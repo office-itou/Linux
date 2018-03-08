@@ -1,0 +1,94 @@
+# *****************************************************************************
+# LiveCDCustomization                                                         *
+# *****************************************************************************
+
+# == 必須ツールのインストール =================================================
+  apt-get -y install squashfs-tools genisoimage
+
+# == 基本システムの展開 =======================================================
+  cd ~
+  rm -Rf ~/ubuntu
+  mkdir -p ~/ubuntu
+  mkdir -p ~/ubuntu/mnt
+  mkdir -p ~/ubuntu/extract-cd
+  cd ~/ubuntu
+  mount -o loop "/mnt/hgfs/Share/My Documents/Download/Linux/iso/Ubuntu/ubuntu-15.10-desktop-amd64.iso" mnt
+    rm -Rf extract-cd
+    rsync --exclude=/casper/filesystem.squashfs -a mnt/ extract-cd
+    rm -Rf edit squashfs-root
+    unsquashfs -no-progress mnt/casper/filesystem.squashfs
+    mv squashfs-root edit
+  umount mnt
+
+# == 基本システムの設定 =======================================================
+  cd ~/ubuntu
+  LANG=C chroot edit /bin/bash
+    mount -t proc     proc     /proc
+    mount -t sysfs    sysfs    /sys
+    mount -t devtmpfs /dev     /dev
+    mount -t devpts   /dev/pts /dev/pts
+    /etc/init.d/dbus start
+
+# -- ロケールの設定 -----------------------------------------------------------
+    timedatectl set-timezone "Asia/Tokyo"
+    localectl set-locale LANG="ja_JP.utf8" LANGUAGE="ja:en"
+    localectl set-x11-keymap "jp" "jp106" "" "terminate:ctrl_alt_bksp"
+    locale | sed -e 's/LANG=C/LANG=ja_JP.UTF-8/' -e 's/LANGUAGE=$/LANGUAGE=ja:en/' -e 's/"C"/"ja_JP.UTF-8"/' > /etc/locale.conf
+
+# -- モジュールの追加 ---------------------------------------------------------
+    apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y dist-upgrade && \
+    apt-get -y autoremove && \
+    apt-get -y install clamav \
+                       ntpdate \
+                       ssh \
+                       apache2 \
+                       smbclient \
+                       bind9 \
+                       anthy anthy-common \
+                       libreoffice-help-ja libreoffice-l10n-ja \
+                       firefox-locale-ja thunderbird-locale-ja \
+                       fonts-takao-mincho fonts-takao-pgothic \
+                       language-pack-gnome-ja language-pack-gnome-ja-base language-pack-ja language-pack-ja-base
+    sed -i /etc/clamav/freshclam.conf \
+        -e 's/# Check for new database 24 times a day/# Check for new database 4 times a day/' \
+        -e 's/Checks 24/Checks 4/' \
+        -e 's/^NotifyClamd/#&/'
+    sed -i /etc/ssh/sshd_config \
+        -e 's/^PermitRootLogin without-password/#&\nPermitRootLogin yes/' \
+        -e 's/#PasswordAuthentication yes/PasswordAuthentication yes/' \
+        -e '/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/d' \
+        -e '/HostKey \/etc\/ssh\/ssh_host_ed25519_key/d' \
+        -e '$a UseDNS no\nIgnoreUserKnownHosts no'
+
+# -- クリーニング処理 ---------------------------------------------------------
+    apt-get -y autoremove
+    apt-get autoclean
+    apt-get clean
+    /etc/init.d/dbus stop
+    umount /dev/pts || umount -lf /dev/pts
+    umount /dev     || umount -lf /dev
+    umount /sys     || umount -lf /sys
+    umount /proc    || umount -lf /proc
+  exit
+  rm -rf edit/tmp/* edit/root/.bash_history edit/root/.viminfo edit/var/cache/apt/*.bin edit/var/cache/apt/archives/*.deb
+
+# == CDイメージの作成 =========================================================
+# -- 圧縮ファイルの作成 -------------------------------------------------------
+  chmod +w extract-cd/casper/filesystem.manifest
+  chroot edit dpkg-query -W --showformat='${Package} ${Version}\n' > extract-cd/casper/filesystem.manifest
+  rm -f extract-cd/casper/filesystem.squashfs
+  mksquashfs edit extract-cd/casper/filesystem.squashfs -no-progress
+  printf $(du -sx --block-size=1 edit | cut -f1) > extract-cd/casper/filesystem.size
+
+# -- ISOイメージの作成 --------------------------------------------------------
+  cd extract-cd
+  rm -f md5sum.txt
+  find -type f -print0 | xargs -0 md5sum | grep -v isolinux/boot.cat | tee md5sum.txt
+  genisoimage -D -r -V "Ubuntu 15.10 amd64" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../ubuntu-15.10-desktop-amd64-custom.iso .
+  ls -l ~/ubuntu/
+  cp -p ~/ubuntu/ubuntu-15.10-desktop-amd64-custom.iso "/mnt/hgfs/Share/My Documents/Download/Linux/iso/Ubuntu/"
+  cd ~
+
+# == EOF ======================================================================

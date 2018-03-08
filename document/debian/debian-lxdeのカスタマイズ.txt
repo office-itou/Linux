@@ -1,0 +1,113 @@
+# *****************************************************************************
+# LiveCDCustomization                                                         *
+# *****************************************************************************
+
+# == tools install ============================================================
+    apt-get -y install debootstrap syslinux genisoimage squashfs-tools
+
+
+# == initial processing =======================================================
+    cd ~
+    rm -Rf   debian-live
+    mkdir -p debian-live/media debian-live/cdimg debian-live/fsimg
+# -----------------------------------------------------------------------------
+    if [ ! -f debian-live-8.7.1-amd64-lxde-desktop.iso ]; then
+        wget "http://ftp.riken.jp/Linux/debian/debian-cd/current-live/amd64/iso-hybrid/debian-live-8.7.1-amd64-lxde-desktop.iso"
+    fi
+# -----------------------------------------------------------------------------
+    mount -o loop debian-live-8.7.1-amd64-lxde-desktop.iso debian-live/media
+    pushd debian-live/media
+    find . -depth -print | cpio -pdm ../cdimg/
+    popd
+    umount debian-live/media
+# -----------------------------------------------------------------------------
+    if [ ! -f debian-live/cdimg/live/filesystem.squashfs.orig ]; then
+        mv debian-live/cdimg/live/filesystem.squashfs debian-live/cdimg/live/filesystem.squashfs.orig
+    fi
+# -----------------------------------------------------------------------------
+    mount -o loop debian-live/cdimg/live/filesystem.squashfs.orig debian-live/media
+    pushd debian-live/media
+    find . -depth -print | cpio -pdm ../fsimg/
+    popd
+    umount debian-live/media
+# -----------------------------------------------------------------------------
+    LANG=C chroot debian-live/fsimg /bin/bash
+
+
+# *****************************************************************************
+    export PS1="(chroot) $PS1"
+    mount -t proc     proc     /proc
+    mount -t sysfs    sysfs    /sys
+    mount -t devtmpfs /dev     /dev
+    mount -t devpts   /dev/pts /dev/pts
+    /etc/init.d/dbus start
+# -- root user's setting ------------------------------------------------------
+    if [ ! -f ~/.vimrc ]; then
+        echo -e "set number\nset tabstop=4\nset list\nset listchars=tab:>_" > ~/.vimrc
+    fi
+
+    if [ ! -f ~/.bashrc.orig ]; then
+        sed -i.orig ~/.bashrc \
+            -e '$a#\ncase "\${TERM}" in\n\t"linux" )\n\t\tLANG=C\n\t\t;;\n\t* )\n\t\tLANG=ja_JP.UTF-8\n\t\t;;\nesac\nexport LANG'
+    fi
+# -- module install -----------------------------------------------------------
+    apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
+    apt-get -y install task-japanese task-japanese-desktop \
+                       clamav \
+                       ntpdate \
+                       proftpd \
+                       smbclient cifs-utils
+# -- clamav -------------------------------------------------------------------
+    if [ ! -f /etc/clamav/freshclam.conf.orig ]; then
+        sed -i.orig /etc/clamav/freshclam.conf \
+            -e 's/# Check for new database 24 times a day/# Check for new database 4 times a day/' \
+            -e 's/Checks 24/Checks 4/' \
+            -e 's/^NotifyClamd/#&/'
+    fi
+# -- sshd ---------------------------------------------------------------------
+    if [ ! -f /etc/ssh/sshd_config.orig ]; then
+        sed -i.orig /etc/ssh/sshd_config \
+            -e 's/^PermitRootLogin .*/PermitRootLogin yes/' \
+            -e 's/#PasswordAuthentication yes/PasswordAuthentication yes/' \
+            -e '/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/d' \
+            -e '/HostKey \/etc\/ssh\/ssh_host_ed25519_key/d' \
+            -e '$aUseDNS no\nIgnoreUserKnownHosts no'
+    fi
+# -- ftpd ---------------------------------------------------------------------
+    if [ ! -f /etc/ftpusers.orig ]; then
+        sed -i.orig /etc/ftpusers \
+            -e 's/root/# &/'
+    fi
+
+    if [ ! -f /etc/proftpd/proftpd.conf.orig ]; then
+        sed -i.orig /etc/proftpd/proftpd.conf \
+            -e '$aTimesGMT off\n<Global>\n\tRootLogin on\n\tUseFtpUsers on\n</Global>'
+    fi
+# -- cleaning -----------------------------------------------------------------
+    apt-get -y autoremove
+    apt-get autoclean
+    apt-get clean
+    /etc/init.d/dbus stop
+    umount -fl /dev/pts /dev /sys /proc
+    exit
+# *****************************************************************************
+
+
+    rm -rf debian-live/fsimg/tmp/* debian-live/fsimg/root/.bash_history debian-live/fsimg/root/.viminfo debian-live/fsimg/var/cache/apt/*.bin debian-live/fsimg/var/cache/apt/archives/*.deb
+# -- file compress ------------------------------------------------------------
+    rm -f debian-live/cdimg/live/filesystem.squashfs
+    mksquashfs debian-live/fsimg debian-live/cdimg/live/filesystem.squashfs -comp xz -wildcards -e *.orig
+    ls -l debian-live/cdimg/live/
+# -----------------------------------------------------------------------------
+    if [ ! -f debian-live/cdimg/isolinux/live.cfg.orig ]; then
+        chmod +w debian-live/cdimg/isolinux/live.cfg
+        sed -i.orig debian-live/cdimg/isolinux/live.cfg \
+            -e 's/append.*/& live-config\.locales=ja_JP\.UTF-8 live-config\.timezone=Asia\/Tokyo live-config\.keyboard-model=jp106 live-config\.keyboard-layouts=jp/g'
+    fi
+# -- make iso image -----------------------------------------------------------
+    pushd debian-live/cdimg
+    genisoimage -J -r -R -o ../../debian-live-8.7.1-amd64-lxde-desktop-custom.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -x *.orig .
+    popd
+    ls -l
+
+# =============================================================================

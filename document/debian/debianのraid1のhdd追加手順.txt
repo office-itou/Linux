@@ -1,0 +1,74 @@
+# -----------------------------------------------------------------------------
+apt-get update
+apt-get -y upgrade
+apt-get -y dist-upgrade
+# -----------------------------------------------------------------------------
+apt-get -y install mdadm rsync
+cat /etc/modules
+cp -p /etc/modules /etc/modules.orig
+echo raid1 >> /etc/modules
+echo md >> /etc/modules
+cat /etc/modules
+modprobe raid1
+modprobe md
+lsmod | grep raid1
+cat /proc/mdstat
+# -----------------------------------------------------------------------------
+fdisk -l /dev/sd[a-b]
+sfdisk -d /dev/sda | sfdisk /dev/sdb
+sfdisk --change-id /dev/sdb 6 fd
+fdisk -l /dev/sd[a-b]
+# -----------------------------------------------------------------------------
+mdadm --create /dev/md0 --level=1 --raid-disks=2 missing /dev/sdb6
+cat /proc/mdstat
+mkfs.ext4 /dev/md0
+# -----------------------------------------------------------------------------
+cat  /etc/mdadm/mdadm.conf 
+cp -p /etc/mdadm/mdadm.conf /etc/mdadm/mdadm.conf.orig
+mdadm --detail --scan >> /etc/mdadm/mdadm.conf 
+cat  /etc/mdadm/mdadm.conf 
+cat /etc/fstab
+cp -p /etc/fstab /etc/fstab.orig
+blkid /dev/sda6 /dev/md0
+sed 's/f5903075-38b9-4ee3-b888-1df1b74d61fc/905af7eb-c54f-4720-a7e5-33279b4b3351/' < /etc/fstab.orig | unexpand -a > /etc/fstab
+vi /etc/fstab
+cat /etc/fstab
+# -----------------------------------------------------------------------------
+# grep md0 /proc/mdstat
+# blkid /dev/sda6 /dev/md0
+# cat /boot/grub/grub.cfg
+# cp -p /boot/grub/grub.cfg /boot/grub/grub.cfg.orig
+# sed 's/f5903075-38b9-4ee3-b888-1df1b74d61fc/905af7eb-c54f-4720-a7e5-33279b4b3351/' < /boot/grub/grub.cfg.orig > /boot/grub/grub.cfg
+# cat /boot/grub/grub.cfg
+# grub-install /dev/sda
+# grub-install /dev/sdb
+# update-grub
+# -----------------------------------------------------------------------------
+# insserv networking,start=1
+# insserv ssh,start=1
+# init s
+# insserv -r networking
+# insserv -d networking
+# insserv -r ssh
+# insserv -d ssh
+# insserv -s | grep networking
+# insserv -s | grep ssh
+# -----------------------------------------------------------------------------
+# mount /dev/md0 /media
+# rsync -apxP --exclude=/media --exclude=lost+found / /media
+# umount /media
+# reboot
+# -----------------------------------------------------------------------------
+umount /dev/sda6
+fdisk -l /dev/sda
+sfdisk --change-id /dev/sda 6 fd
+fdisk -l /dev/sda
+mdadm --add /dev/md0 /dev/sda6
+cat /proc/mdstat
+# -----------------------------------------------------------------------------
+cat /etc/mdadm/mdadm.conf
+cp -p /etc/mdadm/mdadm.conf /etc/mdadm/mdadm.conf.orig1
+cp -p /etc/mdadm/mdadm.conf.orig /etc/mdadm/mdadm.conf
+mdadm --detail --scan >> /etc/mdadm/mdadm.conf 
+cat /etc/mdadm/mdadm.conf
+watch cat /proc/mdstat

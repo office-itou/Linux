@@ -1,0 +1,25 @@
+★★★ debianのglantank用自動インストールの道のり ★★★
+　※ /dev/sdb1がGALNTANKのsda用HDDとする
+
+1)fdisk で /dev/sdb1 に 200MB程の領域を ext2 で確保する。
+2)/dev/sdb1 をマウントする。
+3)カレントディレクトリーをマウント先に移動する。
+4)GLANTANK のインストラーをダウンロードする。
+  wget ftp://ftp.riken.jp/Linux/debian/debian/dists/stable/main/installer-armel/current/images/iop32x/network-console/glantank/*
+  または
+  wget ftp://ftp.jaist.ac.jp/pub/Linux/debian/dists/stable/main/installer-armel/current/images/iop32x/network-console/glantank/*
+5)initrd.gz を解凍する。
+  mkdir x
+  cd x
+  zcat ../initrd.gz | cpio -if -
+6)実行したい preseed.cfg をカレントディレクトリーと親ディレクトリーにコピーしておく。
+  mv preseed.cfg preseed.cfg.orig
+  vi preseed.cfg
+  cp -p preseed.cfg ../
+7)initrd.gz を再圧縮し initrd にコピーする。
+  find | cpio --quiet -o -H newc > ../i
+  cd ..
+  gzip -9 i
+  cp i.gz initrd
+8)HDD を GLANTANK に取り付け電源を入れて 設定した IPアドレスに SSH で接続する。
+9)画面のとおりに実行し、再起動されると debian のインストルーが完了する。

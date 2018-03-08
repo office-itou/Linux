@@ -1,0 +1,119 @@
+# *****************************************************************************
+# LiveCDCustomization (作業環境：knoppix live cd用)                           *
+# *****************************************************************************
+
+# == 基本システムの展開 =======================================================
+# -- 作業領域の確保 -----------------------------------------------------------
+  sfdisk -s
+  umount -l /media/sda1
+  echo ,,83 | sfdisk -f /dev/sda
+  mkfs.ext4 -F /dev/sda1
+
+# -- 作業領域のマウント -------------------------------------------------------
+  mount /dev/sda1 /media/sda1
+
+# -- ファイル展開 -------------------------------------------------------------
+  cd ~
+  rm -Rf /media/sda1/knoppix
+  mkdir -p /media/sda1/knoppix
+  mkdir -p /media/sda1/knoppix/mnt
+  mkdir -p /media/sda1/knoppix/mnt-decompress
+  mkdir -p /media/sda1/knoppix/extract-cd
+  cd /media/sda1/knoppix
+  rsync --exclude="KNOPPIX/KNOPPIX" -aH /mnt-system/ extract-cd
+  rsync                             -aH /KNOPPIX/    edit
+
+# == 基本システムの設定 =======================================================
+  cd /media/sda1/knoppix
+  mount -t proc  proc     edit/proc
+  mount -t sysfs sysfs    edit/sys
+  mount --bind   /dev     edit/dev
+  mount --bind   /dev/pts edit/dev/pts
+  mount --bind   /tmp     edit/tmp
+  chroot edit
+
+# -- apt-getの準備 ------------------------------------------------------------
+    sed -i  /etc/apt/sources.list \
+        -e 's/ftp.de.debian.org/ftp.jp.debian.org/'
+    sed -i.orig /etc/resolv.conf \
+        -e '$a nameserver 8.8.8.8' \
+        -e '$a nameserver 8.8.4.4'
+    apt-get update
+
+# -- 不要なモジュールの削除 ---------------------------------------------------
+    dpkg-query -W --showformat='${Installed-Size}\t${Package}\n' | sort -nr | less
+    apt-get -y remove wine* gcompris* linux-source-* etoys* qemu*
+
+# -- 不要なロケールデータの削除 -----------------------------------------------
+    pushd /usr/share/locale/
+      rm -rf be* bg* cs* da* de* es* fi* fr* he* hi* hu* it* nl* pl* ru* sk* sl* tr* zh*
+    popd
+    localedef --list-archive
+    localedef --list-archive | grep -v -e ^ja -e ^en_GB -e en_US | xargs localedef --delete-from-archive
+    localedef --list-archive
+
+# -- モジュールの追加 ---------------------------------------------------------
+    apt-get update
+    apt-get -y -t unstable upgrade
+#   dpkg -i --force-overwrite /var/cache/apt/archives/systemd_229-1_i386.deb           && apt-get -y -f install && apt-get -y -t unstable upgrade
+#   dpkg -i --force-overwrite /var/cache/apt/archives/init-system-helpers_1.28_all.deb && apt-get -y -f install && apt-get -y -t unstable upgrade
+    apt-get -y -t unstable install libreoffice-l10n-ja ntpdate proftpd fdclone apt-show-versions libauthen-pam-perl
+    freshclam -d
+    freshclam
+    sed -i /etc/ssh/sshd_config \
+        -e 's/PermitRootLogin\ without-password/PermitRootLogin yes/' \
+        -e 's/#PasswordAuthentication\ yes/PasswordAuthentication\ yes/' \
+        -e '/HostKey\ \/etc\/ssh\/ssh_host_ecdsa_key/d' \
+        -e '/HostKey\ \/etc\/ssh\/ssh_host_ed25519_key/d' \
+        -e '$a UseDNS\ no\nIgnoreUserKnownHosts\ no'
+    sed -i /etc/proftpd/proftpd.conf \
+        -e '$a TimesGMT\ off\n<Global>\n\tRootLogin\ on\n\tUseFtpUsers\ on\n</Global>'
+    sed -i /etc/ftpusers \
+        -e "s/root/#\ root/"
+    wget "http://www.webmin.com/download/deb/webmin-current.deb"
+    dpkg -i webmin-current.deb
+    rm -f webmin-current.deb
+
+# -- ロケールの設定 -----------------------------------------------------------
+    rm -f /etc/localtime
+    ln -s /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+    echo -e "LANG=ja_JP.utf8\nLANGUAGE=ja:en\nCOUNTRY=JP" > /etc/default/locale
+    echo -e "XKBMODEL=jp106\nXKBLAYOUT=jp\nXKBOPTIONS=terminate:ctrl_alt_bksp\nBACKSPACE=guess" > /etc/default/keyboard
+    sed -i /etc/locale.gen \
+        -e 's/\(^[^#]\)/#\ \1/' \
+        -e 's/#\ ja_JP.UTF-8\ UTF-8/ja_JP.UTF-8\ UTF-8/'
+    locale-gen
+    locale | sed -e 's/LANG=C/LANG=ja_JP.UTF-8/' -e 's/LANGUAGE=/LANGUAGE=ja:en/' -e 's/"C"/"ja_JP.UTF-8"/' > /etc/locale.conf
+
+# -- クリーニング処理 ---------------------------------------------------------
+    apt-get -y autoremove
+    apt-get autoclean
+    apt-get clean
+    mv -f /etc/resolv.conf.orig /etc/resolv.conf
+  exit
+  for i in tmp dev/pts dev sys proc; do
+    umount edit/$i || umount -lf edit/$i
+  done
+  rm -rf edit/tmp/* edit/root/.bash_history edit/root/.viminfo edit/var/cache/apt/*.bin edit/var/cache/apt/archives/*.deb
+
+# == CDイメージの作成 =========================================================
+# -- 起動オプションの修正 -----------------------------------------------------
+  sed -i extract-cd/boot/isolinux/isolinux.cfg \
+      -e 's/lang=en/lang=ja/' \
+      -e 's/tz=localtime/tz=Asia\/Tokyo/'
+
+# -- 圧縮ファイルの作成 -------------------------------------------------------
+  rm -f extract-cd/KNOPPIX/KNOPPIX
+# genisoimage -input-charset ISO-8859-15 -R -l -D -V "KNOPPIX_FS" -quiet -no-split-symlink-components -no-split-symlink-fields -hide-rr-moved -cache-inodes edit | create_compressed_fs -q -B 65536 -t 8 -L 9 -f isotemp - extract-cd/KNOPPIX/KNOPPIX
+  genisoimage -R -U -V "KNOPPIX_FS" -hide-rr-moved -cache-inodes -no-bak -pad -quiet edit | create_compressed_fs -q -B 65536 -t 8 -L 9 -f isotemp - extract-cd/KNOPPIX/KNOPPIX
+  ls -l extract-cd/KNOPPIX/KNOPPIX
+
+# -- ISOイメージの作成 --------------------------------------------------------
+  cd extract-cd
+  rm -f ../KNOPPIX_V7.6.1DVD-2016-01-16-JP.iso
+  find -type f -not -name sha1sums -not -name boot.cat -not -name isolinux.bin -exec sha1sum '{}' \; > KNOPPIX/sha1sums
+  genisoimage -l -r -J -V "KNOPPIX7.6.1JP" -b boot/isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table -c boot/isolinux/boot.cat -o ../KNOPPIX_V7.6.1DVD-2016-01-16-JP.iso .
+  cp -p /media/sda1/knoppix/KNOPPIX_V7.6.1DVD-2016-01-16-JP.iso "/mnt/hgfs/Share/My Documents/Download/Linux/iso/Knoppix/"
+  cd ~
+
+# == EOF ======================================================================

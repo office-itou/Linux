@@ -1,0 +1,69 @@
+# -----------------------------------------------------------------------------
+apt-get -y install mdadm rsync
+cat /etc/modules
+cp -p /etc/modules /etc/modules.orig
+echo raid1 >> /etc/modules
+echo md >> /etc/modules
+cat /etc/modules
+modprobe raid1
+modprobe md
+lsmod | grep raid1
+cat /proc/mdstat
+# -----------------------------------------------------------------------------
+fdisk -l /dev/sd[a-b]
+sfdisk -d /dev/sda | sfdisk /dev/sdb
+sfdisk --change-id /dev/sdb 6 fd
+fdisk -l /dev/sd[a-b]
+# -----------------------------------------------------------------------------
+mdadm --create /dev/md0 --level=1 --raid-disks=2 missing /dev/sdb6
+cat /proc/mdstat
+mkfs.ext4 /dev/md0
+# -----------------------------------------------------------------------------
+cat  /etc/mdadm/mdadm.conf 
+cp -p /etc/mdadm/mdadm.conf /etc/mdadm/mdadm.conf.orig
+mdadm --detail --scan >> /etc/mdadm/mdadm.conf 
+cat  /etc/mdadm/mdadm.conf 
+cat /etc/fstab
+cp -p /etc/fstab /etc/fstab.orig1
+blkid /dev/sda6 /dev/md0
+#      <-- /dev/sda6のblkid --------------> <-- /dev/md0のblkid --------------->
+sed 's/fa2557cb-bb81-4d27-8fea-8877f538c285/9289024c-e088-4066-9443-fc6933fdb0e8/' < /etc/fstab.orig1 | unexpand -a > /etc/fstab
+# vi /etc/fstab
+cat /etc/fstab
+# -----------------------------------------------------------------------------
+insserv networking,start=1
+insserv ssh,start=1
+init 1
+# -----------------------------------------------------------------------------
+mount /dev/md0 /media
+rsync -apxP --exclude=/media --exclude=lost+found / /media
+umount /media
+# -----------------------------------------------------------------------------
+mkdir tmp
+cd tmp
+zcat /boot/initrd.img-3.2.0-4-iop32x | cpio -i -d -H newc --no-absolute-filenames
+cp -p conf/param.conf conf/param.conf.orig
+#      <-- /dev/sda6のblkid --------------> <-- /dev/md0のblkid --------------->
+sed 's/fa2557cb-bb81-4d27-8fea-8877f538c285/9289024c-e088-4066-9443-fc6933fdb0e8/' < conf/param.conf.orig > conf/param.conf
+cat conf/param.conf
+find | cpio --quiet -o -H newc > ../i
+cd ..
+gzip -9 i
+cp -p i.gz /boot/initrd.img-3.2.0-4-iop32x
+# -----------------------------------------------------------------------------
+reboot
+# -----------------------------------------------------------------------------
+insserv -r networking
+insserv -d networking
+insserv -r ssh
+insserv -d ssh
+insserv -s | grep networking
+insserv -s | grep ssh
+# -----------------------------------------------------------------------------
+# umount /dev/sda6
+fdisk -l /dev/sda
+sfdisk --change-id /dev/sda 6 fd
+fdisk -l /dev/sda
+mdadm --add /dev/md0 /dev/sda6
+cat /proc/mdstat
+# -----------------------------------------------------------------------------

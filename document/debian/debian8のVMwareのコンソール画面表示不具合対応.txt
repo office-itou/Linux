@@ -1,0 +1,21 @@
+# =============================================================================
+# VMwareのコンソール画面表示不具合対応
+# =============================================================================
+apt-cache search linux-source
+apt-get install linux-source-3.16
+# -----------------------------------------------------------------------------
+cd /usr/src
+tar -xf linux-source-3.16.tar.xz
+cd linux-source-3.16
+# -----------------------------------------------------------------------------
+sed "s/#\ CONFIG_DRM_VMWGFX_FBCON\ is\ not\ set/CONFIG_DRM_VMWGFX_FBCON=y/" < /boot/config-3.16.0-4-amd64 > .config
+# -----------------------------------------------------------------------------
+make oldconfig
+make-kpkg clean
+make-kpkg --initrd kernel-image kernel-headers kernel-source
+# -----------------------------------------------------------------------------
+cd ..
+dpkg -i linux-image-3.16.7-ckt11_3.16.7-ckt11-10.00.Custom_amd64.deb
+dpkg -i linux-headers-3.16.7-ckt11_3.16.7-ckt11-10.00.Custom_amd64.deb
+update-grub
+reboot

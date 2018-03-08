@@ -1,0 +1,24 @@
+★★★ debianのインストール用USBメモリーの作成手順 ★★★
+　※ /dev/sdb1がUSBメモリーとする
+
+apt-get install mbr dosfstools syslinux mtools
+install-mbr /dev/sdb
+mkdosfs /dev/sdb1
+syslinux /dev/sdb1
+mount /dev/sdb1 /mnt
+cd /mnt
+wget "http://ftp.jaist.ac.jp/pub/Linux/debian-cd/current/multi-arch/iso-cd/debian-7.8.0-amd64-i386-netinst.iso"
+wget "http://ftp.jaist.ac.jp/pub/Linux/debian/dists/stable/main/installer-amd64/current/images/hd-media/vmlinuz"
+wget "http://ftp.jaist.ac.jp/pub/Linux/debian/dists/stable/main/installer-amd64/current/images/hd-media/initrd.gz"
+wget "https://raw.githubusercontent.com/office-itou/lab/master/Linux/installer/preseed.cfg.single_hdd"
+wget "https://raw.githubusercontent.com/office-itou/lab/master/Linux/installer/preseed.cfg.raid1"
+wget "https://raw.githubusercontent.com/office-itou/lab/master/Linux/installer/preseed.cfg.raid5"
+  mv preseed.cfg.single_hdd preseed.cfg
+# mv preseed.cfg.raid1      preseed.cfg
+# mv preseed.cfg.raid5      preseed.cfg
+cat <<- _EOT_ > syslinux.cfg
+	default vmlinuz
+	append auto=true vga=normal file=/preseed.cfg initrd=initrd.gz priority=critical
+_EOT_
+cd
+umount /mnt
