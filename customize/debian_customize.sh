@@ -21,18 +21,16 @@ _EOT_
 		esac
 	done
 
-	apt-get -y install syslinux mtools mbr genisoimage dvd+rw-tools
+	apt-get -y install xorriso
 #	cd ~
 	WORK_DIRS=`pwd`
-	rm -rf ${WORK_DIRS}/${CODE_NAME}
-	mkdir -p ${WORK_DIRS}/${CODE_NAME}/image
-	mkdir -p ${WORK_DIRS}/${CODE_NAME}/install
-	mkdir -p ${WORK_DIRS}/${CODE_NAME}/mnt
+	rm -rf   ${WORK_DIRS}/${CODE_NAME}/image ${WORK_DIRS}/${CODE_NAME}/install ${WORK_DIRS}/${CODE_NAME}/mnt
+	mkdir -p ${WORK_DIRS}/${CODE_NAME}/image ${WORK_DIRS}/${CODE_NAME}/install ${WORK_DIRS}/${CODE_NAME}/mnt
 # -----------------------------------------------------------------------------
 	cd ${WORK_DIRS}/${CODE_NAME}
 	# -------------------------------------------------------------------------
 	if [ -f "../preseed_debian.cfg" ]; then
-		cp -p "../preseed_debian.cfg" "preseed.cfg"
+		cp --preserve=timestamps "../preseed_debian.cfg" "preseed.cfg"
 	fi
 	if [ ! -f "preseed.cfg" ]; then
 		wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/preseed_debian.cfg"
@@ -42,27 +40,39 @@ _EOT_
 	if [ ! -f "mini-${CODE_NAME}-amd64.iso" ]; then
 		wget -O "mini-${CODE_NAME}-amd64.iso" "http://ftp.jp.debian.org/debian/dists/${CODE_NAME}/main/installer-amd64/current/images/netboot/mini.iso"
 	fi
+	VOLID=`volname "mini-${CODE_NAME}-amd64.iso"`
 	# -------------------------------------------------------------------------
 	mount -o loop "mini-${CODE_NAME}-amd64.iso" ${WORK_DIRS}/${CODE_NAME}/mnt
-	pushd ${WORK_DIRS}/${CODE_NAME}/mnt
+	pushd ${WORK_DIRS}/${CODE_NAME}/mnt > /dev/null
 	find . -depth -print | cpio -pdm ${WORK_DIRS}/${CODE_NAME}/image/
-	popd
+	popd > /dev/null
 	umount ${WORK_DIRS}/${CODE_NAME}/mnt
 # -----------------------------------------------------------------------------
 	cd ${WORK_DIRS}/${CODE_NAME}/install
 	gunzip < ${WORK_DIRS}/${CODE_NAME}/image/initrd.gz | cpio -i
-	cp -p ${WORK_DIRS}/${CODE_NAME}/preseed.cfg .
+	cp --preserve=timestamps ${WORK_DIRS}/${CODE_NAME}/preseed.cfg .
 	mv ${WORK_DIRS}/${CODE_NAME}/image/initrd.gz ${WORK_DIRS}/${CODE_NAME}/image/initrd.gz.orig
 	find . | cpio -H newc --create | gzip -9 > ${WORK_DIRS}/${CODE_NAME}/image/initrd.gz
 # -----------------------------------------------------------------------------
-	cat <<- _EOT_ > ${WORK_DIRS}/${CODE_NAME}/image/syslinux.cfg
-		default vmlinuz
-		append auto=true vga=normal file=/preseed.cfg initrd=initrd.gz priority=critical console-setup/ask_detect=false pkgsel/language-pack-patterns=pkgsel/install-language-support=false quiet --
-_EOT_
+#	cat <<- _EOT_ > ${WORK_DIRS}/${CODE_NAME}/image/syslinux.cfg
+#		default vmlinuz
+#		append auto=true vga=normal file=/preseed.cfg initrd=initrd.gz priority=critical console-setup/ask_detect=false pkgsel/language-pack-patterns=pkgsel/install-language-support=false quiet --
+#_EOT_
 # -----------------------------------------------------------------------------
-	pushd ${WORK_DIRS}/${CODE_NAME}/image
-	genisoimage -J -r -R -o ${WORK_DIRS}/${CODE_NAME}/mini-${CODE_NAME}-amd64-preseed.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table .
-	popd
+	pushd ${WORK_DIRS}/${CODE_NAME}/image > /dev/null
+	xorriso -as mkisofs \
+	    -r -J -V "${VOLID}" \
+	    -o ${WORK_DIRS}/${CODE_NAME}/mini-${CODE_NAME}-amd64-preseed.iso \
+	    -b isolinux.bin \
+	    -c boot.cat \
+	    -no-emul-boot \
+	    -boot-load-size 4 \
+	    -boot-info-table \
+	    -m initrd.gz.orig \
+	    -iso-level 4 \
+	    -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot \
+	    .
+	popd > /dev/null
 # -----------------------------------------------------------------------------
 	cd ${WORK_DIRS}/${CODE_NAME}
 	ls -al

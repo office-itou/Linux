@@ -6,13 +6,13 @@
 	do
 		cat <<- _EOT_
 			# ID:Ver. :コードネーム    :リリース日    :サポート期限
-			#  1:12.04:Precise Pangolin:2012年04月26日:2017年04月
+			#--1:12.04:Precise Pangolin:2012年04月26日:2017年04月
 			#  2:14.04:Trusty Tahr     :2014年04月17日:2019年04月
 			#--3:15.04:Vivid Vervet    :2015年04月23日:2016年01月
 			#--4:15.10:Wily Werewolf   :2015年10月22日:2016年07月
 			#  5:16.04:Xenial Xerus    :2016年04月21日:2021年04月
-			#  6:16.10:Yakkety Yak     :2016年10月13日:2017年07月
-			#  7:17.04:Zesty Zapus     :2017年04月13日:2018年01月
+			#--6:16.10:Yakkety Yak     :2016年10月13日:2017年07月
+			#--7:17.04:Zesty Zapus     :2017年04月13日:2018年01月
 			#  8:17.10:Artful Aardvark :2017年10月19日:2018年07月
 _EOT_
 		echo ID番号+Enterを入力して下さい。
@@ -29,18 +29,16 @@ _EOT_
 		esac
 	done
 
-	apt-get -y install syslinux mtools mbr genisoimage dvd+rw-tools
+	apt-get -y install xorriso
 #	cd ~
 	WORK_DIRS=`pwd`
-	rm -rf ${WORK_DIRS}/${CODE_NAME}
-	mkdir -p ${WORK_DIRS}/${CODE_NAME}/image
-	mkdir -p ${WORK_DIRS}/${CODE_NAME}/install
-	mkdir -p ${WORK_DIRS}/${CODE_NAME}/mnt
+	rm -rf   ${WORK_DIRS}/${CODE_NAME}/image ${WORK_DIRS}/${CODE_NAME}/install ${WORK_DIRS}/${CODE_NAME}/mnt
+	mkdir -p ${WORK_DIRS}/${CODE_NAME}/image ${WORK_DIRS}/${CODE_NAME}/install ${WORK_DIRS}/${CODE_NAME}/mnt
 # -----------------------------------------------------------------------------
 	cd ${WORK_DIRS}/${CODE_NAME}
 	# -------------------------------------------------------------------------
 	if [ -f "../preseed_ubuntu.cfg" ]; then
-		cp -p "../preseed_ubuntu.cfg" "preseed.cfg"
+		cp --preserve=timestamps "../preseed_ubuntu.cfg" "preseed.cfg"
 	fi
 	if [ ! -f "preseed.cfg" ]; then
 		wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/preseed_ubuntu.cfg"
@@ -50,27 +48,39 @@ _EOT_
 	if [ ! -f "mini-${CODE_NAME}-amd64.iso" ]; then
 		wget -O "mini-${CODE_NAME}-amd64.iso" "http://ftp.riken.jp/Linux/ubuntu/dists/${CODE_NAME}/main/installer-amd64/current/images/netboot/mini.iso"
 	fi
+	VOLID=`volname "mini-${CODE_NAME}-amd64.iso"`
 	# -------------------------------------------------------------------------
 	mount -o loop "mini-${CODE_NAME}-amd64.iso" ${WORK_DIRS}/${CODE_NAME}/mnt
-	pushd ${WORK_DIRS}/${CODE_NAME}/mnt
+	pushd ${WORK_DIRS}/${CODE_NAME}/mnt > /dev/null
 	find . -depth -print | cpio -pdm ${WORK_DIRS}/${CODE_NAME}/image/
-	popd
+	popd > /dev/null
 	umount ${WORK_DIRS}/${CODE_NAME}/mnt
 # -----------------------------------------------------------------------------
 	cd ${WORK_DIRS}/${CODE_NAME}/install
 	gunzip < ${WORK_DIRS}/${CODE_NAME}/image/initrd.gz | cpio -i
-	cp -p ${WORK_DIRS}/${CODE_NAME}/preseed.cfg .
+	cp --preserve=timestamps ${WORK_DIRS}/${CODE_NAME}/preseed.cfg .
 	mv ${WORK_DIRS}/${CODE_NAME}/image/initrd.gz ${WORK_DIRS}/${CODE_NAME}/image/initrd.gz.orig
 	find . | cpio -H newc --create | gzip -9 > ${WORK_DIRS}/${CODE_NAME}/image/initrd.gz
 # -----------------------------------------------------------------------------
-	cat <<- _EOT_ > ${WORK_DIRS}/${CODE_NAME}/image/syslinux.cfg
-		default vmlinuz
-		append auto=true vga=normal file=/preseed.cfg initrd=initrd.gz priority=critical console-setup/ask_detect=false pkgsel/language-pack-patterns=pkgsel/install-language-support=false quiet --
-_EOT_
+#	cat <<- _EOT_ > ${WORK_DIRS}/${CODE_NAME}/image/syslinux.cfg
+#		default vmlinuz
+#		append auto=true vga=normal file=/preseed.cfg initrd=initrd.gz priority=critical console-setup/ask_detect=false pkgsel/language-pack-patterns=pkgsel/install-language-support=false quiet --
+#_EOT_
 # -----------------------------------------------------------------------------
-	pushd ${WORK_DIRS}/${CODE_NAME}/image
-	genisoimage -J -r -R -o ${WORK_DIRS}/${CODE_NAME}/mini-${CODE_NAME}-amd64-preseed.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table .
-	popd
+	pushd ${WORK_DIRS}/${CODE_NAME}/image > /dev/null
+	xorriso -as mkisofs \
+	    -r -J -V "${VOLID}" \
+	    -o ${WORK_DIRS}/${CODE_NAME}/mini-${CODE_NAME}-amd64-preseed.iso \
+	    -b isolinux.bin \
+	    -c boot.cat \
+	    -no-emul-boot \
+	    -boot-load-size 4 \
+	    -boot-info-table \
+	    -m initrd.gz.orig \
+	    -iso-level 4 \
+	    -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot \
+	    .
+	popd > /dev/null
 # -----------------------------------------------------------------------------
 	cd ${WORK_DIRS}/${CODE_NAME}
 	ls -al

@@ -19,6 +19,9 @@
 ##	2014/11/02 000.0000 J.Itou         新規作成
 ##	2018/02/28 000.0000 J.Itou         IPV6対応等
 ##	2018/03/07 000.0000 J.Itou         cron用シェル修正
+##	2018/03/10 000.0000 J.Itou         .curlrc追加
+##	2018/03/12 000.0000 J.Itou         cifs関連修正
+##	2018/03/20 000.0000 J.Itou         rootログインの抑制追加・他
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #set -nvx
@@ -40,8 +43,7 @@ funcProc() {
 
 	case "${INP_COMD}" in
 		"start" )
-			which insserv
-			if [ $? -eq 0 ]; then
+			if [ "`which insserv`" != "" ]; then
 				insserv -d ${INP_NAME}; funcPause $?
 			else
 				systemctl enable ${INP_NAME}; funcPause $?
@@ -50,8 +52,7 @@ funcProc() {
 			;;
 		"stop" )
 			/etc/init.d/${INP_NAME} stop
-			which insserv
-			if [ $? -eq 0 ]; then
+			if [ "`which insserv`" != "" ]; then
 				insserv -r ${INP_NAME}; funcPause $?
 			else
 				systemctl disable ${INP_NAME}; funcPause $?
@@ -162,7 +163,7 @@ fncIPV6Conv () {
 	IP6_ADDR=`echo ${IP6_INET} | awk -F / '{print $1;}'`						# IPv6アドレス
 	IP6_MASK=`echo ${IP6_INET} | awk -F / '{print $2;}'`						#  〃 サブネットマスク(bit)
 																				# 本機の属するIPv6アドレス
-	IP6_IPAD=`ip -6 r show dev ${NIC_NAME} | awk -F / '!/default/ && !/fe80::/ {print $1;}'`
+	IP6_IPAD=`ip -6 r show dev ${NIC_NAME} | awk -F / '/\// && !/fe80::/ {print $1;}'`
 																				# BIND用
 	IP6_CONV=`fncIPV6Conv "${IP6_ADDR}"`
 	IP6_ADUP=`echo ${IP6_CONV} | awk -F : '{print $1 $2 $3 $4;}'`
@@ -175,7 +176,7 @@ fncIPV6Conv () {
 	LNK_ADDR=`echo ${LNK_INET} | awk -F / '{print $1;}'`						# IPv6アドレス
 	LNK_MASK=`echo ${LNK_INET} | awk -F / '{print $2;}'`						#  〃 サブネットマスク(bit)
 																				# 本機の属するIPv6アドレス
-	LNK_IPAD=`ip -6 r show dev ${NIC_NAME} | awk -F / '!/default/ &&  /fe80::/ {print $1;}'`
+	LNK_IPAD=`ip -6 r show dev ${NIC_NAME} | awk -F / '/\// &&  /fe80::/ {print $1;}'`
 																				# BIND用
 	LNK_CONV=`fncIPV6Conv "${LNK_ADDR}"`
 	LNK_ADUP=`echo ${LNK_CONV} | awk -F : '{print $1 $2 $3 $4;}'`
@@ -191,7 +192,7 @@ fncIPV6Conv () {
 	MNT_CD=/media
 	DEV_CD=/dev/sr0
 
-	DIR_WK=/work
+	DIR_WK=${PWD}
 	LST_USER=${DIR_WK}/addusers.txt
 #	LOG_FILE=${DIR_WK}/${PGM_NAME}.sh.${NOW_TIME}.log
 	TGZ_WORK=${DIR_WK}/${PGM_NAME}.sh.tgz
@@ -222,86 +223,49 @@ fncIPV6Conv () {
 		SET_WMIN="webmin_${VER_WMIN}_all.deb"
 	fi
 
-	DEV_NUM1=sda
-	DEV_NUM2=sdb
-	DEV_NUM3=sdc
-	DEV_NUM4=sdd
-	DEV_NUM5=sde
-	DEV_NUM6=sdf
-	DEV_NUM7=sdg
-	DEV_NUM8=sdh
-
 	NUM_HDDS=`ls -l /dev/[hs]d[a-z] | wc -l`									# インストール先のHDD台数
+	DEV_ARRY=("/dev/sda" "/dev/sdb" "/dev/sdc" "/dev/sdd" "/dev/sde" "/dev/sdf" "/dev/sdg" "/dev/sdh")
+	HDD_ARRY=(${DEV_ARRY[@]:0:${NUM_HDDS}})
+	USB_ARRY=(${DEV_ARRY[@]:${NUM_HDDS}:${#DEV_ARRY[@]}-${NUM_HDDS}})
+#	DEV_RATE="${USB_ARRY[@]}"
+#	DEV_TEMP="${HDD_ARRY[@]} ${DEV_RATE}"
 
-	case "${NUM_HDDS}" in
-		# HDD 1台 -------------------------------------------------------------
-		1 )	DEV_HDD1=/dev/${DEV_NUM1}
-			DEV_HDD2=
-			DEV_HDD3=
-			DEV_HDD4=
+	CMD_AGET="apt-get -y -qq"
 
-			DEV_USB1=/dev/${DEV_NUM2}
-			DEV_USB2=/dev/${DEV_NUM3}
-			DEV_USB3=/dev/${DEV_NUM4}
-			DEV_USB4=/dev/${DEV_NUM5}
-			;;
-		# HDD 2台 -------------------------------------------------------------
-		2 )	DEV_HDD1=/dev/${DEV_NUM1}
-			DEV_HDD2=/dev/${DEV_NUM2}
-			DEV_HDD3=
-			DEV_HDD4=
-
-			DEV_USB1=/dev/${DEV_NUM3}
-			DEV_USB2=/dev/${DEV_NUM4}
-			DEV_USB3=/dev/${DEV_NUM5}
-			DEV_USB4=/dev/${DEV_NUM6}
-			;;
-		# HDD 4台 ~ -----------------------------------------------------------
-		* )	DEV_HDD1=/dev/${DEV_NUM1}
-			DEV_HDD2=/dev/${DEV_NUM2}
-			DEV_HDD3=/dev/${DEV_NUM3}
-			DEV_HDD4=/dev/${DEV_NUM4}
-
-			DEV_USB1=/dev/${DEV_NUM5}
-			DEV_USB2=/dev/${DEV_NUM6}
-			DEV_USB3=/dev/${DEV_NUM7}
-			DEV_USB4=/dev/${DEV_NUM8}
-			;;
-	esac
-
-	DEV_RATE="${DEV_USB1} ${DEV_USB2} ${DEV_USB3} ${DEV_USB4}"
-	DEV_TEMP="${DEV_HDD1} ${DEV_HDD2} ${DEV_HDD3} ${DEV_HDD4} ${DEV_RATE}"
-
-	CMD_AGET="apt-get -y -q"
+	LIN_CHSH=`which nologin`
+	if [ "`which usermod`" != "" ]; then
+		CMD_CHSH="`which usermod` -s ${LIN_CHSH}"
+	else
+		CMD_CHSH="`which chsh` -s ${LIN_CHSH}"
+	fi
 
 	# 事前ダウンロード --------------------------------------------------------
-	while :
-	do
-		if [ -f "${DIR_WK}/${SET_WMIN}" ]; then
-			break
-		fi
-
-		if [ "${SET_WMIN}" = "webmin-current.deb" ]; then
-			wget "http://www.webmin.com/download/deb/webmin-current.deb"
-		else
-			wget "https://jaist.dl.sourceforge.net/project/webadmin/webmin/${VER_WMIN}/webmin_${VER_WMIN}_all.deb"
-		fi
-		sleep 1s
-	done
+#	while :
+#	do
+#		if [ -f "${DIR_WK}/${SET_WMIN}" ]; then
+#			break
+#		fi
+#
+#		if [ "${SET_WMIN}" = "webmin-current.deb" ]; then
+#			wget "http://www.webmin.com/download/deb/webmin-current.deb"
+#		else
+#			wget "https://jaist.dl.sourceforge.net/project/webadmin/webmin/${VER_WMIN}/webmin_${VER_WMIN}_all.deb"
+#		fi
+#		sleep 1s
+#	done
 
 #------------------------------------------------------------------------------
 # Make work dir
 #------------------------------------------------------------------------------
-	mkdir -p ${DIR_WK}
+#	mkdir -p ${DIR_WK}
 	chmod 700 ${DIR_WK}
-	pushd ${DIR_WK}
-
+#	pushd ${DIR_WK} > /dev/null
+#
 #------------------------------------------------------------------------------
 # System Update
 #------------------------------------------------------------------------------
-	${CMD_AGET} update
-	${CMD_AGET} upgrade
-	${CMD_AGET} dist-upgrade
+	${CMD_AGET} update && ${CMD_AGET} upgrade && ${CMD_AGET} dist-upgrade
+	funcPause $?
 
 #------------------------------------------------------------------------------
 # UDEV Rules
@@ -328,36 +292,62 @@ fncIPV6Conv () {
 #------------------------------------------------------------------------------
 # Locale Setup
 #------------------------------------------------------------------------------
-	if [ ! -f ~/.vimrc ]; then
-		cat <<- _EOT_ > ~/.vimrc
-			set number
-			set tabstop=4
-			set list
-			set listchars=tab:>_
+	locale | sed -e 's/LANG=C/LANG=ja_JP.UTF-8/'              \
+				 -e 's/LANGUAGE=$/LANGUAGE=ja:en/'            \
+				 -e 's/"C"/"ja_JP.UTF-8"/' > /etc/locale.conf
+	funcPause $?
+	# --- root user -----------------------------------------------------------
+	pushd /${USER} > /dev/null
+		if [ ! -f ~/.vimrc ]; then
+			cat <<- _EOT_ > ~/.vimrc
+				set number
+				set tabstop=4
+				set list
+				set listchars=tab:>_
 _EOT_
-	fi
+		fi
+	popd > /dev/null
+	# --- sudo user -----------------------------------------------------------
+	pushd /home/${SUDO_USER} > /dev/null
+		if [ ! -f .vimrc ]; then
+			cat <<- _EOT_ > .vimrc
+				set number
+				set tabstop=4
+				set list
+				set listchars=tab:>_
+_EOT_
+			chown ${SUDO_USER}:${SUDO_USER} .vimrc
+		fi
 
-	if [ ! -f ~/.bashrc.orig ]; then
-		locale | sed -e 's/LANG=C/LANG=ja_JP.UTF-8/' \
-					 -e 's/LANGUAGE=$/LANGUAGE=ja:en/' \
-					 -e 's/"C"/"ja_JP.UTF-8"/' > /etc/locale.conf
-		funcPause $?
-		#----------------------------------------------------------------------
-		cp -p ~/.bashrc ~/.bashrc.orig
-		cat <<- _EOT_ >> ~/.bashrc
-			#
-			case "\${TERM}" in
-			    "linux" )
-			        LANG=C
-			        ;;
-			    * )
-			        LANG=ja_JP.UTF-8
-			        ;;
-			esac
-			export LANG
+		if [ ! -f .curlrc ]; then
+			cat <<- _EOT_ > .curlrc
+				location
+				progress-bar
+				remote-time
+				show-error
 _EOT_
-		. ~/.profile
-	fi
+			chown ${SUDO_USER}:${SUDO_USER} .curlrc
+		fi
+
+#		if [ ! -f .bashrc.orig ]; then
+#			#------------------------------------------------------------------
+#			cp -p .bashrc .bashrc.orig
+#			cat <<- _EOT_ >> .bashrc
+#				#
+#				case "\${TERM}" in
+#				    "linux" )
+#				        LANG=C
+#				        ;;
+#				    * )
+#				        LANG=ja_JP.UTF-8
+#				        ;;
+#				esac
+#				export LANG
+#_EOT_
+#			chown ${SUDO_USER}:${SUDO_USER} .bashrc
+#			. .profile
+#		fi
+	popd > /dev/null
 
 #------------------------------------------------------------------------------
 # Network Setup
@@ -369,13 +359,13 @@ _EOT_
 	fi
 	# hosts -------------------------------------------------------------------
 	if [ ! -f /etc/hosts.orig ]; then
-		sed -i.orig /etc/hosts              \
-		    -e 's/^127.0.1.1/# &/g'
+		sed -i.orig /etc/hosts         \
+		    -e "s/^127\.0\.1\.1/# &/g"
 	fi
 	# resolv.conf -------------------------------------------------------------
 	if [ ! -h /etc/resolv.conf ]; then
 		if [ ! -f /etc/resolv.conf.orig ]; then
-			sed -i.orig /etc/resolv.conf                             \
+			sed -i.orig /etc/resolv.conf                                \
 			    -e "s/nameserver ${NIC_GATE}/nameserver 127\.0\.0\.1/g"
 		fi
 	fi
@@ -398,28 +388,34 @@ _EOT_
 			ALL : ALL
 _EOT_
 	fi
+	# nsswitch.conf -----------------------------------------------------------
+	if [ ! -f /etc/nsswitch.conf.orig ]; then
+		sed -i.orig /etc/nsswitch.conf                            \
+		    -e 's/^hosts:.*/# &\nhosts:          files wins dns/'
+	fi
 
 #------------------------------------------------------------------------------
 # Make share dir
 #------------------------------------------------------------------------------
-	cat /etc/group | grep ${SMB_GADM}
+	cat /etc/group | grep ${SMB_GADM} > /dev/null 2>&1
 	if [ $? -ne 0 ]; then
 		groupadd --system "${SMB_GADM}"
 	fi
 
-	cat /etc/group | grep ${SMB_GRUP}
+	cat /etc/group | grep ${SMB_GRUP} > /dev/null 2>&1
 	if [ $? -ne 0 ]; then
 		groupadd --system "${SMB_GRUP}"
 	fi
 
-	id ${SMB_USER}
+	id ${SMB_USER} > /dev/null 2>&1
 	if [ $? -ne 0 ]; then
 		useradd --system "${SMB_USER}" --groups "${SMB_GRUP}"
 	fi
 
-	usermod root -G ${SMB_GRUP}
+#	usermod root -G ${SMB_GRUP}
 
 	mkdir -p /share
+	mkdir -p /share/cifs
 	mkdir -p /share/data
 	mkdir -p /share/data/adm
 	mkdir -p /share/data/adm/netlogon
@@ -447,7 +443,7 @@ _EOT_
 #	usermod -d /share/data/usr/${DEF_USER} -m ${DEF_USER}
 #	usermod ${DEF_USER} -G ${SMB_GRUP}
 #	usermod -L ${DEF_USER}
-
+#
 #------------------------------------------------------------------------------
 # Make shell dir
 #------------------------------------------------------------------------------
@@ -475,8 +471,7 @@ _EOT_
 		##	---------- -------- -------------- ----------------------------------------
 		##	2013/10/27 000.0000 J.Itou         新規作成
 		##	2014/11/04 000.0000 J.Itou         4HDD版仕様変更
-		##	2014/12/22 000.0000 J.Itou         処理見直し
-		##	2016/10/30 000.0000 J.Itou         処理見直し
+		##	2018/03/20 000.0000 J.Itou         処理見直し
 		##	${NOW_DATE} 000.0000 J.Itou         自動作成
 		##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 		##	---------- -------- -------------- ----------------------------------------
@@ -487,10 +482,10 @@ _EOT_
 		#------------------------------------------------------------------------------
 
 		# USBデバイス変数定義
-		APL_MNT_DV1="${DEV_USB1}1"
-		APL_MNT_DV2="${DEV_USB2}1"
-		APL_MNT_DV3="${DEV_USB3}1"
-		APL_MNT_DV4="${DEV_USB4}1"
+		APL_MNT_DV1="${USB_ARRY[0]}1"
+		APL_MNT_DV2="${USB_ARRY[1]}1"
+		APL_MNT_DV3="${USB_ARRY[2]}1"
+		APL_MNT_DV4="${USB_ARRY[3]}1"
 
 		# USBデバイス変数定義
 		APL_MNT_LN1="/mnt/usb1"
@@ -498,30 +493,30 @@ _EOT_
 		APL_MNT_LN3="/mnt/usb3"
 		APL_MNT_LN4="/mnt/usb4"
 
-		SYS_MNT_DV1="/sys/block/`echo ${DEV_USB1} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
-		SYS_MNT_DV2="/sys/block/`echo ${DEV_USB2} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
-		SYS_MNT_DV3="/sys/block/`echo ${DEV_USB3} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
-		SYS_MNT_DV4="/sys/block/`echo ${DEV_USB4} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
+		SYS_MNT_DV1="/sys/block/`echo ${USB_ARRY[0]} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
+		SYS_MNT_DV2="/sys/block/`echo ${USB_ARRY[1]} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
+		SYS_MNT_DV3="/sys/block/`echo ${USB_ARRY[2]} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
+		SYS_MNT_DV4="/sys/block/`echo ${USB_ARRY[3]} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
 _EOT_
 
 #------------------------------------------------------------------------------
 # Make floppy dir
 #------------------------------------------------------------------------------
 #	if [ ! -d /media/floppy0 ]; then
-#		pushd /media
-#		mkdir floppy0
-#		ln -s floppy0 floppy
-#		popd
+#		pushd /media > /dev/null
+#			mkdir floppy0
+#			ln -s floppy0 floppy
+#		popd > /dev/null
 #	fi
 #
 #------------------------------------------------------------------------------
 # Make cd-rom dir
 #------------------------------------------------------------------------------
 #	if [ ! -d /media/cdrom0 ]; then
-#		pushd /media
-#		mkdir cdrom0
-#		ln -s cdrom0 cdrom
-#		popd
+#		pushd /media > /dev/null
+#			mkdir cdrom0
+#			ln -s cdrom0 cdrom
+#		popd > /dev/null
 #	fi
 #
 #------------------------------------------------------------------------------
@@ -544,10 +539,10 @@ _EOT_
 #			# /dev/fd0										/media/floppy0	auto			rw,user,noauto			0		0
 #			# /dev/sr0										/mnt/cdrom		udf,iso9660		rw,user,noauto			0		0
 #			# /dev/fd0										/mnt/floppy		auto			rw,user,noauto			0		0
-#			# ${DEV_USB1}1										/mnt/usb1		auto			rw,user,noauto			0		0
-#			# ${DEV_USB2}1										/mnt/usb2		auto			rw,user,noauto			0		0
-#			# ${DEV_USB3}1										/mnt/usb3		auto			rw,user,noauto			0		0
-#			# ${DEV_USB4}1										/mnt/usb4		auto			rw,user,noauto			0		0
+#			# ${USB_ARRY[0]}1										/mnt/usb1		auto			rw,user,noauto			0		0
+#			# ${USB_ARRY[1]}1										/mnt/usb2		auto			rw,user,noauto			0		0
+#			# ${USB_ARRY[2]}1										/mnt/usb3		auto			rw,user,noauto			0		0
+#			# ${USB_ARRY[3]}1										/mnt/usb4		auto			rw,user,noauto			0		0
 #_EOT_
 #		vi /etc/fstab
 #	fi
@@ -556,9 +551,9 @@ _EOT_
 # Install clamav
 #------------------------------------------------------------------------------
 	if [ ! -f /etc/clamav/freshclam.conf.orig ]; then
-		sed -i.orig /etc/clamav/freshclam.conf \
+		sed -i.orig /etc/clamav/freshclam.conf                                                      \
 			-e 's/# Check for new database 24 times a day/# Check for new database 12 times a day/' \
-			-e 's/Checks 24/Checks 12/' \
+			-e 's/Checks 24/Checks 12/'                                                             \
 			-e 's/^NotifyClamd/#&/'
 	fi
 
@@ -577,9 +572,9 @@ _EOT_
 # Install ssh
 #------------------------------------------------------------------------------
 	if [ ! -f /etc/ssh/sshd_config.orig ]; then
-		sed -i.orig /etc/ssh/sshd_config \
-			-e 's/^PermitRootLogin .*/PermitRootLogin yes/' \
-			-e 's/^#PermitRootLogin .*/PermitRootLogin yes/' \
+		sed -i.orig /etc/ssh/sshd_config                     \
+			-e 's/^PermitRootLogin .*/PermitRootLogin no/'  \
+			-e 's/^#PermitRootLogin .*/PermitRootLogin no/' \
 			-e '$a UseDNS no'
 	fi
 
@@ -617,19 +612,18 @@ _EOT_
 #------------------------------------------------------------------------------
 # Install ftpd
 #------------------------------------------------------------------------------
-	if [ ! -f /etc/ftpusers.orig ]; then
-		sed -i.orig /etc/ftpusers \
-			-e 's/^root/# &/'
-	fi
+#	if [ ! -f /etc/ftpusers.orig ]; then
+#		sed -i.orig /etc/ftpusers \
+#			-e 's/^root/# &/'
+#	fi
 	#--------------------------------------------------------------------------
-	which proftpd
-	if [ $? -eq 0 ]; then					# Install proftpd
+	if [ "`which proftpd`" != "" ]; then	# Install proftpd
 		if [ ! -f /etc/proftpd/proftpd.conf.orig ]; then
 			cp -p /etc/proftpd/proftpd.conf /etc/proftpd/proftpd.conf.orig
 			cat <<- _EOT_ >> /etc/proftpd/proftpd.conf
 				TimesGMT off
 				<Global>
-				 	RootLogin on
+				#	RootLogin on
 				 	UseFtpUsers on
 				</Global>
 _EOT_
@@ -642,45 +636,45 @@ _EOT_
 		touch /etc/vsftpd.banned_emails		# 接続拒否する電子メール・パスワードのリスト
 		touch /etc/vsftpd.email_passwords	# 匿名ログイン用の電子メール・パスワードのリスト
 		#----------------------------------------------------------------------
-		chmod 0600 /etc/vsftpd.chroot_list \
-				   /etc/vsftpd.user_list \
+		chmod 0600 /etc/vsftpd.chroot_list   \
+				   /etc/vsftpd.user_list     \
 				   /etc/vsftpd.banned_emails \
 				   /etc/vsftpd.email_passwords
 		#----------------------------------------------------------------------
 		if [ ! -f /etc/vsftpd.conf.orig ]; then
-			sed -i.orig /etc/vsftpd.conf \
-				-e 's/^listen=.*$/listen=YES/' \
-				-e 's/^listen_ipv6=.*$/listen_ipv6=NO/' \
-				-e 's/^anonymous_enable=.*$/anonymous_enable=NO/' \
-				-e 's/^local_enable=.*$/local_enable=YES/' \
-				-e 's/^#write_enable=.*$/write_enable=YES/' \
-				-e 's/^#local_umask=.*$/local_umask=022/' \
-				-e 's/^dirmessage_enable=.*$/dirmessage_enable=NO/' \
-				-e 's/^use_localtime=.*$/use_localtime=YES/' \
-				-e 's/^xferlog_enable=.*$/xferlog_enable=YES/' \
-				-e 's/^connect_from_port_20=.*$/connect_from_port_20=YES/' \
-				-e 's/^#xferlog_std_format=.*$/xferlog_std_format=NO/' \
-				-e 's/^#idle_session_timeout=.*$/idle_session_timeout=300/' \
-				-e 's/^#data_connection_timeout=.*$/data_connection_timeout=30/' \
-				-e 's/^#ascii_upload_enable=.*$/ascii_upload_enable=YES/' \
-				-e 's/^#ascii_download_enable=.*$/ascii_download_enable=YES/' \
-				-e 's/^#chroot_local_user=.*$/chroot_local_user=NO/' \
-				-e 's/^#chroot_list_enable=.*$/chroot_list_enable=NO/' \
+			sed -i.orig /etc/vsftpd.conf                                                  \
+				-e 's/^listen=.*$/listen=YES/'                                            \
+				-e 's/^listen_ipv6=.*$/listen_ipv6=NO/'                                   \
+				-e 's/^anonymous_enable=.*$/anonymous_enable=NO/'                         \
+				-e 's/^local_enable=.*$/local_enable=YES/'                                \
+				-e 's/^#write_enable=.*$/write_enable=YES/'                               \
+				-e 's/^#local_umask=.*$/local_umask=022/'                                 \
+				-e 's/^dirmessage_enable=.*$/dirmessage_enable=NO/'                       \
+				-e 's/^use_localtime=.*$/use_localtime=YES/'                              \
+				-e 's/^xferlog_enable=.*$/xferlog_enable=YES/'                            \
+				-e 's/^connect_from_port_20=.*$/connect_from_port_20=YES/'                \
+				-e 's/^#xferlog_std_format=.*$/xferlog_std_format=NO/'                    \
+				-e 's/^#idle_session_timeout=.*$/idle_session_timeout=300/'               \
+				-e 's/^#data_connection_timeout=.*$/data_connection_timeout=30/'          \
+				-e 's/^#ascii_upload_enable=.*$/ascii_upload_enable=YES/'                 \
+				-e 's/^#ascii_download_enable=.*$/ascii_download_enable=YES/'             \
+				-e 's/^#chroot_local_user=.*$/chroot_local_user=NO/'                      \
+				-e 's/^#chroot_list_enable=.*$/chroot_list_enable=NO/'                    \
 				-e 's/^#chroot_list_file=.*$/chroot_list_file=\/etc\/vsftpd.chroot_list/' \
-				-e 's/^#ls_recurse_enable=.*$/ls_recurse_enable=YES/' \
-				-e 's/^pam_service_name=.*$/pam_service_name=vsftpd/' \
-				-e '$atcp_wrappers=YES' \
-				-e '$auserlist_enable=YES' \
-				-e '$auserlist_deny=YES' \
-				-e '$auserlist_file=\/etc\/vsftpd.user_list' \
-				-e '$achmod_enable=YES' \
-				-e '$aforce_dot_files=YES' \
-				-e '$adownload_enable=YES'\
-				-e '$avsftpd_log_file=\/var\/log\/vsftpd\.log' \
-				-e '$adual_log_enable=NO' \
-				-e '$asyslog_enable=NO' \
-				-e '$alog_ftp_protocol=NO' \
-				-e '$aftp_data_port=20' \
+				-e 's/^#ls_recurse_enable=.*$/ls_recurse_enable=YES/'                     \
+				-e 's/^pam_service_name=.*$/pam_service_name=vsftpd/'                     \
+				-e '$atcp_wrappers=YES'                                                   \
+				-e '$auserlist_enable=YES'                                                \
+				-e '$auserlist_deny=YES'                                                  \
+				-e '$auserlist_file=\/etc\/vsftpd.user_list'                              \
+				-e '$achmod_enable=YES'                                                   \
+				-e '$aforce_dot_files=YES'                                                \
+				-e '$adownload_enable=YES'                                                \
+				-e '$avsftpd_log_file=\/var\/log\/vsftpd\.log'                            \
+				-e '$adual_log_enable=NO'                                                 \
+				-e '$asyslog_enable=NO'                                                   \
+				-e '$alog_ftp_protocol=NO'                                                \
+				-e '$aftp_data_port=20'                                                   \
 				-e '$apasv_enable=YES'
 		fi
 		#----------------------------------------------------------------------
@@ -690,59 +684,60 @@ _EOT_
 #------------------------------------------------------------------------------
 # Install bind9
 #------------------------------------------------------------------------------
+	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
 	cat <<- _EOT_ > /var/cache/bind/${WGP_NAME}.zone
-		\$TTL 3600
-		@								IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
-		 										1		; serial
-		 										1800	; refresh
-		 										900		; retry
-		 										86400	; expire
-		 										1200	; default_ttl
-		 								)
-		 								IN		NS		${SVR_NAME}.${WGP_NAME}.
-		${SVR_NAME}						IN		A		${NIC_ADDR}
-		${SVR_NAME}						IN		AAAA	${IP6_ADDR}
-		${SVR_NAME}						IN		AAAA	${LNK_ADDR}
+		\$TTL 3600															; 1 hour
+		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
+		 														${DNS_SCNT}	; serial
+		 														1800		; refresh (30 minutes)
+		 														900			; retry (15 minutes)
+		 														86400		; expire (1 day)
+		 														1200		; minimum (20 minutes)
+		 												)
+		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
+		${SVR_NAME}								IN		A		${NIC_ADDR}
+		${SVR_NAME}								IN		AAAA	${IP6_ADDR}
+		${SVR_NAME}								IN		AAAA	${LNK_ADDR}
 _EOT_
 	#--------------------------------------------------------------------------
 	cat <<- _EOT_ > /var/cache/bind/${WGP_NAME}.rev
-		\$TTL 3600
-		@								IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
-		 										1		; serial
-		 										1800	; refresh
-		 										900		; retry
-		 										86400	; expire
-		 										1200	; default_ttl
-		 								)
-		 								IN		NS		${SVR_NAME}.${WGP_NAME}.
-		${SVR_ADDR}								IN		PTR		${SVR_NAME}.${WGP_NAME}.
+		\$TTL 3600															; 1 hour
+		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
+		 														${DNS_SCNT}	; serial
+		 														1800		; refresh (30 minutes)
+		 														900			; retry (15 minutes)
+		 														86400		; expire (1 day)
+		 														1200		; minimum (20 minutes)
+		 												)
+		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
+		${SVR_ADDR}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
 	cat <<- _EOT_ > /var/cache/bind/${IP6_IPAD}.rev
-		\$TTL 3600
-		@								IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
-		 										1		; serial
-		 										1800	; refresh
-		 										900		; retry
-		 										86400	; expire
-		 										1200	; default_ttl
-		 								)
-		 								IN		NS		${SVR_NAME}.${WGP_NAME}.
-		${SVR_IPV6}	IN		PTR		${SVR_NAME}.${WGP_NAME}.
+		\$TTL 3600															; 1 hour
+		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
+		 														${DNS_SCNT}	; serial
+		 														1800		; refresh (30 minutes)
+		 														900			; retry (15 minutes)
+		 														86400		; expire (1 day)
+		 														1200		; minimum (20 minutes)
+		 												)
+		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
+		${SVR_IPV6}					PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
 	cat <<- _EOT_ > /var/cache/bind/${LNK_IPAD}.rev
-		\$TTL 3600
-		@								IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
-		 										1		; serial
-		 										1800	; refresh
-		 										900		; retry
-		 										86400	; expire
-		 										1200	; default_ttl
-		 								)
-		 								IN		NS		${SVR_NAME}.${WGP_NAME}.
-		${SVR_LNK6}	IN		PTR		${SVR_NAME}.${WGP_NAME}.
+		\$TTL 3600															; 1 hour
+		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
+		 														${DNS_SCNT}	; serial
+		 														1800		; refresh (30 minutes)
+		 														900			; retry (15 minutes)
+		 														86400		; expire (1 day)
+		 														1200		; minimum (20 minutes)
+		 												)
+		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
+		${SVR_LNK6}					PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
 	if [ ! -f /etc/bind/named.conf.local.orig ]; then
@@ -784,15 +779,17 @@ _EOT_
 	#--------------------------------------------------------------------------
 	if [ "${NWK_NAME}" = "" ]; then
 		sed -i.orig /var/cache/bind/${WGP_NAME}.zone -e "/^${SVR_NAME}.*${NIC_ADDR}$/d"
-		sed -i.orig /var/cache/bind/${WGP_NAME}.rev  -e "/^${SVR_ADDR}.*${SVR_NAME}$/d"
+		sed -i.orig /var/cache/bind/${WGP_NAME}.rev  -e "/^${SVR_ADDR}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
 	fi
 
 	funcProc bind9 restart
 
-	dig ${SVR_NAME}.${WGP_NAME} A
-	dig ${SVR_NAME}.${WGP_NAME} AAAA
-	dig -x ${NIC_ADDR}
-	dig -x ${IP6_ADDR}
+#	echo --- dns check -----------------------------------------------------------------
+#	dig ${SVR_NAME}.${WGP_NAME} A
+#	dig ${SVR_NAME}.${WGP_NAME} AAAA
+#	dig -x ${NIC_ADDR}
+#	dig -x ${IP6_ADDR}
+#	echo --- dns check -----------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 # Install dhcp
@@ -825,28 +822,26 @@ _EOT_
 #------------------------------------------------------------------------------
 # Install Webmin
 #------------------------------------------------------------------------------
-	if [ "${SET_WMIN}" = "webmin-current.deb" ]; then
-		dpkg -i webmin-current.deb
-	else
-		dpkg -i webmin_${VER_WMIN}_all.deb
-	fi
-	#--------------------------------------------------------------------------
-	if [ ! -f /etc/webmin/config.orig ]; then
-		cp -p /etc/webmin/config /etc/webmin/config.orig
-		cat <<- _EOT_ >> /etc/webmin/config
-			webprefix=
-			lang_root=ja_JP.UTF-8
+	if [ -f "${DIR_WK}/${SET_WMIN}" ]; then
+		dpkg -i "${SET_WMIN}"
+		#--------------------------------------------------------------------------
+		if [ ! -f /etc/webmin/config.orig ]; then
+			cp -p /etc/webmin/config /etc/webmin/config.orig
+			cat <<- _EOT_ >> /etc/webmin/config
+				webprefix=
+				lang_root=ja_JP.UTF-8
 _EOT_
-	fi
-	#--------------------------------------------------------------------------
-	if [ ! -f /etc/webmin/time/config.orig ]; then
-		cp -p /etc/webmin/time/config /etc/webmin/time/config.orig
-		cat <<- _EOT_ >> /etc/webmin/time/config
-			timeserver=ntp.nict.jp
+		fi
+		#--------------------------------------------------------------------------
+		if [ ! -f /etc/webmin/time/config.orig ]; then
+			cp -p /etc/webmin/time/config /etc/webmin/time/config.orig
+			cat <<- _EOT_ >> /etc/webmin/time/config
+				timeserver=ntp.nict.jp
 _EOT_
-	fi
+		fi
 
-	funcProc webmin stop
+		funcProc webmin stop
+	fi
 
 #------------------------------------------------------------------------------
 # Add smb.conf
@@ -906,7 +901,7 @@ _EOT_
 		 	browseable = No
 
 		[profiles]
-		 	comment = Users profiles
+		 	comment = User profiles
 		 	path = /share/data/adm/profiles
 		 	valid users = @${SMB_GRUP}
 		 	write list = @${SMB_GRUP}
@@ -917,6 +912,17 @@ _EOT_
 		 	comment = Shared directories
 		 	path = /share
 		 	valid users = @${SMB_GADM}
+		 	browseable = No
+
+		[cifs]
+		 	comment = CIFS directories
+		 	path = /share/cifs
+		 	valid users = @${SMB_GADM}
+		 	write list = @${SMB_GADM}
+		 	force user = ${SMB_USER}
+		 	force group = ${SMB_GRUP}
+		 	create mask = 0770
+		 	directory mask = 0770
 		 	browseable = No
 
 		[data]
@@ -1015,7 +1021,7 @@ _EOT_
 		PASSWORD=`echo ${LINE} | awk -F : '{print $4;}'`
 		ADMINFLG=`echo ${LINE} | awk -F : '{print $5;}'`
 		# Account name to be checked ------------------------------------------
-		id ${USERNAME}
+		id ${USERNAME} > /dev/null 2>&1
 		if [ $? -eq 0 ]; then
 			echo "[${USERNAME}] already exists."
 #			chown -R ${USERNAME}:${USERNAME} /share/data/usr/${USERNAME}
@@ -1024,7 +1030,7 @@ _EOT_
 		else
 			# Add users -------------------------------------------------------
 			useradd  -b /share/data/usr -m -c "${FULLNAME}" -G ${SMB_GRUP} -u ${USERIDNO} ${USERNAME}
-			chsh -s `which nologin` ${USERNAME}
+			${CMD_CHSH} ${USERNAME}
 			if [ "${ADMINFLG}" = "1" ]; then
 				usermod -G ${SMB_GADM} -a ${USERNAME}
 			fi
@@ -1051,11 +1057,11 @@ _EOT_
 # Setup Samba User
 #------------------------------------------------------------------------------
 	SMB_PWDB=`find /var/lib/samba/ -name passdb.tdb -print`
-	USR_LIST=`pdbedit -L | awk -F : '{print $1;}'`
-	for USR_NAME in ${USR_LIST}
-	do
-		pdbedit -x -u ${USR_NAME}
-	done
+#	USR_LIST=`pdbedit -L | awk -F : '{print $1;}'`
+#	for USR_NAME in ${USR_LIST}
+#	do
+#		pdbedit -x -u ${USR_NAME}
+#	done
 	pdbedit -i smbpasswd:${SMB_FILE} -e tdbsam:${SMB_PWDB}
 	funcPause $?
 
@@ -1169,11 +1175,11 @@ _EOT_
 		054b73e57f56a7191f00780000
 _EOT_
 
-	pushd /usr/sh
-	xxd -r -p ${TGZ_WORK} | tar -xz
-	funcPause $?
-	ls -al
-	popd
+	pushd /usr/sh > /dev/null
+		xxd -r -p ${TGZ_WORK} | tar -xz
+		funcPause $?
+		ls -al
+	popd > /dev/null
 
 #------------------------------------------------------------------------------
 # Cron
@@ -1194,14 +1200,18 @@ _EOT_
 
 #------------------------------------------------------------------------------
 # GRUB
-# 注)高解像度にならない場合は.vmxにsvga.minVRAMSize = 8388608を追加してみる。
-#    MRAM = XRez * YRez * 4 / 65536
-#    VRAM = ( int( MRAM ) + ( int( MRAM ) != MRAM )) * 65536
-#    svga.minVRAMSize = VRAM
-# 例) 2560 x 2048 の場合
+#   注)高解像度にならない場合は.vmxに以下を追加してみる。
+#     svga.minVRAMSize = 8388608
+#     svga.minVRAM8MB = TRUE
+#   計算式)
+#     MRAM = XRez * YRez * 4 / 65536
+#     VRAM = (int(MRAM) + (int(MRAM) != MRAM)) * 65536
+#     svga.minVRAMSize = VRAM
+#   例) 2560 x 2048 の場合
 #     vmotion.checkpointSVGAPrimarySize = "20971520"
 #     svga.guestBackedPrimaryAware = "TRUE"
 #     svga.minVRAMSize = "20971520"
+#     svga.minVRAM8MB = TRUE
 #     svga.autodetect = "FALSE"
 #     svga.maxWidth = "2560"
 #     svga.maxHeight = "2048"
@@ -1209,8 +1219,8 @@ _EOT_
 #------------------------------------------------------------------------------
 	if [ -f /etc/default/grub ]; then
 		if [ ! -f /etc/default/grub.orig ]; then
-			sed -i.orig /etc/default/grub \
-				-e 's/^GRUB_CMDLINE_LINUX_DEFAULT/#&/' \
+			sed -i.orig /etc/default/grub                                                                 \
+				-e 's/^GRUB_CMDLINE_LINUX_DEFAULT/#&/'                                                    \
 				-e "s/#GRUB_GFXMODE=640x480/GRUB_GFXPAYLOAD_LINUX=${VGA_RESO}\nGRUB_GFXMODE=${VGA_RESO}/"
 
 			update-grub
@@ -1254,8 +1264,7 @@ _EOT_
 			mkdir -p /mnt/hgfs
 			if [ ! -f /etc/fstab.vmware ]; then
 				cp -p /etc/fstab /etc/fstab.vmware
-				which vmhgfs-fuse
-				if [ $? -eq 0 ]; then
+				if [ "`which vmhgfs-fuse`" != "" ]; then
 					HGFS_FS="fuse.vmhgfs-fuse"
 				else
 					HGFS_FS="vmhgfs"
@@ -1286,23 +1295,12 @@ _EOT_
 	fi
 
 #------------------------------------------------------------------------------
-# Backup
-#------------------------------------------------------------------------------
-	pushd /
-	tar -czf /work/bk_boot.tgz   boot
-	tar -czf /work/bk_etc.tgz    etc
-	tar -czf /work/bk_home.tgz   home
-	tar -czf /work/bk_share.tgz  share
-	tar -czf /work/bk_usr_sh.tgz usr/sh
-	tar -czf /work/bk_bind.tgz   var/cache/bind/
-	tar -czf /work/bk_cron.tgz   var/spool/cron/crontabs
-	popd
-
-#------------------------------------------------------------------------------
 # RAID Status
 #------------------------------------------------------------------------------
 	if [ -f /proc/mdstat ]; then
+		echo --- /proc/mdstat --------------------------------------------------------------
 		cat /proc/mdstat
+		echo --- /proc/mdstat --------------------------------------------------------------
 	fi
 
 #------------------------------------------------------------------------------
@@ -1313,10 +1311,57 @@ _EOT_
 	rm -f ${USR_FILE}
 	rm -f ${SMB_FILE}
 	rm -f ${SMB_WORK}
-	popd
+#	popd > /dev/null
 
 #	systemctl list-unit-files -t service
 #	systemctl -t service
+
+	if [ "`which groupmems`" != "" ]; then
+		USR_SUDO=`groupmems -l -g sudo`
+	else
+		USR_SUDO=`cat /etc/group | grep sudo | awk -F : '{ print $4;}' | sed 's/,/\n/g'`
+	fi
+
+	if [ "${USR_SUDO}" != "" ]; then
+		echo "=== 以下のユーザーが sudo に属しています。 ===================================="
+		echo ${USR_SUDO}
+		echo "==============================================================================="
+		while :
+		do
+			echo -n "root ログインできないように変更しますか？ ('YES' or 'no') "
+			read DUMMY
+			case "${DUMMY}" in
+				"YES" )
+					${CMD_CHSH} root
+					if [ $? -ne 0 ]; then
+						echo "変更に失敗しました。"
+					else
+						echo "変更を実行しました。"
+						break
+					fi
+					;;
+				"no" )
+					echo "変更を中止しました。"
+					break
+					;;
+				* )
+					;;
+			esac
+		done
+	fi
+
+#------------------------------------------------------------------------------
+# Backup
+#------------------------------------------------------------------------------
+	pushd / > /dev/null
+		tar -czf ${DIR_WK}/bk_boot.tgz   --exclude "bk_*.tgz" boot
+		tar -czf ${DIR_WK}/bk_etc.tgz    --exclude "bk_*.tgz" etc
+		tar -czf ${DIR_WK}/bk_home.tgz   --exclude "bk_*.tgz" home
+		tar -czf ${DIR_WK}/bk_share.tgz  --exclude "bk_*.tgz" share
+		tar -czf ${DIR_WK}/bk_usr_sh.tgz --exclude "bk_*.tgz" usr/sh
+		tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/cache/bind/
+		tar -czf ${DIR_WK}/bk_cron.tgz   --exclude "bk_*.tgz" var/spool/cron/crontabs
+	popd > /dev/null
 
 #------------------------------------------------------------------------------
 # Exit
@@ -1326,8 +1371,7 @@ _EOT_
 ###############################################################################
 # memo                                                                        #
 ###############################################################################
-# apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
-# find . -name *.iso -exec cp --preserve=timestamps {} /mnt/hgfs/Share/My\ Documents/Download/Linux/ \;
+# sudo apt-get update && sudo apt-get -y upgrade && sudo apt-get -y dist-upgrade
 #==============================================================================
 # End of file                                                                 =
 #==============================================================================

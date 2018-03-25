@@ -1,54 +1,54 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [Debian 9.3.0]                                          *
+# LiveCDCustomization [Debian 9.4.0]                                          *
 # *****************************************************************************
 
-	LIVE_VNUM=9.3.0
+	LIVE_VNUM=9.4.0
 
 # == tools install ============================================================
-	apt-get -y install debootstrap syslinux syslinux-utils genisoimage squashfs-tools
+	apt-get -y install debootstrap xorriso squashfs-tools
 
 # == initial processing =======================================================
 #	cd ~
-	rm -Rf   ./debian-live
+	rm -Rf   ./debian-live/media ./debian-live/cdimg ./debian-live/fsimg
 	mkdir -p ./debian-live/media ./debian-live/cdimg ./debian-live/fsimg
 # -----------------------------------------------------------------------------
 #	tar -cz debian-setup.sh | xxd -ps
 	if [ ! -f ./debian-setup.sh ]; then
 		cat <<- _EOT_ | xxd -r -p | tar -xz
-			1f8b080068af405a0003ed576d6fdb3610f657eb575ced22590bc88a9da4
-			d996264091b6e96b10b4c9a76933688ab2d848a420524edc61ffbd47498e
-			25c7751277d950800f10f3743cde897c4ec78b623a4f7b2a6a3d20b6107b
-			7b7bc588581c779ff5775bfdedc160ab3f78b6d7df6e6df551d86ec1d643
-			bed40cb9d22403686552ea5576b7cdffa4e83ef2465c7823a222c769b3ab
-			54661a4e3ff70f3abfd0c8ecf909749c762273a1c1d590669282c1b5e019
-			a966a1a62a5466e25af050aa19046ca29314a73c944a1728340d52ad2abd
-			67c499e0b43da6a9c705d7bdc00b46b902c39e76bae0ba60de1672c5b24d
-			5433adb918a37a1d386d1a8067fce199f010fe8047e086d09bf024a3f0e7
-			3ee88809a7dd663492e032e8603810793262992f8cacc94869991eec948f
-			31577a2ed18864ea004d7e3f1c76e0b072ebb443de8c6638c9684f667c5c
-			8ba958002e2fb59509fc37f031ba1971c39b8f49d7179428dcbbfff8efb3
-			579f3efed3012e7ce1eb4ecc457ed58127e6c1d71f5e9c1c1f1c95f2febe
-			199f36a6be90e1bbd3def9d96bf7d7b9115384e26f998dc66cb3389e82e6
-			440679cc3018521fc76b325cd14c52ed8e91963c0d8866b0b101338d3b45
-			e53823c1a2364006dd6a6aee0027662fa489ba70bf9094e02e58f3c90d98
-			bac0bc3047b9e48043caf5959bc8af2b185dbe92c62421935be95ba215ba
-			dcfafd57ca9409a522173fb809cbeeb3122b468861d788a992118d39c33a
-			4179a8dc5cf358dd6da5296609cf93328778e2522942be6e81a8e750cd97
-			28292c63549cfc688032c67555280a60e9da0b33a62223f7cc0bac2a14df
-			5fb5928415e45c5702e575e12862f402429981609780f94446a6340c7640
-			f3842920a89b7edfae69b6b9e0be58a4d0d94cda41931f41d3fd5f2752f3
-			707a84071278dd0daf566930bb837f83bf250ca26bf3170ccbd4b995bb05
-			fbfbeff2946509d79ff04afb20c75c40efa9b7a89a3275f36417a83e254a
-			5dca2c78919b37d59c12cd65b974c5549352ef8d54fa3d9b826fb6e69b7d
-			153fc308f54346034586176cea053769be879b60b0bbdbff6db9a3e64d76
-			aed8cb93cf20a42fde8e85cc182ab2f7425e0a1341e1442d278ac2f53039
-			81ae4df7a26e4d8699e10239a65fc18f6c96c237fc57657736dead682c5b
-			74e72f6de1a0cfcc577efcf10c6418fae2f9712c47243e34b7fe3c0965d1
-			432003af757a5e6cd2689e7b95718d091a3322d6eff11a4cd4ae71926b4c
-			81444e6ab7bbd115e1e6aaea71493f2a53a79d57cd6c18379bd8a2179eb5
-			cc117612329b824b8bce9b6be7fffe67c0c2c2c2c2c2c2c2c2c2c2c2c2c2
-			c2c2c2c2c2c2c2c2c2c2c2e2a7c7375433f06800280000
+			1f8b08009012ae5a0003ed57516fdb3610f6abf52bae7691ac0564c5aedd
+			6c4b13a048d76c6b1b046df2346d062d51161b891448ca8937ecbfef28c9
+			b1e4b84ee22e1b0af003629e8ec73b91dfe97809e98411ee2aaaf3aca7e2
+			d663600fb13f1c162362751cbdec8f5afd1783c15e7ff072bfffa285e370
+			7fd482bd47799b15e44a1309d09242e84d7677cd7fa3e83ef1268c7b13a2
+			62c769d3eb4c480d679ffa879def82d8ecf919749c762a72aec1d5904911
+			80c18de019a966a1e62a5266e246f050aa198474a6d30ca73c944a172834
+			0d32ad2abd67c485e0b43daa038f71a67ba1174e7205863ded74c175c1bc
+			2de48aca5d5453ad199fa27a1b38ed2004cff8c3336111fc064fc08da037
+			63a90ce0f703d031e54ebb4d8358804ba183e180e7e9844a9f1b599389d2
+			223b1c968f09537a29053191ea104d7e3c1a77e0a872ebb423d68c663891
+			414f4836adc55434049795daca04fe1bf818dd8cb8e1dda7a4ebf38028dc
+			bbfff4aff39f3e7ef8bb038cfbdcd79d84f1fcba03cfcc83afdfbf3e3d39
+			3c2ee58303333e6f4c7d26e35fcf7a17e76fddef97465491007fcb6c3466
+			bbc5f11434a722cc138ac190fa24d992e18a669269778ab4e4594834859d
+			1d5868dc392aa79284abda101974aba9a5039c58bc9026ead2fd4c3282bb
+			a0cd2737a4ea12f3c21ce59a038e02a6afdd54fcb981d1f52b8384a46476
+			277d6bb45c975b7ff84a9151ae548c57879c51f990955831220cbb454c95
+			4e828451ac13018b949b6b96a8fbad34c52c65795ae6104bdd40f0886d5b
+			20ea3954f3c54b0acb1815275f1ba08c7153158a0258baf62249556ce49e
+			79814d85e2cbab3692b0819c9b4aa0bc2e1cc734b8844848e0f40a309fc8
+			c49486c110344ba90282baf997ed9a66bb2bee8b450a9d2da4219a7c0d9a
+			eeff38159a45f3633c90d0ebee78b54a83d91dfe1bfcad61105d9bbf705c
+			a6ce9ddcadd83f7c976754a64c7fc42bedbd98320ebde7deaa6a4ed5ed93
+			5da1fa8c28752564f83a376faa59403413e5d20d534d4abd9f85d2efe81c
+			7cb335dfecabf819c7a81fd32054647c49e75e789be607b80907a351ff87
+			f58e9a37d985a26f4e3f01173eff65ca85a4a890efb8b8e22682c2895a4e
+			1485eb7172025d9bee45dd990c0bc315724cbf821fd922856ff9afcaee62
+			bc5fd158b7e8de5fdaca419f9baffce4c3398828f2f9ab93444c4872646e
+			fd65128aa2874006deeaeca2d8a4d1bcf22ae31a13414209dfbec76b3051
+			bbc649ae31055231abddee4657845baaaac735fda8c89c765e35b351d26c
+			628b5e78d132c7d84908390737283a6fa69dfffb9f010b0b0b0b0b0b0b0b
+			0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b8b6f1eff0010832c0a00280000
 _EOT_
 	fi
 # -----------------------------------------------------------------------------
@@ -56,11 +56,12 @@ _EOT_
 		wget "http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-${LIVE_VNUM}-amd64-lxde.iso"
 #		wget "http://ftp.riken.jp/.2/debian/debian-cd/current-live/amd64/iso-hybrid/debian-live-${LIVE_VNUM}-amd64-lxde.iso"
 	fi
+	LIVE_VOLID=`volname ./debian-live-${LIVE_VNUM}-amd64-lxde.iso`
 # -----------------------------------------------------------------------------
 	mount -o loop ./debian-live-${LIVE_VNUM}-amd64-lxde.iso ./debian-live/media
-	pushd ./debian-live/media
-	find . -depth -print | cpio -pdm ../cdimg/
-	popd
+	pushd ./debian-live/media > /dev/null
+		find . -depth -print | cpio -pdm ../cdimg/
+	popd > /dev/null
 	umount ./debian-live/media
 # -----------------------------------------------------------------------------
 	if [ ! -f ./debian-live/cdimg/live/filesystem.squashfs.orig ]; then
@@ -68,12 +69,13 @@ _EOT_
 	fi
 # -----------------------------------------------------------------------------
 	mount -o loop ./debian-live/cdimg/live/filesystem.squashfs.orig ./debian-live/media
-	pushd ./debian-live/media
-	find . -depth -print | cpio -pdm ../fsimg/
-	popd
+	pushd ./debian-live/media > /dev/null
+		find . -depth -print | cpio -pdm ../fsimg/
+	popd > /dev/null
 	umount ./debian-live/media
 # -----------------------------------------------------------------------------
-	cp -p debian-setup.sh ./debian-live/fsimg/root
+	cp --preserve=timestamps debian-setup.sh ./debian-live/fsimg/root
+	chmod u+x ./debian-live/fsimg/root/debian-setup.sh
 	LANG=C chroot ./debian-live/fsimg /bin/bash /root/debian-setup.sh
 	rm -f ./debian-live/fsimg/root/debian-setup.sh
 # -----------------------------------------------------------------------------
@@ -89,10 +91,21 @@ _EOT_
 		    -e 's/locales=ja_JP\.UTF-8/& timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp/g'
 	fi
 # -- make iso image -----------------------------------------------------------
-	pushd ./debian-live/cdimg
-	genisoimage -J -r -V "Debian ${LIVE_VNUM} amd64" -cache-inodes -l -D -o ../../debian-live-${LIVE_VNUM}-amd64-lxde-custom.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -x *.orig .
-	isohybrid ../../debian-live-${LIVE_VNUM}-amd64-lxde-custom.iso
-	popd
+	pushd ./debian-live/cdimg > /dev/null
+		xorriso -as mkisofs \
+		    -r -J -V "${LIVE_VOLID}" -D \
+		    -o ../../debian-live-${LIVE_VNUM}-amd64-lxde-custom.iso \
+		    -b isolinux/isolinux.bin \
+		    -c isolinux/boot.cat \
+		    -cache-inodes \
+		    -no-emul-boot \
+		    -boot-load-size 4 \
+		    -boot-info-table \
+		    -m *.orig \
+		    -iso-level 4 \
+		    -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot \
+		    .
+	popd > /dev/null
 	ls -l
 
 # =============================================================================
