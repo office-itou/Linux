@@ -18,14 +18,16 @@
 ##	---------- -------- -------------- -----------------------------------------
 ##	2015/02/20 000.0000 J.Itou         新規作成
 ##	2018/02/25 000.0000 J.Itou         改善対応
+##	2018/05/05 000.0000 J.Itou         改善対応
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ##	---------- -------- -------------- -----------------------------------------
 ################################################################################
-#set -nvx
+	set -eu								# ステータス0以外と未定義変数の参照で終了
+	trap 'exit 1' 1 2 3 15
 
 # Pause処理 -------------------------------------------------------------------
 funcPause() {
-	RET_STS=$1
+	local RET_STS=$1
 
 	if [ ${RET_STS} -ne 0 ]; then
 		echo "Enterキーを押して下さい。"
@@ -33,44 +35,14 @@ funcPause() {
 	fi
 }
 
-# プロセス制御処理 ------------------------------------------------------------
-funcProc() {
-	INP_NAME=$1
-	INP_COMD=$2
-
-	case "${INP_COMD}" in
-		"start" )
-			which insserv
-			if [ $? -eq 0 ]; then
-				insserv -d ${INP_NAME}; funcPause $?
-			else
-				systemctl enable ${INP_NAME}; funcPause $?
-			fi
-			/etc/init.d/${INP_NAME} start
-			;;
-		"stop" )
-			/etc/init.d/${INP_NAME} stop
-			which insserv
-			if [ $? -eq 0 ]; then
-				insserv -r ${INP_NAME}; funcPause $?
-			else
-				systemctl disable ${INP_NAME}; funcPause $?
-			fi
-			;;
-		* )
-			/etc/init.d/${INP_NAME} ${INP_COMD}
-#			systemctl ${INP_COMD} ${INP_NAME}
-			funcPause $?
-			;;
-	esac
-}
-
 #-------------------------------------------------------------------------------
 # Initialize
 #-------------------------------------------------------------------------------
-	DBG_FLAG=${DBG_FLAG:-0}
-	if [ ${DBG_FLAG} -ne 0 ]; then
-		set -vx
+	#--------------------------------------------------------------------------
+	WHO_AMI=`whoami`					# 実行ユーザー名
+	if [ "${WHO_AMI}" != "root" ]; then
+		echo "rootユーザーで実行して下さい。"
+		exit 1
 	fi
 
 	# ワーク変数設定 -----------------------------------------------------------
@@ -84,45 +56,37 @@ funcProc() {
 	LST_USER=${DIR_WK}/addusers.txt
 	USR_FILE=${DIR_WK}/${PGM_NAME}.sh.usr.list
 	SMB_FILE=${DIR_WK}/${PGM_NAME}.sh.smb.list
-	SMB_USER=sambauser
-	SMB_GRUP=sambashare
-
-	# ワーク・ディレクトリーの変更 --------------------------------------------
-	pushd ${DIR_WK}
+	# samba -------------------------------------------------------------------
+	SMB_USER=sambauser					# smb.confのforce user
+	SMB_GRUP=sambashare					# smb.confのforce group
+	SMB_GADM=sambaadmin					# smb.confのadmin group
+	SMB_PWDB=`find /var/lib/samba/ -name passdb.tdb -type f -print`
 
 #------------------------------------------------------------------------------
-# Make User file
+# Make User file (${DIR_WK}/addusers.txtが有ればそれを使う)
 #------------------------------------------------------------------------------
+	echo - Make User file --------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	rm -f ${USR_FILE}
 	rm -f ${SMB_FILE}
 	touch ${USR_FILE}
 	touch ${SMB_FILE}
-
+	# -------------------------------------------------------------------------
 	if [ ! -f ${LST_USER} ]; then
 		# Make User List File (sample) ----------------------------------------
 		cat <<- _EOT_ > ${USR_FILE}
 			Administrator:Administrator:1001::1
 _EOT_
-
-		# Make Samba User List File (pdbedit -L -w にて出力されたもの) (sample)
+		# Make Samba User List File (pdbedit -L -w にて出力) (sample) ---------
 		# administrator's password="password"
 		cat <<- _EOT_ > ${SMB_FILE}
 			administrator:1001:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:
 _EOT_
 	else
-		while read LINE
+		while IFS=':' read WORKNAME FULLNAME USERIDNO PASSWORD LMPASSWD NTPASSWD ACNTFLAG CHNGTIME ADMINFLG
 		do
-			if [ "${LINE}" != "" ]; then
-				USERNAME=`echo ${LINE} | awk -F : '{print $1;}' | tr '[A-Z]' '[a-z]'`
-				FULLNAME=`echo ${LINE} | awk -F : '{print $2;}'`
-				USERIDNO=`echo ${LINE} | awk -F : '{print $3;}'`
-				PASSWORD=`echo ${LINE} | awk -F : '{print $4;}'`
-				LMPASSWD=`echo ${LINE} | awk -F : '{print $5;}'`
-				NTPASSWD=`echo ${LINE} | awk -F : '{print $6;}'`
-				ACNTFLAG=`echo ${LINE} | awk -F : '{print $7;}'`
-				CHNGTIME=`echo ${LINE} | awk -F : '{print $8;}'`
-				ADMINFLG=`echo ${LINE} | awk -F : '{print $9;}'`
-
+			USERNAME="${WORKNAME,,}"
+			if [ "${USERNAME}" != "" ]; then
 				echo "${USERNAME}:${FULLNAME}:${USERIDNO}:${PASSWORD}:${ADMINFLG}"              >> ${USR_FILE}
 				echo "${USERNAME}:${USERIDNO}:${LMPASSWD}:${NTPASSWD}:${ACNTFLAG}:${CHNGTIME}:" >> ${SMB_FILE}
 			fi
@@ -132,55 +96,44 @@ _EOT_
 #------------------------------------------------------------------------------
 # Setup Login User
 #------------------------------------------------------------------------------
-	while read LINE
+	echo - Setup Login User ------------------------------------------------------------
+	# -------------------------------------------------------------------------
+	while IFS=':' read WORKNAME FULLNAME USERIDNO PASSWORD ADMINFLG
 	do
-		USERNAME=`echo ${LINE} | awk -F : '{print $1;}' | tr '[A-Z]' '[a-z]'`
-		FULLNAME=`echo ${LINE} | awk -F : '{print $2;}'`
-		USERIDNO=`echo ${LINE} | awk -F : '{print $3;}'`
-		PASSWORD=`echo ${LINE} | awk -F : '{print $4;}'`
-		ADMINFLG=`echo ${LINE} | awk -F : '{print $5;}'`
+		USERNAME="${WORKNAME,,}"
 		# Account name to be checked ------------------------------------------
-		id ${USERNAME}
-		if [ $? -eq 0 ]; then
-			echo "[${USERNAME}] already exists."
-#			chown -R ${USERNAME}:${USERNAME} /share/data/usr/${USERNAME}
-#			userdel -r ${USERNAME}
-#			rm -Rf /share/data/usr/${USERNAME}
+		RET_NAME=`awk -F ':' '$1=="'${USERNAME}'" { print $1; }' /etc/passwd`
+		if [ "${RET_NAME}" != "" ]; then
+			echo "[${RET_NAME}] already exists."
 		else
 			# Add users -------------------------------------------------------
-			useradd  -b /share/data/usr -m -c "${FULLNAME}" -G ${SMB_GRUP} -u ${USERIDNO} ${USERNAME}
-			chsh -s `which nologin` ${USERNAME}
+			useradd  -b ${DIR_SHAR}/data/usr -m -c "${FULLNAME}" -G ${SMB_GRUP} -u ${USERIDNO} ${USERNAME}; funcPause $?
+			${CMD_CHSH} ${USERNAME}; funcPause $?
 			if [ "${ADMINFLG}" = "1" ]; then
-				usermod -G ${SMB_GADM} -a ${USERNAME}
+				usermod -G ${SMB_GADM} -a ${USERNAME}; funcPause $?
 			fi
 			# Make user dir ---------------------------------------------------
-			mkdir -p /share/data/usr/${USERNAME}/app
-			mkdir -p /share/data/usr/${USERNAME}/dat
-			mkdir -p /share/data/usr/${USERNAME}/web/public_html
-			touch -f /share/data/usr/${USERNAME}/web/public_html/index.html
+			mkdir -p ${DIR_SHAR}/data/usr/${USERNAME}/app
+			mkdir -p ${DIR_SHAR}/data/usr/${USERNAME}/dat
+			mkdir -p ${DIR_SHAR}/data/usr/${USERNAME}/web/public_html
+			touch -f ${DIR_SHAR}/data/usr/${USERNAME}/web/public_html/index.html
 			# Change user dir mode --------------------------------------------
-			chmod -R 770 /share/data/usr/${USERNAME}
-			chown -R ${SMB_USER}:${SMB_GRUP} /share/data/usr/${USERNAME}
+			chmod -R 770 ${DIR_SHAR}/data/usr/${USERNAME}; funcPause $?
+			chown -R ${SMB_USER}:${SMB_GRUP} ${DIR_SHAR}/data/usr/${USERNAME}; funcPause $?
 		fi
 	done < ${USR_FILE}
-
+	# -------------------------------------------------------------------------
 	echo --- ${SMB_GRUP} ---------------------------------------------------------------
-	cat /etc/group | awk -F : '$1=="'${SMB_GRUP}'" {print $4;}'
-#	groupmems -l -g ${SMB_GRUP}
+	awk -F ':' '$1=="'${SMB_GRUP}'" {print $4;}' /etc/group
 	echo --- ${SMB_GADM} ---------------------------------------------------------------
-	cat /etc/group | awk -F : '$1=="'${SMB_GADM}'" {print $4;}'
-#	groupmems -l -g ${SMB_GADM}
+	awk -F ':' '$1=="'${SMB_GADM}'" {print $4;}' /etc/group
 	echo ------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 # Setup Samba User
 #------------------------------------------------------------------------------
-	SMB_PWDB=`find /var/lib/samba/ -name passdb.tdb -print`
-	USR_LIST=`pdbedit -L | awk -F : '{print $1;}'`
-	for USR_NAME in ${USR_LIST}
-	do
-		pdbedit -x -u ${USR_NAME}
-	done
+	echo - Setup Samba User ------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	pdbedit -i smbpasswd:${SMB_FILE} -e tdbsam:${SMB_PWDB}
 	funcPause $?
 
@@ -189,7 +142,6 @@ _EOT_
 #------------------------------------------------------------------------------
 	rm -f ${USR_FILE}
 	rm -f ${SMB_FILE}
-	popd
 
 #------------------------------------------------------------------------------
 # Exit

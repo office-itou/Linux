@@ -18,14 +18,16 @@
 ##	---------- -------- -------------- -----------------------------------------
 ##	2016/02/11 000.0000 J.Itou         新規作成
 ##	2018/02/25 000.0000 J.Itou         改善対応
+##	2018/05/05 000.0000 J.Itou         改善対応
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ##	---------- -------- -------------- -----------------------------------------
 ################################################################################
-#set -nvx
+	set -eu								# ステータス0以外と未定義変数の参照で終了
+	trap 'exit 1' 1 2 3 15
 
 # Pause処理 -------------------------------------------------------------------
 funcPause() {
-	RET_STS=$1
+	local RET_STS=$1
 
 	if [ ${RET_STS} -ne 0 ]; then
 		echo "Enterキーを押して下さい。"
@@ -33,44 +35,14 @@ funcPause() {
 	fi
 }
 
-# プロセス制御処理 ------------------------------------------------------------
-funcProc() {
-	INP_NAME=$1
-	INP_COMD=$2
-
-	case "${INP_COMD}" in
-		"start" )
-			which insserv
-			if [ $? -eq 0 ]; then
-				insserv -d ${INP_NAME}; funcPause $?
-			else
-				systemctl enable ${INP_NAME}; funcPause $?
-			fi
-			/etc/init.d/${INP_NAME} start
-			;;
-		"stop" )
-			/etc/init.d/${INP_NAME} stop
-			which insserv
-			if [ $? -eq 0 ]; then
-				insserv -r ${INP_NAME}; funcPause $?
-			else
-				systemctl disable ${INP_NAME}; funcPause $?
-			fi
-			;;
-		* )
-			/etc/init.d/${INP_NAME} ${INP_COMD}
-#			systemctl ${INP_COMD} ${INP_NAME}
-			funcPause $?
-			;;
-	esac
-}
-
 #-------------------------------------------------------------------------------
 # Initialize
 #-------------------------------------------------------------------------------
-	DBG_FLAG=${DBG_FLAG:-0}
-	if [ ${DBG_FLAG} -ne 0 ]; then
-		set -vx
+	#--------------------------------------------------------------------------
+	WHO_AMI=`whoami`					# 実行ユーザー名
+	if [ "${WHO_AMI}" != "root" ]; then
+		echo "rootユーザーで実行して下さい。"
+		exit 1
 	fi
 
 	# ワーク変数設定 -----------------------------------------------------------
@@ -83,26 +55,15 @@ funcProc() {
 
 	LST_USER=${DIR_WK}/addusers.txt
 
-	# ワーク・ディレクトリーの変更 --------------------------------------------
-	pushd ${DIR_WK}
-
 #------------------------------------------------------------------------------
 # Make User file
 #------------------------------------------------------------------------------
 	rm -f ${LST_USER}
 	touch ${LST_USER}
 
-	OLDIFS=${IFS}
-	IFS=$'\n'
-	for LINE in `pdbedit -L -w`
+	while IFS=':' read WORKNAME USERIDNO LMPASSWD NTPASSWD ACNTFLAG CHNGTIME
 	do
-		USERNAME=`echo ${LINE} | awk -F : '{print $1;}'`
-		USERIDNO=`echo ${LINE} | awk -F : '{print $2;}'`
-		LMPASSWD=`echo ${LINE} | awk -F : '{print $3;}'`
-		NTPASSWD=`echo ${LINE} | awk -F : '{print $4;}'`
-		ACNTFLAG=`echo ${LINE} | awk -F : '{print $5;}'`
-		CHNGTIME=`echo ${LINE} | awk -F : '{print $6;}'`
-
+		USERNAME="${WORKNAME,,}"
 		FULLNAME=`pdbedit -u ${USERNAME} | awk -F : '{print $3;}'`
 		PASSWORD=""
 
@@ -114,13 +75,11 @@ funcProc() {
 		fi
 
 		echo "${USERNAME}:${FULLNAME}:${USERIDNO}:${PASSWORD}:${LMPASSWD}:${NTPASSWD}:${ACNTFLAG}:${CHNGTIME}:${ADMINFLG}" >> ${LST_USER}
-	done
-	IFS=${OLDIFS}
+	done < <(pdbedit -L -w)
 
 #------------------------------------------------------------------------------
 # Termination
 #------------------------------------------------------------------------------
-	popd
 
 #------------------------------------------------------------------------------
 # Exit
