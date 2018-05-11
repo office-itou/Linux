@@ -3,8 +3,21 @@
 ##
 ##	ファイル名	:	install.sh
 ##
-##	機能概要	:	Debian & Ubuntu Install用シェル [VMware対応]
-##
+##	機能概要	:	Install用シェル [VMware対応]
+##	---------------------------------------------------------------------------
+##	<対象OS>	:	Debian 7 ～
+##				:	Ubuntu 18.04 ～
+##				:	CentOS 7 ～
+##	---------------------------------------------------------------------------
+##	<サービス>	:	clamav-freshclam / clamd
+##				:	ssh / sshd
+##				:	apache2 / httpd
+##				:	vsftpd
+##				:	bind9 / named
+##				:	isc-dhcp-server / dhcpd
+##				:	samba / smbd,nmbd / smb,nmb
+##				:	webmin
+##	---------------------------------------------------------------------------
 ##	入出力 I/F
 ##		INPUT	:	
 ##		OUTPUT	:	
@@ -22,13 +35,26 @@
 ##	2018/03/10 000.0000 J.Itou         .curlrc追加
 ##	2018/03/12 000.0000 J.Itou         cifs関連修正
 ##	2018/03/20 000.0000 J.Itou         rootログインの抑制追加・他
+##	2018/04/29 000.0000 J.Itou         処理見直し(CentOS 7対応含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
-#set -nvx
+#	set -o ignoreof						# Ctrl+Dで終了しない
+#	set -n								# 構文エラーのチェック
+#	set -x								# コマンドと引数の展開を表示
+	set -m								# ジョブ制御を有効にする
+	set -eu								# ステータス0以外と未定義変数の参照で終了
+
+	DBG_FLAG=${@:-0}
+
+	echo "*******************************************************************************"
+	echo "`date +"%Y/%m/%d %H:%M:%S"` 設定処理を開始します。"
+	echo "*******************************************************************************"
+
+	trap 'exit 1' 1 2 3 15
 
 # Pause処理 -------------------------------------------------------------------
 funcPause() {
-	RET_STS=$1
+	local RET_STS=$1
 
 	if [ ${RET_STS} -ne 0 ]; then
 		echo "Enterキーを押して下さい。"
@@ -38,92 +64,281 @@ funcPause() {
 
 # プロセス制御処理 ------------------------------------------------------------
 funcProc() {
-	INP_NAME=$1
-	INP_COMD=$2
+	local INP_NAME=$1
+	local INP_COMD=$2
 
-	case "${INP_COMD}" in
-		"start" )
-			if [ "`which insserv`" != "" ]; then
-				insserv -d ${INP_NAME}; funcPause $?
+	if [ "${INP_COMD}" = "" ]; then
+		return
+	fi
+
+	if [ "`which systemctl 2> /dev/null`" != "" ] && [ "${INP_NAME}" != "webmin" ]; then
+		systemctl ${INP_COMD} ${INP_NAME}; funcPause $?
+	else
+		if [ -f /lib/systemd/systemd-sysv-install ] && [ "${INP_COMD}" = "enable" -o "${INP_COMD}" = "disable" ]; then
+			/lib/systemd/systemd-sysv-install ${INP_COMD} ${INP_NAME}; funcPause $?
+		else
+			case "${INP_COMD}" in
+				"enable" )	insserv -d ${INP_NAME};      funcPause $?;;
+				"disable" )	insserv -r ${INP_NAME};      funcPause $?;;
+				* )	/etc/init.d/${INP_NAME} ${INP_COMD}; funcPause $?;;
+			esac
+		fi
+	fi
+}
+
+# diff拡張処理 ----------------------------------------------------------------
+funcDiff () {
+	set +e
+	diff -y --suppress-common-lines "$1" "$2"
+	local RET_CD=$?
+	set -e
+	if [ $RET_CD -ge 2 ]; then
+		funcPause $RET_CD
+		exit 1
+	fi
+}
+
+# substr処理 ------------------------------------------------------------------
+funcSubstr () {
+	echo ${@:1:($#-2)} | \
+	    awk '{for (i=1;i<=NF;i++) print substr($i,'"${@:$#-1:1}"','"${@:$#:1}"');}'
+}
+
+# addstr処理 ------------------------------------------------------------------
+funcAddstr () {
+	echo ${@:1:($#-1)} | \
+	    awk '{for (i=1;i<=NF;i++) print $1 "'"${@:($#):1}"'";}'
+}
+
+# APTの更新可否判断 -----------------------------------------------------------
+funcChkAptTime () {
+	local NOW_TIME=`date +"%s"`													# 現在時刻のEpoch形式 (1970-01-01 00:00:00 UTC からの秒数)
+	local LOG_TIME																# ログファイルの最終更新日時のEpoch形式 (Epoch からの秒数)
+	local IVL_TIME=600															# 比較時間の秒数
+
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		LOG_TIME=`stat /var/log/apt/term.log --format %Y`
+	else																		# Red Hat系
+		LOG_TIME=`stat /var/log/yum.log --format %Y`
+	fi
+
+	if [ $((${NOW_TIME})) -ge $((${LOG_TIME} + ${IVL_TIME})) ]; then
+		echo "OK"
+	else
+		echo "WAIT"
+	fi
+}
+
+# IPアドレス取得処理 ----------------------------------------------------------
+fncGetIPaddr () {
+	LANG=C ip -o -$1 a show scope $2 dev $3 | awk '{print $4;}'
+}
+
+# NetworkManager設定値取得処理 ------------------------------------------------
+fncGetNM () {
+	local DMY_STAT
+
+	LANG=C nmcli c show help 2> /dev/null
+	if [ $? -ge 2 ]; then
+		DMY_STAT="`LANG=C nmcli dev list iface "$2" | awk '/^'"$1"'/'`"
+	else
+		DMY_STAT="`LANG=C nmcli con show uuid "$3" | awk '/^'"$1"'/'`"
+	fi
+
+	case "$1" in
+		"DHCP4" | \
+		"DHCP6" )
+			if [ "${DMY_STAT}" != "" ]; then
+				echo "auto"
 			else
-				systemctl enable ${INP_NAME}; funcPause $?
+				echo "static"
 			fi
-			/etc/init.d/${INP_NAME} start
 			;;
-		"stop" )
-			/etc/init.d/${INP_NAME} stop
-			if [ "`which insserv`" != "" ]; then
-				insserv -r ${INP_NAME}; funcPause $?
-			else
-				systemctl disable ${INP_NAME}; funcPause $?
-			fi
+		"IP4.DNS" | \
+		"IP6.DNS" )
+			echo "${DMY_STAT}" | awk '{print $2;}'
 			;;
 		* )
-			/etc/init.d/${INP_NAME} ${INP_COMD}
-#			systemctl ${INP_COMD} ${INP_NAME}
-			funcPause $?
+			echo ""
 			;;
 	esac
 }
 
-# IPV6補間処理 ----------------------------------------------------------------
-fncIPV6Conv () {
-	declare -a OUT_ARRY
-	INP_ADDR=$1
-	STR_FSEP=${INP_ADDR//[^:]}
-	CNT_FSEP=$((7-${#STR_FSEP}))
-	(($CNT_FSEP)) && INP_ADDR=${INP_ADDR/::/"$(eval printf ':%.s' {1..$((CNT_FSEP+2))})"}
-	OLDIFS=${IFS}
-	IFS=':'
-	OUT_ARRY=(${INP_ADDR/%:/::})
-	IFS=${OLDIFS}
-	OUT_ADDR=$(printf ':%04x' "${OUT_ARRY[@]/#/0x0}")
-	echo ${OUT_ADDR:1}
+# IPv6逆引き処理 --------------------------------------------------------------
+fncIPv6Reverse () {
+	local INP_ADDR
+	local -a OUT_ARRY=()
+
+	for INP_ADDR in "$@"
+	do
+		OUT_ARRY+=($(echo ${INP_ADDR//:/} | \
+		    awk '{for(i=length();i>1;i--) printf("%c.", substr($0,i,1));     \
+		                                  printf("%c" , substr($0,1,1));}'))
+	done
+	echo "${OUT_ARRY[@]}"
 }
 
-#------------------------------------------------------------------------------
-# Initialize
-#------------------------------------------------------------------------------
-	NOW_DATE=`date +"%Y/%m/%d"`
-	NOW_TIME=`date +"%Y%m%d%H%M%S"`
-	PGM_NAME=`basename $0 | sed -e 's/\..*$//'`
-	DBG_FLAG=${DBG_FLAG:-0}
-	if [ ${DBG_FLAG} -ne 0 ]; then
-		set -vx
-	fi
+# IPv6補間処理 ----------------------------------------------------------------
+fncIPv6Conv () {
+	local OLD_IFS
+	local OUT_TEMP
+	local INP_ADDR
+	local STR_FSEP
+	local CNT_FSEP
+	local -a OUT_ARRY=()
+	local -a OUT_ADDR=()
 
-	WHO_AMI=`whoami`
+	for INP_ADDR in "$@"
+	do
+		STR_FSEP=${INP_ADDR//[^:]}
+		CNT_FSEP=$((7-${#STR_FSEP}))
+		(($CNT_FSEP)) && \
+		    INP_ADDR=${INP_ADDR/::/"$(eval printf ':%.s' {1..$((CNT_FSEP+2))})"}
+		OLD_IFS=${IFS}
+		IFS=:
+		OUT_ARRY=(${INP_ADDR/%:/::})
+		IFS=${OLD_IFS}
+		OUT_TEMP=$(printf ':%04x' "${OUT_ARRY[@]/#/0x0}")
+		OUT_ADDR+=("${OUT_TEMP:1}")
+	done
+	echo "${OUT_ADDR[@]}"
+}
+
+# IPv4 netmask変換処理 --------------------------------------------------------
+fncIPv4GetNetmask () {
+	local INP_ADDR
+	local DEC_ADDR
+	local -a OUT_ARRY=()
+
+	for INP_ADDR in "$@"
+	do
+		DEC_ADDR=$((0xFFFFFFFF ^ ((2 ** (32-$((${INP_ADDR}))))-1)))
+		OUT_ARRY+=($(printf '%d.%d.%d.%d' \
+		    $((${DEC_ADDR} >> 24)) \
+		    $(((${DEC_ADDR} >> 16) & 0xFF)) \
+		    $(((${DEC_ADDR} >> 8) & 0xFF)) \
+		    $((${DEC_ADDR} & 0xFF))))
+	done
+	echo "${OUT_ARRY[@]}"
+}
+
+# 初期設定 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+funcInitialize () {
+	# *************************************************************************
+	# Initialize
+	# *************************************************************************
+	echo - Initialize ------------------------------------------------------------------
+	#--------------------------------------------------------------------------
+	NOW_DATE=`date +"%Y/%m/%d"`													# yyyy/mm/dd
+	NOW_TIME=`date +"%Y%m%d%H%M%S"`												# yyyymmddhhmmss
+	PGM_NAME=`basename $0 | sed -e 's/\..*$//'`									# プログラム名
+	#--------------------------------------------------------------------------
+	WHO_AMI=`whoami`															# 実行ユーザー名
 	if [ "${WHO_AMI}" != "root" ]; then
-		echo "rootユーザーでログインして実行して下さい。"
+		echo "rootユーザーで実行して下さい。"
 		exit 1
 	fi
-
-#	WHO_USER=`who | awk '$1!="root" {print $1;}'`
-#	if [ "${WHO_USER}" != "" ]; then
-#		echo "${WHO_USER}がログインしています。"
+	#--------------------------------------------------------------------------
+	WHO_USER=`who | awk -v ORS="," '$1!="root" {print $1;}' | sed -e 's/,$//'`	# ログイン中ユーザ一覧
+	if [ "${WHO_USER}" != "" ]; then
+		echo "以下のユーザーがログインしています。"
+		echo "[${WHO_USER}]"
 #		echo "全てのユーザーをログアウトしてから、"
-#		echo "rootユーザーでログインして実行して下さい。"
+#		echo "rootユーザーで実行して下さい。"
 #		exit 1
-#	fi
-
+	fi
 	# ユーザー環境に合わせて変更する部分 --------------------------------------
-	SVR_NAME=`hostname`															# 本機の名前
-	WGP_NAME=`hostname -d`														# ワークグループ名
-#	GWR_NAME=gw-router															# ゲートウェイの名前
-#	DEF_USER=`ls /home/`														# インストール時に作成したユーザー名
-#	NUM_HDDS=1																	# インストール先のHDD台数
-	FLG_DHCP=0																	# DHCP自動起動フラグ(0以外で自動起動)
-#	FLG_VMTL=0																	# 0以外でVMware Toolsをインストール
-#	FLG_SVER=1																	# 0以外でサーバー仕様でセッティング
-#	VER_WMIN=1.870																# webminの最新バージョンを登録
-#	VGA_RESO=1024x768x32														# コンソールの解像度：1024×768：1600万色
-	VGA_RESO=1280x1024x32														#   〃              ：1280×1024：1600万色
-#	VGA_RESO=800x600x32															#   〃              ： 800× 600：1600万色
+#	VGA_RESO=("800x600x32"   "789")												# コンソールの解像度： 800× 600：1600万色
+#	VGA_RESO=("1024x768x32"  "792")												#   〃              ：1024× 768：1600万色
+	VGA_RESO=("1280x1024x32" "795")												#   〃              ：1280×1024：1600万色
+#	VGA_RESO=("1920x1080x32"    "")												#   〃              ：1920×1080：1600万色
+	# ･････････････････････････････････････････････････････････････････････････
+	DIR_SHAR=/share																# 共有ディレクトリーのルート
+	# ･････････････････････････････････････････････････････････････････････････
+	SET_LANG="ja_JP.UTF-8"														# 使用言語設定
+#	SET_LNGE="ja:en"															# 環境変数 LANGUAGE
+	# ･････････････････････････････････････････････････････････････････････････
+	RUN_CLAM=("enable"  "")														# 起動停止設定：clamav-freshclam
+	RUN_SSHD=("enable"  "")														#   〃        ：ssh / sshd
+	RUN_HTTP=("disable"  "")													#   〃        ：apache2 / httpd
+	RUN_FTPD=("disable"  "")													#   〃        ：vsftpd
+	RUN_BIND=("enable"  "")														#   〃        ：bind9 / named
+	RUN_DHCP=("disable"  "")													#   〃        ：isc-dhcp-server / dhcpd
+	RUN_SMBD=("enable"  "")														#   〃        ：samba / smbd,nmbd / smb,nmb
+	RUN_WMIN=("disable"  "")													#   〃        ：webmin
+	# -------------------------------------------------------------------------
+	FLG_RHAT=`[ ! -f /etc/redhat-release ]; echo $?`							# CentOS時=1,その他=0
+	FLG_SVER=1																	# 0以外でサーバー仕様でセッティング
+	DEF_USER="${SUDO_USER}"														# インストール時に作成したユーザー名
+	# system info -------------------------------------------------------------
+	SYS_NAME=`awk -F '=' '$1=="ID" {gsub("\"",""); print $2;}' /etc/os-release`	# ディストリビューション名
+	SYS_VRID=`awk -F '=' '$1=="VERSION_ID" { print $2; }' /etc/os-release`		# バージョン番号
+	SYS_VNUM=`echo ${SYS_VRID:--1} | bc`										#   〃          (取得できない場合は-1)
+	# samba -------------------------------------------------------------------
 	SMB_USER=sambauser															# smb.confのforce user
 	SMB_GRUP=sambashare															# smb.confのforce group
 	SMB_GADM=sambaadmin															# smb.confのadmin group
-	CPU_TYPE=`uname -r | awk -F - '{print $3;}'`								# CPU TYPE (amd64/iop32x/...)
-
+	# apache2 / httpd ---------------------------------------------------------
+	WWW_DATA=www-data															# apach2 / httpdのユーザ名
+	# cpu type ----------------------------------------------------------------
+	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
+	# network -----------------------------------------------------------------
+	#   NIC複数枚運用には非対応です                                            	<お願い>
+	#   NIC_ARRY[0]のNICのみの設定を想定しています                             	<お願い>
+	#   複数枚運用の場合は手作業にて対応願います                               	<お願い>
+	# -------------------------------------------------------------------------
+	SVR_FQDN=`hostname`															# 本機のFQDN
+	SVR_NAME=`hostname -s`														# 本機のホスト名
+	if [ "${SVR_FQDN}" != "${SVR_NAME}" ]; then									# ワークグループ名(ドメイン名)
+		WGP_NAME=`hostname | awk -F '.' '{ print $2; }'`
+	else
+		WGP_NAME=`hostname -d`
+		SVR_FQDN=${SVR_NAME}.${WGP_NAME}										# 本機のFQDN
+	fi
+	# -------------------------------------------------------------------------
+	CON_NAME=`nmcli -t -f name c | head -n 1`									# 接続名
+	CON_UUID=`nmcli -t -f uuid c | head -n 1`									# 接続UUID
+	# ･････････････････････････････････････････････････････････････････････････
+	NIC_ARRY=(`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`)	# NICデバイス名
+	for DEV_NAME in ${NIC_ARRY[@]}
+	do
+		IP4_ARRY+=(`fncGetIPaddr 4 "global primary"  "${DEV_NAME}"`)			# IPv4:IPアドレス/サブネットマスク(bit)
+		IP6_ARRY+=(`fncGetIPaddr 6 "global primary"  "${DEV_NAME}"`)			# IPv6:IPアドレス/サブネットマスク(bit)
+		LNK_ARRY+=(`fncGetIPaddr 6 "link"            "${DEV_NAME}"`)			# Link:IPアドレス/サブネットマスク(bit)
+		IP4_DHCP+=(`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`)			# IPv4:DHCPフラグ(auto/static)
+		IP6_DHCP+=(`fncGetNM "DHCP6"   "${DEV_NAME}" "${CON_UUID}"`)			# IPv6:DHCPフラグ(auto/static)
+		IP4_DNSA+=(`fncGetNM "IP4.DNS" "${DEV_NAME}" "${CON_UUID}"`)			# IPv4:DNSアドレス
+		IP6_DNSA+=(`fncGetNM "IP6.DNS" "${DEV_NAME}" "${CON_UUID}"`)			# IPv6:DNSアドレス
+	done
+	IP4_GATE=`ip -4 r show table all | awk '/default/ {print $3;}'`				# IPv4:デフォルトゲートウェイ
+	# ･････････････････････････････････････････････････････････････････････････
+	IP4_ADDR=("${IP4_ARRY[@]%/*}")												# IPv4:IPアドレス
+	IP4_BITS=("${IP4_ARRY[@]#*/}")												# IPv4:サブネットマスク(bit)
+	IP6_ADDR=("${IP6_ARRY[@]%/*}")												# IPv6:IPアドレス
+	IP6_BITS=("${IP6_ARRY[@]#*/}")												# IPv6:サブネットマスク(bit)
+	LNK_ADDR=("${LNK_ARRY[@]%/*}")												# Link:IPアドレス
+	LNK_BITS=("${LNK_ARRY[@]#*/}")												# Link:サブネットマスク(bit)
+	# ･････････････････････････････････････････････････････････････････････････
+	IP4_UADR=("${IP4_ADDR[@]%.*}")												# IPv4:本機のIPアドレスの上位値(/24決め打ち)
+	IP4_LADR=("${IP4_ADDR[@]##*.}")												# IPv4:本機のIPアドレスの下位値
+	IP4_LGAT=`echo ${IP4_GATE} | awk -F '.' '{print $4;}'`						# IPv4:デフォルトゲートウェイの下位値
+	IP4_RADR=(`echo ${IP4_ADDR[@]}|awk -F '.' '{printf"%s.%s.%s", $3,$2,$1;}'`)	# IPv4:BIND(逆引き用
+	IP4_NTWK=(`funcAddstr "${IP4_UADR[@]}"   ".0"`)								# IPv4:ネットワークアドレス
+	IP4_BCST=(`funcAddstr "${IP4_UADR[@]}" ".255"`)								# IPv4:ブロードキャストアドレス
+	IP4_MASK=(`fncIPv4GetNetmask "${IP4_BITS[@]}"`)								# IPv4:サブネットマスク
+	# ･････････････････････････････････････････････････････････････････････････
+	IP6_CONV=(`fncIPv6Conv "${IP6_ADDR[@]}"`)									# IPv6:補間済みアドレス
+	LNK_CONV=(`fncIPv6Conv "${LNK_ADDR[@]}"`)									# Link:補間済みアドレス
+	IP6_UADR=(`funcSubstr "${IP6_CONV[@]}"  1 19`)								# IPv6:本機のIPアドレスの上位値(/64決め打ち)
+	IP6_LADR=(`funcSubstr "${IP6_CONV[@]}" 21 19`)								# IPv6:本機のIPアドレスの下位値
+	LNK_UADR=(`funcSubstr "${LNK_CONV[@]}"  1 19`)								# Link:本機のIPアドレスの上位値(/64決め打ち)
+	LNK_LADR=(`funcSubstr "${LNK_CONV[@]}" 21 19`)								# Link:本機のIPアドレスの下位値
+	IP6_RADU=(`fncIPv6Reverse "${IP6_UADR[@]}"`)								# IPv6:BIND逆引き用上位値
+	IP6_RADL=(`fncIPv6Reverse "${IP6_LADR[@]}"`)								# IPv6:BIND逆引き用下位値
+	LNK_RADU=(`fncIPv6Reverse "${LNK_UADR[@]}"`)								# Link:BIND逆引き用上位値
+	LNK_RADL=(`fncIPv6Reverse "${LNK_LADR[@]}"`)								# Link:BIND逆引き用下位値
+	# ･････････････････････････････････････････････････････････････････････････
+	RNG_DHCP="${IP4_UADR[0]}.64 ${IP4_UADR[0]}.79"								# IPv4:DHCPの提供アドレス範囲
 	# プライベートIPアドレス --------------------------------------------------
 	# クラス  | 使用できるIPアドレス範囲       | 使用できるサブネットマスク範囲
 	# クラスA | 10.0.0.0 ～ 10.255.255.255     | 255.0.0.0 ～ 255.255.255.255（最大16,777,214台接続が可能）
@@ -134,64 +349,14 @@ fncIPV6Conv () {
 	# 16 | 11111111.11111111.00000000.00000000 | 255.255.0.0
 	# 24 | 11111111.11111111.11111111.00000000 | 255.255.255.0
 
-	# NICデバイス名 -----------------------------------------------------------
-	NWK_NAME=`awk '$4=="static" {print $2;}' /etc/network/interfaces`
-	NIC_NAME=`ip a show | awk -F "[ :]" '$1=="2" {print $3;}'`
-
-	# IPV4 --------------------------------------------------------------------
-	NIC_INET=`ip -4 a show dev ${NIC_NAME} | awk '$6=="global" {print $2;}'`	# IPアドレス/サブネットマスク(bit)
-	NIC_BCST=`ip -4 a show dev ${NIC_NAME} | awk '$6=="global" {print $4;}'`	# ブロードキャストアドレス
-	NIC_ADDR=`echo ${NIC_INET} | awk -F / '{print $1;}'`						# IPアドレス
-	NIC_BITS=`echo ${NIC_INET} | awk -F / '{print $2;}'`						# サブネットマスク(bit)
-	NIC_IPAD=`echo ${NIC_ADDR} | awk -F . '{printf"%s.%s.%s", $1,$2,$3;}'`		# 本機の属するプライベート・アドレス
-
-	NIC_NTWK=`route -n | awk '$2=="0.0.0.0" && !/169.254./ {print $1;}'`		# ネットワークアドレス
-	NIC_MASK=`route -n | awk '$2=="0.0.0.0" && !/169.254./ {print $3;}'`		# サブネットマスク
-	NIC_GATE=`route -n | awk '$1=="0.0.0.0" {print $2;}'`						# デフォルトゲートウェイ
-#	NIC_DADR=`awk '$1=="nameserver" {print $2;}' /etc/resolv.conf`				# DNS サーバのアドレス
-#	NIC_DNAM=`awk '$1=="search" {print $2;}' /etc/resolv.conf`					# DNS 検索で優先するドメインサフィックス
-
-	REV_IPAD=`echo ${NIC_ADDR} | awk -F . '{printf"%s.%s.%s", $3,$2,$1;}'`		# BIND用
-	SVR_ADDR=`echo ${NIC_ADDR} | awk -F . '{print $4;}'`						# 本機のIPアドレス
-	GWR_ADDR=`echo ${NIC_GATE} | awk -F . '{print $4;}'`						# ゲートウェイのIPアドレス
-
-	ADR_DHCP="${NIC_IPAD}.64 ${NIC_IPAD}.79"									# DHCPの提供アドレス範囲
-
-	# IPV6 グローバル ---------------------------------------------------------
-																				# IPv6アドレス/サブネットマスク(bit)
-	IP6_INET=`ip -6 a show dev ${NIC_NAME} | awk '/inet6/ && !/fe80::/ {print $2;}'`
-	IP6_ADDR=`echo ${IP6_INET} | awk -F / '{print $1;}'`						# IPv6アドレス
-	IP6_MASK=`echo ${IP6_INET} | awk -F / '{print $2;}'`						#  〃 サブネットマスク(bit)
-																				# 本機の属するIPv6アドレス
-	IP6_IPAD=`ip -6 r show dev ${NIC_NAME} | awk -F / '/\// && !/fe80::/ {print $1;}'`
-																				# BIND用
-	IP6_CONV=`fncIPV6Conv "${IP6_ADDR}"`
-	IP6_ADUP=`echo ${IP6_CONV} | awk -F : '{print $1 $2 $3 $4;}'`
-	IP6_ADLO=`echo ${IP6_CONV} | awk -F : '{print $5 $6 $7 $8;}'`
-	REV_IPV6=`echo ${IP6_ADUP} | awk '{for(i=length();i>1;i--) printf("%c.", substr($0,i,1)); printf("%c", substr($0,1,1));}'`
-	SVR_IPV6=`echo ${IP6_ADLO} | awk '{for(i=length();i>1;i--) printf("%c.", substr($0,i,1)); printf("%c", substr($0,1,1));}'`
-	# IPV6 リンクローカル -----------------------------------------------------
-																				# IPv6アドレス/サブネットマスク(bit)
-	LNK_INET=`ip -6 a show dev ${NIC_NAME} | awk '/inet6/ &&  /fe80::/ {print $2;}'`
-	LNK_ADDR=`echo ${LNK_INET} | awk -F / '{print $1;}'`						# IPv6アドレス
-	LNK_MASK=`echo ${LNK_INET} | awk -F / '{print $2;}'`						#  〃 サブネットマスク(bit)
-																				# 本機の属するIPv6アドレス
-	LNK_IPAD=`ip -6 r show dev ${NIC_NAME} | awk -F / '/\// &&  /fe80::/ {print $1;}'`
-																				# BIND用
-	LNK_CONV=`fncIPV6Conv "${LNK_ADDR}"`
-	LNK_ADUP=`echo ${LNK_CONV} | awk -F : '{print $1 $2 $3 $4;}'`
-	LNK_ADLO=`echo ${LNK_CONV} | awk -F : '{print $5 $6 $7 $8;}'`
-	REV_LNK6=`echo ${LNK_ADUP} | awk '{for(i=length();i>1;i--) printf("%c.", substr($0,i,1)); printf("%c", substr($0,1,1));}'`
-	SVR_LNK6=`echo ${LNK_ADLO} | awk '{for(i=length();i>1;i--) printf("%c.", substr($0,i,1)); printf("%c", substr($0,1,1));}'`
-
 	# ワーク変数設定 ----------------------------------------------------------
-	DST_NAME=`awk '/[A-Za-z]./ {print $1;}' /etc/issue | head -n 1 | tr '[A-Z]' '[a-z]'`
-
+#	DST_NAME=`awk '/[A-Za-z]./ {print $1;}' /etc/issue | head -n 1 | tr '[A-Z]' '[a-z]'`
+	# -------------------------------------------------------------------------
 #	MNT_FD=/media/floppy0
 #	MNT_CD=/media/cdrom0
 	MNT_CD=/media
 	DEV_CD=/dev/sr0
-
+	# -------------------------------------------------------------------------
 	DIR_WK=${PWD}
 	LST_USER=${DIR_WK}/addusers.txt
 #	LOG_FILE=${DIR_WK}/${PGM_NAME}.sh.${NOW_TIME}.log
@@ -200,185 +365,251 @@ fncIPV6Conv () {
 	USR_FILE=${DIR_WK}/${PGM_NAME}.sh.usr.list
 	SMB_FILE=${DIR_WK}/${PGM_NAME}.sh.smb.list
 	SMB_WORK=${DIR_WK}/${PGM_NAME}.sh.smb.work
-	SMB_CONF=/etc/samba/smb.conf
-	SMB_BACK=${SMB_CONF}.orig
-
+	# -------------------------------------------------------------------------
 	if [ "${SVR_NAME}" = "" ]; then
 		if [ ${FLG_SVER} -ne 0 ]; then
-			SVR_NAME=sv-${DST_NAME}
+			SVR_NAME=sv-${SYS_NAME}
 		else
-			SVR_NAME=ws-${DST_NAME}
+			SVR_NAME=ws-${SYS_NAME}
 		fi
 	fi
-
+	# -------------------------------------------------------------------------
 	if [ "`lscpu | grep -i vmware`" = "" ]; then
 		FLG_VMTL=0																# 0以外でVMware Toolsをインストール
 	else
 		FLG_VMTL=1																# 0以外でVMware Toolsをインストール
 	fi
-
-	if [ "${VER_WMIN}" = "" ]; then
-		SET_WMIN="webmin-current.deb"
-	else
-		SET_WMIN="webmin_${VER_WMIN}_all.deb"
-	fi
-
+	# -------------------------------------------------------------------------
 	NUM_HDDS=`ls -l /dev/[hs]d[a-z] | wc -l`									# インストール先のHDD台数
 	DEV_ARRY=("/dev/sda" "/dev/sdb" "/dev/sdc" "/dev/sdd" "/dev/sde" "/dev/sdf" "/dev/sdg" "/dev/sdh")
 	HDD_ARRY=(${DEV_ARRY[@]:0:${NUM_HDDS}})
 	USB_ARRY=(${DEV_ARRY[@]:${NUM_HDDS}:${#DEV_ARRY[@]}-${NUM_HDDS}})
 #	DEV_RATE="${USB_ARRY[@]}"
 #	DEV_TEMP="${HDD_ARRY[@]} ${DEV_RATE}"
-
-	CMD_AGET="apt-get -y -qq"
-
+	# -------------------------------------------------------------------------
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		if [ "`which apt 2> /dev/null`" != "" ]; then
+			CMD_AGET="apt -y -qq"
+		else																	# Debian 7
+			CMD_AGET="aptitude -y -q"
+		fi
+	else																		# Red Hat系
+		CMD_AGET="yum -y -q"
+	fi
+	# -------------------------------------------------------------------------
 	LIN_CHSH=`which nologin`
-	if [ "`which usermod`" != "" ]; then
+	if [ "`which usermod 2> /dev/null`" != "" ]; then
 		CMD_CHSH="`which usermod` -s ${LIN_CHSH}"
 	else
 		CMD_CHSH="`which chsh` -s ${LIN_CHSH}"
 	fi
+	# -------------------------------------------------------------------------
+	FILE_USERDIRCONF=`find /etc -name "userdir.conf" -type f -print`
+	if [ "${FILE_USERDIRCONF}" = "" ]; then
+		a2enmod userdir; funcPause $?
+		FILE_USERDIRCONF=`find /etc -name "userdir.conf" -type f -print`
+	fi
+	# -------------------------------------------------------------------------
+	FILE_VSFTPDCONF=`find /etc -name "vsftpd.conf" -type f -print`
+	DIR_VSFTPD=`dirname ${FILE_VSFTPDCONF}`
+	# -------------------------------------------------------------------------
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		DIR_BIND=/etc/bind
+		DIR_ZONE=/var/cache/bind
+	else																		# Red Hat系
+		DIR_BIND=/etc
+		DIR_ZONE=/var/named
+	fi
+	# -------------------------------------------------------------------------
+	pdbedit -L > /dev/null
+	funcPause $?
+	SMB_PWDB=`find /var/lib/samba/ -name passdb.tdb -type f -print`
+	SMB_CONF=`find /etc -name "smb.conf" -type f -print`
+	SMB_BACK=${SMB_CONF}.orig
+	# -------------------------------------------------------------------------
+	VER_WMIN=1.881						# 最新バージョンを設定
+	VER_WMIN=""							# カレントバージョンを取得 (たまに接続エラーになるので注意)
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		if [ "${VER_WMIN}" = "" ]; then
+			SET_WMIN="webmin-current.deb"
+			URL_WMIN="http://www.webmin.com/download/deb/${SET_WMIN}"
+		else
+			SET_WMIN="webmin_${VER_WMIN}_all.deb"
+			URL_WMIN="https://prdownloads.sourceforge.net/webadmin/${SET_WMIN}"
+		fi
+	else																		# Red Hat系
+		if [ "${VER_WMIN}" = "" ]; then
+			SET_WMIN="webmin-current.rpm"
+			URL_WMIN="http://www.webmin.com/download/rpm/${SET_WMIN}"
+		else
+			SET_WMIN="webmin-${VER_WMIN}-1.noarch.rpm"
+			URL_WMIN="https://prdownloads.sourceforge.net/webadmin/${SET_WMIN}"
+		fi
+	fi
+}
 
-	# 事前ダウンロード --------------------------------------------------------
-#	while :
-#	do
-#		if [ -f "${DIR_WK}/${SET_WMIN}" ]; then
-#			break
-#		fi
-#
-#		if [ "${SET_WMIN}" = "webmin-current.deb" ]; then
-#			wget "http://www.webmin.com/download/deb/webmin-current.deb"
-#		else
-#			wget "https://jaist.dl.sourceforge.net/project/webadmin/webmin/${VER_WMIN}/webmin_${VER_WMIN}_all.deb"
-#		fi
-#		sleep 1s
-#	done
+# Main処理 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+funcMain () {
+	# *************************************************************************
+	# 事前ダウンロード
+	# *************************************************************************
+	echo - Download --------------------------------------------------------------------
+	while [ ! -f "${DIR_WK}/${SET_WMIN}" ]
+	do
+		wget -nv "${URL_WMIN}"
+		funcPause $?
+		sleep 1s
+	done
 
-#------------------------------------------------------------------------------
-# Make work dir
-#------------------------------------------------------------------------------
-#	mkdir -p ${DIR_WK}
+	# *************************************************************************
+	# Make work dir
+	# *************************************************************************
+	echo - Make work dir ---------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	chmod 700 ${DIR_WK}
-#	pushd ${DIR_WK} > /dev/null
-#
-#------------------------------------------------------------------------------
-# System Update
-#------------------------------------------------------------------------------
-	${CMD_AGET} update && ${CMD_AGET} upgrade && ${CMD_AGET} dist-upgrade
-	funcPause $?
 
-#------------------------------------------------------------------------------
-# UDEV Rules
-#------------------------------------------------------------------------------
-#	if [ ! -f /etc/udev/rules.d/11-media-auto-mount.rules ]; then
-#		cat <<- _EOT_ > /etc/udev/rules.d/11-media-auto-mount.rules
-#			KERNEL!="sd[b-z][0-9]", GOTO="media_auto_mount_end"
-#			ACTION=="add", RUN+="/bin/mkdir -p /media/usb-%k"
-#
-#			# Global mount options
-#			ACTION=="add", ENV{mount_options}="relatime,users"
-#			# Filesystem specific options
-#			ACTION=="add", PROGRAM=="/lib/initcpio/udev/vol_id -t %N", RESULT=="vfat|ntfs", ENV{mount_options}="$env{mount_options},utf8,gid=100,umask=002"
-#
-#			ACTION=="add", RUN+="/bin/mount -o $env{mount_options} /dev/%k /media/usb-%k"
-#			ACTION=="remove", RUN+="/bin/umount -l /media/usb-%k", RUN+="/bin/rmdir /media/usb-%k"
-#			LABEL="media_auto_mount_end"
-#_EOT_
+	# *************************************************************************
+	# System Update
+	# *************************************************************************
+	echo - System Update ---------------------------------------------------------------
+	# -------------------------------------------------------------------------
+	if [ ${FLG_RHAT} -eq 0 ] && [ ! -f /etc/apt/sources.list.orig ]; then		# 非Red Hat系
+		sed -i.orig /etc/apt/sources.list \
+		    -e 's/^deb cdrom.*$/# &/'
+	fi
+	# --- パッケージ更新 ------------------------------------------------------
+#	if [ "`funcChkAptTime`" = "OK" ]; then										# APTの更新可否判断
+		echo --- Package Update ------------------------------------------------------------
+		${CMD_AGET} update ; funcPause $?
+		echo --- Package Upgrade -----------------------------------------------------------
+		${CMD_AGET} upgrade; funcPause $?
+		# --- リポジトリを追加 	[ Red Hat系 ] ---------------------------------
+		if [ ${FLG_RHAT} -ne 0 ] && [ ! -f /etc/yum.repos.d/CentOS-Base.repo.orig ]; then
+			echo --- Install Repository [yum-plugin-priorities] --------------------------------
+			${CMD_AGET} install yum-plugin-priorities; funcPause $?
+			sed -i.orig -e "s/\]$/\]\npriority=1/g"  /etc/yum.repos.d/CentOS-Base.repo
+			# ---------------------------------------------------------------------
+			echo --- Install Repository [epel-release centos-release-scl-rh] -------------------
+			${CMD_AGET} install epel-release centos-release-scl-rh; funcPause $?
+			sed -i.orig -e "s/\]$/\]\npriority=5/g"  /etc/yum.repos.d/epel.repo
+			# ---------------------------------------------------------------------
+			echo --- Install Repository [centos-release-scl] -----------------------------------
+			${CMD_AGET} install centos-release-scl; funcPause $?
+			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/CentOS-SCLo-scl.repo
+			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
+			# ---------------------------------------------------------------------
+			echo --- Install Repository [remi-release-7.rpm] -----------------------------------
+			${CMD_AGET} install http://rpms.famillecollet.com/enterprise/remi-release-7.rpm; funcPause $?
+			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/remi-safe.repo
+		fi
 #	fi
-#
-#	udevadm control --reload
-#	udevadm trigger
-#
-#------------------------------------------------------------------------------
-# Locale Setup
-#------------------------------------------------------------------------------
-	locale | sed -e 's/LANG=C/LANG=ja_JP.UTF-8/'              \
-				 -e 's/LANGUAGE=$/LANGUAGE=ja:en/'            \
-				 -e 's/"C"/"ja_JP.UTF-8"/' > /etc/locale.conf
-	funcPause $?
-	# --- root user -----------------------------------------------------------
-	pushd /${USER} > /dev/null
-		if [ ! -f ~/.vimrc ]; then
-			cat <<- _EOT_ > ~/.vimrc
-				set number
-				set tabstop=4
-				set list
-				set listchars=tab:>_
-_EOT_
-		fi
-	popd > /dev/null
-	# --- sudo user -----------------------------------------------------------
-	pushd /home/${SUDO_USER} > /dev/null
-		if [ ! -f .vimrc ]; then
-			cat <<- _EOT_ > .vimrc
-				set number
-				set tabstop=4
-				set list
-				set listchars=tab:>_
-_EOT_
-			chown ${SUDO_USER}:${SUDO_USER} .vimrc
-		fi
+	# -------------------------------------------------------------------------
+#	echo --- Package Cleaning ----------------------------------------------------------
+#	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+#		${CMD_AGET} autoclean; funcPause $?
+#	else																		# Red Hat系
+#		${CMD_AGET} autoremove; funcPause $?
+#	fi
+	# --- 自動起動設定 	[ Red Hat系 ] -----------------------------------------
+#	if [ ${FLG_RHAT} -ne 0 ]; then
+#		systemctl enable named dhcpd smb vsftpd httpd
+#		funcPause $?
+#		# --- 	Firewalld を有効にしている場合 --------------------------------
+#		firewall-cmd --add-service=dns   --permanent		# named
+#		firewall-cmd --add-service=dhcp  --permanent		# dhcpd
+#		firewall-cmd --add-service=samba --permanent		# smb
+#		firewall-cmd --add-service=ftp   --permanent		# vsftpd
+#		firewall-cmd --add-service=http  --permanent		# httpd
+#		firewall-cmd --reload
+#	fi
 
-		if [ ! -f .curlrc ]; then
-			cat <<- _EOT_ > .curlrc
-				location
-				progress-bar
-				remote-time
-				show-error
+	# *************************************************************************
+	# Locale Setup
+	# *************************************************************************
+	echo - Locale Setup ----------------------------------------------------------------
+	# --- /etc/locale.gen -----------------------------------------------------
+	if [ -f /etc/locale.gen ] && [ ! -f /etc/locale.gen.orig ]; then
+		sed -i.orig /etc/locale.gen             \
+		    -e "s/^# \(${SET_LANG} UTF-8\)/\1/"
+		locale-gen; funcPause $?
+		update-locale LANG=${SET_LANG}; funcPause $?
+	fi
+	# -------------------------------------------------------------------------
+#	if [ ! -f /etc/locale.conf.orig ]; then
+#		locale > /etc/locale.conf
+#		sed -i.orig /etc/locale.conf                \
+#		    -e "s/\(LANG\)=\S.*$/\1=${SET_LANG}/"   \
+#		    -e "s/\(LC_.*\)=\S.*$/\1=${SET_LANG}/g"
+#	fi
+	#--------------------------------------------------------------------------
+	for USER_NAME in "${USER}" "${SUDO_USER}"
+	do
+		USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
+		pushd ${USER_HOME} > /dev/null
+			if [ ${FLG_RHAT} -eq 0 ]; then										# 非Red Hat系
+				LNG_FILE=".bashrc"
+			else																# Red Hat系
+				LNG_FILE=".i18n"
+			fi
+			[ ! -f .vimrc      ] && { touch .vimrc;      chown "${USER_NAME}":"${USER_NAME}" .vimrc;      }
+			[ ! -f .curlrc     ] && { touch .curlrc;     chown "${USER_NAME}":"${USER_NAME}" .curlrc;     }
+			[ ! -f ${LNG_FILE} ] && { touch ${LNG_FILE}; chown "${USER_NAME}":"${USER_NAME}" ${LNG_FILE}; }
+			# -----------------------------------------------------------------
+			if [ ! -f .vimrc.orig ]; then
+				echo --- .vimrc --------------------------------------------------------------------
+				cp -p .vimrc .vimrc.orig
+				cat <<- _EOT_ >> .vimrc
+					set number
+					set tabstop=4
+					set list
+					set listchars=tab:\>_
 _EOT_
-			chown ${SUDO_USER}:${SUDO_USER} .curlrc
-		fi
+			fi
+			# -----------------------------------------------------------------
+			if [ ! -f .curlrc.orig ]; then
+				echo --- .curlrc -------------------------------------------------------------------
+				cp -p .curlrc .curlrc.orig
+				cat <<- _EOT_ >> .curlrc
+					location
+					progress-bar
+					remote-time
+					show-error
+_EOT_
+			fi
+			# -----------------------------------------------------------------
+			if [ ! -f ${LNG_FILE}.orig ]; then
+				echo --- ${LNG_FILE} -------------------------------------------------------------------
+				cp -p ${LNG_FILE} ${LNG_FILE}.orig
+				cat <<- _EOT_ >> ${LNG_FILE}
+					# --- 日本語文字化け対策 ---
+					case "\${TERM}" in
+					    "linux" ) export LANG=C;;
+					    * )                      ;;
+					esac
+_EOT_
+			fi
+			# -----------------------------------------------------------------
+#			if [ -f .profile ]; then
+#				. .profile
+#			fi
+		popd > /dev/null
+	done
+	#--------------------------------------------------------------------------
 
-#		if [ ! -f .bashrc.orig ]; then
-#			#------------------------------------------------------------------
-#			cp -p .bashrc .bashrc.orig
-#			cat <<- _EOT_ >> .bashrc
-#				#
-#				case "\${TERM}" in
-#				    "linux" )
-#				        LANG=C
-#				        ;;
-#				    * )
-#				        LANG=ja_JP.UTF-8
-#				        ;;
-#				esac
-#				export LANG
-#_EOT_
-#			chown ${SUDO_USER}:${SUDO_USER} .bashrc
-#			. .profile
-#		fi
-	popd > /dev/null
-
-#------------------------------------------------------------------------------
-# Network Setup
-#------------------------------------------------------------------------------
-	# network interface -------------------------------------------------------
-	if [ ! -f /etc/network/interfaces.orig ]; then
-		sed -i.orig /etc/network/interfaces \
-		    -e '/dns-*/d'
-	fi
-	# hosts -------------------------------------------------------------------
-	if [ ! -f /etc/hosts.orig ]; then
-		sed -i.orig /etc/hosts         \
-		    -e "s/^127\.0\.1\.1/# &/g"
-	fi
-	# resolv.conf -------------------------------------------------------------
-	if [ ! -h /etc/resolv.conf ]; then
-		if [ ! -f /etc/resolv.conf.orig ]; then
-			sed -i.orig /etc/resolv.conf                                \
-			    -e "s/nameserver ${NIC_GATE}/nameserver 127\.0\.0\.1/g"
-		fi
-	fi
+	# *************************************************************************
+	# Network Setup
+	# *************************************************************************
+	echo - Network Setup ---------------------------------------------------------------
 	# hosts.allow -------------------------------------------------------------
 	if [ ! -f /etc/hosts.allow.orig ]; then
 		cp -p /etc/hosts.allow /etc/hosts.allow.orig
 		cat <<- _EOT_ >> /etc/hosts.allow
 			ALL : 127.0.0.1
 			ALL : [::1]
-			ALL : 169.254.0.0/16
-			ALL : [fe80::]/64
-			ALL : ${NIC_NTWK}/${NIC_BITS}
-			# ALL : [${IP6_IPAD}]/${IP6_MASK}
+			# ALL : 169.254.0.0/16
+			ALL : [fe80::]/${LNK_BITS[0]}
+			ALL : ${IP4_UADR[0]}.0/${IP4_BITS[0]}
+			# ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
 _EOT_
 	fi
 	# hosts.deny --------------------------------------------------------------
@@ -393,63 +624,110 @@ _EOT_
 		sed -i.orig /etc/nsswitch.conf                            \
 		    -e 's/^hosts:.*/# &\nhosts:          files wins dns/'
 	fi
+	# ipv6 disable ------------------------------------------------------------
+#	if [ ! -f /etc/sysctl.conf.orig ]; then
+#		sed -i.orig /etc/sysctl.conf                  \
+#		    -e '$anet.ipv6.conf.all.disable_ipv6 = 1'
+#		sysctl -p
+#	fi
+	# ipv4 dns changed --------------------------------------------------------
+	if [ "${SYS_NAME}" = "debian" ] \
+	&& [ ${SYS_VNUM} -lt 8 -a ${SYS_VNUM} -ge 0 ]; then							# Debian 8以前の判定
+		if [ -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
+			if [ "${IP4_DHCP[0]}" == "auto" ]; then
+				if [ ! -f "/etc/dhcp/dhclient.conf.orig" ]; then
+					sed -i.orig /etc/dhcp/dhclient.conf                           \
+					    -e 's/^#\(prepend domain-name-servers\).*$/\1 127.0.0.1;/'
+				fi
+			else
+				if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
+					cp -p /etc/resolv.conf /etc/resolv.conf.orig
+				fi
+				if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
+					sed -i.orig "/etc/NetworkManager/system-connections/${CON_NAME}"              \
+					    -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1/"
+				fi
+			fi
+		else
+			if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
+				sed -i.orig /etc/resolv.conf                            \
+				    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1/g"
+			fi
+		fi
+	else
+		nmcli c modify "${CON_UUID}" ipv4.dns 127.0.0.1
+	fi
+	#--------------------------------------------------------------------------
+#	funcProc NetworkManager "${RUN_CLAM[0]}"
+#	funcProc NetworkManager "${RUN_CLAM[1]}"
+	#--------------------------------------------------------------------------
+	if [ "${SYS_NAME}" = "ubuntu" ]; then										# Ubuntuの判定
+		funcProc systemd-resolved disable										# nameserver 127.0.0.53 の無効化
+	fi
 
-#------------------------------------------------------------------------------
-# Make share dir
-#------------------------------------------------------------------------------
-	cat /etc/group | grep ${SMB_GADM} > /dev/null 2>&1
-	if [ $? -ne 0 ]; then
+	# *************************************************************************
+	# Make share dir
+	# *************************************************************************
+	echo - Make share dir --------------------------------------------------------------
+	# -------------------------------------------------------------------------
+	RET_GADM=`awk -F ':' '$1=="'${SMB_GADM}'" { print $1; }' /etc/group`
+	if [ "${RET_GADM}" = "" ]; then
 		groupadd --system "${SMB_GADM}"
+		funcPause $?
 	fi
-
-	cat /etc/group | grep ${SMB_GRUP} > /dev/null 2>&1
-	if [ $? -ne 0 ]; then
+	# -------------------------------------------------------------------------
+	RET_GRUP=`awk -F ':' '$1=="'${SMB_GRUP}'" { print $1; }' /etc/group`
+	if [ "${RET_GRUP}" = "" ]; then
 		groupadd --system "${SMB_GRUP}"
+		funcPause $?
 	fi
-
-	id ${SMB_USER} > /dev/null 2>&1
-	if [ $? -ne 0 ]; then
+	# -------------------------------------------------------------------------
+	RET_USER=`awk -F ':' '$1=="'${SMB_USER}'" { print $1; }' /etc/passwd`
+	if [ "${RET_USER}" = "" ]; then
 		useradd --system "${SMB_USER}" --groups "${SMB_GRUP}"
+		funcPause $?
 	fi
+	# -------------------------------------------------------------------------
+	mkdir -p ${DIR_SHAR}
+	mkdir -p ${DIR_SHAR}/cifs
+	mkdir -p ${DIR_SHAR}/data
+	mkdir -p ${DIR_SHAR}/data/adm
+	mkdir -p ${DIR_SHAR}/data/adm/netlogon
+	mkdir -p ${DIR_SHAR}/data/adm/profiles
+	mkdir -p ${DIR_SHAR}/data/arc
+	mkdir -p ${DIR_SHAR}/data/bak
+	mkdir -p ${DIR_SHAR}/data/pub
+	mkdir -p ${DIR_SHAR}/data/usr
+	mkdir -p ${DIR_SHAR}/dlna
+	mkdir -p ${DIR_SHAR}/dlna/movies
+	mkdir -p ${DIR_SHAR}/dlna/others
+	mkdir -p ${DIR_SHAR}/dlna/photos
+	mkdir -p ${DIR_SHAR}/dlna/sounds
+	# -------------------------------------------------------------------------
+	touch -f ${DIR_SHAR}/data/adm/netlogon/logon.bat
+	# -------------------------------------------------------------------------
+	chown -R ${SMB_USER}:${SMB_GRUP} ${DIR_SHAR}/*
+	chmod -R  770 ${DIR_SHAR}/*
+	chmod    1777 ${DIR_SHAR}/data/adm/profiles
 
-#	usermod root -G ${SMB_GRUP}
+	# *************************************************************************
+	# Make usb dir
+	# *************************************************************************
+	echo - Make usb dir ----------------------------------------------------------------
+	# -------------------------------------------------------------------------
+	mkdir -p /mnt/usb1
+	mkdir -p /mnt/usb2
+	mkdir -p /mnt/usb3
+	mkdir -p /mnt/usb4
 
-	mkdir -p /share
-	mkdir -p /share/cifs
-	mkdir -p /share/data
-	mkdir -p /share/data/adm
-	mkdir -p /share/data/adm/netlogon
-	mkdir -p /share/data/adm/profiles
-	mkdir -p /share/data/arc
-	mkdir -p /share/data/bak
-	mkdir -p /share/data/pub
-	mkdir -p /share/data/usr
-	mkdir -p /share/dlna
-	mkdir -p /share/dlna/movies
-	mkdir -p /share/dlna/others
-	mkdir -p /share/dlna/photos
-	mkdir -p /share/dlna/sounds
-
-	touch -f /share/data/adm/netlogon/logon.bat
-
-	chown -R ${SMB_USER}:${SMB_GRUP} /share/.
-	chmod -R  770 /share/.
-	chmod    1777 /share/data/adm/profiles
-
-#------------------------------------------------------------------------------
-# Move home dir
-#------------------------------------------------------------------------------
-#	useradd -D -b /share/data/usr
-#	usermod -d /share/data/usr/${DEF_USER} -m ${DEF_USER}
-#	usermod ${DEF_USER} -G ${SMB_GRUP}
-#	usermod -L ${DEF_USER}
-#
-#------------------------------------------------------------------------------
-# Make shell dir
-#------------------------------------------------------------------------------
+	# *************************************************************************
+	# Make shell dir
+	# *************************************************************************
+	echo - Make shell dir --------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	mkdir -p /usr/sh
 	mkdir -p /var/log/sh
-
+	# -------------------------------------------------------------------------
 	cat <<- _EOT_ > /usr/sh/USRCOMMON.def
 		#!/bin/bash
 		###############################################################################
@@ -493,262 +771,263 @@ _EOT_
 		APL_MNT_LN3="/mnt/usb3"
 		APL_MNT_LN4="/mnt/usb4"
 
-		SYS_MNT_DV1="/sys/block/`echo ${USB_ARRY[0]} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
-		SYS_MNT_DV2="/sys/block/`echo ${USB_ARRY[1]} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
-		SYS_MNT_DV3="/sys/block/`echo ${USB_ARRY[2]} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
-		SYS_MNT_DV4="/sys/block/`echo ${USB_ARRY[3]} | awk -F/ '{print $3}'`/device/scsi_disk/*/cache_type"
+		SYS_MNT_DV1="/sys/block/`echo ${USB_ARRY[0]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
+		SYS_MNT_DV2="/sys/block/`echo ${USB_ARRY[1]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
+		SYS_MNT_DV3="/sys/block/`echo ${USB_ARRY[2]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
+		SYS_MNT_DV4="/sys/block/`echo ${USB_ARRY[3]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
 _EOT_
 
-#------------------------------------------------------------------------------
-# Make floppy dir
-#------------------------------------------------------------------------------
-#	if [ ! -d /media/floppy0 ]; then
-#		pushd /media > /dev/null
-#			mkdir floppy0
-#			ln -s floppy0 floppy
-#		popd > /dev/null
-#	fi
-#
-#------------------------------------------------------------------------------
-# Make cd-rom dir
-#------------------------------------------------------------------------------
-#	if [ ! -d /media/cdrom0 ]; then
-#		pushd /media > /dev/null
-#			mkdir cdrom0
-#			ln -s cdrom0 cdrom
-#		popd > /dev/null
-#	fi
-#
-#------------------------------------------------------------------------------
-# Make usb dir
-#------------------------------------------------------------------------------
-#	mkdir -p /mnt/cdrom
-#	mkdir -p /mnt/floppy
-	mkdir -p /mnt/usb1
-	mkdir -p /mnt/usb2
-	mkdir -p /mnt/usb3
-	mkdir -p /mnt/usb4
-#	#--------------------------------------------------------------------------
-#	if [ ! -f /etc/fstab.orig ]; then
-#		cp -p /etc/fstab /etc/fstab.orig
-#		unexpand -a -t 4 /etc/fstab.orig > /etc/fstab
-#		cat <<- _EOT_ >> /etc/fstab
-#			# additional devices --------------------------------------------------------------------------------------------------
-#			# <file system>									<mount point>	<type>			<options>				<dump>	<pass>
-#			# /dev/sr0										/media/cdrom0	udf,iso9660		rw,user,noauto			0		0
-#			# /dev/fd0										/media/floppy0	auto			rw,user,noauto			0		0
-#			# /dev/sr0										/mnt/cdrom		udf,iso9660		rw,user,noauto			0		0
-#			# /dev/fd0										/mnt/floppy		auto			rw,user,noauto			0		0
-#			# ${USB_ARRY[0]}1										/mnt/usb1		auto			rw,user,noauto			0		0
-#			# ${USB_ARRY[1]}1										/mnt/usb2		auto			rw,user,noauto			0		0
-#			# ${USB_ARRY[2]}1										/mnt/usb3		auto			rw,user,noauto			0		0
-#			# ${USB_ARRY[3]}1										/mnt/usb4		auto			rw,user,noauto			0		0
-#_EOT_
-#		vi /etc/fstab
-#	fi
-#
-#------------------------------------------------------------------------------
-# Install clamav
-#------------------------------------------------------------------------------
-	if [ ! -f /etc/clamav/freshclam.conf.orig ]; then
-		sed -i.orig /etc/clamav/freshclam.conf                                                      \
-			-e 's/# Check for new database 24 times a day/# Check for new database 12 times a day/' \
-			-e 's/Checks 24/Checks 12/'                                                             \
-			-e 's/^NotifyClamd/#&/'
+	# *************************************************************************
+	# Install clamav
+	# *************************************************************************
+	echo - Install clamav --------------------------------------------------------------
+	# -------------------------------------------------------------------------
+	if [ "`which freshclam 2> /dev/null`" = "" ]; then							# Install clamav
+		${CMD_AGET} install clamav clamav-update clamav-scanner-systemd
+		funcPause $?
+	fi
+	# -------------------------------------------------------------------------
+	FILE_FRESHCONF=`find /etc -name "freshclam.conf" -type f -print`
+	FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
+	# -------------------------------------------------------------------------
+	if [ ! -f ${FILE_CLAMDCONF} ]; then
+		cp -p ${FILE_FRESHCONF} ${FILE_CLAMDCONF}
+		: > ${FILE_CLAMDCONF}
+	fi
+	# -------------------------------------------------------------------------
+	if [ ! -f ${FILE_FRESHCONF}.orig ]; then
+		sed -i.orig ${FILE_FRESHCONF}                                        \
+		    -e 's/^Example/#&/'                                              \
+		    -e 's/\(# Check for new database\) 24 \(times a day\)/\1 12 \2/' \
+		    -e 's/\(Checks\) 24/\1 12/'                                      \
+		    -e 's/^NotifyClamd/#&/'
+	fi
+	# -------------------------------------------------------------------------
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		if [ "${CPU_TYPE}" = "armv5tel" ]; then
+			funcProc clamav-freshclam disable
+			funcProc clamav-freshclam stop
+		else
+			funcProc clamav-freshclam "${RUN_CLAM[0]}"
+			funcProc clamav-freshclam "${RUN_CLAM[1]}"
+		fi
+#	else																		# Red Hat系
+#		funcProc clamd "${RUN_CLAM[0]}"
+#		funcProc clamd "${RUN_CLAM[1]}"
 	fi
 
-	if [ ! -f /etc/clamav/clamd.conf ]; then
-		touch /etc/clamav/clamd.conf
-		chown clamav:adm /etc/clamav/clamd.conf
-	fi
-
-	if [ "${CPU_TYPE}" != "iop32x" ]; then
-		funcProc clamav-freshclam restart
-	else
-		funcProc clamav-freshclam stop
-	fi
-
-#------------------------------------------------------------------------------
-# Install ssh
-#------------------------------------------------------------------------------
+	#--------------------------------------------------------------------------
+	# Install ssh
+	#--------------------------------------------------------------------------
+	echo - Install ssh -----------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	if [ ! -f /etc/ssh/sshd_config.orig ]; then
-		sed -i.orig /etc/ssh/sshd_config                     \
-			-e 's/^PermitRootLogin .*/PermitRootLogin no/'  \
-			-e 's/^#PermitRootLogin .*/PermitRootLogin no/' \
-			-e '$a UseDNS no'
+		sed -i.orig /etc/ssh/sshd_config           \
+		    -e 's/^\(PermitRootLogin\) .*/\1 no/'  \
+		    -e 's/^#\(PermitRootLogin\) .*/\1 no/' \
+		    -e '$a UseDNS no'
+	fi
+	# -------------------------------------------------------------------------
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		funcProc ssh "${RUN_SSHD[0]}"
+		funcProc ssh "${RUN_SSHD[1]}"
+	else																		# Red Hat系
+		funcProc sshd "${RUN_SSHD[0]}"
+		funcProc sshd "${RUN_SSHD[1]}"
 	fi
 
-	funcProc ssh restart
-
-#------------------------------------------------------------------------------
-# Install apache2
-#------------------------------------------------------------------------------
-	if [ ! -f /etc/apache2/mods-available/userdir.conf.orig ]; then
-		cp -p /etc/apache2/mods-available/userdir.conf /etc/apache2/mods-available/userdir.conf.orig
-		cat <<- _EOT_ > /etc/apache2/mods-available/userdir.conf
+	# *************************************************************************
+	# Install apache2
+	# *************************************************************************
+	echo - Install apache2 -------------------------------------------------------------
+	# -------------------------------------------------------------------------
+#	adduser ${WWW-DATA} ${SMB_GRUP}		# webにユーザーディレクトリーを開放する
+#	deluser ${WWW-DATA} ${SMB_GRUP}		# webにユーザーディレクトリーを開放しない
+	# -------------------------------------------------------------------------
+	if [ ! -f ${FILE_USERDIRCONF}.orig ]; then
+		cp -p ${FILE_USERDIRCONF} ${FILE_USERDIRCONF}.orig
+		cat <<- _EOT_ > ${FILE_USERDIRCONF}
 			<IfModule mod_userdir.c>
 			 	UserDir web/public_html
 			 	UserDir disabled root
 
-			 	<Directory /share/data/usr/*/web/public_html>
+			 	<Directory ${DIR_SHAR}/data/usr/*/web/public_html>
 			 		AllowOverride FileInfo AuthConfig Limit Indexes
 			 		Options MultiViews Indexes SymLinksIfOwnerMatch IncludesNoExec
 			 		<Limit GET POST OPTIONS>
 			 			Order allow,deny
 			 			Allow from all
+			 			Require all granted
 			 		</Limit>
 			 		<LimitExcept GET POST OPTIONS>
 			 			Order deny,allow
 			 			Deny from all
+			 			Require all granted
 			 		</LimitExcept>
 			 	</Directory>
 			</IfModule>
 _EOT_
 	fi
-
-	a2enmod userdir
-	funcProc apache2 stop
-
-#------------------------------------------------------------------------------
-# Install ftpd
-#------------------------------------------------------------------------------
-#	if [ ! -f /etc/ftpusers.orig ]; then
-#		sed -i.orig /etc/ftpusers \
-#			-e 's/^root/# &/'
-#	fi
-	#--------------------------------------------------------------------------
-	if [ "`which proftpd`" != "" ]; then	# Install proftpd
-		if [ ! -f /etc/proftpd/proftpd.conf.orig ]; then
-			cp -p /etc/proftpd/proftpd.conf /etc/proftpd/proftpd.conf.orig
-			cat <<- _EOT_ >> /etc/proftpd/proftpd.conf
-				TimesGMT off
-				<Global>
-				#	RootLogin on
-				 	UseFtpUsers on
-				</Global>
-_EOT_
-		fi
-		#----------------------------------------------------------------------
-		funcProc proftpd stop
-	else									# Install vsftpd
-		touch /etc/vsftpd.chroot_list		# chrootを許可するユーザーのリスト
-		touch /etc/vsftpd.user_list			# 接続拒否するユーザーのリスト
-		touch /etc/vsftpd.banned_emails		# 接続拒否する電子メール・パスワードのリスト
-		touch /etc/vsftpd.email_passwords	# 匿名ログイン用の電子メール・パスワードのリスト
-		#----------------------------------------------------------------------
-		chmod 0600 /etc/vsftpd.chroot_list   \
-				   /etc/vsftpd.user_list     \
-				   /etc/vsftpd.banned_emails \
-				   /etc/vsftpd.email_passwords
-		#----------------------------------------------------------------------
-		if [ ! -f /etc/vsftpd.conf.orig ]; then
-			sed -i.orig /etc/vsftpd.conf                                                  \
-				-e 's/^listen=.*$/listen=YES/'                                            \
-				-e 's/^listen_ipv6=.*$/listen_ipv6=NO/'                                   \
-				-e 's/^anonymous_enable=.*$/anonymous_enable=NO/'                         \
-				-e 's/^local_enable=.*$/local_enable=YES/'                                \
-				-e 's/^#write_enable=.*$/write_enable=YES/'                               \
-				-e 's/^#local_umask=.*$/local_umask=022/'                                 \
-				-e 's/^dirmessage_enable=.*$/dirmessage_enable=NO/'                       \
-				-e 's/^use_localtime=.*$/use_localtime=YES/'                              \
-				-e 's/^xferlog_enable=.*$/xferlog_enable=YES/'                            \
-				-e 's/^connect_from_port_20=.*$/connect_from_port_20=YES/'                \
-				-e 's/^#xferlog_std_format=.*$/xferlog_std_format=NO/'                    \
-				-e 's/^#idle_session_timeout=.*$/idle_session_timeout=300/'               \
-				-e 's/^#data_connection_timeout=.*$/data_connection_timeout=30/'          \
-				-e 's/^#ascii_upload_enable=.*$/ascii_upload_enable=YES/'                 \
-				-e 's/^#ascii_download_enable=.*$/ascii_download_enable=YES/'             \
-				-e 's/^#chroot_local_user=.*$/chroot_local_user=NO/'                      \
-				-e 's/^#chroot_list_enable=.*$/chroot_list_enable=NO/'                    \
-				-e 's/^#chroot_list_file=.*$/chroot_list_file=\/etc\/vsftpd.chroot_list/' \
-				-e 's/^#ls_recurse_enable=.*$/ls_recurse_enable=YES/'                     \
-				-e 's/^pam_service_name=.*$/pam_service_name=vsftpd/'                     \
-				-e '$atcp_wrappers=YES'                                                   \
-				-e '$auserlist_enable=YES'                                                \
-				-e '$auserlist_deny=YES'                                                  \
-				-e '$auserlist_file=\/etc\/vsftpd.user_list'                              \
-				-e '$achmod_enable=YES'                                                   \
-				-e '$aforce_dot_files=YES'                                                \
-				-e '$adownload_enable=YES'                                                \
-				-e '$avsftpd_log_file=\/var\/log\/vsftpd\.log'                            \
-				-e '$adual_log_enable=NO'                                                 \
-				-e '$asyslog_enable=NO'                                                   \
-				-e '$alog_ftp_protocol=NO'                                                \
-				-e '$aftp_data_port=20'                                                   \
-				-e '$apasv_enable=YES'
-		fi
-		#----------------------------------------------------------------------
-		funcProc vsftpd stop
+	# -------------------------------------------------------------------------
+	if [ "`which httpd 2> /dev/null`" != "" ]; then
+		VER_BIND=`httpd -v | awk -F '.' '/version/ {sub(".*Apache/",""); printf "%d.%d",$1,$2;}'`
+		funcPause $?
+	else
+		VER_BIND=`apache2ctl -v | awk -F '.' '/version/ {sub(".*Apache/",""); printf "%d.%d",$1,$2;}'`
+		funcPause $?
+	fi
+	if [ "$(echo "${VER_BIND} >= 2.4" | bc)" -eq 1 ]; then						# Ver.2.4以降
+		sed -i ${FILE_USERDIRCONF}   \
+		    -e '/Order allow,deny/d' \
+		    -e '/Allow from all/d'   \
+		    -e '/Order deny,allow/d' \
+		    -e '/Deny from all/d'
+	else																		# Ver.2.4以前
+		sed -i ${FILE_USERDIRCONF}      \
+		    -e '/Require all granted/d'
+	fi
+	# -------------------------------------------------------------------------
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		funcProc apache2 "${RUN_HTTP[0]}"
+		funcProc apache2 "${RUN_HTTP[1]}"
+	else																		# Red Hat系
+		funcProc httpd "${RUN_HTTP[0]}"
+		funcProc httpd "${RUN_HTTP[1]}"
 	fi
 
-#------------------------------------------------------------------------------
-# Install bind9
-#------------------------------------------------------------------------------
+	# *************************************************************************
+	# Install vsftpd
+	# *************************************************************************
+	echo - Install vsftpd --------------------------------------------------------------
+	# -------------------------------------------------------------------------
+	touch ${DIR_VSFTPD}/vsftpd.chroot_list		# chrootを許可するユーザーのリスト
+	touch ${DIR_VSFTPD}/vsftpd.user_list		# 接続拒否するユーザーのリスト
+	touch ${DIR_VSFTPD}/vsftpd.banned_emails	# 接続拒否する電子メール・パスワードのリスト
+	touch ${DIR_VSFTPD}/vsftpd.email_passwords	# 匿名ログイン用の電子メール・パスワードのリスト
+	# -------------------------------------------------------------------------
+	chmod 0600 ${DIR_VSFTPD}/vsftpd.chroot_list     \
+			   ${DIR_VSFTPD}/vsftpd.user_list       \
+			   ${DIR_VSFTPD}/vsftpd.banned_emails   \
+			   ${DIR_VSFTPD}/vsftpd.email_passwords
+	# -------------------------------------------------------------------------
+	if [ ! -f ${DIR_VSFTPD}/vsftpd.conf.orig ]; then
+		sed -i.orig ${DIR_VSFTPD}/vsftpd.conf                                      \
+		    -e 's/^\(listen\)=.*$/\1=YES/'                                         \
+		    -e 's/^\(listen_ipv6\)=.*$/\1=NO/'                                     \
+		    -e 's/^\(anonymous_enable\)=.*$/\1=NO/'                                \
+		    -e 's/^\(local_enable\)=.*$/\1=YES/'                                   \
+		    -e 's/^#\(write_enable\)=.*$/\1=YES/'                                  \
+		    -e 's/^#\(local_umask\)=.*$/\1=022/'                                   \
+		    -e 's/^\(dirmessage_enable\)=.*$/\1=NO/'                               \
+		    -e 's/^\(use_localtime\)=.*$/\1=YES/'                                  \
+		    -e 's/^\(xferlog_enable\)=.*$/\1=YES/'                                 \
+		    -e 's/^\(connect_from_port_20\)=.*$/\1=YES/'                           \
+		    -e 's/^#\(xferlog_std_format\)=.*$/\1=NO/'                             \
+		    -e 's/^#\(idle_session_timeout\)=.*$/\1=300/'                          \
+		    -e 's/^#\(data_connection_timeout\)=.*$/\1=30/'                        \
+		    -e 's/^#\(ascii_upload_enable\)=.*$/\1=YES/'                           \
+		    -e 's/^#\(ascii_download_enable\)=.*$/\1=YES/'                         \
+		    -e 's/^#\(chroot_local_user\)=.*$/\1=NO/'                              \
+		    -e 's/^#\(chroot_list_enable\)=.*$/\1=NO/'                             \
+		    -e "s~^#\(chroot_list_file\)=.*$~\1=${DIR_VSFTPD}/vsftpd.chroot_list~" \
+		    -e 's/^#\(ls_recurse_enable\)=.*$/\1=YES/'                             \
+		    -e 's/^\(pam_service_name\)=.*$/\1=vsftpd/'                            \
+		    -e '$atcp_wrappers=YES'                                                \
+		    -e '$auserlist_enable=YES'                                             \
+		    -e '$auserlist_deny=YES'                                               \
+		    -e "\$auserlist_file=${DIR_VSFTPD}\/vsftpd.user_list"                  \
+		    -e '$achmod_enable=YES'                                                \
+		    -e '$aforce_dot_files=YES'                                             \
+		    -e '$adownload_enable=YES'                                             \
+		    -e '$avsftpd_log_file=\/var\/log\/vsftpd\.log'                         \
+		    -e '$adual_log_enable=NO'                                              \
+		    -e '$asyslog_enable=NO'                                                \
+		    -e '$alog_ftp_protocol=NO'                                             \
+		    -e '$aftp_data_port=20'                                                \
+		    -e '$apasv_enable=YES'
+	fi
+	# -------------------------------------------------------------------------
+	funcProc vsftpd "${RUN_FTPD[0]}"
+	funcProc vsftpd "${RUN_FTPD[1]}"
+
+	# *************************************************************************
+	# Install bind9
+	# *************************************************************************
+	echo - Install bind9 ---------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > /var/cache/bind/${WGP_NAME}.zone
-		\$TTL 3600															; 1 hour
+	cat <<- _EOT_ > ${DIR_ZONE}/${WGP_NAME}.zone
+		\$TTL 1H																; 1 hour
 		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
 		 														${DNS_SCNT}	; serial
-		 														1800		; refresh (30 minutes)
-		 														900			; retry (15 minutes)
-		 														86400		; expire (1 day)
-		 														1200		; minimum (20 minutes)
+		 														30M			; refresh (30 minutes)
+		 														15M			; retry (15 minutes)
+		 														1D			; expire (1 day)
+		 														20M			; minimum (20 minutes)
 		 												)
 		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
-		${SVR_NAME}								IN		A		${NIC_ADDR}
-		${SVR_NAME}								IN		AAAA	${IP6_ADDR}
-		${SVR_NAME}								IN		AAAA	${LNK_ADDR}
+		${SVR_NAME}								IN		A		${IP4_ADDR[0]}
+		${SVR_NAME}								IN		AAAA	${IP6_ADDR[0]}
+		${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > /var/cache/bind/${WGP_NAME}.rev
-		\$TTL 3600															; 1 hour
+	cat <<- _EOT_ > ${DIR_ZONE}/${WGP_NAME}.rev
+		\$TTL 1H																; 1 hour
 		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
 		 														${DNS_SCNT}	; serial
-		 														1800		; refresh (30 minutes)
-		 														900			; retry (15 minutes)
-		 														86400		; expire (1 day)
-		 														1200		; minimum (20 minutes)
+		 														30M			; refresh (30 minutes)
+		 														15M			; retry (15 minutes)
+		 														1D			; expire (1 day)
+		 														20M			; minimum (20 minutes)
 		 												)
 		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
-		${SVR_ADDR}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
+		${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > /var/cache/bind/${IP6_IPAD}.rev
-		\$TTL 3600															; 1 hour
+	cat <<- _EOT_ > ${DIR_ZONE}/${IP6_UADR[0]}.rev
+		\$TTL 1H																; 1 hour
 		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
 		 														${DNS_SCNT}	; serial
-		 														1800		; refresh (30 minutes)
-		 														900			; retry (15 minutes)
-		 														86400		; expire (1 day)
-		 														1200		; minimum (20 minutes)
+		 														30M			; refresh (30 minutes)
+		 														15M			; retry (15 minutes)
+		 														1D			; expire (1 day)
+		 														20M			; minimum (20 minutes)
 		 												)
 		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
-		${SVR_IPV6}					PTR		${SVR_NAME}.${WGP_NAME}.
+		${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > /var/cache/bind/${LNK_IPAD}.rev
-		\$TTL 3600															; 1 hour
+	cat <<- _EOT_ > ${DIR_ZONE}/${LNK_UADR[0]}.rev
+		\$TTL 1H																; 1 hour
 		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
 		 														${DNS_SCNT}	; serial
-		 														1800		; refresh (30 minutes)
-		 														900			; retry (15 minutes)
-		 														86400		; expire (1 day)
-		 														1200		; minimum (20 minutes)
+		 														30M			; refresh (30 minutes)
+		 														15M			; retry (15 minutes)
+		 														1D			; expire (1 day)
+		 														20M			; minimum (20 minutes)
 		 												)
 		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
-		${SVR_LNK6}					PTR		${SVR_NAME}.${WGP_NAME}.
+		${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	if [ ! -f /etc/bind/named.conf.local.orig ]; then
-		cp -p /etc/bind/named.conf.local /etc/bind/named.conf.local.orig
-		cat <<- _EOT_ >> /etc/bind/named.conf.local
+	if [ ! -f ${DIR_BIND}/named.conf.local.orig ]; then
+		if [ ! -f ${DIR_BIND}/named.conf.local ]; then
+			cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.local
+			: > ${DIR_BIND}/named.conf.local
+			sed -i.orig ${DIR_BIND}/named.conf \
+			    -e "/include \"\/etc\/named\.rfc1912\.zones\";/i\include \"${DIR_BIND}\/named\.conf\.local\";"
+		fi
+		# ---------------------------------------------------------------------
+		cp -p ${DIR_BIND}/named.conf.local ${DIR_BIND}/named.conf.local.orig
+		# ---------------------------------------------------------------------
+		cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
 			acl ${WGP_NAME}-net {
 			 	127.0.0.1;
 			 	::1;
-			 	169.254.0.0/16;
-			 	fe80::0/64;
-			 	${NIC_NTWK}/${NIC_BITS};
+			 	// 169.254.0.0/16;
+			 	fe80::0/${LNK_BITS[0]};
+			 	${IP4_NTWK[0]}/${IP4_BITS[0]};
 			};
 
 			zone "${WGP_NAME}" {
@@ -757,317 +1036,385 @@ _EOT_
 			 	allow-update { ${WGP_NAME}-net; };
 			};
 
-			zone "${REV_IPAD}.in-addr.arpa" {
+			zone "${IP4_RADR[0]}.in-addr.arpa" {
 			 	type master;
 			 	file "${WGP_NAME}.rev";
 			 	allow-update { ${WGP_NAME}-net; };
 			};
 
-			zone "${REV_IPV6}.ip6.arpa." {
+			zone "${IP6_RADU[0]}.ip6.arpa." {
 			 	type master;
-			 	file "${IP6_IPAD}.rev";
+			 	file "${IP6_UADR[0]}.rev";
 			 	allow-update { ${WGP_NAME}-net; };
 			};
 
-			zone "${REV_LNK6}.ip6.arpa." {
+			zone "${LNK_RADU[0]}.ip6.arpa." {
 			 	type master;
-			 	file "${LNK_IPAD}.rev";
+			 	file "${LNK_UADR[0]}.rev";
 			 	allow-update { ${WGP_NAME}-net; };
 			};
 _EOT_
 	fi
 	#--------------------------------------------------------------------------
-	if [ "${NWK_NAME}" = "" ]; then
-		sed -i.orig /var/cache/bind/${WGP_NAME}.zone -e "/^${SVR_NAME}.*${NIC_ADDR}$/d"
-		sed -i.orig /var/cache/bind/${WGP_NAME}.rev  -e "/^${SVR_ADDR}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
+	if [ "${IP4_DHCP[0]}" = "auto" ]; then
+		sed -i.orig ${DIR_ZONE}/${WGP_NAME}.zone -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
+		sed -i.orig ${DIR_ZONE}/${WGP_NAME}.rev  -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
 	fi
-
-	funcProc bind9 restart
+	# -------------------------------------------------------------------------
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		funcProc bind9 "${RUN_BIND[0]}"
+		funcProc bind9 "${RUN_BIND[1]}"
+	else																		# Red Hat系
+		funcProc named "${RUN_BIND[0]}"
+		funcProc named "${RUN_BIND[1]}"
+	fi
 
 #	echo --- dns check -----------------------------------------------------------------
 #	dig ${SVR_NAME}.${WGP_NAME} A
 #	dig ${SVR_NAME}.${WGP_NAME} AAAA
-#	dig -x ${NIC_ADDR}
-#	dig -x ${IP6_ADDR}
+#	dig -x ${IP4_ADDR[0]}
+#	dig -x ${IP6_ADDR[0]}
 #	echo --- dns check -----------------------------------------------------------------
 
-#------------------------------------------------------------------------------
-# Install dhcp
-#------------------------------------------------------------------------------
+	# *************************************************************************
+	# Install dhcp
+	# *************************************************************************
+	echo - Install dhcp ----------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	if [ ! -f /etc/dhcp/dhcpd.conf.orig ]; then
 		cp -p /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
 		cat <<- _EOT_ > /etc/dhcp/dhcpd.conf
-			subnet ${NIC_NTWK} netmask ${NIC_MASK} {
+			subnet ${IP4_NTWK[0]} netmask ${IP4_MASK[0]} {
 			 	option time-servers ntp.nict.jp;
-			 	option domain-name-servers ${NIC_ADDR};
+			 	option domain-name-servers ${IP4_ADDR[0]};
 			 	option domain-name "${WGP_NAME}";
-			 	range ${ADR_DHCP};
-			 	option routers ${NIC_GATE};
-			 	option subnet-mask ${NIC_MASK};
-			 	option broadcast-address ${NIC_BCST};
-			 	option netbios-dd-server ${NIC_ADDR};
+			 	range ${RNG_DHCP};
+			 	option routers ${IP4_GATE};
+			 	option subnet-mask ${IP4_MASK[0]};
+			 	option broadcast-address ${IP4_BCST[0]};
+			 	option netbios-dd-server ${IP4_ADDR[0]};
 			 	default-lease-time 3600;
 			 	max-lease-time 86400;
 			}
 
 _EOT_
 	fi
-
-	if [ ${FLG_DHCP} -ne 0 ]; then
-		funcProc isc-dhcp-server start
-	else
-		funcProc isc-dhcp-server stop
+	# -------------------------------------------------------------------------
+	if [ -f /etc/default/isc-dhcp-server ] && [ ! -f /etc/default/isc-dhcp-server.orig ]; then
+		sed -i.orig /etc/default/isc-dhcp-server     \
+		    -e "s/^\(INTERFACESv4\)=.*$/\1=${NIC_ARRY[0]}/" \
+		    -e 's/^INTERFACESv6=/#&/'
+	fi
+	# -------------------------------------------------------------------------
+	if [ "${IP4_DHCP[0]}" = "auto" ]; then
+		RUN_DHCP[0]=disable
+#		RUN_DHCP[1]=stop
+	fi
+	 # ------------------------------------------------------------------------
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		funcProc isc-dhcp-server "${RUN_DHCP[0]}"
+		funcProc isc-dhcp-server "${RUN_DHCP[1]}"
+		if [ "${SYS_NAME}" != "debian" ] || [ ${SYS_VNUM} -eq 8 ]; then			# Debian 8のみ判定
+			funcProc isc-dhcp-server6 disable
+#			funcProc isc-dhcp-server6 stop
+		fi
+	else																		# Red Hat系
+		funcProc dhcpd "${RUN_DHCP[0]}"
+		funcProc dhcpd "${RUN_DHCP[1]}"
 	fi
 
-#------------------------------------------------------------------------------
-# Install Webmin
-#------------------------------------------------------------------------------
-	if [ -f "${DIR_WK}/${SET_WMIN}" ]; then
-		dpkg -i "${SET_WMIN}"
-		#--------------------------------------------------------------------------
+	# *************************************************************************
+	# Install Webmin
+	# *************************************************************************
+	echo - Install Webmin --------------------------------------------------------------
+	# -------------------------------------------------------------------------
+	if [ ! -d /etc/webmin ]; then
+		if [ -f "${DIR_WK}/${SET_WMIN}" ]; then
+			if [ ${FLG_RHAT} -eq 0 ]; then										# 非Red Hat系
+				dpkg -i "${DIR_WK}/${SET_WMIN}"
+				funcPause $?
+			else																# Red Hat系
+				${CMD_AGET} install "${DIR_WK}/${SET_WMIN}"
+				funcPause $?
+			fi
+		fi
+	fi
+	#--------------------------------------------------------------------------
+	if [ -f /etc/webmin/config ]; then
 		if [ ! -f /etc/webmin/config.orig ]; then
 			cp -p /etc/webmin/config /etc/webmin/config.orig
 			cat <<- _EOT_ >> /etc/webmin/config
 				webprefix=
-				lang_root=ja_JP.UTF-8
+				lang_root=${SET_LANG}
 _EOT_
 		fi
-		#--------------------------------------------------------------------------
+		#----------------------------------------------------------------------
 		if [ ! -f /etc/webmin/time/config.orig ]; then
 			cp -p /etc/webmin/time/config /etc/webmin/time/config.orig
 			cat <<- _EOT_ >> /etc/webmin/time/config
 				timeserver=ntp.nict.jp
 _EOT_
 		fi
-
-		funcProc webmin stop
+		#----------------------------------------------------------------------
+		funcProc webmin "${RUN_WMIN[0]}"
+		funcProc webmin "${RUN_WMIN[1]}"
+		PSW_WMIN=`find /usr/ -name "changepass.pl" -print`
+		echo "==============================================================================="
+		echo "===  webminはrootのパスワードを設定しないと利用できません。                 ==="
+		echo "===  rootのパスワードを一時的に設定し、                                     ==="
+		echo "===    webminにログイン後に以下のコマンドで変更して下さい。                 ==="
+		echo "===      ${PSW_WMIN} ログインアカウント パスワード      ==="
+		echo "==============================================================================="
 	fi
 
-#------------------------------------------------------------------------------
-# Add smb.conf
-#------------------------------------------------------------------------------
-	cat <<- _EOT_ > ${SMB_WORK}
-		# Samba config file created using SWAT
-		# from ${SVR_NAME} (${NIC_ADDR})
-		# Date: `date +"%Y/%m/%d/ %H:%M:%S"`
+	# *************************************************************************
+	# Add smb.conf
+	# *************************************************************************
+	echo - Add smb.conf ----------------------------------------------------------------
+	# -------------------------------------------------------------------------
+	if [ ! -f ${SMB_BACK} ]; then
+		CMD_UADD=`which useradd`
+		CMD_UDEL=`which userdel`
+		CMD_GADD=`which groupadd`
+		CMD_GDEL=`which groupdel`
+		CMD_GPWD=`which gpasswd`
+		CMD_FALS=`which false`
+		# ---------------------------------------------------------------------
+		testparm -s -v ${SMB_CONF} |                                                                \
+			sed -e '/\[homes\]/,/^$/d'                                                              \
+			    -e 's/\(dos charset\) =.*$/\1 = CP932/'                                             \
+			    -e "s/\(workgroup\) =.*$/\1 = ${WGP_NAME}/"                                         \
+			    -e "s/\(netbios name\) =.*$/\1 = ${SVR_NAME}/"                                      \
+			    -e 's/\(security\) =.*$/\1 = USER/'                                                 \
+			    -e 's/\(load printers\) =.*$/\1 = No/'                                              \
+			    -e 's~\(printcap name\) =.*$~\1 = /dev/null~'                                       \
+			    -e "s~\(add user script\) =.*$~\1 = ${CMD_UADD} %u~"                                \
+			    -e "s~\(delete user script\) =.*$~\1 = ${CMD_UDEL} %u~"                             \
+			    -e "s~\(add group script\) =.*$~\1 = ${CMD_GADD} %g~"                               \
+			    -e "s~\(delete group script\) =.*$~\1 = ${CMD_GDEL} %g~"                            \
+			    -e "s~\(add user to group script\) =.*$~\1 = ${CMD_GPWD} -a %u %g~"                 \
+			    -e "s~\(delete user from group script\) =.*$~\1 = ${CMD_GPWD} -d %u %g~"            \
+			    -e "s~\(add machine script\) =.*$~\1 = ${CMD_UADD} -d /dev/null -s ${CMD_FALS} %u~" \
+			    -e 's/\(logon script\) =.*$/\1 = logon.bat/'                                        \
+			    -e 's/\(logon path\) =.*$/\1 = \\\\%L\\profiles\\%U/'                               \
+			    -e 's/\(domain logons\) =.*$/\1 = Yes/'                                             \
+			    -e 's/\(os level\) =.*$/\1 = 35/'                                                   \
+			    -e 's/\(preferred master\) =.*$/\1 = Yes/'                                          \
+			    -e 's/\(domain master\) =.*$/\1 = Yes/'                                             \
+			    -e 's/\(wins support\) =.*$/\1 = Yes/'                                              \
+			    -e 's/\(unix password sync\) =.*$/\1 = No/'                                         \
+			    -e '/idmap config \* : backend =/i\\tidmap config \* : range = 1000-10000'          \
+			    -e 's/\(admin users\) =.*$/\1 = administrator/'                                     \
+			    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
+			    -e '/map to guest =.*$/d'                                                           \
+			    -e '/null passwords =.*$/d'                                                         \
+			    -e '/obey pam restrictions =.*$/d'                                                  \
+			    -e '/enable privileges =.*$/d'                                                      \
+			    -e '/password level =.*$/d'                                                         \
+			    -e '/client use spnego principal =.*$/d'                                            \
+			    -e '/syslog =.*$/d'                                                                 \
+			    -e '/syslog only =.*$/d'                                                            \
+			    -e '/use spnego =.*$/d'                                                             \
+			    -e '/paranoid server security =.*$/d'                                               \
+			    -e '/dns proxy =.*$/d'                                                              \
+			    -e '/time offset =.*$/d'                                                            \
+			    -e '/usershare allow guests =.*$/d'                                                 \
+			    -e '/idmap backend =.*$/d'                                                          \
+			    -e '/idmap uid =.*$/d'                                                              \
+			    -e '/idmap gid =.*$/d'                                                              \
+			    -e '/winbind separator =.*$/d'                                                      \
+			    -e '/acl check permissions =.*$/d'                                                  \
+			    -e '/only user =.*$/d'                                                              \
+			    -e '/share modes =.*$/d'                                                            \
+			    -e '/nbt client socket address =.*$/d'                                              \
+			    -e '/lsa over netlogon =.*$/d'                                                      \
+			    -e '/.* = $/d'                                                                      \
+		> ${SMB_WORK}
+		# ---------------------------------------------------------------------
+		cat <<- _EOT_ >> ${SMB_WORK}
+			[homes]
+			 	comment = Home Directories
+			 	valid users = %S
+			 	write list = @${SMB_GRUP}
+			 	force user = ${SMB_USER}
+			 	force group = ${SMB_GRUP}
+			 	create mask = 0770
+			 	directory mask = 0770
+			 	browseable = No
 
-		[global]
-		 	dos charset = CP932
-		 	workgroup = ${WGP_NAME}
-		 	pam password change = Yes
-		 	unix password sync = No
-		 	load printers = No
-		 	printcap name = /dev/null
-		 	add user script = /usr/sbin/useradd %u
-		 	delete user script = /usr/sbin/userdel %u
-		 	add group script = /usr/sbin/groupadd %g
-		 	delete group script = /usr/sbin/groupdel %g
-		 	add user to group script = /usr/bin/gpasswd -a %u %g
-		 	delete user from group script = /usr/bin/gpasswd -d %u %g
-		 	add machine script = /usr/sbin/useradd -d /dev/null -s /bin/false %u
-		 	logon script = logon.bat
-		 	logon path = \\\\%L\\profiles\\%U
-		 	domain logons = Yes
-		 	os level = 35
-		 	preferred master = Yes
-		 	domain master = Yes
-		 	wins support = Yes
-		 	idmap config * : backend = tdb
-		 	admin users = administrator
-		 	printing = bsd
-		 	print command = lpr -r -P'%p' %s
-		 	lpq command = lpq -P'%p'
-		 	lprm command = lprm -P'%p' %j
+			[netlogon]
+			 	comment = Network Logon Service
+			 	path = ${DIR_SHAR}/data/adm/netlogon
+			 	valid users = @${SMB_GRUP}
+			 	write list = @${SMB_GADM}
+			 	force user = ${SMB_USER}
+			 	force group = ${SMB_GRUP}
+			 	create mask = 0770
+			 	directory mask = 0770
+			 	browseable = No
 
-		[homes]
-		 	comment = Home Directories
-		 	valid users = %S
-		 	write list = @${SMB_GRUP}
-		 	force user = ${SMB_USER}
-		 	force group = ${SMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+			[profiles]
+			 	comment = User profiles
+			 	path = ${DIR_SHAR}/data/adm/profiles
+			 	valid users = @${SMB_GRUP}
+			 	write list = @${SMB_GRUP}
+			 	profile acls = Yes
+			 	browseable = No
 
-		[netlogon]
-		 	comment = Network Logon Service
-		 	path = /share/data/adm/netlogon
-		 	valid users = @${SMB_GRUP}
-		 	write list = @${SMB_GADM}
-		 	force user = ${SMB_USER}
-		 	force group = ${SMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+			[share]
+			 	comment = Shared directories
+			 	path = ${DIR_SHAR}
+			 	valid users = @${SMB_GADM}
+			 	browseable = No
 
-		[profiles]
-		 	comment = User profiles
-		 	path = /share/data/adm/profiles
-		 	valid users = @${SMB_GRUP}
-		 	write list = @${SMB_GRUP}
-		 	profile acls = Yes
-		 	browseable = No
+			[cifs]
+			 	comment = CIFS directories
+			 	path = ${DIR_SHAR}/cifs
+			 	valid users = @${SMB_GADM}
+			 	write list = @${SMB_GADM}
+			 	force user = ${SMB_USER}
+			 	force group = ${SMB_GRUP}
+			 	create mask = 0770
+			 	directory mask = 0770
+			 	browseable = No
 
-		[share]
-		 	comment = Shared directories
-		 	path = /share
-		 	valid users = @${SMB_GADM}
-		 	browseable = No
+			[data]
+			 	comment = Data directories
+			 	path = ${DIR_SHAR}/data
+			 	valid users = @${SMB_GADM}
+			 	write list = @${SMB_GADM}
+			 	force user = ${SMB_USER}
+			 	force group = ${SMB_GRUP}
+			 	create mask = 0770
+			 	directory mask = 0770
+			 	browseable = No
 
-		[cifs]
-		 	comment = CIFS directories
-		 	path = /share/cifs
-		 	valid users = @${SMB_GADM}
-		 	write list = @${SMB_GADM}
-		 	force user = ${SMB_USER}
-		 	force group = ${SMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+			[dlna]
+			 	comment = DLNA directories
+			 	valid users = @${SMB_GRUP}
+			 	path = ${DIR_SHAR}/dlna
+			 	write list = @${SMB_GRUP}
+			 	force user = ${SMB_USER}
+			 	force group = ${SMB_GRUP}
+			 	create mask = 0770
+			 	directory mask = 0770
+			 	browseable = No
 
-		[data]
-		 	comment = Data directories
-		 	path = /share/data
-		 	valid users = @${SMB_GADM}
-		 	write list = @${SMB_GADM}
-		 	force user = ${SMB_USER}
-		 	force group = ${SMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
-
-		[dlna]
-		 	comment = DLNA directories
-		 	valid users = @${SMB_GRUP}
-		 	path = /share/dlna
-		 	write list = @${SMB_GRUP}
-		 	force user = ${SMB_USER}
-		 	force group = ${SMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
-
-		[pub]
-		 	comment = Public directories
-		 	path = /share/data/pub
-		 	valid users = @${SMB_GRUP}
+			[pub]
+			 	comment = Public directories
+			 	path = ${DIR_SHAR}/data/pub
+			 	valid users = @${SMB_GRUP}
 
 _EOT_
-
-	if [ ! -f ${SMB_BACK} ]; then
+		# ---------------------------------------------------------------------
 		cp -p ${SMB_CONF} ${SMB_BACK}
-		cat ${SMB_WORK} > ${SMB_CONF}
+		testparm -s ${SMB_WORK} > ${SMB_CONF}
+		funcPause $?
+	fi
+	# -------------------------------------------------------------------------
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		if [ -f /etc/init.d/samba ]; then
+			if [ "${SYS_NAME}" = "debian" ] \
+			&& [ ${SYS_VNUM} -lt 8 -a ${SYS_VNUM} -ge 0 ]; then					# Debian 8以前の判定
+				funcProc samba "${RUN_SMBD[0]}"
+			else
+				funcProc smbd "${RUN_SMBD[0]}"
+				funcProc nmbd "${RUN_SMBD[0]}"
+			fi
+			funcProc samba "${RUN_SMBD[1]}"
+		else
+			funcProc smbd "${RUN_SMBD[0]}"
+			funcProc nmbd "${RUN_SMBD[0]}"
+			funcProc smbd "${RUN_SMBD[1]}"
+			funcProc nmbd "${RUN_SMBD[1]}"
+		fi
+	else																		# Red Hat系
+		funcProc smb "${RUN_SMBD[0]}"
+		funcProc smb "${RUN_SMBD[1]}"
+		funcProc nmb "${RUN_SMBD[0]}"
+		funcProc nmb "${RUN_SMBD[1]}"
 	fi
 
-#	testparm -s
-	if [ -f /etc/init.d/samba ]; then
-		funcProc samba restart
-	else
-		funcProc nmbd restart
-		funcProc smbd restart
-	fi
-
-	if [ -f /etc/init.d/samba-ad-dc ]; then
-		funcProc samba-ad-dc restart
-	fi
-
-#------------------------------------------------------------------------------
-# Make User file (${DIR_WK}/addusers.txtが有ればそれを使う)
-#------------------------------------------------------------------------------
+	# *************************************************************************
+	# Make User file (${DIR_WK}/addusers.txtが有ればそれを使う)
+	# *************************************************************************
+	echo - Make User file --------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	rm -f ${USR_FILE}
 	rm -f ${SMB_FILE}
 	touch ${USR_FILE}
 	touch ${SMB_FILE}
-
+	# -------------------------------------------------------------------------
 	if [ ! -f ${LST_USER} ]; then
 		# Make User List File (sample) ----------------------------------------
 		cat <<- _EOT_ > ${USR_FILE}
 			Administrator:Administrator:1001::1
 _EOT_
-
-		# Make Samba User List File (pdbedit -L -w にて出力されたもの) (sample)
+		# Make Samba User List File (pdbedit -L -w にて出力) (sample) ---------
 		# administrator's password="password"
 		cat <<- _EOT_ > ${SMB_FILE}
 			administrator:1001:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:
 _EOT_
 	else
-		while read LINE
+		while IFS=: read WORKNAME FULLNAME USERIDNO PASSWORD LMPASSWD NTPASSWD ACNTFLAG CHNGTIME ADMINFLG
 		do
-			if [ "${LINE}" != "" ]; then
-				USERNAME=`echo ${LINE} | awk -F : '{print $1;}' | tr '[A-Z]' '[a-z]'`
-				FULLNAME=`echo ${LINE} | awk -F : '{print $2;}'`
-				USERIDNO=`echo ${LINE} | awk -F : '{print $3;}'`
-				PASSWORD=`echo ${LINE} | awk -F : '{print $4;}'`
-				LMPASSWD=`echo ${LINE} | awk -F : '{print $5;}'`
-				NTPASSWD=`echo ${LINE} | awk -F : '{print $6;}'`
-				ACNTFLAG=`echo ${LINE} | awk -F : '{print $7;}'`
-				CHNGTIME=`echo ${LINE} | awk -F : '{print $8;}'`
-				ADMINFLG=`echo ${LINE} | awk -F : '{print $9;}'`
-
+			USERNAME="${WORKNAME,,}"	# 全文字小文字変換
+			if [ "${USERNAME}" != "" ]; then
 				echo "${USERNAME}:${FULLNAME}:${USERIDNO}:${PASSWORD}:${ADMINFLG}"              >> ${USR_FILE}
 				echo "${USERNAME}:${USERIDNO}:${LMPASSWD}:${NTPASSWD}:${ACNTFLAG}:${CHNGTIME}:" >> ${SMB_FILE}
 			fi
 		done < ${LST_USER}
 	fi
 
-#------------------------------------------------------------------------------
-# Setup Login User
-#------------------------------------------------------------------------------
-	while read LINE
+	# *************************************************************************
+	# Setup Login User
+	# *************************************************************************
+	echo - Setup Login User ------------------------------------------------------------
+	# -------------------------------------------------------------------------
+	while IFS=: read WORKNAME FULLNAME USERIDNO PASSWORD ADMINFLG
 	do
-		USERNAME=`echo ${LINE} | awk -F : '{print $1;}' | tr '[A-Z]' '[a-z]'`
-		FULLNAME=`echo ${LINE} | awk -F : '{print $2;}'`
-		USERIDNO=`echo ${LINE} | awk -F : '{print $3;}'`
-		PASSWORD=`echo ${LINE} | awk -F : '{print $4;}'`
-		ADMINFLG=`echo ${LINE} | awk -F : '{print $5;}'`
+		USERNAME="${WORKNAME,,}"		# 全文字小文字変換
 		# Account name to be checked ------------------------------------------
-		id ${USERNAME} > /dev/null 2>&1
-		if [ $? -eq 0 ]; then
-			echo "[${USERNAME}] already exists."
-#			chown -R ${USERNAME}:${USERNAME} /share/data/usr/${USERNAME}
-#			userdel -r ${USERNAME}
-#			rm -Rf /share/data/usr/${USERNAME}
+		RET_NAME=`awk -F ':' '$1=="'${USERNAME}'" { print $1; }' /etc/passwd`
+		if [ "${RET_NAME}" != "" ]; then
+			echo "[${RET_NAME}] already exists."
 		else
 			# Add users -------------------------------------------------------
-			useradd  -b /share/data/usr -m -c "${FULLNAME}" -G ${SMB_GRUP} -u ${USERIDNO} ${USERNAME}
-			${CMD_CHSH} ${USERNAME}
+			useradd  -b ${DIR_SHAR}/data/usr -m -c "${FULLNAME}" -G ${SMB_GRUP} -u ${USERIDNO} ${USERNAME}; funcPause $?
+			${CMD_CHSH} ${USERNAME}; funcPause $?
 			if [ "${ADMINFLG}" = "1" ]; then
-				usermod -G ${SMB_GADM} -a ${USERNAME}
+				usermod -G ${SMB_GADM} -a ${USERNAME}; funcPause $?
 			fi
 			# Make user dir ---------------------------------------------------
-			mkdir -p /share/data/usr/${USERNAME}/app
-			mkdir -p /share/data/usr/${USERNAME}/dat
-			mkdir -p /share/data/usr/${USERNAME}/web/public_html
-			touch -f /share/data/usr/${USERNAME}/web/public_html/index.html
+			mkdir -p ${DIR_SHAR}/data/usr/${USERNAME}/app
+			mkdir -p ${DIR_SHAR}/data/usr/${USERNAME}/dat
+			mkdir -p ${DIR_SHAR}/data/usr/${USERNAME}/web/public_html
+			touch -f ${DIR_SHAR}/data/usr/${USERNAME}/web/public_html/index.html
 			# Change user dir mode --------------------------------------------
-			chmod -R 770 /share/data/usr/${USERNAME}
-			chown -R ${SMB_USER}:${SMB_GRUP} /share/data/usr/${USERNAME}
+			chmod -R 770 ${DIR_SHAR}/data/usr/${USERNAME}; funcPause $?
+			chown -R ${SMB_USER}:${SMB_GRUP} ${DIR_SHAR}/data/usr/${USERNAME}; funcPause $?
 		fi
 	done < ${USR_FILE}
-
+	# -------------------------------------------------------------------------
 	echo --- ${SMB_GRUP} ---------------------------------------------------------------
-	cat /etc/group | awk -F : '$1=="'${SMB_GRUP}'" {print $4;}'
-#	groupmems -l -g ${SMB_GRUP}
+	awk -F ':' '$1=="'${SMB_GRUP}'" {print $4;}' /etc/group
 	echo --- ${SMB_GADM} ---------------------------------------------------------------
-	cat /etc/group | awk -F : '$1=="'${SMB_GADM}'" {print $4;}'
-#	groupmems -l -g ${SMB_GADM}
+	awk -F ':' '$1=="'${SMB_GADM}'" {print $4;}' /etc/group
 	echo ------------------------------------------------------------------------------
 
-#------------------------------------------------------------------------------
-# Setup Samba User
-#------------------------------------------------------------------------------
-	SMB_PWDB=`find /var/lib/samba/ -name passdb.tdb -print`
-#	USR_LIST=`pdbedit -L | awk -F : '{print $1;}'`
-#	for USR_NAME in ${USR_LIST}
-#	do
-#		pdbedit -x -u ${USR_NAME}
-#	done
+	# *************************************************************************
+	# Setup Samba User
+	# *************************************************************************
+	echo - Setup Samba User ------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	pdbedit -i smbpasswd:${SMB_FILE} -e tdbsam:${SMB_PWDB}
 	funcPause $?
 
-#------------------------------------------------------------------------------
-# Cron (cd /usr/sh 後に tar -cz CMD*sh | xxd -ps にて出力されたもの)
-#------------------------------------------------------------------------------
+	# *************************************************************************
+	# Cron shell (cd /usr/sh 後に tar -cz CMD*sh | xxd -ps にて出力されたもの)
+	# *************************************************************************
+	echo - Cron shell ------------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	cat <<- _EOT_ > ${TGZ_WORK}
 		1f8b0800dea99f5a0003ed5c7d5313491ae7dfcca7e81de1d0dd0a939924
 		c4838a5748a2a00cb192b09ee552189281a40c099799a0ac47152487e2db
@@ -1174,16 +1521,17 @@ _EOT_
 		60c182050b162c58b060c182050b162c58b060c182050b162c58b060c182
 		054b73e57f56a7191f00780000
 _EOT_
-
+	# -------------------------------------------------------------------------
 	pushd /usr/sh > /dev/null
 		xxd -r -p ${TGZ_WORK} | tar -xz
 		funcPause $?
 		ls -al
 	popd > /dev/null
 
-#------------------------------------------------------------------------------
-# Cron
-#------------------------------------------------------------------------------
+	# *************************************************************************
+	# Crontab
+	# *************************************************************************
+	echo - Crontab ---------------------------------------------------------------------
 	cat <<- _EOT_ > ${CRN_FILE}
 		SHELL = /bin/bash
 		PATH = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -1194,136 +1542,144 @@ _EOT_
 		# 0 1 * * * /usr/sh/CMDFRESHCLAM.sh
 		# 0 3 * * * /usr/sh/CMDRSYNC.sh
 _EOT_
-
+	# -------------------------------------------------------------------------
 	crontab ${CRN_FILE}
 	funcPause $?
 
-#------------------------------------------------------------------------------
-# GRUB
-#   注)高解像度にならない場合は.vmxに以下を追加してみる。
-#     svga.minVRAMSize = 8388608
-#     svga.minVRAM8MB = TRUE
-#   計算式)
-#     MRAM = XRez * YRez * 4 / 65536
-#     VRAM = (int(MRAM) + (int(MRAM) != MRAM)) * 65536
-#     svga.minVRAMSize = VRAM
-#   例) 2560 x 2048 の場合
-#     vmotion.checkpointSVGAPrimarySize = "20971520"
-#     svga.guestBackedPrimaryAware = "TRUE"
-#     svga.minVRAMSize = "20971520"
-#     svga.minVRAM8MB = TRUE
-#     svga.autodetect = "FALSE"
-#     svga.maxWidth = "2560"
-#     svga.maxHeight = "2048"
-#     svga.vramSize = "20971520"
-#------------------------------------------------------------------------------
-	if [ -f /etc/default/grub ]; then
-		if [ ! -f /etc/default/grub.orig ]; then
-			sed -i.orig /etc/default/grub                                                                 \
-				-e 's/^GRUB_CMDLINE_LINUX_DEFAULT/#&/'                                                    \
-				-e "s/#GRUB_GFXMODE=640x480/GRUB_GFXPAYLOAD_LINUX=${VGA_RESO}\nGRUB_GFXMODE=${VGA_RESO}/"
-
+	# *************************************************************************
+	# GRUB
+	#   注)高解像度にならない場合は.vmxに以下を追加してみる。
+	#     svga.minVRAMSize = 8388608
+	#     svga.minVRAM8MB = TRUE
+	#   計算式)
+	#     MRAM = XRez * YRez * 4 / 65536
+	#     VRAM = (int(MRAM) + (int(MRAM) != MRAM)) * 65536
+	#     svga.minVRAMSize = VRAM
+	#   例) 2560 x 2048 の場合
+	#     vmotion.checkpointSVGAPrimarySize = "20971520"
+	#     svga.guestBackedPrimaryAware = "TRUE"
+	#     svga.minVRAMSize = "20971520"
+	#     svga.minVRAM8MB = TRUE
+	#     svga.autodetect = "FALSE"
+	#     svga.maxWidth = "2560"
+	#     svga.maxHeight = "2048"
+	#     svga.vramSize = "20971520"
+	# -------------------------------------------------------------------------
+	#     番号 解像度：色数
+	# vga=771  800×600：256色
+	#     773  1024×768：256色
+	#     775  1280×1024：色
+	#     788  800×600：6万5000色
+	#     791  1024×768：6万5000色
+	#     794  1280×1024：6万5000色
+	#     789  800×600：1600万色
+	#     792  1024×768：1600万色
+	#     795  1280×1024：1600万色
+	# *************************************************************************
+	if [ -f /etc/default/grub ] && [ ! -f /etc/default/grub.orig ]; then
+		echo - GRUB ------------------------------------------------------------------------
+		if [ ${FLG_RHAT} -eq 0 ]; then											# 非Red Hat系
+			sed -i.orig /etc/default/grub                                                             \
+			    -e 's/^GRUB_CMDLINE_LINUX_DEFAULT/#&/'                                                \
+			    -e "s/#\(GRUB_GFXMODE\)=.*$/GRUB_GFXPAYLOAD_LINUX=${VGA_RESO[0]}\n\1=${VGA_RESO[0]}/"
+			# -----------------------------------------------------------------
 			update-grub
 			funcPause $?
+		else																	# Red Hat系
+			sed -i.orig /etc/default/grub                    \
+			    -e '/^GRUB_TERMINAL_OUTPUT/ s/console//'     \
+			    -e '/^GRUB_CMDLINE_LINUX/ s/ rhgb quiet//'   \
+			    -e "\$aGRUB_GFXPAYLOAD_LINUX=${VGA_RESO[0]}" \
+			    -e "\$aGRUB_GFXMODE=${VGA_RESO[0]}"
+			# -----------------------------------------------------------------
+			if [ -f /boot/efi/EFI/centos/grub.cfg ]; then						# efi
+				grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+				funcPause $?
+			else																# mbr
+				grub2-mkconfig -o /boot/grub2/grub.cfg
+				funcPause $?
+			fi
 		fi
 	fi
 
-#------------------------------------------------------------------------------
-# Disable IPv6
-#------------------------------------------------------------------------------
-#	if [ ! -f /etc/sysctl.conf.orig ]; then
-#		cp -p /etc/sysctl.conf /etc/sysctl.conf.orig
-#		cat <<- _EOT_ >> /etc/sysctl.conf
-#			# -----------------------------------------------------------------------------
-#			# Disable IPv6
-#			net.ipv6.conf.all.disable_ipv6 = 1
-#			net.ipv6.conf.default.disable_ipv6 = 1
-#			net.ipv6.conf.lo.disable_ipv6 = 1
-#			# -----------------------------------------------------------------------------
-#_EOT_
-#	fi
-#
-#	sysctl -p
-#	ifconfig
-#	ip a show
-#
-#------------------------------------------------------------------------------
-# Install VMware Tools
-#------------------------------------------------------------------------------
+	# *************************************************************************
+	# Install VMware Tools
+	# *************************************************************************
 	if [ ${FLG_VMTL} -ne 0 ]; then
-		VMW_CD=${MNT_CD}/VMwareTools-*.tar.gz
-		mount ${DEV_CD} ${MNT_CD}
-		if [ ! -f ${VMW_CD} ]; then
-			if [ "`apt-cache search open-vm-tools-desktop`" = "" ]; then
-				${CMD_AGET} install open-vm-tools open-vm-tools-dev open-vm-tools-dkms
+		echo - Install VMware Tools --------------------------------------------------------
+		# ---------------------------------------------------------------------
+		if [ "`which vmware-checkvm 2> /dev/null`" = "" ]; then
+			if [ "`${CMD_AGET} search open-vm-tools-desktop`" = "" ]; then
+				${CMD_AGET} install open-vm-tools
 				funcPause $?
 			else
-				${CMD_AGET} install open-vm-tools open-vm-tools-desktop open-vm-tools-dev open-vm-tools-dkms
+				${CMD_AGET} install open-vm-tools open-vm-tools-desktop
 				funcPause $?
 			fi
-			mkdir -p /mnt/hgfs
-			if [ ! -f /etc/fstab.vmware ]; then
-				cp -p /etc/fstab /etc/fstab.vmware
-				if [ "`which vmhgfs-fuse`" != "" ]; then
-					HGFS_FS="fuse.vmhgfs-fuse"
-				else
-					HGFS_FS="vmhgfs"
-				fi
-				cat <<- _EOT_ >> /etc/fstab
-					.host:/ /mnt/hgfs ${HGFS_FS} allow_other,auto_unmount,defaults 0 0
+		fi
+		# ---------------------------------------------------------------------
+		mkdir -p /mnt/hgfs
+		# ---------------------------------------------------------------------
+		if [ ! -f /etc/fstab.vmware ]; then
+			if [ "`which vmhgfs-fuse 2> /dev/null`" != "" ]; then
+				HGFS_FS="fuse.vmhgfs-fuse"
+			else
+				HGFS_FS="vmhgfs"
+			fi
+			# -----------------------------------------------------------------
+			cp -p /etc/fstab /etc/fstab.vmware
+			cat <<- _EOT_ >> /etc/fstab
+				.host:/ /mnt/hgfs ${HGFS_FS} allow_other,auto_unmount,defaults 0 0
 _EOT_
-			fi
-#			wget "https://packages.vmware.com/tools/keys/VMWARE-PACKAGING-GPG-DSA-KEY.pub"
-#			wget "https://packages.vmware.com/tools/keys/VMWARE-PACKAGING-GPG-RSA-KEY.pub"
-#			apt-key add ./VMWARE-PACKAGING-GPG-DSA-KEY.pub
-#			apt-key add ./VMWARE-PACKAGING-GPG-RSA-KEY.pub
-#			cat <<- _EOT_ > /etc/apt/sources.list.d/vmware-tools.list
-#				deb https://packages.vmware.com/packages/ubuntu precise main
-#_EOT_
-#			${CMD_AGET} update
-#			${CMD_AGET} install open-vm-tools-deploypkg
-		else
-			if [ ! -d /usr/src/linux-headers-`uname -r` ]; then
-				${CMD_AGET} install linux-headers-`uname -r`
-				funcPause $?
-			fi
-			tar -xzf ${VMW_CD}
-			umount ${MNT_CD}
-			${DIR_WK}/vmware-tools-distrib/vmware-install.pl -d -f
-			funcPause $?
 		fi
 	fi
 
-#------------------------------------------------------------------------------
-# RAID Status
-#------------------------------------------------------------------------------
+	# *************************************************************************
+	# RAID Status
+	# *************************************************************************
 	if [ -f /proc/mdstat ]; then
-		echo --- /proc/mdstat --------------------------------------------------------------
+		echo - RAID Status -----------------------------------------------------------------
+		# ---------------------------------------------------------------------
+		echo --- cat /proc/mdstat ----------------------------------------------------------
 		cat /proc/mdstat
-		echo --- /proc/mdstat --------------------------------------------------------------
+		echo --- cat /proc/mdstat ----------------------------------------------------------
 	fi
 
-#------------------------------------------------------------------------------
-# Termination
-#------------------------------------------------------------------------------
+	# *************************************************************************
+	# Termination
+	# *************************************************************************
+	echo - Termination -----------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	rm -f ${TGZ_WORK}
 	rm -f ${CRN_FILE}
 	rm -f ${USR_FILE}
 	rm -f ${SMB_FILE}
 	rm -f ${SMB_WORK}
-#	popd > /dev/null
-
+	# --- SELinux を有効にしている場合 ----------------------------------------
+	if [ ${FLG_RHAT} -ne 0 ]; then
+		setsebool -P ftpd_full_access on										# vsftpd
+		setsebool -P samba_enable_home_dirs on									# smb
+#		restorecon -R ${DIR_SHAR}
+		chcon -R -t samba_share_t ${DIR_SHAR}/
+	fi
+	# -------------------------------------------------------------------------
 #	systemctl list-unit-files -t service
 #	systemctl -t service
-
-	if [ "`which groupmems`" != "" ]; then
-		USR_SUDO=`groupmems -l -g sudo`
-	else
-		USR_SUDO=`cat /etc/group | grep sudo | awk -F : '{ print $4;}' | sed 's/,/\n/g'`
+	# -------------------------------------------------------------------------
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		GRP_SUDO=sudo
+	else																		# Red Hat系
+		GRP_SUDO=wheel
 	fi
-
+	# -------------------------------------------------------------------------
+	if [ "`which groupmems 2> /dev/null`" != "" ]; then
+		USR_SUDO=`groupmems -l -g ${GRP_SUDO}`
+	else
+		USR_SUDO=`awk -F ':' -v ORS="," '$1=="'${GRP_SUDO}'" {print $4;}' /etc/group | sed -e 's/,$//'`
+	fi
+	# -------------------------------------------------------------------------
 	if [ "${USR_SUDO}" != "" ]; then
-		echo "=== 以下のユーザーが sudo に属しています。 ===================================="
+		echo "=== 以下のユーザーが ${GRP_SUDO} に属しています。 ===================================="
 		echo ${USR_SUDO}
 		echo "==============================================================================="
 		while :
@@ -1335,13 +1691,16 @@ _EOT_
 					${CMD_CHSH} root
 					if [ $? -ne 0 ]; then
 						echo "変更に失敗しました。"
+						echo "==============================================================================="
 					else
 						echo "変更を実行しました。"
+						echo "==============================================================================="
 						break
 					fi
 					;;
 				"no" )
 					echo "変更を中止しました。"
+					echo "==============================================================================="
 					break
 					;;
 				* )
@@ -1350,28 +1709,324 @@ _EOT_
 		done
 	fi
 
-#------------------------------------------------------------------------------
-# Backup
-#------------------------------------------------------------------------------
+	# *************************************************************************
+	# Backup
+	# *************************************************************************
+	echo - Backup ----------------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	pushd / > /dev/null
+		set +e
 		tar -czf ${DIR_WK}/bk_boot.tgz   --exclude "bk_*.tgz" boot
 		tar -czf ${DIR_WK}/bk_etc.tgz    --exclude "bk_*.tgz" etc
 		tar -czf ${DIR_WK}/bk_home.tgz   --exclude "bk_*.tgz" home
 		tar -czf ${DIR_WK}/bk_share.tgz  --exclude "bk_*.tgz" share
 		tar -czf ${DIR_WK}/bk_usr_sh.tgz --exclude "bk_*.tgz" usr/sh
-		tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/cache/bind/
-		tar -czf ${DIR_WK}/bk_cron.tgz   --exclude "bk_*.tgz" var/spool/cron/crontabs
+		# ---------------------------------------------------------------------
+		if [ ${FLG_RHAT} -eq 0 ]; then											# 非Red Hat系
+			tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/cache/bind/
+			tar -czf ${DIR_WK}/bk_cron.tgz   --exclude "bk_*.tgz" var/spool/cron/crontabs
+		else																	# Red Hat系
+			tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/named/
+			tar -czf ${DIR_WK}/bk_cron.tgz   --exclude "bk_*.tgz" var/spool/cron/root
+		fi
+		set -e
 	popd > /dev/null
+}
 
-#------------------------------------------------------------------------------
+# Debug :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+funcDebug () {
+	echo - Debug mode ------------------------------------------------------------------
+	echo "NOW_DATE=${NOW_DATE}"													# yyyy/mm/dd
+	echo "NOW_TIME=${NOW_TIME}"													# yyyymmddhhmmss
+	echo "PGM_NAME=${PGM_NAME}"													# プログラム名
+	echo "WHO_AMI =${WHO_AMI}"													# 実行ユーザー名
+	echo "WHO_USER=${WHO_USER[@]}"												# ログイン中ユーザ一覧
+	echo "VGA_RESO=${VGA_RESO[@]}"												# コンソールの解像度：縦×横×色
+	echo "DIR_SHAR=${DIR_SHAR}"													# 共有ディレクトリーのルート
+	echo "RUN_CLAM=${RUN_CLAM[@]}"												# 起動停止設定：clamav-freshclam
+	echo "RUN_SSHD=${RUN_SSHD[@]}"												#   〃        ：ssh / sshd
+	echo "RUN_HTTP=${RUN_HTTP[@]}"												#   〃        ：apache2 / httpd
+	echo "RUN_FTPD=${RUN_FTPD[@]}"												#   〃        ：vsftpd
+	echo "RUN_BIND=${RUN_BIND[@]}"												#   〃        ：bind9 / named
+	echo "RUN_DHCP=${RUN_DHCP[@]}"												#   〃        ：isc-dhcp-server / dhcpd
+	echo "RUN_SMBD=${RUN_SMBD[@]}"												#   〃        ：samba / smbd,nmbd / smb,nmb
+	echo "RUN_WMIN=${RUN_WMIN[@]}"												#   〃        ：webmin
+	echo "FLG_RHAT=${FLG_RHAT}"													# CentOS時=1,その他=0
+	echo "FLG_SVER=${FLG_SVER}"													# 0以外でサーバー仕様でセッティング
+	echo "DEF_USER=${DEF_USER}"													# インストール時に作成したユーザー名
+	echo "SYS_NAME=${SYS_NAME}"													# ディストリビューション名
+	echo "SYS_VRID=${SYS_VRID}"													# バージョン番号
+	echo "SYS_VNUM=${SYS_VNUM}"													#   〃          (取得できない場合は-1)
+	echo "SMB_USER=${SMB_USER}"													# smb.confのforce user
+	echo "SMB_GRUP=${SMB_GRUP}"													# smb.confのforce group
+	echo "SMB_GADM=${SMB_GADM}"													# smb.confのadmin group
+	echo "WWW_DATA=${WWW_DATA}"													# apach2 / httpdのユーザ名
+	echo "CPU_TYPE=${CPU_TYPE}"													# CPU TYPE (x86_64/armv5tel/...)
+	echo "SVR_FQDN=${SVR_FQDN}"													# 本機のFQDN
+	echo "SVR_NAME=${SVR_NAME}"													# 本機のホスト名
+	echo "WGP_NAME=${WGP_NAME}"													# ワークグループ名(ドメイン名)
+	echo "CON_NAME=${CON_NAME}"													# 接続名
+	echo "CON_UUID=${CON_UUID}"													# 接続UUID
+	echo "NIC_ARRY=${NIC_ARRY[@]}"												# NICデバイス名
+	echo "IP4_ARRY=${IP4_ARRY[@]}"												# IPv4:IPアドレス/サブネットマスク(bit)
+	echo "IP6_ARRY=${IP6_ARRY[@]}"												# IPv6:IPアドレス/サブネットマスク(bit)
+	echo "LNK_ARRY=${LNK_ARRY[@]}"												# Link:IPアドレス/サブネットマスク(bit)
+	echo "IP4_DHCP=${IP4_DHCP[@]}"												# IPv4:DHCPフラグ(1:dhcp/0:static)
+	echo "IP6_DHCP=${IP6_DHCP[@]}"												# IPv6:DHCPフラグ(1:dhcp/0:static)
+	echo "IP4_DNSA=${IP4_DNSA[@]}"												# IPv4:DNSアドレス
+	echo "IP6_DNSA=${IP6_DNSA[@]}"												# IPv6:DNSアドレス
+	echo "IP4_GATE=${IP4_GATE}"													# IPv4:デフォルトゲートウェイ
+	echo "IP4_ADDR=${IP4_ADDR[@]}"												# IPv4:IPアドレス
+	echo "IP4_BITS=${IP4_BITS[@]}"												# IPv4:サブネットマスク(bit)
+	echo "IP4_UADR=${IP4_UADR[@]}"												# IPv4:本機のIPアドレスの上位値(/24決め打ち)
+	echo "IP4_LADR=${IP4_LADR[@]}"												# IPv4:本機のIPアドレスの下位値
+	echo "IP4_LGAT=${IP4_LGAT[@]}"												# IPv4:デフォルトゲートウェイの下位値
+	echo "IP4_RADR=${IP4_RADR[@]}"												# IPv4:BIND逆引き用
+	echo "IP4_NTWK=${IP4_NTWK[@]}"												# IPv4:ネットワークアドレス
+	echo "IP4_BCST=${IP4_BCST[@]}"												# IPv4:ブロードキャストアドレス
+	echo "IP4_MASK=${IP4_MASK[@]}"												# IPv4:サブネットマスク
+	echo "IP6_ADDR=${IP6_ADDR[@]}"												# IPv6:IPアドレス
+	echo "IP6_BITS=${IP6_BITS[@]}"												# IPv6:サブネットマスク(bit)
+	echo "IP6_CONV=${IP6_CONV[@]}"												# IPv6:補間済みアドレス
+	echo "IP6_UADR=${IP6_UADR[@]}"												# IPv6:本機のIPアドレスの上位値(/64決め打ち)
+	echo "IP6_LADR=${IP6_LADR[@]}"												# IPv6:本機のIPアドレスの下位値
+	echo "IP6_RADU=${IP6_RADU[@]}"												# IPv6:BIND逆引き用上位値
+	echo "IP6_RADL=${IP6_RADL[@]}"												# IPv6:BIND逆引き用下位値
+	echo "LNK_ADDR=${LNK_ADDR[@]}"												# Link:IPアドレス
+	echo "LNK_BITS=${LNK_BITS[@]}"												# Link:サブネットマスク(bit)
+	echo "LNK_CONV=${LNK_CONV[@]}"												# Link:補間済みアドレス
+	echo "LNK_UADR=${LNK_UADR[@]}"												# Link:本機のIPアドレスの上位値(/64決め打ち)
+	echo "LNK_LADR=${LNK_LADR[@]}"												# Link:本機のIPアドレスの下位値
+	echo "LNK_RADU=${LNK_RADU[@]}"												# Link:BIND逆引き用上位値
+	echo "LNK_RADL=${LNK_RADL[@]}"												# Link:BIND逆引き用下位値
+	echo "RNG_DHCP=${RNG_DHCP}"													# IPv4:DHCPの提供アドレス範囲
+#	echo "DST_NAME=${DST_NAME}"													# ワーク：
+#	echo "MNT_FD  =${MNT_FD}"													#  〃   ：
+#	echo "MNT_CD  =${MNT_CD}"													#  〃   ：
+	echo "DEV_CD  =${DEV_CD}"													#  〃   ：
+	echo "DIR_WK  =${DIR_WK}"													#  〃   ：
+	echo "LST_USER=${LST_USER}"													#  〃   ：
+#	echo "LOG_FILE=${LOG_FILE}"													#  〃   ：
+	echo "TGZ_WORK=${TGZ_WORK}"													#  〃   ：
+	echo "CRN_FILE=${CRN_FILE}"													#  〃   ：
+	echo "USR_FILE=${USR_FILE}"													#  〃   ：
+	echo "SMB_FILE=${SMB_FILE}"													#  〃   ：
+	echo "SMB_WORK=${SMB_WORK}"													#  〃   ：
+#	echo "SVR_NAME=${SVR_NAME}"													#  〃   ：
+	echo "FLG_VMTL=${FLG_VMTL}"													#  〃   ：0以外でVMware Toolsをインストール
+	echo "NUM_HDDS=${NUM_HDDS}"													#  〃   ：インストール先のHDD台数
+	echo "DEV_ARRY=${DEV_ARRY[@]}"												#  〃   ：
+	echo "HDD_ARRY=${HDD_ARRY[@]}"												#  〃   ：
+	echo "USB_ARRY=${USB_ARRY[@]}"												#  〃   ：
+#	echo "DEV_RATE=${DEV_RATE[@]}"												#  〃   ：
+#	echo "DEV_TEMP=${DEV_TEMP[@]}"												#  〃   ：
+	echo "CMD_AGET=${CMD_AGET}"													#  〃   ：
+	echo "LIN_CHSH=${LIN_CHSH}"													#  〃   ：
+	echo "CMD_CHSH=${CMD_CHSH}"													#  〃   ：
+	echo "FILE_USERDIRCONF=${FILE_USERDIRCONF}"									#  〃   ：
+	echo "FILE_VSFTPDCONF=${FILE_VSFTPDCONF}"									#  〃   ：
+	echo "DIR_VSFTPD=${DIR_VSFTPD}"												#  〃   ：
+	echo "DIR_BIND=${DIR_BIND}"													#  〃   ：
+	echo "DIR_ZONE=${DIR_ZONE}"													#  〃   ：
+	echo "SMB_PWDB=${SMB_PWDB}"													#  〃   ：
+	echo "SMB_CONF=${SMB_CONF}"													#  〃   ：
+	echo "SMB_BACK=${SMB_BACK}"													#  〃   ：
+	echo "VER_WMIN=${VER_WMIN}"													#  〃   ：最新Ver.またはカレントのファイル名
+	echo "SET_WMIN=${SET_WMIN}"													#  〃   ：
+	echo "URL_WMIN=${URL_WMIN}"													#  〃   ：
+	# Network Setup ***********************************************************
+	if [ -f /etc/network/interfaces ]; then
+		echo --- cat /etc/network/interfaces -----------------------------------------------
+		expand -t 4 /etc/network/interfaces
+		if [ -f /etc/network/interfaces.orig ]; then
+			echo --- diff /etc/network/interfaces ----------------------------------------------
+			funcDiff /etc/network/interfaces /etc/network/interfaces.orig
+		fi
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+	echo --- cat /etc/hosts ------------------------------------------------------------
+	expand -t 4 /etc/hosts
+	if [ -f /etc/hosts.orig ]; then
+		echo --- diff /etc/hosts -----------------------------------------------------------
+		funcDiff /etc/hosts /etc/hosts.orig
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+	if [ -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
+		echo --- cat /etc/NetworkManager/system-connections/${CON_NAME} -------------
+		expand -t 4 "/etc/NetworkManager/system-connections/${CON_NAME}"
+		if [ -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
+			echo --- diff /etc/NetworkManager/system-connections/${CON_NAME} ------------
+			funcDiff "/etc/NetworkManager/system-connections/${CON_NAME}" "/etc/NetworkManager/system-connections/${CON_NAME}.orig"
+		fi
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+	if [ -f /etc/resolv.conf ]; then
+		echo --- cat /etc/resolv.conf ------------------------------------------------------
+		expand -t 4 /etc/resolv.conf
+		if [ -f /etc/resolv.conf.orig ]; then
+			echo --- diff /etc/resolv.conf -----------------------------------------------------
+			funcDiff /etc/resolv.conf /etc/resolv.conf.orig
+		fi
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+#	echo --- cat /etc/hosts.allow ------------------------------------------------------
+#	expand -t 4 /etc/hosts.allow
+	if [ -f /etc/hosts.allow.orig ]; then
+		echo --- diff /etc/hosts.allow -----------------------------------------------------
+		funcDiff /etc/hosts.allow /etc/hosts.allow.orig
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+#	echo --- cat /etc/hosts.deny -------------------------------------------------------
+#	expand -t 4 /etc/hosts.deny
+	if [ -f /etc/hosts.deny.orig ]; then
+		echo --- diff /etc/hosts.deny ------------------------------------------------------
+		funcDiff /etc/hosts.deny /etc/hosts.deny.orig
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+#	echo --- cat /etc/nsswitch.conf ----------------------------------------------------
+#	expand -t 4 /etc/nsswitch.conf
+	if [ -f /etc/nsswitch.conf ] && [ -f /etc/nsswitch.conf.orig ]; then
+		echo --- diff /etc/nsswitch.conf ---------------------------------------------------
+		funcDiff /etc/nsswitch.conf /etc/nsswitch.conf.orig
+	fi
+	# Install clamav **********************************************************
+	FILE_FRESHCONF=`find /etc -name "freshclam.conf" -type f -print`
+	if [ "${FILE_FRESHCONF}" != "" ]; then
+		FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
+#		echo --- cat ${FILE_FRESHCONF} ----------------------------------------------------
+#		expand -t 4 ${FILE_FRESHCONF}
+		if [ -f ${FILE_FRESHCONF}.orig ]; then
+			echo --- diff ${FILE_FRESHCONF} ------------------------------------------
+			funcDiff ${FILE_FRESHCONF} ${FILE_FRESHCONF}.orig
+		fi
+		if [ -f ${FILE_CLAMDCONF} ]; then
+			echo --- cat ${FILE_CLAMDCONF} ----------------------------------------------------
+			expand -t 4 ${FILE_CLAMDCONF}
+		fi
+	fi
+	# Install ssh *************************************************************
+#	echo --- cat /etc/ssh/sshd_config --------------------------------------------------
+#	expand -t 4 /etc/ssh/sshd_config
+	if [ -f /etc/ssh/sshd_config.orig ]; then
+		echo --- diff /etc/ssh/sshd_config -------------------------------------------------
+		funcDiff /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
+	fi
+	# Install apache2 *********************************************************
+#	echo --- cat ${FILE_USERDIRCONF} --------------------------------
+#	expand -t 4 ${FILE_USERDIRCONF}
+	if [ -f ${FILE_USERDIRCONF}.orig ]; then
+		echo --- diff ${FILE_USERDIRCONF} ----------------------------------------
+		funcDiff ${FILE_USERDIRCONF} ${FILE_USERDIRCONF}.orig
+	fi
+	# Install vsftpd **********************************************************
+#	echo --- cat ${DIR_VSFTPD}/vsftpd.conf ------------------------------------------------------
+#	expand -t 4 ${DIR_VSFTPD}/vsftpd.conf
+	if [ -f ${DIR_VSFTPD}/vsftpd.conf.orig ]; then
+		echo --- diff ${DIR_VSFTPD}/vsftpd.conf ----------------------------------
+		funcDiff ${DIR_VSFTPD}/vsftpd.conf ${DIR_VSFTPD}/vsftpd.conf.orig
+	fi
+	# Install bind9 ***********************************************************
+	if [ -f ${DIR_ZONE}/${WGP_NAME}.zone ]; then
+		echo --- cat ${DIR_ZONE}/${WGP_NAME}.zone --------------------------------
+		expand -t 4 ${DIR_ZONE}/${WGP_NAME}.zone
+	fi
+	if [ -f ${DIR_ZONE}/${WGP_NAME}.rev ]; then
+		echo --- cat ${DIR_ZONE}/${WGP_NAME}.rev ---------------------------------
+		expand -t 4 ${DIR_ZONE}/${WGP_NAME}.rev
+	fi
+	if [ -f ${DIR_ZONE}/${IP6_UADR}.rev ]; then
+		echo --- cat ${DIR_ZONE}/${IP6_UADR}.rev ---------------------------------
+		expand -t 4 ${DIR_ZONE}/${IP6_UADR}.rev
+	fi
+	if [ -f ${DIR_ZONE}/${LNK_UADR}.rev ]; then
+		echo --- cat ${DIR_ZONE}/${LNK_UADR}.rev ---------------------------------
+		expand -t 4 ${DIR_ZONE}/${LNK_UADR}.rev
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+	echo --- cat ${DIR_BIND}/named.conf --------------------------------------------------
+	expand -t 4 ${DIR_BIND}/named.conf
+	if [ -f ${DIR_BIND}/named.conf.orig ]; then
+		echo --- diff ${DIR_BIND}/named.conf -------------------------------------
+		funcDiff ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.orig
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+	if [ -f ${DIR_BIND}/named.conf.local ]; then
+		echo --- cat ${DIR_BIND}/named.conf.local --------------------------------------------
+		expand -t 4 ${DIR_BIND}/named.conf.local
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+	echo --- dns check -----------------------------------------------------------------
+	dig ${SVR_NAME}.${WGP_NAME} A +nostats +nocomments
+	echo ･･･････････････････････････････････････････････････････････････････････････････
+	dig ${SVR_NAME}.${WGP_NAME} AAAA +nostats +nocomments
+	echo ･･･････････････････････････････････････････････････････････････････････････････
+	dig -x ${IP4_ADDR[0]} +nostats +nocomments
+	echo ･･･････････････････････････････････････････････････････････････････････････････
+	dig -x ${IP6_ADDR[0]} +nostats +nocomments
+	echo ･･･････････････････････････････････････････････････････････････････････････････
+	dig -x ${LNK_ADDR[0]} +nostats +nocomments
+	echo --- dns check -----------------------------------------------------------------
+	# Install dhcp ************************************************************
+	echo --- diff /etc/dhcp/dhcpd.conf -------------------------------------------------
+	expand -t 4 /etc/dhcp/dhcpd.conf
+#	funcDiff /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
+	# Install Webmin **********************************************************
+	if [ -f /etc/webmin/config.orig ]; then
+		echo --- diff /etc/webmin/config ---------------------------------------------------
+		funcDiff /etc/webmin/config /etc/webmin/config.orig
+	fi
+	if [ -f /etc/webmin/time/config.orig ]; then
+		echo --- diff /etc/webmin/time/config ----------------------------------------------
+		funcDiff /etc/webmin/time/config /etc/webmin/time/config.orig
+	fi
+	# Add smb.conf ************************************************************
+	echo --- cat ${SMB_CONF} -------------------------------------------------
+	expand -t 4 ${SMB_CONF}
+	# Setup Samba User ********************************************************
+	echo --- pdbedit -L ----------------------------------------------------------------
+	pdbedit -L
+	# GRUB ********************************************************************
+	if [ -f /etc/default/grub.orig ]; then
+		echo --- diff /etc/default/grub ----------------------------------------------------
+		funcDiff /etc/default/grub /etc/default/grub.orig
+	fi
+	# Install VMware Tools ****************************************************
+	if [ -f /etc/fstab.vmware ]; then
+		echo --- diff /etc/fstab /etc/fstab.vmware -----------------------------------------
+		funcDiff /etc/fstab /etc/fstab.vmware
+	fi
+}
+
+# *****************************************************************************
+# Main処理                                                                    *
+# *****************************************************************************
+	# Common ------------------------------------------------------------------
+	funcInitialize
+	if [ ${DBG_FLAG} -lt 2 ]; then												# 引数<=1又は無しでmain処理
+		# Main ----------------------------------------------------------------
+		funcMain
+	else																		# 引数>=2でdebug処理のみ
+		funcDebug
+	fi
+	# -------------------------------------------------------------------------
+	echo --- End -----------------------------------------------------------------------
+
+# *****************************************************************************
 # Exit
-#------------------------------------------------------------------------------
+# *****************************************************************************
+	echo "*******************************************************************************"
+	echo "`date +"%Y/%m/%d %H:%M:%S"` 設定処理が終了しました。"
+	echo " [ sudo reboot ] して下さい。"
+	echo "*******************************************************************************"
+
 	exit 0
 
 ###############################################################################
 # memo                                                                        #
 ###############################################################################
-# sudo apt-get update && sudo apt-get -y upgrade && sudo apt-get -y dist-upgrade
+# sudo apt update && sudo apt -y upgrade
+# -----------------------------------------------------------------------------
+# <参照> http://tech.nikkeibp.co.jp/it/article/COLUMN/20060227/230881/
 #==============================================================================
 # End of file                                                                 =
 #==============================================================================

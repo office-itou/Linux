@@ -19,6 +19,8 @@
 ##	   日付       版         名前      改訂内容
 ##	---------- -------- -------------- ----------------------------------------
 ##	2018/05/01 000.0000 J.Itou         新規作成
+##	2018/05/11 000.0000 J.Itou         不具合修正
+##	2018/05/11 000.0000 J.Itou         debian testing/CentOS 1804追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -41,6 +43,7 @@
 	    "debian debian-7.11.0-amd64-DVD-1      http://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso        preseed_debian.cfg"   \
 	    "debian debian-8.10.0-amd64-DVD-1      http://cdimage.debian.org/cdimage/archive/8.10.0/amd64/iso-dvd/debian-8.10.0-amd64-DVD-1.iso        preseed_debian.cfg"   \
 	    "debian debian-9.4.0-amd64-DVD-1       http://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-9.4.0-amd64-DVD-1.iso        preseed_debian.cfg"   \
+	    "debian debian-testing-amd64-DVD-1     http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso        preseed_debian.cfg"   \
 	    "ubuntu ubuntu-14.04.5-server-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-server-amd64.iso    preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-14.04.5-desktop-amd64   https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-desktop-amd64.iso   preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-16.04.4-server-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.4-server-amd64.iso    preseed_ubuntu.cfg"   \
@@ -50,7 +53,7 @@
 	    "ubuntu ubuntu-18.04-server-amd64      http://cdimage.ubuntu.com/releases/18.04/release/ubuntu-18.04-server-amd64.iso                      preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-18.04-desktop-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04-desktop-amd64.iso     preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-18.04-live-server-amd64 https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04-live-server-amd64.iso preseed_ubuntu.cfg"   \
-	    "centos CentOS-7-x86_64-DVD-1708       https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.4.1708/isos/x86_64/CentOS-7-x86_64-DVD-1708.iso  kickstart_centos.cfg" \
+	    "centos CentOS-7-x86_64-DVD-1804       https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.5.1804/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso  kickstart_centos.cfg" \
 	)   # 区分  DVDファイル名                  ダウンロード先URL                                                                                   定義ファイル
 # -----------------------------------------------------------------------------
 funcMenu () {
@@ -59,16 +62,17 @@ funcMenu () {
 	echo "#  1：debian-7.11.0-amd64-DVD-1     ：2013-05-04：2018-05-31：oldoldstable   #"
 	echo "#  2：debian-8.10.0-amd64-DVD-1     ：2015-04-25：2020-04-xx：oldstable      #"
 	echo "#  3：debian-9.4.0-amd64-DVD-1      ：2017-06-17：2022-xx-xx：stable         #"
-	echo "#  4：ubuntu-14.04.5-server-amd64   ：2014-04-17：2019-04-xx：Trusty Tahr    #"
-	echo "#  5：ubuntu-14.04.5-desktop-amd64  ：    〃    ：    〃    ：  〃           #"
-	echo "#  6：ubuntu-16.04.4-server-amd64   ：2016-04-21：2021-04-xx：Xenial Xerus   #"
-	echo "#  7：ubuntu-16.04.4-desktop-amd64  ：    〃    ：    〃    ：  〃           #"
-	echo "#  8：ubuntu-17.10.1-server-amd64   ：2017-10-19：2018-07-xx：Artful Aardvark#"
-	echo "#  9：ubuntu-17.10.1-desktop-amd64  ：    〃    ：    〃    ：  〃           #"
-	echo "# 10：ubuntu-18.04-server-amd64     ：2018-04-26：2023-04-xx：Bionic Beaver  #"
-	echo "# 11：ubuntu-18.04-desktop-amd64    ：    〃    ：    〃    ：  〃           #"
-	echo "# 12：ubuntu-18.04-live-server-amd64：    〃    ：    〃    ：  〃           #"
-	echo "# 13：CentOS-7-x86_64-DVD-1708      ：2017-09-14：2024-06-30：               #"
+	echo "#  4：debian-testing-amd64-DVD-1    ：20xx-xx-xx：20xx-xx-xx：testing        #"
+	echo "#  5：ubuntu-14.04.5-server-amd64   ：2014-04-17：2019-04-xx：Trusty Tahr    #"
+	echo "#  6：ubuntu-14.04.5-desktop-amd64  ：    〃    ：    〃    ：  〃           #"
+	echo "#  7：ubuntu-16.04.4-server-amd64   ：2016-04-21：2021-04-xx：Xenial Xerus   #"
+	echo "#  8：ubuntu-16.04.4-desktop-amd64  ：    〃    ：    〃    ：  〃           #"
+	echo "#  9：ubuntu-17.10.1-server-amd64   ：2017-10-19：2018-07-xx：Artful Aardvark#"
+	echo "# 10：ubuntu-17.10.1-desktop-amd64  ：    〃    ：    〃    ：  〃           #"
+	echo "# 11：ubuntu-18.04-server-amd64     ：2018-04-26：2023-04-xx：Bionic Beaver  #"
+	echo "# 12：ubuntu-18.04-desktop-amd64    ：    〃    ：    〃    ：  〃           #"
+	echo "# 13：ubuntu-18.04-live-server-amd64：    〃    ：    〃    ：  〃           #"
+	echo "# 14：CentOS-7-x86_64-DVD-1804      ：2018-05-  ：2024-06-30：               #"
 	echo "# ---------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -98,7 +102,7 @@ funcRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			wget -nv --show-progress -O "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+			wget -nv -O "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
 		fi
 		local VOLID=`volname "../${DVD_NAME}.iso"`			# Volume ID
 		# --- mnt -> image ----------------------------------------------------
@@ -119,8 +123,13 @@ funcRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "preseed/preseed.cfg"
 					else
-						wget -nv --show-progress -O "preseed/preseed.cfg" "${CFG_URL}" || { rm -f "preseed/preseed.cfg"; exit 1; }
+						wget -nv -O "preseed/preseed.cfg" "${CFG_URL}" || { rm -f "preseed/preseed.cfg"; exit 1; }
 					fi
+					sed -i "preseed/preseed.cfg"                                   \
+					    -e 's~.*\(d-i debian-installer/language\).*~  \1 string en~' \
+					    -e 's~.*\(d-i debian-installer/language\).*~  \1 string en~' \
+					    -e 's~.*\(d-i debian-installer/locale\).*~  \1 string en_US.UTF-8~' \
+					    -e '/d-i debian-installer\/language/i\  d-i localechooser\/preferred-locale select en_US.UTF-8\n  d-i localechooser\/supported-locales multiselect en_US.UTF-8, ja_JP.UTF-8'
 					;;
 				"centos" )	# --- get ks.cfg ----------------------------------
 					EFI_IMAG="images/efiboot.img"
@@ -129,7 +138,7 @@ funcRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
 					else
-						wget -nv --show-progress -O "kickstart/ks.cfg" "${CFG_URL}" || { rm -f "kickstart/ks.cfg"; exit 1; }
+						wget -nv -O "kickstart/ks.cfg" "${CFG_URL}" || { rm -f "kickstart/ks.cfg"; exit 1; }
 					fi
 					;;
 				* )	;;
@@ -300,4 +309,5 @@ funcRemaster () {
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
 # Ver.    :リリース日:RHEL      :メンテナンス更新期限
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30
+# 7.5-1804:2018-05-  :201 -  -  :2024-06-30
 # -----------------------------------------------------------------------------

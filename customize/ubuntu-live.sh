@@ -1,9 +1,9 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [ubuntu 17.10.1]                                        *
+# LiveCDCustomization [ubuntu 18.04]                                        *
 # *****************************************************************************
 
-	LIVE_VNUM=17.10.1
+	LIVE_VNUM=18.04
 
 # == tools install ============================================================
 	apt-get -y install debootstrap xorriso squashfs-tools

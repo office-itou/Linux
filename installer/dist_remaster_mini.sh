@@ -19,6 +19,7 @@
 ##	   日付       版         名前      改訂内容
 ##	---------- -------- -------------- ----------------------------------------
 ##	2018/05/01 000.0000 J.Itou         新規作成
+##	2018/05/11 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -93,11 +94,11 @@ funcRemaster () {
 			cp --preserve=timestamps "../../${CFG_NAME}.cfg" "preseed.cfg"
 		fi
 		if [ ! -f "preseed.cfg" ]; then
-			wget -nv --show-progress -O "preseed.cfg" "${CFG_URL}" || { rm -f "preseed.cfg"; exit 1; }
+			wget -nv -O "preseed.cfg" "${CFG_URL}" || { rm -f "preseed.cfg"; exit 1; }
 		fi
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			wget -nv --show-progress -O "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+			wget -nv -O "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
 		fi
 		local VOLID=`volname "../${DVD_NAME}.iso"`			# Volume ID
 		# --- mnt -> image ----------------------------------------------------
@@ -110,18 +111,18 @@ funcRemaster () {
 		pushd decomp > /dev/null							# initrd.gz 展開先
 			gunzip < ../image/initrd.gz | cpio -i
 			cp --preserve=timestamps ../preseed.cfg ./
-			find . | cpio -H newc --create | gzip -9 > ../image/initrd.preseed.gz
+			find . | cpio -H newc --create | gzip -9 > ../image/initps.gz
 		popd > /dev/null
 		pushd image > /dev/null								# 作業用ディスクイメージ
 			# --- mrb:txt.cfg -------------------------------------------------
 			sed -i txt.cfg  \
 			    -e 's/^\(default\) .*$/\1 preseed/' \
 			    -e '/menu default/d' \
-			    -e "/^label install.*$/i\label preseed\r\n\tmenu label ^Preseed install\r\n\tmenu default\r\n\tkernel linux\r\n\tappend vga=788 initrd=initrd.preseed.gz --- quiet \r"
+			    -e "/^label install.*$/i\label preseed\r\n\tmenu label ^Preseed install\r\n\tmenu default\r\n\tkernel linux\r\n\tappend vga=788 initrd=initps.gz --- quiet \r"
 			# --- efi:grub.cfg ------------------------------------------------
 			sed -i boot/grub/grub.cfg \
-			    -e "/^menuentry 'Install'.*$/i\menuentry 'Preseed install' {\n    set background_color=black\n    linux    /linux vga=788 --- quiet\n    initrd   /initrd.preseed.gz\n}" \
-			    -e '/^menuentry "Install".*$/i\menuentry "Preseed install" {\n\tset gfxpayload=keep\n\tlinux\t/linux --- quiet\n\tinitrd\t/initrd.preseed.gz\n}\n'
+			    -e "/^menuentry 'Install'.*$/i\menuentry 'Preseed install' {\n    set background_color=black\n    linux    /linux vga=788 --- quiet\n    initrd   /initps.gz\n}" \
+			    -e '/^menuentry "Install".*$/i\menuentry "Preseed install" {\n\tset gfxpayload=keep\n\tlinux\t/linux --- quiet\n\tinitrd\t/initps.gz\n}\n'
 			# --- make iso file -----------------------------------------------
 			rm -f md5sum.txt
 			find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt
