@@ -127,7 +127,6 @@ funcRemaster () {
 					fi
 					sed -i "preseed/preseed.cfg"                                   \
 					    -e 's~.*\(d-i debian-installer/language\).*~  \1 string en~' \
-					    -e 's~.*\(d-i debian-installer/language\).*~  \1 string en~' \
 					    -e 's~.*\(d-i debian-installer/locale\).*~  \1 string en_US.UTF-8~' \
 					    -e '/d-i debian-installer\/language/i\  d-i localechooser\/preferred-locale select en_US.UTF-8\n  d-i localechooser\/supported-locales multiselect en_US.UTF-8, ja_JP.UTF-8'
 					;;
