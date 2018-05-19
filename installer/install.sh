@@ -36,6 +36,7 @@
 ##	2018/03/12 000.0000 J.Itou         cifs関連修正
 ##	2018/03/20 000.0000 J.Itou         rootログインの抑制追加・他
 ##	2018/04/29 000.0000 J.Itou         処理見直し(CentOS 7対応含む)
+##	2018/05/19 000.0000 J.Itou         処理見直し(ネットワーク周り)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -426,41 +427,27 @@ funcInitialize () {
 	SMB_PWDB=`find /var/lib/samba/ -name passdb.tdb -type f -print`
 	SMB_CONF=`find /etc -name "smb.conf" -type f -print`
 	SMB_BACK=${SMB_CONF}.orig
-	# -------------------------------------------------------------------------
-	VER_WMIN=1.881						# 最新バージョンを設定
-	VER_WMIN=""							# カレントバージョンを取得 (たまに接続エラーになるので注意)
+	# webmin ------------------------------------------------------------------
+	echo - Download webmin -------------------------------------------------------------
 	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		if [ "${VER_WMIN}" = "" ]; then
-			SET_WMIN="webmin-current.deb"
-			URL_WMIN="http://www.webmin.com/download/deb/${SET_WMIN}"
-		else
-			SET_WMIN="webmin_${VER_WMIN}_all.deb"
-			URL_WMIN="https://prdownloads.sourceforge.net/webadmin/${SET_WMIN}"
-		fi
+		SEL_WMIN=">Debian Package<"
 	else																		# Red Hat系
-		if [ "${VER_WMIN}" = "" ]; then
-			SET_WMIN="webmin-current.rpm"
-			URL_WMIN="http://www.webmin.com/download/rpm/${SET_WMIN}"
-		else
-			SET_WMIN="webmin-${VER_WMIN}-1.noarch.rpm"
-			URL_WMIN="https://prdownloads.sourceforge.net/webadmin/${SET_WMIN}"
-		fi
+		SEL_WMIN=">RPM<"
 	fi
+	HTM_WMIN="download.html"
+	WEB_WMIN="http://www.webmin.com/${HTM_WMIN}"
+	WRK_WMIN="${DIR_WK}/${HTM_WMIN}"
+	wget -O "${WRK_WMIN}" "${WEB_WMIN}"
+	funcPause $?
+	URL_WMIN=`awk -F '"' '/'"${SEL_WMIN}"'/ {print $2;}' "${WRK_WMIN}"`
+	SET_WMIN=`basename ${URL_WMIN}`
+	PKG_WMIN="${DIR_WK}/${SET_WMIN}"
+	rm -f "${WRK_WMIN}"
+	funcPause $?
 }
 
 # Main処理 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 funcMain () {
-	# *************************************************************************
-	# 事前ダウンロード
-	# *************************************************************************
-	echo - Download --------------------------------------------------------------------
-	while [ ! -f "${DIR_WK}/${SET_WMIN}" ]
-	do
-		wget -nv "${URL_WMIN}"
-		funcPause $?
-		sleep 1s
-	done
-
 	# *************************************************************************
 	# Make work dir
 	# *************************************************************************
@@ -630,6 +617,23 @@ _EOT_
 #		    -e '$anet.ipv6.conf.all.disable_ipv6 = 1'
 #		sysctl -p
 #	fi
+	# Configuration for getaddrinfo [IPv4接続優先化設定] ----------------------
+	#        ::1/128 (ループバック)
+	#         ::/0   (IPv6通信全般)
+	#     2002::/16  (6to4)
+	#         ::/96  (IPv4互換)
+	# ::ffff:0:0/96  (IPv4マップ)
+	if [ ! -f /etc/gai.conf.orig ]; then
+		if [ ! -f /etc/gai.conf ]; then
+			cp -p `find /usr -name "gai.conf" -print` /etc/
+		fi
+		sed -i.orig /etc/gai.conf                           \
+		    -e 's~#\(precedence.*::1/128.*\)~\1~g'          \
+		    -e 's~#\(precedence.*::/0.*\)~\1~g'             \
+		    -e 's~#\(precedence.*2002::/16.*\)~\1~g'        \
+		    -e 's~#\(precedence.*::/96.*\)~\1~g'            \
+		    -e 's~#\(precedence.*::ffff:0:0/96.*100\)~\1~g'
+	fi
 	# ipv4 dns changed --------------------------------------------------------
 	if [ "${SYS_NAME}" = "debian" ] \
 	&& [ ${SYS_VNUM} -lt 8 -a ${SYS_VNUM} -ge 0 ]; then							# Debian 8以前の判定
@@ -644,18 +648,20 @@ _EOT_
 					cp -p /etc/resolv.conf /etc/resolv.conf.orig
 				fi
 				if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
-					sed -i.orig "/etc/NetworkManager/system-connections/${CON_NAME}"              \
-					    -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1/"
+					sed -i.orig "/etc/NetworkManager/system-connections/${CON_NAME}"                                             \
+					    -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1\ndns-search ${WGP_NAME}/"
 				fi
 			fi
 		else
 			if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
-				sed -i.orig /etc/resolv.conf                            \
+				sed -i.orig /etc/resolv.conf                               \
+				    -e "s/\(search .*\)/\1 ${WGP_NAME}/g"                  \
 				    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1/g"
 			fi
 		fi
 	else
 		nmcli c modify "${CON_UUID}" ipv4.dns 127.0.0.1
+		nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}
 	fi
 	#--------------------------------------------------------------------------
 #	funcProc NetworkManager "${RUN_CLAM[0]}"
@@ -1126,45 +1132,49 @@ _EOT_
 	# *************************************************************************
 	# Install Webmin
 	# *************************************************************************
-	echo - Install Webmin --------------------------------------------------------------
-	# -------------------------------------------------------------------------
-	if [ ! -d /etc/webmin ]; then
-		if [ -f "${DIR_WK}/${SET_WMIN}" ]; then
+	if [ "${URL_WMIN}" != "" ]; then
+		echo - Install Webmin --------------------------------------------------------------
+		# ---------------------------------------------------------------------
+		if [ ! -d /etc/webmin ]; then
+			if [ ! -f "${PKG_WMIN}" ]; then
+				wget -O "${PKG_WMIN}" "${URL_WMIN}"
+				funcPause $?
+			fi
 			if [ ${FLG_RHAT} -eq 0 ]; then										# 非Red Hat系
-				dpkg -i "${DIR_WK}/${SET_WMIN}"
+				dpkg -i "${PKG_WMIN}"
 				funcPause $?
 			else																# Red Hat系
-				${CMD_AGET} install "${DIR_WK}/${SET_WMIN}"
+				${CMD_AGET} install "${PKG_WMIN}"
 				funcPause $?
 			fi
 		fi
-	fi
-	#--------------------------------------------------------------------------
-	if [ -f /etc/webmin/config ]; then
-		if [ ! -f /etc/webmin/config.orig ]; then
-			cp -p /etc/webmin/config /etc/webmin/config.orig
-			cat <<- _EOT_ >> /etc/webmin/config
-				webprefix=
-				lang_root=${SET_LANG}
-_EOT_
-		fi
 		#----------------------------------------------------------------------
-		if [ ! -f /etc/webmin/time/config.orig ]; then
-			cp -p /etc/webmin/time/config /etc/webmin/time/config.orig
-			cat <<- _EOT_ >> /etc/webmin/time/config
-				timeserver=ntp.nict.jp
+		if [ -f /etc/webmin/config ]; then
+			if [ ! -f /etc/webmin/config.orig ]; then
+				cp -p /etc/webmin/config /etc/webmin/config.orig
+				cat <<- _EOT_ >> /etc/webmin/config
+					webprefix=
+					lang_root=${SET_LANG}
 _EOT_
+			fi
+			#------------------------------------------------------------------
+			if [ ! -f /etc/webmin/time/config.orig ]; then
+				cp -p /etc/webmin/time/config /etc/webmin/time/config.orig
+				cat <<- _EOT_ >> /etc/webmin/time/config
+					timeserver=ntp.nict.jp
+_EOT_
+			fi
+			#------------------------------------------------------------------
+			funcProc webmin "${RUN_WMIN[0]}"
+			funcProc webmin "${RUN_WMIN[1]}"
+			PSW_WMIN=`find /usr/ -name "changepass.pl" -print`
+			echo "==============================================================================="
+			echo "===  webminはrootのパスワードを設定しないと利用できません。                 ==="
+			echo "===  rootのパスワードを一時的に設定し、                                     ==="
+			echo "===    webminにログイン後に以下のコマンドで変更して下さい。                 ==="
+			echo "===      ${PSW_WMIN} ログインアカウント パスワード      ==="
+			echo "==============================================================================="
 		fi
-		#----------------------------------------------------------------------
-		funcProc webmin "${RUN_WMIN[0]}"
-		funcProc webmin "${RUN_WMIN[1]}"
-		PSW_WMIN=`find /usr/ -name "changepass.pl" -print`
-		echo "==============================================================================="
-		echo "===  webminはrootのパスワードを設定しないと利用できません。                 ==="
-		echo "===  rootのパスワードを一時的に設定し、                                     ==="
-		echo "===    webminにログイン後に以下のコマンドで変更して下さい。                 ==="
-		echo "===      ${PSW_WMIN} ログインアカウント パスワード      ==="
-		echo "==============================================================================="
 	fi
 
 	# *************************************************************************
@@ -1826,14 +1836,18 @@ funcDebug () {
 	echo "FILE_USERDIRCONF=${FILE_USERDIRCONF}"									#  〃   ：
 	echo "FILE_VSFTPDCONF=${FILE_VSFTPDCONF}"									#  〃   ：
 	echo "DIR_VSFTPD=${DIR_VSFTPD}"												#  〃   ：
-	echo "DIR_BIND=${DIR_BIND}"													#  〃   ：
+	echo "DIR_BIND=${DIR_BIND}"													#  〃   ：bind
 	echo "DIR_ZONE=${DIR_ZONE}"													#  〃   ：
-	echo "SMB_PWDB=${SMB_PWDB}"													#  〃   ：
+	echo "SMB_PWDB=${SMB_PWDB}"													#  〃   ：samba
 	echo "SMB_CONF=${SMB_CONF}"													#  〃   ：
 	echo "SMB_BACK=${SMB_BACK}"													#  〃   ：
-	echo "VER_WMIN=${VER_WMIN}"													#  〃   ：最新Ver.またはカレントのファイル名
-	echo "SET_WMIN=${SET_WMIN}"													#  〃   ：
+	echo "SEL_WMIN=${SEL_WMIN}"													#  〃   ：webmin
+	echo "HTM_WMIN=${HTM_WMIN}"													#  〃   ：
+	echo "WEB_WMIN=${WEB_WMIN}"													#  〃   ：
+	echo "WRK_WMIN=${WRK_WMIN}"													#  〃   ：
 	echo "URL_WMIN=${URL_WMIN}"													#  〃   ：
+	echo "SET_WMIN=${SET_WMIN}"													#  〃   ：
+	echo "PKG_WMIN=${PKG_WMIN}"													#  〃   ：
 	# Network Setup ***********************************************************
 	if [ -f /etc/network/interfaces ]; then
 		echo --- cat /etc/network/interfaces -----------------------------------------------
@@ -1888,6 +1902,13 @@ funcDebug () {
 	if [ -f /etc/nsswitch.conf ] && [ -f /etc/nsswitch.conf.orig ]; then
 		echo --- diff /etc/nsswitch.conf ---------------------------------------------------
 		funcDiff /etc/nsswitch.conf /etc/nsswitch.conf.orig
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+#	echo --- cat /etc/gai.conf ---------------------------------------------------------
+#	expand -t 4 /etc/gai.conf
+	if [ -f /etc/gai.conf ] && [ -f /etc/gai.conf.orig ]; then
+		echo --- diff /etc/gai.conf --------------------------------------------------------
+		funcDiff /etc/gai.conf /etc/gai.conf.orig
 	fi
 	# Install clamav **********************************************************
 	FILE_FRESHCONF=`find /etc -name "freshclam.conf" -type f -print`
