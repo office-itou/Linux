@@ -1,122 +1,122 @@
-Debian/Ubuntu/CentOS/Knoppix‚ÌƒJƒXƒ^ƒ}ƒCƒY
-**“ú–{Œê‰»‚âƒCƒ“ƒXƒg[ƒ‹•â•‚ÉˆÈ‰º‚ÌƒVƒFƒ‹‚ğì¬‚µ‚Ü‚µ‚½B**
-EDebian/Ubuntu/Knoppix‚ÌLive DVDƒCƒ[ƒW‚ÌƒJƒXƒ^ƒ}ƒCƒY
-EDebian/Ubuntu/CentOs7‚ÌƒCƒ“ƒXƒg[ƒ‹DVDƒCƒ[ƒW‚ÌƒJƒXƒ^ƒ}ƒCƒY
-EDebian/Ubuntu‚ÌƒCƒ“ƒXƒg[ƒ‹mini.isoƒCƒ[ƒW‚ÌƒJƒXƒ^ƒ}ƒCƒY
-EDebian/Ubuntu/CrntOS7‚ÌƒCƒ“ƒXƒg[ƒ‹•â•(VMware‘Î‰)
-*¦VMware14ã‚Åmbr‚ÆuefiŠÂ‹«‚Å“®ìŠm”F*
-
-**Live CD—p** (“ú–{Œê‰»‚ÆDebian/Ubuntu‚Ìƒ‚ƒWƒ…[ƒ‹ÅV‰»)
-E[debian-lxde.sh](https://github.com/office-itou/Linux/blob/master/customize/debian-lxde.sh?ts=4)
-E[ubuntu-live.sh](https://github.com/office-itou/Linux/blob/master/customize/ubuntu-live.sh?ts=4)
-E[knoppix-live.sh](https://github.com/office-itou/Linux/blob/master/customize/knoppix-live.sh?ts=4)
-
-**DVD—p** (preseed.cfg,kickstart.cfg‚ğg—p‚µ‚½–³lƒCƒ“ƒXƒg[ƒ‹‚ÌÀŒ») 
-E[dist_remaster_dvd.sh](https://github.com/office-itou/Linux/blob/master/installer/dist_remaster_dvd.sh?ts=4)
-**mini.iso—p** (preseed.cfg‚ğg—p‚µ‚½–³lƒCƒ“ƒXƒg[ƒ‹‚ÌÀŒ») 
-E[dist_remaster_mini.sh](https://github.com/office-itou/Linux/blob/master/installer/dist_remaster_mini.sh?ts=4)
-
-**preseed.cfg** (OS‚Ì–³lƒCƒ“ƒXƒg[ƒ‹İ’è)
-E[preseed_debian.cfg](https://github.com/office-itou/Linux/blob/master/installer/preseed_debian.cfg?ts=4)
-E[preseed_ubuntu.cfg](https://github.com/office-itou/Linux/blob/master/installer/preseed_ubuntu.cfg?ts=4) (mini.isog—p‚ğ„§ADVD‚Å‚Í‘S‹@”\‚Ì“±“ü‚ª‚³‚ê‚È‚¢)
-**kickstart.cfg** (OS‚Ì–³lƒCƒ“ƒXƒg[ƒ‹İ’è)
-E[kickstart_centos.cfg](https://github.com/office-itou/Linux/blob/master/installer/kickstart_centos.cfg?ts=4)
-
-**Debian/Ubuntu/CentOS7ŠÂ‹«İ’è** (OS“±“üŒã‚ÌŠÂ‹«İ’è)
-E[install.sh](https://github.com/office-itou/Linux/blob/master/installer/install.sh?ts=4)
-
-**preseed.cfg‚ÌŠÂ‹«İ’è’l—á** (Še©‚ÌŠÂ‹«‚É‡‚í‚¹‚Ä•ÏXŠè‚¢‚Ü‚·)
-QÆF[preseed‚Ì—˜—p](https://www.debian.org/releases/stable/amd64/apbs02.html.ja)
-
-```text
-# == Network configuration ====================================================
-  d-i netcfg/choose_interface select auto
-  d-i netcfg/disable_dhcp boolean true
-# -- Static network configuration. --------------------------------------------
-  d-i netcfg/get_ipaddress string 192.168.1.1
-  d-i netcfg/get_netmask string 255.255.255.0
-  d-i netcfg/get_gateway string 192.168.1.254
-  d-i netcfg/get_nameservers string 192.168.1.254
-  d-i netcfg/confirm_static boolean true
-# -- hostname and domain names ------------------------------------------------
-  d-i netcfg/get_hostname string sv-debian
-  d-i netcfg/get_domain string workgroup
-```
-
-```text
-# == Account setup ============================================================
-  d-i passwd/root-login boolean false
-  d-i passwd/make-user boolean true
-# -- Root password, either in clear text or encrypted -------------------------
-# d-i passwd/root-password password r00tme
-# d-i passwd/root-password-again password r00tme
-# d-i passwd/root-password-crypted password [crypt(3) hash]
-# -- Normal user's password, either in clear text or encrypted ----------------
-  d-i passwd/user-fullname string Master
-  d-i passwd/username string master
-  d-i passwd/user-password password master
-  d-i passwd/user-password-again password master
-# d-i passwd/user-password-crypted password [crypt(3) hash]
-```
-
-```text
-# == Package selection ========================================================
-  tasksel tasksel/first multiselect \
-    desktop, lxde-desktop, ssh-server, web-server
-  d-i pkgsel/include string \
-    sudo tasksel network-manager curl bc \
-    perl apt-show-versions libapt-pkg-perl libauthen-pam-perl libio-pty-perl libnet-ssleay-perl perl-openssl-defaults \
-    clamav bind9 dnsutils apache2 vsftpd isc-dhcp-server ntpdate samba smbclient cifs-utils rsync \
-    chromium chromium-l10n
-```
-**g—p—á**
-
-```text:dist_remaster_dvd.sh
-master@sv-debian:~/iso$ sudo ./dist_remaster_dvd.sh
-*******************************************************************************
-2018/05/06 09:50:44 ì¬ˆ—‚ğŠJn‚µ‚Ü‚·B
-*******************************************************************************
-# ---------------------------------------------------------------------------#
-# IDFVersion                       FƒŠƒŠ[ƒX“úFƒTƒ|I—¹“úF”õl           #
-#  1Fdebian-7.11.0-amd64-DVD-1     F2013-05-04F2018-05-31Foldoldstable   #
-#  2Fdebian-8.10.0-amd64-DVD-1     F2015-04-25F2020-04-xxFoldstable      #
-#  3Fdebian-9.4.0-amd64-DVD-1      F2017-06-17F2022-xx-xxFstable         #
-#  4Fubuntu-14.04.5-server-amd64   F2014-04-17F2019-04-xxFTrusty Tahr    #
-#  5Fubuntu-14.04.5-desktop-amd64  F    V    F    V    F  V           #
-#  6Fubuntu-16.04.4-server-amd64   F2016-04-21F2021-04-xxFXenial Xerus   #
-#  7Fubuntu-16.04.4-desktop-amd64  F    V    F    V    F  V           #
-#  8Fubuntu-17.10.1-server-amd64   F2017-10-19F2018-07-xxFArtful Aardvark#
-#  9Fubuntu-17.10.1-desktop-amd64  F    V    F    V    F  V           #
-# 10Fubuntu-18.04-server-amd64     F2018-04-26F2023-04-xxFBionic Beaver  #
-# 11Fubuntu-18.04-desktop-amd64    F    V    F    V    F  V           #
-# 12Fubuntu-18.04-live-server-amd64F    V    F    V    F  V           #
-# 13FCentOS-7-x86_64-DVD-1708      F2017-09-14F2024-06-30F               #
-# ---------------------------------------------------------------------------#
-ID”Ô†+Enter‚ğ“ü—Í‚µ‚Ä‰º‚³‚¢B
-{1..11} 13
-   ` È—ª `
-```
-
-```text:dist_remaster_mini.sh
-master@sv-debian:~/iso$ sudo ./dist_remaster_mini.sh
-*******************************************************************************
-2018/05/06 09:42:07 ì¬ˆ—‚ğŠJn‚µ‚Ü‚·B
-*******************************************************************************
-# ---------------------------------------------------------------------------#
-# IDFVersion     FƒR[ƒhƒl[ƒ€    FƒŠƒŠ[ƒX“úFƒTƒ|I—¹“úF”õl           #
-#  1FDebian  7.xxFwheezy          F2013-05-04F2018-05-31Foldoldstable   #
-#  2FDebian  8.xxFjessie          F2015-04-25F2020-04-xxFoldstable      #
-#  3FDebian  9.xxFstretch         F2017-06-17F2022-xx-xxFstable         #
-#  4FDebian 10.xxFbuster          F2019(—\’è)F          Ftesting        #
-#  5FUbuntu 14.04FTrusty Tahr     F2014-04-17F2019-04-xxF               #
-#  6FUbuntu 16.04FXenial Xerus    F2016-04-21F2021-04-xxF               #
-#  7FUbuntu 17.10FArtful Aardvark F2017-10-19F2018-07-xxF               #
-#  8FUbuntu 18.04FBionic Beaver   F2018-04-26F2023-04-xxF               #
-# ---------------------------------------------------------------------------#
-ID”Ô†+Enter‚ğ“ü—Í‚µ‚Ä‰º‚³‚¢B
-{1..8}
-  ` È—ª `
-*******************************************************************************
-2018/05/06 09:44:59 ì¬ˆ—‚ªI—¹‚µ‚Ü‚µ‚½B
-*******************************************************************************
+Debian/Ubuntu/CentOS/Knoppixã®ã‚«ã‚¹ã‚¿ãƒã‚¤ã‚º  
+**æ—¥æœ¬èªåŒ–ã‚„ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«è£œåŠ©ã«ä»¥ä¸‹ã®ã‚·ã‚§ãƒ«ã‚’ä½œæˆã—ã¾ã—ãŸã€‚**  
+ãƒ»Debian/Ubuntu/Knoppixã®Live DVDã‚¤ãƒ¡ãƒ¼ã‚¸ã®ã‚«ã‚¹ã‚¿ãƒã‚¤ã‚º  
+ãƒ»Debian/Ubuntu/CentOs7ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«DVDã‚¤ãƒ¡ãƒ¼ã‚¸ã®ã‚«ã‚¹ã‚¿ãƒã‚¤ã‚º  
+ãƒ»Debian/Ubuntuã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«mini.isoã‚¤ãƒ¡ãƒ¼ã‚¸ã®ã‚«ã‚¹ã‚¿ãƒã‚¤ã‚º  
+ãƒ»Debian/Ubuntu/CrntOS7ã®ã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«è£œåŠ©(VMwareå¯¾å¿œ)  
+*â€»VMware14ä¸Šã§mbrã¨uefiç’°å¢ƒã§å‹•ä½œç¢ºèª*  
+  
+**Live CDç”¨** (æ—¥æœ¬èªåŒ–ã¨Debian/Ubuntuã®ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«æœ€æ–°åŒ–)  
+ãƒ»[debian-lxde.sh](https://github.com/office-itou/Linux/blob/master/customize/debian-lxde.sh?ts=4)  
+ãƒ»[ubuntu-live.sh](https://github.com/office-itou/Linux/blob/master/customize/ubuntu-live.sh?ts=4)  
+ãƒ»[knoppix-live.sh](https://github.com/office-itou/Linux/blob/master/customize/knoppix-live.sh?ts=4)  
+  
+**DVDç”¨** (preseed.cfg,kickstart.cfgã‚’ä½¿ç”¨ã—ãŸç„¡äººã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã®å®Ÿç¾)   
+ãƒ»[dist_remaster_dvd.sh](https://github.com/office-itou/Linux/blob/master/installer/dist_remaster_dvd.sh?ts=4)  
+**mini.isoç”¨** (preseed.cfgã‚’ä½¿ç”¨ã—ãŸç„¡äººã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«ã®å®Ÿç¾)   
+ãƒ»[dist_remaster_mini.sh](https://github.com/office-itou/Linux/blob/master/installer/dist_remaster_mini.sh?ts=4)  
+  
+**preseed.cfg** (OSã®ç„¡äººã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«è¨­å®š)  
+ãƒ»[preseed_debian.cfg](https://github.com/office-itou/Linux/blob/master/installer/preseed_debian.cfg?ts=4)  
+ãƒ»[preseed_ubuntu.cfg](https://github.com/office-itou/Linux/blob/master/installer/preseed_ubuntu.cfg?ts=4) (mini.isoä½¿ç”¨ã‚’æ¨å¥¨ã€DVDã§ã¯å…¨æ©Ÿèƒ½ã®å°å…¥ãŒã•ã‚Œãªã„)  
+**kickstart.cfg** (OSã®ç„¡äººã‚¤ãƒ³ã‚¹ãƒˆãƒ¼ãƒ«è¨­å®š)  
+ãƒ»[kickstart_centos.cfg](https://github.com/office-itou/Linux/blob/master/installer/kickstart_centos.cfg?ts=4)  
+  
+**Debian/Ubuntu/CentOS7ç’°å¢ƒè¨­å®š** (OSå°å…¥å¾Œã®ç’°å¢ƒè¨­å®š)  
+ãƒ»[install.sh](https://github.com/office-itou/Linux/blob/master/installer/install.sh?ts=4)  
+  
+**preseed.cfgã®ç’°å¢ƒè¨­å®šå€¤ä¾‹** (å„è‡ªã®ç’°å¢ƒã«åˆã‚ã›ã¦å¤‰æ›´é¡˜ã„ã¾ã™)  
+å‚ç…§ï¼š[preseedã®åˆ©ç”¨](https://www.debian.org/releases/stable/amd64/apbs02.html.ja)  
+  
+```text  
+# == Network configuration ====================================================  
+  d-i netcfg/choose_interface select auto  
+  d-i netcfg/disable_dhcp boolean true  
+# -- Static network configuration. --------------------------------------------  
+  d-i netcfg/get_ipaddress string 192.168.1.1  
+  d-i netcfg/get_netmask string 255.255.255.0  
+  d-i netcfg/get_gateway string 192.168.1.254  
+  d-i netcfg/get_nameservers string 192.168.1.254  
+  d-i netcfg/confirm_static boolean true  
+# -- hostname and domain names ------------------------------------------------  
+  d-i netcfg/get_hostname string sv-debian  
+  d-i netcfg/get_domain string workgroup  
+```  
+  
+```text  
+# == Account setup ============================================================  
+  d-i passwd/root-login boolean false  
+  d-i passwd/make-user boolean true  
+# -- Root password, either in clear text or encrypted -------------------------  
+# d-i passwd/root-password password r00tme  
+# d-i passwd/root-password-again password r00tme  
+# d-i passwd/root-password-crypted password [crypt(3) hash]  
+# -- Normal user's password, either in clear text or encrypted ----------------  
+  d-i passwd/user-fullname string Master  
+  d-i passwd/username string master  
+  d-i passwd/user-password password master  
+  d-i passwd/user-password-again password master  
+# d-i passwd/user-password-crypted password [crypt(3) hash]  
+```  
+  
+```text  
+# == Package selection ========================================================  
+  tasksel tasksel/first multiselect \  
+    desktop, lxde-desktop, ssh-server, web-server  
+  d-i pkgsel/include string \  
+    sudo tasksel network-manager curl bc \  
+    perl apt-show-versions libapt-pkg-perl libauthen-pam-perl libio-pty-perl libnet-ssleay-perl perl-openssl-defaults \  
+    clamav bind9 dnsutils apache2 vsftpd isc-dhcp-server ntpdate samba smbclient cifs-utils rsync \  
+    chromium chromium-l10n  
+```  
+**ä½¿ç”¨ä¾‹**  
+  
+```text:dist_remaster_dvd.sh  
+master@sv-debian:~/iso$ sudo ./dist_remaster_dvd.sh  
+*******************************************************************************  
+2018/05/06 09:50:44 ä½œæˆå‡¦ç†ã‚’é–‹å§‹ã—ã¾ã™ã€‚  
+*******************************************************************************  
+# ---------------------------------------------------------------------------#  
+# IDï¼šVersion                       ï¼šãƒªãƒªãƒ¼ã‚¹æ—¥ï¼šã‚µãƒçµ‚äº†æ—¥ï¼šå‚™è€ƒ           #  
+#  1ï¼šdebian-7.11.0-amd64-DVD-1     ï¼š2013-05-04ï¼š2018-05-31ï¼šoldoldstable   #  
+#  2ï¼šdebian-8.10.0-amd64-DVD-1     ï¼š2015-04-25ï¼š2020-04-xxï¼šoldstable      #  
+#  3ï¼šdebian-9.4.0-amd64-DVD-1      ï¼š2017-06-17ï¼š2022-xx-xxï¼šstable         #  
+#  4ï¼šubuntu-14.04.5-server-amd64   ï¼š2014-04-17ï¼š2019-04-xxï¼šTrusty Tahr    #  
+#  5ï¼šubuntu-14.04.5-desktop-amd64  ï¼š    ã€ƒ    ï¼š    ã€ƒ    ï¼š  ã€ƒ           #  
+#  6ï¼šubuntu-16.04.4-server-amd64   ï¼š2016-04-21ï¼š2021-04-xxï¼šXenial Xerus   #  
+#  7ï¼šubuntu-16.04.4-desktop-amd64  ï¼š    ã€ƒ    ï¼š    ã€ƒ    ï¼š  ã€ƒ           #  
+#  8ï¼šubuntu-17.10.1-server-amd64   ï¼š2017-10-19ï¼š2018-07-xxï¼šArtful Aardvark#  
+#  9ï¼šubuntu-17.10.1-desktop-amd64  ï¼š    ã€ƒ    ï¼š    ã€ƒ    ï¼š  ã€ƒ           #  
+# 10ï¼šubuntu-18.04-server-amd64     ï¼š2018-04-26ï¼š2023-04-xxï¼šBionic Beaver  #  
+# 11ï¼šubuntu-18.04-desktop-amd64    ï¼š    ã€ƒ    ï¼š    ã€ƒ    ï¼š  ã€ƒ           #  
+# 12ï¼šubuntu-18.04-live-server-amd64ï¼š    ã€ƒ    ï¼š    ã€ƒ    ï¼š  ã€ƒ           #  
+# 13ï¼šCentOS-7-x86_64-DVD-1708      ï¼š2017-09-14ï¼š2024-06-30ï¼š               #  
+# ---------------------------------------------------------------------------#  
+IDç•ªå·+Enterã‚’å…¥åŠ›ã—ã¦ä¸‹ã•ã„ã€‚  
+{1..11} 13  
+   ï½ çœç•¥ ï½  
+```  
+  
+```text:dist_remaster_mini.sh  
+master@sv-debian:~/iso$ sudo ./dist_remaster_mini.sh  
+*******************************************************************************  
+2018/05/06 09:42:07 ä½œæˆå‡¦ç†ã‚’é–‹å§‹ã—ã¾ã™ã€‚  
+*******************************************************************************  
+# ---------------------------------------------------------------------------#  
+# IDï¼šVersion     ï¼šã‚³ãƒ¼ãƒ‰ãƒãƒ¼ãƒ     ï¼šãƒªãƒªãƒ¼ã‚¹æ—¥ï¼šã‚µãƒçµ‚äº†æ—¥ï¼šå‚™è€ƒ           #  
+#  1ï¼šDebian  7.xxï¼šwheezy          ï¼š2013-05-04ï¼š2018-05-31ï¼šoldoldstable   #  
+#  2ï¼šDebian  8.xxï¼šjessie          ï¼š2015-04-25ï¼š2020-04-xxï¼šoldstable      #  
+#  3ï¼šDebian  9.xxï¼šstretch         ï¼š2017-06-17ï¼š2022-xx-xxï¼šstable         #  
+#  4ï¼šDebian 10.xxï¼šbuster          ï¼š2019(äºˆå®š)ï¼š          ï¼štesting        #  
+#  5ï¼šUbuntu 14.04ï¼šTrusty Tahr     ï¼š2014-04-17ï¼š2019-04-xxï¼š               #  
+#  6ï¼šUbuntu 16.04ï¼šXenial Xerus    ï¼š2016-04-21ï¼š2021-04-xxï¼š               #  
+#  7ï¼šUbuntu 17.10ï¼šArtful Aardvark ï¼š2017-10-19ï¼š2018-07-xxï¼š               #  
+#  8ï¼šUbuntu 18.04ï¼šBionic Beaver   ï¼š2018-04-26ï¼š2023-04-xxï¼š               #  
+# ---------------------------------------------------------------------------#  
+IDç•ªå·+Enterã‚’å…¥åŠ›ã—ã¦ä¸‹ã•ã„ã€‚  
+{1..8}  
+  ï½ çœç•¥ ï½  
+*******************************************************************************  
+2018/05/06 09:44:59 ä½œæˆå‡¦ç†ãŒçµ‚äº†ã—ã¾ã—ãŸã€‚  
+*******************************************************************************  
 ```
