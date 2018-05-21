@@ -37,6 +37,7 @@
 ##	2018/03/20 000.0000 J.Itou         rootログインの抑制追加・他
 ##	2018/04/29 000.0000 J.Itou         処理見直し(CentOS 7対応含む)
 ##	2018/05/19 000.0000 J.Itou         処理見直し(ネットワーク周り)
+##	2018/05/21 000.0000 J.Itou         処理見直し(ネットワーク周り)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -472,21 +473,17 @@ funcMain () {
 		${CMD_AGET} upgrade; funcPause $?
 		# --- リポジトリを追加 	[ Red Hat系 ] ---------------------------------
 		if [ ${FLG_RHAT} -ne 0 ] && [ ! -f /etc/yum.repos.d/CentOS-Base.repo.orig ]; then
-			echo --- Install Repository [yum-plugin-priorities] --------------------------------
-			${CMD_AGET} install yum-plugin-priorities; funcPause $?
+			echo --- Install Repository --------------------------------------------------------
+			${CMD_AGET} install yum-plugin-priorities                                       \
+			                    epel-release centos-release-scl-rh                          \
+			                    centos-release-scl                                          \
+			                    http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+			funcPause $?
+			# ---------------------------------------------------------------------
 			sed -i.orig -e "s/\]$/\]\npriority=1/g"  /etc/yum.repos.d/CentOS-Base.repo
-			# ---------------------------------------------------------------------
-			echo --- Install Repository [epel-release centos-release-scl-rh] -------------------
-			${CMD_AGET} install epel-release centos-release-scl-rh; funcPause $?
 			sed -i.orig -e "s/\]$/\]\npriority=5/g"  /etc/yum.repos.d/epel.repo
-			# ---------------------------------------------------------------------
-			echo --- Install Repository [centos-release-scl] -----------------------------------
-			${CMD_AGET} install centos-release-scl; funcPause $?
 			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/CentOS-SCLo-scl.repo
 			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
-			# ---------------------------------------------------------------------
-			echo --- Install Repository [remi-release-7.rpm] -----------------------------------
-			${CMD_AGET} install http://rpms.famillecollet.com/enterprise/remi-release-7.rpm; funcPause $?
 			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/remi-safe.repo
 		fi
 #	fi
@@ -627,12 +624,12 @@ _EOT_
 		if [ ! -f /etc/gai.conf ]; then
 			cp -p `find /usr -name "gai.conf" -print` /etc/
 		fi
-		sed -i.orig /etc/gai.conf                           \
-		    -e 's~#\(precedence.*::1/128.*\)~\1~g'          \
-		    -e 's~#\(precedence.*::/0.*\)~\1~g'             \
-		    -e 's~#\(precedence.*2002::/16.*\)~\1~g'        \
-		    -e 's~#\(precedence.*::/96.*\)~\1~g'            \
-		    -e 's~#\(precedence.*::ffff:0:0/96.*100\)~\1~g'
+#		sed -i.orig /etc/gai.conf                           \
+#		    -e 's~#\(precedence.*::1/128.*\)~\1~g'          \
+#		    -e 's~#\(precedence.*::/0.*\)~\1~g'             \
+#		    -e 's~#\(precedence.*2002::/16.*\)~\1~g'        \
+#		    -e 's~#\(precedence.*::/96.*\)~\1~g'            \
+#		    -e 's~#\(precedence.*::ffff:0:0/96.*100\)~\1~g'
 	fi
 	# ipv4 dns changed --------------------------------------------------------
 	if [ "${SYS_NAME}" = "debian" ] \
@@ -648,20 +645,20 @@ _EOT_
 					cp -p /etc/resolv.conf /etc/resolv.conf.orig
 				fi
 				if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
-					sed -i.orig "/etc/NetworkManager/system-connections/${CON_NAME}"                                             \
-					    -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1\ndns-search ${WGP_NAME}/"
+					sed -i.orig "/etc/NetworkManager/system-connections/${CON_NAME}"                                              \
+					    -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1\ndns-search ${WGP_NAME}\./"
 				fi
 			fi
 		else
 			if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
-				sed -i.orig /etc/resolv.conf                               \
-				    -e "s/\(search .*\)/\1 ${WGP_NAME}/g"                  \
+				sed -i.orig /etc/resolv.conf                                \
+				    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"                 \
 				    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1/g"
 			fi
 		fi
 	else
 		nmcli c modify "${CON_UUID}" ipv4.dns 127.0.0.1
-		nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}
+		nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
 	fi
 	#--------------------------------------------------------------------------
 #	funcProc NetworkManager "${RUN_CLAM[0]}"
