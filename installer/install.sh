@@ -38,6 +38,7 @@
 ##	2018/04/29 000.0000 J.Itou         処理見直し(CentOS 7対応含む)
 ##	2018/05/19 000.0000 J.Itou         処理見直し(ネットワーク周り)
 ##	2018/05/21 000.0000 J.Itou         処理見直し(ネットワーク周り)
+##	2018/05/28 000.0000 J.Itou         処理見直し(smb.conf:SMB2対応)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -250,6 +251,12 @@ funcInitialize () {
 #		exit 1
 	fi
 	# ユーザー環境に合わせて変更する部分 --------------------------------------
+	# 登録ユーザーリスト (pdbedit -L -w の出力結果を拡張) ･････････････････････
+	#   UAR_ARRAY=("login name:full name:uid::lanman passwd hash:nt passwd hash:account flag:last change time:admin flag")
+	USR_ARRY=(                                                                                                                             \
+	    "administrator:Administrator:1001::XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:1" \
+	)	# sample: administrator's password="password"
+	# ･････････････････････････････････････････････････････････････････････････
 #	VGA_RESO=("800x600x32"   "789")												# コンソールの解像度： 800× 600：1600万色
 #	VGA_RESO=("1024x768x32"  "792")												#   〃              ：1024× 768：1600万色
 	VGA_RESO=("1280x1024x32" "795")												#   〃              ：1280×1024：1600万色
@@ -960,7 +967,7 @@ _EOT_
 	# -------------------------------------------------------------------------
 	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > ${DIR_ZONE}/${WGP_NAME}.zone
+	cat <<- _EOT_ > ${DIR_ZONE}/${WGP_NAME}.db
 		\$TTL 1H																; 1 hour
 		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
 		 														${DNS_SCNT}	; serial
@@ -975,7 +982,7 @@ _EOT_
 		${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > ${DIR_ZONE}/${WGP_NAME}.rev
+	cat <<- _EOT_ > ${DIR_ZONE}/${IP4_RADR[0]}.in-addr.arpa.db
 		\$TTL 1H																; 1 hour
 		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
 		 														${DNS_SCNT}	; serial
@@ -988,7 +995,7 @@ _EOT_
 		${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > ${DIR_ZONE}/${IP6_UADR[0]}.rev
+	cat <<- _EOT_ > ${DIR_ZONE}/${IP6_RADU[0]}.ip6.arpa.db
 		\$TTL 1H																; 1 hour
 		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
 		 														${DNS_SCNT}	; serial
@@ -1001,7 +1008,7 @@ _EOT_
 		${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > ${DIR_ZONE}/${LNK_UADR[0]}.rev
+	cat <<- _EOT_ > ${DIR_ZONE}/${LNK_RADU[0]}.ip6.arpa.db
 		\$TTL 1H																; 1 hour
 		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
 		 														${DNS_SCNT}	; serial
@@ -1025,43 +1032,43 @@ _EOT_
 		cp -p ${DIR_BIND}/named.conf.local ${DIR_BIND}/named.conf.local.orig
 		# ---------------------------------------------------------------------
 		cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
-			acl ${WGP_NAME}-net {
-			 	127.0.0.1;
-			 	::1;
-			 	// 169.254.0.0/16;
-			 	fe80::0/${LNK_BITS[0]};
-			 	${IP4_NTWK[0]}/${IP4_BITS[0]};
-			};
-
 			zone "${WGP_NAME}" {
 			 	type master;
-			 	file "${WGP_NAME}.zone";
-			 	allow-update { ${WGP_NAME}-net; };
+			 	file "${WGP_NAME}.db";
+			 	allow-update { none; };
+			 	allow-transfer { none; };
+			 	notify yes;
 			};
 
 			zone "${IP4_RADR[0]}.in-addr.arpa" {
 			 	type master;
-			 	file "${WGP_NAME}.rev";
-			 	allow-update { ${WGP_NAME}-net; };
+			 	file "${IP4_RADR[0]}.in-addr.arpa.db";
+			 	allow-update { none; };
+			 	allow-transfer { none; };
+			 	notify yes;
 			};
 
-			zone "${IP6_RADU[0]}.ip6.arpa." {
+			zone "${IP6_RADU[0]}.ip6.arpa" {
 			 	type master;
-			 	file "${IP6_UADR[0]}.rev";
-			 	allow-update { ${WGP_NAME}-net; };
+			 	file "${IP6_RADU[0]}.ip6.arpa.db";
+			 	allow-update { none; };
+			 	allow-transfer { none; };
+			 	notify yes;
 			};
 
-			zone "${LNK_RADU[0]}.ip6.arpa." {
+			zone "${LNK_RADU[0]}.ip6.arpa" {
 			 	type master;
-			 	file "${LNK_UADR[0]}.rev";
-			 	allow-update { ${WGP_NAME}-net; };
+			 	file "${LNK_RADU[0]}.ip6.arpa.db";
+			 	allow-update { none; };
+			 	allow-transfer { none; };
+			 	notify yes;
 			};
 _EOT_
 	fi
 	#--------------------------------------------------------------------------
 	if [ "${IP4_DHCP[0]}" = "auto" ]; then
-		sed -i.orig ${DIR_ZONE}/${WGP_NAME}.zone -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
-		sed -i.orig ${DIR_ZONE}/${WGP_NAME}.rev  -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
+		sed -i.orig ${DIR_ZONE}/${WGP_NAME}.db                  -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
+		sed -i.orig ${DIR_ZONE}/${IP4_RADR[0]}.in-addr.arpa.db  -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
 	fi
 	# -------------------------------------------------------------------------
 	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
@@ -1238,6 +1245,12 @@ _EOT_
 			    -e '/.* = $/d'                                                                      \
 		> ${SMB_WORK}
 		# ---------------------------------------------------------------------
+		VER_BIND=`testparm -V | awk -F '.' '/Version/ {sub(".* ",""); printf "%d.%d",$1,$2;}'`
+		funcPause $?
+		if [ "$(echo "${VER_BIND} < 4.0" | bc)" -eq 1 ]; then					# Ver.4.0以前
+			echo "max protocol = SMB2" >> ${SMB_WORK}							# SMB2対応
+		fi
+		# ---------------------------------------------------------------------
 		cat <<- _EOT_ >> ${SMB_WORK}
 			[homes]
 			 	comment = Home Directories
@@ -1353,25 +1366,21 @@ _EOT_
 	touch ${SMB_FILE}
 	# -------------------------------------------------------------------------
 	if [ ! -f ${LST_USER} ]; then
-		# Make User List File (sample) ----------------------------------------
-		cat <<- _EOT_ > ${USR_FILE}
-			Administrator:Administrator:1001::1
-_EOT_
-		# Make Samba User List File (pdbedit -L -w にて出力) (sample) ---------
-		# administrator's password="password"
-		cat <<- _EOT_ > ${SMB_FILE}
-			administrator:1001:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:
-_EOT_
-	else
-		while IFS=: read WORKNAME FULLNAME USERIDNO PASSWORD LMPASSWD NTPASSWD ACNTFLAG CHNGTIME ADMINFLG
+		touch ${LST_USER}
+		for I in "${USR_ARRY[@]}"
 		do
-			USERNAME="${WORKNAME,,}"	# 全文字小文字変換
-			if [ "${USERNAME}" != "" ]; then
-				echo "${USERNAME}:${FULLNAME}:${USERIDNO}:${PASSWORD}:${ADMINFLG}"              >> ${USR_FILE}
-				echo "${USERNAME}:${USERIDNO}:${LMPASSWD}:${NTPASSWD}:${ACNTFLAG}:${CHNGTIME}:" >> ${SMB_FILE}
-			fi
-		done < ${LST_USER}
+			echo $I >> ${LST_USER}
+		done
 	fi
+	# -------------------------------------------------------------------------
+	while IFS=: read WORKNAME FULLNAME USERIDNO PASSWORD LMPASSWD NTPASSWD ACNTFLAG CHNGTIME ADMINFLG
+	do
+		USERNAME="${WORKNAME,,}"	# 全文字小文字変換
+		if [ "${USERNAME}" != "" ]; then
+			echo "${USERNAME}:${FULLNAME}:${USERIDNO}:${PASSWORD}:${ADMINFLG}"              >> ${USR_FILE}
+			echo "${USERNAME}:${USERIDNO}:${LMPASSWD}:${NTPASSWD}:${ACNTFLAG}:${CHNGTIME}:" >> ${SMB_FILE}
+		fi
+	done < ${LST_USER}
 
 	# *************************************************************************
 	# Setup Login User
