@@ -40,7 +40,8 @@
 ##	2018/05/21 000.0000 J.Itou         処理見直し(ネットワーク周り)
 ##	2018/05/28 000.0000 J.Itou         処理見直し(smb.conf:SMB2対応)
 ##	2018/06/03 000.0000 J.Itou         処理見直し(addusers.txtの不具合修正)
-##	2018/06/07 000.0000 J.Itou         処理見直し(bindのslave追加)
+##	2018/06/07 000.0000 J.Itou         処理見直し(bind周り)
+##	2018/06/07 000.0000 J.Itou         処理見直し(.vimrc周り)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -553,14 +554,20 @@ funcMain () {
 			[ ! -f .curlrc     ] && { touch .curlrc;     chown "${USER_NAME}":"${USER_NAME}" .curlrc;     }
 			[ ! -f ${LNG_FILE} ] && { touch ${LNG_FILE}; chown "${USER_NAME}":"${USER_NAME}" ${LNG_FILE}; }
 			# -----------------------------------------------------------------
+			# 参照: http://vimdoc.sourceforge.net/htmldoc/usr_toc.html
+			#       http://vimdoc.sourceforge.net/htmldoc/options.html
+			# -----------------------------------------------------------------
 			if [ ! -f .vimrc.orig ]; then
 				echo --- .vimrc --------------------------------------------------------------------
 				cp -p .vimrc .vimrc.orig
 				cat <<- _EOT_ >> .vimrc
-					set number
-					set tabstop=4
-					set list
-					set listchars=tab:\>_
+					set number				" Print the line number in front of each line.
+					set tabstop=4			" Number of spaces that a <Tab> in the file counts for.
+					set list				" List mode: Show tabs as CTRL-I is displayed, display $ after end of line.
+					set listchars=tab:\>_	" Strings to use in 'list' mode and for the |:list| command.
+					set nowrap				" This option changes how text is displayed.
+					set showmode			" If in Insert, Replace or Visual mode put a message on the last line.
+					set laststatus=2		" The value of this option influences when the last window will have a status line always.
 _EOT_
 			fi
 			# -----------------------------------------------------------------
@@ -660,7 +667,7 @@ _EOT_
 				fi
 				if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
 					sed -i.orig "/etc/NetworkManager/system-connections/${CON_NAME}"                                              \
-					    -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1\ndns-search ${WGP_NAME}\./"
+					    -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/ s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1\ndns-search ${WGP_NAME}\./"
 				fi
 			fi
 		else
@@ -974,108 +981,64 @@ _EOT_
 	# -------------------------------------------------------------------------
 	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > ${DIR_ZONE}/${WGP_NAME}.db
-		\$TTL 1H																; 1 hour
-		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
-		 														${DNS_SCNT}	; serial
-		 														30M			; refresh (30 minutes)
-		 														15M			; retry (15 minutes)
-		 														1D			; expire (1 day)
-		 														20M			; minimum (20 minutes)
-		 												)
-		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
+	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
+	do
+		cat <<- _EOT_ > ${DIR_ZONE}/db.${FIL_NAME}
+			\$TTL 1H																; 1 hour
+			@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
+			 														${DNS_SCNT}	; serial
+			 														30M			; refresh (30 minutes)
+			 														15M			; retry (15 minutes)
+			 														1D			; expire (1 day)
+			 														20M			; minimum (20 minutes)
+			 												)
+			@										IN		NS		${SVR_NAME}.${WGP_NAME}.
+_EOT_
+		chmod 640 ${DIR_ZONE}/db.${FIL_NAME}
+		chown root.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
+	done
+	#--------------------------------------------------------------------------
+	cat <<- _EOT_ >> ${DIR_ZONE}/db.${WGP_NAME}
 		${SVR_NAME}								IN		A		${IP4_ADDR[0]}
 		${SVR_NAME}								IN		AAAA	${IP6_ADDR[0]}
 		${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > ${DIR_ZONE}/${IP4_RADR[0]}.in-addr.arpa.db
-		\$TTL 1H																; 1 hour
-		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
-		 														${DNS_SCNT}	; serial
-		 														30M			; refresh (30 minutes)
-		 														15M			; retry (15 minutes)
-		 														1D			; expire (1 day)
-		 														20M			; minimum (20 minutes)
-		 												)
-		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
+	cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP4_RADR[0]}.in-addr.arpa
 		${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > ${DIR_ZONE}/${IP6_RADU[0]}.ip6.arpa.db
-		\$TTL 1H																; 1 hour
-		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
-		 														${DNS_SCNT}	; serial
-		 														30M			; refresh (30 minutes)
-		 														15M			; retry (15 minutes)
-		 														1D			; expire (1 day)
-		 														20M			; minimum (20 minutes)
-		 												)
-		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
+	cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP6_RADU[0]}.ip6.arpa
 		${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ > ${DIR_ZONE}/${LNK_RADU[0]}.ip6.arpa.db
-		\$TTL 1H																; 1 hour
-		@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
-		 														${DNS_SCNT}	; serial
-		 														30M			; refresh (30 minutes)
-		 														15M			; retry (15 minutes)
-		 														1D			; expire (1 day)
-		 														20M			; minimum (20 minutes)
-		 												)
-		@										IN		NS		${SVR_NAME}.${WGP_NAME}.
+	cat <<- _EOT_ >> ${DIR_ZONE}/db.${LNK_RADU[0]}.ip6.arpa
 		${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
-	#--------------------------------------------------------------------------
-	chown ${DNS_USER}. ${DIR_ZONE}/${WGP_NAME}.db
-	chown ${DNS_USER}. ${DIR_ZONE}/${IP4_RADR[0]}.in-addr.arpa.db
-	chown ${DNS_USER}. ${DIR_ZONE}/${IP6_RADU[0]}.ip6.arpa.db
-	chown ${DNS_USER}. ${DIR_ZONE}/${LNK_RADU[0]}.ip6.arpa.db
 	#--------------------------------------------------------------------------
 	if [ ! -f ${DIR_BIND}/named.conf.local.orig ]; then
 		if [ ! -f ${DIR_BIND}/named.conf.local ]; then
 			cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.local
 			: > ${DIR_BIND}/named.conf.local
-			sed -i.orig ${DIR_BIND}/named.conf \
-			    -e "/include \"\/etc\/named\.rfc1912\.zones\";/i\include \"${DIR_BIND}\/named\.conf\.local\";"
+			sed -i.orig ${DIR_BIND}/named.conf                                                                 \
+			    -e "/include \"\/etc\/named\.rfc1912\.zones\";/i include \"${DIR_BIND}\/named\.conf\.local\";"
 		fi
 		# ---------------------------------------------------------------------
 		cp -p ${DIR_BIND}/named.conf.local ${DIR_BIND}/named.conf.local.orig
 		# ---------------------------------------------------------------------
-		cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
-			zone "${WGP_NAME}" {
-			 	type master;
-			 	file "${WGP_NAME}.db";
-			 	allow-update { none; };
-			 	allow-transfer { localnets; localhost; };
-			 	notify yes;
-			};
+		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
+		do
+			cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
+				zone "${FIL_NAME}" {
+				 	type master;
+				 	file "db.${FIL_NAME}";
+				 	allow-update { none; };
+				 	allow-transfer { ${WGP_NAME}-network; };
+				 	notify yes;
+				};
 
-			zone "${IP4_RADR[0]}.in-addr.arpa" {
-			 	type master;
-			 	file "${IP4_RADR[0]}.in-addr.arpa.db";
-			 	allow-update { none; };
-			 	allow-transfer { localnets; localhost; };
-			 	notify yes;
-			};
-
-			zone "${IP6_RADU[0]}.ip6.arpa" {
-			 	type master;
-			 	file "${IP6_RADU[0]}.ip6.arpa.db";
-			 	allow-update { none; };
-			 	allow-transfer { none; };
-			 	notify yes;
-			};
-
-			zone "${LNK_RADU[0]}.ip6.arpa" {
-			 	type master;
-			 	file "${LNK_RADU[0]}.ip6.arpa.db";
-			 	allow-update { none; };
-			 	allow-transfer { none; };
-			 	notify yes;
-			};
 _EOT_
+		done
 		# ---------------------------------------------------------------------
 		if [ "${EXT_ZONE}" != "" ]; then
 			if [ ! -d ${DIR_ZONE}/slaves ]; then
@@ -1085,17 +1048,32 @@ _EOT_
 			cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
 				zone "${EXT_ZONE}" {
 				 	type slave;
-				 	file "slaves/${EXT_ZONE}.db";
+				 	file "slaves/db.${EXT_ZONE}";
 				 	masters { ${EXT_ADDR}; };
 				};
 _EOT_
 		fi
 	fi
 	#--------------------------------------------------------------------------
-	if [ "${IP4_DHCP[0]}" = "auto" ]; then
-		sed -i.orig ${DIR_ZONE}/${WGP_NAME}.db                  -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
-		sed -i.orig ${DIR_ZONE}/${IP4_RADR[0]}.in-addr.arpa.db  -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
+	if [ ! -f ${DIR_BIND}/named.conf.options.orig ]; then
+		if [ -f ${DIR_BIND}/named.conf.options ]; then
+			sed -i.orig ${DIR_BIND}/named.conf.options                                                                                                     \
+			    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\tfe80::/${LNK_BITS[0]};\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
+			    -e "/^};/i \\\n\tallow-transfer { none; };"
+		else
+			sed -i.orig ${DIR_BIND}/named.conf                                                                                                             \
+			    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\tfe80::/${LNK_BITS[0]};\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
+			    -e "/allow-query/a \\\tallow-transfer\t{ none; };"
+		fi
 	fi
+	#--------------------------------------------------------------------------
+	if [ "${IP4_DHCP[0]}" = "auto" ]; then
+		sed -i.orig ${DIR_ZONE}/db.${WGP_NAME}                 -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
+		sed -i.orig ${DIR_ZONE}/db.${IP4_RADR[0]}.in-addr.arpa -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
+	fi
+	# -------------------------------------------------------------------------
+	named-checkconf
+	funcPause $?
 	# -------------------------------------------------------------------------
 	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
 		funcProc bind9 "${RUN_BIND[0]}"
@@ -1221,7 +1199,7 @@ _EOT_
 		CMD_FALS=`which false`
 		# ---------------------------------------------------------------------
 		testparm -s -v ${SMB_CONF} |                                                                \
-			sed -e '/\[homes\]/,/^$/d'                                                              \
+			sed -e '/\[homes\]/,/^$/ d'                                                             \
 			    -e 's/\(dos charset\) =.*$/\1 = CP932/'                                             \
 			    -e "s/\(workgroup\) =.*$/\1 = ${WGP_NAME}/"                                         \
 			    -e "s/\(netbios name\) =.*$/\1 = ${SVR_NAME}/"                                      \
@@ -1243,7 +1221,7 @@ _EOT_
 			    -e 's/\(domain master\) =.*$/\1 = Yes/'                                             \
 			    -e 's/\(wins support\) =.*$/\1 = Yes/'                                              \
 			    -e 's/\(unix password sync\) =.*$/\1 = No/'                                         \
-			    -e '/idmap config \* : backend =/i\\tidmap config \* : range = 1000-10000'          \
+			    -e '/idmap config \* : backend =/i \\tidmap config \* : range = 1000-10000'         \
 			    -e 's/\(admin users\) =.*$/\1 = administrator/'                                     \
 			    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
 			    -e '/map to guest =.*$/d'                                                           \
@@ -1998,8 +1976,8 @@ funcDebug () {
 		expand -t 4 ${DIR_ZONE}/${LNK_UADR}.rev
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	echo --- cat ${DIR_BIND}/named.conf --------------------------------------------------
-	expand -t 4 ${DIR_BIND}/named.conf
+#	echo --- cat ${DIR_BIND}/named.conf --------------------------------------------------
+#	expand -t 4 ${DIR_BIND}/named.conf
 	if [ -f ${DIR_BIND}/named.conf.orig ]; then
 		echo --- diff ${DIR_BIND}/named.conf -------------------------------------
 		funcDiff ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.orig
