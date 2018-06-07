@@ -40,6 +40,7 @@
 ##	2018/05/21 000.0000 J.Itou         処理見直し(ネットワーク周り)
 ##	2018/05/28 000.0000 J.Itou         処理見直し(smb.conf:SMB2対応)
 ##	2018/06/03 000.0000 J.Itou         処理見直し(addusers.txtの不具合修正)
+##	2018/06/07 000.0000 J.Itou         処理見直し(bindのslave追加)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -258,6 +259,9 @@ funcInitialize () {
 	    "administrator:Administrator:1001::XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:1" \
 	)	# sample: administrator's password="password"
 	# ･････････････････････････････････････････････････････････････････････････
+	EXT_ZONE=""																	# マスターDNSのドメイン名
+	EXT_ADDR=0.0.0.0															#   〃         IPアドレス
+	# ･････････････････････････････････････････････････････････････････････････
 #	VGA_RESO=("800x600x32"   "789")												# コンソールの解像度： 800× 600：1600万色
 #	VGA_RESO=("1024x768x32"  "792")												#   〃              ：1024× 768：1600万色
 	VGA_RESO=("1280x1024x32" "795")												#   〃              ：1280×1024：1600万色
@@ -424,9 +428,11 @@ funcInitialize () {
 	DIR_VSFTPD=`dirname ${FILE_VSFTPDCONF}`
 	# -------------------------------------------------------------------------
 	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		DNS_USER=bind
 		DIR_BIND=/etc/bind
 		DIR_ZONE=/var/cache/bind
 	else																		# Red Hat系
+		DNS_USER=named
 		DIR_BIND=/etc
 		DIR_ZONE=/var/named
 	fi
@@ -1022,6 +1028,11 @@ _EOT_
 		${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
+	chown ${DNS_USER}. ${DIR_ZONE}/${WGP_NAME}.db
+	chown ${DNS_USER}. ${DIR_ZONE}/${IP4_RADR[0]}.in-addr.arpa.db
+	chown ${DNS_USER}. ${DIR_ZONE}/${IP6_RADU[0]}.ip6.arpa.db
+	chown ${DNS_USER}. ${DIR_ZONE}/${LNK_RADU[0]}.ip6.arpa.db
+	#--------------------------------------------------------------------------
 	if [ ! -f ${DIR_BIND}/named.conf.local.orig ]; then
 		if [ ! -f ${DIR_BIND}/named.conf.local ]; then
 			cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.local
@@ -1037,7 +1048,7 @@ _EOT_
 			 	type master;
 			 	file "${WGP_NAME}.db";
 			 	allow-update { none; };
-			 	allow-transfer { none; };
+			 	allow-transfer { localnets; localhost; };
 			 	notify yes;
 			};
 
@@ -1045,7 +1056,7 @@ _EOT_
 			 	type master;
 			 	file "${IP4_RADR[0]}.in-addr.arpa.db";
 			 	allow-update { none; };
-			 	allow-transfer { none; };
+			 	allow-transfer { localnets; localhost; };
 			 	notify yes;
 			};
 
@@ -1065,6 +1076,20 @@ _EOT_
 			 	notify yes;
 			};
 _EOT_
+		# ---------------------------------------------------------------------
+		if [ "${EXT_ZONE}" != "" ]; then
+			if [ ! -d ${DIR_ZONE}/slaves ]; then
+				mkdir -p ${DIR_ZONE}/slaves
+				chown ${DNS_USER}. ${DIR_ZONE}/slaves
+			fi
+			cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
+				zone "${EXT_ZONE}" {
+				 	type slave;
+				 	file "slaves/${EXT_ZONE}.db";
+				 	masters { ${EXT_ADDR}; };
+				};
+_EOT_
+		fi
 	fi
 	#--------------------------------------------------------------------------
 	if [ "${IP4_DHCP[0]}" = "auto" ]; then
@@ -1768,6 +1793,8 @@ funcDebug () {
 	echo "RUN_DHCP=${RUN_DHCP[@]}"												#   〃        ：isc-dhcp-server / dhcpd
 	echo "RUN_SMBD=${RUN_SMBD[@]}"												#   〃        ：samba / smbd,nmbd / smb,nmb
 	echo "RUN_WMIN=${RUN_WMIN[@]}"												#   〃        ：webmin
+	echo "EXT_ZONE=${EXT_ZONE}"													# マスターDNSのドメイン名
+	echo "EXT_ADDR=${EXT_ADDR}"													#   〃         IPアドレス
 	echo "FLG_RHAT=${FLG_RHAT}"													# CentOS時=1,その他=0
 	echo "FLG_SVER=${FLG_SVER}"													# 0以外でサーバー仕様でセッティング
 	echo "DEF_USER=${DEF_USER}"													# インストール時に作成したユーザー名
