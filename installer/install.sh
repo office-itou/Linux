@@ -42,6 +42,7 @@
 ##	2018/06/03 000.0000 J.Itou         処理見直し(addusers.txtの不具合修正)
 ##	2018/06/07 000.0000 J.Itou         処理見直し(bind周り)
 ##	2018/06/07 000.0000 J.Itou         処理見直し(.vimrc周り)
+##	2018/06/15 000.0000 J.Itou         処理見直し(nfs/cifs/その他)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -281,6 +282,7 @@ funcInitialize () {
 	RUN_DHCP=("disable"  "")													#   〃        ：isc-dhcp-server / dhcpd
 	RUN_SMBD=("enable"  "")														#   〃        ：samba / smbd,nmbd / smb,nmb
 	RUN_WMIN=("disable"  "")													#   〃        ：webmin
+	RUN_NFSD=("enable"  "")														#   〃        ：nfs-server
 	# -------------------------------------------------------------------------
 	FLG_RHAT=`[ ! -f /etc/redhat-release ]; echo $?`							# CentOS時=1,その他=0
 	FLG_SVER=1																	# 0以外でサーバー仕様でセッティング
@@ -519,6 +521,7 @@ funcMain () {
 #		firewall-cmd --add-service=samba --permanent		# smb
 #		firewall-cmd --add-service=ftp   --permanent		# vsftpd
 #		firewall-cmd --add-service=http  --permanent		# httpd
+#		firewall-cmd --add-service=nfs   --permanent		# nfs
 #		firewall-cmd --reload
 #	fi
 
@@ -528,8 +531,10 @@ funcMain () {
 	echo - Locale Setup ----------------------------------------------------------------
 	# --- /etc/locale.gen -----------------------------------------------------
 	if [ -f /etc/locale.gen ] && [ ! -f /etc/locale.gen.orig ]; then
-		sed -i.orig /etc/locale.gen             \
-		    -e "s/^# \(${SET_LANG} UTF-8\)/\1/"
+		sed -i.orig /etc/locale.gen                         \
+		    -e '/^#\|^$/! s/.*/# \0/'                       \
+		    -e '1,/en_US.UTF-8/ s/.*\(en_US.UTF-8 .*\)/\1/' \
+		    -e "1,/${SET_LANG}/ s/.*\(${SET_LANG} .*\)/\1/"
 		locale-gen; funcPause $?
 		update-locale LANG=${SET_LANG}; funcPause $?
 	fi
@@ -550,9 +555,9 @@ funcMain () {
 			else																# Red Hat系
 				LNG_FILE=".i18n"
 			fi
-			[ ! -f .vimrc      ] && { touch .vimrc;      chown "${USER_NAME}":"${USER_NAME}" .vimrc;      }
-			[ ! -f .curlrc     ] && { touch .curlrc;     chown "${USER_NAME}":"${USER_NAME}" .curlrc;     }
-			[ ! -f ${LNG_FILE} ] && { touch ${LNG_FILE}; chown "${USER_NAME}":"${USER_NAME}" ${LNG_FILE}; }
+			[ ! -f .vimrc      ] && { touch .vimrc;      chown ${USER_NAME}. .vimrc;      }
+			[ ! -f .curlrc     ] && { touch .curlrc;     chown ${USER_NAME}. .curlrc;     }
+			[ ! -f ${LNG_FILE} ] && { touch ${LNG_FILE}; chown ${USER_NAME}. ${LNG_FILE}; }
 			# -----------------------------------------------------------------
 			# 参照: http://vimdoc.sourceforge.net/htmldoc/usr_toc.html
 			#       http://vimdoc.sourceforge.net/htmldoc/options.html
@@ -606,6 +611,7 @@ _EOT_
 	# *************************************************************************
 	echo - Network Setup ---------------------------------------------------------------
 	# hosts.allow -------------------------------------------------------------
+	echo --- hosts.allow ---------------------------------------------------------------
 	if [ ! -f /etc/hosts.allow.orig ]; then
 		cp -p /etc/hosts.allow /etc/hosts.allow.orig
 		cat <<- _EOT_ >> /etc/hosts.allow
@@ -618,6 +624,7 @@ _EOT_
 _EOT_
 	fi
 	# hosts.deny --------------------------------------------------------------
+	echo --- hosts.deny ----------------------------------------------------------------
 	if [ ! -f /etc/hosts.deny.orig ]; then
 		cp -p /etc/hosts.deny /etc/hosts.deny.orig
 		cat <<- _EOT_ >> /etc/hosts.deny
@@ -625,17 +632,58 @@ _EOT_
 _EOT_
 	fi
 	# nsswitch.conf -----------------------------------------------------------
+	echo --- nsswitch.conf -------------------------------------------------------------
 	if [ ! -f /etc/nsswitch.conf.orig ]; then
 		sed -i.orig /etc/nsswitch.conf                            \
 		    -e 's/^hosts:.*/# &\nhosts:          files wins dns/'
 	fi
+	# nfs ---------------------------------------------------------------------
+	echo --- nfs -----------------------------------------------------------------------
+	if [ ! -f /etc/idmapd.conf.orig ]; then
+		sed -i.orig /etc/idmapd.conf                  \
+		    -e "s/#.*\(Domain\).*/\1 = ${WGP_NAME}/g"
+	fi
+	if [ ! -f /etc/exports.orig ]; then
+		sed -i.orig /etc/exports                                                                                                    \
+		    -e "\$a/home ${IP4_UADR[0]}.0/${IP4_BITS[0]}(rw,sync,no_subtree_check) fe80::/${LNK_BITS[0]}(rw,sync,no_subtree_check)"
+	fi
+	echo ---- nfs-server restart -------------------------------------------------------
+	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+		if [ "${SYS_NAME}" = "debian" ] \
+		&& [ ${SYS_VNUM} -le 8 -a ${SYS_VNUM} -ge 0 ]; then						# Debian 8以前の判定
+			funcProc nfs-kernel-server "${RUN_NFSD[0]}"
+		else
+			funcProc nfs-server "${RUN_NFSD[0]}"
+		fi
+	else																		# Red Hat系
+		funcProc "rpcbind nfs-server" "${RUN_NFSD[0]}"
+	fi
+	# cifs --------------------------------------------------------------------
+	echo --- cifs ----------------------------------------------------------------------
+	mkdir -p /mnt/share.nfs \
+	         /mnt/share.win
+	for USER_NAME in "${SUDO_USER}"
+	do
+		USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
+		pushd ${USER_HOME} > /dev/null
+			cat <<- _EOT_ > .credentials
+				username=value
+				password=value
+				domain=value
+_EOT_
+			chown ${USER_NAME}. .credentials
+			chmod 0600 .credentials
+		popd > /dev/null
+	done
 	# ipv6 disable ------------------------------------------------------------
+#	echo --- ipv6 disable --------------------------------------------------------------
 #	if [ ! -f /etc/sysctl.conf.orig ]; then
 #		sed -i.orig /etc/sysctl.conf                  \
 #		    -e '$anet.ipv6.conf.all.disable_ipv6 = 1'
 #		sysctl -p
 #	fi
 	# Configuration for getaddrinfo [IPv4接続優先化設定] ----------------------
+	echo --- Configuration for getaddrinfo [IPv4接続優先化設定] ------------------------
 	#        ::1/128 (ループバック)
 	#         ::/0   (IPv6通信全般)
 	#     2002::/16  (6to4)
@@ -653,6 +701,7 @@ _EOT_
 #		    -e 's~#\(precedence.*::ffff:0:0/96.*100\)~\1~g'
 	fi
 	# ipv4 dns changed --------------------------------------------------------
+	echo --- ipv4 dns changed ----------------------------------------------------------
 	if [ "${SYS_NAME}" = "debian" ] \
 	&& [ ${SYS_VNUM} -lt 8 -a ${SYS_VNUM} -ge 0 ]; then							# Debian 8以前の判定
 		if [ -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
@@ -1128,7 +1177,7 @@ _EOT_
 	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
 		funcProc isc-dhcp-server "${RUN_DHCP[0]}"
 		funcProc isc-dhcp-server "${RUN_DHCP[1]}"
-		if [ "${SYS_NAME}" != "debian" ] || [ ${SYS_VNUM} -eq 8 ]; then			# Debian 8のみ判定
+		if [ "`find /lib/systemd/system/ -name \"isc-dhcp-server6.*\" -print`" != "" ]; then
 			funcProc isc-dhcp-server6 disable
 #			funcProc isc-dhcp-server6 stop
 		fi
@@ -1144,10 +1193,8 @@ _EOT_
 		echo - Install Webmin --------------------------------------------------------------
 		# ---------------------------------------------------------------------
 		if [ ! -d /etc/webmin ]; then
-			if [ ! -f "${PKG_WMIN}" ]; then
-				wget -O "${PKG_WMIN}" "${URL_WMIN}"
-				funcPause $?
-			fi
+			wget -O "${PKG_WMIN}" "${URL_WMIN}"
+			funcPause $?
 			if [ ${FLG_RHAT} -eq 0 ]; then										# 非Red Hat系
 				dpkg -i "${PKG_WMIN}"
 				funcPause $?

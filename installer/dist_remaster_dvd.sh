@@ -21,6 +21,7 @@
 ##	2018/05/01 000.0000 J.Itou         新規作成
 ##	2018/05/11 000.0000 J.Itou         不具合修正
 ##	2018/05/11 000.0000 J.Itou         debian testing/CentOS 1804追加
+##	2018/06/14 000.0000 J.Itou         不具合修正(CentOS7対応含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -104,7 +105,12 @@ funcRemaster () {
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
 			wget -nv -O "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
 		fi
-		local VOLID=`volname "../${DVD_NAME}.iso"`			# Volume ID
+															# Volume ID
+		if [ "`which volname 2> /dev/null`" != "" ]; then
+			local VOLID=`volname "../${DVD_NAME}.iso"`
+		else
+			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
+		fi
 		# --- mnt -> image ----------------------------------------------------
 		mount -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
@@ -223,7 +229,11 @@ funcRemaster () {
 	echo "*******************************************************************************"
 # -----------------------------------------------------------------------------
 	if [ "`which xorriso 2> /dev/nul`" = "" ]; then
-		apt -y update && apt -y upgrade && apt -y install xorriso
+		if [ ! -f /etc/redhat-release ]; then
+			apt -y update && apt -y upgrade && apt -y install xorriso
+		else
+			yum -y update && yum -y upgrade && yum -y install xorriso
+		fi
 	fi
 	# -------------------------------------------------------------------------
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しでメニュー表示

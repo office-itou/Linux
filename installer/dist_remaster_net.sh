@@ -19,6 +19,7 @@
 ##	   日付       版         名前      改訂内容
 ##	---------- -------- -------------- ----------------------------------------
 ##	2018/05/13 000.0000 J.Itou         新規作成
+##	2018/06/14 000.0000 J.Itou         不具合修正(CentOS7対応含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -82,7 +83,12 @@ funcRemaster () {
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
 			wget -nv -O "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
 		fi
-		local VOLID=`volname "../${DVD_NAME}.iso"`			# Volume ID
+															# Volume ID
+		if [ "`which volname 2> /dev/null`" != "" ]; then
+			local VOLID=`volname "../${DVD_NAME}.iso"`
+		else
+			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
+		fi
 		# --- mnt -> image ----------------------------------------------------
 		mount -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
@@ -103,18 +109,6 @@ funcRemaster () {
 					else
 						wget -nv -O "preseed/preseed.cfg" "${CFG_URL}" || { rm -f "preseed/preseed.cfg"; exit 1; }
 					fi
-					sed -i "preseed/preseed.cfg"                                               \
-					    -e 's~.*\(d-i debian-installer/language\).*~  \1 string en~'           \
-					    -e 's~.*\(d-i debian-installer/locale\).*~  \1 string en_US.UTF-8~'    \
-					    -e '/d-i debian-installer\/language/i\  d-i localechooser\/preferred-locale select en_US.UTF-8\n  d-i localechooser\/supported-locales multiselect en_US.UTF-8, ja_JP.UTF-8' \
-					    -e 's~.*\(d-i netcfg/get_ipaddress\).*~  \1 string 192.168.1.10~'      \
-					    -e 's~.*\(d-i netcfg/get_netmask\).*~  \1 string 255.255.255.0~'       \
-					    -e 's~.*\(d-i netcfg/get_gateway\).*~  \1 string 192.168.1.254~'       \
-					    -e 's~.*\(d-i netcfg/get_nameservers\).*~  \1 string 192.168.1.254~'   \
-					    -e 's~.*\(d-i netcfg/confirm_static\).*~  \1 boolean true~'            \
-					    -e "s~.*\(d-i netcfg/get_hostname\).*~  \1 string sv-${CODE_NAME[1]}~" \
-					    -e 's~.*\(d-i netcfg/get_domain\).*~  \1 string workgroup~'            \
-					    -e '/Mirror settings/i\# == Network console ==========================================================\n  d-i network-console\/login select Start installer\n  d-i network-console\/password password install\n  d-i network-console\/password-again password install'
 					;;
 				"centos" )	# --- get ks.cfg ----------------------------------
 					EFI_IMAG="images/efiboot.img"
@@ -209,7 +203,11 @@ funcRemaster () {
 	echo "*******************************************************************************"
 # -----------------------------------------------------------------------------
 	if [ "`which xorriso 2> /dev/nul`" = "" ]; then
-		apt -y update && apt -y upgrade && apt -y install xorriso
+		if [ ! -f /etc/redhat-release ]; then
+			apt -y update && apt -y upgrade && apt -y install xorriso
+		else
+			yum -y update && yum -y upgrade && yum -y install xorriso
+		fi
 	fi
 	# -------------------------------------------------------------------------
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しでメニュー表示
