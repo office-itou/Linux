@@ -45,21 +45,21 @@ _EOT_
 #	APT_REL=""
 	APT_UPD="${APT_REL} -o Acquire::Check-Valid-Until=no"
 	APT_UPG="${APT_REL} -o Dpkg::Options::=--force-confdef"
-	APT_INS="${APT_REL} -o Dpkg::Options::=--force-confdef --reinstall"
+	APT_INS="${APT_REL} -o Dpkg::Options::=--force-confdef"
 	APT_RMV=""
 	dpkg --configure -a                                                    && \
-	apt-get -q -y -f         install                                       && \
-	apt-get -q -y ${APT_RMV} purge                                            \
+	aptitude -q -y -f         install                                      && \
+	aptitude -q -y ${APT_RMV} purge                                           \
 	    wine3.1                                                               \
-	    gcompris*                                                             \
-	    etoys*                                                                \
-	    gnome-games*                                                          \
-	    neverball*                                                            \
-	    scilab*                                                               \
-	    linux-source-*                                                     && \
-	apt-get -q -y            autoremove                                    && \
-	apt-get -q    ${APT_UPD} update                                        && \
-	apt-get -q -y ${APT_INS} install                                          \
+	    gcompris gcompris-data gcompris-sound-de                              \
+	    etoys etoys-doc                                                       \
+	    gnome-games                                                           \
+	    neverball neverball-common neverball-data                             \
+	    scilab scilab-cli scilab-data scilab-doc scilab-full-bin              \
+	    scilab-include scilab-minimal-bin                                     \
+	    linux-source-4.16.5                                                && \
+	aptitude -q    ${APT_UPD} update                                       && \
+	aptitude -q -y ${APT_INS} install                                         \
 	    ca-certificates                                                       \
 	    man-db                                                                \
 	    x11-apps                                                              \
@@ -67,9 +67,8 @@ _EOT_
 	    im-config ibus-mozc                                                   \
 	    manpages-ja manpages-ja-dev                                           \
 	    libreoffice-help-ja libreoffice-l10n-ja                            && \
-	apt-get -q -y            autoremove                                    && \
-	apt-get -q               autoclean                                     && \
-	apt-get -q               clean                                         || \
+	aptitude -q               autoclean                                    && \
+	aptitude -q               clean                                        || \
 	fncEnd $?
 # -- root user's setting ------------------------------------------------------
 	for USER_NAME in "knoppix" "root"
