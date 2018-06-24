@@ -22,6 +22,7 @@
 ##	2018/05/11 000.0000 J.Itou         不具合修正
 ##	2018/05/11 000.0000 J.Itou         debian testing/CentOS 1804追加
 ##	2018/06/14 000.0000 J.Itou         不具合修正(CentOS7対応含む)
+##	2018/06/24 000.0000 J.Itou         debian 8.11 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -42,7 +43,7 @@
 # -----------------------------------------------------------------------------
 	readonly ARRAY_NAME=(                                                                                                                                                \
 	    "debian debian-7.11.0-amd64-DVD-1      http://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso        preseed_debian.cfg"   \
-	    "debian debian-8.10.0-amd64-DVD-1      http://cdimage.debian.org/cdimage/archive/8.10.0/amd64/iso-dvd/debian-8.10.0-amd64-DVD-1.iso        preseed_debian.cfg"   \
+	    "debian debian-8.11.0-amd64-DVD-1      http://cdimage.debian.org/cdimage/archive/8.11.0/amd64/iso-dvd/debian-8.11.0-amd64-DVD-1.iso        preseed_debian.cfg"   \
 	    "debian debian-9.4.0-amd64-DVD-1       http://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-9.4.0-amd64-DVD-1.iso        preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-DVD-1     http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso        preseed_debian.cfg"   \
 	    "ubuntu ubuntu-14.04.5-server-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-server-amd64.iso    preseed_ubuntu.cfg"   \
@@ -61,7 +62,7 @@ funcMenu () {
 	echo "# ---------------------------------------------------------------------------#"
 	echo "# ID：Version                       ：リリース日：サポ終了日：備考           #"
 	echo "#  1：debian-7.11.0-amd64-DVD-1     ：2013-05-04：2018-05-31：oldoldstable   #"
-	echo "#  2：debian-8.10.0-amd64-DVD-1     ：2015-04-25：2020-04-xx：oldstable      #"
+	echo "#  2：debian-8.11.0-amd64-DVD-1     ：2015-04-25：2020-04-xx：oldstable      #"
 	echo "#  3：debian-9.4.0-amd64-DVD-1      ：2017-06-17：2022-xx-xx：stable         #"
 	echo "#  4：debian-testing-amd64-DVD-1    ：20xx-xx-xx：20xx-xx-xx：testing        #"
 	echo "#  5：ubuntu-14.04.5-server-amd64   ：2014-04-17：2019-04-xx：Trusty Tahr    #"
