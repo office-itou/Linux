@@ -42,7 +42,6 @@ _EOT_
 	sed -i /etc/apt/sources.list                     \
 	    -e 's/ftp.de.debian.org/ftp.debian.org/g'
 	APT_REL="-t stable -t testing -t unstable -t experimental"
-#	APT_REL=""
 	APT_UPD="${APT_REL} -o Acquire::Check-Valid-Until=no"
 	APT_UPG="${APT_REL} -o Dpkg::Options::=--force-confdef"
 	APT_INS="${APT_REL} -o Dpkg::Options::=--force-confdef"
@@ -50,20 +49,30 @@ _EOT_
 	dpkg --configure -a                                                    && \
 	aptitude -q -y -f         install                                      && \
 	aptitude -q -y ${APT_RMV} purge                                           \
-	    wine3.1                                                               \
-	    gcompris gcompris-data gcompris-sound-de                              \
+	    android-libadb android-libbacktrace android-libbase android-libcutils \
+	    android-libext4-utils android-libf2fs-utils android-liblog            \
+	    android-libselinux android-libsparse android-libunwind                \
+	    android-libutils android-libziparchive                                \
+	    bitcoind                                                              \
+	    gnome-games kde-games-core-declarative kdegames-card-data-kf5         \
+	    qml-module-org-kde-games-core                                         \
 	    etoys etoys-doc                                                       \
-	    gnome-games                                                           \
-	    neverball neverball-common neverball-data                             \
-	    scilab scilab-cli scilab-data scilab-doc scilab-full-bin              \
-	    scilab-include scilab-minimal-bin                                     \
-	    linux-source-4.16.5                                                && \
+	    gpsd gpsd-clients gpsdrive gpsdrive-data                              \
+	    mediatomb mediatomb-common mediatomb-daemon                           \
+	    qemu qemu-kvm qemu-slof qemu-system qemu-system-arm                   \
+	    qemu-system-common qemu-system-mips qemu-system-misc qemu-system-ppc  \
+	    qemu-system-sparc qemu-system-x86 qemu-user qemu-user-binfmt          \
+	    qemu-utils                                                            \
+	    vlc vlc-bin vlc-data vlc-l10n vlc-plugin-base vlc-plugin-qt           \
+	    vlc-plugin-skins2 vlc-plugin-video-output vlc-plugin-video-splitter   \
+	    vlc-plugin-visualization vlc-plugin-zvbi                           && \
 	aptitude -q    ${APT_UPD} update                                       && \
 	aptitude -q -y ${APT_INS} install                                         \
 	    ca-certificates                                                       \
 	    man-db                                                                \
 	    x11-apps                                                              \
-	    task-japanese task-japanese-desktop                                   \
+	    task-desktop task-japanese task-japanese-desktop                      \
+	    task-lxde-desktop task-ssh-server task-web-server                     \
 	    im-config ibus-mozc                                                   \
 	    manpages-ja manpages-ja-dev                                           \
 	    libreoffice-help-ja libreoffice-l10n-ja                            && \
