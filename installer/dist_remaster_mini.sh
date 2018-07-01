@@ -21,6 +21,7 @@
 ##	2018/05/01 000.0000 J.Itou         新規作成
 ##	2018/05/11 000.0000 J.Itou         不具合修正
 ##	2018/06/14 000.0000 J.Itou         不具合修正(CentOS7対応含む)
+##	2018/06/29 000.0000 J.Itou         仕様変更(取得先URLをHTTPS)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -81,7 +82,7 @@ funcRemaster () {
 #	local CPU_TYPE=i386										# CPUタイプ(32bit)
 	local CPU_TYPE=amd64									# CPUタイプ(64bit)
 	local DVD_NAME="mini-${CODE_NAME[1]}-${CPU_TYPE}"
-	local DVD_URL="http://ftp.yz.yamagata-u.ac.jp/${CODE_NAME[0]}/dists/${CODE_NAME[1]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
+	local DVD_URL="https://ftp.yz.yamagata-u.ac.jp/${CODE_NAME[0]}/dists/${CODE_NAME[1]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
 	# --- preseed.cfg ---------------------------------------------------------
 	local CFG_NAME="preseed_${CODE_NAME[0]}"
 	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/${CFG_NAME}.cfg"

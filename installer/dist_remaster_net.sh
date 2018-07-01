@@ -21,6 +21,7 @@
 ##	2018/05/13 000.0000 J.Itou         新規作成
 ##	2018/06/14 000.0000 J.Itou         不具合修正(CentOS7対応含む)
 ##	2018/06/24 000.0000 J.Itou         debian 8.11 変更
+##	2018/06/29 000.0000 J.Itou         Fedora 28追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -39,21 +40,23 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	readonly ARRAY_NAME=(                                                                                                                                                \
-	    "debian debian-7.11.0-amd64-netinst-1  http://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-cd/debian-7.11.0-amd64-netinst.iso       preseed_debian.cfg"   \
-	    "debian debian-8.11.0-amd64-netinst-1  http://cdimage.debian.org/cdimage/archive/8.11.0/amd64/iso-cd/debian-8.11.0-amd64-netinst.iso       preseed_debian.cfg"   \
-	    "debian debian-9.4.0-amd64-netinst-1   http://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-9.4.0-amd64-netinst.iso       preseed_debian.cfg"   \
-	    "debian debian-testing-amd64-netinst-1 http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso       preseed_debian.cfg"   \
-	)   # 区分  netinstファイル名              ダウンロード先URL                                                                                   定義ファイル
+	readonly ARRAY_NAME=(                                                                                                                                                                           \
+	    "debian debian-7.11.0-amd64-netinst-1       https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-cd/debian-7.11.0-amd64-netinst.iso                            preseed_debian.cfg"   \
+	    "debian debian-8.11.0-amd64-netinst-1       https://cdimage.debian.org/cdimage/archive/8.11.0/amd64/iso-cd/debian-8.11.0-amd64-netinst.iso                            preseed_debian.cfg"   \
+	    "debian debian-9.4.0-amd64-netinst-1        https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-9.4.0-amd64-netinst.iso                            preseed_debian.cfg"   \
+	    "debian debian-testing-amd64-netinst-1      https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                            preseed_debian.cfg"   \
+	    "fedora Fedora-Server-netinst-x86_64-28-1.1 https://download.fedoraproject.org/pub/fedora/linux/releases/28/Server/x86_64/iso/Fedora-Server-netinst-x86_64-28-1.1.iso kickstart_fedora.cfg" \
+	)   # 区分  netinstファイル名                   ダウンロード先URL                                                                                                         定義ファイル
 # -----------------------------------------------------------------------------
 funcMenu () {
-	echo "# ---------------------------------------------------------------------------#"
-	echo "# ID：Version                       ：リリース日：サポ終了日：備考           #"
-	echo "#  1：debian-7.11.0-amd64-netinst-1 ：2013-05-04：2018-05-31：oldoldstable   #"
-	echo "#  2：debian-8.11.0-amd64-netinst-1 ：2015-04-25：2020-04-xx：oldstable      #"
-	echo "#  3：debian-9.4.0-amd64-netinst-1  ：2017-06-17：2022-xx-xx：stable         #"
-	echo "#  4：debian-testing-amd64-netinst-1：20xx-xx-xx：20xx-xx-xx：testing        #"
-	echo "# ---------------------------------------------------------------------------#"
+	echo "# ----------------------------------------------------------------------------#"
+	echo "# ID：Version                            ：リリース日：サポ終了日：備考       #"
+	echo "#  1：debian-7.11.0-amd64-netinst-1      ：2013-05-04：2018-05-31：oldoldstable"
+	echo "#  2：debian-8.11.0-amd64-netinst-1      ：2015-04-25：2020-04-xx：oldstable  #"
+	echo "#  3：debian-9.4.0-amd64-netinst-1       ：2017-06-17：2022-xx-xx：stable     #"
+	echo "#  4：debian-testing-amd64-netinst-1     ：20xx-xx-xx：20xx-xx-xx：testing    #"
+	echo "#  5：Fedora-Server-netinst-x86_64-28-1.1：2018-05-01：20xx-xx-xx：           #"
+	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
 }
@@ -111,7 +114,8 @@ funcRemaster () {
 						wget -nv -O "preseed/preseed.cfg" "${CFG_URL}" || { rm -f "preseed/preseed.cfg"; exit 1; }
 					fi
 					;;
-				"centos" )	# --- get ks.cfg ----------------------------------
+				"centos" | \
+				"fedora")	# --- get ks.cfg ----------------------------------
 					EFI_IMAG="images/efiboot.img"
 					DVD_NAME+="-kickstart"
 					mkdir -p "kickstart"
@@ -176,6 +180,14 @@ funcRemaster () {
 					sed -i EFI/BOOT/grub.cfg \
 					    -e 's/\(set default\)="1"/\1="0"/g' \
 					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS 7'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS\\x207\\x20x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+					;;
+				"fedora" )	# ･････････････････････････････････････････････････
+					sed -i isolinux/isolinux.cfg \
+					    -e '/menu default/d' \
+					    -e '/^label linux/i\label fedora28auto\n  menu label ^Auto Install Fedora 28\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-28 inst.ks=cdrom:/kickstart/ks.cfg\n'
+					sed -i EFI/BOOT/grub.cfg \
+					    -e 's/\(set default\)="1"/\1="0"/g' \
+					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 28'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-28 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
 					;;
 				* )	;;
 			esac
@@ -294,4 +306,5 @@ funcRemaster () {
 # Ver.    :リリース日:RHEL      :メンテナンス更新期限
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30
 # 7.5-1804:2018-05-10:2018-04-10:2024-06-30
+# --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # -----------------------------------------------------------------------------

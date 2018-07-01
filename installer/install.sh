@@ -8,6 +8,7 @@
 ##	<対象OS>	:	Debian 7 ～
 ##				:	Ubuntu 18.04 ～
 ##				:	CentOS 7 ～
+##				:	Fedora 28 ～
 ##	---------------------------------------------------------------------------
 ##	<サービス>	:	clamav-freshclam / clamd
 ##				:	ssh / sshd
@@ -43,6 +44,8 @@
 ##	2018/06/07 000.0000 J.Itou         処理見直し(bind周り)
 ##	2018/06/07 000.0000 J.Itou         処理見直し(.vimrc周り)
 ##	2018/06/15 000.0000 J.Itou         処理見直し(nfs/cifs/その他)
+##	2018/06/28 000.0000 J.Itou         処理見直し(aptitude/apt,dnf/yum)
+##	2018/07/01 000.0000 J.Itou         処理見直し(Fedora 28対応含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -405,13 +408,17 @@ funcInitialize () {
 #	DEV_TEMP="${HDD_ARRY[@]} ${DEV_RATE}"
 	# -------------------------------------------------------------------------
 	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		if [ "`which apt 2> /dev/null`" != "" ]; then
-			CMD_AGET="apt -y -qq"
-		else																	# Debian 7
+		if [ "`which aptitude 2> /dev/null`" != "" ]; then
 			CMD_AGET="aptitude -y -q"
+		else
+			CMD_AGET="apt -y -qq"
 		fi
 	else																		# Red Hat系
-		CMD_AGET="yum -y -q"
+		if [ "`which dnf 2> /dev/null`" != "" ]; then
+			CMD_AGET="dnf -y -q"
+		else
+			CMD_AGET="yum -y -q"
+		fi
 	fi
 	# -------------------------------------------------------------------------
 	LIN_CHSH=`which nologin`
@@ -489,7 +496,7 @@ funcMain () {
 		echo --- Package Upgrade -----------------------------------------------------------
 		${CMD_AGET} upgrade; funcPause $?
 		# --- リポジトリを追加 	[ Red Hat系 ] ---------------------------------
-		if [ ${FLG_RHAT} -ne 0 ] && [ ! -f /etc/yum.repos.d/CentOS-Base.repo.orig ]; then
+		if [ ${SYS_NAME} = "centos" ] && [ ! -f /etc/yum.repos.d/CentOS-Base.repo.orig ]; then
 			echo --- Install Repository --------------------------------------------------------
 			${CMD_AGET} install yum-plugin-priorities                                       \
 			                    epel-release centos-release-scl-rh                          \

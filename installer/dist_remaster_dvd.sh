@@ -23,6 +23,7 @@
 ##	2018/05/11 000.0000 J.Itou         debian testing/CentOS 1804追加
 ##	2018/06/14 000.0000 J.Itou         不具合修正(CentOS7対応含む)
 ##	2018/06/24 000.0000 J.Itou         debian 8.11 変更
+##	2018/06/29 000.0000 J.Itou         Fedora 28追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -41,41 +42,43 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	readonly ARRAY_NAME=(                                                                                                                                                \
-	    "debian debian-7.11.0-amd64-DVD-1      http://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso        preseed_debian.cfg"   \
-	    "debian debian-8.11.0-amd64-DVD-1      http://cdimage.debian.org/cdimage/archive/8.11.0/amd64/iso-dvd/debian-8.11.0-amd64-DVD-1.iso        preseed_debian.cfg"   \
-	    "debian debian-9.4.0-amd64-DVD-1       http://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-9.4.0-amd64-DVD-1.iso        preseed_debian.cfg"   \
-	    "debian debian-testing-amd64-DVD-1     http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso        preseed_debian.cfg"   \
-	    "ubuntu ubuntu-14.04.5-server-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-server-amd64.iso    preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-14.04.5-desktop-amd64   https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-desktop-amd64.iso   preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-16.04.4-server-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.4-server-amd64.iso    preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-16.04.4-desktop-amd64   https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.4-desktop-amd64.iso   preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-17.10.1-server-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/artful/ubuntu-17.10.1-server-amd64.iso    preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-17.10.1-desktop-amd64   https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/artful/ubuntu-17.10.1-desktop-amd64.iso   preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04-server-amd64      http://cdimage.ubuntu.com/releases/18.04/release/ubuntu-18.04-server-amd64.iso                      preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04-desktop-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04-desktop-amd64.iso     preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04-live-server-amd64 https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04-live-server-amd64.iso preseed_ubuntu.cfg"   \
-	    "centos CentOS-7-x86_64-DVD-1804       https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.5.1804/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso  kickstart_centos.cfg" \
-	)   # 区分  DVDファイル名                  ダウンロード先URL                                                                                   定義ファイル
+	readonly ARRAY_NAME=(                                                                                                                                                                      \
+	    "debian debian-7.11.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
+	    "debian debian-8.11.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/archive/8.11.0/amd64/iso-dvd/debian-8.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
+	    "debian debian-9.4.0-amd64-DVD-1        https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-9.4.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
+	    "debian debian-testing-amd64-DVD-1      https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"   \
+	    "ubuntu ubuntu-14.04.5-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-server-amd64.iso                         preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-14.04.5-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-16.04.4-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.4-server-amd64.iso                         preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-16.04.4-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.4-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-17.10.1-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/artful/ubuntu-17.10.1-server-amd64.iso                         preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-17.10.1-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/artful/ubuntu-17.10.1-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-18.04-server-amd64       http://cdimage.ubuntu.com/releases/18.04/release/ubuntu-18.04-server-amd64.iso                                           preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-18.04-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04-desktop-amd64.iso                          preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-18.04-live-server-amd64  https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04-live-server-amd64.iso                      preseed_ubuntu.cfg"   \
+	    "centos CentOS-7-x86_64-DVD-1804        https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.5.1804/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso                       kickstart_centos.cfg" \
+	    "fedora Fedora-Server-dvd-x86_64-28-1.1 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/28/Server/x86_64/iso/Fedora-Server-dvd-x86_64-28-1.1.iso kickstart_fedora.cfg" \
+	)   # 区分  DVDファイル名                   ダウンロード先URL                                                                                                        定義ファイル
 # -----------------------------------------------------------------------------
 funcMenu () {
-	echo "# ---------------------------------------------------------------------------#"
-	echo "# ID：Version                       ：リリース日：サポ終了日：備考           #"
-	echo "#  1：debian-7.11.0-amd64-DVD-1     ：2013-05-04：2018-05-31：oldoldstable   #"
-	echo "#  2：debian-8.11.0-amd64-DVD-1     ：2015-04-25：2020-04-xx：oldstable      #"
-	echo "#  3：debian-9.4.0-amd64-DVD-1      ：2017-06-17：2022-xx-xx：stable         #"
-	echo "#  4：debian-testing-amd64-DVD-1    ：20xx-xx-xx：20xx-xx-xx：testing        #"
-	echo "#  5：ubuntu-14.04.5-server-amd64   ：2014-04-17：2019-04-xx：Trusty Tahr    #"
-	echo "#  6：ubuntu-14.04.5-desktop-amd64  ：    〃    ：    〃    ：  〃           #"
-	echo "#  7：ubuntu-16.04.4-server-amd64   ：2016-04-21：2021-04-xx：Xenial Xerus   #"
-	echo "#  8：ubuntu-16.04.4-desktop-amd64  ：    〃    ：    〃    ：  〃           #"
-	echo "#  9：ubuntu-17.10.1-server-amd64   ：2017-10-19：2018-07-xx：Artful Aardvark#"
-	echo "# 10：ubuntu-17.10.1-desktop-amd64  ：    〃    ：    〃    ：  〃           #"
-	echo "# 11：ubuntu-18.04-server-amd64     ：2018-04-26：2023-04-xx：Bionic Beaver  #"
-	echo "# 12：ubuntu-18.04-desktop-amd64    ：    〃    ：    〃    ：  〃           #"
-	echo "# 13：ubuntu-18.04-live-server-amd64：    〃    ：    〃    ：  〃           #"
-	echo "# 14：CentOS-7-x86_64-DVD-1804      ：2018-05-10：2024-06-30：RHEL 7.5       #"
-	echo "# ---------------------------------------------------------------------------#"
+	echo "# ----------------------------------------------------------------------------#"
+	echo "# ID：Version                        ：リリース日：サポ終了日：備考           #"
+	echo "#  1：debian-7.11.0-amd64-DVD-1      ：2013-05-04：2018-05-31：oldoldstable   #"
+	echo "#  2：debian-8.11.0-amd64-DVD-1      ：2015-04-25：2020-04-xx：oldstable      #"
+	echo "#  3：debian-9.4.0-amd64-DVD-1       ：2017-06-17：2022-xx-xx：stable         #"
+	echo "#  4：debian-testing-amd64-DVD-1     ：20xx-xx-xx：20xx-xx-xx：testing        #"
+	echo "#  5：ubuntu-14.04.5-server-amd64    ：2014-04-17：2019-04-xx：Trusty Tahr    #"
+	echo "#  6：ubuntu-14.04.5-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
+	echo "#  7：ubuntu-16.04.4-server-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus   #"
+	echo "#  8：ubuntu-16.04.4-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
+	echo "#  9：ubuntu-17.10.1-server-amd64    ：2017-10-19：2018-07-xx：Artful Aardvark#"
+	echo "# 10：ubuntu-17.10.1-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
+	echo "# 11：ubuntu-18.04-server-amd64      ：2018-04-26：2023-04-xx：Bionic Beaver  #"
+	echo "# 12：ubuntu-18.04-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
+	echo "# 13：ubuntu-18.04-live-server-amd64 ：    〃    ：    〃    ：  〃           #"
+	echo "# 14：CentOS-7-x86_64-DVD-1804       ：2018-05-10：2024-06-30：RHEL 7.5       #"
+	echo "# 15：Fedora-Server-dvd-x86_64-28-1.1：2018-05-01：20xx-xx-xx：               #"
+	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
 }
@@ -137,7 +140,8 @@ funcRemaster () {
 					    -e 's~.*\(d-i debian-installer/locale\).*~  \1 string en_US.UTF-8~' \
 					    -e '/d-i debian-installer\/language/i\  d-i localechooser\/preferred-locale select en_US.UTF-8\n  d-i localechooser\/supported-locales multiselect en_US.UTF-8, ja_JP.UTF-8'
 					;;
-				"centos" )	# --- get ks.cfg ----------------------------------
+				"centos" | \
+				"fedora")	# --- get ks.cfg ----------------------------------
 					EFI_IMAG="images/efiboot.img"
 					DVD_NAME+="-kickstart"
 					mkdir -p "kickstart"
@@ -202,6 +206,26 @@ funcRemaster () {
 					sed -i EFI/BOOT/grub.cfg \
 					    -e 's/\(set default\)="1"/\1="0"/g' \
 					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS 7'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS\\x207\\x20x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+					;;
+				"fedora" )	# ･････････････････････････････････････････････････
+					sed -i kickstart/ks.cfg                                     \
+					    -e 's/#\(cdrom\)/\1/g'                                  \
+					    -e 's/^\(url \).*/#\1/g'                                \
+					    -e 's/minimal-environment/server-product-environment/g' \
+					    -e 's/@gnome-desktop/#&/g'                              \
+					    -e 's/@input-methods/#&/g'                              \
+					    -e 's/@japanese-support/#&/g'                           \
+					    -e 's/dhcp/#&/g'                                        \
+					    -e 's/vsftpd/#&/g'                                      \
+					    -e 's/chromium/#&/g'                                    \
+					    -e 's/\(%post\).*/\1/g'                                 \
+					    -e '/%post/a\dnf -y group install "fedora workstation" input-methods japanese-support\ndnf -y install dhcp vsftpd chromium'
+					sed -i isolinux/isolinux.cfg \
+					    -e '/menu default/d' \
+					    -e '/^label linux/i\label fedora28auto\n  menu label ^Auto Install Fedora 28\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-28 inst.ks=cdrom:/kickstart/ks.cfg\n'
+					sed -i EFI/BOOT/grub.cfg \
+					    -e 's/\(set default\)="1"/\1="0"/g' \
+					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 28'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-28 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
 					;;
 				* )	;;
 			esac
@@ -320,4 +344,5 @@ funcRemaster () {
 # Ver.    :リリース日:RHEL      :メンテナンス更新期限
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30
 # 7.5-1804:2018-05-10:2018-04-10:2024-06-30
+# --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # -----------------------------------------------------------------------------
