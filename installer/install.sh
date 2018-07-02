@@ -45,7 +45,8 @@
 ##	2018/06/07 000.0000 J.Itou         処理見直し(.vimrc周り)
 ##	2018/06/15 000.0000 J.Itou         処理見直し(nfs/cifs/その他)
 ##	2018/06/28 000.0000 J.Itou         処理見直し(aptitude/apt,dnf/yum)
-##	2018/07/01 000.0000 J.Itou         処理見直し(Fedora 28対応含む)
+##	2018/06/29 000.0000 J.Itou         処理見直し(Fedora 28対応含む)
+##	2018/07/01 000.0000 J.Itou         不具合修正(Fedora 28対応含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -518,19 +519,6 @@ funcMain () {
 #	else																		# Red Hat系
 #		${CMD_AGET} autoremove; funcPause $?
 #	fi
-	# --- 自動起動設定 	[ Red Hat系 ] -----------------------------------------
-#	if [ ${FLG_RHAT} -ne 0 ]; then
-#		systemctl enable named dhcpd smb vsftpd httpd
-#		funcPause $?
-#		# --- 	Firewalld を有効にしている場合 --------------------------------
-#		firewall-cmd --add-service=dns   --permanent		# named
-#		firewall-cmd --add-service=dhcp  --permanent		# dhcpd
-#		firewall-cmd --add-service=samba --permanent		# smb
-#		firewall-cmd --add-service=ftp   --permanent		# vsftpd
-#		firewall-cmd --add-service=http  --permanent		# httpd
-#		firewall-cmd --add-service=nfs   --permanent		# nfs
-#		firewall-cmd --reload
-#	fi
 
 	# *************************************************************************
 	# Locale Setup
@@ -744,7 +732,31 @@ _EOT_
 	if [ "${SYS_NAME}" = "ubuntu" ]; then										# Ubuntuの判定
 		funcProc systemd-resolved disable										# nameserver 127.0.0.53 の無効化
 	fi
-
+	# SELinux -----------------------------------------------------------------
+	echo --- SELinux changed -----------------------------------------------------------
+	if [ "`which getenforce 2> /dev/null`" != "" ] && [ "`getenforce`" = "Enforcing" ]; then
+		sed -i.orig /etc/selinux/config                \
+		    -e 's/\(SELINUX\)=enforcing/\1=disabled/g'
+	fi
+	# Virtual Bridge ----------------------------------------------------------
+	echo --- Virtual Bridge changed ----------------------------------------------------
+	if [ "`find /lib/systemd/system/ -name \"libvirtd.*\" -print`" != "" ]; then
+		funcProc libvirtd disable
+	fi
+	# firewalld ---------------------------------------------------------------
+	echo --- firewalld changed ---------------------------------------------------------
+	if [ "`find /lib/systemd/system/ -name \"firewalld.*\" -print`" != "" ]; then
+		funcProc firewalld enable
+		funcProc firewalld restart
+		# --- 	Firewalld を有効にしている場合 --------------------------------
+		firewall-cmd --add-service=dns   --permanent		# named
+		firewall-cmd --add-service=dhcp  --permanent		# dhcpd
+		firewall-cmd --add-service=samba --permanent		# smb
+		firewall-cmd --add-service=ftp   --permanent		# vsftpd
+		firewall-cmd --add-service=http  --permanent		# httpd
+		firewall-cmd --add-service=nfs   --permanent		# nfs
+		firewall-cmd --reload
+	fi
 	# *************************************************************************
 	# Make share dir
 	# *************************************************************************
@@ -1072,14 +1084,32 @@ _EOT_
 		${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	if [ ! -f ${DIR_BIND}/named.conf.local.orig ]; then
-		if [ ! -f ${DIR_BIND}/named.conf.local ]; then
-			cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.local
-			: > ${DIR_BIND}/named.conf.local
-			sed -i.orig ${DIR_BIND}/named.conf                                                                 \
-			    -e "/include \"\/etc\/named\.rfc1912\.zones\";/i include \"${DIR_BIND}\/named\.conf\.local\";"
+	if [ ! -f ${DIR_BIND}/named.conf.local ]; then
+		cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.local
+		: > ${DIR_BIND}/named.conf.local
+		if [ ! -f ${DIR_BIND}/named.conf.orig ]; then
+			cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.orig
 		fi
-		# ---------------------------------------------------------------------
+		sed -i ${DIR_BIND}/named.conf                                                                      \
+		    -e "/include \"\/etc\/named\.rfc1912\.zones\";/i include \"${DIR_BIND}\/named\.conf\.local\";"
+	fi
+	# ---------------------------------------------------------------------
+	if [ -f ${DIR_BIND}/named.conf.options ]; then
+		if [ ! -f ${DIR_BIND}/named.conf.options.orig ]; then
+			sed -i.orig ${DIR_BIND}/named.conf.options                                                                                                     \
+			    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\tfe80::/${LNK_BITS[0]};\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
+			    -e "/^};/i \\\n\tallow-transfer { none; };"
+		fi
+	else
+		if [ ! -f ${DIR_BIND}/named.conf.orig ]; then
+			cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.orig
+		fi
+		sed -i ${DIR_BIND}/named.conf                                                                                                                  \
+		    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\tfe80::/${LNK_BITS[0]};\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
+		    -e "/allow-query/a \\\tallow-transfer\t{ none; };"
+	fi
+	#--------------------------------------------------------------------------
+	if [ ! -f ${DIR_BIND}/named.conf.local.orig ]; then
 		cp -p ${DIR_BIND}/named.conf.local ${DIR_BIND}/named.conf.local.orig
 		# ---------------------------------------------------------------------
 		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
@@ -1108,18 +1138,6 @@ _EOT_
 				 	masters { ${EXT_ADDR}; };
 				};
 _EOT_
-		fi
-	fi
-	#--------------------------------------------------------------------------
-	if [ ! -f ${DIR_BIND}/named.conf.options.orig ]; then
-		if [ -f ${DIR_BIND}/named.conf.options ]; then
-			sed -i.orig ${DIR_BIND}/named.conf.options                                                                                                     \
-			    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\tfe80::/${LNK_BITS[0]};\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
-			    -e "/^};/i \\\n\tallow-transfer { none; };"
-		else
-			sed -i.orig ${DIR_BIND}/named.conf                                                                                                             \
-			    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\tfe80::/${LNK_BITS[0]};\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
-			    -e "/allow-query/a \\\tallow-transfer\t{ none; };"
 		fi
 	fi
 	#--------------------------------------------------------------------------
@@ -1258,7 +1276,13 @@ _EOT_
 			    -e "s/\(workgroup\) =.*$/\1 = ${WGP_NAME}/"                                         \
 			    -e "s/\(netbios name\) =.*$/\1 = ${SVR_NAME}/"                                      \
 			    -e 's/\(security\) =.*$/\1 = USER/'                                                 \
+			    -e 's/\(server role\) =.*$/\1 = standalone server/'                                 \
+			    -e 's/\(pam password change\) =.*$/\1 = Yes/'                                       \
 			    -e 's/\(load printers\) =.*$/\1 = No/'                                              \
+			    -e 's~\(log file\) =.*$~\1 = /var/log/samba/log.%m~'                                \
+			    -e 's/\(max log size\) =.*$/\1 = 1000/'                                             \
+			    -e 's/\(min protocol\) =.*$/\1 = NT1/'                                              \
+			    -e 's/\(server min protocol\) =.*$/\1 = NT1/'                                       \
 			    -e 's~\(printcap name\) =.*$~\1 = /dev/null~'                                       \
 			    -e "s~\(add user script\) =.*$~\1 = ${CMD_UADD} %u~"                                \
 			    -e "s~\(delete user script\) =.*$~\1 = ${CMD_UDEL} %u~"                             \
@@ -1336,7 +1360,7 @@ _EOT_
 			 	path = ${DIR_SHAR}/data/adm/profiles
 			 	valid users = @${SMB_GRUP}
 			 	write list = @${SMB_GRUP}
-			 	profile acls = Yes
+			#	profile acls = Yes
 			 	browseable = No
 
 			[share]
@@ -1730,12 +1754,12 @@ _EOT_
 	rm -f ${SMB_FILE}
 	rm -f ${SMB_WORK}
 	# --- SELinux を有効にしている場合 ----------------------------------------
-	if [ ${FLG_RHAT} -ne 0 ]; then
-		setsebool -P ftpd_full_access on										# vsftpd
-		setsebool -P samba_enable_home_dirs on									# smb
+#	if [ ${FLG_RHAT} -ne 0 ]; then
+#		setsebool -P ftpd_full_access on										# vsftpd
+#		setsebool -P samba_enable_home_dirs on									# smb
 #		restorecon -R ${DIR_SHAR}
-		chcon -R -t samba_share_t ${DIR_SHAR}/
-	fi
+#		chcon -R -t samba_share_t ${DIR_SHAR}/
+#	fi
 	# -------------------------------------------------------------------------
 #	systemctl list-unit-files -t service
 #	systemctl -t service
