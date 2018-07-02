@@ -710,8 +710,11 @@ _EOT_
 					cp -p /etc/resolv.conf /etc/resolv.conf.orig
 				fi
 				if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
-					sed -i.orig "/etc/NetworkManager/system-connections/${CON_NAME}"                                              \
-					    -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/ s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1\ndns-search ${WGP_NAME}\./"
+					funcProc network-manager stop
+					cp -p "/etc/NetworkManager/system-connections/${CON_NAME}" "${DIR_WK}/${CON_NAME}.orig"
+					cat "${DIR_WK}/${CON_NAME}.orig"                                                                                    \
+					    | sed -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/ s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1;\ndns-search=${WGP_NAME}/" \
+					    > "/etc/NetworkManager/system-connections/${CON_NAME}"
 				fi
 			fi
 		else
@@ -1330,7 +1333,9 @@ _EOT_
 		VER_BIND=`testparm -V | awk -F '.' '/Version/ {sub(".* ",""); printf "%d.%d",$1,$2;}'`
 		funcPause $?
 		if [ "$(echo "${VER_BIND} < 4.0" | bc)" -eq 1 ]; then					# Ver.4.0以前
-			echo "max protocol = SMB2" >> ${SMB_WORK}							# SMB2対応
+			echo --- Add SMB2 Protocol ---------------------------------------------------------
+			sed -i ${SMB_WORK}                          \
+			    -e 's/\(max protocol\) =.*$/\1 = SMB2/'							# SMB2対応
 		fi
 		# ---------------------------------------------------------------------
 		cat <<- _EOT_ >> ${SMB_WORK}
