@@ -208,18 +208,9 @@ funcRemaster () {
 					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS 7'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS\\x207\\x20x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
 					;;
 				"fedora" )	# ･････････････････････････････････････････････････
-					sed -i kickstart/ks.cfg                                     \
-					    -e 's/#\(cdrom\)/\1/g'                                  \
-					    -e 's/^\(url \).*/#\1/g'                                \
-					    -e 's/minimal-environment/server-product-environment/g' \
-					    -e 's/@gnome-desktop/#&/g'                              \
-					    -e 's/@input-methods/#&/g'                              \
-					    -e 's/@japanese-support/#&/g'                           \
-					    -e 's/dhcp/#&/g'                                        \
-					    -e 's/vsftpd/#&/g'                                      \
-					    -e 's/chromium/#&/g'                                    \
-					    -e 's/\(%post\).*/\1/g'                                 \
-					    -e '/%post/a\dnf -y group install "fedora workstation" input-methods japanese-support\ndnf -y install dhcp vsftpd chromium'
+					sed -i kickstart/ks.cfg    \
+					    -e 's/#\(cdrom\)/\1/g' \
+					    -e 's/^\(url \)/#\1/g'
 					sed -i isolinux/isolinux.cfg \
 					    -e '/menu default/d' \
 					    -e '/^label linux/i\label fedora28auto\n  menu label ^Auto Install Fedora 28\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-28 inst.ks=cdrom:/kickstart/ks.cfg\n'
