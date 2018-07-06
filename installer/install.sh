@@ -47,6 +47,7 @@
 ##	2018/06/28 000.0000 J.Itou         処理見直し(aptitude/apt,dnf/yum)
 ##	2018/06/29 000.0000 J.Itou         処理見直し(Fedora 28対応含む)
 ##	2018/07/01 000.0000 J.Itou         不具合修正(Fedora 28対応含む)
+##	2018/07/07 000.0000 J.Itou         処理見直し(CentOS 7対応含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -497,20 +498,20 @@ funcMain () {
 		echo --- Package Upgrade -----------------------------------------------------------
 		${CMD_AGET} upgrade; funcPause $?
 		# --- リポジトリを追加 	[ Red Hat系 ] ---------------------------------
-		if [ ${SYS_NAME} = "centos" ] && [ ! -f /etc/yum.repos.d/CentOS-Base.repo.orig ]; then
-			echo --- Install Repository --------------------------------------------------------
-			${CMD_AGET} install yum-plugin-priorities                                       \
-			                    epel-release centos-release-scl-rh                          \
-			                    centos-release-scl                                          \
-			                    http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
-			funcPause $?
-			# ---------------------------------------------------------------------
-			sed -i.orig -e "s/\]$/\]\npriority=1/g"  /etc/yum.repos.d/CentOS-Base.repo
-			sed -i.orig -e "s/\]$/\]\npriority=5/g"  /etc/yum.repos.d/epel.repo
-			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/CentOS-SCLo-scl.repo
-			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
-			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/remi-safe.repo
-		fi
+#		if [ ${SYS_NAME} = "centos" ] && [ ! -f /etc/yum.repos.d/CentOS-Base.repo.orig ]; then
+#			echo --- Install Repository --------------------------------------------------------
+#			${CMD_AGET} install yum-plugin-priorities                                       \
+#			                    epel-release centos-release-scl-rh                          \
+#			                    centos-release-scl                                          \
+#			                    http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+#			funcPause $?
+#			# ---------------------------------------------------------------------
+#			sed -i.orig -e "s/\]$/\]\npriority=1/g"  /etc/yum.repos.d/CentOS-Base.repo
+#			sed -i.orig -e "s/\]$/\]\npriority=5/g"  /etc/yum.repos.d/epel.repo
+#			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/CentOS-SCLo-scl.repo
+#			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
+#			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/remi-safe.repo
+#		fi
 #	fi
 	# -------------------------------------------------------------------------
 #	echo --- Package Cleaning ----------------------------------------------------------

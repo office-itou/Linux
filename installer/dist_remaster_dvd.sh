@@ -24,6 +24,7 @@
 ##	2018/06/14 000.0000 J.Itou         不具合修正(CentOS7対応含む)
 ##	2018/06/24 000.0000 J.Itou         debian 8.11 変更
 ##	2018/06/29 000.0000 J.Itou         Fedora 28追加
+##	2018/07/07 000.0000 J.Itou         仕様見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -150,6 +151,9 @@ funcRemaster () {
 					else
 						wget -nv -O "kickstart/ks.cfg" "${CFG_URL}" || { rm -f "kickstart/ks.cfg"; exit 1; }
 					fi
+					sed -i kickstart/ks.cfg    \
+					    -e 's/#\(cdrom\)/\1/g' \
+					    -e 's/^\(url \)/#\1/g'
 					;;
 				* )	;;
 			esac
@@ -208,9 +212,6 @@ funcRemaster () {
 					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS 7'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS\\x207\\x20x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
 					;;
 				"fedora" )	# ･････････････････････････････････････････････････
-					sed -i kickstart/ks.cfg    \
-					    -e 's/#\(cdrom\)/\1/g' \
-					    -e 's/^\(url \)/#\1/g'
 					sed -i isolinux/isolinux.cfg \
 					    -e '/menu default/d' \
 					    -e '/^label linux/i\label fedora28auto\n  menu label ^Auto Install Fedora 28\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-28 inst.ks=cdrom:/kickstart/ks.cfg\n'
