@@ -48,6 +48,7 @@
 ##	2018/06/29 000.0000 J.Itou         処理見直し(Fedora 28対応含む)
 ##	2018/07/01 000.0000 J.Itou         不具合修正(Fedora 28対応含む)
 ##	2018/07/07 000.0000 J.Itou         処理見直し(CentOS 7対応含む)
+##	2018/07/07 000.0000 J.Itou         不具合修正(bind周り)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -492,28 +493,10 @@ funcMain () {
 		    -e 's/^deb cdrom.*$/# &/'
 	fi
 	# --- パッケージ更新 ------------------------------------------------------
-#	if [ "`funcChkAptTime`" = "OK" ]; then										# APTの更新可否判断
-		echo --- Package Update ------------------------------------------------------------
-		${CMD_AGET} update ; funcPause $?
-		echo --- Package Upgrade -----------------------------------------------------------
-		${CMD_AGET} upgrade; funcPause $?
-		# --- リポジトリを追加 	[ Red Hat系 ] ---------------------------------
-#		if [ ${SYS_NAME} = "centos" ] && [ ! -f /etc/yum.repos.d/CentOS-Base.repo.orig ]; then
-#			echo --- Install Repository --------------------------------------------------------
-#			${CMD_AGET} install yum-plugin-priorities                                       \
-#			                    epel-release centos-release-scl-rh                          \
-#			                    centos-release-scl                                          \
-#			                    http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
-#			funcPause $?
-#			# ---------------------------------------------------------------------
-#			sed -i.orig -e "s/\]$/\]\npriority=1/g"  /etc/yum.repos.d/CentOS-Base.repo
-#			sed -i.orig -e "s/\]$/\]\npriority=5/g"  /etc/yum.repos.d/epel.repo
-#			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/CentOS-SCLo-scl.repo
-#			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
-#			sed -i.orig -e "s/\]$/\]\npriority=10/g" /etc/yum.repos.d/remi-safe.repo
-#		fi
-#	fi
-	# -------------------------------------------------------------------------
+	echo --- Package Update ------------------------------------------------------------
+	${CMD_AGET} update ; funcPause $?
+	echo --- Package Upgrade -----------------------------------------------------------
+	${CMD_AGET} upgrade; funcPause $?
 #	echo --- Package Cleaning ----------------------------------------------------------
 #	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
 #		${CMD_AGET} autoclean; funcPause $?
@@ -1053,6 +1036,7 @@ _EOT_
 	# -------------------------------------------------------------------------
 	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
+	echo --- db.xxx --------------------------------------------------------------------
 	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
 	do
 		cat <<- _EOT_ > ${DIR_ZONE}/db.${FIL_NAME}
@@ -1088,32 +1072,41 @@ _EOT_
 		${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	if [ ! -f ${DIR_BIND}/named.conf.local ]; then
-		cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.local
-		: > ${DIR_BIND}/named.conf.local
-		if [ ! -f ${DIR_BIND}/named.conf.orig ]; then
-			cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.orig
-		fi
-		sed -i ${DIR_BIND}/named.conf                                                                      \
-		    -e "/include \"\/etc\/named\.rfc1912\.zones\";/i include \"${DIR_BIND}\/named\.conf\.local\";"
+	if [ "${IP4_DHCP[0]}" = "auto" ]; then
+		echo --- dhcp対応 ------------------------------------------------------------------
+		sed -i.orig ${DIR_ZONE}/db.${WGP_NAME}                 -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
+		sed -i.orig ${DIR_ZONE}/db.${IP4_RADR[0]}.in-addr.arpa -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
 	fi
-	# ---------------------------------------------------------------------
-	if [ -f ${DIR_BIND}/named.conf.options ]; then
+	# -------------------------------------------------------------------------
+	if [ ! -f ${DIR_BIND}/named.conf.orig ]; then
+		echo --- named.conf ----------------------------------------------------------------
+		cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.orig
+		# ---------------------------------------------------------------------
 		if [ ! -f ${DIR_BIND}/named.conf.options.orig ]; then
-			sed -i.orig ${DIR_BIND}/named.conf.options                                                                                                     \
+			echo ---- add named.conf.options ---------------------------------------------------
+			sed -i ${DIR_BIND}/named.conf                                                                                                                  \
 			    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\tfe80::/${LNK_BITS[0]};\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
-			    -e "/^};/i \\\n\tallow-transfer { none; };"
+			    -e "/allow-query/a \\\tallow-transfer\t{ none; };"
 		fi
-	else
-		if [ ! -f ${DIR_BIND}/named.conf.orig ]; then
-			cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.orig
+		# ---------------------------------------------------------------------
+		if [ ! -f ${DIR_BIND}/named.conf.local ]; then
+			echo ---- add named.conf.local -----------------------------------------------------
+			cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.local
+			: > ${DIR_BIND}/named.conf.local
+			sed -i ${DIR_BIND}/named.conf                                                                      \
+			    -e "/include \"\/etc\/named\.rfc1912\.zones\";/i include \"${DIR_BIND}\/named\.conf\.local\";"
 		fi
-		sed -i ${DIR_BIND}/named.conf                                                                                                                  \
-		    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\tfe80::/${LNK_BITS[0]};\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
-		    -e "/allow-query/a \\\tallow-transfer\t{ none; };"
 	fi
 	#--------------------------------------------------------------------------
-	if [ ! -f ${DIR_BIND}/named.conf.local.orig ]; then
+	if [ ! -f ${DIR_BIND}/named.conf.options.orig ] && [ -f ${DIR_BIND}/named.conf.options ]; then
+		echo --- named.conf.options --------------------------------------------------------
+		sed -i.orig ${DIR_BIND}/named.conf.options                                                                                                     \
+		    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\tfe80::/${LNK_BITS[0]};\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
+		    -e "/^};/i \\\n\tallow-transfer { none; };"
+	fi
+	#--------------------------------------------------------------------------
+	if [ ! -f ${DIR_BIND}/named.conf.local.orig ] && [ -f ${DIR_BIND}/named.conf.local ]; then
+		echo --- named.conf.local ----------------------------------------------------------
 		cp -p ${DIR_BIND}/named.conf.local ${DIR_BIND}/named.conf.local.orig
 		# ---------------------------------------------------------------------
 		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
@@ -1131,6 +1124,7 @@ _EOT_
 		done
 		# ---------------------------------------------------------------------
 		if [ "${EXT_ZONE}" != "" ]; then
+			echo --- slaves --------------------------------------------------------------------
 			if [ ! -d ${DIR_ZONE}/slaves ]; then
 				mkdir -p ${DIR_ZONE}/slaves
 				chown ${DNS_USER}. ${DIR_ZONE}/slaves
@@ -1143,11 +1137,6 @@ _EOT_
 				};
 _EOT_
 		fi
-	fi
-	#--------------------------------------------------------------------------
-	if [ "${IP4_DHCP[0]}" = "auto" ]; then
-		sed -i.orig ${DIR_ZONE}/db.${WGP_NAME}                 -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
-		sed -i.orig ${DIR_ZONE}/db.${IP4_RADR[0]}.in-addr.arpa -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
 	fi
 	# -------------------------------------------------------------------------
 	named-checkconf
