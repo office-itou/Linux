@@ -24,6 +24,7 @@
 ##	2018/06/29 000.0000 J.Itou         Fedora 28追加
 ##	2018/07/07 000.0000 J.Itou         CentOS 7追加
 ##	2018/07/07 000.0000 J.Itou         仕様見直し
+##	2018/07/15 000.0000 J.Itou         debian 9.5.0 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -45,7 +46,7 @@
 	readonly ARRAY_NAME=(                                                                                                                                                                           \
 	    "debian debian-7.11.0-amd64-netinst-1       https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-cd/debian-7.11.0-amd64-netinst.iso                            preseed_debian.cfg"   \
 	    "debian debian-8.11.0-amd64-netinst-1       https://cdimage.debian.org/cdimage/archive/8.11.0/amd64/iso-cd/debian-8.11.0-amd64-netinst.iso                            preseed_debian.cfg"   \
-	    "debian debian-9.4.0-amd64-netinst-1        https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-9.4.0-amd64-netinst.iso                            preseed_debian.cfg"   \
+	    "debian debian-9.5.0-amd64-netinst-1        https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-9.5.0-amd64-netinst.iso                            preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-netinst-1      https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                            preseed_debian.cfg"   \
 	    "centos CentOS-7-x86_64-NetInstall-1804     https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.5.1804/isos/x86_64/CentOS-7-x86_64-NetInstall-1804.iso                 kickstart_centos.cfg" \
 	    "fedora Fedora-Server-netinst-x86_64-28-1.1 https://download.fedoraproject.org/pub/fedora/linux/releases/28/Server/x86_64/iso/Fedora-Server-netinst-x86_64-28-1.1.iso kickstart_fedora.cfg" \
@@ -56,7 +57,7 @@ funcMenu () {
 	echo "# ID：Version                            ：リリース日：サポ終了日：備考       #"
 	echo "#  1：debian-7.11.0-amd64-netinst-1      ：2013-05-04：2018-05-31：oldoldstable"
 	echo "#  2：debian-8.11.0-amd64-netinst-1      ：2015-04-25：2020-04-xx：oldstable  #"
-	echo "#  3：debian-9.4.0-amd64-netinst-1       ：2017-06-17：2022-xx-xx：stable     #"
+	echo "#  3：debian-9.5.0-amd64-netinst-1       ：2017-06-17：2022-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst-1     ：20xx-xx-xx：20xx-xx-xx：testing    #"
 	echo "#  5：CentOS-7-x86_64-NetInstall-1804    ：2018-05-10：2024-06-30：RHEL 7.5   #"
 	echo "#  6：Fedora-Server-netinst-x86_64-28-1.1：2018-05-01：20xx-xx-xx：           #"

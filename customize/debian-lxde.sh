@@ -1,9 +1,9 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [Debian 9.4.0]                                          *
+# LiveCDCustomization [Debian 9.5.0]                                          *
 # *****************************************************************************
 
-	LIVE_VNUM=9.4.0
+	LIVE_VNUM=9.5.0
 
 # == tools install ============================================================
 	apt-get -y install debootstrap xorriso squashfs-tools
