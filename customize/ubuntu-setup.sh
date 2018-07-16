@@ -29,16 +29,16 @@
 	if [ ! -f /etc/apt/sources.list.orig ]; then
 		cp -p  /etc/apt/sources.list /etc/apt/sources.list.orig
 		cat <<- _EOT_ > /etc/apt/sources.list
-			deb http://jp.archive.ubuntu.com/ubuntu/ artful main restricted
-			deb http://jp.archive.ubuntu.com/ubuntu/ artful multiverse
-			deb http://jp.archive.ubuntu.com/ubuntu/ artful universe
-			deb http://jp.archive.ubuntu.com/ubuntu/ artful-backports main restricted universe multiverse
-			deb http://jp.archive.ubuntu.com/ubuntu/ artful-updates main restricted
-			deb http://jp.archive.ubuntu.com/ubuntu/ artful-updates multiverse
-			deb http://jp.archive.ubuntu.com/ubuntu/ artful-updates universe
-			deb http://security.ubuntu.com/ubuntu artful-security main restricted
-			deb http://security.ubuntu.com/ubuntu artful-security multiverse
-			deb http://security.ubuntu.com/ubuntu artful-security universe
+			deb http://jp.archive.ubuntu.com/ubuntu/ bionic main restricted
+			deb http://jp.archive.ubuntu.com/ubuntu/ bionic multiverse
+			deb http://jp.archive.ubuntu.com/ubuntu/ bionic universe
+			deb http://jp.archive.ubuntu.com/ubuntu/ bionic-backports main restricted universe multiverse
+			deb http://jp.archive.ubuntu.com/ubuntu/ bionic-updates main restricted
+			deb http://jp.archive.ubuntu.com/ubuntu/ bionic-updates multiverse
+			deb http://jp.archive.ubuntu.com/ubuntu/ bionic-updates universe
+			deb http://security.ubuntu.com/ubuntu bionic-security main restricted
+			deb http://security.ubuntu.com/ubuntu bionic-security multiverse
+			deb http://security.ubuntu.com/ubuntu bionic-security universe
 _EOT_
 	fi
 	apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
