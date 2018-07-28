@@ -26,6 +26,7 @@
 ##	2018/06/29 000.0000 J.Itou         Fedora 28追加
 ##	2018/07/07 000.0000 J.Itou         仕様見直し
 ##	2018/07/15 000.0000 J.Itou         debian 9.5.0 変更
+##	2018/07/27 000.0000 J.Itou         ubuntu 18.04.1 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -55,9 +56,8 @@
 	    "ubuntu ubuntu-16.04.4-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.4-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-17.10.1-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/artful/ubuntu-17.10.1-server-amd64.iso                         preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-17.10.1-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/artful/ubuntu-17.10.1-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04-server-amd64       http://cdimage.ubuntu.com/releases/18.04/release/ubuntu-18.04-server-amd64.iso                                           preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04-desktop-amd64.iso                          preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04-live-server-amd64  https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04-live-server-amd64.iso                      preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-18.04.1-server-amd64     http://cdimage.ubuntu.com/releases/18.04.1/release/ubuntu-18.04.1-server-amd64.iso                                       preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-18.04.1-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04.1-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
 	    "centos CentOS-7-x86_64-DVD-1804        https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.5.1804/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso                       kickstart_centos.cfg" \
 	    "fedora Fedora-Server-dvd-x86_64-28-1.1 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/28/Server/x86_64/iso/Fedora-Server-dvd-x86_64-28-1.1.iso kickstart_fedora.cfg" \
 	)   # 区分  DVDファイル名                   ダウンロード先URL                                                                                                        定義ファイル
@@ -75,11 +75,10 @@ funcMenu () {
 	echo "#  8：ubuntu-16.04.4-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
 	echo "#  9：ubuntu-17.10.1-server-amd64    ：2017-10-19：2018-07-xx：Artful Aardvark#"
 	echo "# 10：ubuntu-17.10.1-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
-	echo "# 11：ubuntu-18.04-server-amd64      ：2018-04-26：2023-04-xx：Bionic Beaver  #"
-	echo "# 12：ubuntu-18.04-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
-	echo "# 13：ubuntu-18.04-live-server-amd64 ：    〃    ：    〃    ：  〃           #"
-	echo "# 14：CentOS-7-x86_64-DVD-1804       ：2018-05-10：2024-06-30：RHEL 7.5       #"
-	echo "# 15：Fedora-Server-dvd-x86_64-28-1.1：2018-05-01：20xx-xx-xx：               #"
+	echo "# 11：ubuntu-18.04.1-server-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver  #"
+	echo "# 12：ubuntu-18.04.1-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
+	echo "# 13：CentOS-7-x86_64-DVD-1804       ：2018-05-10：2024-06-30：RHEL 7.5       #"
+	echo "# 14：Fedora-Server-dvd-x86_64-28-1.1：2018-05-01：20xx-xx-xx：               #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
