@@ -13,3 +13,15 @@ indent_size = 4
 [*.md]
 indent_style = space
 indent_size = 2
+
+[*.c]
+indent_style = space
+indent_size = 4
+
+[*.h]
+indent_style = space
+indent_size = 4
+
+[Makefile]
+indent_style = space
+indent_size = 4
