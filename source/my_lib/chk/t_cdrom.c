@@ -34,11 +34,7 @@ void dbg_print(const cuedata_t * cuedata)
 		my_lba2msf(lba, &m, &s, &f);
 		printf("|%03d|%03d|%02d:%02d.%02d|%02d:%02d.%02d|%6d|%6d|%3d|%6d|%02d:%02d.%02d|\n",
 			   cuedata->td[i].trk, cuedata->td[i].ind,
-			   cuedata->td[i].min0, cuedata->td[i].sec0, cuedata->td[i].frm0,
-			   cuedata->td[i].min1, cuedata->td[i].sec1, cuedata->td[i].frm1,
-			   cuedata->td[i].lba0, cuedata->td[i].lba1,
-			   cuedata->td[i].flg,
-			   lba, m, s, f);
+			   cuedata->td[i].min0, cuedata->td[i].sec0, cuedata->td[i].frm0, cuedata->td[i].min1, cuedata->td[i].sec1, cuedata->td[i].frm1, cuedata->td[i].lba0, cuedata->td[i].lba1, cuedata->td[i].flg, lba, m, s, f);
 	}
 }
 
@@ -50,6 +46,7 @@ int main(int argc, char *argv[])
 	int flg_wave = 0;					// 1: output to wave data
 	int opt;							// option character
 	int i;
+
 	while ((opt = getopt(argc, argv, "wd")) != -1) {
 		switch (opt) {
 		case 'w':

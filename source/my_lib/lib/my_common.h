@@ -2,7 +2,6 @@
 #ifndef __MY_COMMON_H__
 #define __MY_COMMON_H__
 // ----------------------------------------------------------------------------
-#define _XOPEN_SOURCE 700
 #include <features.h>
 #include <unistd.h>
 #include <stdint.h>						// uint16_t,uint32_t,uint64_t,...
@@ -11,6 +10,7 @@
 #include <stdio.h>						// FILE,fopen,fclose,...
 #include <string.h>						// memset,strncpy,strlen,strchr,strstr
 #include <stdlib.h>						// free
+#include <fcntl.h>						// open
 #include <linux/limits.h>				// PATH_MAX
 #include <linux/cdrom.h>				// CD_FRAMES,CD_SECS,...
 // ----------------------------------------------------------------------------
@@ -68,11 +68,12 @@
 #endif
 #endif
 // --- my_string.c ------------------------------------------------------------
-extern void my_perror(int errnum, const char *format, ...);
+extern int my_perror(int errnum, const char *format, ...);
 extern void my_rm_crlf(char *s);
 extern int my_sjis2utf8(const char *src, char *dst, size_t len);
-extern int my_dirname(const char *path, char *dname, size_t dname_len, char *fname, size_t fname_len);
-extern int my_basename(const char *path, char *bname, size_t bname_len, char *ename, size_t ename_len);
+extern void my_dirname(const char *path, char *dname, size_t dname_len, char *fname, size_t fname_len);
+extern void my_basename(const char *path, char *bname, size_t bname_len, char *ename, size_t ename_len);
+
 // --- my_file.c --------------------------------------------------------------
 extern int my_fopen(FILE ** stream, const char *path, const char *mode);
 extern int my_fclose(FILE * stream);
@@ -89,7 +90,15 @@ extern ssize_t my_write(int fd, const void *buf, size_t count);
 extern ssize_t my_pread(int fd, void *buf, size_t count, off_t offset);
 extern ssize_t my_pwrite(int fd, const void *buf, size_t count, off_t offset);
 extern int my_ioctl(int fd, unsigned long request, char *argp);
+extern off_t my_fstat(int fd);
+extern int my_copy(const char *ipath, const char *opath);
+
+// --- my_time.c --------------------------------------------------------------
+extern int64_t my_get_current_time(void);
+extern int my_get_time_string(int64_t time, char *buf);
+
 // --- my_cdrom.c -------------------------------------------------------------
+#define TRACK_MAX				99
 typedef struct {
 	int trk;							// track number
 	int ind;							// index number
@@ -110,9 +119,11 @@ typedef struct {
 	int frame_len;						// frame size
 	int trk0;							// start track
 	int trk1;							// end track
+	int leadout;						// last frame number
 	int flg;							// flag (1:binary,...)
-	trkdata_t td[99];					// track data
+	trkdata_t td[TRACK_MAX];			// track data
 } cuedata_t;
+
 #define WAVE_HEADER_LEN 36
 #define WAVE_DATA_LEN    8
 typedef struct wave_header {
@@ -133,13 +144,22 @@ typedef struct wave_data {
 	uint32_t length;					// length of wave data
 //  char *data;                         // wave data
 } __attribute__ ((__packed__)) wave_data_t;
+typedef struct {
+	char cue[PATH_MAX];					// cue file name
+	char bin[PATH_MAX];					// bin file name
+	int entry[TRACK_MAX];				// start frame number of the truck
+	int first, last;					// first and last track number
+	int leadout;						// last frame number
+} tocdata_t;
 extern void my_lba2msf(int lba, int *m, int *s, int *f);
 extern int my_msf2lba(int m, int s, int f);
 extern int my_msf2frame(const char *buf, int *m, int *s, int *f);
 extern int my_get_cuedata(cuedata_t * cuedata);
 extern int my_get_bindata(const cuedata_t * cuedata, int flg_wave);
+extern int my_read_toc(tocdata_t * toc);
+
 // ----------------------------------------------------------------------------
-#endif									// __MY_COMMON_H__
+#endif							// __MY_COMMON_H__
 // ----------------------------------------------------------------------------
 // gcc -Wall t_cdrom.c my_cdrom.c my_file.c my_string.c -o t_cdrom -g
 // valgrind --leak-check=full --track-origins=yes
