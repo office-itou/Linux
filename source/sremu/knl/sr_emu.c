@@ -9,15 +9,20 @@
 #include <linux/module.h>				// module_init,module_exit, ...
 #include <linux/cdrom.h>				// struct cdrom_device_ops, ...
 #include <linux/file.h>					// fput
+#include <scsi/scsi.h>					//
+#include <scsi/scsi_ioctl.h>			//
+#include <scsi/scsi_cmnd.h>				//
 #include <scsi/scsi_driver.h>			// scsi_register_driver, ...
 #include <scsi/scsi_eh.h>				// scsi_block_when_processing_errors, ...
 #include <scsi/sg.h>					// SG command
 #include "sr_emu.h"						// SCSI cdrom (sr) emulation driver's header
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#define VENDOR				"NECCDEMU"
+#define PRODUCT				"CD-emulator (SR)"
+#define REVISION			"1.00"
 #define SR_HARD_SECTOR		CD_FRAMESIZE_RAW
 #define SR_MINORS			1
-
 #define SR_CAPABILITIES		( CDC_CLOSE_TRAY     \
 							| CDC_OPEN_TRAY      \
 							| CDC_LOCK           \
@@ -39,18 +44,6 @@
 							| CDC_MRW            \
 							| CDC_MRW_W          \
 							| CDC_RAM )
-
-#define MAX_RETRIES			3
-#define SR_TIMEOUT			(30 * HZ)
-
-#define IOCTL_RETRIES		3
-
-#define VENDOR_TIMEOUT		(30 * HZ)
-#define VENDOR_SCSI3		1			// default: scsi-3 mmc
-#define VENDOR_NEC			2
-#define VENDOR_TOSHIBA		3
-#define VENDOR_WRITER		4			// pre-scsi3 writers
-
 // ============================================================================
 struct scsi_cd {
 	struct cdrom_device_info *cdi;
@@ -68,11 +61,8 @@ static DEFINE_MUTEX(sr_mutex);
 static DEFINE_SPINLOCK(sr_lock);
 static LIST_HEAD(sr_deferred);
 
-#define SR_VERSION_STR "1.00.00"
-static int sr_version_num = 100000;
-
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-// 0x12
+// 0x12: Inquiry
 static int sr_gpcmd_inquiry(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	bufp[0x00] = 0x05;					//  0: C/DVD Logical Unit (ROM, R, RW, RAM and +RW types)
@@ -83,270 +73,326 @@ static int sr_gpcmd_inquiry(const struct scsi_cd *cd, const struct sg_io_hdr *io
 	bufp[0x05] = 0x00;					//  5:
 	bufp[0x06] = 0x00;					//  6:
 	bufp[0x07] = 0x00;					//  7:
-	bufp[0x08] = 'N';					//  8: Vendor Identification (8bytes)
-	bufp[0x09] = 'E';					//  9:
-	bufp[0x0a] = 'C';					// 10:
-	bufp[0x0b] = 'c';					// 11:
-	bufp[0x0c] = 'd';					// 12:
-	bufp[0x0d] = 'e';					// 13:
-	bufp[0x0e] = 'm';					// 14:
-	bufp[0x0f] = 'u';					// 15:
-	bufp[0x10] = 'C';					// 16: Product Identification (16bytes)
-	bufp[0x11] = 'D';					// 17:
-	bufp[0x12] = '-';					// 18:
-	bufp[0x13] = 'E';					// 19:
-	bufp[0x14] = 'm';					// 20:
-	bufp[0x15] = 'u';					// 21:
-	bufp[0x16] = ' ';					// 22:
-	bufp[0x17] = 'I';					// 23:
-	bufp[0x18] = 'D';					// 24:
-	bufp[0x19] = 'E';					// 25:
-	bufp[0x1a] = ' ';					// 26:
-	bufp[0x1b] = 'C';					// 27:
-	bufp[0x1c] = 'D';					// 28:
-	bufp[0x1d] = 'R';					// 29:
-	bufp[0x1e] = '1';					// 30:
-	bufp[0x1f] = '0';					// 31:
-	bufp[0x20] = '1';					// 32: Product Revision Level (4bytes)
-	bufp[0x21] = '.';					// 33:
-	bufp[0x22] = '0';					// 34:
-	bufp[0x23] = '0';					// 35:
+	memcpy(&bufp[0x08], VENDOR, 8);		//  8: Vendor Identification (8bytes)
+	memcpy(&bufp[0x10], PRODUCT, 16);	// 16: Product Identification (16bytes)
+	memcpy(&bufp[0x20], REVISION, 4);	// 32: Product Revision Level (4bytes)
 
 	return 0;
 }
 
 // ============================================================================
-// 0x28
+// 0x28: Read 10
 static int sr_gpcmd_read_10(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
-	return 0;
+	int ret = 0, res;
+	struct sr_toc *toc = cd->toc;
+	struct file *file;
+	unsigned long lba, len;
+
+	if (!cd->toc->initial)
+		return -ENOMEDIUM;
+
+	lba = ((unsigned long) cmdp[2] << 24) + ((unsigned long) cmdp[3] << 16) + ((unsigned long) cmdp[4] << 8) + ((unsigned long) cmdp[5]);
+	len = ((unsigned long) cmdp[7] << 8) + ((unsigned long) cmdp[8]);
+
+	file = filp_open(toc->path_bin, O_RDONLY | O_LARGEFILE, 0);
+	if (IS_ERR(file))
+		return PTR_ERR(file);
+
+	res = kernel_read(file, lba, bufp, len);
+	if (res < 0)
+		ret = -EIO;
+
+	fput(file);
+
+	return ret;
 }
 
 // ============================================================================
-// 0x42
+// 0x42: Read Subchannel
 static int sr_gpcmd_read_subchannel(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
-	return 0;
+	int ret = -ENOSYS, len;
+
+	if (!cd->toc->initial)
+		return -ENOMEDIUM;
+
+	if (!(cmdp[2] & 0x40)) {			// SubQ
+		len = 0;
+		bufp[0x00] = 0x00;				//  0: Reserved
+		bufp[0x01] = 0x15;				//  1: Audio Status
+		bufp[0x02] = len >> 8;			//  2: Sub-channel Data Length
+		bufp[0x03] = len;				//  3: 
+		return 0;
+	}
+
+	switch (cmdp[3]) {					// Sub-channel Data Format
+	case 0x01:							// CD current position Mandatory
+		break;
+	case 0x02:							// Media catalogue number (UPC/bar code) Mandatory
+		len = 20;
+		bufp[0x00] = 0x00;				//  0: Reserved
+		bufp[0x01] = 0x15;				//  1: Audio Status
+		bufp[0x02] = len >> 8;			//  2: Sub-channel Data Length
+		bufp[0x03] = len;				//  3: 
+		bufp[0x04] = 0x02;				//  0: Sub Channel Data Format Code
+		bufp[0x05] = 0x00;				//  1: Reserved
+		bufp[0x06] = 0x00;				//  2: Reserved
+		bufp[0x07] = 0x00;				//  3: Reserved
+		bufp[0x08] = 0x00;				//  4: Media Catalogue Number (UPC/Bar Code)
+		bufp[0x09] = 0x00;				//  5: 
+		bufp[0x0a] = 0x00;				//  6: 
+		bufp[0x0b] = 0x00;				//  7: 
+		bufp[0x0c] = 0x00;				//  8: 
+		bufp[0x0d] = 0x00;				//  9: 
+		bufp[0x0e] = 0x00;				// 10: 
+		bufp[0x0f] = 0x00;				// 11: 
+		bufp[0x10] = 0x00;				// 12: 
+		bufp[0x11] = 0x00;				// 13: 
+		bufp[0x12] = 0x00;				// 14: 
+		bufp[0x13] = 0x00;				// 15: 
+		bufp[0x14] = 0x00;				// 16: 
+		bufp[0x15] = 0x00;				// 17: 
+		bufp[0x16] = 0x00;				// 18: 
+		bufp[0x17] = 0x00;				// 19: 
+		ret = 0;
+		break;
+	case 0x03:							// Track international standard recording code (ISRC) Mandatory
+		break;
+	}
+
+	return ret;
 }
 
 // ============================================================================
-// 0x43: READ TOC,READ TOC/PMA/ATIP
+// 0x43: Read Table of Contents
 static int sr_gpcmd_read_toc_pma_atip(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	struct sr_toc *toc = cd->toc;
 	struct cdrom_tochdr *thdr = &toc->tochdr;
 	struct cdrom_tocentry *tent = toc->tocentry;
-	int i, n, o, len, trk, lba, lba0, lba1, m, s, f;
+	int i, n, o, len, trk, trk0, trk1, lout, lba, lba0, lba1, m, s, f;
 
 	if (!cd->toc->initial)
 		return -ENOMEDIUM;
 
+	trk0 = thdr->cdth_trk0;
+	trk1 = thdr->cdth_trk1;
+	lout = toc->leadout;
+
 	switch (cmdp[2] & 0x0f) {			// Format
 	case 0x00:							// TOC
-		len = 3 + 8 * thdr->cdth_trk1 + 7;
-		bufp[0x00] = len >> 8;			//  0: TOC Data Length
-		bufp[0x01] = len;				//  1: 
-		bufp[0x02] = thdr->cdth_trk0;	//  2: 
-		bufp[0x03] = thdr->cdth_trk1;	//  3: 
-		bufp[0x04] = 0x00;				//  4: 
-
-		for (i = thdr->cdth_trk0, n = 0, o = 0; i <= thdr->cdth_trk1 && n <= TRACK_MAX; i++, n++, o += 8, tent++) {
-			trk = tent->cdte_track;
-			if (tent->cdte_format == CDROM_MSF)
+		if (cmdp[0x06] == 0x00)			// from first track to end track (lead out)
+			trk = trk0;
+		else							// from select track to end track (lead out)
+			trk = cmdp[0x06];
+		len = 2 + 8 * (trk1 - trk + 2);
+		o = 0;
+		bufp[o++] = len >> 8;			//  0: TOC Data Length
+		bufp[o++] = len;				//  1: 
+		bufp[o++] = trk0;				//  2: First Track Number
+		bufp[o++] = trk1;				//  3: Last Track Number
+		for (i = trk0, n = 0; i <= trk1 && n <= TRACK_MAX; i++, n++, tent++) {
+			if (tent->cdte_track != trk)
+				continue;
+			for (; i <= trk1 && n <= TRACK_MAX; i++, n++, tent++) {
+				trk = tent->cdte_track;
 				lba = sr_msf2lba(tent->cdte_addr.msf.minute, tent->cdte_addr.msf.second, tent->cdte_addr.msf.frame);
-			else
-				lba = tent->cdte_addr.lba;
-			bufp[0x05 + o] = 0x10;		//  0: 
-			bufp[0x06 + o] = trk;		//  1: 
-			bufp[0x07 + o] = 0x00;		//  2: 
-			bufp[0x08 + o] = lba >> 24;	//  3: 
-			bufp[0x09 + o] = lba >> 16;	//  4: 
-			bufp[0x0a + o] = lba >> 8;	//  5: 
-			bufp[0x0b + o] = lba;		//  6: 
-			bufp[0x0c + o] = 0x00;		//  7: 
+				bufp[o++] = 0x00;		//  0: Reserved
+				bufp[o++] = 0x10;		//  1: ADR | Control 
+				bufp[o++] = trk;		//  2: Track Number
+				bufp[o++] = 0x00;		//  3: Reserved
+				bufp[o++] = lba >> 24;	//  4: Track Start Address
+				bufp[o++] = lba >> 16;	//  5: 
+				bufp[o++] = lba >> 8;	//  6: 
+				bufp[o++] = lba;		//  7: 
+			}
 		}
-
-		lba = toc->leadout;
-		bufp[0x05 + o] = 0x10;			//  0
-		bufp[0x06 + o] = 0xaa;			//  1
-		bufp[0x07 + o] = 0x00;			//  2
-		bufp[0x08 + o] = lba >> 24;		//  3
-		bufp[0x09 + o] = lba >> 16;		//  4
-		bufp[0x0a + o] = lba >> 8;		//  5
-		bufp[0x0b + o] = lba;			//  6
-		break;
+		lba = lout;
+		bufp[o++] = 0x00;				//  0: Reserved
+		bufp[o++] = 0x10;				//  1: ADR | Control 
+		bufp[o++] = 0xaa;				//  2: Track Number
+		bufp[o++] = 0x00;				//  3: Reserved
+		bufp[o++] = lba >> 24;			//  4: Track Start Address
+		bufp[o++] = lba >> 16;			//  5: 
+		bufp[o++] = lba >> 8;			//  6: 
+		bufp[o++] = lba;				//  7: 
+		return 0;
 	case 0x01:							// Session Information
 		len = 0x0a;
-		bufp[0x00] = len >> 8;			//  0: TOC Data Length
-		bufp[0x01] = len;				//  1: 
-		bufp[0x02] = 0x01;				//  2: 
-		bufp[0x03] = 0x01;				//  3: 
-		bufp[0x04] = 0x00;				//  4: 
-		bufp[0x05] = 0x10;				//  5: 
-		bufp[0x06] = 0x01;				//  6: 
-		bufp[0x07] = 0x00;				//  7: 
-		bufp[0x08] = 0x00;				//  8: 
-		bufp[0x09] = 0x00;				//  9: 
-		bufp[0x0a] = 0x00;				// 10: 
-		bufp[0x0b] = 0x00;				// 11: 
-		break;
+		o = 0;
+		lba = 0;
+		bufp[o++] = len >> 8;			//  0: TOC Data Length (0Ah)
+		bufp[o++] = len;				//  1: 
+		bufp[o++] = 0x01;				//  2: First Complete Session Number (Hex)
+		bufp[o++] = 0x01;				//  3: Last Complete Session Number (Hex)
+		bufp[o++] = 0x00;				//  0: Reserved
+		bufp[o++] = 0x10;				//  1: ADR | Control
+		bufp[o++] = 0x01;				//  2: First Track Number in Last Complete Session
+		bufp[o++] = 0x00;				//  3: Reserved
+		bufp[o++] = lba >> 24;			//  4: Start Address of First Track in Last Session
+		bufp[o++] = lba >> 16;			//  5: 
+		bufp[o++] = lba >> 8;			//  6: 
+		bufp[o++] = lba;				//  7: 
+		return 0;
 	case 0x02:							// Full TOC
-		lba = toc->leadout + 75 * 2;
-		sr_lba2msf(lba, &m, &s, &f);
-		len = 2 + 11 * 3 + 11 * thdr->cdth_trk1;
-		bufp[0x00] = len >> 8;			//  0: TOC Data Length
-		bufp[0x01] = len;				//  1: 
-		bufp[0x02] = 0x01;				//  2: 
-		bufp[0x03] = 0x01;				//  3: 
+		if (cmdp[0x06] == 0xaa) {		// Lead-out area
+			len = 2 + 11;
+			o = 0;
+			sr_lba2msf(lout + 75 * 2, &m, &s, &f);
 
-		bufp[0x04] = 0x01;				//  0:
-		bufp[0x05] = 0x10;				//  1:
-		bufp[0x06] = 0x00;				//  2:
-		bufp[0x07] = 0xa0;				//  3:
-		bufp[0x08] = 0x00;				//  4:
-		bufp[0x09] = 0x00;				//  5:
-		bufp[0x0a] = 0x00;				//  6:
-		bufp[0x0b] = 0x00;				//  7:
-		bufp[0x0c] = thdr->cdth_trk0;	//  8:
-		bufp[0x0d] = 0x00;				//  9:
-		bufp[0x0e] = 0x00;				// 10:
+			bufp[o++] = len >> 8;		//  0: TOC Data Length
+			bufp[o++] = len;			//  1: 
+			bufp[o++] = 0x01;			//  2: First Complete Session Number
+			bufp[o++] = 0x01;			//  3: Last Complete Session Number
+			bufp[o++] = 0x01;			//  4:  0: Session Number
+			bufp[o++] = 0x10;			//  5:  1: ADR | Control
+			bufp[o++] = 0x00;			//  6:  2: Byte 1 or TNO
+			bufp[o++] = 0xa0;			//  7:  3: Byte 2 or Point
+			bufp[o++] = 0x00;			//  8:  4: Byte 3 or Min
+			bufp[o++] = 0x00;			//  9:  5: Byte 4 or Sec
+			bufp[o++] = 0x00;			// 10:  6: Byte 5 or Frame
+			bufp[o++] = 0x00;			// 11:  7: Byte 6 or Zero
+			bufp[o++] = m;				// 12:  8: Byte 7 or PMin
+			bufp[o++] = s;				// 13:  9: Byte 8 or PSec
+			bufp[o++] = f;				// 14: 10: Byte 9 or PFrame
 
-		bufp[0x0f] = 0x01;				//  0:
-		bufp[0x10] = 0x10;				//  1:
-		bufp[0x11] = 0x00;				//  2:
-		bufp[0x12] = 0xa1;				//  3:
-		bufp[0x13] = 0x00;				//  4:
-		bufp[0x14] = 0x00;				//  5:
-		bufp[0x15] = 0x00;				//  6:
-		bufp[0x16] = 0x00;				//  7:
-		bufp[0x17] = thdr->cdth_trk1;	//  8:
-		bufp[0x18] = 0x00;				//  9:
-		bufp[0x19] = 0x00;				// 10:
+			return 0;
+		}
 
-		bufp[0x1a] = 0x01;				//  0:
-		bufp[0x1b] = 0x10;				//  1:
-		bufp[0x1c] = 0x00;				//  2:
-		bufp[0x1d] = 0xa2;				//  3:
-		bufp[0x1e] = 0x00;				//  4:
-		bufp[0x1f] = 0x00;				//  5:
-		bufp[0x20] = 0x00;				//  6:
-		bufp[0x21] = 0x00;				//  7:
-		bufp[0x22] = m;					//  8:
-		bufp[0x23] = s;					//  9:
-		bufp[0x24] = f;					// 10:
+		len = 2 + 11 * (3 + trk1 - trk0 + 1);
+		o = 0;
+		bufp[o++] = len >> 8;			//  0: TOC Data Length
+		bufp[o++] = len;				//  1: 
+		bufp[o++] = 0x01;				//  2: First Complete Session Number
+		bufp[o++] = 0x01;				//  3: Last Complete Session Number
 
-		for (i = thdr->cdth_trk0, n = 0, o = 0; i <= thdr->cdth_trk1 && n <= TRACK_MAX; i++, n++, o += 11, tent++) {
+		for (i = 0; i < 3; i++) {
+			bufp[o++] = 0x01;			//  0: Session Number
+			bufp[o++] = 0x10;			//  1: ADR | Control (Sub-channel Q encodes current position data | 2 Audio without Pre-emphasis)
+			bufp[o++] = 0x00;			//  2: Byte 1 or TNO
+			bufp[o++] = 0xa0 + i;		//  3: Byte 2 or Point (Point: First Track number,Last Track number,Lead-out)
+			bufp[o++] = 0x00;			//  4: Byte 3 or Min
+			bufp[o++] = 0x00;			//  5: Byte 4 or Sec
+			bufp[o++] = 0x00;			//  6: Byte 5 or Frame
+			bufp[o++] = 0x00;			//  7: Byte 6 or Zero
+			m = s = f = 0;
+			if (i == 0) {				// First Track number
+				m = trk0;
+			} else if (i == 1) {		// Last Track number
+				m = trk1;
+			} else if (i == 2) {		// Lead-out
+				sr_lba2msf(lout + 75 * 2, &m, &s, &f);
+			}
+			bufp[o++] = m;				//  8: Byte 7 or PMin
+			bufp[o++] = s;				//  9: Byte 8 or PSec
+			bufp[o++] = f;				// 10: Byte 9 or PFrame
+		}
+
+		for (i = trk0, n = 0; i <= trk1 && n <= TRACK_MAX; i++, n++, tent++) {
 			trk = tent->cdte_track;
 			if (tent->cdte_format == CDROM_MSF)
 				lba = sr_msf2lba(tent->cdte_addr.msf.minute, tent->cdte_addr.msf.second, tent->cdte_addr.msf.frame);
 			else
 				lba = tent->cdte_addr.lba;
-			lba += 75 * 2;
-			sr_lba2msf(lba, &m, &s, &f);
-			bufp[0x25 + o] = 0x01;		//  0:
-			bufp[0x26 + o] = 0x10;		//  1:
-			bufp[0x27 + o] = 0x00;		//  2:
-			bufp[0x28 + o] = trk;		//  3:
-			bufp[0x29 + o] = 0x00;		//  4:
-			bufp[0x2a + o] = 0x00;		//  5:
-			bufp[0x2b + o] = 0x00;		//  6:
-			bufp[0x2c + o] = 0x00;		//  7:
-			bufp[0x2d + o] = m;			//  8:
-			bufp[0x2e + o] = s;			//  9:
-			bufp[0x2f + o] = f;			// 10:
+			sr_lba2msf(lba + 75 * 2, &m, &s, &f);
+			bufp[o++] = 0x01;			//  0: Session Number
+			bufp[o++] = 0x10;			//  1: ADR | Control (Sub-channel Q encodes current position data | 2 Audio without Pre-emphasis)
+			bufp[o++] = 0x00;			//  2: Byte 1 or TNO
+			bufp[o++] = trk;			//  3: Byte 2 or Point (Point: First Track number)
+			bufp[o++] = 0x00;			//  4: Byte 3 or Min
+			bufp[o++] = 0x00;			//  5: Byte 4 or Sec
+			bufp[o++] = 0x00;			//  6: Byte 5 or Frame
+			bufp[o++] = 0x00;			//  7: Byte 6 or Zero
+			bufp[o++] = m;				//  8: Byte 7 or PMin
+			bufp[o++] = s;				//  9: Byte 8 or PSec
+			bufp[o++] = f;				// 10: Byte 9 or PFrame
 		}
-		bufp[0x25 + o] = 0x01;			//  0:
-		break;
+
+		return 0;
 	case 0x03:							// PMA
-		len = 2 + 11 * thdr->cdth_trk1 + 11;
-		bufp[0x00] = len >> 8;			//  0: TOC Data Length
-		bufp[0x01] = len;				//  1: 
-		bufp[0x02] = 0x00;				//  2: 
-		bufp[0x03] = 0x00;				//  3: 
+		o = 0;
+		len = 2 + 11 * (3 + trk1 - trk0 + 1);
+		bufp[o++] = len >> 8;			//  0: PMA Data Length
+		bufp[o++] = len;				//  1: 
+		bufp[o++] = 0x00;				//  2: Reserved
+		bufp[o++] = 0x00;				//  3: Reserved
 
 		lba0 = 0;
-		for (i = thdr->cdth_trk0, n = 0, o = 0; i <= thdr->cdth_trk1 && n <= TRACK_MAX; i++, n++, o += 11, tent++) {
+		for (i = trk0, n = 0; i <= trk1 && n < TRACK_MAX; i++, n++, tent++) {
 			trk = tent->cdte_track;
 			if (tent->cdte_format == CDROM_MSF)
 				lba1 = sr_msf2lba(tent->cdte_addr.msf.minute, tent->cdte_addr.msf.second, tent->cdte_addr.msf.frame);
 			else
 				lba1 = tent->cdte_addr.lba;
-			lba1 += 75 * 2;
-			bufp[0x04 + o] = 0x00;		//  0: 
-			bufp[0x05 + o] = 0x10;		//  1: 
-			bufp[0x06 + o] = 0x00;		//  2: 
-			bufp[0x07 + o] = trk;		//  3: 
 
-			sr_lba2msf(lba1, &m, &s, &f);
-			bufp[0x08 + o] = m;			//  4: 
-			bufp[0x09 + o] = s;			//  5: 
-			bufp[0x0a + o] = f;			//  6: 
+			bufp[o++] = 0x00;			//  0: Reserved
+			bufp[o++] = 0x10;			//  1: ADR | Control (Sub-channel Q encodes current position data | 2 Audio without Pre-emphasis)
+			bufp[o++] = 0x00;			//  2: Byte 1 or TNO
+			bufp[o++] = trk;			//  3: Byte 2 or Point (Point: First Track number)
 
-			bufp[0x0b + o] = 0x00;		//  7: 
+			sr_lba2msf(lba1 + 75 * 2, &m, &s, &f);
+			bufp[o++] = m;				//  4: Byte 3 or Min
+			bufp[o++] = s;				//  5: Byte 4 or Sec
+			bufp[o++] = f;				//  6: Byte 5 or Frame
 
-			sr_lba2msf(lba1 - lba0, &m, &s, &f);
-			bufp[0x0c + o] = m;			//  8: 
-			bufp[0x0d + o] = s;			//  9: 
-			bufp[0x0e + o] = f;			// 10: 
+			bufp[o++] = 0x00;			//  7: Byte 6 or Zero
+
+			sr_lba2msf(lba1 - lba0 + 75 * 2, &m, &s, &f);
+			bufp[o++] = m;				//  8: Byte 7 or PMin
+			bufp[o++] = s;				//  9: Byte 8 or PSec
+			bufp[o++] = f;				// 10: Byte 9 or PFrame
 
 			lba0 = lba1;
 		}
-
-		bufp[0x04 + o] = 0x00;			//  0: 
-		bufp[0x05 + o] = 0x20;			//  1: 
-		bufp[0x06 + o] = 0x00;			//  2: 
-		bufp[0x07 + o] = 0x00;			//  3: 
-		bufp[0x08 + o] = 0x00;			//  4: 
-		bufp[0x09 + o] = 0x00;			//  5: 
-		bufp[0x0a + o] = 0x00;			//  6: 
-		bufp[0x0b + o] = 0x00;			//  7: 
-		bufp[0x0c + o] = 0x00;			//  8: 
-		bufp[0x0d + o] = 0x00;			//  9: 
-		bufp[0x0e + o] = 0x00;			// 10: 
-		break;
+		return 0;
 	case 0x04:							// ATIP
+		o = 0;
 		len = 0x1a;
-		bufp[0x00] = len >> 8;			//  0: TOC Data Length
-		bufp[0x01] = len;				//  1: 
-		bufp[0x02] = 0x00;				//  2: 
-		bufp[0x03] = 0x00;				//  3: 
-		bufp[0x04] = 0x00;				//  4: 
-		bufp[0x05] = 0x00;				//  5: 
-		bufp[0x06] = 0x00;				//  6: 
-		bufp[0x07] = 0x00;				//  7: 
-		bufp[0x08] = 0x00;				//  8: 
-		bufp[0x09] = 0x00;				//  9: 
-		bufp[0x0a] = 0x00;				// 10: 
-		bufp[0x0b] = 0x00;				// 11: 
-		bufp[0x0c] = 0x00;				// 12: 
-		bufp[0x0d] = 0x00;				// 13: 
-		bufp[0x0e] = 0x00;				// 14: 
-		bufp[0x0f] = 0x00;				// 15: 
-		bufp[0x10] = 0x00;				// 16: 
-		bufp[0x11] = 0x00;				// 17: 
-		bufp[0x12] = 0x00;				// 18: 
-		bufp[0x13] = 0x00;				// 19: 
-		bufp[0x14] = 0x00;				// 20: 
-		bufp[0x15] = 0x00;				// 21: 
-		bufp[0x16] = 0x00;				// 22: 
-		bufp[0x17] = 0x00;				// 23: 
-		bufp[0x18] = 0x00;				// 24: 
-		bufp[0x19] = 0x00;				// 25: 
-		break;
+		bufp[o++] = len >> 8;			//  0: ATIP Data Length
+		bufp[o++] = len;				//  1: 
+		bufp[o++] = 0x00;				//  2: Reserved
+		bufp[o++] = 0x00;				//  3: Reserved
+		bufp[o++] = 0xd1;				//  0: 
+		bufp[o++] = 0x00;				//  1: 
+		bufp[o++] = 0xc6;				//  2: 
+		bufp[o++] = 0x00;				//  3: Reserved
+		bufp[o++] = 0x61;				//  4: ATIP Start Time of Lead-in (Min)
+		bufp[o++] = 0x0a;				//  5: ATIP Start Time of Lead-in (Sec)
+		bufp[o++] = 0x00;				//  6: ATIP Start Time of Lead-in (Frame)
+		bufp[o++] = 0x00;				//  7: Reserved
+		bufp[o++] = 0x4f;				//  8: ATIP Last Possible Start Time of Lead-out (Min)
+		bufp[o++] = 0x3b;				//  9: ATIP Last Possible Start Time of Lead-out (Sec)
+		bufp[o++] = 0x4a;				// 10: ATIP Last Possible Start Time of Lead-out (Frame)
+		bufp[o++] = 0x00;				// 11: Reserved
+		bufp[o++] = 0x02;				// 12: A1 Values
+		bufp[o++] = 0x4a;				// 13: 
+		bufp[o++] = 0xb0;				// 14: 
+		bufp[o++] = 0x00;				// 15: Reserved
+		bufp[o++] = 0x5c;				// 16: A2 Values
+		bufp[o++] = 0xc6;				// 17: 
+		bufp[o++] = 0x26;				// 18: 
+		bufp[o++] = 0x00;				// 19: Reserved
+		bufp[o++] = 0xff;				// 20: A3 Values
+		bufp[o++] = 0xff;				// 21: 
+		bufp[o++] = 0xff;				// 22: 
+		bufp[o++] = 0x00;				// 23: Reserved
+		return 0;
 	case 0x05:							// CD-Text
 		len = 0x02;
-		bufp[0x00] = len >> 8;			//  0: TOC Data Length
-		bufp[0x01] = len;				//  1: 
-		bufp[0x02] = 0x00;				//  2: 
-		bufp[0x03] = 0x00;				//  3: 
-		break;
+		o = 0;
+		bufp[o++] = len >> 8;			//  0: CD-Text Data Length
+		bufp[o++] = len;				//  1: 
+		bufp[o++] = 0x00;				//  2: Reserved
+		bufp[o++] = 0x00;				//  3: Reserved
+		return 0;
 	}
 
-	return 0;
+	return -ENOSYS;
 }
 
 // ============================================================================
-// 0x45: PLAY AUDIO
+// 0x45: Play Audio 10
 static int sr_gpcmd_play_audio_10(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	if (!cd->toc->initial)
@@ -356,7 +402,7 @@ static int sr_gpcmd_play_audio_10(const struct scsi_cd *cd, const struct sg_io_h
 }
 
 // ============================================================================
-// 0x51: READ DISK INFORMATION
+// 0x51: Read Disc Info
 static int sr_gpcmd_read_disc_info(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	struct sr_toc *toc = cd->toc;
@@ -404,7 +450,14 @@ static int sr_gpcmd_read_disc_info(const struct scsi_cd *cd, const struct sg_io_
 }
 
 // ============================================================================
-// 0x5a
+// 0x55: Mode Select 10
+static int sr_gpcmd_mode_select_10(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
+{
+	return 0;
+}
+
+// ============================================================================
+// 0x5a: Mode Sense 10
 static int sr_gpcmd_mode_sense_10(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	bufp[0x00] = 0x00;					//  0: Mode Data Length 1
@@ -444,31 +497,45 @@ static int sr_gpcmd_mode_sense_10(const struct scsi_cd *cd, const struct sg_io_h
 		break;
 	case 0x2a:							// 0x2Ah C/DVD Capabilities & Mechanical Status
 		bufp[0x08] = 0x2a;				//  8:  0: Page Code (2Ah)
-		bufp[0x09] = 0x18;				//  9:  1: Page Length (18h)
+		bufp[0x09] = 0x26;				//  9:  1: Page Length (18h)
 		bufp[0x0a] = 0x3f;				// 10:  2: Read media
-		bufp[0x0b] = 0x3f;				// 11:  3: Write media
-		bufp[0x0c] = 0x71;				// 12:  4: Media Function Capabilities
-		bufp[0x0d] = 0xef;				// 13:  5:
+		bufp[0x0b] = 0x37;				// 11:  3: Write media
+		bufp[0x0c] = 0xf1;				// 12:  4: Media Function Capabilities
+		bufp[0x0d] = 0x63;				// 13:  5:
 		bufp[0x0e] = 0x2b;				// 14:  6:
-		bufp[0x0f] = 0x3f;				// 15:  7:
-		bufp[0x10] = 0x00;				// 16:  8: Obsolete
-		bufp[0x11] = 0x00;				// 17:  9:
-		bufp[0x12] = 0x00;				// 18: 10: Number of Volume Levels Supported
+		bufp[0x0f] = 0x23;				// 15:  7:
+		bufp[0x10] = 0x10;				// 16:  8: Obsolete
+		bufp[0x11] = 0x89;				// 17:  9:
+		bufp[0x12] = 0x01;				// 18: 10: Number of Volume Levels Supported
 		bufp[0x13] = 0x00;				// 19: 11:
-		bufp[0x14] = 0x00;				// 20: 12: Buffer Size supported by Logical Unit (in KBytes)
-		bufp[0x15] = 0x00;				// 21: 13:
-		bufp[0x16] = 0x00;				// 22: 14: Obsolete
-		bufp[0x17] = 0x00;				// 23: 15:
+		bufp[0x14] = 0x0f;				// 20: 12: Buffer Size supported by Logical Unit (in KBytes)
+		bufp[0x15] = 0xa0;				// 21: 13:
+		bufp[0x16] = 0x10;				// 22: 14: Obsolete
+		bufp[0x17] = 0x89;				// 23: 15:
 		bufp[0x18] = 0x00;				// 24: 16: Obsolete
-		bufp[0x19] = 0xc2;				// 25: 17: Digital Output Format
-		bufp[0x1a] = 0x00;				// 26: 18: Obsolete
-		bufp[0x1b] = 0x00;				// 27: 19:
-		bufp[0x1c] = 0x00;				// 28: 20: Obsolete
-		bufp[0x1d] = 0x00;				// 29: 21:
+		bufp[0x19] = 0x00;				// 25: 17: Digital Output Format
+		bufp[0x1a] = 0x02;				// 26: 18: Obsolete
+		bufp[0x1b] = 0xc2;				// 27: 19:
+		bufp[0x1c] = 0x02;				// 28: 20: Obsolete
+		bufp[0x1d] = 0xc2;				// 29: 21:
 		bufp[0x1e] = 0x00;				// 30: 22: Copy Management Revision Supported
-		bufp[0x1f] = 0x00;				// 31: 23:
+		bufp[0x1f] = 0x01;				// 31: 23:
 		bufp[0x20] = 0x00;				// 32: 24: Reserved
 		bufp[0x21] = 0x00;				// 33: 25: Reserved
+		bufp[0x22] = 0x00;				// 
+		bufp[0x23] = 0x00;				// 
+		bufp[0x24] = 0x02;				// 
+		bufp[0x25] = 0xc2;				// 
+		bufp[0x26] = 0x00;				// 
+		bufp[0x27] = 0x02;				// 
+		bufp[0x28] = 0x00;				// 
+		bufp[0x29] = 0x00;				// 
+		bufp[0x2a] = 0x1b;				// 
+		bufp[0x2b] = 0x90;				// 
+		bufp[0x2c] = 0x00;				// 
+		bufp[0x2d] = 0x00;				// 
+		bufp[0x2e] = 0x02;				// 
+		bufp[0x2f] = 0xc2;				// 
 		break;
 	case 0x2b:							// 2Bh - 3Eh Vendor-specific
 	case 0x2c:
@@ -519,27 +586,96 @@ static int sr_gpcmd_read_cd_msf(const struct scsi_cd *cd, const struct sg_io_hdr
 }
 
 // ============================================================================
-// 0xbe: READ CD
+// 0xbe: Read CD
 static int sr_gpcmd_read_cd(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
-	int ret = 0, res;
+	int ret = 0, res, m, s, f;
 	struct sr_toc *toc = cd->toc;
 	struct file *file;
-	unsigned long lba, len;
+	unsigned long lba = 0, len = 0, o = 0, cnt, l;
+	int sector_type, header_code, error_flag, sub_channel;
 
 	if (!cd->toc->initial)
 		return -ENOMEDIUM;
 
 	lba = ((unsigned long) cmdp[2] << 24) + ((unsigned long) cmdp[3] << 16) + ((unsigned long) cmdp[4] << 8) + ((unsigned long) cmdp[5]);
-	len = ((unsigned long) cmdp[6] << 16) + ((unsigned long) cmdp[7] << 8) + ((unsigned long) cmdp[8]);
+	sr_lba2msf(lba, &m, &s, &f);
+	// Expected Sector Type
+	sector_type = (cmdp[1] >> 2) & 0x07;
+	switch (sector_type) {
+	case 0x00:							// Any Type      : 
+	case 0x01:							// CD DA         : 2352
+		len = 2352;
+		break;
+	case 0x02:							// Mode 1        : 2048
+		len = 2048;
+		break;
+	case 0x03:							// Mode 2        : 2336
+		len = 2336;
+		break;
+	case 0x04:							// Mode 2 Form 1 : 2048
+		len = 2048;
+		break;
+	case 0x05:							// Mode 2 Form 2 : 2328
+		len = 2328;
+		break;
+	default:
+		return -EINVAL;
+	}
+	// Header(s) Code
+	header_code = (cmdp[9] >> 5) & 0x03;
+	switch (header_code) {
+	case 0x00:							// None
+		break;
+	case 0x01:							// HdrOnly
+		break;
+	case 0x02:							// SubheaderOnly
+		break;
+	case 0x03:							// All Headers
+		break;
+	default:
+		return -EINVAL;
+	}
+	// Error Flag(s)
+	error_flag = (cmdp[9] >> 1) & 0x03;
+	switch (error_flag) {
+	case 0x00:							// None
+		break;
+	case 0x01:							// C2 Error Flag data
+		break;
+	case 0x02:							// C2 & Block Error Flags
+		break;
+	default:
+		return -EINVAL;
+	}
+	// Sub-Channel Data Selection Bits
+	sub_channel = cmdp[10] & 0x03;
+	switch (sub_channel) {
+	case 0x00:							// No Sub-channel Data
+		break;
+	case 0x01:							// RAW
+		break;
+	case 0x02:							// Q
+		break;
+	case 0x04:							// R - W
+		break;
+	default:
+		return -EINVAL;
+	}
 
 	file = filp_open(toc->path_bin, O_RDONLY | O_LARGEFILE, 0);
 	if (IS_ERR(file))
 		return PTR_ERR(file);
 
-	res = kernel_read(file, lba, bufp, len);
-	if (res < 0)
-		ret = -EIO;
+	cnt = ((unsigned long) cmdp[6] << 16) + ((unsigned long) cmdp[7] << 8) + ((unsigned long) cmdp[8]);
+
+	for (l = 0; l < cnt; l++) {
+		res = kernel_read(file, lba, &bufp[o], len);
+		if (res < 0) {
+			ret = -EIO;
+			break;
+		}
+	}
 
 	fput(file);
 
@@ -592,48 +728,61 @@ static int sr_do_ioctl(struct scsi_cd *cd, struct sg_io_hdr *io_hdr)
 		ret = -EFAULT;
 		goto exit;
 	}
-
+#ifdef DEBUG
+	for (i = 0; i < sizeof(packet_command_texts) / sizeof(packet_command_texts[0]); i++) {
+		if (packet_command_texts[i].packet_command == cmdp[0]) {
+			b = packet_command_texts[i].text;
+			break;
+		}
+	}
+	pr_devel(DEVICE_NAME ": %s: %02x: %s\n", __FUNCTION__, *cmdp, b);
+	pr_devel(DEVICE_NAME ": %s: cmdp: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", __FUNCTION__, cmdp[0], cmdp[1], cmdp[2], cmdp[3], cmdp[4], cmdp[5], cmdp[6], cmdp[7], cmdp[8], cmdp[9], cmdp[10], cmdp[11]);
+#endif
 	switch (cmdp[0]) {
-	case GPCMD_TEST_UNIT_READY:		// 0x00 -------------------------------
+	case GPCMD_TEST_UNIT_READY:		// 0x00: Test Unit Ready --------------
+		ret = 0;
 		break;
-	case GPCMD_INQUIRY:				// 0x12 -------------------------------
+	case GPCMD_INQUIRY:				// 0x12: Inquiry ----------------------
 		ret = sr_gpcmd_inquiry(cd, io_hdr, cmdp, bufp);
 		break;
-	case GPCMD_READ_10:				// 0x28: Read 10
+	case GPCMD_READ_10:				// 0x28: Read 10 ----------------------
 		ret = sr_gpcmd_read_10(cd, io_hdr, cmdp, bufp);
 		break;
-	case GPCMD_READ_SUBCHANNEL:		// 0x42
+	case GPCMD_READ_SUBCHANNEL:		// 0x42: Read Subchannel --------------
 		ret = sr_gpcmd_read_subchannel(cd, io_hdr, cmdp, bufp);
 		break;
-	case GPCMD_READ_TOC_PMA_ATIP:		// 0x43: READ TOC,READ TOC/PMA/ATIP ---
+	case GPCMD_READ_TOC_PMA_ATIP:		// 0x43: Read Table of Contents -------
 		ret = sr_gpcmd_read_toc_pma_atip(cd, io_hdr, cmdp, bufp);
 		break;
-	case GPCMD_PLAY_AUDIO_10:			// 0x45: PLAY AUDIO
+	case GPCMD_PLAY_AUDIO_10:			// 0x45: Play Audio 10 ----------------
 		ret = sr_gpcmd_play_audio_10(cd, io_hdr, cmdp, bufp);
 		break;
-	case GPCMD_READ_DISC_INFO:			// 0x51: READ DISK INFORMATION
+	case GPCMD_READ_DISC_INFO:			// 0x51: Read Disc Info ---------------
 		ret = sr_gpcmd_read_disc_info(cd, io_hdr, cmdp, bufp);
 		break;
-	case GPCMD_MODE_SENSE_10:			// 0x5a
+	case GPCMD_MODE_SELECT_10:			// 0x55: Mode Select 10 ---------------
+		ret = sr_gpcmd_mode_select_10(cd, io_hdr, cmdp, bufp);
+		break;
+	case GPCMD_MODE_SENSE_10:			// 0x5a: Mode Sense 10 ----------------
 		ret = sr_gpcmd_mode_sense_10(cd, io_hdr, cmdp, bufp);
 		break;
-	case GPCMD_READ_12:				// 0xa8: Read 12
+	case GPCMD_READ_12:				// 0xa8: Read 12 ----------------------
 		ret = sr_gpcmd_read_12(cd, io_hdr, cmdp, bufp);
 		break;
-	case GPCMD_READ_CD_MSF:			// 0xb9: Read CD MSF
+	case GPCMD_READ_CD_MSF:			// 0xb9: Read CD MSF ------------------
 		ret = sr_gpcmd_read_cd_msf(cd, io_hdr, cmdp, bufp);
 		break;
-	case GPCMD_READ_CD:				// 0xbe: READ CD
+	case GPCMD_READ_CD:				// 0xbe: Read CD ----------------------
 		ret = sr_gpcmd_read_cd(cd, io_hdr, cmdp, bufp);
 		break;
 	default:
 		for (i = 0; i < sizeof(packet_command_texts) / sizeof(packet_command_texts[0]); i++) {
 			if (packet_command_texts[i].packet_command == cmdp[0]) {
 				b = packet_command_texts[i].text;
-				pr_devel(DEVICE_NAME ": %s: %02x: %s\n", __FUNCTION__, *cmdp, b);
 				break;
 			}
 		}
+		pr_err(DEVICE_NAME ": %s: %02x: %s\n", __FUNCTION__, *cmdp, b);
 		break;
 	}
 
@@ -662,102 +811,113 @@ static int sr_media_load(struct block_device *bdev, fmode_t mode, unsigned cmd, 
 // ============================================================================
 static int sr_emulated_host(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_set_transform(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_transform(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_set_reserved_size(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_reserved_size(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_scsi_id(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_set_force_low_dma(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_low_dma(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_set_force_pack_id(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_pack_id(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_num_waiting(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_sg_tablesize(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_version_num(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
 	void __user *argp = (void __user *) arg;
-	int __user *ip = argp;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return put_user(sr_version_num, ip);
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_scsi_reset(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
@@ -767,9 +927,6 @@ static int sr_io(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned
 	void __user *argp = (void __user *) arg;
 	struct sg_io_hdr io_hdr;
 
-#if 0
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-#endif
 	if (copy_from_user(&io_hdr, argp, sizeof(struct sg_io_hdr)))
 		return -EFAULT;
 
@@ -785,106 +942,121 @@ static int sr_io(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned
 // ============================================================================
 static int sr_get_request_table(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_set_keep_orphan(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_keep_orphan(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_access_count(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_set_timeout(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_timeout(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_get_command_q(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_set_command_q(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_set_debug(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_next_cmd_len(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_scsi_ioctl_get_idlun(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_scsi_ioctl_probe_host(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_scsi_ioctl_get_bus_number(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_scsi_ioctl_get_pci(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ============================================================================
 static int sr_cdrommultisession(struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg)
 {
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
-	return 0;
+	void __user *argp = (void __user *) arg;
+
+	return scsi_cmd_ioctl(bdev->bd_disk->queue, bdev->bd_disk, mode, cmd, argp);
 }
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
