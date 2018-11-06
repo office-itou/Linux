@@ -27,6 +27,7 @@
 ##	2018/07/07 000.0000 J.Itou         仕様見直し
 ##	2018/07/15 000.0000 J.Itou         debian 9.5.0 変更
 ##	2018/07/27 000.0000 J.Itou         ubuntu 18.04.1 変更
+##	2018/11/06 000.0000 J.Itou         ubuntu 18.10,19.04 / Fedora 29 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -52,14 +53,16 @@
 	    "debian debian-testing-amd64-DVD-1      https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"   \
 	    "ubuntu ubuntu-14.04.5-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-server-amd64.iso                         preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-14.04.5-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-16.04.4-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.4-server-amd64.iso                         preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-16.04.4-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.4-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-17.10.1-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/artful/ubuntu-17.10.1-server-amd64.iso                         preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-17.10.1-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/artful/ubuntu-17.10.1-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-16.04.5-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.5-server-amd64.iso                         preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-16.04.5-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.5-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-18.04.1-server-amd64     http://cdimage.ubuntu.com/releases/18.04.1/release/ubuntu-18.04.1-server-amd64.iso                                       preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-18.04.1-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04.1-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-18.10-server-amd64       http://cdimage.ubuntu.com/releases/18.10/release/ubuntu-18.10-server-amd64.iso                                           preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-18.10-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/cosmic/ubuntu-18.10-desktop-amd64.iso                          preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-19.04-server-amd64       http://cdimage.ubuntu.com/releases/19.04/release/ubuntu-19.04-server-amd64.iso                                           preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-19.04-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/disco/ubuntu-19.04-desktop-amd64.iso                           preseed_ubuntu.cfg"   \
 	    "centos CentOS-7-x86_64-DVD-1804        https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.5.1804/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso                       kickstart_centos.cfg" \
-	    "fedora Fedora-Server-dvd-x86_64-28-1.1 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/28/Server/x86_64/iso/Fedora-Server-dvd-x86_64-28-1.1.iso kickstart_fedora.cfg" \
+	    "fedora Fedora-Server-dvd-x86_64-29-1.2 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/29/Server/x86_64/iso/Fedora-Server-dvd-x86_64-29-1.2.iso kickstart_fedora.cfg" \
 	)   # 区分  DVDファイル名                   ダウンロード先URL                                                                                                        定義ファイル
 # -----------------------------------------------------------------------------
 funcMenu () {
@@ -71,14 +74,16 @@ funcMenu () {
 	echo "#  4：debian-testing-amd64-DVD-1     ：20xx-xx-xx：20xx-xx-xx：testing        #"
 	echo "#  5：ubuntu-14.04.5-server-amd64    ：2014-04-17：2019-04-xx：Trusty Tahr    #"
 	echo "#  6：ubuntu-14.04.5-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
-	echo "#  7：ubuntu-16.04.4-server-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus   #"
-	echo "#  8：ubuntu-16.04.4-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
-	echo "#  9：ubuntu-17.10.1-server-amd64    ：2017-10-19：2018-07-xx：Artful Aardvark#"
-	echo "# 10：ubuntu-17.10.1-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
-	echo "# 11：ubuntu-18.04.1-server-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver  #"
-	echo "# 12：ubuntu-18.04.1-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
-	echo "# 13：CentOS-7-x86_64-DVD-1804       ：2018-05-10：2024-06-30：RHEL 7.5       #"
-	echo "# 14：Fedora-Server-dvd-x86_64-28-1.1：2018-05-01：20xx-xx-xx：               #"
+	echo "#  7：ubuntu-16.04.5-server-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus   #"
+	echo "#  8：ubuntu-16.04.5-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
+	echo "#  9：ubuntu-18.04.1-server-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver  #"
+	echo "# 10：ubuntu-18.04.1-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
+	echo "# 11：ubuntu-18.10-server-amd64      ：2018-10-18：2019-07-xx：CosmicCuttlefish"
+	echo "# 12：ubuntu-18.10-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
+	echo "#---：ubuntu-19.04-server-amd64      ：2019-04-18：2020-01-xx：Disco Dingo    #"
+	echo "#---：ubuntu-19.04-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
+	echo "# 15：CentOS-7-x86_64-DVD-1804       ：2018-05-10：2024-06-30：RHEL 7.5       #"
+	echo "# 16：Fedora-Server-dvd-x86_64-29-1.2：2018-10-30：20xx-xx-xx：kernel 4.18    #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -285,56 +290,62 @@ funcRemaster () {
 # 792：1024× 768：1600万色
 # 795：1280×1024：1600万色
 # ---  https://ja.wikipedia.org/wiki/Debian -----------------------------------
-# Ver. :コードネーム    :リリース日:サポート期限
-#x  1.1:buzz            :1996-06-17:
-#x  1.2:rex             :1996-12-12:
-#x  1.3:bo              :1997-06-02:
-#x  2.0:hamm            :1998-07-24:
-#x  2.1:slink           :1999-03-09:
-#x  2.2:potato          :2000-08-15:
-#x  3.0:woody           :2002-07-19:2006-06-30
-#x  3.1:sarge           :2005-06-06:2008-03-31
-#x  4.0:etch            :2007-04-08:2010-02-15
-#x  5.0:lenny           :2009-02-14:2012-02-06
-#x  6.0:squeeze         :2011-02-06:2014-05-31/2016-02-29[LTS]
-#   7.0:wheezy          :2013-05-04:2016-04-25/2018-05-31[LTS]
-#   8.0:jessie          :2015-04-25:2018-05-xx/2020-04-xx[LTS]
-#   9.0:stretch         :2017-06-17:2020-xx-xx/2022-xx-xx[LTS]
-#  10.0:buster          :2019(予定):
-#  11.0:bullseye        :2021(予定):
+# Ver. :コードネーム     :リリース日:サポート期限
+#x  1.1:buzz             :1996-06-17:
+#x  1.2:rex              :1996-12-12:
+#x  1.3:bo               :1997-06-02:
+#x  2.0:hamm             :1998-07-24:
+#x  2.1:slink            :1999-03-09:
+#x  2.2:potato           :2000-08-15:
+#x  3.0:woody            :2002-07-19:2006-06-30
+#x  3.1:sarge            :2005-06-06:2008-03-31
+#x  4.0:etch             :2007-04-08:2010-02-15
+#x  5.0:lenny            :2009-02-14:2012-02-06
+#x  6.0:squeeze          :2011-02-06:2014-05-31/2016-02-29[LTS]
+#   7.0:wheezy           :2013-05-04:2016-04-25/2018-05-31[LTS]
+#   8.0:jessie           :2015-04-25:2018-05-xx/2020-04-xx[LTS]
+#   9.0:stretch          :2017-06-17:2020-xx-xx/2022-06-xx[LTS]
+#  10.0:buster           :2019(予定):
+#  11.0:bullseye         :2021(予定):
 # --- https://en.wikipedia.org/wiki/Ubuntu_version_history --------------------
-# Ver. :コードネーム    :リリース日:サポート期限
-#x 4.10:Warty Warthog   :2004-10-20:2006-04-30
-#x 5.04:Hoary Hedgehog  :2005-04-08:2006-10-31
-#x 5.10:Breezy Badger   :2005-10-13:2007-04-13
-#x 6.06:Dapper Drake    :2006-06-01:2009-07-14
-#x 6.10:Edgy Eft        :2006-10-26:2008-04-25
-#x 7.04:Feisty Fawn     :2007-04-19:2008-10-19
-#x 7.10:Gutsy Gibbon    :2007-10-18:2009-04-18
-#x 8.04:Hardy Heron     :2008-04-24:2011-05-12
-#x 8.10:Intrepid Ibex   :2008-10-30:2010-04-30
-#x 9.04:Jaunty Jackalope:2009-04-23:2010-10-23
-#x 9.10:Karmic Koala    :2009-10-29:2011-04-30
-#x10.04:Lucid Lynx      :2010-04-29:2013-05-09
-#x10.10:Maverick Meerkat:2010-10-10:2012-04-10
-#x11.04:Natty Narwhal   :2011-04-28:2012-10-28
-#x11.10:Oneiric Ocelot  :2011-10-13:2013-05-09
-#x12.04:Precise Pangolin:2012-04-26:2017-04-28
-#x12.10:Quantal Quetzal :2012-10-18:2014-05-16
-#x13.04:Raring Ringtail :2013-04-25:2014-01-27
-#x13.10:Saucy Salamander:2013-10-17:2014-07-17
-# 14.04:Trusty Tahr     :2014-04-17:2019-04-xx
-#x14.10:Utopic Unicorn  :2014-10-23:2015-07-23
-#x15.04:Vivid Vervet    :2015-04-23:2016-02-04
-#x15.10:Wily Werewolf   :2015-10-22:2016-07-28
-# 16.04:Xenial Xerus    :2016-04-21:2021-04-xx
-#x16.10:Yakkety Yak     :2016-10-13:2017-07-20
-#x17.04:Zesty Zapus     :2017-04-13:2018-01-13
-# 17.10:Artful Aardvark :2017-10-19:2018-07-xx
-# 18.04:Bionic Beaver   :2018-04-26:2023-04-xx
+# Ver. :コードネーム     :リリース日:サポート期限
+#x 4.10:Warty Warthog    :2004-10-20:2006-04-30
+#x 5.04:Hoary Hedgehog   :2005-04-08:2006-10-31
+#x 5.10:Breezy Badger    :2005-10-13:2007-04-13
+#x 6.06:Dapper Drake     :2006-06-01:2009-07-14
+#x 6.10:Edgy Eft         :2006-10-26:2008-04-25
+#x 7.04:Feisty Fawn      :2007-04-19:2008-10-19
+#x 7.10:Gutsy Gibbon     :2007-10-18:2009-04-18
+#x 8.04:Hardy Heron      :2008-04-24:2011-05-12
+#x 8.10:Intrepid Ibex    :2008-10-30:2010-04-30
+#x 9.04:Jaunty Jackalope :2009-04-23:2010-10-23
+#x 9.10:Karmic Koala     :2009-10-29:2011-04-30
+#x10.04:Lucid Lynx       :2010-04-29:2013-05-09
+#x10.10:Maverick Meerkat :2010-10-10:2012-04-10
+#x11.04:Natty Narwhal    :2011-04-28:2012-10-28
+#x11.10:Oneiric Ocelot   :2011-10-13:2013-05-09
+#x12.04:Precise Pangolin :2012-04-26:2017-04-28
+#x12.10:Quantal Quetzal  :2012-10-18:2014-05-16
+#x13.04:Raring Ringtail  :2013-04-25:2014-01-27
+#x13.10:Saucy Salamander :2013-10-17:2014-07-17
+# 14.04:Trusty Tahr      :2014-04-17:2019-04-xx
+#x14.10:Utopic Unicorn   :2014-10-23:2015-07-23
+#x15.04:Vivid Vervet     :2015-04-23:2016-02-04
+#x15.10:Wily Werewolf    :2015-10-22:2016-07-28
+# 16.04:Xenial Xerus     :2016-04-21:2021-04-xx
+#x16.10:Yakkety Yak      :2016-10-13:2017-07-20
+#x17.04:Zesty Zapus      :2017-04-13:2018-01-13
+#x17.10:Artful Aardvark  :2017-10-19:2018-07-19
+# 18.04:Bionic Beaver    :2018-04-26:2023-04-xx
+# 18.10:Cosmic Cuttlefish:2018-10-18:2019-07-xx
+# 19.04:Disco Dingo      :2019-04-18:2020-01-xx
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
 # Ver.    :リリース日:RHEL      :メンテナンス更新期限
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30
 # 7.5-1804:2018-05-10:2018-04-10:2024-06-30
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
+# Ver. :コードネーム     :リリース日:サポート期限
+# 27   :                 :2017-11-14:
+# 28   :                 :2018-05-01:
+# 29   :                 :2018-10-30:
 # -----------------------------------------------------------------------------
