@@ -12,7 +12,7 @@
 #include <sys/stat.h>					// For mode constants
 #include "my_library.h"					// my library's header
 #include "my_cdrom.h"					// my cdrom's header
-#include "sr_common.h"					// SCSI cdrom (sr) emulation driver
+#include "sr_device.h"					// SCSI cdrom (sr) device driver
 
 // ::: sr_mount.c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 int main(int argc, char *argv[])
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	if ((fd = my_open(dev_name, O_RDWR | O_NONBLOCK, 0)) < 0)
 		return fd;
 
-	if ((ret = my_ioctl(fd, SR_MEDIA_LOAD, &toc)) < 0)
+	if ((ret = my_ioctl(fd, SR_LOAD_MEDIA, &toc)) < 0)
 		err = ret;
 
 	if ((ret = my_close(fd)) < 0)

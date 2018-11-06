@@ -3,11 +3,11 @@ sources		:= sr_mount.c          \
 			   ../lib/my_library.c \
 			   ../lib/my_cdrom.c
 objects 	:= $(sources:.c=.o)
-headers		:= ../knl/sr_common.h  \
+headers		:= ../dev/sr_device.h  \
 			   ../lib/my_library.h \
 			   ../lib/my_cdrom.h
 cflags		:= -Wall -O3 \
-			   -I../knl/ \
+			   -I../dev/ \
 			   -I../lib/
 
 $(targets)	: $(sources)

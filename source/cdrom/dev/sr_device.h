@@ -6,10 +6,6 @@
 #define __SR_DEVICE_H__
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include "../lib/my_library.h"			// my library's header
-#include "../lib/my_cdrom.h"			// my cdrom's header
-
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #define AUTHOR				"Jun Itou"
 #define DEVICE_NAME			"srdev"
 #define DESCRIPTION			"SCSI cdrom ("DEVICE_NAME") device driver"
@@ -28,6 +24,8 @@ enum {									// IOCTL commands
 #include <linux/version.h>				// LINUX_VERSION_CODE, ...
 #include <scsi/scsi_cmnd.h> 			// struct block_device_operations
 #include <scsi/sg.h>					// SG command
+#include "../lib/my_library.h"			// my library's header
+#include "../lib/my_cdrom.h"			// my cdrom's header
 
 // ============================================================================
 #define VENDOR				"NECcdemu"
@@ -56,6 +54,10 @@ enum {									// IOCTL commands
 							| CDC_MRW            \
 							| CDC_MRW_W          \
 							| CDC_RAM )
+
+#ifndef BLK_STS_IOERR
+#define BLK_STS_IOERR		EIO
+#endif
 
 // ============================================================================
 struct scsi_cd {

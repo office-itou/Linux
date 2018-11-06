@@ -171,14 +171,14 @@ static int sr_drive_status(struct cdrom_device_info *cdi, int slot)
 
 	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
 
+	if (slot != CDSL_CURRENT)
+		return -EINVAL;
+
 	if (IS_ERR_OR_NULL(cd))
 		return PTR_ERR(cd);
 
 	if (!toc->initial)
 		return -ENOMEDIUM;
-
-	if (slot != CDSL_CURRENT)
-		return -EINVAL;
 
 	return result;
 }
@@ -191,6 +191,9 @@ static unsigned int sr_check_events(struct cdrom_device_info *cdi, unsigned int 
 
 	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
 
+	if (slot != CDSL_CURRENT)
+		return -EINVAL;
+
 	if (IS_ERR_OR_NULL(cd))
 		return PTR_ERR(cd);
 
@@ -198,9 +201,6 @@ static unsigned int sr_check_events(struct cdrom_device_info *cdi, unsigned int 
 		toc->mchange = 0;
 		return DISK_EVENT_MEDIA_CHANGE;
 	}
-
-	if (slot != CDSL_CURRENT)
-		return -EINVAL;
 
 	return result;
 }
@@ -262,19 +262,21 @@ static void sr_do_request(struct request_queue *q)
 
 	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
 
-	while ((req = blk_fetch_request(q))) {
-		if (req->cmd_type != REQ_TYPE_FS) {
+	while ((req = blk_fetch_request(q)) != NULL) {
+		switch (req_op(req)) {
+		case REQ_OP_READ:
+			list_add_tail(&req->queuelist, &sr_deferred);
+			schedule_work(&work);
+			break;
+		case REQ_OP_WRITE:
+			pr_notice(DEVICE_NAME ": Read only device - write request ignored\n");
+			__blk_end_request_all(req, BLK_STS_IOERR);
+			break;
+		default:
 			pr_devel(DEVICE_NAME ": Non-fs request ignored\n");
-			__blk_end_request_all(req, -EIO);
-			continue;
+			__blk_end_request_all(req, BLK_STS_IOERR);
+			break;
 		}
-		if (rq_data_dir(req) != READ) {
-			pr_devel(DEVICE_NAME ": Read only device - write request ignored\n");
-			__blk_end_request_all(req, -EIO);
-			continue;
-		}
-		list_add_tail(&req->queuelist, &sr_deferred);
-		schedule_work(&work);
 	}
 }
 
