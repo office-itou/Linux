@@ -1,5 +1,5 @@
 // ****************************************************************************
-// SCSI cdrom (sr) emulation driver
+// SCSI cdrom (sr) device driver
 // ****************************************************************************
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -12,7 +12,7 @@
 #include <sys/stat.h>					// For mode constants
 #include "my_library.h"					// my library's header
 #include "my_cdrom.h"					// my cdrom's header
-#include "sr_device.h"					// SCSI cdrom (sr) device driver
+#include "sr_module.h"					// SCSI cdrom (sr) device driver's header
 
 // ::: sr_mount.c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 int main(int argc, char *argv[])

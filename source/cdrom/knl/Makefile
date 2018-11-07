@@ -1,13 +1,13 @@
-targets		:= srdev
-sources		:= ../dev/sr_device.c  \
-			   ../dev/sr_gpcmd.c   \
+targets		:= sremu
+sources		:= sr_module.c         \
+			   sr_gpcmd.c          \
+			   ../lib/my_library.c \
 			   ../lib/my_cdrom.c
-objects 	:= $(sources:.c=.o)
-headers		:= ../dev/sr_device.h  \
+objects		:= $(sources:.c=.o)
+headers		:= sr_module.h         \
 			   ../lib/my_library.h \
 			   ../lib/my_cdrom.h
 cflags		:= -Wall -O3 \
-			   -I../dev/ \
 			   -I../lib/
 obj-m		:= $(targets).o
 $(targets)-y:= $(objects)

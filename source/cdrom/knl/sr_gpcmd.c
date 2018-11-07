@@ -3,21 +3,21 @@
 // ****************************************************************************
 
 // ::: debug ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#define NDEBUG
+#define DEBUG
 
 // ::: include ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#include "sr_device.h"					// SCSI cdrom (sr) device driver
+#include "sr_module.h"					// SCSI cdrom (sr) device driver's header
 
 // ::: global :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 // ::: sr_gpcmd.c :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // === 0x12: GPCMD_INQUIRY ====================================================
-static int sr_gpcmd_inquiry(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
+static int sr_gpcmd_inquiry(const struct sr_unit *sr, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	int result = 0;
-	const struct my_toc *toc = &cd->toc;
+	const struct my_toc *toc = sr->toc;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
+	pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 	if (!toc->initial)
 		return -ENOMEDIUM;
 
@@ -29,24 +29,24 @@ static int sr_gpcmd_inquiry(const struct scsi_cd *cd, const struct sg_io_hdr *io
 	bufp[0x05] = 0x00;					//  5:
 	bufp[0x06] = 0x00;					//  6:
 	bufp[0x07] = 0x00;					//  7:
-	memcpy(&bufp[0x08], VENDOR, 8);		//  8: Vendor Identification (8bytes)
-	memcpy(&bufp[0x10], PRODUCT, 16);	// 16: Product Identification (16bytes)
-	memcpy(&bufp[0x20], REVISION, 4);	// 32: Product Revision Level (4bytes)
+	memcpy(&bufp[0x08], SR_VENDOR, 8);	//  8: Vendor Identification (8bytes)
+	memcpy(&bufp[0x10], SR_PRODUCT, 16);	// 16: Product Identification (16bytes)
+	memcpy(&bufp[0x20], SR_REVISION, 4);	// 32: Product Revision Level (4bytes)
 
 	return result;
 }
 
 // === 0x43: GPCMD_READ_TOC_PMA_ATIP ==========================================
-static int sr_gpcmd_read_toc_pma_atip(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
+static int sr_gpcmd_read_toc_pma_atip(const struct sr_unit *sr, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	int result = 0;
-	const struct my_toc *toc = &cd->toc;
+	const struct my_toc *toc = sr->toc;
 	const struct cdrom_tochdr *thdr = &toc->tochdr;
 	const struct cdrom_tocentry *tent = toc->tocentry;
 	int i, n, o, len, trk, trk0, trk1, m, s, f;
 	long lout, lba, lba0, lba1;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
+	pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 	if (!toc->initial)
 		return -ENOMEDIUM;
 
@@ -271,13 +271,13 @@ static int sr_gpcmd_read_toc_pma_atip(const struct scsi_cd *cd, const struct sg_
 }
 
 // === 0x51: GPCMD_READ_DISC_INFO =============================================
-static int sr_gpcmd_read_disc_info(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
+static int sr_gpcmd_read_disc_info(const struct sr_unit *sr, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	int result = 0;
-	const struct my_toc *toc = &cd->toc;
+	const struct my_toc *toc = sr->toc;
 	const struct cdrom_tochdr *thdr = &toc->tochdr;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
+	pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 
 	if (!toc->initial)
 		return -ENOMEDIUM;
@@ -321,13 +321,13 @@ static int sr_gpcmd_read_disc_info(const struct scsi_cd *cd, const struct sg_io_
 }
 
 // === 0xb9: GPCMD_READ_CD_MSF ================================================
-static int sr_gpcmd_read_cd_msf(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
+static int sr_gpcmd_read_cd_msf(const struct sr_unit *sr, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	int result = 0;
-	const struct my_toc *toc = &cd->toc;
+	const struct my_toc *toc = sr->toc;
 	unsigned long lba0 = 0, lba1 = 0, blk = 0, len = 0;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
+	pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 	if (!toc->initial)
 		return -ENOMEDIUM;
 	lba0 = my_msf2lba(cmdp[3], cmdp[4], cmdp[5]);	// Starting Logical Block Address
@@ -349,18 +349,18 @@ static int sr_gpcmd_read_cd_msf(const struct scsi_cd *cd, const struct sg_io_hdr
 		break;
 	}
 
-	result = sr_do_read_media(cd, lba0, bufp, blk, len);
+	result = sr_do_read_media(sr, lba0, bufp, blk, len);
 	return result;
 }
 
 // === 0xbe: GPCMD_READ_CD ====================================================
-static int sr_gpcmd_read_cd(const struct scsi_cd *cd, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
+static int sr_gpcmd_read_cd(const struct sr_unit *sr, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	int result = 0;
-	const struct my_toc *toc = &cd->toc;
+	const struct my_toc *toc = sr->toc;
 	unsigned long lba = 0, blk = 0, len = 0;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
+	pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 	if (!toc->initial)
 		return -ENOMEDIUM;
 	lba = ((unsigned long) cmdp[2] << 24) + ((unsigned long) cmdp[3] << 16) + ((unsigned long) cmdp[4] << 8) + ((unsigned long) cmdp[5]);	// Starting Logical Block Address
@@ -381,17 +381,17 @@ static int sr_gpcmd_read_cd(const struct scsi_cd *cd, const struct sg_io_hdr *io
 		break;
 	}
 
-	result = sr_do_read_media(cd, lba, bufp, blk, len);
+	result = sr_do_read_media(sr, lba, bufp, blk, len);
 	return result;
 }
 
 // ::: do command :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-int sr_do_load_media(struct scsi_cd *cd, const unsigned char *bufp)
+int sr_do_load_media(struct sr_unit *sr, const unsigned char *bufp)
 {
 	int result = 0;
-	struct my_toc *toc = &cd->toc;
+	struct my_toc *toc = sr->toc;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
+	pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 
 	if (copy_from_user(toc, bufp, sizeof(struct my_toc)))
 		return -EFAULT;
@@ -403,18 +403,18 @@ int sr_do_load_media(struct scsi_cd *cd, const unsigned char *bufp)
 }
 
 // ============================================================================
-int sr_do_read_media(const struct scsi_cd *cd, unsigned long lba, unsigned char *bufp, unsigned long blk, unsigned long len)
+int sr_do_read_media(const struct sr_unit *sr, unsigned long lba, unsigned char *bufp, unsigned long blk, unsigned long len)
 {
 	int result = 0;
-	const struct my_toc *toc = &cd->toc;
+	const struct my_toc *toc = sr->toc;
 	struct file *file;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
+	pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 
 	if (!toc->initial)
 		return -ENOMEDIUM;
 /*
-	pr_devel(DEVICE_NAME ": %s: [%s]\n", __FUNCTION__, toc->path_bin);
+	pr_devel(SR_DEV_NAME ": %s: [%s]\n", __FUNCTION__, toc->path_bin);
 */
 	lba *= blk;
 	len *= blk;
@@ -429,7 +429,7 @@ int sr_do_read_media(const struct scsi_cd *cd, unsigned long lba, unsigned char 
 #endif
 	fput(file);
 /*
-	pr_devel(DEVICE_NAME ": %s: lba: %ld: len: %ld: ret: %d\n", __FUNCTION__, lba, len, result);
+	pr_devel(SR_DEV_NAME ": %s: lba: %ld: len: %ld: ret: %d\n", __FUNCTION__, lba, len, result);
 */
 	if (result != len)
 		return -EFAULT;
@@ -438,13 +438,13 @@ int sr_do_read_media(const struct scsi_cd *cd, unsigned long lba, unsigned char 
 }
 
 // ============================================================================
-int sr_do_read_tochdr(const struct scsi_cd *cd, const unsigned char *cmdp, unsigned char *bufp)
+int sr_do_read_tochdr(const struct sr_unit *sr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	int result = 0;
-	const struct my_toc *toc = &cd->toc;
+	const struct my_toc *toc = sr->toc;
 	const struct cdrom_tochdr *tochdr = &toc->tochdr;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
+	pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 
 	if (!toc->initial)
 		return -ENOMEDIUM;
@@ -456,14 +456,14 @@ int sr_do_read_tochdr(const struct scsi_cd *cd, const unsigned char *cmdp, unsig
 }
 
 // ============================================================================
-int sr_do_read_tocentry(const struct scsi_cd *cd, const unsigned char *cmdp, unsigned char *bufp)
+int sr_do_read_tocentry(const struct sr_unit *sr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	int result = 0;
-	const struct my_toc *toc = &cd->toc;
+	const struct my_toc *toc = sr->toc;
 	struct cdrom_tocentry *tocentryp;
 	int n, track, format;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
+	pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 
 	if (!toc->initial)
 		return -ENOMEDIUM;
@@ -517,15 +517,15 @@ int sr_do_read_tocentry(const struct scsi_cd *cd, const unsigned char *cmdp, uns
 }
 
 // ============================================================================
-int sr_do_read_track_tocentry(const struct scsi_cd *cd, int trk, struct cdrom_tocentry *tentry)
+int sr_do_read_track_tocentry(const struct sr_unit *sr, int trk, struct cdrom_tocentry *tentry)
 {
 	int result = 0;
-	const struct my_toc *toc = &cd->toc;
+	const struct my_toc *toc = sr->toc;
 	const struct cdrom_tochdr *thdr = &toc->tochdr;
 	const struct cdrom_tocentry *tent = toc->tocentry;
 	int i, n, trk0, trk1, m, s, f;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
+	pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 
 	if (!toc->initial)
 		return -ENOMEDIUM;
@@ -556,14 +556,14 @@ int sr_do_read_track_tocentry(const struct scsi_cd *cd, int trk, struct cdrom_to
 }
 
 // ============================================================================
-int sr_do_gpcmd(struct scsi_cd *cd, void __user * argp)
+int sr_do_gpcmd(struct sr_unit *sr, void __user * argp)
 {
 	int result = 0;
 	struct sg_io_hdr *io_hdr;
 	unsigned char *cmdp, *bufp;
 	ssize_t bsiz = 1024;
 
-	pr_devel(DEVICE_NAME ": enter %s\n", __FUNCTION__);
+	pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 
 	io_hdr = kzalloc(sizeof(struct sg_io_hdr), GFP_KERNEL);
 	if (IS_ERR_OR_NULL(io_hdr))
@@ -617,33 +617,33 @@ int sr_do_gpcmd(struct scsi_cd *cd, void __user * argp)
 		goto exit;
 	}
 
-	pr_devel(DEVICE_NAME ": %s: %04x: %s\n", __FUNCTION__, cmdp[0], my_msg_packet_cmd(cmdp[0]));
-	pr_devel(DEVICE_NAME ": %s:     : %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x                      ", __FUNCTION__, cmdp[0x00], cmdp[0x01], cmdp[0x02], cmdp[0x03], cmdp[0x04], cmdp[0x05], cmdp[0x06], cmdp[0x07], cmdp[0x08], cmdp[0x09], cmdp[0x0a], cmdp[0x0b]);
-	pr_devel(DEVICE_NAME ": %s:     : %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", __FUNCTION__, bufp[0x00], bufp[0x01], bufp[0x02], bufp[0x03], bufp[0x04], bufp[0x05], bufp[0x06], bufp[0x07], bufp[0x08], bufp[0x09], bufp[0x0a], bufp[0x0b], bufp[0x0c], bufp[0x0d], bufp[0x0e], bufp[0x0f]);
+	pr_devel(SR_DEV_NAME ": %s: %04x: %s\n", __FUNCTION__, cmdp[0], my_msg_packet_cmd(cmdp[0]));
+	pr_devel(SR_DEV_NAME ": %s:     : %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x                      ", __FUNCTION__, cmdp[0x00], cmdp[0x01], cmdp[0x02], cmdp[0x03], cmdp[0x04], cmdp[0x05], cmdp[0x06], cmdp[0x07], cmdp[0x08], cmdp[0x09], cmdp[0x0a], cmdp[0x0b]);
+	pr_devel(SR_DEV_NAME ": %s:     : %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", __FUNCTION__, bufp[0x00], bufp[0x01], bufp[0x02], bufp[0x03], bufp[0x04], bufp[0x05], bufp[0x06], bufp[0x07], bufp[0x08], bufp[0x09], bufp[0x0a], bufp[0x0b], bufp[0x0c], bufp[0x0d], bufp[0x0e], bufp[0x0f]);
 	result = -ENOSYS;
 	switch (cmdp[0]) {
 	default:
 		result = -ENOSYS;
 		break;
 	case GPCMD_INQUIRY:				// 0x12: 
-		result = sr_gpcmd_inquiry(cd, io_hdr, cmdp, bufp);
+		result = sr_gpcmd_inquiry(sr, io_hdr, cmdp, bufp);
 		break;
 	case GPCMD_READ_TOC_PMA_ATIP:		// 0x43: 
-		result = sr_gpcmd_read_toc_pma_atip(cd, io_hdr, cmdp, bufp);
+		result = sr_gpcmd_read_toc_pma_atip(sr, io_hdr, cmdp, bufp);
 		break;
 	case GPCMD_READ_DISC_INFO:			// 0x51
-		result = sr_gpcmd_read_disc_info(cd, io_hdr, cmdp, bufp);
+		result = sr_gpcmd_read_disc_info(sr, io_hdr, cmdp, bufp);
 		break;
 	case GPCMD_READ_CD:				// 0xbe: 
-		result = sr_gpcmd_read_cd(cd, io_hdr, cmdp, bufp);
+		result = sr_gpcmd_read_cd(sr, io_hdr, cmdp, bufp);
 		break;
 	case GPCMD_READ_CD_MSF:			// 0xb9: 
-		result = sr_gpcmd_read_cd_msf(cd, io_hdr, cmdp, bufp);
+		result = sr_gpcmd_read_cd_msf(sr, io_hdr, cmdp, bufp);
 		break;
 	}
   exit:
 	if (result >= 0 && io_hdr->dxfer_len) {
-		pr_devel(DEVICE_NAME ": %s:     : %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", __FUNCTION__, bufp[0x00], bufp[0x01], bufp[0x02], bufp[0x03], bufp[0x04], bufp[0x05], bufp[0x06], bufp[0x07], bufp[0x08], bufp[0x09], bufp[0x0a], bufp[0x0b], bufp[0x0c], bufp[0x0d], bufp[0x0e], bufp[0x0f]);
+		pr_devel(SR_DEV_NAME ": %s:     : %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n", __FUNCTION__, bufp[0x00], bufp[0x01], bufp[0x02], bufp[0x03], bufp[0x04], bufp[0x05], bufp[0x06], bufp[0x07], bufp[0x08], bufp[0x09], bufp[0x0a], bufp[0x0b], bufp[0x0c], bufp[0x0d], bufp[0x0e], bufp[0x0f]);
 		if (copy_to_user(io_hdr->dxferp, bufp, io_hdr->dxfer_len))
 			result = -EFAULT;
 	}

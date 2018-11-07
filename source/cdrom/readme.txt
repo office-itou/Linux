@@ -1,18 +1,19 @@
 ・開発環境
   sudo aptitude install linux-headers-`uname -r` build-essential indent
+  (debian 9.5にて開発中。ubuntu 18.10で検証予定。その他OS/kernelは未定)
 
 ・使用方法
   ### driver ###
-  cd dev
-  make clean && make
-  sudo insmod srdev.ko
-  sudo rmmod srdev && sudo insmod srdev.ko
+  cd knl
+  make clean && env LANG=C make
+  sudo insmod sremu.ko
+  sudo rmmod sremu && sudo insmod sremu.ko
   ### mounter ###
   cd cmd
   make clean && make
-  sudo ./sr_mount cdda.cue /dev/srdev0
+  sudo ./sr_mount cdda.cue /dev/sremu
   ### testing ###
-  sudo rm -f data.toc data.bin && sudo cdrdao read-cd --device /dev/srdev0 data.toc
+  sudo rm -f data.toc data.bin && sudo cdrdao read-cd --device /dev/sremu data.toc
 
 ・注意事項
 　未検証品につき重大な事故が起きてもリカバリーできる環境にて実施する事。

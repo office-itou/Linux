@@ -4,7 +4,7 @@
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #define NDEBUG
-
+#ifndef MODULE
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <stdio.h>						// fprintf,perror
 #include <errno.h>						// errno
@@ -204,5 +204,8 @@ off_t my_stat(const char *pathname)
 		return -my_perror(errno, "error: %s: %s: %s\n", __FUNCTION__, "stat", pathname);
 	return sb.st_size;
 }
+
+// ============================================================================
+#endif							// MODULE
 
 // *** EOF ********************************************************************
