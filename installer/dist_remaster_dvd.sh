@@ -28,6 +28,7 @@
 ##	2018/07/15 000.0000 J.Itou         debian 9.5.0 変更
 ##	2018/07/27 000.0000 J.Itou         ubuntu 18.04.1 変更
 ##	2018/11/06 000.0000 J.Itou         ubuntu 18.10,19.04 / Fedora 29 変更
+##	2018/11/11 000.0000 J.Itou         debian 9.6.0 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -49,7 +50,7 @@
 	readonly ARRAY_NAME=(                                                                                                                                                                      \
 	    "debian debian-7.11.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
 	    "debian debian-8.11.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/archive/8.11.0/amd64/iso-dvd/debian-8.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
-	    "debian debian-9.5.0-amd64-DVD-1        https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-9.5.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
+	    "debian debian-9.6.0-amd64-DVD-1        https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-9.6.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-DVD-1      https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"   \
 	    "ubuntu ubuntu-14.04.5-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-server-amd64.iso                         preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-14.04.5-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
@@ -70,7 +71,7 @@ funcMenu () {
 	echo "# ID：Version                        ：リリース日：サポ終了日：備考           #"
 	echo "#  1：debian-7.11.0-amd64-DVD-1      ：2013-05-04：2018-05-31：oldoldstable   #"
 	echo "#  2：debian-8.11.0-amd64-DVD-1      ：2015-04-25：2020-04-xx：oldstable      #"
-	echo "#  3：debian-9.5.0-amd64-DVD-1       ：2017-06-17：2022-xx-xx：stable         #"
+	echo "#  3：debian-9.6.0-amd64-DVD-1       ：2017-06-17：2022-xx-xx：stable         #"
 	echo "#  4：debian-testing-amd64-DVD-1     ：20xx-xx-xx：20xx-xx-xx：testing        #"
 	echo "#  5：ubuntu-14.04.5-server-amd64    ：2014-04-17：2019-04-xx：Trusty Tahr    #"
 	echo "#  6：ubuntu-14.04.5-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
@@ -302,7 +303,7 @@ funcRemaster () {
 #x  4.0:etch             :2007-04-08:2010-02-15
 #x  5.0:lenny            :2009-02-14:2012-02-06
 #x  6.0:squeeze          :2011-02-06:2014-05-31/2016-02-29[LTS]
-#   7.0:wheezy           :2013-05-04:2016-04-25/2018-05-31[LTS]
+#x  7.0:wheezy           :2013-05-04:2016-04-25/2018-05-31[LTS]
 #   8.0:jessie           :2015-04-25:2018-05-xx/2020-04-xx[LTS]
 #   9.0:stretch          :2017-06-17:2020-xx-xx/2022-06-xx[LTS]
 #  10.0:buster           :2019(予定):
