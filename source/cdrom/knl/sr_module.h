@@ -20,10 +20,15 @@
 
 // ::: include ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include <linux/file.h>					// fput
+#include <linux/kobject.h>				// kobject_del, ...
 #include <linux/module.h>				// module_init,module_exit, ...
 #include <linux/platform_device.h>		// struct platform_driver, ...
 #include <linux/version.h>				// LINUX_VERSION_CODE, ...
+#include <scsi/scsi.h>					// 
 #include <scsi/scsi_cmnd.h>				// struct block_device_operations
+#include <scsi/scsi_driver.h>			// struct scsi_driver
+#include <scsi/scsi_eh.h>				// scsi_block_when_processing_errors, ...
+#include <scsi/scsi_ioctl.h>			// scsi_ioctl, ...
 #include <scsi/sg.h>					// SG command
 
 // ::: global :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -31,7 +36,9 @@
 #define SR_PRODUCT			"CD-emu IDE CDR10"
 #define SR_REVISION			"1.00"
 #define SR_TIMEOUT			(30 * HZ)
+#define SR_MAX_RETRIES		3
 #define SR_HARD_SECTOR		2048
+#define SR_DISKS			256
 #define SR_CAPABILITIES		( CDC_CLOSE_TRAY     \
 							| CDC_OPEN_TRAY      \
 							| CDC_LOCK           \
@@ -53,6 +60,32 @@
 							| CDC_MRW            \
 							| CDC_MRW_W          \
 							| CDC_RAM )
+#define SR_MASK				( CDC_CLOSE_TRAY     \
+							| CDC_OPEN_TRAY      \
+							| CDC_LOCK           \
+							| CDC_SELECT_SPEED   \
+							| CDC_SELECT_DISC    \
+							| CDC_MULTI_SESSION  \
+							| CDC_MCN            \
+							| CDC_MEDIA_CHANGED  \
+							| CDC_PLAY_AUDIO     \
+							| CDC_RESET          \
+							| CDC_DRIVE_STATUS   \
+							| CDC_GENERIC_PACKET \
+							| CDC_CD_R           \
+							| CDC_CD_RW          \
+							| CDC_DVD            \
+							| CDC_DVD_R          \
+							| CDC_DVD_RAM        \
+							| CDC_MO_DRIVE       \
+							| CDC_MRW            \
+							| CDC_MRW_W          \
+							| CDC_RAM )
+
+#define VENDOR_SCSI3		1			// default: scsi-3 mmc
+#define VENDOR_NEC			2
+#define VENDOR_TOSHIBA		3
+#define VENDOR_WRITER		4			// pre-scsi3 writers
 
 #ifndef BLK_STS_OK
 #define BLK_STS_OK			0
@@ -63,20 +96,38 @@
 #endif
 
 // ============================================================================
-struct sr_unit {
-	struct cdrom_device_info *cdi;
+struct scsi_cd {
+//	struct scsi_driver *driver;
+//	unsigned capacity;					// size in blocks
+//	struct scsi_device *device;
+	unsigned int vendor;				// vendor code, see sr_vendor.c
+//	unsigned long ms_offset;			// for reading multisession-CD's
+//	unsigned writeable:1;
+//	unsigned use:1;						// is this device still supportable
+//	unsigned xa_flag:1;					// CD has XA sectors ?
+//	unsigned readcd_known:1;			// drive supports READ_CD (0xbe)
+//	unsigned readcd_cdda:1;				// reading audio data using READ_CD
+//	unsigned media_present:1;			// media is present
+
+	// GET_EVENT spurious event handling, blk layer guarantees exclusion
+//	int tur_mismatch;					// nr of get_event TUR mismatches
+//	bool tur_changed:1;					// changed according to TUR
+//	bool get_event_changed:1;			// changed according to GET_EVENT
+//	bool ignore_get_event:1;			// GET_EVENT is unreliable, use TUR
+
+	struct cdrom_device_info cdi;
+	// We hold gendisk and scsi_device references on probe and use the refs on this kref to decide when to release them
+//	struct kref kref;
 	struct gendisk *disk;
-	struct request_queue *rq;
-	struct my_toc *toc;
 };
 
 // ::: do command :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-int sr_do_load_media(struct sr_unit *sr, const unsigned char *bufp);
-int sr_do_read_media(const struct sr_unit *sr, unsigned long lba, unsigned char *bufp, unsigned long blk, unsigned long len);
-int sr_do_read_tochdr(const struct sr_unit *sr, const unsigned char *cmdp, unsigned char *bufp);
-int sr_do_read_tocentry(const struct sr_unit *sr, const unsigned char *cmdp, unsigned char *bufp);
-int sr_do_read_track_tocentry(const struct sr_unit *sr, int trk, struct cdrom_tocentry *tentry);
-int sr_do_gpcmd(struct sr_unit *sr, void __user * argp);
+extern int sr_do_load_media(struct my_toc *toc, const unsigned long arg);
+extern int sr_do_read_media(const struct my_toc *toc, unsigned long lba, unsigned char *bufp, unsigned long blk, unsigned long len);
+extern int sr_do_read_tochdr(const struct my_toc *toc, const unsigned char *cmdp, unsigned char *bufp);
+extern int sr_do_read_tocentry(const struct my_toc *toc, const unsigned char *cmdp, unsigned char *bufp);
+extern int sr_do_read_track_tocentry(const struct my_toc *toc, int trk, struct cdrom_tocentry *tentry);
+extern int sr_do_gpcmd(struct my_toc *toc, struct scsi_cd *cd, struct block_device *bdev, fmode_t mode, unsigned cmd, unsigned long arg);
 
 // ============================================================================
 #endif							// MODULE

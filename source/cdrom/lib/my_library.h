@@ -47,8 +47,8 @@ extern ssize_t my_write(int fd, const void *buf, size_t count);
 extern ssize_t my_pread(int fd, void *buf, size_t count, off_t offset);
 extern ssize_t my_pwrite(int fd, const void *buf, size_t count, off_t offset);
 extern int my_ioctl(int fd, unsigned long request, void *argp);
-extern off_t my_fstat(int fd);
-extern off_t my_stat(const char *pathname);
+extern long long my_fstat(int fd);
+extern long long my_stat(const char *pathname);
 
 // ============================================================================
 #endif							// MODULE

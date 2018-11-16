@@ -49,7 +49,7 @@ int my_sjis2utf8(const char *src, char *dst, size_t len)
 	int ret = 0;
 
 	strncpy(buf, src, sizeof(buf));
-	if ((conv = iconv_open("UTF-8", "SHIFT-JIS")) == (iconv_t) - 1)
+	if ((conv = iconv_open("UTF-8", "CP932")) == (iconv_t) - 1)
 		return -my_perror(errno, "error: %s: %s\n", __FUNCTION__, "iconv open");
 	if (iconv(conv, &src_buf, &src_len, &dst_buf, &dst_len) == (size_t) - 1)
 		ret = -my_perror(errno, "error: %s: %s\n", __FUNCTION__, "iconv");
@@ -186,23 +186,23 @@ int my_ioctl(int fd, unsigned long request, void *argp)
 }
 
 // ============================================================================
-off_t my_fstat(int fd)
+long long my_fstat(int fd)
 {
 	struct stat sb;						// file system status
 
 	if (fstat(fd, &sb) < 0)
 		return -my_perror(errno, "error: %s: %s\n", __FUNCTION__, "fstat");
-	return sb.st_size;
+	return (long long) sb.st_size;
 }
 
 // ============================================================================
-off_t my_stat(const char *pathname)
+long long my_stat(const char *pathname)
 {
 	struct stat sb;						// file system status
 
 	if (lstat(pathname, &sb))
 		return -my_perror(errno, "error: %s: %s: %s\n", __FUNCTION__, "stat", pathname);
-	return sb.st_size;
+	return (long long) sb.st_size;
 }
 
 // ============================================================================

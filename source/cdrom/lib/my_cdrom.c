@@ -78,9 +78,9 @@ int my_read_toc(struct my_toc *toc)
 	off_t offset = 0;					// offset (from the start of the file)
 	char *p, *s, *t;					// work
 	int n = -1, min, sec, frm, lba;		// work
-	char dname[PATH_MAX];				// work directory name
-	char fname[PATH_MAX];				// work file name
-	off_t size;							// work file size
+	char dname[NAME_MAX];				// work directory name
+	char fname[NAME_MAX];				// work file name
+	long long size;						// work file size
 
 	// ------------------------------------------------------------------------
 	if (realpath(toc->path_cue, pathname) == NULL)
@@ -120,6 +120,7 @@ int my_read_toc(struct my_toc *toc)
 					err = size;
 					break;
 				}
+				toc->size = size;
 				toc->leadout = size / CD_FRAMESIZE_RAW;
 			}
 			continue;

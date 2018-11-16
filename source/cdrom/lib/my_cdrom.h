@@ -13,15 +13,19 @@
 
 // ============================================================================
 #define TRACK_MAX			99
+
+#pragma pack(1)
 struct my_toc {
 	int initial;						// initial flag
 	int mchange;						// media change flag
 	char path_cue[PATH_MAX];			// cue file name
 	char path_bin[PATH_MAX];			// bin file name
 	long leadout;						// last frame number (set track = CDROM_LEADOUT)
+	long long size;						// file size
 	struct cdrom_tochdr tochdr;
 	struct cdrom_tocentry tocentry[TRACK_MAX];
 };
+#pragma pack()
 
 struct my_msg_list {
 	unsigned id;

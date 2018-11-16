@@ -277,8 +277,8 @@ int main(int argc, char *argv[])
 	dataLen = 48;
 	cmd[0] = 0x5a;						// Mode Sense 10
 	cmd[2] = 0x2a;						// C/DVD Capabilities & Mechanical Status
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1))
 		dumpPrint(((unsigned int) data[0] << 8) + (unsigned int) data[1], data);
 
@@ -288,8 +288,8 @@ int main(int argc, char *argv[])
 	dataLen = 16;
 	cmd[0] = 0x55;						// Mode Select 10
 	cmd[1] = 0x10;						// PF
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	data[0x00] = 0x00;
 	data[0x01] = 0x00;
 	data[0x02] = 0x00;
@@ -318,8 +318,8 @@ int main(int argc, char *argv[])
 	cmd[2] = 0x40;						// request subQ data
 	cmd[3] = 1;							// CD current position Mandatory
 	cmd[6] = 0x01;						// Track Number
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1))
 		dumpPrint(((unsigned int) data[2] << 8) + (unsigned int) data[3], data);
 
@@ -332,8 +332,8 @@ int main(int argc, char *argv[])
 	cmd[2] = 0x40;						// request subQ data
 	cmd[3] = 2;							// Media catalogue number (UPC/bar code) Mandatory
 	cmd[6] = 0x01;						// Track Number
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1))
 		dumpPrint(((unsigned int) data[2] << 8) + (unsigned int) data[3], data);
 
@@ -346,8 +346,8 @@ int main(int argc, char *argv[])
 	cmd[2] = 0x40;						// request subQ data
 	cmd[3] = 3;							// Track international standard recording code (ISRC) Mandatory
 	cmd[6] = 0x01;						// Track Number
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1))
 		dumpPrint(((unsigned int) data[2] << 8) + (unsigned int) data[3], data);
 
@@ -358,8 +358,8 @@ int main(int argc, char *argv[])
 	cmd[0] = 0x43;						// Read Table of Contents
 	cmd[2] = 0x01;						// Session Information
 	cmd[6] = 0;							// Track / Session Number
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1))
 		dumpPrint(((unsigned int) data[0] << 8) + (unsigned int) data[1], data);
 
@@ -370,8 +370,8 @@ int main(int argc, char *argv[])
 	cmd[0] = 0x43;						// Read Table of Contents
 	cmd[2] = 0x04;						// ATIP
 	cmd[6] = 0;							// Track / Session Number
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1))
 		dumpPrint(((unsigned int) data[0] << 8) + (unsigned int) data[1], data);
 
@@ -382,8 +382,8 @@ int main(int argc, char *argv[])
 	cmd[0] = 0x43;						// Read Table of Contents
 	cmd[2] = 0x00;						// TOC
 	cmd[6] = 0;							// Track / Session Number
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1))
 		dumpPrint(((unsigned int) data[0] << 8) + (unsigned int) data[1], data);
 
@@ -394,8 +394,8 @@ int main(int argc, char *argv[])
 	cmd[0] = 0x43;						// Read Table of Contents
 	cmd[2] = 0x00;						// TOC
 	cmd[6] = 0;							// Track / Session Number
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1)) {
 		dumpPrint(((unsigned int) data[0] << 8) + (unsigned int) data[1], data);
 		trk0 = data[2];
@@ -409,8 +409,8 @@ int main(int argc, char *argv[])
 	cmd[0] = 0x43;						// Read Table of Contents
 	cmd[2] = 0x02;						// Full TOC
 	cmd[6] = 0;							// Track / Session Number
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1)) {
 		dumpPrint(((unsigned int) data[0] << 8) + (unsigned int) data[1], data);
 		printf("%s: d2,3,4,5     : %02d, %02d, %02d, %02d\n", impl.filename, data[2], data[3], data[4], data[5]);
@@ -422,8 +422,8 @@ int main(int argc, char *argv[])
 	cmd[0] = 0x43;						// Read Table of Contents
 	cmd[2] = 0x02;						// Full TOC
 	cmd[6] = 0;							// Track / Session Number
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1)) {
 		dumpPrint(((unsigned int) data[0] << 8) + (unsigned int) data[1], data);
 		for (i = 4; i < 11 * 3; i += 11)
@@ -438,8 +438,8 @@ int main(int argc, char *argv[])
 	cmd[0] = 0x43;						// Read Table of Contents
 	cmd[2] = 0x00;						// TOC
 	cmd[6] = 0;							// Track / Session Number
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1)) {
 		lba = ((unsigned long) data[8] << 24) + ((unsigned long) data[9] << 16) + ((unsigned long) data[10] << 8) + (unsigned long) data[11];
 		printf("%s: print track 0\n", impl.filename);
@@ -454,8 +454,8 @@ int main(int argc, char *argv[])
 	cmd[0] = 0x43;						// Read Table of Contents
 	cmd[2] = 0x00;						// TOC
 	cmd[6] = 0xaa;						// Track / Session Number
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1)) {
 		trk0 = data[2];
 		trk1 = data[3];
@@ -474,8 +474,8 @@ int main(int argc, char *argv[])
 		cmd[0] = 0x43;					// Read Table of Contents
 		cmd[2] = 0x00;					// TOC
 		cmd[6] = trk;					// Track / Session Number
-		cmd[7] = dataLen >> 8;
-		cmd[8] = dataLen;
+		cmd[7] = (dataLen >> 8) & 0xff;
+		cmd[8] = dataLen & 0xff;
 		if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 0)) {
 			lba = ((unsigned long) data[8] << 24) + ((unsigned long) data[9] << 16) + ((unsigned long) data[10] << 8) + (unsigned long) data[11];
 			printf("%s: d6,2,3,5,LBA : %02d, %02d, %02d, %02x, %6ld\n", impl.filename, data[6], data[2], data[3], data[5], lba);
@@ -492,8 +492,8 @@ int main(int argc, char *argv[])
 		cmd[2] = 0x01 << 6;				// SubQ
 		cmd[3] = 0x03;					// Track international standard recording code (ISRC)
 		cmd[6] = trk;					// Track / Session Number
-		cmd[7] = dataLen >> 8;
-		cmd[8] = dataLen;
+		cmd[7] = (dataLen >> 8) & 0xff;
+		cmd[8] = dataLen & 0xff;
 		if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1)) {
 			dumpPrint(((unsigned int) data[0] << 8) + (unsigned int) data[1], data);
 			switch (data[1]) {
@@ -530,21 +530,22 @@ int main(int argc, char *argv[])
 	cmd[3] = 0x00;
 	cmd[4] = 0x00;
 	cmd[5] = 0x00;
-	cmd[6] = dataLen >> 16;				// Transfer Length in Blocks
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[6] = (dataLen >> 16) & 0xff;	// Transfer Length in Blocks
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1)) {
 		dumpPrint(((unsigned int) data[0] << 8) + (unsigned int) data[1], data);
 		dataLen = ((data[0] << 8) | data[1]) + 2;
-		cmd[6] = dataLen >> 16;			// Transfer Length in Blocks
-		cmd[7] = dataLen >> 8;
-		cmd[8] = dataLen;
+		cmd[6] = (dataLen >> 16) & 0xff;	// Transfer Length in Blocks
+		cmd[7] = (dataLen >> 8) & 0xff;
+		cmd[8] = dataLen & 0xff;
 		if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1)) {
 			dumpPrint(((unsigned int) data[0] << 8) + (unsigned int) data[1], data);
 			printf("%s: %s\n", impl.filename, (char *) &data[9]);
 		}
 	}
 	// ---- Read CD -----------------------------------------------------------
+#if 0
 	memset(cmd, 0, sizeof(cmd));
 	memset(data, 0, sizeof(data));
 	dataLen = 15;
@@ -554,14 +555,14 @@ int main(int argc, char *argv[])
 	cmd[3] = 0x00;
 	cmd[4] = 0x00;
 	cmd[5] = 0x00;
-	cmd[6] = dataLen >> 16;				// Transfer Length in Blocks
-	cmd[7] = dataLen >> 8;
-	cmd[8] = dataLen;
+	cmd[6] = (dataLen >> 16) & 0xff;	// Transfer Length in Blocks
+	cmd[7] = (dataLen >> 8) & 0xff;
+	cmd[8] = dataLen & 0xff;
 	cmd[9] = 0x00;
 	cmd[10] = 0x01;
 	if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 1))
 		dumpPrint(((unsigned int) data[0] << 8) + (unsigned int) data[1], data);
-
+#endif
 	// ---- Read CD -----------------------------------------------------------
 	if (raw_filename != NULL) {
 		fd = open(raw_filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -575,35 +576,35 @@ int main(int argc, char *argv[])
 			cmd[3] = 0xff;
 			cmd[4] = 0xff;				// Logical unit Write Speed (kBytes/sec)
 			cmd[5] = 0xff;
-			if (!sendCmd(cmd, 12, NULL, 0, NULL, 0, 1)) {
-				dataLen = 0;
-				for (sect = 0; sect < lout; sect++) {
-					printf("%s: %6ld / %6ld\n", impl.filename, sect, lout);
-					memset(cmd, 0, sizeof(cmd));
-					memset(data, 0, sizeof(data));
-					cmd[0] = 0xbe;		// Read CD
-					cmd[1] = 0x00;		// Expected Sector Type
-					cmd[2] = sect >> 24;	// Starting Logical Block Address
-					cmd[3] = sect >> 16;
-					cmd[4] = sect >> 8;
-					cmd[5] = sect;
-					cmd[6] = dataLen >> 16;	// Transfer Length in Blocks
-					cmd[7] = dataLen >> 8;
-					cmd[8] = dataLen;
-					cmd[9] = 0xf8;		// Header(s) Code | Error Flag(s)
-					cmd[10] = 0x02;		// Sub-Channel Data Selection Bits
-					if (!sendCmd(cmd, 12, NULL, 0, data, dataLen, 0)) {
-						if (write(fd, data, 2352) < 0) {
-							ret = errno;
-							printf("%s: write failed: %s\n", impl.filename, strerror(errno));
-							break;
-						}
-					} else {
-						printf("%s: break: %ld/%ld\n", impl.filename, sect, lout);
+			sendCmd(cmd, 12, NULL, 0, NULL, 0, 1);
+			dataLen = 1;
+			for (sect = 0; sect < lout; sect++) {
+				printf("%s: %6ld / %6ld\r", impl.filename, sect, lout);
+				memset(cmd, 0, sizeof(cmd));
+				memset(data, 0, sizeof(data));
+				cmd[0] = 0xbe;			// Read CD
+				cmd[1] = 0x00;			// Expected Sector Type
+				cmd[2] = (sect >> 24) & 0xff;	// Starting Logical Block Address
+				cmd[3] = (sect >> 16) & 0xff;
+				cmd[4] = (sect >> 8) & 0xff;
+				cmd[5] = sect & 0xff;
+				cmd[6] = (dataLen >> 16) & 0xff;	// Transfer Length in Blocks
+				cmd[7] = (dataLen >> 8) & 0xff;
+				cmd[8] = dataLen & 0xff;
+				cmd[9] = 0xf8;			// Header(s) Code | Error Flag(s)
+				cmd[10] = 0x02;			// Sub-Channel Data Selection Bits
+				if (!sendCmd(cmd, 12, NULL, 0, data, CD_FRAMESIZE_RAW * dataLen, 0)) {
+					if (write(fd, data, CD_FRAMESIZE_RAW * dataLen) < 0) {
+						ret = errno;
+						printf("\n%s: write failed: %s\n", impl.filename, strerror(errno));
 						break;
 					}
+				} else {
+					printf("\n%s: break: %ld/%ld\n", impl.filename, sect, lout);
+					break;
 				}
 			}
+			printf("\n");
 			close(fd);
 		}
 	}
