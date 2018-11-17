@@ -123,7 +123,7 @@ struct scsi_cd {
 
 // ::: do command :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 extern int sr_do_load_media(struct my_toc *toc, const unsigned long arg);
-extern int sr_do_read_media(const struct my_toc *toc, unsigned long lba, unsigned char *bufp, unsigned long blk, unsigned long len);
+extern int sr_do_read_media(const struct my_toc *toc, loff_t lba, unsigned char *bufp, loff_t blk, loff_t len);
 extern int sr_do_read_tochdr(const struct my_toc *toc, const unsigned char *cmdp, unsigned char *bufp);
 extern int sr_do_read_tocentry(const struct my_toc *toc, const unsigned char *cmdp, unsigned char *bufp);
 extern int sr_do_read_track_tocentry(const struct my_toc *toc, int trk, struct cdrom_tocentry *tentry);

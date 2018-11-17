@@ -13,7 +13,7 @@
   make clean && make
   sudo ./sr_mount cdda.cue /dev/sremu0
   ### testing ###
-  sudo rm -f data.toc data.bin && sudo cdrdao read-cd --device /dev/sremu0 data.toc
+  sudo rm -f data.toc data.bin && sudo cdrdao read-cd --device /dev/sremu0 --read-raw --with-cddb data.toc
   sudo cdparanoia 1- -p -d /dev/sremu0 data.pcm
 
 ・注意事項

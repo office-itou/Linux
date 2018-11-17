@@ -491,31 +491,16 @@ static int sr_gpcmd_read_dvd_structure(const struct my_toc *toc, const struct sg
 static int sr_gpcmd_read_cd_msf(const struct my_toc *toc, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	int result = 0;
-	unsigned long lba0 = 0, lba1 = 0, blk = 0, len = 0;
+	loff_t lba0 = 0, lba1 = 0, blk = 0, len = 0;
 
 //  pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 	if (!toc->initial)
 		return -ENOMEDIUM;
 
-	lba0 = my_msf2lba(cmdp[3], cmdp[4], cmdp[5]);	// Starting Logical Block Address
-	lba1 = my_msf2lba(cmdp[6], cmdp[7], cmdp[8]);	// Ending Logical Block Address
+	lba0 = (loff_t) my_msf2lba(cmdp[3], cmdp[4], cmdp[5]);	// Starting Logical Block Address
+	lba1 = (loff_t) my_msf2lba(cmdp[6], cmdp[7], cmdp[8]);	// Ending Logical Block Address
 	len = lba1 - lba0 + 1;				// Transfer Length in Blocks
-
-	switch (cmdp[9]) {
-	case 0x58:
-		blk = CD_FRAMESIZE_RAW0;
-		break;
-	case 0x78:
-		blk = CD_FRAMESIZE_RAW1;
-		break;
-	case 0xf8:
-		blk = CD_FRAMESIZE_RAW;
-		break;
-	default:
-		blk = CD_FRAMESIZE;
-		break;
-	}
-
+	blk = io_hdr->dxfer_len;
 	result = sr_do_read_media(toc, lba0, bufp, blk, len);
 	return result;
 }
@@ -533,30 +518,15 @@ static int sr_gpcmd_set_speed(const struct my_toc *toc, const struct sg_io_hdr *
 static int sr_gpcmd_read_cd(const struct my_toc *toc, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
 	int result = 0;
-	unsigned long lba = 0, blk = 0, len = 0;
+	loff_t lba = 0, blk = 0, len = 0;
 
 //  pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 	if (!toc->initial)
 		return -ENOMEDIUM;
 
-	lba = ((unsigned long) cmdp[2] << 24) + ((unsigned long) cmdp[3] << 16) + ((unsigned long) cmdp[4] << 8) + ((unsigned long) cmdp[5]);	// Starting Logical Block Address
-	len = ((unsigned long) cmdp[6] << 16) + ((unsigned long) cmdp[7] << 8) + ((unsigned long) cmdp[8]);	// Transfer Length in Blocks
-
-	switch (cmdp[9]) {
-	case 0x58:
-		blk = CD_FRAMESIZE_RAW0;
-		break;
-	case 0x78:
-		blk = CD_FRAMESIZE_RAW1;
-		break;
-	case 0xf8:
-		blk = CD_FRAMESIZE_RAW;
-		break;
-	default:
-		blk = CD_FRAMESIZE;
-		break;
-	}
-
+	lba = ((loff_t) cmdp[2] << 24) + ((loff_t) cmdp[3] << 16) + ((loff_t) cmdp[4] << 8) + ((loff_t) cmdp[5]);	// Starting Logical Block Address
+	len = ((loff_t) cmdp[6] << 16) + ((loff_t) cmdp[7] << 8) + ((loff_t) cmdp[8]);	// Transfer Length in Blocks
+	blk = io_hdr->dxfer_len;
 	result = sr_do_read_media(toc, lba, bufp, blk, len);
 	return result;
 }
@@ -596,9 +566,9 @@ int sr_do_load_media(struct my_toc *toc, const unsigned long arg)
 }
 
 // ============================================================================
-int sr_do_read_media(const struct my_toc *toc, unsigned long lba, unsigned char *bufp, unsigned long blk, unsigned long len)
+int sr_do_read_media(const struct my_toc *toc, loff_t lba, unsigned char *bufp, loff_t blk, loff_t len)
 {
-	int result = 0;
+	ssize_t result = 0;
 	struct file *file;
 	loff_t pos;
 
@@ -606,10 +576,9 @@ int sr_do_read_media(const struct my_toc *toc, unsigned long lba, unsigned char 
 	if (!toc->initial)
 		return -ENOMEDIUM;
 
-	lba *= blk;
-	len *= blk;
+//  lba *= blk;
+	len = blk;
 	pos = lba;
-
 //  pr_devel(SR_DEV_NAME ": %s: [%s]\n", __FUNCTION__, toc->path_bin);
 
 	file = filp_open(toc->path_bin, O_RDONLY | O_LARGEFILE, 0);
@@ -622,12 +591,12 @@ int sr_do_read_media(const struct my_toc *toc, unsigned long lba, unsigned char 
 #endif
 	fput(file);
 
-//  pr_devel(SR_DEV_NAME ": %s: lba: %ld: len: %ld: pos: %lld: ret: %d\n", __FUNCTION__, lba, len, pos, result);
+	pr_devel(SR_DEV_NAME ": %s: lba: %lld: len: %lld: blk: %lld: ret: %ld\n", __FUNCTION__, lba, len, blk, result);
 
-	if (result != len)
-		return -EFAULT;
+	if (result == len)
+		return 0;
 
-	return result;
+	return -EFAULT;
 }
 
 // ============================================================================
@@ -762,7 +731,7 @@ int sr_do_gpcmd(struct my_toc *toc, struct scsi_cd *cd, struct block_device *bde
 		return -EFAULT;
 	}
 
-	if (io_hdr->interface_id != 'S') {
+	if (io_hdr->interface_id != SG_INTERFACE_ID_ORIG) {
 		kfree(io_hdr);
 		return -ENOSYS;
 	}
