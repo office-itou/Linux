@@ -60,6 +60,150 @@ static int sr_gpcmd_read_10(const struct my_toc *toc, const struct sg_io_hdr *io
 	return result;
 }
 
+// === 0x42: GPCMD_READ_SUBCHANNEL ============================================
+static int sr_gpcmd_read_subchannel(const struct my_toc *toc, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
+{
+	int result = 0;
+	const struct cdrom_tochdr *thdr = &toc->tochdr;
+	const struct cdrom_tocentry *tent = toc->tocentry;
+	int len, o, i, n;
+	int msf = 0, trk = 0, trk0 = 0, trk1 = 0, m = 0, s = 0, f = 0;
+	long lba0 = 0, lba1 = 0, lout;
+
+//  pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
+	if (!toc->initial)
+		return -ENOMEDIUM;
+
+	if (!(cmdp[2] & 0x40)) {			// SubQ
+		len = 0;
+		bufp[0x00] = 0x00;				//  0: Reserved
+		bufp[0x01] = 0x15;				//  1: Audio Status
+		bufp[0x02] = len >> 8;			//  2: Sub-channel Data Length
+		bufp[0x03] = len;				//  3: 
+		return 0;
+	}
+
+	switch (cmdp[3]) {					// Sub-channel Data Format
+	default:
+		result = -ENOSYS;
+		break;
+	case 0x01:							// CD current position Mandatory
+		msf = cmdp[1] & 0x02;
+		trk = cmdp[6];
+
+		trk0 = thdr->cdth_trk0;
+		trk1 = thdr->cdth_trk1;
+		lout = toc->leadout;
+
+		for (i = trk0, n = 0; i <= trk1 && n < TRACK_MAX; i++, n++, tent++) {
+			if (tent->cdte_track == trk) {
+				lba0 = my_msf2lba(tent->cdte_addr.msf.minute, tent->cdte_addr.msf.second, tent->cdte_addr.msf.frame);
+				if (i == trk1) {
+					lba1 = lout;
+				} else {
+					tent++;
+					lba1 = my_msf2lba(tent->cdte_addr.msf.minute, tent->cdte_addr.msf.second, tent->cdte_addr.msf.frame) - 1;
+				}
+				break;
+			}
+		}
+
+		len = 12;
+		o = 0;
+		bufp[o++] = 0x00;				//  0: Reserved
+		bufp[o++] = 0x15;				//  1: Audio Status
+		bufp[o++] = len >> 8;			//  2: Sub-channel Data Length
+		bufp[o++] = len;				//  3: 
+		bufp[o++] = 0x01;				//  0: Sub Channel Data Format Code
+		bufp[o++] = 0x00;				//  1: ADR / Control
+		bufp[o++] = trk;				//  2: Track Number
+		bufp[o++] = 0x01;				//  3: Index Number
+		if (msf) {						// MSF
+			my_lba2msf(lba0, &m, &s, &f, 1);
+			bufp[o++] = 0x00;			//  4: Absolute CD Address
+			bufp[o++] = m;				//  5: 
+			bufp[o++] = s;				//  6: 
+			bufp[o++] = f;				//  7: 
+			my_lba2msf(lba1, &m, &s, &f, 1);
+			bufp[o++] = 0x00;			//  8:  Track Relative CD Address
+			bufp[o++] = m;				//  9: 
+			bufp[o++] = s;				// 10: 
+			bufp[o++] = f;				// 11: 
+		} else {
+			bufp[o++] = lba0 >> 24;		//  4: Absolute CD Address
+			bufp[o++] = lba0 >> 16;		//  5: 
+			bufp[o++] = lba0 >> 8;		//  6: 
+			bufp[o++] = lba0;			//  7: 
+			bufp[o++] = lba1 >> 24;		//  8: Track Relative CD Address
+			bufp[o++] = lba1 >> 16;		//  9: 
+			bufp[o++] = lba1 >> 8;		// 10: 
+			bufp[o++] = lba1;			// 11: 
+		}
+		result = 0;
+		break;
+	case 0x02:							// Media catalogue number (UPC/bar code) Mandatory
+		len = 20;
+		o = 0;
+		bufp[o++] = 0x00;				//  0: Reserved
+		bufp[o++] = 0x15;				//  1: Audio Status
+		bufp[o++] = len >> 8;			//  2: Sub-channel Data Length
+		bufp[o++] = len;				//  3: 
+		bufp[o++] = 0x02;				//  0: Sub Channel Data Format Code
+		bufp[o++] = 0x00;				//  1: Reserved
+		bufp[o++] = 0x00;				//  2: Reserved
+		bufp[o++] = 0x00;				//  3: Reserved
+		bufp[o++] = 0x00;				//  4: Media Catalogue Number (UPC/Bar Code)
+		bufp[o++] = 0x00;				//  5: 
+		bufp[o++] = 0x00;				//  6: 
+		bufp[o++] = 0x00;				//  7: 
+		bufp[o++] = 0x00;				//  8: 
+		bufp[o++] = 0x00;				//  9: 
+		bufp[o++] = 0x00;				// 10: 
+		bufp[o++] = 0x00;				// 11: 
+		bufp[o++] = 0x00;				// 12: 
+		bufp[o++] = 0x00;				// 13: 
+		bufp[o++] = 0x00;				// 14: 
+		bufp[o++] = 0x00;				// 15: 
+		bufp[o++] = 0x00;				// 16: 
+		bufp[o++] = 0x00;				// 17: 
+		bufp[o++] = 0x00;				// 18: 
+		bufp[o++] = 0x00;				// 19: 
+		result = 0;
+		break;
+	case 0x03:							// Track international standard recording code (ISRC) Mandatory
+		len = 20;
+		o = 0;
+		bufp[o++] = 0x00;				//  0: Reserved
+		bufp[o++] = 0x15;				//  1: Audio Status
+		bufp[o++] = len >> 8;			//  2: Sub-channel Data Length
+		bufp[o++] = len;				//  3: 
+		bufp[o++] = 0x03;				//  0: Sub Channel Data Format Code (03h)
+		bufp[o++] = 0x30;				//  1: ADR (03) | Control
+		bufp[o++] = 0x01;				//  2: Track Number
+		bufp[o++] = 0x01;				//  3: Reserved
+		bufp[o++] = 0x80;				//  4: TCVal
+		bufp[o++] = 0x30;				//  5: I01 (Country Code)
+		bufp[o++] = 0x30;				//  6: I02
+		bufp[o++] = 0x30;				//  7: I03 (Owner Code)
+		bufp[o++] = 0x30;				//  8: I04
+		bufp[o++] = 0x30;				//  9: I05
+		bufp[o++] = 0x30;				// 10: I06 (Year of Recording)
+		bufp[o++] = 0x30;				// 11: I07
+		bufp[o++] = 0x30;				// 12: I08 (Serial Number)
+		bufp[o++] = 0x30;				// 13: I09
+		bufp[o++] = 0x30;				// 14: I10
+		bufp[o++] = 0x30;				// 15: I11
+		bufp[o++] = 0x30;				// 16: I12
+		bufp[o++] = 0x00;				// 17: Zero
+		bufp[o++] = 0x00;				// 18: AFrame
+		bufp[o++] = 0x00;				// 19: Reserved
+		result = 0;
+		break;
+	}
+
+	return result;
+}
+
 // === 0x43: GPCMD_READ_TOC_PMA_ATIP ==========================================
 static int sr_gpcmd_read_toc_pma_atip(const struct my_toc *toc, const struct sg_io_hdr *io_hdr, const unsigned char *cmdp, unsigned char *bufp)
 {
@@ -500,8 +644,34 @@ static int sr_gpcmd_read_cd_msf(const struct my_toc *toc, const struct sg_io_hdr
 	lba0 = (loff_t) my_msf2lba(cmdp[3], cmdp[4], cmdp[5]);	// Starting Logical Block Address
 	lba1 = (loff_t) my_msf2lba(cmdp[6], cmdp[7], cmdp[8]);	// Ending Logical Block Address
 	len = lba1 - lba0 + 1;				// Transfer Length in Blocks
-	blk = io_hdr->dxfer_len;
-	result = sr_do_read_media(toc, lba0, bufp, blk, len);
+
+	switch (cmdp[9]) {
+	case 0x58:
+		blk = CD_FRAMESIZE_RAW0;
+		break;
+	case 0x78:
+		blk = CD_FRAMESIZE_RAW1;
+		break;
+	case 0xf8:
+		blk = CD_FRAMESIZE_RAW;
+		break;
+	default:
+		blk = CD_FRAMESIZE;
+		break;
+	}
+
+	switch (cmdp[10]) {
+	case 0x00:
+		break;
+	case 0x01:
+	case 0x04:
+		blk += CD_FRAMESIZE_SUB;
+		break;
+	}
+
+	lba0 *= blk;
+	len *= blk;
+	result = sr_do_read_media(toc, lba0, bufp, len);
 	return result;
 }
 
@@ -526,8 +696,34 @@ static int sr_gpcmd_read_cd(const struct my_toc *toc, const struct sg_io_hdr *io
 
 	lba = ((loff_t) cmdp[2] << 24) + ((loff_t) cmdp[3] << 16) + ((loff_t) cmdp[4] << 8) + ((loff_t) cmdp[5]);	// Starting Logical Block Address
 	len = ((loff_t) cmdp[6] << 16) + ((loff_t) cmdp[7] << 8) + ((loff_t) cmdp[8]);	// Transfer Length in Blocks
-	blk = io_hdr->dxfer_len;
-	result = sr_do_read_media(toc, lba, bufp, blk, len);
+
+	switch (cmdp[9]) {
+	case 0x58:
+		blk = CD_FRAMESIZE_RAW0;
+		break;
+	case 0x78:
+		blk = CD_FRAMESIZE_RAW1;
+		break;
+	case 0xf8:
+		blk = CD_FRAMESIZE_RAW;
+		break;
+	default:
+		blk = CD_FRAMESIZE;
+		break;
+	}
+
+	switch (cmdp[10]) {
+	case 0x00:
+		break;
+	case 0x01:
+	case 0x04:
+		blk += CD_FRAMESIZE_SUB;
+		break;
+	}
+
+	lba *= blk;
+	len *= blk;
+	result = sr_do_read_media(toc, lba, bufp, len);
 	return result;
 }
 
@@ -566,37 +762,34 @@ int sr_do_load_media(struct my_toc *toc, const unsigned long arg)
 }
 
 // ============================================================================
-int sr_do_read_media(const struct my_toc *toc, loff_t lba, unsigned char *bufp, loff_t blk, loff_t len)
+int sr_do_read_media(const struct my_toc *toc, loff_t lba, unsigned char *bufp, loff_t len)
 {
 	ssize_t result = 0;
 	struct file *file;
-	loff_t pos;
+	loff_t pos = lba;
 
 //  pr_devel(SR_DEV_NAME ": enter %s\n", __FUNCTION__);
 	if (!toc->initial)
 		return -ENOMEDIUM;
 
-//  lba *= blk;
-	len = blk;
-	pos = lba;
 //  pr_devel(SR_DEV_NAME ": %s: [%s]\n", __FUNCTION__, toc->path_bin);
 
 	file = filp_open(toc->path_bin, O_RDONLY | O_LARGEFILE, 0);
 	if (IS_ERR(file))
 		return PTR_ERR(file);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	result = kernel_read(file, lba, bufp, len);
+	result = kernel_read(file, pos, bufp, len);
 #else
 	result = kernel_read(file, bufp, len, &pos);
 #endif
 	fput(file);
 
-	pr_devel(SR_DEV_NAME ": %s: lba: %lld: len: %lld: blk: %lld: ret: %ld\n", __FUNCTION__, lba, len, blk, result);
+//	pr_devel(SR_DEV_NAME ": %s: lba: %lld: len: %lld: ret: %ld\n", __FUNCTION__, lba, len, result);
 
-	if (result == len)
+//	if (result == len)
 		return 0;
 
-	return -EFAULT;
+//	return -EFAULT;
 }
 
 // ============================================================================
@@ -794,6 +987,9 @@ int sr_do_gpcmd(struct my_toc *toc, struct scsi_cd *cd, struct block_device *bde
 		break;
 	case GPCMD_READ_10:				// 0x28
 		result = sr_gpcmd_read_10(toc, io_hdr, cmdp, bufp);
+		break;
+	case GPCMD_READ_SUBCHANNEL:		// 0x42: 
+		result = sr_gpcmd_read_subchannel(toc, io_hdr, cmdp, bufp);
 		break;
 	case GPCMD_READ_TOC_PMA_ATIP:		// 0x43: 
 		result = sr_gpcmd_read_toc_pma_atip(toc, io_hdr, cmdp, bufp);
