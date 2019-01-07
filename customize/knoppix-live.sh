@@ -201,7 +201,7 @@ _EOT_
 	if [ -d ./knoppix-live/rpack.i386 ]; then
 		cp -p ./knoppix-live/rpack.i386/*.deb ./knoppix-live/fsimg/var/cache/apt/archives/
 	fi
-	if [ -d ./knoppix-live/rpack.i386 ]; then
+	if [ -d ./knoppix-live/clamav ]; then
 		cp -p ./knoppix-live/clamav/*.cvd     ./knoppix-live/fsimg/var/lib/clamav/
 	fi
 # =============================================================================
