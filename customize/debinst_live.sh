@@ -62,7 +62,9 @@
 		    task-desktop task-japanese task-japanese-desktop task-laptop          \\
 		    task-lxde-desktop task-ssh-server task-web-server                     \\
 		    live-boot wpagui blackbox xterm nano                                  \\
-		    linux-headers-${IMG_ARCH} linux-image-${IMG_ARCH}
+		    linux-headers-${IMG_ARCH} linux-image-${IMG_ARCH}                     \\
+		    vim wget less traceroute btrfs-progs dnsutils ifupdown usbutils       \\
+		    powermgmt-base task-english
 _EOT_SH_
 	cat <<- '_EOT_SH_' >> ./debootstrap/fsimg/inst-net.sh
 		echo "---- module fix broken --------------------------------------------------------"
@@ -78,10 +80,9 @@ _EOT_SH_
 		systemctl  enable vsftpd
 		systemctl  enable bind9
 		systemctl disable isc-dhcp-server
-		systemctl  enable isc-dhcp-server6
+		systemctl disable isc-dhcp-server6
 		systemctl  enable smbd
 		systemctl  enable nmbd
-		#systemctl  enable webmin
 		# -----------------------------------------------------------------------------
 		echo "--- localize ------------------------------------------------------------------"
 		if [ -f /etc/locale.gen ]; then
