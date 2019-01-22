@@ -24,6 +24,7 @@
 # -----------------------------------------------------------------------------
 	INP_ARCH=$1
 	INP_SUITE=$2
+	INP_NETWORK=$3
 	if [ "${INP_ARCH}" = "i386" ]; then
 		IMG_ARCH="686"
 	else
@@ -214,51 +215,22 @@ _EOT_SH_
 		echo "--- cleaning and exit ---------------------------------------------------------"
 _EOT_SH_
 # =============================================================================
-	echo "-- media loading --------------------------------------------------------------"
-	LIVE_DVD=0
-	if [ ${LIVE_DVD} -eq 0 ]; then
+	echo "--- debootstrap ---------------------------------------------------------------"
+	LIVE_VOLID="Debian live ${INP_SUITE} ${INP_ARCH}"
+	if [ "${INP_NETWORK}" != "" ]; then
+		echo "---- network install ----------------------------------------------------------"
+		debootstrap --merged-usr --arch=${INP_ARCH} --variant=minbase ${INP_SUITE} ./debootstrap/fsimg/
+	else
+		echo "---- media install ------------------------------------------------------------"
 		case "${INP_SUITE}" in
 			"testing" | "buster"  ) LIVE_MEDIA="./debian-testing-${INP_ARCH}-DVD-1.iso";;
 			"stable"  | "stretch" ) LIVE_MEDIA="./debian-9.6.0-${INP_ARCH}-DVD-1.iso";;
 			*                     ) LIVE_MEDIA="";;
 		esac
 		FSSQ_MEDIA=""
-	else
-		case "${INP_SUITE}" in
-			"testing" | "buster"  ) LIVE_MEDIA="./debian-live-testing-${INP_ARCH}-lxde.iso";;
-			"stable"  | "stretch" ) LIVE_MEDIA="./debian-live-9.6.0-${INP_ARCH}-lxde.iso";;
-			*                     ) LIVE_MEDIA="";;
-		esac
-		FSSQ_MEDIA="./debootstrap/cdimg/live/filesystem.squashfs"
-	fi
-	if [ "${LIVE_MEDIA}" == "" ]; then
-		echo "--- debootstrap ---------------------------------------------------------------"
-		LIVE_VOLID=""
-		debootstrap --merged-usr --arch=${INP_ARCH} --variant=minbase ${INP_SUITE} ./debootstrap/fsimg/
-	else
-		if [ ${LIVE_DVD} -eq 0 ]; then
-			echo "--- debootstrap ---------------------------------------------------------------"
-			LIVE_VOLID=`volname ${LIVE_MEDIA}`
-			mount -r -o loop ${LIVE_MEDIA} ./debootstrap/media/
-			debootstrap --no-check-gpg --merged-usr --arch=${INP_ARCH} --variant=minbase ${INP_SUITE} ./debootstrap/fsimg/ file:./debootstrap/media/
-			umount ./debootstrap/media/
-		else # ----------------------------------------------------------------
-			echo "--- dvd loading ---------------------------------------------------------------"
-			LIVE_VOLID=`volname ${LIVE_MEDIA}`
-			mount -r -o loop ${LIVE_MEDIA} ./debootstrap/media/
-			pushd ./debootstrap/media > /dev/null
-				find . -depth -print | cpio -pdm ../cdimg/
-			popd > /dev/null
-			umount ./debootstrap/media/
-			# -----------------------------------------------------------------
-			echo "--- fsimg loading -------------------------------------------------------------"
-			FSSQ_VOLID=`volname ${FSSQ_MEDIA}`
-			mount -r -o loop ${FSSQ_MEDIA} ./debootstrap/media/
-			pushd ./debootstrap/media > /dev/null
-				find . -depth -print | cpio -pdm ../fsimg/
-			popd > /dev/null
-			umount ./debootstrap/media/
-		fi
+		mount -r -o loop ${LIVE_MEDIA} ./debootstrap/media/
+		debootstrap --no-check-gpg --merged-usr --arch=${INP_ARCH} --variant=minbase ${INP_SUITE} ./debootstrap/fsimg/ file:./debootstrap/media/
+		umount ./debootstrap/media/
 	fi
 	# -------------------------------------------------------------------------
 	if [ -d ./debootstrap/rpack.${INP_ARCH} ]; then
@@ -266,11 +238,6 @@ _EOT_SH_
 		mkdir -p ./debootstrap/fsimg/var/cache/apt/archives
 		cp -p ./debootstrap/rpack.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/
 	fi
-#	if [ -d ./debootstrap/clamav ]; then
-#		echo "--- clamav file copy ----------------------------------------------------------"
-#		mkdir -p ./debootstrap/fsimg/var/lib/clamav
-#		cp -p ./debootstrap/clamav/*.cvd ./debootstrap/fsimg/var/lib/clamav/
-#	fi
 	# -------------------------------------------------------------------------
 	echo "-- chroot ---------------------------------------------------------------------"
 	echo "debian-live" >  ./debootstrap/fsimg/etc/hostname
@@ -302,100 +269,75 @@ _EOT_SH_
 	       ./debootstrap/fsimg/var/cache/apt/*.bin            \
 	       ./debootstrap/fsimg/var/cache/apt/archives/*.deb
 # -----------------------------------------------------------------------------
-	if [ ${LIVE_DVD} -eq 0 ]; then
-		# ---------------------------------------------------------------------
-		echo "--- download system file ------------------------------------------------------"
-		pushd ./debootstrap > /dev/null
-			TAR_INST=debian-cd_info-${INP_SUITE}-${INP_ARCH}.tar.gz
-			if [ ! -f "./${TAR_INST}" ]; then
-				wget -O "./${TAR_INST}" "http://ftp.debian.org/debian/dists/${INP_SUITE}/main/installer-${INP_ARCH}/current/images/cdrom/debian-cd_info.tar.gz"
-			fi
-			tar -xzf "./${TAR_INST}" -C ./_work/
-		popd > /dev/null
-		# ---------------------------------------------------------------------
-		echo "--- make cdimg directory ------------------------------------------------------"
-		mkdir -p ./debootstrap/cdimg/boot/grub \
-		         ./debootstrap/cdimg/isolinux  \
-		         ./debootstrap/cdimg/live      \
-		         ./debootstrap/cdimg/.disk
-		# ---------------------------------------------------------------------
-		echo "-- make system loading file ---------------------------------------------------"
-		# ---------------------------------------------------------------------
-		echo "--- make .disk's file ---------------------------------------------------------"
-		echo -en "main"                                                                  > ./debootstrap/cdimg/.disk/base_components
-		echo -en ""                                                                      > ./debootstrap/cdimg/.disk/base_installable
-		echo -en "live"                                                                  > ./debootstrap/cdimg/.disk/cd_type
-		echo -en "Custom Debian GNU/Linux Live ${INP_SUITE}-${INP_ARCH} lxde"            > ./debootstrap/cdimg/.disk/info
-		echo -en "xorriso -output /debian-live-${INP_SUITE}-${INP_ARCH}-lxde-custom.iso" > ./debootstrap/cdimg/.disk/mkisofs
-		echo -en "netcfg\nethdetect\npcmciautils-udeb\nlive-installer\n"                 > ./debootstrap/cdimg/.disk/udeb_include
-		# ---------------------------------------------------------------------
-		echo "--- make boot.cat file --------------------------------------------------------"
-		if [ "${INP_ARCH}" = "i386" ]; then
-			echo -en "\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" >  ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xaa\x55\x55\xaa" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x88\x00\x00\x00\x00\x00\x04\x00\x15\x02\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x91\xef\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x88\x00\x00\x00\x00\x00\x80\x02\x75\x01\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
-		else
-			echo -en "\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" >  ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xaa\x55\x55\xaa" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x88\x00\x00\x00\x00\x00\x04\x00\x40\x02\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x91\xef\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x88\x00\x00\x00\x00\x00\x40\x03\x70\x01\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
-			echo -en "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" >> ./debootstrap/cdimg/isolinux/boot.cat
+	echo "--- download system file ------------------------------------------------------"
+	pushd ./debootstrap > /dev/null
+		TAR_INST=debian-cd_info-${INP_SUITE}-${INP_ARCH}.tar.gz
+		if [ ! -f "./${TAR_INST}" ]; then
+			wget -O "./${TAR_INST}" "http://ftp.debian.org/debian/dists/${INP_SUITE}/main/installer-${INP_ARCH}/current/images/cdrom/debian-cd_info.tar.gz"
 		fi
-		dd if=/dev/zero of=./debootstrap/cdimg/isolinux/boot.cat bs=1 count=0 seek=2K
-		# ---------------------------------------------------------------------
-		echo "--- copy system file ----------------------------------------------------------"
-		pushd ./debootstrap/_work/grub > /dev/null
-			find . -depth -print | cpio -pdm ../../cdimg/boot/grub/
-		popd > /dev/null
-		if [ ! -f ./debootstrap/cdimg/boot/grub/loopback.cfg ]; then
-			echo -n "source /grub/grub.cfg" > ./debootstrap/cdimg/boot/grub/loopback.cfg
-		fi
-		cp -p ./debootstrap/_work/splash.png                                 ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/_work/menu.cfg                                   ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/_work/stdmenu.cfg                                ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/_work/isolinux.cfg                               ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/fsimg/usr/lib/ISOLINUX/isolinux.bin              ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/hdt.c32      ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/ldlinux.c32  ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libcom32.c32 ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libgpl.c32   ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libmenu.c32  ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libutil.c32  ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/vesamenu.c32 ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/fsimg/usr/lib/syslinux/memdisk                   ./debootstrap/cdimg/isolinux/
-		cp -p ./debootstrap/fsimg/boot/*                                     ./debootstrap/cdimg/live/
-		# ---------------------------------------------------------------------
-		VER_KRNL=`find ./debootstrap/fsimg/boot/ -name "vmlinuz*" -print | sed -e 's/.*vmlinuz-//g' -e 's/-amd64//g' -e 's/-686//g'`
-		echo "--- edit grub.cfg file --------------------------------------------------------"
-		cat <<- _EOT_ >> ./debootstrap/cdimg/boot/grub/grub.cfg
-			if [ \${iso_path} ] ; then
-			set loopback="findiso=\${iso_path}"
-			fi
-
-			menuentry "Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})" {
-			  linux  /live/vmlinuz-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 "\${loopback}"
-			  initrd /live/initrd.img-${VER_KRNL}-${IMG_ARCH}
-			}
-_EOT_
-		echo "--- edit menu.cfg file --------------------------------------------------------"
-		cat <<- _EOT_ > ./debootstrap/cdimg/isolinux/menu.cfg
-			INCLUDE stdmenu.cfg
-			MENU title Main Menu
-			DEFAULT Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})
-			LABEL Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})
-			  SAY "Booting Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})..."
-			  linux /live/vmlinuz-${VER_KRNL}-${IMG_ARCH}
-			  APPEND initrd=/live/initrd.img-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8
-_EOT_
+		tar -xzf "./${TAR_INST}" -C ./_work/
+	popd > /dev/null
+	# ---------------------------------------------------------------------
+	echo "--- make cdimg directory ------------------------------------------------------"
+	mkdir -p ./debootstrap/cdimg/boot/grub \
+	         ./debootstrap/cdimg/isolinux  \
+	         ./debootstrap/cdimg/live      \
+	         ./debootstrap/cdimg/.disk
+	# ---------------------------------------------------------------------
+	echo "-- make system loading file ---------------------------------------------------"
+	# ---------------------------------------------------------------------
+	echo "--- make .disk's file ---------------------------------------------------------"
+	echo -en "main"                                                                  > ./debootstrap/cdimg/.disk/base_components
+	echo -en ""                                                                      > ./debootstrap/cdimg/.disk/base_installable
+	echo -en "live"                                                                  > ./debootstrap/cdimg/.disk/cd_type
+	echo -en "Custom Debian GNU/Linux Live ${INP_SUITE}-${INP_ARCH} lxde"            > ./debootstrap/cdimg/.disk/info
+	echo -en "xorriso -output /debian-live-${INP_SUITE}-${INP_ARCH}-lxde-custom.iso" > ./debootstrap/cdimg/.disk/mkisofs
+	echo -en "netcfg\nethdetect\npcmciautils-udeb\nlive-installer\n"                 > ./debootstrap/cdimg/.disk/udeb_include
+	# ---------------------------------------------------------------------
+	echo "--- copy system file ----------------------------------------------------------"
+	pushd ./debootstrap/_work/grub > /dev/null
+		find . -depth -print | cpio -pdm ../../cdimg/boot/grub/
+	popd > /dev/null
+	if [ ! -f ./debootstrap/cdimg/boot/grub/loopback.cfg ]; then
+		echo -n "source /grub/grub.cfg" > ./debootstrap/cdimg/boot/grub/loopback.cfg
 	fi
+	cp -p ./debootstrap/_work/splash.png                                 ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/_work/menu.cfg                                   ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/_work/stdmenu.cfg                                ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/_work/isolinux.cfg                               ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/fsimg/usr/lib/ISOLINUX/isolinux.bin              ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/hdt.c32      ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/ldlinux.c32  ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libcom32.c32 ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libgpl.c32   ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libmenu.c32  ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libutil.c32  ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/vesamenu.c32 ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/fsimg/usr/lib/syslinux/memdisk                   ./debootstrap/cdimg/isolinux/
+	cp -p ./debootstrap/fsimg/boot/*                                     ./debootstrap/cdimg/live/
+	# ---------------------------------------------------------------------
+	VER_KRNL=`find ./debootstrap/fsimg/boot/ -name "vmlinuz*" -print | sed -e 's/.*vmlinuz-//g' -e 's/-amd64//g' -e 's/-686//g'`
+	echo "--- edit grub.cfg file --------------------------------------------------------"
+	cat <<- _EOT_ >> ./debootstrap/cdimg/boot/grub/grub.cfg
+		if [ \${iso_path} ] ; then
+		set loopback="findiso=\${iso_path}"
+		fi
+
+		menuentry "Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})" {
+		  linux  /live/vmlinuz-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 "\${loopback}"
+		  initrd /live/initrd.img-${VER_KRNL}-${IMG_ARCH}
+		}
+_EOT_
+	echo "--- edit menu.cfg file --------------------------------------------------------"
+	cat <<- _EOT_ > ./debootstrap/cdimg/isolinux/menu.cfg
+		INCLUDE stdmenu.cfg
+		MENU title Main Menu
+		DEFAULT Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})
+		LABEL Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})
+		  SAY "Booting Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})..."
+		  linux /live/vmlinuz-${VER_KRNL}-${IMG_ARCH}
+		  APPEND initrd=/live/initrd.img-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8
+_EOT_
 # -- file compress ------------------------------------------------------------
 	echo "-- make file system image -----------------------------------------------------"
 	rm -f ./debootstrap/cdimg/live/filesystem.squashfs
@@ -404,6 +346,8 @@ _EOT_
 # -- make iso image -----------------------------------------------------------
 	echo "-- make iso image -------------------------------------------------------------"
 	pushd ./debootstrap/cdimg > /dev/nullF
+		find . -type f -exec md5sum {} \; > ../md5sum.txt
+		cp -p ../md5sum.txt .
 		xorriso                                                                \
 		    -as mkisofs                                                        \
 		    -iso-level 3                                                       \
