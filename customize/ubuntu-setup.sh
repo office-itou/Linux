@@ -1,73 +1,114 @@
 #!/bin/bash
+# -----------------------------------------------------------------------------
+	set -m								# ジョブ制御を有効にする
+	set -eu								# ステータス0以外と未定義変数の参照で終了
+	echo "*******************************************************************************"
+	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]"
+	echo "*******************************************************************************"
+# -- terminate ----------------------------------------------------------------
+fncEnd() {
+	echo "--- terminate -----------------------------------------------------------------"
+	RET_STS=$1
 
+	history -c
+#	/etc/init.d/dbus stop
+#	umount /dev/pts || umount -fl /dev/pts
+#	umount /dev     || umount -fl /dev
+#	umount /sys     || umount -fl /sys
+#	umount /proc    || umount -fl /proc
+
+	echo "*******************************************************************************"
+	echo "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]"
+	echo "*******************************************************************************"
+	exit ${RET_STS}
+}
+# -- initialize ---------------------------------------------------------------
+	echo "--- initialize ----------------------------------------------------------------"
+	trap 'fncEnd 1' 1 2 3 15
 	export PS1="(chroot) "
-	mount -t proc     proc     /proc
-	mount -t sysfs    sysfs    /sys
-	mount -t devtmpfs /dev     /dev
-	mount -t devpts   /dev/pts /dev/pts
-	/etc/init.d/dbus start
-# -- root user's setting ------------------------------------------------------
-	cd /root
-
-	if [ ! -f .vimrc ]; then
-		echo -e "set number\nset tabstop=4\nset list\nset listchars=tab:>_" > .vimrc
-	fi
-
-	if [ ! -f .bashrc.orig ]; then
-		sed -i.orig .bashrc                                                                                                       \
-		    -e '$a#\ncase "\${TERM}" in\n\t"linux" )\n\t\tLANG=C\n\t\t;;\n\t* )\n\t\tLANG=ja_JP.UTF-8\n\t\t;;\nesac\nexport LANG'
-	fi
-# -- setup locales ------------------------------------------------------------
-#	timedatectl set-timezone "Asia/Tokyo"
-	ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
-	localectl set-locale LANG="ja_JP.utf8" LANGUAGE="ja:en"
-	localectl set-x11-keymap "jp" "jp106" "" "terminate:ctrl_alt_bksp"
-	locale | sed -e 's/LANG=C/LANG=ja_JP.UTF-8/'                \
-	             -e 's/LANGUAGE=$/LANGUAGE=ja:en/'              \
-	             -e 's/"C"/"ja_JP.UTF-8"/' > /etc/locale.conf
+#	mount -t proc     proc     /proc
+#	mount -t sysfs    sysfs    /sys
+#	mount -t devtmpfs /dev     /dev
+#	mount -t devpts   /dev/pts /dev/pts
+#	/etc/init.d/dbus start
+# -- localize -----------------------------------------------------------------
+	echo "--- localize ------------------------------------------------------------------"
+	sed -i /etc/locale.gen                  \
+	    -e 's/^[A-Za-z]/# &/g'              \
+	    -e 's/# \(ja_JP.UTF-8 UTF-8\)/\1/g' \
+	    -e 's/# \(en_US.UTF-8 UTF-8\)/\1/g'
+	locale-gen
+	update-locale LANG=ja_JP.UTF-8
+#	sed -i /etc/xdg/lxsession/LXDE/autostart               \
+#	    -e '$a@setxkbmap -layout jp -option ctrl:swapcase'
 # -- module install -----------------------------------------------------------
-	if [ ! -f /etc/apt/sources.list.orig ]; then
-		cp -p  /etc/apt/sources.list /etc/apt/sources.list.orig
-		cat <<- _EOT_ > /etc/apt/sources.list
-			deb http://jp.archive.ubuntu.com/ubuntu/ bionic main restricted
-			deb http://jp.archive.ubuntu.com/ubuntu/ bionic multiverse
-			deb http://jp.archive.ubuntu.com/ubuntu/ bionic universe
-			deb http://jp.archive.ubuntu.com/ubuntu/ bionic-backports main restricted universe multiverse
-			deb http://jp.archive.ubuntu.com/ubuntu/ bionic-updates main restricted
-			deb http://jp.archive.ubuntu.com/ubuntu/ bionic-updates multiverse
-			deb http://jp.archive.ubuntu.com/ubuntu/ bionic-updates universe
-			deb http://security.ubuntu.com/ubuntu bionic-security main restricted
-			deb http://security.ubuntu.com/ubuntu bionic-security multiverse
-			deb http://security.ubuntu.com/ubuntu bionic-security universe
+	echo "--- module install ------------------------------------------------------------"
+#	sed -i.orig /etc/resolv.conf -e '$anameserver 1.1.1.1\nnameserver 1.0.0.1'
+	apt update       -q                                                    && \
+	apt upgrade      -q -y                                                 && \
+	apt full-upgrade -q -y                                                 && \
+	apt install      -q -y                                                    \
+	    openssh-server gnome-getting-started-docs-ja gnome-user-docs-ja       \
+	    language-pack-gnome-ja language-pack-gnome-ja-base language-pack-ja   \
+	    language-pack-ja-base libreoffice-help-ja libreoffice-l10n-ja         \
+	    lvm2 apache2 curl rsync bind9utils network-manager samba smbclient    \
+	    cifs-utils nfs-common nfs-kernel-server sudo tasksel bc dpkg-repack   \
+	    build-essential perl libapt-pkg-perl libio-pty-perl                   \
+	    libnet-ssleay-perl ibus-mozc vsftpd clamav isc-dhcp-server libelf-dev \
+	    isolinux squashfs-tools open-vm-tools bind9 indent                 && \
+	apt autoremove   -q -y                                                 && \
+	apt autoclean    -q -y                                                 && \
+	apt clean        -q -y                                                 || \
+	fncEnd 1
+#	mv /etc/resolv.conf.orig /etc/resolv.conf
+# -- default user's setting ---------------------------------------------------
+	echo "--- default user's setting ----------------------------------------------------"
+	echo "--- .bashrc -------------------------------------------------------------------"
+	cat <<- _EOT_ >> /etc/skel/.bashrc
+		# --- 日本語文字化け対策 ---
+		case "\${TERM}" in
+		    "linux" ) export LANG=C;;
+		    * )                    ;;
+		esac
+		export GTK_IM_MODULE=ibus
+		export XMODIFIERS=@im=ibus
+		export QT_IM_MODULE=ibus
 _EOT_
-	fi
-	apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
-	apt-get -y install gnome-getting-started-docs-ja gnome-user-docs-ja                                          \
-	                   mythes-es hyphen-es                                                                       \
-	                   ibus-mozc                                                                                 \
-	                   clamav                                                                                    \
-	                   ntpdate                                                                                   \
-	                   openssh-server                                                                            \
-	                   proftpd                                                                                   \
-	                   smbclient cifs-utils                                                                      \
-	                   apache2                                                                                   \
-	                   bind9                                                                                     \
-	                   anthy anthy-common                                                                        \
-	                   libreoffice-help-ja libreoffice-l10n-ja                                                   \
-	                   firefox-locale-ja thunderbird-locale-ja                                                   \
-	                   fonts-takao-mincho fonts-takao-gothic fonts-takao-pgothic fonts-noto-cjk-extra            \
-	                   language-pack-gnome-ja language-pack-gnome-ja-base language-pack-ja language-pack-ja-base \
-	                   chromium-browser
+	echo "--- .vimrc --------------------------------------------------------------------"
+	cat <<- _EOT_ > /etc/skel/.vimrc
+		set number              " Print the line number in front of each line.
+		set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+		set list                " List mode: Show tabs as CTRL-I is displayed, display $ after end of line.
+		set listchars=tab:\>_   " Strings to use in 'list' mode and for the |:list| command.
+		set nowrap              " This option changes how text is displayed.
+		set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+		set laststatus=2        " The value of this option influences when the last window will have a status line always.
+_EOT_
+	echo "--- .curlrc -------------------------------------------------------------------"
+	cat <<- _EOT_ > /etc/skel/.curlrc
+		location
+		progress-bar
+		remote-time
+		show-error
+_EOT_
+# -- open vm tools ------------------------------------------------------------
+	echo "--- open vm tools -------------------------------------------------------------"
+	mkdir -p /mnt/hgfs
+	sed -i /etc/fstab                                                                   \
+	    -e '$a.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0'
+# -- im-config ----------------------------------------------------------------
+#	echo "--- im-config -----------------------------------------------------------------"
+#	im-config -n fcitx
 # -- clamav -------------------------------------------------------------------
-	if [ ! -f /etc/clamav/freshclam.conf.orig ]; then
-		sed -i.orig /etc/clamav/freshclam.conf                                                     \
-		    -e 's/# Check for new database 24 times a day/# Check for new database 4 times a day/' \
-		    -e 's/Checks 24/Checks 4/'                                                             \
+	if [ -f /etc/clamav/freshclam.conf ]; then
+		echo "--- clamav --------------------------------------------------------------------"
+		sed -i /etc/clamav/freshclam.conf \
 		    -e 's/^NotifyClamd/#&/'
 	fi
 # -- sshd ---------------------------------------------------------------------
-	if [ ! -f /etc/ssh/sshd_config.orig ]; then
-		sed -i.orig /etc/ssh/sshd_config                                   \
+	if [ -f /etc/ssh/sshd_config ]; then
+		echo "--- sshd ----------------------------------------------------------------------"
+		sed -i /etc/ssh/sshd_config                                        \
 		    -e 's/^PermitRootLogin .*/PermitRootLogin yes/'                \
 		    -e 's/#PasswordAuthentication yes/PasswordAuthentication yes/' \
 		    -e '/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/d'                 \
@@ -75,21 +116,111 @@ _EOT_
 		    -e '$aUseDNS no\nIgnoreUserKnownHosts no'
 	fi
 # -- ftpd ---------------------------------------------------------------------
-	if [ ! -f /etc/ftpusers.orig ]; then
-		sed -i.orig /etc/ftpusers \
+	if [ -f /etc/vsftpd.conf ]; then
+		echo "--- ftpd ----------------------------------------------------------------------"
+		touch /etc/ftpusers					#
+		touch /etc/vsftpd.conf				#
+		touch /etc/vsftpd.chroot_list		# chrootを許可するユーザーのリスト
+		touch /etc/vsftpd.user_list			# 接続拒否するユーザーのリスト
+		touch /etc/vsftpd.banned_emails		# 接続拒否する電子メール・パスワードのリスト
+		touch /etc/vsftpd.email_passwords	# 匿名ログイン用の電子メール・パスワードのリスト
+		# -------------------------------------------------------------------------
+		chmod 0600 /etc/ftpusers               \
+				   /etc/vsftpd.conf            \
+				   /etc/vsftpd.chroot_list     \
+				   /etc/vsftpd.user_list       \
+				   /etc/vsftpd.banned_emails   \
+				   /etc/vsftpd.email_passwords
+		# -------------------------------------------------------------------------
+		sed -i /etc/ftpusers \
 		    -e 's/root/# &/'
+		# -------------------------------------------------------------------------
+		sed -i /etc/vsftpd.conf                                           \
+		    -e 's/^\(listen\)=.*$/\1=NO/'                                 \
+		    -e 's/^\(listen_ipv6\)=.*$/\1=YES/'                           \
+		    -e 's/^\(anonymous_enable\)=.*$/\1=NO/'                       \
+		    -e 's/^\(local_enable\)=.*$/\1=YES/'                          \
+		    -e 's/^#\(write_enable\)=.*$/\1=YES/'                         \
+		    -e 's/^#\(local_umask\)=.*$/\1=022/'                          \
+		    -e 's/^\(dirmessage_enable\)=.*$/\1=NO/'                      \
+		    -e 's/^\(use_localtime\)=.*$/\1=YES/'                         \
+		    -e 's/^\(xferlog_enable\)=.*$/\1=YES/'                        \
+		    -e 's/^\(connect_from_port_20\)=.*$/\1=YES/'                  \
+		    -e 's/^#\(xferlog_std_format\)=.*$/\1=NO/'                    \
+		    -e 's/^#\(idle_session_timeout\)=.*$/\1=300/'                 \
+		    -e 's/^#\(data_connection_timeout\)=.*$/\1=30/'               \
+		    -e 's/^#\(ascii_upload_enable\)=.*$/\1=YES/'                  \
+		    -e 's/^#\(ascii_download_enable\)=.*$/\1=YES/'                \
+		    -e 's/^#\(chroot_local_user\)=.*$/\1=NO/'                     \
+		    -e 's/^#\(chroot_list_enable\)=.*$/\1=NO/'                    \
+		    -e "s~^#\(chroot_list_file\)=.*$~\1=/etc/vsftpd.chroot_list~" \
+		    -e 's/^#\(ls_recurse_enable\)=.*$/\1=YES/'                    \
+		    -e 's/^\(pam_service_name\)=.*$/\1=vsftpd/'                   \
+		    -e '$atcp_wrappers=YES'                                       \
+		    -e '$auserlist_enable=YES'                                    \
+		    -e '$auserlist_deny=YES'                                      \
+		    -e "\$auserlist_file=/etc\/vsftpd.user_list"                  \
+		    -e '$achmod_enable=YES'                                       \
+		    -e '$aforce_dot_files=YES'                                    \
+		    -e '$adownload_enable=YES'                                    \
+		    -e '$avsftpd_log_file=\/var\/log\/vsftpd\.log'                \
+		    -e '$adual_log_enable=NO'                                     \
+		    -e '$asyslog_enable=NO'                                       \
+		    -e '$alog_ftp_protocol=NO'                                    \
+		    -e '$aftp_data_port=20'                                       \
+		    -e '$apasv_enable=YES'
 	fi
-
-	if [ ! -f /etc/proftpd/proftpd.conf.orig ]; then
-		sed -i.orig /etc/proftpd/proftpd.conf                                          \
-		    -e '$aTimesGMT off\n<Global>\n\tRootLogin on\n\tUseFtpUsers on\n</Global>'
-	fi
+# -- root and user's setting --------------------------------------------------
+	echo "--- root and user's setting ---------------------------------------------------"
+	for USER_NAME in "root"
+	do
+		USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
+		pushd ${USER_HOME} > /dev/null
+			echo "--- .bashrc -------------------------------------------------------------------"
+			cat <<- _EOT_ >> .bashrc
+				# --- 日本語文字化け対策 ---
+				case "\${TERM}" in
+				    "linux" ) export LANG=C;;
+				    * )                    ;;
+				esac
+				export GTK_IM_MODULE=ibus
+				export XMODIFIERS=@im=ibus
+				export QT_IM_MODULE=ibus
+_EOT_
+			echo "--- .vimrc --------------------------------------------------------------------"
+			cat <<- _EOT_ > .vimrc
+				set number				" Print the line number in front of each line.
+				set tabstop=4			" Number of spaces that a <Tab> in the file counts for.
+				set list				" List mode: Show tabs as CTRL-I is displayed, display $ after end of line.
+				set listchars=tab:\>_	" Strings to use in 'list' mode and for the |:list| command.
+				set nowrap				" This option changes how text is displayed.
+				set showmode			" If in Insert, Replace or Visual mode put a message on the last line.
+				set laststatus=2		" The value of this option influences when the last window will have a status line always.
+_EOT_
+			echo "--- .curlrc -------------------------------------------------------------------"
+			cat <<- _EOT_ > .curlrc
+				location
+				progress-bar
+				remote-time
+				show-error
+_EOT_
+			echo "--- im-config -----------------------------------------------------------------"
+#			im-config -n ibus
+			mkdir .xinput.d
+			ln -s /etc/X11/xinit/xinput.d/ja_JP .xinput.d/ja_JP
+			chown -R ${USER_NAME}:${USER_NAME} .xinput.d .bashrc .vimrc .curlrc
+		popd > /dev/null
+	done
 # -- cleaning -----------------------------------------------------------------
+	echo "--- cleaning ------------------------------------------------------------------"
 	apt-get -y autoremove
 	apt-get autoclean
 	apt-get clean
-	/etc/init.d/dbus stop
-	umount -fl /dev/pts /dev /sys /proc
-	history -c
-
-	exit
+	find /var/log/ -type f -name \* -exec cp -f /dev/null {} \;
+	fncEnd 0
+# -- EOF ----------------------------------------------------------------------
+# *****************************************************************************
+# <memo>
+#   [im-config]
+#     Change Kanji mode:[Windows key]+[Space key]->[Zenkaku/Hankaku key]
+# *****************************************************************************
