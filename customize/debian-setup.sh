@@ -33,14 +33,20 @@ fncEnd() {
 #	/etc/init.d/dbus start
 # -- localize -----------------------------------------------------------------
 	echo "--- localize ------------------------------------------------------------------"
+#	ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+#	localectl set-locale LANG="ja_JP.utf8" LANGUAGE="ja:en"
+#	localectl set-x11-keymap "jp" "jp106" "" "terminate:ctrl_alt_bksp"
+	locale |                                  \
+	    sed -e 's/\(LANG\)=C/\1=ja_JP.UTF-8/' \
+	        -e 's/\(LANGUAGE\)=$/\1=ja:en/'   \
+	        -e 's/"C"/"ja_JP.UTF-8"/'         \
+	> /etc/locale.conf
 	sed -i /etc/locale.gen                  \
 	    -e 's/^[A-Za-z]/# &/g'              \
 	    -e 's/# \(ja_JP.UTF-8 UTF-8\)/\1/g' \
 	    -e 's/# \(en_US.UTF-8 UTF-8\)/\1/g'
 	locale-gen
 	update-locale LANG=ja_JP.UTF-8
-	sed -i /etc/xdg/lxsession/LXDE/autostart               \
-	    -e '$a@setxkbmap -layout jp -option ctrl:swapcase'
 # -- module install -----------------------------------------------------------
 	echo "--- module install ------------------------------------------------------------"
 #	sed -i.orig /etc/resolv.conf -e '$anameserver 1.1.1.1\nnameserver 1.0.0.1'
@@ -96,8 +102,7 @@ _EOT_
 # -- open vm tools ------------------------------------------------------------
 	echo "--- open vm tools -------------------------------------------------------------"
 	mkdir -p /mnt/hgfs
-	sed -i /etc/fstab                                                                   \
-	    -e '$a.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0'
+	echo -n '.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' > /etc/fstab.vmware-sample
 # -- im-config ----------------------------------------------------------------
 #	echo "--- im-config -----------------------------------------------------------------"
 #	im-config -n fcitx
@@ -110,11 +115,13 @@ _EOT_
 # -- sshd ---------------------------------------------------------------------
 	if [ -f /etc/ssh/sshd_config ]; then
 		echo "--- sshd ----------------------------------------------------------------------"
-		sed -i /etc/ssh/sshd_config                                        \
-		    -e 's/^PermitRootLogin .*/PermitRootLogin yes/'                \
-		    -e 's/#PasswordAuthentication yes/PasswordAuthentication yes/' \
-		    -e '/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/d'                 \
-		    -e '/HostKey \/etc\/ssh\/ssh_host_ed25519_key/d'               \
+		sed -i /etc/ssh/sshd_config                          \
+		    -e 's/^\(PermitRootLogin\) .*/\1 yes/'           \
+		    -e 's/#\(PasswordAuthentication\) .*/\1 yes/'    \
+		    -e 's/#\(PermitEmptyPasswords\) .*/\1 no/'       \
+		    -e 's/#\(UsePAM\) .*/\1 yes/'                    \
+		    -e '/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/d'   \
+		    -e '/HostKey \/etc\/ssh\/ssh_host_ed25519_key/d' \
 		    -e '$aUseDNS no\nIgnoreUserKnownHosts no'
 	fi
 # -- ftpd ---------------------------------------------------------------------
@@ -172,53 +179,50 @@ _EOT_
 		    -e '$aftp_data_port=20'                                       \
 		    -e '$apasv_enable=YES'
 	fi
+# -- smb ----------------------------------------------------------------------
+	if [ -f /etc/samba/smb.conf ]; then
+		echo "--- smb.conf ------------------------------------------------------------------"
+		testparm -s /etc/samba/smb.conf | sed -e '/homes/ idos charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\nidmap config * : range = 1000-10000\n' > smb.conf
+		testparm -s smb.conf > /etc/samba/smb.conf
+		rm -f smb.conf
+	fi
 # -- root and user's setting --------------------------------------------------
 	echo "--- root and user's setting ---------------------------------------------------"
-	for USER_NAME in "root"
+	for TARGET in "/etc/skel" "/root"
 	do
-		USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
-		pushd ${USER_HOME} > /dev/null
-			echo "--- .bashrc -------------------------------------------------------------------"
-			cat <<- _EOT_ >> .bashrc
+		pushd ${TARGET} > /dev/null
+			echo "---- .bashrc ------------------------------------------------------------------"
+			cat <<- '_EOT_' >> .bashrc
 				# --- 日本語文字化け対策 ---
-				case "\${TERM}" in
+				case "${TERM}" in
 				    "linux" ) export LANG=C;;
 				    * )                    ;;
 				esac
-				export GTK_IM_MODULE=ibus
-				export XMODIFIERS=@im=ibus
-				export QT_IM_MODULE=ibus
+				# export GTK_IM_MODULE=ibus
+				# export XMODIFIERS=@im=ibus
+				# export QT_IM_MODULE=ibus
 _EOT_
-			echo "--- .vimrc --------------------------------------------------------------------"
-			cat <<- _EOT_ > .vimrc
-				set number				" Print the line number in front of each line.
-				set tabstop=4			" Number of spaces that a <Tab> in the file counts for.
-				set list				" List mode: Show tabs as CTRL-I is displayed, display $ after end of line.
-				set listchars=tab:\>_	" Strings to use in 'list' mode and for the |:list| command.
-				set nowrap				" This option changes how text is displayed.
-				set showmode			" If in Insert, Replace or Visual mode put a message on the last line.
-				set laststatus=2		" The value of this option influences when the last window will have a status line always.
+			echo "---- .vimrc -------------------------------------------------------------------"
+			cat <<- '_EOT_' > .vimrc
+				set number              " Print the line number in front of each line.
+				set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+				set list                " List mode: Show tabs as CTRL-I is displayed, display $ after end of line.
+				set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+				set nowrap              " This option changes how text is displayed.
+				set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+				set laststatus=2        " The value of this option influences when the last window will have a status line always.
 _EOT_
-			echo "--- .curlrc -------------------------------------------------------------------"
-			cat <<- _EOT_ > .curlrc
+			echo "---- .curlrc ------------------------------------------------------------------"
+			cat <<- '_EOT_' > .curlrc
 				location
 				progress-bar
 				remote-time
 				show-error
 _EOT_
-			echo "--- im-config -----------------------------------------------------------------"
-#			im-config -n ibus
-			mkdir .xinput.d
-			ln -s /etc/X11/xinit/xinput.d/ja_JP .xinput.d/ja_JP
-			chown -R ${USER_NAME}:${USER_NAME} .xinput.d .bashrc .vimrc .curlrc
 		popd > /dev/null
 	done
 # -- cleaning -----------------------------------------------------------------
 	echo "--- cleaning ------------------------------------------------------------------"
-	apt-get -y autoremove
-	apt-get autoclean
-	apt-get clean
-	find /var/log/ -type f -name \* -exec cp -f /dev/null {} \;
 	fncEnd 0
 # -- EOF ----------------------------------------------------------------------
 # *****************************************************************************

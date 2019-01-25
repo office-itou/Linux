@@ -292,18 +292,18 @@ _EOT_
 	# -------------------------------------------------------------------------
 	pushd ./knoppix-live/cdimg > /dev/null
 		find KNOPPIX -name "KNOPPIX*" -type f -exec sha1sum -b {} \; > KNOPPIX/sha1sums
-		sudo xorriso -as mkisofs                                     \
-		             -D -R -U -V "${LIVE_VOLID}"                     \
-		             -o ../../${LIVE_DEST}                           \
-		             -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin   \
-		             -b boot/isolinux/isolinux.bin                   \
-		             -c boot/isolinux/boot.cat                       \
-		             -no-emul-boot                                   \
-		             -boot-load-size 4                               \
-		             -boot-info-table                                \
-		             -iso-level 4                                    \
-		             -eltorito-alt-boot -e efiboot.img -no-emul-boot \
-		             .
+		xorriso -as mkisofs                                     \
+		        -D -R -U -V "${LIVE_VOLID}"                     \
+		        -o ../../${LIVE_DEST}                           \
+		        -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin   \
+		        -b boot/isolinux/isolinux.bin                   \
+		        -c boot/isolinux/boot.cat                       \
+		        -no-emul-boot                                   \
+		        -boot-load-size 4                               \
+		        -boot-info-table                                \
+		        -iso-level 4                                    \
+		        -eltorito-alt-boot -e efiboot.img -no-emul-boot \
+		        .
 	popd > /dev/null
 	ls -lh KNOPPIX*
 # =============================================================================

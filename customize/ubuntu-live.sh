@@ -1,187 +1,231 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [ubuntu 18.10]                                          *
+# LiveCDCustomization [ubuntu-18.10-desktop-amd64.iso]                        *
 # *****************************************************************************
-
-	LIVE_VNUM=18.10
-
+	LIVE_VNUM="18.10"
+	LIVE_ARCH="amd64"
+	LIVE_FILE="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}.iso"
+	LIVE_DEST="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}-custom.iso"
+# == initialize ===============================================================
+#	set -m								# ジョブ制御を有効にする
+#	set -eu								# ステータス0以外と未定義変数の参照で終了
+	echo "*******************************************************************************"
+	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]"
+	echo "*******************************************************************************"
+	trap 'exit 1' 1 2 3 15
 # == tools install ============================================================
-	apt-get -y install debootstrap xorriso squashfs-tools
-
+	apt -y install debootstrap squashfs-tools xorriso isolinux
 # == initial processing =======================================================
-#	cd ~
-	rm -Rf   ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg
+#	rm -rf   ./ubuntu-live
+	rm -rf   ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg
 	mkdir -p ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg
-# -----------------------------------------------------------------------------
-#	tar -cz ubuntu-setup.sh | xxd -ps
+	# -------------------------------------------------------------------------
+	#	tar -cz ./ubuntu-setup.sh | xxd -ps
 	if [ ! -f ./ubuntu-setup.sh ]; then
 		cat <<- _EOT_ | xxd -r -p | tar -xz
-			1f8b08002381495c0003ed5b7b6f1bc711f7bfd4a7d852b2293b3e1e49f9
-			d1c8a611c39163d5cf4a729bc474cfcbbb2579e6bd727b4789b115c0129a
-			264dda3cd03a681a14089034695227298a064d53241f86a19c7e8bceec1d
-			c93b3e443da806056e044b77fbf8edececececccced92ffb96e74b9c79be
-			93e5b543074139a0d3274e88bf407d7f0ba74fcf9d38949f3b5128cce572
-			73738543b97ce1e4e9538748ee40b8e9239f7bd425e4906bdbde76edc6d5
-			ff9fd2f48fe4b26ec965ca6b53d3449a244da540ab8864a6429a26ad8d7f
-			b6363f6a6d3e6cbff265fb9bf75b1b6f6fbdf76afbd75fb51e7cda7af087
-			d6c66b6117e647fb7cd5da7cb9b5f9efd6c6b7f09cfbeeeb0fdb1f3c6c3d
-			f878ebbd4fda9fbdfbf89bbfb43f7875ebf75fb41e7cd67e63e3f12f3f6a
-			3df8e8f13f36befbd7cb5329a6d66c923e36594a7770ef68d463e489f4e1
-			e7e4c3a67c5823872fcd1fbe3a7f78397d87cc13542b8fdc9ac9dd4e1f18
-			23b860c463aea95bc8cabe17ac62a90b96367b94dcebb02c4d74000944b1
-			b4b0a22caf2c1767f25353a99ace3ddb6d12499d9a4ec9cc5365ddd2bdac
-			266b659f83086d07ca7dd3061b45648d3564c7e3e4fe7d12164915a35b1c
-			6f4890061b461af1261fd6088a238d1cd7568734c2e2a91f56bd98a51db0
-			72a5d89aee91997be182ad4fad07fa862ba453437f71dffa1055b2c9a1a2
-			92792e754826506792cf903c299039923f8993726cd8973796f3c5f4ac5a
-			43ab7e94c04e4a85cbeb91ce9af71e82f58e340125a908ede93e847ad36d
-			01bae6990ed475953154bf680b5466d2d3eb88260fd90a604d02f91bb63a
-			1939c5e43f3954943f671a917422a6219059b6ca2c3240a5a914fe9118c9
-			70f917b7ce4bcf53e9c5dbf23439225733db349d26a5d9bb54f9c98deccd
-			958bd28f89f85d3a2a97f2d86fa029b3949bcbc39a4ea502ee24e06e2ae5
-			3bb8e5a4a0885c397fed996264105896e8b4d6b4aa6cac71c6b96e5bf295
-			679f5e90a9efd981d9ef677dbacbd00c7d0a8eb8b57ad9040d950cdab47d
-			8fdc8547dbf10088a89e6bccf355eaa894b34cb0e2a6adf9c0906e01b861
-			ec6785a22b3e395429dd954dd676f56a20209771db686455dbaa8433b7a8
-			c938731bcc25f9acf82959b1b21cfce46151a8e391603142094a2f0ceace
-			783a7204552100abba54635d30a9b90fb08a6f18520771bf601df1ef8333
-			d2dd1cb6c32cce6b5228d0aa659ba8da9ea75b55496826d324cd56b97497
-			86b53eb4ed16c5c00c6a557d5a659243d5ba14b48636c38b257020595f9d
-			001c0ad66daf975d66572abacaa41a331c811f2933f239abc7570fac6116
-			0805a41a2b10d5770de2f2a6a5127064b5277d4f3738b198b76abb75c904
-			a5ab82283835cb9470b3ac1a3ab3bc0898aa57b814768227d5364dd886f8
-			5867aec58c8e30b9afd9c4a3bcce9941ca2ad19c7a557219cea70756f675
-			4393c026c018709a118701733023586909db77de755b72bc66f03a7235a1
-			1d4c43e2dc60346cabc3592099f68b2a69f08ae7684435a8491b44e7aaa4
-			d554a7c32c74654645c2b32704d36133ea96bf46f80b3ef8fa303dcfb661
-			cea83252c30cdf84044127b550462394160d9dcb4cbbc1f6acb4713015a6
-			288e87fd827581f60e06be1e80757c073cb21b03066db8990bacb5c62ad4
-			37c0e6c05a64e0e40eb6df5eec6bd45a4f0e554a4771b318f9b9ea24223f
-			c055a947ce9e9588b2707d4521e7ce0522e27566c8e1405318d3e1c05bef
-			7cb8f5de5fbfffe44f5b0f7fd57ef44efb7588e9de6a7ffecde3470f8998
-			7b0a4f40922ecddc5b5958baba9e06b584425ca1b4d0e434394a426f4e1c
-			d517ce9c09eb8f41cd1012f58c53e421ecf8ccca6565f1aa72f5fad337af
-			2c147177f5ea9e85d2c58b8b0b4bcbc5a774b3aff2a72bfdfdc49463926d
-			e8e664043b44b251c18a7180350c9d2ddf2cc3fe8f519adc7075d8cf5e0d
-			2daec53a8d748b545c1b2aec0a61604c45653604f26819c3afe28918d0b5
-			a02774e060f818074ce08b92b32bb47c0e01718c8a0e6e858a7e2e2715db
-			ed201a10ebf52f499a5cc1527045d83c59aed9ab625c4239b9b0b274455a
-			04b345349d3be02731ed78e791cc105a81a8540441c04b946f1c45ad5197
-			170169be744e11a32c7b20812ab06be306424633d83023462614608051c1
-			fcfd79acb84ff01c80f20eac65af6248d1c7fc0ac4afa4e3b8d5e0880389
-			8849b0352fc67a078643ad183206b358418e162dd8dade71b2c4a08fca08
-			30f4339dfb708a881e8e8f82066789c38146ec40d406e55e7cfa500007bd
-			e7f36221ca27230d6af80ca5e54598d6ad0a945ab892ab3516c15c853300
-			26b2aa836b52a360e7290960030da2c62a6df2ec10a5c7e3f8a0cc4954e9
-			837160d6e8ade35ce011c2b42a98630ece850baf7842813befe92643e980
-			e825e6bab61b722d8c351e7fa46192e0f8db0fbb51294c0e15a560d635dd
-			25924364d3f2e45ab5c2e301560556a6bc9b136e0445c2a6199aad412833
-			2ff7c604b797b36cc3c467099f41090c7b55b14167dce378882bbe25a2db
-			e3e159c5498ee4c2104637253c21f5bd9d5831394f476f0d26062b629808
-			1cd84655f7d602ee432f6bdf63a096e815728b489560e90260b9025a5bc3
-			e7205aba7d0637226a746fa6936301552aa63fc39928858769189b5fb33d
-			bdd2bc00d59a3c7d448620ada207c28180439bccc5719f700018ff694ab8
-			26c3c432b9c107c4d23ffcce7751546e37f0f2d45bb26def8a5d052b9f3d
-			26f71735199733dbc34cdfa09c4340a39df751049e1ed83cd1759baa4c0c
-			46be045bfa326b9212ceaf849313bf14dcea0a53354e953a6bcada0033bb
-			81d10a274fe69f1c0e148599a137397bfada321cad256b11e2489741817b
-			194e5a0b478070cc8e6899887626b2ce7d5a160452a337dee406161ae6d9
-			3e785a81ddf61cf4e67990e888d745b8daa6565c5f2ae8b0a0571dbcb636
-			defefee3bfb5dff83cc8a8b436ff2c72275fe2ef079fb5363f1109955786
-			02223b211ce06dfdf6c3c75fbebbf5dadbed37ffbc07b032b52ca629cca4
-			105b0fc7fbcf1fbf6e3f7ab3b5f93ee26d7edadafcbab5f99680fc5c94bc
-			3a761081ae38e116e0304afbf56fdb6ffea6b5f9a8b5f1456be383d6e6df
-			1fffee63c0d9ed58134c86612c5303278ee44ee572f1b51fb241c4161950
-			cdb18d7aba30ba51777db7438aaddba8467d729fb8bc62fe4d4756719b88
-			f31537c599031d7dc4228ca1be53a0348b526756e968317b6c462ee58bd7
-			ae0fdafc9da228bad338d5837a6e61795bac01146ad956135c35ae308b96
-			0db623ae0679c16bf2018431ccf4a14c9766575ddd63bb8419440998f14d
-			caeb3d905ca1b00b5e4ab3e06687f1d52e04338002baaa087630f0d8e38c
-			4ab36b15e61a76757782194001adb598ea2910e79b0a5e5c2885dc58ac41
-			e97698e19ea640a06c526fbc64065174cd604a9830515038b61fc199cbe5
-			86000da268d4a34a38af11400338832894abbaaef88e61536da7321e8502
-			81b2b5739c41948ee90e54182cdd0ed46e348a8e4ed80eb5378292e62ff5
-			a3e03d4e80f112608c386c5e4a0fdb8d5c711944e87c171b7b40771d6a2a
-			789dadab4cc12c510f23e062284cdcc3f45447c17b1b074e0f1c79bcc51d
-			86824b1211eb8e8146a068cc6aee8299e81a952230b83ac5c003ef3fddd3
-			e37811dec86ea733800296009646b3035e762ee0384adfeed9234a200205
-			8d94100c0885ba2519de3be22965e165dbdd08bcf8b0037b5617f6cdce24
-			1347e14dbe078c7e143115cf511cd7f66cd536760ad4b74680202c261aff
-			6221b7375ec0cf6b44d7a71796a11d10f7a7fbce4b44efcf26878a31175e
-			edde5c5e5852ae9dbfba8037ad69c4870acd86598a9a4bd7af2e14efd0d5
-			3a912e92cc7c06269d2f16d399997bdd8eeb9934b9e7888bf4995367d633
-			8177283c60ed0e5e3efa7815117640bc75bcb0c44f3a2cdf30d0873ea8a4
-			4b6a30edd24bb6ec3cdd3222e1323ee5323ee9d24dbb6c9f7819937a199f
-			7c491d58fa6540c6a49b7689265ef06dd7e996be848b80d86ba2a5970409
-			5899647a65448225b5cff44a34c11230bdabb44a3cb122fa4f289f329851
-			09983bd85c4aeac0b2294374b89b4589e551063229fdb99421d99418df13
-			be964fc52fe63be620c88b64d7740bd632ab61916111890796f9d97c5e5e
-			c34fe8e44e03597cccd5eb10bc0bb9c06ca0e71289dafbf9e84baf57d778
-			8706a62743c776b4b8cdd76c8b7532088c5a7b4dd8c7682a961498142aea
-			077ea452c5cfaf9b910f3c7ac5ddef347a45e16b05149ca0c385fe964c24
-			afe9807182a502af9d948e8113b1c654a23ae2ceb5231d726f9d94ce743f
-			b4c805725ab87e714237398037d10f6201efac092239070f84dcea6ae46d
-			f14ec80561a8c8656addd5038b7bebe762e3735267cddb4fdc5a46432e9e
-			a573b79e67569dd67df912157f45f1c439fea1ff6f414209259450420925
-			94504209259450420925945042092594504209259450420925945042ff3b
-			fa2f690e385200500000
+			1f8b08004c7f4a5c0003ed5b7b931bc511f7bf779f62a23bfb6ce3d54ae7
+			0770f85cb9328771fcccdd39012c6759ed8ea4b17667969dddbb931f54f9
+			ae422090f0a8c45408952aaa20108881542a540829f830e2cee45ba47b76
+			575a492bdf6b0d9594dab6b43b8fdff474f774cf4ccb453dac863c083549
+			83d02bcac6befca904f4e8b163ea1ba8effb68f9f88963fbca478f4d4f1f
+			7bf4d1e3a513fb4ae5e9478f97f791d243e065804219983e21fb7c218207
+			b5dbaafe7f94267ea45719d7aba66c8c4f102d4f1a1f039b229a3b16d304
+			69affdb3bdfe617bfdeec6cb5f6c7cfd5e7bedadcd775fd9f8f597ed3b9f
+			b4effca1bdf66adc8586e93e5fb6d75f6aafffbbbdf60d3c97befdea838d
+			f7efb6ef7cb4f9eec71b9fbe73ffebbf6cbcffcae6ef3f6fdff974e3f5b5
+			fbbffcb07de7c3fbff58fbf65f2f8d8f51ab2148e170be5448709fb7cd80
+			92470afb9fd5f7bbfa7e9bec7f7a66ff8599fd8b85e7c90c41b30ac8d5c9
+			d2b5c2436304154602eabb8c232b7b56588d5bf3dc3e7888dc4c58d6721d
+			4003512ccc2f198b4b8bb393e5f1f1b1069381f05b44b3c627c6741a583a
+			e32c28daba5d0d25885078501eba023c14d16dbaac7b8124b76e91b848ab
+			399de2de860469b061aa916cc9ac46509c6ae4f9c2ca6884c5e33fac7951
+			6e3f64e31aa3ab2c2093376385dd1ebf1dd91b6a88990ebbb1677b481b59
+			7ea86864816f7a642a3267529e2265324d8e92f2719c9427605d5e5e2ccf
+			160e5a0df4ea8708aca4b158bd014974de7d88f49d6a02465253d6d37988
+			eda6d3026c2d703da8eb18636c7ee91668cca46bd7294bce580ae04d22f9
+			3bc2ca474e3df2cf0f5543693a9c68b246f450faba6c983ed56f084e19af
+			097d4e32535f12cd96206a9a6ae480b914bbe133b50287401cd0a237727e
+			eee299d9c275d3f8c9e56218d41e2ba8922b7367e6b17486f2c240cfd572
+			596bd2960b5650b8ee15f0a35c3a01dff0b7e3ce66acc0770c18dba836a5
+			0756138f778b6c4995f131a57e6a43b0225352af1c449e2a87664feb95f2
+			6cc4eb95a5a7b4c7f4a9a43152ba314e003a4c461d601ad0940c362e9c2e
+			e88514604135ebb0712a25445ab404af610c05b6584f459df2a1b388c6f9
+			c5d539ed3953bb714d9f2007f4fad4039a4e90cac11447447d560ec144b0
+			df4053ca8d2b8b594d13896bc0ddf858e8a1c3eb517a6a90c8f65d618750
+			c938ac07c7d98bada66d3f3f5465fb91f88bc267f548073e95c25956ca51
+			629934b9e95249fd65ea937251fda9f09eb212fc294ff5aad2f4025d8ad0
+			b7a82c3a103813c5550edab44a8a87955849c81940484adc1056957a54a2
+			86de241271625e2f6c6de78374e0002a3802abfba64d3b605a6b0f60b5d0
+			71b40471af608922f7c019e998bce99956834e93aa4560a36c3f1e7d8601
+			7324a986ccb1352a25e518bc08c6139785ae56f5c50ae87200acbf81e694
+			4b9c58ac26b508d1724cd75c2656e83bc4f69a75cda7307e3393b31af369
+			4dacc62b46bb6e929ae081d4b80884665d6f6a7415e220a973e1e2120b02
+			c6eb9a0a24d4d66c6149ec928045ad42e429a96ab4bc06e5303dc2200469
+			aeb86181686d982b61d2d2ec86e569b1c1f671c6c0de190f578963f27a68
+			d6a98693d0a2310039bb588343081d9c666fe381de493f875541f71acacc
+			a3203d78a74e4d4bc26f02c6aa4c685ed0ea34e2102ea474a8d92df2a9a8
+			d59845b506753c25a46cd3483745452ae696dd69e2b68206952839405f11
+			7e537361c9d741501c346d09d715bc1f0c6b9ad4e7d44984ca8368b90a0f
+			b4b0ec6a811060213d6f303dd9845d723f183692b29120a989f9b2c52d22
+			4db76a12e9562d87a126e50b211cfd60ec085d86b62081299b923a0958d0
+			0841eb7e95f976cad696650df8dbe65aeaae4d33840d3f75c5326a7aaf0b
+			1dc12c509d12e65ec13a40bb078363028025db4edced2d0f4480ecb81085
+			379bd64cf0da0497e194c49d0caed9dd04a47478cb0f552ba4718b7869e0
+			5b795c1a00ae6506e4e4498d18f397960c722aded7c82675f478a071bc0e
+			c08137dffe60f3ddbf7ef7f19f36effe6ae3dedb1bafdd6ddf7973e3b3af
+			efdfbb4bd4dc010c3c42a1327973697ee1c2ed02b82d28440d15945f2a90
+			43243e08a87dc6e9279e88eb0f434d06a97a2a4de421ee7866e99c71f682
+			71e1d29357cecfcfa287ecd63d03a5679f3a3bbfb038fb63e6f655fe74a9
+			bf9f9a728f6497999b8f6033249b16ac1a0758c35b171ebad574c852e222
+			977d065e02dc19783b4e93468c939a0fc186881aa1101f556531060acc2a
+			9edc678ff5005d8c7a4207097e1b5c63d000be4c7272c9ac9e42401ca3c6
+			601f66e111494230f31344b5db21fdac9dc752d8bbd119b2d8102b6a5c62
+			4a727a69e1bc76168210b199f41cb345ed23c9239924660d4e00eafc0cbc
+			a4f9c6512c38abc859409aa99c32d4288b0148a00eec0a5c40c8e814369c
+			52231313608051c5fcad19acb845d0bf437902cbc50a9e46fb985f6a30f4
+			e50183480083f23a48444d0282760feb098c845a35640fccd91a727496c3
+			d20e8e90050a7d2c88183ef9199321ec48540f2f4441c3ee52420c222212
+			b563caa077fa5000bb832094b3d3693e2959369d90a2b48214d370968352
+			8e9a5c816d42177305f608309115063bb086097ede24116c6441a6b362b6
+			6431c3e871d3f3b0dc49dae8a37160d618cc702ef00827fc3ab863097b09
+			1f5e3142c159449d4a413a207a8dfabef063ae95b3c6184b965d1205cebd
+			b09b96427ea82805b769339f681ed15d1ee88d7a4dc6636960c6c58690c1
+			8cdead835db8a4c565179f357c06653962c510a05bff08065b23e4ea02e3
+			481c53242991d25422de1ae8b90afd57e0bcafc146c373687c65e46a18e4
+			d8ee824e8fa826d27746b9c1aa735b0a0edc9bc582d588fb784fbee73150
+			d1ac46ae12ad16c92b02d66b60780d7c8e4e88d79ec0b58446d99d697e2c
+			a055f49c2ab399a8c4f1303e625e1401abb54e43b5ad4f1cd0e138596391
+			70609769e79336e8130e00e33fdb8875922596fc061f104bfff043a94f52
+			958397f17e29581022382fea8c570ec1d11c0fe62d2af5a9a11d27a0a329
+			251c16ecb910271ab0c8390df61feca8469c77e1589360c8ac61073a5e91
+			f4f2dc85a11c66b2aa3f0d5ee31c6d910acaa98242521f067a13835ab634
+			8d266de9f6d4ce3adad3c78f971f4fbaa63b4e9ac0e7931717219256f859
+			382dfa140afc7310583962c2294ba42c521d4b72b1893e8b8c4e3cc31769
+			7e032b6b0c44081babc8b1061e6ede659412ebad4b71f5805a75d16de0fe
+			0437d1d16b7bedadef3efadbc6eb9f45b9b7f6fa9f5596ed0bfcbcf3697b
+			fd63957a7b391310d989e1006ff3b71fdcffe29dcd57dfda78e3cfbb00ab
+			9a9c53dba0aec91c998df79f3f7eb571ef8df6fa7b88b7fe497bfdabf6fa
+			9b0af23355f2ca96832874c34bd6078cb2f1da371b6ffca6bd7eafbdf679
+			7bedfdf6fadfefffee23c0d9e95839a64df1e8d2803d1b299d28957a759f
+			b124d5121930cd2d1b756d6178a38e7e1f84d4a3b7618dfae49ebbbcd24e
+			bb23ab5e4f87f355b7da530f75f4214ad88206e2074a9d82db9f2d1e56b9
+			818b97b29df276500ce62d9fe8423d3bbff840ac0114930bde821d9f3428
+			37ab0edd165783bce0a5d100c216ccf4a140b45af1594077083388123113
+			baa66c76414ad3d33be0a5721076d5f1716a07821940015b353ad9af5dce
+			a87270b5467d47d47726980114b05a4eadc08063bd6be03d85315dda126b
+			50ba093332b00d3817bb66b0b564065198ed5043828061ff63a0704498c2
+			395a2a65000da2d866601af1bc86000de00ca298d262cc083d4798f67665
+			3c0c05cec57cfb38832889eb8e4c183cdd36cc6e380ac36dd736ad378552
+			902ff6a3e0b54d84f122600c09362f16b256a3347c0a0772b983853d60bb
+			9ee91a78d3cd2c6a6016ad8b11719109d3bbc30c2ccfc06b1a0fa2078ebc
+			b5c7cd424195a4c4ba6da0212836e5ad1d3093d651250583da998df6dcfd
+			d1bdb0152f6a37b2d3e90ca0802700d5d822e265fb02ee45e95b3dbb4489
+			4460a093528201a1987e4587f7443c9522bc3c7035022f21acc0aed78575
+			b33dc9f4a2c896dc05463f8a9a4ae0199e2f02610967bb407d3a0204e531
+			d1f9cf4e9776c70becf396d3fa495d14b8d59c765efd170598d1d2017ef8
+			c9ac53b9f7c1d5c98ccac0337d97683293855b9d1f86e80d01fb049d305b
+			48a2ee96694066c9e9cb8f1f9daef03805c73c8bb88c93447fd0e0e252b9
+			539d5515e7f5b2aa988dbf7a896f2d0e9319e2e3e532d4964ba592861fa5
+			0ac72bbb84ddbe097566712a6b6e7837eaa2e8bb058982d1d1abfbf03de7
+			99d2f7a1f9a1a2eaf0aa7e696ee1ccfc125e9b173a97c20578c691a0892d
+			f03a38c49ba5c99b51dbdb280bfc71160f1d07cf381df6f24c82a16575ae
+			ada7d445f314e6c1bad9afede7bf920c586f026ceb14d8d649b04e1a0c99
+			79502a2c559f9d0e4b35189a12eb15756e59b16c51934e3a2cc784d8c348
+			897d5f49b1acb498ca8aed352d965b62ec7b488dfd90c9b15ef3cf2d3f36
+			ccfc3b89b19ed4d84072ac3f3d9691204b739e779a66ac375193789328d5
+			555c651c745ab4b148fd08358a62cf94cbfa2afea0564f1ae8eac785dd0e
+			d1bb920ccc067a2e80ffbfb238bf605c9cbb307f7b26fdd2edd5f1ffb173
+			eacad0139edd1b376cc1699251a226dfed6f307a68bc27499417aa0a95d1
+			af584a11c7f3979eca6bf7364172fda13ae09d74c11e4fc10321573bb671
+			4dbd13725af91072cee4d759e418affe5c2d42499ab475ed91ab8be87bd5
+			b376eaea739437cd66a83f6daa6f559c3bc73ff4fff919d1884634a2118d
+			6844231ad1884634a2118d6844231ad1884634a2118d6844231ad1ff2ffd
+			170ff7247e00500000
 _EOT_
 	fi
-# -----------------------------------------------------------------------------
-	if [ ! -f ./ubuntu-${LIVE_VNUM}-desktop-amd64.iso ]; then
-		wget "https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/${LIVE_VNUM}/ubuntu-${LIVE_VNUM}-desktop-amd64.iso"
-#		wget "https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/${LIVE_VNUM}/ubuntu-${LIVE_VNUM}-live-server-amd64.iso"
-#		wget "http://cdimage.ubuntu.com/releases/${LIVE_VNUM}/release/ubuntu-${LIVE_VNUM}-server-arm64.iso"
+	# -------------------------------------------------------------------------
+	if [ ! -f ./${LIVE_FILE} ]; then
+		wget "https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/${LIVE_VNUM}/${LIVE_FILE}"
 	fi
-	LIVE_VOLID=`volname ./ubuntu-${LIVE_VNUM}-desktop-amd64.iso`
-# -----------------------------------------------------------------------------
-	mount -r -o loop ./ubuntu-${LIVE_VNUM}-desktop-amd64.iso ./ubuntu-live/media
+	# -------------------------------------------------------------------------
+	mount -r -o loop ./${LIVE_FILE} ./ubuntu-live/media
 	pushd ./ubuntu-live/media > /dev/null
 		find . -depth -print | cpio -pdm ../cdimg/
 	popd > /dev/null
 	umount ./ubuntu-live/media
-# -----------------------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	if [ ! -f ./ubuntu-live/cdimg/casper/filesystem.squashfs.orig ]; then
-		mv ./ubuntu-live/cdimg/casper/filesystem.squashfs ./ubuntu-live/cdimg/casper/filesystem.squashfs.orig
+		mv ./ubuntu-live/cdimg/casper/filesystem.squashfs ./ubuntu-live/filesystem.squashfs
 	fi
-# -----------------------------------------------------------------------------
-	mount -r -o loop ./ubuntu-live/cdimg/casper/filesystem.squashfs.orig ./ubuntu-live/media
+	# -------------------------------------------------------------------------
+	mount -r -o loop ./ubuntu-live/filesystem.squashfs ./ubuntu-live/media
 	pushd ./ubuntu-live/media > /dev/null
 		find . -depth -print | cpio -pdm ../fsimg/
 	popd > /dev/null
 	umount ./ubuntu-live/media
-# -----------------------------------------------------------------------------
-	cp -p ubuntu-setup.sh ./ubuntu-live/fsimg/root
-	chmod u+x ./ubuntu-live/fsimg/root/ubuntu-setup.sh
-	LANG=C chroot ./ubuntu-live/fsimg /bin/bash /root/ubuntu-setup.sh
-	rm -f ./ubuntu-live/fsimg/root/ubuntu-setup.sh
-# -----------------------------------------------------------------------------
-	rm -rf ./ubuntu-live/fsimg/tmp/* ./ubuntu-live/fsimg/root/.bash_history ./ubuntu-live/fsimg/root/.viminfo ./ubuntu-live/fsimg/var/cache/apt/*.bin ./ubuntu-live/fsimg/var/cache/apt/archives/*.deb
-# -- file compress ------------------------------------------------------------
-	rm -f ./ubuntu-live/cdimg/casper/filesystem.squashfs
-	mksquashfs ./ubuntu-live/fsimg ./ubuntu-live/cdimg/casper/filesystem.squashfs -comp xz -wildcards -e *.orig
-	ls -lht ./ubuntu-live/cdimg/casper/
-# -----------------------------------------------------------------------------
-	if [ ! -f ./ubuntu-live/cdimg/isolinux/menu.cfg.orig ]; then
-		chmod +w ./ubuntu-live/cdimg/isolinux/menu.cfg
-		sed -i.orig ./ubuntu-live/cdimg/isolinux/menu.cfg                                                 \
-		    -e 's/locales=ja_JP\.UTF-8/& timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp/g'
-	fi
-# -- make iso image -----------------------------------------------------------
-	pushd ./ubuntu-live/cdimg > /dev/null
-		xorriso -as mkisofs \
-		    -r -J -V "${LIVE_VOLID}" -D \
-		    -o ../../ubuntu-${LIVE_VNUM}-desktop-amd64-custom.iso \
-		    -b isolinux/isolinux.bin \
-		    -c isolinux/boot.cat \
-		    -cache-inodes \
-		    -no-emul-boot \
-		    -boot-load-size 4 \
-		    -boot-info-table \
-		    -m *.orig \
-		    -iso-level 4 \
-		    -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot \
-		    .
-	popd > /dev/null
-	ls -lht
 # =============================================================================
+	if [ -d ./ubuntu-live/rpack.${LIVE_ARCH} ]; then
+		echo "--- deb file copy -------------------------------------------------------------"
+		cp -p ./ubuntu-live/rpack.${LIVE_ARCH}/*.deb ./ubuntu-live/fsimg/var/cache/apt/archives/
+	fi
+# =============================================================================
+	rm -f ./ubuntu-live/fsimg/etc/localtime
+	ln -s /usr/share/zoneinfo/Asia/Tokyo ./ubuntu-live/fsimg/etc/localtime
+	# -------------------------------------------------------------------------
+	mount --bind /dev     ./ubuntu-live/fsimg/dev
+	mount --bind /dev/pts ./ubuntu-live/fsimg/dev/pts
+	mount --bind /proc    ./ubuntu-live/fsimg/proc
+#	mount --bind /sys     ./ubuntu-live/fsimg/sys
+	# -------------------------------------------------------------------------
+	cp -p ./ubuntu-setup.sh ./ubuntu-live/fsimg/root
+	LANG=C chroot ./ubuntu-live/fsimg /bin/bash /root/ubuntu-setup.sh
+	RET_STS=$?
+	# -------------------------------------------------------------------------
+#	umount ./ubuntu-live/fsimg/sys     || umount -lf ./ubuntu-live/fsimg/sys
+	umount ./ubuntu-live/fsimg/proc    || umount -lf ./ubuntu-live/fsimg/proc
+	umount ./ubuntu-live/fsimg/dev/pts || umount -lf ./ubuntu-live/fsimg/dev/pts
+	umount ./ubuntu-live/fsimg/dev     || umount -lf ./ubuntu-live/fsimg/dev
+	# -------------------------------------------------------------------------
+	if [ ${RET_STS} -ne 0 ]; then
+		exit ${RET_STS}
+	fi
+	# -------------------------------------------------------------------------
+	find   ./ubuntu-live/fsimg/var/log/ -type f -name \* -exec cp -f /dev/null {} \;
+	rm -rf ./ubuntu-live/fsimg/root/.bash_history           \
+	       ./ubuntu-live/fsimg/root/.viminfo                \
+	       ./ubuntu-live/fsimg/tmp/*                        \
+	       ./ubuntu-live/fsimg/var/cache/apt/*.bin          \
+	       ./ubuntu-live/fsimg/var/cache/apt/archives/*.deb \
+	       ./ubuntu-live/fsimg/root/ubuntu-setup.sh
+# =============================================================================
+	rm -f ./ubuntu-live/cdimg/casper/filesystem.squashfs
+	mksquashfs ./ubuntu-live/fsimg ./ubuntu-live/cdimg/casper/filesystem.squashfs
+	ls -lht ./ubuntu-live/cdimg/casper/
+	# -------------------------------------------------------------------------
+	chmod +w ./ubuntu-live/cdimg/isolinux/txt.cfg
+	sed -i ./ubuntu-live/cdimg/isolinux/txt.cfg                                                                      \
+	    -e 's/\(append .*\)/\1 locales=ja_JP\.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp/g'
+	# -------------------------------------------------------------------------
+	pushd ./ubuntu-live/cdimg > /dev/null
+		find . -type f -exec md5sum {} \; > ../md5sum.txt
+		mv ../md5sum.txt .
+		xorriso -as mkisofs                                           \
+		        -D -R -U -V "${LIVE_VOLID}"                           \
+		        -o ../../${LIVE_DEST}                                 \
+		        -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin         \
+		        -b isolinux/isolinux.bin                              \
+		        -c isolinux/boot.cat                                  \
+		        -no-emul-boot                                         \
+		        -boot-load-size 4                                     \
+		        -boot-info-table                                      \
+		        -iso-level 4                                          \
+		        -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot \
+		        .
+	popd > /dev/null
+	ls -lh ubuntu*
+# =============================================================================
+	echo "*******************************************************************************"
+	echo "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]"
+	echo "*******************************************************************************"
+	exit 0
+# == EOF ======================================================================
