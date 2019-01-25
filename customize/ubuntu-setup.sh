@@ -33,14 +33,6 @@ fncEnd() {
 #	/etc/init.d/dbus start
 # -- localize -----------------------------------------------------------------
 	echo "--- localize ------------------------------------------------------------------"
-#	ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
-#	localectl set-locale LANG="ja_JP.utf8" LANGUAGE="ja:en"
-#	localectl set-x11-keymap "jp" "jp106" "" "terminate:ctrl_alt_bksp"
-	locale |                                  \
-	    sed -e 's/\(LANG\)=C/\1=ja_JP.UTF-8/' \
-	        -e 's/\(LANGUAGE\)=$/\1=ja:en/'   \
-	        -e 's/"C"/"ja_JP.UTF-8"/'         \
-	> /etc/locale.conf
 	sed -i /etc/locale.gen                  \
 	    -e 's/^[A-Za-z]/# &/g'              \
 	    -e 's/# \(ja_JP.UTF-8 UTF-8\)/\1/g' \
@@ -71,43 +63,11 @@ fncEnd() {
 	apt clean        -q -y                                                 || \
 	fncEnd 1
 #	mv /etc/resolv.conf.orig /etc/resolv.conf
-# -- default user's setting ---------------------------------------------------
-	echo "--- default user's setting ----------------------------------------------------"
-	echo "--- .bashrc -------------------------------------------------------------------"
-	cat <<- _EOT_ >> /etc/skel/.bashrc
-		# --- 日本語文字化け対策 ---
-		case "\${TERM}" in
-		    "linux" ) export LANG=C;;
-		    * )                    ;;
-		esac
-		export GTK_IM_MODULE=ibus
-		export XMODIFIERS=@im=ibus
-		export QT_IM_MODULE=ibus
-_EOT_
-	echo "--- .vimrc --------------------------------------------------------------------"
-	cat <<- _EOT_ > /etc/skel/.vimrc
-		set number              " Print the line number in front of each line.
-		set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
-		set list                " List mode: Show tabs as CTRL-I is displayed, display $ after end of line.
-		set listchars=tab:\>_   " Strings to use in 'list' mode and for the |:list| command.
-		set nowrap              " This option changes how text is displayed.
-		set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
-		set laststatus=2        " The value of this option influences when the last window will have a status line always.
-_EOT_
-	echo "--- .curlrc -------------------------------------------------------------------"
-	cat <<- _EOT_ > /etc/skel/.curlrc
-		location
-		progress-bar
-		remote-time
-		show-error
-_EOT_
 # -- open vm tools ------------------------------------------------------------
 	echo "--- open vm tools -------------------------------------------------------------"
 	mkdir -p /mnt/hgfs
-	echo -n '.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' > /etc/fstab.vmware-sample
-# -- im-config ----------------------------------------------------------------
-#	echo "--- im-config -----------------------------------------------------------------"
-#	im-config -n fcitx
+	echo -n '.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
+	> /etc/fstab.vmware-sample
 # -- clamav -------------------------------------------------------------------
 	if [ -f /etc/clamav/freshclam.conf ]; then
 		echo "--- clamav --------------------------------------------------------------------"
@@ -184,7 +144,7 @@ _EOT_
 # -- smb ----------------------------------------------------------------------
 	if [ -f /etc/samba/smb.conf ]; then
 		echo "--- smb.conf ------------------------------------------------------------------"
-		testparm -s /etc/samba/smb.conf | sed -e '/homes/ idos charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\nidmap config * : range = 1000-10000\n' > smb.conf
+		testparm -s /etc/samba/smb.conf | sed -e '/global/ ados charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\nidmap config * : range = 1000-10000\n' > smb.conf
 		testparm -s smb.conf > /etc/samba/smb.conf
 		rm -f smb.conf
 	fi
