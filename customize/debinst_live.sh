@@ -62,7 +62,7 @@
 		    sudo                                                                  \\
 		    task-desktop task-japanese task-japanese-desktop task-laptop          \\
 		    task-lxde-desktop task-ssh-server task-web-server                     \\
-		    live-boot wpagui blackbox xterm nano                                  \\
+		    live-task-lxde wpagui blackbox xterm nano                             \\
 		    linux-headers-${IMG_ARCH} linux-image-${IMG_ARCH}                     \\
 		    vim wget less traceroute btrfs-progs dnsutils ifupdown usbutils       \\
 		    powermgmt-base task-english
@@ -207,11 +207,6 @@ _EOT_SH_
 		sed -i /etc/xdg/lxsession/LXDE/autostart               \
 		    -e '$a@setxkbmap -layout jp -option ctrl:swapcase'
 		# -----------------------------------------------------------------------------
-		echo "--- add users -----------------------------------------------------------------"
-		adduser -q --gecos "" user
-		adduser -q user sudo
-		smbpasswd -a user
-		# -----------------------------------------------------------------------------
 		echo "--- cleaning and exit ---------------------------------------------------------"
 _EOT_SH_
 # =============================================================================
@@ -324,7 +319,7 @@ _EOT_SH_
 		fi
 
 		menuentry "Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})" {
-		  linux  /live/vmlinuz-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 "\${loopback}"
+		  linux  /live/vmlinuz-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp "\${loopback}"
 		  initrd /live/initrd.img-${VER_KRNL}-${IMG_ARCH}
 		}
 _EOT_
@@ -336,18 +331,18 @@ _EOT_
 		LABEL Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})
 		  SAY "Booting Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})..."
 		  linux /live/vmlinuz-${VER_KRNL}-${IMG_ARCH}
-		  APPEND initrd=/live/initrd.img-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8
+		  APPEND initrd=/live/initrd.img-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp
 _EOT_
 # -- file compress ------------------------------------------------------------
 	echo "-- make file system image -----------------------------------------------------"
 	rm -f ./debootstrap/cdimg/live/filesystem.squashfs
-	mksquashfs ./debootstrap/fsimg ./debootstrap/cdimg/live/filesystem.squashfs
+	mksquashfs ./debootstrap/fsimg ./debootstrap/cdimg/live/filesystem.squashfs -mem 1G -noappend -b 4K -comp lz4
 	ls -lht ./debootstrap/cdimg/live/
 # -- make iso image -----------------------------------------------------------
 	echo "-- make iso image -------------------------------------------------------------"
 	pushd ./debootstrap/cdimg > /dev/nullF
 		find . -type f -exec md5sum {} \; > ../md5sum.txt
-		cp -p ../md5sum.txt .
+		mv ../md5sum.txt .
 		xorriso                                                                \
 		    -as mkisofs                                                        \
 		    -iso-level 3                                                       \
