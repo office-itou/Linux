@@ -211,16 +211,16 @@ _EOT_SH_
 _EOT_SH_
 # =============================================================================
 	echo "--- debootstrap ---------------------------------------------------------------"
-	LIVE_VOLID="Debian live ${INP_SUITE} ${INP_ARCH}"
+	LIVE_VOLID="d-live ${INP_SUITE} lx ${INP_ARCH}"
 	if [ "${INP_NETWORK}" != "" ]; then
 		echo "---- network install ----------------------------------------------------------"
 		debootstrap --merged-usr --arch=${INP_ARCH} --variant=minbase ${INP_SUITE} ./debootstrap/fsimg/
 	else
 		echo "---- media install ------------------------------------------------------------"
 		case "${INP_SUITE}" in
-			"testing" | "buster"  ) LIVE_MEDIA="./debian-testing-${INP_ARCH}-DVD-1.iso";;
-			"stable"  | "stretch" ) LIVE_MEDIA="./debian-9.6.0-${INP_ARCH}-DVD-1.iso";;
-			*                     ) LIVE_MEDIA="";;
+			"testing" | "buster"  | 10* ) LIVE_MEDIA="./debian-testing-${INP_ARCH}-DVD-1.iso";;
+			"stable"  | "stretch" | 9*  ) LIVE_MEDIA="./debian-9.7.0-${INP_ARCH}-DVD-1.iso";;
+			*                           ) LIVE_MEDIA="";;
 		esac
 		FSSQ_MEDIA=""
 		mount -r -o loop ${LIVE_MEDIA} ./debootstrap/media/
@@ -228,10 +228,15 @@ _EOT_SH_
 		umount ./debootstrap/media/
 	fi
 	# -------------------------------------------------------------------------
-	if [ -d ./debootstrap/rpack.${INP_ARCH} ]; then
+	case "${INP_SUITE}" in
+		"testing" | "buster"  | 10* ) DEB_SUITE="testing";;
+		"stable"  | "stretch" | 9*  ) DEB_SUITE="stable";;
+		*                           ) DEB_SUITE="";;
+	esac
+	if [ -d ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH} ]; then
 		echo "--- deb file copy -------------------------------------------------------------"
 		mkdir -p ./debootstrap/fsimg/var/cache/apt/archives
-		cp -p ./debootstrap/rpack.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/
+		cp -p ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/
 	fi
 	# -------------------------------------------------------------------------
 	echo "-- chroot ---------------------------------------------------------------------"
@@ -268,7 +273,12 @@ _EOT_SH_
 	pushd ./debootstrap > /dev/null
 		TAR_INST=debian-cd_info-${INP_SUITE}-${INP_ARCH}.tar.gz
 		if [ ! -f "./${TAR_INST}" ]; then
-			wget -O "./${TAR_INST}" "http://ftp.debian.org/debian/dists/${INP_SUITE}/main/installer-${INP_ARCH}/current/images/cdrom/debian-cd_info.tar.gz"
+			case "${INP_SUITE}" in
+				"testing" | "buster"  ) TAR_URL="https://d-i.debian.org/daily-images/${INP_ARCH}/daily/cdrom/debian-cd_info.tar.gz";;
+				"stable"  | "stretch" ) TAR_URL="https://cdimage.debian.org/debian/dists/${INP_SUITE}/main/installer-${INP_ARCH}/current/images/cdrom/debian-cd_info.tar.gz";;
+				*                     ) TAR_URL="";;
+			esac
+			wget -O "./${TAR_INST}" "${TAR_URL}"
 		fi
 		tar -xzf "./${TAR_INST}" -C ./_work/
 	popd > /dev/null
@@ -331,16 +341,16 @@ _EOT_
 		LABEL Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})
 		  SAY "Booting Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})..."
 		  linux /live/vmlinuz-${VER_KRNL}-${IMG_ARCH}
-		  APPEND initrd=/live/initrd.img-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp
+		  APPEND initrd=/live/initrd.img-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp
 _EOT_
 # -- file compress ------------------------------------------------------------
 	echo "-- make file system image -----------------------------------------------------"
 	rm -f ./debootstrap/cdimg/live/filesystem.squashfs
-	mksquashfs ./debootstrap/fsimg ./debootstrap/cdimg/live/filesystem.squashfs -mem 1G -noappend -b 4K -comp lz4
+	mksquashfs ./debootstrap/fsimg ./debootstrap/cdimg/live/filesystem.squashfs -mem 1G -noappend -b 4K -comp xz
 	ls -lht ./debootstrap/cdimg/live/
 # -- make iso image -----------------------------------------------------------
 	echo "-- make iso image -------------------------------------------------------------"
-	pushd ./debootstrap/cdimg > /dev/nullF
+	pushd ./debootstrap/cdimg > /dev/null
 		find . -type f -exec md5sum {} \; > ../md5sum.txt
 		mv ../md5sum.txt .
 		xorriso                                                                \

@@ -1,9 +1,14 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [debian-live-9.7.0-amd64-lxde.iso]                      *
+# LiveCDCustomization [debian-live-[version]-[architecture]-lxde.iso]         *
 # *****************************************************************************
-	LIVE_VNUM="9.7.0"
-	LIVE_ARCH="amd64"
+	if [ "$1" = "" ] || [ "$2" = "" ]; then
+		echo "$0 [i386 | amd64] [9.x.0 | testing | ...]"
+		exit 1
+	fi
+
+	LIVE_ARCH="$1"
+	LIVE_VNUM="$2"
 	LIVE_FILE="debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde.iso"
 	LIVE_DEST="debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde-custom.iso"
 # == initialize ===============================================================
@@ -131,8 +136,14 @@
 _EOT_
 	fi
 	# -------------------------------------------------------------------------
+	TAR_INST=debian-cd_info-${INP_SUITE}-${INP_ARCH}.tar.gz
 	if [ ! -f ./${LIVE_FILE} ]; then
-		wget "https://ftp.yz.yamagata-u.ac.jp/pub/linux/debian-cd/current-live/${LIVE_ARCH}/iso-hybrid/${LIVE_FILE}"
+		case "${INP_SUITE}" in
+			"testing" | "buster"  ) LIVE_URL="http://cdimage.debian.org/cdimage/weekly-live-builds/${LIVE_ARCH}/iso-hybrid/debian-live-testing-${LIVE_ARCH}-lxde.iso";;
+			"stable"  | "stretch" ) LIVE_URL="http://cdimage.debian.org/cdimage/release/current-live/${LIVE_ARCH}/iso-hybrid/debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde.iso";;
+			*                     ) LIVE_URL="";;
+		esac
+		wget "${LIVE_URL}"
 	fi
 	# -------------------------------------------------------------------------
 	mount -r -o loop ./${LIVE_FILE} ./debian-live/media
@@ -151,9 +162,14 @@ _EOT_
 	popd > /dev/null
 	umount ./debian-live/media
 # =============================================================================
-	if [ -d ./debian-live/rpack.${LIVE_ARCH} ]; then
+	case "${LIVE_VNUM}" in
+		"testing" | "buster"  | 10* ) LIVE_SUITE="testing";;
+		"stable"  | "stretch" | 9*  ) LIVE_SUITE="stable";;
+		*                           ) LIVE_SUITE="";;
+	esac
+	if [ -d ./debian-live/rpack.${LIVE_SUITE}.${LIVE_ARCH} ]; then
 		echo "--- deb file copy -------------------------------------------------------------"
-		cp -p ./debian-live/rpack.${LIVE_ARCH}/*.deb ./debian-live/fsimg/var/cache/apt/archives/
+		cp -p ./debian-live/rpack.${LIVE_SUITE}.${LIVE_ARCH}/*.deb ./debian-live/fsimg/var/cache/apt/archives/
 	fi
 # =============================================================================
 	rm -f ./debian-live/fsimg/etc/localtime
@@ -165,6 +181,10 @@ _EOT_
 #	mount --bind /sys     ./debian-live/fsimg/sys
 	# -------------------------------------------------------------------------
 	cp -p ./debian-setup.sh ./debian-live/fsimg/root
+	if [ "${LIVE_ARCH}" == "i386" ]; then
+		sed -i ./debian-live/fsimg/root/debian-setup.sh    \
+		    -e 's/linux-headers-amd64/linux-headers-686/g'
+	fi
 	LANG=C chroot ./debian-live/fsimg /bin/bash /root/debian-setup.sh
 	RET_STS=$?
 	# -------------------------------------------------------------------------
@@ -185,16 +205,18 @@ _EOT_
 	       ./debian-live/fsimg/var/cache/apt/archives/*.deb \
 	       ./debian-live/fsimg/root/debian-setup.sh
 # =============================================================================
-	sed -i ./debian-live/cdimg/boot/grub/grub.cfg                                   \
+	sed -i ./debian-live/cdimg/boot/grub/grub.cfg                                                                                                  \
 	    -e 's/\(linux .* components\) \("${loopback}"$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
-	sed -i ./debian-live/cdimg/isolinux/menu.cfg                 \
+	sed -i ./debian-live/cdimg/isolinux/menu.cfg                                                                               \
 	    -e 's/\(APPEND .* components$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp/'
 	# -------------------------------------------------------------------------
 	rm -f ./debian-live/cdimg/live/filesystem.squashfs
-	mksquashfs ./debian-live/fsimg ./debian-live/cdimg/live/filesystem.squashfs
+	mksquashfs ./debian-live/fsimg ./debian-live/cdimg/live/filesystem.squashfs -mem 1G -noappend -b 4K -comp xz
 	ls -lht ./debian-live/cdimg/live/
 	# -------------------------------------------------------------------------
 	pushd ./debian-live/cdimg > /dev/null
+		find . -type f -exec md5sum {} \; > ../md5sum.txt
+		mv ../md5sum.txt .
 		xorriso                                     \
 		    -as mkisofs                             \
 		    -iso-level 3                            \

@@ -12,7 +12,7 @@
 	echo "*******************************************************************************"
 	trap 'exit 1' 1 2 3 15
 # == tools install ============================================================
-	apt -y install debootstrap squashfs-tools xorriso cloop-utils isolinux
+	apt -y install debootstrap squashfs-tools xorriso isolinux
 # == initial processing =======================================================
 #	rm -rf   ./knoppix-live
 	rm -rf   ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg
@@ -172,7 +172,7 @@ _EOT_
 	# -------------------------------------------------------------------------
 	dd if=./${LIVE_FILE} of=./knoppix-live/efiboot.img bs=512 skip=${ISO2_START} count=${ISO2_COUNT}
 	# -------------------------------------------------------------------------
-	mount -o loop ./${LIVE_FILE} ./knoppix-live/media
+	mount -r -o loop ./${LIVE_FILE} ./knoppix-live/media
 	cp -rp ./knoppix-live/media/* ./knoppix-live/cdimg/
 	umount ./knoppix-live/media
 	# -------------------------------------------------------------------------
@@ -186,11 +186,11 @@ _EOT_
 	fi
 	rm -f ./knoppix-live/cdimg/KNOPPIX/KNOPPIX1
 	# -------------------------------------------------------------------------
-	mount -o loop ./knoppix-live/KNOPPIX_FS.iso ./knoppix-live/media
+	mount -r -o loop ./knoppix-live/KNOPPIX_FS.iso ./knoppix-live/media
 	cp -rp ./knoppix-live/media/* ./knoppix-live/fsimg/
 	umount ./knoppix-live/media
 	# -------------------------------------------------------------------------
-	mount -o loop ./knoppix-live/KNOPPIX1_FS.iso ./knoppix-live/media
+	mount -r -o loop ./knoppix-live/KNOPPIX1_FS.iso ./knoppix-live/media
 	cp -rp ./knoppix-live/media/* ./knoppix-live/fsimg/
 	umount ./knoppix-live/media
 	# -------------------------------------------------------------------------
@@ -198,8 +198,8 @@ _EOT_
 	      ./knoppix-live/KNOPPIX1_FS.tmp \
 	      ./knoppix-live/filelist.txt
 	# -----------------------------------------------------------------------------
-	if [ -d ./knoppix-live/rpack.i386 ]; then
-		cp -p ./knoppix-live/rpack.i386/*.deb ./knoppix-live/fsimg/var/cache/apt/archives/
+	if [ -d ./knoppix-live/rpack.knoppix82 ]; then
+		cp -p ./knoppix-live/rpack.knoppix82/*.deb ./knoppix-live/fsimg/var/cache/apt/archives/
 	fi
 	if [ -d ./knoppix-live/clamav ]; then
 		cp -p ./knoppix-live/clamav/*.cvd     ./knoppix-live/fsimg/var/lib/clamav/
