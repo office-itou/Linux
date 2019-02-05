@@ -52,7 +52,7 @@ fncEnd() {
 	    task-desktop task-japanese task-japanese-desktop task-laptop          \
 	    task-lxde-desktop task-print-server task-ssh-server task-web-server   \
 	    apache2 apt-show-versions aptitude bc bind9 bind9utils                \
-	    build-essential chromium chromium-l10n cifs-utils clamav \
+	    build-essential chromium chromium-l10n cifs-utils clamav              \
 	    curl dpkg-repack fdclone ibus-mozc indent isc-dhcp-server isolinux    \
 	    libapt-pkg-perl libauthen-pam-perl libelf-dev libio-pty-perl          \
 	    libnet-ssleay-perl linux-headers-amd64 lvm2 network-manager           \

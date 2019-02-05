@@ -290,14 +290,29 @@ _EOT_SH_
 	         ./debootstrap/cdimg/.disk
 	# ---------------------------------------------------------------------
 	echo "-- make system loading file ---------------------------------------------------"
+	NOW_TIME=`date +"%Y-%m-%dT%H:%M"`
+	# ---------------------------------------------------------------------
+#	echo "--- make efi.img file ---------------------------------------------------------"
+#	dd if=/dev/zero of=./debootstrap/cdimg/boot/grub/efi.img bs=256M count=1
+#	mkfs.vfat ./debootstrap/cdimg/boot/grub/efi.img
+#	mount -o loop ./debootstrap/cdimg/boot/grub/efi.img ./debootstrap/media/
+#	mkdir -p ./debootstrap/media/efi/boot   \
+#	         ./debootstrap/media/efi/debian
+#	cat <<- '_EOT_' > ./debootstrap/media/efi/debian/grub.cfg
+#		search --file --set=root /.disk/info
+#		set prefix=($root)/boot/grub
+#		source $prefix/x86_64-efi/grub.cfg
+#_EOT_
+#	cp -p ./debootstrap/fsimg/usr/lib/grub/x86_64-efi/monolithic/grubx64.efi ./debootstrap/media/efi/boot/
+#	umount ./debootstrap/media/
 	# ---------------------------------------------------------------------
 	echo "--- make .disk's file ---------------------------------------------------------"
-	echo -en "main"                                                                  > ./debootstrap/cdimg/.disk/base_components
-	echo -en ""                                                                      > ./debootstrap/cdimg/.disk/base_installable
-	echo -en "live"                                                                  > ./debootstrap/cdimg/.disk/cd_type
-	echo -en "Custom Debian GNU/Linux Live ${INP_SUITE}-${INP_ARCH} lxde"            > ./debootstrap/cdimg/.disk/info
-	echo -en "xorriso -output /debian-live-${INP_SUITE}-${INP_ARCH}-lxde-custom.iso" > ./debootstrap/cdimg/.disk/mkisofs
-	echo -en "netcfg\nethdetect\npcmciautils-udeb\nlive-installer\n"                 > ./debootstrap/cdimg/.disk/udeb_include
+#	echo -en "main"                                                                   > ./debootstrap/cdimg/.disk/base_components
+#	echo -en ""                                                                       > ./debootstrap/cdimg/.disk/base_installable
+#	echo -en "live"                                                                   > ./debootstrap/cdimg/.disk/cd_type
+	echo -en "Custom Debian GNU/Linux Live ${INP_SUITE}-${INP_ARCH} lxde ${NOW_TIME}" > ./debootstrap/cdimg/.disk/info
+#	echo -en "xorriso -output /debian-live-${INP_SUITE}-${INP_ARCH}-lxde-custom.iso"  > ./debootstrap/cdimg/.disk/mkisofs
+#	echo -en "netcfg\nethdetect\npcmciautils-udeb\nlive-installer\n"                  > ./debootstrap/cdimg/.disk/udeb_include
 	# ---------------------------------------------------------------------
 	echo "--- copy system file ----------------------------------------------------------"
 	pushd ./debootstrap/_work/grub > /dev/null
@@ -321,6 +336,13 @@ _EOT_SH_
 	cp -p ./debootstrap/fsimg/usr/lib/syslinux/memdisk                   ./debootstrap/cdimg/isolinux/
 	cp -p ./debootstrap/fsimg/boot/*                                     ./debootstrap/cdimg/live/
 	# ---------------------------------------------------------------------
+	echo "--- copy EFI directory --------------------------------------------------------"
+	mount -r -o loop ./debootstrap/cdimg/boot/grub/efi.img ./debootstrap/media/
+	pushd ./debootstrap/media/efi/ > /dev/null
+		find . -depth -print | cpio -pdm ../../cdimg/EFI/
+	popd > /dev/null
+	umount ./debootstrap/media/
+	# ---------------------------------------------------------------------
 	VER_KRNL=`find ./debootstrap/fsimg/boot/ -name "vmlinuz*" -print | sed -e 's/.*vmlinuz-//g' -e 's/-amd64//g' -e 's/-686//g'`
 	echo "--- edit grub.cfg file --------------------------------------------------------"
 	cat <<- _EOT_ >> ./debootstrap/cdimg/boot/grub/grub.cfg
@@ -329,7 +351,7 @@ _EOT_SH_
 		fi
 
 		menuentry "Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})" {
-		  linux  /live/vmlinuz-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp "\${loopback}"
+		  linux  /live/vmlinuz-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp "\${loopback}"
 		  initrd /live/initrd.img-${VER_KRNL}-${IMG_ARCH}
 		}
 _EOT_
