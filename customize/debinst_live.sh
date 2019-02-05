@@ -62,7 +62,7 @@
 		    sudo                                                                  \\
 		    task-desktop task-japanese task-japanese-desktop task-laptop          \\
 		    task-lxde-desktop task-ssh-server task-web-server                     \\
-		    live-task-lxde wpagui blackbox xterm nano                             \\
+		    live-task-base live-config wpagui blackbox xterm nano                 \\
 		    linux-headers-${IMG_ARCH} linux-image-${IMG_ARCH}                     \\
 		    vim wget less traceroute btrfs-progs dnsutils ifupdown usbutils       \\
 		    powermgmt-base task-english
@@ -273,11 +273,7 @@ _EOT_SH_
 	pushd ./debootstrap > /dev/null
 		TAR_INST=debian-cd_info-${INP_SUITE}-${INP_ARCH}.tar.gz
 		if [ ! -f "./${TAR_INST}" ]; then
-			case "${INP_SUITE}" in
-				"testing" | "buster"  ) TAR_URL="https://d-i.debian.org/daily-images/${INP_ARCH}/daily/cdrom/debian-cd_info.tar.gz";;
-				"stable"  | "stretch" ) TAR_URL="https://cdimage.debian.org/debian/dists/${INP_SUITE}/main/installer-${INP_ARCH}/current/images/cdrom/debian-cd_info.tar.gz";;
-				*                     ) TAR_URL="";;
-			esac
+			TAR_URL="https://cdimage.debian.org/debian/dists/${INP_SUITE}/main/installer-${INP_ARCH}/current/images/cdrom/debian-cd_info.tar.gz"
 			wget -O "./${TAR_INST}" "${TAR_URL}"
 		fi
 		tar -xzf "./${TAR_INST}" -C ./_work/
@@ -290,29 +286,10 @@ _EOT_SH_
 	         ./debootstrap/cdimg/.disk
 	# ---------------------------------------------------------------------
 	echo "-- make system loading file ---------------------------------------------------"
-	NOW_TIME=`date +"%Y-%m-%dT%H:%M"`
-	# ---------------------------------------------------------------------
-#	echo "--- make efi.img file ---------------------------------------------------------"
-#	dd if=/dev/zero of=./debootstrap/cdimg/boot/grub/efi.img bs=256M count=1
-#	mkfs.vfat ./debootstrap/cdimg/boot/grub/efi.img
-#	mount -o loop ./debootstrap/cdimg/boot/grub/efi.img ./debootstrap/media/
-#	mkdir -p ./debootstrap/media/efi/boot   \
-#	         ./debootstrap/media/efi/debian
-#	cat <<- '_EOT_' > ./debootstrap/media/efi/debian/grub.cfg
-#		search --file --set=root /.disk/info
-#		set prefix=($root)/boot/grub
-#		source $prefix/x86_64-efi/grub.cfg
-#_EOT_
-#	cp -p ./debootstrap/fsimg/usr/lib/grub/x86_64-efi/monolithic/grubx64.efi ./debootstrap/media/efi/boot/
-#	umount ./debootstrap/media/
+	NOW_TIME=`date +"%Y-%m-%d %H:%M"`
 	# ---------------------------------------------------------------------
 	echo "--- make .disk's file ---------------------------------------------------------"
-#	echo -en "main"                                                                   > ./debootstrap/cdimg/.disk/base_components
-#	echo -en ""                                                                       > ./debootstrap/cdimg/.disk/base_installable
-#	echo -en "live"                                                                   > ./debootstrap/cdimg/.disk/cd_type
 	echo -en "Custom Debian GNU/Linux Live ${INP_SUITE}-${INP_ARCH} lxde ${NOW_TIME}" > ./debootstrap/cdimg/.disk/info
-#	echo -en "xorriso -output /debian-live-${INP_SUITE}-${INP_ARCH}-lxde-custom.iso"  > ./debootstrap/cdimg/.disk/mkisofs
-#	echo -en "netcfg\nethdetect\npcmciautils-udeb\nlive-installer\n"                  > ./debootstrap/cdimg/.disk/udeb_include
 	# ---------------------------------------------------------------------
 	echo "--- copy system file ----------------------------------------------------------"
 	pushd ./debootstrap/_work/grub > /dev/null
