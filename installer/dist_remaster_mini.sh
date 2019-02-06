@@ -23,6 +23,7 @@
 ##	2018/06/14 000.0000 J.Itou         不具合修正
 ##	2018/06/29 000.0000 J.Itou         仕様変更(取得先URLをHTTPS)
 ##	2018/11/06 000.0000 J.Itou         ubuntu 18.10,19.04 変更
+##	2019/02/06 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -112,7 +113,7 @@ funcRemaster () {
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
-		mount -o loop "../${DVD_NAME}.iso" mnt
+		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
 			find . -depth -print | cpio -pdm ../image/
 		popd > /dev/null
@@ -133,6 +134,20 @@ funcRemaster () {
 			sed -i boot/grub/grub.cfg \
 			    -e "/^menuentry 'Install'.*$/i\menuentry 'Preseed install' {\n    set background_color=black\n    linux    /linux vga=788 --- quiet\n    initrd   /initps.gz\n}" \
 			    -e '/^menuentry "Install".*$/i\menuentry "Preseed install" {\n\tset gfxpayload=keep\n\tlinux\t/linux --- quiet\n\tinitrd\t/initps.gz\n}\n'
+			# --- copy EFI directory ------------------------------------------
+			case "${CODE_NAME[0]}" in
+				"debian" )
+					if [ ! -d EFI ]; then
+						echo "--- copy EFI directory --------------------------------------------------------"
+						mount -r -o loop boot/grub/efi.img ../mnt/
+						pushd ../mnt/efi/ > /dev/null
+							find . -depth -print | cpio -pdm ../../image/EFI/
+						popd > /dev/null
+						umount ../mnt/
+					fi
+					;;
+				* )	;;
+			esac
 			# --- make iso file -----------------------------------------------
 			rm -f md5sum.txt
 			find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt

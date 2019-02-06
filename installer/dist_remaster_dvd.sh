@@ -20,7 +20,7 @@
 ##	---------- -------- -------------- ----------------------------------------
 ##	2018/05/01 000.0000 J.Itou         新規作成
 ##	2018/05/11 000.0000 J.Itou         不具合修正
-##	2018/05/11 000.0000 J.Itou         debian testing/CentOS 1804追加
+##	2018/05/11 000.0000 J.Itou         debian testing/CentOS 1810追加
 ##	2018/06/14 000.0000 J.Itou         不具合修正(CentOS7対応含む)
 ##	2018/06/24 000.0000 J.Itou         debian 8.11 変更
 ##	2018/06/29 000.0000 J.Itou         Fedora 28追加
@@ -29,6 +29,9 @@
 ##	2018/07/27 000.0000 J.Itou         ubuntu 18.04.1 変更
 ##	2018/11/06 000.0000 J.Itou         ubuntu 18.10,19.04 / Fedora 29 変更
 ##	2018/11/11 000.0000 J.Itou         debian 9.6.0 変更
+##	2019/01/09 000.0000 J.Itou         CentOS 7 1810変更
+##	2019/01/24 000.0000 J.Itou         debian 9.7.0 変更
+##	2019/02/06 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -50,7 +53,7 @@
 	readonly ARRAY_NAME=(                                                                                                                                                                      \
 	    "debian debian-7.11.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
 	    "debian debian-8.11.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/archive/8.11.0/amd64/iso-dvd/debian-8.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
-	    "debian debian-9.6.0-amd64-DVD-1        https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-9.6.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
+	    "debian debian-9.7.0-amd64-DVD-1        https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-9.7.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-DVD-1      https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"   \
 	    "ubuntu ubuntu-14.04.5-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-server-amd64.iso                         preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-14.04.5-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
@@ -62,7 +65,7 @@
 	    "ubuntu ubuntu-18.10-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/cosmic/ubuntu-18.10-desktop-amd64.iso                          preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-19.04-server-amd64       http://cdimage.ubuntu.com/releases/19.04/release/ubuntu-19.04-server-amd64.iso                                           preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-19.04-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/disco/ubuntu-19.04-desktop-amd64.iso                           preseed_ubuntu.cfg"   \
-	    "centos CentOS-7-x86_64-DVD-1804        https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.5.1804/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso                       kickstart_centos.cfg" \
+	    "centos CentOS-7-x86_64-DVD-1810        https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.6.1810/isos/x86_64/CentOS-7-x86_64-DVD-1810.iso                       kickstart_centos.cfg" \
 	    "fedora Fedora-Server-dvd-x86_64-29-1.2 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/29/Server/x86_64/iso/Fedora-Server-dvd-x86_64-29-1.2.iso kickstart_fedora.cfg" \
 	)   # 区分  DVDファイル名                   ダウンロード先URL                                                                                                        定義ファイル
 # -----------------------------------------------------------------------------
@@ -71,7 +74,7 @@ funcMenu () {
 	echo "# ID：Version                        ：リリース日：サポ終了日：備考           #"
 	echo "#  1：debian-7.11.0-amd64-DVD-1      ：2013-05-04：2018-05-31：oldoldstable   #"
 	echo "#  2：debian-8.11.0-amd64-DVD-1      ：2015-04-25：2020-04-xx：oldstable      #"
-	echo "#  3：debian-9.6.0-amd64-DVD-1       ：2017-06-17：2022-xx-xx：stable         #"
+	echo "#  3：debian-9.7.0-amd64-DVD-1       ：2017-06-17：2022-xx-xx：stable         #"
 	echo "#  4：debian-testing-amd64-DVD-1     ：20xx-xx-xx：20xx-xx-xx：testing        #"
 	echo "#  5：ubuntu-14.04.5-server-amd64    ：2014-04-17：2019-04-xx：Trusty Tahr    #"
 	echo "#  6：ubuntu-14.04.5-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
@@ -83,7 +86,7 @@ funcMenu () {
 	echo "# 12：ubuntu-18.10-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
 	echo "#---：ubuntu-19.04-server-amd64      ：2019-04-18：2020-01-xx：Disco Dingo    #"
 	echo "#---：ubuntu-19.04-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
-	echo "# 15：CentOS-7-x86_64-DVD-1804       ：2018-05-10：2024-06-30：RHEL 7.5       #"
+	echo "# 15：CentOS-7-x86_64-DVD-1810       ：2018-12-03：2024-06-30：RHEL 7.6       #"
 	echo "# 16：Fedora-Server-dvd-x86_64-29-1.2：2018-10-30：20xx-xx-xx：kernel 4.18    #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
@@ -123,7 +126,7 @@ funcRemaster () {
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
-		mount -o loop "../${DVD_NAME}.iso" mnt
+		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
 			find . -depth -print | cpio -pdm ../image/
 		popd > /dev/null
@@ -224,6 +227,20 @@ funcRemaster () {
 					sed -i EFI/BOOT/grub.cfg \
 					    -e 's/\(set default\)="1"/\1="0"/g' \
 					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 28'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-28 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+					;;
+				* )	;;
+			esac
+			# --- copy EFI directory ------------------------------------------
+			case "${CODE_NAME[0]}" in
+				"debian" )
+					if [ ! -d EFI ]; then
+						echo "--- copy EFI directory --------------------------------------------------------"
+						mount -r -o loop boot/grub/efi.img ../mnt/
+						pushd ../mnt/efi/ > /dev/null
+							find . -depth -print | cpio -pdm ../../image/EFI/
+						popd > /dev/null
+						umount ../mnt/
+					fi
 					;;
 				* )	;;
 			esac
@@ -344,6 +361,7 @@ funcRemaster () {
 # Ver.    :リリース日:RHEL      :メンテナンス更新期限
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30
 # 7.5-1804:2018-05-10:2018-04-10:2024-06-30
+# 7.6-1810:2018-12-03:2018-10-30:2024-06-30
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # Ver. :コードネーム     :リリース日:サポート期限
 # 27   :                 :2017-11-14:
