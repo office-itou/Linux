@@ -25,7 +25,7 @@
 	echo "*******************************************************************************"
 	trap 'exit 1' 1 2 3 15
 # == tools install ============================================================
-	apt -y install debootstrap squashfs-tools xorriso isolinux
+#	apt -y install debian-live squashfs-tools xorriso isolinux
 # == initial processing =======================================================
 #	rm -rf   ./debian-live
 	rm -rf   ./debian-live/media ./debian-live/cdimg ./debian-live/fsimg
@@ -151,17 +151,15 @@ _EOT_
 		wget "${LIVE_URL}"
 	fi
 	# -------------------------------------------------------------------------
+	echo "--- copy media -> cdimg -------------------------------------------------------"
 	mount -r -o loop ./${LIVE_FILE} ./debian-live/media
 	pushd ./debian-live/media > /dev/null
 		find . -depth -print | cpio -pdm ../cdimg/
 	popd > /dev/null
 	umount ./debian-live/media
 	# -------------------------------------------------------------------------
-	if [ ! -f ./debian-live/cdimg/live/filesystem.squashfs.orig ]; then
-		mv ./debian-live/cdimg/live/filesystem.squashfs ./debian-live/filesystem.squashfs
-	fi
-	# -------------------------------------------------------------------------
-	mount -r -o loop ./debian-live/filesystem.squashfs ./debian-live/media
+	echo "--- copy media -> fsimg -------------------------------------------------------"
+	mount -r -o loop ./debian-live/cdimg/live/filesystem.squashfs ./debian-live/media
 	pushd ./debian-live/media > /dev/null
 		find . -depth -print | cpio -pdm ../fsimg/
 	popd > /dev/null
@@ -209,6 +207,15 @@ _EOT_
 	    -e 's/\(linux .* components\) \("${loopback}"$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
 	sed -i ./debian-live/cdimg/isolinux/menu.cfg                                                                               \
 	    -e 's/\(APPEND .* components$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp/'
+	# ---------------------------------------------------------------------
+	if [ -f ./debian-live/cdimg/boot/grub/efi.img ]; then
+		echo "--- copy EFI directory --------------------------------------------------------"
+		mount -r -o loop ./debian-live/cdimg/boot/grub/efi.img ./debian-live/media/
+		pushd ./debian-live/media/efi/ > /dev/null
+			find . -depth -print | cpio -pdm ../../cdimg/EFI/
+		popd > /dev/null
+		umount ./debian-live/media/
+	fi
 	# -------------------------------------------------------------------------
 	rm -f ./debian-live/cdimg/live/filesystem.squashfs
 	mksquashfs ./debian-live/fsimg ./debian-live/cdimg/live/filesystem.squashfs -mem 1G -noappend -b 4K -comp xz
