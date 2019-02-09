@@ -64,6 +64,20 @@ fncEnd() {
 	apt clean        -q -y                                                 || \
 	fncEnd 1
 #	mv /etc/resolv.conf.orig /etc/resolv.conf
+	# -----------------------------------------------------------------------------
+	echo "--- systemctl -----------------------------------------------------------------"
+	systemctl  enable clamav-freshclam
+	systemctl  enable ssh
+	systemctl disable apache2
+	systemctl  enable vsftpd
+	systemctl  enable bind9
+	systemctl disable isc-dhcp-server
+#	systemctl disable isc-dhcp-server6
+	systemctl  enable smbd
+	systemctl  enable nmbd
+	# -----------------------------------------------------------------------------
+	echo "--- freshclam -----------------------------------------------------------------"
+	freshclam --show-progress
 # -- open vm tools ------------------------------------------------------------
 	echo "--- open vm tools -------------------------------------------------------------"
 	mkdir -p /mnt/hgfs

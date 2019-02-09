@@ -195,8 +195,7 @@ _EOT_
 	ls -lht ./ubuntu-live/cdimg/casper/
 	# -------------------------------------------------------------------------
 	pushd ./ubuntu-live/cdimg > /dev/null
-		find . -type f -exec md5sum {} \; > ../md5sum.txt
-		mv ../md5sum.txt .
+		find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
 		xorriso                                     \
 		    -as mkisofs                             \
 		    -iso-level 3                            \

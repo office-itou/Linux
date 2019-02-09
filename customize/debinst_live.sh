@@ -62,10 +62,10 @@
 		    sudo                                                                  \\
 		    task-desktop task-japanese task-japanese-desktop task-laptop          \\
 		    task-lxde-desktop task-ssh-server task-web-server                     \\
-		    live-task-base live-config wpagui blackbox xterm nano                 \\
+		    live-task-base live-config wpagui xterm nano                          \\
 		    linux-headers-${IMG_ARCH} linux-image-${IMG_ARCH}                     \\
 		    vim wget less traceroute btrfs-progs dnsutils ifupdown usbutils       \\
-		    powermgmt-base task-english
+		    powermgmt-base task-english acpid debconf-i18n
 _EOT_SH_
 	cat <<- '_EOT_SH_' >> ./debootstrap/fsimg/inst-net.sh
 		echo "---- module fix broken --------------------------------------------------------"
@@ -75,15 +75,28 @@ _EOT_SH_
 		apt autoclean    -q                                                    && \
 		apt clean        -q
 		# -----------------------------------------------------------------------------
+		echo "--- systemctl -----------------------------------------------------------------"
 		systemctl  enable clamav-freshclam
 		systemctl  enable ssh
 		systemctl disable apache2
 		systemctl  enable vsftpd
 		systemctl  enable bind9
 		systemctl disable isc-dhcp-server
-		systemctl disable isc-dhcp-server6
+#		systemctl disable isc-dhcp-server6
 		systemctl  enable smbd
 		systemctl  enable nmbd
+		# -----------------------------------------------------------------------------
+		echo "--- freshclam -----------------------------------------------------------------"
+		freshclam --show-progress
+		# -----------------------------------------------------------------------------
+		echo "--- network interfaces --------------------------------------------------------"
+		cat <<- '_EOT_' > /etc/network/interfaces.d/setup
+			auto lo
+			iface lo inet loopback
+
+			auto eth0
+			iface eth0 inet dhcp
+		_EOT_
 		# -----------------------------------------------------------------------------
 		echo "--- localize ------------------------------------------------------------------"
 		if [ -f /etc/locale.gen ]; then
@@ -238,6 +251,11 @@ _EOT_SH_
 		mkdir -p ./debootstrap/fsimg/var/cache/apt/archives
 		cp -p ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/
 	fi
+#	if [ -d ./debootstrap/clamav ]; then
+#		echo "--- clamav file copy ----------------------------------------------------------"
+#		mkdir -p ./debootstrap/fsimg/var/lib/clamav
+#		cp -p ./debootstrap/clamav/* ./debootstrap/fsimg/var/lib/clamav/
+#	fi
 	# -------------------------------------------------------------------------
 	echo "-- chroot ---------------------------------------------------------------------"
 	echo "debian-live" >  ./debootstrap/fsimg/etc/hostname
@@ -331,6 +349,8 @@ _EOT_SH_
 		  linux  /live/vmlinuz-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp "\${loopback}"
 		  initrd /live/initrd.img-${VER_KRNL}-${IMG_ARCH}
 		}
+
+		set timeout=5
 _EOT_
 	echo "--- edit menu.cfg file --------------------------------------------------------"
 	cat <<- _EOT_ > ./debootstrap/cdimg/isolinux/menu.cfg
@@ -342,6 +362,9 @@ _EOT_
 		  linux /live/vmlinuz-${VER_KRNL}-${IMG_ARCH}
 		  APPEND initrd=/live/initrd.img-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp
 _EOT_
+	echo "--- edit isolinux.cfg file ----------------------------------------------------"
+	sed -i ./debootstrap/cdimg/isolinux/isolinux.cfg \
+	    -e 's/^\(timeout\) .*/\1 50/'
 # -- file compress ------------------------------------------------------------
 	echo "-- make file system image -----------------------------------------------------"
 	rm -f ./debootstrap/cdimg/live/filesystem.squashfs
@@ -350,8 +373,7 @@ _EOT_
 # -- make iso image -----------------------------------------------------------
 	echo "-- make iso image -------------------------------------------------------------"
 	pushd ./debootstrap/cdimg > /dev/null
-		find . -type f -exec md5sum {} \; > ../md5sum.txt
-		mv ../md5sum.txt .
+		find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
 		xorriso                                                                \
 		    -as mkisofs                                                        \
 		    -iso-level 3                                                       \
