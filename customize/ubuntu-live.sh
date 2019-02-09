@@ -20,7 +20,7 @@
 	rm -rf   ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg
 	mkdir -p ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg
 	# -------------------------------------------------------------------------
-	cat <<- '_EOT_SH_' > ./debian-live/fsimg/ubuntu-setup.sh
+	cat <<- '_EOT_SH_' > ./ubuntu-live/fsimg/ubuntu-setup.sh
 		#!/bin/bash
 		# -----------------------------------------------------------------------------
 			set -m								# ジョブ制御を有効にする

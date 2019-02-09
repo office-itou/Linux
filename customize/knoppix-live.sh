@@ -18,7 +18,7 @@
 	rm -rf   ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg
 	mkdir -p ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg
 	# -------------------------------------------------------------------------
-	cat <<- '_EOT_SH_' > ./debian-live/fsimg/knoppix-setup.sh
+	cat <<- '_EOT_SH_' > ./knoppix-live/fsimg/knoppix-setup.sh
 		#!/bin/bash
 		# -----------------------------------------------------------------------------
 			set -m								# ジョブ制御を有効にする
