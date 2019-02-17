@@ -232,7 +232,7 @@ _EOT_SH_
 		echo "---- media install ------------------------------------------------------------"
 		case "${INP_SUITE}" in
 			"testing" | "buster"  | 10* ) LIVE_MEDIA="./debian-testing-${INP_ARCH}-DVD-1.iso";;
-			"stable"  | "stretch" | 9*  ) LIVE_MEDIA="./debian-9.7.0-${INP_ARCH}-DVD-1.iso";;
+			"stable"  | "stretch" | 9*  ) LIVE_MEDIA="./debian-9.8.0-${INP_ARCH}-DVD-1.iso";;
 			*                           ) LIVE_MEDIA="";;
 		esac
 		FSSQ_MEDIA=""
