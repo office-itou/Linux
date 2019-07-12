@@ -17,7 +17,7 @@
 ##				:	bind9 / named
 ##				:	isc-dhcp-server / dhcpd
 ##				:	samba / smbd,nmbd / smb,nmb
-##				:	webmin
+##				:	x)webmin
 ##	---------------------------------------------------------------------------
 ##	入出力 I/F
 ##		INPUT	:	
@@ -49,6 +49,9 @@
 ##	2018/07/01 000.0000 J.Itou         不具合修正(Fedora 28対応含む)
 ##	2018/07/07 000.0000 J.Itou         処理見直し(CentOS 7対応含む)
 ##	2018/07/07 000.0000 J.Itou         不具合修正(bind周り)
+##	2018/11/23 000.0000 J.Itou         不具合修正(vsftp周り)
+##	2019/07/10 000.0000 J.Itou         不具合修正(最新化対応)
+##	2018/06/29 000.0000 J.Itou         処理見直し(webmin導入停止)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -90,11 +93,15 @@ funcProc() {
 		if [ -f /lib/systemd/systemd-sysv-install ] && [ "${INP_COMD}" = "enable" -o "${INP_COMD}" = "disable" ]; then
 			/lib/systemd/systemd-sysv-install ${INP_COMD} ${INP_NAME}; funcPause $?
 		else
-			case "${INP_COMD}" in
-				"enable" )	insserv -d ${INP_NAME};      funcPause $?;;
-				"disable" )	insserv -r ${INP_NAME};      funcPause $?;;
-				* )	/etc/init.d/${INP_NAME} ${INP_COMD}; funcPause $?;;
-			esac
+			if [ "`which insserv 2> /dev/null`" != "" ]; then
+				case "${INP_COMD}" in
+					"enable" )	insserv -d ${INP_NAME};      funcPause $?;;
+					"disable" )	insserv -r ${INP_NAME};      funcPause $?;;
+					* )	/etc/init.d/${INP_NAME} ${INP_COMD}; funcPause $?;;
+				esac
+			else
+				/etc/init.d/${INP_NAME} ${INP_COMD}
+			fi
 		fi
 	fi
 }
@@ -267,8 +274,8 @@ funcInitialize () {
 	    "administrator:Administrator:1001::XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:1" \
 	)	# sample: administrator's password="password"
 	# ･････････････････････････････････････････････････････････････････････････
-	EXT_ZONE=""																	# マスターDNSのドメイン名
-	EXT_ADDR=0.0.0.0															#   〃         IPアドレス
+	EXT_ZONE="planet"															# マスターDNSのドメイン名
+	EXT_ADDR=192.168.1.11														#   〃         IPアドレス
 	# ･････････････････････････････････････････････････････････････････････････
 #	VGA_RESO=("800x600x32"   "789")												# コンソールの解像度： 800× 600：1600万色
 #	VGA_RESO=("1024x768x32"  "792")												#   〃              ：1024× 768：1600万色
@@ -328,10 +335,12 @@ funcInitialize () {
 		IP4_ARRY+=(`fncGetIPaddr 4 "global primary"  "${DEV_NAME}"`)			# IPv4:IPアドレス/サブネットマスク(bit)
 		IP6_ARRY+=(`fncGetIPaddr 6 "global primary"  "${DEV_NAME}"`)			# IPv6:IPアドレス/サブネットマスク(bit)
 		LNK_ARRY+=(`fncGetIPaddr 6 "link"            "${DEV_NAME}"`)			# Link:IPアドレス/サブネットマスク(bit)
-		IP4_DHCP+=(`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`)			# IPv4:DHCPフラグ(auto/static)
-		IP6_DHCP+=(`fncGetNM "DHCP6"   "${DEV_NAME}" "${CON_UUID}"`)			# IPv6:DHCPフラグ(auto/static)
-		IP4_DNSA+=(`fncGetNM "IP4.DNS" "${DEV_NAME}" "${CON_UUID}"`)			# IPv4:DNSアドレス
-		IP6_DNSA+=(`fncGetNM "IP6.DNS" "${DEV_NAME}" "${CON_UUID}"`)			# IPv6:DNSアドレス
+		if [ "${CON_UUID}" != "" ]; then
+			IP4_DHCP+=(`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`)		# IPv4:DHCPフラグ(auto/static)
+			IP6_DHCP+=(`fncGetNM "DHCP6"   "${DEV_NAME}" "${CON_UUID}"`)		# IPv6:DHCPフラグ(auto/static)
+			IP4_DNSA+=(`fncGetNM "IP4.DNS" "${DEV_NAME}" "${CON_UUID}"`)		# IPv4:DNSアドレス
+			IP6_DNSA+=(`fncGetNM "IP6.DNS" "${DEV_NAME}" "${CON_UUID}"`)		# IPv6:DNSアドレス
+		fi
 	done
 	IP4_GATE=`ip -4 r show table all | awk '/default/ {print $3;}'`				# IPv4:デフォルトゲートウェイ
 	# ･････････････････････････････････････････････････････････････････････････
@@ -472,6 +481,8 @@ funcInitialize () {
 	PKG_WMIN="${DIR_WK}/${SET_WMIN}"
 	rm -f "${WRK_WMIN}"
 	funcPause $?
+	wget -O "${PKG_WMIN}" "${URL_WMIN}"
+	funcPause $?
 }
 
 # Main処理 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -497,6 +508,8 @@ funcMain () {
 	${CMD_AGET} update ; funcPause $?
 	echo --- Package Upgrade -----------------------------------------------------------
 	${CMD_AGET} upgrade; funcPause $?
+#	echo --- Package Fix-broken --------------------------------------------------------
+#	${CMD_AGET} --fix-broken install; funcPause $?
 #	echo --- Package Cleaning ----------------------------------------------------------
 #	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
 #		${CMD_AGET} autoclean; funcPause $?
@@ -592,20 +605,24 @@ _EOT_
 	# hosts.allow -------------------------------------------------------------
 	echo --- hosts.allow ---------------------------------------------------------------
 	if [ ! -f /etc/hosts.allow.orig ]; then
-		cp -p /etc/hosts.allow /etc/hosts.allow.orig
+		if [ -f /etc/hosts.allow ]; then
+			cp -p /etc/hosts.allow /etc/hosts.allow.orig
+		fi
 		cat <<- _EOT_ >> /etc/hosts.allow
 			ALL : 127.0.0.1
 			ALL : [::1]
 			# ALL : 169.254.0.0/16
 			ALL : [fe80::]/${LNK_BITS[0]}
 			ALL : ${IP4_UADR[0]}.0/${IP4_BITS[0]}
-			# ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
+			ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
 _EOT_
 	fi
 	# hosts.deny --------------------------------------------------------------
 	echo --- hosts.deny ----------------------------------------------------------------
 	if [ ! -f /etc/hosts.deny.orig ]; then
-		cp -p /etc/hosts.deny /etc/hosts.deny.orig
+		if [ -f /etc/hosts.deny ]; then
+			cp -p /etc/hosts.deny /etc/hosts.deny.orig
+		fi
 		cat <<- _EOT_ >> /etc/hosts.deny
 			ALL : ALL
 _EOT_
@@ -681,9 +698,17 @@ _EOT_
 	fi
 	# ipv4 dns changed --------------------------------------------------------
 	echo --- ipv4 dns changed ----------------------------------------------------------
-	if [ "${SYS_NAME}" = "debian" ] \
-	&& [ ${SYS_VNUM} -lt 8 -a ${SYS_VNUM} -ge 0 ]; then							# Debian 8以前の判定
-		if [ -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
+	if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
+		if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
+			sed -i.orig /etc/resolv.conf                                \
+			    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"                 \
+			    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1/g"
+		fi
+	else
+		if [ "${CON_UUID}" != "" ]; then
+			nmcli c modify "${CON_UUID}" ipv4.dns 127.0.0.1
+			nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
+		else
 			if [ "${IP4_DHCP[0]}" == "auto" ]; then
 				if [ ! -f "/etc/dhcp/dhclient.conf.orig" ]; then
 					sed -i.orig /etc/dhcp/dhclient.conf                           \
@@ -701,16 +726,7 @@ _EOT_
 					    > "/etc/NetworkManager/system-connections/${CON_NAME}"
 				fi
 			fi
-		else
-			if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
-				sed -i.orig /etc/resolv.conf                                \
-				    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"                 \
-				    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1/g"
-			fi
 		fi
-	else
-		nmcli c modify "${CON_UUID}" ipv4.dns 127.0.0.1
-		nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
 	fi
 	#--------------------------------------------------------------------------
 #	funcProc NetworkManager "${RUN_CLAM[0]}"
@@ -991,8 +1007,8 @@ _EOT_
 	# -------------------------------------------------------------------------
 	if [ ! -f ${DIR_VSFTPD}/vsftpd.conf.orig ]; then
 		sed -i.orig ${DIR_VSFTPD}/vsftpd.conf                                      \
-		    -e 's/^\(listen\)=.*$/\1=YES/'                                         \
-		    -e 's/^\(listen_ipv6\)=.*$/\1=NO/'                                     \
+		    -e 's/^\(listen\)=.*$/\1=NO/'                                          \
+		    -e 's/^\(listen_ipv6\)=.*$/\1=YES/'                                    \
 		    -e 's/^\(anonymous_enable\)=.*$/\1=NO/'                                \
 		    -e 's/^\(local_enable\)=.*$/\1=YES/'                                   \
 		    -e 's/^#\(write_enable\)=.*$/\1=YES/'                                  \
@@ -1207,12 +1223,11 @@ _EOT_
 	# *************************************************************************
 	# Install Webmin
 	# *************************************************************************
+	URL_WMIN=""
 	if [ "${URL_WMIN}" != "" ]; then
 		echo - Install Webmin --------------------------------------------------------------
 		# ---------------------------------------------------------------------
 		if [ ! -d /etc/webmin ]; then
-			wget -O "${PKG_WMIN}" "${URL_WMIN}"
-			funcPause $?
 			if [ ${FLG_RHAT} -eq 0 ]; then										# 非Red Hat系
 				dpkg -i "${PKG_WMIN}"
 				funcPause $?
@@ -1400,6 +1415,16 @@ _EOT_
 			[pub]
 			 	comment = Public directories
 			 	path = ${DIR_SHAR}/data/pub
+			 	valid users = @${SMB_GRUP}
+
+			[lusr]
+			 	comment = Linux /usr directories
+			 	path = /usr
+			 	valid users = @${SMB_GRUP}
+
+			[lhome]
+			 	comment = Linux /home directories
+			 	path = /home
 			 	valid users = @${SMB_GRUP}
 
 _EOT_

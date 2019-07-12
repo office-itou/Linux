@@ -24,6 +24,7 @@
 ##	2018/06/29 000.0000 J.Itou         仕様変更(取得先URLをHTTPS)
 ##	2018/11/06 000.0000 J.Itou         ubuntu 18.10,19.04 変更
 ##	2019/02/06 000.0000 J.Itou         不具合修正
+##	2019/07/09 000.0000 J.Itou         最新化修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -47,25 +48,23 @@
 	    "debian oldstable"    \
 	    "debian stable"       \
 	    "debian testing"      \
-	    "ubuntu trusty"       \
 	    "ubuntu xenial"       \
 	    "ubuntu bionic"       \
-	    "ubuntu cosmic"       \
 	    "ubuntu disco"        \
+	    "ubuntu eoan"         \
 	)
 # -----------------------------------------------------------------------------
 funcMenu () {
 	echo "# ---------------------------------------------------------------------------#"
 	echo "# ID：Version     ：コードネーム    ：リリース日：サポ終了日：備考           #"
-	echo "#  1：Debian  7.xx：wheezy          ：2013-05-04：2018-05-31：oldoldstable   #"
-	echo "#  2：Debian  8.xx：jessie          ：2015-04-25：2020-04-xx：oldstable      #"
-	echo "#  3：Debian  9.xx：stretch         ：2017-06-17：2022-xx-xx：stable         #"
-	echo "#  4：Debian 10.xx：buster          ：2019(予定)：          ：testing        #"
-	echo "#  5：Ubuntu 14.04：Trusty Tahr     ：2014-04-17：2019-04-xx：               #"
-	echo "#  6：Ubuntu 16.04：Xenial Xerus    ：2016-04-21：2021-04-xx：               #"
-	echo "#  7：Ubuntu 18.04：Bionic Beaver   ：2018-04-26：2023-04-xx：               #"
-	echo "#  8：Ubuntu 18.10：CosmicCuttlefish：2018-10-18：2019-07-xx：               #"
-	echo "#  9：Ubuntu 19.04：Disco Dingo     ：2019-04-18：2020-01-xx：               #"
+	echo "#  1：Debian  8.xx：jessie          ：2015-04-25：2020-06-30：oldoldstable   #"
+	echo "#  2：Debian  9.xx：stretch         ：2017-06-17：2022-06-xx：oldstable      #"
+	echo "#  3：Debian 10.xx：buster          ：2019-07-06：          ：stable         #"
+	echo "#  4：Debian 11.xx：bullseye        ：2021-xx-xx：          ：testing        #"
+	echo "#  5：Ubuntu 16.04：Xenial Xerus    ：2016-04-21：2021-04-xx：               #"
+	echo "#  6：Ubuntu 18.04：Bionic Beaver   ：2018-04-26：2023-04-xx：               #"
+	echo "#  7：Ubuntu 19.04：Disco Dingo     ：2019-04-18：2020-01-xx：               #"
+	echo "#  8：Ubuntu 19.10：Eoan Ermine     ：2019-10-17：2020-07-xx：               #"
 	echo "# ---------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -225,9 +224,9 @@ funcRemaster () {
 #x  5.0:lenny            :2009-02-14:2012-02-06
 #x  6.0:squeeze          :2011-02-06:2014-05-31/2016-02-29[LTS]
 #x  7.0:wheezy           :2013-05-04:2016-04-25/2018-05-31[LTS]
-#   8.0:jessie           :2015-04-25:2018-05-xx/2020-04-xx[LTS]
+#   8.0:jessie           :2015-04-25:2018-06-17/2020-06-30[LTS]
 #   9.0:stretch          :2017-06-17:2020-xx-xx/2022-06-xx[LTS]
-#  10.0:buster           :2019(予定):
+#  10.0:buster           :2019-07-06:
 #  11.0:bullseye         :2021(予定):
 # --- https://en.wikipedia.org/wiki/Ubuntu_version_history --------------------
 # Ver. :コードネーム     :リリース日:サポート期限
@@ -250,7 +249,7 @@ funcRemaster () {
 #x12.10:Quantal Quetzal  :2012-10-18:2014-05-16
 #x13.04:Raring Ringtail  :2013-04-25:2014-01-27
 #x13.10:Saucy Salamander :2013-10-17:2014-07-17
-# 14.04:Trusty Tahr      :2014-04-17:2019-04-xx
+#x14.04:Trusty Tahr      :2014-04-17:2019-04-30
 #x14.10:Utopic Unicorn   :2014-10-23:2015-07-23
 #x15.04:Vivid Vervet     :2015-04-23:2016-02-04
 #x15.10:Wily Werewolf    :2015-10-22:2016-07-28
@@ -259,6 +258,18 @@ funcRemaster () {
 #x17.04:Zesty Zapus      :2017-04-13:2018-01-13
 #x17.10:Artful Aardvark  :2017-10-19:2018-07-19
 # 18.04:Bionic Beaver    :2018-04-26:2023-04-xx
-# 18.10:Cosmic Cuttlefish:2018-10-18:2019-07-xx
+#x18.10:Cosmic Cuttlefish:2018-10-18:2019-07-xx
 # 19.04:Disco Dingo      :2019-04-18:2020-01-xx
+# 19.10:Eoan Ermine      :2019-10-17:2020-07-xx
+# --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
+# Ver.    :リリース日:RHEL      :メンテナンス更新期限
+# 7.4-1708:2017-09-14:2017-08-01:2024-06-30
+# 7.5-1804:2018-05-10:2018-04-10:2024-06-30
+# 7.6-1810:2018-12-03:2018-10-30:2024-06-30
+# --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
+# Ver. :コードネーム     :リリース日:サポート期限
+#x27   :                 :2017-11-14:2018-11-27
+#x28   :                 :2018-05-01:2019-05-29
+# 29   :                 :2018-10-30:
+# 30   :                 :2019-04-29:
 # -----------------------------------------------------------------------------

@@ -33,6 +33,7 @@
 ##	2019/01/24 000.0000 J.Itou         debian 9.7.0 変更
 ##	2019/02/17 000.0000 J.Itou         debian 9.8.0 変更
 ##	2019/02/06 000.0000 J.Itou         不具合修正
+##	2019/07/09 000.0000 J.Itou         最新化修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -52,43 +53,39 @@
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
 	readonly ARRAY_NAME=(                                                                                                                                                                      \
-	    "debian debian-7.11.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
-	    "debian debian-8.11.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/archive/8.11.0/amd64/iso-dvd/debian-8.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
-	    "debian debian-9.8.0-amd64-DVD-1        https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-9.8.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
+	    "debian debian-8.11.1-amd64-DVD-1       https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg"   \
+	    "debian debian-9.9.0-amd64-DVD-1        https://cdimage.debian.org/cdimage/release/9.9.0/amd64/iso-dvd/debian-9.9.0-amd64-DVD-1.iso                              preseed_debian.cfg"   \
+	    "debian debian-10.0.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.0.0-amd64-DVD-1.iso                           preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-DVD-1      https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"   \
-	    "ubuntu ubuntu-14.04.5-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-server-amd64.iso                         preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-14.04.5-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/trusty/ubuntu-14.04.5-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-16.04.5-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.5-server-amd64.iso                         preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-16.04.5-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.5-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04.1-server-amd64     http://cdimage.ubuntu.com/releases/18.04.1/release/ubuntu-18.04.1-server-amd64.iso                                       preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04.1-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04.1-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.10-server-amd64       http://cdimage.ubuntu.com/releases/18.10/release/ubuntu-18.10-server-amd64.iso                                           preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.10-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/cosmic/ubuntu-18.10-desktop-amd64.iso                          preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-19.04-server-amd64       http://cdimage.ubuntu.com/releases/19.04/release/ubuntu-19.04-server-amd64.iso                                           preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-16.04.6-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.6-server-amd64.iso                         preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-16.04.6-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.6-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-18.04.2-server-amd64     http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.2-server-amd64.iso                                        preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-18.04.2-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04.2-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-19.04-server-amd64       http://cdimage.ubuntu.com/releases/disco/release/ubuntu-19.04-server-amd64.iso                                           preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-19.04-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/disco/ubuntu-19.04-desktop-amd64.iso                           preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-19.10-server-amd64       http://cdimage.ubuntu.com/releases/eoan/release/ubuntu-19.10-server-amd64.iso                                            preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-19.10-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/eoan/ubuntu-19.10-desktop-amd64.iso                            preseed_ubuntu.cfg"   \
 	    "centos CentOS-7-x86_64-DVD-1810        https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.6.1810/isos/x86_64/CentOS-7-x86_64-DVD-1810.iso                       kickstart_centos.cfg" \
-	    "fedora Fedora-Server-dvd-x86_64-29-1.2 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/29/Server/x86_64/iso/Fedora-Server-dvd-x86_64-29-1.2.iso kickstart_fedora.cfg" \
+	    "fedora Fedora-Server-dvd-x86_64-30-1.2 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/30/Server/x86_64/iso/Fedora-Server-dvd-x86_64-30-1.2.iso kickstart_fedora.cfg" \
 	)   # 区分  DVDファイル名                   ダウンロード先URL                                                                                                        定義ファイル
 # -----------------------------------------------------------------------------
 funcMenu () {
 	echo "# ----------------------------------------------------------------------------#"
 	echo "# ID：Version                        ：リリース日：サポ終了日：備考           #"
-	echo "#  1：debian-7.11.0-amd64-DVD-1      ：2013-05-04：2018-05-31：oldoldstable   #"
-	echo "#  2：debian-8.11.0-amd64-DVD-1      ：2015-04-25：2020-04-xx：oldstable      #"
-	echo "#  3：debian-9.8.0-amd64-DVD-1       ：2017-06-17：2022-xx-xx：stable         #"
+	echo "#  1：debian-8.11.1-amd64-DVD-1      ：2015-04-25：2020-04-xx：oldoldstable   #"
+	echo "#  2：debian-9.9.0-amd64-DVD-1       ：2017-06-17：2022-xx-xx：oldstable      #"
+	echo "#  3：debian-10.0.0-amd64-DVD-1      ：2019-07-06：20xx-xx-xx：stable         #"
 	echo "#  4：debian-testing-amd64-DVD-1     ：20xx-xx-xx：20xx-xx-xx：testing        #"
-	echo "#  5：ubuntu-14.04.5-server-amd64    ：2014-04-17：2019-04-xx：Trusty Tahr    #"
-	echo "#  6：ubuntu-14.04.5-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
-	echo "#  7：ubuntu-16.04.5-server-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus   #"
-	echo "#  8：ubuntu-16.04.5-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
-	echo "#  9：ubuntu-18.04.1-server-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver  #"
-	echo "# 10：ubuntu-18.04.1-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
-	echo "# 11：ubuntu-18.10-server-amd64      ：2018-10-18：2019-07-xx：CosmicCuttlefish"
-	echo "# 12：ubuntu-18.10-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
-	echo "#---：ubuntu-19.04-server-amd64      ：2019-04-18：2020-01-xx：Disco Dingo    #"
-	echo "#---：ubuntu-19.04-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
-	echo "# 15：CentOS-7-x86_64-DVD-1810       ：2018-12-03：2024-06-30：RHEL 7.6       #"
-	echo "# 16：Fedora-Server-dvd-x86_64-29-1.2：2018-10-30：20xx-xx-xx：kernel 4.18    #"
+	echo "#  5：ubuntu-16.04.6-server-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus   #"
+	echo "#  6：ubuntu-16.04.6-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
+	echo "#  7：ubuntu-18.04.2-server-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver  #"
+	echo "#  8：ubuntu-18.04.2-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
+	echo "#  9：ubuntu-19.04-server-amd64      ：2019-04-18：2020-01-xx：Disco Dingo    #"
+	echo "# 10：ubuntu-19.04-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
+	echo "#---：ubuntu-19.10-server-amd64      ：2019-10-17：2020-07-xx：Eoan Ermine    #"
+	echo "#---：ubuntu-19.10-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
+	echo "# 13：CentOS-7-x86_64-DVD-1810       ：2018-12-03：2024-06-30：RHEL 7.6       #"
+	echo "# 14：Fedora-Server-dvd-x86_64-30-1.2：2019-04-29：20xx-xx-xx：kernel 5.0     #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -179,9 +176,9 @@ funcRemaster () {
 					;;
 				"ubuntu" )	# ･････････････････････････････････････････････････
 					case "${CODE_NAME[1]}" in
-						"ubuntu-14.04.5-server-amd64"    | \
-						"ubuntu-16.04.4-server-amd64"    | \
-						"ubuntu-17.10.1-server-amd64"    | \
+						"ubuntu-16.04.6-server-amd64"    | \
+						"ubuntu-18.04.2-server-amd64"    | \
+						"ubuntu-19.04-server-amd64"      | \
 						"ubuntu-18.04-server-amd64"      )
 							sed -i isolinux/txt.cfg  \
 							    -e 's/^\(default\) .*$/\1 preseed/' \
@@ -190,9 +187,7 @@ funcRemaster () {
 							sed -i.orig boot/grub/grub.cfg \
 							    -e '/menuentry "Install Ubuntu Server"/i\menuentry "Preseed install Ubuntu Server" {\n\tset gfxpayload=keep\n\tlinux\t/install/vmlinuz  auto=true file=/cdrom/preseed/preseed.cfg quiet ---\n\tinitrd\t/install/initrd.gz\n}'
 							;;
-						"ubuntu-14.04.5-desktop-amd64"   | \
-						"ubuntu-16.04.4-desktop-amd64"   | \
-						"ubuntu-17.10.1-desktop-amd64"   )
+						"ubuntu-16.04.6-desktop-amd64"   )
 							sed -i isolinux/txt.cfg  \
 							    -e 's/^\(default\) .*$/\1 preseed/' \
 							    -e '/menu default/d' \
@@ -200,15 +195,15 @@ funcRemaster () {
 							sed -i.orig boot/grub/grub.cfg \
 							    -e '/menuentry "Try Ubuntu without installing"/i\menuentry "Preseed install Ubuntu" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz.efi  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd.lz\n}'
 							;;
-						"ubuntu-18.04-desktop-amd64"     )
+						"ubuntu-18.04.2-desktop-amd64"   | \
+						"ubuntu-19.04-desktop-amd64"     | \
+						"ubuntu-19.10-desktop-amd64"     )
 							sed -i isolinux/txt.cfg  \
 							    -e 's/^\(default\) .*$/\1 preseed/' \
 							    -e '/menu default/d' \
 							    -e '/^default/a\label preseed\n  menu label ^Preseed install Ubuntu\n  kernel /casper/vmlinuz\n  append  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity initrd=/casper/initrd.lz quiet splash ---'
 							sed -i.orig boot/grub/grub.cfg \
 							    -e '/menuentry "Try Ubuntu without installing"/i\menuentry "Preseed install Ubuntu" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd.lz\n}'
-							;;
-						"ubuntu-18.04-live-server-amd64" )
 							;;
 						* )	;;
 					esac
@@ -224,10 +219,10 @@ funcRemaster () {
 				"fedora" )	# ･････････････････････････････････････････････････
 					sed -i isolinux/isolinux.cfg \
 					    -e '/menu default/d' \
-					    -e '/^label linux/i\label fedora28auto\n  menu label ^Auto Install Fedora 28\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-28 inst.ks=cdrom:/kickstart/ks.cfg\n'
+					    -e '/^label linux/i\label fedora30auto\n  menu label ^Auto Install Fedora 30\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-30 inst.ks=cdrom:/kickstart/ks.cfg\n'
 					sed -i EFI/BOOT/grub.cfg \
 					    -e 's/\(set default\)="1"/\1="0"/g' \
-					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 28'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-28 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 30'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-30 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
 					;;
 				* )	;;
 			esac
@@ -322,9 +317,9 @@ funcRemaster () {
 #x  5.0:lenny            :2009-02-14:2012-02-06
 #x  6.0:squeeze          :2011-02-06:2014-05-31/2016-02-29[LTS]
 #x  7.0:wheezy           :2013-05-04:2016-04-25/2018-05-31[LTS]
-#   8.0:jessie           :2015-04-25:2018-05-xx/2020-04-xx[LTS]
+#   8.0:jessie           :2015-04-25:2018-06-17/2020-06-30[LTS]
 #   9.0:stretch          :2017-06-17:2020-xx-xx/2022-06-xx[LTS]
-#  10.0:buster           :2019(予定):
+#  10.0:buster           :2019-07-06:
 #  11.0:bullseye         :2021(予定):
 # --- https://en.wikipedia.org/wiki/Ubuntu_version_history --------------------
 # Ver. :コードネーム     :リリース日:サポート期限
@@ -347,7 +342,7 @@ funcRemaster () {
 #x12.10:Quantal Quetzal  :2012-10-18:2014-05-16
 #x13.04:Raring Ringtail  :2013-04-25:2014-01-27
 #x13.10:Saucy Salamander :2013-10-17:2014-07-17
-# 14.04:Trusty Tahr      :2014-04-17:2019-04-xx
+#x14.04:Trusty Tahr      :2014-04-17:2019-04-30
 #x14.10:Utopic Unicorn   :2014-10-23:2015-07-23
 #x15.04:Vivid Vervet     :2015-04-23:2016-02-04
 #x15.10:Wily Werewolf    :2015-10-22:2016-07-28
@@ -356,8 +351,9 @@ funcRemaster () {
 #x17.04:Zesty Zapus      :2017-04-13:2018-01-13
 #x17.10:Artful Aardvark  :2017-10-19:2018-07-19
 # 18.04:Bionic Beaver    :2018-04-26:2023-04-xx
-# 18.10:Cosmic Cuttlefish:2018-10-18:2019-07-xx
+#x18.10:Cosmic Cuttlefish:2018-10-18:2019-07-xx
 # 19.04:Disco Dingo      :2019-04-18:2020-01-xx
+# 19.10:Eoan Ermine      :2019-10-17:2020-07-xx
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
 # Ver.    :リリース日:RHEL      :メンテナンス更新期限
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30
@@ -365,7 +361,8 @@ funcRemaster () {
 # 7.6-1810:2018-12-03:2018-10-30:2024-06-30
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # Ver. :コードネーム     :リリース日:サポート期限
-# 27   :                 :2017-11-14:
-# 28   :                 :2018-05-01:
+#x27   :                 :2017-11-14:2018-11-27
+#x28   :                 :2018-05-01:2019-05-29
 # 29   :                 :2018-10-30:
+# 30   :                 :2019-04-29:
 # -----------------------------------------------------------------------------
