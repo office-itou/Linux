@@ -1,8 +1,8 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [ubuntu-18.10-desktop-amd64.iso]                        *
+# LiveCDCustomization [ubuntu-19.04-desktop-amd64.iso]                        *
 # *****************************************************************************
-	LIVE_VNUM="18.10"
+	LIVE_VNUM="19.04"
 	LIVE_ARCH="amd64"
 	LIVE_FILE="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}.iso"
 	LIVE_DEST="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}-custom.iso"
