@@ -231,9 +231,9 @@ _EOT_SH_
 	else
 		echo "---- media install ------------------------------------------------------------"
 		case "${INP_SUITE}" in
-			"testing" | "buster"  | 10* ) LIVE_MEDIA="./debian-testing-${INP_ARCH}-DVD-1.iso";;
-			"stable"  | "stretch" | 9*  ) LIVE_MEDIA="./debian-9.8.0-${INP_ARCH}-DVD-1.iso";;
-			*                           ) LIVE_MEDIA="";;
+			"testing" | "bullseye" | 11* ) LIVE_MEDIA="./debian-testing-${INP_ARCH}-DVD-1.iso";;
+			"stable"  | "buster"   | 10* ) LIVE_MEDIA="./debian-10.0.0-${INP_ARCH}-DVD-1.iso";;
+			*                            ) LIVE_MEDIA="";;
 		esac
 		FSSQ_MEDIA=""
 		mount -r -o loop ${LIVE_MEDIA} ./debootstrap/media/
@@ -242,9 +242,9 @@ _EOT_SH_
 	fi
 	# -------------------------------------------------------------------------
 	case "${INP_SUITE}" in
-		"testing" | "buster"  | 10* ) DEB_SUITE="testing";;
-		"stable"  | "stretch" | 9*  ) DEB_SUITE="stable";;
-		*                           ) DEB_SUITE="";;
+		"testing" | "bullseye" | 11* ) DEB_SUITE="testing";;
+		"stable"  | "buster"   | 10* ) DEB_SUITE="stable";;
+		*                            ) DEB_SUITE="";;
 	esac
 	if [ -d ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH} ]; then
 		echo "--- deb file copy -------------------------------------------------------------"

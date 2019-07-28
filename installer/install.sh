@@ -53,8 +53,11 @@
 ##	2019/07/10 000.0000 J.Itou         不具合修正(最新化対応)
 ##	2018/06/29 000.0000 J.Itou         処理見直し(webmin導入停止)
 ##	2019/07/13 000.0000 J.Itou         不具合修正(ipv6周り)
+<<<<<<< HEAD
 ##	2019/07/18 000.0000 J.Itou         不具合修正(debian7対応)
 ##	2019/07/23 000.0000 J.Itou         不具合修正(ipv6周り)
+=======
+>>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -265,8 +268,11 @@ funcInitialize () {
 	    "administrator:Administrator:1001::XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:1" \
 	)	# sample: administrator's password="password"
 	# ･････････････････････････････････････････････････････････････････････････
+<<<<<<< HEAD
 	/etc/init.d/network-manager restart											# NetworkManager restarted
 	# ･････････････････････････････････････････････････････････････････････････
+=======
+>>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 	EXT_ZONE=""																	# マスターDNSのドメイン名
 	EXT_ADDR=""																	#   〃         IPアドレス
 	# ･････････････････････････････････････････････････････････････････････････
@@ -612,12 +618,19 @@ _EOT_
 		fi
 		cat <<- _EOT_ >> /etc/hosts.allow
 			ALL : 127.0.0.1
+<<<<<<< HEAD
 			ALL : [::1]
 			ALL : [fe80::]/${LNK_BITS[0]}
+=======
+>>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 			ALL : ${IP4_UADR[0]}.0/${IP4_BITS[0]}
 _EOT_
 		if [ "${IP6_DHCP}" != "auto" ]; then
 			cat <<- _EOT_ >> /etc/hosts.allow
+<<<<<<< HEAD
+=======
+				ALL : [::1]
+>>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 				ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
 _EOT_
 		fi
@@ -1058,7 +1071,11 @@ _EOT_
 	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
 	echo --- db.xxx --------------------------------------------------------------------
+<<<<<<< HEAD
 	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa
+=======
+	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa
+>>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 	do
 		cat <<- _EOT_ > ${DIR_ZONE}/db.${FIL_NAME}
 			\$TTL 1H																; 1 hour
@@ -1075,7 +1092,11 @@ _EOT_
 		chown root.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
 	done
 	if [ "${IP6_DHCP}" != "auto" ]; then
+<<<<<<< HEAD
 		for FIL_NAME in ${IP6_RADU[0]}.ip6.arpa
+=======
+		for FIL_NAME in ${WGP_NAME} ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
+>>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 		do
 			cat <<- _EOT_ > ${DIR_ZONE}/db.${FIL_NAME}
 				\$TTL 1H																; 1 hour
@@ -1095,11 +1116,18 @@ _EOT_
 	#--------------------------------------------------------------------------
 	cat <<- _EOT_ >> ${DIR_ZONE}/db.${WGP_NAME}
 		${SVR_NAME}								IN		A		${IP4_ADDR[0]}
+<<<<<<< HEAD
 		${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
+=======
+>>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 _EOT_
 	if [ "${IP6_DHCP}" != "auto" ]; then
 		cat <<- _EOT_ >> ${DIR_ZONE}/db.${WGP_NAME}
 			${SVR_NAME}								IN		AAAA	${IP6_ADDR[0]}
+<<<<<<< HEAD
+=======
+			${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
+>>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 _EOT_
 	fi
 	#--------------------------------------------------------------------------
@@ -1107,9 +1135,20 @@ _EOT_
 		${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
+<<<<<<< HEAD
 	cat <<- _EOT_ >> ${DIR_ZONE}/db.${LNK_RADU[0]}.ip6.arpa
 		${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
+=======
+	if [ "${IP6_DHCP}" != "auto" ]; then
+		cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP6_RADU[0]}.ip6.arpa
+			${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
+		#--------------------------------------------------------------------------
+		cat <<- _EOT_ >> ${DIR_ZONE}/db.${LNK_RADU[0]}.ip6.arpa
+			${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
+>>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
+_EOT_
+	fi
 	#--------------------------------------------------------------------------
 	if [ "${IP6_DHCP}" != "auto" ]; then
 		cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP6_RADU[0]}.ip6.arpa
@@ -1155,7 +1194,11 @@ _EOT_
 		echo --- named.conf.local ----------------------------------------------------------
 		cp -p ${DIR_BIND}/named.conf.local ${DIR_BIND}/named.conf.local.orig
 		# ---------------------------------------------------------------------
+<<<<<<< HEAD
 		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa
+=======
+		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa
+>>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 		do
 			cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
 				zone "${FIL_NAME}" {
@@ -1169,7 +1212,11 @@ _EOT_
 _EOT_
 		done
 		if [ "${IP6_DHCP}" != "auto" ]; then
+<<<<<<< HEAD
 			for FIL_NAME in ${IP6_RADU[0]}.ip6.arpa
+=======
+			for FIL_NAME in ${WGP_NAME} ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
+>>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 			do
 				cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
 					zone "${FIL_NAME}" {

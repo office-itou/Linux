@@ -3,7 +3,7 @@
 # LiveCDCustomization [debian-live-[version]-[architecture]-lxde.iso]         *
 # *****************************************************************************
 	if [ "$1" = "" ] || [ "$2" = "" ]; then
-		echo "$0 [i386 | amd64] [9.x.0 | testing | ...]"
+		echo "$0 [i386 | amd64] [10.x | testing | ...]"
 		exit 1
 	fi
 
@@ -13,9 +13,9 @@
 	LIVE_DEST="debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde-custom.iso"
 	# -------------------------------------------------------------------------
 	case "${LIVE_VNUM}" in
-		"testing" | "buster"  | 10* ) LIVE_SUITE="testing";;
-		"stable"  | "stretch" | 9*  ) LIVE_SUITE="stable";;
-		*                           ) LIVE_SUITE="";;
+		"testing" | "bullseye" | 11* ) LIVE_SUITE="testing";;
+		"stable"  | "buster"   | 10* ) LIVE_SUITE="stable";;
+		*                            ) LIVE_SUITE="";;
 	esac
 # == initialize ===============================================================
 #	set -m								# ジョブ制御を有効にする
@@ -78,7 +78,7 @@
 		# -- module install -----------------------------------------------------------
 			echo "--- module install ------------------------------------------------------------"
 		#	sed -i.orig /etc/resolv.conf -e '$anameserver 1.1.1.1\nnameserver 1.0.0.1'
-			sed -i /etc/apt/sources.list.d/base.list -e 's/^\(deb .*\)/\1 non-free contrib/g'
+			sed -i /etc/apt/sources.list -e 's/^\(deb .*\)/\1 non-free contrib/g'
 			apt update       -q                                                    && \
 			apt upgrade      -q -y                                                 && \
 			apt full-upgrade -q -y                                                 && \
@@ -100,7 +100,7 @@
 		#	mv /etc/resolv.conf.orig /etc/resolv.conf
 			# -----------------------------------------------------------------------------
 			echo "--- systemctl -----------------------------------------------------------------"
-			systemctl  enable clamav-freshclam
+			systemctl disable clamav-freshclam
 			systemctl  enable ssh
 			systemctl disable apache2
 			systemctl  enable vsftpd
@@ -266,10 +266,10 @@ _EOT_SH_
 	popd > /dev/null
 	umount ./debian-live/media
 # =============================================================================
-	if [ -d ./debian-live/rpack.${LIVE_SUITE}.${LIVE_ARCH} ]; then
-		echo "--- deb file copy -------------------------------------------------------------"
-		cp -p ./debian-live/rpack.${LIVE_SUITE}.${LIVE_ARCH}/*.deb ./debian-live/fsimg/var/cache/apt/archives/
-	fi
+#	if [ -d ./debian-live/rpack.${LIVE_SUITE}.${LIVE_ARCH} ]; then
+#		echo "--- deb file copy -------------------------------------------------------------"
+#		cp -p ./debian-live/rpack.${LIVE_SUITE}.${LIVE_ARCH}/*.deb ./debian-live/fsimg/var/cache/apt/archives/
+#	fi
 # =============================================================================
 	rm -f ./debian-live/fsimg/etc/localtime
 	ln -s /usr/share/zoneinfo/Asia/Tokyo ./debian-live/fsimg/etc/localtime
@@ -277,7 +277,7 @@ _EOT_SH_
 	mount --bind /dev     ./debian-live/fsimg/dev
 	mount --bind /dev/pts ./debian-live/fsimg/dev/pts
 	mount --bind /proc    ./debian-live/fsimg/proc
-#	mount --bind /sys     ./debian-live/fsimg/sys
+	mount --bind /sys     ./debian-live/fsimg/sys
 	# -------------------------------------------------------------------------
 #	cp -p ./debian-setup.sh ./debian-live/fsimg/
 	if [ "${LIVE_ARCH}" == "i386" ]; then
@@ -287,7 +287,7 @@ _EOT_SH_
 	LANG=C chroot ./debian-live/fsimg /bin/bash /debian-setup.sh
 	RET_STS=$?
 	# -------------------------------------------------------------------------
-#	umount ./debian-live/fsimg/sys     || umount -lf ./debian-live/fsimg/sys
+	umount ./debian-live/fsimg/sys     || umount -lf ./debian-live/fsimg/sys
 	umount ./debian-live/fsimg/proc    || umount -lf ./debian-live/fsimg/proc
 	umount ./debian-live/fsimg/dev/pts || umount -lf ./debian-live/fsimg/dev/pts
 	umount ./debian-live/fsimg/dev     || umount -lf ./debian-live/fsimg/dev
@@ -304,19 +304,19 @@ _EOT_SH_
 	       ./debian-live/fsimg/var/cache/apt/archives/*.deb \
 	       ./debian-live/fsimg/debian-setup.sh
 # =============================================================================
-	sed -i ./debian-live/cdimg/boot/grub/grub.cfg                                                                                                  \
-	    -e 's/\(linux .* components\) \("${loopback}"$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
-	sed -i ./debian-live/cdimg/isolinux/menu.cfg                                                                               \
-	    -e 's/\(APPEND .* components$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp/'
+	sed -i ./debian-live/cdimg/boot/grub/grub.cfg                                                                                       \
+	    -e 's/\(linux .* components\) \(.*$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
+	sed -i ./debian-live/cdimg/isolinux/menu.cfg                                                                                         \
+	    -e 's/\(APPEND .* components\) \(.*$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
 	# ---------------------------------------------------------------------
-	if [ -f ./debian-live/cdimg/boot/grub/efi.img ]; then
-		echo "--- copy EFI directory --------------------------------------------------------"
-		mount -r -o loop ./debian-live/cdimg/boot/grub/efi.img ./debian-live/media/
-		pushd ./debian-live/media/efi/ > /dev/null
-			find . -depth -print | cpio -pdm ../../cdimg/EFI/
-		popd > /dev/null
-		umount ./debian-live/media/
-	fi
+#	if [ -f ./debian-live/cdimg/boot/grub/efi.img ]; then
+#		echo "--- copy EFI directory --------------------------------------------------------"
+#		mount -r -o loop ./debian-live/cdimg/boot/grub/efi.img ./debian-live/media/
+#		pushd ./debian-live/media/efi/ > /dev/null
+#			find . -depth -print | cpio -pdm ../../cdimg/EFI/
+#		popd > /dev/null
+#		umount ./debian-live/media/
+#	fi
 	# -------------------------------------------------------------------------
 	rm -f ./debian-live/cdimg/live/filesystem.squashfs
 	mksquashfs ./debian-live/fsimg ./debian-live/cdimg/live/filesystem.squashfs -mem 1G -noappend -b 4K -comp xz
