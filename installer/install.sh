@@ -52,6 +52,9 @@
 ##	2018/11/23 000.0000 J.Itou         不具合修正(vsftp周り)
 ##	2019/07/10 000.0000 J.Itou         不具合修正(最新化対応)
 ##	2018/06/29 000.0000 J.Itou         処理見直し(webmin導入停止)
+##	2019/07/13 000.0000 J.Itou         不具合修正(ipv6周り)
+##	2019/07/18 000.0000 J.Itou         不具合修正(debian7対応)
+##	2019/07/23 000.0000 J.Itou         不具合修正(ipv6周り)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -158,25 +161,13 @@ fncGetIPaddr () {
 fncGetNM () {
 	local DMY_STAT
 
-	LANG=C nmcli c show help 2> /dev/null
-	if [ $? -ge 2 ]; then
-		DMY_STAT="`LANG=C nmcli dev list iface "$2" | awk '/^'"$1"'/'`"
-	else
-		DMY_STAT="`LANG=C nmcli con show uuid "$3" | awk '/^'"$1"'/'`"
-	fi
-
 	case "$1" in
-		"DHCP4" | \
-		"DHCP6" )
-			if [ "${DMY_STAT}" != "" ]; then
-				echo "auto"
-			else
-				echo "static"
-			fi
-			;;
-		"IP4.DNS" | \
-		"IP6.DNS" )
-			echo "${DMY_STAT}" | awk '{print $2;}'
+		"ipv4.method" | \
+		"ipv6.method" | \
+		"ipv4.dns"    | \
+		"ipv6.dns"    )
+			DMY_STAT=`cat $2 | awk '/^'"$1"':/ {print $2;}'`
+			echo "${DMY_STAT}"
 			;;
 		* )
 			echo ""
@@ -274,8 +265,10 @@ funcInitialize () {
 	    "administrator:Administrator:1001::XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:1" \
 	)	# sample: administrator's password="password"
 	# ･････････････････････････････････････････････････････････････････････････
-	EXT_ZONE="planet"															# マスターDNSのドメイン名
-	EXT_ADDR=192.168.1.11														#   〃         IPアドレス
+	/etc/init.d/network-manager restart											# NetworkManager restarted
+	# ･････････････････････････････････････････････････････････････････････････
+	EXT_ZONE=""																	# マスターDNSのドメイン名
+	EXT_ADDR=""																	#   〃         IPアドレス
 	# ･････････････････････････････････････････････････････････････････････････
 #	VGA_RESO=("800x600x32"   "789")												# コンソールの解像度： 800× 600：1600万色
 #	VGA_RESO=("1024x768x32"  "792")												#   〃              ：1024× 768：1600万色
@@ -336,10 +329,17 @@ funcInitialize () {
 		IP6_ARRY+=(`fncGetIPaddr 6 "global primary"  "${DEV_NAME}"`)			# IPv6:IPアドレス/サブネットマスク(bit)
 		LNK_ARRY+=(`fncGetIPaddr 6 "link"            "${DEV_NAME}"`)			# Link:IPアドレス/サブネットマスク(bit)
 		if [ "${CON_UUID}" != "" ]; then
-			IP4_DHCP+=(`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`)		# IPv4:DHCPフラグ(auto/static)
-			IP6_DHCP+=(`fncGetNM "DHCP6"   "${DEV_NAME}" "${CON_UUID}"`)		# IPv6:DHCPフラグ(auto/static)
-			IP4_DNSA+=(`fncGetNM "IP4.DNS" "${DEV_NAME}" "${CON_UUID}"`)		# IPv4:DNSアドレス
-			IP6_DNSA+=(`fncGetNM "IP6.DNS" "${DEV_NAME}" "${CON_UUID}"`)		# IPv6:DNSアドレス
+			NIC_WORK=${PWD}/${PGM_NAME}.sh.${DEV_NAME}.work
+			LANG=C nmcli c show help 2> /dev/null
+			if [ $? -ne 0 ]; then
+				LANG=C nmcli dev list iface "${DEV_NAME}" > ${NIC_WORK}
+			else
+				LANG=C nmcli con show uuid "${CON_UUID}" > ${NIC_WORK}
+			fi
+			IP4_DHCP+=(`fncGetNM "ipv4.method" "${NIC_WORK}"`)					# IPv4:DHCPフラグ(auto/static)
+			IP6_DHCP+=(`fncGetNM "ipv6.method" "${NIC_WORK}"`)					# IPv6:DHCPフラグ(auto/static)
+			IP4_DNSA+=(`fncGetNM "ipv4.dns"    "${NIC_WORK}"`)					# IPv4:DNSアドレス
+			IP6_DNSA+=(`fncGetNM "ipv6.dns"    "${NIC_WORK}"`)					# IPv6:DNSアドレス
 		fi
 	done
 	IP4_GATE=`ip -4 r show table all | awk '/default/ {print $3;}'`				# IPv4:デフォルトゲートウェイ
@@ -481,8 +481,10 @@ funcInitialize () {
 	PKG_WMIN="${DIR_WK}/${SET_WMIN}"
 	rm -f "${WRK_WMIN}"
 	funcPause $?
-	wget -O "${PKG_WMIN}" "${URL_WMIN}"
-	funcPause $?
+	if [ ! -f "${PKG_WMIN}" ]; then
+		wget -O "${PKG_WMIN}" "${URL_WMIN}"
+		funcPause $?
+	fi
 }
 
 # Main処理 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -611,11 +613,14 @@ _EOT_
 		cat <<- _EOT_ >> /etc/hosts.allow
 			ALL : 127.0.0.1
 			ALL : [::1]
-			# ALL : 169.254.0.0/16
 			ALL : [fe80::]/${LNK_BITS[0]}
 			ALL : ${IP4_UADR[0]}.0/${IP4_BITS[0]}
-			ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
 _EOT_
+		if [ "${IP6_DHCP}" != "auto" ]; then
+			cat <<- _EOT_ >> /etc/hosts.allow
+				ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
+_EOT_
+		fi
 	fi
 	# hosts.deny --------------------------------------------------------------
 	echo --- hosts.deny ----------------------------------------------------------------
@@ -640,8 +645,8 @@ _EOT_
 		    -e "s/#.*\(Domain\).*/\1 = ${WGP_NAME}/g"
 	fi
 	if [ ! -f /etc/exports.orig ]; then
-		sed -i.orig /etc/exports                                                                                                    \
-		    -e "\$a/home ${IP4_UADR[0]}.0/${IP4_BITS[0]}(rw,sync,no_subtree_check) fe80::/${LNK_BITS[0]}(rw,sync,no_subtree_check)"
+		sed -i.orig /etc/exports                                                    \
+		    -e "\$a/home ${IP4_UADR[0]}.0/${IP4_BITS[0]}(rw,sync,no_subtree_check)"
 	fi
 	echo ---- nfs-server restart -------------------------------------------------------
 	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
@@ -705,7 +710,7 @@ _EOT_
 			    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1/g"
 		fi
 	else
-		if [ "${CON_UUID}" != "" ]; then
+		if [ "${CON_UUID}" != "" ] && [ "${SYS_NAME}${SYS_VNUM}" != "debian7" ]; then
 			nmcli c modify "${CON_UUID}" ipv4.dns 127.0.0.1
 			nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
 		else
@@ -1053,7 +1058,7 @@ _EOT_
 	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
 	echo --- db.xxx --------------------------------------------------------------------
-	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
+	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa
 	do
 		cat <<- _EOT_ > ${DIR_ZONE}/db.${FIL_NAME}
 			\$TTL 1H																; 1 hour
@@ -1069,24 +1074,48 @@ _EOT_
 		chmod 640 ${DIR_ZONE}/db.${FIL_NAME}
 		chown root.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
 	done
+	if [ "${IP6_DHCP}" != "auto" ]; then
+		for FIL_NAME in ${IP6_RADU[0]}.ip6.arpa
+		do
+			cat <<- _EOT_ > ${DIR_ZONE}/db.${FIL_NAME}
+				\$TTL 1H																; 1 hour
+				@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
+				 														${DNS_SCNT}	; serial
+				 														30M			; refresh (30 minutes)
+				 														15M			; retry (15 minutes)
+				 														1D			; expire (1 day)
+				 														20M			; minimum (20 minutes)
+				 												)
+				@										IN		NS		${SVR_NAME}.${WGP_NAME}.
+	_EOT_
+			chmod 640 ${DIR_ZONE}/db.${FIL_NAME}
+			chown root.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
+		done
+	fi
 	#--------------------------------------------------------------------------
 	cat <<- _EOT_ >> ${DIR_ZONE}/db.${WGP_NAME}
 		${SVR_NAME}								IN		A		${IP4_ADDR[0]}
-		${SVR_NAME}								IN		AAAA	${IP6_ADDR[0]}
 		${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
 _EOT_
+	if [ "${IP6_DHCP}" != "auto" ]; then
+		cat <<- _EOT_ >> ${DIR_ZONE}/db.${WGP_NAME}
+			${SVR_NAME}								IN		AAAA	${IP6_ADDR[0]}
+_EOT_
+	fi
 	#--------------------------------------------------------------------------
 	cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP4_RADR[0]}.in-addr.arpa
 		${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP6_RADU[0]}.ip6.arpa
-		${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
-_EOT_
-	#--------------------------------------------------------------------------
 	cat <<- _EOT_ >> ${DIR_ZONE}/db.${LNK_RADU[0]}.ip6.arpa
 		${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
+	#--------------------------------------------------------------------------
+	if [ "${IP6_DHCP}" != "auto" ]; then
+		cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP6_RADU[0]}.ip6.arpa
+			${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
+_EOT_
+	fi
 	#--------------------------------------------------------------------------
 	if [ "${IP4_DHCP[0]}" = "auto" ]; then
 		echo --- dhcp対応 ------------------------------------------------------------------
@@ -1100,8 +1129,8 @@ _EOT_
 		# ---------------------------------------------------------------------
 		if [ ! -f ${DIR_BIND}/named.conf.options.orig ]; then
 			echo ---- add named.conf.options ---------------------------------------------------
-			sed -i ${DIR_BIND}/named.conf                                                                                                                  \
-			    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\tfe80::/${LNK_BITS[0]};\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
+			sed -i ${DIR_BIND}/named.conf                                                                                        \
+			    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
 			    -e "/allow-query/a \\\tallow-transfer\t{ none; };"
 		fi
 		# ---------------------------------------------------------------------
@@ -1116,16 +1145,17 @@ _EOT_
 	#--------------------------------------------------------------------------
 	if [ ! -f ${DIR_BIND}/named.conf.options.orig ] && [ -f ${DIR_BIND}/named.conf.options ]; then
 		echo --- named.conf.options --------------------------------------------------------
-		sed -i.orig ${DIR_BIND}/named.conf.options                                                                                                     \
-		    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\tfe80::/${LNK_BITS[0]};\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
-		    -e "/^};/i \\\n\tallow-transfer { none; };"
+		sed -i.orig ${DIR_BIND}/named.conf.options                                                                           \
+		    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
+		    -e "/^};/i \\\n\tallow-transfer { none; };"                                                                      \
+		    -e "s/\(listen-on-v6\)/\/\/ \1/g"
 	fi
 	#--------------------------------------------------------------------------
 	if [ ! -f ${DIR_BIND}/named.conf.local.orig ] && [ -f ${DIR_BIND}/named.conf.local ]; then
 		echo --- named.conf.local ----------------------------------------------------------
 		cp -p ${DIR_BIND}/named.conf.local ${DIR_BIND}/named.conf.local.orig
 		# ---------------------------------------------------------------------
-		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
+		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa
 		do
 			cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
 				zone "${FIL_NAME}" {
@@ -1138,6 +1168,21 @@ _EOT_
 
 _EOT_
 		done
+		if [ "${IP6_DHCP}" != "auto" ]; then
+			for FIL_NAME in ${IP6_RADU[0]}.ip6.arpa
+			do
+				cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
+					zone "${FIL_NAME}" {
+					 	type master;
+					 	file "db.${FIL_NAME}";
+					 	allow-update { none; };
+					 	allow-transfer { ${WGP_NAME}-network; };
+					 	notify yes;
+					};
+
+_EOT_
+		done
+		fi
 		# ---------------------------------------------------------------------
 		if [ "${EXT_ZONE}" != "" ]; then
 			echo --- slaves --------------------------------------------------------------------
