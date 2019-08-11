@@ -34,6 +34,7 @@
 ##	2019/02/17 000.0000 J.Itou         debian 9.8.0 変更
 ##	2019/02/06 000.0000 J.Itou         不具合修正
 ##	2019/07/09 000.0000 J.Itou         最新化修正
+##	2019/08/11 000.0000 J.Itou         ubuntu 18.04.3 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -59,8 +60,8 @@
 	    "debian debian-testing-amd64-DVD-1      https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"   \
 	    "ubuntu ubuntu-16.04.6-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.6-server-amd64.iso                         preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-16.04.6-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.6-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04.2-server-amd64     http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.2-server-amd64.iso                                        preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04.2-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04.2-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-18.04.3-server-amd64     http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.3-server-amd64.iso                                        preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-18.04.3-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04.3-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-19.04-server-amd64       http://cdimage.ubuntu.com/releases/disco/release/ubuntu-19.04-server-amd64.iso                                           preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-19.04-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/disco/ubuntu-19.04-desktop-amd64.iso                           preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-19.10-server-amd64       http://cdimage.ubuntu.com/releases/eoan/release/ubuntu-19.10-server-amd64.iso                                            preseed_ubuntu.cfg"   \
@@ -78,8 +79,8 @@ funcMenu () {
 	echo "#  4：debian-testing-amd64-DVD-1     ：20xx-xx-xx：20xx-xx-xx：testing        #"
 	echo "#  5：ubuntu-16.04.6-server-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus   #"
 	echo "#  6：ubuntu-16.04.6-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
-	echo "#  7：ubuntu-18.04.2-server-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver  #"
-	echo "#  8：ubuntu-18.04.2-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
+	echo "#  7：ubuntu-18.04.3-server-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver  #"
+	echo "#  8：ubuntu-18.04.3-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
 	echo "#  9：ubuntu-19.04-server-amd64      ：2019-04-18：2020-01-xx：Disco Dingo    #"
 	echo "# 10：ubuntu-19.04-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
 	echo "#---：ubuntu-19.10-server-amd64      ：2019-10-17：2020-07-xx：Eoan Ermine    #"
@@ -177,7 +178,7 @@ funcRemaster () {
 				"ubuntu" )	# ･････････････････････････････････････････････････
 					case "${CODE_NAME[1]}" in
 						"ubuntu-16.04.6-server-amd64"    | \
-						"ubuntu-18.04.2-server-amd64"    | \
+						"ubuntu-18.04.3-server-amd64"    | \
 						"ubuntu-19.04-server-amd64"      | \
 						"ubuntu-18.04-server-amd64"      )
 							sed -i isolinux/txt.cfg  \
@@ -195,7 +196,7 @@ funcRemaster () {
 							sed -i.orig boot/grub/grub.cfg \
 							    -e '/menuentry "Try Ubuntu without installing"/i\menuentry "Preseed install Ubuntu" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz.efi  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd.lz\n}'
 							;;
-						"ubuntu-18.04.2-desktop-amd64"   | \
+						"ubuntu-18.04.3-desktop-amd64"   | \
 						"ubuntu-19.04-desktop-amd64"     | \
 						"ubuntu-19.10-desktop-amd64"     )
 							sed -i isolinux/txt.cfg  \
