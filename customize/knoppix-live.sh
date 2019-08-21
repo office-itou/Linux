@@ -76,15 +76,14 @@
 			mkdir ~/apt
 			mv /etc/apt/apt.conf.d/* ~/apt/
 			cat <<- _EOT_ > /etc/apt/sources.list
-				deb http://ftp.debian.org/debian stable main non-free contrib
-				deb-src http://ftp.debian.org/debian stable main non-free contrib
+				deb http://ftp.debian.org/debian stretch main non-free contrib
+				deb-src http://ftp.debian.org/debian stretch main non-free contrib
 
-				deb http://security.debian.org/debian-security stable/updates main contrib non-free
-				deb-src http://security.debian.org/debian-security stable/updates main contrib non-free
+				deb http://security.debian.org/debian-security stretch/updates main contrib non-free
+				deb-src http://security.debian.org/debian-security stretch/updates main contrib non-free
 
-				# stable-updates, previously known as 'volatile'
-				deb http://ftp.debian.org/debian stable-updates main contrib non-free
-				deb-src http://ftp.debian.org/debian stable-updates main contrib non-free
+				deb http://ftp.debian.org/debian stretch-updates main contrib non-free
+				deb-src http://ftp.debian.org/debian stretch-updates main contrib non-free
 		_EOT_
 		# -----------------------------------------------------------------------------
 			dpkg --audit
@@ -325,12 +324,12 @@ _EOT_SH_
 	      ./knoppix-live/KNOPPIX1_FS.tmp \
 	      ./knoppix-live/filelist.txt
 	# -----------------------------------------------------------------------------
-	if [ -d ./knoppix-live/rpack.knoppix82 ]; then
-		cp -p ./knoppix-live/rpack.knoppix82/*.deb ./knoppix-live/fsimg/var/cache/apt/archives/
-	fi
-	if [ -d ./knoppix-live/clamav ]; then
-		cp -p ./knoppix-live/clamav/*.cvd     ./knoppix-live/fsimg/var/lib/clamav/
-	fi
+#	if [ -d ./knoppix-live/rpack.knoppix82 ]; then
+#		cp -p ./knoppix-live/rpack.knoppix82/*.deb ./knoppix-live/fsimg/var/cache/apt/archives/
+#	fi
+#	if [ -d ./knoppix-live/clamav ]; then
+#		cp -p ./knoppix-live/clamav/*.cvd     ./knoppix-live/fsimg/var/lib/clamav/
+#	fi
 # =============================================================================
 	rm -f ./knoppix-live/fsimg/etc/localtime
 	ln -s /usr/share/zoneinfo/Asia/Tokyo ./knoppix-live/fsimg/etc/localtime

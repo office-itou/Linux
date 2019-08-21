@@ -10,7 +10,7 @@ Debian/Ubuntu/CentOS/Knoppixのカスタマイズ
 **Live CD用** (日本語化とDebian/Ubuntuのモジュール最新化)  
 ・[debian-lxde.sh](https://github.com/office-itou/Linux/blob/master/customize/debian-lxde.sh?ts=4)  
 ・[ubuntu-live.sh](https://github.com/office-itou/Linux/blob/master/customize/ubuntu-live.sh?ts=4)  
-・[knoppix-live.sh](https://github.com/office-itou/Linux/blob/master/customize/knoppix-live.sh?ts=4)  
+・[knoppix-live.sh](https://github.com/office-itou/Linux/blob/master/customize/knoppix-live.sh?ts=4)  (Debian 9での作業を推奨)  
   
 **DVD用** (preseed.cfg,kickstart.cfgを使用した無人インストールの実現)   
 ・[dist_remaster_dvd.sh](https://github.com/office-itou/Linux/blob/master/installer/dist_remaster_dvd.sh?ts=4)  
