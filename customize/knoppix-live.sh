@@ -1,8 +1,8 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [KNOPPIX_V8.2-2018-05-10-EN.iso]                        *
+# LiveCDCustomization [KNOPPIX_V8.6-2019-08-08-EN.iso]                        *
 # *****************************************************************************
-	LIVE_FILE="KNOPPIX_V8.2-2018-05-10-EN.iso"
+	LIVE_FILE="KNOPPIX_V8.6-2019-08-08-EN.iso"
 	LIVE_DEST=`echo "${LIVE_FILE}" | sed -e 's/-EN/-JP/g'`
 # == initialize ===============================================================
 #	set -m								# ジョブ制御を有効にする
@@ -76,14 +76,14 @@
 			mkdir ~/apt
 			mv /etc/apt/apt.conf.d/* ~/apt/
 			cat <<- _EOT_ > /etc/apt/sources.list
-				deb http://ftp.debian.org/debian stretch main non-free contrib
-				deb-src http://ftp.debian.org/debian stretch main non-free contrib
+				deb http://ftp.debian.org/debian stable main non-free contrib
+				deb-src http://ftp.debian.org/debian stable main non-free contrib
 
-				deb http://security.debian.org/debian-security stretch/updates main contrib non-free
-				deb-src http://security.debian.org/debian-security stretch/updates main contrib non-free
+				deb http://security.debian.org/debian-security stable/updates main contrib non-free
+				deb-src http://security.debian.org/debian-security stable/updates main contrib non-free
 
-				deb http://ftp.debian.org/debian stretch-updates main contrib non-free
-				deb-src http://ftp.debian.org/debian stretch-updates main contrib non-free
+				deb http://ftp.debian.org/debian stable-updates main contrib non-free
+				deb-src http://ftp.debian.org/debian stable-updates main contrib non-free
 		_EOT_
 		# -----------------------------------------------------------------------------
 			dpkg --audit
@@ -257,7 +257,7 @@
 		# -----------------------------------------------------------------------------
 		# <memo>
 		#   https://lists.debian.org/debian-user/2011/04/msg01168.html
-		#   https://manpages.debian.org/stretch/apt/sources.list.5.ja.html
+		#   https://manpages.debian.org/stable/apt/sources.list.5.ja.html
 		#       Dpkg::Options::= --force-confdef or --force-confnew or --force-confold
 		#       Acquire::Check-Valid-Until=no
 		#   http://linux-memo.sakura.ne.jp/knoppix/knoppix_customjp080100_cust.html
