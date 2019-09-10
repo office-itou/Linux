@@ -32,6 +32,8 @@
 ##	2019/02/17 000.0000 J.Itou         debian 9.8.0 変更
 ##	2019/02/06 000.0000 J.Itou         不具合修正
 ##	2019/07/09 000.0000 J.Itou         最新化修正
+##	2019/09/08 000.0000 J.Itou         debian 9.10.0/10.1.0 変更
+##	2019/09/10 000.0000 J.Itou         debian 9.11.0 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -52,8 +54,8 @@
 # -----------------------------------------------------------------------------
 	readonly ARRAY_NAME=(                                                                                                                                                                              \
 	    "debian debian-8.11.1-amd64-netinst         https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian debian-9.9.0-amd64-netinst          https://cdimage.debian.org/cdimage/archive/9.9.0/amd64/iso-cd/debian-9.9.0-amd64-netinst.iso                                 preseed_debian.cfg"   \
-	    "debian debian-10.0.0-amd64-netinst         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.0.0-amd64-netinst.iso                              preseed_debian.cfg"   \
+	    "debian debian-9.11.0-amd64-netinst         https://cdimage.debian.org/cdimage/archive/9.11.0/amd64/iso-cd/debian-9.11.0-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "debian debian-10.1.0-amd64-netinst         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.1.0-amd64-netinst.iso                              preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-netinst        https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "centos CentOS-7-x86_64-NetInstall-1810     https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.6.1810/isos/x86_64/CentOS-7-x86_64-NetInstall-1810.iso                    kickstart_centos.cfg" \
 	    "fedora Fedora-Server-netinst-x86_64-30-1.2 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/30/Server/x86_64/iso/Fedora-Server-netinst-x86_64-30-1.2.iso kickstart_fedora.cfg" \
@@ -63,8 +65,8 @@ funcMenu () {
 	echo "# ----------------------------------------------------------------------------#"
 	echo "# ID：Version                            ：リリース日：サポ終了日：備考       #"
 	echo "#  1：debian-8.11.1-amd64-netinst        ：2015-04-25：2020-06-30：oldoldstable"
-	echo "#  2：debian-9.9.0-amd64-netinst         ：2017-06-17：2022-06-xx：oldstable  #"
-	echo "#  3：debian-10.0.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
+	echo "#  2：debian-9.11.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
+	echo "#  3：debian-10.1.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
 	echo "#  5：CentOS-7-x86_64-NetInstall-1810    ：2018-12-03：2024-06-30：RHEL 7.6   #"
 	echo "#  6：Fedora-Server-netinst-x86_64-30-1.2：2019-04-29：20xx-xx-xx：kernel 5.0 #"
