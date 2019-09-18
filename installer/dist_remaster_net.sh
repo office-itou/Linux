@@ -34,6 +34,7 @@
 ##	2019/07/09 000.0000 J.Itou         最新化修正
 ##	2019/09/08 000.0000 J.Itou         debian 9.10.0/10.1.0 変更
 ##	2019/09/10 000.0000 J.Itou         debian 9.11.0 変更
+##	2019/09/18 000.0000 J.Itou         CentOS 7.7.1908 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -57,7 +58,7 @@
 	    "debian debian-9.11.0-amd64-netinst         https://cdimage.debian.org/cdimage/archive/9.11.0/amd64/iso-cd/debian-9.11.0-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "debian debian-10.1.0-amd64-netinst         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.1.0-amd64-netinst.iso                              preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-netinst        https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "centos CentOS-7-x86_64-NetInstall-1810     https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.6.1810/isos/x86_64/CentOS-7-x86_64-NetInstall-1810.iso                    kickstart_centos.cfg" \
+	    "centos CentOS-7-x86_64-NetInstall-1908     https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-NetInstall-1908.iso                    kickstart_centos.cfg" \
 	    "fedora Fedora-Server-netinst-x86_64-30-1.2 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/30/Server/x86_64/iso/Fedora-Server-netinst-x86_64-30-1.2.iso kickstart_fedora.cfg" \
 	)   # 区分  netinstファイル名                   ダウンロード先URL                                                                                                            定義ファイル
 # -----------------------------------------------------------------------------
@@ -68,7 +69,7 @@ funcMenu () {
 	echo "#  2：debian-9.11.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
 	echo "#  3：debian-10.1.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
-	echo "#  5：CentOS-7-x86_64-NetInstall-1810    ：2018-12-03：2024-06-30：RHEL 7.6   #"
+	echo "#  5：CentOS-7-x86_64-NetInstall-1908    ：2018-12-03：2024-06-30：RHEL 7.6   #"
 	echo "#  6：Fedora-Server-netinst-x86_64-30-1.2：2019-04-29：20xx-xx-xx：kernel 5.0 #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"

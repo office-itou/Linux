@@ -37,6 +37,7 @@
 ##	2019/08/11 000.0000 J.Itou         ubuntu 18.04.3 変更
 ##	2019/09/08 000.0000 J.Itou         debian 9.10.0/10.1.0 変更
 ##	2019/09/10 000.0000 J.Itou         debian 9.11.0 変更
+##	2019/09/18 000.0000 J.Itou         CentOS 7.7.1908 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -68,7 +69,7 @@
 	    "ubuntu ubuntu-19.04-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/disco/ubuntu-19.04-desktop-amd64.iso                           preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-19.10-server-amd64       http://cdimage.ubuntu.com/releases/eoan/release/ubuntu-19.10-server-amd64.iso                                            preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-19.10-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/eoan/ubuntu-19.10-desktop-amd64.iso                            preseed_ubuntu.cfg"   \
-	    "centos CentOS-7-x86_64-DVD-1810        https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.6.1810/isos/x86_64/CentOS-7-x86_64-DVD-1810.iso                       kickstart_centos.cfg" \
+	    "centos CentOS-7-x86_64-DVD-1908        https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-DVD-1908.iso                       kickstart_centos.cfg" \
 	    "fedora Fedora-Server-dvd-x86_64-30-1.2 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/30/Server/x86_64/iso/Fedora-Server-dvd-x86_64-30-1.2.iso kickstart_fedora.cfg" \
 	)   # 区分  DVDファイル名                   ダウンロード先URL                                                                                                        定義ファイル
 # -----------------------------------------------------------------------------
@@ -87,7 +88,7 @@ funcMenu () {
 	echo "# 10：ubuntu-19.04-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
 	echo "#---：ubuntu-19.10-server-amd64      ：2019-10-17：2020-07-xx：Eoan Ermine    #"
 	echo "#---：ubuntu-19.10-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
-	echo "# 13：CentOS-7-x86_64-DVD-1810       ：2018-12-03：2024-06-30：RHEL 7.6       #"
+	echo "# 13：CentOS-7-x86_64-DVD-1908       ：2018-12-03：2024-06-30：RHEL 7.6       #"
 	echo "# 14：Fedora-Server-dvd-x86_64-30-1.2：2019-04-29：20xx-xx-xx：kernel 5.0     #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
