@@ -35,6 +35,7 @@
 ##	2019/09/08 000.0000 J.Itou         debian 9.10.0/10.1.0 変更
 ##	2019/09/10 000.0000 J.Itou         debian 9.11.0 変更
 ##	2019/09/18 000.0000 J.Itou         CentOS 7.7.1908 変更
+##	2019/09/28 000.0000 J.Itou         CentOS 8.0.1905 追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -53,13 +54,14 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	readonly ARRAY_NAME=(                                                                                                                                                                              \
-	    "debian debian-8.11.1-amd64-netinst         https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian debian-9.11.0-amd64-netinst         https://cdimage.debian.org/cdimage/archive/9.11.0/amd64/iso-cd/debian-9.11.0-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian debian-10.1.0-amd64-netinst         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.1.0-amd64-netinst.iso                              preseed_debian.cfg"   \
-	    "debian debian-testing-amd64-netinst        https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "centos CentOS-7-x86_64-NetInstall-1908     https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-NetInstall-1908.iso                    kickstart_centos.cfg" \
-	    "fedora Fedora-Server-netinst-x86_64-30-1.2 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/30/Server/x86_64/iso/Fedora-Server-netinst-x86_64-30-1.2.iso kickstart_fedora.cfg" \
+	readonly ARRAY_NAME=(                                                                                                                                                                               \
+	    "debian debian-8.11.1-amd64-netinst         https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"    \
+	    "debian debian-9.11.0-amd64-netinst         https://cdimage.debian.org/cdimage/archive/9.11.0/amd64/iso-cd/debian-9.11.0-amd64-netinst.iso                               preseed_debian.cfg"    \
+	    "debian debian-10.1.0-amd64-netinst         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.1.0-amd64-netinst.iso                              preseed_debian.cfg"    \
+	    "debian debian-testing-amd64-netinst        https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"    \
+	    "centos CentOS-7-x86_64-NetInstall-1908     https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-NetInstall-1908.iso                    kickstart_centos.cfg"  \
+	    "centos CentOS-8-x86_64-1905-boot           https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8.0.1905/isos/x86_64/CentOS-8-x86_64-1905-boot.iso                          kickstart_centos8.cfg" \
+	    "fedora Fedora-Server-netinst-x86_64-30-1.2 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/30/Server/x86_64/iso/Fedora-Server-netinst-x86_64-30-1.2.iso kickstart_fedora.cfg"  \
 	)   # 区分  netinstファイル名                   ダウンロード先URL                                                                                                            定義ファイル
 # -----------------------------------------------------------------------------
 funcMenu () {
@@ -69,8 +71,9 @@ funcMenu () {
 	echo "#  2：debian-9.11.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
 	echo "#  3：debian-10.1.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
-	echo "#  5：CentOS-7-x86_64-NetInstall-1908    ：2018-12-03：2024-06-30：RHEL 7.6   #"
-	echo "#  6：Fedora-Server-netinst-x86_64-30-1.2：2019-04-29：20xx-xx-xx：kernel 5.0 #"
+	echo "#  5：CentOS-7-x86_64-NetInstall-1908    ：2019-09-17：2024-06-30：RHEL 7.7   #"
+	echo "#  6：CentOS-8-x86_64-1905-boot          ：2019-09-24：20xx-xx-xx：RHEL 8.0   #"
+	echo "#  7：Fedora-Server-netinst-x86_64-30-1.2：2019-04-29：20xx-xx-xx：kernel 5.0 #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -141,7 +144,8 @@ funcRemaster () {
 					fi
 					sed -i kickstart/ks.cfg    \
 					    -e 's/^\(cdrom\)/#\1/g' \
-					    -e 's/#\(url \)/\1/g'
+					    -e 's/#\(url \)/\1/g' \
+					    -e 's/#\(repo \)/\1/g'
 					;;
 				* )	;;
 			esac
@@ -190,12 +194,31 @@ funcRemaster () {
 					esac
 					;;
 				"centos" )	# ･････････････････････････････････････････････････
-					sed -i isolinux/isolinux.cfg \
-					    -e '/menu default/d' \
-					    -e '/^label linux/i\label centos7auto\n  menu label ^Auto Install CentOS 7\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n'
-					sed -i EFI/BOOT/grub.cfg \
-					    -e 's/\(set default\)="1"/\1="0"/g' \
-					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS 7'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS\\x207\\x20x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+					case "${VOLID}" in
+						"CentOS 7 x86_64                 " )
+							sed -i isolinux/isolinux.cfg \
+							    -e '/menu default/d' \
+							    -e '/^label linux/i\label centos7auto\n  menu label ^Auto Install CentOS 7\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n'
+							sed -i EFI/BOOT/grub.cfg \
+							    -e 's/\(set default\)="1"/\1="0"/g' \
+							    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS 7'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS\\x207\\x20x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+							;;
+						"CentOS-8-BaseOS-x86_64          " )
+							sed -i isolinux/isolinux.cfg \
+							    -e '/menu default/d' \
+							    -e '/^label linux/i\label centos8auto\n  menu label ^Auto Install CentOS Linux 8.0.1905\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS-8-BaseOS-x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n'
+							sed -i EFI/BOOT/grub.cfg \
+							    -e 's/\(set default\)="1"/\1="0"/g' \
+							    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS Linux 8.0.1905'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-8-BaseOS-x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+							sed -i kickstart/ks.cfg \
+							    -e 's/release=7/release=8/' \
+							    -e 's/repo=os/repo=baseos/' \
+							    -e 's/remi-release-7.rpm/remi-release-8.rpm/'
+							;;
+						* )
+							echo "?:[${VOLID}]"
+							;;
+					esac
 					;;
 				"fedora" )	# ･････････････････････････････････････････････････
 					sed -i isolinux/isolinux.cfg \
@@ -340,6 +363,8 @@ funcRemaster () {
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30
 # 7.5-1804:2018-05-10:2018-04-10:2024-06-30
 # 7.6-1810:2018-12-03:2018-10-30:2024-06-30
+# 7.7-1908:2019-09-17:2019-08-06:2024-06-30
+# 8.0-1905:2019-09-24:2019-05-07:20xx-xx-xx
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # Ver. :コードネーム     :リリース日:サポート期限
 #x27   :                 :2017-11-14:2018-11-27
