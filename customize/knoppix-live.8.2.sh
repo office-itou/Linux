@@ -1,8 +1,8 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [KNOPPIX_V8.6-2019-08-08-EN.iso]                        *
+# LiveCDCustomization [KNOPPIX_V8.2-2018-05-10-EN.iso]                        *
 # *****************************************************************************
-	LIVE_FILE="KNOPPIX_V8.6-2019-08-08-EN.iso"
+	LIVE_FILE="KNOPPIX_V8.2-2018-05-10-EN.iso"
 	LIVE_DEST=`echo "${LIVE_FILE}" | sed -e 's/-EN/-JP/g'`
 # == initialize ===============================================================
 #	set -m								# ジョブ制御を有効にする
@@ -76,14 +76,14 @@
 			mkdir ~/apt
 			mv /etc/apt/apt.conf.d/* ~/apt/
 			cat <<- _EOT_ > /etc/apt/sources.list
-				deb http://ftp.debian.org/debian stable main non-free contrib
-				deb-src http://ftp.debian.org/debian stable main non-free contrib
+				deb http://ftp.debian.org/debian stretch main non-free contrib
+				deb-src http://ftp.debian.org/debian stretch main non-free contrib
 
-				deb http://security.debian.org/debian-security stable/updates main contrib non-free
-				deb-src http://security.debian.org/debian-security stable/updates main contrib non-free
+				deb http://security.debian.org/debian-security stretch/updates main contrib non-free
+				deb-src http://security.debian.org/debian-security stretch/updates main contrib non-free
 
-				deb http://ftp.debian.org/debian stable-updates main contrib non-free
-				deb-src http://ftp.debian.org/debian stable-updates main contrib non-free
+				deb http://ftp.debian.org/debian stretch-updates main contrib non-free
+				deb-src http://ftp.debian.org/debian stretch-updates main contrib non-free
 		_EOT_
 		# -----------------------------------------------------------------------------
 			dpkg --audit
@@ -257,7 +257,7 @@
 		# -----------------------------------------------------------------------------
 		# <memo>
 		#   https://lists.debian.org/debian-user/2011/04/msg01168.html
-		#   https://manpages.debian.org/stable/apt/sources.list.5.ja.html
+		#   https://manpages.debian.org/stretch/apt/sources.list.5.ja.html
 		#       Dpkg::Options::= --force-confdef or --force-confnew or --force-confold
 		#       Acquire::Check-Valid-Until=no
 		#   http://linux-memo.sakura.ne.jp/knoppix/knoppix_customjp080100_cust.html
@@ -307,11 +307,6 @@ _EOT_SH_
 	fi
 	rm -f ./knoppix-live/cdimg/KNOPPIX/KNOPPIX
 	# -------------------------------------------------------------------------
-	if [ ! -f ./knoppix-live/KNOPPIX2_FS.iso ]; then
-		extract_compressed_fs ./knoppix-live/cdimg/KNOPPIX/KNOPPIX2 ./knoppix-live/KNOPPIX2_FS.iso
-	fi
-	rm -f ./knoppix-live/cdimg/KNOPPIX/KNOPPIX2
-	# -------------------------------------------------------------------------
 	if [ ! -f ./knoppix-live/KNOPPIX1_FS.iso ]; then
 		extract_compressed_fs ./knoppix-live/cdimg/KNOPPIX/KNOPPIX1 ./knoppix-live/KNOPPIX1_FS.iso
 	fi
@@ -321,25 +316,20 @@ _EOT_SH_
 	cp -rp ./knoppix-live/media/* ./knoppix-live/fsimg/
 	umount ./knoppix-live/media
 	# -------------------------------------------------------------------------
-	mount -r -o loop ./knoppix-live/KNOPPIX2_FS.iso ./knoppix-live/media
-	cp -rp ./knoppix-live/media/* ./knoppix-live/fsimg/
-	umount ./knoppix-live/media
-	# -------------------------------------------------------------------------
 	mount -r -o loop ./knoppix-live/KNOPPIX1_FS.iso ./knoppix-live/media
 	cp -rp ./knoppix-live/media/* ./knoppix-live/fsimg/
 	umount ./knoppix-live/media
 	# -------------------------------------------------------------------------
 	rm -f ./knoppix-live/KNOPPIX_FS.tmp  \
 	      ./knoppix-live/KNOPPIX1_FS.tmp \
-	      ./knoppix-live/KNOPPIX2_FS.tmp \
 	      ./knoppix-live/filelist.txt
 	# -----------------------------------------------------------------------------
-	if [ -d ./knoppix-live/rpack.knoppix82 ]; then
-		cp -p ./knoppix-live/rpack.knoppix82/*.deb ./knoppix-live/fsimg/var/cache/apt/archives/
-	fi
-	if [ -d ./knoppix-live/clamav ]; then
-		cp -p ./knoppix-live/clamav/*.cvd     ./knoppix-live/fsimg/var/lib/clamav/
-	fi
+#	if [ -d ./knoppix-live/rpack.knoppix82 ]; then
+#		cp -p ./knoppix-live/rpack.knoppix82/*.deb ./knoppix-live/fsimg/var/cache/apt/archives/
+#	fi
+#	if [ -d ./knoppix-live/clamav ]; then
+#		cp -p ./knoppix-live/clamav/*.cvd     ./knoppix-live/fsimg/var/lib/clamav/
+#	fi
 # =============================================================================
 	rm -f ./knoppix-live/fsimg/etc/localtime
 	ln -s /usr/share/zoneinfo/Asia/Tokyo ./knoppix-live/fsimg/etc/localtime
@@ -380,7 +370,6 @@ _EOT_SH_
 		LIVE_VOLID=`volname ./${LIVE_FILE}`
 		LIVE_VOLID_FS=`volname ./knoppix-live/KNOPPIX_FS.iso`
 		LIVE_VOLID_FS1=`volname ./knoppix-live/KNOPPIX1_FS.iso`
-		LIVE_VOLID_FS2=`volname ./knoppix-live/KNOPPIX2_FS.iso`
 	fi
 	pushd ./knoppix-live/fsimg > /dev/null
 		find usr/share/ -maxdepth 1 -type d \
@@ -397,7 +386,6 @@ _EOT_SH_
 			| grep -v -e "/edict$\|/fonts$\|/icons$\|/kiten$\|/locale$\|/qt4$" \
 			| sort -u | awk '{print $1"/";}' > ../filelist.txt
 		rm -f ../KNOPPIX_FS.tmp ../KNOPPIX1_FS.tmp
-		rm -f ../KNOPPIX_FS.tmp ../KNOPPIX2_FS.tmp
 		# ---------------------------------------------------------------------
 		xorriso -as mkisofs                 \
 		    -D -R -U -V "${LIVE_VOLID_FS}"  \
