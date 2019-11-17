@@ -39,6 +39,8 @@
 ##	2019/09/10 000.0000 J.Itou         debian 9.11.0 変更
 ##	2019/09/18 000.0000 J.Itou         CentOS 7.7.1908 変更
 ##	2019/09/28 000.0000 J.Itou         CentOS 8.0.1905 追加
+##	2019/11/15 000.0000 J.Itou         不具合修正
+##	2019/11/17 000.0000 J.Itou         debian 10.2.0 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -60,7 +62,7 @@
 	readonly ARRAY_NAME=(                                                                                                                                                                       \
 	    "debian debian-8.11.1-amd64-DVD-1       https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg"    \
 	    "debian debian-9.11.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/release/9.11.0/amd64/iso-dvd/debian-9.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"    \
-	    "debian debian-10.1.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.1.0-amd64-DVD-1.iso                           preseed_debian.cfg"    \
+	    "debian debian-10.2.0-amd64-DVD-1       https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.2.0-amd64-DVD-1.iso                           preseed_debian.cfg"    \
 	    "debian debian-testing-amd64-DVD-1      https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"    \
 	    "ubuntu ubuntu-16.04.6-server-amd64     https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.6-server-amd64.iso                         preseed_ubuntu.cfg"    \
 	    "ubuntu ubuntu-16.04.6-desktop-amd64    https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.6-desktop-amd64.iso                        preseed_ubuntu.cfg"    \
@@ -80,7 +82,7 @@ funcMenu () {
 	echo "# ID：Version                        ：リリース日：サポ終了日：備考           #"
 	echo "#  1：debian-8.11.1-amd64-DVD-1      ：2015-04-25：2020-04-xx：oldoldstable   #"
 	echo "#  2：debian-9.11.0-amd64-DVD-1      ：2017-06-17：2022-xx-xx：oldstable      #"
-	echo "#  3：debian-10.1.0-amd64-DVD-1      ：2019-07-06：20xx-xx-xx：stable         #"
+	echo "#  3：debian-10.2.0-amd64-DVD-1      ：2019-07-06：20xx-xx-xx：stable         #"
 	echo "#  4：debian-testing-amd64-DVD-1     ：20xx-xx-xx：20xx-xx-xx：testing        #"
 	echo "#  5：ubuntu-16.04.6-server-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus   #"
 	echo "#  6：ubuntu-16.04.6-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
@@ -187,7 +189,7 @@ funcRemaster () {
 						"ubuntu-16.04.6-server-amd64"    | \
 						"ubuntu-18.04.3-server-amd64"    | \
 						"ubuntu-19.04-server-amd64"      | \
-						"ubuntu-18.04-server-amd64"      )
+						"ubuntu-19.10-server-amd64"      )
 							sed -i isolinux/txt.cfg  \
 							    -e 's/^\(default\) .*$/\1 preseed/' \
 							    -e '/menu default/d' \

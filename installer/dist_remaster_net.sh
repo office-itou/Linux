@@ -36,6 +36,7 @@
 ##	2019/09/10 000.0000 J.Itou         debian 9.11.0 変更
 ##	2019/09/18 000.0000 J.Itou         CentOS 7.7.1908 変更
 ##	2019/09/28 000.0000 J.Itou         CentOS 8.0.1905 追加
+##	2019/11/17 000.0000 J.Itou         debian 10.2.0 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -57,7 +58,7 @@
 	readonly ARRAY_NAME=(                                                                                                                                                                               \
 	    "debian debian-8.11.1-amd64-netinst         https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"    \
 	    "debian debian-9.11.0-amd64-netinst         https://cdimage.debian.org/cdimage/archive/9.11.0/amd64/iso-cd/debian-9.11.0-amd64-netinst.iso                               preseed_debian.cfg"    \
-	    "debian debian-10.1.0-amd64-netinst         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.1.0-amd64-netinst.iso                              preseed_debian.cfg"    \
+	    "debian debian-10.2.0-amd64-netinst         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.2.0-amd64-netinst.iso                              preseed_debian.cfg"    \
 	    "debian debian-testing-amd64-netinst        https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"    \
 	    "centos CentOS-7-x86_64-NetInstall-1908     https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-NetInstall-1908.iso                    kickstart_centos.cfg"  \
 	    "centos CentOS-8-x86_64-1905-boot           https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8.0.1905/isos/x86_64/CentOS-8-x86_64-1905-boot.iso                          kickstart_centos8.cfg" \
@@ -69,7 +70,7 @@ funcMenu () {
 	echo "# ID：Version                            ：リリース日：サポ終了日：備考       #"
 	echo "#  1：debian-8.11.1-amd64-netinst        ：2015-04-25：2020-06-30：oldoldstable"
 	echo "#  2：debian-9.11.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
-	echo "#  3：debian-10.1.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
+	echo "#  3：debian-10.2.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
 	echo "#  5：CentOS-7-x86_64-NetInstall-1908    ：2019-09-17：2024-06-30：RHEL 7.7   #"
 	echo "#  6：CentOS-8-x86_64-1905-boot          ：2019-09-24：20xx-xx-xx：RHEL 8.0   #"
