@@ -37,6 +37,7 @@
 ##	2019/09/18 000.0000 J.Itou         CentOS 7.7.1908 変更
 ##	2019/09/28 000.0000 J.Itou         CentOS 8.0.1905 追加
 ##	2019/11/17 000.0000 J.Itou         debian 10.2.0 変更
+##	2019/11/23 000.0000 J.Itou         fedora 31 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -62,7 +63,7 @@
 	    "debian debian-testing-amd64-netinst        https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"    \
 	    "centos CentOS-7-x86_64-NetInstall-1908     https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-NetInstall-1908.iso                    kickstart_centos.cfg"  \
 	    "centos CentOS-8-x86_64-1905-boot           https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8.0.1905/isos/x86_64/CentOS-8-x86_64-1905-boot.iso                          kickstart_centos8.cfg" \
-	    "fedora Fedora-Server-netinst-x86_64-30-1.2 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/30/Server/x86_64/iso/Fedora-Server-netinst-x86_64-30-1.2.iso kickstart_fedora.cfg"  \
+	    "fedora Fedora-Server-netinst-x86_64-31-1.9 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/31/Server/x86_64/iso/Fedora-Server-netinst-x86_64-31-1.9.iso kickstart_fedora.cfg"  \
 	)   # 区分  netinstファイル名                   ダウンロード先URL                                                                                                            定義ファイル
 # -----------------------------------------------------------------------------
 funcMenu () {
@@ -74,7 +75,7 @@ funcMenu () {
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
 	echo "#  5：CentOS-7-x86_64-NetInstall-1908    ：2019-09-17：2024-06-30：RHEL 7.7   #"
 	echo "#  6：CentOS-8-x86_64-1905-boot          ：2019-09-24：20xx-xx-xx：RHEL 8.0   #"
-	echo "#  7：Fedora-Server-netinst-x86_64-30-1.2：2019-04-29：20xx-xx-xx：kernel 5.0 #"
+	echo "#  7：Fedora-Server-netinst-x86_64-31-1.9：2019-10-29：20xx-xx-xx：kernel 5.3 #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -224,10 +225,10 @@ funcRemaster () {
 				"fedora" )	# ･････････････････････････････････････････････････
 					sed -i isolinux/isolinux.cfg \
 					    -e '/menu default/d' \
-					    -e '/^label linux/i\label fedora30auto\n  menu label ^Auto Install Fedora 30\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-30 inst.ks=cdrom:/kickstart/ks.cfg\n'
+					    -e '/^label linux/i\label fedora31auto\n  menu label ^Auto Install Fedora 31\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-31 inst.ks=cdrom:/kickstart/ks.cfg\n'
 					sed -i EFI/BOOT/grub.cfg \
 					    -e 's/\(set default\)="1"/\1="0"/g' \
-					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 30'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-30 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 31'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-31 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
 					;;
 				* )	;;
 			esac
@@ -372,4 +373,5 @@ funcRemaster () {
 #x28   :                 :2018-05-01:2019-05-29
 # 29   :                 :2018-10-30:
 # 30   :                 :2019-04-29:
+# 31   :                 :2019-10-29:
 # -----------------------------------------------------------------------------
