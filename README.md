@@ -2,9 +2,9 @@ Debian/Ubuntu/CentOS/Knoppixのカスタマイズ
   
 **日本語化やインストール補助に以下のシェルを作成しました。**  
 ・Debian/Ubuntu/KnoppixのLive DVDイメージのカスタマイズ  
-・Debian/Ubuntu/CentOs7のインストールDVDイメージのカスタマイズ  
+・Debian/Ubuntu/CentOS7/CentOS8のインストールDVDイメージのカスタマイズ  
 ・Debian/Ubuntuのインストールmini.isoイメージのカスタマイズ  
-・Debian/Ubuntu/CrntOS7のインストール補助(VMware対応)  
+・Debian/Ubuntu/CrntOS7/CentOS8のインストール補助(VMware対応)  
 *※VMware14上でmbrとuefi環境で動作確認*  
   
 **Live CD用** (日本語化とDebian/Ubuntuのモジュール最新化)  
