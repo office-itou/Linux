@@ -42,6 +42,7 @@
 ##	2019/11/15 000.0000 J.Itou         不具合修正
 ##	2019/11/17 000.0000 J.Itou         debian 10.2.0 変更
 ##	2019/11/23 000.0000 J.Itou         fedora 31 変更
+##	2019/11/24 000.0000 J.Itou         CentOS Stream 追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -75,6 +76,7 @@
 	    "ubuntu ubuntu-19.10-desktop-amd64      https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/eoan/ubuntu-19.10-desktop-amd64.iso                            preseed_ubuntu.cfg"    \
 	    "centos CentOS-7-x86_64-DVD-1908        https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-DVD-1908.iso                       kickstart_centos.cfg"  \
 	    "centos CentOS-8-x86_64-1905-dvd1       https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8.0.1905/isos/x86_64/CentOS-8-x86_64-1905-dvd1.iso                      kickstart_centos8.cfg" \
+	    "centos CentOS-Stream-x86_64-dvd1       https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-x86_64-dvd1.iso                      kickstart_centos8.cfg" \
 	    "fedora Fedora-Server-dvd-x86_64-31-1.9 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/31/Server/x86_64/iso/Fedora-Server-dvd-x86_64-31-1.9.iso kickstart_fedora.cfg"  \
 	)   # 区分  DVDファイル名                   ダウンロード先URL                                                                                                        定義ファイル
 # -----------------------------------------------------------------------------
@@ -94,8 +96,9 @@ funcMenu () {
 	echo "# 11：ubuntu-19.10-server-amd64      ：2019-10-17：2020-07-xx：Eoan Ermine    #"
 	echo "# 12：ubuntu-19.10-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
 	echo "# 13：CentOS-7-x86_64-DVD-1908       ：2018-09-17：2024-06-30：RHEL 7.7       #"
-	echo "# 14：CentOS-8-x86_64-1905-dvd1      ：2019-09-24：20xx-xx-xx：RHEL 8.0       #"
-	echo "# 15：Fedora-Server-dvd-x86_64-31-1.9：2019-10-29：20xx-xx-xx：kernel 5.3     #"
+	echo "# 14：CentOS-8-x86_64-1905-dvd1      ：2019-09-24：2029-05-31：RHEL 8.0       #"
+	echo "# 15：CentOS-Stream-x86_64-dvd1      ：20xx-xx-xx：20xx-xx-xx：RHEL x.x       #"
+	echo "# 16：Fedora-Server-dvd-x86_64-31-1.9：2019-10-29：20xx-xx-xx：kernel 5.3     #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -237,6 +240,22 @@ funcRemaster () {
 							sed -i EFI/BOOT/grub.cfg \
 							    -e 's/\(set default\)="1"/\1="0"/g' \
 							    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS Linux 8.0.1905'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-8-BaseOS-x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+							sed -i kickstart/ks.cfg \
+							    -e 's/release=7/release=8/' \
+							    -e 's/repo=os/repo=baseos/' \
+							    -e 's/remi-release-7.rpm/remi-release-8.rpm/'
+							;;
+						"CentOS-Stream-BaseOS-x86_64     " )
+							sed -i isolinux/isolinux.cfg \
+							    -e '/menu default/d' \
+							    -e '/^label linux/i\label centos8auto\n  menu label ^Auto Install CentOS Stream 8.0.1905\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS-Stream-BaseOS-x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n'
+							sed -i EFI/BOOT/grub.cfg \
+							    -e 's/\(set default\)="1"/\1="0"/g' \
+							    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS Stream 8.0.1905'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-Stream-BaseOS-x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+							sed -i kickstart/ks.cfg \
+							    -e 's/release=7/release=8/' \
+							    -e 's/repo=os/repo=baseos/' \
+							    -e 's/remi-release-7.rpm/remi-release-8.rpm/'
 							;;
 						* )
 							echo "?:[${VOLID}]"
@@ -387,7 +406,7 @@ funcRemaster () {
 # 7.5-1804:2018-05-10:2018-04-10:2024-06-30
 # 7.6-1810:2018-12-03:2018-10-30:2024-06-30
 # 7.7-1908:2019-09-17:2019-08-06:2024-06-30
-# 8.0-1905:2019-09-24:2019-05-07:20xx-xx-xx
+# 8.0-1905:2019-09-24:2019-05-07:2029-05-31
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # Ver. :コードネーム     :リリース日:サポート期限
 #x27   :                 :2017-11-14:2018-11-27
