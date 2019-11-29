@@ -43,6 +43,7 @@
 ##	2019/11/17 000.0000 J.Itou         debian 10.2.0 変更
 ##	2019/11/23 000.0000 J.Itou         fedora 31 変更
 ##	2019/11/24 000.0000 J.Itou         CentOS Stream 追加
+##	2019/11/29 000.0000 J.Itou         USBメモリーでのインストール対応
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -291,15 +292,17 @@ funcRemaster () {
 			find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt
 			xorriso -as mkisofs \
 			    -quiet \
-			    -r -J -V "${VOLID}" \
-			    -o "../../${DVD_NAME}.iso" \
-			    -b isolinux/isolinux.bin \
-			    -c isolinux/boot.cat \
-			    -no-emul-boot \
-			    -boot-load-size 4 \
-			    -boot-info-table \
-			    -iso-level 4 \
-			    -eltorito-alt-boot -e "${EFI_IMAG}" -no-emul-boot \
+			    -iso-level 3 \
+			    -full-iso9660-filenames \
+			    -volid "${VOLID}" \
+			    -eltorito-boot isolinux/isolinux.bin \
+			    -eltorito-catalog isolinux/boot.cat \
+			    -no-emul-boot -boot-load-size 4 -boot-info-table \
+			    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+			    -eltorito-alt-boot \
+			    -e "${EFI_IMAG}" \
+			    -no-emul-boot -isohybrid-gpt-basdat \
+			    -output "../../${DVD_NAME}.iso" \
 			    .
 		popd > /dev/null
 	popd > /dev/null

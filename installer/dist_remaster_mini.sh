@@ -27,6 +27,7 @@
 ##	2019/07/09 000.0000 J.Itou         最新化修正
 ##	2019/11/23 000.0000 J.Itou         コメント追加：fedora 31
 ##	2019/11/24 000.0000 J.Itou         ubuntu 20.04 追加
+##	2019/11/29 000.0000 J.Itou         USBメモリーでのインストール対応
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -156,15 +157,17 @@ funcRemaster () {
 			find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt
 			xorriso -as mkisofs \
 			    -quiet \
-			    -r -J -V "${VOLID}" \
-			    -o "../../${DVD_NAME}-preseed.iso" \
-			    -b isolinux.bin \
-			    -c boot.cat \
-			    -no-emul-boot \
-			    -boot-load-size 4 \
-			    -boot-info-table \
-			    -iso-level 4 \
-			    -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot \
+			    -iso-level 3 \
+			    -full-iso9660-filenames \
+			    -volid "${VOLID}" \
+			    -eltorito-boot isolinux.bin \
+			    -eltorito-catalog boot.cat \
+			    -no-emul-boot -boot-load-size 4 -boot-info-table \
+			    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+			    -eltorito-alt-boot \
+			    -e boot/grub/efi.img \
+			    -no-emul-boot -isohybrid-gpt-basdat \
+			    -output "../../${DVD_NAME}-preseed.iso" \
 			    .
 		popd > /dev/null
 	popd > /dev/null
