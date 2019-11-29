@@ -324,21 +324,19 @@ _EOT_SH_
 	# -------------------------------------------------------------------------
 	pushd ./debian-live/cdimg > /dev/null
 		find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
-		xorriso                                     \
-		    -as mkisofs                             \
-		    -iso-level 3                            \
-		    -full-iso9660-filenames                 \
-		    -volid "${LIVE_VOLID}"                  \
-		    -eltorito-boot                          \
-		        isolinux/isolinux.bin               \
-		        -no-emul-boot                       \
-		        -boot-load-size 4                   \
-		        -boot-info-table                    \
-		        -eltorito-catalog isolinux/boot.cat \
-		    -eltorito-alt-boot                      \
-		        -e boot/grub/efi.img                \
-		        -no-emul-boot                       \
-		    -output ../../${LIVE_DEST}              \
+		xorriso -as mkisofs \
+		    -quiet \
+		    -iso-level 3 \
+		    -full-iso9660-filenames \
+		    -volid "${LIVE_VOLID}" \
+		    -eltorito-boot isolinux/isolinux.bin \
+		    -eltorito-catalog isolinux/boot.cat \
+		    -no-emul-boot -boot-load-size 4 -boot-info-table \
+		    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+		    -eltorito-alt-boot \
+		    -e boot/grub/efi.img \
+		    -no-emul-boot -isohybrid-gpt-basdat \
+		    -output "../../${LIVE_DEST}" \
 		    .
 	popd > /dev/null
 	ls -lht debian*

@@ -2,8 +2,13 @@
 # *****************************************************************************
 # LiveCDCustomization [ubuntu-19.04-desktop-amd64.iso]                        *
 # *****************************************************************************
-	LIVE_VNUM="19.04"
-	LIVE_ARCH="amd64"
+	if [ "$1" = "" ] || [ "$2" = "" ]; then
+		echo "$0 [i386 | amd64] [19.xx | ...]"
+		exit 1
+	fi
+
+	LIVE_ARCH="$1"
+	LIVE_VNUM="$2"
 	LIVE_FILE="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}.iso"
 	LIVE_DEST="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}-custom.iso"
 # == initialize ===============================================================
@@ -70,8 +75,8 @@
 			apt upgrade      -q -y                                                 && \
 			apt full-upgrade -q -y                                                 && \
 			apt install      -q -y                                                    \
-			    apache2 bc bind9 bind9utils build-essential chromium-browser          \
-			    chromium-browser-l10n cifs-utils clamav curl dpkg-repack              \
+			    apache2 bc bind9 bind9utils build-essential                           \
+			                          cifs-utils clamav curl dpkg-repack              \
 			    firefox-locale-ja fonts-noto-cjk-extra gnome-getting-started-docs-ja  \
 			    gnome-user-docs-ja hyphen-es ibus-mozc indent isc-dhcp-server         \
 			    isolinux language-pack-gnome-ja language-pack-gnome-ja-base           \
@@ -84,6 +89,8 @@
 			apt autoremove   -q -y                                                 && \
 			apt autoclean    -q -y                                                 && \
 			apt clean        -q -y                                                 || \
+			fncEnd 1
+			snap install chromium                                                  || \
 			fncEnd 1
 		#	mv /etc/resolv.conf.orig /etc/resolv.conf
 			# -----------------------------------------------------------------------------
@@ -259,6 +266,7 @@ _EOT_SH_
 	rm -f ./ubuntu-live/fsimg/etc/localtime
 	ln -s /usr/share/zoneinfo/Asia/Tokyo ./ubuntu-live/fsimg/etc/localtime
 	# -------------------------------------------------------------------------
+	mount --bind /run     ./ubuntu-live/fsimg/run
 	mount --bind /dev     ./ubuntu-live/fsimg/dev
 	mount --bind /dev/pts ./ubuntu-live/fsimg/dev/pts
 	mount --bind /proc    ./ubuntu-live/fsimg/proc
@@ -272,6 +280,7 @@ _EOT_SH_
 	umount ./ubuntu-live/fsimg/proc    || umount -lf ./ubuntu-live/fsimg/proc
 	umount ./ubuntu-live/fsimg/dev/pts || umount -lf ./ubuntu-live/fsimg/dev/pts
 	umount ./ubuntu-live/fsimg/dev     || umount -lf ./ubuntu-live/fsimg/dev
+	umount ./ubuntu-live/fsimg/run     || umount -lf ./ubuntu-live/fsimg/run
 	# -------------------------------------------------------------------------
 	if [ ${RET_STS} -ne 0 ]; then
 		exit ${RET_STS}
@@ -285,9 +294,9 @@ _EOT_SH_
 	       ./ubuntu-live/fsimg/var/cache/apt/archives/*.deb \
 	       ./ubuntu-live/fsimg/ubuntu-setup.sh
 # =============================================================================
-	sed -i ./debian-live/cdimg/boot/grub/grub.cfg                                                                                       \
+	sed -i ./ubuntu-live/cdimg/boot/grub/grub.cfg                                                                                       \
 	    -e 's/\(linux .* casper\) \(quiet.*\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
-	sed -i ./debian-live/cdimg/isolinux/menu.cfg                                                                                          \
+	sed -i ./ubuntu-live/cdimg/isolinux/menu.cfg                                                                                          \
 	    -e 's/\(append .* casper\) \(initrd.*\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
 	# -------------------------------------------------------------------------
 	rm -f ./ubuntu-live/cdimg/casper/filesystem.squashfs
@@ -296,21 +305,19 @@ _EOT_SH_
 	# -------------------------------------------------------------------------
 	pushd ./ubuntu-live/cdimg > /dev/null
 		find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
-		xorriso                                     \
-		    -as mkisofs                             \
-		    -iso-level 3                            \
-		    -full-iso9660-filenames                 \
-		    -volid "${LIVE_VOLID}"                  \
-		    -eltorito-boot                          \
-		        isolinux/isolinux.bin               \
-		        -no-emul-boot                       \
-		        -boot-load-size 4                   \
-		        -boot-info-table                    \
-		        -eltorito-catalog isolinux/boot.cat \
-		    -eltorito-alt-boot                      \
-		        -e boot/grub/efi.img                \
-		        -no-emul-boot                       \
-		    -output ../../${LIVE_DEST}              \
+		xorriso -as mkisofs \
+		    -quiet \
+		    -iso-level 3 \
+		    -full-iso9660-filenames \
+		    -volid "${LIVE_VOLID}" \
+		    -eltorito-boot isolinux/isolinux.bin \
+		    -eltorito-catalog isolinux/boot.cat \
+		    -no-emul-boot -boot-load-size 4 -boot-info-table \
+		    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+		    -eltorito-alt-boot \
+		    -e boot/grub/efi.img \
+		    -no-emul-boot -isohybrid-gpt-basdat \
+		    -output "../../${LIVE_DEST}" \
 		    .
 	popd > /dev/null
 	ls -lht ubuntu*
