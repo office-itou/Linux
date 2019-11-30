@@ -116,12 +116,14 @@
 		# -- open vm tools ------------------------------------------------------------
 			echo "--- open vm tools -------------------------------------------------------------"
 			mkdir -p /mnt/hgfs
-			sed -i /etc/fstab                                                                   \
-			    -e '$a.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0'
+			echo -n '#.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
+			>> /etc/fstab
 		# -- clamav -------------------------------------------------------------------
 			echo "--- clamav --------------------------------------------------------------------"
 			sed -i /etc/clamav/freshclam.conf \
 			    -e 's/^NotifyClamd/#&/'
+		# -- bind9 --------------------------------------------------------------------
+			touch /etc/bind/named.conf.options
 		# -- sshd ---------------------------------------------------------------------
 			echo "--- sshd ----------------------------------------------------------------------"
 			sed -i /etc/ssh/sshd_config                                        \
@@ -190,13 +192,73 @@
 			    -e '$apasv_enable=YES'
 		# -- samba --------------------------------------------------------------------
 			echo "--- samba ---------------------------------------------------------------------"
-			testparm -s /etc/samba/smb.conf | sed -e '/homes/ idos charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\nidmap config * : range = 1000-10000\n' > ./smb.conf
+			CMD_UADD=`which useradd`
+			CMD_UDEL=`which userdel`
+			CMD_GADD=`which groupadd`
+			CMD_GDEL=`which groupdel`
+			CMD_GPWD=`which gpasswd`
+			CMD_FALS=`which false`
+			testparm -s -v |                                                                        \
+			sed -e 's/\(dos charset\) =.*$/\1 = CP932/'                                             \
+			    -e 's/\(security\) =.*$/\1 = USER/'                                                 \
+			    -e 's/\(server role\) =.*$/\1 = standalone server/'                                 \
+			    -e 's/\(pam password change\) =.*$/\1 = Yes/'                                       \
+			    -e 's/\(load printers\) =.*$/\1 = No/'                                              \
+			    -e 's~\(log file\) =.*$~\1 = /var/log/samba/log.%m~'                                \
+			    -e 's/\(max log size\) =.*$/\1 = 1000/'                                             \
+			    -e 's/\(min protocol\) =.*$/\1 = NT1/'                                              \
+			    -e 's/\(server min protocol\) =.*$/\1 = NT1/'                                       \
+			    -e 's~\(printcap name\) =.*$~\1 = /dev/null~'                                       \
+			    -e "s~\(add user script\) =.*$~\1 = ${CMD_UADD} %u~"                                \
+			    -e "s~\(delete user script\) =.*$~\1 = ${CMD_UDEL} %u~"                             \
+			    -e "s~\(add group script\) =.*$~\1 = ${CMD_GADD} %g~"                               \
+			    -e "s~\(delete group script\) =.*$~\1 = ${CMD_GDEL} %g~"                            \
+			    -e "s~\(add user to group script\) =.*$~\1 = ${CMD_GPWD} -a %u %g~"                 \
+			    -e "s~\(delete user from group script\) =.*$~\1 = ${CMD_GPWD} -d %u %g~"            \
+			    -e "s~\(add machine script\) =.*$~\1 = ${CMD_UADD} -d /dev/null -s ${CMD_FALS} %u~" \
+			    -e 's/\(logon script\) =.*$/\1 = logon.bat/'                                        \
+			    -e 's/\(logon path\) =.*$/\1 = \\\\%L\\profiles\\%U/'                               \
+			    -e 's/\(domain logons\) =.*$/\1 = Yes/'                                             \
+			    -e 's/\(os level\) =.*$/\1 = 35/'                                                   \
+			    -e 's/\(preferred master\) =.*$/\1 = Yes/'                                          \
+			    -e 's/\(domain master\) =.*$/\1 = Yes/'                                             \
+			    -e 's/\(wins support\) =.*$/\1 = Yes/'                                              \
+			    -e 's/\(unix password sync\) =.*$/\1 = No/'                                         \
+			    -e '/idmap config \* : backend =/i \\tidmap config \* : range = 1000-10000'         \
+			    -e 's/\(admin users\) =.*$/\1 = administrator/'                                     \
+			    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
+			    -e '/map to guest =.*$/d'                                                           \
+			    -e '/null passwords =.*$/d'                                                         \
+			    -e '/obey pam restrictions =.*$/d'                                                  \
+			    -e '/enable privileges =.*$/d'                                                      \
+			    -e '/password level =.*$/d'                                                         \
+			    -e '/client use spnego principal =.*$/d'                                            \
+			    -e '/syslog =.*$/d'                                                                 \
+			    -e '/syslog only =.*$/d'                                                            \
+			    -e '/use spnego =.*$/d'                                                             \
+			    -e '/paranoid server security =.*$/d'                                               \
+			    -e '/dns proxy =.*$/d'                                                              \
+			    -e '/time offset =.*$/d'                                                            \
+			    -e '/usershare allow guests =.*$/d'                                                 \
+			    -e '/idmap backend =.*$/d'                                                          \
+			    -e '/idmap uid =.*$/d'                                                              \
+			    -e '/idmap gid =.*$/d'                                                              \
+			    -e '/winbind separator =.*$/d'                                                      \
+			    -e '/acl check permissions =.*$/d'                                                  \
+			    -e '/only user =.*$/d'                                                              \
+			    -e '/share modes =.*$/d'                                                            \
+			    -e '/nbt client socket address =.*$/d'                                              \
+			    -e '/lsa over netlogon =.*$/d'                                                      \
+			    -e '/.* = $/d'                                                                      \
+			> ./smb.conf
+#			testparm -s /etc/samba/smb.conf | sed -e '/homes/ idos charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\nidmap config * : range = 1000-10000\n' > ./smb.conf
 			testparm -s ./smb.conf > /etc/samba/smb.conf
 			rm -f ./smb.conf
 		# -- root and user's setting --------------------------------------------------
 			echo "--- root and user's setting ---------------------------------------------------"
-			usermod -p live knoppix
 			smbpasswd -a knoppix -n
+			echo -e "knoppix\nknoppix\n" | passwd knoppix
+			echo -e "knoppix\nknoppix\n" | smbpasswd knoppix
 			# -------------------------------------------------------------------------
 			for USER_NAME in "skel" "root" "knoppix"
 			do
@@ -344,7 +406,7 @@ _EOT_SH_
 	rm -f ./knoppix-live/fsimg/etc/localtime
 	ln -s /usr/share/zoneinfo/Asia/Tokyo ./knoppix-live/fsimg/etc/localtime
 	sed -i ./knoppix-live/fsimg/etc/adjtime  -e 's/LOCAL/UTC/g'
-	sed -i ./knoppix-live/fsimg/etc/rc.local -e 's/^SERVICES="\([a-z]*\)"/SERVICES="\1 bind9 ssh samba"/g'
+	sed -i ./knoppix-live/fsimg/etc/rc.local -e 's/^SERVICES="\([a-z]*\)"/SERVICES="\1 rsyslog bind9 ssh smbd nmbd"/g'
 	# -------------------------------------------------------------------------
 	mount --bind /dev     ./knoppix-live/fsimg/dev
 	mount --bind /dev/pts ./knoppix-live/fsimg/dev/pts
@@ -430,18 +492,20 @@ _EOT_SH_
 	# -------------------------------------------------------------------------
 	pushd ./knoppix-live/cdimg > /dev/null
 		find KNOPPIX -name "KNOPPIX*" -type f -exec sha1sum -b {} \; > KNOPPIX/sha1sums
-		xorriso -as mkisofs                                     \
-		        -D -R -U -V "${LIVE_VOLID}"                     \
-		        -o ../../${LIVE_DEST}                           \
-		        -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin   \
-		        -b boot/isolinux/isolinux.bin                   \
-		        -c boot/isolinux/boot.cat                       \
-		        -no-emul-boot                                   \
-		        -boot-load-size 4                               \
-		        -boot-info-table                                \
-		        -iso-level 4                                    \
-		        -eltorito-alt-boot -e efiboot.img -no-emul-boot \
-		        .
+		xorriso -as mkisofs \
+		    -quiet \
+		    -iso-level 3 \
+		    -full-iso9660-filenames \
+		    -volid "${LIVE_VOLID}" \
+		    -eltorito-boot boot/isolinux/isolinux.bin \
+		    -eltorito-catalog boot/isolinux/boot.cat \
+		    -no-emul-boot -boot-load-size 4 -boot-info-table \
+		    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+		    -eltorito-alt-boot \
+		    -e efiboot.img \
+		    -no-emul-boot -isohybrid-gpt-basdat \
+		    -output "../../${LIVE_DEST}" \
+		    "."
 	popd > /dev/null
 	ls -lh KNOPPIX*
 # =============================================================================

@@ -110,7 +110,7 @@
 		# -- open vm tools ------------------------------------------------------------
 			echo "--- open vm tools -------------------------------------------------------------"
 			mkdir -p /mnt/hgfs
-			echo -n '.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
+			echo -n '#.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
 			> /etc/fstab.vmware-sample
 		# -- clamav -------------------------------------------------------------------
 			if [ -f /etc/clamav/freshclam.conf ]; then
@@ -295,9 +295,9 @@ _EOT_SH_
 	       ./ubuntu-live/fsimg/ubuntu-setup.sh
 # =============================================================================
 	sed -i ./ubuntu-live/cdimg/boot/grub/grub.cfg                                                                                       \
-	    -e 's/\(linux .* casper\) \(quiet.*\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
+	    -e '1,/linux .* casper/ s/\(linux .* casper\) \(quiet.*\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
 	sed -i ./ubuntu-live/cdimg/isolinux/menu.cfg                                                                                          \
-	    -e 's/\(append .* casper\) \(initrd.*\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
+	    -e '1,/append .* casper/ s/\(append .* casper\) \(initrd.*\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
 	# -------------------------------------------------------------------------
 	rm -f ./ubuntu-live/cdimg/casper/filesystem.squashfs
 	mksquashfs ./ubuntu-live/fsimg ./ubuntu-live/cdimg/casper/filesystem.squashfs

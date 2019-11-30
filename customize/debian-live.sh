@@ -115,7 +115,7 @@
 		# -- open vm tools ------------------------------------------------------------
 			echo "--- open vm tools -------------------------------------------------------------"
 			mkdir -p /mnt/hgfs
-			echo -n '.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
+			echo -n '#.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
 			>> /etc/fstab
 		# -- clamav -------------------------------------------------------------------
 			if [ -f /etc/clamav/freshclam.conf ]; then
@@ -305,9 +305,9 @@ _EOT_SH_
 	       ./debian-live/fsimg/debian-setup.sh
 # =============================================================================
 	sed -i ./debian-live/cdimg/boot/grub/grub.cfg                                                                                       \
-	    -e 's/\(linux .* components\) \(.*$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
+	    -e '1,/linux .* components/ s/\(linux .* components\) \(.*$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
 	sed -i ./debian-live/cdimg/isolinux/menu.cfg                                                                                         \
-	    -e 's/\(APPEND .* components\) \(.*$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
+	    -e '1,/APPEND .* components/ s/\(APPEND .* components\) \(.*$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
 	# ---------------------------------------------------------------------
 #	if [ -f ./debian-live/cdimg/boot/grub/efi.img ]; then
 #		echo "--- copy EFI directory --------------------------------------------------------"
@@ -319,7 +319,7 @@ _EOT_SH_
 #	fi
 	# -------------------------------------------------------------------------
 	rm -f ./debian-live/cdimg/live/filesystem.squashfs
-	mksquashfs ./debian-live/fsimg ./debian-live/cdimg/live/filesystem.squashfs -mem 1G -noappend -b 4K -comp xz
+	mksquashfs ./debian-live/fsimg ./debian-live/cdimg/live/filesystem.squashfs
 	ls -lht ./debian-live/cdimg/live/
 	# -------------------------------------------------------------------------
 	pushd ./debian-live/cdimg > /dev/null
