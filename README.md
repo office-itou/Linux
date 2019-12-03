@@ -27,7 +27,10 @@ Debian/Ubuntu/CentOS/Knoppixのカスタマイズ
 ・[install.sh](https://github.com/office-itou/Linux/blob/master/installer/install.sh?ts=4)  
   
 **preseed.cfgの環境設定値例** (各自の環境に合わせて変更願います)  
-*※USBメモリーからMBR環境にインストールする場合はpartman-auto/disk string /dev/sdb等に変更願います。*  
+*※USBメモリーからMBR環境にインストールする場合は以下の様に変更願います。
+・partman-auto/disk string /dev/sdb ← 実際のドライブに合わせる
+・grub-installer/bootdev string /dev/sdb ← 実際のドライブに合わせる
+*  
 参照：[preseedの利用](https://www.debian.org/releases/stable/amd64/apbs02.html.ja)  
   
 ```text
