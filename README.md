@@ -10,7 +10,7 @@ Debian/Ubuntu/CentOS/Knoppixのカスタマイズ
 **Live CD用** (日本語化とDebian/Ubuntuのモジュール最新化)  
 ・[debian-lxde.sh](https://github.com/office-itou/Linux/blob/master/customize/debian-lxde.sh?ts=4)  
 ・[ubuntu-live.sh](https://github.com/office-itou/Linux/blob/master/customize/ubuntu-live.sh?ts=4)  
-・[knoppix-live.sh](https://github.com/office-itou/Linux/blob/master/customize/knoppix-live.sh?ts=4)  (Debian 9での作業を推奨)  
+・[knoppix-live.sh](https://github.com/office-itou/Linux/blob/master/customize/knoppix-live.sh?ts=4)  (knoppix上での作業を推奨)  
   
 **DVD用** (preseed.cfg,kickstart.cfgを使用した無人インストールの実現)   
 ・[dist_remaster_dvd.sh](https://github.com/office-itou/Linux/blob/master/installer/dist_remaster_dvd.sh?ts=4)  
@@ -27,6 +27,7 @@ Debian/Ubuntu/CentOS/Knoppixのカスタマイズ
 ・[install.sh](https://github.com/office-itou/Linux/blob/master/installer/install.sh?ts=4)  
   
 **preseed.cfgの環境設定値例** (各自の環境に合わせて変更願います)  
+*※USBメモリーからMBR環境にインストールする場合はpartman-auto/disk string /dev/sdb等に変更願います。*
 参照：[preseedの利用](https://www.debian.org/releases/stable/amd64/apbs02.html.ja)  
   
 ```text
