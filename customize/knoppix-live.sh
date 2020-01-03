@@ -1,8 +1,8 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [KNOPPIX_V8.6-2019-08-08-EN.iso]                        *
+# LiveCDCustomization [KNOPPIX_V8.6.1-2019-10-14-EN.iso]                      *
 # *****************************************************************************
-	LIVE_FILE="KNOPPIX_V8.6-2019-08-08-EN.iso"
+	LIVE_FILE="KNOPPIX_V8.6.1-2019-10-14-EN.iso"
 	LIVE_DEST=`echo "${LIVE_FILE}" | sed -e 's/-EN/-JP/g'`
 # == initialize ===============================================================
 #	set -m								# ジョブ制御を有効にする

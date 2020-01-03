@@ -232,7 +232,7 @@ _EOT_SH_
 		echo "---- media install ------------------------------------------------------------"
 		case "${INP_SUITE}" in
 			"testing" | "bullseye" | 11* ) LIVE_MEDIA="./debian-testing-${INP_ARCH}-DVD-1.iso";;
-			"stable"  | "buster"   | 10* ) LIVE_MEDIA="./debian-10.0.0-${INP_ARCH}-DVD-1.iso";;
+			"stable"  | "buster"   | 10* ) LIVE_MEDIA="./debian-10.2.0-${INP_ARCH}-DVD-1.iso";;
 			*                            ) LIVE_MEDIA="";;
 		esac
 		FSSQ_MEDIA=""
@@ -346,7 +346,7 @@ _EOT_SH_
 		fi
 
 		menuentry "Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})" {
-		  linux  /live/vmlinuz-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp "\${loopback}"
+		  linux  /live/vmlinuz-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp "\${loopback}" noeject
 		  initrd /live/initrd.img-${VER_KRNL}-${IMG_ARCH}
 		}
 
@@ -359,7 +359,7 @@ _EOT_
 		DEFAULT Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})
 		LABEL Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})
 		  SAY "Booting Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})..."
-		  linux /live/vmlinuz-${VER_KRNL}-${IMG_ARCH}
+		  linux /live/vmlinuz-${VER_KRNL}-${IMG_ARCH} noeject
 		  APPEND initrd=/live/initrd.img-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp
 _EOT_
 	echo "--- edit isolinux.cfg file ----------------------------------------------------"
@@ -373,21 +373,19 @@ _EOT_
 # -- make iso image -----------------------------------------------------------
 	echo "-- make iso image -------------------------------------------------------------"
 	pushd ./debootstrap/cdimg > /dev/null
-		find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
-		xorriso                                                                \
-		    -as mkisofs                                                        \
+		find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt
+		xorriso -as mkisofs                                                    \
+		    -quiet                                                             \
 		    -iso-level 3                                                       \
 		    -full-iso9660-filenames                                            \
 		    -volid "${LIVE_VOLID}"                                             \
-		    -eltorito-boot                                                     \
-		        isolinux/isolinux.bin                                          \
-		        -no-emul-boot                                                  \
-		        -boot-load-size 4                                              \
-		        -boot-info-table                                               \
-		        -eltorito-catalog isolinux/boot.cat                            \
+		    -eltorito-boot isolinux/isolinux.bin                               \
+		    -eltorito-catalog isolinux/boot.cat                                \
+		    -no-emul-boot -boot-load-size 4 -boot-info-table                   \
+		    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin                      \
 		    -eltorito-alt-boot                                                 \
-		        -e boot/grub/efi.img                                           \
-		        -no-emul-boot                                                  \
+		    -e boot/grub/efi.img                                               \
+		    -no-emul-boot -isohybrid-gpt-basdat                                \
 		    -output ../../debian-live-${INP_SUITE}-${INP_ARCH}-lxde-custom.iso \
 		    .
 	popd > /dev/null
