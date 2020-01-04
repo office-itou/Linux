@@ -32,6 +32,27 @@
 	fi
 	echo "-- architecture: ${INP_ARCH} --------------------------------------------------------"
 # =============================================================================
+	echo "--- debootstrap ---------------------------------------------------------------"
+	LIVE_VOLID="d-live ${INP_SUITE} lx ${INP_ARCH}"
+	echo "---- network install ----------------------------------------------------------"
+	mmdebstrap --variant=minbase --mode=sudo --architectures=${INP_ARCH} ${INP_SUITE} ./debootstrap/fsimg/ http://ftp.debian.org/debian
+	# -------------------------------------------------------------------------
+	case "${INP_SUITE}" in
+		"testing" | "bullseye" | 11* ) DEB_SUITE="testing";;
+		"stable"  | "buster"   | 10* ) DEB_SUITE="stable";;
+		*                            ) DEB_SUITE="";;
+	esac
+	if [ -d ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH} ]; then
+		echo "--- deb file copy -------------------------------------------------------------"
+		mkdir -p ./debootstrap/fsimg/var/cache/apt/archives
+		cp -p ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/
+	fi
+#	if [ -d ./debootstrap/clamav ]; then
+#		echo "--- clamav file copy ----------------------------------------------------------"
+#		mkdir -p ./debootstrap/fsimg/var/lib/clamav
+#		cp -p ./debootstrap/clamav/* ./debootstrap/fsimg/var/lib/clamav/
+#	fi
+# =============================================================================
 	echo "-- make inst-net.sh -----------------------------------------------------------"
 	cat <<- _EOT_SH_ > ./debootstrap/fsimg/inst-net.sh
 		echo "--- module install ------------------------------------------------------------"
@@ -39,8 +60,8 @@
 			deb http://ftp.debian.org/debian ${INP_SUITE} main non-free contrib
 			deb-src http://ftp.debian.org/debian ${INP_SUITE} main non-free contrib
 			
-			deb http://security.debian.org/debian-security ${INP_SUITE}/updates main contrib non-free
-			deb-src http://security.debian.org/debian-security ${INP_SUITE}/updates main contrib non-free
+			# deb http://security.debian.org/debian-security ${INP_SUITE}/updates main contrib non-free
+			# deb-src http://security.debian.org/debian-security ${INP_SUITE}/updates main contrib non-free
 			
 			# ${INP_SUITE}-updates, previously known as 'volatile'
 			deb http://ftp.debian.org/debian ${INP_SUITE}-updates main contrib non-free
@@ -51,21 +72,30 @@
 		apt upgrade      -q -y                                                 && \\
 		apt full-upgrade -q -y                                                 && \\
 		apt install      -q -y                                                    \\
-		    apache2 apt-show-versions aptitude bc bind9 bind9utils bison chromium \\
-		    chromium-l10n cifs-utils clamav curl dpkg-repack fdclone flex         \\
+		    apache2 apt-show-versions aptitude bc bind9 bind9utils bison          \\
+		    cifs-utils clamav curl dpkg-repack fdclone flex                       \\
 		    ibus-mozc indent isc-dhcp-server isolinux libapt-pkg-perl             \\
 		    libauthen-pam-perl libelf-dev libio-pty-perl lvm2 network-manager     \\
 		    nfs-common nfs-kernel-server ntfs-3g ntp ntpdate open-vm-tools        \\
 		    open-vm-tools-desktop samba smbclient task-ssh-server task-web-server \\
 		    vsftpd xorriso                                                        \\
 		    build-essential grub-efi libnet-ssleay-perl perl rsync squashfs-tools \\
-		    sudo                                                                  \\
+		    snapd sudo                                                            \\
 		    task-desktop task-japanese task-japanese-desktop task-laptop          \\
 		    task-lxde-desktop task-ssh-server task-web-server                     \\
 		    live-task-base live-config wpagui xterm nano                          \\
 		    linux-headers-${IMG_ARCH} linux-image-${IMG_ARCH}                     \\
 		    vim wget less traceroute btrfs-progs dnsutils ifupdown usbutils       \\
-		    powermgmt-base task-english acpid debconf-i18n
+		    powermgmt-base task-english acpid debconf-i18n                     || \\
+		exit 1
+		# -----------------------------------------------------------------------------
+		if [ "${IMG_ARCH}" = "amd64" ]; then
+			echo "---- google chrome install ----------------------------------------------------"
+			wget "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" && \\
+			dpkg -i "google-chrome-stable_current_amd64.deb"                                 && \\
+			rm "google-chrome-stable_current_amd64.deb"                                      || \\
+			exit 1
+		fi
 _EOT_SH_
 	cat <<- '_EOT_SH_' >> ./debootstrap/fsimg/inst-net.sh
 		echo "---- module fix broken --------------------------------------------------------"
@@ -73,7 +103,8 @@ _EOT_SH_
 		echo "---- module autoremove, autoclean, clean --------------------------------------"
 		apt autoremove   -q -y                                                 && \
 		apt autoclean    -q                                                    && \
-		apt clean        -q
+		apt clean        -q                                                    || \
+		exit 1
 		# -----------------------------------------------------------------------------
 		echo "--- systemctl -----------------------------------------------------------------"
 		systemctl  enable clamav-freshclam
@@ -222,57 +253,23 @@ _EOT_SH_
 		# -----------------------------------------------------------------------------
 		echo "--- cleaning and exit ---------------------------------------------------------"
 _EOT_SH_
-# =============================================================================
-	echo "--- debootstrap ---------------------------------------------------------------"
-	LIVE_VOLID="d-live ${INP_SUITE} lx ${INP_ARCH}"
-	if [ "${INP_NETWORK}" != "" ]; then
-		echo "---- network install ----------------------------------------------------------"
-		debootstrap --merged-usr --arch=${INP_ARCH} --variant=minbase ${INP_SUITE} ./debootstrap/fsimg/
-	else
-		echo "---- media install ------------------------------------------------------------"
-		case "${INP_SUITE}" in
-			"testing" | "bullseye" | 11* ) LIVE_MEDIA="./debian-testing-${INP_ARCH}-DVD-1.iso";;
-			"stable"  | "buster"   | 10* ) LIVE_MEDIA="./debian-10.2.0-${INP_ARCH}-DVD-1.iso";;
-			*                            ) LIVE_MEDIA="";;
-		esac
-		FSSQ_MEDIA=""
-		mount -r -o loop ${LIVE_MEDIA} ./debootstrap/media/
-		debootstrap --no-check-gpg --merged-usr --arch=${INP_ARCH} --variant=minbase ${INP_SUITE} ./debootstrap/fsimg/ file:./debootstrap/media/
-		umount ./debootstrap/media/
-	fi
-	# -------------------------------------------------------------------------
 	case "${INP_SUITE}" in
-		"testing" | "bullseye" | 11* ) DEB_SUITE="testing";;
-		"stable"  | "buster"   | 10* ) DEB_SUITE="stable";;
-		*                            ) DEB_SUITE="";;
+		"testing" | "bullseye" | 11* ) ;;
+		*                            ) sed -i ./debootstrap/fsimg/inst-net.sh -e 's/^# \(deb\)/\1/g';;
 	esac
-	if [ -d ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH} ]; then
-		echo "--- deb file copy -------------------------------------------------------------"
-		mkdir -p ./debootstrap/fsimg/var/cache/apt/archives
-		cp -p ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/
-	fi
-#	if [ -d ./debootstrap/clamav ]; then
-#		echo "--- clamav file copy ----------------------------------------------------------"
-#		mkdir -p ./debootstrap/fsimg/var/lib/clamav
-#		cp -p ./debootstrap/clamav/* ./debootstrap/fsimg/var/lib/clamav/
-#	fi
-	# -------------------------------------------------------------------------
+# =============================================================================
 	echo "-- chroot ---------------------------------------------------------------------"
 	echo "debian-live" >  ./debootstrap/fsimg/etc/hostname
 	echo -e "127.0.1.1\tdebian-live" >> ./debootstrap/fsimg/etc/hosts
 	rm -f ./debootstrap/fsimg/etc/localtime
 	ln -s /usr/share/zoneinfo/Asia/Tokyo ./debootstrap/fsimg/etc/localtime
 	# -------------------------------------------------------------------------
-	mount --bind /dev     ./debootstrap/fsimg/dev     && \
-	mount --bind /dev/pts ./debootstrap/fsimg/dev/pts && \
-	mount --bind /proc    ./debootstrap/fsimg/proc
+	mount --bind /proc ./debootstrap/fsimg/proc
 	# -------------------------------------------------------------------------
 	LANG=C chroot ./debootstrap/fsimg/ /bin/bash /inst-net.sh
 	RET_STS=$?
 	# -------------------------------------------------------------------------
-	umount -lf ./debootstrap/fsimg/proc    && \
-	umount -lf ./debootstrap/fsimg/dev/pts && \
-	umount -lf ./debootstrap/fsimg/dev
+	umount -lf ./debootstrap/fsimg/proc
 	# -------------------------------------------------------------------------
 	if [ ${RET_STS} -ne 0 ]; then
 		exit ${RET_STS}
