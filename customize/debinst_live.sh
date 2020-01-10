@@ -2,16 +2,20 @@
 # *****************************************************************************
 # debootstrap for stable/testing cdrom
 # *****************************************************************************
-	if [ "$1" = "" ] || [ "$2" = "" ]; then
-		echo "$0 [i386 | amd64] [stable | testing | ...]"
-		exit 1
-	fi
-
 #	set -o ignoreof						# Ctrl+Dで終了しない
 #	set -n								# 構文エラーのチェック
 #	set -x								# コマンドと引数の展開を表示
 #	set -m								# ジョブ制御を有効にする
 #	set -eu								# ステータス0以外と未定義変数の参照で終了
+
+	INP_ARCH=$1
+	INP_SUITE=$2
+#	INP_NETWORK=$3
+
+	if [ "${INP_ARCH}" = "" ] || [ "${INP_SUITE}" = "" ]; then
+		echo "$0 [i386 | amd64] [stable | testing | ...]"
+		exit 1
+	fi
 
 	echo "*******************************************************************************"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]"
@@ -22,9 +26,6 @@
 	rm -rf   ./debootstrap/media ./debootstrap/cdimg ./debootstrap/fsimg ./debootstrap/_work
 	mkdir -p ./debootstrap/media ./debootstrap/cdimg ./debootstrap/fsimg ./debootstrap/_work
 # -----------------------------------------------------------------------------
-	INP_ARCH=$1
-	INP_SUITE=$2
-	INP_NETWORK=$3
 	if [ "${INP_ARCH}" = "i386" ]; then
 		IMG_ARCH="686"
 	else
@@ -42,221 +43,267 @@
 		"stable"  | "buster"   | 10* ) DEB_SUITE="stable";;
 		*                            ) DEB_SUITE="";;
 	esac
-	if [ -d ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH} ]; then
+	if [ -d "./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/" ]; then
 		echo "--- deb file copy -------------------------------------------------------------"
 		mkdir -p ./debootstrap/fsimg/var/cache/apt/archives
-		cp -p ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/
+		cp -p ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/ > /dev/null 2>&1
 	fi
-#	if [ -d ./debootstrap/clamav ]; then
-#		echo "--- clamav file copy ----------------------------------------------------------"
-#		mkdir -p ./debootstrap/fsimg/var/lib/clamav
-#		cp -p ./debootstrap/clamav/* ./debootstrap/fsimg/var/lib/clamav/
-#	fi
+	if [ -d "./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/" ]; then
+		echo "--- chrome file copy ----------------------------------------------------------"
+		cp -p ./debootstrap/ungoogled-chromium/*.deb ./debootstrap/fsimg/ > /dev/null 2>&1
+	fi
 # =============================================================================
 	echo "-- make inst-net.sh -----------------------------------------------------------"
 	cat <<- _EOT_SH_ > ./debootstrap/fsimg/inst-net.sh
-		echo "--- module install ------------------------------------------------------------"
-		cat <<- '_EOT_' > /etc/apt/sources.list
-			deb http://ftp.debian.org/debian ${INP_SUITE} main non-free contrib
-			deb-src http://ftp.debian.org/debian ${INP_SUITE} main non-free contrib
-			
-			# deb http://security.debian.org/debian-security ${INP_SUITE}/updates main contrib non-free
-			# deb-src http://security.debian.org/debian-security ${INP_SUITE}/updates main contrib non-free
-			
-			# ${INP_SUITE}-updates, previously known as 'volatile'
-			deb http://ftp.debian.org/debian ${INP_SUITE}-updates main contrib non-free
-			deb-src http://ftp.debian.org/debian ${INP_SUITE}-updates main contrib non-free
-		_EOT_
-		echo "---- module update, upgrade, install ------------------------------------------"
-		apt update                                                             && \\
-		apt upgrade      -q -y                                                 && \\
-		apt full-upgrade -q -y                                                 && \\
-		apt install      -q -y                                                    \\
-		    apache2 apt-show-versions aptitude bc bind9 bind9utils bison          \\
-		    cifs-utils clamav curl dpkg-repack fdclone flex                       \\
-		    ibus-mozc indent isc-dhcp-server isolinux libapt-pkg-perl             \\
-		    libauthen-pam-perl libelf-dev libio-pty-perl lvm2 network-manager     \\
-		    nfs-common nfs-kernel-server ntfs-3g ntp ntpdate open-vm-tools        \\
-		    open-vm-tools-desktop samba smbclient task-ssh-server task-web-server \\
-		    vsftpd xorriso                                                        \\
-		    build-essential grub-efi libnet-ssleay-perl perl rsync squashfs-tools \\
-		    snapd sudo                                                            \\
-		    task-desktop task-japanese task-japanese-desktop task-laptop          \\
-		    task-lxde-desktop task-ssh-server task-web-server                     \\
-		    live-task-base live-config wpagui xterm nano                          \\
-		    linux-headers-${IMG_ARCH} linux-image-${IMG_ARCH}                     \\
-		    vim wget less traceroute btrfs-progs dnsutils ifupdown usbutils       \\
-		    powermgmt-base task-english acpid debconf-i18n                     || \\
-		exit 1
+		#!/bin/bash
 		# -----------------------------------------------------------------------------
-		if [ "${IMG_ARCH}" = "amd64" ]; then
-			echo "---- google chrome install ----------------------------------------------------"
-			wget "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" && \\
-			dpkg -i "google-chrome-stable_current_amd64.deb"                                 && \\
-			rm "google-chrome-stable_current_amd64.deb"                                      || \\
-			exit 1
-		fi
-_EOT_SH_
-	cat <<- '_EOT_SH_' >> ./debootstrap/fsimg/inst-net.sh
-		echo "---- module fix broken --------------------------------------------------------"
-		apt install      -q -y --fix-broken
-		echo "---- module autoremove, autoclean, clean --------------------------------------"
-		apt autoremove   -q -y                                                 && \
-		apt autoclean    -q                                                    && \
-		apt clean        -q                                                    || \
-		exit 1
-		# -----------------------------------------------------------------------------
-		echo "--- systemctl -----------------------------------------------------------------"
-		systemctl  enable clamav-freshclam
-		systemctl  enable ssh
-		systemctl disable apache2
-		systemctl  enable vsftpd
-		systemctl  enable bind9
-		systemctl disable isc-dhcp-server
-#		systemctl disable isc-dhcp-server6
-		systemctl  enable smbd
-		systemctl  enable nmbd
-		# -----------------------------------------------------------------------------
-		echo "--- freshclam -----------------------------------------------------------------"
-		freshclam --show-progress
-		# -----------------------------------------------------------------------------
-		echo "--- network interfaces --------------------------------------------------------"
-		cat <<- '_EOT_' > /etc/network/interfaces.d/setup
-			auto lo
-			iface lo inet loopback
+		 	set -m								# ジョブ制御を有効にする
+		 	set -eu								# ステータス0以外と未定義変数の参照で終了
+		 	echo "*******************************************************************************"
+		 	echo "\`date +"%Y/%m/%d %H:%M:%S"\` : start [\$0]"
+		 	echo "*******************************************************************************"
+		# -- terminate ----------------------------------------------------------------
+		fncEnd() {
+		 	echo "--- terminate -----------------------------------------------------------------"
+		 	RET_STS=\$1
 
-			auto eth0
-			iface eth0 inet dhcp
+		 	history -c
+
+		 	echo "*******************************************************************************"
+		 	echo "\`date +"%Y/%m/%d %H:%M:%S"\` : end [\$0]"
+		 	echo "*******************************************************************************"
+		 	exit \${RET_STS}
+		}
+		# -- initialize ---------------------------------------------------------------
+		 	echo "--- initialize ----------------------------------------------------------------"
+		 	trap 'fncEnd 1' 1 2 3 15
+		 	export PS1="(chroot) "
+		# -- module install -----------------------------------------------------------
+		 	echo "--- module install ------------------------------------------------------------"
+		 	cat <<- '_EOT_' > /etc/apt/sources.list
+		 		deb http://ftp.debian.org/debian ${INP_SUITE} main non-free contrib
+		 		deb-src http://ftp.debian.org/debian ${INP_SUITE} main non-free contrib
+
+		 		# deb http://security.debian.org/debian-security ${INP_SUITE}/updates main contrib non-free
+		 		# deb-src http://security.debian.org/debian-security ${INP_SUITE}/updates main contrib non-free
+
+		 		# ${INP_SUITE}-updates, previously known as 'volatile'
+		 		deb http://ftp.debian.org/debian ${INP_SUITE}-updates main contrib non-free
+		 		deb-src http://ftp.debian.org/debian ${INP_SUITE}-updates main contrib non-free
 		_EOT_
-		# -----------------------------------------------------------------------------
-		echo "--- localize ------------------------------------------------------------------"
-		if [ -f /etc/locale.gen ]; then
-			sed -i /etc/locale.gen                  \
-			    -e 's/^[A-Za-z]/# &/g'              \
-			    -e 's/# \(ja_JP.UTF-8 UTF-8\)/\1/g' \
-			    -e 's/# \(en_US.UTF-8 UTF-8\)/\1/g'
-			locale-gen
-			update-locale LANG=ja_JP.UTF-8
-		fi
-		# -----------------------------------------------------------------------------
-		echo "--- root and user's setting ---------------------------------------------------"
-		for TARGET in "/etc/skel" "/root"
-		do
-			pushd ${TARGET} > /dev/null
-				echo "---- .bashrc ------------------------------------------------------------------"
-				cat <<- '_EOT_' >> .bashrc
-					# --- 日本語文字化け対策 ---
-					case "${TERM}" in
-					    "linux" ) export LANG=C;;
-					    * )                    ;;
-					esac
-					# export GTK_IM_MODULE=ibus
-					# export XMODIFIERS=@im=ibus
-					# export QT_IM_MODULE=ibus
-				_EOT_
-				echo "---- .vimrc -------------------------------------------------------------------"
-				cat <<- '_EOT_' > .vimrc
-					set number              " Print the line number in front of each line.
-					set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
-					set list                " List mode: Show tabs as CTRL-I is displayed, display $ after end of line.
-					set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
-					set nowrap              " This option changes how text is displayed.
-					set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
-					set laststatus=2        " The value of this option influences when the last window will have a status line always.
-				_EOT_
-				echo "---- .curlrc ------------------------------------------------------------------"
-				cat <<- '_EOT_' > .curlrc
-					location
-					progress-bar
-					remote-time
-					show-error
-				_EOT_
-			popd > /dev/null
-		done
+		# -- module update, upgrade, install ------------------------------------------
+		 	echo "---- module update, upgrade, install ------------------------------------------"
+		 	apt update                                                             && \\
+		 	apt upgrade      -q -y                                                 && \\
+		 	apt full-upgrade -q -y                                                 && \\
+		 	apt install      -q -y                                                    \\
+		 	    acpid apache2 apt-show-versions aptitude bc bind9 bind9utils bison    \\
+		 	    btrfs-progs build-essential cifs-utils clamav curl debconf-i18n       \\
+		 	    dnsutils dpkg-repack fdclone flex grub-efi ibus-mozc ifupdown indent  \\
+		 	    isc-dhcp-server isolinux less libappindicator3-1 libapt-pkg-perl      \\
+		 	    libauthen-pam-perl libelf-dev libio-pty-perl libnet-ssleay-perl       \\
+		 	    linux-headers-${IMG_ARCH} linux-image-${IMG_ARCH} live-config live-task-base lvm2 \\
+		 	    nano network-manager nfs-common nfs-kernel-server ntfs-3g ntp ntpdate \\
+		 	    open-vm-tools open-vm-tools-desktop perl powermgmt-base rsync samba   \\
+		 	    smbclient snapd squashfs-tools sudo task-desktop task-english         \\
+		 	    task-japanese task-japanese-desktop task-laptop task-lxde-desktop     \\
+		 	    task-ssh-server task-web-server traceroute usbutils vim vsftpd wget   \\
+		 	    wpagui xorriso xterm                                               || \\
+		 	fncEnd \$?
+		# -- module fix broken --------------------------------------------------------
+		 	echo "---- module fix broken --------------------------------------------------------"
+		 	apt install      -q -y --fix-broken
+		# -- module autoremove, autoclean, clean --------------------------------------
+		 	echo "---- module autoremove, autoclean, clean --------------------------------------"
+		 	apt autoremove   -q -y                                                 && \\
+		 	apt autoclean    -q                                                    && \\
+		 	apt clean        -q                                                    || \\
+		 	fncEnd \$?
+		# -- localize -----------------------------------------------------------------
+		 	echo "--- localize ------------------------------------------------------------------"
+		 	if [ -f /etc/locale.gen ]; then
+		 		sed -i /etc/locale.gen                  \\
+		 		    -e 's/^[A-Za-z]/# &/g'              \\
+		 		    -e 's/# \(ja_JP.UTF-8 UTF-8\)/\1/g' \\
+		 		    -e 's/# \(en_US.UTF-8 UTF-8\)/\1/g'
+		 		locale-gen
+		 		update-locale LANG=ja_JP.UTF-8
+		 	fi
+		 	sed -i /etc/xdg/lxsession/LXDE/autostart               \\
+		 	    -e '\$a@setxkbmap -layout jp -option ctrl:swapcase'
+		# -- google chrome install ----------------------------------------------------
+		 	if [ "${IMG_ARCH}" = "amd64" ]; then
+		 		echo "---- chrome install -----------------------------------------------------------"
+		 		if [ "" != "Google" ]; then
+		 			VER_CHROM="79.0.3945.117-1.buster1"
+		 			if [ ! -f ungoogled-chromium_\${VER_CHROM}_amd64.deb ] || [ ! -f ungoogled-chromium-common_\${VER_CHROM}_amd64.deb ]; then
+		 				curl -L -# -R -S -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium-common_\${VER_CHROM}_amd64.deb"  \\
+		 				                 -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium-driver_\${VER_CHROM}_amd64.deb"  \\
+		 				                 -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium-l10n_\${VER_CHROM}_all.deb"      \\
+		 				                 -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium-sandbox_\${VER_CHROM}_amd64.deb" \\
+		 				                 -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium-shell_\${VER_CHROM}_amd64.deb"   \\
+		 				                 -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium_\${VER_CHROM}_amd64.deb"      || \\
+		 				fncEnd \$?
+		 			fi
+		 			apt install -q -y libminizip1 libre2-5 && \\
+		 			dpkg -i ungoogled-chromium_*.deb          \\
+		 			        ungoogled-chromium-*.deb       && \\
+		 			rm -f   ungoogled-chromium*            || \\
+		 			fncEnd \$?
+		 		else
+		 			curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" && \\
+		 			dpkg -i google-chrome-stable_current_amd64.deb                                                  && \\
+		 			rm -f   google-chrome-stable_current_amd64.deb                                                  || \\
+		 			fncEnd \$?
+		 		fi
+		 	fi
+		# -- systemctl ----------------------------------------------------------------
+		 	echo "--- systemctl -----------------------------------------------------------------"
+		 	systemctl  enable clamav-freshclam
+		 	systemctl  enable ssh
+		 	systemctl disable apache2
+		 	systemctl disable vsftpd
+		 	systemctl  enable bind9
+		 	systemctl disable isc-dhcp-server
+		#	systemctl disable isc-dhcp-server6
+		 	systemctl  enable smbd
+		 	systemctl  enable nmbd
+		# -- freshclam ----------------------------------------------------------------
+		 	echo "--- freshclam -----------------------------------------------------------------"
+		 	freshclam --show-progress
+		# -- network interfaces -------------------------------------------------------
+		 	echo "--- network interfaces --------------------------------------------------------"
+		 	cat <<- '_EOT_' > /etc/network/interfaces.d/setup
+		 		auto lo
+		 		iface lo inet loopback
+
+		 		auto eth0
+		 		iface eth0 inet dhcp
+		_EOT_
+		# -- root and user's setting --------------------------------------------------
+		 	echo "--- root and user's setting ---------------------------------------------------"
+		 	for TARGET in "/etc/skel" "/root"
+		 	do
+		 		pushd \${TARGET} > /dev/null
+		 		echo "---- .bashrc ------------------------------------------------------------------"
+		 		cat <<- '_EOT_' >> .bashrc
+		 			# --- 日本語文字化け対策 ---
+		 			case "\\\${TERM}" in
+		 			    "linux" ) export LANG=C;;
+		 			    * )                    ;;
+		 			esac
+		 			# export GTK_IM_MODULE=ibus
+		 			# export XMODIFIERS=@im=ibus
+		 			# export QT_IM_MODULE=ibus
+		_EOT_
+		 		echo "---- .vimrc -------------------------------------------------------------------"
+		 		cat <<- '_EOT_' > .vimrc
+		 			set number              " Print the line number in front of each line.
+		 			set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+		 			set list                " List mode: Show tabs as CTRL-I is displayed, display \\$ after end of line.
+		 			set listchars=tab:\\>_   " Strings to use in 'list' mode and for the |:list| command.
+		 			set nowrap              " This option changes how text is displayed.
+		 			set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+		 			set laststatus=2        " The value of this option influences when the last window will have a status line always.
+		 			syntax on               " Vim5 and later versions support syntax highlighting.
+		_EOT_
+		 		echo "---- .curlrc ------------------------------------------------------------------"
+		 		cat <<- '_EOT_' > .curlrc
+		 			location
+		 			progress-bar
+		 			remote-time
+		 			show-error
+		_EOT_
+		 		popd > /dev/null
+		 	done
+		 	# -------------------------------------------------------------------------
+		 	useradd -m user -s \`which bash\`
+		 	smbpasswd -a user -n
+		 	echo -e "live\\nlive\\n" | passwd user
+		 	echo -e "live\\nlive\\n" | smbpasswd user
 		# --- open-vm-tools -----------------------------------------------------------
-		echo "--- open vm tools -------------------------------------------------------------"
-		mkdir -p /mnt/hgfs
-		sed -i /etc/fstab                                                                   \
-		    -e '$a.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0'
+		 	echo "--- open vm tools -------------------------------------------------------------"
+		 	mkdir -p /mnt/hgfs
+		 	sed -i /etc/fstab                                                                   \\
+		 	    -e '\$a.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0'
 		# -- sshd ---------------------------------------------------------------------
-		echo "--- sshd ----------------------------------------------------------------------"
-		sed -i /etc/ssh/sshd_config                                        \
-		    -e 's/^PermitRootLogin .*/PermitRootLogin yes/'                \
-		    -e 's/#PasswordAuthentication yes/PasswordAuthentication yes/' \
-		    -e '/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/d'                 \
-		    -e '/HostKey \/etc\/ssh\/ssh_host_ed25519_key/d'               \
-		    -e '$aUseDNS no\nIgnoreUserKnownHosts no'                      \
-		    -e 's/^UsePrivilegeSeparation/#&/'                             \
-		    -e 's/^KeyRegenerationInterval/#&/'                            \
-		    -e 's/^ServerKeyBits/#&/'                                      \
-		    -e 's/^RSAAuthentication/#&/'                                  \
-		    -e 's/^RhostsRSAAuthentication/#&/'
+		 	echo "--- sshd ----------------------------------------------------------------------"
+		 	sed -i /etc/ssh/sshd_config                                        \\
+		 	    -e 's/^PermitRootLogin .*/PermitRootLogin yes/'                \\
+		 	    -e 's/#PasswordAuthentication yes/PasswordAuthentication yes/' \\
+		 	    -e '/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/d'                 \\
+		 	    -e '/HostKey \/etc\/ssh\/ssh_host_ed25519_key/d'               \\
+		 	    -e '\$aUseDNS no\nIgnoreUserKnownHosts no'                      \\
+		 	    -e 's/^UsePrivilegeSeparation/#&/'                             \\
+		 	    -e 's/^KeyRegenerationInterval/#&/'                            \\
+		 	    -e 's/^ServerKeyBits/#&/'                                      \\
+		 	    -e 's/^RSAAuthentication/#&/'                                  \\
+		 	    -e 's/^RhostsRSAAuthentication/#&/'
 		# -- ftpd ---------------------------------------------------------------------
-		echo "--- ftpd ----------------------------------------------------------------------"
-		touch /etc/ftpusers					#
-		touch /etc/vsftpd.conf				#
-		touch /etc/vsftpd.chroot_list		# chrootを許可するユーザーのリスト
-		touch /etc/vsftpd.user_list			# 接続拒否するユーザーのリスト
-		touch /etc/vsftpd.banned_emails		# 接続拒否する電子メール・パスワードのリスト
-		touch /etc/vsftpd.email_passwords	# 匿名ログイン用の電子メール・パスワードのリスト
-		chmod 0600 /etc/ftpusers               \
-		           /etc/vsftpd.conf            \
-		           /etc/vsftpd.chroot_list     \
-		           /etc/vsftpd.user_list       \
-		           /etc/vsftpd.banned_emails   \
-		           /etc/vsftpd.email_passwords
-		sed -i /etc/ftpusers \
-		    -e 's/root/# &/'
-		sed -i /etc/vsftpd.conf                                           \
-		    -e 's/^\(listen\)=.*$/\1=NO/'                                 \
-		    -e 's/^\(listen_ipv6\)=.*$/\1=YES/'                           \
-		    -e 's/^\(anonymous_enable\)=.*$/\1=NO/'                       \
-		    -e 's/^\(local_enable\)=.*$/\1=YES/'                          \
-		    -e 's/^#\(write_enable\)=.*$/\1=YES/'                         \
-		    -e 's/^#\(local_umask\)=.*$/\1=022/'                          \
-		    -e 's/^\(dirmessage_enable\)=.*$/\1=NO/'                      \
-		    -e 's/^\(use_localtime\)=.*$/\1=YES/'                         \
-		    -e 's/^\(xferlog_enable\)=.*$/\1=YES/'                        \
-		    -e 's/^\(connect_from_port_20\)=.*$/\1=YES/'                  \
-		    -e 's/^#\(xferlog_std_format\)=.*$/\1=NO/'                    \
-		    -e 's/^#\(idle_session_timeout\)=.*$/\1=300/'                 \
-		    -e 's/^#\(data_connection_timeout\)=.*$/\1=30/'               \
-		    -e 's/^#\(ascii_upload_enable\)=.*$/\1=YES/'                  \
-		    -e 's/^#\(ascii_download_enable\)=.*$/\1=YES/'                \
-		    -e 's/^#\(chroot_local_user\)=.*$/\1=NO/'                     \
-		    -e 's/^#\(chroot_list_enable\)=.*$/\1=NO/'                    \
-		    -e 's~^#\(chroot_list_file\)=.*$~\1=/etc/vsftpd.chroot_list~' \
-		    -e 's/^#\(ls_recurse_enable\)=.*$/\1=YES/'                    \
-		    -e 's/^\(pam_service_name\)=.*$/\1=vsftpd/'                   \
-		    -e '$atcp_wrappers=YES'                                       \
-		    -e '$auserlist_enable=YES'                                    \
-		    -e '$auserlist_deny=YES'                                      \
-		    -e '$auserlist_file=/etc/vsftpd.user_list'                    \
-		    -e '$achmod_enable=YES'                                       \
-		    -e '$aforce_dot_files=YES'                                    \
-		    -e '$adownload_enable=YES'                                    \
-		    -e '$avsftpd_log_file=/var/log/vsftpd.log'                    \
-		    -e '$adual_log_enable=NO'                                     \
-		    -e '$asyslog_enable=NO'                                       \
-		    -e '$alog_ftp_protocol=NO'                                    \
-		    -e '$aftp_data_port=20'                                       \
-		    -e '$apasv_enable=YES'
+		 	echo "--- ftpd ----------------------------------------------------------------------"
+		 	touch /etc/ftpusers					#
+		 	touch /etc/vsftpd.conf				#
+		 	touch /etc/vsftpd.chroot_list		# chrootを許可するユーザーのリスト
+		 	touch /etc/vsftpd.user_list			# 接続拒否するユーザーのリスト
+		 	touch /etc/vsftpd.banned_emails		# 接続拒否する電子メール・パスワードのリスト
+		 	touch /etc/vsftpd.email_passwords	# 匿名ログイン用の電子メール・パスワードのリスト
+		 	chmod 0600 /etc/ftpusers               \\
+		 	           /etc/vsftpd.conf            \\
+		 	           /etc/vsftpd.chroot_list     \\
+		 	           /etc/vsftpd.user_list       \\
+		 	           /etc/vsftpd.banned_emails   \\
+		 	           /etc/vsftpd.email_passwords
+		 	sed -i /etc/ftpusers \\
+		 	    -e 's/root/# &/'
+		 	sed -i /etc/vsftpd.conf                                           \\
+		 	    -e 's/^\(listen\)=.*\$/\1=NO/'                                 \\
+		 	    -e 's/^\(listen_ipv6\)=.*\$/\1=YES/'                           \\
+		 	    -e 's/^\(anonymous_enable\)=.*\$/\1=NO/'                       \\
+		 	    -e 's/^\(local_enable\)=.*\$/\1=YES/'                          \\
+		 	    -e 's/^#\(write_enable\)=.*\$/\1=YES/'                         \\
+		 	    -e 's/^#\(local_umask\)=.*\$/\1=022/'                          \\
+		 	    -e 's/^\(dirmessage_enable\)=.*\$/\1=NO/'                      \\
+		 	    -e 's/^\(use_localtime\)=.*\$/\1=YES/'                         \\
+		 	    -e 's/^\(xferlog_enable\)=.*\$/\1=YES/'                        \\
+		 	    -e 's/^\(connect_from_port_20\)=.*\$/\1=YES/'                  \\
+		 	    -e 's/^#\(xferlog_std_format\)=.*\$/\1=NO/'                    \\
+		 	    -e 's/^#\(idle_session_timeout\)=.*\$/\1=300/'                 \\
+		 	    -e 's/^#\(data_connection_timeout\)=.*\$/\1=30/'               \\
+		 	    -e 's/^#\(ascii_upload_enable\)=.*\$/\1=YES/'                  \\
+		 	    -e 's/^#\(ascii_download_enable\)=.*\$/\1=YES/'                \\
+		 	    -e 's/^#\(chroot_local_user\)=.*\$/\1=NO/'                     \\
+		 	    -e 's/^#\(chroot_list_enable\)=.*\$/\1=NO/'                    \\
+		 	    -e 's~^#\(chroot_list_file\)=.*\$~\1=/etc/vsftpd.chroot_list~' \\
+		 	    -e 's/^#\(ls_recurse_enable\)=.*\$/\1=YES/'                    \\
+		 	    -e 's/^\(pam_service_name\)=.*\$/\1=vsftpd/'                   \\
+		 	    -e '\$atcp_wrappers=YES'                                       \\
+		 	    -e '\$auserlist_enable=YES'                                    \\
+		 	    -e '\$auserlist_deny=YES'                                      \\
+		 	    -e '\$auserlist_file=/etc/vsftpd.user_list'                    \\
+		 	    -e '\$achmod_enable=YES'                                       \\
+		 	    -e '\$aforce_dot_files=YES'                                    \\
+		 	    -e '\$adownload_enable=YES'                                    \\
+		 	    -e '\$avsftpd_log_file=/var/log/vsftpd.log'                    \\
+		 	    -e '\$adual_log_enable=NO'                                     \\
+		 	    -e '\$asyslog_enable=NO'                                       \\
+		 	    -e '\$alog_ftp_protocol=NO'                                    \\
+		 	    -e '\$aftp_data_port=20'                                       \\
+		 	    -e '\$apasv_enable=YES'
+		# -- smb.conf -----------------------------------------------------------------
+		 	echo "--- smb.conf ------------------------------------------------------------------"
+		 	testparm -s /etc/samba/smb.conf | sed -e '/homes/ idos charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\nidmap config * : range = 1000-10000\n' > smb.conf
+		 	testparm -s smb.conf > /etc/samba/smb.conf
+		 	rm -f smb.conf
 		# -----------------------------------------------------------------------------
-		echo "--- smb.conf ------------------------------------------------------------------"
-		testparm -s /etc/samba/smb.conf | sed -e '/homes/ idos charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\nidmap config * : range = 1000-10000\n' > smb.conf
-		testparm -s smb.conf > /etc/samba/smb.conf
-		rm -f smb.conf
-		# -----------------------------------------------------------------------------
-		echo "--- localize ------------------------------------------------------------------"
-		sed -i /etc/xdg/lxsession/LXDE/autostart               \
-		    -e '$a@setxkbmap -layout jp -option ctrl:swapcase'
-		# -----------------------------------------------------------------------------
-		echo "--- cleaning and exit ---------------------------------------------------------"
+		 	echo "--- cleaning and exit ---------------------------------------------------------"
+		 	fncEnd 0
+		# -- EOF ----------------------------------------------------------------------
 _EOT_SH_
 	case "${INP_SUITE}" in
 		"testing" | "bullseye" | 11* ) ;;
-		*                            ) sed -i ./debootstrap/fsimg/inst-net.sh -e 's/^# \(deb\)/\1/g';;
+		*                            ) sed -i ./debootstrap/fsimg/inst-net.sh -e 's/^\( \t\t\)# \(deb\)/\1\2/g';;
 	esac
+	sed -i ./debootstrap/fsimg/inst-net.sh -e 's/^ //g'
 # =============================================================================
 	echo "-- chroot ---------------------------------------------------------------------"
 	echo "debian-live" >  ./debootstrap/fsimg/etc/hostname
@@ -264,12 +311,18 @@ _EOT_SH_
 	rm -f ./debootstrap/fsimg/etc/localtime
 	ln -s /usr/share/zoneinfo/Asia/Tokyo ./debootstrap/fsimg/etc/localtime
 	# -------------------------------------------------------------------------
-	mount --bind /proc ./debootstrap/fsimg/proc
+	mount --bind /dev     ./debootstrap/fsimg/dev
+	mount --bind /dev/pts ./debootstrap/fsimg/dev/pts
+	mount --bind /proc    ./debootstrap/fsimg/proc
+	mount --bind /sys     ./debootstrap/fsimg/sys
 	# -------------------------------------------------------------------------
-	LANG=C chroot ./debootstrap/fsimg/ /bin/bash /inst-net.sh
+	LC_ALL=C LANG=C LANGUAGE=C chroot ./debootstrap/fsimg/ /bin/bash /inst-net.sh
 	RET_STS=$?
 	# -------------------------------------------------------------------------
-	umount -lf ./debootstrap/fsimg/proc
+	umount ./debootstrap/fsimg/sys     || umount -lf ./debootstrap/fsimg/sys
+	umount ./debootstrap/fsimg/proc    || umount -lf ./debootstrap/fsimg/proc
+	umount ./debootstrap/fsimg/dev/pts || umount -lf ./debootstrap/fsimg/dev/pts
+	umount ./debootstrap/fsimg/dev     || umount -lf ./debootstrap/fsimg/dev
 	# -------------------------------------------------------------------------
 	if [ ${RET_STS} -ne 0 ]; then
 		exit ${RET_STS}
@@ -313,20 +366,20 @@ _EOT_SH_
 	if [ ! -f ./debootstrap/cdimg/boot/grub/loopback.cfg ]; then
 		echo -n "source /grub/grub.cfg" > ./debootstrap/cdimg/boot/grub/loopback.cfg
 	fi
-	cp -p ./debootstrap/_work/splash.png                                 ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/_work/menu.cfg                                   ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/_work/stdmenu.cfg                                ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/_work/isolinux.cfg                               ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/fsimg/usr/lib/ISOLINUX/isolinux.bin              ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/hdt.c32      ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/ldlinux.c32  ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libcom32.c32 ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libgpl.c32   ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libmenu.c32  ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libutil.c32  ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/vesamenu.c32 ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/fsimg/usr/lib/syslinux/memdisk                   ./debootstrap/cdimg/isolinux/
-	cp -p ./debootstrap/fsimg/boot/*                                     ./debootstrap/cdimg/live/
+	cp -p  ./debootstrap/_work/splash.png                                 ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/_work/menu.cfg                                   ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/_work/stdmenu.cfg                                ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/_work/isolinux.cfg                               ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/fsimg/usr/lib/ISOLINUX/isolinux.bin              ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/hdt.c32      ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/ldlinux.c32  ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libcom32.c32 ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libgpl.c32   ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libmenu.c32  ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libutil.c32  ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/vesamenu.c32 ./debootstrap/cdimg/isolinux/
+	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/memdisk                   ./debootstrap/cdimg/isolinux/
+	cp -pr ./debootstrap/fsimg/boot/*                                     ./debootstrap/cdimg/live/
 	# ---------------------------------------------------------------------
 	echo "--- copy EFI directory --------------------------------------------------------"
 	mount -r -o loop ./debootstrap/cdimg/boot/grub/efi.img ./debootstrap/media/
