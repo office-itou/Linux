@@ -53,11 +53,8 @@
 ##	2019/07/10 000.0000 J.Itou         不具合修正(最新化対応)
 ##	2018/06/29 000.0000 J.Itou         処理見直し(webmin導入停止)
 ##	2019/07/13 000.0000 J.Itou         不具合修正(ipv6周り)
-<<<<<<< HEAD
-##	2019/07/18 000.0000 J.Itou         不具合修正(debian7対応)
-##	2019/07/23 000.0000 J.Itou         不具合修正(ipv6周り)
-=======
->>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
+##	2020/01/04 000.0000 J.Itou         不具合修正(nologin検索)
+##	2020/01/10 000.0000 J.Itou         不具合修正(.vimrc加筆)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -164,13 +161,25 @@ fncGetIPaddr () {
 fncGetNM () {
 	local DMY_STAT
 
+	LANG=C nmcli c show help 2> /dev/null
+	if [ $? -ge 2 ]; then
+		DMY_STAT="`LANG=C nmcli dev list iface "$2" | awk '/^'"$1"'/'`"
+	else
+		DMY_STAT="`LANG=C nmcli con show uuid "$3" | awk '/^'"$1"'/'`"
+	fi
+
 	case "$1" in
-		"ipv4.method" | \
-		"ipv6.method" | \
-		"ipv4.dns"    | \
-		"ipv6.dns"    )
-			DMY_STAT=`cat $2 | awk '/^'"$1"':/ {print $2;}'`
-			echo "${DMY_STAT}"
+		"DHCP4" | \
+		"DHCP6" )
+			if [ "${DMY_STAT}" != "" ]; then
+				echo "auto"
+			else
+				echo "static"
+			fi
+			;;
+		"IP4.DNS" | \
+		"IP6.DNS" )
+			echo "${DMY_STAT}" | awk '{print $2;}'
 			;;
 		* )
 			echo ""
@@ -268,11 +277,6 @@ funcInitialize () {
 	    "administrator:Administrator:1001::XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:1" \
 	)	# sample: administrator's password="password"
 	# ･････････････････････････････････････････････････････････････････････････
-<<<<<<< HEAD
-	/etc/init.d/network-manager restart											# NetworkManager restarted
-	# ･････････････････････････････････････････････････････････････････････････
-=======
->>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 	EXT_ZONE=""																	# マスターDNSのドメイン名
 	EXT_ADDR=""																	#   〃         IPアドレス
 	# ･････････････････････････････････････････････････････････････････････････
@@ -288,12 +292,12 @@ funcInitialize () {
 	# ･････････････････････････････････････････････････････････････････････････
 	RUN_CLAM=("enable"  "")														# 起動停止設定：clamav-freshclam
 	RUN_SSHD=("enable"  "")														#   〃        ：ssh / sshd
-	RUN_HTTP=("disable"  "")													#   〃        ：apache2 / httpd
-	RUN_FTPD=("disable"  "")													#   〃        ：vsftpd
+	RUN_HTTP=("disable" "")														#   〃        ：apache2 / httpd
+	RUN_FTPD=("disable" "")														#   〃        ：vsftpd
 	RUN_BIND=("enable"  "")														#   〃        ：bind9 / named
-	RUN_DHCP=("disable"  "")													#   〃        ：isc-dhcp-server / dhcpd
+	RUN_DHCP=("disable" "")														#   〃        ：isc-dhcp-server / dhcpd
 	RUN_SMBD=("enable"  "")														#   〃        ：samba / smbd,nmbd / smb,nmb
-	RUN_WMIN=("disable"  "")													#   〃        ：webmin
+	RUN_WMIN=("disable" "")														#   〃        ：webmin
 	RUN_NFSD=("enable"  "")														#   〃        ：nfs-server
 	# -------------------------------------------------------------------------
 	FLG_RHAT=`[ ! -f /etc/redhat-release ]; echo $?`							# CentOS時=1,その他=0
@@ -335,17 +339,10 @@ funcInitialize () {
 		IP6_ARRY+=(`fncGetIPaddr 6 "global primary"  "${DEV_NAME}"`)			# IPv6:IPアドレス/サブネットマスク(bit)
 		LNK_ARRY+=(`fncGetIPaddr 6 "link"            "${DEV_NAME}"`)			# Link:IPアドレス/サブネットマスク(bit)
 		if [ "${CON_UUID}" != "" ]; then
-			NIC_WORK=${PWD}/${PGM_NAME}.sh.${DEV_NAME}.work
-			LANG=C nmcli c show help 2> /dev/null
-			if [ $? -ne 0 ]; then
-				LANG=C nmcli dev list iface "${DEV_NAME}" > ${NIC_WORK}
-			else
-				LANG=C nmcli con show uuid "${CON_UUID}" > ${NIC_WORK}
-			fi
-			IP4_DHCP+=(`fncGetNM "ipv4.method" "${NIC_WORK}"`)					# IPv4:DHCPフラグ(auto/static)
-			IP6_DHCP+=(`fncGetNM "ipv6.method" "${NIC_WORK}"`)					# IPv6:DHCPフラグ(auto/static)
-			IP4_DNSA+=(`fncGetNM "ipv4.dns"    "${NIC_WORK}"`)					# IPv4:DNSアドレス
-			IP6_DNSA+=(`fncGetNM "ipv6.dns"    "${NIC_WORK}"`)					# IPv6:DNSアドレス
+			IP4_DHCP+=(`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`)		# IPv4:DHCPフラグ(auto/static)
+			IP6_DHCP+=(`fncGetNM "DHCP6"   "${DEV_NAME}" "${CON_UUID}"`)		# IPv6:DHCPフラグ(auto/static)
+			IP4_DNSA+=(`fncGetNM "IP4.DNS" "${DEV_NAME}" "${CON_UUID}"`)		# IPv4:DNSアドレス
+			IP6_DNSA+=(`fncGetNM "IP6.DNS" "${DEV_NAME}" "${CON_UUID}"`)		# IPv6:DNSアドレス
 		fi
 	done
 	IP4_GATE=`ip -4 r show table all | awk '/default/ {print $3;}'`				# IPv4:デフォルトゲートウェイ
@@ -439,7 +436,7 @@ funcInitialize () {
 		fi
 	fi
 	# -------------------------------------------------------------------------
-	LIN_CHSH=`which nologin`
+	LIN_CHSH=`find /usr/bin/ /usr/sbin/ -name nologin -print`
 	if [ "`which usermod 2> /dev/null`" != "" ]; then
 		CMD_CHSH="`which usermod` -s ${LIN_CHSH}"
 	else
@@ -487,10 +484,8 @@ funcInitialize () {
 	PKG_WMIN="${DIR_WK}/${SET_WMIN}"
 	rm -f "${WRK_WMIN}"
 	funcPause $?
-	if [ ! -f "${PKG_WMIN}" ]; then
-		wget -O "${PKG_WMIN}" "${URL_WMIN}"
-		funcPause $?
-	fi
+	wget -O "${PKG_WMIN}" "${URL_WMIN}"
+	funcPause $?
 }
 
 # Main処理 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -566,13 +561,14 @@ funcMain () {
 				echo --- .vimrc --------------------------------------------------------------------
 				cp -p .vimrc .vimrc.orig
 				cat <<- _EOT_ >> .vimrc
-					set number				" Print the line number in front of each line.
-					set tabstop=4			" Number of spaces that a <Tab> in the file counts for.
-					set list				" List mode: Show tabs as CTRL-I is displayed, display $ after end of line.
-					set listchars=tab:\>_	" Strings to use in 'list' mode and for the |:list| command.
-					set nowrap				" This option changes how text is displayed.
-					set showmode			" If in Insert, Replace or Visual mode put a message on the last line.
-					set laststatus=2		" The value of this option influences when the last window will have a status line always.
+					set number              " Print the line number in front of each line.
+					set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+					set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+					set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+					set nowrap              " This option changes how text is displayed.
+					set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+					set laststatus=2        " The value of this option influences when the last window will have a status line always.
+					" syntax on               " Vim5 and later versions support syntax highlighting.
 _EOT_
 			fi
 			# -----------------------------------------------------------------
@@ -618,22 +614,10 @@ _EOT_
 		fi
 		cat <<- _EOT_ >> /etc/hosts.allow
 			ALL : 127.0.0.1
-<<<<<<< HEAD
-			ALL : [::1]
-			ALL : [fe80::]/${LNK_BITS[0]}
-=======
->>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 			ALL : ${IP4_UADR[0]}.0/${IP4_BITS[0]}
+			ALL : [::1]
+			ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
 _EOT_
-		if [ "${IP6_DHCP}" != "auto" ]; then
-			cat <<- _EOT_ >> /etc/hosts.allow
-<<<<<<< HEAD
-=======
-				ALL : [::1]
->>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
-				ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
-_EOT_
-		fi
 	fi
 	# hosts.deny --------------------------------------------------------------
 	echo --- hosts.deny ----------------------------------------------------------------
@@ -723,7 +707,7 @@ _EOT_
 			    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1/g"
 		fi
 	else
-		if [ "${CON_UUID}" != "" ] && [ "${SYS_NAME}${SYS_VNUM}" != "debian7" ]; then
+		if [ "${CON_UUID}" != "" ]; then
 			nmcli c modify "${CON_UUID}" ipv4.dns 127.0.0.1
 			nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
 		else
@@ -1071,11 +1055,7 @@ _EOT_
 	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
 	echo --- db.xxx --------------------------------------------------------------------
-<<<<<<< HEAD
-	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa
-=======
 	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa
->>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 	do
 		cat <<- _EOT_ > ${DIR_ZONE}/db.${FIL_NAME}
 			\$TTL 1H																; 1 hour
@@ -1092,11 +1072,7 @@ _EOT_
 		chown root.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
 	done
 	if [ "${IP6_DHCP}" != "auto" ]; then
-<<<<<<< HEAD
-		for FIL_NAME in ${IP6_RADU[0]}.ip6.arpa
-=======
 		for FIL_NAME in ${WGP_NAME} ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
->>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 		do
 			cat <<- _EOT_ > ${DIR_ZONE}/db.${FIL_NAME}
 				\$TTL 1H																; 1 hour
@@ -1116,18 +1092,11 @@ _EOT_
 	#--------------------------------------------------------------------------
 	cat <<- _EOT_ >> ${DIR_ZONE}/db.${WGP_NAME}
 		${SVR_NAME}								IN		A		${IP4_ADDR[0]}
-<<<<<<< HEAD
-		${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
-=======
->>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 _EOT_
 	if [ "${IP6_DHCP}" != "auto" ]; then
 		cat <<- _EOT_ >> ${DIR_ZONE}/db.${WGP_NAME}
 			${SVR_NAME}								IN		AAAA	${IP6_ADDR[0]}
-<<<<<<< HEAD
-=======
 			${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
->>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 _EOT_
 	fi
 	#--------------------------------------------------------------------------
@@ -1135,10 +1104,6 @@ _EOT_
 		${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-<<<<<<< HEAD
-	cat <<- _EOT_ >> ${DIR_ZONE}/db.${LNK_RADU[0]}.ip6.arpa
-		${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
-=======
 	if [ "${IP6_DHCP}" != "auto" ]; then
 		cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP6_RADU[0]}.ip6.arpa
 			${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
@@ -1146,13 +1111,6 @@ _EOT_
 		#--------------------------------------------------------------------------
 		cat <<- _EOT_ >> ${DIR_ZONE}/db.${LNK_RADU[0]}.ip6.arpa
 			${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
->>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
-_EOT_
-	fi
-	#--------------------------------------------------------------------------
-	if [ "${IP6_DHCP}" != "auto" ]; then
-		cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP6_RADU[0]}.ip6.arpa
-			${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	fi
 	#--------------------------------------------------------------------------
@@ -1194,11 +1152,7 @@ _EOT_
 		echo --- named.conf.local ----------------------------------------------------------
 		cp -p ${DIR_BIND}/named.conf.local ${DIR_BIND}/named.conf.local.orig
 		# ---------------------------------------------------------------------
-<<<<<<< HEAD
-		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa
-=======
 		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa
->>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 		do
 			cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
 				zone "${FIL_NAME}" {
@@ -1212,11 +1166,7 @@ _EOT_
 _EOT_
 		done
 		if [ "${IP6_DHCP}" != "auto" ]; then
-<<<<<<< HEAD
-			for FIL_NAME in ${IP6_RADU[0]}.ip6.arpa
-=======
 			for FIL_NAME in ${WGP_NAME} ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
->>>>>>> 38abca17e01e1f5f5000c747416219f023bf674f
 			do
 				cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
 					zone "${FIL_NAME}" {
