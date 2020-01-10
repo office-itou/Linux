@@ -48,7 +48,7 @@
 		mkdir -p ./debootstrap/fsimg/var/cache/apt/archives
 		cp -p ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/ > /dev/null 2>&1
 	fi
-	if [ -d "./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/" ]; then
+	if [ -d "./debootstrap/ungoogled-chromium/" ]; then
 		echo "--- chrome file copy ----------------------------------------------------------"
 		cp -p ./debootstrap/ungoogled-chromium/*.deb ./debootstrap/fsimg/ > /dev/null 2>&1
 	fi
@@ -134,7 +134,7 @@
 		# -- google chrome install ----------------------------------------------------
 		 	if [ "${IMG_ARCH}" = "amd64" ]; then
 		 		echo "---- chrome install -----------------------------------------------------------"
-		 		if [ "" != "Google" ]; then
+		 		if [ "${DEB_SUITE}" = "stable" ]; then
 		 			VER_CHROM="79.0.3945.117-1.buster1"
 		 			if [ ! -f ungoogled-chromium_\${VER_CHROM}_amd64.deb ] || [ ! -f ungoogled-chromium-common_\${VER_CHROM}_amd64.deb ]; then
 		 				curl -L -# -R -S -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium-common_\${VER_CHROM}_amd64.deb"  \\
@@ -145,10 +145,14 @@
 		 				                 -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium_\${VER_CHROM}_amd64.deb"      || \\
 		 				fncEnd \$?
 		 			fi
-		 			apt install -q -y libminizip1 libre2-5 && \\
-		 			dpkg -i ungoogled-chromium_*.deb          \\
-		 			        ungoogled-chromium-*.deb       && \\
-		 			rm -f   ungoogled-chromium*            || \\
+		 			apt install      -q -y                             \\
+		 			    libminizip1 libre2-5 libevent-2.1-6 libvpx5 && \\
+		 			apt autoremove   -q -y                          && \\
+		 			apt autoclean    -q                             && \\
+		 			apt clean        -q                             && \\
+		 			dpkg -i ungoogled-chromium_*.deb                   \\
+		 			        ungoogled-chromium-*.deb                && \\
+		 			rm -f   ungoogled-chromium*                     || \\
 		 			fncEnd \$?
 		 		else
 		 			curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" && \\
@@ -224,8 +228,8 @@
 		# --- open-vm-tools -----------------------------------------------------------
 		 	echo "--- open vm tools -------------------------------------------------------------"
 		 	mkdir -p /mnt/hgfs
-		 	sed -i /etc/fstab                                                                   \\
-		 	    -e '\$a.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0'
+		 	sed -i /etc/fstab                                                                           \\
+		 	    -e '\$a.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,noauto,defaults 0 0'
 		# -- sshd ---------------------------------------------------------------------
 		 	echo "--- sshd ----------------------------------------------------------------------"
 		 	sed -i /etc/ssh/sshd_config                                        \\
@@ -335,7 +339,9 @@ _EOT_SH_
 	       ./debootstrap/fsimg/root/.viminfo                  \
 	       ./debootstrap/fsimg/tmp/*                          \
 	       ./debootstrap/fsimg/var/cache/apt/*.bin            \
-	       ./debootstrap/fsimg/var/cache/apt/archives/*.deb
+	       ./debootstrap/fsimg/var/cache/apt/archives/*.deb   \
+	       ./debootstrap/fsimg/ungoogled-chromium*            \
+	       ./debootstrap/fsimg/google-chrome-*.deb
 # -----------------------------------------------------------------------------
 	echo "--- download system file ------------------------------------------------------"
 	pushd ./debootstrap > /dev/null
@@ -418,7 +424,7 @@ _EOT_
 # -- file compress ------------------------------------------------------------
 	echo "-- make file system image -----------------------------------------------------"
 	rm -f ./debootstrap/cdimg/live/filesystem.squashfs
-	mksquashfs ./debootstrap/fsimg ./debootstrap/cdimg/live/filesystem.squashfs -mem 1G -noappend -b 4K -comp xz
+	mksquashfs ./debootstrap/fsimg ./debootstrap/cdimg/live/filesystem.squashfs -noappend
 	ls -lht ./debootstrap/cdimg/live/
 # -- make iso image -----------------------------------------------------------
 	echo "-- make iso image -------------------------------------------------------------"
