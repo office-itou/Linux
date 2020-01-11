@@ -43,15 +43,6 @@
 		"stable"  | "buster"   | 10* ) DEB_SUITE="stable";;
 		*                            ) DEB_SUITE="";;
 	esac
-	if [ -d "./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/" ]; then
-		echo "--- deb file copy -------------------------------------------------------------"
-		mkdir -p ./debootstrap/fsimg/var/cache/apt/archives
-		cp -p ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/ > /dev/null 2>&1
-	fi
-	if [ -d "./debootstrap/ungoogled-chromium/" ]; then
-		echo "--- chrome file copy ----------------------------------------------------------"
-		cp -p ./debootstrap/ungoogled-chromium/*.deb ./debootstrap/fsimg/ > /dev/null 2>&1
-	fi
 # =============================================================================
 	echo "-- make inst-net.sh -----------------------------------------------------------"
 	cat <<- _EOT_SH_ > ./debootstrap/fsimg/inst-net.sh
@@ -192,7 +183,7 @@
 		 		echo "---- .bashrc ------------------------------------------------------------------"
 		 		cat <<- '_EOT_' >> .bashrc
 		 			# --- 日本語文字化け対策 ---
-		 			case "\\\${TERM}" in
+		 			case "\${TERM}" in
 		 			    "linux" ) export LANG=C;;
 		 			    * )                    ;;
 		 			esac
@@ -204,8 +195,8 @@
 		 		cat <<- '_EOT_' > .vimrc
 		 			set number              " Print the line number in front of each line.
 		 			set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
-		 			set list                " List mode: Show tabs as CTRL-I is displayed, display \\$ after end of line.
-		 			set listchars=tab:\\>_   " Strings to use in 'list' mode and for the |:list| command.
+		 			set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+		 			set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
 		 			set nowrap              " This option changes how text is displayed.
 		 			set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
 		 			set laststatus=2        " The value of this option influences when the last window will have a status line always.
@@ -227,9 +218,12 @@
 		 	echo -e "live\\nlive\\n" | smbpasswd user
 		# --- open-vm-tools -----------------------------------------------------------
 		 	echo "--- open vm tools -------------------------------------------------------------"
-		 	mkdir -p /mnt/hgfs
-		 	sed -i /etc/fstab                                                                           \\
-		 	    -e '\$a.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,noauto,defaults 0 0'
+		 	mkdir -p /media/hgfs
+		 	chown user.user /media/hgfs
+		 	sed -i /etc/fstab                                                                                  \\
+		 	    -e '\$a.host:/ /media/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,noauto,users,defaults 0 0'
+		 	sed -i /etc/fuse.conf                \\
+		 	    -e 's/#\(user_allow_other\)/\1/'
 		# -- sshd ---------------------------------------------------------------------
 		 	echo "--- sshd ----------------------------------------------------------------------"
 		 	sed -i /etc/ssh/sshd_config                                        \\
@@ -295,9 +289,67 @@
 		 	    -e '\$apasv_enable=YES'
 		# -- smb.conf -----------------------------------------------------------------
 		 	echo "--- smb.conf ------------------------------------------------------------------"
-		 	testparm -s /etc/samba/smb.conf | sed -e '/homes/ idos charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\nidmap config * : range = 1000-10000\n' > smb.conf
-		 	testparm -s smb.conf > /etc/samba/smb.conf
-		 	rm -f smb.conf
+		 	CMD_UADD=`which useradd`
+		 	CMD_UDEL=`which userdel`
+		 	CMD_GADD=`which groupadd`
+		 	CMD_GDEL=`which groupdel`
+		 	CMD_GPWD=`which gpasswd`
+		 	CMD_FALS=`which false`
+		 	testparm -s -v |                                                                        \\
+		 	sed -e 's/\\(dos charset\\) =.*\$/\\1 = CP932/'                                             \\
+		 	    -e 's/\\(security\\) =.*\$/\\1 = USER/'                                                 \\
+		 	    -e 's/\\(server role\\) =.*\$/\\1 = standalone server/'                                 \\
+		 	    -e 's/\\(pam password change\\) =.*\$/\\1 = Yes/'                                       \\
+		 	    -e 's/\\(load printers\\) =.*\$/\\1 = No/'                                              \\
+		 	    -e 's~\\(log file\\) =.*\$~\\1 = /var/log/samba/log.%m~'                                \\
+		 	    -e 's/\\(max log size\\) =.*\$/\\1 = 1000/'                                             \\
+		 	    -e 's/\\(min protocol\\) =.*\$/\\1 = NT1/'                                              \\
+		 	    -e 's/\\(server min protocol\\) =.*\$/\\1 = NT1/'                                       \\
+		 	    -e 's~\\(printcap name\\) =.*\$~\\1 = /dev/null~'                                       \\
+		 	    -e "s~\\(add user script\\) =.*\$~\\1 = \${CMD_UADD} %u~"                                \\
+		 	    -e "s~\\(delete user script\\) =.*\$~\\1 = \${CMD_UDEL} %u~"                             \\
+		 	    -e "s~\\(add group script\\) =.*\$~\\1 = \${CMD_GADD} %g~"                               \\
+		 	    -e "s~\\(delete group script\\) =.*\$~\\1 = \${CMD_GDEL} %g~"                            \\
+		 	    -e "s~\\(add user to group script\\) =.*\$~\\1 = \${CMD_GPWD} -a %u %g~"                 \\
+		 	    -e "s~\\(delete user from group script\\) =.*\$~\\1 = \${CMD_GPWD} -d %u %g~"            \\
+		 	    -e "s~\\(add machine script\\) =.*\$~\\1 = \${CMD_UADD} -d /dev/null -s \${CMD_FALS} %u~" \\
+		 	    -e 's/\\(logon script\\) =.*\$/\\1 = logon.bat/'                                        \\
+		 	    -e 's/\\(logon path\\) =.*\$/\\1 = \\\\\\\\%L\\\\profiles\\\\%U/'                               \\
+		 	    -e 's/\\(domain logons\\) =.*\$/\\1 = Yes/'                                             \\
+		 	    -e 's/\\(os level\\) =.*\$/\\1 = 35/'                                                   \\
+		 	    -e 's/\\(preferred master\\) =.*\$/\\1 = Yes/'                                          \\
+		 	    -e 's/\\(domain master\\) =.*\$/\\1 = Yes/'                                             \\
+		 	    -e 's/\\(wins support\\) =.*\$/\\1 = Yes/'                                              \\
+		 	    -e 's/\\(unix password sync\\) =.*\$/\\1 = No/'                                         \\
+		 	    -e '/idmap config \\* : backend =/i \\\\tidmap config \\* : range = 1000-10000'         \\
+		 	    -e 's/\\(admin users\\) =.*\$/\\1 = administrator/'                                     \\
+		 	    -e 's/\\(printing\\) =.*\$/\\1 = bsd/'                                                  \\
+		 	    -e '/map to guest =.*\$/d'                                                           \\
+		 	    -e '/null passwords =.*\$/d'                                                         \\
+		 	    -e '/obey pam restrictions =.*\$/d'                                                  \\
+		 	    -e '/enable privileges =.*\$/d'                                                      \\
+		 	    -e '/password level =.*\$/d'                                                         \\
+		 	    -e '/client use spnego principal =.*\$/d'                                            \\
+		 	    -e '/syslog =.*\$/d'                                                                 \\
+		 	    -e '/syslog only =.*\$/d'                                                            \\
+		 	    -e '/use spnego =.*\$/d'                                                             \\
+		 	    -e '/paranoid server security =.*\$/d'                                               \\
+		 	    -e '/dns proxy =.*\$/d'                                                              \\
+		 	    -e '/time offset =.*\$/d'                                                            \\
+		 	    -e '/usershare allow guests =.*\$/d'                                                 \\
+		 	    -e '/idmap backend =.*\$/d'                                                          \\
+		 	    -e '/idmap uid =.*\$/d'                                                              \\
+		 	    -e '/idmap gid =.*\$/d'                                                              \\
+		 	    -e '/winbind separator =.*\$/d'                                                      \\
+		 	    -e '/acl check permissions =.*\$/d'                                                  \\
+		 	    -e '/only user =.*\$/d'                                                              \\
+		 	    -e '/share modes =.*\$/d'                                                            \\
+		 	    -e '/nbt client socket address =.*\$/d'                                              \\
+		 	    -e '/lsa over netlogon =.*\$/d'                                                      \\
+		 	    -e '/.* = \$/d'                                                                      \\
+		 	> ./smb.conf
+		 	testparm -s ./smb.conf > /etc/samba/smb.conf
+		 	rm -f ./smb.conf
 		# -----------------------------------------------------------------------------
 		 	echo "--- cleaning and exit ---------------------------------------------------------"
 		 	fncEnd 0
@@ -309,6 +361,16 @@ _EOT_SH_
 	esac
 	sed -i ./debootstrap/fsimg/inst-net.sh -e 's/^ //g'
 # =============================================================================
+	if [ -d "./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/" ]; then
+		echo "--- deb file copy -------------------------------------------------------------"
+		mkdir -p ./debootstrap/fsimg/var/cache/apt/archives
+		cp -p ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/ > /dev/null 2>&1
+	fi
+	if [ -d "./debootstrap/ungoogled-chromium/" ]; then
+		echo "--- chrome file copy ----------------------------------------------------------"
+		cp -p ./debootstrap/ungoogled-chromium/*.deb ./debootstrap/fsimg/ > /dev/null 2>&1
+	fi
+	# -------------------------------------------------------------------------
 	echo "-- chroot ---------------------------------------------------------------------"
 	echo "debian-live" >  ./debootstrap/fsimg/etc/hostname
 	echo -e "127.0.1.1\tdebian-live" >> ./debootstrap/fsimg/etc/hosts
