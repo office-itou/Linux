@@ -14,8 +14,8 @@
 # == tools install ============================================================
 	apt -y install debootstrap squashfs-tools xorriso isolinux
 # == initial processing =======================================================
-	rm -rf   ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg
-	mkdir -p ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg
+	rm -rf   ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg ./knoppix-live/_work
+	mkdir -p ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg ./knoppix-live/_work
 	# -------------------------------------------------------------------------
 	cat <<- '_EOT_SH_' > ./knoppix-live/fsimg/knoppix-setup.sh
 		#!/bin/bash
@@ -72,8 +72,9 @@
 			fncEnd $?
 		# -- open vm tools ------------------------------------------------------------
 			echo "--- open vm tools -------------------------------------------------------------"
-			mkdir -p /media/hgfs
-			echo -n '#.host:/ /media/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
+			# mkdir -p /media/hgfs
+			echo -e '# Added by User\n' \
+			        '.host:/ /media/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,noauto,users,defaults 0 0' \
 			>> /etc/fstab
 		# -- clamav -------------------------------------------------------------------
 			echo "--- clamav --------------------------------------------------------------------"
@@ -231,6 +232,14 @@ _EOT_SH_
 	cp -rp ./knoppix-live/media/* ./knoppix-live/cdimg/
 	umount ./knoppix-live/media
 	# -------------------------------------------------------------------------
+	echo "--- Change minirt.gz ----------------------------------------------------------"
+	pushd ./knoppix-live/_work > /dev/null
+		zcat ../cdimg/boot/isolinux/minirt.gz | cpio -idm
+		mkdir -p media/hgfs
+		chown knoppix.knoppix media/hgfs
+		find . | cpio -H newc -o | gzip -9 > ../cdimg/boot/isolinux/minirt.gz
+	popd > /dev/null
+	# -------------------------------------------------------------------------
 	if [ ! -f ./knoppix-live/KNOPPIX_FS.iso ]; then
 		echo "--- Extract KNOPPIX -----------------------------------------------------------"
 		extract_compressed_fs ./knoppix-live/cdimg/KNOPPIX/KNOPPIX ./knoppix-live/KNOPPIX_FS.iso
@@ -371,7 +380,7 @@ _EOT_SH_
 #		xorriso -as mkisofs -D -R -U -V "${LIVE_VOLID_FS2}" -o ../KNOPPIX2_FS.tmp -path-list    ../KNOPPIX2_FS.txt  .
 	popd > /dev/null
 	# -------------------------------------------------------------------------
-	create_compressed_fs -B 512K -f ./knoppix-live/isotemp -q -L -2 - ./knoppix-live/cdimg/KNOPPIX/KNOPPIX  < ./knoppix-live/KNOPPIX_FS.tmp
+	create_compressed_fs         -f ./knoppix-live/isotemp -q -L  9 - ./knoppix-live/cdimg/KNOPPIX/KNOPPIX  < ./knoppix-live/KNOPPIX_FS.tmp
 #	create_compressed_fs -B 512K -f ./knoppix-live/isotemp -q -L -2 - ./knoppix-live/cdimg/KNOPPIX/KNOPPIX1 < ./knoppix-live/KNOPPIX1_FS.tmp
 #	create_compressed_fs -B 512K -f ./knoppix-live/isotemp -q -L -2 - ./knoppix-live/cdimg/KNOPPIX/KNOPPIX2 < ./knoppix-live/KNOPPIX2_FS.tmp
 	ls -lh ./knoppix-live/cdimg/KNOPPIX/KNOPPIX*
