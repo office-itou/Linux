@@ -37,7 +37,7 @@
 　*※USBメモリーからMBR環境にインストールする場合は以下の様に変更願います。*  
 　・partman-auto/disk string /dev/sdb ← 実際のドライブに合わせる  
 　・grub-installer/bootdev string /dev/sdb ← 実際のドライブに合わせる  
-　　参照：[preseedの利用](https://www.debian.org/releases/stable/amd64/apbs02.html.ja)  
+　　参照：[preseedの利用](https://www.debian.org/releases/stable/amd64/apbs02.ja.html)  
   
 ```text
 # == Network configuration ====================================================
