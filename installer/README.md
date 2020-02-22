@@ -1,4 +1,4 @@
-**Debian/Ubuntu/CentOS/Fedoraのカスタマイズ**  
+**Debian/Ubuntu/CentOS/Fedoraの無人インストール用メディアのカスタマイズ**  
   
 【無人インストールISO作成シェル】  
   
