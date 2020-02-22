@@ -1,10 +1,17 @@
-# Auto detect text files and perform LF normalization
-*				text=auto
-*.sh			text eol=lf
-*.cfg			text eol=lf
-*.c				text eol=lf
-*.cpp			text eol=lf
-*.h				text eol=lf
-Makefile		text eol=lf
-Makefile.am		text eol=lf
-configure.ac	text eol=lf
+* binary
+
+.editorconfig  diff=binaryfile
+.gitignore     diff=binaryfile
+.gitattributes diff=binaryfile
+
+*.md         diff=binaryfile
+*.txt        diff=binaryfile
+*.xml        diff=binaryfile
+*.sh         diff=binaryfile
+*.cfg        diff=binaryfile
+*.c          diff=binaryfile
+*.cpp        diff=binaryfile
+*.h          diff=binaryfile
+Makefile     diff=binaryfile
+Makefile.am  diff=binaryfile
+configure.ac diff=binaryfile
