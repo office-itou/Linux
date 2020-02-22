@@ -17,7 +17,7 @@
 | [kickstart_centos.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_centos.cfg)    | CentOS用 |
 | [kickstart_fedora.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_fedora.cfg)    | Fedora用 |
   
-【インストール補助作業ファイル】  
+【インストール補助作業シェル】  
   
 | ファイル名              | 機能                |
 | ----------------------- | ------------------- |
