@@ -1,11 +1,11 @@
 #!/bin/bash
 ###############################################################################
 ##
-##	ファイル名	:	dist_remaster_dvd.sh
+##	ファイル名	:	dist_remaster_net.sh
 ##
-##	機能概要	:	ブータブルDVDの作成用シェル [DVD版]
+##	機能概要	:	ブータブルDVDの作成用シェル [netinst版]
 ##	---------------------------------------------------------------------------
-##	<対象OS>	:	Debian / Ubuntu / CentOS7 (64bit)
+##	<対象OS>	:	Debian
 ##	---------------------------------------------------------------------------
 ##	入出力 I/F
 ##		INPUT	:	
@@ -18,33 +18,29 @@
 ##	改訂履歴	:	
 ##	   日付       版         名前      改訂内容
 ##	---------- -------- -------------- ----------------------------------------
-##	2018/05/01 000.0000 J.Itou         新規作成
-##	2018/05/11 000.0000 J.Itou         不具合修正
-##	2018/05/11 000.0000 J.Itou         debian testing/CentOS 1810追加
+##	2018/05/13 000.0000 J.Itou         新規作成
 ##	2018/06/14 000.0000 J.Itou         不具合修正(CentOS7対応含む)
 ##	2018/06/24 000.0000 J.Itou         debian 8.11 変更
 ##	2018/06/29 000.0000 J.Itou         Fedora 28追加
+##	2018/07/07 000.0000 J.Itou         CentOS 7追加
 ##	2018/07/07 000.0000 J.Itou         仕様見直し
 ##	2018/07/15 000.0000 J.Itou         debian 9.5.0 変更
-##	2018/07/27 000.0000 J.Itou         ubuntu 18.04.1 変更
-##	2018/11/06 000.0000 J.Itou         ubuntu 18.10,19.04 / Fedora 29 変更
+##	2018/11/06 000.0000 J.Itou         fedora 29 変更
 ##	2018/11/11 000.0000 J.Itou         debian 9.6.0 変更
-##	2019/01/09 000.0000 J.Itou         CentOS 7 1810変更
-##	2019/01/24 000.0000 J.Itou         debian 9.7.0 変更
+##	2019/01/09 000.0000 J.Itou         debianファイル名修正/CentOS 7 1810変更
+##	2018/11/11 000.0000 J.Itou         debian 9.7.0 変更
 ##	2019/02/17 000.0000 J.Itou         debian 9.8.0 変更
 ##	2019/02/06 000.0000 J.Itou         不具合修正
 ##	2019/07/09 000.0000 J.Itou         最新化修正
-##	2019/08/11 000.0000 J.Itou         ubuntu 18.04.3 変更
 ##	2019/09/08 000.0000 J.Itou         debian 9.10.0/10.1.0 変更
 ##	2019/09/10 000.0000 J.Itou         debian 9.11.0 変更
 ##	2019/09/18 000.0000 J.Itou         CentOS 7.7.1908 変更
 ##	2019/09/28 000.0000 J.Itou         CentOS 8.0.1905 追加
-##	2019/11/15 000.0000 J.Itou         不具合修正
 ##	2019/11/17 000.0000 J.Itou         debian 10.2.0 変更
 ##	2019/11/23 000.0000 J.Itou         fedora 31 変更
 ##	2019/11/24 000.0000 J.Itou         CentOS Stream 追加
 ##	2019/11/29 000.0000 J.Itou         USBメモリーでのインストール対応
-##	2020/02/22 000.0000 J.Itou         debian 9.12.0/10.3.0 / ubuntu 18.04.4 変更 / CentOS 8.1 追加 / CentOS-Stream-8-x86_64-20191219-boot 変更
+##	2020/02/22 000.0000 J.Itou         debian 9.12.0/10.3.0 変更 / CentOS 8.1 追加 / CentOS-Stream-8-x86_64-20191219-boot 変更
 ##	2020/02/22 000.0000 J.Itou         wget -> curl 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
@@ -65,38 +61,26 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	readonly ARRAY_NAME=(                                                                                                                                                                           \
-	    "debian debian-8.11.1-amd64-DVD-1            https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg"   \
-	    "debian debian-9.12.0-amd64-DVD-1            https://cdimage.debian.org/cdimage/archive/9.12.0/amd64/iso-dvd/debian-9.12.0-amd64-DVD-1.iso                            preseed_debian.cfg"   \
-	    "debian debian-10.3.0-amd64-DVD-1            https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.3.0-amd64-DVD-1.iso                           preseed_debian.cfg"   \
-	    "debian debian-testing-amd64-DVD-1           https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"   \
-	    "ubuntu ubuntu-16.04.6-server-amd64          https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.6-server-amd64.iso                         preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-16.04.6-desktop-amd64         https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/xenial/ubuntu-16.04.6-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04.4-server-amd64          http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.4-server-amd64.iso                                        preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-18.04.4-desktop-amd64         https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04.4-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-19.10-server-amd64            http://cdimage.ubuntu.com/releases/eoan/release/ubuntu-19.10-server-amd64.iso                                            preseed_ubuntu.cfg"   \
-	    "ubuntu ubuntu-19.10-desktop-amd64           https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/eoan/ubuntu-19.10-desktop-amd64.iso                            preseed_ubuntu.cfg"   \
-	    "centos CentOS-8.1.1911-x86_64-dvd1          http://isoredirect.centos.org/centos/8/isos/x86_64/CentOS-8.1.1911-x86_64-dvd1.iso                                       kickstart_centos.cfg" \
-	    "centos CentOS-Stream-8-x86_64-20191219-dvd1 http://isoredirect.centos.org/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20191219-dvd1.iso                       kickstart_centos.cfg" \
-	    "fedora Fedora-Server-dvd-x86_64-31-1.9      https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/31/Server/x86_64/iso/Fedora-Server-dvd-x86_64-31-1.9.iso kickstart_fedora.cfg" \
-	)   # 区分  DVDファイル名                        ダウンロード先URL                                                                                                        定義ファイル
+	readonly ARRAY_NAME=(                                                                                                                                                                               \
+	    "debian debian-8.11.1-amd64-netinst          https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "debian debian-9.12.0-amd64-netinst          https://cdimage.debian.org/cdimage/archive/9.12.0/amd64/iso-cd/debian-9.12.0-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "debian debian-10.3.0-amd64-netinst          https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.3.0-amd64-netinst.iso                              preseed_debian.cfg"   \
+	    "debian debian-testing-amd64-netinst         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "centos CentOS-8.1.1911-x86_64-boot          http://isoredirect.centos.org/centos/8/isos/x86_64/CentOS-8.1.1911-x86_64-boot.iso                                           kickstart_centos.cfg" \
+	    "centos CentOS-Stream-8-x86_64-20191219-boot http://isoredirect.centos.org/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20191219-boot.iso                           kickstart_centos.cfg" \
+	    "fedora Fedora-Server-netinst-x86_64-31-1.9  https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/31/Server/x86_64/iso/Fedora-Server-netinst-x86_64-31-1.9.iso kickstart_fedora.cfg" \
+	)   # 区分  netinstファイル名                   ダウンロード先URL                                                                                                             定義ファイル
 # -----------------------------------------------------------------------------
 funcMenu () {
 	echo "# ----------------------------------------------------------------------------#"
-	echo "# ID：Version                        ：リリース日：サポ終了日：備考           #"
-	echo "#  1：debian-8.11.1-amd64-DVD-1      ：2015-04-25：2020-04-xx：oldoldstable   #"
-	echo "#  2：debian-9.12.0-amd64-DVD-1      ：2017-06-17：2022-xx-xx：oldstable      #"
-	echo "#  3：debian-10.3.0-amd64-DVD-1      ：2019-07-06：20xx-xx-xx：stable         #"
-	echo "#  4：debian-testing-amd64-DVD-1     ：20xx-xx-xx：20xx-xx-xx：testing        #"
-	echo "#  5：ubuntu-16.04.6-server-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus   #"
-	echo "#  6：ubuntu-16.04.6-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
-	echo "#  7：ubuntu-18.04.4-server-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver  #"
-	echo "#  8：ubuntu-18.04.4-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
-	echo "#  9：ubuntu-19.10-server-amd64      ：2019-10-17：2020-07-xx：Eoan Ermine    #"
-	echo "# 10：ubuntu-19.10-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
-	echo "# 11：CentOS-8.1.1911-x86_64-dvd1    ：2019-09-24：2029-05-31：RHEL 8.0       #"
-	echo "# 12：CentOS-Stream-8-x86_64-20191219：2019-xx-xx：20xx-xx-xx：RHEL x.x       #"
-	echo "# 13：Fedora-Server-dvd-x86_64-31-1.9：2019-10-29：20xx-xx-xx：kernel 5.3     #"
+	echo "# ID：Version                            ：リリース日：サポ終了日：備考       #"
+	echo "#  1：debian-8.11.1-amd64-netinst        ：2015-04-25：2020-06-30：oldoldstable"
+	echo "#  2：debian-9.12.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
+	echo "#  3：debian-10.3.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
+	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
+	echo "#  5：CentOS-8.1.1911-x86_64-boot        ：2019-09-24：2029-05-31：RHEL 8.0   #"
+	echo "#  6：CentOS-Stream-8-x86_64-20191219-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
+	echo "#  7：Fedora-Server-netinst-x86_64-31-1.9：2019-10-29：20xx-xx-xx：kernel 5.3 #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -118,7 +102,7 @@ funcRemaster () {
 	local DVD_URL="${CODE_NAME[2]}"
 	# --- preseed.cfg ---------------------------------------------------------
 	local CFG_NAME="${CODE_NAME[3]}"
-	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/${CFG_NAME}"
+	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/${CFG_NAME}"
 	# -------------------------------------------------------------------------
 	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}/image ${WORK_DIRS}/${CODE_NAME[1]}/decomp ${WORK_DIRS}/${CODE_NAME[1]}/mnt
 	mkdir -p ${WORK_DIRS}/${CODE_NAME[1]}/image ${WORK_DIRS}/${CODE_NAME[1]}/decomp ${WORK_DIRS}/${CODE_NAME[1]}/mnt
@@ -168,10 +152,6 @@ funcRemaster () {
 					else
 						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_URL}" || { rm -f "preseed/preseed.cfg"; exit 1; }
 					fi
-					sed -i "preseed/preseed.cfg"                                   \
-					    -e 's~.*\(d-i debian-installer/language\).*~  \1 string en~' \
-					    -e 's~.*\(d-i debian-installer/locale\).*~  \1 string en_US.UTF-8~' \
-					    -e '/d-i debian-installer\/language/i\  d-i localechooser\/preferred-locale select en_US.UTF-8\n  d-i localechooser\/supported-locales multiselect en_US.UTF-8, ja_JP.UTF-8'
 					;;
 				"centos" | \
 				"fedora")	# --- get ks.cfg ----------------------------------
@@ -184,10 +164,9 @@ funcRemaster () {
 						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || { rm -f "kickstart/ks.cfg"; exit 1; }
 					fi
 					sed -i kickstart/ks.cfg    \
-					    -e 's/#\(cdrom\)/\1/g' \
-					    -e 's/^\(url \)/repo --name="New_Repository" /g'
-#					    -e 's/^\(url \)/#\1/g' \
-#					    -e 's/^\(repo \)/#\1/g'
+					    -e 's/^\(cdrom\)/#\1/g' \
+					    -e 's/#\(url \)/\1/g' \
+					    -e 's/#\(repo \)/\1/g'
 					;;
 				* )	;;
 			esac
@@ -204,9 +183,9 @@ funcRemaster () {
 				"ubuntu" )	# ･････････････････････････････････････････････････
 					case "${CODE_NAME[1]}" in
 						"ubuntu-16.04.6-server-amd64"    | \
-						"ubuntu-18.04.4-server-amd64"    | \
+						"ubuntu-18.04.2-server-amd64"    | \
 						"ubuntu-19.04-server-amd64"      | \
-						"ubuntu-19.10-server-amd64"      )
+						"ubuntu-18.04-server-amd64"      )
 							sed -i isolinux/txt.cfg  \
 							    -e 's/^\(default\) .*$/\1 preseed/' \
 							    -e '/menu default/d' \
@@ -222,7 +201,7 @@ funcRemaster () {
 							sed -i.orig boot/grub/grub.cfg \
 							    -e '/menuentry "Try Ubuntu without installing"/i\menuentry "Preseed install Ubuntu" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz.efi  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd.lz\n}'
 							;;
-						"ubuntu-18.04.4-desktop-amd64"   | \
+						"ubuntu-18.04.2-desktop-amd64"   | \
 						"ubuntu-19.04-desktop-amd64"     | \
 						"ubuntu-19.10-desktop-amd64"     )
 							sed -i isolinux/txt.cfg  \

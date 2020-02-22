@@ -95,7 +95,7 @@ funcRemaster () {
 	local DVD_URL="https://ftp.yz.yamagata-u.ac.jp/pub/linux/${CODE_NAME[1]}/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
 	# --- preseed.cfg ---------------------------------------------------------
 	local CFG_NAME="preseed_${CODE_NAME[0]}"
-	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/${CFG_NAME}.cfg"
+	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/${CFG_NAME}.cfg"
 	# -------------------------------------------------------------------------
 	rm -rf   ${WORK_DIRS}/${CODE_NAME[2]}/image ${WORK_DIRS}/${CODE_NAME[2]}/decomp ${WORK_DIRS}/${CODE_NAME[2]}/mnt
 	mkdir -p ${WORK_DIRS}/${CODE_NAME[2]}/image ${WORK_DIRS}/${CODE_NAME[2]}/decomp ${WORK_DIRS}/${CODE_NAME[2]}/mnt
