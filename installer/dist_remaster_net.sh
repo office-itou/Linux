@@ -40,11 +40,14 @@
 ##	2019/11/23 000.0000 J.Itou         fedora 31 変更
 ##	2019/11/24 000.0000 J.Itou         CentOS Stream 追加
 ##	2019/11/29 000.0000 J.Itou         USBメモリーでのインストール対応
+##	2020/02/22 000.0000 J.Itou         debian 9.12.0/10.3.0 変更 / CentOS 8.1 追加 / CentOS-Stream-8-x86_64-20191219-boot 変更
+##	2020/02/22 000.0000 J.Itou         wget -> curl 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
 #	set -n													# 構文エラーのチェック
-	set -eu													# ステータス0以外と未定義変数の参照で終了
+#	set -eu													# ステータス0以外と未定義変数の参照で終了
+	set -u													# 未定義変数の参照で終了
 #	set -o ignoreof											# Ctrl+Dで終了しない
 	trap 'exit 1' 1 2 3 15
 # -----------------------------------------------------------------------------
@@ -59,27 +62,25 @@
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
 	readonly ARRAY_NAME=(                                                                                                                                                                               \
-	    "debian debian-8.11.1-amd64-netinst         https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"    \
-	    "debian debian-9.11.0-amd64-netinst         https://cdimage.debian.org/cdimage/archive/9.11.0/amd64/iso-cd/debian-9.11.0-amd64-netinst.iso                               preseed_debian.cfg"    \
-	    "debian debian-10.2.0-amd64-netinst         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.2.0-amd64-netinst.iso                              preseed_debian.cfg"    \
-	    "debian debian-testing-amd64-netinst        https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"    \
-	    "centos CentOS-7-x86_64-NetInstall-1908     https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-NetInstall-1908.iso                    kickstart_centos.cfg"  \
-	    "centos CentOS-8-x86_64-1905-boot           https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8.0.1905/isos/x86_64/CentOS-8-x86_64-1905-boot.iso                          kickstart_centos8.cfg" \
-	    "centos CentOS-Stream-x86_64-boot           https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-x86_64-boot.iso                          kickstart_centos8.cfg" \
-	    "fedora Fedora-Server-netinst-x86_64-31-1.9 https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/31/Server/x86_64/iso/Fedora-Server-netinst-x86_64-31-1.9.iso kickstart_fedora.cfg"  \
-	)   # 区分  netinstファイル名                   ダウンロード先URL                                                                                                            定義ファイル
+	    "debian debian-8.11.1-amd64-netinst          https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "debian debian-9.12.0-amd64-netinst          https://cdimage.debian.org/cdimage/archive/9.12.0/amd64/iso-cd/debian-9.12.0-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "debian debian-10.3.0-amd64-netinst          https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.3.0-amd64-netinst.iso                              preseed_debian.cfg"   \
+	    "debian debian-testing-amd64-netinst         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "centos CentOS-8.1.1911-x86_64-boot          http://isoredirect.centos.org/centos/8/isos/x86_64/CentOS-8.1.1911-x86_64-boot.iso                                           kickstart_centos.cfg" \
+	    "centos CentOS-Stream-8-x86_64-20191219-boot http://isoredirect.centos.org/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20191219-boot.iso                           kickstart_centos.cfg" \
+	    "fedora Fedora-Server-netinst-x86_64-31-1.9  https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/31/Server/x86_64/iso/Fedora-Server-netinst-x86_64-31-1.9.iso kickstart_fedora.cfg" \
+	)   # 区分  netinstファイル名                   ダウンロード先URL                                                                                                             定義ファイル
 # -----------------------------------------------------------------------------
 funcMenu () {
 	echo "# ----------------------------------------------------------------------------#"
 	echo "# ID：Version                            ：リリース日：サポ終了日：備考       #"
 	echo "#  1：debian-8.11.1-amd64-netinst        ：2015-04-25：2020-06-30：oldoldstable"
-	echo "#  2：debian-9.11.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
-	echo "#  3：debian-10.2.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
+	echo "#  2：debian-9.12.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
+	echo "#  3：debian-10.3.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
-	echo "#  5：CentOS-7-x86_64-NetInstall-1908    ：2019-09-17：2024-06-30：RHEL 7.7   #"
-	echo "#  6：CentOS-8-x86_64-1905-boot          ：2019-09-24：2029-05-31：RHEL 8.0   #"
-	echo "#  7：CentOS-Stream-x86_64-boot          ：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
-	echo "#  8：Fedora-Server-netinst-x86_64-31-1.9：2019-10-29：20xx-xx-xx：kernel 5.3 #"
+	echo "#  5：CentOS-8.1.1911-x86_64-boot        ：2019-09-24：2029-05-31：RHEL 8.0   #"
+	echo "#  6：CentOS-Stream-8-x86_64-20191219-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
+	echo "#  7：Fedora-Server-netinst-x86_64-31-1.9：2019-10-29：20xx-xx-xx：kernel 5.3 #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -109,7 +110,21 @@ funcRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			wget -nv -O "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+		else
+			curl -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}"
+			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+			local WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+			local DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "../${DVD_NAME}.iso"`
+			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
+			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
+			if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+			fi
+			if [ -f "header.txt" ]; then
+				rm -f "header.txt"
+			fi
 		fi
 															# Volume ID
 		if [ "`which volname 2> /dev/null`" != "" ]; then
@@ -135,7 +150,7 @@ funcRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "preseed/preseed.cfg"
 					else
-						wget -nv -O "preseed/preseed.cfg" "${CFG_URL}" || { rm -f "preseed/preseed.cfg"; exit 1; }
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_URL}" || { rm -f "preseed/preseed.cfg"; exit 1; }
 					fi
 					;;
 				"centos" | \
@@ -146,7 +161,7 @@ funcRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
 					else
-						wget -nv -O "kickstart/ks.cfg" "${CFG_URL}" || { rm -f "kickstart/ks.cfg"; exit 1; }
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || { rm -f "kickstart/ks.cfg"; exit 1; }
 					fi
 					sed -i kickstart/ks.cfg    \
 					    -e 's/^\(cdrom\)/#\1/g' \
@@ -201,37 +216,21 @@ funcRemaster () {
 					;;
 				"centos" )	# ･････････････････････････････････････････････････
 					case "${VOLID}" in
-						"CentOS 7 x86_64                 " )
+						"CentOS-8-1-1911-x86_64-dvd      " )
 							sed -i isolinux/isolinux.cfg \
 							    -e '/menu default/d' \
-							    -e '/^label linux/i\label centos7auto\n  menu label ^Auto Install CentOS 7\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n'
+							    -e '/^label linux/i\label auto\n  menu label ^Auto Install CentOS Linux 8\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS-8-1-1911-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n'
 							sed -i EFI/BOOT/grub.cfg \
 							    -e 's/\(set default\)="1"/\1="0"/g' \
-							    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS 7'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS\\x207\\x20x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+							    -e '/^### BEGIN \/etc\/grub\.d\/10_linux ###/a\menuentry '\''Auto Install CentOS Linux 8'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-8-1-1911-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}\n'
 							;;
-						"CentOS-8-BaseOS-x86_64          " )
+						"CentOS-Stream-8-x86_64-dvd      " )
 							sed -i isolinux/isolinux.cfg \
 							    -e '/menu default/d' \
-							    -e '/^label linux/i\label centos8auto\n  menu label ^Auto Install CentOS Linux 8.0.1905\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS-8-BaseOS-x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n'
+							    -e '/^label linux/i\label auto\n  menu label ^Auto Install CentOS Stream 8-stream\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS-Stream-8-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n'
 							sed -i EFI/BOOT/grub.cfg \
 							    -e 's/\(set default\)="1"/\1="0"/g' \
-							    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS Linux 8.0.1905'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-8-BaseOS-x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
-							sed -i kickstart/ks.cfg \
-							    -e 's/release=7/release=8/' \
-							    -e 's/repo=os/repo=baseos/' \
-							    -e 's/remi-release-7.rpm/remi-release-8.rpm/'
-							;;
-						"CentOS-Stream-BaseOS-x86_64     " )
-							sed -i isolinux/isolinux.cfg \
-							    -e '/menu default/d' \
-							    -e '/^label linux/i\label centos8auto\n  menu label ^Auto Install CentOS Stream 8.0.1905\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS-Stream-BaseOS-x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n'
-							sed -i EFI/BOOT/grub.cfg \
-							    -e 's/\(set default\)="1"/\1="0"/g' \
-							    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install CentOS Stream 8.0.1905'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-Stream-BaseOS-x86_64 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
-							sed -i kickstart/ks.cfg \
-							    -e 's/release=7/release=8/' \
-							    -e 's/repo=os/repo=baseos/' \
-							    -e 's/remi-release-7.rpm/remi-release-8.rpm/'
+							    -e '/^### BEGIN \/etc\/grub\.d\/10_linux ###/a\menuentry '\''Auto Install CentOS Stream 8-stream'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-Stream-8-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}\n'
 							;;
 						* )
 							echo "?:[${VOLID}]"
@@ -307,7 +306,7 @@ funcRemaster () {
 		fi
 	done
 	# -------------------------------------------------------------------------
-	ls -alth "${WORK_DIRS}"
+	ls -alLt "${WORK_DIRS}/"*.iso
 # -----------------------------------------------------------------------------
 	echo "*******************************************************************************"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"
@@ -375,9 +374,10 @@ funcRemaster () {
 #x17.04:Zesty Zapus      :2017-04-13:2018-01-13
 #x17.10:Artful Aardvark  :2017-10-19:2018-07-19
 # 18.04:Bionic Beaver    :2018-04-26:2023-04-xx
-#x18.10:Cosmic Cuttlefish:2018-10-18:2019-07-xx
-# 19.04:Disco Dingo      :2019-04-18:2020-01-xx
+#x18.10:Cosmic Cuttlefish:2018-10-18:2019-07-18
+# 19.04:Disco Dingo      :2019-04-18:2020-01-23
 # 19.10:Eoan Ermine      :2019-10-17:2020-07-xx
+# 20.04:Focal Fossa      :2020-04-23:2025-04-xx
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
 # Ver.    :リリース日:RHEL      :メンテナンス更新期限
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30

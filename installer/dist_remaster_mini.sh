@@ -28,11 +28,13 @@
 ##	2019/11/23 000.0000 J.Itou         コメント追加：fedora 31
 ##	2019/11/24 000.0000 J.Itou         ubuntu 20.04 追加
 ##	2019/11/29 000.0000 J.Itou         USBメモリーでのインストール対応
+##	2020/02/22 000.0000 J.Itou         wget -> curl 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
 #	set -n													# 構文エラーのチェック
-	set -eu													# ステータス0以外と未定義変数の参照で終了
+#	set -eu													# ステータス0以外と未定義変数の参照で終了
+	set -u													# 未定義変数の参照で終了
 #	set -o ignoreof											# Ctrl+Dで終了しない
 	trap 'exit 1' 1 2 3 15
 # -----------------------------------------------------------------------------
@@ -47,15 +49,15 @@
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
 	readonly ARRAY_NAME=(      \
-	    "debian oldoldstable" \
-	    "debian oldstable"    \
-	    "debian stable"       \
-	    "debian testing"      \
-	    "ubuntu xenial"       \
-	    "ubuntu bionic"       \
-	    "ubuntu disco"        \
-	    "ubuntu eoan"         \
-	    "ubuntu focal"        \
+	    "debian debian         oldoldstable" \
+	    "debian debian         oldstable"    \
+	    "debian debian         stable"       \
+	    "debian debian         testing"      \
+	    "ubuntu ubuntu-archive xenial"       \
+	    "ubuntu ubuntu-archive bionic"       \
+	    "ubuntu ubuntu-archive disco"        \
+	    "ubuntu ubuntu-archive eoan"         \
+	    "ubuntu ubuntu-archive focal"        \
 	)
 # -----------------------------------------------------------------------------
 funcMenu () {
@@ -65,11 +67,11 @@ funcMenu () {
 	echo "#  2：Debian  9.xx：stretch         ：2017-06-17：2022-06-xx：oldstable      #"
 	echo "#  3：Debian 10.xx：buster          ：2019-07-06：          ：stable         #"
 	echo "#  4：Debian 11.xx：bullseye        ：2021-xx-xx：          ：testing        #"
-	echo "#  5：Ubuntu 16.04：Xenial Xerus    ：2016-04-21：2021-04-xx：               #"
-	echo "#  6：Ubuntu 18.04：Bionic Beaver   ：2018-04-26：2023-04-xx：               #"
-	echo "#  7：Ubuntu 19.04：Disco Dingo     ：2019-04-18：2020-01-xx：               #"
+	echo "#  5：Ubuntu 16.04：Xenial Xerus    ：2016-04-21：2021-04-xx：LTS            #"
+	echo "#  6：Ubuntu 18.04：Bionic Beaver   ：2018-04-26：2023-04-xx：LTS            #"
+	echo "#  7：Ubuntu 19.04：Disco Dingo     ：2019-04-18：2020-01-23：               #"
 	echo "#  8：Ubuntu 19.10：Eoan Ermine     ：2019-10-17：2020-07-xx：               #"
-	echo "# xx：Ubuntu 20.04：Focal Fossa     ：20xx-xx-xx：20xx-xx-xx：               #"
+	echo "#  9：Ubuntu 20.04：Focal Fossa     ：2020-04-23：2025-04-xx：LTS            #"
 	echo "# ---------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -85,30 +87,44 @@ funcIsInt () {
 funcRemaster () {
 	# --- ARRAY_NAME ----------------------------------------------------------
 	local CODE_NAME=($1)									# 配列展開
-	echo "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} ---------------------------------------------"
+	echo "↓処理中：${CODE_NAME[0]}：${CODE_NAME[2]} ---------------------------------------------"
 	# --- DVD -----------------------------------------------------------------
 #	local CPU_TYPE=i386										# CPUタイプ(32bit)
 	local CPU_TYPE=amd64									# CPUタイプ(64bit)
-	local DVD_NAME="mini-${CODE_NAME[1]}-${CPU_TYPE}"
-	local DVD_URL="https://ftp.yz.yamagata-u.ac.jp/${CODE_NAME[0]}/dists/${CODE_NAME[1]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
+	local DVD_NAME="mini-${CODE_NAME[2]}-${CPU_TYPE}"
+	local DVD_URL="https://ftp.yz.yamagata-u.ac.jp/pub/linux/${CODE_NAME[1]}/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
 	# --- preseed.cfg ---------------------------------------------------------
 	local CFG_NAME="preseed_${CODE_NAME[0]}"
 	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/${CFG_NAME}.cfg"
 	# -------------------------------------------------------------------------
-	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}/image ${WORK_DIRS}/${CODE_NAME[1]}/decomp ${WORK_DIRS}/${CODE_NAME[1]}/mnt
-	mkdir -p ${WORK_DIRS}/${CODE_NAME[1]}/image ${WORK_DIRS}/${CODE_NAME[1]}/decomp ${WORK_DIRS}/${CODE_NAME[1]}/mnt
+	rm -rf   ${WORK_DIRS}/${CODE_NAME[2]}/image ${WORK_DIRS}/${CODE_NAME[2]}/decomp ${WORK_DIRS}/${CODE_NAME[2]}/mnt
+	mkdir -p ${WORK_DIRS}/${CODE_NAME[2]}/image ${WORK_DIRS}/${CODE_NAME[2]}/decomp ${WORK_DIRS}/${CODE_NAME[2]}/mnt
 	# --- remaster ------------------------------------------------------------
-	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
+	pushd ${WORK_DIRS}/${CODE_NAME[2]} > /dev/null
 		# --- get preseed.cfg -------------------------------------------------
 		if [ -f "../../${CFG_NAME}.cfg" ]; then
 			cp --preserve=timestamps "../../${CFG_NAME}.cfg" "preseed.cfg"
 		fi
 		if [ ! -f "preseed.cfg" ]; then
-			wget -nv -O "preseed.cfg" "${CFG_URL}" || { rm -f "preseed.cfg"; exit 1; }
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed.cfg" "${CFG_URL}" || { rm -f "preseed.cfg"; exit 1; }
 		fi
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			wget -nv -O "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+		else
+			curl -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}"
+			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+			local WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+			local DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "../${DVD_NAME}.iso"`
+			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
+			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
+			if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+			fi
+			if [ -f "header.txt" ]; then
+				rm -f "header.txt"
+			fi
 		fi
 															# Volume ID
 		if [ "`which volname 2> /dev/null`" != "" ]; then
@@ -171,7 +187,7 @@ funcRemaster () {
 			    .
 		popd > /dev/null
 	popd > /dev/null
-	echo "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} ---------------------------------------------"
+	echo "↑処理済：${CODE_NAME[0]}：${CODE_NAME[2]} ---------------------------------------------"
 }
 # -----------------------------------------------------------------------------
 	echo "*******************************************************************************"
@@ -197,7 +213,7 @@ funcRemaster () {
 		fi
 	done
 	# -------------------------------------------------------------------------
-	ls -alt "${WORK_DIRS}"
+	ls -alLt "${WORK_DIRS}/"*.iso
 # -----------------------------------------------------------------------------
 	echo "*******************************************************************************"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"
@@ -265,9 +281,10 @@ funcRemaster () {
 #x17.04:Zesty Zapus      :2017-04-13:2018-01-13
 #x17.10:Artful Aardvark  :2017-10-19:2018-07-19
 # 18.04:Bionic Beaver    :2018-04-26:2023-04-xx
-#x18.10:Cosmic Cuttlefish:2018-10-18:2019-07-xx
-# 19.04:Disco Dingo      :2019-04-18:2020-01-xx
+#x18.10:Cosmic Cuttlefish:2018-10-18:2019-07-18
+# 19.04:Disco Dingo      :2019-04-18:2020-01-23
 # 19.10:Eoan Ermine      :2019-10-17:2020-07-xx
+# 20.04:Focal Fossa      :2020-04-23:2025-04-xx
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
 # Ver.    :リリース日:RHEL      :メンテナンス更新期限
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30
