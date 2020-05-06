@@ -46,6 +46,8 @@
 ##	2019/11/29 000.0000 J.Itou         USBメモリーでのインストール対応
 ##	2020/02/22 000.0000 J.Itou         debian 9.12.0/10.3.0 / ubuntu 18.04.4 変更 / CentOS 8.1 追加 / CentOS-Stream-8-x86_64-20191219-boot 変更
 ##	2020/02/22 000.0000 J.Itou         wget -> curl 変更
+##	2020/05/05 000.0000 J.Itou         不具合修正
+##	2020/05/05 000.0000 J.Itou         ubuntu 20.04 追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -76,6 +78,9 @@
 	    "ubuntu ubuntu-18.04.4-desktop-amd64         https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/bionic/ubuntu-18.04.4-desktop-amd64.iso                        preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-19.10-server-amd64            http://cdimage.ubuntu.com/releases/eoan/release/ubuntu-19.10-server-amd64.iso                                            preseed_ubuntu.cfg"   \
 	    "ubuntu ubuntu-19.10-desktop-amd64           https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/eoan/ubuntu-19.10-desktop-amd64.iso                            preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-20.04-live-server-amd64       https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/focal/ubuntu-20.04-live-server-amd64.iso                       preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-20.04-server-amd64            http://cdimage.ubuntu.com/releases/focal/release/ubuntu-20.04-server-amd64.iso                                           preseed_ubuntu.cfg"   \
+	    "ubuntu ubuntu-20.04-desktop-amd64           https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/focal/ubuntu-20.04-desktop-amd64.iso                           preseed_ubuntu.cfg"   \
 	    "centos CentOS-8.1.1911-x86_64-dvd1          http://isoredirect.centos.org/centos/8/isos/x86_64/CentOS-8.1.1911-x86_64-dvd1.iso                                       kickstart_centos.cfg" \
 	    "centos CentOS-Stream-8-x86_64-20191219-dvd1 http://isoredirect.centos.org/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20191219-dvd1.iso                       kickstart_centos.cfg" \
 	    "fedora Fedora-Server-dvd-x86_64-31-1.9      https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/31/Server/x86_64/iso/Fedora-Server-dvd-x86_64-31-1.9.iso kickstart_fedora.cfg" \
@@ -94,9 +99,12 @@ funcMenu () {
 	echo "#  8：ubuntu-18.04.4-desktop-amd64   ：    〃    ：    〃    ：  〃           #"
 	echo "#  9：ubuntu-19.10-server-amd64      ：2019-10-17：2020-07-xx：Eoan Ermine    #"
 	echo "# 10：ubuntu-19.10-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
-	echo "# 11：CentOS-8.1.1911-x86_64-dvd1    ：2019-09-24：2029-05-31：RHEL 8.0       #"
-	echo "# 12：CentOS-Stream-8-x86_64-20191219：2019-xx-xx：20xx-xx-xx：RHEL x.x       #"
-	echo "# 13：Fedora-Server-dvd-x86_64-31-1.9：2019-10-29：20xx-xx-xx：kernel 5.3     #"
+	echo "# 11：ubuntu-20.04-live-server-amd64 ：2020-04-23：2025-04-xx：Focal Fossa    #"
+	echo "# 12：ubuntu-20.04-server-amd64      ：2020-04-23：2025-04-xx：Focal Fossa    #"
+	echo "# 13：ubuntu-20.04-desktop-amd64     ：    〃    ：    〃    ：  〃           #"
+	echo "# 14：CentOS-8.1.1911-x86_64-dvd1    ：2019-09-24：2029-05-31：RHEL 8.0       #"
+	echo "# 15：CentOS-Stream-8-x86_64-20191219：2019-xx-xx：20xx-xx-xx：RHEL x.x       #"
+	echo "# 16：Fedora-Server-dvd-x86_64-31-1.9：2019-10-29：20xx-xx-xx：kernel 5.3     #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -198,7 +206,7 @@ funcRemaster () {
 					    -e 's/^\(default\) .*$/\1 preseed/' \
 					    -e '/menu default/d' \
 					    -e '/^label install/i\label preseed\n\tmenu label ^Preseed install\n\tmenu default\n\tkernel /install.amd/vmlinuz\n\tappend vga=788 initrd=/install.amd/initrd.gz --- quiet auto=true file=/cdrom/preseed/preseed.cfg'
-					sed -i.orig boot/grub/grub.cfg \
+					sed -i boot/grub/grub.cfg \
 					    -e "/^set theme/a\menuentry --hotkey=p 'Preseed install' {\n    set background_color=black\n    linux    /install.amd/vmlinuz auto=true file=/cdrom/preseed/preseed.cfg priority=critical vga=788 --- quiet\n    initrd   /install.amd/initrd.gz\n}"
 					;;
 				"ubuntu" )	# ･････････････････････････････････････････････････
@@ -211,7 +219,7 @@ funcRemaster () {
 							    -e 's/^\(default\) .*$/\1 preseed/' \
 							    -e '/menu default/d' \
 							    -e '/^default/a\label preseed\n  menu label ^Preseed install Server\n  kernel /install/vmlinuz\n  append  auto=true file=/cdrom/preseed/preseed.cfg vga=788 initrd=/install/initrd.gz quiet ---'
-							sed -i.orig boot/grub/grub.cfg \
+							sed -i boot/grub/grub.cfg \
 							    -e '/menuentry "Install Ubuntu Server"/i\menuentry "Preseed install Ubuntu Server" {\n\tset gfxpayload=keep\n\tlinux\t/install/vmlinuz  auto=true file=/cdrom/preseed/preseed.cfg quiet ---\n\tinitrd\t/install/initrd.gz\n}'
 							;;
 						"ubuntu-16.04.6-desktop-amd64"   )
@@ -219,7 +227,7 @@ funcRemaster () {
 							    -e 's/^\(default\) .*$/\1 preseed/' \
 							    -e '/menu default/d' \
 							    -e '/^default/a\label preseed\n  menu label ^Preseed install Ubuntu\n  kernel /casper/vmlinuz.efi\n  append  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity initrd=/casper/initrd.lz quiet splash ---'
-							sed -i.orig boot/grub/grub.cfg \
+							sed -i boot/grub/grub.cfg \
 							    -e '/menuentry "Try Ubuntu without installing"/i\menuentry "Preseed install Ubuntu" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz.efi  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd.lz\n}'
 							;;
 						"ubuntu-18.04.4-desktop-amd64"   | \
@@ -229,8 +237,110 @@ funcRemaster () {
 							    -e 's/^\(default\) .*$/\1 preseed/' \
 							    -e '/menu default/d' \
 							    -e '/^default/a\label preseed\n  menu label ^Preseed install Ubuntu\n  kernel /casper/vmlinuz\n  append  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity initrd=/casper/initrd.lz quiet splash ---'
-							sed -i.orig boot/grub/grub.cfg \
+							sed -i boot/grub/grub.cfg \
 							    -e '/menuentry "Try Ubuntu without installing"/i\menuentry "Preseed install Ubuntu" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd.lz\n}'
+							;;
+						"ubuntu-20.04-live-server-amd64" )
+							sed -i isolinux/txt.cfg  \
+							    -e 's/^\(default\) .*$/\1 preseed/' \
+							    -e '/menu default/d' \
+							    -e '/^default/a\label preseed\n  menu label ^Auto install Ubuntu Server\n  kernel /casper/vmlinuz\n  append  autoinstall "ds=nocloud;s=/cdrom/nocloud/" vga=788 initrd=/casper/initrd quiet ---'
+							sed -i boot/grub/grub.cfg \
+							    -e '/menuentry "Install Ubuntu Server"/i\menuentry "Auto install Ubuntu Server" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz autoinstall "ds=nocloud;s=/cdrom/nocloud/" quiet  ---\n\tinitrd\t/casper/initrd\n}'
+							mkdir nocloud
+							touch nocloud/meta-data
+							touch nocloud/user-data
+#							touch nocloud/network-config
+#							cat <<- '_EOT_' >> nocloud/network-config
+#version: 2
+#ethernets:
+#  ens160:
+#    addresses:
+#      - 192.168.1.1/255.255.255.0
+#    gateway4: 192.168.1.254
+#    nameservers:
+#      addresses:
+#        - 192.168.1.254
+#_EOT_
+							cat <<- '_EOT_' >> nocloud/user-data
+#cloud-config
+autoinstall:
+  version: 1
+# bootcmd:
+#   - echo 192.168.1.1 sv-ubuntu.workgroup sv-ubuntu > /etc/hosts
+  identity:
+    hostname: sv-ubuntu
+    realname: Master
+    username: master
+    password: "$6$rBCZT84E9aJgVKuJ$53LaBfRk7uuexIfi1hGZCS575zZlgsqmliIlMIqiMqX.gFw9kNIeyPjpu5OUw7TmQLSs/.0VI..M.rWKdExaE0"
+  locale: ja_JP.UTF-8
+  keyboard:
+    layout: jp
+  refresh-installer:
+    update: yes
+    channel: edge
+  network:
+    network:
+      version: 2
+      ethernets:
+        ens160:
+          dhcp4: false
+          addresses:
+            - 192.168.1.1/24
+          gateway4: 192.168.1.254
+          nameservers:
+            addresses:
+              - 192.168.1.254
+  package_update: true
+  package_upgrade: true
+  packages:
+    - standard^
+    - server^
+    - openssh-server^
+    - dns-server^
+    - samba-server^
+#   - ubuntu-desktop^
+    - sudo
+    - tasksel
+    - isc-dhcp-server
+    - apache2
+    - vsftpd
+    - ntpdate
+    - clamav
+    - cifs-utils
+    - nfs-common
+    - nfs-kernel-server
+    - smbclient
+    - dnsutils
+    - ibus-mozc
+    - inxi
+    - rsync
+    - desktop-base
+#   - chromium-browser
+#   - chromium-browser-l10n
+  filesystem:
+    guided: yes
+    guided-method: lvm
+    guided-index: 0
+# storage:
+#   layout:
+#     name: lvm
+#   config:
+#     - {ptable: gpt, path: /dev/sda,  wipe: superblock,                        preserve: false, name: '', grub_device: false, type: disk,          id: disk-sda}
+#     - {device: disk-sda, size: 512M, wipe: superblock, flag: boot, number: 1, preserve: false,           grub_device: true,  type: partition,     id: partition-0}
+#     - {device: disk-sda, size:   1G, wipe: superblock, flag: '',   number: 2, preserve: false,                               type: partition,     id: partition-1}
+#     - {device: disk-sda, size:   -1, wipe: superblock, flag: '',   number: 3, preserve: false,                               type: partition,     id: partition-2}
+#     - {name: ubuntu-vg, devices: [partition-2],                               preserve: false,                               type: lvm_volgroup,  id: lvm_volgroup-0}
+#     - {name: ubuntu-lv, volgroup: lvm_volgroup-0, size: 50G,                  preserve: false,                               type: lvm_partition, id: lvm_partition-0}
+#     - {fstype: fat32, volume: partition-0,                                    preserve: false,                               type: format,        id: format-0}
+#     - {fstype: ext4,  volume: partition-1,                                    preserve: false,                               type: format,        id: format-1}
+#     - {fstype: ext4,  volume: lvm_partition-0,                                preserve: false,                               type: format,        id: format-2}
+#     - {device: format-0, path: /boot/efi,                                                                                    type: mount,         id: mount-0}
+#     - {device: format-1, path: /boot,                                                                                        type: mount,         id: mount-1}
+#     - {device: format-2, path: /,                                                                                            type: mount,         id: mount-2}
+  user-data:
+    timezone: Asia/Tokyo
+_EOT_
 							;;
 						* )	;;
 					esac
@@ -284,7 +394,14 @@ funcRemaster () {
 			esac
 			# --- make iso file -----------------------------------------------
 			rm -f md5sum.txt
-			find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt
+			case "${CODE_NAME[1]}" in
+				"ubuntu-20.04-live-server-amd64" )
+					find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
+					;;
+				* )
+					find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
+					;;
+			esac
 			xorriso -as mkisofs \
 			    -quiet \
 			    -iso-level 3 \

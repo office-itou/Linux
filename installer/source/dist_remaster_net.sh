@@ -42,6 +42,7 @@
 ##	2019/11/29 000.0000 J.Itou         USBメモリーでのインストール対応
 ##	2020/02/22 000.0000 J.Itou         debian 9.12.0/10.3.0 変更 / CentOS 8.1 追加 / CentOS-Stream-8-x86_64-20191219-boot 変更
 ##	2020/02/22 000.0000 J.Itou         wget -> curl 変更
+##	2020/05/05 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -177,7 +178,7 @@ funcRemaster () {
 					    -e 's/^\(default\) .*$/\1 preseed/' \
 					    -e '/menu default/d' \
 					    -e '/^label install/i\label preseed\n\tmenu label ^Preseed install\n\tmenu default\n\tkernel /install.amd/vmlinuz\n\tappend vga=788 initrd=/install.amd/initrd.gz --- quiet auto=true file=/cdrom/preseed/preseed.cfg'
-					sed -i.orig boot/grub/grub.cfg \
+					sed -i boot/grub/grub.cfg \
 					    -e "/^set theme/a\menuentry --hotkey=p 'Preseed install' {\n    set background_color=black\n    linux    /install.amd/vmlinuz auto=true file=/cdrom/preseed/preseed.cfg priority=critical vga=788 --- quiet\n    initrd   /install.amd/initrd.gz\n}"
 					;;
 				"ubuntu" )	# ･････････････････････････････････････････････････
@@ -190,7 +191,7 @@ funcRemaster () {
 							    -e 's/^\(default\) .*$/\1 preseed/' \
 							    -e '/menu default/d' \
 							    -e '/^default/a\label preseed\n  menu label ^Preseed install Server\n  kernel /install/vmlinuz\n  append  auto=true file=/cdrom/preseed/preseed.cfg vga=788 initrd=/install/initrd.gz quiet ---'
-							sed -i.orig boot/grub/grub.cfg \
+							sed -i boot/grub/grub.cfg \
 							    -e '/menuentry "Install Ubuntu Server"/i\menuentry "Preseed install Ubuntu Server" {\n\tset gfxpayload=keep\n\tlinux\t/install/vmlinuz  auto=true file=/cdrom/preseed/preseed.cfg quiet ---\n\tinitrd\t/install/initrd.gz\n}'
 							;;
 						"ubuntu-16.04.6-desktop-amd64"   )
@@ -198,7 +199,7 @@ funcRemaster () {
 							    -e 's/^\(default\) .*$/\1 preseed/' \
 							    -e '/menu default/d' \
 							    -e '/^default/a\label preseed\n  menu label ^Preseed install Ubuntu\n  kernel /casper/vmlinuz.efi\n  append  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity initrd=/casper/initrd.lz quiet splash ---'
-							sed -i.orig boot/grub/grub.cfg \
+							sed -i boot/grub/grub.cfg \
 							    -e '/menuentry "Try Ubuntu without installing"/i\menuentry "Preseed install Ubuntu" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz.efi  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd.lz\n}'
 							;;
 						"ubuntu-18.04.2-desktop-amd64"   | \
@@ -208,7 +209,7 @@ funcRemaster () {
 							    -e 's/^\(default\) .*$/\1 preseed/' \
 							    -e '/menu default/d' \
 							    -e '/^default/a\label preseed\n  menu label ^Preseed install Ubuntu\n  kernel /casper/vmlinuz\n  append  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity initrd=/casper/initrd.lz quiet splash ---'
-							sed -i.orig boot/grub/grub.cfg \
+							sed -i boot/grub/grub.cfg \
 							    -e '/menuentry "Try Ubuntu without installing"/i\menuentry "Preseed install Ubuntu" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd.lz\n}'
 							;;
 						* )	;;
