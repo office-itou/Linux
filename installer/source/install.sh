@@ -55,6 +55,7 @@
 ##	2019/07/13 000.0000 J.Itou         不具合修正(ipv6周り)
 ##	2020/01/04 000.0000 J.Itou         不具合修正(nologin検索)
 ##	2020/01/10 000.0000 J.Itou         不具合修正(.vimrc加筆)
+##	2020/05/09 000.0000 J.Itou         不具合修正(Ubuntu 20.04対応含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -161,30 +162,56 @@ fncGetIPaddr () {
 fncGetNM () {
 	local DMY_STAT
 
-	LANG=C nmcli c show help 2> /dev/null
-	if [ $? -ge 2 ]; then
-		DMY_STAT="`LANG=C nmcli dev list iface "$2" | awk '/^'"$1"'/'`"
+	if [ "${CON_NAME}" != "" -a ! -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
+		LANG=C nmcli c show help 2> /dev/null
+		if [ $? -ge 2 ]; then
+			DMY_STAT="`LANG=C nmcli dev list iface "$2" | awk '/^'"$1"'/'`"
+		else
+			DMY_STAT="`LANG=C nmcli con show uuid "$3" | awk '/^'"$1"'/'`"
+		fi
+		case "$1" in
+			"DHCP4" | \
+			"DHCP6" )
+				if [ "${DMY_STAT}" != "" ]; then
+					echo "auto"
+				else
+					echo "static"
+				fi
+				;;
+			"IP4.DNS" | \
+			"IP6.DNS" )
+				echo "${DMY_STAT}" | awk '{print $2;}'
+				;;
+			* )
+				echo ""
+				;;
+		esac
 	else
-		DMY_STAT="`LANG=C nmcli con show uuid "$3" | awk '/^'"$1"'/'`"
+		DMY_STAT=""
+		case "$1" in
+			"DHCP4" )
+				if [ "`LANG=C ip -4 a show dev $2 scope global dynamic`" = "" ]; then
+					DMY_STAT="static"
+				else
+					DMY_STAT="auto"
+				fi
+				;;
+			"DHCP6" )
+				if [ "`LANG=C ip -6 a show dev $2 scope global dynamic`" = "" ]; then
+					DMY_STAT="static"
+				else
+					DMY_STAT="auto"
+				fi
+				;;
+			"IP4.DNS" )
+				;;
+			"IP6.DNS" )
+				;;
+			* )
+				;;
+		esac
+		echo "${DMY_STAT}"
 	fi
-
-	case "$1" in
-		"DHCP4" | \
-		"DHCP6" )
-			if [ "${DMY_STAT}" != "" ]; then
-				echo "auto"
-			else
-				echo "static"
-			fi
-			;;
-		"IP4.DNS" | \
-		"IP6.DNS" )
-			echo "${DMY_STAT}" | awk '{print $2;}'
-			;;
-		* )
-			echo ""
-			;;
-	esac
 }
 
 # IPv6逆引き処理 --------------------------------------------------------------
@@ -333,17 +360,19 @@ funcInitialize () {
 	CON_UUID=`nmcli -t -f uuid c | head -n 1`									# 接続UUID
 	# ･････････････････････････････････････････････････････････････････････････
 	NIC_ARRY=(`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`)	# NICデバイス名
+#	IP4_DHCP=""																	# IPv4:DHCPフラグ(auto/static)
+#	IP6_DHCP=""																	# IPv6:DHCPフラグ(auto/static)
+#	IP4_DNSA=""																	# IPv4:DNSアドレス
+#	IP6_DNSA=""																	# IPv6:DNSアドレス
 	for DEV_NAME in ${NIC_ARRY[@]}
 	do
-		IP4_ARRY+=(`fncGetIPaddr 4 "global primary"  "${DEV_NAME}"`)			# IPv4:IPアドレス/サブネットマスク(bit)
-		IP6_ARRY+=(`fncGetIPaddr 6 "global primary"  "${DEV_NAME}"`)			# IPv6:IPアドレス/サブネットマスク(bit)
-		LNK_ARRY+=(`fncGetIPaddr 6 "link"            "${DEV_NAME}"`)			# Link:IPアドレス/サブネットマスク(bit)
-		if [ "${CON_UUID}" != "" ]; then
-			IP4_DHCP+=(`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`)		# IPv4:DHCPフラグ(auto/static)
-			IP6_DHCP+=(`fncGetNM "DHCP6"   "${DEV_NAME}" "${CON_UUID}"`)		# IPv6:DHCPフラグ(auto/static)
-			IP4_DNSA+=(`fncGetNM "IP4.DNS" "${DEV_NAME}" "${CON_UUID}"`)		# IPv4:DNSアドレス
-			IP6_DNSA+=(`fncGetNM "IP6.DNS" "${DEV_NAME}" "${CON_UUID}"`)		# IPv6:DNSアドレス
-		fi
+		IP4_ARRY+=(`fncGetIPaddr 4 "global primary" "${DEV_NAME}"`)				# IPv4:IPアドレス/サブネットマスク(bit)
+		IP6_ARRY+=(`fncGetIPaddr 6 "global primary" "${DEV_NAME}"`)				# IPv6:IPアドレス/サブネットマスク(bit)
+		LNK_ARRY+=(`fncGetIPaddr 6 "link"           "${DEV_NAME}"`)				# Link:IPアドレス/サブネットマスク(bit)
+		IP4_DHCP+=(`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`)			# IPv4:DHCPフラグ(auto/static)
+		IP6_DHCP+=(`fncGetNM "DHCP6"   "${DEV_NAME}" "${CON_UUID}"`)			# IPv6:DHCPフラグ(auto/static)
+		IP4_DNSA+=(`fncGetNM "IP4.DNS" "${DEV_NAME}" "${CON_UUID}"`)			# IPv4:DNSアドレス
+		IP6_DNSA+=(`fncGetNM "IP6.DNS" "${DEV_NAME}" "${CON_UUID}"`)			# IPv6:DNSアドレス
 	done
 	IP4_GATE=`ip -4 r show table all | awk '/default/ {print $3;}'`				# IPv4:デフォルトゲートウェイ
 	# ･････････････････････････････････････････････････････････････････････････
@@ -468,24 +497,24 @@ funcInitialize () {
 	SMB_CONF=`find /etc -name "smb.conf" -type f -print`
 	SMB_BACK=${SMB_CONF}.orig
 	# webmin ------------------------------------------------------------------
-	echo - Download webmin -------------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		SEL_WMIN=">Debian Package<"
-	else																		# Red Hat系
-		SEL_WMIN=">RPM<"
-	fi
-	HTM_WMIN="download.html"
-	WEB_WMIN="http://www.webmin.com/${HTM_WMIN}"
-	WRK_WMIN="${DIR_WK}/${HTM_WMIN}"
-	wget -O "${WRK_WMIN}" "${WEB_WMIN}"
-	funcPause $?
-	URL_WMIN=`awk -F '"' '/'"${SEL_WMIN}"'/ {print $2;}' "${WRK_WMIN}"`
-	SET_WMIN=`basename ${URL_WMIN}`
-	PKG_WMIN="${DIR_WK}/${SET_WMIN}"
-	rm -f "${WRK_WMIN}"
-	funcPause $?
-	wget -O "${PKG_WMIN}" "${URL_WMIN}"
-	funcPause $?
+#	echo - Download webmin -------------------------------------------------------------
+#	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
+#		SEL_WMIN=">Debian Package<"
+#	else																		# Red Hat系
+#		SEL_WMIN=">RPM<"
+#	fi
+#	HTM_WMIN="download.html"
+#	WEB_WMIN="http://www.webmin.com/${HTM_WMIN}"
+#	WRK_WMIN="${DIR_WK}/${HTM_WMIN}"
+#	wget -O "${WRK_WMIN}" "${WEB_WMIN}"
+#	funcPause $?
+#	URL_WMIN=`awk -F '"' '/'"${SEL_WMIN}"'/ {print $2;}' "${WRK_WMIN}"`
+#	SET_WMIN=`basename ${URL_WMIN}`
+#	PKG_WMIN="${DIR_WK}/${SET_WMIN}"
+#	rm -f "${WRK_WMIN}"
+#	funcPause $?
+#	wget -O "${PKG_WMIN}" "${URL_WMIN}"
+#	funcPause $?
 }
 
 # Main処理 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -606,6 +635,17 @@ _EOT_
 	# Network Setup
 	# *************************************************************************
 	echo - Network Setup ---------------------------------------------------------------
+	# hosts -------------------------------------------------------------------
+	echo --- hosts ---------------------------------------------------------------------
+	if [ ! -f /etc/hosts.orig ]; then
+		if [ -f /etc/hosts ]; then
+			if [ "${IP4_DHCP[0]}" != "auto" ]; then
+				sed -i.orig /etc/hosts                      \
+				    -e "s/127.0.1.1/${IP4_ADDR}/"           \
+				    -e "s/\(${SVR_FQDN}\)$/\1 ${SVR_NAME}/"
+			fi
+		fi
+	fi
 	# hosts.allow -------------------------------------------------------------
 	echo --- hosts.allow ---------------------------------------------------------------
 	if [ ! -f /etc/hosts.allow.orig ]; then
@@ -681,51 +721,53 @@ _EOT_
 #		sysctl -p
 #	fi
 	# Configuration for getaddrinfo [IPv4接続優先化設定] ----------------------
-	echo --- Configuration for getaddrinfo [IPv4接続優先化設定] ------------------------
+#	echo --- Configuration for getaddrinfo [IPv4接続優先化設定] ------------------------
 	#        ::1/128 (ループバック)
 	#         ::/0   (IPv6通信全般)
 	#     2002::/16  (6to4)
 	#         ::/96  (IPv4互換)
 	# ::ffff:0:0/96  (IPv4マップ)
-	if [ ! -f /etc/gai.conf.orig ]; then
-		if [ ! -f /etc/gai.conf ]; then
-			cp -p `find /usr -name "gai.conf" -print` /etc/
-		fi
+#	if [ ! -f /etc/gai.conf.orig ]; then
+#		if [ ! -f /etc/gai.conf ]; then
+#			cp -p `find /usr -name "gai.conf" -print` /etc/
+#		fi
 #		sed -i.orig /etc/gai.conf                           \
 #		    -e 's~#\(precedence.*::1/128.*\)~\1~g'          \
 #		    -e 's~#\(precedence.*::/0.*\)~\1~g'             \
 #		    -e 's~#\(precedence.*2002::/16.*\)~\1~g'        \
 #		    -e 's~#\(precedence.*::/96.*\)~\1~g'            \
 #		    -e 's~#\(precedence.*::ffff:0:0/96.*100\)~\1~g'
-	fi
+#	fi
 	# ipv4 dns changed --------------------------------------------------------
-	echo --- ipv4 dns changed ----------------------------------------------------------
-	if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
-		if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
-			sed -i.orig /etc/resolv.conf                                \
-			    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"                 \
-			    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1/g"
-		fi
-	else
-		if [ "${CON_UUID}" != "" ]; then
-			nmcli c modify "${CON_UUID}" ipv4.dns 127.0.0.1
-			nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
+	if [ "${CON_NAME}" != "" ]; then
+		echo --- ipv4 dns changed ----------------------------------------------------------
+		if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
+			if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
+				sed -i.orig /etc/resolv.conf                                \
+				    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"                 \
+				    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1/g"
+			fi
 		else
-			if [ "${IP4_DHCP[0]}" == "auto" ]; then
-				if [ ! -f "/etc/dhcp/dhclient.conf.orig" ]; then
-					sed -i.orig /etc/dhcp/dhclient.conf                           \
-					    -e 's/^#\(prepend domain-name-servers\).*$/\1 127.0.0.1;/'
-				fi
+			if [ "${CON_UUID}" != "" ]; then
+				nmcli c modify "${CON_UUID}" ipv4.dns 127.0.0.1
+				nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
 			else
-				if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
-					cp -p /etc/resolv.conf /etc/resolv.conf.orig
-				fi
-				if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
-					funcProc network-manager stop
-					cp -p "/etc/NetworkManager/system-connections/${CON_NAME}" "${DIR_WK}/${CON_NAME}.orig"
-					cat "${DIR_WK}/${CON_NAME}.orig"                                                                                    \
-					    | sed -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/ s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1;\ndns-search=${WGP_NAME}/" \
-					    > "/etc/NetworkManager/system-connections/${CON_NAME}"
+				if [ "${IP4_DHCP[0]}" = "auto" ]; then
+					if [ ! -f "/etc/dhcp/dhclient.conf.orig" ]; then
+						sed -i.orig /etc/dhcp/dhclient.conf                           \
+						    -e 's/^#\(prepend domain-name-servers\).*$/\1 127.0.0.1;/'
+					fi
+				else
+					if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
+						cp -p /etc/resolv.conf /etc/resolv.conf.orig
+					fi
+					if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
+						funcProc network-manager stop
+						cp -p "/etc/NetworkManager/system-connections/${CON_NAME}" "${DIR_WK}/${CON_NAME}.orig"
+						cat "${DIR_WK}/${CON_NAME}.orig"                                                                                    \
+						    | sed -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/ s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1;\ndns-search=${WGP_NAME}/" \
+						    > "/etc/NetworkManager/system-connections/${CON_NAME}"
+					fi
 				fi
 			fi
 		fi
@@ -1071,7 +1113,7 @@ _EOT_
 		chmod 640 ${DIR_ZONE}/db.${FIL_NAME}
 		chown root.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
 	done
-	if [ "${IP6_DHCP}" != "auto" ]; then
+	if [ "${IP6_DHCP}" != "" -a "${IP6_DHCP}" != "auto" ]; then
 		for FIL_NAME in ${WGP_NAME} ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
 		do
 			cat <<- _EOT_ > ${DIR_ZONE}/db.${FIL_NAME}
@@ -1093,7 +1135,7 @@ _EOT_
 	cat <<- _EOT_ >> ${DIR_ZONE}/db.${WGP_NAME}
 		${SVR_NAME}								IN		A		${IP4_ADDR[0]}
 _EOT_
-	if [ "${IP6_DHCP}" != "auto" ]; then
+	if [ "${IP6_DHCP}" != "" -a "${IP6_DHCP}" != "auto" ]; then
 		cat <<- _EOT_ >> ${DIR_ZONE}/db.${WGP_NAME}
 			${SVR_NAME}								IN		AAAA	${IP6_ADDR[0]}
 			${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
@@ -1104,7 +1146,7 @@ _EOT_
 		${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	if [ "${IP6_DHCP}" != "auto" ]; then
+	if [ "${IP6_DHCP}" != "" -a "${IP6_DHCP}" != "auto" ]; then
 		cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP6_RADU[0]}.ip6.arpa
 			${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
@@ -1165,8 +1207,8 @@ _EOT_
 
 _EOT_
 		done
-		if [ "${IP6_DHCP}" != "auto" ]; then
-			for FIL_NAME in ${WGP_NAME} ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
+		if [ "${IP6_DHCP}" != "" -a "${IP6_DHCP}" != "auto" ]; then
+			for FIL_NAME in ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
 			do
 				cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
 					zone "${FIL_NAME}" {
@@ -1200,12 +1242,12 @@ _EOT_
 	named-checkconf
 	funcPause $?
 	# -------------------------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		funcProc bind9 "${RUN_BIND[0]}"
-		funcProc bind9 "${RUN_BIND[1]}"
-	else																		# Red Hat系
+	if [ "`find /lib/systemd/system/ -name \"named.service\" -print`" != "" ]; then
 		funcProc named "${RUN_BIND[0]}"
 		funcProc named "${RUN_BIND[1]}"
+	else
+		funcProc bind9 "${RUN_BIND[0]}"
+		funcProc bind9 "${RUN_BIND[1]}"
 	fi
 
 #	echo --- dns check -----------------------------------------------------------------
@@ -1993,13 +2035,13 @@ funcDebug () {
 	echo "SMB_PWDB=${SMB_PWDB}"													#  〃   ：samba
 	echo "SMB_CONF=${SMB_CONF}"													#  〃   ：
 	echo "SMB_BACK=${SMB_BACK}"													#  〃   ：
-	echo "SEL_WMIN=${SEL_WMIN}"													#  〃   ：webmin
-	echo "HTM_WMIN=${HTM_WMIN}"													#  〃   ：
-	echo "WEB_WMIN=${WEB_WMIN}"													#  〃   ：
-	echo "WRK_WMIN=${WRK_WMIN}"													#  〃   ：
-	echo "URL_WMIN=${URL_WMIN}"													#  〃   ：
-	echo "SET_WMIN=${SET_WMIN}"													#  〃   ：
-	echo "PKG_WMIN=${PKG_WMIN}"													#  〃   ：
+#	echo "SEL_WMIN=${SEL_WMIN}"													#  〃   ：webmin
+#	echo "HTM_WMIN=${HTM_WMIN}"													#  〃   ：
+#	echo "WEB_WMIN=${WEB_WMIN}"													#  〃   ：
+#	echo "WRK_WMIN=${WRK_WMIN}"													#  〃   ：
+#	echo "URL_WMIN=${URL_WMIN}"													#  〃   ：
+#	echo "SET_WMIN=${SET_WMIN}"													#  〃   ：
+#	echo "PKG_WMIN=${PKG_WMIN}"													#  〃   ：
 	# Network Setup ***********************************************************
 	if [ -f /etc/network/interfaces ]; then
 		echo --- cat /etc/network/interfaces -----------------------------------------------

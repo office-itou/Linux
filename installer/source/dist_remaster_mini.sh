@@ -30,6 +30,7 @@
 ##	2019/11/29 000.0000 J.Itou         USBメモリーでのインストール対応
 ##	2020/02/22 000.0000 J.Itou         wget -> curl 変更
 ##	2020/05/05 000.0000 J.Itou         不具合修正
+##	2020/05/11 000.0000 J.Itou         ubuntu 20.04 対応 / ubuntu 19.04 削除
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -56,7 +57,6 @@
 	    "debian debian         testing"      \
 	    "ubuntu ubuntu-archive xenial"       \
 	    "ubuntu ubuntu-archive bionic"       \
-	    "ubuntu ubuntu-archive disco"        \
 	    "ubuntu ubuntu-archive eoan"         \
 	    "ubuntu ubuntu-archive focal"        \
 	)
@@ -70,9 +70,8 @@ funcMenu () {
 	echo "#  4：Debian 11.xx：bullseye        ：2021-xx-xx：          ：testing        #"
 	echo "#  5：Ubuntu 16.04：Xenial Xerus    ：2016-04-21：2021-04-xx：LTS            #"
 	echo "#  6：Ubuntu 18.04：Bionic Beaver   ：2018-04-26：2023-04-xx：LTS            #"
-	echo "#  7：Ubuntu 19.04：Disco Dingo     ：2019-04-18：2020-01-23：               #"
-	echo "#  8：Ubuntu 19.10：Eoan Ermine     ：2019-10-17：2020-07-xx：               #"
-	echo "#  9：Ubuntu 20.04：Focal Fossa     ：2020-04-23：2025-04-xx：LTS            #"
+	echo "#  7：Ubuntu 19.10：Eoan Ermine     ：2019-10-17：2020-07-xx：               #"
+	echo "#  8：Ubuntu 20.04：Focal Fossa     ：2020-04-23：2025-04-xx：LTS            #"
 	echo "# ---------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -93,7 +92,14 @@ funcRemaster () {
 #	local CPU_TYPE=i386										# CPUタイプ(32bit)
 	local CPU_TYPE=amd64									# CPUタイプ(64bit)
 	local DVD_NAME="mini-${CODE_NAME[2]}-${CPU_TYPE}"
-	local DVD_URL="https://ftp.yz.yamagata-u.ac.jp/pub/linux/${CODE_NAME[1]}/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
+	case "${CODE_NAME[2]}" in
+		"focal" )
+			local DVD_URL="https://ftp.yz.yamagata-u.ac.jp/pub/linux/${CODE_NAME[1]}/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/legacy-images/netboot/mini.iso"
+			;;
+		* )
+			local DVD_URL="https://ftp.yz.yamagata-u.ac.jp/pub/linux/${CODE_NAME[1]}/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
+			;;
+	esac
 	# --- preseed.cfg ---------------------------------------------------------
 	local CFG_NAME="preseed_${CODE_NAME[0]}"
 	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/${CFG_NAME}.cfg"
@@ -253,6 +259,7 @@ funcRemaster () {
 #  10.0:buster           :2019-07-06:
 #  11.0:bullseye         :2021(予定):
 # --- https://en.wikipedia.org/wiki/Ubuntu_version_history --------------------
+# [https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja]
 # Ver. :コードネーム     :リリース日:サポート期限
 #x 4.10:Warty Warthog    :2004-10-20:2006-04-30
 #x 5.04:Hoary Hedgehog   :2005-04-08:2006-10-31
@@ -300,4 +307,5 @@ funcRemaster () {
 # 29   :                 :2018-10-30:
 # 30   :                 :2019-04-29:
 # 31   :                 :2019-10-29:
+# 32   :                 :2020-04-28:
 # -----------------------------------------------------------------------------

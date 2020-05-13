@@ -4,10 +4,11 @@ autoinstall:
 # bootcmd:
 #   - echo 192.168.1.1 sv-ubuntu.workgroup sv-ubuntu > /etc/hosts
   identity:
-    hostname: sv-ubuntu
+    hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
     password: "$6$rBCZT84E9aJgVKuJ$53LaBfRk7uuexIfi1hGZCS575zZlgsqmliIlMIqiMqX.gFw9kNIeyPjpu5OUw7TmQLSs/.0VI..M.rWKdExaE0"
+#   password = "master"
   locale: ja_JP.UTF-8
   keyboard:
     layout: jp
@@ -35,6 +36,7 @@ autoinstall:
     - dns-server^
     - samba-server^
     - ubuntu-desktop^
+#   - ubuntu-desktop-default-languages^
     - sudo
     - tasksel
     - isc-dhcp-server
@@ -51,8 +53,23 @@ autoinstall:
     - inxi
     - rsync
     - desktop-base
-#   - chromium-browser
-#   - chromium-browser-l10n
+    - network-manager
+    - language-pack-ja
+    - language-pack-ja-base
+    - language-pack-gnome-ja
+    - fonts-noto-cjk-extra
+    - mozc-utils-gui
+    - gnome-user-docs-ja
+    - gnome-getting-started-docs-ja
+    - firefox-locale-ja
+    - thunderbird-locale-ja
+    - libreoffice-l10n-ja
+    - libreoffice-help-ja
+    - chromium-browser
+    - chromium-browser-l10n
+# snap:
+#   commands:
+#     00: snap install chromium
 # filesystem:
 #   guided: yes
 #   guided-method: lvm

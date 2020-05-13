@@ -43,6 +43,7 @@
 ##	2020/02/22 000.0000 J.Itou         debian 9.12.0/10.3.0 変更 / CentOS 8.1 追加 / CentOS-Stream-8-x86_64-20191219-boot 変更
 ##	2020/02/22 000.0000 J.Itou         wget -> curl 変更
 ##	2020/05/05 000.0000 J.Itou         不具合修正
+##	2020/05/11 000.0000 J.Itou         debian 10.4.0 変更 / fedora 32 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -65,11 +66,11 @@
 	readonly ARRAY_NAME=(                                                                                                                                                                               \
 	    "debian debian-8.11.1-amd64-netinst          https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "debian debian-9.12.0-amd64-netinst          https://cdimage.debian.org/cdimage/archive/9.12.0/amd64/iso-cd/debian-9.12.0-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian debian-10.3.0-amd64-netinst          https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.3.0-amd64-netinst.iso                              preseed_debian.cfg"   \
+	    "debian debian-10.4.0-amd64-netinst          https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.4.0-amd64-netinst.iso                              preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-netinst         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "centos CentOS-8.1.1911-x86_64-boot          http://isoredirect.centos.org/centos/8/isos/x86_64/CentOS-8.1.1911-x86_64-boot.iso                                           kickstart_centos.cfg" \
 	    "centos CentOS-Stream-8-x86_64-20191219-boot http://isoredirect.centos.org/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20191219-boot.iso                           kickstart_centos.cfg" \
-	    "fedora Fedora-Server-netinst-x86_64-31-1.9  https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora/linux/releases/31/Server/x86_64/iso/Fedora-Server-netinst-x86_64-31-1.9.iso kickstart_fedora.cfg" \
+	    "fedora Fedora-Server-netinst-x86_64-32-1.6  https://download.fedoraproject.org/pub/fedora/linux/releases/32/Server/x86_64/iso/Fedora-Server-netinst-x86_64-32-1.6.iso    kickstart_fedora.cfg" \
 	)   # 区分  netinstファイル名                   ダウンロード先URL                                                                                                             定義ファイル
 # -----------------------------------------------------------------------------
 funcMenu () {
@@ -77,11 +78,11 @@ funcMenu () {
 	echo "# ID：Version                            ：リリース日：サポ終了日：備考       #"
 	echo "#  1：debian-8.11.1-amd64-netinst        ：2015-04-25：2020-06-30：oldoldstable"
 	echo "#  2：debian-9.12.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
-	echo "#  3：debian-10.3.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
+	echo "#  3：debian-10.4.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
 	echo "#  5：CentOS-8.1.1911-x86_64-boot        ：2019-09-24：2029-05-31：RHEL 8.0   #"
 	echo "#  6：CentOS-Stream-8-x86_64-20191219-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
-	echo "#  7：Fedora-Server-netinst-x86_64-31-1.9：2019-10-29：20xx-xx-xx：kernel 5.3 #"
+	echo "#  7：Fedora-Server-netinst-x86_64-32-1.6：2020-04-28：20xx-xx-xx：kernel 5.6 #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -346,6 +347,7 @@ funcRemaster () {
 #  10.0:buster           :2019-07-06:
 #  11.0:bullseye         :2021(予定):
 # --- https://en.wikipedia.org/wiki/Ubuntu_version_history --------------------
+# [https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja]
 # Ver. :コードネーム     :リリース日:サポート期限
 #x 4.10:Warty Warthog    :2004-10-20:2006-04-30
 #x 5.04:Hoary Hedgehog   :2005-04-08:2006-10-31
@@ -393,4 +395,5 @@ funcRemaster () {
 # 29   :                 :2018-10-30:
 # 30   :                 :2019-04-29:
 # 31   :                 :2019-10-29:
+# 32   :                 :2020-04-28:
 # -----------------------------------------------------------------------------
