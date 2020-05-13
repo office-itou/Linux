@@ -242,10 +242,10 @@ funcRemaster () {
 				"fedora" )	# ･････････････････････････････････････････････････
 					sed -i isolinux/isolinux.cfg \
 					    -e '/menu default/d' \
-					    -e '/^label linux/i\label fedora31auto\n  menu label ^Auto Install Fedora 31\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-31 inst.ks=cdrom:/kickstart/ks.cfg\n'
+					    -e '/^label linux/i\label fedora32auto\n  menu label ^Auto Install Fedora 32\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-32 inst.ks=cdrom:/kickstart/ks.cfg\n'
 					sed -i EFI/BOOT/grub.cfg \
 					    -e 's/\(set default\)="1"/\1="0"/g' \
-					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 31'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-31 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 32'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-32 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
 					;;
 				* )	;;
 			esac
