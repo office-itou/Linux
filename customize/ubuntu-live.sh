@@ -1,14 +1,14 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [ubuntu-19.04-desktop-amd64.iso]                        *
+# LiveCDCustomization [ubuntu-20.04-desktop-amd64.iso]                        *
 # *****************************************************************************
-	if [ "$1" = "" ] || [ "$2" = "" ]; then
-		echo "$0 [i386 | amd64] [19.xx | ...]"
-		exit 1
-	fi
+#	if [ "$1" = "" ] || [ "$2" = "" ]; then
+#		echo "$0 [ amd64] [20.xx | ...]"
+#		exit 1
+#	fi
 
-	LIVE_ARCH="$1"
-	LIVE_VNUM="$2"
+	LIVE_ARCH="amd64"
+	LIVE_VNUM="20.04"
 	LIVE_FILE="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}.iso"
 	LIVE_DEST="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}-custom.iso"
 # == initialize ===============================================================
@@ -19,11 +19,13 @@
 	echo "*******************************************************************************"
 	trap 'exit 1' 1 2 3 15
 # == tools install ============================================================
-	apt -y install debootstrap squashfs-tools xorriso isolinux
+	if [ "`LANG=C dpkg -l debootstrap squashfs-tools xorriso isolinux | awk '$1==\"un\" {print $1;}'`" != "" ]; then
+		apt -y install debootstrap squashfs-tools xorriso isolinux
+	fi
 # == initial processing =======================================================
 #	rm -rf   ./ubuntu-live
-	rm -rf   ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg
-	mkdir -p ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg
+	rm -rf   ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg ./ubuntu-live/wkdir
+	mkdir -p ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg ./ubuntu-live/wkdir
 	# -------------------------------------------------------------------------
 	cat <<- '_EOT_SH_' > ./ubuntu-live/fsimg/ubuntu-setup.sh
 		#!/bin/bash
@@ -71,26 +73,30 @@
 			echo "--- module install ------------------------------------------------------------"
 		#	sed -i.orig /etc/resolv.conf -e '$anameserver 1.1.1.1\nnameserver 1.0.0.1'
 			sed -i /etc/apt/sources.list -e 's/^\(deb .*\)/\1 universe multiverse/g'
+			echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Ubuntu_Focal/ /' > /etc/apt/sources.list.d/home:ungoogled_chromium.list
+			wget -nv https://download.opensuse.org/repositories/home:ungoogled_chromium/Ubuntu_Focal/Release.key -O Release.key
+			apt-key add - < Release.key
 			apt update       -q                                                    && \
 			apt upgrade      -q -y                                                 && \
 			apt full-upgrade -q -y                                                 && \
 			apt install      -q -y                                                    \
-			    apache2 bc bind9 bind9utils build-essential                           \
-			                          cifs-utils clamav curl dpkg-repack              \
-			    firefox-locale-ja fonts-noto-cjk-extra gnome-getting-started-docs-ja  \
-			    gnome-user-docs-ja hyphen-es ibus-mozc indent isc-dhcp-server         \
-			    isolinux language-pack-gnome-ja language-pack-gnome-ja-base           \
-			    language-pack-ja language-pack-ja-base libapt-pkg-perl libelf-dev     \
-			    libio-pty-perl libnet-ssleay-perl libreoffice-help-ja                 \
-			    libreoffice-l10n-ja lvm2 mythes-es network-manager nfs-common         \
-			    nfs-kernel-server ntpdate open-vm-tools open-vm-tools-desktop         \
-			    openssh-server perl rsync samba smbclient squashfs-tools sudo tasksel \
-			    thunderbird-locale-ja vsftpd                                       && \
+				    tasksel clamav apache2 vsftpd isc-dhcp-server ntpdate inxi        \
+				    network-manager bc nfs-common nfs-kernel-server                   \
+				    ibus-mozc mozc-utils-gui fonts-noto-cjk-extra                     \
+				    gnome-getting-started-docs-ja gnome-user-docs-ja                  \
+				    language-pack-gnome-ja language-pack-ja                           \
+				    libreoffice-help-ja libreoffice-l10n-ja                           \
+				    firefox-locale-ja thunderbird-locale-ja                           \
+				    ungoogled-chromium ungoogled-chromium-l10n                     && \
 			apt autoremove   -q -y                                                 && \
 			apt autoclean    -q -y                                                 && \
 			apt clean        -q -y                                                 || \
 			fncEnd 1
-			snap install chromium                                                  || \
+			# -----------------------------------------------------------------------------
+			echo "--- task install --------------------------------------------------------------"
+			tasksel install                                                           \
+			    standard server openssh-server print-server dns-server samba-server   \
+			    ubuntu-desktop ubuntu-desktop-minimal                              || \
 			fncEnd 1
 		#	mv /etc/resolv.conf.orig /etc/resolv.conf
 			# -----------------------------------------------------------------------------
@@ -99,7 +105,11 @@
 			systemctl  enable ssh
 			systemctl disable apache2
 			systemctl  enable vsftpd
-			systemctl  enable bind9
+			if [ "`find /usr/lib/ -name named.service -print`" = "" ]; then
+				systemctl  enable bind9
+			else
+				systemctl  enable named
+			fi
 			systemctl disable isc-dhcp-server
 		#	systemctl disable isc-dhcp-server6
 			systemctl  enable smbd
@@ -110,8 +120,9 @@
 		# -- open vm tools ------------------------------------------------------------
 			echo "--- open vm tools -------------------------------------------------------------"
 			mkdir -p /mnt/hgfs
-			echo -n '#.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
+			echo -n '.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
 			> /etc/fstab.vmware-sample
+		# memo: sudo bash -c '/etc/fstab.vmware-sample >> /etc/fstab'
 		# -- clamav -------------------------------------------------------------------
 			if [ -f /etc/clamav/freshclam.conf ]; then
 				echo "--- clamav --------------------------------------------------------------------"
@@ -239,7 +250,8 @@
 _EOT_SH_
 	# -------------------------------------------------------------------------
 	if [ ! -f ./${LIVE_FILE} ]; then
-		wget "https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/${LIVE_VNUM}/${LIVE_FILE}"
+		wget "https://releases.ubuntu.com/${LIVE_VNUM}/${LIVE_FILE}"
+#		wget "https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/${LIVE_VNUM}/${LIVE_FILE}"
 	fi
 	# -------------------------------------------------------------------------
 	mount -r -o loop ./${LIVE_FILE} ./ubuntu-live/media
@@ -272,7 +284,7 @@ _EOT_SH_
 	mount --bind /proc    ./ubuntu-live/fsimg/proc
 #	mount --bind /sys     ./ubuntu-live/fsimg/sys
 	# -------------------------------------------------------------------------
-#	cp -p ./ubuntu-setup.sh ./ubuntu-live/fsimg/
+	cp -p ./ubuntu-setup.sh ./ubuntu-live/fsimg/
 	LANG=C chroot ./ubuntu-live/fsimg /bin/bash /ubuntu-setup.sh
 	RET_STS=$?
 	# -------------------------------------------------------------------------
@@ -294,17 +306,27 @@ _EOT_SH_
 	       ./ubuntu-live/fsimg/var/cache/apt/archives/*.deb \
 	       ./ubuntu-live/fsimg/ubuntu-setup.sh
 # =============================================================================
-	sed -i ./ubuntu-live/cdimg/boot/grub/grub.cfg                                                                                       \
-	    -e '1,/linux .* casper/ s/\(linux .* casper\) \(quiet.*\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
-	sed -i ./ubuntu-live/cdimg/isolinux/menu.cfg                                                                                          \
-	    -e '1,/append .* casper/ s/\(append .* casper\) \(initrd.*\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
+#	pushd ./ubuntu-live/wkdir > /dev/null
+#		unmkinitramfs ../cdimg/casper/initrd .
+#		sed -i main/scripts/casper-bottom/12fstab                                                  \
+#		    -e '/tmpfs/ a#.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0'
+#		mkinitramfs -c gzip -o ../initrd
+#		cp -p ../initrd ../cdimg/casper/initrd
+#	popd > /dev/null
+# =============================================================================
+	sed -i ./ubuntu-live/cdimg/boot/grub/grub.cfg \
+	    -e '/menuentry "Ubuntu"/i\menuentry "Ubuntu of Japanese" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz  locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp file=/cdrom/preseed/ubuntu.seed maybe-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd\n}'
+	sed -i ./ubuntu-live/cdimg/isolinux/txt.cfg \
+	    -e 's/^\(default\) .*$/\1 live_of_japanese/' \
+	    -e '/^label live$/i\label live_of_japanese\n  menu label ^Try Ubuntu of Japanese without installing\n  kernel /casper/vmlinuz\n  append  locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp file=/cdrom/preseed/ubuntu.seed initrd=/casper/initrd quiet splash ---'
 	# -------------------------------------------------------------------------
 	rm -f ./ubuntu-live/cdimg/casper/filesystem.squashfs
 	mksquashfs ./ubuntu-live/fsimg ./ubuntu-live/cdimg/casper/filesystem.squashfs
 	ls -lht ./ubuntu-live/cdimg/casper/
 	# -------------------------------------------------------------------------
 	pushd ./ubuntu-live/cdimg > /dev/null
-		find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
+#		find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
+		find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 		xorriso -as mkisofs \
 		    -quiet \
 		    -iso-level 3 \
@@ -326,4 +348,6 @@ _EOT_SH_
 	echo "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]"
 	echo "*******************************************************************************"
 	exit 0
+# == memo =====================================================================
+	https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja
 # == EOF ======================================================================
