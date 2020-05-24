@@ -13,9 +13,9 @@
 	LIVE_DEST="debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde-custom.iso"
 	# -------------------------------------------------------------------------
 	case "${LIVE_VNUM}" in
-		"testing" | "bullseye" | 11* ) LIVE_SUITE="testing";;
-		"stable"  | "buster"   | 10* ) LIVE_SUITE="stable";;
-		*                            ) LIVE_SUITE="";;
+		"testing" | "bullseye" | 11* ) LIVE_SUITE="testing"; OBS_SUITE="Sid"   ;;
+		"stable"  | "buster"   | 10* ) LIVE_SUITE="stable" ; OBS_SUITE="Buster";;
+		*                            ) LIVE_SUITE=""       ; OBS_SUITE=""      ;;
 	esac
 # == initialize ===============================================================
 #	set -m								# ジョブ制御を有効にする
@@ -25,7 +25,9 @@
 	echo "*******************************************************************************"
 	trap 'exit 1' 1 2 3 15
 # == tools install ============================================================
-#	apt -y install debian-live squashfs-tools xorriso isolinux
+	if [ "`LANG=C dpkg -l debootstrap squashfs-tools xorriso isolinux | awk '$1==\"un\" {print $1;}'`" != "" ]; then
+		apt -y install debootstrap squashfs-tools xorriso isolinux
+	fi
 # == initial processing =======================================================
 #	rm -rf   ./debian-live
 	rm -rf   ./debian-live/media ./debian-live/cdimg ./debian-live/fsimg
@@ -76,23 +78,32 @@
 		#	sed -i /etc/xdg/lxsession/LXDE/autostart               \
 		#	    -e '$a@setxkbmap -layout jp -option ctrl:swapcase'
 		# -- module install -----------------------------------------------------------
-			echo "--- module install ------------------------------------------------------------"
 		#	sed -i.orig /etc/resolv.conf -e '$anameserver 1.1.1.1\nnameserver 1.0.0.1'
 			sed -i /etc/apt/sources.list -e 's/^\(deb .*\)/\1 non-free contrib/g'
+			echo "--- module install ------------------------------------------------------------"
 			apt update       -q                                                    && \
 			apt upgrade      -q -y                                                 && \
 			apt full-upgrade -q -y                                                 && \
 			apt install      -q -y                                                    \
-			    task-desktop task-japanese task-japanese-desktop task-laptop          \
-			    task-lxde-desktop task-print-server task-ssh-server task-web-server   \
-			    apache2 apt-show-versions aptitude bc bind9 bind9utils                \
-			    build-essential chromium chromium-l10n cifs-utils clamav              \
-			    curl dpkg-repack fdclone ibus-mozc indent isc-dhcp-server isolinux    \
-			    libapt-pkg-perl libauthen-pam-perl libelf-dev libio-pty-perl          \
-			    libnet-ssleay-perl linux-headers-amd64 lvm2 network-manager           \
-			    nfs-common nfs-kernel-server ntpdate open-vm-tools                    \
-			    open-vm-tools-desktop perl rsync samba smbclient squashfs-tools sudo  \
-			    tasksel vsftpd xorriso                                             && \
+			    clamav bind9 bind9utils samba smbclient vsftpd isc-dhcp-server        \
+			    ntpdate inxi bc nfs-common nfs-kernel-server ibus-mozc                \
+			    open-vm-tools open-vm-tools-desktop                                && \
+			apt autoremove   -q -y                                                 && \
+			apt autoclean    -q -y                                                 && \
+			apt clean        -q -y                                                 || \
+			fncEnd 1
+			echo "--- task install --------------------------------------------------------------"
+			tasksel install                                                           \
+			    standard desktop laptop japanese japanese-desktop lxde-desktop        \
+			    ssh-server web-server                                              || \
+			fncEnd 1
+			echo "--- ungoogled chromium install ------------------------------------------------"
+			echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Debian_${OBS_SUITE}/ /' > /etc/apt/sources.list.d/home:ungoogled_chromium.list
+			wget -nv https://download.opensuse.org/repositories/home:ungoogled_chromium/Debian_${OBS_SUITE}/Release.key -O Release.key
+			apt-key add - < Release.key
+			apt update       -q                                                    && \
+			apt install      -q -y                                                    \
+			    ungoogled-chromium ungoogled-chromium-l10n                         && \
 			apt autoremove   -q -y                                                 && \
 			apt autoclean    -q -y                                                 && \
 			apt clean        -q -y                                                 || \
@@ -104,7 +115,11 @@
 			systemctl  enable ssh
 			systemctl disable apache2
 			systemctl  enable vsftpd
-			systemctl  enable bind9
+			if [ "`find /usr/lib/ -name named.service -print`" = "" ]; then
+				systemctl  enable bind9
+			else
+				systemctl  enable named
+			fi
 			systemctl disable isc-dhcp-server
 		#	systemctl disable isc-dhcp-server6
 			systemctl  enable smbd
@@ -115,8 +130,9 @@
 		# -- open vm tools ------------------------------------------------------------
 			echo "--- open vm tools -------------------------------------------------------------"
 			mkdir -p /mnt/hgfs
-			echo -n '#.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
-			>> /etc/fstab
+			echo -n '.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
+			> /etc/fstab.vmware-sample
+		# memo: sudo bash -c '/etc/fstab.vmware-sample >> /etc/fstab'
 		# -- clamav -------------------------------------------------------------------
 			if [ -f /etc/clamav/freshclam.conf ]; then
 				echo "--- clamav --------------------------------------------------------------------"
@@ -242,14 +258,38 @@
 		#     Change Kanji mode:[Windows key]+[Space key]->[Zenkaku/Hankaku key]
 		# *****************************************************************************
 _EOT_SH_
+	sed -i ./debian-live/fsimg/debian-setup.sh \
+	    -e "s/\${OBS_SUITE}/${OBS_SUITE}/g"
 	# -------------------------------------------------------------------------
-	if [ ! -f ./${LIVE_FILE} ]; then
-		case "${LIVE_SUITE}" in
-			"testing" ) LIVE_URL="http://cdimage.debian.org/cdimage/weekly-live-builds/${LIVE_ARCH}/iso-hybrid/debian-live-testing-${LIVE_ARCH}-lxde.iso";;
-			"stable"  ) LIVE_URL="http://cdimage.debian.org/cdimage/release/current-live/${LIVE_ARCH}/iso-hybrid/debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde.iso";;
-			*         ) LIVE_URL="";;
-		esac
-		wget "${LIVE_URL}"
+#	if [ ! -f ./${LIVE_FILE} ]; then
+#		case "${LIVE_SUITE}" in
+#			"testing" ) LIVE_URL="http://cdimage.debian.org/cdimage/weekly-live-builds/${LIVE_ARCH}/iso-hybrid/debian-live-testing-${LIVE_ARCH}-lxde.iso";;
+#			"stable"  ) LIVE_URL="http://cdimage.debian.org/cdimage/release/current-live/${LIVE_ARCH}/iso-hybrid/debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde.iso";;
+#			*         ) LIVE_URL="";;
+#		esac
+#		wget "${LIVE_URL}"
+#	fi
+	case "${LIVE_SUITE}" in
+		"testing" ) LIVE_URL="http://cdimage.debian.org/cdimage/weekly-live-builds/${LIVE_ARCH}/iso-hybrid/debian-live-testing-${LIVE_ARCH}-lxde.iso";;
+		"stable"  ) LIVE_URL="http://cdimage.debian.org/cdimage/release/current-live/${LIVE_ARCH}/iso-hybrid/debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde.iso";;
+		*         ) LIVE_URL="";;
+	esac
+	if [ ! -f "./${LIVE_FILE}" ]; then
+		curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${LIVE_FILE}"; exit 1; }
+	else
+		curl -L -s --connect-timeout 60 --dump-header "header.txt" "${LIVE_URL}"
+		WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+		WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+		WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+		DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "./${LIVE_FILE}"`
+		DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
+		DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
+		if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${LIVE_FILE}"; exit 1; }
+		fi
+		if [ -f "header.txt" ]; then
+			rm -f "header.txt"
+		fi
 	fi
 	# -------------------------------------------------------------------------
 	echo "--- copy media -> cdimg -------------------------------------------------------"

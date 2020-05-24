@@ -70,33 +70,40 @@
 			locale-gen
 			update-locale LANG=ja_JP.UTF-8
 		# -- module install -----------------------------------------------------------
-			echo "--- module install ------------------------------------------------------------"
 		#	sed -i.orig /etc/resolv.conf -e '$anameserver 1.1.1.1\nnameserver 1.0.0.1'
 			sed -i /etc/apt/sources.list -e 's/^\(deb .*\)/\1 universe multiverse/g'
-			echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Ubuntu_Focal/ /' > /etc/apt/sources.list.d/home:ungoogled_chromium.list
-			wget -nv https://download.opensuse.org/repositories/home:ungoogled_chromium/Ubuntu_Focal/Release.key -O Release.key
-			apt-key add - < Release.key
+			echo "--- module install ------------------------------------------------------------"
 			apt update       -q                                                    && \
 			apt upgrade      -q -y                                                 && \
 			apt full-upgrade -q -y                                                 && \
 			apt install      -q -y                                                    \
-				    tasksel clamav apache2 vsftpd isc-dhcp-server ntpdate inxi        \
-				    network-manager bc nfs-common nfs-kernel-server                   \
-				    ibus-mozc mozc-utils-gui fonts-noto-cjk-extra                     \
-				    gnome-getting-started-docs-ja gnome-user-docs-ja                  \
-				    language-pack-gnome-ja language-pack-ja                           \
-				    libreoffice-help-ja libreoffice-l10n-ja                           \
-				    firefox-locale-ja thunderbird-locale-ja                           \
-				    ungoogled-chromium ungoogled-chromium-l10n                     && \
+			    tasksel clamav apache2 vsftpd isc-dhcp-server ntpdate inxi            \
+			    network-manager bc nfs-common nfs-kernel-server                       \
+			    ibus-mozc mozc-utils-gui fonts-noto-cjk-extra                         \
+			    gnome-getting-started-docs-ja gnome-user-docs-ja                      \
+			    language-pack-gnome-ja language-pack-ja                               \
+			    libreoffice-help-ja libreoffice-l10n-ja                               \
+			    firefox-locale-ja thunderbird-locale-ja                               \
+			    open-vm-tools open-vm-tools-desktop                                && \
 			apt autoremove   -q -y                                                 && \
 			apt autoclean    -q -y                                                 && \
 			apt clean        -q -y                                                 || \
 			fncEnd 1
-			# -----------------------------------------------------------------------------
 			echo "--- task install --------------------------------------------------------------"
 			tasksel install                                                           \
 			    standard server openssh-server print-server dns-server samba-server   \
 			    ubuntu-desktop ubuntu-desktop-minimal                              || \
+			fncEnd 1
+			echo "--- ungoogled chromium install ------------------------------------------------"
+			echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Ubuntu_Focal/ /' > /etc/apt/sources.list.d/home:ungoogled_chromium.list
+			wget -nv https://download.opensuse.org/repositories/home:ungoogled_chromium/Ubuntu_Focal/Release.key -O Release.key
+			apt-key add - < Release.key
+			apt update       -q                                                    && \
+			apt install      -q -y                                                    \
+			    ungoogled-chromium ungoogled-chromium-l10n                         && \
+			apt autoremove   -q -y                                                 && \
+			apt autoclean    -q -y                                                 && \
+			apt clean        -q -y                                                 || \
 			fncEnd 1
 		#	mv /etc/resolv.conf.orig /etc/resolv.conf
 			# -----------------------------------------------------------------------------
@@ -249,11 +256,30 @@
 		# *****************************************************************************
 _EOT_SH_
 	# -------------------------------------------------------------------------
-	if [ ! -f ./${LIVE_FILE} ]; then
-		wget "https://releases.ubuntu.com/${LIVE_VNUM}/${LIVE_FILE}"
+#	if [ ! -f ./${LIVE_FILE} ]; then
+#		wget "https://releases.ubuntu.com/${LIVE_VNUM}/${LIVE_FILE}"
 #		wget "https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/${LIVE_VNUM}/${LIVE_FILE}"
+#	fi
+	LIVE_URL="https://releases.ubuntu.com/${LIVE_VNUM}/${LIVE_FILE}"
+	if [ ! -f "./${LIVE_FILE}" ]; then
+		curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${LIVE_FILE}"; exit 1; }
+	else
+		curl -L -s --connect-timeout 60 --dump-header "header.txt" "${LIVE_URL}"
+		WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+		WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+		WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+		DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "./${LIVE_FILE}"`
+		DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
+		DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
+		if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${LIVE_FILE}"; exit 1; }
+		fi
+		if [ -f "header.txt" ]; then
+			rm -f "header.txt"
+		fi
 	fi
 	# -------------------------------------------------------------------------
+	echo "--- copy media -> cdimg -------------------------------------------------------"
 	mount -r -o loop ./${LIVE_FILE} ./ubuntu-live/media
 	pushd ./ubuntu-live/media > /dev/null
 		find . -depth -print | cpio -pdm ../cdimg/
@@ -264,6 +290,7 @@ _EOT_SH_
 		mv ./ubuntu-live/cdimg/casper/filesystem.squashfs ./ubuntu-live/filesystem.squashfs
 	fi
 	# -------------------------------------------------------------------------
+	echo "--- copy media -> fsimg -------------------------------------------------------"
 	mount -r -o loop ./ubuntu-live/filesystem.squashfs ./ubuntu-live/media
 	pushd ./ubuntu-live/media > /dev/null
 		find . -depth -print | cpio -pdm ../fsimg/
@@ -284,7 +311,7 @@ _EOT_SH_
 	mount --bind /proc    ./ubuntu-live/fsimg/proc
 #	mount --bind /sys     ./ubuntu-live/fsimg/sys
 	# -------------------------------------------------------------------------
-	cp -p ./ubuntu-setup.sh ./ubuntu-live/fsimg/
+#	cp -p ./ubuntu-setup.sh ./ubuntu-live/fsimg/
 	LANG=C chroot ./ubuntu-live/fsimg /bin/bash /ubuntu-setup.sh
 	RET_STS=$?
 	# -------------------------------------------------------------------------
