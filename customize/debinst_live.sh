@@ -158,7 +158,11 @@
 		 	systemctl  enable ssh
 		 	systemctl disable apache2
 		 	systemctl disable vsftpd
-		 	systemctl  enable bind9
+		 	if [ "\`find /lib/systemd/system/ -name named.service -print\`" = "" ]; then
+		 		systemctl  enable bind9
+		 	else
+		 		systemctl  enable named
+		 	fi
 		 	systemctl disable isc-dhcp-server
 		#	systemctl disable isc-dhcp-server6
 		 	systemctl  enable smbd

@@ -115,7 +115,7 @@
 			systemctl  enable ssh
 			systemctl disable apache2
 			systemctl  enable vsftpd
-			if [ "`find /usr/lib/ -name named.service -print`" = "" ]; then
+			if [ "`find /lib/systemd/system/ -name named.service -print`" = "" ]; then
 				systemctl  enable bind9
 			else
 				systemctl  enable named
