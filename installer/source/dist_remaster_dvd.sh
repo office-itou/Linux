@@ -44,13 +44,14 @@
 ##	2019/11/23 000.0000 J.Itou         fedora 31 変更
 ##	2019/11/24 000.0000 J.Itou         CentOS Stream 追加
 ##	2019/11/29 000.0000 J.Itou         USBメモリーでのインストール対応
-##	2020/02/22 000.0000 J.Itou         debian 9.12.0/10.3.0 / ubuntu 18.04.4 変更 / CentOS 8.1 追加 / CentOS-Stream-8-x86_64-20191219-boot 変更
+##	2020/02/22 000.0000 J.Itou         debian 9.12.0/10.3.0 / ubuntu 18.04.4 変更 / CentOS 8.1 追加 / CentOS-Stream-8-x86_64-20191219-dvd1 変更
 ##	2020/02/22 000.0000 J.Itou         wget -> curl 変更
 ##	2020/05/05 000.0000 J.Itou         不具合修正
 ##	2020/05/05 000.0000 J.Itou         ubuntu 20.04 追加
 ##	2020/05/11 000.0000 J.Itou         debian 10.4.0 変更 / ubuntu-desktopの処理停止 / fedora 32 変更
 ##	2020/07/10 000.0000 J.Itou         CentOS 8.2.2004 変更
 ##	2020/07/20 000.0000 J.Itou         debian 9.13.0 変更
+##	2020/08/02 000.0000 J.Itou         debian 10.5.0 / CentOS-Stream-8-x86_64-20200730-dvd1 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -73,7 +74,7 @@
 	readonly ARRAY_NAME=(                                                                                                                                                                               \
 	    "debian debian-8.11.1-amd64-DVD-1            https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg"       \
 	    "debian debian-9.13.0-amd64-DVD-1            https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
-	    "debian debian-10.4.0-amd64-DVD-1            https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.4.0-amd64-DVD-1.iso                           preseed_debian.cfg"       \
+	    "debian debian-10.5.0-amd64-DVD-1            https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.5.0-amd64-DVD-1.iso                           preseed_debian.cfg"       \
 	    "debian debian-testing-amd64-DVD-1           https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"       \
 	    "ubuntu ubuntu-16.04.6-server-amd64          https://releases.ubuntu.com/xenial/ubuntu-16.04.6-server-amd64.iso                                                       preseed_ubuntu.cfg"       \
 	    "ubuntu ubuntu-18.04.4-server-amd64          http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.4-server-amd64.iso                                        preseed_ubuntu.cfg"       \
@@ -81,7 +82,7 @@
 	    "ubuntu ubuntu-20.04-legacy-server-amd64     http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04-legacy-server-amd64.iso               preseed_ubuntu.cfg"       \
 	    "ubuntu ubuntu-20.04-live-server-amd64       https://releases.ubuntu.com/focal/ubuntu-20.04-live-server-amd64.iso                                                     nocloud-ubuntu-user-data" \
 	    "centos CentOS-8.2.2004-x86_64-dvd1          http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-dvd1.iso                   kickstart_centos.cfg"     \
-	    "centos CentOS-Stream-8-x86_64-20200629-dvd1 http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20200629-dvd1.iso          kickstart_centos.cfg"     \
+	    "centos CentOS-Stream-8-x86_64-20200730-dvd1 http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20200730-dvd1.iso          kickstart_centos.cfg"     \
 	    "fedora Fedora-Server-dvd-x86_64-32-1.6      https://download.fedoraproject.org/pub/fedora/linux/releases/32/Server/x86_64/iso/Fedora-Server-dvd-x86_64-32-1.6.iso    kickstart_fedora.cfg"     \
 	)   # 区分  DVDファイル名                        ダウンロード先URL                                                                                                        定義ファイル
 #	    "ubuntu ubuntu-16.04.6-desktop-amd64         https://releases.ubuntu.com/xenial/ubuntu-16.04.6-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
@@ -95,7 +96,7 @@ funcMenu () {
 	echo "# ID：Version                         ：リリース日：サポ終了日：備考          #"
 	echo "#  1：debian-8.11.1-amd64-DVD-1       ：2015-04-25：2020-04-xx：oldoldstable  #"
 	echo "#  2：debian-9.13.0-amd64-DVD-1       ：2017-06-17：2022-xx-xx：oldstable     #"
-	echo "#  3：debian-10.4.0-amd64-DVD-1       ：2019-07-06：20xx-xx-xx：stable        #"
+	echo "#  3：debian-10.5.0-amd64-DVD-1       ：2019-07-06：20xx-xx-xx：stable        #"
 	echo "#  4：debian-testing-amd64-DVD-1      ：20xx-xx-xx：20xx-xx-xx：testing       #"
 	echo "#  5：ubuntu-16.04.6-server-amd64     ：2016-04-21：2021-04-xx：Xenial Xerus  #"
 	echo "#  6：ubuntu-18.04.4-server-amd64     ：2018-04-26：2023-04-xx：Bionic Beaver #"
@@ -103,7 +104,7 @@ funcMenu () {
 	echo "#  8：ubuntu-20.04-legacy-server-amd64：2020-04-23：2025-04-xx：Focal Fossa   #"
 	echo "#  9：ubuntu-20.04-live-server-amd64  ：2020-04-23：2025-04-xx：Focal Fossa   #"
 	echo "# 10：CentOS-8.2.2004-x86_64-dvd1     ：2020-06-15：2029-05-31：RHEL 8.0      #"
-	echo "# 11：CentOS-Stream-8-x86_64-20200629-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
+	echo "# 11：CentOS-Stream-8-x86_64-20200730-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
 	echo "# 12：Fedora-Server-dvd-x86_64-32-1.6 ：2020-04-28：20xx-xx-xx：kernel 5.6    #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
