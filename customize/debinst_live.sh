@@ -21,6 +21,10 @@
 	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]"
 	echo "*******************************************************************************"
 	trap 'exit 1' 1 2 3 15
+# == tools install ============================================================
+	if [ "`LANG=C dpkg -l debootstrap squashfs-tools xorriso isolinux | awk '$1==\"un\" {print $1;}'`" != "" ]; then
+		apt -y install debootstrap squashfs-tools xorriso isolinux
+	fi
 # =============================================================================
 	echo "-- initialize -----------------------------------------------------------------"
 	rm -rf   ./debootstrap/media ./debootstrap/cdimg ./debootstrap/fsimg ./debootstrap/_work
