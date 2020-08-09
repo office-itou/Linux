@@ -47,6 +47,7 @@
 ##	2020/07/10 000.0000 J.Itou         CentOS 8.2.2004 変更
 ##	2020/07/20 000.0000 J.Itou         debian 9.13.0 変更
 ##	2020/08/02 000.0000 J.Itou         debian 10.5.0 / CentOS-Stream-8-x86_64-20200730-boot 変更
+##	2020/08/09 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200801-boot 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -72,7 +73,7 @@
 	    "debian debian-10.5.0-amd64-netinst          https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.5.0-amd64-netinst.iso                              preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-netinst         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "centos CentOS-8.2.2004-x86_64-boot          http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso                       kickstart_centos.cfg" \
-	    "centos CentOS-Stream-8-x86_64-20200730-boot http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20200730-boot.iso              kickstart_centos.cfg" \
+	    "centos CentOS-Stream-8-x86_64-20200801-boot http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20200801-boot.iso              kickstart_centos.cfg" \
 	    "fedora Fedora-Server-netinst-x86_64-32-1.6  https://download.fedoraproject.org/pub/fedora/linux/releases/32/Server/x86_64/iso/Fedora-Server-netinst-x86_64-32-1.6.iso    kickstart_fedora.cfg" \
 	)   # 区分  netinstファイル名                   ダウンロード先URL                                                                                                             定義ファイル
 # -----------------------------------------------------------------------------
@@ -84,7 +85,7 @@ funcMenu () {
 	echo "#  3：debian-10.5.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
 	echo "#  5：CentOS-8.2.2004-x86_64-boot        ：2020-06-15：2029-05-31：RHEL 8.0   #"
-	echo "#  6：CentOS-Stream-8-x86_64-20200730-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
+	echo "#  6：CentOS-Stream-8-x86_64-20200801-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
 	echo "#  7：Fedora-Server-netinst-x86_64-32-1.6：2020-04-28：20xx-xx-xx：kernel 5.6 #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
