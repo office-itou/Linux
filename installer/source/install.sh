@@ -5,19 +5,17 @@
 ##
 ##	機能概要	:	Install用シェル [VMware対応]
 ##	---------------------------------------------------------------------------
-##	<対象OS>	:	Debian 7 ～
-##				:	Ubuntu 18.04 ～
-##				:	CentOS 7 ～
-##				:	Fedora 28 ～
+##	<対象OS>	:	Debian 10 ～
+##				:	Ubuntu 20.04 ～
+##				:	CentOS 8 ～
+##				:	Fedora 32 ～
+##				:	openSUSE 15.2 ～
 ##	---------------------------------------------------------------------------
 ##	<サービス>	:	clamav-freshclam / clamd
 ##				:	ssh / sshd
-##				:	apache2 / httpd
-##				:	vsftpd
 ##				:	bind9 / named
 ##				:	isc-dhcp-server / dhcpd
 ##				:	samba / smbd,nmbd / smb,nmb
-##				:	x)webmin
 ##	---------------------------------------------------------------------------
 ##	入出力 I/F
 ##		INPUT	:	
@@ -56,6 +54,7 @@
 ##	2020/01/04 000.0000 J.Itou         不具合修正(nologin検索)
 ##	2020/01/10 000.0000 J.Itou         不具合修正(.vimrc加筆)
 ##	2020/05/09 000.0000 J.Itou         不具合修正(Ubuntu 20.04対応含む)
+##	2020/09/28 000.0000 J.Itou         不具合修正(対象OSの変更含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -94,8 +93,8 @@ funcProc() {
 	if [ "`which systemctl 2> /dev/null`" != "" ] && [ "${INP_NAME}" != "webmin" ]; then
 		systemctl ${INP_COMD} ${INP_NAME}; funcPause $?
 	else
-		if [ -f /lib/systemd/systemd-sysv-install ] && [ "${INP_COMD}" = "enable" -o "${INP_COMD}" = "disable" ]; then
-			/lib/systemd/systemd-sysv-install ${INP_COMD} ${INP_NAME}; funcPause $?
+		if [ -f ${DIR_SYSD}/systemd-sysv-install ] && [ "${INP_COMD}" = "enable" -o "${INP_COMD}" = "disable" ]; then
+			${DIR_SYSD}/systemd-sysv-install ${INP_COMD} ${INP_NAME}; funcPause $?
 		else
 			if [ "`which insserv 2> /dev/null`" != "" ]; then
 				case "${INP_COMD}" in
@@ -134,25 +133,6 @@ funcAddstr () {
 	    awk '{for (i=1;i<=NF;i++) print $1 "'"${@:($#):1}"'";}'
 }
 
-# APTの更新可否判断 -----------------------------------------------------------
-funcChkAptTime () {
-	local NOW_TIME=`date +"%s"`													# 現在時刻のEpoch形式 (1970-01-01 00:00:00 UTC からの秒数)
-	local LOG_TIME																# ログファイルの最終更新日時のEpoch形式 (Epoch からの秒数)
-	local IVL_TIME=600															# 比較時間の秒数
-
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		LOG_TIME=`stat /var/log/apt/term.log --format %Y`
-	else																		# Red Hat系
-		LOG_TIME=`stat /var/log/yum.log --format %Y`
-	fi
-
-	if [ $((${NOW_TIME})) -ge $((${LOG_TIME} + ${IVL_TIME})) ]; then
-		echo "OK"
-	else
-		echo "WAIT"
-	fi
-}
-
 # IPアドレス取得処理 ----------------------------------------------------------
 fncGetIPaddr () {
 	LANG=C ip -o -$1 a show scope $2 dev $3 | awk '{print $4;}'
@@ -162,7 +142,7 @@ fncGetIPaddr () {
 fncGetNM () {
 	local DMY_STAT
 
-	if [ "${CON_NAME}" != "" -a ! -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
+	if [ "${CON_NAME}" != "" -a -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
 		LANG=C nmcli c show help 2> /dev/null
 		if [ $? -ge 2 ]; then
 			DMY_STAT="`LANG=C nmcli dev list iface "$2" | awk '/^'"$1"'/'`"
@@ -204,8 +184,10 @@ fncGetNM () {
 				fi
 				;;
 			"IP4.DNS" )
+					LANG=C ip -4 r show dev $2 default | awk '{print $3;}'
 				;;
 			"IP6.DNS" )
+					LANG=C ip -6 r show dev $2 default | awk '{print $3;}'
 				;;
 			* )
 				;;
@@ -317,29 +299,48 @@ funcInitialize () {
 	SET_LANG="ja_JP.UTF-8"														# 使用言語設定
 #	SET_LNGE="ja:en"															# 環境変数 LANGUAGE
 	# ･････････････････････････････････････････････････････････････････････････
-	RUN_CLAM=("enable"  "")														# 起動停止設定：clamav-freshclam
+	if [ -d "/lib/systemd/" ]; then
+		DIR_SYSD="/lib/systemd"
+	elif [ -d "/usr/lib/systemd/" ]; then
+		DIR_SYSD="/usr/lib/systemd"
+	else
+		DIR_SYSD=""
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+#	RUN_CLAM=("enable"  "")														# 起動停止設定：clamav-freshclam
 	RUN_SSHD=("enable"  "")														#   〃        ：ssh / sshd
-	RUN_HTTP=("disable" "")														#   〃        ：apache2 / httpd
-	RUN_FTPD=("disable" "")														#   〃        ：vsftpd
 	RUN_BIND=("enable"  "")														#   〃        ：bind9 / named
 	RUN_DHCP=("disable" "")														#   〃        ：isc-dhcp-server / dhcpd
 	RUN_SMBD=("enable"  "")														#   〃        ：samba / smbd,nmbd / smb,nmb
-	RUN_WMIN=("disable" "")														#   〃        ：webmin
-	RUN_NFSD=("enable"  "")														#   〃        ：nfs-server
 	# -------------------------------------------------------------------------
-	FLG_RHAT=`[ ! -f /etc/redhat-release ]; echo $?`							# CentOS時=1,その他=0
+	if [ -f /etc/redhat-release ]; then
+		FLG_RHAT=1						# CentOS/Fedora
+	elif [ -f /etc/SUSE-brand ]; then
+		FLG_RHAT=2						# OpenSUSE
+	else
+		FLG_RHAT=0						# Debian/Ubuntu
+	fi
 	FLG_SVER=1																	# 0以外でサーバー仕様でセッティング
 	DEF_USER="${SUDO_USER}"														# インストール時に作成したユーザー名
 	# system info -------------------------------------------------------------
-	SYS_NAME=`awk -F '=' '$1=="ID" {gsub("\"",""); print $2;}' /etc/os-release`	# ディストリビューション名
-	SYS_VRID=`awk -F '=' '$1=="VERSION_ID" { print $2; }' /etc/os-release`		# バージョン番号
+	SYS_NAME=`awk -F '=' '$1=="ID"         {gsub("\"",""); print $2;}' /etc/os-release`	# ディストリビューション名
+	SYS_VERS=`awk -F '=' '$1=="VERSION"    {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン名
+	SYS_VRID=`awk -F '=' '$1=="VERSION_ID" {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン番号
 	SYS_VNUM=`echo ${SYS_VRID:--1} | bc`										#   〃          (取得できない場合は-1)
+	SYS_NOOP=1																	# 対象OS=0,それ以外=1
+	if [ "${SYS_NAME}" = "debian"        -a `echo "${SYS_VNUM} >= 10"    | bc` ]; then SYS_NOOP=0; fi
+	if [ "${SYS_NAME}" = "ubuntu"        -a `echo "${SYS_VNUM} >= 20.04" | bc` ]; then SYS_NOOP=0; fi
+	if [ "${SYS_NAME}" = "centos"        -a `echo "${SYS_VNUM} >=  8"    | bc` ]; then SYS_NOOP=0; fi
+	if [ "${SYS_NAME}" = "fedora"        -a `echo "${SYS_VNUM} >= 32"    | bc` ]; then SYS_NOOP=0; fi
+#	if [ "${SYS_NAME}" = "opensuse-leap" -a `echo "${SYS_VNUM} >= 15.2"  | bc` ]; then SYS_NOOP=0; fi
+	if [ ${SYS_NOOP} -ne 0 ]; then
+		echo "${SYS_NAME} ${SYS_VERS} ではテストをしていないので実行できません。"
+		exit 1
+	fi
 	# samba -------------------------------------------------------------------
 	SMB_USER=sambauser															# smb.confのforce user
 	SMB_GRUP=sambashare															# smb.confのforce group
 	SMB_GADM=sambaadmin															# smb.confのadmin group
-	# apache2 / httpd ---------------------------------------------------------
-	WWW_DATA=www-data															# apach2 / httpdのユーザ名
 	# cpu type ----------------------------------------------------------------
 	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
 	# network -----------------------------------------------------------------
@@ -356,14 +357,21 @@ funcInitialize () {
 		SVR_FQDN=${SVR_NAME}.${WGP_NAME}										# 本機のFQDN
 	fi
 	# -------------------------------------------------------------------------
-	CON_NAME=`nmcli -t -f name c | head -n 1`									# 接続名
-	CON_UUID=`nmcli -t -f uuid c | head -n 1`									# 接続UUID
+	set +e
+	LANG=C nmcli -t -f name c > /dev/null 2>&1
+	local RET_CD=$?
+	set -e
+	if [ $RET_CD -eq 0 ]; then
+		CON_NAME=`nmcli -t -f name c | head -n 1`								# 接続名
+		CON_UUID=`nmcli -t -f uuid c | head -n 1`								# 接続UUID
+	else
+		CON_NAME=`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`	# 接続名
+		CON_UUID=""																# 接続UUID
+	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	NIC_ARRY=(`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`)	# NICデバイス名
-#	IP4_DHCP=""																	# IPv4:DHCPフラグ(auto/static)
-#	IP6_DHCP=""																	# IPv6:DHCPフラグ(auto/static)
-#	IP4_DNSA=""																	# IPv4:DNSアドレス
-#	IP6_DNSA=""																	# IPv6:DNSアドレス
+#	NIC_ARRY=(`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`)	# NICデバイス名
+#	NIC_ARRY=(`LANG=C ip -4 -o a show scope global noprefixroute | awk -F '[: ]*' '{print $2;}'`)
+	NIC_ARRY=(`LANG=C ip -4 -o a show scope global | awk -F '[: ]*' '{print $2;}'`)
 	for DEV_NAME in ${NIC_ARRY[@]}
 	do
 		IP4_ARRY+=(`fncGetIPaddr 4 "global primary" "${DEV_NAME}"`)				# IPv4:IPアドレス/サブネットマスク(bit)
@@ -414,16 +422,11 @@ funcInitialize () {
 	# 24 | 11111111.11111111.11111111.00000000 | 255.255.255.0
 
 	# ワーク変数設定 ----------------------------------------------------------
-#	DST_NAME=`awk '/[A-Za-z]./ {print $1;}' /etc/issue | head -n 1 | tr '[A-Z]' '[a-z]'`
-	# -------------------------------------------------------------------------
-#	MNT_FD=/media/floppy0
-#	MNT_CD=/media/cdrom0
 	MNT_CD=/media
 	DEV_CD=/dev/sr0
 	# -------------------------------------------------------------------------
 	DIR_WK=${PWD}
 	LST_USER=${DIR_WK}/addusers.txt
-#	LOG_FILE=${DIR_WK}/${PGM_NAME}.sh.${NOW_TIME}.log
 	TGZ_WORK=${DIR_WK}/${PGM_NAME}.sh.tgz
 	CRN_FILE=${DIR_WK}/${PGM_NAME}.sh.crn
 	USR_FILE=${DIR_WK}/${PGM_NAME}.sh.usr.list
@@ -448,22 +451,28 @@ funcInitialize () {
 	DEV_ARRY=("/dev/sda" "/dev/sdb" "/dev/sdc" "/dev/sdd" "/dev/sde" "/dev/sdf" "/dev/sdg" "/dev/sdh")
 	HDD_ARRY=(${DEV_ARRY[@]:0:${NUM_HDDS}})
 	USB_ARRY=(${DEV_ARRY[@]:${NUM_HDDS}:${#DEV_ARRY[@]}-${NUM_HDDS}})
-#	DEV_RATE="${USB_ARRY[@]}"
-#	DEV_TEMP="${HDD_ARRY[@]} ${DEV_RATE}"
 	# -------------------------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		if [ "`which aptitude 2> /dev/null`" != "" ]; then
-			CMD_AGET="aptitude -y -q"
-		else
-			CMD_AGET="apt -y -qq"
-		fi
-	else																		# Red Hat系
-		if [ "`which dnf 2> /dev/null`" != "" ]; then
-			CMD_AGET="dnf -y -q"
-		else
-			CMD_AGET="yum -y -q"
-		fi
-	fi
+	case ${FLG_RHAT} in
+		0 )
+			if [ "`which aptitude 2> /dev/null`" != "" ]; then
+				CMD_AGET="aptitude -y -q"
+			else
+				CMD_AGET="apt -y -qq"
+			fi
+			;;
+		1 )
+			if [ "`which dnf 2> /dev/null`" != "" ]; then
+				CMD_AGET="dnf -y -q --allowerasing"
+			else
+				CMD_AGET="yum -y -q"
+			fi
+			;;
+		2 )
+				CMD_AGET=""
+			;;
+		* )
+			;;
+	esac
 	# -------------------------------------------------------------------------
 	LIN_CHSH=`find /usr/bin/ /usr/sbin/ -name nologin -print`
 	if [ "`which usermod 2> /dev/null`" != "" ]; then
@@ -472,49 +481,31 @@ funcInitialize () {
 		CMD_CHSH="`which chsh` -s ${LIN_CHSH}"
 	fi
 	# -------------------------------------------------------------------------
-	FILE_USERDIRCONF=`find /etc -name "userdir.conf" -type f -print`
-	if [ "${FILE_USERDIRCONF}" = "" ]; then
-		a2enmod userdir; funcPause $?
-		FILE_USERDIRCONF=`find /etc -name "userdir.conf" -type f -print`
-	fi
-	# -------------------------------------------------------------------------
-	FILE_VSFTPDCONF=`find /etc -name "vsftpd.conf" -type f -print`
-	DIR_VSFTPD=`dirname ${FILE_VSFTPDCONF}`
-	# -------------------------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		DNS_USER=bind
-		DIR_BIND=/etc/bind
-		DIR_ZONE=/var/cache/bind
-	else																		# Red Hat系
-		DNS_USER=named
-		DIR_BIND=/etc
-		DIR_ZONE=/var/named
-	fi
+	case ${FLG_RHAT} in
+		0 )
+			DNS_USER=bind
+			DIR_BIND=/etc/bind
+			DIR_ZONE=/var/cache/bind
+			;;
+		1 )
+			DNS_USER=named
+			DIR_BIND=/etc
+			DIR_ZONE=/var/named
+			;;
+		2 )
+			DNS_USER=named
+			DIR_BIND=/etc
+			DIR_ZONE=/var/lib/named
+			;;
+		* )
+			;;
+	esac
 	# -------------------------------------------------------------------------
 	pdbedit -L > /dev/null
 	funcPause $?
 	SMB_PWDB=`find /var/lib/samba/ -name passdb.tdb -type f -print`
 	SMB_CONF=`find /etc -name "smb.conf" -type f -print`
 	SMB_BACK=${SMB_CONF}.orig
-	# webmin ------------------------------------------------------------------
-#	echo - Download webmin -------------------------------------------------------------
-#	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-#		SEL_WMIN=">Debian Package<"
-#	else																		# Red Hat系
-#		SEL_WMIN=">RPM<"
-#	fi
-#	HTM_WMIN="download.html"
-#	WEB_WMIN="http://www.webmin.com/${HTM_WMIN}"
-#	WRK_WMIN="${DIR_WK}/${HTM_WMIN}"
-#	wget -O "${WRK_WMIN}" "${WEB_WMIN}"
-#	funcPause $?
-#	URL_WMIN=`awk -F '"' '/'"${SEL_WMIN}"'/ {print $2;}' "${WRK_WMIN}"`
-#	SET_WMIN=`basename ${URL_WMIN}`
-#	PKG_WMIN="${DIR_WK}/${SET_WMIN}"
-#	rm -f "${WRK_WMIN}"
-#	funcPause $?
-#	wget -O "${PKG_WMIN}" "${URL_WMIN}"
-#	funcPause $?
 }
 
 # Main処理 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -529,25 +520,26 @@ funcMain () {
 	# *************************************************************************
 	# System Update
 	# *************************************************************************
-	echo - System Update ---------------------------------------------------------------
-	# -------------------------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ] && [ ! -f /etc/apt/sources.list.orig ]; then		# 非Red Hat系
-		sed -i.orig /etc/apt/sources.list \
-		    -e 's/^deb cdrom.*$/# &/'
-	fi
-	# --- パッケージ更新 ------------------------------------------------------
-	echo --- Package Update ------------------------------------------------------------
-	${CMD_AGET} update ; funcPause $?
-	echo --- Package Upgrade -----------------------------------------------------------
-	${CMD_AGET} upgrade; funcPause $?
-#	echo --- Package Fix-broken --------------------------------------------------------
-#	${CMD_AGET} --fix-broken install; funcPause $?
-#	echo --- Package Cleaning ----------------------------------------------------------
-#	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-#		${CMD_AGET} autoclean; funcPause $?
-#	else																		# Red Hat系
-#		${CMD_AGET} autoremove; funcPause $?
-#	fi
+	case ${FLG_RHAT} in
+		0 | \
+		1 )
+			echo - System Update ---------------------------------------------------------------
+			# -------------------------------------------------------------------------
+			if [ ${FLG_RHAT} -eq 0 ] && [ ! -f /etc/apt/sources.list.orig ]; then
+				sed -i.orig /etc/apt/sources.list \
+				    -e 's/^deb cdrom.*$/# &/'
+			fi
+			# --- パッケージ更新 ------------------------------------------------------
+			echo --- Package Update ------------------------------------------------------------
+			${CMD_AGET} update ; funcPause $?
+			echo --- Package Upgrade -----------------------------------------------------------
+			${CMD_AGET} upgrade; funcPause $?
+			;;
+		2 )
+			;;
+		* )
+			;;
+	esac
 
 	# *************************************************************************
 	# Locale Setup
@@ -562,23 +554,22 @@ funcMain () {
 		locale-gen; funcPause $?
 		update-locale LANG=${SET_LANG}; funcPause $?
 	fi
-	# -------------------------------------------------------------------------
-#	if [ ! -f /etc/locale.conf.orig ]; then
-#		locale > /etc/locale.conf
-#		sed -i.orig /etc/locale.conf                \
-#		    -e "s/\(LANG\)=\S.*$/\1=${SET_LANG}/"   \
-#		    -e "s/\(LC_.*\)=\S.*$/\1=${SET_LANG}/g"
-#	fi
 	#--------------------------------------------------------------------------
 	for USER_NAME in "${USER}" "${SUDO_USER}"
 	do
 		USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
 		pushd ${USER_HOME} > /dev/null
-			if [ ${FLG_RHAT} -eq 0 ]; then										# 非Red Hat系
-				LNG_FILE=".bashrc"
-			else																# Red Hat系
-				LNG_FILE=".i18n"
-			fi
+			case ${FLG_RHAT} in
+				0 )
+					LNG_FILE=".bashrc"
+					;;
+				1 | \
+				2 )
+					LNG_FILE=".i18n"
+					;;
+				* )
+					;;
+			esac
 			[ ! -f .vimrc      ] && { touch .vimrc;      chown ${USER_NAME}. .vimrc;      }
 			[ ! -f .curlrc     ] && { touch .curlrc;     chown ${USER_NAME}. .curlrc;     }
 			[ ! -f ${LNG_FILE} ] && { touch ${LNG_FILE}; chown ${USER_NAME}. ${LNG_FILE}; }
@@ -623,10 +614,6 @@ _EOT_
 					esac
 _EOT_
 			fi
-			# -----------------------------------------------------------------
-#			if [ -f .profile ]; then
-#				. .profile
-#			fi
 		popd > /dev/null
 	done
 	#--------------------------------------------------------------------------
@@ -669,33 +656,6 @@ _EOT_
 			ALL : ALL
 _EOT_
 	fi
-	# nsswitch.conf -----------------------------------------------------------
-	echo --- nsswitch.conf -------------------------------------------------------------
-	if [ ! -f /etc/nsswitch.conf.orig ]; then
-		sed -i.orig /etc/nsswitch.conf                            \
-		    -e 's/^hosts:.*/# &\nhosts:          files wins dns/'
-	fi
-	# nfs ---------------------------------------------------------------------
-	echo --- nfs -----------------------------------------------------------------------
-	if [ ! -f /etc/idmapd.conf.orig ]; then
-		sed -i.orig /etc/idmapd.conf                  \
-		    -e "s/#.*\(Domain\).*/\1 = ${WGP_NAME}/g"
-	fi
-	if [ ! -f /etc/exports.orig ]; then
-		sed -i.orig /etc/exports                                                    \
-		    -e "\$a/home ${IP4_UADR[0]}.0/${IP4_BITS[0]}(rw,sync,no_subtree_check)"
-	fi
-	echo ---- nfs-server restart -------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		if [ "${SYS_NAME}" = "debian" ] \
-		&& [ ${SYS_VNUM} -le 8 -a ${SYS_VNUM} -ge 0 ]; then						# Debian 8以前の判定
-			funcProc nfs-kernel-server "${RUN_NFSD[0]}"
-		else
-			funcProc nfs-server "${RUN_NFSD[0]}"
-		fi
-	else																		# Red Hat系
-		funcProc "rpcbind nfs-server" "${RUN_NFSD[0]}"
-	fi
 	# cifs --------------------------------------------------------------------
 	echo --- cifs ----------------------------------------------------------------------
 	mkdir -p /mnt/share.nfs \
@@ -713,68 +673,21 @@ _EOT_
 			chmod 0600 .credentials
 		popd > /dev/null
 	done
-	# ipv6 disable ------------------------------------------------------------
-#	echo --- ipv6 disable --------------------------------------------------------------
-#	if [ ! -f /etc/sysctl.conf.orig ]; then
-#		sed -i.orig /etc/sysctl.conf                  \
-#		    -e '$anet.ipv6.conf.all.disable_ipv6 = 1'
-#		sysctl -p
-#	fi
-	# Configuration for getaddrinfo [IPv4接続優先化設定] ----------------------
-#	echo --- Configuration for getaddrinfo [IPv4接続優先化設定] ------------------------
-	#        ::1/128 (ループバック)
-	#         ::/0   (IPv6通信全般)
-	#     2002::/16  (6to4)
-	#         ::/96  (IPv4互換)
-	# ::ffff:0:0/96  (IPv4マップ)
-#	if [ ! -f /etc/gai.conf.orig ]; then
-#		if [ ! -f /etc/gai.conf ]; then
-#			cp -p `find /usr -name "gai.conf" -print` /etc/
-#		fi
-#		sed -i.orig /etc/gai.conf                           \
-#		    -e 's~#\(precedence.*::1/128.*\)~\1~g'          \
-#		    -e 's~#\(precedence.*::/0.*\)~\1~g'             \
-#		    -e 's~#\(precedence.*2002::/16.*\)~\1~g'        \
-#		    -e 's~#\(precedence.*::/96.*\)~\1~g'            \
-#		    -e 's~#\(precedence.*::ffff:0:0/96.*100\)~\1~g'
-#	fi
 	# ipv4 dns changed --------------------------------------------------------
-	if [ "${CON_NAME}" != "" ]; then
+	if [ "`which nmcli 2> /dev/null`" != "" ]; then
 		echo --- ipv4 dns changed ----------------------------------------------------------
-		if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
-			if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
-				sed -i.orig /etc/resolv.conf                                \
-				    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"                 \
-				    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1/g"
-			fi
+		if [ "${CON_UUID}" != "" ]; then
+			nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
+			nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
+			nmcli c up     "${CON_UUID}"
 		else
-			if [ "${CON_UUID}" != "" ]; then
-				nmcli c modify "${CON_UUID}" ipv4.dns 127.0.0.1
-				nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
-			else
-				if [ "${IP4_DHCP[0]}" = "auto" ]; then
-					if [ ! -f "/etc/dhcp/dhclient.conf.orig" ]; then
-						sed -i.orig /etc/dhcp/dhclient.conf                           \
-						    -e 's/^#\(prepend domain-name-servers\).*$/\1 127.0.0.1;/'
-					fi
-				else
-					if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
-						cp -p /etc/resolv.conf /etc/resolv.conf.orig
-					fi
-					if [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
-						funcProc network-manager stop
-						cp -p "/etc/NetworkManager/system-connections/${CON_NAME}" "${DIR_WK}/${CON_NAME}.orig"
-						cat "${DIR_WK}/${CON_NAME}.orig"                                                                                    \
-						    | sed -e "/^\[ipv4\]/,/^dns=${IP4_DNSA[0]}/ s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1;\ndns-search=${WGP_NAME}/" \
-						    > "/etc/NetworkManager/system-connections/${CON_NAME}"
-					fi
-				fi
+			if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
+				sed -i.orig /etc/resolv.conf                                                  \
+				    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"                                   \
+				    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1\n\1 ${IP4_DNSA[0]}/g"
 			fi
 		fi
 	fi
-	#--------------------------------------------------------------------------
-#	funcProc NetworkManager "${RUN_CLAM[0]}"
-#	funcProc NetworkManager "${RUN_CLAM[1]}"
 	#--------------------------------------------------------------------------
 	if [ "${SYS_NAME}" = "ubuntu" ]; then										# Ubuntuの判定
 		funcProc systemd-resolved disable										# nameserver 127.0.0.53 の無効化
@@ -787,21 +700,22 @@ _EOT_
 	fi
 	# Virtual Bridge ----------------------------------------------------------
 	echo --- Virtual Bridge changed ----------------------------------------------------
-	if [ "`find /lib/systemd/system/ -name \"libvirtd.*\" -print`" != "" ]; then
+	if [ "`find ${DIR_SYSD}/system/ -name \"libvirtd.*\" -print`" != "" ]; then
 		funcProc libvirtd disable
 	fi
 	# firewalld ---------------------------------------------------------------
 	echo --- firewalld changed ---------------------------------------------------------
-	if [ "`find /lib/systemd/system/ -name \"firewalld.*\" -print`" != "" ]; then
+	if [ "`find ${DIR_SYSD}/system/ -name \"firewalld.*\" -print`" != "" ]; then
 		funcProc firewalld enable
 		funcProc firewalld restart
 		# --- 	Firewalld を有効にしている場合 --------------------------------
-		firewall-cmd --add-service=dns   --permanent		# named
-		firewall-cmd --add-service=dhcp  --permanent		# dhcpd
-		firewall-cmd --add-service=samba --permanent		# smb
-		firewall-cmd --add-service=ftp   --permanent		# vsftpd
-		firewall-cmd --add-service=http  --permanent		# httpd
-		firewall-cmd --add-service=nfs   --permanent		# nfs
+		firewall-cmd --add-service=dns   --zone=home --permanent		# named
+#		firewall-cmd --add-service=dhcp  --zone=home --permanent		# dhcpd
+		firewall-cmd --add-service=samba --zone=home --permanent		# smb
+#		firewall-cmd --add-service=ftp   --zone=home --permanent		# vsftpd
+#		firewall-cmd --add-service=http  --zone=home --permanent		# httpd
+#		firewall-cmd --add-service=nfs   --zone=home --permanent		# nfs
+		firewall-cmd --set-default-zone=home
 		firewall-cmd --reload
 	fi
 	# *************************************************************************
@@ -919,45 +833,56 @@ _EOT_
 	# *************************************************************************
 	# Install clamav
 	# *************************************************************************
-	echo - Install clamav --------------------------------------------------------------
-	# -------------------------------------------------------------------------
-	if [ "`which freshclam 2> /dev/null`" = "" ]; then							# Install clamav
-		${CMD_AGET} install clamav clamav-update clamav-scanner-systemd
-		funcPause $?
-	fi
-	# -------------------------------------------------------------------------
-	FILE_FRESHCONF=`find /etc -name "freshclam.conf" -type f -print`
-	FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
-	# -------------------------------------------------------------------------
-	if [ ! -f ${FILE_CLAMDCONF} ]; then
-		cp -p ${FILE_FRESHCONF} ${FILE_CLAMDCONF}
-		: > ${FILE_CLAMDCONF}
-	fi
-	# -------------------------------------------------------------------------
-	if [ ! -f ${FILE_FRESHCONF}.orig ]; then
-		sed -i.orig ${FILE_FRESHCONF}                                        \
-		    -e 's/^Example/#&/'                                              \
-		    -e 's/\(# Check for new database\) 24 \(times a day\)/\1 12 \2/' \
-		    -e 's/\(Checks\) 24/\1 12/'                                      \
-		    -e 's/^NotifyClamd/#&/'
-	fi
-	# -------------------------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		if [ "${CPU_TYPE}" = "armv5tel" ]; then
-			funcProc clamav-freshclam disable
-			funcProc clamav-freshclam stop
-		else
-			funcProc clamav-freshclam "${RUN_CLAM[0]}"
-			funcProc clamav-freshclam "${RUN_CLAM[1]}"
-		fi
-#	else																		# Red Hat系
-#		funcProc clamd "${RUN_CLAM[0]}"
-#		funcProc clamd "${RUN_CLAM[1]}"
-	fi
+	case ${FLG_RHAT} in
+		0 | \
+		1 )
+			echo - Install clamav --------------------------------------------------------------
+			# -------------------------------------------------------------------------
+			if [ "`which freshclam 2> /dev/null`" = "" ]; then					# Install clamav
+				${CMD_AGET} install clamav clamav-update clamav-scanner-systemd
+				funcPause $?
+			fi
+			# -------------------------------------------------------------------------
+			FILE_FRESHCONF=`find /etc -name "freshclam.conf" -type f -print`
+			FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
+			# -------------------------------------------------------------------------
+			if [ ! -f ${FILE_CLAMDCONF} ]; then
+				cp -p ${FILE_FRESHCONF} ${FILE_CLAMDCONF}
+				: > ${FILE_CLAMDCONF}
+			fi
+			# -------------------------------------------------------------------------
+			if [ ! -f ${FILE_FRESHCONF}.orig ]; then
+				sed -i.orig ${FILE_FRESHCONF}                                        \
+				    -e 's/^Example/#&/'                                              \
+				    -e 's/\(# Check for new database\) 24 \(times a day\)/\1 12 \2/' \
+				    -e 's/\(Checks\) 24/\1 12/'                                      \
+				    -e 's/^NotifyClamd/#&/'
+			fi
+			# -------------------------------------------------------------------------
+			case ${FLG_RHAT} in
+				0 )
+					if [ "${CPU_TYPE}" = "armv5tel" ]; then
+						funcProc clamav-freshclam disable
+						funcProc clamav-freshclam stop
+					fi
+					;;
+				1 )
+					;;
+				2 )
+					;;
+				* )
+					;;
+			esac
+			;;
+		2 )
+			;;
+		* )
+			;;
+	esac
 
-	#--------------------------------------------------------------------------
+	# *************************************************************************
 	# Install ssh
-	#--------------------------------------------------------------------------
+	# *************************************************************************
 	echo - Install ssh -----------------------------------------------------------------
 	# -------------------------------------------------------------------------
 	if [ ! -f /etc/ssh/sshd_config.orig ]; then
@@ -967,127 +892,19 @@ _EOT_
 		    -e '$a UseDNS no'
 	fi
 	# -------------------------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		funcProc ssh "${RUN_SSHD[0]}"
-		funcProc ssh "${RUN_SSHD[1]}"
-	else																		# Red Hat系
-		funcProc sshd "${RUN_SSHD[0]}"
-		funcProc sshd "${RUN_SSHD[1]}"
-	fi
-
-	# *************************************************************************
-	# Install apache2
-	# *************************************************************************
-	echo - Install apache2 -------------------------------------------------------------
-	# -------------------------------------------------------------------------
-#	adduser ${WWW-DATA} ${SMB_GRUP}		# webにユーザーディレクトリーを開放する
-#	deluser ${WWW-DATA} ${SMB_GRUP}		# webにユーザーディレクトリーを開放しない
-	# -------------------------------------------------------------------------
-	if [ ! -f ${FILE_USERDIRCONF}.orig ]; then
-		cp -p ${FILE_USERDIRCONF} ${FILE_USERDIRCONF}.orig
-		cat <<- _EOT_ > ${FILE_USERDIRCONF}
-			<IfModule mod_userdir.c>
-			 	UserDir web/public_html
-			 	UserDir disabled root
-
-			 	<Directory ${DIR_SHAR}/data/usr/*/web/public_html>
-			 		AllowOverride FileInfo AuthConfig Limit Indexes
-			 		Options MultiViews Indexes SymLinksIfOwnerMatch IncludesNoExec
-			 		<Limit GET POST OPTIONS>
-			 			Order allow,deny
-			 			Allow from all
-			 			Require all granted
-			 		</Limit>
-			 		<LimitExcept GET POST OPTIONS>
-			 			Order deny,allow
-			 			Deny from all
-			 			Require all granted
-			 		</LimitExcept>
-			 	</Directory>
-			</IfModule>
-_EOT_
-	fi
-	# -------------------------------------------------------------------------
-	if [ "`which httpd 2> /dev/null`" != "" ]; then
-		VER_BIND=`httpd -v | awk -F '.' '/version/ {sub(".*Apache/",""); printf "%d.%d",$1,$2;}'`
-		funcPause $?
-	else
-		VER_BIND=`apache2ctl -v | awk -F '.' '/version/ {sub(".*Apache/",""); printf "%d.%d",$1,$2;}'`
-		funcPause $?
-	fi
-	if [ "$(echo "${VER_BIND} >= 2.4" | bc)" -eq 1 ]; then						# Ver.2.4以降
-		sed -i ${FILE_USERDIRCONF}   \
-		    -e '/Order allow,deny/d' \
-		    -e '/Allow from all/d'   \
-		    -e '/Order deny,allow/d' \
-		    -e '/Deny from all/d'
-	else																		# Ver.2.4以前
-		sed -i ${FILE_USERDIRCONF}      \
-		    -e '/Require all granted/d'
-	fi
-	# -------------------------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		funcProc apache2 "${RUN_HTTP[0]}"
-		funcProc apache2 "${RUN_HTTP[1]}"
-	else																		# Red Hat系
-		funcProc httpd "${RUN_HTTP[0]}"
-		funcProc httpd "${RUN_HTTP[1]}"
-	fi
-
-	# *************************************************************************
-	# Install vsftpd
-	# *************************************************************************
-	echo - Install vsftpd --------------------------------------------------------------
-	# -------------------------------------------------------------------------
-	touch ${DIR_VSFTPD}/vsftpd.chroot_list		# chrootを許可するユーザーのリスト
-	touch ${DIR_VSFTPD}/vsftpd.user_list		# 接続拒否するユーザーのリスト
-	touch ${DIR_VSFTPD}/vsftpd.banned_emails	# 接続拒否する電子メール・パスワードのリスト
-	touch ${DIR_VSFTPD}/vsftpd.email_passwords	# 匿名ログイン用の電子メール・パスワードのリスト
-	# -------------------------------------------------------------------------
-	chmod 0600 ${DIR_VSFTPD}/vsftpd.chroot_list     \
-			   ${DIR_VSFTPD}/vsftpd.user_list       \
-			   ${DIR_VSFTPD}/vsftpd.banned_emails   \
-			   ${DIR_VSFTPD}/vsftpd.email_passwords
-	# -------------------------------------------------------------------------
-	if [ ! -f ${DIR_VSFTPD}/vsftpd.conf.orig ]; then
-		sed -i.orig ${DIR_VSFTPD}/vsftpd.conf                                      \
-		    -e 's/^\(listen\)=.*$/\1=NO/'                                          \
-		    -e 's/^\(listen_ipv6\)=.*$/\1=YES/'                                    \
-		    -e 's/^\(anonymous_enable\)=.*$/\1=NO/'                                \
-		    -e 's/^\(local_enable\)=.*$/\1=YES/'                                   \
-		    -e 's/^#\(write_enable\)=.*$/\1=YES/'                                  \
-		    -e 's/^#\(local_umask\)=.*$/\1=022/'                                   \
-		    -e 's/^\(dirmessage_enable\)=.*$/\1=NO/'                               \
-		    -e 's/^\(use_localtime\)=.*$/\1=YES/'                                  \
-		    -e 's/^\(xferlog_enable\)=.*$/\1=YES/'                                 \
-		    -e 's/^\(connect_from_port_20\)=.*$/\1=YES/'                           \
-		    -e 's/^#\(xferlog_std_format\)=.*$/\1=NO/'                             \
-		    -e 's/^#\(idle_session_timeout\)=.*$/\1=300/'                          \
-		    -e 's/^#\(data_connection_timeout\)=.*$/\1=30/'                        \
-		    -e 's/^#\(ascii_upload_enable\)=.*$/\1=YES/'                           \
-		    -e 's/^#\(ascii_download_enable\)=.*$/\1=YES/'                         \
-		    -e 's/^#\(chroot_local_user\)=.*$/\1=NO/'                              \
-		    -e 's/^#\(chroot_list_enable\)=.*$/\1=NO/'                             \
-		    -e "s~^#\(chroot_list_file\)=.*$~\1=${DIR_VSFTPD}/vsftpd.chroot_list~" \
-		    -e 's/^#\(ls_recurse_enable\)=.*$/\1=YES/'                             \
-		    -e 's/^\(pam_service_name\)=.*$/\1=vsftpd/'                            \
-		    -e '$atcp_wrappers=YES'                                                \
-		    -e '$auserlist_enable=YES'                                             \
-		    -e '$auserlist_deny=YES'                                               \
-		    -e "\$auserlist_file=${DIR_VSFTPD}\/vsftpd.user_list"                  \
-		    -e '$achmod_enable=YES'                                                \
-		    -e '$aforce_dot_files=YES'                                             \
-		    -e '$adownload_enable=YES'                                             \
-		    -e '$avsftpd_log_file=\/var\/log\/vsftpd\.log'                         \
-		    -e '$adual_log_enable=NO'                                              \
-		    -e '$asyslog_enable=NO'                                                \
-		    -e '$alog_ftp_protocol=NO'                                             \
-		    -e '$aftp_data_port=20'                                                \
-		    -e '$apasv_enable=YES'
-	fi
-	# -------------------------------------------------------------------------
-	funcProc vsftpd "${RUN_FTPD[0]}"
-	funcProc vsftpd "${RUN_FTPD[1]}"
+	case ${FLG_RHAT} in
+		0 )
+			funcProc ssh "${RUN_SSHD[0]}"
+			funcProc ssh "${RUN_SSHD[1]}"
+			;;
+		1 | \
+		2 )
+			funcProc sshd "${RUN_SSHD[0]}"
+			funcProc sshd "${RUN_SSHD[1]}"
+			;;
+		* )
+			;;
+	esac
 
 	# *************************************************************************
 	# Install bind9
@@ -1110,8 +927,8 @@ _EOT_
 			 												)
 			@										IN		NS		${SVR_NAME}.${WGP_NAME}.
 _EOT_
-		chmod 640 ${DIR_ZONE}/db.${FIL_NAME}
-		chown root.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
+#		chmod 640 ${DIR_ZONE}/db.${FIL_NAME}
+		chown ${DNS_USER}.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
 	done
 	if [ "${IP6_DHCP}" != "" -a "${IP6_DHCP}" != "auto" ]; then
 		for FIL_NAME in ${WGP_NAME} ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
@@ -1127,8 +944,8 @@ _EOT_
 				 												)
 				@										IN		NS		${SVR_NAME}.${WGP_NAME}.
 	_EOT_
-			chmod 640 ${DIR_ZONE}/db.${FIL_NAME}
-			chown root.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
+#			chmod 640 ${DIR_ZONE}/db.${FIL_NAME}
+			chown ${DNS_USER}.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
 		done
 	fi
 	#--------------------------------------------------------------------------
@@ -1162,6 +979,11 @@ _EOT_
 		sed -i.orig ${DIR_ZONE}/db.${IP4_RADR[0]}.in-addr.arpa -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
 	fi
 	# -------------------------------------------------------------------------
+	if [ ! -f ${DIR_BIND}/named.conf.include ]; then
+		cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.include
+		: > ${DIR_BIND}/named.conf.include
+	fi
+	# -------------------------------------------------------------------------
 	if [ ! -f ${DIR_BIND}/named.conf.orig ]; then
 		echo --- named.conf ----------------------------------------------------------------
 		cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.orig
@@ -1170,7 +992,7 @@ _EOT_
 			echo ---- add named.conf.options ---------------------------------------------------
 			sed -i ${DIR_BIND}/named.conf                                                                                        \
 			    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
-			    -e "/allow-query/a \\\tallow-transfer\t{ none; };"
+			    -e "/allow-query { 127.0.0.1; };/a \\\tallow-transfer\t{ none; };"
 		fi
 		# ---------------------------------------------------------------------
 		if [ ! -f ${DIR_BIND}/named.conf.local ]; then
@@ -1242,7 +1064,7 @@ _EOT_
 	named-checkconf
 	funcPause $?
 	# -------------------------------------------------------------------------
-	if [ "`find /lib/systemd/system/ -name \"named.service\" -print`" != "" ]; then
+	if [ "`find ${DIR_SYSD}/system/ -name \"named.service\" -print`" != "" ]; then
 		funcProc named "${RUN_BIND[0]}"
 		funcProc named "${RUN_BIND[1]}"
 	else
@@ -1262,24 +1084,51 @@ _EOT_
 	# *************************************************************************
 	echo - Install dhcp ----------------------------------------------------------------
 	# -------------------------------------------------------------------------
-	if [ ! -f /etc/dhcp/dhcpd.conf.orig ]; then
-		cp -p /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
-		cat <<- _EOT_ > /etc/dhcp/dhcpd.conf
-			subnet ${IP4_NTWK[0]} netmask ${IP4_MASK[0]} {
-			 	option time-servers ntp.nict.jp;
-			 	option domain-name-servers ${IP4_ADDR[0]};
-			 	option domain-name "${WGP_NAME}";
-			 	range ${RNG_DHCP};
-			 	option routers ${IP4_GATE};
-			 	option subnet-mask ${IP4_MASK[0]};
-			 	option broadcast-address ${IP4_BCST[0]};
-			 	option netbios-dd-server ${IP4_ADDR[0]};
-			 	default-lease-time 3600;
-			 	max-lease-time 86400;
-			}
+	case ${FLG_RHAT} in
+		0 | \
+		1 )
+			if [ ! -f /etc/dhcp/dhcpd.conf.orig ]; then
+				cp -p /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
+				cat <<- _EOT_ > /etc/dhcp/dhcpd.conf
+					subnet ${IP4_NTWK[0]} netmask ${IP4_MASK[0]} {
+					 	option time-servers ntp.nict.jp;
+					 	option domain-name-servers ${IP4_ADDR[0]};
+					 	option domain-name "${WGP_NAME}";
+					 	range ${RNG_DHCP};
+					 	option routers ${IP4_GATE};
+					 	option subnet-mask ${IP4_MASK[0]};
+					 	option broadcast-address ${IP4_BCST[0]};
+					 	option netbios-dd-server ${IP4_ADDR[0]};
+					 	default-lease-time 3600;
+					 	max-lease-time 86400;
+					}
 
 _EOT_
-	fi
+			fi
+			;;
+		2 )
+			if [ ! -f /etc/dhcpd.conf.orig ]; then
+				cp -p /etc/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
+				cat <<- _EOT_ > /etc/dhcpd.conf
+					subnet ${IP4_NTWK[0]} netmask ${IP4_MASK[0]} {
+					 	option time-servers ntp.nict.jp;
+					 	option domain-name-servers ${IP4_ADDR[0]};
+					 	option domain-name "${WGP_NAME}";
+					 	range ${RNG_DHCP};
+					 	option routers ${IP4_GATE};
+					 	option subnet-mask ${IP4_MASK[0]};
+					 	option broadcast-address ${IP4_BCST[0]};
+					 	option netbios-dd-server ${IP4_ADDR[0]};
+					 	default-lease-time 3600;
+					 	max-lease-time 86400;
+					}
+
+_EOT_
+			fi
+			;;
+		* )
+			;;
+	esac
 	# -------------------------------------------------------------------------
 	if [ -f /etc/default/isc-dhcp-server ] && [ ! -f /etc/default/isc-dhcp-server.orig ]; then
 		sed -i.orig /etc/default/isc-dhcp-server     \
@@ -1289,65 +1138,26 @@ _EOT_
 	# -------------------------------------------------------------------------
 	if [ "${IP4_DHCP[0]}" = "auto" ]; then
 		RUN_DHCP[0]=disable
-#		RUN_DHCP[1]=stop
+	#	RUN_DHCP[1]=stop
 	fi
 	 # ------------------------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		funcProc isc-dhcp-server "${RUN_DHCP[0]}"
-		funcProc isc-dhcp-server "${RUN_DHCP[1]}"
-		if [ "`find /lib/systemd/system/ -name \"isc-dhcp-server6.*\" -print`" != "" ]; then
-			funcProc isc-dhcp-server6 disable
-#			funcProc isc-dhcp-server6 stop
-		fi
-	else																		# Red Hat系
-		funcProc dhcpd "${RUN_DHCP[0]}"
-		funcProc dhcpd "${RUN_DHCP[1]}"
-	fi
-
-	# *************************************************************************
-	# Install Webmin
-	# *************************************************************************
-	URL_WMIN=""
-	if [ "${URL_WMIN}" != "" ]; then
-		echo - Install Webmin --------------------------------------------------------------
-		# ---------------------------------------------------------------------
-		if [ ! -d /etc/webmin ]; then
-			if [ ${FLG_RHAT} -eq 0 ]; then										# 非Red Hat系
-				dpkg -i "${PKG_WMIN}"
-				funcPause $?
-			else																# Red Hat系
-				${CMD_AGET} install "${PKG_WMIN}"
-				funcPause $?
+	case ${FLG_RHAT} in
+		0 )
+			funcProc isc-dhcp-server "${RUN_DHCP[0]}"
+			funcProc isc-dhcp-server "${RUN_DHCP[1]}"
+			if [ "`find ${DIR_SYSD}/system/ -name \"isc-dhcp-server6.*\" -print`" != "" ]; then
+				funcProc isc-dhcp-server6 disable
+			#	funcProc isc-dhcp-server6 stop
 			fi
-		fi
-		#----------------------------------------------------------------------
-		if [ -f /etc/webmin/config ]; then
-			if [ ! -f /etc/webmin/config.orig ]; then
-				cp -p /etc/webmin/config /etc/webmin/config.orig
-				cat <<- _EOT_ >> /etc/webmin/config
-					webprefix=
-					lang_root=${SET_LANG}
-_EOT_
-			fi
-			#------------------------------------------------------------------
-			if [ ! -f /etc/webmin/time/config.orig ]; then
-				cp -p /etc/webmin/time/config /etc/webmin/time/config.orig
-				cat <<- _EOT_ >> /etc/webmin/time/config
-					timeserver=ntp.nict.jp
-_EOT_
-			fi
-			#------------------------------------------------------------------
-			funcProc webmin "${RUN_WMIN[0]}"
-			funcProc webmin "${RUN_WMIN[1]}"
-			PSW_WMIN=`find /usr/ -name "changepass.pl" -print`
-			echo "==============================================================================="
-			echo "===  webminはrootのパスワードを設定しないと利用できません。                 ==="
-			echo "===  rootのパスワードを一時的に設定し、                                     ==="
-			echo "===    webminにログイン後に以下のコマンドで変更して下さい。                 ==="
-			echo "===      ${PSW_WMIN} ログインアカウント パスワード      ==="
-			echo "==============================================================================="
-		fi
-	fi
+			;;
+		1 | \
+		2 )
+			funcProc dhcpd "${RUN_DHCP[0]}"
+			funcProc dhcpd "${RUN_DHCP[1]}"
+			;;
+		* )
+			;;
+	esac
 
 	# *************************************************************************
 	# Add smb.conf
@@ -1518,28 +1328,34 @@ _EOT_
 		funcPause $?
 	fi
 	# -------------------------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		if [ -f /etc/init.d/samba ]; then
-			if [ "${SYS_NAME}" = "debian" ] \
-			&& [ ${SYS_VNUM} -lt 8 -a ${SYS_VNUM} -ge 0 ]; then					# Debian 8以前の判定
-				funcProc samba "${RUN_SMBD[0]}"
+	case ${FLG_RHAT} in
+		0 )
+			if [ -f /etc/init.d/samba ]; then
+				if [ "${SYS_NAME}" = "debian" ] \
+				&& [ ${SYS_VNUM} -lt 8 -a ${SYS_VNUM} -ge 0 ]; then				# Debian 8以前の判定
+					funcProc samba "${RUN_SMBD[0]}"
+				else
+					funcProc smbd "${RUN_SMBD[0]}"
+					funcProc nmbd "${RUN_SMBD[0]}"
+				fi
+				funcProc samba "${RUN_SMBD[1]}"
 			else
 				funcProc smbd "${RUN_SMBD[0]}"
 				funcProc nmbd "${RUN_SMBD[0]}"
+				funcProc smbd "${RUN_SMBD[1]}"
+				funcProc nmbd "${RUN_SMBD[1]}"
 			fi
-			funcProc samba "${RUN_SMBD[1]}"
-		else
-			funcProc smbd "${RUN_SMBD[0]}"
-			funcProc nmbd "${RUN_SMBD[0]}"
-			funcProc smbd "${RUN_SMBD[1]}"
-			funcProc nmbd "${RUN_SMBD[1]}"
-		fi
-	else																		# Red Hat系
-		funcProc smb "${RUN_SMBD[0]}"
-		funcProc smb "${RUN_SMBD[1]}"
-		funcProc nmb "${RUN_SMBD[0]}"
-		funcProc nmb "${RUN_SMBD[1]}"
-	fi
+			;;
+		1 | \
+		2 )
+			funcProc smb "${RUN_SMBD[0]}"
+			funcProc smb "${RUN_SMBD[1]}"
+			funcProc nmb "${RUN_SMBD[0]}"
+			funcProc nmb "${RUN_SMBD[1]}"
+			;;
+		* )
+			;;
+	esac
 
 	# *************************************************************************
 	# Make User file (${DIR_WK}/addusers.txtが有ればそれを使う)
@@ -1733,20 +1549,20 @@ _EOT_
 	# *************************************************************************
 	# Crontab
 	# *************************************************************************
-	echo - Crontab ---------------------------------------------------------------------
-	cat <<- _EOT_ > ${CRN_FILE}
-		SHELL = /bin/bash
-		PATH = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-		# @reboot /sbin/sysctl -p
-		0 0,3,6,9,12,15,18,21 * * * /usr/sbin/ntpdate -s ntp.nict.jp
-		# @reboot /usr/sh/CMDMOUNT.sh
-		# @reboot /usr/sh/CMDBACKUP.sh
-		# 0 1 * * * /usr/sh/CMDFRESHCLAM.sh
-		# 0 3 * * * /usr/sh/CMDRSYNC.sh
-_EOT_
-	# -------------------------------------------------------------------------
-	crontab ${CRN_FILE}
-	funcPause $?
+#	echo - Crontab ---------------------------------------------------------------------
+#	cat <<- _EOT_ > ${CRN_FILE}
+#		SHELL = /bin/bash
+#		PATH = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+#		# @reboot /sbin/sysctl -p
+#		0 0,3,6,9,12,15,18,21 * * * /usr/sbin/ntpdate -s ntp.nict.jp
+#		# @reboot /usr/sh/CMDMOUNT.sh
+#		# @reboot /usr/sh/CMDBACKUP.sh
+#		# 0 1 * * * /usr/sh/CMDFRESHCLAM.sh
+#		# 0 3 * * * /usr/sh/CMDRSYNC.sh
+#_EOT_
+#	# -------------------------------------------------------------------------
+#	crontab ${CRN_FILE}
+#	funcPause $?
 
 	# *************************************************************************
 	# GRUB
@@ -1780,28 +1596,35 @@ _EOT_
 	# *************************************************************************
 	if [ -f /etc/default/grub ] && [ ! -f /etc/default/grub.orig ]; then
 		echo - GRUB ------------------------------------------------------------------------
-		if [ ${FLG_RHAT} -eq 0 ]; then											# 非Red Hat系
-			sed -i.orig /etc/default/grub                                                             \
-			    -e 's/^GRUB_CMDLINE_LINUX_DEFAULT/#&/'                                                \
-			    -e "s/#\(GRUB_GFXMODE\)=.*$/GRUB_GFXPAYLOAD_LINUX=${VGA_RESO[0]}\n\1=${VGA_RESO[0]}/"
-			# -----------------------------------------------------------------
-			update-grub
-			funcPause $?
-		else																	# Red Hat系
-			sed -i.orig /etc/default/grub                    \
-			    -e '/^GRUB_TERMINAL_OUTPUT/ s/console//'     \
-			    -e '/^GRUB_CMDLINE_LINUX/ s/ rhgb quiet//'   \
-			    -e "\$aGRUB_GFXPAYLOAD_LINUX=${VGA_RESO[0]}" \
-			    -e "\$aGRUB_GFXMODE=${VGA_RESO[0]}"
-			# -----------------------------------------------------------------
-			if [ -f /boot/efi/EFI/centos/grub.cfg ]; then						# efi
-				grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+		case ${FLG_RHAT} in
+			0 )
+				sed -i.orig /etc/default/grub                                                             \
+				    -e 's/^GRUB_CMDLINE_LINUX_DEFAULT/#&/'                                                \
+				    -e "s/#\(GRUB_GFXMODE\)=.*$/GRUB_GFXPAYLOAD_LINUX=${VGA_RESO[0]}\n\1=${VGA_RESO[0]}/"
+				# -----------------------------------------------------------------
+				update-grub
 				funcPause $?
-			else																# mbr
-				grub2-mkconfig -o /boot/grub2/grub.cfg
-				funcPause $?
-			fi
-		fi
+				;;
+			1 )
+				sed -i.orig /etc/default/grub                    \
+				    -e '/^GRUB_TERMINAL_OUTPUT/ s/console//'     \
+				    -e '/^GRUB_CMDLINE_LINUX/ s/ rhgb quiet//'   \
+				    -e "\$aGRUB_GFXPAYLOAD_LINUX=${VGA_RESO[0]}" \
+				    -e "\$aGRUB_GFXMODE=${VGA_RESO[0]}"
+				# -----------------------------------------------------------------
+				if [ -f /boot/efi/EFI/centos/grub.cfg ]; then					# efi
+					grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+					funcPause $?
+				else															# mbr
+					grub2-mkconfig -o /boot/grub2/grub.cfg
+					funcPause $?
+				fi
+				;;
+			2 )
+				;;
+			* )
+				;;
+		esac
 	fi
 
 	# *************************************************************************
@@ -1810,15 +1633,24 @@ _EOT_
 	if [ ${FLG_VMTL} -ne 0 ]; then
 		echo - Install VMware Tools --------------------------------------------------------
 		# ---------------------------------------------------------------------
-		if [ "`which vmware-checkvm 2> /dev/null`" = "" ]; then
-			if [ "`${CMD_AGET} search open-vm-tools-desktop`" = "" ]; then
-				${CMD_AGET} install open-vm-tools
-				funcPause $?
-			else
-				${CMD_AGET} install open-vm-tools open-vm-tools-desktop
-				funcPause $?
-			fi
-		fi
+		case ${FLG_RHAT} in
+			0 | \
+			1 )
+				if [ "`which vmware-checkvm 2> /dev/null`" = "" ]; then
+					if [ "`${CMD_AGET} search open-vm-tools-desktop`" = "" ]; then
+						${CMD_AGET} install open-vm-tools
+						funcPause $?
+					else
+						${CMD_AGET} install open-vm-tools open-vm-tools-desktop
+						funcPause $?
+					fi
+				fi
+				;;
+			2 )
+				;;
+			* )
+				;;
+		esac
 		# ---------------------------------------------------------------------
 		mkdir -p /mnt/hgfs
 		# ---------------------------------------------------------------------
@@ -1868,11 +1700,17 @@ _EOT_
 #	systemctl list-unit-files -t service
 #	systemctl -t service
 	# -------------------------------------------------------------------------
-	if [ ${FLG_RHAT} -eq 0 ]; then												# 非Red Hat系
-		GRP_SUDO=sudo
-	else																		# Red Hat系
-		GRP_SUDO=wheel
-	fi
+	case ${FLG_RHAT} in
+		0 )
+			GRP_SUDO=sudo
+			;;
+		1 | \
+		2 )
+			GRP_SUDO=wheel
+			;;
+		* )
+			;;
+	esac
 	# -------------------------------------------------------------------------
 	if [ "`which groupmems 2> /dev/null`" != "" ]; then
 		USR_SUDO=`groupmems -l -g ${GRP_SUDO}`
@@ -1880,7 +1718,7 @@ _EOT_
 		USR_SUDO=`awk -F ':' -v ORS="," '$1=="'${GRP_SUDO}'" {print $4;}' /etc/group | sed -e 's/,$//'`
 	fi
 	# -------------------------------------------------------------------------
-	if [ "${USR_SUDO}" != "" ]; then
+	if [ "${USR_SUDO}" != "" -a "`awk -F ':' '/root/ {print $7;}' /etc/passwd`" != "${LIN_CHSH}" ]; then
 		echo "=== 以下のユーザーが ${GRP_SUDO} に属しています。 ===================================="
 		echo ${USR_SUDO}
 		echo "==============================================================================="
@@ -1923,14 +1761,14 @@ _EOT_
 		tar -czf ${DIR_WK}/bk_home.tgz   --exclude "bk_*.tgz" home
 		tar -czf ${DIR_WK}/bk_share.tgz  --exclude "bk_*.tgz" share
 		tar -czf ${DIR_WK}/bk_usr_sh.tgz --exclude "bk_*.tgz" usr/sh
+		tar -czf ${DIR_WK}/bk_cron.tgz   --exclude "bk_*.tgz" var/spool/cron
 		# ---------------------------------------------------------------------
-		if [ ${FLG_RHAT} -eq 0 ]; then											# 非Red Hat系
-			tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/cache/bind/
-			tar -czf ${DIR_WK}/bk_cron.tgz   --exclude "bk_*.tgz" var/spool/cron/crontabs
-		else																	# Red Hat系
-			tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/named/
-			tar -czf ${DIR_WK}/bk_cron.tgz   --exclude "bk_*.tgz" var/spool/cron/root
-		fi
+		case ${FLG_RHAT} in
+			0 )	tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/cache/bind/	;;
+			1 )	tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/named/		;;
+			2 )	tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/lib/named/	;;
+			* )																			;;
+		esac
 		set -e
 	popd > /dev/null
 }
@@ -1945,26 +1783,27 @@ funcDebug () {
 	echo "WHO_USER=${WHO_USER[@]}"												# ログイン中ユーザ一覧
 	echo "VGA_RESO=${VGA_RESO[@]}"												# コンソールの解像度：縦×横×色
 	echo "DIR_SHAR=${DIR_SHAR}"													# 共有ディレクトリーのルート
-	echo "RUN_CLAM=${RUN_CLAM[@]}"												# 起動停止設定：clamav-freshclam
+#	echo "RUN_CLAM=${RUN_CLAM[@]}"												# 起動停止設定：clamav-freshclam
 	echo "RUN_SSHD=${RUN_SSHD[@]}"												#   〃        ：ssh / sshd
-	echo "RUN_HTTP=${RUN_HTTP[@]}"												#   〃        ：apache2 / httpd
-	echo "RUN_FTPD=${RUN_FTPD[@]}"												#   〃        ：vsftpd
+#	echo "RUN_HTTP=${RUN_HTTP[@]}"												#   〃        ：apache2 / httpd
+#	echo "RUN_FTPD=${RUN_FTPD[@]}"												#   〃        ：vsftpd
 	echo "RUN_BIND=${RUN_BIND[@]}"												#   〃        ：bind9 / named
 	echo "RUN_DHCP=${RUN_DHCP[@]}"												#   〃        ：isc-dhcp-server / dhcpd
 	echo "RUN_SMBD=${RUN_SMBD[@]}"												#   〃        ：samba / smbd,nmbd / smb,nmb
-	echo "RUN_WMIN=${RUN_WMIN[@]}"												#   〃        ：webmin
+#	echo "RUN_WMIN=${RUN_WMIN[@]}"												#   〃        ：webmin
 	echo "EXT_ZONE=${EXT_ZONE}"													# マスターDNSのドメイン名
 	echo "EXT_ADDR=${EXT_ADDR}"													#   〃         IPアドレス
 	echo "FLG_RHAT=${FLG_RHAT}"													# CentOS時=1,その他=0
 	echo "FLG_SVER=${FLG_SVER}"													# 0以外でサーバー仕様でセッティング
 	echo "DEF_USER=${DEF_USER}"													# インストール時に作成したユーザー名
 	echo "SYS_NAME=${SYS_NAME}"													# ディストリビューション名
+	echo "SYS_VERS=${SYS_VERS}"													# バージョン名
 	echo "SYS_VRID=${SYS_VRID}"													# バージョン番号
 	echo "SYS_VNUM=${SYS_VNUM}"													#   〃          (取得できない場合は-1)
 	echo "SMB_USER=${SMB_USER}"													# smb.confのforce user
 	echo "SMB_GRUP=${SMB_GRUP}"													# smb.confのforce group
 	echo "SMB_GADM=${SMB_GADM}"													# smb.confのadmin group
-	echo "WWW_DATA=${WWW_DATA}"													# apach2 / httpdのユーザ名
+#	echo "WWW_DATA=${WWW_DATA}"													# apach2 / httpdのユーザ名
 	echo "CPU_TYPE=${CPU_TYPE}"													# CPU TYPE (x86_64/armv5tel/...)
 	echo "SVR_FQDN=${SVR_FQDN}"													# 本機のFQDN
 	echo "SVR_NAME=${SVR_NAME}"													# 本機のホスト名
@@ -2027,9 +1866,9 @@ funcDebug () {
 	echo "CMD_AGET=${CMD_AGET}"													#  〃   ：
 	echo "LIN_CHSH=${LIN_CHSH}"													#  〃   ：
 	echo "CMD_CHSH=${CMD_CHSH}"													#  〃   ：
-	echo "FILE_USERDIRCONF=${FILE_USERDIRCONF}"									#  〃   ：
-	echo "FILE_VSFTPDCONF=${FILE_VSFTPDCONF}"									#  〃   ：
-	echo "DIR_VSFTPD=${DIR_VSFTPD}"												#  〃   ：
+#	echo "FILE_USERDIRCONF=${FILE_USERDIRCONF}"									#  〃   ：
+#	echo "FILE_VSFTPDCONF=${FILE_VSFTPDCONF}"									#  〃   ：
+#	echo "DIR_VSFTPD=${DIR_VSFTPD}"												#  〃   ：
 	echo "DIR_BIND=${DIR_BIND}"													#  〃   ：bind
 	echo "DIR_ZONE=${DIR_ZONE}"													#  〃   ：
 	echo "SMB_PWDB=${SMB_PWDB}"													#  〃   ：samba
@@ -2129,17 +1968,17 @@ funcDebug () {
 	# Install apache2 *********************************************************
 #	echo --- cat ${FILE_USERDIRCONF} --------------------------------
 #	expand -t 4 ${FILE_USERDIRCONF}
-	if [ -f ${FILE_USERDIRCONF}.orig ]; then
-		echo --- diff ${FILE_USERDIRCONF} ----------------------------------------
-		funcDiff ${FILE_USERDIRCONF} ${FILE_USERDIRCONF}.orig
-	fi
+#	if [ -f ${FILE_USERDIRCONF}.orig ]; then
+#		echo --- diff ${FILE_USERDIRCONF} ----------------------------------------
+#		funcDiff ${FILE_USERDIRCONF} ${FILE_USERDIRCONF}.orig
+#	fi
 	# Install vsftpd **********************************************************
 #	echo --- cat ${DIR_VSFTPD}/vsftpd.conf ------------------------------------------------------
 #	expand -t 4 ${DIR_VSFTPD}/vsftpd.conf
-	if [ -f ${DIR_VSFTPD}/vsftpd.conf.orig ]; then
-		echo --- diff ${DIR_VSFTPD}/vsftpd.conf ----------------------------------
-		funcDiff ${DIR_VSFTPD}/vsftpd.conf ${DIR_VSFTPD}/vsftpd.conf.orig
-	fi
+#	if [ -f ${DIR_VSFTPD}/vsftpd.conf.orig ]; then
+#		echo --- diff ${DIR_VSFTPD}/vsftpd.conf ----------------------------------
+#		funcDiff ${DIR_VSFTPD}/vsftpd.conf ${DIR_VSFTPD}/vsftpd.conf.orig
+#	fi
 	# Install bind9 ***********************************************************
 	if [ -f ${DIR_ZONE}/${WGP_NAME}.zone ]; then
 		echo --- cat ${DIR_ZONE}/${WGP_NAME}.zone --------------------------------
@@ -2182,9 +2021,24 @@ funcDebug () {
 	dig -x ${LNK_ADDR[0]} +nostats +nocomments
 	echo --- dns check -----------------------------------------------------------------
 	# Install dhcp ************************************************************
-	echo --- diff /etc/dhcp/dhcpd.conf -------------------------------------------------
-	expand -t 4 /etc/dhcp/dhcpd.conf
+#	echo --- diff /etc/dhcp/dhcpd.conf -------------------------------------------------
+#	expand -t 4 /etc/dhcp/dhcpd.conf
 #	funcDiff /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
+	case ${FLG_RHAT} in
+		0 | \
+		1 )
+			echo --- diff /etc/dhcp/dhcpd.conf -------------------------------------------------
+			expand -t 4 /etc/dhcp/dhcpd.conf
+#			funcDiff /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
+			;;
+		2 )
+			echo --- diff /etc/dhcpd.conf ------------------------------------------------------
+			expand -t 4 /etc/dhcpd.conf
+#			funcDiff /etc/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
+			;;
+		* )
+			;;
+	esac
 	# Install Webmin **********************************************************
 	if [ -f /etc/webmin/config.orig ]; then
 		echo --- diff /etc/webmin/config ---------------------------------------------------

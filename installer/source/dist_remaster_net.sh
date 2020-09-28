@@ -48,6 +48,7 @@
 ##	2020/07/20 000.0000 J.Itou         debian 9.13.0 変更
 ##	2020/08/02 000.0000 J.Itou         debian 10.5.0 / CentOS-Stream-8-x86_64-20200730-boot 変更
 ##	2020/08/09 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200801-boot 変更
+##	2020/09/27 000.0000 J.Itou         debian 10.6.0 / CentOS-Stream-8-x86_64-20200921-boot 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -70,10 +71,10 @@
 	readonly ARRAY_NAME=(                                                                                                                                                                               \
 	    "debian debian-8.11.1-amd64-netinst          https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "debian debian-9.13.0-amd64-netinst          https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian debian-10.5.0-amd64-netinst          https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.5.0-amd64-netinst.iso                              preseed_debian.cfg"   \
+	    "debian debian-10.6.0-amd64-netinst          https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.6.0-amd64-netinst.iso                              preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-netinst         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "centos CentOS-8.2.2004-x86_64-boot          http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso                       kickstart_centos.cfg" \
-	    "centos CentOS-Stream-8-x86_64-20200801-boot http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20200801-boot.iso              kickstart_centos.cfg" \
+	    "centos CentOS-Stream-8-x86_64-20200921-boot http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20200921-boot.iso              kickstart_centos.cfg" \
 	    "fedora Fedora-Server-netinst-x86_64-32-1.6  https://download.fedoraproject.org/pub/fedora/linux/releases/32/Server/x86_64/iso/Fedora-Server-netinst-x86_64-32-1.6.iso    kickstart_fedora.cfg" \
 	)   # 区分  netinstファイル名                   ダウンロード先URL                                                                                                             定義ファイル
 # -----------------------------------------------------------------------------
@@ -82,10 +83,10 @@ funcMenu () {
 	echo "# ID：Version                            ：リリース日：サポ終了日：備考       #"
 	echo "#  1：debian-8.11.1-amd64-netinst        ：2015-04-25：2020-06-30：oldoldstable"
 	echo "#  2：debian-9.13.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
-	echo "#  3：debian-10.5.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
+	echo "#  3：debian-10.6.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
 	echo "#  5：CentOS-8.2.2004-x86_64-boot        ：2020-06-15：2029-05-31：RHEL 8.0   #"
-	echo "#  6：CentOS-Stream-8-x86_64-20200801-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
+	echo "#  6：CentOS-Stream-8-x86_64-20200921-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
 	echo "#  7：Fedora-Server-netinst-x86_64-32-1.6：2020-04-28：20xx-xx-xx：kernel 5.6 #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
@@ -185,40 +186,6 @@ funcRemaster () {
 					    -e '/^label install/i\label preseed\n\tmenu label ^Preseed install\n\tmenu default\n\tkernel /install.amd/vmlinuz\n\tappend vga=788 initrd=/install.amd/initrd.gz --- quiet auto=true file=/cdrom/preseed/preseed.cfg'
 					sed -i boot/grub/grub.cfg \
 					    -e "/^set theme/a\menuentry --hotkey=p 'Preseed install' {\n    set background_color=black\n    linux    /install.amd/vmlinuz auto=true file=/cdrom/preseed/preseed.cfg priority=critical vga=788 --- quiet\n    initrd   /install.amd/initrd.gz\n}"
-					;;
-				"ubuntu" )	# ･････････････････････････････････････････････････
-					case "${CODE_NAME[1]}" in
-						"ubuntu-16.04.6-server-amd64"    | \
-						"ubuntu-18.04.2-server-amd64"    | \
-						"ubuntu-19.04-server-amd64"      | \
-						"ubuntu-18.04-server-amd64"      )
-							sed -i isolinux/txt.cfg  \
-							    -e 's/^\(default\) .*$/\1 preseed/' \
-							    -e '/menu default/d' \
-							    -e '/^default/a\label preseed\n  menu label ^Preseed install Server\n  kernel /install/vmlinuz\n  append  auto=true file=/cdrom/preseed/preseed.cfg vga=788 initrd=/install/initrd.gz quiet ---'
-							sed -i boot/grub/grub.cfg \
-							    -e '/menuentry "Install Ubuntu Server"/i\menuentry "Preseed install Ubuntu Server" {\n\tset gfxpayload=keep\n\tlinux\t/install/vmlinuz  auto=true file=/cdrom/preseed/preseed.cfg quiet ---\n\tinitrd\t/install/initrd.gz\n}'
-							;;
-						"ubuntu-16.04.6-desktop-amd64"   )
-							sed -i isolinux/txt.cfg  \
-							    -e 's/^\(default\) .*$/\1 preseed/' \
-							    -e '/menu default/d' \
-							    -e '/^default/a\label preseed\n  menu label ^Preseed install Ubuntu\n  kernel /casper/vmlinuz.efi\n  append  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity initrd=/casper/initrd.lz quiet splash ---'
-							sed -i boot/grub/grub.cfg \
-							    -e '/menuentry "Try Ubuntu without installing"/i\menuentry "Preseed install Ubuntu" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz.efi  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd.lz\n}'
-							;;
-						"ubuntu-18.04.2-desktop-amd64"   | \
-						"ubuntu-19.04-desktop-amd64"     | \
-						"ubuntu-19.10-desktop-amd64"     )
-							sed -i isolinux/txt.cfg  \
-							    -e 's/^\(default\) .*$/\1 preseed/' \
-							    -e '/menu default/d' \
-							    -e '/^default/a\label preseed\n  menu label ^Preseed install Ubuntu\n  kernel /casper/vmlinuz\n  append  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity initrd=/casper/initrd.lz quiet splash ---'
-							sed -i boot/grub/grub.cfg \
-							    -e '/menuentry "Try Ubuntu without installing"/i\menuentry "Preseed install Ubuntu" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz  auto=true file=/cdrom/preseed/preseed.cfg boot=casper automatic-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd.lz\n}'
-							;;
-						* )	;;
-					esac
 					;;
 				"centos" )	# ･････････････････････････････････････････････････
 					case "${VOLID}" in

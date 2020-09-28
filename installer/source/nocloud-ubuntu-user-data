@@ -40,13 +40,13 @@ autoinstall:
     - sudo
     - tasksel
     - isc-dhcp-server
-    - apache2
-    - vsftpd
+#   - apache2
+#   - vsftpd
     - ntpdate
     - clamav
     - cifs-utils
-    - nfs-common
-    - nfs-kernel-server
+#   - nfs-common
+#   - nfs-kernel-server
     - smbclient
     - dnsutils
     - ibus-mozc

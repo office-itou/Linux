@@ -54,6 +54,7 @@
 ##	2020/08/02 000.0000 J.Itou         debian 10.5.0 / CentOS-Stream-8-x86_64-20200730-dvd1 変更
 ##	2020/08/07 000.0000 J.Itou         ubuntu-20.04.1 変更
 ##	2020/08/09 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200801-boot 変更
+##	2020/09/27 000.0000 J.Itou         debian 10.6.0 / ubuntu / CentOS-Stream-8-x86_64-20200921-boot 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -76,20 +77,18 @@
 	readonly ARRAY_NAME=(                                                                                                                                                                               \
 	    "debian debian-8.11.1-amd64-DVD-1            https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg"       \
 	    "debian debian-9.13.0-amd64-DVD-1            https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
-	    "debian debian-10.5.0-amd64-DVD-1            https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.5.0-amd64-DVD-1.iso                           preseed_debian.cfg"       \
+	    "debian debian-10.6.0-amd64-DVD-1            https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.6.0-amd64-DVD-1.iso                           preseed_debian.cfg"       \
 	    "debian debian-testing-amd64-DVD-1           https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"       \
-	    "ubuntu ubuntu-16.04.6-server-amd64          https://releases.ubuntu.com/xenial/ubuntu-16.04.6-server-amd64.iso                                                       preseed_ubuntu.cfg"       \
-	    "ubuntu ubuntu-18.04.4-server-amd64          http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.4-server-amd64.iso                                        preseed_ubuntu.cfg"       \
-	    "ubuntu ubuntu-19.10-server-amd64            http://cdimage.ubuntu.com/releases/eoan/release/ubuntu-19.10-server-amd64.iso                                            preseed_ubuntu.cfg"       \
+	    "ubuntu ubuntu-16.04.7-server-amd64          https://releases.ubuntu.com/xenial/ubuntu-16.04.7-server-amd64.iso                                                       preseed_ubuntu.cfg"       \
+	    "ubuntu ubuntu-18.04.5-server-amd64          http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.5-server-amd64.iso                                        preseed_ubuntu.cfg"       \
 	    "ubuntu ubuntu-20.04.1-legacy-server-amd64   http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg"       \
 	    "ubuntu ubuntu-20.04.1-live-server-amd64     https://releases.ubuntu.com/focal/ubuntu-20.04.1-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
 	    "centos CentOS-8.2.2004-x86_64-dvd1          http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-dvd1.iso                   kickstart_centos.cfg"     \
-	    "centos CentOS-Stream-8-x86_64-20200801-dvd1 http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20200801-dvd1.iso          kickstart_centos.cfg"     \
+	    "centos CentOS-Stream-8-x86_64-20200921-dvd1 http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20200921-dvd1.iso          kickstart_centos.cfg"     \
 	    "fedora Fedora-Server-dvd-x86_64-32-1.6      https://download.fedoraproject.org/pub/fedora/linux/releases/32/Server/x86_64/iso/Fedora-Server-dvd-x86_64-32-1.6.iso    kickstart_fedora.cfg"     \
 	)   # 区分  DVDファイル名                        ダウンロード先URL                                                                                                        定義ファイル
-#	    "ubuntu ubuntu-16.04.6-desktop-amd64         https://releases.ubuntu.com/xenial/ubuntu-16.04.6-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
-#	    "ubuntu ubuntu-18.04.4-desktop-amd64         https://releases.ubuntu.com/bionic/ubuntu-18.04.4-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
-#	    "ubuntu ubuntu-19.10-desktop-amd64           https://releases.ubuntu.com/eoan/ubuntu-19.10-desktop-amd64.iso                                                          preseed_ubuntu.cfg"       \
+#	    "ubuntu ubuntu-16.04.7-desktop-amd64         https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
+#	    "ubuntu ubuntu-18.04.5-desktop-amd64         https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
 #	    "ubuntu ubuntu-20.04.1-desktop-amd64         https://releases.ubuntu.com/focal/ubuntu-20.04.1-desktop-amd64.iso                                                       preseed_ubuntu.cfg"       \
 
 # -----------------------------------------------------------------------------
@@ -98,22 +97,20 @@ funcMenu () {
 	echo "# ID：Version                         ：リリース日：サポ終了日：備考          #"
 	echo "#  1：debian-8.11.1-amd64-DVD-1       ：2015-04-25：2020-04-xx：oldoldstable  #"
 	echo "#  2：debian-9.13.0-amd64-DVD-1       ：2017-06-17：2022-xx-xx：oldstable     #"
-	echo "#  3：debian-10.5.0-amd64-DVD-1       ：2019-07-06：20xx-xx-xx：stable        #"
+	echo "#  3：debian-10.6.0-amd64-DVD-1       ：2019-07-06：20xx-xx-xx：stable        #"
 	echo "#  4：debian-testing-amd64-DVD-1      ：20xx-xx-xx：20xx-xx-xx：testing       #"
-	echo "#  5：ubuntu-16.04.6-server-amd64     ：2016-04-21：2021-04-xx：Xenial Xerus  #"
-	echo "#  6：ubuntu-18.04.4-server-amd64     ：2018-04-26：2023-04-xx：Bionic Beaver #"
-	echo "#  7：ubuntu-19.10-server-amd64       ：2019-10-17：2020-07-xx：Eoan Ermine   #"
-	echo "#  8：ubuntu-20.04.1-legacy-server-amd：2020-04-23：2025-04-xx：Focal Fossa   #"
-	echo "#  9：ubuntu-20.04.1-live-server-amd64：2020-04-23：2025-04-xx：Focal Fossa   #"
-	echo "# 10：CentOS-8.2.2004-x86_64-dvd1     ：2020-06-15：2029-05-31：RHEL 8.0      #"
-	echo "# 11：CentOS-Stream-8-x86_64-20200801-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
-	echo "# 12：Fedora-Server-dvd-x86_64-32-1.6 ：2020-04-28：20xx-xx-xx：kernel 5.6    #"
+	echo "#  5：ubuntu-16.04.7-server-amd64     ：2016-04-21：2021-04-xx：Xenial Xerus  #"
+	echo "#  6：ubuntu-18.04.5-server-amd64     ：2018-04-26：2023-04-xx：Bionic Beaver #"
+	echo "#  7：ubuntu-20.04.1-legacy-server-amd：2020-04-23：2025-04-xx：Focal Fossa   #"
+	echo "#  8：ubuntu-20.04.1-live-server-amd64：2020-04-23：2025-04-xx：Focal Fossa   #"
+	echo "#  9：CentOS-8.2.2004-x86_64-dvd1     ：2020-06-15：2029-05-31：RHEL 8.0      #"
+	echo "# 10：CentOS-Stream-8-x86_64-20200921-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
+	echo "# 11：Fedora-Server-dvd-x86_64-32-1.6 ：2020-04-28：20xx-xx-xx：kernel 5.6    #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
-#	echo "#   ：ubuntu-16.04.6-desktop-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus  #"
-#	echo "#   ：ubuntu-18.04.4-desktop-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver #"
-#	echo "#   ：ubuntu-19.10-desktop-amd64      ：2019-10-17：2020-07-xx：Eoan Ermine   #"
+#	echo "#   ：ubuntu-16.04.7-desktop-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus  #"
+#	echo "#   ：ubuntu-18.04.5-desktop-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver #"
 #	echo "#   ：ubuntu-20.04.1-desktop-amd64    ：2020-04-23：2025-04-xx：Focal Fossa   #"
 }
 # -----------------------------------------------------------------------------
@@ -234,7 +231,7 @@ funcRemaster () {
 					;;
 				"ubuntu" )	# ･････････････････････････････････････････････････
 					case "${CODE_NAME[1]}" in
-						"ubuntu-16.04.6-server-amd64"      )
+						"ubuntu-16.04.7-server-amd64"      )
 							sed -i "preseed/preseed.cfg"      \
 							    -e 's/fonts-noto-cjk-extra//' \
 							    -e 's/gnome-user-docs-ja//'
@@ -264,22 +261,23 @@ funcRemaster () {
 					esac
 					;;
 				"centos" )	# ･････････････････････････････････････････････････
+					LABEL=`echo "${VOLID}" | sed -e 's/ //g'`
 					case "${VOLID}" in
-						"CentOS-8-1-1911-x86_64-dvd      " )
+						"CentOS-8-2-2004-x86_64-dvd      " )
 							sed -i isolinux/isolinux.cfg \
 							    -e '/menu default/d' \
-							    -e '/^label linux/i\label auto\n  menu label ^Auto Install CentOS Linux 8\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS-8-1-1911-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n'
+							    -e "/^label linux/i\label auto\n  menu label ^Auto Install CentOS Linux 8\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=${LABEL} quiet inst.ks=cdrom:/kickstart/ks.cfg\n"
 							sed -i EFI/BOOT/grub.cfg \
 							    -e 's/\(set default\)="1"/\1="0"/g' \
-							    -e '/^### BEGIN \/etc\/grub\.d\/10_linux ###/a\menuentry '\''Auto Install CentOS Linux 8'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-8-1-1911-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}\n'
+							    -e "/^### BEGIN \/etc\/grub\.d\/10_linux ###/a\menuentry \'Auto Install CentOS Linux 8\' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${LABEL} quiet inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}"
 							;;
 						"CentOS-Stream-8-x86_64-dvd      " )
 							sed -i isolinux/isolinux.cfg \
 							    -e '/menu default/d' \
-							    -e '/^label linux/i\label auto\n  menu label ^Auto Install CentOS Stream 8-stream\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS-Stream-8-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n'
+							    -e "/^label linux/i\label auto\n  menu label ^Auto Install CentOS Stream 8-stream\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=${LABEL} quiet inst.ks=cdrom:/kickstart/ks.cfg\n"
 							sed -i EFI/BOOT/grub.cfg \
 							    -e 's/\(set default\)="1"/\1="0"/g' \
-							    -e '/^### BEGIN \/etc\/grub\.d\/10_linux ###/a\menuentry '\''Auto Install CentOS Stream 8-stream'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-Stream-8-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}\n'
+							    -e "/^### BEGIN \/etc\/grub\.d\/10_linux ###/a\menuentry \'Auto Install CentOS Stream 8-stream\' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${LABEL} quiet inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}"
 							;;
 						* )
 							echo "?:[${VOLID}]"
@@ -287,12 +285,13 @@ funcRemaster () {
 					esac
 					;;
 				"fedora" )	# ･････････････････････････････････････････････････
+					LABEL=`echo "${VOLID}" | sed -e 's/ //g'`
 					sed -i isolinux/isolinux.cfg \
 					    -e '/menu default/d' \
-					    -e '/^label linux/i\label fedora32auto\n  menu label ^Auto Install Fedora 32\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-32 inst.ks=cdrom:/kickstart/ks.cfg\n'
+					    -e "/^label linux/i\label fedora32auto\n  menu label ^Auto Install Fedora 32\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=${LABEL} inst.ks=cdrom:/kickstart/ks.cfg\n"
 					sed -i EFI/BOOT/grub.cfg \
 					    -e 's/\(set default\)="1"/\1="0"/g' \
-					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 32'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-32 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+					    -e "/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry \'Auto Install Fedora 32\' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${LABEL} inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}"
 					;;
 				* )	;;
 			esac
