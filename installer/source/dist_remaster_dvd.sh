@@ -55,6 +55,9 @@
 ##	2020/08/07 000.0000 J.Itou         ubuntu-20.04.1 変更
 ##	2020/08/09 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200801-boot 変更
 ##	2020/09/27 000.0000 J.Itou         debian 10.6.0 / ubuntu / CentOS-Stream-8-x86_64-20200921-boot 変更
+##	2020/10/06 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200928-boot 変更
+##	2020/10/13 000.0000 J.Itou         CentOS-Stream-8-x86_64-20201007-boot 変更
+##	2020/10/14 000.0000 J.Itou         openSUSE Leap / Tumbleweed 対応
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -74,22 +77,24 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	readonly ARRAY_NAME=(                                                                                                                                                                               \
-	    "debian debian-8.11.1-amd64-DVD-1            https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg"       \
-	    "debian debian-9.13.0-amd64-DVD-1            https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
-	    "debian debian-10.6.0-amd64-DVD-1            https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.6.0-amd64-DVD-1.iso                           preseed_debian.cfg"       \
-	    "debian debian-testing-amd64-DVD-1           https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"       \
-	    "ubuntu ubuntu-16.04.7-server-amd64          https://releases.ubuntu.com/xenial/ubuntu-16.04.7-server-amd64.iso                                                       preseed_ubuntu.cfg"       \
-	    "ubuntu ubuntu-18.04.5-server-amd64          http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.5-server-amd64.iso                                        preseed_ubuntu.cfg"       \
-	    "ubuntu ubuntu-20.04.1-legacy-server-amd64   http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg"       \
-	    "ubuntu ubuntu-20.04.1-live-server-amd64     https://releases.ubuntu.com/focal/ubuntu-20.04.1-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
-	    "centos CentOS-8.2.2004-x86_64-dvd1          http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-dvd1.iso                   kickstart_centos.cfg"     \
-	    "centos CentOS-Stream-8-x86_64-20200921-dvd1 http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20200921-dvd1.iso          kickstart_centos.cfg"     \
-	    "fedora Fedora-Server-dvd-x86_64-32-1.6      https://download.fedoraproject.org/pub/fedora/linux/releases/32/Server/x86_64/iso/Fedora-Server-dvd-x86_64-32-1.6.iso    kickstart_fedora.cfg"     \
-	)   # 区分  DVDファイル名                        ダウンロード先URL                                                                                                        定義ファイル
-#	    "ubuntu ubuntu-16.04.7-desktop-amd64         https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
-#	    "ubuntu ubuntu-18.04.5-desktop-amd64         https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
-#	    "ubuntu ubuntu-20.04.1-desktop-amd64         https://releases.ubuntu.com/focal/ubuntu-20.04.1-desktop-amd64.iso                                                       preseed_ubuntu.cfg"       \
+	readonly ARRAY_NAME=(                                                                                                                                                                                 \
+	    "debian debian-8.11.1-amd64-DVD-1              https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg"       \
+	    "debian debian-9.13.0-amd64-DVD-1              https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
+	    "debian debian-10.6.0-amd64-DVD-1              https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.6.0-amd64-DVD-1.iso                           preseed_debian.cfg"       \
+	    "debian debian-testing-amd64-DVD-1             https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"       \
+	    "ubuntu ubuntu-16.04.7-server-amd64            https://releases.ubuntu.com/xenial/ubuntu-16.04.7-server-amd64.iso                                                       preseed_ubuntu.cfg"       \
+	    "ubuntu ubuntu-18.04.5-server-amd64            http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.5-server-amd64.iso                                        preseed_ubuntu.cfg"       \
+	    "ubuntu ubuntu-20.04.1-legacy-server-amd64     http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg"       \
+	    "ubuntu ubuntu-20.04.1-live-server-amd64       https://releases.ubuntu.com/focal/ubuntu-20.04.1-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
+	    "centos CentOS-8.2.2004-x86_64-dvd1            http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-dvd1.iso                   kickstart_centos.cfg"     \
+	    "centos CentOS-Stream-8-x86_64-20201007-dvd1   http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201007-dvd1.iso          kickstart_centos.cfg"     \
+	    "fedora Fedora-Server-dvd-x86_64-32-1.6        https://download.fedoraproject.org/pub/fedora/linux/releases/32/Server/x86_64/iso/Fedora-Server-dvd-x86_64-32-1.6.iso    kickstart_fedora.cfg"     \
+	    "suse   openSUSE-Leap-15.2-DVD-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml"      \
+	    "suse   openSUSE-Tumbleweed-DVD-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml"      \
+	)   # 区分  DVDファイル名                          ダウンロード先URL                                                                                                        定義ファイル
+#	    "ubuntu ubuntu-16.04.7-desktop-amd64           https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
+#	    "ubuntu ubuntu-18.04.5-desktop-amd64           https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
+#	    "ubuntu ubuntu-20.04.1-desktop-amd64           https://releases.ubuntu.com/focal/ubuntu-20.04.1-desktop-amd64.iso                                                       preseed_ubuntu.cfg"       \
 
 # -----------------------------------------------------------------------------
 funcMenu () {
@@ -104,8 +109,10 @@ funcMenu () {
 	echo "#  7：ubuntu-20.04.1-legacy-server-amd：2020-04-23：2025-04-xx：Focal Fossa   #"
 	echo "#  8：ubuntu-20.04.1-live-server-amd64：2020-04-23：2025-04-xx：Focal Fossa   #"
 	echo "#  9：CentOS-8.2.2004-x86_64-dvd1     ：2020-06-15：2029-05-31：RHEL 8.0      #"
-	echo "# 10：CentOS-Stream-8-x86_64-20200921-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
+	echo "# 10：CentOS-Stream-8-x86_64-20201007-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
 	echo "# 11：Fedora-Server-dvd-x86_64-32-1.6 ：2020-04-28：20xx-xx-xx：kernel 5.6    #"
+	echo "# 12：openSUSE-Leap-15.2-DVD-x86_64   ：2020-xx-xx：20xx-xx-xx：              #"
+	echo "# 13：openSUSE-Tumbleweed-DVD-x86_64-C：2020-xx-xx：20xx-xx-xx：              #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -217,6 +224,16 @@ funcRemaster () {
 #					    -e 's/^\(url \)/#\1/g' \
 #					    -e 's/^\(repo \)/#\1/g'
 					;;
+				"suse")	# --- get autoinst.xml --------------------------------
+					EFI_IMAG="images/efiboot.img"
+					DVD_NAME+="-autoyast"
+					mkdir -p "autoyast"
+					if [ -f "../../../${CFG_NAME}" ]; then
+						cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
+					else
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || { rm -f "autoyast/autoinst.xml"; exit 1; }
+					fi
+					;;
 				* )	;;
 			esac
 			# --- mrb:txt.cfg / efi:grub.cfg ----------------------------------
@@ -293,48 +310,93 @@ funcRemaster () {
 					    -e 's/\(set default\)="1"/\1="0"/g' \
 					    -e "/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry \'Auto Install Fedora 32\' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${LABEL} inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}"
 					;;
+				"suse" )	# ･････････････････････････････････････････････････
+					LABEL=`echo "${VOLID}" | sed -e 's/ //g'`
+					# --- isolinux.cfg ----------------------------------------
+					sed -n '/#[ \t][ \t]*install/,/append/p' boot/x86_64/loader/isolinux.cfg | \
+					sed -e 's/\(install\)/auto \1/' \
+					    -e 's/\(label\) linux/\1 autoinst/' \
+					    -e '/append/ s/$/ autoyast=cd:\/autoyast\/autoinst\.xml ifcfg=e*=dhcp/' | \
+					sed -e '/^default.*$/r /dev/stdin' boot/x86_64/loader/isolinux.cfg | \
+					sed -e 's/^\(default\) harddisk$/\1=autoinst\n/' \
+					> isolinux.cfg
+					mv isolinux.cfg boot/x86_64/loader/
+					# --- grub.cfg --------------------------------------------
+					sed -n '/menuentry[ \t][ \t]*'\''Installation'\''.*{/,/}/p' EFI/BOOT/grub.cfg | \
+					sed -e 's/^}/}\n/' \
+					    -e 's/'\''\(Installation\)'\''/'\''Auto \1'\''/' \
+					    -e '/linuxefi/ s/$/ autoyast=cd:\/autoyast\/autoinst\.xml ifcfg=e*=dhcp/' | \
+					sed -e '/\# look for an installed SUSE system and boot it/r /dev/stdin' EFI/BOOT/grub.cfg | \
+					sed -e 's/^\(default\)=1$/\1=0/' \
+					> grub.cfg
+					mv grub.cfg EFI/BOOT/
+					;;
 				* )	;;
 			esac
-			# --- copy EFI directory ------------------------------------------
-#			case "${CODE_NAME[0]}" in
-#				"debian" )
-#					if [ ! -d EFI ]; then
-#						echo "--- copy EFI directory --------------------------------------------------------"
-#						mount -r -o loop boot/grub/efi.img ../mnt/
-#						pushd ../mnt/efi/ > /dev/null
+			case "${CODE_NAME[0]}" in
+				"debian" | \
+				"ubuntu" | \
+				"centos" | \
+				"fedora" )
+					# --- copy EFI directory ------------------------------------------
+#					case "${CODE_NAME[0]}" in
+#						"debian" )
+#							if [ ! -d EFI ]; then
+#								echo "--- copy EFI directory --------------------------------------------------------"
+#								mount -r -o loop boot/grub/efi.img ../mnt/
+#								pushd ../mnt/efi/ > /dev/null
 #							find . -depth -print | cpio -pdm ../../image/EFI/
-#						popd > /dev/null
-#						umount ../mnt/
-#					fi
-#					;;
-#				* )	;;
-#			esac
-			# --- make iso file -----------------------------------------------
-			rm -f md5sum.txt
-			case "${CODE_NAME[1]}" in
-				"ubuntu-20.04.1-legacy-server-amd64" | \
-				"ubuntu-20.04.1-desktop-amd64"       | \
-				"ubuntu-20.04.1-live-server-amd64"   )
-					find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
+#								popd > /dev/null
+#								umount ../mnt/
+#							fi
+#							;;
+#						* )	;;
+#					esac
+					# --- make iso file -----------------------------------------------
+					rm -f md5sum.txt
+					case "${CODE_NAME[1]}" in
+						"ubuntu-20.04.1-legacy-server-amd64" | \
+						"ubuntu-20.04.1-desktop-amd64"       | \
+						"ubuntu-20.04.1-live-server-amd64"   )
+							find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
+							;;
+						* )
+							find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
+							;;
+					esac
+					xorriso -as mkisofs \
+					    -quiet \
+					    -iso-level 3 \
+					    -full-iso9660-filenames \
+					    -volid "${VOLID}" \
+					    -eltorito-boot isolinux/isolinux.bin \
+					    -eltorito-catalog isolinux/boot.cat \
+					    -no-emul-boot -boot-load-size 4 -boot-info-table \
+					    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+					    -eltorito-alt-boot \
+					    -e "${EFI_IMAG}" \
+					    -no-emul-boot -isohybrid-gpt-basdat \
+					    -output "../../${DVD_NAME}.iso" \
+					    .
 					;;
-				* )
-					find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
+				"suse" )	# ･････････････････････････････････････････････････
+#					find boot EFI docu media.1 -type f -exec sha256sum {} \; > CHECKSUMS
+					xorriso -as mkisofs \
+					    -quiet \
+					    -iso-level 3 \
+					    -full-iso9660-filenames \
+					    -volid "${VOLID}" \
+					    -eltorito-boot boot/x86_64/loader/isolinux.bin \
+					    -no-emul-boot -boot-load-size 4 -boot-info-table \
+					    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+					    -eltorito-alt-boot \
+					    -e boot/x86_64/efi \
+					    -no-emul-boot -isohybrid-gpt-basdat \
+					    -output "../../${DVD_NAME}.iso" \
+					    .
 					;;
+				* )	;;
 			esac
-			xorriso -as mkisofs \
-			    -quiet \
-			    -iso-level 3 \
-			    -full-iso9660-filenames \
-			    -volid "${VOLID}" \
-			    -eltorito-boot isolinux/isolinux.bin \
-			    -eltorito-catalog isolinux/boot.cat \
-			    -no-emul-boot -boot-load-size 4 -boot-info-table \
-			    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
-			    -eltorito-alt-boot \
-			    -e "${EFI_IMAG}" \
-			    -no-emul-boot -isohybrid-gpt-basdat \
-			    -output "../../${DVD_NAME}.iso" \
-			    .
 		popd > /dev/null
 	popd > /dev/null
 	echo "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------"

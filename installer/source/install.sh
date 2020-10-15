@@ -55,6 +55,7 @@
 ##	2020/01/10 000.0000 J.Itou         不具合修正(.vimrc加筆)
 ##	2020/05/09 000.0000 J.Itou         不具合修正(Ubuntu 20.04対応含む)
 ##	2020/09/28 000.0000 J.Itou         不具合修正(対象OSの変更含む)
+##	2020/09/30 000.0000 J.Itou         不具合修正(openSUSE対応含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -142,12 +143,14 @@ fncGetIPaddr () {
 fncGetNM () {
 	local DMY_STAT
 
-	if [ "${CON_NAME}" != "" -a -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
+	if [ "${ACT_NMAN}" = "active" ]; then
 		LANG=C nmcli c show help 2> /dev/null
 		if [ $? -ge 2 ]; then
 			DMY_STAT="`LANG=C nmcli dev list iface "$2" | awk '/^'"$1"'/'`"
-		else
+		elif [ "$3" != "" ]; then
 			DMY_STAT="`LANG=C nmcli con show uuid "$3" | awk '/^'"$1"'/'`"
+		else
+			DMY_STAT=""
 		fi
 		case "$1" in
 			"DHCP4" | \
@@ -167,7 +170,6 @@ fncGetNM () {
 				;;
 		esac
 	else
-		DMY_STAT=""
 		case "$1" in
 			"DHCP4" )
 				if [ "`LANG=C ip -4 a show dev $2 scope global dynamic`" = "" ]; then
@@ -184,12 +186,19 @@ fncGetNM () {
 				fi
 				;;
 			"IP4.DNS" )
-					LANG=C ip -4 r show dev $2 default | awk '{print $3;}'
+					DMY_STAT="`LANG=C ip -4 r show dev $2 default | awk '{print $3;}'`"
+					if [ "${DMY_STAT}" = "" ]; then
+						DMY_STAT="`LANG=C awk '/nameserver.*\./ {print$2}' /etc/resolv.conf`"
+					fi
 				;;
 			"IP6.DNS" )
-					LANG=C ip -6 r show dev $2 default | awk '{print $3;}'
+					DMY_STAT="`LANG=C ip -6 r show dev $2 default | awk '{print $3;}'`"
+					if [ "${DMY_STAT}" = "" ]; then
+						DMY_STAT="`LANG=C awk '/nameserver.*\:/ {print$2}' /etc/resolv.conf`"
+					fi
 				;;
 			* )
+				DMY_STAT=""
 				;;
 		esac
 		echo "${DMY_STAT}"
@@ -299,27 +308,12 @@ funcInitialize () {
 	SET_LANG="ja_JP.UTF-8"														# 使用言語設定
 #	SET_LNGE="ja:en"															# 環境変数 LANGUAGE
 	# ･････････････････････････････････････････････････････････････････････････
-	if [ -d "/lib/systemd/" ]; then
-		DIR_SYSD="/lib/systemd"
-	elif [ -d "/usr/lib/systemd/" ]; then
-		DIR_SYSD="/usr/lib/systemd"
-	else
-		DIR_SYSD=""
-	fi
-	# ･････････････････････････････････････････････････････････････････････････
 #	RUN_CLAM=("enable"  "")														# 起動停止設定：clamav-freshclam
 	RUN_SSHD=("enable"  "")														#   〃        ：ssh / sshd
 	RUN_BIND=("enable"  "")														#   〃        ：bind9 / named
 	RUN_DHCP=("disable" "")														#   〃        ：isc-dhcp-server / dhcpd
 	RUN_SMBD=("enable"  "")														#   〃        ：samba / smbd,nmbd / smb,nmb
 	# -------------------------------------------------------------------------
-	if [ -f /etc/redhat-release ]; then
-		FLG_RHAT=1						# CentOS/Fedora
-	elif [ -f /etc/SUSE-brand ]; then
-		FLG_RHAT=2						# OpenSUSE
-	else
-		FLG_RHAT=0						# Debian/Ubuntu
-	fi
 	FLG_SVER=1																	# 0以外でサーバー仕様でセッティング
 	DEF_USER="${SUDO_USER}"														# インストール時に作成したユーザー名
 	# system info -------------------------------------------------------------
@@ -328,11 +322,12 @@ funcInitialize () {
 	SYS_VRID=`awk -F '=' '$1=="VERSION_ID" {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン番号
 	SYS_VNUM=`echo ${SYS_VRID:--1} | bc`										#   〃          (取得できない場合は-1)
 	SYS_NOOP=1																	# 対象OS=0,それ以外=1
-	if [ "${SYS_NAME}" = "debian"        -a `echo "${SYS_VNUM} >= 10"    | bc` ]; then SYS_NOOP=0; fi
-	if [ "${SYS_NAME}" = "ubuntu"        -a `echo "${SYS_VNUM} >= 20.04" | bc` ]; then SYS_NOOP=0; fi
-	if [ "${SYS_NAME}" = "centos"        -a `echo "${SYS_VNUM} >=  8"    | bc` ]; then SYS_NOOP=0; fi
-	if [ "${SYS_NAME}" = "fedora"        -a `echo "${SYS_VNUM} >= 32"    | bc` ]; then SYS_NOOP=0; fi
-#	if [ "${SYS_NAME}" = "opensuse-leap" -a `echo "${SYS_VNUM} >= 15.2"  | bc` ]; then SYS_NOOP=0; fi
+	if [ "${SYS_NAME}" = "debian"              ] && [ `echo "${SYS_VNUM} >= 10"       | bc` ]; then SYS_NOOP=0; fi
+	if [ "${SYS_NAME}" = "ubuntu"              ] && [ `echo "${SYS_VNUM} >= 20.04"    | bc` ]; then SYS_NOOP=0; fi
+	if [ "${SYS_NAME}" = "centos"              ] && [ `echo "${SYS_VNUM} >=  8"       | bc` ]; then SYS_NOOP=0; fi
+	if [ "${SYS_NAME}" = "fedora"              ] && [ `echo "${SYS_VNUM} >= 32"       | bc` ]; then SYS_NOOP=0; fi
+	if [ "${SYS_NAME}" = "opensuse-leap"       ] && [ `echo "${SYS_VNUM} >= 15.2"     | bc` ]; then SYS_NOOP=0; fi
+	if [ "${SYS_NAME}" = "opensuse-tumbleweed" ] && [ `echo "${SYS_VNUM} >= 20201002" | bc` ]; then SYS_NOOP=0; fi
 	if [ ${SYS_NOOP} -ne 0 ]; then
 		echo "${SYS_NAME} ${SYS_VERS} ではテストをしていないので実行できません。"
 		exit 1
@@ -357,11 +352,12 @@ funcInitialize () {
 		SVR_FQDN=${SVR_NAME}.${WGP_NAME}										# 本機のFQDN
 	fi
 	# -------------------------------------------------------------------------
-	set +e
-	LANG=C nmcli -t -f name c > /dev/null 2>&1
-	local RET_CD=$?
-	set -e
-	if [ $RET_CD -eq 0 ]; then
+	if [ "`which nmcli 2> /dev/null`" = "" ]; then
+		ACT_NMAN=""
+	else
+		ACT_NMAN="`systemctl status NetworkManager | awk '/Active:/ {print $2;}'`"
+	fi
+	if [ "$ACT_NMAN" = "active" ]; then
 		CON_NAME=`nmcli -t -f name c | head -n 1`								# 接続名
 		CON_UUID=`nmcli -t -f uuid c | head -n 1`								# 接続UUID
 	else
@@ -452,23 +448,34 @@ funcInitialize () {
 	HDD_ARRY=(${DEV_ARRY[@]:0:${NUM_HDDS}})
 	USB_ARRY=(${DEV_ARRY[@]:${NUM_HDDS}:${#DEV_ARRY[@]}-${NUM_HDDS}})
 	# -------------------------------------------------------------------------
-	case ${FLG_RHAT} in
-		0 )
+	if [ -d "/lib/systemd/" ]; then
+		DIR_SYSD="/lib/systemd"
+	elif [ -d "/usr/lib/systemd/" ]; then
+		DIR_SYSD="/usr/lib/systemd"
+	else
+		DIR_SYSD=""
+	fi
+	# -------------------------------------------------------------------------
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
 			if [ "`which aptitude 2> /dev/null`" != "" ]; then
 				CMD_AGET="aptitude -y -q"
 			else
 				CMD_AGET="apt -y -qq"
 			fi
 			;;
-		1 )
+		"centos" | \
+		"fedora" )
 			if [ "`which dnf 2> /dev/null`" != "" ]; then
 				CMD_AGET="dnf -y -q --allowerasing"
 			else
 				CMD_AGET="yum -y -q"
 			fi
 			;;
-		2 )
-				CMD_AGET=""
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
+				CMD_AGET="zypper -n -t"
 			;;
 		* )
 			;;
@@ -481,18 +488,21 @@ funcInitialize () {
 		CMD_CHSH="`which chsh` -s ${LIN_CHSH}"
 	fi
 	# -------------------------------------------------------------------------
-	case ${FLG_RHAT} in
-		0 )
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
 			DNS_USER=bind
 			DIR_BIND=/etc/bind
 			DIR_ZONE=/var/cache/bind
 			;;
-		1 )
+		"centos" | \
+		"fedora" )
 			DNS_USER=named
 			DIR_BIND=/etc
 			DIR_ZONE=/var/named
 			;;
-		2 )
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
 			DNS_USER=named
 			DIR_BIND=/etc
 			DIR_ZONE=/var/lib/named
@@ -520,26 +530,44 @@ funcMain () {
 	# *************************************************************************
 	# System Update
 	# *************************************************************************
-	case ${FLG_RHAT} in
-		0 | \
-		1 )
+	set +e
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
 			echo - System Update ---------------------------------------------------------------
-			# -------------------------------------------------------------------------
-			if [ ${FLG_RHAT} -eq 0 ] && [ ! -f /etc/apt/sources.list.orig ]; then
+			if [ ! -f /etc/apt/sources.list.orig ]; then
 				sed -i.orig /etc/apt/sources.list \
 				    -e 's/^deb cdrom.*$/# &/'
 			fi
 			# --- パッケージ更新 ------------------------------------------------------
 			echo --- Package Update ------------------------------------------------------------
-			${CMD_AGET} update ; funcPause $?
+			${CMD_AGET} update
 			echo --- Package Upgrade -----------------------------------------------------------
-			${CMD_AGET} upgrade; funcPause $?
+			${CMD_AGET} upgrade
+			${CMD_AGET} dist-upgrade
 			;;
-		2 )
+		"centos" | \
+		"fedora" )
+			echo - System Update ---------------------------------------------------------------
+			# --- パッケージ更新 ------------------------------------------------------
+			echo --- Package Update ------------------------------------------------------------
+			${CMD_AGET} check-update
+			echo --- Package Upgrade -----------------------------------------------------------
+			${CMD_AGET} upgrade
+			;;
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
+			echo - System Update ---------------------------------------------------------------
+			# --- パッケージ更新 ------------------------------------------------------
+			echo --- Package Update ------------------------------------------------------------
+			${CMD_AGET} update
+			echo --- Package Upgrade -----------------------------------------------------------
+			${CMD_AGET} dist-upgrade
 			;;
 		* )
 			;;
 	esac
+	set -e
 
 	# *************************************************************************
 	# Locale Setup
@@ -559,38 +587,52 @@ funcMain () {
 	do
 		USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
 		pushd ${USER_HOME} > /dev/null
-			case ${FLG_RHAT} in
-				0 )
+			case "${SYS_NAME}" in
+				"debian" | \
+				"ubuntu" )
 					LNG_FILE=".bashrc"
 					;;
-				1 | \
-				2 )
+				"centos" | \
+				"fedora" )
+					LNG_FILE=".i18n"
+					;;
+				"opensuse-leap"       | \
+				"opensuse-tumbleweed" )
 					LNG_FILE=".i18n"
 					;;
 				* )
 					;;
 			esac
-			[ ! -f .vimrc      ] && { touch .vimrc;      chown ${USER_NAME}. .vimrc;      }
-			[ ! -f .curlrc     ] && { touch .curlrc;     chown ${USER_NAME}. .curlrc;     }
-			[ ! -f ${LNG_FILE} ] && { touch ${LNG_FILE}; chown ${USER_NAME}. ${LNG_FILE}; }
+			[ ! -f .vimrc      -a -f /etc/vim/vimrc       ] && { touch .vimrc;      chown ${USER_NAME}. .vimrc;      }
+			[ ! -f .vimrc      -a -f /etc/vimrc           ] && { touch .vimrc;      chown ${USER_NAME}. .vimrc;      }
+			[ ! -f .virc       -a -f /etc/virc            ] && { touch .virc;       chown ${USER_NAME}. .virc;       }
+			[ ! -f .curlrc                                ] && { touch .curlrc;     chown ${USER_NAME}. .curlrc;     }
+			[ ! -f ${LNG_FILE}                            ] && { touch ${LNG_FILE}; chown ${USER_NAME}. ${LNG_FILE}; }
 			# -----------------------------------------------------------------
 			# 参照: http://vimdoc.sourceforge.net/htmldoc/usr_toc.html
 			#       http://vimdoc.sourceforge.net/htmldoc/options.html
 			# -----------------------------------------------------------------
-			if [ ! -f .vimrc.orig ]; then
-				echo --- .vimrc --------------------------------------------------------------------
-				cp -p .vimrc .vimrc.orig
-				cat <<- _EOT_ >> .vimrc
-					set number              " Print the line number in front of each line.
-					set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
-					set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
-					set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
-					set nowrap              " This option changes how text is displayed.
-					set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
-					set laststatus=2        " The value of this option influences when the last window will have a status line always.
-					" syntax on               " Vim5 and later versions support syntax highlighting.
+			for VIMRC in ".vimrc" ".virc"
+			do
+				if [ ! -f ${VIMRC}.orig ] && [ -f ${VIMRC} ]; then
+					echo --- ${VIMRC} --------------------------------------------------------------------
+					cp -p ${VIMRC} ${VIMRC}.orig
+					cat <<- _EOT_ >> ${VIMRC}
+						set number              " Print the line number in front of each line.
+						set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+						set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+						set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+						set nowrap              " This option changes how text is displayed.
+						set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+						set laststatus=2        " The value of this option influences when the last window will have a status line always.
+						" syntax on               " Vim5 and later versions support syntax highlighting.
 _EOT_
-			fi
+					if [ "${SYS_NAME}" = "debian" ]; then
+						sed -i ${VIMRC}                  \
+						    -e 's/^\(syntax on\)/\" \1/'
+					fi
+				fi
+			done
 			# -----------------------------------------------------------------
 			if [ ! -f .curlrc.orig ]; then
 				echo --- .curlrc -------------------------------------------------------------------
@@ -610,7 +652,7 @@ _EOT_
 					# --- 日本語文字化け対策 ---
 					case "\${TERM}" in
 					    "linux" ) export LANG=C;;
-					    * )                      ;;
+					    *       )              ;;
 					esac
 _EOT_
 			fi
@@ -674,14 +716,18 @@ _EOT_
 		popd > /dev/null
 	done
 	# ipv4 dns changed --------------------------------------------------------
-	if [ "`which nmcli 2> /dev/null`" != "" ]; then
-		echo --- ipv4 dns changed ----------------------------------------------------------
+	echo --- ipv4 dns changed ----------------------------------------------------------
+	if [ "${ACT_NMAN}" != "" ]; then
 		if [ "${CON_UUID}" != "" ]; then
 			nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
 			nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
 			nmcli c up     "${CON_UUID}"
 		else
-			if [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
+			if [ ! -h /etc/sysconfig/network/config ] && [ ! -f /etc/sysconfig/network/config.orig ]; then
+					sed -i.orig /etc/sysconfig/network/config                                                           \
+					    -e "s/\(NETCONFIG_DNS_STATIC_SERVERS\)=\"${IP4_DNSA[0]}\"/\1=\"127\.0\.0\.1 ${IP4_DNSA[0]}\"/g"
+					netconfig update -f
+			elif [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
 				sed -i.orig /etc/resolv.conf                                                  \
 				    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"                                   \
 				    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1\n\1 ${IP4_DNSA[0]}/g"
@@ -709,14 +755,17 @@ _EOT_
 		funcProc firewalld enable
 		funcProc firewalld restart
 		# --- 	Firewalld を有効にしている場合 --------------------------------
-		firewall-cmd --add-service=dns   --zone=home --permanent		# named
-#		firewall-cmd --add-service=dhcp  --zone=home --permanent		# dhcpd
-		firewall-cmd --add-service=samba --zone=home --permanent		# smb
-#		firewall-cmd --add-service=ftp   --zone=home --permanent		# vsftpd
-#		firewall-cmd --add-service=http  --zone=home --permanent		# httpd
-#		firewall-cmd --add-service=nfs   --zone=home --permanent		# nfs
+		firewall-cmd --zone=home --permanent --add-service=dns			# named
+#		firewall-cmd --zone=home --permanent --add-service=dhcp			# dhcpd
+		firewall-cmd --zone=home --permanent --add-service=samba		# smb
+#		firewall-cmd --zone=home --permanent --add-service=ftp			# vsftpd
+#		firewall-cmd --zone=home --permanent --add-service=http			# httpd
+#		firewall-cmd --zone=home --permanent --add-service=nfs			# nfs
+		firewall-cmd --zone=home --permanent --add-source-port=137/udp	# ファイルマネージャー対策
 		firewall-cmd --set-default-zone=home
 		firewall-cmd --reload
+		# --- ファイルマネージャー対策 [一時的] -------------------------------
+#		iptables -t raw -A OUTPUT -p udp -m udp --dport 137 -j CT --helper netbios-ns
 	fi
 	# *************************************************************************
 	# Make share dir
@@ -833,9 +882,16 @@ _EOT_
 	# *************************************************************************
 	# Install clamav
 	# *************************************************************************
-	case ${FLG_RHAT} in
-		0 | \
-		1 )
+	if [ "${SYS_NAME}" = "debian" ] && [ "${CPU_TYPE}" = "armv5tel" ]; then
+		funcProc clamav-freshclam disable
+		funcProc clamav-freshclam stop
+	fi
+	# -------------------------------------------------------------------------
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" | \
+		"centos" | \
+		"fedora" )
 			echo - Install clamav --------------------------------------------------------------
 			# -------------------------------------------------------------------------
 			if [ "`which freshclam 2> /dev/null`" = "" ]; then					# Install clamav
@@ -858,23 +914,31 @@ _EOT_
 				    -e 's/\(Checks\) 24/\1 12/'                                      \
 				    -e 's/^NotifyClamd/#&/'
 			fi
-			# -------------------------------------------------------------------------
-			case ${FLG_RHAT} in
-				0 )
-					if [ "${CPU_TYPE}" = "armv5tel" ]; then
-						funcProc clamav-freshclam disable
-						funcProc clamav-freshclam stop
-					fi
-					;;
-				1 )
-					;;
-				2 )
-					;;
-				* )
-					;;
-			esac
 			;;
-		2 )
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
+			echo - Install clamav --------------------------------------------------------------
+			# -------------------------------------------------------------------------
+			if [ "`which freshclam 2> /dev/null`" = "" ]; then					# Install clamav
+				${CMD_AGET} install clamav
+				funcPause $?
+			fi
+			# -------------------------------------------------------------------------
+			FILE_FRESHCONF=`find /etc -name "freshclam.conf" -type f -print`
+			FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
+			# -------------------------------------------------------------------------
+			if [ ! -f ${FILE_CLAMDCONF} ]; then
+				cp -p ${FILE_FRESHCONF} ${FILE_CLAMDCONF}
+				: > ${FILE_CLAMDCONF}
+			fi
+			# -------------------------------------------------------------------------
+			if [ ! -f ${FILE_FRESHCONF}.orig ]; then
+				sed -i.orig ${FILE_FRESHCONF}                                        \
+				    -e 's/^Example/#&/'                                              \
+				    -e 's/\(# Check for new database\) 24 \(times a day\)/\1 12 \2/' \
+				    -e 's/\(Checks\) 24/\1 12/'                                      \
+				    -e 's/^NotifyClamd/#&/'
+			fi
 			;;
 		* )
 			;;
@@ -892,13 +956,19 @@ _EOT_
 		    -e '$a UseDNS no'
 	fi
 	# -------------------------------------------------------------------------
-	case ${FLG_RHAT} in
-		0 )
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
 			funcProc ssh "${RUN_SSHD[0]}"
 			funcProc ssh "${RUN_SSHD[1]}"
 			;;
-		1 | \
-		2 )
+		"centos" | \
+		"fedora" )
+			funcProc sshd "${RUN_SSHD[0]}"
+			funcProc sshd "${RUN_SSHD[1]}"
+			;;
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
 			funcProc sshd "${RUN_SSHD[0]}"
 			funcProc sshd "${RUN_SSHD[1]}"
 			;;
@@ -913,10 +983,15 @@ _EOT_
 	# -------------------------------------------------------------------------
 	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
+	echo --- masters --------------------------------------------------------------------
+	if [ ! -d ${DIR_ZONE}/master ]; then
+		mkdir -p ${DIR_ZONE}/master
+		chown ${DNS_USER}. ${DIR_ZONE}/master
+	fi
 	echo --- db.xxx --------------------------------------------------------------------
 	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa
 	do
-		cat <<- _EOT_ > ${DIR_ZONE}/db.${FIL_NAME}
+		cat <<- _EOT_ > ${DIR_ZONE}/master/db.${FIL_NAME}
 			\$TTL 1H																; 1 hour
 			@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
 			 														${DNS_SCNT}	; serial
@@ -927,13 +1002,13 @@ _EOT_
 			 												)
 			@										IN		NS		${SVR_NAME}.${WGP_NAME}.
 _EOT_
-#		chmod 640 ${DIR_ZONE}/db.${FIL_NAME}
-		chown ${DNS_USER}.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
+#		chmod 640 ${DIR_ZONE}/master/db.${FIL_NAME}
+		chown ${DNS_USER}.${DNS_USER} ${DIR_ZONE}/master/db.${FIL_NAME}
 	done
-	if [ "${IP6_DHCP}" != "" -a "${IP6_DHCP}" != "auto" ]; then
+	if [ "${IP6_DHCP}" != "" ] && [ "${IP6_DHCP}" != "auto" ]; then
 		for FIL_NAME in ${WGP_NAME} ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
 		do
-			cat <<- _EOT_ > ${DIR_ZONE}/db.${FIL_NAME}
+			cat <<- _EOT_ > ${DIR_ZONE}/master/db.${FIL_NAME}
 				\$TTL 1H																; 1 hour
 				@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
 				 														${DNS_SCNT}	; serial
@@ -944,84 +1019,106 @@ _EOT_
 				 												)
 				@										IN		NS		${SVR_NAME}.${WGP_NAME}.
 	_EOT_
-#			chmod 640 ${DIR_ZONE}/db.${FIL_NAME}
-			chown ${DNS_USER}.${DNS_USER} ${DIR_ZONE}/db.${FIL_NAME}
+#			chmod 640 ${DIR_ZONE}/master/db.${FIL_NAME}
+			chown ${DNS_USER}.${DNS_USER} ${DIR_ZONE}/master/db.${FIL_NAME}
 		done
 	fi
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ >> ${DIR_ZONE}/db.${WGP_NAME}
+	cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${WGP_NAME}
 		${SVR_NAME}								IN		A		${IP4_ADDR[0]}
 _EOT_
-	if [ "${IP6_DHCP}" != "" -a "${IP6_DHCP}" != "auto" ]; then
-		cat <<- _EOT_ >> ${DIR_ZONE}/db.${WGP_NAME}
+	if [ "${IP6_DHCP}" != "" ] && [ "${IP6_DHCP}" != "auto" ]; then
+		cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${WGP_NAME}
 			${SVR_NAME}								IN		AAAA	${IP6_ADDR[0]}
 			${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
 _EOT_
 	fi
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP4_RADR[0]}.in-addr.arpa
+	cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa
 		${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	if [ "${IP6_DHCP}" != "" -a "${IP6_DHCP}" != "auto" ]; then
-		cat <<- _EOT_ >> ${DIR_ZONE}/db.${IP6_RADU[0]}.ip6.arpa
+	if [ "${IP6_DHCP}" != "" ] && [ "${IP6_DHCP}" != "auto" ]; then
+		cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa
 			${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 		#--------------------------------------------------------------------------
-		cat <<- _EOT_ >> ${DIR_ZONE}/db.${LNK_RADU[0]}.ip6.arpa
+		cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
 			${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	fi
 	#--------------------------------------------------------------------------
 	if [ "${IP4_DHCP[0]}" = "auto" ]; then
 		echo --- dhcp対応 ------------------------------------------------------------------
-		sed -i.orig ${DIR_ZONE}/db.${WGP_NAME}                 -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
-		sed -i.orig ${DIR_ZONE}/db.${IP4_RADR[0]}.in-addr.arpa -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
+		sed -i.orig ${DIR_ZONE}/master/db.${WGP_NAME}                 -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
+		sed -i.orig ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
 	fi
 	# -------------------------------------------------------------------------
-	if [ ! -f ${DIR_BIND}/named.conf.include ]; then
-		cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.include
-		: > ${DIR_BIND}/named.conf.include
-	fi
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
+			# --- named.conf.options --------------------------------------------------
+			if [ ! -f ${DIR_BIND}/named.conf.options.orig ]; then
+				echo --- named.conf.options --------------------------------------------------------
+				sed -i.orig ${DIR_BIND}/named.conf.options                                                                           \
+				    -e 's/\/.*\(listen-on-v6\)/\1/g'                                                                                 \
+				    -e '/listen-on-v6.*;$/a \\tallow-transfer { none; };'                                                            \
+				    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n"
+			fi
+			;;
+		"centos" | \
+		"fedora" )
+			# --- named.conf ----------------------------------------------------------
+			if [ ! -f ${DIR_BIND}/named.conf.orig ]; then
+				echo --- named.conf ----------------------------------------------------------------
+				sed -i.orig ${DIR_BIND}/named.conf                                                                                   \
+				    -e 's/\/.*\(listen-on-v6\)/\1/g'                                                                                 \
+				    -e '/listen-on-v6.*;$/a \\tallow-transfer { none; };'                                                            \
+				    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
+				    -e "\$a\\\ninclude \"${DIR_BIND}/named.conf.local\";"
+			fi
+			;;
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
+			# --- named.conf ----------------------------------------------------------
+			if [ ! -f ${DIR_BIND}/named.conf.orig ]; then
+				echo --- named.conf ----------------------------------------------------------------
+				sed -i.orig ${DIR_BIND}/named.conf                                                                                   \
+				    -e 's/\/.*\(listen-on-v6\)/\1/g'                                                                                 \
+				    -e '/listen-on-v6.*;$/a \\tallow-transfer { none; };'                                                            \
+				    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
+				    -e "\$a\\\ninclude \"${DIR_BIND}/named.conf.local\";"
+			fi
+			;;
+		* )
+			;;
+	esac
 	# -------------------------------------------------------------------------
-	if [ ! -f ${DIR_BIND}/named.conf.orig ]; then
-		echo --- named.conf ----------------------------------------------------------------
-		cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.orig
-		# ---------------------------------------------------------------------
-		if [ ! -f ${DIR_BIND}/named.conf.options.orig ]; then
-			echo ---- add named.conf.options ---------------------------------------------------
-			sed -i ${DIR_BIND}/named.conf                                                                                        \
-			    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
-			    -e "/allow-query { 127.0.0.1; };/a \\\tallow-transfer\t{ none; };"
+	for FIL_NAME in `sed -n 's/^include "\(.*\)";$/\1/gp' ${DIR_BIND}/named.conf`
+	do
+		if [ ! -f ${FIL_NAME} ]; then
+			echo ---- make ${FIL_NAME} ---------------------------------------------
+			cp -p ${DIR_BIND}/named.conf ${FIL_NAME}
+			: > ${FIL_NAME}
 		fi
-		# ---------------------------------------------------------------------
-		if [ ! -f ${DIR_BIND}/named.conf.local ]; then
-			echo ---- add named.conf.local -----------------------------------------------------
-			cp -p ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.local
-			: > ${DIR_BIND}/named.conf.local
-			sed -i ${DIR_BIND}/named.conf                                                                      \
-			    -e "/include \"\/etc\/named\.rfc1912\.zones\";/i include \"${DIR_BIND}\/named\.conf\.local\";"
-		fi
-	fi
-	#--------------------------------------------------------------------------
-	if [ ! -f ${DIR_BIND}/named.conf.options.orig ] && [ -f ${DIR_BIND}/named.conf.options ]; then
-		echo --- named.conf.options --------------------------------------------------------
-		sed -i.orig ${DIR_BIND}/named.conf.options                                                                           \
-		    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
-		    -e "/^};/i \\\n\tallow-transfer { none; };"                                                                      \
-		    -e "s/\(listen-on-v6\)/\/\/ \1/g"
-	fi
-	#--------------------------------------------------------------------------
-	if [ ! -f ${DIR_BIND}/named.conf.local.orig ] && [ -f ${DIR_BIND}/named.conf.local ]; then
+	done
+	# --- named.conf.local -----------------------------------------------------
+	if [ ! -f ${DIR_BIND}/named.conf.local.orig ]; then
 		echo --- named.conf.local ----------------------------------------------------------
 		cp -p ${DIR_BIND}/named.conf.local ${DIR_BIND}/named.conf.local.orig
+		# ---------------------------------------------------------------------
+		cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
+			 # -----------------------------------------------------------------------------
+			 # ${WGP_NAME}
+			 # -----------------------------------------------------------------------------
+_EOT_
 		# ---------------------------------------------------------------------
 		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa
 		do
 			cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
 				zone "${FIL_NAME}" {
 				 	type master;
-				 	file "db.${FIL_NAME}";
+				 	file "master/db.${FIL_NAME}";
 				 	allow-update { none; };
 				 	allow-transfer { ${WGP_NAME}-network; };
 				 	notify yes;
@@ -1029,13 +1126,14 @@ _EOT_
 
 _EOT_
 		done
-		if [ "${IP6_DHCP}" != "" -a "${IP6_DHCP}" != "auto" ]; then
+		# ---------------------------------------------------------------------
+		if [ "${IP6_DHCP}" != "" ] && [ "${IP6_DHCP}" != "auto" ]; then
 			for FIL_NAME in ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
 			do
 				cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
 					zone "${FIL_NAME}" {
 					 	type master;
-					 	file "db.${FIL_NAME}";
+					 	file "master/db.${FIL_NAME}";
 					 	allow-update { none; };
 					 	allow-transfer { ${WGP_NAME}-network; };
 					 	notify yes;
@@ -1059,6 +1157,10 @@ _EOT_
 				};
 _EOT_
 		fi
+		# ---------------------------------------------------------------------
+		cat <<- _EOT_ >> ${DIR_BIND}/named.conf.local
+			 # -----------------------------------------------------------------------------
+_EOT_
 	fi
 	# -------------------------------------------------------------------------
 	named-checkconf
@@ -1084,9 +1186,11 @@ _EOT_
 	# *************************************************************************
 	echo - Install dhcp ----------------------------------------------------------------
 	# -------------------------------------------------------------------------
-	case ${FLG_RHAT} in
-		0 | \
-		1 )
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" | \
+		"centos" | \
+		"fedora" )
 			if [ ! -f /etc/dhcp/dhcpd.conf.orig ]; then
 				cp -p /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
 				cat <<- _EOT_ > /etc/dhcp/dhcpd.conf
@@ -1106,7 +1210,8 @@ _EOT_
 _EOT_
 			fi
 			;;
-		2 )
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
 			if [ ! -f /etc/dhcpd.conf.orig ]; then
 				cp -p /etc/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
 				cat <<- _EOT_ > /etc/dhcpd.conf
@@ -1141,8 +1246,9 @@ _EOT_
 	#	RUN_DHCP[1]=stop
 	fi
 	 # ------------------------------------------------------------------------
-	case ${FLG_RHAT} in
-		0 )
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
 			funcProc isc-dhcp-server "${RUN_DHCP[0]}"
 			funcProc isc-dhcp-server "${RUN_DHCP[1]}"
 			if [ "`find ${DIR_SYSD}/system/ -name \"isc-dhcp-server6.*\" -print`" != "" ]; then
@@ -1150,8 +1256,13 @@ _EOT_
 			#	funcProc isc-dhcp-server6 stop
 			fi
 			;;
-		1 | \
-		2 )
+		"centos" | \
+		"fedora" )
+			funcProc dhcpd "${RUN_DHCP[0]}"
+			funcProc dhcpd "${RUN_DHCP[1]}"
+			;;
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
 			funcProc dhcpd "${RUN_DHCP[0]}"
 			funcProc dhcpd "${RUN_DHCP[1]}"
 			;;
@@ -1328,11 +1439,12 @@ _EOT_
 		funcPause $?
 	fi
 	# -------------------------------------------------------------------------
-	case ${FLG_RHAT} in
-		0 )
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
 			if [ -f /etc/init.d/samba ]; then
 				if [ "${SYS_NAME}" = "debian" ] \
-				&& [ ${SYS_VNUM} -lt 8 -a ${SYS_VNUM} -ge 0 ]; then				# Debian 8以前の判定
+				&& [ ${SYS_VNUM} -lt 8 ] && [ ${SYS_VNUM} -ge 0 ]; then				# Debian 8以前の判定
 					funcProc samba "${RUN_SMBD[0]}"
 				else
 					funcProc smbd "${RUN_SMBD[0]}"
@@ -1346,8 +1458,15 @@ _EOT_
 				funcProc nmbd "${RUN_SMBD[1]}"
 			fi
 			;;
-		1 | \
-		2 )
+		"centos" | \
+		"fedora" )
+			funcProc smb "${RUN_SMBD[0]}"
+			funcProc smb "${RUN_SMBD[1]}"
+			funcProc nmb "${RUN_SMBD[0]}"
+			funcProc nmb "${RUN_SMBD[1]}"
+			;;
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
 			funcProc smb "${RUN_SMBD[0]}"
 			funcProc smb "${RUN_SMBD[1]}"
 			funcProc nmb "${RUN_SMBD[0]}"
@@ -1596,31 +1715,47 @@ _EOT_
 	# *************************************************************************
 	if [ -f /etc/default/grub ] && [ ! -f /etc/default/grub.orig ]; then
 		echo - GRUB ------------------------------------------------------------------------
-		case ${FLG_RHAT} in
-			0 )
-				sed -i.orig /etc/default/grub                                                             \
-				    -e 's/^GRUB_CMDLINE_LINUX_DEFAULT/#&/'                                                \
-				    -e "s/#\(GRUB_GFXMODE\)=.*$/GRUB_GFXPAYLOAD_LINUX=${VGA_RESO[0]}\n\1=${VGA_RESO[0]}/"
-				# -----------------------------------------------------------------
-				update-grub
-				funcPause $?
-				;;
-			1 )
-				sed -i.orig /etc/default/grub                    \
-				    -e '/^GRUB_TERMINAL_OUTPUT/ s/console//'     \
-				    -e '/^GRUB_CMDLINE_LINUX/ s/ rhgb quiet//'   \
-				    -e "\$aGRUB_GFXPAYLOAD_LINUX=${VGA_RESO[0]}" \
-				    -e "\$aGRUB_GFXMODE=${VGA_RESO[0]}"
-				# -----------------------------------------------------------------
-				if [ -f /boot/efi/EFI/centos/grub.cfg ]; then					# efi
-					grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+		# ---------------------------------------------------------------------
+		VGA_MODE=`echo ${VGA_RESO[0]} | sed -e "s/\(.*\)x\(.*\)x\(.*\)/\1x\2x\3/"`
+		sed -i.orig /etc/default/grub                        \
+		    -e 's/^GRUB_GFXMODE.*$/#&/'                      \
+		    -e 's/^GRUB_GFXPAYLOAD_LINUX.*$/#&/'             \
+		    -e 's/^aGRUB_CMDLINE_LINUX_DEFAULT.*$/#&/'       \
+		    -e '/^GRUB_TERMINAL/ s/ *console//'              \
+		    -e '/^GRUB_CMDLINE_LINUX/ s/ *rhgb//'            \
+		    -e '/^GRUB_CMDLINE_LINUX/ s/ *quiet//'           \
+		    -e "\$a\\\n### User Custom ###"                  \
+		    -e "\$aGRUB_GFXMODE=${VGA_MODE}"                 \
+		    -e "\$aGRUB_GFXPAYLOAD_LINUX=keep"               \
+		    -e 's/[ \t][ \t]*/ /g'                           \
+		    -e 's/[ \t]*$//g'
+		# ---------------------------------------------------------------------
+		case "${SYS_NAME}" in
+			"debian" | \
+			"ubuntu" )
+					update-grub
 					funcPause $?
-				else															# mbr
-					grub2-mkconfig -o /boot/grub2/grub.cfg
-					funcPause $?
-				fi
 				;;
-			2 )
+			"centos" | \
+			"fedora" )
+					if [ -f /boot/efi/EFI/${SYS_NAME}/grub.cfg ]; then			# efi
+						grub2-mkconfig -o /boot/efi/EFI/${SYS_NAME}/grub.cfg
+						funcPause $?
+					else														# mbr
+						grub2-mkconfig -o /boot/grub2/grub.cfg
+						funcPause $?
+					fi
+				;;
+			"opensuse-leap"       | \
+			"opensuse-tumbleweed" )
+					if [ -f /boot/efi/EFI/${SYS_NAME}/grub.cfg ]; then			# efi
+#						grub2-mkconfig -o /boot/efi/EFI/${SYS_NAME}/grub.cfg
+						grub2-mkconfig -o /boot/grub2/grub.cfg
+						funcPause $?
+					else														# mbr
+						grub2-mkconfig -o /boot/grub2/grub.cfg
+						funcPause $?
+					fi
 				;;
 			* )
 				;;
@@ -1633,9 +1768,11 @@ _EOT_
 	if [ ${FLG_VMTL} -ne 0 ]; then
 		echo - Install VMware Tools --------------------------------------------------------
 		# ---------------------------------------------------------------------
-		case ${FLG_RHAT} in
-			0 | \
-			1 )
+		case "${SYS_NAME}" in
+			"debian" | \
+			"ubuntu" | \
+			"centos" | \
+			"fedora" )
 				if [ "`which vmware-checkvm 2> /dev/null`" = "" ]; then
 					if [ "`${CMD_AGET} search open-vm-tools-desktop`" = "" ]; then
 						${CMD_AGET} install open-vm-tools
@@ -1646,7 +1783,8 @@ _EOT_
 					fi
 				fi
 				;;
-			2 )
+			"opensuse-leap"       | \
+			"opensuse-tumbleweed" )
 				;;
 			* )
 				;;
@@ -1700,12 +1838,17 @@ _EOT_
 #	systemctl list-unit-files -t service
 #	systemctl -t service
 	# -------------------------------------------------------------------------
-	case ${FLG_RHAT} in
-		0 )
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
 			GRP_SUDO=sudo
 			;;
-		1 | \
-		2 )
+		"centos" | \
+		"fedora" )
+			GRP_SUDO=wheel
+			;;
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
 			GRP_SUDO=wheel
 			;;
 		* )
@@ -1718,7 +1861,7 @@ _EOT_
 		USR_SUDO=`awk -F ':' -v ORS="," '$1=="'${GRP_SUDO}'" {print $4;}' /etc/group | sed -e 's/,$//'`
 	fi
 	# -------------------------------------------------------------------------
-	if [ "${USR_SUDO}" != "" -a "`awk -F ':' '/root/ {print $7;}' /etc/passwd`" != "${LIN_CHSH}" ]; then
+	if [ "${USR_SUDO}" != "" ] && [ "`awk -F ':' '/root/ {print $7;}' /etc/passwd`" != "${LIN_CHSH}" ]; then
 		echo "=== 以下のユーザーが ${GRP_SUDO} に属しています。 ===================================="
 		echo ${USR_SUDO}
 		echo "==============================================================================="
@@ -1763,11 +1906,21 @@ _EOT_
 		tar -czf ${DIR_WK}/bk_usr_sh.tgz --exclude "bk_*.tgz" usr/sh
 		tar -czf ${DIR_WK}/bk_cron.tgz   --exclude "bk_*.tgz" var/spool/cron
 		# ---------------------------------------------------------------------
-		case ${FLG_RHAT} in
-			0 )	tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/cache/bind/	;;
-			1 )	tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/named/		;;
-			2 )	tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/lib/named/	;;
-			* )																			;;
+		case "${SYS_NAME}" in
+			"debian" | \
+			"ubuntu" )
+				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/cache/bind/
+				;;
+			"centos" | \
+			"fedora" )
+				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/named/
+				;;
+			"opensuse-leap"       | \
+			"opensuse-tumbleweed" )
+				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/lib/named/
+				;;
+			* )
+				;;
 		esac
 		set -e
 	popd > /dev/null
@@ -1793,7 +1946,7 @@ funcDebug () {
 #	echo "RUN_WMIN=${RUN_WMIN[@]}"												#   〃        ：webmin
 	echo "EXT_ZONE=${EXT_ZONE}"													# マスターDNSのドメイン名
 	echo "EXT_ADDR=${EXT_ADDR}"													#   〃         IPアドレス
-	echo "FLG_RHAT=${FLG_RHAT}"													# CentOS時=1,その他=0
+#	echo "FLG_RHAT=${FLG_RHAT}"													# CentOS時=1,その他=0
 	echo "FLG_SVER=${FLG_SVER}"													# 0以外でサーバー仕様でセッティング
 	echo "DEF_USER=${DEF_USER}"													# インストール時に作成したユーザー名
 	echo "SYS_NAME=${SYS_NAME}"													# ディストリビューション名
@@ -2024,14 +2177,17 @@ funcDebug () {
 #	echo --- diff /etc/dhcp/dhcpd.conf -------------------------------------------------
 #	expand -t 4 /etc/dhcp/dhcpd.conf
 #	funcDiff /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
-	case ${FLG_RHAT} in
-		0 | \
-		1 )
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" | \
+		"centos" | \
+		"fedora" )
 			echo --- diff /etc/dhcp/dhcpd.conf -------------------------------------------------
 			expand -t 4 /etc/dhcp/dhcpd.conf
 #			funcDiff /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
 			;;
-		2 )
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
 			echo --- diff /etc/dhcpd.conf ------------------------------------------------------
 			expand -t 4 /etc/dhcpd.conf
 #			funcDiff /etc/dhcpd.conf /etc/dhcp/dhcpd.conf.orig

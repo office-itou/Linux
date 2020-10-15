@@ -49,6 +49,9 @@
 ##	2020/08/02 000.0000 J.Itou         debian 10.5.0 / CentOS-Stream-8-x86_64-20200730-boot 変更
 ##	2020/08/09 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200801-boot 変更
 ##	2020/09/27 000.0000 J.Itou         debian 10.6.0 / CentOS-Stream-8-x86_64-20200921-boot 変更
+##	2020/10/06 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200928-boot 変更
+##	2020/10/13 000.0000 J.Itou         CentOS-Stream-8-x86_64-20201007-boot 変更
+##	2020/10/14 000.0000 J.Itou         openSUSE Leap / Tumbleweed 対応
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -68,15 +71,17 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	readonly ARRAY_NAME=(                                                                                                                                                                               \
-	    "debian debian-8.11.1-amd64-netinst          https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian debian-9.13.0-amd64-netinst          https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian debian-10.6.0-amd64-netinst          https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.6.0-amd64-netinst.iso                              preseed_debian.cfg"   \
-	    "debian debian-testing-amd64-netinst         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "centos CentOS-8.2.2004-x86_64-boot          http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso                       kickstart_centos.cfg" \
-	    "centos CentOS-Stream-8-x86_64-20200921-boot http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20200921-boot.iso              kickstart_centos.cfg" \
-	    "fedora Fedora-Server-netinst-x86_64-32-1.6  https://download.fedoraproject.org/pub/fedora/linux/releases/32/Server/x86_64/iso/Fedora-Server-netinst-x86_64-32-1.6.iso    kickstart_fedora.cfg" \
-	)   # 区分  netinstファイル名                   ダウンロード先URL                                                                                                             定義ファイル
+	readonly ARRAY_NAME=(                                                                                                                                                                                 \
+	    "debian debian-8.11.1-amd64-netinst            https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "debian debian-9.13.0-amd64-netinst            https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "debian debian-10.6.0-amd64-netinst            https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.6.0-amd64-netinst.iso                              preseed_debian.cfg"   \
+	    "debian debian-testing-amd64-netinst           https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "centos CentOS-8.2.2004-x86_64-boot            http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso                       kickstart_centos.cfg" \
+	    "centos CentOS-Stream-8-x86_64-20201007-boot   http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201007-boot.iso              kickstart_centos.cfg" \
+	    "fedora Fedora-Server-netinst-x86_64-32-1.6    https://download.fedoraproject.org/pub/fedora/linux/releases/32/Server/x86_64/iso/Fedora-Server-netinst-x86_64-32-1.6.iso    kickstart_fedora.cfg" \
+	    "suse   openSUSE-Leap-15.2-NET-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml"  \
+	    "suse   openSUSE-Tumbleweed-NET-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml"  \
+	)   # 区分  netinstファイル名                      ダウンロード先URL                                                                                                            定義ファイル
 # -----------------------------------------------------------------------------
 funcMenu () {
 	echo "# ----------------------------------------------------------------------------#"
@@ -86,8 +91,10 @@ funcMenu () {
 	echo "#  3：debian-10.6.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
 	echo "#  5：CentOS-8.2.2004-x86_64-boot        ：2020-06-15：2029-05-31：RHEL 8.0   #"
-	echo "#  6：CentOS-Stream-8-x86_64-20200921-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
+	echo "#  6：CentOS-Stream-8-x86_64-20201007-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
 	echo "#  7：Fedora-Server-netinst-x86_64-32-1.6：2020-04-28：20xx-xx-xx：kernel 5.6 #"
+	echo "#  8：openSUSE-Leap-15.2-NET-x86_64      ：20xx-xx-xx：20xx-xx-xx：           #"
+	echo "#  9：openSUSE-Tumbleweed-NET-x86_64-Curr：20xx-xx-xx：20xx-xx-xx：           #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -175,6 +182,16 @@ funcRemaster () {
 					    -e 's/#\(url \)/\1/g' \
 					    -e 's/#\(repo \)/\1/g'
 					;;
+				"suse")	# --- get autoinst.xml --------------------------------
+					EFI_IMAG="images/efiboot.img"
+					DVD_NAME+="-autoyast"
+					mkdir -p "autoyast"
+					if [ -f "../../../${CFG_NAME}" ]; then
+						cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
+					else
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || { rm -f "autoyast/autoinst.xml"; exit 1; }
+					fi
+					;;
 				* )	;;
 			esac
 			# --- mrb:txt.cfg / efi:grub.cfg ----------------------------------
@@ -189,7 +206,7 @@ funcRemaster () {
 					;;
 				"centos" )	# ･････････････････････････････････････････････････
 					case "${VOLID}" in
-						"CentOS-8-1-1911-x86_64-dvd      " )
+						"CentOS-8-2-2004-x86_64-dvd      " )
 							sed -i isolinux/isolinux.cfg \
 							    -e '/menu default/d' \
 							    -e '/^label linux/i\label auto\n  menu label ^Auto Install CentOS Linux 8\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS-8-1-1911-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n'
@@ -218,39 +235,84 @@ funcRemaster () {
 					    -e 's/\(set default\)="1"/\1="0"/g' \
 					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 32'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-32 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
 					;;
-				* )	;;
-			esac
-			# --- copy EFI directory ------------------------------------------
-			case "${CODE_NAME[0]}" in
-				"debian" )
-					if [ ! -d EFI ]; then
-						echo "--- copy EFI directory --------------------------------------------------------"
-						mount -r -o loop boot/grub/efi.img ../mnt/
-						pushd ../mnt/efi/ > /dev/null
-							find . -depth -print | cpio -pdm ../../image/EFI/
-						popd > /dev/null
-						umount ../mnt/
-					fi
+				"suse" )	# ･････････････････････････････････････････････････
+					LABEL=`echo "${VOLID}" | sed -e 's/ //g'`
+					# --- isolinux.cfg ----------------------------------------
+					sed -n '/#[ \t][ \t]*install/,/append/p' boot/x86_64/loader/isolinux.cfg | \
+					sed -e 's/\(install\)/auto \1/' \
+					    -e 's/\(label\) linux/\1 autoinst/' \
+					    -e '/append/ s/$/ autoyast=cd:\/autoyast\/autoinst\.xml ifcfg=e*=dhcp/' | \
+					sed -e '/^default.*$/r /dev/stdin' boot/x86_64/loader/isolinux.cfg | \
+					sed -e 's/^\(default\) harddisk$/\1=autoinst\n/' \
+					> isolinux.cfg
+					mv isolinux.cfg boot/x86_64/loader/
+					# --- grub.cfg --------------------------------------------
+					sed -n '/menuentry[ \t][ \t]*'\''Installation'\''.*{/,/}/p' EFI/BOOT/grub.cfg | \
+					sed -e 's/^}/}\n/' \
+					    -e 's/'\''\(Installation\)'\''/'\''Auto \1'\''/' \
+					    -e '/linuxefi/ s/$/ autoyast=cd:\/autoyast\/autoinst\.xml ifcfg=e*=dhcp/' | \
+					sed -e '/\# look for an installed SUSE system and boot it/r /dev/stdin' EFI/BOOT/grub.cfg | \
+					sed -e 's/^\(default\)=1$/\1=0/' \
+					> grub.cfg
+					mv grub.cfg EFI/BOOT/
 					;;
 				* )	;;
 			esac
-			# --- make iso file -----------------------------------------------
-			rm -f md5sum.txt
-			find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt
-			xorriso -as mkisofs \
-			    -quiet \
-			    -iso-level 3 \
-			    -full-iso9660-filenames \
-			    -volid "${VOLID}" \
-			    -eltorito-boot isolinux/isolinux.bin \
-			    -eltorito-catalog isolinux/boot.cat \
-			    -no-emul-boot -boot-load-size 4 -boot-info-table \
-			    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
-			    -eltorito-alt-boot \
-			    -e "${EFI_IMAG}" \
-			    -no-emul-boot -isohybrid-gpt-basdat \
-			    -output "../../${DVD_NAME}.iso" \
-			    .
+			case "${CODE_NAME[0]}" in
+				"debian" | \
+				"ubuntu" | \
+				"centos" | \
+				"fedora" )
+					# --- copy EFI directory ----------------------------------
+					case "${CODE_NAME[0]}" in
+						"debian" )
+							if [ ! -d EFI ]; then
+								echo "--- copy EFI directory --------------------------------------------------------"
+								mount -r -o loop boot/grub/efi.img ../mnt/
+								pushd ../mnt/efi/ > /dev/null
+									find . -depth -print | cpio -pdm ../../image/EFI/
+								popd > /dev/null
+								umount ../mnt/
+							fi
+							;;
+						* )	;;
+					esac
+					# --- make iso file ---------------------------------------
+					rm -f md5sum.txt
+					find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt
+					xorriso -as mkisofs \
+					    -quiet \
+					    -iso-level 3 \
+					    -full-iso9660-filenames \
+					    -volid "${VOLID}" \
+					    -eltorito-boot isolinux/isolinux.bin \
+					    -eltorito-catalog isolinux/boot.cat \
+					    -no-emul-boot -boot-load-size 4 -boot-info-table \
+					    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+					    -eltorito-alt-boot \
+					    -e "${EFI_IMAG}" \
+					    -no-emul-boot -isohybrid-gpt-basdat \
+					    -output "../../${DVD_NAME}.iso" \
+					    .
+					;;
+				"suse" )	# ･････････････････････････････････････････････････
+#					find boot EFI docu media.1 -type f -exec sha256sum {} \; > CHECKSUMS
+					xorriso -as mkisofs \
+					    -quiet \
+					    -iso-level 3 \
+					    -full-iso9660-filenames \
+					    -volid "${VOLID}" \
+					    -eltorito-boot boot/x86_64/loader/isolinux.bin \
+					    -no-emul-boot -boot-load-size 4 -boot-info-table \
+					    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+					    -eltorito-alt-boot \
+					    -e boot/x86_64/efi \
+					    -no-emul-boot -isohybrid-gpt-basdat \
+					    -output "../../${DVD_NAME}.iso" \
+					    .
+					;;
+				* )	;;
+			esac
 		popd > /dev/null
 	popd > /dev/null
 	echo "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------"
