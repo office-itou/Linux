@@ -56,6 +56,7 @@
 ##	2020/05/09 000.0000 J.Itou         不具合修正(Ubuntu 20.04対応含む)
 ##	2020/09/28 000.0000 J.Itou         不具合修正(対象OSの変更含む)
 ##	2020/09/30 000.0000 J.Itou         不具合修正(openSUSE対応含む)
+##	2020/10/15 000.0000 J.Itou         不具合修正(openSUSE対応含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -603,11 +604,18 @@ funcMain () {
 				* )
 					;;
 			esac
-			[ ! -f .vimrc      -a -f /etc/vim/vimrc       ] && { touch .vimrc;      chown ${USER_NAME}. .vimrc;      }
-			[ ! -f .vimrc      -a -f /etc/vimrc           ] && { touch .vimrc;      chown ${USER_NAME}. .vimrc;      }
-			[ ! -f .virc       -a -f /etc/virc            ] && { touch .virc;       chown ${USER_NAME}. .virc;       }
-			[ ! -f .curlrc                                ] && { touch .curlrc;     chown ${USER_NAME}. .curlrc;     }
-			[ ! -f ${LNG_FILE}                            ] && { touch ${LNG_FILE}; chown ${USER_NAME}. ${LNG_FILE}; }
+			VIM_ARRY=`find /etc -name 'vimrc' -o -name 'virc' -type f | awk '{gsub("\"", ""); gsub(".*/", ""); print $0;}'`
+			if [ "${VIM_ARRY}" = "" ]; then
+				VIM_FILE=`LANG=C vi --version | awk '/^[ \t]*user vimrc file/ {gsub("\"", ""); gsub(".*/", ""); print $0;}'`
+				[ "${VIM_FILE}" != "" -a ! -f ${VIM_FILE} ] && { touch ${VIM_FILE}; chown ${USER_NAME}. ${VIM_FILE}; }
+			else
+				for VIMRC in ${VIM_ARRY}
+				do
+					[ ! -f .${VIMRC} ] && { touch .${VIMRC}; chown ${USER_NAME}. .${VIMRC}; }
+				done
+			fi
+			[                        ! -f .curlrc     ] && { touch .curlrc;     chown ${USER_NAME}. .curlrc;     }
+			[ "${LNG_FILE}" != "" -a ! -f ${LNG_FILE} ] && { touch ${LNG_FILE}; chown ${USER_NAME}. ${LNG_FILE}; }
 			# -----------------------------------------------------------------
 			# 参照: http://vimdoc.sourceforge.net/htmldoc/usr_toc.html
 			#       http://vimdoc.sourceforge.net/htmldoc/options.html

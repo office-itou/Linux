@@ -1,9 +1,9 @@
-**Debian/Ubuntu/CentOS/Fedoraの無人インストール用メディアのカスタマイズ**  
+**Debian/Ubuntu/CentOS/Fedora/OpenSUSEの無人インストール用メディアのカスタマイズ**  
   
 【事前準備】  
   
 ・開発環境  
-　**Debian 10.3 64bit版**  
+　**Debian 10.6 64bit版**  
   
 【無人インストールISO作成シェル】  
   
@@ -22,6 +22,9 @@
 | [kickstart_centos.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_centos.cfg)    | CentOS用 |
 | [kickstart_fedora.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_fedora.cfg)    | Fedora用 |
 | [nocloud-ubuntu-user-data](https://github.com/office-itou/Linux/blob/master/installer/source/nocloud-ubuntu-user-data) | ubuntu用 |
+| [yast_opensuse15.xml](https://github.com/office-itou/Linux/blob/master/installer/source/yast_opensuse15.xml) | OpenSUSE15用 |
+| [yast_opensuse16.xml](https://github.com/office-itou/Linux/blob/master/installer/source/yast_opensuse16.xml) | OpenSUSE16用 |
+
   
 【インストール補助作業シェル】  
   
@@ -97,6 +100,8 @@ wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/sourc
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_ubuntu.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_centos.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_fedora.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse15.xml"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse16.xml"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/install.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers_txt_maker.sh"
