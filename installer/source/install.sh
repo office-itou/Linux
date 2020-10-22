@@ -57,6 +57,7 @@
 ##	2020/09/28 000.0000 J.Itou         不具合修正(対象OSの変更含む)
 ##	2020/09/30 000.0000 J.Itou         不具合修正(openSUSE対応含む)
 ##	2020/10/15 000.0000 J.Itou         不具合修正(openSUSE対応含む)
+##	2020/10/19 000.0000 J.Itou         不具合修正(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -633,9 +634,9 @@ funcMain () {
 						set nowrap              " This option changes how text is displayed.
 						set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
 						set laststatus=2        " The value of this option influences when the last window will have a status line always.
-						" syntax on               " Vim5 and later versions support syntax highlighting.
+						syntax on               " Vim5 and later versions support syntax highlighting.
 _EOT_
-					if [ "${SYS_NAME}" = "debian" ]; then
+					if [ "`which vim 2> /dev/null`" = "" ]; then
 						sed -i ${VIMRC}                  \
 						    -e 's/^\(syntax on\)/\" \1/'
 					fi

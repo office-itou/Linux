@@ -21,35 +21,50 @@
 	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]"
 	echo "*******************************************************************************"
 	trap 'exit 1' 1 2 3 15
+# =============================================================================
+	echo "-- Initialize -----------------------------------------------------------------"
+	#--------------------------------------------------------------------------
+	NOW_DATE=`date +"%Y/%m/%d"`													# yyyy/mm/dd
+	NOW_TIME=`date +"%Y%m%d%H%M%S"`												# yyyymmddhhmmss
+	PGM_NAME=`basename $0 | sed -e 's/\..*$//'`									# プログラム名
+	#--------------------------------------------------------------------------
+	WHO_AMI=`whoami`															# 実行ユーザー名
+	if [ "${WHO_AMI}" != "root" ]; then
+		echo "rootユーザーで実行して下さい。"
+		exit 1
+	fi
+	#--------------------------------------------------------------------------
 # == tools install ============================================================
-	if [ "`LANG=C dpkg -l debootstrap squashfs-tools xorriso isolinux | awk '$1==\"un\" {print $1;}'`" != "" ]; then
-		apt -y install debootstrap squashfs-tools xorriso isolinux
+	if [ "`which mmdebstrap 2> /dev/null`" = "" ]; then
+		apt -y install mmdebstrap debootstrap squashfs-tools xorriso isolinux
 	fi
 # =============================================================================
-	echo "-- initialize -----------------------------------------------------------------"
-	rm -rf   ./debootstrap/media ./debootstrap/cdimg ./debootstrap/fsimg ./debootstrap/_work
-	mkdir -p ./debootstrap/media ./debootstrap/cdimg ./debootstrap/fsimg ./debootstrap/_work
-# -----------------------------------------------------------------------------
 	if [ "${INP_ARCH}" = "i386" ]; then
 		IMG_ARCH="686"
 	else
 		IMG_ARCH="amd64"
 	fi
 	echo "-- architecture: ${INP_ARCH} --------------------------------------------------------"
+	# -------------------------------------------------------------------------
+	case "${INP_SUITE}" in
+		"stable"  | "buster"   | 10* ) DEB_SUITE="stable";;
+		"testing" | "bullseye" | 11* ) DEB_SUITE="testing";;
+		*                            ) DEB_SUITE="";;
+	esac
+	# -------------------------------------------------------------------------
+	DIR_TOP=./${PGM_NAME}/${DEB_SUITE}.${INP_ARCH}
+# -----------------------------------------------------------------------------
+	echo "-- make directory -------------------------------------------------------------"
+	rm -rf   ${DIR_TOP}/media ${DIR_TOP}/cdimg ${DIR_TOP}/fsimg ${DIR_TOP}/_work
+	mkdir -p ${DIR_TOP}/media ${DIR_TOP}/cdimg ${DIR_TOP}/fsimg ${DIR_TOP}/_work
 # =============================================================================
 	echo "--- debootstrap ---------------------------------------------------------------"
 	LIVE_VOLID="d-live ${INP_SUITE} lx ${INP_ARCH}"
 	echo "---- network install ----------------------------------------------------------"
-	mmdebstrap --variant=minbase --mode=sudo --architectures=${INP_ARCH} ${INP_SUITE} ./debootstrap/fsimg/ http://ftp.debian.org/debian
-	# -------------------------------------------------------------------------
-	case "${INP_SUITE}" in
-		"testing" | "bullseye" | 11* ) DEB_SUITE="testing";;
-		"stable"  | "buster"   | 10* ) DEB_SUITE="stable";;
-		*                            ) DEB_SUITE="";;
-	esac
+	mmdebstrap --variant=minbase --mode=sudo --architectures=${INP_ARCH} ${INP_SUITE} ${DIR_TOP}/fsimg/
 # =============================================================================
 	echo "-- make inst-net.sh -----------------------------------------------------------"
-	cat <<- _EOT_SH_ > ./debootstrap/fsimg/inst-net.sh
+	cat <<- _EOT_SH_ > ${DIR_TOP}/fsimg/inst-net.sh
 		#!/bin/bash
 		# -----------------------------------------------------------------------------
 		 	set -m								# ジョブ制御を有効にする
@@ -75,35 +90,76 @@
 		 	export PS1="(chroot) "
 		# -- module install -----------------------------------------------------------
 		 	echo "--- module install ------------------------------------------------------------"
-		 	cat <<- '_EOT_' > /etc/apt/sources.list
-		 		deb http://ftp.debian.org/debian ${INP_SUITE} main non-free contrib
-		 		deb-src http://ftp.debian.org/debian ${INP_SUITE} main non-free contrib
+		 	# -------------------------------------------------------------------------
+		 	echo "# -----------------------------------------------------------------------------"
+		 	cat /etc/apt/sources.list
+		 	echo "# -----------------------------------------------------------------------------"
+		 	APT_ADDRE="\`awk '(/^deb/) && !(\$2~/security/) && !(\$3~/update/) {print \$2;}' /etc/apt/sources.list | uniq\`"
+		 	APT_SUITE="\`awk '(/^deb/) && !(\$2~/security/) && !(\$3~/update/) {print \$3;}' /etc/apt/sources.list | uniq\`"
+		 	# -------------------------------------------------------------------------
+		 	if [ "\${APT_ADDRE}" = "" ]; then APT_ADDRE="http://ftp.debian.org/debian"; fi
+		 	if [ "\${APT_SUITE}" = "" ]; then APT_SUITE="${INP_SUITE}"; fi
+		 	# -------------------------------------------------------------------------
+		 	cat <<- _EOT_ > /etc/apt/sources.list
+		 		deb \${APT_ADDRE} \${APT_SUITE} main non-free contrib
+		 		deb-src \${APT_ADDRE} \${APT_SUITE} main non-free contrib
 
-		 		# deb http://security.debian.org/debian-security ${INP_SUITE}/updates main contrib non-free
-		 		# deb-src http://security.debian.org/debian-security ${INP_SUITE}/updates main contrib non-free
+		 		# deb http://security.debian.org/debian-security \${APT_SUITE}/updates main contrib non-free
+		 		# deb-src http://security.debian.org/debian-security \${APT_SUITE}/updates main contrib non-free
 
 		 		# ${INP_SUITE}-updates, previously known as 'volatile'
-		 		deb http://ftp.debian.org/debian ${INP_SUITE}-updates main contrib non-free
-		 		deb-src http://ftp.debian.org/debian ${INP_SUITE}-updates main contrib non-free
+		 		deb \${APT_ADDRE} \${APT_SUITE}-updates main contrib non-free
+		 		deb-src \${APT_ADDRE} \${APT_SUITE}-updates main contrib non-free
 		_EOT_
+		 	# -------------------------------------------------------------------------
+		 	if [ "${DEB_SUITE}" != "testing" ]; then
+		 		sed -i /etc/apt/sources.list \\
+		 		    -e 's/^# \(deb\)/\1/g'
+		 	fi
 		# -- module update, upgrade, install ------------------------------------------
 		 	echo "---- module update, upgrade, install ------------------------------------------"
 		 	apt update                                                             && \\
 		 	apt upgrade      -q -y                                                 && \\
 		 	apt full-upgrade -q -y                                                 && \\
 		 	apt install      -q -y                                                    \\
+		 	    linux-headers-${IMG_ARCH} linux-image-${IMG_ARCH}                              && \\
+		 	apt install      -q -y                                                    \\
 		 	    acpid apache2 apt-show-versions aptitude bc bind9 bind9utils bison    \\
 		 	    btrfs-progs build-essential cifs-utils clamav curl debconf-i18n       \\
 		 	    dnsutils dpkg-repack fdclone flex grub-efi ibus-mozc ifupdown indent  \\
 		 	    isc-dhcp-server isolinux less libappindicator3-1 libapt-pkg-perl      \\
 		 	    libauthen-pam-perl libelf-dev libio-pty-perl libnet-ssleay-perl       \\
-		 	    linux-headers-${IMG_ARCH} linux-image-${IMG_ARCH} live-config live-task-base lvm2 \\
+		 	    live-config live-task-base lvm2                                       \\
 		 	    nano network-manager nfs-common nfs-kernel-server ntfs-3g ntp ntpdate \\
 		 	    open-vm-tools open-vm-tools-desktop perl powermgmt-base rsync samba   \\
 		 	    smbclient snapd squashfs-tools sudo task-desktop task-english         \\
 		 	    task-japanese task-japanese-desktop task-laptop task-lxde-desktop     \\
 		 	    task-ssh-server task-web-server traceroute usbutils vim vsftpd wget   \\
 		 	    wpagui xorriso xterm                                               || \\
+		 	fncEnd \$?
+		# -- source.list custom -------------------------------------------------------
+		 	echo "---- source.list custom -------------------------------------------------------"
+		 	case "${DEB_SUITE}" in
+		 		"stable"  )
+		 			echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Debian_Buster/ /' | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
+		 			curl -fsSL https://download.opensuse.org/repositories/home:ungoogled_chromium/Debian_Buster/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home:ungoogled_chromium.gpg > /dev/null
+		 			if [ -f Release.key ]; then rm -f Release.key; fi
+		 			;;
+		 		"testing" )
+		 			echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Debian_Sid/ /' | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
+		 			curl -fsSL https://download.opensuse.org/repositories/home:ungoogled_chromium/Debian_Sid/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home:ungoogled_chromium.gpg > /dev/null
+		 			if [ -f Release.key ]; then rm -f Release.key; fi
+		 			;;
+		 		*         )
+		 			;;
+		 	esac
+		# -- module update, upgrade, install ------------------------------------------
+		 	echo "---- module update, upgrade, install ------------------------------------------"
+		 	apt update                                                             && \\
+		 	apt upgrade      -q -y                                                 && \\
+		 	apt full-upgrade -q -y                                                 && \\
+		 	apt install      -q -y                                                    \\
+		 	    ungoogled-chromium                                                 || \\
 		 	fncEnd \$?
 		# -- module fix broken --------------------------------------------------------
 		 	echo "---- module fix broken --------------------------------------------------------"
@@ -126,36 +182,6 @@
 		 	fi
 		 	sed -i /etc/xdg/lxsession/LXDE/autostart               \\
 		 	    -e '\$a@setxkbmap -layout jp -option ctrl:swapcase'
-		# -- google chrome install ----------------------------------------------------
-		 	if [ "${IMG_ARCH}" = "amd64" ]; then
-		 		echo "---- chrome install -----------------------------------------------------------"
-		 		if [ "${DEB_SUITE}" = "stable" ]; then
-		 			VER_CHROM="79.0.3945.117-1.buster1"
-		 			if [ ! -f ungoogled-chromium_\${VER_CHROM}_amd64.deb ] || [ ! -f ungoogled-chromium-common_\${VER_CHROM}_amd64.deb ]; then
-		 				curl -L -# -R -S -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium-common_\${VER_CHROM}_amd64.deb"  \\
-		 				                 -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium-driver_\${VER_CHROM}_amd64.deb"  \\
-		 				                 -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium-l10n_\${VER_CHROM}_all.deb"      \\
-		 				                 -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium-sandbox_\${VER_CHROM}_amd64.deb" \\
-		 				                 -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium-shell_\${VER_CHROM}_amd64.deb"   \\
-		 				                 -O "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/\${VER_CHROM}/ungoogled-chromium_\${VER_CHROM}_amd64.deb"      || \\
-		 				fncEnd \$?
-		 			fi
-		 			apt install      -q -y                             \\
-		 			    libminizip1 libre2-5 libevent-2.1-6 libvpx5 && \\
-		 			apt autoremove   -q -y                          && \\
-		 			apt autoclean    -q                             && \\
-		 			apt clean        -q                             && \\
-		 			dpkg -i ungoogled-chromium_*.deb                   \\
-		 			        ungoogled-chromium-*.deb                && \\
-		 			rm -f   ungoogled-chromium*                     || \\
-		 			fncEnd \$?
-		 		else
-		 			curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" && \\
-		 			dpkg -i google-chrome-stable_current_amd64.deb                                                  && \\
-		 			rm -f   google-chrome-stable_current_amd64.deb                                                  || \\
-		 			fncEnd \$?
-		 		fi
-		 	fi
 		# -- systemctl ----------------------------------------------------------------
 		 	echo "--- systemctl -----------------------------------------------------------------"
 		 	systemctl  enable clamav-freshclam
@@ -183,6 +209,10 @@
 		 		auto eth0
 		 		iface eth0 inet dhcp
 		_EOT_
+		# -- desktop setting ----------------------------------------------------------
+		 	if [ -f /etc/xdg/autostart/diodon-autostart.desktop -a -f /etc/xdg/autostart/clipit-startup.desktop ]; then
+		 		rm /etc/xdg/autostart/clipit-startup.desktop
+		 	fi
 		# -- root and user's setting --------------------------------------------------
 		 	echo "--- root and user's setting ---------------------------------------------------"
 		 	for TARGET in "/etc/skel" "/root"
@@ -210,6 +240,10 @@
 		 			set laststatus=2        " The value of this option influences when the last window will have a status line always.
 		 			syntax on               " Vim5 and later versions support syntax highlighting.
 		_EOT_
+		 		if [ "\`which vim 2> /dev/null\`" = "" ]; then
+		 				sed -i .vimrc                    \\
+		 				    -e 's/^\(syntax on\)/\" \1/'
+		 		fi
 		 		echo "---- .curlrc ------------------------------------------------------------------"
 		 		cat <<- '_EOT_' > .curlrc
 		 			location
@@ -297,12 +331,12 @@
 		 	    -e '\$apasv_enable=YES'
 		# -- smb.conf -----------------------------------------------------------------
 		 	echo "--- smb.conf ------------------------------------------------------------------"
-		 	CMD_UADD=`which useradd`
-		 	CMD_UDEL=`which userdel`
-		 	CMD_GADD=`which groupadd`
-		 	CMD_GDEL=`which groupdel`
-		 	CMD_GPWD=`which gpasswd`
-		 	CMD_FALS=`which false`
+		 	CMD_UADD="\`which useradd\`"
+		 	CMD_UDEL="\`which userdel\`"
+		 	CMD_GADD="\`which groupadd\`"
+		 	CMD_GDEL="\`which groupdel\`"
+		 	CMD_GPWD="\`which gpasswd\`"
+		 	CMD_FALS="\`which false\`"
 		 	testparm -s -v |                                                                        \\
 		 	sed -e 's/\\(dos charset\\) =.*\$/\\1 = CP932/'                                             \\
 		 	    -e 's/\\(security\\) =.*\$/\\1 = USER/'                                                 \\
@@ -363,58 +397,42 @@
 		 	fncEnd 0
 		# -- EOF ----------------------------------------------------------------------
 _EOT_SH_
-	case "${INP_SUITE}" in
-		"testing" | "bullseye" | 11* ) ;;
-		*                            ) sed -i ./debootstrap/fsimg/inst-net.sh -e 's/^\( \t\t\)# \(deb\)/\1\2/g';;
-	esac
-	sed -i ./debootstrap/fsimg/inst-net.sh -e 's/^ //g'
+	sed -i ${DIR_TOP}/fsimg/inst-net.sh -e 's/^ //g'
 # =============================================================================
-	if [ -d "./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/" ]; then
-		echo "--- deb file copy -------------------------------------------------------------"
-		mkdir -p ./debootstrap/fsimg/var/cache/apt/archives
-		cp -p ./debootstrap/rpack.${DEB_SUITE}.${INP_ARCH}/*.deb ./debootstrap/fsimg/var/cache/apt/archives/ > /dev/null 2>&1
-	fi
-	if [ -d "./debootstrap/ungoogled-chromium/" ]; then
-		echo "--- chrome file copy ----------------------------------------------------------"
-		cp -p ./debootstrap/ungoogled-chromium/*.deb ./debootstrap/fsimg/ > /dev/null 2>&1
-	fi
-	# -------------------------------------------------------------------------
 	echo "-- chroot ---------------------------------------------------------------------"
-	echo "debian-live" >  ./debootstrap/fsimg/etc/hostname
-	echo -e "127.0.1.1\tdebian-live" >> ./debootstrap/fsimg/etc/hosts
-	rm -f ./debootstrap/fsimg/etc/localtime
-	ln -s /usr/share/zoneinfo/Asia/Tokyo ./debootstrap/fsimg/etc/localtime
+	echo "debian-live" > ${DIR_TOP}/fsimg/etc/hostname
+	echo -e "127.0.1.1\tdebian-live" >> ${DIR_TOP}/fsimg/etc/hosts
+	rm -f ${DIR_TOP}/fsimg/etc/localtime
+	ln -s /usr/share/zoneinfo/Asia/Tokyo ${DIR_TOP}/fsimg/etc/localtime
 	# -------------------------------------------------------------------------
-	mount --bind /dev     ./debootstrap/fsimg/dev
-	mount --bind /dev/pts ./debootstrap/fsimg/dev/pts
-	mount --bind /proc    ./debootstrap/fsimg/proc
-	mount --bind /sys     ./debootstrap/fsimg/sys
+	mount --bind /dev     ${DIR_TOP}/fsimg/dev
+	mount --bind /dev/pts ${DIR_TOP}/fsimg/dev/pts
+	mount --bind /proc    ${DIR_TOP}/fsimg/proc
+	mount --bind /sys     ${DIR_TOP}/fsimg/sys
 	# -------------------------------------------------------------------------
-	LC_ALL=C LANG=C LANGUAGE=C chroot ./debootstrap/fsimg/ /bin/bash /inst-net.sh
+	LC_ALL=C LANG=C LANGUAGE=C chroot ${DIR_TOP}/fsimg/ /bin/bash /inst-net.sh
 	RET_STS=$?
 	# -------------------------------------------------------------------------
-	umount ./debootstrap/fsimg/sys     || umount -lf ./debootstrap/fsimg/sys
-	umount ./debootstrap/fsimg/proc    || umount -lf ./debootstrap/fsimg/proc
-	umount ./debootstrap/fsimg/dev/pts || umount -lf ./debootstrap/fsimg/dev/pts
-	umount ./debootstrap/fsimg/dev     || umount -lf ./debootstrap/fsimg/dev
+	umount ${DIR_TOP}/fsimg/sys     || umount -lf ${DIR_TOP}/fsimg/sys
+	umount ${DIR_TOP}/fsimg/proc    || umount -lf ${DIR_TOP}/fsimg/proc
+	umount ${DIR_TOP}/fsimg/dev/pts || umount -lf ${DIR_TOP}/fsimg/dev/pts
+	umount ${DIR_TOP}/fsimg/dev     || umount -lf ${DIR_TOP}/fsimg/dev
 	# -------------------------------------------------------------------------
 	if [ ${RET_STS} -ne 0 ]; then
 		exit ${RET_STS}
 	fi
 # -----------------------------------------------------------------------------
 	echo "-- cleaning -------------------------------------------------------------------"
-	find  ./debootstrap/fsimg/var/log/ -type f -name \* -exec cp -f /dev/null {} \;
-	rm -rf ./debootstrap/fsimg/inst-net.sh                    \
-	       ./debootstrap/fsimg/root/.bash_history             \
-	       ./debootstrap/fsimg/root/.viminfo                  \
-	       ./debootstrap/fsimg/tmp/*                          \
-	       ./debootstrap/fsimg/var/cache/apt/*.bin            \
-	       ./debootstrap/fsimg/var/cache/apt/archives/*.deb   \
-	       ./debootstrap/fsimg/ungoogled-chromium*            \
-	       ./debootstrap/fsimg/google-chrome-*.deb
+	find ${DIR_TOP}/fsimg/var/log/ -type f -name \* -exec cp -f /dev/null {} \;
+	rm -rf ${DIR_TOP}/fsimg/inst-net.sh                  \
+	       ${DIR_TOP}/fsimg/root/.bash_history           \
+	       ${DIR_TOP}/fsimg/root/.viminfo                \
+	       ${DIR_TOP}/fsimg/tmp/*                        \
+	       ${DIR_TOP}/fsimg/var/cache/apt/*.bin          \
+	       ${DIR_TOP}/fsimg/var/cache/apt/archives/*.deb
 # -----------------------------------------------------------------------------
 	echo "--- download system file ------------------------------------------------------"
-	pushd ./debootstrap > /dev/null
+	pushd ${DIR_TOP} > /dev/null
 		TAR_INST=debian-cd_info-${INP_SUITE}-${INP_ARCH}.tar.gz
 		if [ ! -f "./${TAR_INST}" ]; then
 			TAR_URL="https://cdimage.debian.org/debian/dists/${INP_SUITE}/main/installer-${INP_ARCH}/current/images/cdrom/debian-cd_info.tar.gz"
@@ -424,49 +442,49 @@ _EOT_SH_
 	popd > /dev/null
 	# ---------------------------------------------------------------------
 	echo "--- make cdimg directory ------------------------------------------------------"
-	mkdir -p ./debootstrap/cdimg/boot/grub \
-	         ./debootstrap/cdimg/isolinux  \
-	         ./debootstrap/cdimg/live      \
-	         ./debootstrap/cdimg/.disk
+	mkdir -p ${DIR_TOP}/cdimg/boot/grub \
+	         ${DIR_TOP}/cdimg/isolinux  \
+	         ${DIR_TOP}/cdimg/live      \
+	         ${DIR_TOP}/cdimg/.disk
 	# ---------------------------------------------------------------------
 	echo "-- make system loading file ---------------------------------------------------"
 	NOW_TIME=`date +"%Y-%m-%d %H:%M"`
 	# ---------------------------------------------------------------------
 	echo "--- make .disk's file ---------------------------------------------------------"
-	echo -en "Custom Debian GNU/Linux Live ${INP_SUITE}-${INP_ARCH} lxde ${NOW_TIME}" > ./debootstrap/cdimg/.disk/info
+	echo -en "Custom Debian GNU/Linux Live ${INP_SUITE}-${INP_ARCH} lxde ${NOW_TIME}" > ${DIR_TOP}/cdimg/.disk/info
 	# ---------------------------------------------------------------------
 	echo "--- copy system file ----------------------------------------------------------"
-	pushd ./debootstrap/_work/grub > /dev/null
+	pushd ${DIR_TOP}/_work/grub > /dev/null
 		find . -depth -print | cpio -pdm ../../cdimg/boot/grub/
 	popd > /dev/null
-	if [ ! -f ./debootstrap/cdimg/boot/grub/loopback.cfg ]; then
-		echo -n "source /grub/grub.cfg" > ./debootstrap/cdimg/boot/grub/loopback.cfg
+	if [ ! -f ${DIR_TOP}/cdimg/boot/grub/loopback.cfg ]; then
+		echo -n "source /grub/grub.cfg" > ${DIR_TOP}/cdimg/boot/grub/loopback.cfg
 	fi
-	cp -p  ./debootstrap/_work/splash.png                                 ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/_work/menu.cfg                                   ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/_work/stdmenu.cfg                                ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/_work/isolinux.cfg                               ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/fsimg/usr/lib/ISOLINUX/isolinux.bin              ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/hdt.c32      ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/ldlinux.c32  ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libcom32.c32 ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libgpl.c32   ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libmenu.c32  ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/libutil.c32  ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/modules/bios/vesamenu.c32 ./debootstrap/cdimg/isolinux/
-	cp -p  ./debootstrap/fsimg/usr/lib/syslinux/memdisk                   ./debootstrap/cdimg/isolinux/
-	cp -pr ./debootstrap/fsimg/boot/*                                     ./debootstrap/cdimg/live/
+	cp -p  ${DIR_TOP}/_work/splash.png                                 ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/_work/menu.cfg                                   ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/_work/stdmenu.cfg                                ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/_work/isolinux.cfg                               ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/fsimg/usr/lib/ISOLINUX/isolinux.bin              ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/hdt.c32      ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/ldlinux.c32  ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/libcom32.c32 ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/libgpl.c32   ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/libmenu.c32  ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/libutil.c32  ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/vesamenu.c32 ${DIR_TOP}/cdimg/isolinux/
+	cp -p  ${DIR_TOP}/fsimg/usr/lib/syslinux/memdisk                   ${DIR_TOP}/cdimg/isolinux/
+	cp -pr ${DIR_TOP}/fsimg/boot/*                                     ${DIR_TOP}/cdimg/live/
 	# ---------------------------------------------------------------------
 	echo "--- copy EFI directory --------------------------------------------------------"
-	mount -r -o loop ./debootstrap/cdimg/boot/grub/efi.img ./debootstrap/media/
-	pushd ./debootstrap/media/efi/ > /dev/null
+	mount -r -o loop ${DIR_TOP}/cdimg/boot/grub/efi.img ${DIR_TOP}/media/
+	pushd ${DIR_TOP}/media/efi/ > /dev/null
 		find . -depth -print | cpio -pdm ../../cdimg/EFI/
 	popd > /dev/null
-	umount ./debootstrap/media/
+	umount ${DIR_TOP}/media/
 	# ---------------------------------------------------------------------
-	VER_KRNL=`find ./debootstrap/fsimg/boot/ -name "vmlinuz*" -print | sed -e 's/.*vmlinuz-//g' -e 's/-amd64//g' -e 's/-686//g'`
+	VER_KRNL=`find ${DIR_TOP}/fsimg/boot/ -name "vmlinuz*" -print | sed -e 's/.*vmlinuz-//g' -e 's/-amd64//g' -e 's/-686//g'`
 	echo "--- edit grub.cfg file --------------------------------------------------------"
-	cat <<- _EOT_ >> ./debootstrap/cdimg/boot/grub/grub.cfg
+	cat <<- _EOT_ >> ${DIR_TOP}/cdimg/boot/grub/grub.cfg
 		if [ \${iso_path} ] ; then
 		set loopback="findiso=\${iso_path}"
 		fi
@@ -479,7 +497,7 @@ _EOT_SH_
 		set timeout=5
 _EOT_
 	echo "--- edit menu.cfg file --------------------------------------------------------"
-	cat <<- _EOT_ > ./debootstrap/cdimg/isolinux/menu.cfg
+	cat <<- _EOT_ > ${DIR_TOP}/cdimg/isolinux/menu.cfg
 		INCLUDE stdmenu.cfg
 		MENU title Main Menu
 		DEFAULT Debian GNU/Linux Live (kernel ${VER_KRNL}-${IMG_ARCH})
@@ -489,33 +507,33 @@ _EOT_
 		  APPEND initrd=/live/initrd.img-${VER_KRNL}-${IMG_ARCH} boot=live components locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp
 _EOT_
 	echo "--- edit isolinux.cfg file ----------------------------------------------------"
-	sed -i ./debootstrap/cdimg/isolinux/isolinux.cfg \
+	sed -i ${DIR_TOP}/cdimg/isolinux/isolinux.cfg \
 	    -e 's/^\(timeout\) .*/\1 50/'
 # -- file compress ------------------------------------------------------------
 	echo "-- make file system image -----------------------------------------------------"
-	rm -f ./debootstrap/cdimg/live/filesystem.squashfs
-	mksquashfs ./debootstrap/fsimg ./debootstrap/cdimg/live/filesystem.squashfs -noappend
-	ls -lht ./debootstrap/cdimg/live/
+	rm -f ${DIR_TOP}/cdimg/live/filesystem.squashfs
+	mksquashfs ${DIR_TOP}/fsimg ${DIR_TOP}/cdimg/live/filesystem.squashfs -noappend
+	ls -lht ${DIR_TOP}/cdimg/live/
 # -- make iso image -----------------------------------------------------------
 	echo "-- make iso image -------------------------------------------------------------"
-	pushd ./debootstrap/cdimg > /dev/null
+	pushd ${DIR_TOP}/cdimg > /dev/null
 		find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt
-		xorriso -as mkisofs                                                    \
-		    -quiet                                                             \
-		    -iso-level 3                                                       \
-		    -full-iso9660-filenames                                            \
-		    -volid "${LIVE_VOLID}"                                             \
-		    -eltorito-boot isolinux/isolinux.bin                               \
-		    -eltorito-catalog isolinux/boot.cat                                \
-		    -no-emul-boot -boot-load-size 4 -boot-info-table                   \
-		    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin                      \
-		    -eltorito-alt-boot                                                 \
-		    -e boot/grub/efi.img                                               \
-		    -no-emul-boot -isohybrid-gpt-basdat                                \
-		    -output ../../debian-live-${INP_SUITE}-${INP_ARCH}-lxde-custom.iso \
+		xorriso -as mkisofs                                                         \
+		    -quiet                                                                  \
+		    -iso-level 3                                                            \
+		    -full-iso9660-filenames                                                 \
+		    -volid "${LIVE_VOLID}"                                                  \
+		    -eltorito-boot isolinux/isolinux.bin                                    \
+		    -eltorito-catalog isolinux/boot.cat                                     \
+		    -no-emul-boot -boot-load-size 4 -boot-info-table                        \
+		    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin                           \
+		    -eltorito-alt-boot                                                      \
+		    -e boot/grub/efi.img                                                    \
+		    -no-emul-boot -isohybrid-gpt-basdat                                     \
+		    -output ../../debian-live-${INP_SUITE}-${INP_ARCH}-lxde-debootstrap.iso \
 		    .
 	popd > /dev/null
-	ls -lht
+	ls -lht ./${PGM_NAME}/
 # =============================================================================
 	echo "*******************************************************************************"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]"
