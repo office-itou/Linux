@@ -58,6 +58,7 @@
 ##	2020/09/30 000.0000 J.Itou         不具合修正(openSUSE対応含む)
 ##	2020/10/15 000.0000 J.Itou         不具合修正(openSUSE対応含む)
 ##	2020/10/19 000.0000 J.Itou         不具合修正(いろいろ)
+##	2020/11/03 000.0000 J.Itou         不具合修正(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -323,14 +324,15 @@ funcInitialize () {
 	SYS_VERS=`awk -F '=' '$1=="VERSION"    {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン名
 	SYS_VRID=`awk -F '=' '$1=="VERSION_ID" {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン番号
 	SYS_VNUM=`echo ${SYS_VRID:--1} | bc`										#   〃          (取得できない場合は-1)
-	SYS_NOOP=1																	# 対象OS=0,それ以外=1
-	if [ "${SYS_NAME}" = "debian"              ] && [ `echo "${SYS_VNUM} >= 10"       | bc` ]; then SYS_NOOP=0; fi
-	if [ "${SYS_NAME}" = "ubuntu"              ] && [ `echo "${SYS_VNUM} >= 20.04"    | bc` ]; then SYS_NOOP=0; fi
-	if [ "${SYS_NAME}" = "centos"              ] && [ `echo "${SYS_VNUM} >=  8"       | bc` ]; then SYS_NOOP=0; fi
-	if [ "${SYS_NAME}" = "fedora"              ] && [ `echo "${SYS_VNUM} >= 32"       | bc` ]; then SYS_NOOP=0; fi
-	if [ "${SYS_NAME}" = "opensuse-leap"       ] && [ `echo "${SYS_VNUM} >= 15.2"     | bc` ]; then SYS_NOOP=0; fi
-	if [ "${SYS_NAME}" = "opensuse-tumbleweed" ] && [ `echo "${SYS_VNUM} >= 20201002" | bc` ]; then SYS_NOOP=0; fi
-	if [ ${SYS_NOOP} -ne 0 ]; then
+	SYS_NOOP=0																	# 対象OS=1,それ以外=0
+	if [ "${SYS_NAME}" = "debian"              ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 10"       | bc`; fi
+	if [ "${SYS_NAME}" = "ubuntu"              ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 20.04"    | bc`; fi
+	if [ "${SYS_NAME}" = "centos"              ]; then SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`; fi
+	if [ "${SYS_NAME}" = "fedora"              ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`; fi
+	if [ "${SYS_NAME}" = "opensuse-leap"       ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`; fi
+	if [ "${SYS_NAME}" = "opensuse-tumbleweed" ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`; fi
+	if [ "${SYS_NAME}" = "debian"              ]; then SYS_NOOP=`echo "${SYS_VNUM} ==  7"       | bc`; fi
+	if [ ${SYS_NOOP} -eq 0 ]; then
 		echo "${SYS_NAME} ${SYS_VERS} ではテストをしていないので実行できません。"
 		exit 1
 	fi
@@ -354,10 +356,15 @@ funcInitialize () {
 		SVR_FQDN=${SVR_NAME}.${WGP_NAME}										# 本機のFQDN
 	fi
 	# -------------------------------------------------------------------------
-	if [ "`which nmcli 2> /dev/null`" = "" ]; then
-		ACT_NMAN=""
-	else
-		ACT_NMAN="`systemctl status NetworkManager | awk '/Active:/ {print $2;}'`"
+	ACT_NMAN=""
+	if [ "`which nmcli 2> /dev/null`" != "" ]; then
+		if [ "`which systemctl 2> /dev/null`" != "" ]; then
+			ACT_NMAN="`systemctl status NetworkManager | awk '/Active:/ {print $2;}'`"
+		else
+			if [ "`/etc/init.d/network-manager status | sed -n '/^.*is running.*$/p'`" != "" ]; then
+				ACT_NMAN="active"
+			fi
+		fi
 	fi
 	if [ "$ACT_NMAN" = "active" ]; then
 		CON_NAME=`nmcli -t -f name c | head -n 1`								# 接続名
@@ -605,6 +612,7 @@ funcMain () {
 				* )
 					;;
 			esac
+			VIM_VER=`LANG=C vi --version 2>&1 | sed -n '/IMproved/p' | awk '{print $5;}'`
 			VIM_ARRY=`find /etc -name 'vimrc' -o -name 'virc' -type f | awk '{gsub("\"", ""); gsub(".*/", ""); print $0;}'`
 			if [ "${VIM_ARRY}" = "" ]; then
 				VIM_FILE=`LANG=C vi --version | awk '/^[ \t]*user vimrc file/ {gsub("\"", ""); gsub(".*/", ""); print $0;}'`
@@ -636,7 +644,7 @@ funcMain () {
 						set laststatus=2        " The value of this option influences when the last window will have a status line always.
 						syntax on               " Vim5 and later versions support syntax highlighting.
 _EOT_
-					if [ "`which vim 2> /dev/null`" = "" ]; then
+					if [ "`which vim 2> /dev/null`" = "" -o `echo "${VIM_VER} < 8.0" | bc` -ne 0 ]; then
 						sed -i ${VIMRC}                  \
 						    -e 's/^\(syntax on\)/\" \1/'
 					fi
@@ -727,20 +735,27 @@ _EOT_
 	# ipv4 dns changed --------------------------------------------------------
 	echo --- ipv4 dns changed ----------------------------------------------------------
 	if [ "${ACT_NMAN}" != "" ]; then
-		if [ "${CON_UUID}" != "" ]; then
+		if [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
 			nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
 			nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
 			nmcli c up     "${CON_UUID}"
 		else
-			if [ ! -h /etc/sysconfig/network/config ] && [ ! -f /etc/sysconfig/network/config.orig ]; then
-					sed -i.orig /etc/sysconfig/network/config                                                           \
-					    -e "s/\(NETCONFIG_DNS_STATIC_SERVERS\)=\"${IP4_DNSA[0]}\"/\1=\"127\.0\.0\.1 ${IP4_DNSA[0]}\"/g"
-					netconfig update -f
-			elif [ ! -h /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
-				sed -i.orig /etc/resolv.conf                                                  \
-				    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"                                   \
-				    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1\n\1 ${IP4_DNSA[0]}/g"
+			if [ ! -h /etc/sysconfig/network/config ] && [ -f /etc/sysconfig/network/config ] && [ ! -f /etc/sysconfig/network/config.orig ]; then
+				sed -i.orig /etc/sysconfig/network/config                                                           \
+				    -e "s/\(NETCONFIG_DNS_STATIC_SERVERS\)=\"${IP4_DNSA[0]}\"/\1=\"127\.0\.0\.1 ${IP4_DNSA[0]}\"/g"
+				netconfig update -f
+#			elif [ ! -h "/etc/NetworkManager/system-connections/${CON_NAME}" ] && [ -f "/etc/NetworkManager/system-connections/${CON_NAME}" ] && [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
+#				if [ "`sed -n '/nameserver 127.0.0.1/p' /etc/resolv.conf`" = "" ]; then
+#					sed -i.orig "/etc/NetworkManager/system-connections/${CON_NAME}"   \
+#					    -e "s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1;${IP4_DNSA[0]}/g"
+#				fi
 			fi
+		fi
+	else
+		if [ ! -h /etc/resolv.conf ] && [ -f /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
+			sed -i.orig /etc/resolv.conf                                                  \
+			    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"                                   \
+			    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1\n\1 ${IP4_DNSA[0]}/g"
 		fi
 	fi
 	#--------------------------------------------------------------------------

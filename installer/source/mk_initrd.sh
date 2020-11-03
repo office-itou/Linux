@@ -24,10 +24,10 @@
 	mkdir -p ${WORK_DIRS}/glantank/image ${WORK_DIRS}/glantank/decomp ${WORK_DIRS}/glantank/mnt
 	# -------------------------------------------------------------------------
 	pushd ${WORK_DIRS}/glantank > /dev/null
-		[ ! -f initrd.gz            ] && wget "http://ftp.yz.yamagata-u.ac.jp/pub/linux/debian/dists/wheezy/main/installer-armel/current/images/iop32x/network-console/glantank/initrd.gz"
-		[ ! -f zImage               ] && wget "http://ftp.yz.yamagata-u.ac.jp/pub/linux/debian/dists/wheezy/main/installer-armel/current/images/iop32x/network-console/glantank/zImage"
-		[ ! -f preseed.cfg          ] && wget "http://ftp.yz.yamagata-u.ac.jp/pub/linux/debian/dists/wheezy/main/installer-armel/current/images/iop32x/network-console/glantank/preseed.cfg"
-		[ ! -f preseed_glantank.cfg ] && wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/preseed_glantank.cfg"
+		[ ! -f initrd.gz            ] && wget "http://archive.debian.org/debian-archive/debian/dists/wheezy/main/installer-armel/current/images/iop32x/network-console/glantank/initrd.gz"
+		[ ! -f zImage               ] && wget "http://archive.debian.org/debian-archive/debian/dists/wheezy/main/installer-armel/current/images/iop32x/network-console/glantank/zImage"
+		[ ! -f preseed.cfg          ] && wget "http://archive.debian.org/debian-archive/debian/dists/wheezy/main/installer-armel/current/images/iop32x/network-console/glantank/preseed.cfg"
+		[ ! -f preseed_glantank.cfg ] && wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_glantank.cfg"
 		# ---------------------------------------------------------------------
 		sed -i "preseed_glantank.cfg"                                            \
 		    -e 's~.*\(d-i netcfg/get_ipaddress\).*~  \1 string 192.168.1.11~'    \
