@@ -58,7 +58,7 @@
 ##	2020/10/06 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200928-boot 変更
 ##	2020/10/13 000.0000 J.Itou         CentOS-Stream-8-x86_64-20201007-boot 変更
 ##	2020/10/14 000.0000 J.Itou         openSUSE Leap / Tumbleweed 対応
-##	2020/11/04 000.0000 J.Itou         memo修正
+##	2020/11/04 000.0000 J.Itou         memo修正 / fedora 33 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -88,8 +88,8 @@
 	    "ubuntu ubuntu-20.04.1-legacy-server-amd64     http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg"       \
 	    "ubuntu ubuntu-20.04.1-live-server-amd64       https://releases.ubuntu.com/focal/ubuntu-20.04.1-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
 	    "centos CentOS-8.2.2004-x86_64-dvd1            http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-dvd1.iso                   kickstart_centos.cfg"     \
-	    "centos CentOS-Stream-8-x86_64-20201007-dvd1   http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201007-dvd1.iso          kickstart_centos.cfg"     \
-	    "fedora Fedora-Server-dvd-x86_64-32-1.6        https://download.fedoraproject.org/pub/fedora/linux/releases/32/Server/x86_64/iso/Fedora-Server-dvd-x86_64-32-1.6.iso    kickstart_fedora.cfg"     \
+	    "centos CentOS-Stream-8-x86_64-20201030-dvd1   http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201030-dvd1.iso          kickstart_centos.cfg"     \
+	    "fedora Fedora-Server-dvd-x86_64-33-1.2        https://download.fedoraproject.org/pub/fedora/linux/releases/33/Server/x86_64/iso/Fedora-Server-dvd-x86_64-33-1.2.iso    kickstart_fedora.cfg"     \
 	    "suse   openSUSE-Leap-15.2-DVD-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml"      \
 	    "suse   openSUSE-Tumbleweed-DVD-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml"      \
 	)   # 区分  DVDファイル名                          ダウンロード先URL                                                                                                        定義ファイル
@@ -110,8 +110,8 @@ funcMenu () {
 	echo "#  7：ubuntu-20.04.1-legacy-server-amd：2020-04-23：2025-04-xx：Focal Fossa   #"
 	echo "#  8：ubuntu-20.04.1-live-server-amd64：2020-04-23：2025-04-xx：Focal Fossa   #"
 	echo "#  9：CentOS-8.2.2004-x86_64-dvd1     ：2020-06-15：2029-05-31：RHEL 8.0      #"
-	echo "# 10：CentOS-Stream-8-x86_64-20201007-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
-	echo "# 11：Fedora-Server-dvd-x86_64-32-1.6 ：2020-04-28：20xx-xx-xx：kernel 5.6    #"
+	echo "# 10：CentOS-Stream-8-x86_64-20201030-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
+	echo "# 11：Fedora-Server-dvd-x86_64-33-1.2 ：2020-10-xx：20xx-xx-xx：kernel 5.x    #"
 	echo "# 12：openSUSE-Leap-15.2-DVD-x86_64   ：2020-xx-xx：20xx-xx-xx：              #"
 	echo "# 13：openSUSE-Tumbleweed-DVD-x86_64-C：2020-xx-xx：20xx-xx-xx：              #"
 	echo "# ----------------------------------------------------------------------------#"
@@ -279,40 +279,56 @@ funcRemaster () {
 					esac
 					;;
 				"centos" )	# ･････････････････････････････････････････････････
-					LABEL=`echo "${VOLID}" | sed -e 's/ //g'`
-					case "${VOLID}" in
-						"CentOS-8-2-2004-x86_64-dvd      " )
-							sed -i isolinux/isolinux.cfg \
-							    -e '/menu default/d' \
-							    -e "/^label linux/i\label auto\n  menu label ^Auto Install CentOS Linux 8\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=${LABEL} quiet inst.ks=cdrom:/kickstart/ks.cfg\n"
-							sed -i EFI/BOOT/grub.cfg \
-							    -e 's/\(set default\)="1"/\1="0"/g' \
-							    -e "/^### BEGIN \/etc\/grub\.d\/10_linux ###/a\menuentry \'Auto Install CentOS Linux 8\' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${LABEL} quiet inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}"
-							;;
-						"CentOS-Stream-8-x86_64-dvd      " )
-							sed -i isolinux/isolinux.cfg \
-							    -e '/menu default/d' \
-							    -e "/^label linux/i\label auto\n  menu label ^Auto Install CentOS Stream 8-stream\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=${LABEL} quiet inst.ks=cdrom:/kickstart/ks.cfg\n"
-							sed -i EFI/BOOT/grub.cfg \
-							    -e 's/\(set default\)="1"/\1="0"/g' \
-							    -e "/^### BEGIN \/etc\/grub\.d\/10_linux ###/a\menuentry \'Auto Install CentOS Stream 8-stream\' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${LABEL} quiet inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}"
-							;;
-						* )
-							echo "?:[${VOLID}]"
-							;;
-					esac
+					# --- isolinux.cfg ----------------------------------------
+					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
+					INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
+					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg             | \
+					sed -e 's/^\(label\) linux/\1 autoinst/'                         \
+					    -e 's/\(Install\)/Auto \1/'                                  \
+					    -e 's/\(append.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/'   \
+					    -e "/menu label/a  ${INS_STR}"                             | \
+					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg            \
+					    -e '/menu default/{/menu default/d}'                         \
+					    -e 's/\(timeout\).*$/\1 50/'                                 \
+					> isolinux.cfg
+					mv isolinux.cfg isolinux/
+					# --- grub.cfg --------------------------------------------
+					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
+					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg        | \
+					sed -e 's/\(Install\)/Auto \1/'                                    \
+					    -e 's/\(linuxefi.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/' | \
+					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg                | \
+					sed -e 's/\(set default\)="1"/\1="0"/'                             \
+					    -e 's/\(set timeout\).*$/\1=5/'                                \
+					> grub.cfg
+					mv grub.cfg EFI/BOOT/
 					;;
 				"fedora" )	# ･････････････････････････････････････････････････
-					LABEL=`echo "${VOLID}" | sed -e 's/ //g'`
-					sed -i isolinux/isolinux.cfg \
-					    -e '/menu default/d' \
-					    -e "/^label linux/i\label fedora32auto\n  menu label ^Auto Install Fedora 32\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=${LABEL} inst.ks=cdrom:/kickstart/ks.cfg\n"
-					sed -i EFI/BOOT/grub.cfg \
-					    -e 's/\(set default\)="1"/\1="0"/g' \
-					    -e "/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry \'Auto Install Fedora 32\' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${LABEL} inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}"
+					# --- isolinux.cfg ----------------------------------------
+					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
+					INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
+					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg             | \
+					sed -e 's/^\(label\) linux/\1 autoinst/'                         \
+					    -e 's/\(Install\)/Auto \1/'                                  \
+					    -e 's/\(append.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/'   \
+					    -e "/menu label/a  ${INS_STR}"                             | \
+					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg            \
+					    -e '/menu default/{/menu default/d}'                         \
+					    -e 's/\(timeout\).*$/\1 50/'                                 \
+					> isolinux.cfg
+					mv isolinux.cfg isolinux/
+					# --- grub.cfg --------------------------------------------
+					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
+					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg        | \
+					sed -e 's/\(Install\)/Auto \1/'                                    \
+					    -e 's/\(linuxefi.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/' | \
+					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg                | \
+					sed -e 's/\(set default\)="1"/\1="0"/'                             \
+					    -e 's/\(set timeout\).*$/\1=5/'                                \
+					> grub.cfg
+					mv grub.cfg EFI/BOOT/
 					;;
 				"suse" )	# ･････････････････････････････････････････････････
-					LABEL=`echo "${VOLID}" | sed -e 's/ //g'`
 					# --- isolinux.cfg ----------------------------------------
 					sed -n '/#[ \t][ \t]*install/,/append/p' boot/x86_64/loader/isolinux.cfg | \
 					sed -e 's/\(install\)/auto \1/' \
@@ -520,5 +536,5 @@ funcRemaster () {
 #x30   :                 :2019-04-29:2020-05-26: 5.0
 # 31   :                 :2019-10-29:          : 5.3
 # 32   :                 :2020-04-28:          : 5.6
-# 33   :                 :2020-11-xx:          :
+# 33   :                 :2020-10-xx:          : 5.x
 # -----------------------------------------------------------------------------

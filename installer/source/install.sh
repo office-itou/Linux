@@ -59,6 +59,7 @@
 ##	2020/10/15 000.0000 J.Itou         不具合修正(openSUSE対応含む)
 ##	2020/10/19 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2020/11/03 000.0000 J.Itou         不具合修正(いろいろ)
+##	2020/11/04 000.0000 J.Itou         不具合修正(対象OSの確認処理)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -331,7 +332,7 @@ funcInitialize () {
 	if [ "${SYS_NAME}" = "fedora"              ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`; fi
 	if [ "${SYS_NAME}" = "opensuse-leap"       ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`; fi
 	if [ "${SYS_NAME}" = "opensuse-tumbleweed" ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`; fi
-	if [ "${SYS_NAME}" = "debian"              ]; then SYS_NOOP=`echo "${SYS_VNUM} ==  7"       | bc`; fi
+#	if [ "${SYS_NAME}" = "debian"              ]; then SYS_NOOP=`echo "${SYS_VNUM} ==  7"       | bc`; fi
 	if [ ${SYS_NOOP} -eq 0 ]; then
 		echo "${SYS_NAME} ${SYS_VERS} ではテストをしていないので実行できません。"
 		exit 1

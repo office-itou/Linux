@@ -52,7 +52,7 @@
 ##	2020/10/06 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200928-boot 変更
 ##	2020/10/13 000.0000 J.Itou         CentOS-Stream-8-x86_64-20201007-boot 変更
 ##	2020/10/14 000.0000 J.Itou         openSUSE Leap / Tumbleweed 対応
-##	2020/11/04 000.0000 J.Itou         memo修正
+##	2020/11/04 000.0000 J.Itou         memo修正 / fedora 33 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -78,8 +78,8 @@
 	    "debian debian-10.6.0-amd64-netinst            https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.6.0-amd64-netinst.iso                              preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-netinst           https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "centos CentOS-8.2.2004-x86_64-boot            http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso                       kickstart_centos.cfg" \
-	    "centos CentOS-Stream-8-x86_64-20201007-boot   http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201007-boot.iso              kickstart_centos.cfg" \
-	    "fedora Fedora-Server-netinst-x86_64-32-1.6    https://download.fedoraproject.org/pub/fedora/linux/releases/32/Server/x86_64/iso/Fedora-Server-netinst-x86_64-32-1.6.iso    kickstart_fedora.cfg" \
+	    "centos CentOS-Stream-8-x86_64-20201030-boot   http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201030-boot.iso              kickstart_centos.cfg" \
+	    "fedora Fedora-Server-netinst-x86_64-33-1.2    https://download.fedoraproject.org/pub/fedora/linux/releases/33/Server/x86_64/iso/Fedora-Server-netinst-x86_64-33-1.2.iso    kickstart_fedora.cfg" \
 	    "suse   openSUSE-Leap-15.2-NET-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml"  \
 	    "suse   openSUSE-Tumbleweed-NET-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml"  \
 	)   # 区分  netinstファイル名                      ダウンロード先URL                                                                                                            定義ファイル
@@ -92,8 +92,8 @@ funcMenu () {
 	echo "#  3：debian-10.6.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
 	echo "#  5：CentOS-8.2.2004-x86_64-boot        ：2020-06-15：2029-05-31：RHEL 8.0   #"
-	echo "#  6：CentOS-Stream-8-x86_64-20201007-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
-	echo "#  7：Fedora-Server-netinst-x86_64-32-1.6：2020-04-28：20xx-xx-xx：kernel 5.6 #"
+	echo "#  6：CentOS-Stream-8-x86_64-20201030-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
+	echo "#  7：Fedora-Server-netinst-x86_64-33-1.2：2020-10-xx：20xx-xx-xx：kernel 5.x #"
 	echo "#  8：openSUSE-Leap-15.2-NET-x86_64      ：20xx-xx-xx：20xx-xx-xx：           #"
 	echo "#  9：openSUSE-Tumbleweed-NET-x86_64-Curr：20xx-xx-xx：20xx-xx-xx：           #"
 	echo "# ----------------------------------------------------------------------------#"
@@ -206,35 +206,54 @@ funcRemaster () {
 					    -e "/^set theme/a\menuentry --hotkey=p 'Preseed install' {\n    set background_color=black\n    linux    /install.amd/vmlinuz auto=true file=/cdrom/preseed/preseed.cfg priority=critical vga=788 --- quiet\n    initrd   /install.amd/initrd.gz\n}"
 					;;
 				"centos" )	# ･････････････････････････････････････････････････
-					case "${VOLID}" in
-						"CentOS-8-2-2004-x86_64-dvd      " )
-							sed -i isolinux/isolinux.cfg \
-							    -e '/menu default/d' \
-							    -e '/^label linux/i\label auto\n  menu label ^Auto Install CentOS Linux 8\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS-8-1-1911-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n'
-							sed -i EFI/BOOT/grub.cfg \
-							    -e 's/\(set default\)="1"/\1="0"/g' \
-							    -e '/^### BEGIN \/etc\/grub\.d\/10_linux ###/a\menuentry '\''Auto Install CentOS Linux 8'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-8-1-1911-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}\n'
-							;;
-						"CentOS-Stream-8-x86_64-dvd      " )
-							sed -i isolinux/isolinux.cfg \
-							    -e '/menu default/d' \
-							    -e '/^label linux/i\label auto\n  menu label ^Auto Install CentOS Stream 8-stream\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=CentOS-Stream-8-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n'
-							sed -i EFI/BOOT/grub.cfg \
-							    -e 's/\(set default\)="1"/\1="0"/g' \
-							    -e '/^### BEGIN \/etc\/grub\.d\/10_linux ###/a\menuentry '\''Auto Install CentOS Stream 8-stream'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=CentOS-Stream-8-x86_64-dvd quiet inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}\n'
-							;;
-						* )
-							echo "?:[${VOLID}]"
-							;;
-					esac
+					# --- isolinux.cfg ----------------------------------------
+					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
+					INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
+					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg             | \
+					sed -e 's/^\(label\) linux/\1 autoinst/'                         \
+					    -e 's/\(Install\)/Auto \1/'                                  \
+					    -e 's/\(append.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/'   \
+					    -e "/menu label/a  ${INS_STR}"                             | \
+					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg            \
+					    -e '/menu default/{/menu default/d}'                         \
+					    -e 's/\(timeout\).*$/\1 50/'                                 \
+					> isolinux.cfg
+					mv isolinux.cfg isolinux/
+					# --- grub.cfg --------------------------------------------
+					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
+					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg        | \
+					sed -e 's/\(Install\)/Auto \1/'                                    \
+					    -e 's/\(linuxefi.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/' | \
+					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg                | \
+					sed -e 's/\(set default\)="1"/\1="0"/'                             \
+					    -e 's/\(set timeout\).*$/\1=5/'                                \
+					> grub.cfg
+					mv grub.cfg EFI/BOOT/
 					;;
 				"fedora" )	# ･････････････････････････････････････････････････
-					sed -i isolinux/isolinux.cfg \
-					    -e '/menu default/d' \
-					    -e '/^label linux/i\label fedora32auto\n  menu label ^Auto Install Fedora 32\n  menu default\n  kernel vmlinuz\n  append initrd=initrd.img inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-32 inst.ks=cdrom:/kickstart/ks.cfg\n'
-					sed -i EFI/BOOT/grub.cfg \
-					    -e 's/\(set default\)="1"/\1="0"/g' \
-					    -e '/^### BEGIN \/etc\/grub.d\/10_linux ###$/a\menuentry '\''Auto Install Fedora 32'\'' --class fedora --class gnu-linux --class gnu --class os {\n\tlinuxefi /images/pxeboot/vmlinuz inst.stage2=hd:LABEL=Fedora-S-dvd-x86_64-32 inst.ks=cdrom:/kickstart/ks.cfg\n\tinitrdefi /images/pxeboot/initrd.img\n}'
+					# --- isolinux.cfg ----------------------------------------
+					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
+					INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
+					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg             | \
+					sed -e 's/^\(label\) linux/\1 autoinst/'                         \
+					    -e 's/\(Install\)/Auto \1/'                                  \
+					    -e 's/\(append.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/'   \
+					    -e "/menu label/a  ${INS_STR}"                             | \
+					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg            \
+					    -e '/menu default/{/menu default/d}'                         \
+					    -e 's/\(timeout\).*$/\1 50/'                                 \
+					> isolinux.cfg
+					mv isolinux.cfg isolinux/
+					# --- grub.cfg --------------------------------------------
+					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
+					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg        | \
+					sed -e 's/\(Install\)/Auto \1/'                                    \
+					    -e 's/\(linuxefi.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/' | \
+					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg                | \
+					sed -e 's/\(set default\)="1"/\1="0"/'                             \
+					    -e 's/\(set timeout\).*$/\1=5/'                                \
+					> grub.cfg
+					mv grub.cfg EFI/BOOT/
 					;;
 				"suse" )	# ･････････････････････････････････････････････････
 					LABEL=`echo "${VOLID}" | sed -e 's/ //g'`
@@ -279,8 +298,6 @@ funcRemaster () {
 						* )	;;
 					esac
 					# --- make iso file ---------------------------------------
-					rm -f md5sum.txt
-					find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt
 					xorriso -as mkisofs \
 					    -quiet \
 					    -iso-level 3 \
@@ -297,7 +314,6 @@ funcRemaster () {
 					    .
 					;;
 				"suse" )	# ･････････････････････････････････････････････････
-#					find boot EFI docu media.1 -type f -exec sha256sum {} \; > CHECKSUMS
 					xorriso -as mkisofs \
 					    -quiet \
 					    -iso-level 3 \
@@ -314,6 +330,7 @@ funcRemaster () {
 					;;
 				* )	;;
 			esac
+			LANG=C implantisomd5 "../../${DVD_NAME}.iso"
 		popd > /dev/null
 	popd > /dev/null
 	echo "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------"
@@ -328,6 +345,13 @@ funcRemaster () {
 			apt -y update && apt -y upgrade && apt -y install xorriso
 		else
 			yum -y update && yum -y upgrade && yum -y install xorriso
+		fi
+	fi
+	if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
+		if [ ! -f /etc/redhat-release ]; then
+			apt -y update && apt -y upgrade && apt -y install isomd5sum
+		else
+			yum -y update && yum -y upgrade && yum -y install isomd5sum
 		fi
 	fi
 	# -------------------------------------------------------------------------
@@ -436,5 +460,5 @@ funcRemaster () {
 #x30   :                 :2019-04-29:2020-05-26: 5.0
 # 31   :                 :2019-10-29:          : 5.3
 # 32   :                 :2020-04-28:          : 5.6
-# 33   :                 :2020-11-xx:          :
+# 33   :                 :2020-10-xx:          : 5.x
 # -----------------------------------------------------------------------------
