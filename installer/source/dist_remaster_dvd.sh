@@ -240,14 +240,41 @@ funcRemaster () {
 			# --- mrb:txt.cfg / efi:grub.cfg ----------------------------------
 			case "${CODE_NAME[0]}" in
 				"debian" )	# ･････････････････････････････････････････････････
-					sed -i isolinux/txt.cfg  \
-					    -e 's/^\(default\) .*$/\1 preseed/' \
-					    -e '/menu default/d' \
-					    -e '/^label install/i\label preseed\n\tmenu label ^Preseed install\n\tmenu default\n\tkernel /install.amd/vmlinuz\n\tappend vga=788 initrd=/install.amd/initrd.gz --- quiet auto=true file=/cdrom/preseed/preseed.cfg'
-					sed -i boot/grub/grub.cfg \
-					    -e "/^set theme/a\menuentry --hotkey=p 'Preseed install' {\n    set background_color=black\n    linux    /install.amd/vmlinuz auto=true file=/cdrom/preseed/preseed.cfg priority=critical vga=788 --- quiet\n    initrd   /install.amd/initrd.gz\n}"
+					INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
+					# --- txt.cfg -------------------------------------
+					sed -i isolinux/isolinux.cfg     \
+					    -e 's/\(timeout\).*$/\1 50/'
+					sed -i isolinux/prompt.cfg       \
+					    -e 's/\(timeout\).*$/\1 50/'
+					sed -i isolinux/gtk.cfg        \
+					    -e '/^.*menu default.*$/d'
+					INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+					INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^.*menu\).*$/\1 default/'`"
+					sed -n '/label install/,/append/p' isolinux/txt.cfg | \
+					sed -e 's/^\(label\) install/\1 autoinst/'            \
+					    -e 's/\(Install\)/Auto \1/'                       \
+					    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"              \
+					    -e "/menu label/a ${INS_STR}"                     \
+					> txt.cfg
+					cat isolinux/txt.cfg >> txt.cfg
+					mv txt.cfg isolinux/
+					# --- grub.cfg ------------------------------------
+					INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+					sed -n '/^menuentry .*'\''Install'\''/,/^}/p' boot/grub/grub.cfg | \
+					sed -e 's/\(Install\)/Auto \1/'                                    \
+					    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                          \
+					    -e 's/\(--hotkey\)=./\1=a/'                                  | \
+					sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg               | \
+					sed -e 's/\(set default\)="1"/\1="0"/'                             \
+					    -e '1i set timeout=5'                                          \
+					> grub.cfg
+					mv grub.cfg boot/grub/
 					;;
 				"ubuntu" )	# ･････････････････････････････････････････････････
+					sed -i isolinux/isolinux.cfg     \
+					    -e 's/\(timeout\).*$/\1 50/'
+					sed -i isolinux/prompt.cfg       \
+					    -e 's/\(timeout\).*$/\1 50/'
 					case "${CODE_NAME[1]}" in
 						"ubuntu-16.04.7-server-amd64"      )
 							sed -i "preseed/preseed.cfg"      \
@@ -258,20 +285,50 @@ funcRemaster () {
 					esac
 					case "${CODE_NAME[1]}" in
 						*live* )
-							sed -i isolinux/txt.cfg  \
-							    -e 's/^\(default\) .*$/\1 preseed/' \
-							    -e '/menu default/d' \
-							    -e '/^default/a\label preseed\n  menu label ^Auto install Ubuntu Server\n  kernel /casper/vmlinuz\n  append  autoinstall "ds=nocloud;s=/cdrom/nocloud/" vga=788 initrd=/casper/initrd quiet ---'
-							sed -i boot/grub/grub.cfg \
-							    -e '/menuentry "Install Ubuntu Server"/i\menuentry "Auto install Ubuntu Server" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz autoinstall "ds=nocloud;s=/cdrom/nocloud/" quiet  ---\n\tinitrd\t/casper/initrd\n}'
+							INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
+							# --- txt.cfg -------------------------------------
+							INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+							INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^.*menu\).*$/\1 default/'`"
+							sed -n '/label live$/,/append/p' isolinux/txt.cfg | \
+							sed -e 's/^\(label\) live/\1 autoinst/'             \
+							    -e 's/\(Install\)/Auto \1/'                     \
+							    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"          | \
+							sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg    \
+							> txt.cfg
+							mv txt.cfg isolinux/
+							# --- grub.cfg ------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry \"Install.*Server\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\(Install\)/Auto \1/'                                      \
+							    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                          | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                 | \
+							sed -e 's/\(set default\)="1"/\1="0"/'                               \
+							    -e 's/\(set timeout\).*$/\1=5/'                                  \
+							> grub.cfg
+							mv grub.cfg boot/grub/
 							;;
 						*server* )
-							sed -i isolinux/txt.cfg  \
-							    -e 's/^\(default\) .*$/\1 preseed/' \
-							    -e '/menu default/d' \
-							    -e '/^default/a\label preseed\n  menu label ^Preseed install Server\n  kernel /install/vmlinuz\n  append  auto=true file=/cdrom/preseed/preseed.cfg vga=788 initrd=/install/initrd.gz quiet ---'
-							sed -i boot/grub/grub.cfg \
-							    -e '/menuentry "Install Ubuntu Server"/i\menuentry "Preseed install Ubuntu Server" {\n\tset gfxpayload=keep\n\tlinux\t/install/vmlinuz  auto=true file=/cdrom/preseed/preseed.cfg quiet ---\n\tinitrd\t/install/initrd.gz\n}'
+							INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
+							# --- txt.cfg -------------------------------------
+							INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+							INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^.*menu\).*$/\1 default/'`"
+							sed -n '/label install/,/append/p' isolinux/txt.cfg | \
+							sed -e 's/^\(label\) install/\1 autoinst/'            \
+							    -e 's/\(Install\)/Auto \1/'                       \
+							    -e "s/\(file\).*seed/\1=${INS_CFG}/"            | \
+							sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg      \
+							> txt.cfg
+							mv txt.cfg isolinux/
+							# --- grub.cfg ------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry \"Install/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\(Install\)/Auto \1/'                            \
+							    -e "s/\(file\).*seed/\1=${INS_CFG}/"                 | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg       | \
+							sed -e 's/\(set default\)="1"/\1="0"/'                     \
+							    -e 's/\(set timeout\).*$/\1=5/'                        \
+							> grub.cfg
+							mv grub.cfg boot/grub/
 							;;
 						*desktop* )
 							;;
@@ -279,72 +336,77 @@ funcRemaster () {
 					esac
 					;;
 				"centos" )	# ･････････････････････････････････････････････････
+					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
 					# --- isolinux.cfg ----------------------------------------
 					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
 					INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
-					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg             | \
-					sed -e 's/^\(label\) linux/\1 autoinst/'                         \
-					    -e 's/\(Install\)/Auto \1/'                                  \
-					    -e 's/\(append.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/'   \
-					    -e "/menu label/a  ${INS_STR}"                             | \
-					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg            \
-					    -e '/menu default/{/menu default/d}'                         \
-					    -e 's/\(timeout\).*$/\1 50/'                                 \
+					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg    | \
+					sed -e 's/^\(label\) linux/\1 autoinst/'                \
+					    -e 's/\(Install\)/Auto \1/'                         \
+					    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"                \
+					    -e "/menu label/a  ${INS_STR}"                    | \
+					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg   \
+					    -e '/menu default/{/menu default/d}'                \
+					    -e 's/\(timeout\).*$/\1 50/'                        \
 					> isolinux.cfg
 					mv isolinux.cfg isolinux/
 					# --- grub.cfg --------------------------------------------
 					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
-					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg        | \
-					sed -e 's/\(Install\)/Auto \1/'                                    \
-					    -e 's/\(linuxefi.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/' | \
-					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg                | \
-					sed -e 's/\(set default\)="1"/\1="0"/'                             \
-					    -e 's/\(set timeout\).*$/\1=5/'                                \
+					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
+					sed -e 's/\(Install\)/Auto \1/'                             \
+					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                 | \
+					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg         | \
+					sed -e 's/\(set default\)="1"/\1="0"/'                      \
+					    -e 's/\(set timeout\).*$/\1=5/'                         \
 					> grub.cfg
 					mv grub.cfg EFI/BOOT/
 					;;
 				"fedora" )	# ･････････････････････････････････････････････････
+					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
 					# --- isolinux.cfg ----------------------------------------
 					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
 					INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
-					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg             | \
-					sed -e 's/^\(label\) linux/\1 autoinst/'                         \
-					    -e 's/\(Install\)/Auto \1/'                                  \
-					    -e 's/\(append.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/'   \
-					    -e "/menu label/a  ${INS_STR}"                             | \
-					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg            \
-					    -e '/menu default/{/menu default/d}'                         \
-					    -e 's/\(timeout\).*$/\1 50/'                                 \
+					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg    | \
+					sed -e 's/^\(label\) linux/\1 autoinst/'                \
+					    -e 's/\(Install\)/Auto \1/'                         \
+					    -e "s/\(append.*$\)/\1 ${INS_CFG}/"                 \
+					    -e "/menu label/a  ${INS_STR}"                    | \
+					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg   \
+					    -e '/menu default/{/menu default/d}'                \
+					    -e 's/\(timeout\).*$/\1 50/'                        \
 					> isolinux.cfg
 					mv isolinux.cfg isolinux/
 					# --- grub.cfg --------------------------------------------
 					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
-					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg        | \
-					sed -e 's/\(Install\)/Auto \1/'                                    \
-					    -e 's/\(linuxefi.*$\)/\1 inst.ks=cdrom:\/kickstart\/ks.cfg/' | \
-					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg                | \
-					sed -e 's/\(set default\)="1"/\1="0"/'                             \
-					    -e 's/\(set timeout\).*$/\1=5/'                                \
+					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
+					sed -e 's/\(Install\)/Auto \1/'                             \
+					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                | \
+					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg         | \
+					sed -e 's/\(set default\)="1"/\1="0"/'                      \
+					    -e 's/\(set timeout\).*$/\1=5/'                         \
 					> grub.cfg
 					mv grub.cfg EFI/BOOT/
 					;;
 				"suse" )	# ･････････････････････････････････････････････････
+					INS_CFG="autoyast=cd:\/autoyast\/autoinst\.xml ifcfg=e*=dhcp"
 					# --- isolinux.cfg ----------------------------------------
 					sed -n '/#[ \t][ \t]*install/,/append/p' boot/x86_64/loader/isolinux.cfg | \
-					sed -e 's/\(install\)/auto \1/' \
-					    -e 's/\(label\) linux/\1 autoinst/' \
-					    -e '/append/ s/$/ autoyast=cd:\/autoyast\/autoinst\.xml ifcfg=e*=dhcp/' | \
-					sed -e '/^default.*$/r /dev/stdin' boot/x86_64/loader/isolinux.cfg | \
-					sed -e 's/^\(default\) harddisk$/\1=autoinst\n/' \
+					sed -e 's/\(install\)/auto \1/'                                            \
+					    -e 's/\(label\) linux/\1 autoinst/'                                    \
+					    -e "/append/ s/\$/ ${INS_CFG}/"                                      | \
+					sed -e '/^default.*$/r /dev/stdin' boot/x86_64/loader/isolinux.cfg       | \
+					sed -e 's/^\(default\) harddisk$/\1=autoinst\n/'                           \
+					    -e 's/\(timeout\).*$/\1 50/'                                           \
 					> isolinux.cfg
 					mv isolinux.cfg boot/x86_64/loader/
 					# --- grub.cfg --------------------------------------------
-					sed -n '/menuentry[ \t][ \t]*'\''Installation'\''.*{/,/}/p' EFI/BOOT/grub.cfg | \
-					sed -e 's/^}/}\n/' \
-					    -e 's/'\''\(Installation\)'\''/'\''Auto \1'\''/' \
-					    -e '/linuxefi/ s/$/ autoyast=cd:\/autoyast\/autoinst\.xml ifcfg=e*=dhcp/' | \
+					sed -n '/menuentry[ \t][ \t]*'\''Installation'\''.*{/,/}/p' EFI/BOOT/grub.cfg             | \
+					sed -e 's/^}/}\n/'                                                                          \
+					    -e 's/'\''\(Installation\)'\''/'\''Auto \1'\''/'                                        \
+					    -e "/linuxefi/ s/\$/ ${INS_CFG}/"                                                     | \
 					sed -e '/\# look for an installed SUSE system and boot it/r /dev/stdin' EFI/BOOT/grub.cfg | \
-					sed -e 's/^\(default\)=1$/\1=0/' \
+					sed -e 's/^\(default\)=1$/\1=0/'                                                            \
+					    -e 's/\(timeout\).*$/\1=5/'                                                             \
 					> grub.cfg
 					mv grub.cfg EFI/BOOT/
 					;;
@@ -370,15 +432,15 @@ funcRemaster () {
 #						* )	;;
 #					esac
 					# --- make iso file -----------------------------------------------
-					rm -f md5sum.txt
 					case "${CODE_NAME[1]}" in
 						"ubuntu-20.04.1-legacy-server-amd64" | \
 						"ubuntu-20.04.1-desktop-amd64"       | \
 						"ubuntu-20.04.1-live-server-amd64"   )
+							rm -f md5sum.txt
 							find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 							;;
 						* )
-							find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
+#							find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
 							;;
 					esac
 					xorriso -as mkisofs \
@@ -414,6 +476,7 @@ funcRemaster () {
 					;;
 				* )	;;
 			esac
+			LANG=C implantisomd5 "../../${DVD_NAME}.iso"
 		popd > /dev/null
 	popd > /dev/null
 	echo "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------"
@@ -428,6 +491,13 @@ funcRemaster () {
 			apt -y update && apt -y upgrade && apt -y install xorriso
 		else
 			yum -y update && yum -y upgrade && yum -y install xorriso
+		fi
+	fi
+	if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
+		if [ ! -f /etc/redhat-release ]; then
+			apt -y update && apt -y upgrade && apt -y install isomd5sum
+		else
+			yum -y update && yum -y upgrade && yum -y install isomd5sum
 		fi
 	fi
 	# -------------------------------------------------------------------------
