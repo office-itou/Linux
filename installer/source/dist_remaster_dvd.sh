@@ -292,7 +292,8 @@ funcRemaster () {
 							sed -n '/label live$/,/append/p' isolinux/txt.cfg | \
 							sed -e 's/^\(label\) live/\1 autoinst/'             \
 							    -e 's/\(Install\)/Auto \1/'                     \
-							    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"          | \
+							    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"            \
+							    -e 's/\"//g'                                  | \
 							sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg    \
 							> txt.cfg
 							mv txt.cfg isolinux/

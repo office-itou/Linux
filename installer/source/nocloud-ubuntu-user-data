@@ -43,11 +43,27 @@ autoinstall:
   - ubuntu-desktop-minimal^
   - chromium-browser
   - chromium-browser-l10n
+  - cifs-utils
   - clamav
   - desktop-base
   - dnsutils
+  - firefox-locale-ja
+  - fonts-noto-cjk-extra
+  - gnome-getting-started-docs-ja
+  - gnome-user-docs-ja
+  - ibus-mozc
   - inxi
   - isc-dhcp-server
+  - language-pack-gnome-ja
+  - language-pack-ja
+  - language-pack-ja-base
+  - libreoffice-help-ja
+  - libreoffice-l10n-ja
+  - mozc-utils-gui
+  - network-manager
   - ntpdate
+  - rsync
+  - smbclient
+  - sudo
   - tasksel
-
+  - thunderbird-locale-ja
