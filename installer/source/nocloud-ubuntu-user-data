@@ -1,69 +1,139 @@
 #cloud-config
 autoinstall:
   version: 1
+# =============================================================================
   apt:
     geoip: true
     preserve_sources_list: false
-    primary:
-    - arches: [amd64, i386]
-      uri: http://jp.archive.ubuntu.com/ubuntu
-    - arches: [default]
-      uri: http://ports.ubuntu.com/ubuntu-ports
+#   primary:
+#   - arches: [amd64, i386]
+#     uri: http://jp.archive.ubuntu.com/ubuntu
+#   - arches: [default]
+#     uri: http://ports.ubuntu.com/ubuntu-ports
+# =============================================================================
+  storage:
+    layout:
+      name: lvm
+# =============================================================================
   identity:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
     password: "$6$/.H6NuGg1Yexu.QW$6bEipH7jsFIiFXDb.v30sp3QV/Yx1ZpwyjUgtrjfTCCPVWYy7LhIS.wclxtiN9FMgQSE5ZLFi/Erz64T57Jjv/"
+#   password="master"
+# =============================================================================
   locale: ja_JP
   keyboard:
     layout: jp
-  user-data:
-    timezone: Asia/Tokyo
+# =============================================================================
   network:
     network:
       version: 2
       ethernets:
         ens160:
+          dhcp4: false
           addresses:
           - 192.168.1.1/24
           gateway4: 192.168.1.254
           nameservers:
             addresses:
             - 192.168.1.254
+# =============================================================================
   package_update: true
   package_upgrade: true
   packages:
   - standard^
+  - server^
+  - ubuntu-desktop^
+  - ubuntu-desktop-minimal^
   - dns-server^
   - openssh-server^
   - print-server^
   - samba-server^
-  - server^
-  - ubuntu-desktop^
-  - ubuntu-desktop-minimal^
-  - chromium-browser
-  - chromium-browser-l10n
-  - cifs-utils
+# -----------------------------------------------------------------------------
+  - network-manager
+  - chrony
+# - ntpd
+# - ntpdate
   - clamav
-  - desktop-base
-  - dnsutils
-  - firefox-locale-ja
-  - fonts-noto-cjk-extra
-  - gnome-getting-started-docs-ja
-  - gnome-user-docs-ja
-  - ibus-mozc
+  - curl
+  - rsync
   - inxi
+# - rng-tools5
+# -----------------------------------------------------------------------------
+  - linux-headers-generic
+  - build-essential
+  - indent
+  - vim
+  - bc
+# - perl
+# - perl-openssl-defaults
+# -----------------------------------------------------------------------------
+  - sudo
+  - tasksel
+# - apt-show-versions
+# - aptitude
+# -----------------------------------------------------------------------------
+  - bind9
+  - bind9utils
+  - dnsutils
+# -----------------------------------------------------------------------------
+  - samba
+  - smbclient
+  - cifs-utils
+# -----------------------------------------------------------------------------
   - isc-dhcp-server
+# -----------------------------------------------------------------------------
   - language-pack-gnome-ja
   - language-pack-ja
   - language-pack-ja-base
+  - fonts-noto-cjk-extra
+# -----------------------------------------------------------------------------
+  - desktop-base
+  - ibus-mozc
+  - mozc-utils-gui
+  - gnome-getting-started-docs-ja
+  - gnome-user-docs-ja
   - libreoffice-help-ja
   - libreoffice-l10n-ja
-  - mozc-utils-gui
-  - network-manager
-  - ntpdate
-  - rsync
-  - smbclient
-  - sudo
-  - tasksel
+# -----------------------------------------------------------------------------
+  - firefox-locale-ja
   - thunderbird-locale-ja
+# - chromium-browser
+# - chromium-browser-l10n
+# -----------------------------------------------------------------------------
+# - dpkg-repack
+# - isolinux
+# - squashfs-tools
+# - xorriso
+# -----------------------------------------------------------------------------
+  - open-vm-tools
+  - open-vm-tools-desktop
+# =============================================================================
+  user-data:
+#   ntp:
+#     enabled: true
+#     servers:
+#     - ntp.nict.jp
+    ntp:
+      enabled: true
+      ntp_client: chrony
+      pools:
+      - ntp.nict.jp
+#     servers:
+#     - ntp.nict.jp
+    timezone: Asia/Tokyo
+    snap:
+      commands:
+      - snap install chromium
+    runcmd:
+    - mkdir -p /etc/NetworkManager/conf.d/
+    - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+    - systemctl restart network-manager.service
+    - nmcli c modify ens160 +ipv4.dns 192.168.1.254
+    power_state:
+      delay: "+1"
+      mode: reboot
+      message: "System reboot."
+      timeout: 5
+# === EOF =====================================================================
