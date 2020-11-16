@@ -59,6 +59,8 @@
 ##	2020/10/13 000.0000 J.Itou         CentOS-Stream-8-x86_64-20201007-boot 変更
 ##	2020/10/14 000.0000 J.Itou         openSUSE Leap / Tumbleweed 対応
 ##	2020/11/04 000.0000 J.Itou         memo修正 / fedora 33 変更
+##	2020/11/11 000.0000 J.Itou         追加アプリ導入処理追加
+##	2020/11/12 000.0000 J.Itou         ubuntu 20.10 追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -87,21 +89,24 @@
 	    "ubuntu ubuntu-18.04.5-server-amd64            http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.5-server-amd64.iso                                        preseed_ubuntu.cfg"       \
 	    "ubuntu ubuntu-20.04.1-legacy-server-amd64     http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg"       \
 	    "ubuntu ubuntu-20.04.1-live-server-amd64       https://releases.ubuntu.com/focal/ubuntu-20.04.1-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
+	    "ubuntu ubuntu-20.10-live-server-amd64         https://releases.ubuntu.com/groovy/ubuntu-20.10-live-server-amd64.iso                                                    nocloud-ubuntu-user-data" \
 	    "centos CentOS-8.2.2004-x86_64-dvd1            http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-dvd1.iso                   kickstart_centos.cfg"     \
 	    "centos CentOS-Stream-8-x86_64-20201030-dvd1   http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201030-dvd1.iso          kickstart_centos.cfg"     \
 	    "fedora Fedora-Server-dvd-x86_64-33-1.2        https://download.fedoraproject.org/pub/fedora/linux/releases/33/Server/x86_64/iso/Fedora-Server-dvd-x86_64-33-1.2.iso    kickstart_fedora.cfg"     \
 	    "suse   openSUSE-Leap-15.2-DVD-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml"      \
 	    "suse   openSUSE-Tumbleweed-DVD-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml"      \
 	)   # 区分  DVDファイル名                          ダウンロード先URL                                                                                                        定義ファイル
+#	    "debian debian-7.11.0-amd64-DVD-1              https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
 #	    "ubuntu ubuntu-16.04.7-desktop-amd64           https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
 #	    "ubuntu ubuntu-18.04.5-desktop-amd64           https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
 #	    "ubuntu ubuntu-20.04.1-desktop-amd64           https://releases.ubuntu.com/focal/ubuntu-20.04.1-desktop-amd64.iso                                                       preseed_ubuntu.cfg"       \
+#	    "ubuntu ubuntu-20.10-desktop-amd64             https://releases.ubuntu.com/groovy/ubuntu-20.10-desktop-amd64.iso                                                        preseed_ubuntu.cfg"       \
 
 # -----------------------------------------------------------------------------
 funcMenu () {
 	echo "# ----------------------------------------------------------------------------#"
 	echo "# ID：Version                         ：リリース日：サポ終了日：備考          #"
-	echo "#  1：debian-8.11.1-amd64-DVD-1       ：2015-04-25：2020-04-xx：oldoldstable  #"
+	echo "#  1：debian-8.11.1-amd64-DVD-1       ：2015-04-25：2020-06-30：oldoldstable  #"
 	echo "#  2：debian-9.13.0-amd64-DVD-1       ：2017-06-17：2022-xx-xx：oldstable     #"
 	echo "#  3：debian-10.6.0-amd64-DVD-1       ：2019-07-06：20xx-xx-xx：stable        #"
 	echo "#  4：debian-testing-amd64-DVD-1      ：20xx-xx-xx：20xx-xx-xx：testing       #"
@@ -109,14 +114,16 @@ funcMenu () {
 	echo "#  6：ubuntu-18.04.5-server-amd64     ：2018-04-26：2023-04-xx：Bionic Beaver #"
 	echo "#  7：ubuntu-20.04.1-legacy-server-amd：2020-04-23：2025-04-xx：Focal Fossa   #"
 	echo "#  8：ubuntu-20.04.1-live-server-amd64：2020-04-23：2025-04-xx：Focal Fossa   #"
-	echo "#  9：CentOS-8.2.2004-x86_64-dvd1     ：2020-06-15：2029-05-31：RHEL 8.0      #"
-	echo "# 10：CentOS-Stream-8-x86_64-20201030-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
-	echo "# 11：Fedora-Server-dvd-x86_64-33-1.2 ：2020-10-xx：20xx-xx-xx：kernel 5.x    #"
-	echo "# 12：openSUSE-Leap-15.2-DVD-x86_64   ：2020-xx-xx：20xx-xx-xx：              #"
-	echo "# 13：openSUSE-Tumbleweed-DVD-x86_64-C：2020-xx-xx：20xx-xx-xx：              #"
+	echo "#  9：ubuntu-20.10-live-server-amd64  ：2020-10-22：2021-07-xx：Groovy Gorilla#"
+	echo "# 10：CentOS-8.2.2004-x86_64-dvd1     ：2020-06-15：2029-05-31：RHEL 8.0      #"
+	echo "# 11：CentOS-Stream-8-x86_64-20201030-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
+	echo "# 12：Fedora-Server-dvd-x86_64-33-1.2 ：2020-10-xx：20xx-xx-xx：kernel 5.x    #"
+	echo "# 13：openSUSE-Leap-15.2-DVD-x86_64   ：2020-xx-xx：20xx-xx-xx：              #"
+	echo "# 14：openSUSE-Tumbleweed-DVD-x86_64-C：2020-xx-xx：20xx-xx-xx：              #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
+#	echo "#   ：                                ：2021-04-22：2022-01-xx：Hirsute Hippo #"
 #	echo "#   ：ubuntu-16.04.7-desktop-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus  #"
 #	echo "#   ：ubuntu-18.04.5-desktop-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver #"
 #	echo "#   ：ubuntu-20.04.1-desktop-amd64    ：2020-04-23：2025-04-xx：Focal Fossa   #"
@@ -146,17 +153,18 @@ funcRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { exit 1; }
 		else
-			curl -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}"
+			curl -f -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}"
+			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
 			local WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
 			local DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "../${DVD_NAME}.iso"`
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
-			if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+			if [ ${WEB_STAT} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
+				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { exit 1; }
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
@@ -181,26 +189,29 @@ funcRemaster () {
 				"debian" | \
 				"ubuntu" )
 					case "${CODE_NAME[1]}" in
-						*live* )	# --- get user-data -------------------------------
+						*20.04*live*    | \
+						*20.10*live*    | \
+						*20.04*desktop* | \
+						*20.10*desktop* )					# --- get user-data
 							EFI_IMAG="boot/grub/efi.img"
-							DVD_NAME+="-nocloud"
+							ISO_NAME="${DVD_NAME}-nocloud"
 							mkdir -p "nocloud"
 							touch nocloud/meta-data
 							touch nocloud/user-data
 							if [ -f "../../../${CFG_NAME}" ]; then
 								cp --preserve=timestamps "../../../${CFG_NAME}" "nocloud/user-data"
 							else
-								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_URL}" || { rm -f "nocloud/user-data"; exit 1; }
+								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_URL}" || { exit 1; }
 							fi
 							;;
-						* )			# --- get preseed.cfg -----------------------------
+						* )									# --- get preseed.cfg
 							EFI_IMAG="boot/grub/efi.img"
-							DVD_NAME+="-preseed"
+							ISO_NAME="${DVD_NAME}-preseed"
 							mkdir -p "preseed"
 							if [ -f "../../../${CFG_NAME}" ]; then
 								cp --preserve=timestamps "../../../${CFG_NAME}" "preseed/preseed.cfg"
 							else
-								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_URL}" || { rm -f "preseed/preseed.cfg"; exit 1; }
+								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_URL}" || { exit 1; }
 							fi
 #							sed -i "preseed/preseed.cfg"                                   \
 #							    -e 's~.*\(d-i debian-installer/language\).*~  \1 string en~' \
@@ -211,13 +222,13 @@ funcRemaster () {
 					;;
 				"centos" | \
 				"fedora")	# --- get ks.cfg ----------------------------------
-					EFI_IMAG="images/efiboot.img"
-					DVD_NAME+="-kickstart"
+					EFI_IMAG="EFI/BOOT/efiboot.img"
+					ISO_NAME="${DVD_NAME}-kickstart"
 					mkdir -p "kickstart"
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
 					else
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || { rm -f "kickstart/ks.cfg"; exit 1; }
+						curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || { exit 1; }
 					fi
 					sed -i kickstart/ks.cfg    \
 					    -e 's/#\(cdrom\)/\1/g' \
@@ -226,17 +237,23 @@ funcRemaster () {
 #					    -e 's/^\(repo \)/#\1/g'
 					;;
 				"suse")	# --- get autoinst.xml --------------------------------
-					EFI_IMAG="images/efiboot.img"
-					DVD_NAME+="-autoyast"
+					EFI_IMAG="EFI/BOOT/efiboot.img"
+					ISO_NAME="${DVD_NAME}-autoyast"
 					mkdir -p "autoyast"
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
 					else
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || { rm -f "autoyast/autoinst.xml"; exit 1; }
+						curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || { exit 1; }
 					fi
 					;;
 				* )	;;
 			esac
+			# --- Get EFI Image ---------------------------------------------------
+			if [ ! -f ${EFI_IMAG} ]; then
+				ISO_SKIPS=`fdisk -l "../../${DVD_NAME}.iso" | awk '/EFI/ {print $2;}'`
+				ISO_COUNT=`fdisk -l "../../${DVD_NAME}.iso" | awk '/EFI/ {print $4;}'`
+				dd if="../../${DVD_NAME}.iso" of=${EFI_IMAG} bs=512 skip=${ISO_SKIPS} count=${ISO_COUNT}
+			fi
 			# --- mrb:txt.cfg / efi:grub.cfg ----------------------------------
 			case "${CODE_NAME[0]}" in
 				"debian" )	# ･････････････････････････････････････････････････
@@ -248,15 +265,28 @@ funcRemaster () {
 					    -e 's/\(timeout\).*$/\1 50/'
 					sed -i isolinux/gtk.cfg        \
 					    -e '/^.*menu default.*$/d'
+					sed -i isolinux/txt.cfg        \
+					    -e '/^.*menu default.*$/d'
 					INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-					INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^.*menu\).*$/\1 default/'`"
-					sed -n '/label install/,/append/p' isolinux/txt.cfg | \
-					sed -e 's/^\(label\) install/\1 autoinst/'            \
-					    -e 's/\(Install\)/Auto \1/'                       \
-					    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"              \
-					    -e "/menu label/a ${INS_STR}"                     \
-					> txt.cfg
-					cat isolinux/txt.cfg >> txt.cfg
+					INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | head -n 1 | sed -e 's/\(^.*menu\) label.*$/\1 default/'`"
+					if [ ${INS_ROW} -ge 1 ]; then
+						sed -n '/label install/,/^$/p' isolinux/txt.cfg  | \
+						sed -e 's/^\(label\) install/\1 autoinst/'         \
+						    -e 's/\(Install\)/Auto \1/'                    \
+						    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"           \
+						    -e "/menu label/a  ${INS_STR}"               | \
+						sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg   \
+						    -e 's/\(timeout\).*$/\1 50/'                   \
+						> txt.cfg
+					else
+						sed -n '/label install/,/^$/p' isolinux/txt.cfg  | \
+						sed -e 's/^\(label\) install/\1 autoinst/'         \
+						    -e 's/\(Install\)/Auto \1/'                    \
+						    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"           \
+						    -e "/menu label/a  ${INS_STR}"                 \
+						> txt.cfg
+						cat isolinux/txt.cfg >> txt.cfg
+					fi
 					mv txt.cfg isolinux/
 					# --- grub.cfg ------------------------------------
 					INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
@@ -271,10 +301,16 @@ funcRemaster () {
 					mv grub.cfg boot/grub/
 					;;
 				"ubuntu" )	# ･････････････････････････････････････････････････
-					sed -i isolinux/isolinux.cfg     \
-					    -e 's/\(timeout\).*$/\1 50/'
-					sed -i isolinux/prompt.cfg       \
-					    -e 's/\(timeout\).*$/\1 50/'
+					case "${CODE_NAME[1]}" in
+						*20.10* )
+							;;
+						* )
+							sed -i isolinux/isolinux.cfg     \
+							    -e 's/\(timeout\).*$/\1 50/'
+							sed -i isolinux/prompt.cfg       \
+							    -e 's/\(timeout\).*$/\1 50/'
+							;;
+					esac
 					case "${CODE_NAME[1]}" in
 						"ubuntu-16.04.7-server-amd64"      )
 							sed -i "preseed/preseed.cfg"      \
@@ -284,7 +320,7 @@ funcRemaster () {
 						* )	;;
 					esac
 					case "${CODE_NAME[1]}" in
-						*live* )
+						*20.04*live* )						# --- nocloud -----
 							INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
 							# --- txt.cfg -------------------------------------
 							INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
@@ -308,30 +344,121 @@ funcRemaster () {
 							> grub.cfg
 							mv grub.cfg boot/grub/
 							;;
-						*server* )
+						*20.04*desktop* )					# --- nocloud -----
+							INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\" vga=788"
+							# --- txt.cfg -------------------------------------
+							INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+							INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^[ \t]*menu\).*$/\1 default/g' | head -n 1`"
+							sed -n '/label live-install$/,/append/p' isolinux/txt.cfg | \
+							sed -e 's/^\(label\).*/\1 autoinst/'                        \
+							    -e 's/\(Install\)/Auto \1/'                             \
+							    -e "s/\(file\).*seed/\1=${INS_CFG}/"                    \
+							    -e "/menu label/a  ${INS_STR}"                          \
+							    -e 's/only-ubiquity/boot=casper automatic-ubiquity/'  | \
+							sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg            \
+							> txt.cfg
+							mv txt.cfg isolinux/
+							# --- grub.cfg ------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry \"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -n '0,/\}/p'                                          | \
+							sed -e 's/\(Ubuntu\)/Auto Install \1/'                      \
+							    -e "s/\(file\).*seed/\1=${INS_CFG}/"                    \
+							    -e 's/maybe-ubiquity/boot=casper automatic-ubiquity/' | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg        | \
+							sed -e 's/\(set default\)="1"/\1="0"/'                      \
+							    -e 's/\(set timeout\).*$/\1=5/'                         \
+							> grub.cfg
+							mv grub.cfg boot/grub/
+							;;
+						*20.10*live* )						# --- nocloud -----
+							INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
+							# --- txt.cfg -------------------------------------
+							# --- grub.cfg ------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry \"Ubuntu Server\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\(Ubuntu Server\)/Auto Install/'                         \
+							    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                        | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg               | \
+							sed -e 's/\(set default\)="1"/\1="0"/'                             \
+							    -e 's/\(set timeout\).*$/\1=5/'                                \
+							> grub.cfg
+							mv grub.cfg boot/grub/
+							;;
+						*20.10*desktop* )					# --- nocloud -----
+							INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
+							# --- txt.cfg -------------------------------------
+							# --- grub.cfg ------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry \"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\(Ubuntu\)/Auto Install/'                         \
+							    -e "s/\(file\).*seed/\1=${INS_CFG}/"                    \
+							    -e 's/maybe-ubiquity/boot=casper automatic-ubiquity/' | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg        | \
+							sed -e 's/\(set default\)="1"/\1="0"/'                      \
+							    -e 's/\(set timeout\).*$/\1=5/'                         \
+							> grub.cfg
+							mv grub.cfg boot/grub/
+							;;
+						*server* )							# --- preseed.cfg -
 							INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
 							# --- txt.cfg -------------------------------------
 							INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-							INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^.*menu\).*$/\1 default/'`"
+							INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^[ \t]*menu\).*$/\1 default/g' | head -n 1`"
 							sed -n '/label install/,/append/p' isolinux/txt.cfg | \
 							sed -e 's/^\(label\) install/\1 autoinst/'            \
 							    -e 's/\(Install\)/Auto \1/'                       \
-							    -e "s/\(file\).*seed/\1=${INS_CFG}/"            | \
+							    -e "s/\(file\).*seed/\1=${INS_CFG}/"              \
+							    -e "/menu label/a  ${INS_STR}"                  | \
 							sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg      \
 							> txt.cfg
 							mv txt.cfg isolinux/
 							# --- grub.cfg ------------------------------------
 							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-							sed -n '/^menuentry \"Install/,/^}/p' boot/grub/grub.cfg | \
-							sed -e 's/\(Install\)/Auto \1/'                            \
-							    -e "s/\(file\).*seed/\1=${INS_CFG}/"                 | \
-							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg       | \
-							sed -e 's/\(set default\)="1"/\1="0"/'                     \
-							    -e 's/\(set timeout\).*$/\1=5/'                        \
+							sed -n '/^menuentry \"Install Ubuntu Server\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -n '0,/\}/p'                                                         | \
+							sed -e 's/\(Install\)/Auto \1/'                                            \
+							    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                 | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                       | \
+							sed -e 's/\(set default\)="1"/\1="0"/'                                     \
+							    -e 's/\(set timeout\).*$/\1=5/'                                        \
 							> grub.cfg
+							if [ "`sed -n '/set default/p' grub.cfg`" = "" ]; then
+								sed -i grub.cfg           \
+								    -e '1i set default=0'
+							fi
+							if [ "`sed -n '/set timeout/p' grub.cfg`" = "" ]; then
+								sed -i grub.cfg           \
+								    -e '1i set timeout=5'
+							fi
 							mv grub.cfg boot/grub/
 							;;
-						*desktop* )
+						*desktop* )							# --- preseed.cfg -
+							INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
+							# --- txt.cfg -------------------------------------
+							INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+							INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^[ \t]*menu\).*$/\1 default/g' | head -n 1`"
+							sed -n '/label live-install$/,/append/p' isolinux/txt.cfg | \
+							sed -e 's/^\(label\).*/\1 autoinst/'                        \
+							    -e 's/\(Install\)/Auto \1/'                             \
+							    -e "s/\(file\).*seed/\1=${INS_CFG}/"                    \
+							    -e "/menu label/a  ${INS_STR}"                          \
+							    -e 's/only-ubiquity/boot=casper automatic-ubiquity/'  | \
+							sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg            \
+							> txt.cfg
+							mv txt.cfg isolinux/
+							# --- grub.cfg ------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry \"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -n '0,/\}/p'                                          | \
+							sed -e 's/\(Ubuntu\)/Auto Install \1/'                      \
+							    -e "s/\(file\).*seed/\1=${INS_CFG}/"                    \
+							    -e 's/maybe-ubiquity/boot=casper automatic-ubiquity/' | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg        | \
+							sed -e 's/\(set default\)="1"/\1="0"/'                      \
+							    -e 's/\(set timeout\).*$/\1=5/'                         \
+							> grub.cfg
+							mv grub.cfg boot/grub/
 							;;
 						* )	;;
 					esac
@@ -417,31 +544,18 @@ funcRemaster () {
 				"debian" | \
 				"ubuntu" | \
 				"centos" | \
-				"fedora" )
-					# --- copy EFI directory ------------------------------------------
-#					case "${CODE_NAME[0]}" in
-#						"debian" )
-#							if [ ! -d EFI ]; then
-#								echo "--- copy EFI directory --------------------------------------------------------"
-#								mount -r -o loop boot/grub/efi.img ../mnt/
-#								pushd ../mnt/efi/ > /dev/null
-#							find . -depth -print | cpio -pdm ../../image/EFI/
-#								popd > /dev/null
-#								umount ../mnt/
-#							fi
-#							;;
-#						* )	;;
-#					esac
+				"fedora" )	# ･････････････････････････････････････････････････
+					rm -f md5sum.txt
+					find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 					# --- make iso file -----------------------------------------------
 					case "${CODE_NAME[1]}" in
-						"ubuntu-20.04.1-legacy-server-amd64" | \
-						"ubuntu-20.04.1-desktop-amd64"       | \
-						"ubuntu-20.04.1-live-server-amd64"   )
-							rm -f md5sum.txt
-							find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
+						ubuntu*20.10* )
+							ELT_BOOT=boot/grub/i386-pc/eltorito.img
+							ELT_CATA=boot.catalog
 							;;
 						* )
-#							find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
+							ELT_BOOT=isolinux/isolinux.bin
+							ELT_CATA=isolinux/boot.cat
 							;;
 					esac
 					xorriso -as mkisofs \
@@ -449,14 +563,14 @@ funcRemaster () {
 					    -iso-level 3 \
 					    -full-iso9660-filenames \
 					    -volid "${VOLID}" \
-					    -eltorito-boot isolinux/isolinux.bin \
-					    -eltorito-catalog isolinux/boot.cat \
+					    -eltorito-boot ${ELT_BOOT} \
+					    -eltorito-catalog ${ELT_CATA} \
 					    -no-emul-boot -boot-load-size 4 -boot-info-table \
 					    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
 					    -eltorito-alt-boot \
 					    -e "${EFI_IMAG}" \
 					    -no-emul-boot -isohybrid-gpt-basdat \
-					    -output "../../${DVD_NAME}.iso" \
+					    -output "../../${ISO_NAME}.iso" \
 					    .
 					;;
 				"suse" )	# ･････････････････････････････････････････････････
@@ -472,12 +586,12 @@ funcRemaster () {
 					    -eltorito-alt-boot \
 					    -e boot/x86_64/efi \
 					    -no-emul-boot -isohybrid-gpt-basdat \
-					    -output "../../${DVD_NAME}.iso" \
+					    -output "../../${ISO_NAME}.iso" \
 					    .
 					;;
 				* )	;;
 			esac
-			LANG=C implantisomd5 "../../${DVD_NAME}.iso"
+			LANG=C implantisomd5 "../../${ISO_NAME}.iso"
 		popd > /dev/null
 	popd > /dev/null
 	echo "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------"
@@ -499,6 +613,13 @@ funcRemaster () {
 			apt -y update && apt -y upgrade && apt -y install isomd5sum
 		else
 			yum -y update && yum -y upgrade && yum -y install isomd5sum
+		fi
+	fi
+	if [ ! -f /usr/lib/ISOLINUX/isohdpfx.bin ]; then
+		if [ ! -f /etc/redhat-release ]; then
+			apt -y update && apt -y upgrade && apt -y install isolinux
+		else
+			yum -y update && yum -y upgrade && yum -y install isolinux
 		fi
 	fi
 	# -------------------------------------------------------------------------

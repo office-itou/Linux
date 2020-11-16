@@ -5,11 +5,6 @@ autoinstall:
   apt:
     geoip: true
     preserve_sources_list: false
-#   primary:
-#   - arches: [amd64, i386]
-#     uri: http://jp.archive.ubuntu.com/ubuntu
-#   - arches: [default]
-#     uri: http://ports.ubuntu.com/ubuntu-ports
 # =============================================================================
   storage:
     layout:
@@ -39,40 +34,35 @@ autoinstall:
             addresses:
             - 192.168.1.254
 # =============================================================================
+  ssh:
+    install-server: true
+# =============================================================================
   package_update: true
   package_upgrade: true
   packages:
   - standard^
   - server^
-  - ubuntu-desktop^
-  - ubuntu-desktop-minimal^
   - dns-server^
   - openssh-server^
   - print-server^
   - samba-server^
+  - ubuntu-desktop^
+  - ubuntu-desktop-minimal^
 # -----------------------------------------------------------------------------
   - network-manager
   - chrony
-# - ntpd
-# - ntpdate
   - clamav
   - curl
   - rsync
   - inxi
-# - rng-tools5
 # -----------------------------------------------------------------------------
-  - linux-headers-generic
   - build-essential
   - indent
   - vim
   - bc
-# - perl
-# - perl-openssl-defaults
 # -----------------------------------------------------------------------------
   - sudo
   - tasksel
-# - apt-show-versions
-# - aptitude
 # -----------------------------------------------------------------------------
   - bind9
   - bind9utils
@@ -84,48 +74,41 @@ autoinstall:
 # -----------------------------------------------------------------------------
   - isc-dhcp-server
 # -----------------------------------------------------------------------------
+  - cups
+  - cups-common
+# -----------------------------------------------------------------------------
   - language-pack-gnome-ja
   - language-pack-ja
   - language-pack-ja-base
-  - fonts-noto-cjk-extra
 # -----------------------------------------------------------------------------
-  - desktop-base
+  - ubuntu-server
+  - ubuntu-desktop
+  - fonts-noto
   - ibus-mozc
   - mozc-utils-gui
+# -----------------------------------------------------------------------------
   - gnome-getting-started-docs-ja
   - gnome-user-docs-ja
+# -----------------------------------------------------------------------------
   - libreoffice-help-ja
   - libreoffice-l10n-ja
 # -----------------------------------------------------------------------------
   - firefox-locale-ja
   - thunderbird-locale-ja
-# - chromium-browser
-# - chromium-browser-l10n
 # -----------------------------------------------------------------------------
-# - dpkg-repack
-# - isolinux
-# - squashfs-tools
-# - xorriso
-# -----------------------------------------------------------------------------
-  - open-vm-tools
-  - open-vm-tools-desktop
+# - open-vm-tools
+# - open-vm-tools-desktop
 # =============================================================================
   user-data:
-#   ntp:
-#     enabled: true
-#     servers:
-#     - ntp.nict.jp
     ntp:
       enabled: true
       ntp_client: chrony
       pools:
       - ntp.nict.jp
-#     servers:
-#     - ntp.nict.jp
     timezone: Asia/Tokyo
-    snap:
-      commands:
-      - snap install chromium
+#   snap:
+#     commands:
+#     - snap install chromium
     runcmd:
     - mkdir -p /etc/NetworkManager/conf.d/
     - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf

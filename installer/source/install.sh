@@ -60,6 +60,9 @@
 ##	2020/10/19 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2020/11/03 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2020/11/04 000.0000 J.Itou         不具合修正(対象OSの確認処理)
+##	2020/11/08 000.0000 J.Itou         処理追加(chrony.conf編集)
+##	2020/11/09 000.0000 J.Itou         処理追加(ubuntu通信障害対策)
+##	2020/11/11 000.0000 J.Itou         処理追加(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -147,66 +150,38 @@ fncGetIPaddr () {
 fncGetNM () {
 	local DMY_STAT
 
-	if [ "${ACT_NMAN}" = "active" ]; then
-		LANG=C nmcli c show help 2> /dev/null
-		if [ $? -ge 2 ]; then
-			DMY_STAT="`LANG=C nmcli dev list iface "$2" | awk '/^'"$1"'/'`"
-		elif [ "$3" != "" ]; then
-			DMY_STAT="`LANG=C nmcli con show uuid "$3" | awk '/^'"$1"'/'`"
-		else
+	case "$1" in
+		"DHCP4" )
+			if [ "`LANG=C ip -4 a show dev $2 scope global dynamic`" = "" ]; then
+				DMY_STAT="static"
+			else
+				DMY_STAT="auto"
+			fi
+			;;
+		"DHCP6" )
+			if [ "`LANG=C ip -6 a show dev $2 scope global dynamic`" = "" ]; then
+				DMY_STAT="static"
+			else
+				DMY_STAT="auto"
+			fi
+			;;
+		"IP4.DNS" )
+				DMY_STAT="`LANG=C ip -4 r show dev $2 default | awk '{print $3;}'`"
+				if [ "${DMY_STAT}" = "" ]; then
+					DMY_STAT="`LANG=C awk '/nameserver.*\./ {print$2}' /etc/resolv.conf`"
+				fi
+			;;
+		"IP6.DNS" )
+				DMY_STAT="`LANG=C ip -6 r show dev $2 default | awk '{print $3;}'`"
+				if [ "${DMY_STAT}" = "" ]; then
+					DMY_STAT="`LANG=C awk '/nameserver.*\:/ {print$2}' /etc/resolv.conf`"
+				fi
+			;;
+		* )
 			DMY_STAT=""
-		fi
-		case "$1" in
-			"DHCP4" | \
-			"DHCP6" )
-				if [ "${DMY_STAT}" != "" ]; then
-					echo "auto"
-				else
-					echo "static"
-				fi
-				;;
-			"IP4.DNS" | \
-			"IP6.DNS" )
-				echo "${DMY_STAT}" | awk '{print $2;}'
-				;;
-			* )
-				echo ""
-				;;
-		esac
-	else
-		case "$1" in
-			"DHCP4" )
-				if [ "`LANG=C ip -4 a show dev $2 scope global dynamic`" = "" ]; then
-					DMY_STAT="static"
-				else
-					DMY_STAT="auto"
-				fi
-				;;
-			"DHCP6" )
-				if [ "`LANG=C ip -6 a show dev $2 scope global dynamic`" = "" ]; then
-					DMY_STAT="static"
-				else
-					DMY_STAT="auto"
-				fi
-				;;
-			"IP4.DNS" )
-					DMY_STAT="`LANG=C ip -4 r show dev $2 default | awk '{print $3;}'`"
-					if [ "${DMY_STAT}" = "" ]; then
-						DMY_STAT="`LANG=C awk '/nameserver.*\./ {print$2}' /etc/resolv.conf`"
-					fi
-				;;
-			"IP6.DNS" )
-					DMY_STAT="`LANG=C ip -6 r show dev $2 default | awk '{print $3;}'`"
-					if [ "${DMY_STAT}" = "" ]; then
-						DMY_STAT="`LANG=C awk '/nameserver.*\:/ {print$2}' /etc/resolv.conf`"
-					fi
-				;;
-			* )
-				DMY_STAT=""
-				;;
-		esac
-		echo "${DMY_STAT}"
-	fi
+			;;
+	esac
+	echo "${DMY_STAT}"
 }
 
 # IPv6逆引き処理 --------------------------------------------------------------
@@ -298,6 +273,9 @@ funcInitialize () {
 	USR_ARRY=(                                                                                                                             \
 	    "administrator:Administrator:1001::XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:1" \
 	)	# sample: administrator's password="password"
+
+	# ･････････････････････････････････････････････････････････････････････････
+	NTP_NAME=ntp.nict.jp
 	# ･････････････････････････････････････････････････････････････････････････
 	EXT_ZONE=""																	# マスターDNSのドメイン名
 	EXT_ADDR=""																	#   〃         IPアドレス
@@ -320,29 +298,51 @@ funcInitialize () {
 	# -------------------------------------------------------------------------
 	FLG_SVER=1																	# 0以外でサーバー仕様でセッティング
 	DEF_USER="${SUDO_USER}"														# インストール時に作成したユーザー名
+
 	# system info -------------------------------------------------------------
-	SYS_NAME=`awk -F '=' '$1=="ID"         {gsub("\"",""); print $2;}' /etc/os-release`	# ディストリビューション名
-	SYS_VERS=`awk -F '=' '$1=="VERSION"    {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン名
-	SYS_VRID=`awk -F '=' '$1=="VERSION_ID" {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン番号
+	SYS_NAME=`awk -F '=' '$1=="ID"               {gsub("\"",""); print $2;}' /etc/os-release`	# ディストリビューション名
+	SYS_CODE=`awk -F '=' '$1=="VERSION_CODENAME" {gsub("\"",""); print $2;}' /etc/os-release`	# コード名
+	SYS_VERS=`awk -F '=' '$1=="VERSION"          {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン名
+	SYS_VRID=`awk -F '=' '$1=="VERSION_ID"       {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン番号
 	SYS_VNUM=`echo ${SYS_VRID:--1} | bc`										#   〃          (取得できない場合は-1)
 	SYS_NOOP=0																	# 対象OS=1,それ以外=0
-	if [ "${SYS_NAME}" = "debian"              ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 10"       | bc`; fi
-	if [ "${SYS_NAME}" = "ubuntu"              ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 20.04"    | bc`; fi
-	if [ "${SYS_NAME}" = "centos"              ]; then SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`; fi
-	if [ "${SYS_NAME}" = "fedora"              ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`; fi
-	if [ "${SYS_NAME}" = "opensuse-leap"       ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`; fi
-	if [ "${SYS_NAME}" = "opensuse-tumbleweed" ]; then SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`; fi
-#	if [ "${SYS_NAME}" = "debian"              ]; then SYS_NOOP=`echo "${SYS_VNUM} ==  7"       | bc`; fi
+	if [ "${SYS_CODE}" = "" ]; then
+		case "${SYS_NAME}" in
+			"debian"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
+			"ubuntu"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
+			"centos"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/centos-release`;;
+			"fedora"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/fedora-release`;;
+			"opensuse-leap"       ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
+			"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
+			*                     )                                                                                   ;;
+		esac
+	fi
+	if [ "${SYS_NAME}" = "debian" ] && [ "${SYS_CODE}" = "sid" -o `echo "${SYS_VNUM} ==  7" | bc` -ne 0 ]; then
+		SYS_NOOP=1
+	else
+		case "${SYS_NAME}" in
+			"debian"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 10"       | bc`;;
+			"ubuntu"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 20.04"    | bc`;;
+			"centos"              ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
+			"fedora"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`;;
+			"opensuse-leap"       ) SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`;;
+			"opensuse-tumbleweed" ) SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`;;
+			*                     )                                               ;;
+		esac
+	fi
 	if [ ${SYS_NOOP} -eq 0 ]; then
-		echo "${SYS_NAME} ${SYS_VERS} ではテストをしていないので実行できません。"
+		echo "${SYS_NAME} ${SYS_VERS:-${SYS_CODE}} ではテストをしていないので実行できません。"
 		exit 1
 	fi
+
 	# samba -------------------------------------------------------------------
 	SMB_USER=sambauser															# smb.confのforce user
 	SMB_GRUP=sambashare															# smb.confのforce group
 	SMB_GADM=sambaadmin															# smb.confのadmin group
+
 	# cpu type ----------------------------------------------------------------
 	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
+
 	# network -----------------------------------------------------------------
 	#   NIC複数枚運用には非対応です                                            	<お願い>
 	#   NIC_ARRY[0]のNICのみの設定を想定しています                             	<お願い>
@@ -426,6 +426,31 @@ funcInitialize () {
 	#  8 | 11111111.00000000.00000000.00000000 | 255.0.0.0
 	# 16 | 11111111.11111111.00000000.00000000 | 255.255.0.0
 	# 24 | 11111111.11111111.11111111.00000000 | 255.255.255.0
+
+	# ungoogled-chromium ------------------------------------------------------
+	URL_SYS=""
+	URL_DEB=""
+	URL_KEY=""
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
+			case "${SYS_CODE}" in
+				"buster" | \
+				"sid"    | \
+				"bionic" | \
+				"focal"  )
+					echo --- Install chromium [${SYS_NAME} ${SYS_CODE}] ------------------------------------------
+					URL_SYS="`echo ${SYS_NAME} | sed -e 's/\(.\)\(.*\)/\U\1\L\2/g'`_`echo ${SYS_CODE} | sed -e 's/\(.\)\(.*\)/\U\1\L\2/g'`"
+					URL_DEB="http://download.opensuse.org/repositories/home:/ungoogled_chromium/${URL_SYS}/"
+					URL_KEY="https://download.opensuse.org/repositories/home:ungoogled_chromium/${URL_SYS}/Release.key"
+					;;
+				* )
+					;;
+			esac
+			;;
+		* )
+			;;
+	esac
 
 	# ワーク変数設定 ----------------------------------------------------------
 	MNT_CD=/media
@@ -538,8 +563,32 @@ funcMain () {
 	chmod 700 ${DIR_WK}
 
 	# *************************************************************************
+	# NTP Setup
+	# *************************************************************************
+	if [ -f /etc/chrony/chrony.conf ] && [ ! -f /etc/chrony/chrony.conf.orig ]; then
+		INS_STR=`awk '($1=="pool" || $1=="server") && !a[$1]++ {print $1 " '${NTP_NAME}' iburst";}' /etc/chrony/chrony.conf`
+		sed -i.orig /etc/chrony/chrony.conf                                    \
+		    -e 's/^\([pool|server]\)/#\1/g'                                    \
+		    -e "0,/^#[pool|server]/{s/^\(#[pool|server].*$\)/${INS_STR}\n\1/}"
+		if [ "`which systemctl 2> /dev/null`" != "" ] && [ "`find ${DIR_SYSD}/system/ -name \"chrony.service\" -print`" != "" ]; then
+			systemctl restart chrony
+		else
+			/etc/init.d/chrony restart
+		fi
+	fi
+
+	# *************************************************************************
 	# System Update
 	# *************************************************************************
+	if [ "${URL_DEB}" != "" ] && [ "${URL_KEY}" != "" ]; then
+		if [ ! -f /etc/apt/sources.list.d/home:ungoogled_chromium.list ]; then
+			echo "deb ${URL_DEB} /" | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
+		fi
+		if [ ! -f /etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg ]; then
+			curl -fsSL ${URL_KEY} | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg > /dev/null
+		fi
+	fi
+	# -------------------------------------------------------------------------
 	set +e
 	case "${SYS_NAME}" in
 		"debian" | \
@@ -578,6 +627,20 @@ funcMain () {
 			;;
 	esac
 	set -e
+
+	# *************************************************************************
+	# Install chromium
+	# *************************************************************************
+	if [ "${SYS_NAME}" != "debian" ] || [ "${SYS_NAME}" = "debian" -a "${CPU_TYPE}" != "armv5tel" ]; then
+		if [ "`which snap 2> /dev/null`"! = "" ] && [ "${SYS_NAME}" != "debian" -a "${SYS_NAME}" != "ubuntu" ]; then
+			snap install chromium
+		else							# ungoogled-chromium
+			if [ "${URL_DEB}" != "" ] && [ "${URL_KEY}" != "" ] && \
+			   [ "`dpkg -l ungoogled-chromium | awk '/ungoogled-chromium/ {print $1;}'`" != "ii" ]; then
+				${CMD_AGET} install ungoogled-chromium
+			fi
+		fi
+	fi
 
 	# *************************************************************************
 	# Locale Setup
@@ -704,6 +767,7 @@ _EOT_
 			ALL : ${IP4_UADR[0]}.0/${IP4_BITS[0]}
 			ALL : [::1]
 			ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
+			ALL : [fe80::]/64
 _EOT_
 	fi
 	# hosts.deny --------------------------------------------------------------
@@ -735,25 +799,30 @@ _EOT_
 	done
 	# ipv4 dns changed --------------------------------------------------------
 	echo --- ipv4 dns changed ----------------------------------------------------------
-	if [ "${ACT_NMAN}" != "" ]; then
-		if [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
-			nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
-			nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
-			nmcli c up     "${CON_UUID}"
-		else
-			if [ ! -h /etc/sysconfig/network/config ] && [ -f /etc/sysconfig/network/config ] && [ ! -f /etc/sysconfig/network/config.orig ]; then
-				sed -i.orig /etc/sysconfig/network/config                                                           \
-				    -e "s/\(NETCONFIG_DNS_STATIC_SERVERS\)=\"${IP4_DNSA[0]}\"/\1=\"127\.0\.0\.1 ${IP4_DNSA[0]}\"/g"
-				netconfig update -f
-#			elif [ ! -h "/etc/NetworkManager/system-connections/${CON_NAME}" ] && [ -f "/etc/NetworkManager/system-connections/${CON_NAME}" ] && [ ! -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
-#				if [ "`sed -n '/nameserver 127.0.0.1/p' /etc/resolv.conf`" = "" ]; then
-#					sed -i.orig "/etc/NetworkManager/system-connections/${CON_NAME}"   \
-#					    -e "s/\(dns\)=${IP4_DNSA[0]}/\1=127\.0\.0\.1;${IP4_DNSA[0]}/g"
-#				fi
-			fi
-		fi
+	if [ -f /etc/NetworkManager/NetworkManager.conf ] &&
+	   [ ! -f /etc/NetworkManager/NetworkManager.conf.orig ] &&
+	   [ "`sed -n '/^dns/p' /etc/NetworkManager/NetworkManager.conf`" != "" ]; then
+		sed -i.orig /etc/NetworkManager/NetworkManager.conf \
+		    -e 's/^\(dns=.*$\)/#\1/'
+	fi
+	if [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
+		nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
+		nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
+		nmcli c up     "${CON_UUID}"
+	elif [ ! -h /etc/sysconfig/network/config ] && \
+		   [   -f /etc/sysconfig/network/config ] && \
+		   [ ! -f /etc/sysconfig/network/config.orig ]; then
+		sed -i.orig /etc/sysconfig/network/config                                                           \
+		    -e "s/\(NETCONFIG_DNS_STATIC_SERVERS\)=\"${IP4_DNSA[0]}\"/\1=\"127\.0\.0\.1 ${IP4_DNSA[0]}\"/g"
+		netconfig update -f
+	elif [ -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
+		sed -i "/etc/NetworkManager/system-connections/${CON_NAME}"    \
+		    -e '/\[ipv4\]/,/\[.*\]/ s/\(dns\)=\(.*\)/\1=127.0.0.1;\2/' \
+		    -e "/\[ipv4\]/a dns-search=${WGP_NAME}.;"
 	else
-		if [ ! -h /etc/resolv.conf ] && [ -f /etc/resolv.conf ] && [ ! -f /etc/resolv.conf.orig ]; then
+		if [ ! -h /etc/resolv.conf ] && \
+		   [   -f /etc/resolv.conf ] && \
+		   [ ! -f /etc/resolv.conf.orig ]; then
 			sed -i.orig /etc/resolv.conf                                                  \
 			    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"                                   \
 			    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1\n\1 ${IP4_DNSA[0]}/g"
@@ -1082,42 +1151,55 @@ _EOT_
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			# --- named.conf.options --------------------------------------------------
-			if [ ! -f ${DIR_BIND}/named.conf.options.orig ]; then
-				echo --- named.conf.options --------------------------------------------------------
-				sed -i.orig ${DIR_BIND}/named.conf.options                                                                           \
-				    -e 's/\/.*\(listen-on-v6\)/\1/g'                                                                                 \
-				    -e '/listen-on-v6.*;$/a \\tallow-transfer { none; };'                                                            \
-				    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n"
-			fi
+			FIL_BIND=named.conf.options
 			;;
 		"centos" | \
 		"fedora" )
-			# --- named.conf ----------------------------------------------------------
-			if [ ! -f ${DIR_BIND}/named.conf.orig ]; then
-				echo --- named.conf ----------------------------------------------------------------
-				sed -i.orig ${DIR_BIND}/named.conf                                                                                   \
-				    -e 's/\/.*\(listen-on-v6\)/\1/g'                                                                                 \
-				    -e '/listen-on-v6.*;$/a \\tallow-transfer { none; };'                                                            \
-				    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
-				    -e "\$a\\\ninclude \"${DIR_BIND}/named.conf.local\";"
-			fi
+			FIL_BIND=named.conf
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-			# --- named.conf ----------------------------------------------------------
-			if [ ! -f ${DIR_BIND}/named.conf.orig ]; then
-				echo --- named.conf ----------------------------------------------------------------
-				sed -i.orig ${DIR_BIND}/named.conf                                                                                   \
-				    -e 's/\/.*\(listen-on-v6\)/\1/g'                                                                                 \
-				    -e '/listen-on-v6.*;$/a \\tallow-transfer { none; };'                                                            \
-				    -e "/^options/i acl \"${WGP_NAME}-network\" \{\n\t127.0.0.1;\n\t::1;\n\t${IP4_UADR[0]}.0/${IP4_BITS[0]};\n\};\n" \
-				    -e "\$a\\\ninclude \"${DIR_BIND}/named.conf.local\";"
-			fi
+			FIL_BIND=named.conf
 			;;
 		* )
 			;;
 	esac
+	# --- named.conf ----------------------------------------------------------
+	if [ ! -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
+		echo --- ${FIL_BIND} --------------------------------------------------------
+		INS_ROW=$((`sed -n '/^options/ =' ${DIR_BIND}/${FIL_BIND} | head -n 1`-1))
+		OLD_IFS=${IFS}
+		IFS= INS_STR=$(
+			cat <<- _EOT_
+				acl "${WGP_NAME}-network" {
+				\t127.0.0.1;
+				\t::1;
+				\t${IP4_UADR[0]}.0/${IP4_BITS[0]};
+				#\t${IP6_UADR[0]}::0/${IP6_BITS[0]};
+				#\tfe80::0/64;
+				};\n
+_EOT_
+		)
+		# ---------------------------------------------------------------------
+		if [ ${INS_ROW} -ge 1 ]; then
+			IFS= INS_CFG=$(echo -e ${INS_STR} | sed "${INS_ROW}r /dev/stdin" ${DIR_BIND}/${FIL_BIND})
+		else
+			IFS= INS_CFG=$(echo -e ${INS_STR} | cat /dev/stdin ${DIR_BIND}/${FIL_BIND})
+		fi
+		# ---------------------------------------------------------------------
+		echo ${INS_CFG} | \
+		sed -e 's/\/.*\(listen-on-v6\)/\1/g'                      \
+		    -e '/listen-on-v6.*;$/a \\tallow-transfer { none; };' \
+		> ${DIR_WK}/${PGM_NAME}.sh.${FIL_BIND}
+		IFS=${OLD_IFS}
+		cp -p ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BIND}.orig
+		mv ${DIR_WK}/${PGM_NAME}.sh.${FIL_BIND} ${DIR_BIND}/${FIL_BIND}
+		# ---------------------------------------------------------------------
+		if [ "${SYS_NAME}" = "ubuntu" ]; then
+			sed -i.${NOW_TIME} ${DIR_BIND}/${FIL_BIND} \
+			    -e 's/\(dnssec-validation\) auto;/\1 no;/'
+		fi
+	fi
 	# -------------------------------------------------------------------------
 	for FIL_NAME in `sed -n 's/^include "\(.*\)";$/\1/gp' ${DIR_BIND}/named.conf`
 	do
@@ -1220,7 +1302,7 @@ _EOT_
 				cp -p /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
 				cat <<- _EOT_ > /etc/dhcp/dhcpd.conf
 					subnet ${IP4_NTWK[0]} netmask ${IP4_MASK[0]} {
-					 	option time-servers ntp.nict.jp;
+					 	option time-servers ${NTP_NAME};
 					 	option domain-name-servers ${IP4_ADDR[0]};
 					 	option domain-name "${WGP_NAME}";
 					 	range ${RNG_DHCP};
@@ -1241,7 +1323,7 @@ _EOT_
 				cp -p /etc/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
 				cat <<- _EOT_ > /etc/dhcpd.conf
 					subnet ${IP4_NTWK[0]} netmask ${IP4_MASK[0]} {
-					 	option time-servers ntp.nict.jp;
+					 	option time-servers ${NTP_NAME};
 					 	option domain-name-servers ${IP4_ADDR[0]};
 					 	option domain-name "${WGP_NAME}";
 					 	range ${RNG_DHCP};
@@ -1555,6 +1637,12 @@ _EOT_
 			# Change user dir mode --------------------------------------------
 			chmod -R 770 ${DIR_SHAR}/data/usr/${USERNAME}; funcPause $?
 			chown -R ${SMB_USER}:${SMB_GRUP} ${DIR_SHAR}/data/usr/${USERNAME}; funcPause $?
+			if [ -d /var/lib/AccountsService/users/ ] && [ ! -f "/var/lib/AccountsService/users/${USERNAME}" ]; then
+				cat <<- _EOT_ > "/var/lib/AccountsService/users/${USERNAME}"
+					[User]
+					SystemAccount=true
+_EOT_
+			fi
 		fi
 	done < ${USR_FILE}
 	# -------------------------------------------------------------------------
@@ -1698,7 +1786,7 @@ _EOT_
 #		SHELL = /bin/bash
 #		PATH = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 #		# @reboot /sbin/sysctl -p
-#		0 0,3,6,9,12,15,18,21 * * * /usr/sbin/ntpdate -s ntp.nict.jp
+#		0 0,3,6,9,12,15,18,21 * * * /usr/sbin/ntpdate -s ${NTP_NAME}
 #		# @reboot /usr/sh/CMDMOUNT.sh
 #		# @reboot /usr/sh/CMDBACKUP.sh
 #		# 0 1 * * * /usr/sh/CMDFRESHCLAM.sh
@@ -1754,6 +1842,11 @@ _EOT_
 		    -e "\$aGRUB_GFXPAYLOAD_LINUX=keep"               \
 		    -e 's/[ \t][ \t]*/ /g'                           \
 		    -e 's/[ \t]*$//g'
+		if [ "${SYS_NAME}" = "ubuntu" ]; then
+			sed -i /etc/default/grub                            \
+			    -e '/^GRUB_RECORDFAIL_TIMEOUT/d'                \
+			    -e '/^GRUB_TIMEOUT/a GRUB_RECORDFAIL_TIMEOUT=5'
+		fi
 		# ---------------------------------------------------------------------
 		case "${SYS_NAME}" in
 			"debian" | \
@@ -1916,6 +2009,18 @@ _EOT_
 			esac
 		done
 	fi
+	# -------------------------------------------------------------------------
+#	if [ -d "/var/lib/AccountsService/users/" ]; then
+#		for USERNAME in `awk -F [:] '{if(($6~"^/home/" && $3<1000) || (($7~"nologin" || $7~"false") && $3>=1000))print $1;}' /etc/passwd`
+#		do
+#			if [ ! -f "/var/lib/AccountsService/users/${USERNAME}" ]; then
+#				cat <<- _EOT_ > "/var/lib/AccountsService/users/${USERNAME}"
+#					[User]
+#					SystemAccount=true
+#_EOT_
+#			fi
+#		done
+#	fi
 
 	# *************************************************************************
 	# Backup
@@ -1975,9 +2080,11 @@ funcDebug () {
 	echo "FLG_SVER=${FLG_SVER}"													# 0以外でサーバー仕様でセッティング
 	echo "DEF_USER=${DEF_USER}"													# インストール時に作成したユーザー名
 	echo "SYS_NAME=${SYS_NAME}"													# ディストリビューション名
+	echo "SYS_CODE=${SYS_CODE}"													# コード名
 	echo "SYS_VERS=${SYS_VERS}"													# バージョン名
 	echo "SYS_VRID=${SYS_VRID}"													# バージョン番号
 	echo "SYS_VNUM=${SYS_VNUM}"													#   〃          (取得できない場合は-1)
+	echo "SYS_NOOP=${SYS_NOOP}"													# 対象OS=1,それ以外=0
 	echo "SMB_USER=${SMB_USER}"													# smb.confのforce user
 	echo "SMB_GRUP=${SMB_GRUP}"													# smb.confのforce group
 	echo "SMB_GADM=${SMB_GADM}"													# smb.confのadmin group
@@ -1986,6 +2093,7 @@ funcDebug () {
 	echo "SVR_FQDN=${SVR_FQDN}"													# 本機のFQDN
 	echo "SVR_NAME=${SVR_NAME}"													# 本機のホスト名
 	echo "WGP_NAME=${WGP_NAME}"													# ワークグループ名(ドメイン名)
+	echo "ACT_NMAN=${ACT_NMAN}"													# NetworkManager起動状態
 	echo "CON_NAME=${CON_NAME}"													# 接続名
 	echo "CON_UUID=${CON_UUID}"													# 接続UUID
 	echo "NIC_ARRY=${NIC_ARRY[@]}"												# NICデバイス名
@@ -2021,6 +2129,9 @@ funcDebug () {
 	echo "LNK_RADU=${LNK_RADU[@]}"												# Link:BIND逆引き用上位値
 	echo "LNK_RADL=${LNK_RADL[@]}"												# Link:BIND逆引き用下位値
 	echo "RNG_DHCP=${RNG_DHCP}"													# IPv4:DHCPの提供アドレス範囲
+	echo "URL_SYS =${URL_SYS}"													# ungoogled-chromium:OS別URL
+	echo "URL_DEB =${URL_DEB}"													# ungoogled-chromium:/etc/apt/sources.list.d/home:ungoogled_chromium.list
+	echo "URL_KEY =${URL_KEY}"													# ungoogled-chromium:/etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg
 #	echo "DST_NAME=${DST_NAME}"													# ワーク：
 #	echo "MNT_FD  =${MNT_FD}"													#  〃   ：
 #	echo "MNT_CD  =${MNT_CD}"													#  〃   ：
@@ -2158,36 +2269,70 @@ funcDebug () {
 #		funcDiff ${DIR_VSFTPD}/vsftpd.conf ${DIR_VSFTPD}/vsftpd.conf.orig
 #	fi
 	# Install bind9 ***********************************************************
-	if [ -f ${DIR_ZONE}/${WGP_NAME}.zone ]; then
-		echo --- cat ${DIR_ZONE}/${WGP_NAME}.zone --------------------------------
-		expand -t 4 ${DIR_ZONE}/${WGP_NAME}.zone
+	if [ -f ${DIR_ZONE}/master/db.${WGP_NAME}                 ]; then
+		echo --- cat ${DIR_ZONE}/master/db.${WGP_NAME} -----------------------------------
+		expand -t 4 ${DIR_ZONE}/master/db.${WGP_NAME}
 	fi
-	if [ -f ${DIR_ZONE}/${WGP_NAME}.rev ]; then
-		echo --- cat ${DIR_ZONE}/${WGP_NAME}.rev ---------------------------------
-		expand -t 4 ${DIR_ZONE}/${WGP_NAME}.rev
+	if [ -f ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa ]; then
+		echo --- cat ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa -----------------------
+		expand -t 4 ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa
 	fi
-	if [ -f ${DIR_ZONE}/${IP6_UADR}.rev ]; then
-		echo --- cat ${DIR_ZONE}/${IP6_UADR}.rev ---------------------------------
-		expand -t 4 ${DIR_ZONE}/${IP6_UADR}.rev
+	if [ -f ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa     ]; then
+		echo --- cat ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa -----------------------
+		expand -t 4 ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa
 	fi
-	if [ -f ${DIR_ZONE}/${LNK_UADR}.rev ]; then
-		echo --- cat ${DIR_ZONE}/${LNK_UADR}.rev ---------------------------------
-		expand -t 4 ${DIR_ZONE}/${LNK_UADR}.rev
+	if [ -f ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa     ]; then
+		echo --- cat ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa -----------------------
+		expand -t 4 ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-#	echo --- cat ${DIR_BIND}/named.conf --------------------------------------------------
-#	expand -t 4 ${DIR_BIND}/named.conf
+	echo --- cat ${DIR_BIND}/named.conf --------------------------------------------------
 	if [ -f ${DIR_BIND}/named.conf.orig ]; then
-		echo --- diff ${DIR_BIND}/named.conf -------------------------------------
 		funcDiff ${DIR_BIND}/named.conf ${DIR_BIND}/named.conf.orig
+	else
+		expand -t 4 ${DIR_BIND}/named.conf
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	if [ -f ${DIR_BIND}/named.conf.local ]; then
-		echo --- cat ${DIR_BIND}/named.conf.local --------------------------------------------
+	echo --- cat ${DIR_BIND}/named.conf.local --------------------------------------------
+	if [ -f ${DIR_BIND}/named.conf.local.orig ]; then
+		funcDiff ${DIR_BIND}/named.conf.local ${DIR_BIND}/named.conf.local.orig
+	else
 		expand -t 4 ${DIR_BIND}/named.conf.local
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
+	echo --- cat ${DIR_BIND}/named.conf.options ------------------------------------------
+	if [ -f ${DIR_BIND}/named.conf.options.orig ]; then
+		funcDiff ${DIR_BIND}/named.conf.options ${DIR_BIND}/named.conf.options.orig
+	else
+		expand -t 4 ${DIR_BIND}/named.conf.options
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+	set +e
+	echo --- ping check ----------------------------------------------------------------
+	if [ "`which ping4 2> /dev/null`" != "" ]; then
+		ping4 -c 4 www.google.com
+	else
+		ping -c 4 www.google.com
+	fi
+	if [ "`which ping6 2> /dev/null`" != "" ]; then
+		echo ･･･････････････････････････････････････････････････････････････････････････････
+		ping6 -c 4 www.google.com
+	fi
+	echo --- ping check ----------------------------------------------------------------
+	set -e
+	# ･････････････････････････････････････････････････････････････････････････
+	set +e
 	echo --- dns check -----------------------------------------------------------------
+	dig @localhost ${IP4_RADR[0]}.in-addr.arpa DNSKEY +dnssec +multi
+	echo ･･･････････････････････････････････････････････････････････････････････････････
+	dig @localhost ${WGP_NAME} DNSKEY +dnssec +multi
+	echo ･･･････････････････････････････････････････････････････････････････････････････
+	dig @${IP4_ADDR[0]} ${WGP_NAME} axfr
+	echo ･･･････････････････････････････････････････････････････････････････････････････
+	dig @${IP6_ADDR[0]} ${WGP_NAME} axfr
+#	echo ･･･････････････････････････････････････････････････････････････････････････････
+#	dig @${LNK_ADDR[0]} ${WGP_NAME} axfr
+	echo ･･･････････････････････････････････････････････････････････････････････････････
 	dig ${SVR_NAME}.${WGP_NAME} A +nostats +nocomments
 	echo ･･･････････････････････････････････････････････････････････････････････････････
 	dig ${SVR_NAME}.${WGP_NAME} AAAA +nostats +nocomments
@@ -2198,6 +2343,7 @@ funcDebug () {
 	echo ･･･････････････････････････････････････････････････････････････････････････････
 	dig -x ${LNK_ADDR[0]} +nostats +nocomments
 	echo --- dns check -----------------------------------------------------------------
+	set -e
 	# Install dhcp ************************************************************
 #	echo --- diff /etc/dhcp/dhcpd.conf -------------------------------------------------
 #	expand -t 4 /etc/dhcp/dhcpd.conf

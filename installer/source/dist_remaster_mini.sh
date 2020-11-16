@@ -32,6 +32,8 @@
 ##	2020/05/05 000.0000 J.Itou         不具合修正
 ##	2020/05/11 000.0000 J.Itou         ubuntu 20.04 対応 / ubuntu 19.04 削除
 ##	2020/11/04 000.0000 J.Itou         memo修正
+##	2020/11/11 000.0000 J.Itou         追加アプリ導入処理追加 / 取得先サーバー変更
+##	2020/11/12 000.0000 J.Itou         ubuntu 20.10 追加 (DL先未登録のためコメントアウト)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -39,7 +41,7 @@
 #	set -eu													# ステータス0以外と未定義変数の参照で終了
 	set -u													# 未定義変数の参照で終了
 #	set -o ignoreof											# Ctrl+Dで終了しない
-	trap 'exit 1' 1 2 3 15
+#	trap 'exit 1' 1 2 3 15
 # -----------------------------------------------------------------------------
 	INP_INDX=${@:-""}										# 処理ID
 # -----------------------------------------------------------------------------
@@ -59,6 +61,8 @@
 	    "ubuntu ubuntu-archive xenial"       \
 	    "ubuntu ubuntu-archive bionic"       \
 	    "ubuntu ubuntu-archive focal"        \
+	    "ubuntu ubuntu-archive groovy"       \
+	    "ubuntu ubuntu-archive hirsute"
 	)
 # -----------------------------------------------------------------------------
 funcMenu () {
@@ -66,11 +70,13 @@ funcMenu () {
 	echo "# ID：Version     ：コードネーム    ：リリース日：サポ終了日：備考           #"
 	echo "#  1：Debian  8.xx：jessie          ：2015-04-25：2020-06-30：oldoldstable   #"
 	echo "#  2：Debian  9.xx：stretch         ：2017-06-17：2022-06-xx：oldstable      #"
-	echo "#  3：Debian 10.xx：buster          ：2019-07-06：          ：stable         #"
-	echo "#  4：Debian 11.xx：bullseye        ：2021-xx-xx：          ：testing        #"
+	echo "#  3：Debian 10.xx：buster          ：2019-07-06：20xx-xx-xx：stable         #"
+	echo "#  4：Debian 11.xx：bullseye        ：2021-xx-xx：20xx-xx-xx：testing        #"
 	echo "#  5：Ubuntu 16.04：Xenial Xerus    ：2016-04-21：2021-04-xx：LTS            #"
 	echo "#  6：Ubuntu 18.04：Bionic Beaver   ：2018-04-26：2023-04-xx：LTS            #"
 	echo "#  7：Ubuntu 20.04：Focal Fossa     ：2020-04-23：2025-04-xx：LTS            #"
+#	echo "#  8：Ubuntu 20.10：Groovy Gorilla  ：2020-10-22：2021-07-xx：               #"
+#	echo "#  9：Ubuntu 21.04：Hirsute Hippo   ：2021-04-22：2022-01-xx：               #"
 	echo "# ---------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
@@ -92,14 +98,24 @@ funcRemaster () {
 	local CPU_TYPE=amd64									# CPUタイプ(64bit)
 	local DVD_NAME="mini-${CODE_NAME[2]}-${CPU_TYPE}"
 	case "${CODE_NAME[2]}" in
-		"testing" )
+		"oldoldstable" | \
+		"oldstable"    | \
+		"stable"       )
+			local DVD_URL="http://ftp.debian.org/debian/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
+			;;
+		"testing"     )
 			local DVD_URL="https://d-i.debian.org/daily-images/${CPU_TYPE}/daily/netboot/mini.iso"
 			;;
-		"focal" )
-			local DVD_URL="https://ftp.yz.yamagata-u.ac.jp/pub/linux/${CODE_NAME[1]}/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/legacy-images/netboot/mini.iso"
+		"xenial"  | \
+		"bionic"  )
+			local DVD_URL="http://archive.ubuntu.com/ubuntu/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
+			;;
+		"focal"   | \
+		"groovy"  | \
+		"hirsute" )
+			local DVD_URL="http://archive.ubuntu.com/ubuntu/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/legacy-images/netboot/mini.iso"
 			;;
 		* )
-			local DVD_URL="https://ftp.yz.yamagata-u.ac.jp/pub/linux/${CODE_NAME[1]}/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
 			;;
 	esac
 	# --- preseed.cfg ---------------------------------------------------------
@@ -115,21 +131,22 @@ funcRemaster () {
 			cp --preserve=timestamps "../../${CFG_NAME}.cfg" "preseed.cfg"
 		fi
 		if [ ! -f "preseed.cfg" ]; then
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed.cfg" "${CFG_URL}" || { rm -f "preseed.cfg"; exit 1; }
+			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed.cfg" "${CFG_URL}" || { exit 1; }
 		fi
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { exit 1; }
 		else
-			curl -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}"
+			curl -f -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}"
+			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
 			local WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
 			local DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "../${DVD_NAME}.iso"`
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
-			if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { rm -f "../${DVD_NAME}.iso"; exit 1; }
+			if [ ${WEB_STAT} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
+				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { exit 1; }
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
@@ -208,6 +225,20 @@ funcRemaster () {
 			apt -y update && apt -y upgrade && apt -y install xorriso
 		else
 			yum -y update && yum -y upgrade && yum -y install xorriso
+		fi
+	fi
+	if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
+		if [ ! -f /etc/redhat-release ]; then
+			apt -y update && apt -y upgrade && apt -y install isomd5sum
+		else
+			yum -y update && yum -y upgrade && yum -y install isomd5sum
+		fi
+	fi
+	if [ ! -f /usr/lib/ISOLINUX/isohdpfx.bin ]; then
+		if [ ! -f /etc/redhat-release ]; then
+			apt -y update && apt -y upgrade && apt -y install isolinux
+		else
+			yum -y update && yum -y upgrade && yum -y install isolinux
 		fi
 	fi
 	# -------------------------------------------------------------------------
