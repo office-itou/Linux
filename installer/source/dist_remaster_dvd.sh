@@ -546,7 +546,7 @@ funcRemaster () {
 				"centos" | \
 				"fedora" )	# ･････････････････････････････････････････････････
 					rm -f md5sum.txt
-					find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
+					find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img"! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 					# --- make iso file -----------------------------------------------
 					case "${CODE_NAME[1]}" in
 						ubuntu*20.10* )
