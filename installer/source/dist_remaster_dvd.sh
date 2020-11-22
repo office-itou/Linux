@@ -61,6 +61,7 @@
 ##	2020/11/04 000.0000 J.Itou         memo修正 / fedora 33 変更
 ##	2020/11/11 000.0000 J.Itou         追加アプリ導入処理追加
 ##	2020/11/12 000.0000 J.Itou         ubuntu 20.10 追加
+##	2020/11/21 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -103,7 +104,7 @@
 #	    "ubuntu ubuntu-20.10-desktop-amd64             https://releases.ubuntu.com/groovy/ubuntu-20.10-desktop-amd64.iso                                                        preseed_ubuntu.cfg"       \
 
 # -----------------------------------------------------------------------------
-funcMenu () {
+fncMenu () {
 	echo "# ----------------------------------------------------------------------------#"
 	echo "# ID：Version                         ：リリース日：サポ終了日：備考          #"
 	echo "#  1：debian-8.11.1-amd64-DVD-1       ：2015-04-25：2020-06-30：oldoldstable  #"
@@ -129,14 +130,14 @@ funcMenu () {
 #	echo "#   ：ubuntu-20.04.1-desktop-amd64    ：2020-04-23：2025-04-xx：Focal Fossa   #"
 }
 # -----------------------------------------------------------------------------
-funcIsInt () {
+fncIsInt () {
 	set +e
 	expr ${1:-""} + 1 > /dev/null 2>&1
 	if [ $? -ge 2 ]; then echo 1; else echo 0; fi
 	set -e
 }
 # -----------------------------------------------------------------------------
-funcRemaster () {
+fncRemaster () {
 	# --- ARRAY_NAME ----------------------------------------------------------
 	local CODE_NAME=($1)									# 配列展開
 	echo "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------"
@@ -163,7 +164,7 @@ funcRemaster () {
 			local DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "../${DVD_NAME}.iso"`
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
-			if [ ${WEB_STAT} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
+			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
 				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { exit 1; }
 			fi
 			if [ -f "header.txt" ]; then
@@ -189,10 +190,10 @@ funcRemaster () {
 				"debian" | \
 				"ubuntu" )
 					case "${CODE_NAME[1]}" in
-						*20.04*live*    | \
-						*20.10*live*    | \
-						*20.04*desktop* | \
-						*20.10*desktop* )					# --- get user-data
+						ubuntu*20.04*live*    | \
+						ubuntu*20.10*live*    | \
+						ubuntu*20.04*desktop* | \
+						ubuntu*20.10*desktop* )				# --- get user-data
 							EFI_IMAG="boot/grub/efi.img"
 							ISO_NAME="${DVD_NAME}-nocloud"
 							mkdir -p "nocloud"
@@ -213,10 +214,6 @@ funcRemaster () {
 							else
 								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_URL}" || { exit 1; }
 							fi
-#							sed -i "preseed/preseed.cfg"                                   \
-#							    -e 's~.*\(d-i debian-installer/language\).*~  \1 string en~' \
-#							    -e 's~.*\(d-i debian-installer/locale\).*~  \1 string en_US.UTF-8~' \
-#							    -e '/d-i debian-installer\/language/i\  d-i localechooser\/preferred-locale select en_US.UTF-8\n  d-i localechooser\/supported-locales multiselect en_US.UTF-8, ja_JP.UTF-8'
 							;;
 					esac
 					;;
@@ -230,11 +227,19 @@ funcRemaster () {
 					else
 						curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || { exit 1; }
 					fi
-					sed -i kickstart/ks.cfg    \
-					    -e 's/#\(cdrom\)/\1/g' \
-					    -e 's/^\(url \)/repo --name="New_Repository" /g'
-#					    -e 's/^\(url \)/#\1/g' \
-#					    -e 's/^\(repo \)/#\1/g'
+					case "${WORK_DIRS}" in
+						*net* )
+							sed -i kickstart/ks.cfg     \
+							    -e 's/^\(cdrom\)/#\1/g' \
+							    -e 's/#\(url \)/\1/g'   \
+							    -e 's/#\(repo \)/\1/g'
+							;;
+						*dvd* )
+							sed -i kickstart/ks.cfg                              \
+							    -e 's/#\(cdrom\)/\1/g'                           \
+							    -e 's/^\(url \)/repo --name="New_Repository" /g'
+							;;
+					esac
 					;;
 				"suse")	# --- get autoinst.xml --------------------------------
 					EFI_IMAG="EFI/BOOT/efiboot.img"
@@ -257,6 +262,16 @@ funcRemaster () {
 			# --- mrb:txt.cfg / efi:grub.cfg ----------------------------------
 			case "${CODE_NAME[0]}" in
 				"debian" )	# ･････････････････････････････････････････････････
+					case "${CODE_NAME[1]}" in
+						debian-7.* )
+							sed -i "preseed/preseed.cfg"                                                                               \
+							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/hostname\).*$/\1 string archive.debian.org/'                     \
+							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/directory\).*$/\1 string \/debian-archive\/debian/'              \
+							    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'                       \
+							    -e 's/\(^[ \t]*d-i[ \t]*netcfg\/get_nameservers\)[ \t]*[A-Za-z]*[ \t]*\(.*\)$/\1 string 127.0.0.1 \2/'
+							;;
+						* )	;;
+					esac
 					INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
 					# --- txt.cfg -------------------------------------
 					sed -i isolinux/isolinux.cfg     \
@@ -546,7 +561,7 @@ funcRemaster () {
 				"centos" | \
 				"fedora" )	# ･････････････････････････････････････････････････
 					rm -f md5sum.txt
-					find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img"! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
+					find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 					# --- make iso file -----------------------------------------------
 					case "${CODE_NAME[1]}" in
 						ubuntu*20.10* )
@@ -624,13 +639,13 @@ funcRemaster () {
 	fi
 	# -------------------------------------------------------------------------
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しでメニュー表示
-		funcMenu
+		fncMenu
 	fi
 	# -------------------------------------------------------------------------
 	for I in `eval echo "${INP_INDX}"`						# 連番可
 	do
-		if [ `funcIsInt "$I"` -eq 0 ] && [ $I -ge 1 ] && [ $I -le ${#ARRAY_NAME[@]} ]; then
-			funcRemaster "${ARRAY_NAME[$I-1]}"
+		if [ `fncIsInt "$I"` -eq 0 ] && [ $I -ge 1 ] && [ $I -le ${#ARRAY_NAME[@]} ]; then
+			fncRemaster "${ARRAY_NAME[$I-1]}"
 		fi
 	done
 	# -------------------------------------------------------------------------

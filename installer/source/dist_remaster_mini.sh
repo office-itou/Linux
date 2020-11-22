@@ -34,6 +34,7 @@
 ##	2020/11/04 000.0000 J.Itou         memo修正
 ##	2020/11/11 000.0000 J.Itou         追加アプリ導入処理追加 / 取得先サーバー変更
 ##	2020/11/12 000.0000 J.Itou         ubuntu 20.10 追加 (DL先未登録のためコメントアウト)
+##	2020/11/21 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -65,7 +66,7 @@
 	    "ubuntu ubuntu-archive hirsute"
 	)
 # -----------------------------------------------------------------------------
-funcMenu () {
+fncMenu () {
 	echo "# ---------------------------------------------------------------------------#"
 	echo "# ID：Version     ：コードネーム    ：リリース日：サポ終了日：備考           #"
 	echo "#  1：Debian  8.xx：jessie          ：2015-04-25：2020-06-30：oldoldstable   #"
@@ -82,14 +83,14 @@ funcMenu () {
 	read INP_INDX
 }
 # -----------------------------------------------------------------------------
-funcIsInt () {
+fncIsInt () {
 	set +e
 	expr ${1:-""} + 1 > /dev/null 2>&1
 	if [ $? -ge 2 ]; then echo 1; else echo 0; fi
 	set -e
 }
 # -----------------------------------------------------------------------------
-funcRemaster () {
+fncRemaster () {
 	# --- ARRAY_NAME ----------------------------------------------------------
 	local CODE_NAME=($1)									# 配列展開
 	echo "↓処理中：${CODE_NAME[0]}：${CODE_NAME[2]} ---------------------------------------------"
@@ -145,7 +146,7 @@ funcRemaster () {
 			local DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "../${DVD_NAME}.iso"`
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
-			if [ ${WEB_STAT} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
+			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
 				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { exit 1; }
 			fi
 			if [ -f "header.txt" ]; then
@@ -172,14 +173,43 @@ funcRemaster () {
 		popd > /dev/null
 		pushd image > /dev/null								# 作業用ディスクイメージ
 			# --- mrb:txt.cfg -------------------------------------------------
-			sed -i txt.cfg  \
-			    -e 's/^\(default\) .*$/\1 preseed/' \
-			    -e '/menu default/d' \
-			    -e "/^label install.*$/i\label preseed\r\n\tmenu label ^Preseed install\r\n\tmenu default\r\n\tkernel linux\r\n\tappend vga=788 initrd=initps.gz --- quiet \r"
+			sed -i isolinux.cfg -e 's/\(timeout\).*[0-9]*/\1 50/'
+			sed -i prompt.cfg   -e 's/\(timeout\).*[0-9]*/\1 50/'
+			sed -i txt.cfg      -e '/menu default/d' \
+			                    -e '/timeout/d'
+			INS_ROW=$((`sed -n '/^label/ =' txt.cfg | head -n 1`-1))
+			INS_STR="\\`sed -n '/menu label/p' txt.cfg | head -n 1 | sed -e 's/\(^.*menu\).*/\1 default/'`"
+			if [ ${INS_ROW} -ge 1 ]; then
+				sed -n '/label install/,/append/p' txt.cfg | \
+				sed -e 's/^\(label\) install/\1 autoinst/'   \
+				    -e 's/\(Install\)/Auto \1/'              \
+				    -e "s/initrd.gz/initps.gz/"              \
+				    -e "/menu label/a ${INS_STR}"          | \
+				sed -e "${INS_ROW}r /dev/stdin" txt.cfg      \
+				    -e '1i timeout 50'                       \
+				> txt.cfg.temp
+			else
+				sed -n '/label install/,/append/p' txt.cfg | \
+				sed -e 's/^\(label\) install/\1 autoinst/'   \
+				    -e 's/\(Install\)/Auto \1/'              \
+				    -e "s/initrd.gz/initps.gz/"              \
+				    -e "/menu label/a ${INS_STR}"            \
+				    -e '1i timeout 50'                       \
+				> txt.cfg.temp
+				cat txt.cfg >> txt.cfg.temp
+			fi
+			mv txt.cfg.temp txt.cfg
 			# --- efi:grub.cfg ------------------------------------------------
-			sed -i boot/grub/grub.cfg \
-			    -e "/^menuentry 'Install'.*$/i\menuentry 'Preseed install' {\n    set background_color=black\n    linux    /linux vga=788 --- quiet\n    initrd   /initps.gz\n}" \
-			    -e '/^menuentry "Install".*$/i\menuentry "Preseed install" {\n\tset gfxpayload=keep\n\tlinux\t/linux --- quiet\n\tinitrd\t/initps.gz\n}\n'
+			INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+			sed -n '/^menuentry .*['\''"]Install['\''\"]/,/^}/p' boot/grub/grub.cfg | \
+			sed -e 's/\(Install\)/Auto \1/'                                           \
+			    -e "s/initrd.gz/initps.gz/"                                           \
+			    -e 's/\(--hotkey\)=./\1=a/'                                         | \
+			sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                      | \
+			sed -e 's/\(set default\)="1"/\1="0"/'                                    \
+			    -e '1i set timeout=5'                                                 \
+			> grub.cfg.temp
+			mv grub.cfg.temp boot/grub/grub.cfg
 			# --- copy EFI directory ------------------------------------------
 			case "${CODE_NAME[0]}" in
 				"debian" )
@@ -194,22 +224,29 @@ funcRemaster () {
 					;;
 				* )	;;
 			esac
-			# --- make iso file -----------------------------------------------
+			# -----------------------------------------------------------------
 			rm -f md5sum.txt
-			find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt
+			find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" -type f -exec md5sum {} \; > md5sum.txt
+			# --- make iso file -----------------------------------------------
+			EFI_IMAG="boot/grub/efi.img"
+			ISO_NAME="${DVD_NAME}-preseed"
+			ELT_BOOT=isolinux.bin
+			ELT_CATA=boot.cat
+#			ELT_BOOT=boot/grub/i386-pc/eltorito.img
+#			ELT_CATA=boot.catalog
 			xorriso -as mkisofs \
 			    -quiet \
 			    -iso-level 3 \
 			    -full-iso9660-filenames \
 			    -volid "${VOLID}" \
-			    -eltorito-boot isolinux.bin \
-			    -eltorito-catalog boot.cat \
+			    -eltorito-boot ${ELT_BOOT} \
+			    -eltorito-catalog ${ELT_CATA} \
 			    -no-emul-boot -boot-load-size 4 -boot-info-table \
 			    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
 			    -eltorito-alt-boot \
-			    -e boot/grub/efi.img \
+			    -e "${EFI_IMAG}" \
 			    -no-emul-boot -isohybrid-gpt-basdat \
-			    -output "../../${DVD_NAME}-preseed.iso" \
+			    -output "../../${ISO_NAME}.iso" \
 			    .
 		popd > /dev/null
 	popd > /dev/null
@@ -243,13 +280,13 @@ funcRemaster () {
 	fi
 	# -------------------------------------------------------------------------
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しでメニュー表示
-		funcMenu
+		fncMenu
 	fi
 	# -------------------------------------------------------------------------
 	for I in `eval echo "${INP_INDX}"`						# 連番可
 	do
-		if [ `funcIsInt "$I"` -eq 0 ] && [ $I -ge 1 ] && [ $I -le ${#ARRAY_NAME[@]} ]; then
-			funcRemaster "${ARRAY_NAME[$I-1]}"
+		if [ `fncIsInt "$I"` -eq 0 ] && [ $I -ge 1 ] && [ $I -le ${#ARRAY_NAME[@]} ]; then
+			fncRemaster "${ARRAY_NAME[$I-1]}"
 		fi
 	done
 	# -------------------------------------------------------------------------
