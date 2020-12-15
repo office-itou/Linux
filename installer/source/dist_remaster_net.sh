@@ -56,6 +56,7 @@
 ##	2020/11/11 000.0000 J.Itou         追加アプリ導入処理追加
 ##	2020/11/21 000.0000 J.Itou         不具合修正
 ##	2020/12/06 000.0000 J.Itou         debian 10.7.0 / CentOS-Stream-8-x86_64-20201203-boot 変更
+##	2020/12/15 000.0000 J.Itou         CentOS 8.3.2011 / CentOS-Stream-8 20201211 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -80,8 +81,8 @@
 	    "debian debian-9.13.0-amd64-netinst            https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "debian debian-10.7.0-amd64-netinst            https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.7.0-amd64-netinst.iso                              preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-netinst           https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "centos CentOS-8.2.2004-x86_64-boot            http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso                       kickstart_centos.cfg" \
-	    "centos CentOS-Stream-8-x86_64-20201203-boot   http://ftp-srv2.kddilabs.jp/Linux/packages/CentOS/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201203-boot.iso              kickstart_centos.cfg" \
+	    "centos CentOS-8.3.2011-x86_64-boot            http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-boot.iso                                   kickstart_centos.cfg" \
+	    "centos CentOS-Stream-8-x86_64-20201211-boot   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201211-boot.iso                          kickstart_centos.cfg" \
 	    "fedora Fedora-Server-netinst-x86_64-33-1.2    https://download.fedoraproject.org/pub/fedora/linux/releases/33/Server/x86_64/iso/Fedora-Server-netinst-x86_64-33-1.2.iso    kickstart_fedora.cfg" \
 	    "suse   openSUSE-Leap-15.2-NET-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml"  \
 	    "suse   openSUSE-Tumbleweed-NET-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml"  \
@@ -94,9 +95,9 @@ fncMenu () {
 	echo "#  2：debian-9.13.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
 	echo "#  3：debian-10.7.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
-	echo "#  5：CentOS-8.2.2004-x86_64-boot        ：2020-06-15：2029-05-31：RHEL 8.0   #"
-	echo "#  6：CentOS-Stream-8-x86_64-20201203-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
-	echo "#  7：Fedora-Server-netinst-x86_64-33-1.2：2020-10-xx：20xx-xx-xx：kernel 5.x #"
+	echo "#  5：CentOS-8.3.2011-x86_64-boot        ：2020-06-15：2021-12-31：RHEL 8.0   #"
+	echo "#  6：CentOS-Stream-8-x86_64-20201211-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
+	echo "#  7：Fedora-Server-netinst-x86_64-33-1.2：2020-10-27：20xx-xx-xx：kernel 5.8 #"
 	echo "#  8：openSUSE-Leap-15.2-NET-x86_64      ：20xx-xx-xx：20xx-xx-xx：           #"
 	echo "#  9：openSUSE-Tumbleweed-NET-x86_64-Curr：20xx-xx-xx：20xx-xx-xx：           #"
 	echo "# ----------------------------------------------------------------------------#"
@@ -706,9 +707,10 @@ fncRemaster () {
 # 7.6-1810:2018-12-03:2018-10-30:2024-06-30: 3.10.0- 957
 # 7.7-1908:2019-09-17:2019-08-06:2024-06-30: 3.10.0-1062
 # 7.8-2003:2020-04-27:2020-03-30:2024-06-30: 3.10.0-1127
-# 8.0-1905:2019-09-24:2019-05-07:2029-05-31: 4.18.0- 80
-# 8.1-1911:2020-01-15:2019-11-05:2029-05-31: 4.18.0-147
-# 8.2.2004:2020-06-15:2020-04-28:2029-05-31: 4.18.0-193
+# 8.0-1905:2019-09-24:2019-05-07:2021-12-31: 4.18.0- 80
+# 8.1-1911:2020-01-15:2019-11-05:2021-12-31: 4.18.0-147
+# 8.2.2004:2020-06-15:2020-04-28:2021-12-31: 4.18.0-193
+# 8.3.2011:2020-11-03:2020-12-07:2021-12-31: 4.18.0-240
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # Ver. :コードネーム     :リリース日:サポ期限  :kernel
 #x27   :                 :2017-11-14:2018-11-27: 4.13
@@ -717,5 +719,5 @@ fncRemaster () {
 #x30   :                 :2019-04-29:2020-05-26: 5.0
 # 31   :                 :2019-10-29:          : 5.3
 # 32   :                 :2020-04-28:          : 5.6
-# 33   :                 :2020-10-xx:          : 5.x
+# 33   :                 :2020-10-27:          : 5.8
 # -----------------------------------------------------------------------------
