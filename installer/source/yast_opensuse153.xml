@@ -4,18 +4,18 @@
   <add-on t="map">
     <add_on_others t="list">
       <listentry t="map">
-        <media_url>http://download.opensuse.org/tumbleweed/repo/oss/</media_url>
-        <name>repo-oss</name>
+        <media_url>http://download.opensuse.org/update/leap/15.3/oss/</media_url>
+        <name>repo-update</name>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>http://download.opensuse.org/tumbleweed/repo/non-oss/</media_url>
+        <media_url>http://download.opensuse.org/distribution/leap/15.3/repo/non-oss/</media_url>
         <name>repo-non-oss</name>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>http://download.opensuse.org/update/tumbleweed/</media_url>
-        <name>repo-update</name>
+        <media_url>http://download.opensuse.org/distribution/leap/15.3/repo/oss/</media_url>
+        <name>repo-oss</name>
         <product_dir>/</product_dir>
       </listentry>
     </add_on_others>
@@ -67,7 +67,7 @@
       <interface t="map">
         <bootproto>static</bootproto>
         <ipaddr>192.168.1.1</ipaddr>
-        <name>ens160</name>
+        <name>eth0</name>
         <prefixlen>24</prefixlen>
         <startmode>auto</startmode>
         <zone>home</zone>
@@ -78,7 +78,7 @@
       <routes t="list">
         <route t="map">
           <destination>default</destination>
-          <device>ens160</device>
+          <device>eth0</device>
           <gateway>192.168.1.254</gateway>
           <netmask>-</netmask>
         </route>
@@ -120,9 +120,11 @@ exit 0
   <software t="map">
     <install_recommended t="boolean">true</install_recommended>
     <packages t="list">
+      <package>bind</package>
       <package>chromium</package>
       <package>clamav</package>
       <package>chrony</package>
+      <package>dhcpd-pools</package>
     </packages>
     <patterns t="list">
       <pattern>apparmor</pattern>
@@ -130,25 +132,21 @@ exit 0
       <pattern>basesystem</pattern>
       <pattern>console</pattern>
       <pattern>enhanced_base</pattern>
+      <pattern>lxde</pattern>
       <pattern>minimal_base</pattern>
       <pattern>sw_management</pattern>
       <pattern>x11</pattern>
       <pattern>x11_enhanced</pattern>
       <pattern>laptop</pattern>
       <pattern>multimedia</pattern>
-      <pattern>devel_basis</pattern>
       <pattern>fonts</pattern>
       <pattern>fonts_opt</pattern>
-      <pattern>lxde</pattern>
-      <pattern>lxde_laptop</pattern>
-      <pattern>lxde_office</pattern>
-      <pattern>dhcp_dns_server</pattern>
       <pattern>file_server</pattern>
       <pattern>x11_yast</pattern>
       <pattern>yast2_basis</pattern>
     </patterns>
     <products t="list">
-      <product>openSUSE</product>
+      <product>Leap</product>
     </products>
   </software>
   <timezone t="map">

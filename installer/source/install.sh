@@ -64,6 +64,7 @@
 ##	2020/11/09 000.0000 J.Itou         処理追加(ubuntu通信障害対策)
 ##	2020/11/11 000.0000 J.Itou         処理追加(いろいろ)
 ##	2020/11/18 000.0000 J.Itou         不具合修正(いろいろ)
+##	2020/12/22 000.0000 J.Itou         不具合修正(nologin設定値)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -539,7 +540,12 @@ fncInitialize () {
 			;;
 	esac
 	# -------------------------------------------------------------------------
-	LIN_CHSH=`find /usr/bin/ /usr/sbin/ -name nologin -print`
+#	LIN_CHSH=`find /usr/bin/ /usr/sbin/ -name nologin -print`
+	if [ -f /etc/lightdm/users.conf ]; then
+		LIN_CHSH=`awk -F '[ =]' '$1=="hidden-shells" {print $2;}' /etc/lightdm/users.conf`
+	else
+		LIN_CHSH=`find /bin /sbin /usr/sbin -mindepth 1 -maxdepth 1 \( -name 'false' -o -name 'nologin' \) -print | head -n 1`
+	fi
 	if [ "`which usermod 2> /dev/null`" != "" ]; then
 		CMD_CHSH="`which usermod` -s ${LIN_CHSH}"
 	else

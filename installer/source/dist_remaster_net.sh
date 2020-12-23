@@ -57,6 +57,7 @@
 ##	2020/11/21 000.0000 J.Itou         不具合修正
 ##	2020/12/06 000.0000 J.Itou         debian 10.7.0 / CentOS-Stream-8-x86_64-20201203-boot 変更
 ##	2020/12/15 000.0000 J.Itou         CentOS 8.3.2011 / CentOS-Stream-8 20201211 変更
+##	2020/12/20 000.0000 J.Itou         openSUSE Leap 15.3 追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -87,6 +88,7 @@
 	    "suse   openSUSE-Leap-15.2-NET-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml"  \
 	    "suse   openSUSE-Tumbleweed-NET-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml"  \
 	)   # 区分  netinstファイル名                      ダウンロード先URL                                                                                                            定義ファイル
+#	    "suse   openSUSE-Leap-15.3-NET-x86_64-Current  http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64-Current.iso                            yast_opensuse153.xml" \
 # -----------------------------------------------------------------------------
 fncMenu () {
 	echo "# ----------------------------------------------------------------------------#"
@@ -98,11 +100,12 @@ fncMenu () {
 	echo "#  5：CentOS-8.3.2011-x86_64-boot        ：2020-06-15：2021-12-31：RHEL 8.0   #"
 	echo "#  6：CentOS-Stream-8-x86_64-20201211-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
 	echo "#  7：Fedora-Server-netinst-x86_64-33-1.2：2020-10-27：20xx-xx-xx：kernel 5.8 #"
-	echo "#  8：openSUSE-Leap-15.2-NET-x86_64      ：20xx-xx-xx：20xx-xx-xx：           #"
+	echo "#  8：openSUSE-Leap-15.2-NET-x86_64      ：2020-07-02：2021-11-xx：kernel 5.3 #"
 	echo "#  9：openSUSE-Tumbleweed-NET-x86_64-Curr：20xx-xx-xx：20xx-xx-xx：           #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
+#	echo "#   ：openSUSE-Leap-15.3-NET-x86_64-Curre：20xx-xx-xx：20xx-xx-xx：           #"
 }
 # -----------------------------------------------------------------------------
 fncIsInt () {
@@ -720,4 +723,8 @@ fncRemaster () {
 # 31   :                 :2019-10-29:          : 5.3
 # 32   :                 :2020-04-28:          : 5.6
 # 33   :                 :2020-10-27:          : 5.8
+# --- https://ja.wikipedia.org/wiki/OpenSUSE ----------------------------------
+# Ver. :コードネーム       :リリース日:サポ期限  :kernel
+# 15.2 :openSUSE Leap      :2020-07-02:2021-11-xx: 5.3
+# xx.x :openSUSE Tumbleweed:20xx-xx-xx:20xx-xx-xx:
 # -----------------------------------------------------------------------------
