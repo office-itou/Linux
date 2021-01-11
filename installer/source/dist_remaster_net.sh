@@ -58,6 +58,7 @@
 ##	2020/12/06 000.0000 J.Itou         debian 10.7.0 / CentOS-Stream-8-x86_64-20201203-boot 変更
 ##	2020/12/15 000.0000 J.Itou         CentOS 8.3.2011 / CentOS-Stream-8 20201211 変更
 ##	2020/12/20 000.0000 J.Itou         openSUSE Leap 15.3 追加
+##	2021/01/11 000.0000 J.Itou         debian-testingをdaily-buildsに変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -81,13 +82,14 @@
 	    "debian debian-8.11.1-amd64-netinst            https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "debian debian-9.13.0-amd64-netinst            https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "debian debian-10.7.0-amd64-netinst            https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.7.0-amd64-netinst.iso                              preseed_debian.cfg"   \
-	    "debian debian-testing-amd64-netinst           https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "debian debian-testing-amd64-netinst           https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg"   \
 	    "centos CentOS-8.3.2011-x86_64-boot            http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-boot.iso                                   kickstart_centos.cfg" \
 	    "centos CentOS-Stream-8-x86_64-20201211-boot   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201211-boot.iso                          kickstart_centos.cfg" \
 	    "fedora Fedora-Server-netinst-x86_64-33-1.2    https://download.fedoraproject.org/pub/fedora/linux/releases/33/Server/x86_64/iso/Fedora-Server-netinst-x86_64-33-1.2.iso    kickstart_fedora.cfg" \
 	    "suse   openSUSE-Leap-15.2-NET-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml"  \
 	    "suse   openSUSE-Tumbleweed-NET-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml"  \
 	)   # 区分  netinstファイル名                      ダウンロード先URL                                                                                                            定義ファイル
+#	    "debian debian-testing-amd64-netinst           https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
 #	    "suse   openSUSE-Leap-15.3-NET-x86_64-Current  http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64-Current.iso                            yast_opensuse153.xml" \
 # -----------------------------------------------------------------------------
 fncMenu () {

@@ -65,6 +65,7 @@
 ##	2020/11/11 000.0000 J.Itou         処理追加(いろいろ)
 ##	2020/11/18 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2020/12/22 000.0000 J.Itou         不具合修正(nologin設定値)
+##	2021/01/10 000.0000 J.Itou         不具合修正(chromium導入関係)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -323,6 +324,9 @@ fncInitialize () {
 	FLG_SVER=1																	# 0以外でサーバー仕様でセッティング
 	DEF_USER="${SUDO_USER}"														# インストール時に作成したユーザー名
 
+	# cpu type ----------------------------------------------------------------
+	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
+
 	# system info -------------------------------------------------------------
 	SYS_NAME=`awk -F '=' '$1=="ID"               {gsub("\"",""); print $2;}' /etc/os-release`	# ディストリビューション名
 	SYS_CODE=`awk -F '=' '$1=="VERSION_CODENAME" {gsub("\"",""); print $2;}' /etc/os-release`	# コード名
@@ -344,18 +348,20 @@ fncInitialize () {
 	if [ "${SYS_NAME}" = "debian" ] && [ "${SYS_CODE}" = "sid" -o `echo "${SYS_VNUM} ==  7" | bc` -ne 0 ]; then
 		SYS_NOOP=1
 	else
-		case "${SYS_NAME}" in
-			"debian"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 10"       | bc`;;
-			"ubuntu"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 20.04"    | bc`;;
-			"centos"              ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
-			"fedora"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`;;
-			"opensuse-leap"       ) SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`;;
-			"opensuse-tumbleweed" ) SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`;;
-			*                     )                                               ;;
-		esac
+		if [ "${CPU_TYPE}" = "x86_64" ]; then
+			case "${SYS_NAME}" in
+				"debian"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 10"       | bc`;;
+				"ubuntu"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 20.04"    | bc`;;
+				"centos"              ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
+				"fedora"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`;;
+				"opensuse-leap"       ) SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`;;
+				"opensuse-tumbleweed" ) SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`;;
+				*                     )                                               ;;
+			esac
+		fi
 	fi
 	if [ ${SYS_NOOP} -eq 0 ]; then
-		echo "${SYS_NAME} ${SYS_VERS:-${SYS_CODE}} ではテストをしていないので実行できません。"
+		echo "${SYS_NAME} ${SYS_VERS:-${SYS_CODE}} (${CPU_TYPE}) ではテストをしていないので実行できません。"
 		exit 1
 	fi
 
@@ -363,9 +369,6 @@ fncInitialize () {
 	SMB_USER=sambauser															# smb.confのforce user
 	SMB_GRUP=sambashare															# smb.confのforce group
 	SMB_GADM=sambaadmin															# smb.confのadmin group
-
-	# cpu type ----------------------------------------------------------------
-	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
 
 	# network -----------------------------------------------------------------
 	#   NIC複数枚運用には非対応です                                            	<お願い>
@@ -463,10 +466,16 @@ fncInitialize () {
 				"sid"    | \
 				"bionic" | \
 				"focal"  )
-					echo --- Install chromium [${SYS_NAME} ${SYS_CODE}] ------------------------------------------
+#					echo --- Install ungoogled-chromium [${SYS_NAME} ${SYS_CODE}] --------------------------------
 					URL_SYS="`echo ${SYS_NAME} | sed -e 's/\(.\)\(.*\)/\U\1\L\2/g'`_`echo ${SYS_CODE} | sed -e 's/\(.\)\(.*\)/\U\1\L\2/g'`"
 					URL_DEB="http://download.opensuse.org/repositories/home:/ungoogled_chromium/${URL_SYS}/"
 					URL_KEY="https://download.opensuse.org/repositories/home:ungoogled_chromium/${URL_SYS}/Release.key"
+#					if [ ! -f /etc/apt/sources.list.d/home:ungoogled_chromium.list ]; then
+#						echo "deb ${URL_DEB} /" | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
+#					fi
+#					if [ ! -f /etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg ]; then
+#						curl -fsSL ${URL_KEY} | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg > /dev/null
+#					fi
 					;;
 				* )
 					;;
@@ -624,15 +633,6 @@ fncMain () {
 	# *************************************************************************
 	# System Update
 	# *************************************************************************
-	if [ "${URL_DEB}" != "" ] && [ "${URL_KEY}" != "" ]; then
-		if [ ! -f /etc/apt/sources.list.d/home:ungoogled_chromium.list ]; then
-			echo "deb ${URL_DEB} /" | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
-		fi
-		if [ ! -f /etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg ]; then
-			curl -fsSL ${URL_KEY} | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg > /dev/null
-		fi
-	fi
-	# -------------------------------------------------------------------------
 	set +e
 	case "${SYS_NAME}" in
 		"debian" | \
@@ -673,18 +673,99 @@ fncMain () {
 	set -e
 
 	# *************************************************************************
+	# Install snapd
+	# *************************************************************************
+#	case "${SYS_NAME}" in
+#		"debian" | \
+#		"ubuntu" )
+#			case "${SYS_CODE}" in
+#				"buster" | \
+#				"sid"    | \
+#				"bionic" | \
+#				"focal"  | \
+#				"groovy" )
+#					if [ "`which snap 2> /dev/null`" = "" ]; then
+#						echo --- Install snapd [${SYS_NAME} ${SYS_CODE}] ---------------------------------------------
+#						${CMD_AGET} install snapd
+#					fi
+#					;;
+#				* )
+#					;;
+#			esac
+#			;;
+#		* )
+#			;;
+#	esac
+
+	# *************************************************************************
 	# Install chromium
 	# *************************************************************************
-	if [ "${SYS_NAME}" != "debian" ] || [ "${SYS_NAME}" = "debian" -a "${CPU_TYPE}" != "armv5tel" ]; then
-		if [ "`which snap 2> /dev/null`"! = "" ] && [ "${SYS_NAME}" != "debian" -a "${SYS_NAME}" != "ubuntu" ]; then
-			snap install chromium
-		else							# ungoogled-chromium
-			if [ "${URL_DEB}" != "" ] && [ "${URL_KEY}" != "" ] && \
-			   [ "`dpkg -l ungoogled-chromium | awk '/ungoogled-chromium/ {print $1;}'`" != "ii" ]; then
-				${CMD_AGET} install ungoogled-chromium
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
+			if [ "`dpkg -l ungoogled-chromium | awk '/ungoogled-chromium/ {print $1;}'`" != "ii" ]; then
+				case "${SYS_CODE}" in
+					"buster" | \
+					"sid"    | \
+					"bionic" | \
+					"focal"  | \
+					"groovy" )
+						echo --- Install ungoogled-chromium [${SYS_NAME} ${SYS_CODE}] --------------------------------
+						VER_PROG=87.0.4280.67-1
+						curl -L -# -O -R -S "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium_${VER_PROG}.unportable1_amd64.deb"
+						curl -L -# -O -R -S "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-common_${VER_PROG}.unportable1_amd64.deb"
+						curl -L -# -O -R -S "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-driver_${VER_PROG}.unportable1_amd64.deb"
+						curl -L -# -O -R -S "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-sandbox_${VER_PROG}.unportable1_amd64.deb"
+						curl -L -# -O -R -S "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-l10n_${VER_PROG}.unportable1_all.deb"
+						if [ "`dpkg -l libva2 | awk '/libva2/ {print $1;}'`" != "ii" ]; then
+							${CMD_AGET} install libva2
+						fi
+						dpkg --install ungoogled-chromium_*.deb         \
+						               ungoogled-chromium-common_*.deb  \
+						               ungoogled-chromium-driver_*.deb  \
+						               ungoogled-chromium-sandbox_*.deb \
+						               ungoogled-chromium-l10n_*.deb
+						;;
+					* )
+						;;
+				esac
 			fi
-		fi
-	fi
+			;;
+		* )
+			;;
+	esac
+
+#	if [ "`which snap 2> /dev/null`" != "" ]; then
+#		echo --- Install chromium [${SYS_NAME} ${SYS_CODE}] ------------------------------------------
+#		snap install chromium
+#	else								# ungoogled-chromium
+#		if [ "${SYS_NAME}" != "debian" ] || [ "${SYS_NAME}" = "debian" -a "${CPU_TYPE}" != "armv5tel" ]; then
+#			if [ "${URL_DEB}" != "" ] && [ "${URL_KEY}" != "" ] && \
+#			   [ "`dpkg -l ungoogled-chromium | awk '/ungoogled-chromium/ {print $1;}'`" != "ii" ]; then
+#				${CMD_AGET} install ungoogled-chromium
+#			fi
+#		fi
+#	fi
+
+#	case "${SYS_NAME}" in
+#		"debian" | \
+#		"ubuntu" )
+#			echo --- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------
+#			curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+#			dpkg --install google-chrome-stable_current_amd64.deb
+#			;;
+#		"centos" | \
+#		"fedora" )
+#			echo --- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------
+#			curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
+#			${CMD_AGET} install google-chrome-stable_current_x86_64.rpm
+#			;;
+#		"opensuse-leap"       | \
+#		"opensuse-tumbleweed" )
+#			;;
+#		* )
+#			;;
+#	esac
 
 	# *************************************************************************
 	# Locale Setup
@@ -1563,11 +1644,13 @@ _EOT_
 				if [ "${SYS_NAME}" = "debian" ] \
 				&& [ ${SYS_VNUM} -lt 8 ] && [ ${SYS_VNUM} -ge 0 ]; then				# Debian 8以前の判定
 					fncProc samba "${RUN_SMBD[0]}"
+					fncProc samba "${RUN_SMBD[1]}"
 				else
 					fncProc smbd "${RUN_SMBD[0]}"
 					fncProc nmbd "${RUN_SMBD[0]}"
+					fncProc smbd "${RUN_SMBD[1]}"
+					fncProc nmbd "${RUN_SMBD[1]}"
 				fi
-				fncProc samba "${RUN_SMBD[1]}"
 			else
 				fncProc smbd "${RUN_SMBD[0]}"
 				fncProc nmbd "${RUN_SMBD[0]}"

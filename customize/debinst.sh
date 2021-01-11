@@ -25,16 +25,17 @@
 		mount -o loop /debian-testing-amd64-DVD-1.iso /media/cdrom
 		apt-cdrom add -m --cdrom /media/cdrom
 		apt install      -q -y --allow-unauthenticated                            \\
-		    task-desktop task-laptop task-lxde-desktop task-print-server          \\
-		    task-ssh-server task-web-server task-japanese task-japanese-desktop   \\
-		    lvm2 apache2 curl rsync chromium bind9utils ntpdate network-manager   \\
-		    samba smbclient cifs-utils nfs-common nfs-kernel-server sudo tasksel  \\
-		    aptitude bc dpkg-repack build-essential perl libapt-pkg-perl          \\
-		    libio-pty-perl libnet-ssleay-perl
-#		    ibus-mozc vsftpd clamav isc-dhcp-server apt-show-versions fdclone     \\
-#		    linux-headers-amd64 libelf-dev libauthen-pam-perl xorriso isolinux    \\
-#		    cloop-utils squashfs-tools open-vm-tools open-vm-tools-desktop        \\
-#		    chromium-l10n bind9 indent
+		    task-desktop task-laptop task-lxde-desktop task-ssh-server            \\
+		    task-japanese task-japanese-desktop                                   \\
+		    network-manager curl rsync inxi lvm2 gpg                              \\
+		    build-essential vim bc                                                \\
+		    sudo tasksel                                                          \\
+		    openssh-server                                                        \\
+		    samba smbclient cifs-utils                                            \\
+		    cups cups-common                                                      \\
+		    lxde fonts-noto                                                       \\
+		    libreoffice-help-ja libreoffice-l10n-ja                               \\
+		    firefox-esr-l10n-ja thunderbird thunderbird-l10n-ja
 		umount /media/cdrom
 		# -----------------------------------------------------------------------------
 		cp -p /etc/apt/sources.list /etc/apt/sources.list.cdrom
@@ -42,13 +43,24 @@
 			deb http://deb.debian.org/debian testing main non-free contrib
 			deb-src http://deb.debian.org/debian testing main non-free contrib
 			
-			deb http://security.debian.org/debian-security testing/updates main contrib non-free
-			deb-src http://security.debian.org/debian-security testing/updates main contrib non-free
+			# deb http://security.debian.org/debian-security testing/updates main contrib non-free
+			# deb-src http://security.debian.org/debian-security testing/updates main contrib non-free
 			
 			# testing-updates, previously known as 'volatile'
 			deb http://deb.debian.org/debian testing-updates main contrib non-free
 			deb-src http://deb.debian.org/debian testing-updates main contrib non-free
 		_EOT_
+		# echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Debian_Sid/ /' | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
+		# curl -fsSL https://download.opensuse.org/repositories/home:ungoogled_chromium/Debian_Sid/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home:ungoogled_chromium.gpg > /dev/null
+		# if [ -f Release.key ]; then rm -f Release.key; fi
+		apt update       -q                                                    && \\
+		apt upgrade      -q -y                                                 && \\
+		apt full-upgrade -q -y                                                 && \\
+		apt install      -q -y                                                    \\
+		    bind9 bind9utils dnsutils                                             \\
+		    isc-dhcp-server                                                       \\
+		    chrony clamav indent ibus-mozc mozc-utils-gui
+		#   ungoogled-chromium
 		# diff -y /etc/apt/sources.list /etc/apt/sources.list.orig
 		# diff -y /etc/apt/sources.list /etc/apt/sources.list.cdrom
 		# -----------------------------------------------------------------------------

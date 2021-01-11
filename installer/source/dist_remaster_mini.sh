@@ -37,6 +37,7 @@
 ##	2020/11/21 000.0000 J.Itou         不具合修正
 ##	2020/12/15 000.0000 J.Itou         memo修正
 ##	2020/12/20 000.0000 J.Itou         memo修正
+##	2021/01/11 000.0000 J.Itou         debian bullseye 公式リリースを追加(コメントアウト中)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -108,6 +109,7 @@ fncRemaster () {
 			;;
 		"testing"     )
 			local DVD_URL="https://d-i.debian.org/daily-images/${CPU_TYPE}/daily/netboot/mini.iso"
+#			local DVD_URL="http://ftp.nl.debian.org/debian/dists/testing/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
 			;;
 		"xenial"  | \
 		"bionic"  )
