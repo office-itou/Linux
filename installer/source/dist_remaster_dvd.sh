@@ -100,9 +100,9 @@
 	    "centos CentOS-Stream-8-x86_64-20201211-dvd1   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201211-dvd1.iso                      kickstart_centos.cfg"     \
 	    "fedora Fedora-Server-dvd-x86_64-33-1.2        https://download.fedoraproject.org/pub/fedora/linux/releases/33/Server/x86_64/iso/Fedora-Server-dvd-x86_64-33-1.2.iso    kickstart_fedora.cfg"     \
 	    "suse   openSUSE-Leap-15.2-DVD-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml"      \
+	    "suse   openSUSE-Leap-15.3-DVD-x86_64-Current  http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                        yast_opensuse153.xml"     \
 	    "suse   openSUSE-Tumbleweed-DVD-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml"      \
 	)   # 区分  DVDファイル名                          ダウンロード先URL                                                                                                        定義ファイル
-#	    "suse   openSUSE-Leap-15.3-DVD-x86_64-Current  http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                        yast_opensuse153.xml"     \
 #	    "debian debian-7.11.0-amd64-DVD-1              https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
 #	    "ubuntu ubuntu-16.04.7-desktop-amd64           https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
 #	    "ubuntu ubuntu-18.04.5-desktop-amd64           https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
@@ -127,11 +127,11 @@ fncMenu () {
 	echo "# 12：CentOS-Stream-8-x86_64-20201211-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
 	echo "# 13：Fedora-Server-dvd-x86_64-33-1.2 ：2020-10-27：20xx-xx-xx：kernel 5.8    #"
 	echo "# 14：openSUSE-Leap-15.2-DVD-x86_64   ：2020-07-02：2021-11-xx：kernel 5.3    #"
-	echo "# 15：openSUSE-Tumbleweed-DVD-x86_64-C：2020-xx-xx：20xx-xx-xx：              #"
+	echo "# 15：openSUSE-Leap-15.3-DVD-x86_64-Cu：2020-xx-xx：20xx-xx-xx：              #"
+	echo "# 16：openSUSE-Tumbleweed-DVD-x86_64-C：2020-xx-xx：20xx-xx-xx：              #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
-#	echo "#   ：openSUSE-Leap-15.3-DVD-x86_64-Cu：2020-xx-xx：20xx-xx-xx：              #"
 #	echo "#   ：                                ：2021-04-22：2022-01-xx：Hirsute Hippo #"
 #	echo "#   ：ubuntu-16.04.7-desktop-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus  #"
 #	echo "#   ：ubuntu-18.04.5-desktop-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver #"

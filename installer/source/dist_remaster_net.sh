@@ -87,10 +87,10 @@
 	    "centos CentOS-Stream-8-x86_64-20201211-boot   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20201211-boot.iso                          kickstart_centos.cfg" \
 	    "fedora Fedora-Server-netinst-x86_64-33-1.2    https://download.fedoraproject.org/pub/fedora/linux/releases/33/Server/x86_64/iso/Fedora-Server-netinst-x86_64-33-1.2.iso    kickstart_fedora.cfg" \
 	    "suse   openSUSE-Leap-15.2-NET-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml"  \
+	    "suse   openSUSE-Leap-15.3-NET-x86_64-Current  http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64-Current.iso                            yast_opensuse153.xml" \
 	    "suse   openSUSE-Tumbleweed-NET-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml"  \
 	)   # 区分  netinstファイル名                      ダウンロード先URL                                                                                                            定義ファイル
 #	    "debian debian-testing-amd64-netinst           https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
-#	    "suse   openSUSE-Leap-15.3-NET-x86_64-Current  http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64-Current.iso                            yast_opensuse153.xml" \
 # -----------------------------------------------------------------------------
 fncMenu () {
 	echo "# ----------------------------------------------------------------------------#"
@@ -103,11 +103,11 @@ fncMenu () {
 	echo "#  6：CentOS-Stream-8-x86_64-20201211-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
 	echo "#  7：Fedora-Server-netinst-x86_64-33-1.2：2020-10-27：20xx-xx-xx：kernel 5.8 #"
 	echo "#  8：openSUSE-Leap-15.2-NET-x86_64      ：2020-07-02：2021-11-xx：kernel 5.3 #"
-	echo "#  9：openSUSE-Tumbleweed-NET-x86_64-Curr：20xx-xx-xx：20xx-xx-xx：           #"
+	echo "#  9：openSUSE-Leap-15.3-NET-x86_64-Curre：20xx-xx-xx：20xx-xx-xx：           #"
+	echo "# 10：openSUSE-Tumbleweed-NET-x86_64-Curr：20xx-xx-xx：20xx-xx-xx：           #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
-#	echo "#   ：openSUSE-Leap-15.3-NET-x86_64-Curre：20xx-xx-xx：20xx-xx-xx：           #"
 }
 # -----------------------------------------------------------------------------
 fncIsInt () {
