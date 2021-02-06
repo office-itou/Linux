@@ -1,6 +1,6 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [ubuntu-20.04.1-desktop-amd64.iso]                      *
+# LiveCDCustomization [ubuntu-20.04.2-desktop-amd64.iso]                      *
 # *****************************************************************************
 #	if [ "$1" = "" ] || [ "$2" = "" ]; then
 #		echo "$0 [ amd64] [20.xx | ...]"
@@ -8,7 +8,7 @@
 #	fi
 
 	LIVE_ARCH="amd64"
-	LIVE_VNUM="20.04.1"
+	LIVE_VNUM="20.04.2"
 	LIVE_FILE="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}.iso"
 	LIVE_DEST="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}-custom.iso"
 # == initialize ===============================================================

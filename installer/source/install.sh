@@ -66,6 +66,7 @@
 ##	2020/11/18 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2020/12/22 000.0000 J.Itou         不具合修正(nologin設定値)
 ##	2021/01/10 000.0000 J.Itou         不具合修正(chromium導入関係)
+##	2021/02/06 000.0000 J.Itou         不具合修正(chromium導入関係)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -711,12 +712,12 @@ fncMain () {
 					"focal"  | \
 					"groovy" )
 						echo --- Install ungoogled-chromium [${SYS_NAME} ${SYS_CODE}] --------------------------------
-						VER_PROG=87.0.4280.67-1
-						curl -L -# -O -R -S "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium_${VER_PROG}.unportable1_amd64.deb"
-						curl -L -# -O -R -S "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-common_${VER_PROG}.unportable1_amd64.deb"
-						curl -L -# -O -R -S "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-driver_${VER_PROG}.unportable1_amd64.deb"
-						curl -L -# -O -R -S "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-sandbox_${VER_PROG}.unportable1_amd64.deb"
-						curl -L -# -O -R -S "https://github.com/Eloston/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-l10n_${VER_PROG}.unportable1_all.deb"
+						VER_PROG=87.0.4280.141-1
+						curl -L -# -O -R -S "https://github.com/SugaryHull/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium_${VER_PROG}.unportable1_amd64.deb"
+						curl -L -# -O -R -S "https://github.com/SugaryHull/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-common_${VER_PROG}.unportable1_amd64.deb"
+						curl -L -# -O -R -S "https://github.com/SugaryHull/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-driver_${VER_PROG}.unportable1_amd64.deb"
+						curl -L -# -O -R -S "https://github.com/SugaryHull/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-sandbox_${VER_PROG}.unportable1_amd64.deb"
+						curl -L -# -O -R -S "https://github.com/SugaryHull/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-l10n_${VER_PROG}.unportable1_all.deb"
 						if [ "`dpkg -l libva2 | awk '/libva2/ {print $1;}'`" != "ii" ]; then
 							${CMD_AGET} install libva2
 						fi
