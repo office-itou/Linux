@@ -67,6 +67,7 @@
 ##	2020/12/20 000.0000 J.Itou         openSUSE Leap 15.3 追加
 ##	2021/01/11 000.0000 J.Itou         debian bullseye 公式リリースを追加
 ##	2021/02/02 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210126-boot 変更
+##	2021/02/05 000.0000 J.Itou         ubuntu-20.04.2 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -95,7 +96,7 @@
 	    "ubuntu ubuntu-16.04.7-server-amd64            https://releases.ubuntu.com/xenial/ubuntu-16.04.7-server-amd64.iso                                                       preseed_ubuntu.cfg"       \
 	    "ubuntu ubuntu-18.04.5-server-amd64            http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.5-server-amd64.iso                                        preseed_ubuntu.cfg"       \
 	    "ubuntu ubuntu-20.04.1-legacy-server-amd64     http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg"       \
-	    "ubuntu ubuntu-20.04.1-live-server-amd64       https://releases.ubuntu.com/focal/ubuntu-20.04.1-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
+	    "ubuntu ubuntu-20.04.2-live-server-amd64       https://releases.ubuntu.com/focal/ubuntu-20.04.2-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
 	    "ubuntu ubuntu-20.10-live-server-amd64         https://releases.ubuntu.com/groovy/ubuntu-20.10-live-server-amd64.iso                                                    nocloud-ubuntu-user-data" \
 	    "centos CentOS-8.3.2011-x86_64-dvd1            http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso                               kickstart_centos.cfg"     \
 	    "centos CentOS-Stream-8-x86_64-20210126-dvd1   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210126-dvd1.iso                      kickstart_centos.cfg"     \
@@ -122,7 +123,7 @@ fncMenu () {
 	echo "#  6：ubuntu-16.04.7-server-amd64     ：2016-04-21：2021-04-xx：Xenial Xerus  #"
 	echo "#  7：ubuntu-18.04.5-server-amd64     ：2018-04-26：2023-04-xx：Bionic Beaver #"
 	echo "#  8：ubuntu-20.04.1-legacy-server-amd：2020-04-23：2025-04-xx：Focal Fossa   #"
-	echo "#  9：ubuntu-20.04.1-live-server-amd64：2020-04-23：2025-04-xx：Focal Fossa   #"
+	echo "#  9：ubuntu-20.04.2-live-server-amd64：2020-04-23：2025-04-xx：Focal Fossa   #"
 	echo "# 10：ubuntu-20.10-live-server-amd64  ：2020-10-22：2021-07-xx：Groovy Gorilla#"
 	echo "# 11：CentOS-8.3.2011-x86_64-dvd1     ：2020-06-15：2021-12-31：RHEL 8.0      #"
 	echo "# 12：CentOS-Stream-8-x86_64-20210126-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
