@@ -67,6 +67,7 @@
 ##	2020/12/22 000.0000 J.Itou         不具合修正(nologin設定値)
 ##	2021/01/10 000.0000 J.Itou         不具合修正(chromium導入関係)
 ##	2021/02/06 000.0000 J.Itou         不具合修正(chromium導入関係)
+##	2021/02/25 000.0000 J.Itou         不具合修正(find周り)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -554,7 +555,7 @@ fncInitialize () {
 	if [ -f /etc/lightdm/users.conf ]; then
 		LIN_CHSH=`awk -F '[ =]' '$1=="hidden-shells" {print $2;}' /etc/lightdm/users.conf`
 	else
-		LIN_CHSH=`find /bin /sbin /usr/sbin -mindepth 1 -maxdepth 1 \( -name 'false' -o -name 'nologin' \) -print | head -n 1`
+		LIN_CHSH=`find /bin/ /sbin/ /usr/sbin/ -mindepth 1 -maxdepth 1 \( -name 'false' -o -name 'nologin' \) -print | head -n 1`
 	fi
 	if [ "`which usermod 2> /dev/null`" != "" ]; then
 		CMD_CHSH="`which usermod` -s ${LIN_CHSH}"
@@ -562,7 +563,7 @@ fncInitialize () {
 		CMD_CHSH="`which chsh` -s ${LIN_CHSH}"
 	fi
 	# --- bind ----------------------------------------------------------------
-	INF_BIND=`LANG=C find /etc -name "named.conf" -type f -exec ls -l '{}' \;`
+	INF_BIND=`LANG=C find /etc/ -name "named.conf" -type f -exec ls -l '{}' \;`
 	DNS_USER=`echo ${INF_BIND} | awk '{print $3;}'`
 	DNS_GRUP=`echo ${INF_BIND} | awk '{print $4;}'`
 	FUL_BIND=`echo ${INF_BIND} | awk '{print $9;}'`
@@ -597,7 +598,7 @@ fncInitialize () {
 	done
 
 	# dhcpd -------------------------------------------------------------------
-	INF_DHCP=`LANG=C find /etc -name "dhcpd.conf" -type f -exec ls -l '{}' \;`
+	INF_DHCP=`LANG=C find /etc/ -name "dhcpd.conf" -type f -exec ls -l '{}' \;`
 	FUL_DHCP=`echo ${INF_DHCP} | awk '{print $9;}'`
 	DIR_DHCP=`dirname ${FUL_DHCP}`
 	FIL_DHCP=`basename ${FUL_DHCP}`
@@ -606,7 +607,7 @@ fncInitialize () {
 	pdbedit -L > /dev/null
 	fncPause $?
 	SMB_PWDB=`find /var/lib/samba/ -name passdb.tdb -type f -print`
-	SMB_CONF=`find /etc -name "smb.conf" -type f -print`
+	SMB_CONF=`find /etc/ -name "smb.conf" -type f -print`
 	SMB_BACK=${SMB_CONF}.orig
 }
 
@@ -804,7 +805,7 @@ fncMain () {
 					;;
 			esac
 			VIM_VER=`LANG=C vi --version 2>&1 | sed -n '/IMproved/p' | awk '{print $5;}'`
-			VIM_ARRY=`find /etc -name 'vimrc' -o -name 'virc' -type f | awk '{gsub("\"", ""); gsub(".*/", ""); print $0;}'`
+			VIM_ARRY=`find /etc/ -name 'vimrc' -o -name 'virc' -type f | awk '{gsub("\"", ""); gsub(".*/", ""); print $0;}'`
 			if [ "${VIM_ARRY}" = "" ]; then
 				VIM_FILE=`LANG=C vi --version | awk '/^[ \t]*user vimrc file/ {gsub("\"", ""); gsub(".*/", ""); print $0;}'`
 				[ "${VIM_FILE}" != "" -a ! -f ${VIM_FILE} ] && { touch ${VIM_FILE}; chown ${USER_NAME}. ${VIM_FILE}; }
@@ -1123,7 +1124,7 @@ _EOT_
 				fncPause $?
 			fi
 			# -------------------------------------------------------------------------
-			FILE_FRESHCONF=`find /etc -name "freshclam.conf" -type f -print`
+			FILE_FRESHCONF=`find /etc/ -name "freshclam.conf" -type f -print`
 			FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
 			# -------------------------------------------------------------------------
 			if [ ! -f ${FILE_CLAMDCONF} ]; then
@@ -1148,7 +1149,7 @@ _EOT_
 				fncPause $?
 			fi
 			# -------------------------------------------------------------------------
-			FILE_FRESHCONF=`find /etc -name "freshclam.conf" -type f -print`
+			FILE_FRESHCONF=`find /etc/ -name "freshclam.conf" -type f -print`
 			FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
 			# -------------------------------------------------------------------------
 			if [ ! -f ${FILE_CLAMDCONF} ]; then
@@ -2331,7 +2332,7 @@ fncDebug () {
 		fncDiff /etc/gai.conf /etc/gai.conf.orig
 	fi
 	# Install clamav **********************************************************
-	FILE_FRESHCONF=`find /etc -name "freshclam.conf" -type f -print`
+	FILE_FRESHCONF=`find /etc/ -name "freshclam.conf" -type f -print`
 	if [ "${FILE_FRESHCONF}" != "" ]; then
 		FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
 #		echo --- cat ${FILE_FRESHCONF} ----------------------------------------------------
