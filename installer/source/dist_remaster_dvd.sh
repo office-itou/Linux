@@ -53,22 +53,23 @@
 ##	2020/07/20 000.0000 J.Itou         debian 9.13.0 変更
 ##	2020/08/02 000.0000 J.Itou         debian 10.5.0 / CentOS-Stream-8-x86_64-20200730-dvd1 変更
 ##	2020/08/07 000.0000 J.Itou         ubuntu-20.04.1 変更
-##	2020/08/09 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200801-boot 変更
-##	2020/09/27 000.0000 J.Itou         debian 10.6.0 / ubuntu / CentOS-Stream-8-x86_64-20200921-boot 変更
-##	2020/10/06 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200928-boot 変更
-##	2020/10/13 000.0000 J.Itou         CentOS-Stream-8-x86_64-20201007-boot 変更
+##	2020/08/09 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200801-dvd1 変更
+##	2020/09/27 000.0000 J.Itou         debian 10.6.0 / ubuntu / CentOS-Stream-8-x86_64-20200921-dvd1 変更
+##	2020/10/06 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200928-dvd1 変更
+##	2020/10/13 000.0000 J.Itou         CentOS-Stream-8-x86_64-20201007-dvd1 変更
 ##	2020/10/14 000.0000 J.Itou         openSUSE Leap / Tumbleweed 対応
 ##	2020/11/04 000.0000 J.Itou         memo修正 / fedora 33 変更
 ##	2020/11/11 000.0000 J.Itou         追加アプリ導入処理追加
 ##	2020/11/12 000.0000 J.Itou         ubuntu 20.10 追加
 ##	2020/11/21 000.0000 J.Itou         不具合修正
-##	2020/12/06 000.0000 J.Itou         debian 10.7.0 / CentOS-Stream-8-x86_64-20201203-boot 変更
+##	2020/12/06 000.0000 J.Itou         debian 10.7.0 / CentOS-Stream-8-x86_64-20201203-dvd1 変更
 ##	2020/12/15 000.0000 J.Itou         CentOS 8.3.2011 / CentOS-Stream-8 20201211 変更
 ##	2020/12/20 000.0000 J.Itou         openSUSE Leap 15.3 追加
 ##	2021/01/11 000.0000 J.Itou         debian bullseye 公式リリースを追加
-##	2021/02/02 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210126-boot 変更
+##	2021/02/02 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210126-dvd1 変更
 ##	2021/02/05 000.0000 J.Itou         ubuntu-20.04.2 変更
-##	2021/02/16 000.0000 J.Itou         debian 10.8.0 / CentOS-Stream-8-x86_64-20210215-boot 変更
+##	2021/02/16 000.0000 J.Itou         debian 10.8.0 / CentOS-Stream-8-x86_64-20210215-dvd1 変更
+##	2021/03/07 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210302-dvd1 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -100,7 +101,7 @@
 	    "ubuntu ubuntu-20.04.2-live-server-amd64       https://releases.ubuntu.com/focal/ubuntu-20.04.2-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
 	    "ubuntu ubuntu-20.10-live-server-amd64         https://releases.ubuntu.com/groovy/ubuntu-20.10-live-server-amd64.iso                                                    nocloud-ubuntu-user-data" \
 	    "centos CentOS-8.3.2011-x86_64-dvd1            http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso                               kickstart_centos.cfg"     \
-	    "centos CentOS-Stream-8-x86_64-20210215-dvd1   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210215-dvd1.iso                      kickstart_centos.cfg"     \
+	    "centos CentOS-Stream-8-x86_64-20210302-dvd1   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210302-dvd1.iso                      kickstart_centos.cfg"     \
 	    "fedora Fedora-Server-dvd-x86_64-33-1.2        https://download.fedoraproject.org/pub/fedora/linux/releases/33/Server/x86_64/iso/Fedora-Server-dvd-x86_64-33-1.2.iso    kickstart_fedora.cfg"     \
 	    "suse   openSUSE-Leap-15.2-DVD-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml"      \
 	    "suse   openSUSE-Leap-15.3-DVD-x86_64-Current  http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                        yast_opensuse153.xml"     \
@@ -127,7 +128,7 @@ fncMenu () {
 	echo "#  9：ubuntu-20.04.2-live-server-amd64：2020-04-23：2025-04-xx：Focal Fossa   #"
 	echo "# 10：ubuntu-20.10-live-server-amd64  ：2020-10-22：2021-07-xx：Groovy Gorilla#"
 	echo "# 11：CentOS-8.3.2011-x86_64-dvd1     ：2020-06-15：2021-12-31：RHEL 8.0      #"
-	echo "# 12：CentOS-Stream-8-x86_64-20210215-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
+	echo "# 12：CentOS-Stream-8-x86_64-20210302-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
 	echo "# 13：Fedora-Server-dvd-x86_64-33-1.2 ：2020-10-27：20xx-xx-xx：kernel 5.8    #"
 	echo "# 14：openSUSE-Leap-15.2-DVD-x86_64   ：2020-07-02：2021-11-xx：kernel 5.3    #"
 	echo "# 15：openSUSE-Leap-15.3-DVD-x86_64-Cu：2020-xx-xx：20xx-xx-xx：              #"
