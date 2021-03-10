@@ -110,16 +110,28 @@
 		 	    standard desktop laptop japanese japanese-desktop lxde-desktop        \
 		 	    ssh-server web-server                                              || \
 		 	fncEnd 1
-		 	echo "--- ungoogled chromium install ------------------------------------------------"
-		 	echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Debian_${OBS_SUITE}/ /' | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
-		 	curl -fsSL https://download.opensuse.org/repositories/home:ungoogled_chromium/Debian_${OBS_SUITE}/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home:ungoogled_chromium.gpg > /dev/null
+		 	echo "--- google chrome install -----------------------------------------------------"
+		 	echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/google-chrome.list
+		 	curl -fsSL https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 		 	if [ -f Release.key ]; then rm -f Release.key; fi
 		 	apt update                                                             && \
 		 	apt upgrade      -q -y                                                 && \
 		 	apt full-upgrade -q -y                                                 && \
 		 	apt install      -q -y                                                    \
-		 	    ungoogled-chromium                                                 || \
+		 	    google-chrome-stable                                               || \
 		 	fncEnd 1
+		#	echo "--- ungoogled chromium install ------------------------------------------------"
+		#	echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Debian_${OBS_SUITE}/ /' | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
+		#	curl -fsSL https://download.opensuse.org/repositories/home:ungoogled_chromium/Debian_${OBS_SUITE}/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home:ungoogled_chromium.gpg > /dev/null
+		#	if [ -f Release.key ]; then rm -f Release.key; fi
+		#	apt update                                                             && \
+		#	apt upgrade      -q -y                                                 && \
+		#	apt full-upgrade -q -y                                                 && \
+		#	apt install      -q -y                                                    \
+		#	    ungoogled-chromium ungoogled-chromium-common                          \
+		#	    ungoogled-chromium-driver ungoogled-chromium-sandbox                  \
+		#	    ungoogled-chromium-shell ungoogled-chromium-l10n                   || \
+		#	fncEnd 1
 		 	# -----------------------------------------------------------------------------
 		 	apt autoremove   -q -y                                                 && \
 		 	apt autoclean    -q                                                    && \
@@ -365,37 +377,64 @@ _EOT_SH_
 	       ./debian-live/fsimg/var/cache/apt/archives/*.deb \
 	       ./debian-live/fsimg/debian-setup.sh
 # =============================================================================
-	sed -i ./debian-live/cdimg/boot/grub/grub.cfg                                                                                       \
-	    -e '1,/linux .* components/ s/\(linux .* components\) \(.*$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
-	sed -i ./debian-live/cdimg/isolinux/menu.cfg                                                                                         \
-	    -e '1,/APPEND .* components/ s/\(APPEND .* components\) \(.*$\)/\1 locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp \2/'
-	# ---------------------------------------------------------------------
-#	if [ -f ./debian-live/cdimg/boot/grub/efi.img ]; then
-#		echo "--- copy EFI directory --------------------------------------------------------"
-#		mount -r -o loop ./debian-live/cdimg/boot/grub/efi.img ./debian-live/media/
-#		pushd ./debian-live/media/efi/ > /dev/null
-#			find . -depth -print | cpio -pdm ../../cdimg/EFI/
-#		popd > /dev/null
-#		umount ./debian-live/media/
-#	fi
-	# -------------------------------------------------------------------------
 	rm -f ./debian-live/cdimg/live/filesystem.squashfs
 	mksquashfs ./debian-live/fsimg ./debian-live/cdimg/live/filesystem.squashfs
 	ls -lht ./debian-live/cdimg/live/
 	# -------------------------------------------------------------------------
+	BOOT_MBR=`echo ${LIVE_FILE} | sed 's/iso$/mbr/'`
+	BOOT_EFI=`echo ${LIVE_FILE} | sed 's/iso$/efi/'`
+	FILE_SKP=`fdisk -l ${LIVE_FILE} | awk '/EFI/ {print $2;}'`
+	FILE_CNT=`fdisk -l ${LIVE_FILE} | awk '/EFI/ {print $4;}'`
+	dd if=${LIVE_FILE} of=./debian-live/${BOOT_MBR} bs=1 count=446
+	dd if=${LIVE_FILE} of=./debian-live/${BOOT_EFI} bs=512 skip=${FILE_SKP} count=${FILE_CNT}
+	# -------------------------------------------------------------------------
 	pushd ./debian-live/cdimg > /dev/null
-		find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
+		INS_CFG="locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp"
+		# --- grub.cfg --------------------------------------------------------
+		INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+		sed -n '/^menuentry \"Debian GNU\/Linux.*\"/,/^}/p' boot/grub/grub.cfg | \
+		sed -e 's/\(Debian GNU\/Linux.*)\)/\1 of Japanese/'                      \
+		    -e "s~\(components\)~\1 ${INS_CFG}~"                               | \
+		sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                       \
+		    -e '1i set default=0'                                                \
+		    -e '1i set timeout=5'                                                \
+		> grub.cfg
+		mv grub.cfg boot/grub/
+		# --- txt.cfg ---------------------------------------------------------
+		INS_ROW=$((`sed -n '/^LABEL/ =' isolinux/menu.cfg | head -n 1`-1))
+		INS_STR=`sed -n 's/LABEL \(Debian GNU\/Linux Live.*\)/\1 of japanese/p' isolinux/menu.cfg`
+		sed -n '/LABEL Debian GNU\/Linux Live.*/,/^$/p' isolinux/menu.cfg | \
+		sed -e "s~\(LABEL\) .*~\1 ${INS_STR}~"                              \
+		    -e "s~\(SAY\) .*~\1 \"${INS_STR}\.\.\.\"~"                      \
+		    -e "s~\(APPEND .* components\) \(.*$\)~\1 ${INS_CFG} \2~"     | \
+		sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg                 | \
+		sed -e "s~^\(DEFAULT\) .*$~\1 ${INS_STR}~"                          \
+		> menu.cfg
+		mv menu.cfg isolinux/
+		# ---------------------------------------------------------------------
+		sed -i isolinux/isolinux.cfg     \
+		    -e 's/\(timeout\).*$/\1 50/'
+		# ---------------------------------------------------------------------
+		find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
+		BOOT_BIN="isolinux/isolinux.bin"
+		BOOT_CAT="isolinux/boot.cat"
+		# ---------------------------------------------------------------------
 		xorriso -as mkisofs \
 		    -quiet \
 		    -iso-level 3 \
 		    -full-iso9660-filenames \
 		    -volid "${LIVE_VOLID}" \
-		    -eltorito-boot isolinux/isolinux.bin \
-		    -eltorito-catalog isolinux/boot.cat \
-		    -no-emul-boot -boot-load-size 4 -boot-info-table \
+		    -partition_offset 16 \
+		    --grub2-mbr "../${BOOT_MBR}" \
+		    --mbr-force-bootable \
+		    -append_partition 2 0xEF "../${BOOT_EFI}" \
+		    -appended_part_as_gpt \
+		    -eltorito-boot ${BOOT_BIN} \
+		    -eltorito-catalog ${BOOT_CAT} \
+		    -no-emul-boot -boot-load-size 4 -boot-info-table --grub2-boot-info \
 		    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
 		    -eltorito-alt-boot \
-		    -e boot/grub/efi.img \
+		    -e '--interval:appended_partition_2:all::' \
 		    -no-emul-boot -isohybrid-gpt-basdat \
 		    -output "../../${LIVE_DEST}" \
 		    .

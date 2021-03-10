@@ -1,16 +1,20 @@
 #!/bin/bash
 # *****************************************************************************
-# LiveCDCustomization [ubuntu-20.04.2.0-desktop-amd64.iso]                    *
+# LiveCDCustomization [ubuntu-[version]-desktop-[architecture].iso]           *
 # *****************************************************************************
-#	if [ "$1" = "" ] || [ "$2" = "" ]; then
-#		echo "$0 [ amd64] [20.xx | ...]"
-#		exit 1
-#	fi
+	if [ "$1" = "" ] || [ "$2" = "" ]; then
+		echo "$0 [amd64] [20.04 | 20.10]"
+		exit 1
+	fi
 
-	LIVE_ARCH="amd64"
-	LIVE_VNUM="20.04.2.0"
+#	LIVE_ARCH="amd64"
+#	LIVE_VNUM="20.04.2.0"
+#	LIVE_VNUM="20.10"
+	LIVE_ARCH="$1"
+	LIVE_VNUM="$2"
 	LIVE_FILE="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}.iso"
 	LIVE_DEST="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}-custom.iso"
+	VERSION=`echo "${LIVE_VNUM}" | awk -F '.' '{print $1"."$2;}'`
 # == initialize ===============================================================
 #	set -m								# ジョブ制御を有効にする
 #	set -eu								# ステータス0以外と未定義変数の参照で終了
@@ -36,8 +40,8 @@
 		apt -y install debootstrap squashfs-tools xorriso isolinux
 	fi
 # == initial processing =======================================================
-#	rm -rf   ./ubuntu-live
-	rm -rf   ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg ./ubuntu-live/wkdir
+	rm -rf   ./ubuntu-live
+#	rm -rf   ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg ./ubuntu-live/wkdir
 	mkdir -p ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg ./ubuntu-live/wkdir
 	# -------------------------------------------------------------------------
 	cat <<- '_EOT_SH_' > ./ubuntu-live/fsimg/ubuntu-setup.sh
@@ -52,14 +56,7 @@
 		fncEnd() {
 		 	echo "--- terminate -----------------------------------------------------------------"
 		 	RET_STS=$1
-
 		 	history -c
-		#	/etc/init.d/dbus stop
-		#	umount /dev/pts || umount -fl /dev/pts
-		#	umount /dev     || umount -fl /dev
-		#	umount /sys     || umount -fl /sys
-		#	umount /proc    || umount -fl /proc
-
 		 	echo "*******************************************************************************"
 		 	echo "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]"
 		 	echo "*******************************************************************************"
@@ -69,11 +66,6 @@
 		 	echo "--- initialize ----------------------------------------------------------------"
 		 	trap 'fncEnd 1' 1 2 3 15
 		 	export PS1="(chroot) "
-		#	mount -t proc     proc     /proc
-		#	mount -t sysfs    sysfs    /sys
-		#	mount -t devtmpfs /dev     /dev
-		#	mount -t devpts   /dev/pts /dev/pts
-		#	/etc/init.d/dbus start
 		# -- module install -----------------------------------------------------------
 		#	sed -i.orig /etc/resolv.conf -e '$anameserver 1.1.1.1\nnameserver 1.0.0.1'
 		 	sed -i /etc/apt/sources.list -e 's/^\(deb .*\)/\1 universe multiverse/g'
@@ -82,9 +74,9 @@
 		 	apt upgrade      -q -y                                                 && \
 		 	apt full-upgrade -q -y                                                 && \
 		 	apt install      -q -y                                                    \
-		 	    tasksel clamav apache2 vsftpd isc-dhcp-server ntpdate inxi curl       \
-		 	    network-manager bc nfs-common nfs-kernel-server                       \
-		 	    ibus-mozc mozc-utils-gui fonts-noto-cjk-extra                         \
+		 	    tasksel vim curl                                                      \
+		 	    nfs-common nfs-kernel-server                                          \
+		 	    mozc-utils-gui fonts-noto-cjk-extra                                   \
 		 	    gnome-getting-started-docs-ja gnome-user-docs-ja                      \
 		 	    language-pack-gnome-ja language-pack-ja                               \
 		 	    libreoffice-help-ja libreoffice-l10n-ja                               \
@@ -96,43 +88,51 @@
 		 	fncEnd 1
 		 	echo "--- task install --------------------------------------------------------------"
 		 	tasksel install                                                           \
-		 	    standard server openssh-server print-server dns-server samba-server   \
-		 	    ubuntu-desktop ubuntu-desktop-minimal                              || \
+		 	    standard server openssh-server dns-server samba-server             || \
 		 	fncEnd 1
-		 	echo "--- ungoogled chromium install ------------------------------------------------"
-		 	echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Ubuntu_Focal/ /' | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
-		 	curl -fsSL https://download.opensuse.org/repositories/home:ungoogled_chromium/Ubuntu_Focal/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home:ungoogled_chromium.gpg > /dev/null
+		 	echo "--- google chrome install -----------------------------------------------------"
+		 	echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/google-chrome.list
+		 	wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 		 	if [ -f Release.key ]; then rm -f Release.key; fi
 		 	apt update                                                             && \
-		 	apt upgrade      -q -y                                                 && \
-		 	apt full-upgrade -q -y                                                 && \
 		 	apt install      -q -y                                                    \
-		 	    ungoogled-chromium                                                 || \
+		 	    google-chrome-stable                                               || \
 		 	fncEnd 1
-		 	# -----------------------------------------------------------------------------
-		 	apt autoremove   -q -y                                                 && \
-		 	apt autoclean    -q                                                    && \
-		 	apt clean        -q                                                    || \
-		 	fncEnd 1
+		#	chmod 644 /usr/bin/gnome-keyring-daemon
+		#	echo "--- ungoogled chromium install ------------------------------------------------"
+		#	echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Ubuntu_Focal/ /' | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
+		#	curl -fsSL https://download.opensuse.org/repositories/home:ungoogled_chromium/Ubuntu_Focal/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home:ungoogled_chromium.gpg > /dev/null
+		#	if [ -f Release.key ]; then rm -f Release.key; fi
+		#	apt update                                                             && \
+		#	apt install      -q -y                                                    \
+		#	    ungoogled-chromium ungoogled-chromium-common                          \
+		#	    ungoogled-chromium-driver ungoogled-chromium-sandbox                  \
+		#	    ungoogled-chromium-shell ungoogled-chromium-l10n                   || \
+		#	fncEnd 1
+		#	# -----------------------------------------------------------------------------
+		#	apt autoremove   -q -y                                                 && \
+		#	apt autoclean    -q                                                    && \
+		#	apt clean        -q                                                    || \
+		#	fncEnd 1
 		#	mv /etc/resolv.conf.orig /etc/resolv.conf
 		 	# -----------------------------------------------------------------------------
-		 	echo "--- systemctl -----------------------------------------------------------------"
-		 	systemctl  enable clamav-freshclam
-		 	systemctl  enable ssh
-		 	systemctl disable apache2
-		 	systemctl  enable vsftpd
-		 	if [ "`find /lib/systemd/system/ -name named.service -print`" = "" ]; then
-		 		systemctl  enable bind9
-		 	else
-		 		systemctl  enable named
-		 	fi
-		 	systemctl disable isc-dhcp-server
+		#	echo "--- systemctl -----------------------------------------------------------------"
+		#	systemctl  enable clamav-freshclam
+		#	systemctl  enable ssh
+		#	systemctl disable apache2
+		#	systemctl  enable vsftpd
+		#	if [ "`find /lib/systemd/system/ -name named.service -print`" = "" ]; then
+		#		systemctl  enable bind9
+		#	else
+		#		systemctl  enable named
+		#	fi
+		#	systemctl disable isc-dhcp-server
 		#	systemctl disable isc-dhcp-server6
-		 	systemctl  enable smbd
-		 	systemctl  enable nmbd
+		#	systemctl  enable smbd
+		#	systemctl  enable nmbd
 		 	# -----------------------------------------------------------------------------
-		 	echo "--- freshclam -----------------------------------------------------------------"
-		 	freshclam --show-progress
+		#	echo "--- freshclam -----------------------------------------------------------------"
+		#	freshclam --show-progress
 		# -- localize -----------------------------------------------------------------
 		 	echo "--- localize ------------------------------------------------------------------"
 		 	sed -i /etc/locale.gen                  \
@@ -271,6 +271,9 @@
 		_EOT_
 		 		popd > /dev/null
 		 	done
+		# -- swap off -----------------------------------------------------------------
+		#	echo "--- swap off ------------------------------------------------------------------"
+		#	swapoff -a
 		# -- cleaning -----------------------------------------------------------------
 		 	echo "--- cleaning ------------------------------------------------------------------"
 		 	fncEnd 0
@@ -283,10 +286,6 @@
 _EOT_SH_
 	sed -i ./ubuntu-live/fsimg/ubuntu-setup.sh -e 's/^ //g'
 	# -------------------------------------------------------------------------
-#	if [ ! -f ./${LIVE_FILE} ]; then
-#		wget "https://releases.ubuntu.com/${LIVE_VNUM}/${LIVE_FILE}"
-#		wget "https://ftp.yz.yamagata-u.ac.jp/pub/linux/ubuntu/releases/${LIVE_VNUM}/${LIVE_FILE}"
-#	fi
 	LIVE_URL="https://releases.ubuntu.com/${LIVE_VNUM}/${LIVE_FILE}"
 	if [ ! -f "./${LIVE_FILE}" ]; then
 		curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${LIVE_FILE}"; exit 1; }
@@ -360,38 +359,67 @@ _EOT_SH_
 	       ./ubuntu-live/fsimg/var/cache/apt/archives/*.deb \
 	       ./ubuntu-live/fsimg/ubuntu-setup.sh
 # =============================================================================
-#	pushd ./ubuntu-live/wkdir > /dev/null
-#		unmkinitramfs ../cdimg/casper/initrd .
-#		sed -i main/scripts/casper-bottom/12fstab                                                  \
-#		    -e '/tmpfs/ a#.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0'
-#		mkinitramfs -c gzip -o ../initrd
-#		cp -p ../initrd ../cdimg/casper/initrd
-#	popd > /dev/null
-# =============================================================================
-	sed -i ./ubuntu-live/cdimg/boot/grub/grub.cfg \
-	    -e '/menuentry "Ubuntu"/i\menuentry "Ubuntu of Japanese" {\n\tset gfxpayload=keep\n\tlinux\t/casper/vmlinuz  locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp file=/cdrom/preseed/ubuntu.seed maybe-ubiquity quiet splash ---\n\tinitrd\t/casper/initrd\n}'
-	sed -i ./ubuntu-live/cdimg/isolinux/txt.cfg \
-	    -e 's/^\(default\) .*$/\1 live_of_japanese/' \
-	    -e '/^label live$/i\label live_of_japanese\n  menu label ^Try Ubuntu of Japanese without installing\n  kernel /casper/vmlinuz\n  append  locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-model=jp106 keyboard-layouts=jp file=/cdrom/preseed/ubuntu.seed initrd=/casper/initrd quiet splash ---'
-	# -------------------------------------------------------------------------
 	rm -f ./ubuntu-live/cdimg/casper/filesystem.squashfs
 	mksquashfs ./ubuntu-live/fsimg ./ubuntu-live/cdimg/casper/filesystem.squashfs
 	ls -lht ./ubuntu-live/cdimg/casper/
 	# -------------------------------------------------------------------------
+	BOOT_MBR=`echo ${LIVE_FILE} | sed 's/iso$/mbr/'`
+	BOOT_EFI=`echo ${LIVE_FILE} | sed 's/iso$/efi/'`
+	FILE_SKP=`fdisk -l ${LIVE_FILE} | awk '/EFI/ {print $2;}'`
+	FILE_CNT=`fdisk -l ${LIVE_FILE} | awk '/EFI/ {print $4;}'`
+	dd if=${LIVE_FILE} of=./ubuntu-live/${BOOT_MBR} bs=1 count=446
+	dd if=${LIVE_FILE} of=./ubuntu-live/${BOOT_EFI} bs=512 skip=${FILE_SKP} count=${FILE_CNT}
+	# -------------------------------------------------------------------------
 	pushd ./ubuntu-live/cdimg > /dev/null
-#		find . ! -name "md5sum.txt" -type f -exec md5sum {} \; > md5sum.txt
-		find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
+		INS_CFG="locale=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp"
+		# --- grub.cfg --------------------------------------------------------
+		INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+		sed -n '/^menuentry \"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
+		sed -n '0,/\}/p'                                          | \
+		sed -e 's/\(Ubuntu\)/\1 of Japanese/'                       \
+		    -e "s~\(file\)~${INS_CFG} \1~"                        | \
+		sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg        | \
+		sed -e 's/\(set default\)="1"/\1="0"/'                      \
+		    -e 's/\(set timeout\).*$/\1=5/'                         \
+		> grub.cfg
+		mv grub.cfg boot/grub/
+		# ---------------------------------------------------------------------
+		if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then
+			# --- txt.cfg -----------------------------------------------------
+			INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+			sed -n '/label live$/,/append/p' isolinux/txt.cfg    | \
+			sed -e 's/^\(label\).*/\1 live_of_japanese/'           \
+			    -e 's/\(Try Ubuntu\) \(.*$\)/\1 of Japanese \2/'   \
+			    -e "s~\(file\)~${INS_CFG} \1~"                   | \
+			sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg     | \
+			sed -e 's/^\(default\) .*$/\1 live_of_japanese/'       \
+			> txt.cfg
+			mv txt.cfg isolinux/
+			# -----------------------------------------------------------------
+			find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
+			BOOT_BIN="isolinux/isolinux.bin"
+			BOOT_CAT="isolinux/boot.cat"
+		else
+			find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -path "./EFI/boot/*" ! -path "./boot/grub/i386-pc/*" ! -path "./boot/grub/x86_64-efi/*" -type f -exec md5sum {} \; > md5sum.txt
+			BOOT_BIN="boot/grub/i386-pc/eltorito.img"
+			BOOT_CAT="boot.catalog"
+		fi
 		xorriso -as mkisofs \
 		    -quiet \
 		    -iso-level 3 \
 		    -full-iso9660-filenames \
 		    -volid "${LIVE_VOLID}" \
-		    -eltorito-boot isolinux/isolinux.bin \
-		    -eltorito-catalog isolinux/boot.cat \
-		    -no-emul-boot -boot-load-size 4 -boot-info-table \
+		    -partition_offset 16 \
+		    --grub2-mbr "../${BOOT_MBR}" \
+		    --mbr-force-bootable \
+		    -append_partition 2 0xEF "../${BOOT_EFI}" \
+		    -appended_part_as_gpt \
+		    -eltorito-boot ${BOOT_BIN} \
+		    -eltorito-catalog ${BOOT_CAT} \
+		    -no-emul-boot -boot-load-size 4 -boot-info-table --grub2-boot-info \
 		    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
 		    -eltorito-alt-boot \
-		    -e boot/grub/efi.img \
+		    -e '--interval:appended_partition_2:all::' \
 		    -no-emul-boot -isohybrid-gpt-basdat \
 		    -output "../../${LIVE_DEST}" \
 		    .
