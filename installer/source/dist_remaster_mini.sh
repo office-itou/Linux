@@ -38,6 +38,7 @@
 ##	2020/12/15 000.0000 J.Itou         memo修正
 ##	2020/12/20 000.0000 J.Itou         memo修正
 ##	2021/01/11 000.0000 J.Itou         debian bullseye 公式リリースを追加(コメントアウト中)
+##	2021/03/16 000.0000 J.Itou         画面表示処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -70,18 +71,18 @@
 	)
 # -----------------------------------------------------------------------------
 fncMenu () {
-	echo "# ---------------------------------------------------------------------------#"
-	echo "# ID：Version     ：コードネーム    ：リリース日：サポ終了日：備考           #"
-	echo "#  1：Debian  8.xx：jessie          ：2015-04-25：2020-06-30：oldoldstable   #"
-	echo "#  2：Debian  9.xx：stretch         ：2017-06-17：2022-06-xx：oldstable      #"
-	echo "#  3：Debian 10.xx：buster          ：2019-07-06：20xx-xx-xx：stable         #"
-	echo "#  4：Debian 11.xx：bullseye        ：2021-xx-xx：20xx-xx-xx：testing        #"
-	echo "#  5：Ubuntu 16.04：Xenial Xerus    ：2016-04-21：2021-04-xx：LTS            #"
-	echo "#  6：Ubuntu 18.04：Bionic Beaver   ：2018-04-26：2023-04-xx：LTS            #"
-	echo "#  7：Ubuntu 20.04：Focal Fossa     ：2020-04-23：2025-04-xx：LTS            #"
-#	echo "#  8：Ubuntu 20.10：Groovy Gorilla  ：2020-10-22：2021-07-xx：               #"
-#	echo "#  9：Ubuntu 21.04：Hirsute Hippo   ：2021-04-22：2022-01-xx：               #"
-	echo "# ---------------------------------------------------------------------------#"
+	echo "# ----------------------------------------------------------------------------#"
+	echo "# ID：Version     ：コードネーム    ：リリース日：サポ終了日：備考            #"
+	echo "#  1：Debian  8.xx：jessie          ：2015-04-25：2020-06-30：oldoldstable    #"
+	echo "#  2：Debian  9.xx：stretch         ：2017-06-17：2022-06-xx：oldstable       #"
+	echo "#  3：Debian 10.xx：buster          ：2019-07-06：20xx-xx-xx：stable          #"
+	echo "#  4：Debian 11.xx：bullseye        ：2021-xx-xx：20xx-xx-xx：testing         #"
+	echo "#  5：Ubuntu 16.04：Xenial Xerus    ：2016-04-21：2021-04-xx：LTS             #"
+	echo "#  6：Ubuntu 18.04：Bionic Beaver   ：2018-04-26：2023-04-xx：LTS             #"
+	echo "#  7：Ubuntu 20.04：Focal Fossa     ：2020-04-23：2025-04-xx：LTS             #"
+#	echo "#  8：Ubuntu 20.10：Groovy Gorilla  ：2020-10-22：2021-07-xx：                #"
+#	echo "#  9：Ubuntu 21.04：Hirsute Hippo   ：2021-04-22：2022-01-xx：                #"
+	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
 }
@@ -93,10 +94,19 @@ fncIsInt () {
 	set -e
 }
 # -----------------------------------------------------------------------------
+fncPrint () {
+	local RET_STR=""
+	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -79 | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+	if [ $? -ne 0 ]; then
+		RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -78 | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+	fi
+	echo "${RET_STR}"
+}
+# -----------------------------------------------------------------------------
 fncRemaster () {
 	# --- ARRAY_NAME ----------------------------------------------------------
 	local CODE_NAME=($1)									# 配列展開
-	echo "↓処理中：${CODE_NAME[0]}：${CODE_NAME[2]} ---------------------------------------------"
+	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[2]} -------------------------------------------------------------------------------"
 	# --- DVD -----------------------------------------------------------------
 #	local CPU_TYPE=i386										# CPUタイプ(32bit)
 	local CPU_TYPE=amd64									# CPUタイプ(64bit)
@@ -254,7 +264,7 @@ fncRemaster () {
 			    .
 		popd > /dev/null
 	popd > /dev/null
-	echo "↑処理済：${CODE_NAME[0]}：${CODE_NAME[2]} ---------------------------------------------"
+	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[2]} -------------------------------------------------------------------------------"
 }
 # -----------------------------------------------------------------------------
 	echo "*******************************************************************************"

@@ -69,6 +69,7 @@
 ##	2021/02/06 000.0000 J.Itou         不具合修正(chromium導入関係)
 ##	2021/02/25 000.0000 J.Itou         不具合修正(find周り)
 ##	2021/03/09 000.0000 J.Itou         処理見直し(chromium導入停止)
+##	2021/03/16 000.0000 J.Itou         処理見直し(google chrome導入等)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -105,7 +106,7 @@ fncProc () {
 	fi
 
 	if [ "`which systemctl 2> /dev/null`" != "" ]; then
-		systemctl -q ${INP_COMD} ${INP_NAME}; fncPause $?
+		systemctl ${INP_COMD} ${INP_NAME}; fncPause $?
 	elif [ "${INP_COMD}" != "enable" -a "${INP_COMD}" != "disable" ]; then
 		if [ "`which service 2> /dev/null`" != ""                              ] && \
 		   [ "`find ${DIR_SYSD}/system/ -name \"${INP_NAME}.*\" -print`" != "" ]; then
@@ -136,13 +137,14 @@ fncProc () {
 fncProcFind () {
 	local INP_NAME=$1
 
-	if [ "`find ${DIR_SYSD}/system/ -name \"${INP_NAME}.*\" -print`" != "" ] || \
-	   [ "`find /etc/init.d/        -name \"${INP_NAME}\"   -print`" != "" ]; then
+	if [ "`find ${DIR_SYSD}/system/ -name \"${INP_NAME}.*\" -print`" != "" ]; then
 		echo 1
-		return
+	elif [ -d /etc/init.d/ ] &&
+	     [ "`find /etc/init.d/ -name \"${INP_NAME}\" -print`" != "" ]; then
+		echo 1
+	else
+		echo 0
 	fi
-
-	echo 0
 }
 
 # diff拡張処理 ----------------------------------------------------------------
@@ -270,12 +272,22 @@ fncIPv4GetNetmask () {
 	echo "${OUT_ARRY[@]}"
 }
 
+# 画面表示処理 ----------------------------------------------------------------
+fncPrint () {
+	local RET_STR=""
+	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -79 | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+	if [ $? -ne 0 ]; then
+		RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -78 | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+	fi
+	echo "${RET_STR}"
+}
+
 # 初期設定 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 fncInitialize () {
 	# *************************************************************************
 	# Initialize
 	# *************************************************************************
-	echo - Initialize ------------------------------------------------------------------
+	echo "- Initialize ------------------------------------------------------------------"
 	#--------------------------------------------------------------------------
 	NOW_DATE=`date +"%Y/%m/%d"`													# yyyy/mm/dd
 	NOW_TIME=`date +"%Y%m%d%H%M%S"`												# yyyymmddhhmmss
@@ -457,37 +469,6 @@ fncInitialize () {
 	# 16 | 11111111.11111111.00000000.00000000 | 255.255.0.0
 	# 24 | 11111111.11111111.11111111.00000000 | 255.255.255.0
 
-	# ungoogled-chromium ------------------------------------------------------
-	URL_SYS=""
-	URL_DEB=""
-	URL_KEY=""
-	case "${SYS_NAME}" in
-		"debian" | \
-		"ubuntu" )
-			case "${SYS_CODE}" in
-				"buster" | \
-				"sid"    | \
-				"bionic" | \
-				"focal"  )
-#					echo --- Install ungoogled-chromium [${SYS_NAME} ${SYS_CODE}] --------------------------------
-					URL_SYS="`echo ${SYS_NAME} | sed -e 's/\(.\)\(.*\)/\U\1\L\2/g'`_`echo ${SYS_CODE} | sed -e 's/\(.\)\(.*\)/\U\1\L\2/g'`"
-					URL_DEB="http://download.opensuse.org/repositories/home:/ungoogled_chromium/${URL_SYS}/"
-					URL_KEY="https://download.opensuse.org/repositories/home:ungoogled_chromium/${URL_SYS}/Release.key"
-#					if [ ! -f /etc/apt/sources.list.d/home:ungoogled_chromium.list ]; then
-#						echo "deb ${URL_DEB} /" | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
-#					fi
-#					if [ ! -f /etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg ]; then
-#						curl -fsSL ${URL_KEY} | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg > /dev/null
-#					fi
-					;;
-				* )
-					;;
-			esac
-			;;
-		* )
-			;;
-	esac
-
 	# ワーク変数設定 ----------------------------------------------------------
 	MNT_CD=/media
 	DEV_CD=/dev/sr0
@@ -617,7 +598,7 @@ fncMain () {
 	# *************************************************************************
 	# Make work dir
 	# *************************************************************************
-	echo - Make work dir ---------------------------------------------------------------
+	echo "- Make work dir ---------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	chmod 700 ${DIR_WK}
 
@@ -640,34 +621,34 @@ fncMain () {
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			echo - System Update ---------------------------------------------------------------
+			echo "- System Update ---------------------------------------------------------------"
 			if [ ! -f /etc/apt/sources.list.orig ]; then
 				sed -i.orig /etc/apt/sources.list \
 				    -e 's/^deb cdrom.*$/# &/'
 			fi
 			# --- パッケージ更新 ------------------------------------------------------
-			echo --- Package Update ------------------------------------------------------------
+			echo "--- Package Update ------------------------------------------------------------"
 			${CMD_AGET} update
-			echo --- Package Upgrade -----------------------------------------------------------
+			echo "--- Package Upgrade -----------------------------------------------------------"
 			${CMD_AGET} upgrade
 			${CMD_AGET} dist-upgrade
 			;;
 		"centos" | \
 		"fedora" )
-			echo - System Update ---------------------------------------------------------------
+			echo "- System Update ---------------------------------------------------------------"
 			# --- パッケージ更新 ------------------------------------------------------
-			echo --- Package Update ------------------------------------------------------------
+			echo "--- Package Update ------------------------------------------------------------"
 			${CMD_AGET} check-update
-			echo --- Package Upgrade -----------------------------------------------------------
+			echo "--- Package Upgrade -----------------------------------------------------------"
 			${CMD_AGET} upgrade
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-			echo - System Update ---------------------------------------------------------------
+			echo "- System Update ---------------------------------------------------------------"
 			# --- パッケージ更新 ------------------------------------------------------
-			echo --- Package Update ------------------------------------------------------------
+			echo "--- Package Update ------------------------------------------------------------"
 			${CMD_AGET} update
-			echo --- Package Upgrade -----------------------------------------------------------
+			echo "--- Package Upgrade -----------------------------------------------------------"
 			${CMD_AGET} dist-upgrade
 			;;
 		* )
@@ -688,7 +669,7 @@ fncMain () {
 #				"focal"  | \
 #				"groovy" )
 #					if [ "`which snap 2> /dev/null`" = "" ]; then
-#						echo --- Install snapd [${SYS_NAME} ${SYS_CODE}] ---------------------------------------------
+#						fncPrint "--- Install snapd [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
 #						${CMD_AGET} install snapd
 #					fi
 #					;;
@@ -703,68 +684,62 @@ fncMain () {
 	# *************************************************************************
 	# Install chromium
 	# *************************************************************************
+	# google-chrome -----------------------------------------------------------
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
+			if [ "`LANG=C dpkg -l chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk '$1=="ii" {print $2;}'`" = "" ]; then
+				fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
+				curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+				${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb
+			fi
+			;;
+		"centos" | \
+		"fedora" )
+			if [ "`LANG=C dnf list chromium ungoogled-chromium google-chrome-stable 2> /dev/null | sed -n '/Installed Packages/,/Available Packages/p' | awk '/chromium|chrome/ {print $1;}'`" = "" ]; then
+				fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
+				curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
+				${CMD_AGET} install google-chrome-stable_current_x86_64.rpm
+			fi
+			;;
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
+			if [ "`LANG=C zypper --quiet search chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk -F '|' '/chromium|chrome/ {print $1;}' | sed -e 's/ *//g'`" = "" ]; then
+				fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
+				curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
+				${CMD_AGET} --no-gpg-checks -n install google-chrome-stable_current_x86_64.rpm
+				zypper --gpg-auto-import-keys refresh
+			fi
+			;;
+		* )
+			;;
+	esac
+
+	# ungoogled-chromium ------------------------------------------------------
+#	URL_SYS=""
+#	URL_DEB=""
+#	URL_KEY=""
 #	case "${SYS_NAME}" in
 #		"debian" | \
 #		"ubuntu" )
-#			if [ "`dpkg -l ungoogled-chromium | awk '/ungoogled-chromium/ {print $1;}'`" != "ii" ]; then
-#				case "${SYS_CODE}" in
-#					"buster" | \
-#					"sid"    | \
-#					"bionic" | \
-#					"focal"  | \
-#					"groovy" )
-#						echo --- Install ungoogled-chromium [${SYS_NAME} ${SYS_CODE}] --------------------------------
-#						VER_PROG=87.0.4280.141-1
-#						curl -L -# -O -R -S "https://github.com/SugaryHull/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium_${VER_PROG}.unportable1_amd64.deb"
-#						curl -L -# -O -R -S "https://github.com/SugaryHull/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-common_${VER_PROG}.unportable1_amd64.deb"
-#						curl -L -# -O -R -S "https://github.com/SugaryHull/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-driver_${VER_PROG}.unportable1_amd64.deb"
-#						curl -L -# -O -R -S "https://github.com/SugaryHull/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-sandbox_${VER_PROG}.unportable1_amd64.deb"
-#						curl -L -# -O -R -S "https://github.com/SugaryHull/ungoogled-chromium-binaries/releases/download/${VER_PROG}.unportable1/ungoogled-chromium-l10n_${VER_PROG}.unportable1_all.deb"
-#						if [ "`dpkg -l libva2 | awk '/libva2/ {print $1;}'`" != "ii" ]; then
-#							${CMD_AGET} install libva2
-#						fi
-#						dpkg --install ungoogled-chromium_*.deb         \
-#						               ungoogled-chromium-common_*.deb  \
-#						               ungoogled-chromium-driver_*.deb  \
-#						               ungoogled-chromium-sandbox_*.deb \
-#						               ungoogled-chromium-l10n_*.deb
-#						;;
-#					* )
-#						;;
-#				esac
-#			fi
-#			;;
-#		* )
-#			;;
-#	esac
-
-#	if [ "`which snap 2> /dev/null`" != "" ]; then
-#		echo --- Install chromium [${SYS_NAME} ${SYS_CODE}] ------------------------------------------
-#		snap install chromium
-#	else								# ungoogled-chromium
-#		if [ "${SYS_NAME}" != "debian" ] || [ "${SYS_NAME}" = "debian" -a "${CPU_TYPE}" != "armv5tel" ]; then
-#			if [ "${URL_DEB}" != "" ] && [ "${URL_KEY}" != "" ] && \
-#			   [ "`dpkg -l ungoogled-chromium | awk '/ungoogled-chromium/ {print $1;}'`" != "ii" ]; then
-#				${CMD_AGET} install ungoogled-chromium
-#			fi
-#		fi
-#	fi
-
-#	case "${SYS_NAME}" in
-#		"debian" | \
-#		"ubuntu" )
-#			echo --- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------
-#			curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
-#			dpkg --install google-chrome-stable_current_amd64.deb
-#			;;
-#		"centos" | \
-#		"fedora" )
-#			echo --- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------
-#			curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
-#			${CMD_AGET} install google-chrome-stable_current_x86_64.rpm
-#			;;
-#		"opensuse-leap"       | \
-#		"opensuse-tumbleweed" )
+#			case "${SYS_CODE}" in
+#				"buster" | \
+#				"sid"    | \
+#				"bionic" | \
+#				"focal"  )
+#					if [ "`dpkg -l chromium ungoogled-chromium google-chrome* 2>&1 | awk '$1=="ii" {print $2;}'`" = "" ]; then
+#						fncPrint "--- Install ungoogled-chromium [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
+#						URL_SYS="`echo ${SYS_NAME} | sed -e 's/\(.\)\(.*\)/\U\1\L\2/g'`_`echo ${SYS_CODE} | sed -e 's/\(.\)\(.*\)/\U\1\L\2/g'`"
+#						URL_DEB="http://download.opensuse.org/repositories/home:/ungoogled_chromium/${URL_SYS}/"
+#						URL_KEY="https://download.opensuse.org/repositories/home:ungoogled_chromium/${URL_SYS}/Release.key"
+#						echo "deb ${URL_DEB} /" | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
+#						curl -fsSL ${URL_KEY} | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg > /dev/null
+#						${CMD_AGET} install ungoogled-chromium ungoogled-chromium-common ungoogled-chromium-driver ungoogled-chromium-sandbox ungoogled-chromium-l10n
+#					fi
+#					;;
+#				* )
+#					;;
+#			esac
 #			;;
 #		* )
 #			;;
@@ -773,7 +748,7 @@ fncMain () {
 	# *************************************************************************
 	# Locale Setup
 	# *************************************************************************
-	echo - Locale Setup ----------------------------------------------------------------
+	echo "- Locale Setup ----------------------------------------------------------------"
 	# --- /etc/locale.gen -----------------------------------------------------
 	if [ ! -f /etc/locale.gen.orig ] && \
 	   [   -f /etc/locale.gen      ]; then
@@ -825,7 +800,7 @@ fncMain () {
 			for VIMRC in ".vimrc" ".virc"
 			do
 				if [ ! -f ${VIMRC}.orig ] && [ -f ${VIMRC} ]; then
-					echo --- ${VIMRC} --------------------------------------------------------------------
+					fncPrint "--- ${VIMRC} -------------------------------------------------------------------------------"
 					cp -p ${VIMRC} ${VIMRC}.orig
 					cat <<- _EOT_ >> ${VIMRC}
 						set number              " Print the line number in front of each line.
@@ -845,7 +820,7 @@ _EOT_
 			done
 			# -----------------------------------------------------------------
 			if [ ! -f .curlrc.orig ]; then
-				echo --- .curlrc -------------------------------------------------------------------
+				echo "--- .curlrc -------------------------------------------------------------------"
 				cp -p .curlrc .curlrc.orig
 				cat <<- _EOT_ >> .curlrc
 					location
@@ -856,7 +831,7 @@ _EOT_
 			fi
 			# -----------------------------------------------------------------
 			if [ ! -f ${LNG_FILE}.orig ]; then
-				echo --- ${LNG_FILE} -------------------------------------------------------------------
+				fncPrint "--- ${LNG_FILE} -------------------------------------------------------------------------------"
 				cp -p ${LNG_FILE} ${LNG_FILE}.orig
 				cat <<- _EOT_ >> ${LNG_FILE}
 					# --- 日本語文字化け対策 ---
@@ -873,9 +848,9 @@ _EOT_
 	# *************************************************************************
 	# Network Setup
 	# *************************************************************************
-	echo - Network Setup ---------------------------------------------------------------
+	echo "- Network Setup ---------------------------------------------------------------"
 	# hosts -------------------------------------------------------------------
-	echo --- hosts ---------------------------------------------------------------------
+	echo "--- hosts ---------------------------------------------------------------------"
 	if [ ! -f /etc/hosts.orig ] && \
 	   [   -f /etc/hosts      ]; then
 		if [ "${IP4_DHCP[0]}" != "auto" ]; then
@@ -885,7 +860,7 @@ _EOT_
 		fi
 	fi
 	# hosts.allow -------------------------------------------------------------
-	echo --- hosts.allow ---------------------------------------------------------------
+	echo "--- hosts.allow ---------------------------------------------------------------"
 	if [ ! -f /etc/hosts.allow.orig ] && \
 	   [   -f /etc/hosts.allow      ]; then
 		cp -p /etc/hosts.allow /etc/hosts.allow.orig
@@ -898,7 +873,7 @@ _EOT_
 _EOT_
 	fi
 	# hosts.deny --------------------------------------------------------------
-	echo --- hosts.deny ----------------------------------------------------------------
+	echo "--- hosts.deny ----------------------------------------------------------------"
 	if [ ! -f /etc/hosts.deny.orig ] && \
 	   [   -f /etc/hosts.deny      ]; then
 		cp -p /etc/hosts.deny /etc/hosts.deny.orig
@@ -907,7 +882,7 @@ _EOT_
 _EOT_
 	fi
 	# cifs --------------------------------------------------------------------
-	echo --- cifs ----------------------------------------------------------------------
+	echo "--- cifs ----------------------------------------------------------------------"
 	mkdir -p /mnt/share.nfs \
 	         /mnt/share.win
 	for USER_NAME in "${SUDO_USER}"
@@ -924,7 +899,7 @@ _EOT_
 		popd > /dev/null
 	done
 	# ipv4 dns changed --------------------------------------------------------
-	echo --- ipv4 dns changed ----------------------------------------------------------
+	echo "--- ipv4 dns changed ----------------------------------------------------------"
 	if [ ! -f /etc/NetworkManager/NetworkManager.conf.orig ] && \
 	   [   -f /etc/NetworkManager/NetworkManager.conf      ] && \
 	   [ "`sed -n '/^dns/p' /etc/NetworkManager/NetworkManager.conf`" != "" ]; then
@@ -965,18 +940,18 @@ _EOT_
 		fncProc systemd-resolved disable										# nameserver 127.0.0.53 の無効化
 	fi
 	# SELinux -----------------------------------------------------------------
-	echo --- SELinux changed -----------------------------------------------------------
+	echo "--- SELinux changed -----------------------------------------------------------"
 	if [ "`which getenforce 2> /dev/null`" != "" ] && [ "`getenforce`" = "Enforcing" ]; then
 		sed -i.orig /etc/selinux/config                \
 		    -e 's/\(SELINUX\)=enforcing/\1=disabled/g'
 	fi
 	# Virtual Bridge ----------------------------------------------------------
-	echo --- Virtual Bridge changed ----------------------------------------------------
+	echo "--- Virtual Bridge changed ----------------------------------------------------"
 	if [ "`fncProcFind \"libvirtd\"`" = "1" ]; then
 		fncProc libvirtd disable
 	fi
 	# firewalld ---------------------------------------------------------------
-	echo --- firewalld changed ---------------------------------------------------------
+	echo "--- firewalld changed ---------------------------------------------------------"
 	if [ "`fncProcFind \"firewalld\"`" = "1" ]; then
 		fncProc firewalld enable
 		fncProc firewalld restart
@@ -996,7 +971,7 @@ _EOT_
 	# *************************************************************************
 	# Make share dir
 	# *************************************************************************
-	echo - Make share dir --------------------------------------------------------------
+	echo "- Make share dir --------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	RET_GADM=`awk -F ':' '$1=="'${SMB_GADM}'" { print $1; }' /etc/group`
 	if [ "${RET_GADM}" = "" ]; then
@@ -1041,7 +1016,7 @@ _EOT_
 	# *************************************************************************
 	# Make usb dir
 	# *************************************************************************
-	echo - Make usb dir ----------------------------------------------------------------
+	echo "- Make usb dir ----------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	mkdir -p /mnt/usb1
 	mkdir -p /mnt/usb2
@@ -1051,7 +1026,7 @@ _EOT_
 	# *************************************************************************
 	# Make shell dir
 	# *************************************************************************
-	echo - Make shell dir --------------------------------------------------------------
+	echo "- Make shell dir --------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	mkdir -p /usr/sh
 	mkdir -p /var/log/sh
@@ -1118,7 +1093,7 @@ _EOT_
 		"ubuntu" | \
 		"centos" | \
 		"fedora" )
-			echo - Install clamav --------------------------------------------------------------
+			echo "- Install clamav --------------------------------------------------------------"
 			# -------------------------------------------------------------------------
 			if [ "`which freshclam 2> /dev/null`" = "" ]; then					# Install clamav
 				${CMD_AGET} install clamav clamav-update clamav-scanner-systemd
@@ -1143,7 +1118,7 @@ _EOT_
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-			echo - Install clamav --------------------------------------------------------------
+			echo "- Install clamav --------------------------------------------------------------"
 			# -------------------------------------------------------------------------
 			if [ "`which freshclam 2> /dev/null`" = "" ]; then					# Install clamav
 				${CMD_AGET} install clamav
@@ -1173,7 +1148,7 @@ _EOT_
 	# *************************************************************************
 	# Install ssh
 	# *************************************************************************
-	echo - Install ssh -----------------------------------------------------------------
+	echo "- Install ssh -----------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	if [ ! -f /etc/ssh/sshd_config.orig ] && \
 	   [   -f /etc/ssh/sshd_config      ]; then
@@ -1195,16 +1170,16 @@ _EOT_
 	# *************************************************************************
 	# Install bind9
 	# *************************************************************************
-	echo - Install bind9 ---------------------------------------------------------------
+	echo "- Install bind9 ---------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
-	echo --- masters --------------------------------------------------------------------
+	echo "--- masters -------------------------------------------------------------------"
 	if [ ! -d ${DIR_ZONE}/master ]; then
 		mkdir -p ${DIR_ZONE}/master
 		chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/master
 	fi
-	echo --- db.xxx --------------------------------------------------------------------
+	echo "--- db.xxx --------------------------------------------------------------------"
 	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa
 	do
 		cat <<- _EOT_ > ${DIR_ZONE}/master/db.${FIL_NAME}
@@ -1265,14 +1240,14 @@ _EOT_
 	fi
 	#--------------------------------------------------------------------------
 	if [ "${IP4_DHCP[0]}" = "auto" ]; then
-		echo --- dhcp対応 ------------------------------------------------------------------
+		echo "--- dhcp対応 ------------------------------------------------------------------"
 		sed -i.orig ${DIR_ZONE}/master/db.${WGP_NAME}                 -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
 		sed -i.orig ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
 	fi
 	# --- named.conf ----------------------------------------------------------
 	if [ ! -f ${DIR_BIND}/${FIL_BIND}.orig ] && \
 	   [   -f ${DIR_BIND}/${FIL_BIND}      ]; then
-		echo --- ${FIL_BIND} ----------------------------------------------------------------
+		fncPrint "--- ${FIL_BIND} -------------------------------------------------------------------------------"
 		if [ ! -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
 			cp -p ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BIND}.orig
 		fi
@@ -1291,7 +1266,7 @@ _EOT_
 	for FIL_NAME in `sed -n 's/^include "\(.*\)";$/\1/gp' ${DIR_BIND}/${FIL_BIND}`
 	do
 		if [ ! -f ${FIL_NAME} ]; then
-			echo ---- make ${FIL_NAME} ---------------------------------------------
+			fncPrint "---- make ${FIL_NAME} -------------------------------------------------------------------------------"
 			cp -p ${DIR_BIND}/named.conf ${FIL_NAME}
 			: > ${FIL_NAME}
 		fi
@@ -1300,7 +1275,7 @@ _EOT_
 	if [ ! -f ${DIR_BIND}/${FIL_BOPT}.orig -o "${FIL_BOPT}" = "${FIL_BIND}"                      ] && \
 	   [   -f ${DIR_BIND}/${FIL_BOPT}                                                            ] && \
 	   [ "`sed -n \"/^acl \\"${WGP_NAME}-network\\" {$/,/^};$/p\" ${DIR_BIND}/${FIL_BOPT}`" = "" ]; then
-		echo --- ${FIL_BOPT} --------------------------------------------------------
+		fncPrint "--- ${FIL_BOPT} -------------------------------------------------------------------------------"
 		if [ ! -f ${DIR_BIND}/${FIL_BOPT}.orig ]; then
 			cp -p ${DIR_BIND}/${FIL_BOPT} ${DIR_BIND}/${FIL_BOPT}.orig
 		fi
@@ -1339,7 +1314,7 @@ _EOT_
 	# --- named.conf.local -----------------------------------------------------
 	if [ ! -f ${DIR_BIND}/${FIL_BLOC}.orig ] && \
 	   [   -f ${DIR_BIND}/${FIL_BLOC}      ]; then
-		echo --- ${FIL_BLOC} ----------------------------------------------------------
+		fncPrint "--- ${FIL_BLOC} -------------------------------------------------------------------------------"
 		if [ ! -f ${DIR_BIND}/${FIL_BLOC}.orig ]; then
 			cp -p ${DIR_BIND}/${FIL_BLOC} ${DIR_BIND}/${FIL_BLOC}.orig
 		fi
@@ -1381,7 +1356,7 @@ _EOT_
 		fi
 		# ---------------------------------------------------------------------
 		if [ "${EXT_ZONE}" != "" ]; then
-			echo --- slaves --------------------------------------------------------------------
+			echo "--- slaves --------------------------------------------------------------------"
 			if [ ! -d ${DIR_ZONE}/slaves ]; then
 				mkdir -p ${DIR_ZONE}/slaves
 				chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/slaves
@@ -1412,17 +1387,17 @@ _EOT_
 		fncProc bind9 "${RUN_BIND[1]}"
 	fi
 
-#	echo --- dns check -----------------------------------------------------------------
+#	echo "--- dns check -----------------------------------------------------------------"
 #	dig ${SVR_NAME}.${WGP_NAME} A
 #	dig ${SVR_NAME}.${WGP_NAME} AAAA
 #	dig -x ${IP4_ADDR[0]}
 #	dig -x ${IP6_ADDR[0]}
-#	echo --- dns check -----------------------------------------------------------------
+#	echo "--- dns check -----------------------------------------------------------------"
 
 	# *************************************************************************
 	# Install dhcp
 	# *************************************************************************
-	echo - Install dhcp ----------------------------------------------------------------
+	echo "- Install dhcp ----------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	if [ "${DIR_DHCP}" != "" ]; then
 		if [ ! -f ${DIR_DHCP}/${FIL_DHCP}.orig ] && \
@@ -1474,7 +1449,7 @@ _EOT_
 	# *************************************************************************
 	# Add smb.conf
 	# *************************************************************************
-	echo - Add smb.conf ----------------------------------------------------------------
+	echo "- Add smb.conf ----------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	if [ ! -f ${SMB_BACK} ]; then
 		CMD_UADD=`which useradd`
@@ -1544,7 +1519,7 @@ _EOT_
 		VER_BIND=`testparm -V | awk -F '.' '/Version/ {sub(".* ",""); printf "%d.%d",$1,$2;}'`
 		fncPause $?
 		if [ "$(echo "${VER_BIND} < 4.0" | bc)" -eq 1 ]; then					# Ver.4.0以前
-			echo --- Add SMB2 Protocol ---------------------------------------------------------
+			echo "--- Add SMB2 Protocol ---------------------------------------------------------"
 			sed -i ${SMB_WORK}                          \
 			    -e 's/\(max protocol\) =.*$/\1 = SMB2/'							# SMB2対応
 		fi
@@ -1682,7 +1657,7 @@ _EOT_
 	# *************************************************************************
 	# Make User file (${DIR_WK}/addusers.txtが有ればそれを使う)
 	# *************************************************************************
-	echo - Make User file --------------------------------------------------------------
+	echo "- Make User file --------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	rm -f ${USR_FILE}
 	rm -f ${SMB_FILE}
@@ -1709,7 +1684,7 @@ _EOT_
 	# *************************************************************************
 	# Setup Login User
 	# *************************************************************************
-	echo - Setup Login User ------------------------------------------------------------
+	echo "- Setup Login User ------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	while IFS=: read WORKNAME FULLNAME USERIDNO PASSWORD ADMINFLG
 	do
@@ -1742,16 +1717,16 @@ _EOT_
 		fi
 	done < ${USR_FILE}
 	# -------------------------------------------------------------------------
-	echo --- ${SMB_GRUP} ---------------------------------------------------------------
+	fncPrint "--- ${SMB_GRUP} -------------------------------------------------------------------------------"
 	awk -F ':' '$1=="'${SMB_GRUP}'" {print $4;}' /etc/group
-	echo --- ${SMB_GADM} ---------------------------------------------------------------
+	fncPrint "--- ${SMB_GADM} -------------------------------------------------------------------------------"
 	awk -F ':' '$1=="'${SMB_GADM}'" {print $4;}' /etc/group
-	echo ------------------------------------------------------------------------------
+	echo "-------------------------------------------------------------------------------"
 
 	# *************************************************************************
 	# Setup Samba User
 	# *************************************************************************
-	echo - Setup Samba User ------------------------------------------------------------
+	echo "- Setup Samba User ------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	pdbedit -i smbpasswd:${SMB_FILE} -e tdbsam:${SMB_PWDB}
 	fncPause $?
@@ -1759,7 +1734,7 @@ _EOT_
 	# *************************************************************************
 	# Cron shell (cd /usr/sh 後に tar -cz CMD*sh | xxd -ps にて出力されたもの)
 	# *************************************************************************
-	echo - Cron shell ------------------------------------------------------------------
+	echo "- Cron shell ------------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	cat <<- _EOT_ > ${TGZ_WORK}
 		1f8b0800dea99f5a0003ed5c7d5313491ae7dfcca7e81de1d0dd0a939924
@@ -1877,7 +1852,7 @@ _EOT_
 	# *************************************************************************
 	# Crontab
 	# *************************************************************************
-#	echo - Crontab ---------------------------------------------------------------------
+#	echo "- Crontab ---------------------------------------------------------------------"
 #	cat <<- _EOT_ > ${CRN_FILE}
 #		SHELL = /bin/bash
 #		PATH = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -1924,7 +1899,7 @@ _EOT_
 	# *************************************************************************
 	if [ ! -f /etc/default/grub.orig ] && \
 	   [   -f /etc/default/grub      ]; then
-		echo - GRUB ------------------------------------------------------------------------
+		echo "- GRUB ------------------------------------------------------------------------"
 		# ---------------------------------------------------------------------
 		VGA_MODE=`echo ${VGA_RESO[0]} | sed -e "s/\(.*\)x\(.*\)x\(.*\)/\1x\2x\3/"`
 		sed -i.orig /etc/default/grub                        \
@@ -1985,7 +1960,7 @@ _EOT_
 	# Install VMware Tools
 	# *************************************************************************
 	if [ ${FLG_VMTL} -ne 0 ]; then
-		echo - Install VMware Tools --------------------------------------------------------
+		echo "- Install VMware Tools --------------------------------------------------------"
 		# ---------------------------------------------------------------------
 		case "${SYS_NAME}" in
 			"debian" | \
@@ -2029,17 +2004,17 @@ _EOT_
 	# RAID Status
 	# *************************************************************************
 	if [ -f /proc/mdstat ]; then
-		echo - RAID Status -----------------------------------------------------------------
+		echo "- RAID Status -----------------------------------------------------------------"
 		# ---------------------------------------------------------------------
-		echo --- cat /proc/mdstat ----------------------------------------------------------
+		echo "--- cat /proc/mdstat ----------------------------------------------------------"
 		cat /proc/mdstat
-		echo --- cat /proc/mdstat ----------------------------------------------------------
+		echo "--- cat /proc/mdstat ----------------------------------------------------------"
 	fi
 
 	# *************************************************************************
 	# Termination
 	# *************************************************************************
-	echo - Termination -----------------------------------------------------------------
+	echo "- Termination -----------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	rm -f ${TGZ_WORK}
 	rm -f ${CRN_FILE}
@@ -2081,7 +2056,7 @@ _EOT_
 	fi
 	# -------------------------------------------------------------------------
 	if [ "${USR_SUDO}" != "" ] && [ "`awk -F ':' '/root/ {print $7;}' /etc/passwd`" != "${LIN_CHSH}" ]; then
-		echo "=== 以下のユーザーが ${GRP_SUDO} に属しています。 ===================================="
+		fncPrint "=== 以下のユーザーが ${GRP_SUDO} に属しています。 ==============================================================================="
 		echo ${USR_SUDO}
 		echo "==============================================================================="
 		while :
@@ -2114,7 +2089,7 @@ _EOT_
 	# *************************************************************************
 	# Backup
 	# *************************************************************************
-	echo - Backup ----------------------------------------------------------------------
+	echo "- Backup ----------------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	pushd / > /dev/null
 		set +e
@@ -2147,7 +2122,7 @@ _EOT_
 
 # Debug :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 fncDebug () {
-	echo - Debug mode ------------------------------------------------------------------
+	echo "- Debug mode ------------------------------------------------------------------"
 	echo "NOW_DATE=${NOW_DATE}"													# yyyy/mm/dd
 	echo "NOW_TIME=${NOW_TIME}"													# yyyymmddhhmmss
 	echo "PGM_NAME=${PGM_NAME}"													# プログラム名
@@ -2218,9 +2193,9 @@ fncDebug () {
 	echo "LNK_RADU=${LNK_RADU[@]}"												# Link:BIND逆引き用上位値
 	echo "LNK_RADL=${LNK_RADL[@]}"												# Link:BIND逆引き用下位値
 	echo "RNG_DHCP=${RNG_DHCP}"													# IPv4:DHCPの提供アドレス範囲
-	echo "URL_SYS =${URL_SYS}"													# ungoogled-chromium:OS別URL
-	echo "URL_DEB =${URL_DEB}"													# ungoogled-chromium:/etc/apt/sources.list.d/home:ungoogled_chromium.list
-	echo "URL_KEY =${URL_KEY}"													# ungoogled-chromium:/etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg
+#	echo "URL_SYS =${URL_SYS}"													# ungoogled-chromium:OS別URL
+#	echo "URL_DEB =${URL_DEB}"													# ungoogled-chromium:/etc/apt/sources.list.d/home:ungoogled_chromium.list
+#	echo "URL_KEY =${URL_KEY}"													# ungoogled-chromium:/etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg
 #	echo "DST_NAME=${DST_NAME}"													# ワーク：
 #	echo "MNT_FD  =${MNT_FD}"													#  〃   ：
 #	echo "MNT_CD  =${MNT_CD}"													#  〃   ：
@@ -2272,135 +2247,135 @@ fncDebug () {
 #	echo "PKG_WMIN=${PKG_WMIN}"													#  〃   ：
 	# Network Setup ***********************************************************
 	if [ -f /etc/network/interfaces ]; then
-		echo --- cat /etc/network/interfaces -----------------------------------------------
+		echo "--- cat /etc/network/interfaces -----------------------------------------------"
 		expand -t 4 /etc/network/interfaces
 		if [ -f /etc/network/interfaces.orig ]; then
-			echo --- diff /etc/network/interfaces ----------------------------------------------
+			echo "--- diff /etc/network/interfaces ----------------------------------------------"
 			fncDiff /etc/network/interfaces /etc/network/interfaces.orig
 		fi
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	echo --- cat /etc/hosts ------------------------------------------------------------
+	echo "--- cat /etc/hosts ------------------------------------------------------------"
 	expand -t 4 /etc/hosts
 	if [ -f /etc/hosts.orig ]; then
-		echo --- diff /etc/hosts -----------------------------------------------------------
+		echo "--- diff /etc/hosts -----------------------------------------------------------"
 		fncDiff /etc/hosts /etc/hosts.orig
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
 	if [ -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
-		echo --- cat /etc/NetworkManager/system-connections/${CON_NAME} -------------
+		fncPrint "--- cat /etc/NetworkManager/system-connections/${CON_NAME} -------------------------------------------------------------------------------"
 		expand -t 4 "/etc/NetworkManager/system-connections/${CON_NAME}"
 		if [ -f "/etc/NetworkManager/system-connections/${CON_NAME}.orig" ]; then
-			echo --- diff /etc/NetworkManager/system-connections/${CON_NAME} ------------
+			fncPrint "--- diff /etc/NetworkManager/system-connections/${CON_NAME} -------------------------------------------------------------------------------"
 			fncDiff "/etc/NetworkManager/system-connections/${CON_NAME}" "/etc/NetworkManager/system-connections/${CON_NAME}.orig"
 		fi
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
 	if [ -f /etc/resolv.conf ]; then
-		echo --- cat /etc/resolv.conf ------------------------------------------------------
+		echo "--- cat /etc/resolv.conf ------------------------------------------------------"
 		expand -t 4 /etc/resolv.conf
 		if [ -f /etc/resolv.conf.orig ]; then
-			echo --- diff /etc/resolv.conf -----------------------------------------------------
+			echo "--- diff /etc/resolv.conf -----------------------------------------------------"
 			fncDiff /etc/resolv.conf /etc/resolv.conf.orig
 		fi
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-#	echo --- cat /etc/hosts.allow ------------------------------------------------------
+#	echo "--- cat /etc/hosts.allow ------------------------------------------------------"
 #	expand -t 4 /etc/hosts.allow
 	if [ -f /etc/hosts.allow.orig ]; then
-		echo --- diff /etc/hosts.allow -----------------------------------------------------
+		echo "--- diff /etc/hosts.allow -----------------------------------------------------"
 		fncDiff /etc/hosts.allow /etc/hosts.allow.orig
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-#	echo --- cat /etc/hosts.deny -------------------------------------------------------
+#	echo "--- cat /etc/hosts.deny -------------------------------------------------------"
 #	expand -t 4 /etc/hosts.deny
 	if [ -f /etc/hosts.deny.orig ]; then
-		echo --- diff /etc/hosts.deny ------------------------------------------------------
+		echo "--- diff /etc/hosts.deny ------------------------------------------------------"
 		fncDiff /etc/hosts.deny /etc/hosts.deny.orig
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-#	echo --- cat /etc/nsswitch.conf ----------------------------------------------------
+#	echo "--- cat /etc/nsswitch.conf ----------------------------------------------------"
 #	expand -t 4 /etc/nsswitch.conf
 	if [ -f /etc/nsswitch.conf ] && [ -f /etc/nsswitch.conf.orig ]; then
-		echo --- diff /etc/nsswitch.conf ---------------------------------------------------
+		echo "--- diff /etc/nsswitch.conf ---------------------------------------------------"
 		fncDiff /etc/nsswitch.conf /etc/nsswitch.conf.orig
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-#	echo --- cat /etc/gai.conf ---------------------------------------------------------
+#	echo "--- cat /etc/gai.conf ---------------------------------------------------------"
 #	expand -t 4 /etc/gai.conf
 	if [ -f /etc/gai.conf ] && [ -f /etc/gai.conf.orig ]; then
-		echo --- diff /etc/gai.conf --------------------------------------------------------
+		echo "--- diff /etc/gai.conf --------------------------------------------------------"
 		fncDiff /etc/gai.conf /etc/gai.conf.orig
 	fi
 	# Install clamav **********************************************************
 	FILE_FRESHCONF=`find /etc/ -name "freshclam.conf" -type f -print`
 	if [ "${FILE_FRESHCONF}" != "" ]; then
 		FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
-#		echo --- cat ${FILE_FRESHCONF} ----------------------------------------------------
+#		fncPrint "--- cat ${FILE_FRESHCONF} -------------------------------------------------------------------------------"
 #		expand -t 4 ${FILE_FRESHCONF}
 		if [ -f ${FILE_FRESHCONF}.orig ]; then
-			echo --- diff ${FILE_FRESHCONF} ------------------------------------------
+			fncPrint "--- diff ${FILE_FRESHCONF} -------------------------------------------------------------------------------"
 			fncDiff ${FILE_FRESHCONF} ${FILE_FRESHCONF}.orig
 		fi
 #		if [ -f ${FILE_CLAMDCONF} ]; then
-#			echo --- cat ${FILE_CLAMDCONF} ----------------------------------------------------
+#			fncPrint "--- cat ${FILE_CLAMDCONF} -------------------------------------------------------------------------------"
 #			expand -t 4 ${FILE_CLAMDCONF}
 #		fi
 	fi
 	# Install ssh *************************************************************
-#	echo --- cat /etc/ssh/sshd_config --------------------------------------------------
+#	echo "--- cat /etc/ssh/sshd_config --------------------------------------------------"
 #	expand -t 4 /etc/ssh/sshd_config
 	if [ -f /etc/ssh/sshd_config.orig ]; then
-		echo --- diff /etc/ssh/sshd_config -------------------------------------------------
+		echo "--- diff /etc/ssh/sshd_config -------------------------------------------------"
 		fncDiff /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
 	fi
 	# Install apache2 *********************************************************
-#	echo --- cat ${FILE_USERDIRCONF} --------------------------------
+#	fncPrint "--- cat ${FILE_USERDIRCONF} -------------------------------------------------------------------------------"
 #	expand -t 4 ${FILE_USERDIRCONF}
 #	if [ -f ${FILE_USERDIRCONF}.orig ]; then
-#		echo --- diff ${FILE_USERDIRCONF} ----------------------------------------
+#		fncPrint "--- diff ${FILE_USERDIRCONF} -------------------------------------------------------------------------------"
 #		fncDiff ${FILE_USERDIRCONF} ${FILE_USERDIRCONF}.orig
 #	fi
 	# Install vsftpd **********************************************************
-#	echo --- cat ${DIR_VSFTPD}/vsftpd.conf ------------------------------------------------------
+#	fncPrint "--- cat ${DIR_VSFTPD}/vsftpd.conf -------------------------------------------------------------------------------"
 #	expand -t 4 ${DIR_VSFTPD}/vsftpd.conf
 #	if [ -f ${DIR_VSFTPD}/vsftpd.conf.orig ]; then
-#		echo --- diff ${DIR_VSFTPD}/vsftpd.conf ----------------------------------
+#		fncPrint "--- diff ${DIR_VSFTPD}/vsftpd.conf -------------------------------------------------------------------------------"
 #		fncDiff ${DIR_VSFTPD}/vsftpd.conf ${DIR_VSFTPD}/vsftpd.conf.orig
 #	fi
 	# Install bind9 ***********************************************************
 	if [ -f ${DIR_ZONE}/master/db.${WGP_NAME}                 ]; then
-		echo --- cat ${DIR_ZONE}/master/db.${WGP_NAME} -----------------------------------
+		fncPrint "--- cat ${DIR_ZONE}/master/db.${WGP_NAME} -------------------------------------------------------------------------------"
 		expand -t 4 ${DIR_ZONE}/master/db.${WGP_NAME}
 	fi
 	if [ -f ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa ]; then
-		echo --- cat ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa -----------------------
+		fncPrint "--- cat ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa -------------------------------------------------------------------------------"
 		expand -t 4 ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa
 	fi
 	if [ -f ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa     ]; then
-		echo --- cat ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa -----------------------
+		fncPrint "--- cat ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa -------------------------------------------------------------------------------"
 		expand -t 4 ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa
 	fi
 	if [ -f ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa     ]; then
-		echo --- cat ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa -----------------------
+		fncPrint "--- cat ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa -------------------------------------------------------------------------------"
 		expand -t 4 ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	echo --- cat ${DIR_BIND}/${FIL_BIND} --------------------------------------------------
+	fncPrint "--- cat ${DIR_BIND}/${FIL_BIND} -------------------------------------------------------------------------------"
 	if [ -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
 		fncDiff ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BIND}.orig
 	elif [ -f ${DIR_BIND}/${FIL_BIND} ]; then
 		expand -t 4 ${DIR_BIND}/${FIL_BIND}
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	echo --- cat ${DIR_BIND}/${FIL_BIND}.local --------------------------------------------
+	fncPrint "--- cat ${DIR_BIND}/${FIL_BIND}.local -------------------------------------------------------------------------------"
 	if [ -f ${DIR_BIND}/${FIL_BIND}.local.orig ]; then
 		fncDiff ${DIR_BIND}/${FIL_BIND}.local ${DIR_BIND}/${FIL_BIND}.local.orig
 	elif [ -f ${DIR_BIND}/${FIL_BIND}.local ]; then
 		expand -t 4 ${DIR_BIND}/${FIL_BIND}.local
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	echo --- cat ${DIR_BIND}/${FIL_BIND}.options ------------------------------------------
+	fncPrint "--- cat ${DIR_BIND}/${FIL_BIND}.options -------------------------------------------------------------------------------"
 	if [ -f ${DIR_BIND}/${FIL_BIND}.options.orig ]; then
 		fncDiff ${DIR_BIND}/${FIL_BIND}.options ${DIR_BIND}/${FIL_BIND}.options.orig
 	elif [ -f ${DIR_BIND}/${FIL_BIND}.options ]; then
@@ -2408,7 +2383,7 @@ fncDebug () {
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
 	set +e
-	echo --- ping check ----------------------------------------------------------------
+	echo "--- ping check ----------------------------------------------------------------"
 	if [ "`which ping4 2> /dev/null`" != "" ]; then
 		ping4 -c 4 www.google.com
 	else
@@ -2420,65 +2395,65 @@ fncDebug () {
 		fi
 	fi
 	if [ "`which ping6 2> /dev/null`" != "" ]; then
-		echo ･･･････････････････････････････････････････････････････････････････････････････
+		echo "･･･････････････････････････････････････････････････････････････････････････････"
 		ping6 -c 4 www.google.com
 	fi
-	echo --- ping check ----------------------------------------------------------------
+	echo "--- ping check ----------------------------------------------------------------"
 	set -e
 	# ･････････････････････････････････････････････････････････････････････････
 	set +e
-	echo --- dns check -----------------------------------------------------------------
+	echo "--- dns check -----------------------------------------------------------------"
 	dig @localhost ${IP4_RADR[0]}.in-addr.arpa DNSKEY +dnssec +multi
-	echo ･･･････････････････････････････････････････････････････････････････････････････
+	echo "･･･････････････････････････････････････････････････････････････････････････････"
 	dig @localhost ${WGP_NAME} DNSKEY +dnssec +multi
-	echo ･･･････････････････････････････････････････････････････････････････････････････
+	echo "･･･････････････････････････････････････････････････････････････････････････････"
 	dig @${IP4_ADDR[0]} ${WGP_NAME} axfr
-	echo ･･･････････････････････････････････････････････････････････････････････････････
+	echo "･･･････････････････････････････････････････････････････････････････････････････"
 	dig @${IP6_ADDR[0]} ${WGP_NAME} axfr
-#	echo ･･･････････････････････････････････････････････････････････････････････････････
+#	echo "･･･････････････････････････････････････････････････････････････････････････････"
 #	dig @${LNK_ADDR[0]} ${WGP_NAME} axfr
-	echo ･･･････････････････････････････････････････････････････････････････････････････
+	echo "･･･････････････････････････････････････････････････････････････････････････････"
 	dig ${SVR_NAME}.${WGP_NAME} A +nostats +nocomments
-	echo ･･･････････････････････････････････････････････････････････････････････････････
+	echo "･･･････････････････････････････････････････････････････････････････････････････"
 	dig ${SVR_NAME}.${WGP_NAME} AAAA +nostats +nocomments
-	echo ･･･････････････････････････････････････････････････････････････････････････････
+	echo "･･･････････････････････････････････････････････････････････････････････････････"
 	dig -x ${IP4_ADDR[0]} +nostats +nocomments
-	echo ･･･････････････････････････････････････････････････････････････････････････････
+	echo "･･･････････････････････････････････････････････････････････････････････････････"
 	dig -x ${IP6_ADDR[0]} +nostats +nocomments
-	echo ･･･････････････････････････････････････････････････････････････････････････････
+	echo "･･･････････････････････････････････････････････････････････････････････････････"
 	dig -x ${LNK_ADDR[0]} +nostats +nocomments
-	echo --- dns check -----------------------------------------------------------------
+	echo "--- dns check -----------------------------------------------------------------"
 	set -e
 	# Install dhcp ************************************************************
-#	echo --- diff ${DIR_DHCP}/dhcpd.conf -------------------------------------------------
+#	fncPrint "--- diff ${DIR_DHCP}/dhcpd.conf -------------------------------------------------------------------------------"
 #	expand -t 4 /etc/dhcp/dhcpd.conf
 #	fncDiff /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
-	echo --- diff ${DIR_DHCP}/dhcpd.conf -------------------------------------------------
+	fncPrint "--- diff ${DIR_DHCP}/dhcpd.conf -------------------------------------------------------------------------------"
 	expand -t 4 ${DIR_DHCP}/dhcpd.conf
 #	fncDiff ${DIR_DHCP}/dhcpd.conf ${DIR_DHCP}/dhcpd.conf.orig
 	# Install Webmin **********************************************************
 	if [ -f /etc/webmin/config.orig ]; then
-		echo --- diff /etc/webmin/config ---------------------------------------------------
+		echo "--- diff /etc/webmin/config ---------------------------------------------------"
 		fncDiff /etc/webmin/config /etc/webmin/config.orig
 	fi
 	if [ -f /etc/webmin/time/config.orig ]; then
-		echo --- diff /etc/webmin/time/config ----------------------------------------------
+		echo "--- diff /etc/webmin/time/config ----------------------------------------------"
 		fncDiff /etc/webmin/time/config /etc/webmin/time/config.orig
 	fi
 	# Add smb.conf ************************************************************
-	echo --- cat ${SMB_CONF} -------------------------------------------------
+	fncPrint "--- cat ${SMB_CONF} -------------------------------------------------------------------------------"
 	expand -t 4 ${SMB_CONF}
 	# Setup Samba User ********************************************************
-	echo --- pdbedit -L ----------------------------------------------------------------
+	echo "--- pdbedit -L ----------------------------------------------------------------"
 	pdbedit -L
 	# GRUB ********************************************************************
 	if [ -f /etc/default/grub.orig ]; then
-		echo --- diff /etc/default/grub ----------------------------------------------------
+		echo "--- diff /etc/default/grub ----------------------------------------------------"
 		fncDiff /etc/default/grub /etc/default/grub.orig
 	fi
 	# Install VMware Tools ****************************************************
 	if [ -f /etc/fstab.vmware ]; then
-		echo --- diff /etc/fstab /etc/fstab.vmware -----------------------------------------
+		echo "--- diff /etc/fstab /etc/fstab.vmware -----------------------------------------"
 		fncDiff /etc/fstab /etc/fstab.vmware
 	fi
 }
@@ -2495,7 +2470,7 @@ fncDebug () {
 		fncDebug
 	fi
 	# -------------------------------------------------------------------------
-	echo --- End -----------------------------------------------------------------------
+	echo "--- End -----------------------------------------------------------------------"
 
 # *****************************************************************************
 # Exit

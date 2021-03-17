@@ -126,7 +126,9 @@ exit 0</source>
     <install_recommended t="boolean">true</install_recommended>
     <packages t="list">
       <package>bind</package>
+<!--
       <package>chromium</package>
+-->
       <package>clamav</package>
       <package>chrony</package>
       <package>dhcpd-pools</package>

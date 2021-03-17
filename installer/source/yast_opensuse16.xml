@@ -120,7 +120,9 @@ exit 0
   <software t="map">
     <install_recommended t="boolean">true</install_recommended>
     <packages t="list">
+<!--
       <package>chromium</package>
+-->
       <package>clamav</package>
       <package>chrony</package>
     </packages>

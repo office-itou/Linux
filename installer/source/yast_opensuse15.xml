@@ -123,9 +123,11 @@ exit 0
   </scripts>
   <software>
     <install_recommended config:type="boolean">true</install_recommended>
+<!--
     <packages config:type="list">
       <package>chromium</package>
     </packages>
+-->
     <patterns config:type="list">
       <pattern>apparmor</pattern>
       <pattern>apparmor_opt</pattern>
