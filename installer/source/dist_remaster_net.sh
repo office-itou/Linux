@@ -64,6 +64,7 @@
 ##	2021/03/07 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210302-boot 変更
 ##	2021/03/15 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210311-boot 変更
 ##	2021/03/16 000.0000 J.Itou         画面表示処理見直し
+##	2021/03/29 000.0000 J.Itou         debian 10.9.0 / CentOS-Stream-8-x86_64-20210316-boot 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -86,10 +87,10 @@
 	readonly ARRAY_NAME=(                                                                                                                                                                                 \
 	    "debian debian-8.11.1-amd64-netinst            https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
 	    "debian debian-9.13.0-amd64-netinst            https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian debian-10.8.0-amd64-netinst            https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.8.0-amd64-netinst.iso                              preseed_debian.cfg"   \
+	    "debian debian-10.9.0-amd64-netinst            https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.9.0-amd64-netinst.iso                              preseed_debian.cfg"   \
 	    "debian debian-testing-amd64-netinst           https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg"   \
 	    "centos CentOS-8.3.2011-x86_64-boot            http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-boot.iso                                   kickstart_centos.cfg" \
-	    "centos CentOS-Stream-8-x86_64-20210311-boot   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210311-boot.iso                          kickstart_centos.cfg" \
+	    "centos CentOS-Stream-8-x86_64-20210316-boot   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210316-boot.iso                          kickstart_centos.cfg" \
 	    "fedora Fedora-Server-netinst-x86_64-33-1.2    https://download.fedoraproject.org/pub/fedora/linux/releases/33/Server/x86_64/iso/Fedora-Server-netinst-x86_64-33-1.2.iso    kickstart_fedora.cfg" \
 	    "suse   openSUSE-Leap-15.2-NET-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml"  \
 	    "suse   openSUSE-Leap-15.3-NET-x86_64-Current  http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64-Current.iso                            yast_opensuse153.xml" \
@@ -102,10 +103,10 @@ fncMenu () {
 	echo "# ID：Version                            ：リリース日：サポ終了日：備考       #"
 	echo "#  1：debian-8.11.1-amd64-netinst        ：2015-04-25：2020-06-30：oldoldstable"
 	echo "#  2：debian-9.13.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
-	echo "#  3：debian-10.8.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
+	echo "#  3：debian-10.9.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
 	echo "#  5：CentOS-8.3.2011-x86_64-boot        ：2020-06-15：2021-12-31：RHEL 8.0   #"
-	echo "#  6：CentOS-Stream-8-x86_64-20210311-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
+	echo "#  6：CentOS-Stream-8-x86_64-20210316-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
 	echo "#  7：Fedora-Server-netinst-x86_64-33-1.2：2020-10-27：20xx-xx-xx：kernel 5.8 #"
 	echo "#  8：openSUSE-Leap-15.2-NET-x86_64      ：2020-07-02：2021-11-xx：kernel 5.3 #"
 	echo "#  9：openSUSE-Leap-15.3-NET-x86_64-Curre：20xx-xx-xx：20xx-xx-xx：           #"
