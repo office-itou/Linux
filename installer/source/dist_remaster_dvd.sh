@@ -73,6 +73,8 @@
 ##	2021/03/15 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210311-dvd1 変更
 ##	2021/03/16 000.0000 J.Itou         画面表示処理見直し
 ##	2021/03/29 000.0000 J.Itou         debian 10.9.0 / CentOS-Stream-8-x86_64-20210316-dvd1 変更
+##	2021/03/30 000.0000 J.Itou         ubuntu-20.04.2.0-desktop-amd64 / ubuntu-20.10-desktop-amd64 追加
+##	2021/04/04 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210402-dvd1 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -104,16 +106,18 @@
 	    "ubuntu ubuntu-20.04.2-live-server-amd64       https://releases.ubuntu.com/focal/ubuntu-20.04.2-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
 	    "ubuntu ubuntu-20.10-live-server-amd64         https://releases.ubuntu.com/groovy/ubuntu-20.10-live-server-amd64.iso                                                    nocloud-ubuntu-user-data" \
 	    "centos CentOS-8.3.2011-x86_64-dvd1            http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso                               kickstart_centos.cfg"     \
-	    "centos CentOS-Stream-8-x86_64-20210316-dvd1   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210316-dvd1.iso                      kickstart_centos.cfg"     \
+	    "centos CentOS-Stream-8-x86_64-20210402-dvd1   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210402-dvd1.iso                      kickstart_centos.cfg"     \
 	    "fedora Fedora-Server-dvd-x86_64-33-1.2        https://download.fedoraproject.org/pub/fedora/linux/releases/33/Server/x86_64/iso/Fedora-Server-dvd-x86_64-33-1.2.iso    kickstart_fedora.cfg"     \
 	    "suse   openSUSE-Leap-15.2-DVD-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml"      \
 	    "suse   openSUSE-Leap-15.3-DVD-x86_64-Current  http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                        yast_opensuse153.xml"     \
 	    "suse   openSUSE-Tumbleweed-DVD-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml"      \
+	    "ubuntu ubuntu-20.04.2.0-desktop-amd64         https://releases.ubuntu.com/focal/ubuntu-20.04.2.0-desktop-amd64.iso                                                     preseed_ubuntu.cfg"       \
+	    "ubuntu ubuntu-20.10-desktop-amd64             https://releases.ubuntu.com/groovy/ubuntu-20.10-desktop-amd64.iso                                                        preseed_ubuntu.cfg"       \
 	)   # 区分  DVDファイル名                          ダウンロード先URL                                                                                                        定義ファイル
 #	    "debian debian-7.11.0-amd64-DVD-1              https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
 #	    "ubuntu ubuntu-16.04.7-desktop-amd64           https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
 #	    "ubuntu ubuntu-18.04.5-desktop-amd64           https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
-#	    "ubuntu ubuntu-20.04.1-desktop-amd64           https://releases.ubuntu.com/focal/ubuntu-20.04.1-desktop-amd64.iso                                                       preseed_ubuntu.cfg"       \
+#	    "ubuntu ubuntu-20.04.2.0-desktop-amd64         https://releases.ubuntu.com/focal/ubuntu-20.04.2.0-desktop-amd64.iso                                                     preseed_ubuntu.cfg"       \
 #	    "ubuntu ubuntu-20.10-desktop-amd64             https://releases.ubuntu.com/groovy/ubuntu-20.10-desktop-amd64.iso                                                        preseed_ubuntu.cfg"       \
 
 # -----------------------------------------------------------------------------
@@ -131,18 +135,21 @@ fncMenu () {
 	echo "#  9：ubuntu-20.04.2-live-server-amd64：2020-04-23：2025-04-xx：Focal Fossa   #"
 	echo "# 10：ubuntu-20.10-live-server-amd64  ：2020-10-22：2021-07-xx：Groovy Gorilla#"
 	echo "# 11：CentOS-8.3.2011-x86_64-dvd1     ：2020-06-15：2021-12-31：RHEL 8.0      #"
-	echo "# 12：CentOS-Stream-8-x86_64-20210316-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
+	echo "# 12：CentOS-Stream-8-x86_64-20210402-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
 	echo "# 13：Fedora-Server-dvd-x86_64-33-1.2 ：2020-10-27：20xx-xx-xx：kernel 5.8    #"
 	echo "# 14：openSUSE-Leap-15.2-DVD-x86_64   ：2020-07-02：2021-11-xx：kernel 5.3    #"
 	echo "# 15：openSUSE-Leap-15.3-DVD-x86_64-Cu：2020-xx-xx：20xx-xx-xx：              #"
 	echo "# 16：openSUSE-Tumbleweed-DVD-x86_64-C：2020-xx-xx：20xx-xx-xx：              #"
+	echo "# 17：ubuntu-20.04.2.0-desktop-amd64  ：2020-04-23：2025-04-xx：Focal Fossa   #"
+	echo "# 18：ubuntu-20.10-desktop-amd64      ：2020-10-22：2021-07-xx：Groovy Gorilla#"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
 #	echo "#   ：                                ：2021-04-22：2022-01-xx：Hirsute Hippo #"
 #	echo "#   ：ubuntu-16.04.7-desktop-amd64    ：2016-04-21：2021-04-xx：Xenial Xerus  #"
 #	echo "#   ：ubuntu-18.04.5-desktop-amd64    ：2018-04-26：2023-04-xx：Bionic Beaver #"
-#	echo "#   ：ubuntu-20.04.1-desktop-amd64    ：2020-04-23：2025-04-xx：Focal Fossa   #"
+#	echo "#   ：ubuntu-20.04.2.0-desktop-amd64  ：2020-04-23：2025-04-xx：Focal Fossa   #"
+#	echo "#   ：ubuntu-20.10-desktop-amd64      ：2020-10-22：2021-07-xx：Groovy Gorilla#"
 }
 # -----------------------------------------------------------------------------
 fncIsInt () {
@@ -215,9 +222,7 @@ fncRemaster () {
 				"ubuntu" )
 					case "${CODE_NAME[1]}" in
 						ubuntu*20.04*live*    | \
-						ubuntu*20.10*live*    | \
-						ubuntu*20.04*desktop* | \
-						ubuntu*20.10*desktop* )				# --- get user-data
+						ubuntu*20.10*live*    )				# --- get user-data
 							EFI_IMAG="boot/grub/efi.img"
 							ISO_NAME="${DVD_NAME}-nocloud"
 							mkdir -p "nocloud"
@@ -384,7 +389,8 @@ fncRemaster () {
 							mv grub.cfg boot/grub/
 							;;
 						*20.04*desktop* )					# --- nocloud -----
-							INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\" vga=788"
+#							INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\" vga=788"
+							INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
 							# --- txt.cfg -------------------------------------
 							INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
 							INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^[ \t]*menu\).*$/\1 default/g' | head -n 1`"
@@ -411,7 +417,8 @@ fncRemaster () {
 							mv grub.cfg boot/grub/
 							;;
 						*20.10*live* )						# --- nocloud -----
-							INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
+#							INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
+							INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
 							# --- txt.cfg -------------------------------------
 							# --- grub.cfg ------------------------------------
 							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
