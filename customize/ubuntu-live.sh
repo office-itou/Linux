@@ -3,7 +3,7 @@
 # LiveCDCustomization [ubuntu-[version]-desktop-[architecture].iso]           *
 # *****************************************************************************
 	if [ "$1" = "" ] || [ "$2" = "" ]; then
-		echo "$0 [amd64] [20.04 | 20.10]"
+		echo "$0 [amd64] [20.04.2.0 | 20.10]"
 		exit 1
 	fi
 
@@ -14,6 +14,7 @@
 	LIVE_VNUM="$2"
 	LIVE_FILE="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}.iso"
 	LIVE_DEST="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}-custom.iso"
+	CFG_NAME="preseed_ubuntu.cfg"
 	VERSION=`echo "${LIVE_VNUM}" | awk -F '.' '{print $1"."$2;}'`
 # == initialize ===============================================================
 #	set -m								# ジョブ制御を有効にする
@@ -383,9 +384,8 @@ _EOT_SH_
 		    -e 's/\(set timeout\).*$/\1=5/'                         \
 		> grub.cfg
 		mv grub.cfg boot/grub/
-		# ---------------------------------------------------------------------
+		# --- txt.cfg ---------------------------------------------------------
 		if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then
-			# --- txt.cfg -----------------------------------------------------
 			INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
 			sed -n '/label live$/,/append/p' isolinux/txt.cfg    | \
 			sed -e 's/^\(label\).*/\1 live_of_japanese/'           \
@@ -395,7 +395,40 @@ _EOT_SH_
 			sed -e 's/^\(default\) .*$/\1 live_of_japanese/'       \
 			> txt.cfg
 			mv txt.cfg isolinux/
-			# -----------------------------------------------------------------
+		fi
+		# --- preseed.cfg -----------------------------------------------------
+		if [ -f "../../${CFG_NAME}" ]; then
+			cp --preserve=timestamps "../../${CFG_NAME}" "preseed/preseed.cfg"
+#			# --- grub.cfg ----------------------------------------------------
+#			INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+#			sed -n '/^menuentry \"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
+#			sed -n '0,/\}/p'                                          | \
+#			sed -e 's/\(Ubuntu\)/Auto Install \1/'                      \
+#			    -e "s/\(file\).*seed/\1=${INS_CFG}/"                    \
+#			    -e 's/maybe-ubiquity/boot=casper automatic-ubiquity/' | \
+#			sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg        | \
+#			sed -e 's/\(set default\)="1"/\1="0"/'                      \
+#			    -e 's/\(set timeout\).*$/\1=5/'                         \
+#			> grub.cfg
+#			mv grub.cfg boot/grub/
+#			# --- txt.cfg -----------------------------------------------------
+#			if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then
+#				INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
+#				INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+#				INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^[ \t]*menu\).*$/\1 default/g' | head -n 1`"
+#				sed -n '/label live-install$/,/append/p' isolinux/txt.cfg | \
+#				sed -e 's/^\(label\).*/\1 autoinst/'                        \
+#				    -e 's/\(Install\)/Auto \1/'                             \
+#				    -e "s/\(file\).*seed/\1=${INS_CFG}/"                    \
+#				    -e "/menu label/a  ${INS_STR}"                          \
+#				    -e 's/only-ubiquity/boot=casper automatic-ubiquity/'  | \
+#				sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg            \
+#				> txt.cfg
+#				mv txt.cfg isolinux/
+#			fi
+		fi
+		# ---------------------------------------------------------------------
+		if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then
 			find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 			BOOT_BIN="isolinux/isolinux.bin"
 			BOOT_CAT="isolinux/boot.cat"

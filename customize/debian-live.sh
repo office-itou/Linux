@@ -11,6 +11,7 @@
 	LIVE_VNUM="$2"
 	LIVE_FILE="debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde.iso"
 	LIVE_DEST="debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde-custom.iso"
+	CFG_NAME="preseed_ubuntu.cfg"
 	# -------------------------------------------------------------------------
 	case "${LIVE_VNUM}" in
 		"stable"  | "buster"   | 10* ) LIVE_SUITE="stable" ; OBS_SUITE="Buster";;
@@ -414,6 +415,29 @@ _EOT_SH_
 		# ---------------------------------------------------------------------
 		sed -i isolinux/isolinux.cfg     \
 		    -e 's/\(timeout\).*$/\1 50/'
+		# --- preseed.cfg -----------------------------------------------------
+		if [ -f "../../${CFG_NAME}" ]; then
+			mkdir -p "preseed"
+			cp --preserve=timestamps "../../${CFG_NAME}" "preseed/preseed.cfg"
+#			# -----------------------------------------------------------------
+#			INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
+#			# --- grub.cfg ----------------------------------------------------
+#			INS_ROW=$((`sed -n '/^menuentry "Graphical Debian Installer"/ =' boot/grub/grub.cfg | head -n 1`-1))
+#			sed -n '/^menuentry "Debian Installer"/,/^}/p' boot/grub/grub.cfg | \
+#			sed -e 's/\(menuentry "Debian\) \(Installer"\)/\1 Auto \2/'         \
+#			    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                           \
+#			sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                  \
+#			> grub.cfg
+#			mv grub.cfg boot/grub/
+#			# --- txt.cfg -----------------------------------------------------
+#			INS_ROW=$((`sed -n '/^LABEL Graphical Debian Installer/ =' isolinux/menu.cfg | head -n 1`-1))
+#			sed -n '/LABEL Debian Installer$/,/^$/p' isolinux/menu.cfg | \
+#			sed -e 's/^\(LABEL Debian\) \(Installer\)/\1 Auto \2/'       \
+#			    -e "s/\(APPEND.*\$\)/\1 ${INS_CFG}/"                   | \
+#			sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg            \
+#			> menu.cfg
+#			mv menu.cfg isolinux/
+		fi
 		# ---------------------------------------------------------------------
 		find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 		BOOT_BIN="isolinux/isolinux.bin"
