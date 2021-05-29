@@ -19,65 +19,7 @@
 ##	   日付       版         名前      改訂内容
 ##	---------- -------- -------------- ----------------------------------------
 ##	2018/05/01 000.0000 J.Itou         新規作成
-##	2018/05/11 000.0000 J.Itou         不具合修正
-##	2018/05/11 000.0000 J.Itou         debian testing/CentOS 1810追加
-##	2018/06/14 000.0000 J.Itou         不具合修正(CentOS7対応含む)
-##	2018/06/24 000.0000 J.Itou         debian 8.11 変更
-##	2018/06/29 000.0000 J.Itou         Fedora 28追加
-##	2018/07/07 000.0000 J.Itou         仕様見直し
-##	2018/07/15 000.0000 J.Itou         debian 9.5.0 変更
-##	2018/07/27 000.0000 J.Itou         ubuntu 18.04.1 変更
-##	2018/11/06 000.0000 J.Itou         ubuntu 18.10,19.04 / Fedora 29 変更
-##	2018/11/11 000.0000 J.Itou         debian 9.6.0 変更
-##	2019/01/09 000.0000 J.Itou         CentOS 7 1810変更
-##	2019/01/24 000.0000 J.Itou         debian 9.7.0 変更
-##	2019/02/17 000.0000 J.Itou         debian 9.8.0 変更
-##	2019/02/06 000.0000 J.Itou         不具合修正
-##	2019/07/09 000.0000 J.Itou         最新化修正
-##	2019/08/11 000.0000 J.Itou         ubuntu 18.04.3 変更
-##	2019/09/08 000.0000 J.Itou         debian 9.10.0/10.1.0 変更
-##	2019/09/10 000.0000 J.Itou         debian 9.11.0 変更
-##	2019/09/18 000.0000 J.Itou         CentOS 7.7.1908 変更
-##	2019/09/28 000.0000 J.Itou         CentOS 8.0.1905 追加
-##	2019/11/15 000.0000 J.Itou         不具合修正
-##	2019/11/17 000.0000 J.Itou         debian 10.2.0 変更
-##	2019/11/23 000.0000 J.Itou         fedora 31 変更
-##	2019/11/24 000.0000 J.Itou         CentOS Stream 追加
-##	2019/11/29 000.0000 J.Itou         USBメモリーでのインストール対応
-##	2020/02/22 000.0000 J.Itou         debian 9.12.0/10.3.0 / ubuntu 18.04.4 変更 / CentOS 8.1 追加 / CentOS-Stream-8-x86_64-20191219-dvd1 変更
-##	2020/02/22 000.0000 J.Itou         wget -> curl 変更
-##	2020/05/05 000.0000 J.Itou         不具合修正
-##	2020/05/05 000.0000 J.Itou         ubuntu 20.04 追加
-##	2020/05/11 000.0000 J.Itou         debian 10.4.0 変更 / ubuntu-desktopの処理停止 / fedora 32 変更
-##	2020/07/10 000.0000 J.Itou         CentOS 8.2.2004 変更
-##	2020/07/20 000.0000 J.Itou         debian 9.13.0 変更
-##	2020/08/02 000.0000 J.Itou         debian 10.5.0 / CentOS-Stream-8-x86_64-20200730-dvd1 変更
-##	2020/08/07 000.0000 J.Itou         ubuntu-20.04.1 変更
-##	2020/08/09 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200801-dvd1 変更
-##	2020/09/27 000.0000 J.Itou         debian 10.6.0 / ubuntu / CentOS-Stream-8-x86_64-20200921-dvd1 変更
-##	2020/10/06 000.0000 J.Itou         CentOS-Stream-8-x86_64-20200928-dvd1 変更
-##	2020/10/13 000.0000 J.Itou         CentOS-Stream-8-x86_64-20201007-dvd1 変更
-##	2020/10/14 000.0000 J.Itou         openSUSE Leap / Tumbleweed 対応
-##	2020/11/04 000.0000 J.Itou         memo修正 / fedora 33 変更
-##	2020/11/11 000.0000 J.Itou         追加アプリ導入処理追加
-##	2020/11/12 000.0000 J.Itou         ubuntu 20.10 追加
-##	2020/11/21 000.0000 J.Itou         不具合修正
-##	2020/12/06 000.0000 J.Itou         debian 10.7.0 / CentOS-Stream-8-x86_64-20201203-dvd1 変更
-##	2020/12/15 000.0000 J.Itou         CentOS 8.3.2011 / CentOS-Stream-8 20201211 変更
-##	2020/12/20 000.0000 J.Itou         openSUSE Leap 15.3 追加
-##	2021/01/11 000.0000 J.Itou         debian bullseye 公式リリースを追加
-##	2021/02/02 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210126-dvd1 変更
-##	2021/02/05 000.0000 J.Itou         ubuntu-20.04.2 変更
-##	2021/02/16 000.0000 J.Itou         debian 10.8.0 / CentOS-Stream-8-x86_64-20210215-dvd1 変更
-##	2021/03/07 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210302-dvd1 変更
-##	2021/03/15 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210311-dvd1 変更
-##	2021/03/16 000.0000 J.Itou         画面表示処理見直し
-##	2021/03/29 000.0000 J.Itou         debian 10.9.0 / CentOS-Stream-8-x86_64-20210316-dvd1 変更
-##	2021/03/30 000.0000 J.Itou         ubuntu-20.04.2.0-desktop-amd64 / ubuntu-20.10-desktop-amd64 追加
-##	2021/04/04 000.0000 J.Itou         CentOS-Stream-8-x86_64-20210402-dvd1 変更
-##	2021/04/24 000.0000 J.Itou         ubuntu-21.04-live-server-amd64 / ubuntu-21.04-desktop-amd64 追加, CentOS-Stream-8-x86_64-20210421-dvd1 変更
-##	2021/04/25 000.0000 J.Itou         ubuntu desktop コメントアウト
-##	2021/04/28 000.0000 J.Itou         Fedora-Server-dvd-x86_64-34-1.2 変更 / memo修正
+##	2021/05/29 000.0000 J.Itou         memo修正 / 履歴整理 / 不具合修正 / CentOS-Stream-8-x86_64-20210524-dvd1 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -110,10 +52,10 @@
 	    "ubuntu ubuntu-20.10-live-server-amd64         https://releases.ubuntu.com/groovy/ubuntu-20.10-live-server-amd64.iso                                                    nocloud-ubuntu-user-data" \
 	    "ubuntu ubuntu-21.04-live-server-amd64         https://releases.ubuntu.com/hirsute/ubuntu-21.04-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
 	    "centos CentOS-8.3.2011-x86_64-dvd1            http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso                               kickstart_centos.cfg"     \
-	    "centos CentOS-Stream-8-x86_64-20210421-dvd1   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210421-dvd1.iso                      kickstart_centos.cfg"     \
+	    "centos CentOS-Stream-8-x86_64-20210524-dvd1   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210524-dvd1.iso                      kickstart_centos.cfg"     \
 	    "fedora Fedora-Server-dvd-x86_64-34-1.2        https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso    kickstart_fedora.cfg"     \
 	    "suse   openSUSE-Leap-15.2-DVD-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml"      \
-	    "suse   openSUSE-Leap-15.3-DVD-x86_64-Current  http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                        yast_opensuse153.xml"     \
+	    "suse   openSUSE-Leap-15.3-DVD-x86_64          http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64.iso                                yast_opensuse153.xml"     \
 	    "suse   openSUSE-Tumbleweed-DVD-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml"      \
 	)   # 区分  DVDファイル名                          ダウンロード先URL                                                                                                        定義ファイル
 #	    "debian debian-7.11.0-amd64-DVD-1              https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
@@ -139,10 +81,10 @@ fncMenu () {
 	echo "# 10：ubuntu-20.10-live-server-amd64  ：2020-10-22：2021-07-xx：Groovy Gorilla#"
 	echo "# 11：ubuntu-21.04-live-server-amd64  ：2021-04-22：2022-01-xx：Hirsute Hippo #"
 	echo "# 12：CentOS-8.3.2011-x86_64-dvd1     ：2020-06-15：2021-12-31：RHEL 8.0      #"
-	echo "# 13：CentOS-Stream-8-x86_64-20210421-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
+	echo "# 13：CentOS-Stream-8-x86_64-20210524-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
 	echo "# 14：Fedora-Server-dvd-x86_64-34-1.2 ：2021-04-27：20xx-xx-xx：kernel 5.11   #"
 	echo "# 15：openSUSE-Leap-15.2-DVD-x86_64   ：2020-07-02：2021-11-xx：kernel 5.3    #"
-	echo "# 16：openSUSE-Leap-15.3-DVD-x86_64-Cu：2020-xx-xx：20xx-xx-xx：              #"
+	echo "# 16：openSUSE-Leap-15.3-DVD-x86_64   ：2020-07-07：20xx-xx-xx：              #"
 	echo "# 17：openSUSE-Tumbleweed-DVD-x86_64-C：2020-xx-xx：20xx-xx-xx：              #"
 	echo "# ----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
@@ -187,9 +129,9 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { exit 1; }
+			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 		else
-			curl -f -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}"
+			curl -f -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -198,7 +140,7 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { exit 1; }
+				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
@@ -234,7 +176,7 @@ fncRemaster () {
 							if [ -f "../../../${CFG_NAME}" ]; then
 								cp --preserve=timestamps "../../../${CFG_NAME}" "nocloud/user-data"
 							else
-								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_URL}" || { exit 1; }
+								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
 							fi
 							;;
 						* )									# --- get preseed.cfg
@@ -244,7 +186,7 @@ fncRemaster () {
 							if [ -f "../../../${CFG_NAME}" ]; then
 								cp --preserve=timestamps "../../../${CFG_NAME}" "preseed/preseed.cfg"
 							else
-								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_URL}" || { exit 1; }
+								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
 							fi
 							;;
 					esac
@@ -257,7 +199,7 @@ fncRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
 					else
-						curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || { exit 1; }
+						curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
 					fi
 					case "${WORK_DIRS}" in
 						*net* )
@@ -280,7 +222,7 @@ fncRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
 					else
-						curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || { exit 1; }
+						curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
 					fi
 					;;
 				* )	;;
@@ -664,6 +606,7 @@ fncRemaster () {
 		popd > /dev/null
 	popd > /dev/null
 	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
+	return 0
 }
 # -----------------------------------------------------------------------------
 	echo "*******************************************************************************"
@@ -699,7 +642,7 @@ fncRemaster () {
 	for I in `eval echo "${INP_INDX}"`						# 連番可
 	do
 		if [ `fncIsInt "$I"` -eq 0 ] && [ $I -ge 1 ] && [ $I -le ${#ARRAY_NAME[@]} ]; then
-			fncRemaster "${ARRAY_NAME[$I-1]}"
+			fncRemaster "${ARRAY_NAME[$I-1]}" || exit 1
 		fi
 	done
 	# -------------------------------------------------------------------------
@@ -738,7 +681,7 @@ fncRemaster () {
 #x  6.0:squeeze          :2011-02-06:2014-05-31/2016-02-29[LTS]
 #x  7.0:wheezy           :2013-05-04:2016-04-25/2018-05-31[LTS]
 #x  8.0:jessie           :2015-04-25:2018-06-17/2020-06-30[LTS]:oldoldstable
-#   9.0:stretch          :2017-06-17:2020-xx-xx/2022-06-xx[LTS]:oldstable
+#   9.0:stretch          :2017-06-17:2020-07-06/2022-06-30[LTS]:oldstable
 #  10.0:buster           :2019-07-06:2022-xx-xx/2024-xx-xx[LTS]:stable
 #  11.0:bullseye         :2021(予定):                          :testing
 #  12.0:bookworm         :          :                          
@@ -779,6 +722,7 @@ fncRemaster () {
 # 20.04:Focal Fossa      :2020-04-23:2025-04-xx/2030-04-xx:LTS
 # 20.10:Groovy Gorilla   :2020-10-22:2021-07-xx
 # 21.04:Hirsute Hippo    :2021-04-22:2022-01-xx
+# 21.10:Impish Indri     :2021-10-14:2022-07-xx
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
 # Ver.    :リリース日:RHEL      :メンテ期限:kernel
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30: 3.10.0- 693
@@ -803,6 +747,7 @@ fncRemaster () {
 # 35   :                 :2021-10-19:          : 
 # --- https://ja.wikipedia.org/wiki/OpenSUSE ----------------------------------
 # Ver. :コードネーム       :リリース日:サポ期限  :kernel
-# 15.2 :openSUSE Leap      :2020-07-02:2021-11-xx: 5.3
+# 15.2 :openSUSE Leap      :2020-07-02:2021-12-31: 5.3.18
+# 15.3 :openSUSE Leap      :2021-07-07:          : 5.3.18
 # xx.x :openSUSE Tumbleweed:20xx-xx-xx:20xx-xx-xx:
 # -----------------------------------------------------------------------------

@@ -19,27 +19,7 @@
 ##	   日付       版         名前      改訂内容
 ##	---------- -------- -------------- ----------------------------------------
 ##	2018/05/01 000.0000 J.Itou         新規作成
-##	2018/05/11 000.0000 J.Itou         不具合修正
-##	2018/06/14 000.0000 J.Itou         不具合修正
-##	2018/06/29 000.0000 J.Itou         仕様変更(取得先URLをHTTPS)
-##	2018/11/06 000.0000 J.Itou         ubuntu 18.10,19.04 変更
-##	2019/02/06 000.0000 J.Itou         不具合修正
-##	2019/07/09 000.0000 J.Itou         最新化修正
-##	2019/11/23 000.0000 J.Itou         コメント追加：fedora 31
-##	2019/11/24 000.0000 J.Itou         ubuntu 20.04 追加
-##	2019/11/29 000.0000 J.Itou         USBメモリーでのインストール対応
-##	2020/02/22 000.0000 J.Itou         wget -> curl 変更
-##	2020/05/05 000.0000 J.Itou         不具合修正
-##	2020/05/11 000.0000 J.Itou         ubuntu 20.04 対応 / ubuntu 19.04 削除
-##	2020/11/04 000.0000 J.Itou         memo修正
-##	2020/11/11 000.0000 J.Itou         追加アプリ導入処理追加 / 取得先サーバー変更
-##	2020/11/12 000.0000 J.Itou         ubuntu 20.10 追加 (DL先未登録のためコメントアウト)
-##	2020/11/21 000.0000 J.Itou         不具合修正
-##	2020/12/15 000.0000 J.Itou         memo修正
-##	2020/12/20 000.0000 J.Itou         memo修正
-##	2021/01/11 000.0000 J.Itou         debian bullseye 公式リリースを追加(コメントアウト中)
-##	2021/03/16 000.0000 J.Itou         画面表示処理見直し
-##	2021/04/28 000.0000 J.Itou         memo修正
+##	2021/05/29 000.0000 J.Itou         memo修正 / 履歴整理 / 不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -147,13 +127,13 @@ fncRemaster () {
 			cp --preserve=timestamps "../../${CFG_NAME}.cfg" "preseed.cfg"
 		fi
 		if [ ! -f "preseed.cfg" ]; then
-			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed.cfg" "${CFG_URL}" || { exit 1; }
+			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
 		fi
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { exit 1; }
+			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 		else
-			curl -f -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}"
+			curl -f -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -162,7 +142,7 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || { exit 1; }
+				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
@@ -266,6 +246,7 @@ fncRemaster () {
 		popd > /dev/null
 	popd > /dev/null
 	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[2]} -------------------------------------------------------------------------------"
+	return 0
 }
 # -----------------------------------------------------------------------------
 	echo "*******************************************************************************"
@@ -301,7 +282,7 @@ fncRemaster () {
 	for I in `eval echo "${INP_INDX}"`						# 連番可
 	do
 		if [ `fncIsInt "$I"` -eq 0 ] && [ $I -ge 1 ] && [ $I -le ${#ARRAY_NAME[@]} ]; then
-			fncRemaster "${ARRAY_NAME[$I-1]}"
+			fncRemaster "${ARRAY_NAME[$I-1]}" || exit 1
 		fi
 	done
 	# -------------------------------------------------------------------------
@@ -340,7 +321,7 @@ fncRemaster () {
 #x  6.0:squeeze          :2011-02-06:2014-05-31/2016-02-29[LTS]
 #x  7.0:wheezy           :2013-05-04:2016-04-25/2018-05-31[LTS]
 #x  8.0:jessie           :2015-04-25:2018-06-17/2020-06-30[LTS]:oldoldstable
-#   9.0:stretch          :2017-06-17:2020-xx-xx/2022-06-xx[LTS]:oldstable
+#   9.0:stretch          :2017-06-17:2020-07-06/2022-06-30[LTS]:oldstable
 #  10.0:buster           :2019-07-06:2022-xx-xx/2024-xx-xx[LTS]:stable
 #  11.0:bullseye         :2021(予定):                          :testing
 #  12.0:bookworm         :          :                          
@@ -381,6 +362,7 @@ fncRemaster () {
 # 20.04:Focal Fossa      :2020-04-23:2025-04-xx/2030-04-xx:LTS
 # 20.10:Groovy Gorilla   :2020-10-22:2021-07-xx
 # 21.04:Hirsute Hippo    :2021-04-22:2022-01-xx
+# 21.10:Impish Indri     :2021-10-14:2022-07-xx
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
 # Ver.    :リリース日:RHEL      :メンテ期限:kernel
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30: 3.10.0- 693
@@ -405,6 +387,7 @@ fncRemaster () {
 # 35   :                 :2021-10-19:          : 
 # --- https://ja.wikipedia.org/wiki/OpenSUSE ----------------------------------
 # Ver. :コードネーム       :リリース日:サポ期限  :kernel
-# 15.2 :openSUSE Leap      :2020-07-02:2021-11-xx: 5.3
+# 15.2 :openSUSE Leap      :2020-07-02:2021-12-31: 5.3.18
+# 15.3 :openSUSE Leap      :2021-07-07:          : 5.3.18
 # xx.x :openSUSE Tumbleweed:20xx-xx-xx:20xx-xx-xx:
 # -----------------------------------------------------------------------------
