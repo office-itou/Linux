@@ -20,6 +20,7 @@
 ##	---------- -------- -------------- ----------------------------------------
 ##	2018/05/13 000.0000 J.Itou         新規作成
 ##	2021/05/29 000.0000 J.Itou         memo修正 / 履歴整理 / 不具合修正 / CentOS-Stream-8-x86_64-20210524-boot 変更
+##	2021/06/03 000.0000 J.Itou         情報登録用配列の修正 / CentOS-Stream-8-x86_64-20210528-boot 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -39,19 +40,19 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	readonly ARRAY_NAME=(                                                                                                                                                                                 \
-	    "debian debian-8.11.1-amd64-netinst            https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian debian-9.13.0-amd64-netinst            https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian debian-10.9.0-amd64-netinst            https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.9.0-amd64-netinst.iso                              preseed_debian.cfg"   \
-	    "debian debian-testing-amd64-netinst           https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg"   \
-	    "centos CentOS-8.3.2011-x86_64-boot            http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-boot.iso                                   kickstart_centos.cfg" \
-	    "centos CentOS-Stream-8-x86_64-20210524-boot   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210524-boot.iso                          kickstart_centos.cfg" \
-	    "fedora Fedora-Server-netinst-x86_64-34-1.2    https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso    kickstart_fedora.cfg" \
-	    "suse   openSUSE-Leap-15.2-NET-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml"  \
-	    "suse   openSUSE-Leap-15.3-NET-x86_64          http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                    yast_opensuse153.xml" \
-	    "suse   openSUSE-Tumbleweed-NET-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml"  \
-	)   # 区分  netinstファイル名                      ダウンロード先URL                                                                                                            定義ファイル
-#	    "debian debian-testing-amd64-netinst           https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
+	readonly ARRAY_NAME=(                                                                                                                                          \
+	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "debian https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg"   \
+	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.9.0-amd64-netinst.iso                              preseed_debian.cfg"   \
+	    "debian https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg"   \
+	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-boot.iso                                   kickstart_centos.cfg" \
+	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210528-boot.iso                          kickstart_centos.cfg" \
+	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso    kickstart_fedora.cfg" \
+	    "suse   http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml"  \
+	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                    yast_opensuse153.xml" \
+	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml"  \
+	)   # 区分  ダウンロード先URL                                                                                                            定義ファイル
+#	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
 # -----------------------------------------------------------------------------
 fncMenu () {
 	echo "# ----------------------------------------------------------------------------#"
@@ -61,7 +62,7 @@ fncMenu () {
 	echo "#  3：debian-10.9.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
 	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
 	echo "#  5：CentOS-8.3.2011-x86_64-boot        ：2020-06-15：2021-12-31：RHEL 8.0   #"
-	echo "#  6：CentOS-Stream-8-x86_64-20210524-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
+	echo "#  6：CentOS-Stream-8-x86_64-20210528-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
 	echo "#  7：Fedora-Server-netinst-x86_64-34-1.2：2021-04-27：20xx-xx-xx：kernel 5.11#"
 	echo "#  8：openSUSE-Leap-15.2-NET-x86_64      ：2020-07-02：2021-11-xx：kernel 5.3 #"
 	echo "#  9：openSUSE-Leap-15.3-NET-x86_64      ：2021-07-07：20xx-xx-xx：           #"
@@ -89,7 +90,13 @@ fncPrint () {
 # -----------------------------------------------------------------------------
 fncRemaster () {
 	# --- ARRAY_NAME ----------------------------------------------------------
-	local CODE_NAME=($1)									# 配列展開
+	local ARRY_NAME=($1)											# 配列展開
+	local CODE_NAME=()												# 配列宣言
+	CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
+	CODE_NAME[1]=`basename ${ARRY_NAME[1]} | sed -e 's/.iso//ig'`	# DVDファイル名
+	CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
+	CODE_NAME[3]=${ARRY_NAME[2]}									# 定義ファイル
+	# -------------------------------------------------------------------------
 	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
 	# --- DVD -----------------------------------------------------------------
 	local DVD_NAME="${CODE_NAME[1]}"

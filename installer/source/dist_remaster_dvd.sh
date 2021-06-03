@@ -20,6 +20,7 @@
 ##	---------- -------- -------------- ----------------------------------------
 ##	2018/05/01 000.0000 J.Itou         新規作成
 ##	2021/05/29 000.0000 J.Itou         memo修正 / 履歴整理 / 不具合修正 / CentOS-Stream-8-x86_64-20210524-dvd1 変更
+##	2021/06/03 000.0000 J.Itou         情報登録用配列の修正 / CentOS-Stream-8-x86_64-20210528-dvd1 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -39,31 +40,31 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	readonly ARRAY_NAME=(                                                                                                                                                                                 \
-	    "debian debian-8.11.1-amd64-DVD-1              https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg"       \
-	    "debian debian-9.13.0-amd64-DVD-1              https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
-	    "debian debian-10.9.0-amd64-DVD-1              https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.9.0-amd64-DVD-1.iso                           preseed_debian.cfg"       \
-	    "debian debian-testing-amd64-DVD-1             https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"       \
-	    "debian debian-bullseye-DI-alpha3-amd64-DVD-1  https://cdimage.debian.org/cdimage/bullseye_di_alpha3/amd64/iso-dvd/debian-bullseye-DI-alpha3-amd64-DVD-1.iso            preseed_debian.cfg"       \
-	    "ubuntu ubuntu-16.04.7-server-amd64            https://releases.ubuntu.com/xenial/ubuntu-16.04.7-server-amd64.iso                                                       preseed_ubuntu.cfg"       \
-	    "ubuntu ubuntu-18.04.5-server-amd64            http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.5-server-amd64.iso                                        preseed_ubuntu.cfg"       \
-	    "ubuntu ubuntu-20.04.1-legacy-server-amd64     http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg"       \
-	    "ubuntu ubuntu-20.04.2-live-server-amd64       https://releases.ubuntu.com/focal/ubuntu-20.04.2-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
-	    "ubuntu ubuntu-20.10-live-server-amd64         https://releases.ubuntu.com/groovy/ubuntu-20.10-live-server-amd64.iso                                                    nocloud-ubuntu-user-data" \
-	    "ubuntu ubuntu-21.04-live-server-amd64         https://releases.ubuntu.com/hirsute/ubuntu-21.04-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
-	    "centos CentOS-8.3.2011-x86_64-dvd1            http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso                               kickstart_centos.cfg"     \
-	    "centos CentOS-Stream-8-x86_64-20210524-dvd1   http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210524-dvd1.iso                      kickstart_centos.cfg"     \
-	    "fedora Fedora-Server-dvd-x86_64-34-1.2        https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso    kickstart_fedora.cfg"     \
-	    "suse   openSUSE-Leap-15.2-DVD-x86_64          http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml"      \
-	    "suse   openSUSE-Leap-15.3-DVD-x86_64          http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64.iso                                yast_opensuse153.xml"     \
-	    "suse   openSUSE-Tumbleweed-DVD-x86_64-Current http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml"      \
-	)   # 区分  DVDファイル名                          ダウンロード先URL                                                                                                        定義ファイル
-#	    "debian debian-7.11.0-amd64-DVD-1              https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
-#	    "ubuntu ubuntu-16.04.7-desktop-amd64           https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
-#	    "ubuntu ubuntu-18.04.5-desktop-amd64           https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
-#	    "ubuntu ubuntu-20.04.2.0-desktop-amd64         https://releases.ubuntu.com/focal/ubuntu-20.04.2.0-desktop-amd64.iso                                                     preseed_ubuntu.cfg"       \
-#	    "ubuntu ubuntu-20.10-desktop-amd64             https://releases.ubuntu.com/groovy/ubuntu-20.10-desktop-amd64.iso                                                        preseed_ubuntu.cfg"       \
-#	    "ubuntu ubuntu-21.04-desktop-amd64             https://releases.ubuntu.com/hirsute/ubuntu-21.04-desktop-amd64.iso                                                       preseed_ubuntu.cfg"       \
+	readonly ARRAY_NAME=(                                                                                                                                          \
+	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg"       \
+	    "debian https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
+	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.9.0-amd64-DVD-1.iso                           preseed_debian.cfg"       \
+	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg"       \
+	    "debian https://cdimage.debian.org/cdimage/bullseye_di_alpha3/amd64/iso-dvd/debian-bullseye-DI-alpha3-amd64-DVD-1.iso            preseed_debian.cfg"       \
+	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-16.04.7-server-amd64.iso                                                       preseed_ubuntu.cfg"       \
+	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.5-server-amd64.iso                                        preseed_ubuntu.cfg"       \
+	    "ubuntu http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg"       \
+	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-20.04.2-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
+	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-20.10-live-server-amd64.iso                                                    nocloud-ubuntu-user-data" \
+	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-21.04-live-server-amd64.iso                                                   nocloud-ubuntu-user-data" \
+	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso                               kickstart_centos.cfg"     \
+	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210528-dvd1.iso                      kickstart_centos.cfg"     \
+	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso    kickstart_fedora.cfg"     \
+	    "suse   http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml"      \
+	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64.iso                                yast_opensuse153.xml"     \
+	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml"      \
+	)   # 区分  ダウンロード先URL                                                                                                        定義ファイル
+#	    "debian https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg"       \
+#	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
+#	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg"       \
+#	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-20.04.2.0-desktop-amd64.iso                                                     preseed_ubuntu.cfg"       \
+#	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-20.10-desktop-amd64.iso                                                        preseed_ubuntu.cfg"       \
+#	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-21.04-desktop-amd64.iso                                                       preseed_ubuntu.cfg"       \
 
 # -----------------------------------------------------------------------------
 fncMenu () {
@@ -81,7 +82,7 @@ fncMenu () {
 	echo "# 10：ubuntu-20.10-live-server-amd64  ：2020-10-22：2021-07-xx：Groovy Gorilla#"
 	echo "# 11：ubuntu-21.04-live-server-amd64  ：2021-04-22：2022-01-xx：Hirsute Hippo #"
 	echo "# 12：CentOS-8.3.2011-x86_64-dvd1     ：2020-06-15：2021-12-31：RHEL 8.0      #"
-	echo "# 13：CentOS-Stream-8-x86_64-20210524-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
+	echo "# 13：CentOS-Stream-8-x86_64-20210528-：2019-xx-xx：20xx-xx-xx：RHEL x.x      #"
 	echo "# 14：Fedora-Server-dvd-x86_64-34-1.2 ：2021-04-27：20xx-xx-xx：kernel 5.11   #"
 	echo "# 15：openSUSE-Leap-15.2-DVD-x86_64   ：2020-07-02：2021-11-xx：kernel 5.3    #"
 	echo "# 16：openSUSE-Leap-15.3-DVD-x86_64   ：2020-07-07：20xx-xx-xx：              #"
@@ -114,7 +115,13 @@ fncPrint () {
 # -----------------------------------------------------------------------------
 fncRemaster () {
 	# --- ARRAY_NAME ----------------------------------------------------------
-	local CODE_NAME=($1)									# 配列展開
+	local ARRY_NAME=($1)											# 配列展開
+	local CODE_NAME=()												# 配列宣言
+	CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
+	CODE_NAME[1]=`basename ${ARRY_NAME[1]} | sed -e 's/.iso//ig'`	# DVDファイル名
+	CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
+	CODE_NAME[3]=${ARRY_NAME[2]}									# 定義ファイル
+	# -------------------------------------------------------------------------
 	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
 	# --- DVD -----------------------------------------------------------------
 	local DVD_NAME="${CODE_NAME[1]}"
