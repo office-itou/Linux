@@ -37,8 +37,8 @@ autoinstall:
   ssh:
     install-server: true
 # =============================================================================
-  package_update: true
-  package_upgrade: true
+  package_update: false
+  package_upgrade: false
   packages:
   - standard^
   - server^

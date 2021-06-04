@@ -21,7 +21,7 @@
 ##	2018/05/13 000.0000 J.Itou         新規作成
 ##	2021/05/29 000.0000 J.Itou         memo修正 / 履歴整理 / 不具合修正 / CentOS-Stream-8-x86_64-20210524-boot 変更
 ##	2021/06/03 000.0000 J.Itou         情報登録用配列の修正 / CentOS-Stream-8-x86_64-20210528-boot 変更
-##	2021/06/04 000.0000 J.Itou         memo修正 / openSUSE対応 / CentOS-Stream-8-x86_64-20210603-boot 変更
+##	2021/06/04 000.0000 J.Itou         memo修正 / openSUSE対応 / CentOS-8.4.2105-x86_64-boot / CentOS-Stream-8-x86_64-20210603-boot 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -45,7 +45,7 @@
 	    "debian https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg   2017-06-17 2022-06-xx oldstable     " \
 	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.9.0-amd64-netinst.iso                              preseed_debian.cfg   2019-07-06 20xx-xx-xx stable        " \
 	    "debian https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg   20xx-xx-xx 20xx-xx-xx testing       " \
-	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-boot.iso                                   kickstart_centos.cfg 2020-06-15 2021-12-31 RHEL_8.0      " \
+	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8.4.2105/isos/x86_64/CentOS-8.4.2105-x86_64-boot.iso                                   kickstart_centos.cfg 2021-06-03 2021-12-31 RHEL_8.4      " \
 	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210603-boot.iso                          kickstart_centos.cfg 20xx-xx-xx 20xx-xx-xx RHEL_x.x      " \
 	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso    kickstart_fedora.cfg 2021-04-27 20xx-xx-xx kernel_5.11   " \
 	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                    yast_opensuse153.xml 2021-06-02 20xx-xx-xx kernel_5.3.18 " \
@@ -649,7 +649,7 @@ fncRemaster () {
 			else
 				CMD_AGET="yum -y -q"
 			fi
-			DIR_LINX="/usr/lib/ISOLINUX/isohdpfx.bin"
+			DIR_LINX="/usr/share/syslinux/isohdpfx.bin"
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
@@ -662,7 +662,22 @@ fncRemaster () {
 # -----------------------------------------------------------------------------
 	case "${SYS_NAME}" in
 		"debian" | \
-		"ubuntu" | \
+		"ubuntu" )
+			if [ "`which xorriso 2> /dev/nul`" = ""       \
+			-o   "`which implantisomd5 2> /dev/nul`" = "" \
+			-o   ! -f "${DIR_LINX}" ]; then
+				${CMD_AGET} update
+				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+					${CMD_AGET} install xorriso
+				fi
+				if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
+					${CMD_AGET} install isomd5sum
+				fi
+				if [ ! -f "${DIR_LINX}" ]; then
+					${CMD_AGET} install isolinux
+				fi
+			fi
+			;;
 		"centos" | \
 		"fedora" )
 			if [ "`which xorriso 2> /dev/nul`" = ""       \
@@ -676,7 +691,7 @@ fncRemaster () {
 					${CMD_AGET} install isomd5sum
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
-					${CMD_AGET} install isolinux
+					${CMD_AGET} install syslinux
 				fi
 			fi
 			;;
@@ -805,6 +820,7 @@ fncRemaster () {
 # 8.1-1911:2020-01-15:2019-11-05:2021-12-31: 4.18.0-147
 # 8.2.2004:2020-06-15:2020-04-28:2021-12-31: 4.18.0-193
 # 8.3.2011:2020-11-03:2020-12-07:2021-12-31: 4.18.0-240
+# 8.4.2015:2021-06-03:2021-05-18:2021-12-31: 4.18.0-305
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # Ver. :コードネーム     :リリース日:サポ期限  :kernel
 #x27   :                 :2017-11-14:2018-11-27: 4.13

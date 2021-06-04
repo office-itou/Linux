@@ -3,7 +3,10 @@
 【事前準備】  
   
 ・開発環境  
-　**Debian 10.6 64bit版**  
+　**Debian 10.9 64bit版**  
+  
+・実行確認  
+　**debian 10.9.0 / ubuntu 21.04 / CentOS 8.4.2105 / Fedora 34-1.2 / openSUSE 15.3 各64bit版**  
   
 【無人インストールISO作成シェル】  
   
