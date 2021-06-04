@@ -96,18 +96,20 @@
 【ダウンロード用コピペ】  
   
 ```text
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers.sh"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers_txt_maker.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster_dvd.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster_mini.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster_net.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_debian.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_ubuntu.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/install.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_centos.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_fedora.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/nocloud-ubuntu-user-data"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_debian.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_ubuntu.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse15.xml"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse153.xml"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse16.xml"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/install.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers_txt_maker.sh"
 chmod u+x *.sh
 ```
   
