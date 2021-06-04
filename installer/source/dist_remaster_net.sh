@@ -5,7 +5,7 @@
 ##
 ##	機能概要	:	ブータブルDVDの作成用シェル [netinst版]
 ##	---------------------------------------------------------------------------
-##	<対象OS>	:	Debian
+##	<対象OS>	:	Debian / Ubuntu / CentOS7 / Fedora / openSUSE (64bit)
 ##	---------------------------------------------------------------------------
 ##	入出力 I/F
 ##		INPUT	:	
@@ -21,6 +21,7 @@
 ##	2018/05/13 000.0000 J.Itou         新規作成
 ##	2021/05/29 000.0000 J.Itou         memo修正 / 履歴整理 / 不具合修正 / CentOS-Stream-8-x86_64-20210524-boot 変更
 ##	2021/06/03 000.0000 J.Itou         情報登録用配列の修正 / CentOS-Stream-8-x86_64-20210528-boot 変更
+##	2021/06/04 000.0000 J.Itou         memo修正 / openSUSE対応 / CentOS-Stream-8-x86_64-20210603-boot 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -40,34 +41,38 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	readonly ARRAY_NAME=(                                                                                                                                          \
-	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg"   \
-	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.9.0-amd64-netinst.iso                              preseed_debian.cfg"   \
-	    "debian https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg"   \
-	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-boot.iso                                   kickstart_centos.cfg" \
-	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210528-boot.iso                          kickstart_centos.cfg" \
-	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso    kickstart_fedora.cfg" \
-	    "suse   http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml"  \
-	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                    yast_opensuse153.xml" \
-	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml"  \
-	)   # 区分  ダウンロード先URL                                                                                                            定義ファイル
-#	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"   \
+	ARRAY_NAME=(                                                                                                                                                                                        \
+	    "debian https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg   2017-06-17 2022-06-xx oldstable     " \
+	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.9.0-amd64-netinst.iso                              preseed_debian.cfg   2019-07-06 20xx-xx-xx stable        " \
+	    "debian https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg   20xx-xx-xx 20xx-xx-xx testing       " \
+	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-boot.iso                                   kickstart_centos.cfg 2020-06-15 2021-12-31 RHEL_8.0      " \
+	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210603-boot.iso                          kickstart_centos.cfg 20xx-xx-xx 20xx-xx-xx RHEL_x.x      " \
+	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso    kickstart_fedora.cfg 2021-04-27 20xx-xx-xx kernel_5.11   " \
+	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                    yast_opensuse153.xml 2021-06-02 20xx-xx-xx kernel_5.3.18 " \
+	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml  20xx-xx-xx 20xx-xx-xx kernel_x.x    " \
+	)   # 区分  ダウンロード先URL                                                                                                            定義ファイル         リリース日 サポ終了日 備考
+#	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"  20xx-xx-xx 20xx-xx-xx testing       " \
+#	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg   2015-04-25 2020-06-30 oldoldstable  " \
+#	    "suse   http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml  2020-07-02 2021-11-xx kernel_5.3    " \
 # -----------------------------------------------------------------------------
 fncMenu () {
-	echo "# ----------------------------------------------------------------------------#"
-	echo "# ID：Version                            ：リリース日：サポ終了日：備考       #"
-	echo "#  1：debian-8.11.1-amd64-netinst        ：2015-04-25：2020-06-30：oldoldstable"
-	echo "#  2：debian-9.13.0-amd64-netinst        ：2017-06-17：2022-06-xx：oldstable  #"
-	echo "#  3：debian-10.9.0-amd64-netinst        ：2019-07-06：20xx-xx-xx：stable     #"
-	echo "#  4：debian-testing-amd64-netinst       ：20xx-xx-xx：20xx-xx-xx：testing    #"
-	echo "#  5：CentOS-8.3.2011-x86_64-boot        ：2020-06-15：2021-12-31：RHEL 8.0   #"
-	echo "#  6：CentOS-Stream-8-x86_64-20210528-boo：20xx-xx-xx：20xx-xx-xx：RHEL x.x   #"
-	echo "#  7：Fedora-Server-netinst-x86_64-34-1.2：2021-04-27：20xx-xx-xx：kernel 5.11#"
-	echo "#  8：openSUSE-Leap-15.2-NET-x86_64      ：2020-07-02：2021-11-xx：kernel 5.3 #"
-	echo "#  9：openSUSE-Leap-15.3-NET-x86_64      ：2021-07-07：20xx-xx-xx：           #"
-	echo "# 10：openSUSE-Tumbleweed-NET-x86_64-Curr：20xx-xx-xx：20xx-xx-xx：           #"
-	echo "# ----------------------------------------------------------------------------#"
+	local ARRY_NAME=()										# 配列展開
+	local CODE_NAME=()										# 配列宣言
+	echo "#-----------------------------------------------------------------------------#"
+	echo "# ID：Version                       ：リリース日：サポ終了日：備考            #"
+	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
+	do
+		ARRY_NAME=(${ARRAY_NAME[$I-1]})
+		CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
+		CODE_NAME[1]=`basename ${ARRY_NAME[1]} | sed -e 's/.iso//ig'`	# DVDファイル名
+		CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
+		CODE_NAME[3]=${ARRY_NAME[2]}									# 定義ファイル
+		CODE_NAME[4]=${ARRY_NAME[3]}									# リリース日
+		CODE_NAME[5]=${ARRY_NAME[4]}									# サポ終了日
+		CODE_NAME[6]=${ARRY_NAME[5]}									# 備考
+		printf "#%3d：%-30.30s：%-10.10s：%-10.10s：%-16.16s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+	done
+	echo "#-----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
 }
@@ -551,10 +556,10 @@ fncRemaster () {
 					    -iso-level 3 \
 					    -full-iso9660-filenames \
 					    -volid "${VOLID}" \
-					    -eltorito-boot ${ELT_BOOT} \
-					    -eltorito-catalog ${ELT_CATA} \
+					    -eltorito-boot "${ELT_BOOT}" \
+					    -eltorito-catalog "${ELT_CATA}" \
 					    -no-emul-boot -boot-load-size 4 -boot-info-table \
-					    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+					    -isohybrid-mbr "${DIR_LINX}" \
 					    -eltorito-alt-boot \
 					    -e "${EFI_IMAG}" \
 					    -no-emul-boot -isohybrid-gpt-basdat \
@@ -570,7 +575,7 @@ fncRemaster () {
 					    -volid "${VOLID}" \
 					    -eltorito-boot boot/x86_64/loader/isolinux.bin \
 					    -no-emul-boot -boot-load-size 4 -boot-info-table \
-					    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+					    -isohybrid-mbr "${DIR_LINX}" \
 					    -eltorito-alt-boot \
 					    -e boot/x86_64/efi \
 					    -no-emul-boot -isohybrid-gpt-basdat \
@@ -579,7 +584,9 @@ fncRemaster () {
 					;;
 				* )	;;
 			esac
-			LANG=C implantisomd5 "../../${ISO_NAME}.iso"
+			if [ "`which implantisomd5 2> /dev/nul`" != "" ]; then
+				LANG=C implantisomd5 "../../${ISO_NAME}.iso"
+			fi
 		popd > /dev/null
 	popd > /dev/null
 	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
@@ -589,29 +596,116 @@ fncRemaster () {
 	echo "*******************************************************************************"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理を開始します。"
 	echo "*******************************************************************************"
+# cpu type --------------------------------------------------------------------
+	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
+# system info -----------------------------------------------------------------
+	SYS_NAME=`awk -F '=' '$1=="ID"               {gsub("\"",""); print $2;}' /etc/os-release`	# ディストリビューション名
+	SYS_CODE=`awk -F '=' '$1=="VERSION_CODENAME" {gsub("\"",""); print $2;}' /etc/os-release`	# コード名
+	SYS_VERS=`awk -F '=' '$1=="VERSION"          {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン名
+	SYS_VRID=`awk -F '=' '$1=="VERSION_ID"       {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン番号
+	SYS_VNUM=`echo ${SYS_VRID:--1} | bc`										#   〃          (取得できない場合は-1)
+	SYS_NOOP=0																	# 対象OS=1,それ以外=0
+	if [ "${SYS_CODE}" = "" ]; then
+		case "${SYS_NAME}" in
+			"debian"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
+			"ubuntu"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
+			"centos"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/centos-release`;;
+			"fedora"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/fedora-release`;;
+			"opensuse-leap"       ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
+			"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
+			*                     )                                                                                   ;;
+		esac
+	fi
+	if [ "${CPU_TYPE}" = "x86_64" ]; then
+		case "${SYS_NAME}" in
+			"debian"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 10"       | bc`;;
+			"ubuntu"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 20.04"    | bc`;;
+			"centos"              ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
+			"fedora"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`;;
+			"opensuse-leap"       ) SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`;;
+			"opensuse-tumbleweed" ) SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`;;
+			*                     )                                               ;;
+		esac
+	fi
+	if [ ${SYS_NOOP} -eq 0 ]; then
+		echo "${SYS_NAME} ${SYS_VERS:-${SYS_CODE}} (${CPU_TYPE}) ではテストをしていないので実行できません。"
+		exit 1
+	fi
 # -----------------------------------------------------------------------------
-	if [ "`which xorriso 2> /dev/nul`" = "" ]; then
-		if [ ! -f /etc/redhat-release ]; then
-			apt -y update && apt -y upgrade && apt -y install xorriso
-		else
-			yum -y update && yum -y upgrade && yum -y install xorriso
-		fi
-	fi
-	if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
-		if [ ! -f /etc/redhat-release ]; then
-			apt -y update && apt -y upgrade && apt -y install isomd5sum
-		else
-			yum -y update && yum -y upgrade && yum -y install isomd5sum
-		fi
-	fi
-	if [ ! -f /usr/lib/ISOLINUX/isohdpfx.bin ]; then
-		if [ ! -f /etc/redhat-release ]; then
-			apt -y update && apt -y upgrade && apt -y install isolinux
-		else
-			yum -y update && yum -y upgrade && yum -y install isolinux
-		fi
-	fi
-	# -------------------------------------------------------------------------
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
+			if [ "`which aptitude 2> /dev/null`" != "" ]; then
+				CMD_AGET="aptitude -y -q"
+			else
+				CMD_AGET="apt -y -qq"
+			fi
+			DIR_LINX="/usr/lib/ISOLINUX/isohdpfx.bin"
+			;;
+		"centos" | \
+		"fedora" )
+			if [ "`which dnf 2> /dev/null`" != "" ]; then
+				CMD_AGET="dnf -y -q --allowerasing"
+			else
+				CMD_AGET="yum -y -q"
+			fi
+			DIR_LINX="/usr/lib/ISOLINUX/isohdpfx.bin"
+			;;
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
+			CMD_AGET="zypper -n -t"
+			DIR_LINX="/usr/share/syslinux/isohdpfx.bin"
+			;;
+		* )
+			;;
+	esac
+# -----------------------------------------------------------------------------
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" | \
+		"centos" | \
+		"fedora" )
+			if [ "`which xorriso 2> /dev/nul`" = ""       \
+			-o   "`which implantisomd5 2> /dev/nul`" = "" \
+			-o   ! -f "${DIR_LINX}" ]; then
+				${CMD_AGET} update
+				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+					${CMD_AGET} install xorriso
+				fi
+				if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
+					${CMD_AGET} install isomd5sum
+				fi
+				if [ ! -f "${DIR_LINX}" ]; then
+					${CMD_AGET} install isolinux
+				fi
+			fi
+			;;
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
+			if [ "`which xorriso 2> /dev/nul`" = ""       \
+			-o   ! -f "${DIR_LINX}" ]; then
+				${CMD_AGET} update
+				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+					${CMD_AGET} install xorriso
+				fi
+				if [ ! -f "${DIR_LINX}" ]; then
+					${CMD_AGET} install isolinux
+				fi
+			fi
+			ARRAY_WORK=("${ARRAY_NAME[@]}")
+			for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
+			do
+				ARRY_NAME=(${ARRAY_WORK[$I-1]})
+				if [ "${ARRY_NAME[0]}" != "suse" ]; then
+					unset ARRAY_WORK[$I-1]
+				fi
+			done
+			ARRAY_NAME=("${ARRAY_WORK[@]}")
+			;;
+		* )
+			;;
+	esac
+# -----------------------------------------------------------------------------
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しでメニュー表示
 		fncMenu
 	fi
@@ -725,6 +819,6 @@ fncRemaster () {
 # --- https://ja.wikipedia.org/wiki/OpenSUSE ----------------------------------
 # Ver. :コードネーム       :リリース日:サポ期限  :kernel
 # 15.2 :openSUSE Leap      :2020-07-02:2021-12-31: 5.3.18
-# 15.3 :openSUSE Leap      :2021-07-07:          : 5.3.18
+# 15.3 :openSUSE Leap      :2021-06-02:          : 5.3.18
 # xx.x :openSUSE Tumbleweed:20xx-xx-xx:20xx-xx-xx:
 # -----------------------------------------------------------------------------
