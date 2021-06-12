@@ -22,6 +22,7 @@
 ##	2021/05/29 000.0000 J.Itou         memo修正 / 履歴整理 / 不具合修正 / CentOS-Stream-8-x86_64-20210524-boot 変更
 ##	2021/06/03 000.0000 J.Itou         情報登録用配列の修正 / CentOS-Stream-8-x86_64-20210528-boot 変更
 ##	2021/06/04 000.0000 J.Itou         memo修正 / openSUSE対応 / CentOS-8.4.2105-x86_64-boot / CentOS-Stream-8-x86_64-20210603-boot 変更
+##	2021/06/12 000.0000 J.Itou         URLのワイルドカード対応
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -46,7 +47,7 @@
 	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.9.0-amd64-netinst.iso                              preseed_debian.cfg   2019-07-06 20xx-xx-xx stable        " \
 	    "debian https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg   20xx-xx-xx 20xx-xx-xx testing       " \
 	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8.4.2105/isos/x86_64/CentOS-8.4.2105-x86_64-boot.iso                                   kickstart_centos.cfg 2021-06-03 2021-12-31 RHEL_8.4      " \
-	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20210603-boot.iso                          kickstart_centos.cfg 20xx-xx-xx 20xx-xx-xx RHEL_x.x      " \
+	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-.*-boot.iso                                kickstart_centos.cfg 20xx-xx-xx 20xx-xx-xx RHEL_x.x      " \
 	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso    kickstart_fedora.cfg 2021-04-27 20xx-xx-xx kernel_5.11   " \
 	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                    yast_opensuse153.xml 2021-06-02 20xx-xx-xx kernel_5.3.18 " \
 	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml  20xx-xx-xx 20xx-xx-xx kernel_x.x    " \
@@ -58,8 +59,10 @@
 fncMenu () {
 	local ARRY_NAME=()										# 配列展開
 	local CODE_NAME=()										# 配列宣言
+	local DIR_NAME											# ディレクトリ名
+	local FIL_NAME											# ファイル名
 	echo "#-----------------------------------------------------------------------------#"
-	echo "# ID：Version                       ：リリース日：サポ終了日：備考            #"
+	echo "#ID：Version                         ：リリース日：サポ終了日：備考           #"
 	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
 	do
 		ARRY_NAME=(${ARRAY_NAME[$I-1]})
@@ -70,7 +73,16 @@ fncMenu () {
 		CODE_NAME[4]=${ARRY_NAME[3]}									# リリース日
 		CODE_NAME[5]=${ARRY_NAME[4]}									# サポ終了日
 		CODE_NAME[6]=${ARRY_NAME[5]}									# 備考
-		printf "#%3d：%-30.30s：%-10.10s：%-10.10s：%-16.16s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+		# ---------------------------------------------------------------------
+		if [ "`echo ${CODE_NAME[1]} | sed -n '/\.\*/p'`" != "" ]; then
+			DIR_NAME=`dirname ${CODE_NAME[2]}`
+			FIL_NAME=`curl -L -# -l -R -S "${DIR_NAME}" 2> /dev/null | sed -n "s/.*\"\(${CODE_NAME[1]}.iso\)\".*/\1/p"`
+			CODE_NAME[1]=`echo ${FIL_NAME} | sed -e 's/.iso//ig'`
+			CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_NAME}`
+			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
+		fi
+		# ---------------------------------------------------------------------
+		printf "#%2d：%-32.32s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 	done
 	echo "#-----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"

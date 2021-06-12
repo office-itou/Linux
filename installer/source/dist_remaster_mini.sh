@@ -21,6 +21,7 @@
 ##	2018/05/01 000.0000 J.Itou         新規作成
 ##	2021/05/29 000.0000 J.Itou         memo修正 / 履歴整理 / 不具合修正
 ##	2021/06/04 000.0000 J.Itou         memo修正
+##	2021/06/12 000.0000 J.Itou         menu修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -53,18 +54,18 @@
 	)
 # -----------------------------------------------------------------------------
 fncMenu () {
-	echo "# ----------------------------------------------------------------------------#"
-	echo "# ID：Version     ：コードネーム    ：リリース日：サポ終了日：備考            #"
-	echo "#  1：Debian  8.xx：jessie          ：2015-04-25：2020-06-30：oldoldstable    #"
-	echo "#  2：Debian  9.xx：stretch         ：2017-06-17：2022-06-xx：oldstable       #"
-	echo "#  3：Debian 10.xx：buster          ：2019-07-06：20xx-xx-xx：stable          #"
-	echo "#  4：Debian 11.xx：bullseye        ：2021-xx-xx：20xx-xx-xx：testing         #"
-	echo "#  5：Ubuntu 16.04：Xenial Xerus    ：2016-04-21：2021-04-xx：LTS             #"
-	echo "#  6：Ubuntu 18.04：Bionic Beaver   ：2018-04-26：2023-04-xx：LTS             #"
-	echo "#  7：Ubuntu 20.04：Focal Fossa     ：2020-04-23：2025-04-xx：LTS             #"
-#	echo "#  8：Ubuntu 20.10：Groovy Gorilla  ：2020-10-22：2021-07-xx：                #"
-#	echo "#  9：Ubuntu 21.04：Hirsute Hippo   ：2021-04-22：2022-01-xx：                #"
-	echo "# ----------------------------------------------------------------------------#"
+	echo "#-----------------------------------------------------------------------------#"
+	echo "#ID：Version     ：コードネーム      ：リリース日：サポ終了日：備考           #"
+	echo "# 1：Debian  8.xx：jessie            ：2015-04-25：2020-06-30：oldoldstable   #"
+	echo "# 2：Debian  9.xx：stretch           ：2017-06-17：2022-06-xx：oldstable      #"
+	echo "# 3：Debian 10.xx：buster            ：2019-07-06：20xx-xx-xx：stable         #"
+	echo "# 4：Debian 11.xx：bullseye          ：2021-xx-xx：20xx-xx-xx：testing        #"
+	echo "# 5：Ubuntu 16.04：Xenial Xerus      ：2016-04-21：2021-04-xx：LTS            #"
+	echo "# 6：Ubuntu 18.04：Bionic Beaver     ：2018-04-26：2023-04-xx：LTS            #"
+	echo "# 7：Ubuntu 20.04：Focal Fossa       ：2020-04-23：2025-04-xx：LTS            #"
+#	echo "# 8：Ubuntu 20.10：Groovy Gorilla    ：2020-10-22：2021-07-xx：               #"
+#	echo "# 9：Ubuntu 21.04：Hirsute Hippo     ：2021-04-22：2022-01-xx：               #"
+	echo "#-----------------------------------------------------------------------------#"
 	echo "ID番号+Enterを入力して下さい。"
 	read INP_INDX
 }
