@@ -22,6 +22,7 @@
 ##	2021/05/29 000.0000 J.Itou         memo修正 / 履歴整理 / 不具合修正
 ##	2021/06/04 000.0000 J.Itou         memo修正
 ##	2021/06/12 000.0000 J.Itou         menu修正
+##	2021/06/13 000.0000 J.Itou         作業ディレクトリ削除処理追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -66,8 +67,10 @@ fncMenu () {
 #	echo "# 8：Ubuntu 20.10：Groovy Gorilla    ：2020-10-22：2021-07-xx：               #"
 #	echo "# 9：Ubuntu 21.04：Hirsute Hippo     ：2021-04-22：2022-01-xx：               #"
 	echo "#-----------------------------------------------------------------------------#"
-	echo "ID番号+Enterを入力して下さい。"
-	read INP_INDX
+	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
+		echo "ID番号+Enterを入力して下さい。"
+		read INP_INDX
+	fi
 }
 # -----------------------------------------------------------------------------
 fncIsInt () {
@@ -120,7 +123,7 @@ fncRemaster () {
 	local CFG_NAME="preseed_${CODE_NAME[0]}"
 	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/${CFG_NAME}.cfg"
 	# -------------------------------------------------------------------------
-	rm -rf   ${WORK_DIRS}/${CODE_NAME[2]}/image ${WORK_DIRS}/${CODE_NAME[2]}/decomp ${WORK_DIRS}/${CODE_NAME[2]}/mnt
+	rm -rf   ${WORK_DIRS}/${CODE_NAME[2]}
 	mkdir -p ${WORK_DIRS}/${CODE_NAME[2]}/image ${WORK_DIRS}/${CODE_NAME[2]}/decomp ${WORK_DIRS}/${CODE_NAME[2]}/mnt
 	# --- remaster ------------------------------------------------------------
 	pushd ${WORK_DIRS}/${CODE_NAME[2]} > /dev/null
@@ -247,6 +250,7 @@ fncRemaster () {
 			    .
 		popd > /dev/null
 	popd > /dev/null
+	rm -rf   ${WORK_DIRS}/${CODE_NAME[2]}
 	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[2]} -------------------------------------------------------------------------------"
 	return 0
 }
@@ -277,9 +281,7 @@ fncRemaster () {
 		fi
 	fi
 	# -------------------------------------------------------------------------
-	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しでメニュー表示
-		fncMenu
-	fi
+	fncMenu
 	# -------------------------------------------------------------------------
 	for I in `eval echo "${INP_INDX}"`						# 連番可
 	do

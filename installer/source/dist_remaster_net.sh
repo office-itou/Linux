@@ -23,6 +23,7 @@
 ##	2021/06/03 000.0000 J.Itou         情報登録用配列の修正 / CentOS-Stream-8-x86_64-20210528-boot 変更
 ##	2021/06/04 000.0000 J.Itou         memo修正 / openSUSE対応 / CentOS-8.4.2105-x86_64-boot / CentOS-Stream-8-x86_64-20210603-boot 変更
 ##	2021/06/12 000.0000 J.Itou         URLのワイルドカード対応
+##	2021/06/13 000.0000 J.Itou         作業ディレクトリ削除処理追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -85,8 +86,10 @@ fncMenu () {
 		printf "#%2d：%-32.32s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 	done
 	echo "#-----------------------------------------------------------------------------#"
-	echo "ID番号+Enterを入力して下さい。"
-	read INP_INDX
+	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
+		echo "ID番号+Enterを入力して下さい。"
+		read INP_INDX
+	fi
 }
 # -----------------------------------------------------------------------------
 fncIsInt () {
@@ -122,7 +125,7 @@ fncRemaster () {
 	local CFG_NAME="${CODE_NAME[3]}"
 	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/${CFG_NAME}"
 	# -------------------------------------------------------------------------
-	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}/image ${WORK_DIRS}/${CODE_NAME[1]}/decomp ${WORK_DIRS}/${CODE_NAME[1]}/mnt
+	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
 	mkdir -p ${WORK_DIRS}/${CODE_NAME[1]}/image ${WORK_DIRS}/${CODE_NAME[1]}/decomp ${WORK_DIRS}/${CODE_NAME[1]}/mnt
 	# --- remaster ------------------------------------------------------------
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
@@ -601,6 +604,7 @@ fncRemaster () {
 			fi
 		popd > /dev/null
 	popd > /dev/null
+	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
 	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
 	return 0
 }
@@ -733,9 +737,7 @@ fncRemaster () {
 			;;
 	esac
 # -----------------------------------------------------------------------------
-	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しでメニュー表示
-		fncMenu
-	fi
+	fncMenu
 	# -------------------------------------------------------------------------
 	for I in `eval echo "${INP_INDX}"`						# 連番可
 	do
