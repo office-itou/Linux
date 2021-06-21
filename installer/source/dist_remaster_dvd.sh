@@ -24,6 +24,7 @@
 ##	2021/06/04 000.0000 J.Itou         memo修正 / openSUSE対応 / CentOS-8.4.2105-x86_64-dvd1 / CentOS-Stream-8-x86_64-20210603-dvd1 変更
 ##	2021/06/12 000.0000 J.Itou         URLのワイルドカード対応
 ##	2021/06/13 000.0000 J.Itou         作業ディレクトリ削除処理追加
+##	2021/06/21 000.0000 J.Itou         CentOSの接続先変更 / [0-9].* 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -44,16 +45,16 @@
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
 	ARRAY_NAME=(                                                                                                                                                                                        \
-	    "debian https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso                            preseed_debian.cfg       2017-06-17 2022-xx-xx oldstable     " \
-	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-10.9.0-amd64-DVD-1.iso                           preseed_debian.cfg       2019-07-06 20xx-xx-xx stable        " \
+	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                 preseed_debian.cfg       2017-06-17 2022-xx-xx oldstable     " \
+	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                          preseed_debian.cfg       2019-07-06 20xx-xx-xx stable        " \
 	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg       20xx-xx-xx 20xx-xx-xx testing       " \
-	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-16.04.7-server-amd64.iso                                                       preseed_ubuntu.cfg       2016-04-21 2021-04-xx Xenial_Xerus  " \
-	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.5-server-amd64.iso                                        preseed_ubuntu.cfg       2018-04-26 2023-04-xx Bionic_Beaver " \
-	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-20.04.2-live-server-amd64.iso                                                   nocloud-ubuntu-user-data 2020-04-23 2025-04-xx Focal_Fossa   " \
-	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-20.10-live-server-amd64.iso                                                    nocloud-ubuntu-user-data 2020-10-22 2021-07-xx Groovy_Gorilla" \
-	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-21.04-live-server-amd64.iso                                                   nocloud-ubuntu-user-data 2021-04-22 2022-01-xx Hirsute_Hippo " \
-	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8.4.2105/isos/x86_64/CentOS-8.4.2105-x86_64-dvd1.iso                               kickstart_centos.cfg     2021-06-03 2021-12-31 RHEL_8.4      " \
-	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-.*-dvd1.iso                            kickstart_centos.cfg     2019-xx-xx 20xx-xx-xx RHEL_x.x      " \
+	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg       2016-04-21 2021-04-xx Xenial_Xerus  " \
+	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                        preseed_ubuntu.cfg       2018-04-26 2023-04-xx Bionic_Beaver " \
+	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                   nocloud-ubuntu-user-data 2020-04-23 2025-04-xx Focal_Fossa   " \
+	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-live-server-amd64.iso                                                  nocloud-ubuntu-user-data 2020-10-22 2021-07-xx Groovy_Gorilla" \
+	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                 nocloud-ubuntu-user-data 2021-04-22 2022-01-xx Hirsute_Hippo " \
+	    "centos https://ftp.tsukuba.wide.ad.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                 kickstart_centos.cfg     2021-06-03 2021-12-31 RHEL_8.4      " \
+	    "centos https://ftp.tsukuba.wide.ad.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-dvd1.iso                 kickstart_centos.cfg     2019-xx-xx 2024-05-31 RHEL_x.x      " \
 	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso    kickstart_fedora.cfg     2021-04-27 20xx-xx-xx kernel_5.11   " \
 	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64.iso                                yast_opensuse153.xml     2021-06-02 20xx-xx-xx kernel_5.3.18 " \
 	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml      2021-xx-xx 20xx-xx-xx kernel_x.x    " \
@@ -90,7 +91,7 @@ fncMenu () {
 		# ---------------------------------------------------------------------
 		if [ "`echo ${CODE_NAME[1]} | sed -n '/\.\*/p'`" != "" ]; then
 			DIR_NAME=`dirname ${CODE_NAME[2]}`
-			FIL_NAME=`curl -L -# -l -R -S "${DIR_NAME}" 2> /dev/null | sed -n "s/.*\"\(${CODE_NAME[1]}.iso\)\".*/\1/p"`
+			FIL_NAME=`curl -L -# -l -R -S "${DIR_NAME}" 2> /dev/null | sed -n "s/.*\"\(${CODE_NAME[1]}.iso\)\".*/\1/p" | uniq`
 			CODE_NAME[1]=`echo ${FIL_NAME} | sed -e 's/.iso//ig'`
 			CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_NAME}`
 			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`

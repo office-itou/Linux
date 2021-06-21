@@ -24,6 +24,7 @@
 ##	2021/06/04 000.0000 J.Itou         memo修正 / openSUSE対応 / CentOS-8.4.2105-x86_64-boot / CentOS-Stream-8-x86_64-20210603-boot 変更
 ##	2021/06/12 000.0000 J.Itou         URLのワイルドカード対応
 ##	2021/06/13 000.0000 J.Itou         作業ディレクトリ削除処理追加
+##	2021/06/21 000.0000 J.Itou         CentOSの接続先変更 / [0-9].* 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -44,11 +45,11 @@
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
 	ARRAY_NAME=(                                                                                                                                                                                        \
-	    "debian https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso                               preseed_debian.cfg   2017-06-17 2022-06-xx oldstable     " \
-	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-10.9.0-amd64-netinst.iso                              preseed_debian.cfg   2019-07-06 20xx-xx-xx stable        " \
+	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                    preseed_debian.cfg   2017-06-17 2022-06-xx oldstable     " \
+	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                             preseed_debian.cfg   2019-07-06 20xx-xx-xx stable        " \
 	    "debian https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg   20xx-xx-xx 20xx-xx-xx testing       " \
-	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8.4.2105/isos/x86_64/CentOS-8.4.2105-x86_64-boot.iso                                   kickstart_centos.cfg 2021-06-03 2021-12-31 RHEL_8.4      " \
-	    "centos http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-.*-boot.iso                                kickstart_centos.cfg 20xx-xx-xx 20xx-xx-xx RHEL_x.x      " \
+	    "centos https://ftp.tsukuba.wide.ad.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-boot.iso                                     kickstart_centos.cfg 2021-06-03 2021-12-31 RHEL_8.4      " \
+	    "centos https://ftp.tsukuba.wide.ad.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-boot.iso                     kickstart_centos.cfg 20xx-xx-xx 2024-05-31 RHEL_x.x      " \
 	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso    kickstart_fedora.cfg 2021-04-27 20xx-xx-xx kernel_5.11   " \
 	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                    yast_opensuse153.xml 2021-06-02 20xx-xx-xx kernel_5.3.18 " \
 	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml  20xx-xx-xx 20xx-xx-xx kernel_x.x    " \
