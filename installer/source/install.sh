@@ -70,6 +70,7 @@
 ##	2021/02/25 000.0000 J.Itou         不具合修正(find周り)
 ##	2021/03/09 000.0000 J.Itou         処理見直し(chromium導入停止)
 ##	2021/03/16 000.0000 J.Itou         処理見直し(google chrome導入等)
+##	2021/06/23 000.0000 J.Itou         処理見直し(Rocky Linux 8.4対応含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -355,6 +356,7 @@ fncInitialize () {
 			"ubuntu"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
 			"centos"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/centos-release`;;
 			"fedora"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/fedora-release`;;
+			"rocky"               ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/rocky-release` ;;
 			"opensuse-leap"       ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
 			"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
 			*                     )                                                                                   ;;
@@ -369,6 +371,7 @@ fncInitialize () {
 				"ubuntu"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 20.04"    | bc`;;
 				"centos"              ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
 				"fedora"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`;;
+				"rocky"               ) SYS_NOOP=`echo "${SYS_VNUM} >=  8.4"     | bc`;;
 				"opensuse-leap"       ) SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`;;
 				"opensuse-tumbleweed" ) SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`;;
 				*                     )                                               ;;
@@ -518,7 +521,8 @@ fncInitialize () {
 			fi
 			;;
 		"centos" | \
-		"fedora" )
+		"fedora" | \
+		"rocky"  )
 			if [ "`which dnf 2> /dev/null`" != "" ]; then
 				CMD_AGET="dnf -y -q --allowerasing"
 			else
@@ -559,7 +563,8 @@ fncInitialize () {
 		"ubuntu"              )
 			;;
 		"centos"              | \
-		"fedora"              )
+		"fedora"              | \
+		"rocky"               )
 			FIL_BOPT=${FIL_BIND}
 			;;
 		"opensuse-leap"       | \
@@ -634,7 +639,8 @@ fncMain () {
 			${CMD_AGET} dist-upgrade
 			;;
 		"centos" | \
-		"fedora" )
+		"fedora" | \
+		"rocky"  )
 			echo "- System Update ---------------------------------------------------------------"
 			# --- パッケージ更新 ------------------------------------------------------
 			echo "--- Package Update ------------------------------------------------------------"
@@ -695,7 +701,8 @@ fncMain () {
 			fi
 			;;
 		"centos" | \
-		"fedora" )
+		"fedora" | \
+		"rocky"  )
 			if [ "`LANG=C dnf list chromium ungoogled-chromium google-chrome-stable 2> /dev/null | sed -n '/Installed Packages/,/Available Packages/p' | awk '/chromium|chrome/ {print $1;}'`" = "" ]; then
 				fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
 				curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
@@ -770,7 +777,8 @@ fncMain () {
 					LNG_FILE=".bashrc"
 					;;
 				"centos" | \
-				"fedora" )
+				"fedora" | \
+				"rocky"  )
 					LNG_FILE=".i18n"
 					;;
 				"opensuse-leap"       | \
@@ -1092,7 +1100,8 @@ _EOT_
 		"debian" | \
 		"ubuntu" | \
 		"centos" | \
-		"fedora" )
+		"fedora" | \
+		"rocky"  )
 			echo "- Install clamav --------------------------------------------------------------"
 			# -------------------------------------------------------------------------
 			if [ "`which freshclam 2> /dev/null`" = "" ]; then					# Install clamav
@@ -1637,7 +1646,8 @@ _EOT_
 			fi
 			;;
 		"centos" | \
-		"fedora" )
+		"fedora" | \
+		"rocky"  )
 			fncProc smb "${RUN_SMBD[0]}"
 			fncProc smb "${RUN_SMBD[1]}"
 			fncProc nmb "${RUN_SMBD[0]}"
@@ -1919,7 +1929,7 @@ _EOT_
 			    -e '/^GRUB_RECORDFAIL_TIMEOUT/d'                \
 			    -e '/^GRUB_TIMEOUT/a GRUB_RECORDFAIL_TIMEOUT=5'
 		fi
-		if [ "${SYS_NAME}" = "centos" ] || [ "${SYS_NAME}" = "fedora" ]; then
+		if [ "${SYS_NAME}" = "centos" ] || [ "${SYS_NAME}" = "fedora" ] || [ "${SYS_NAME}" = "rocky" ]; then
 			sed -i /etc/default/grub                              \
 			    -e '$a GRUB_FONT=\/usr\/share\/grub\/unicode.pf2'
 		fi
@@ -1931,7 +1941,8 @@ _EOT_
 					fncPause $?
 				;;
 			"centos" | \
-			"fedora" )
+			"fedora" | \
+			"rocky"  )
 					if [ -f /boot/efi/EFI/${SYS_NAME}/grub.cfg ]; then			# efi
 						grub2-mkconfig -o /boot/efi/EFI/${SYS_NAME}/grub.cfg
 						fncPause $?
@@ -1966,7 +1977,8 @@ _EOT_
 			"debian" | \
 			"ubuntu" | \
 			"centos" | \
-			"fedora" )
+			"fedora" | \
+			"rocky"  )
 				if [ "`which vmware-checkvm 2> /dev/null`" = "" ]; then
 					if [ "`${CMD_AGET} search open-vm-tools-desktop`" = "" ]; then
 						${CMD_AGET} install open-vm-tools
@@ -2038,7 +2050,8 @@ _EOT_
 			GRP_SUDO=sudo
 			;;
 		"centos" | \
-		"fedora" )
+		"fedora" | \
+		"rocky"  )
 			GRP_SUDO=wheel
 			;;
 		"opensuse-leap"       | \
@@ -2106,7 +2119,8 @@ _EOT_
 				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/cache/bind/
 				;;
 			"centos" | \
-			"fedora" )
+			"fedora" | \
+			"rocky"  )
 				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/named/
 				;;
 			"opensuse-leap"       | \

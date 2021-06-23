@@ -25,6 +25,7 @@
 ##	2021/06/12 000.0000 J.Itou         URLのワイルドカード対応
 ##	2021/06/13 000.0000 J.Itou         作業ディレクトリ削除処理追加
 ##	2021/06/21 000.0000 J.Itou         CentOSの接続先変更 / [0-9].* 変更
+##	2021/06/23 000.0000 J.Itou         Rocky Linux 追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -58,6 +59,7 @@
 	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso    kickstart_fedora.cfg     2021-04-27 20xx-xx-xx kernel_5.11   " \
 	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64.iso                                yast_opensuse153.xml     2021-06-02 20xx-xx-xx kernel_5.3.18 " \
 	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml      2021-xx-xx 20xx-xx-xx kernel_x.x    " \
+	    "rocky  https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                    kickstart_rocky.cfg      202x-xx-xx 20xx-xx-xx RHEL_8.4      " \
 	)   # 区分  ダウンロード先URL                                                                                                        定義ファイル             リリース日 サポ終了日 備考
 #	    "debian https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg       2013-05-04 2018-05-31 wheezy        " \
 #	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg       2015-04-25 2020-06-30 oldoldstable  " \
@@ -208,7 +210,8 @@ fncRemaster () {
 					esac
 					;;
 				"centos" | \
-				"fedora")	# --- get ks.cfg ----------------------------------
+				"fedora" | \
+				"rocky"  )	# --- get ks.cfg ----------------------------------
 					EFI_IMAG="EFI/BOOT/efiboot.img"
 					ISO_NAME="${DVD_NAME}-kickstart"
 					mkdir -p "kickstart"
@@ -525,6 +528,32 @@ fncRemaster () {
 					> grub.cfg
 					mv grub.cfg EFI/BOOT/
 					;;
+				"rocky" )	# ･････････････････････････････････････････････････
+					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
+					# --- isolinux.cfg ----------------------------------------
+					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
+					INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
+					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg    | \
+					sed -e 's/^\(label\) linux/\1 autoinst/'                \
+					    -e 's/\(Install\)/Auto \1/'                         \
+					    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"                \
+					    -e "/menu label/a  ${INS_STR}"                    | \
+					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg   \
+					    -e '/menu default/{/menu default/d}'                \
+					    -e 's/\(timeout\).*$/\1 50/'                        \
+					> isolinux.cfg
+					mv isolinux.cfg isolinux/
+					# --- grub.cfg --------------------------------------------
+					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
+					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
+					sed -e 's/\(Install\)/Auto \1/'                             \
+					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                 | \
+					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg         | \
+					sed -e 's/\(set default\)="1"/\1="0"/'                      \
+					    -e 's/\(set timeout\).*$/\1=5/'                         \
+					> grub.cfg
+					mv grub.cfg EFI/BOOT/
+					;;
 				"suse" )	# ･････････････････････････････････････････････････
 					INS_CFG="autoyast=cd:\/autoyast\/autoinst\.xml ifcfg=e*=dhcp"
 					# --- isolinux.cfg ----------------------------------------
@@ -570,7 +599,8 @@ fncRemaster () {
 				"debian" | \
 				"ubuntu" | \
 				"centos" | \
-				"fedora" )	# ･････････････････････････････････････････････････
+				"fedora" | \
+				"rocky"  )	# ･････････････････････････････････････････････････
 					rm -f md5sum.txt
 					find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 					# --- make iso file -----------------------------------------------

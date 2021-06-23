@@ -3,10 +3,10 @@
 【事前準備】  
   
 ・開発環境  
-　**Debian 10.9 64bit版**  
+　**Debian 10.10.0 64bit版**  
   
 ・実行確認  
-　**debian 10.9.0 / ubuntu 21.04 / CentOS 8.4.2105 / Fedora 34-1.2 / openSUSE 15.3 各64bit版**  
+　**debian 10.10.0 / ubuntu 21.04 / CentOS 8.4.2105 / Fedora 34-1.2 / openSUSE 15.3 各64bit版**  
   
 【無人インストールISO作成シェル】  
   
@@ -24,6 +24,7 @@
 | [preseed_ubuntu.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/preseed_ubuntu.cfg)      | ubuntu用 |
 | [kickstart_centos.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_centos.cfg)    | CentOS用 |
 | [kickstart_fedora.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_fedora.cfg)    | Fedora用 |
+| [kickstart_rocky.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_rocky.cfg)    | Rocky Linux用 |
 | [nocloud-ubuntu-user-data](https://github.com/office-itou/Linux/blob/master/installer/source/nocloud-ubuntu-user-data) | ubuntu用 |
 | [yast_opensuse15.xml](https://github.com/office-itou/Linux/blob/master/installer/source/yast_opensuse15.xml) | OpenSUSE15用 |
 | [yast_opensuse16.xml](https://github.com/office-itou/Linux/blob/master/installer/source/yast_opensuse16.xml) | OpenSUSE16用 |
