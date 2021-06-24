@@ -658,6 +658,7 @@ fncRemaster () {
 			"ubuntu"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
 			"centos"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/centos-release`;;
 			"fedora"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/fedora-release`;;
+			"rocky"               ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/rocky-release` ;;
 			"opensuse-leap"       ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
 			"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
 			*                     )                                                                                   ;;
@@ -669,6 +670,7 @@ fncRemaster () {
 			"ubuntu"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 20.04"    | bc`;;
 			"centos"              ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
 			"fedora"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`;;
+			"rocky"               ) SYS_NOOP=`echo "${SYS_VNUM} >=  8.4"     | bc`;;
 			"opensuse-leap"       ) SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`;;
 			"opensuse-tumbleweed" ) SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`;;
 			*                     )                                               ;;
@@ -690,7 +692,8 @@ fncRemaster () {
 			DIR_LINX="/usr/lib/ISOLINUX/isohdpfx.bin"
 			;;
 		"centos" | \
-		"fedora" )
+		"fedora" | \
+		"rocky"  )
 			if [ "`which dnf 2> /dev/null`" != "" ]; then
 				CMD_AGET="dnf -y -q --allowerasing"
 			else
@@ -726,7 +729,8 @@ fncRemaster () {
 			fi
 			;;
 		"centos" | \
-		"fedora" )
+		"fedora" | \
+		"rocky"  )
 			if [ "`which xorriso 2> /dev/nul`" = ""       \
 			-o   "`which implantisomd5 2> /dev/nul`" = "" \
 			-o   ! -f "${DIR_LINX}" ]; then

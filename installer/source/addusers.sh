@@ -26,6 +26,7 @@
 ##	2018/02/25 000.0000 J.Itou         改善対応
 ##	2018/05/05 000.0000 J.Itou         改善対応
 ##	2018/06/03 000.0000 J.Itou         改善対応
+##	2021/06/24 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -79,10 +80,22 @@ funcPause() {
 	SMB_GRUP=sambashare															# smb.confのforce group
 	SMB_GADM=sambaadmin															# smb.confのadmin group
 	# ワーク変数設定 ----------------------------------------------------------
+	DIR_SHAR=/share																# 共有ディレクトリーのルート
 	DIR_WK=${PWD}
 	LST_USER=${DIR_WK}/addusers.txt
 	USR_FILE=${DIR_WK}/${PGM_NAME}.sh.usr.list
 	SMB_FILE=${DIR_WK}/${PGM_NAME}.sh.smb.list
+	# -------------------------------------------------------------------------
+	if [ -f /etc/lightdm/users.conf ]; then
+		LIN_CHSH=`awk -F '[ =]' '$1=="hidden-shells" {print $2;}' /etc/lightdm/users.conf`
+	else
+		LIN_CHSH=`find /bin/ /sbin/ /usr/sbin/ -mindepth 1 -maxdepth 1 \( -name 'false' -o -name 'nologin' \) -print | head -n 1`
+	fi
+	if [ "`which usermod 2> /dev/null`" != "" ]; then
+		CMD_CHSH="`which usermod` -s ${LIN_CHSH}"
+	else
+		CMD_CHSH="`which chsh` -s ${LIN_CHSH}"
+	fi
 	# -------------------------------------------------------------------------
 	pdbedit -L > /dev/null
 	funcPause $?
