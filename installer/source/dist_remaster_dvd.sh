@@ -26,6 +26,7 @@
 ##	2021/06/13 000.0000 J.Itou         作業ディレクトリ削除処理追加
 ##	2021/06/21 000.0000 J.Itou         CentOSの接続先変更 / [0-9].* 変更
 ##	2021/06/23 000.0000 J.Itou         Rocky Linux 追加
+##	2021/06/28 000.0000 J.Itou         Debian 11 対応
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -262,6 +263,15 @@ fncRemaster () {
 							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/directory\).*$/\1 string \/debian-archive\/debian/'              \
 							    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'                       \
 							    -e 's/\(^[ \t]*d-i[ \t]*netcfg\/get_nameservers\)[ \t]*[A-Za-z]*[ \t]*\(.*\)$/\1 string 127.0.0.1 \2/'
+							;;
+						* )	;;
+					esac
+					case "${CODE_NAME[1]}" in
+						debian-11.*      | \
+						debian-testing-* )
+							sed -i "preseed/preseed.cfg"                                                 \
+							    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'             \
+							    -e 's/#[ \t]\([ \t]*in-target systemctl disable connman.service\)/  \1/'
 							;;
 						* )	;;
 					esac

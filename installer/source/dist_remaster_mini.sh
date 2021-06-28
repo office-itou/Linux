@@ -23,6 +23,7 @@
 ##	2021/06/04 000.0000 J.Itou         memo修正
 ##	2021/06/12 000.0000 J.Itou         menu修正
 ##	2021/06/13 000.0000 J.Itou         作業ディレクトリ削除処理追加
+##	2021/06/28 000.0000 J.Itou         Debian 11 対応
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -169,6 +170,19 @@ fncRemaster () {
 		pushd decomp > /dev/null							# initrd.gz 展開先
 			gunzip < ../image/initrd.gz | cpio -i
 			cp --preserve=timestamps ../preseed.cfg ./
+			# --- preseed.cfg -------------------------------------------------
+			if [ -f ../image/.disk/info ]; then
+				local VER_NUM=`awk '{print $3;}' ../image/.disk/info`
+				case "${VER_NUM}" in
+					11 )
+						sed -i "./preseed.cfg"                                                       \
+						    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'             \
+						    -e 's/#[ \t]\([ \t]*in-target systemctl disable connman.service\)/  \1/'
+						;;
+					* ) ;;
+				esac
+			fi
+			# --- make initps.gz ----------------------------------------------
 			find . | cpio -H newc --create | gzip -9 > ../image/initps.gz
 		popd > /dev/null
 		pushd image > /dev/null								# 作業用ディスクイメージ

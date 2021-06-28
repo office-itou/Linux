@@ -917,14 +917,14 @@ _EOT_
 	if [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
 		nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
 		nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
-		nmcli c up     "${CON_UUID}"
+#		nmcli c up     "${CON_UUID}"
 	elif [ ! -f /etc/sysconfig/network/config.orig ] && \
 		 [   -f /etc/sysconfig/network/config      ] && \
 		 [ ! -h /etc/sysconfig/network/config      ]; then
 		if [ "`sed -n '/NETCONFIG_DNS_STATIC_SERVERS=.*127\.0\.0\.1/p' /etc/sysconfig/network/config`" = "" ]; then
 			sed -i.orig /etc/sysconfig/network/config                                                           \
 			    -e "s/\(NETCONFIG_DNS_STATIC_SERVERS\)=\"${IP4_DNSA[0]}\"/\1=\"127\.0\.0\.1 ${IP4_DNSA[0]}\"/g"
-			netconfig update -f
+#			netconfig update -f
 		fi
 	elif [ -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
 		sed -i "/etc/NetworkManager/system-connections/${CON_NAME}"    \
@@ -1523,6 +1523,32 @@ _EOT_
 			    -e '/nbt client socket address =.*$/d'                                              \
 			    -e '/lsa over netlogon =.*$/d'                                                      \
 			    -e '/.* = $/d'                                                                      \
+			    -e '/client lanman auth =.*$/d'                                                     \
+			    -e '/client NTLMv2 auth =.*$/d'                                                     \
+			    -e '/client plaintext auth =.*$/d'                                                  \
+			    -e '/client schannel =.*$/d'                                                        \
+			    -e '/client use spnego principal =.*$/d'                                            \
+			    -e '/client use spnego =.*$/d'                                                      \
+			    -e '/domain logons =.*$/d'                                                          \
+			    -e '/enable privileges =.*$/d'                                                      \
+			    -e '/encrypt passwords =.*$/d'                                                      \
+			    -e '/idmap backend =.*$/d'                                                          \
+			    -e '/idmap gid =.*$/d'                                                              \
+			    -e '/idmap uid =.*$/d'                                                              \
+			    -e '/lanman auth =.*$/d'                                                            \
+			    -e '/lsa over netlogon =.*$/d'                                                      \
+			    -e '/nbt client socket address =.*$/d'                                              \
+			    -e '/null passwords =.*$/d'                                                         \
+			    -e '/raw NTLMv2 auth =.*$/d'                                                        \
+			    -e '/server schannel =.*$/d'                                                        \
+			    -e '/syslog =.*$/d'                                                                 \
+			    -e '/syslog only =.*$/d'                                                            \
+			    -e '/unicode =.*$/d'                                                                \
+			    -e '/acl check permissions =.*$/d'                                                  \
+			    -e '/allocation roundup size =.*$/d'                                                \
+			    -e '/blocking locks =.*$/d'                                                         \
+			    -e '/copy =.*$/d'                                                                   \
+			    -e '/winbind separator =.*$/d'                                                      \
 		> ${SMB_WORK}
 		# ---------------------------------------------------------------------
 		VER_BIND=`testparm -V | awk -F '.' '/Version/ {sub(".* ",""); printf "%d.%d",$1,$2;}'`
