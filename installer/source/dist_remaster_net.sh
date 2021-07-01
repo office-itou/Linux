@@ -27,6 +27,7 @@
 ##	2021/06/21 000.0000 J.Itou         CentOSの接続先変更 / [0-9].* 変更
 ##	2021/06/23 000.0000 J.Itou         Rocky Linux 追加
 ##	2021/06/28 000.0000 J.Itou         Debian 11 対応
+##	2021/07/02 000.0000 J.Itou         memo修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -55,7 +56,7 @@
 	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso    kickstart_fedora.cfg 2021-04-27 20xx-xx-xx kernel_5.11   " \
 	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                    yast_opensuse153.xml 2021-06-02 20xx-xx-xx kernel_5.3.18 " \
 	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml  20xx-xx-xx 20xx-xx-xx kernel_x.x    " \
-	    "rocky  https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-boot.iso                                        kickstart_rocky.cfg      202x-xx-xx 20xx-xx-xx RHEL_8.4  " \
+	    "rocky  https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-boot.iso                                        kickstart_rocky.cfg  2021-06-21 20xx-xx-xx RHEL_8.4      " \
 	)   # 区分  ダウンロード先URL                                                                                                            定義ファイル         リリース日 サポ終了日 備考
 #	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"  20xx-xx-xx 20xx-xx-xx testing       " \
 #	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg   2015-04-25 2020-06-30 oldoldstable  " \
@@ -880,6 +881,9 @@ fncRemaster () {
 # 8.2.2004:2020-06-15:2020-04-28:2021-12-31: 4.18.0-193
 # 8.3.2011:2020-11-03:2020-12-07:2021-12-31: 4.18.0-240
 # 8.4.2015:2021-06-03:2021-05-18:2021-12-31: 4.18.0-305
+# --- https://ja.wikipedia.org/wiki/Rocky_Linux -------------------------------
+# Ver. :リリース日:RHEL      :メンテ期限:kernel
+#  8.4 :2021-06-21:2021-05-18:         : 4.18.0-305
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # Ver. :コードネーム     :リリース日:サポ期限  :kernel
 #x27   :                 :2017-11-14:2018-11-27: 4.13
