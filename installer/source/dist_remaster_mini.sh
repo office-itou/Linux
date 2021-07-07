@@ -25,6 +25,7 @@
 ##	2021/06/13 000.0000 J.Itou         作業ディレクトリ削除処理追加
 ##	2021/06/28 000.0000 J.Itou         Debian 11 対応
 ##	2021/07/02 000.0000 J.Itou         memo修正
+##	2021/07/07 000.0000 J.Itou         cpio 表示出力抑制追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -164,12 +165,12 @@ fncRemaster () {
 		# --- mnt -> image ----------------------------------------------------
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
-			find . -depth -print | cpio -pdm ../image/
+			find . -depth -print | cpio -pdm --quiet ../image/
 		popd > /dev/null
 		umount mnt
 		# --- image -> decomp -> image ----------------------------------------
 		pushd decomp > /dev/null							# initrd.gz 展開先
-			gunzip < ../image/initrd.gz | cpio -i
+			gunzip < ../image/initrd.gz | cpio -i --quiet
 			cp --preserve=timestamps ../preseed.cfg ./
 			# --- preseed.cfg -------------------------------------------------
 			if [ -f ../image/.disk/info ]; then
@@ -184,7 +185,7 @@ fncRemaster () {
 				esac
 			fi
 			# --- make initps.gz ----------------------------------------------
-			find . | cpio -H newc --create | gzip -9 > ../image/initps.gz
+			find . | cpio -H newc --create --quiet | gzip -9 > ../image/initps.gz
 		popd > /dev/null
 		pushd image > /dev/null								# 作業用ディスクイメージ
 			# --- mrb:txt.cfg -------------------------------------------------
@@ -232,7 +233,7 @@ fncRemaster () {
 						echo "--- copy EFI directory --------------------------------------------------------"
 						mount -r -o loop boot/grub/efi.img ../mnt/
 						pushd ../mnt/efi/ > /dev/null
-							find . -depth -print | cpio -pdm ../../image/EFI/
+							find . -depth -print | cpio -pdm --quiet ../../image/EFI/
 						popd > /dev/null
 						umount ../mnt/
 					fi

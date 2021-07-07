@@ -28,6 +28,7 @@
 ##	2021/06/23 000.0000 J.Itou         Rocky Linux 追加
 ##	2021/06/28 000.0000 J.Itou         Debian 11 対応
 ##	2021/07/02 000.0000 J.Itou         memo修正
+##	2021/07/07 000.0000 J.Itou         cpio 表示出力抑制追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -175,7 +176,7 @@ fncRemaster () {
 		# --- mnt -> image ----------------------------------------------------
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
-			find . -depth -print | cpio -pdm ../image/
+			find . -depth -print | cpio -pdm --quiet ../image/
 		popd > /dev/null
 		umount mnt
 		# --- image -----------------------------------------------------------
