@@ -3,7 +3,7 @@
 # LiveCDCustomization [ubuntu-[version]-desktop-[architecture].iso]           *
 # *****************************************************************************
 	if [ "$1" = "" ] || [ "$2" = "" ]; then
-		echo "$0 [amd64] [20.04.2.0 | 20.10]"
+		echo "$0 [amd64] [21.04 | 21.10]"
 		exit 1
 	fi
 
@@ -23,6 +23,18 @@
 	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]"
 	echo "*******************************************************************************"
 	trap 'exit 1' 1 2 3 15
+# =============================================================================
+# IPv4 netmask変換処理 --------------------------------------------------------
+fncIPv4GetNetmaskBits () {
+	local INP_ADDR
+	local -a OUT_ARRY=()
+
+	for INP_ADDR in "$@"
+	do
+		OUT_ARRY+=`echo ${INP_ADDR} | awk -F. '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
+	done
+	echo "${OUT_ARRY[@]}"
+}
 # =============================================================================
 	echo "-- Initialize -----------------------------------------------------------------"
 	#--------------------------------------------------------------------------
@@ -75,11 +87,17 @@
 		 	apt upgrade      -q -y                                                 && \
 		 	apt full-upgrade -q -y                                                 && \
 		 	apt install      -q -y                                                    \
-		 	    tasksel vim curl                                                      \
-		 	    nfs-common nfs-kernel-server                                          \
-		 	    mozc-utils-gui fonts-noto-cjk-extra                                   \
+		 	    network-manager chrony clamav curl rsync inxi                         \
+		 	    build-essential indent vim bc                                         \
+		 	    sudo tasksel                                                          \
+		 	    openssh-server                                                        \
+		 	    bind9 bind9utils dnsutils                                             \
+		 	    samba smbclient cifs-utils                                            \
+		 	    isc-dhcp-server                                                       \
+		 	    cups cups-common                                                      \
+		 	    language-pack-gnome-ja language-pack-ja language-pack-ja-base         \
+		 	    ubuntu-server ubuntu-desktop fonts-noto ibus-mozc mozc-utils-gui      \
 		 	    gnome-getting-started-docs-ja gnome-user-docs-ja                      \
-		 	    language-pack-gnome-ja language-pack-ja                               \
 		 	    libreoffice-help-ja libreoffice-l10n-ja                               \
 		 	    firefox-locale-ja thunderbird-locale-ja                               \
 		 	    open-vm-tools open-vm-tools-desktop                                && \
@@ -89,7 +107,9 @@
 		 	fncEnd 1
 		 	echo "--- task install --------------------------------------------------------------"
 		 	tasksel install                                                           \
-		 	    standard server openssh-server dns-server samba-server             || \
+		 	    standard, server, dns-server, openssh-server,                         \
+		 	    print-server, samba-server,                                           \
+		 	    ubuntu-desktop, ubuntu-desktop-minimal                             || \
 		 	fncEnd 1
 		 	echo "--- google chrome install -----------------------------------------------------"
 		 	echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/google-chrome.list
@@ -360,6 +380,50 @@ _EOT_SH_
 	       ./ubuntu-live/fsimg/var/cache/apt/archives/*.deb \
 	       ./ubuntu-live/fsimg/ubuntu-setup.sh
 # =============================================================================
+	mv ./ubuntu-live/cdimg/casper/filesystem.size                    ./ubuntu-live/cdimg/casper/filesystem.size.orig
+	mv ./ubuntu-live/cdimg/casper/filesystem.manifest                ./ubuntu-live/cdimg/casper/filesystem.manifest.orig
+	mv ./ubuntu-live/cdimg/casper/filesystem.manifest-remove         ./ubuntu-live/cdimg/casper/filesystem.manifest-remove.orig
+	mv ./ubuntu-live/cdimg/casper/filesystem.manifest-minimal-remove ./ubuntu-live/cdimg/casper/filesystem.manifest-minimal-remove.orig
+	# -------------------------------------------------------------------------
+	touch ./ubuntu-live/cdimg/casper/filesystem.size
+	touch ./ubuntu-live/cdimg/casper/filesystem.manifest
+#	touch ./ubuntu-live/cdimg/casper/filesystem.manifest-remove
+#	touch ./ubuntu-live/cdimg/casper/filesystem.manifest-minimal-remove
+	# -------------------------------------------------------------------------
+	printf $(LANG=C chroot ./ubuntu-live/fsimg du -sx --block-size=1 | cut -f1) > ./ubuntu-live/cdimg/casper/filesystem.size
+	LANG=C chroot ./ubuntu-live/fsimg dpkg-query -W --showformat='${Package} ${Version}\n' > ./ubuntu-live/cdimg/casper/filesystem.manifest
+	cp -p ./ubuntu-live/cdimg/casper/filesystem.manifest ./ubuntu-live/cdimg/casper/filesystem.manifest-desktop
+	sed -i ./ubuntu-live/cdimg/casper/filesystem.manifest-desktop \
+	    -e '/ubiquity/d'                                          \
+	    -e '/casper/d'                                            \
+	    -e '/discover/d'                                          \
+	    -e '/laptop-detect/d'                                     \
+	    -e '/os-prober/d'
+# =============================================================================
+	if [ -f "./${CFG_NAME}" ]; then
+		IPV4_DHCP=`awk '/netcfg\/disable_dhcp/    {print $4;}' ./${CFG_NAME}`
+		if [ "${IPV4_DHCP,,}" = "true" ]; then
+			IPV4_ADDR=`awk '/netcfg\/get_ipaddress/   {print $4;}' ./${CFG_NAME}`
+			IPV4_MASK=`awk '/netcfg\/get_netmask/     {print $4;}' ./${CFG_NAME}`
+			IPV4_GWAY=`awk '/netcfg\/get_gateway/     {print $4;}' ./${CFG_NAME}`
+			IPV4_NAME=`awk '/netcfg\/get_nameservers/ {print $4;}' ./${CFG_NAME}`
+			IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
+			# -----------------------------------------------------------------
+			cat <<- _EOT_ >> ./ubuntu-live/fsimg/etc/netplan/99-network-manager-static.yaml.orig
+				network:
+				  version: 2
+				  renderer: NetworkManager
+				  ethernets:
+				    ens160:
+				      dhcp4: false
+				      addresses: [${IPV4_ADDR}/${IPV4_BITS}]
+				      gateway4: ${IPV4_GWAY}
+				      nameservers:
+				        addresses: [${IPV4_NAME}]
+_EOT_
+		fi
+	fi
+	# -------------------------------------------------------------------------
 	rm -f ./ubuntu-live/cdimg/casper/filesystem.squashfs
 	mksquashfs ./ubuntu-live/fsimg ./ubuntu-live/cdimg/casper/filesystem.squashfs
 	ls -lht ./ubuntu-live/cdimg/casper/
@@ -399,33 +463,32 @@ _EOT_SH_
 		# --- preseed.cfg -----------------------------------------------------
 		if [ -f "../../${CFG_NAME}" ]; then
 			cp --preserve=timestamps "../../${CFG_NAME}" "preseed/preseed.cfg"
-#			# --- grub.cfg ----------------------------------------------------
-#			INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-#			sed -n '/^menuentry \"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
-#			sed -n '0,/\}/p'                                          | \
-#			sed -e 's/\(Ubuntu\)/Auto Install \1/'                      \
-#			    -e "s/\(file\).*seed/\1=${INS_CFG}/"                    \
-#			    -e 's/maybe-ubiquity/boot=casper automatic-ubiquity/' | \
-#			sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg        | \
-#			sed -e 's/\(set default\)="1"/\1="0"/'                      \
-#			    -e 's/\(set timeout\).*$/\1=5/'                         \
-#			> grub.cfg
-#			mv grub.cfg boot/grub/
-#			# --- txt.cfg -----------------------------------------------------
-#			if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then
-#				INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
-#				INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-#				INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^[ \t]*menu\).*$/\1 default/g' | head -n 1`"
-#				sed -n '/label live-install$/,/append/p' isolinux/txt.cfg | \
-#				sed -e 's/^\(label\).*/\1 autoinst/'                        \
-#				    -e 's/\(Install\)/Auto \1/'                             \
-#				    -e "s/\(file\).*seed/\1=${INS_CFG}/"                    \
-#				    -e "/menu label/a  ${INS_STR}"                          \
-#				    -e 's/only-ubiquity/boot=casper automatic-ubiquity/'  | \
-#				sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg            \
-#				> txt.cfg
-#				mv txt.cfg isolinux/
-#			fi
+			INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
+			# --- grub.cfg ----------------------------------------------------
+			INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+			sed -n '/^menuentry \"Ubuntu of Japanese\"/,/^}/p' boot/grub/grub.cfg | \
+			sed -e 's/\(Ubuntu of Japanese\)/Auto Install/'                         \
+			    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                \
+			    -e 's/maybe-ubiquity/boot=casper automatic-ubiquity/'             | \
+			sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                    | \
+			sed -e 's/\(set default\)="1"/\1="0"/'                                  \
+			    -e 's/\(set timeout\).*$/\1=5/'                                     \
+			> grub.cfg
+			mv grub.cfg boot/grub/
+			# --- txt.cfg -----------------------------------------------------
+			if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then
+				INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+				INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^[ \t]*menu\).*$/\1 default/g' | head -n 1`"
+				sed -n '/label live-install$/,/append/p' isolinux/txt.cfg | \
+				sed -e 's/^\(label\).*/\1 autoinst/'                        \
+				    -e 's/\(Install\)/Auto \1/'                             \
+				    -e "s/\(file\).*seed/\1=${INS_CFG}/"                    \
+				    -e "/menu label/a  ${INS_STR}"                          \
+				    -e 's/only-ubiquity/boot=casper automatic-ubiquity/'  | \
+				sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg            \
+				> txt.cfg
+				mv txt.cfg isolinux/
+			fi
 		fi
 		# ---------------------------------------------------------------------
 		if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then

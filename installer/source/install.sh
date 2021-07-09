@@ -71,6 +71,7 @@
 ##	2021/03/09 000.0000 J.Itou         処理見直し(chromium導入停止)
 ##	2021/03/16 000.0000 J.Itou         処理見直し(google chrome導入等)
 ##	2021/06/23 000.0000 J.Itou         処理見直し(Rocky Linux 8.4対応含む)
+##	2021/07/09 000.0000 J.Itou         処理追加(関数追加)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -269,6 +270,18 @@ fncIPv4GetNetmask () {
 		    $(((${DEC_ADDR} >> 16) & 0xFF)) \
 		    $(((${DEC_ADDR} >> 8) & 0xFF)) \
 		    $((${DEC_ADDR} & 0xFF))))
+	done
+	echo "${OUT_ARRY[@]}"
+}
+
+# IPv4 netmask変換処理 bit用 --------------------------------------------------
+fncIPv4GetNetmaskBits () {
+	local INP_ADDR
+	local -a OUT_ARRY=()
+
+	for INP_ADDR in "$@"
+	do
+		OUT_ARRY+=`echo ${INP_ADDR} | awk -F. '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
 	done
 	echo "${OUT_ARRY[@]}"
 }
