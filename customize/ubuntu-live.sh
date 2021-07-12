@@ -17,10 +17,14 @@
 	CFG_NAME="preseed_ubuntu.cfg"
 	VERSION=`echo "${LIVE_VNUM}" | awk -F '.' '{print $1"."$2;}'`
 # == initialize ===============================================================
-#	set -m								# ジョブ制御を有効にする
+#	set -o ignoreof						# Ctrl+Dで終了しない
+#	set -n								# 構文エラーのチェック
+#	set -x								# コマンドと引数の展開を表示
+	set -m								# ジョブ制御を有効にする
 #	set -eu								# ステータス0以外と未定義変数の参照で終了
+
 	echo "*******************************************************************************"
-	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]"
+	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0 ${LIVE_ARCH} ${LIVE_VNUM}]"
 	echo "*******************************************************************************"
 	trap 'exit 1' 1 2 3 15
 # =============================================================================
@@ -85,7 +89,6 @@ fncIPv4GetNetmaskBits () {
 		 	echo "--- module install ------------------------------------------------------------"
 		 	apt update       -q                                                    && \
 		 	apt upgrade      -q -y                                                 && \
-		 	apt full-upgrade -q -y                                                 && \
 		 	apt install      -q -y                                                    \
 		 	    network-manager chrony clamav curl rsync inxi                         \
 		 	    build-essential indent vim bc                                         \
@@ -329,18 +332,18 @@ _EOT_SH_
 	echo "--- copy media -> cdimg -------------------------------------------------------"
 	mount -r -o loop ./${LIVE_FILE} ./ubuntu-live/media
 	pushd ./ubuntu-live/media > /dev/null
-		find . -depth -print | cpio -pdm ../cdimg/
+		find . -depth -print | cpio -pdm --quiet ../cdimg/
 	popd > /dev/null
 	umount ./ubuntu-live/media
 	# -------------------------------------------------------------------------
-	if [ ! -f ./ubuntu-live/cdimg/casper/filesystem.squashfs.orig ]; then
-		mv ./ubuntu-live/cdimg/casper/filesystem.squashfs ./ubuntu-live/filesystem.squashfs
-	fi
+#	if [ ! -f ./ubuntu-live/cdimg/casper/filesystem.squashfs.orig ]; then
+#		mv ./ubuntu-live/cdimg/casper/filesystem.squashfs ./ubuntu-live/filesystem.squashfs
+#	fi
 	# -------------------------------------------------------------------------
 	echo "--- copy media -> fsimg -------------------------------------------------------"
-	mount -r -o loop ./ubuntu-live/filesystem.squashfs ./ubuntu-live/media
+	mount -r -o loop ./ubuntu-live/cdimg/casper/filesystem.squashfs ./ubuntu-live/media
 	pushd ./ubuntu-live/media > /dev/null
-		find . -depth -print | cpio -pdm ../fsimg/
+		find . -depth -print | cpio -pdm --quiet ../fsimg/
 	popd > /dev/null
 	umount ./ubuntu-live/media
 # =============================================================================
@@ -349,6 +352,30 @@ _EOT_SH_
 		cp -p ./ubuntu-live/rpack.${LIVE_ARCH}/*.deb ./ubuntu-live/fsimg/var/cache/apt/archives/
 	fi
 # =============================================================================
+	if [ -f "./${CFG_NAME}" ]; then
+		IPV4_DHCP=`awk '/netcfg\/disable_dhcp/    {print $4;}' ./${CFG_NAME}`
+		if [ "${IPV4_DHCP,,}" = "true" ]; then
+			IPV4_ADDR=`awk '/netcfg\/get_ipaddress/   {print $4;}' ./${CFG_NAME}`
+			IPV4_MASK=`awk '/netcfg\/get_netmask/     {print $4;}' ./${CFG_NAME}`
+			IPV4_GWAY=`awk '/netcfg\/get_gateway/     {print $4;}' ./${CFG_NAME}`
+			IPV4_NAME=`awk '/netcfg\/get_nameservers/ {print $4;}' ./${CFG_NAME}`
+			IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
+			# -----------------------------------------------------------------
+			cat <<- _EOT_ >> ./ubuntu-live/fsimg/etc/netplan/99-network-manager-static.yaml.orig
+				network:
+				  version: 2
+				  renderer: NetworkManager
+				  ethernets:
+				    ens160:
+				      dhcp4: false
+				      addresses: [${IPV4_ADDR}/${IPV4_BITS}]
+				      gateway4: ${IPV4_GWAY}
+				      nameservers:
+				        addresses: [${IPV4_NAME}]
+_EOT_
+		fi
+	fi
+	# -------------------------------------------------------------------------
 	rm -f ./ubuntu-live/fsimg/etc/localtime
 	ln -s /usr/share/zoneinfo/Asia/Tokyo ./ubuntu-live/fsimg/etc/localtime
 	# -------------------------------------------------------------------------
@@ -358,7 +385,6 @@ _EOT_SH_
 	mount --bind /proc    ./ubuntu-live/fsimg/proc
 #	mount --bind /sys     ./ubuntu-live/fsimg/sys
 	# -------------------------------------------------------------------------
-#	cp -p ./ubuntu-setup.sh ./ubuntu-live/fsimg/
 	LANG=C chroot ./ubuntu-live/fsimg /bin/bash /ubuntu-setup.sh
 	RET_STS=$?
 	# -------------------------------------------------------------------------
@@ -394,102 +420,90 @@ _EOT_SH_
 	LANG=C chroot ./ubuntu-live/fsimg dpkg-query -W --showformat='${Package} ${Version}\n' > ./ubuntu-live/cdimg/casper/filesystem.manifest
 	cp -p ./ubuntu-live/cdimg/casper/filesystem.manifest ./ubuntu-live/cdimg/casper/filesystem.manifest-desktop
 	sed -i ./ubuntu-live/cdimg/casper/filesystem.manifest-desktop \
-	    -e '/ubiquity/d'                                          \
-	    -e '/casper/d'                                            \
-	    -e '/discover/d'                                          \
-	    -e '/laptop-detect/d'                                     \
-	    -e '/os-prober/d'
+	    -e '/^casper.*$/d'                                        \
+	    -e '/^lupin-casper.*$/d'                                  \
+	    -e '/^ubiquity.*$/d'                                      \
+	    -e '/^ubiquity-casper.*$/d'                               \
+	    -e '/^ubiquity-frontend-gtk.*$/d'                         \
+	    -e '/^ubiquity-slideshow-ubuntu.*$/d'                     \
+	    -e '/^ubiquity-ubuntu-artwork.*$/d'
+#	    -e '/ubiquity/d'                                          \
+#	    -e '/casper/d'                                            \
+#	    -e '/discover/d'                                          \
+#	    -e '/laptop-detect/d'                                     \
+#	    -e '/os-prober/d'
 # =============================================================================
-	if [ -f "./${CFG_NAME}" ]; then
-		IPV4_DHCP=`awk '/netcfg\/disable_dhcp/    {print $4;}' ./${CFG_NAME}`
-		if [ "${IPV4_DHCP,,}" = "true" ]; then
-			IPV4_ADDR=`awk '/netcfg\/get_ipaddress/   {print $4;}' ./${CFG_NAME}`
-			IPV4_MASK=`awk '/netcfg\/get_netmask/     {print $4;}' ./${CFG_NAME}`
-			IPV4_GWAY=`awk '/netcfg\/get_gateway/     {print $4;}' ./${CFG_NAME}`
-			IPV4_NAME=`awk '/netcfg\/get_nameservers/ {print $4;}' ./${CFG_NAME}`
-			IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
-			# -----------------------------------------------------------------
-			cat <<- _EOT_ >> ./ubuntu-live/fsimg/etc/netplan/99-network-manager-static.yaml.orig
-				network:
-				  version: 2
-				  renderer: NetworkManager
-				  ethernets:
-				    ens160:
-				      dhcp4: false
-				      addresses: [${IPV4_ADDR}/${IPV4_BITS}]
-				      gateway4: ${IPV4_GWAY}
-				      nameservers:
-				        addresses: [${IPV4_NAME}]
-_EOT_
-		fi
-	fi
-	# -------------------------------------------------------------------------
-	rm -f ./ubuntu-live/cdimg/casper/filesystem.squashfs
-	mksquashfs ./ubuntu-live/fsimg ./ubuntu-live/cdimg/casper/filesystem.squashfs
-	ls -lht ./ubuntu-live/cdimg/casper/
-	# -------------------------------------------------------------------------
 	BOOT_MBR=`echo ${LIVE_FILE} | sed 's/iso$/mbr/'`
 	BOOT_EFI=`echo ${LIVE_FILE} | sed 's/iso$/efi/'`
 	FILE_SKP=`fdisk -l ${LIVE_FILE} | awk '/EFI/ {print $2;}'`
 	FILE_CNT=`fdisk -l ${LIVE_FILE} | awk '/EFI/ {print $4;}'`
-	dd if=${LIVE_FILE} of=./ubuntu-live/${BOOT_MBR} bs=1 count=446
-	dd if=${LIVE_FILE} of=./ubuntu-live/${BOOT_EFI} bs=512 skip=${FILE_SKP} count=${FILE_CNT}
+	dd if=${LIVE_FILE} of=./ubuntu-live/${BOOT_MBR} bs=1 count=446 status=none
+	dd if=${LIVE_FILE} of=./ubuntu-live/${BOOT_EFI} bs=512 skip=${FILE_SKP} count=${FILE_CNT} status=none
 	# -------------------------------------------------------------------------
 	pushd ./ubuntu-live/cdimg > /dev/null
-		INS_CFG="locale=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp"
+		INS_CFG="locale=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp105 keyboard-layouts=jp"
 		# --- grub.cfg --------------------------------------------------------
 		INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-		sed -n '/^menuentry \"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
-		sed -n '0,/\}/p'                                          | \
-		sed -e 's/\(Ubuntu\)/\1 of Japanese/'                       \
-		    -e "s~\(file\)~${INS_CFG} \1~"                        | \
-		sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg        | \
-		sed -e 's/\(set default\)="1"/\1="0"/'                      \
-		    -e 's/\(set timeout\).*$/\1=5/'                         \
+		sed -n '/^menuentry \"Try Ubuntu.*\"\|\"Install Ubuntu\"\|\"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
+		sed -e 's/\"\(Try Ubuntu\)\(.*\)\"/\"\1 of Japanese\2\"/'                                         \
+		    -e 's/\"\(Install Ubuntu\)\"/\"\1 of Japanese\"/'                                             \
+		    -e 's/\"\(Ubuntu\)\"/\"\1 of Japanese\"/'                                                     \
+		    -e "s~\(file\)~${INS_CFG} \1~"                                                              | \
+		sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                                              | \
+		sed -e 's/\(set default\)="1"/\1="0"/'                                                            \
+		    -e 's/\(set timeout\).*$/\1=5/'                                                               \
 		> grub.cfg
 		mv grub.cfg boot/grub/
 		# --- txt.cfg ---------------------------------------------------------
 		if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then
 			INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-			sed -n '/label live$/,/append/p' isolinux/txt.cfg    | \
-			sed -e 's/^\(label\).*/\1 live_of_japanese/'           \
-			    -e 's/\(Try Ubuntu\) \(.*$\)/\1 of Japanese \2/'   \
-			    -e "s~\(file\)~${INS_CFG} \1~"                   | \
-			sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg     | \
-			sed -e 's/^\(default\) .*$/\1 live_of_japanese/'       \
+			sed -n '/label live$\|live-install$/,/append/p' isolinux/txt.cfg | \
+			sed -e 's/^\(label\) \(.*\)/\1 \2_of_japanese/'                    \
+			    -e 's/\(Install Ubuntu\)/\1 of Japanese/'                      \
+			    -e 's/\(Try Ubuntu\)\(.*$\)/\1 of Japanese\2/'                 \
+			    -e "s~\(file\)~${INS_CFG} \1~"                               | \
+			sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg                 | \
+			sed -e 's/^\(default\) .*$/\1 live_of_japanese/'                   \
 			> txt.cfg
 			mv txt.cfg isolinux/
 		fi
 		# --- preseed.cfg -----------------------------------------------------
 		if [ -f "../../${CFG_NAME}" ]; then
 			cp --preserve=timestamps "../../${CFG_NAME}" "preseed/preseed.cfg"
+#			sed -i preseed/preseed.cfg                     \
+#			    -e '/pkgsel\/upgrade .*none/ s/#/ /g'      \
+#			    -e '/pkgsel\/upgrade .*-upgrade/ s/^ /#/g'
 			INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
 			# --- grub.cfg ----------------------------------------------------
-			INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-			sed -n '/^menuentry \"Ubuntu of Japanese\"/,/^}/p' boot/grub/grub.cfg | \
-			sed -e 's/\(Ubuntu of Japanese\)/Auto Install/'                         \
-			    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                \
-			    -e 's/maybe-ubiquity/boot=casper automatic-ubiquity/'             | \
-			sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                    | \
-			sed -e 's/\(set default\)="1"/\1="0"/'                                  \
-			    -e 's/\(set timeout\).*$/\1=5/'                                     \
+			INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"/ =' boot/grub/grub.cfg | head -n 1`-1))
+			sed -n '/^menuentry \"Install\|Ubuntu.*of Japanese\"/,/^}/p' boot/grub/grub.cfg | \
+			sed -e 's/\"Install \(Ubuntu of Japanese\)\"/\"Auto Install \1\"/'                \
+			    -e 's/\"\(Ubuntu of Japanese\)\"/\"Auto Install \1\"/'                        \
+			    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                          \
+			    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity/'                    | \
+			sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                              | \
+			sed -e 's/\(set default\)="1"/\1="0"/'                                            \
+			    -e 's/\(set timeout\).*$/\1=5/'                                               \
 			> grub.cfg
 			mv grub.cfg boot/grub/
 			# --- txt.cfg -----------------------------------------------------
 			if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then
-				INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-				INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^[ \t]*menu\).*$/\1 default/g' | head -n 1`"
-				sed -n '/label live-install$/,/append/p' isolinux/txt.cfg | \
-				sed -e 's/^\(label\).*/\1 autoinst/'                        \
-				    -e 's/\(Install\)/Auto \1/'                             \
-				    -e "s/\(file\).*seed/\1=${INS_CFG}/"                    \
-				    -e "/menu label/a  ${INS_STR}"                          \
-				    -e 's/only-ubiquity/boot=casper automatic-ubiquity/'  | \
-				sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg            \
+				INS_ROW=$((`sed -n '/^label live$/ =' isolinux/txt.cfg | head -n 1`-1))
+				sed -n '/label live-install_of_japanese$/,/append/p' isolinux/txt.cfg | \
+				sed -e 's/^\(label\).*/\1 autoinst/'                                    \
+				    -e 's/\(Install\)/Auto \1/'                                         \
+				    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                \
+				    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity/'          | \
+				sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg                        \
 				> txt.cfg
 				mv txt.cfg isolinux/
 			fi
 		fi
+		# -------------------------------------------------------------------------
+		rm -f ./casper/filesystem.squashfs
+		mksquashfs ../fsimg ./casper/filesystem.squashfs -mem 1G
+		ls -lht ./casper/
+		FSIMG_SIZE=`LANG=C ls -lh ./casper/filesystem.squashfs | awk '{print $5;}'`
 		# ---------------------------------------------------------------------
 		if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then
 			find . ! -name "md5sum.txt" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
@@ -520,12 +534,15 @@ _EOT_
 		    -output "../../${LIVE_DEST}" \
 		    .
 	popd > /dev/null
+	rm -rf ./ubuntu-live
 	ls -lht ubuntu*
+	echo メディアは ${FSIMG_SIZE} 以上のメモリーを搭載する PC で使用して下さい。
 # =============================================================================
 	echo "*******************************************************************************"
-	echo "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]"
+	echo "`date +"%Y/%m/%d %H:%M:%S"` : end [$0 ${LIVE_ARCH} ${LIVE_VNUM}]"
 	echo "*******************************************************************************"
 	exit 0
 # == memo =====================================================================
 	https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja
+	sudo bash -c 'for i in `ls ubuntu-*-desktop-amd64.iso | awk -F '\''-'\'' '\''{print $2;}'\''`; do ./ubuntu-live.sh amd64 $i; done'
 # == EOF ======================================================================
