@@ -29,6 +29,7 @@
 ##	2021/06/28 000.0000 J.Itou         Debian 11 対応
 ##	2021/07/02 000.0000 J.Itou         memo修正
 ##	2021/07/07 000.0000 J.Itou         cpio 表示出力抑制追加
+##	2021/07/13 000.0000 J.Itou         ubuntu 無人インストール定義ファイルの処理変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -48,32 +49,32 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	ARRAY_NAME=(                                                                                                                                                                                        \
-	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                 preseed_debian.cfg       2017-06-17 2022-xx-xx oldstable     " \
-	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                          preseed_debian.cfg       2019-07-06 20xx-xx-xx stable        " \
-	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg       20xx-xx-xx 20xx-xx-xx testing       " \
-	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg       2016-04-21 2021-04-xx Xenial_Xerus  " \
-	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                        preseed_ubuntu.cfg       2018-04-26 2023-04-xx Bionic_Beaver " \
-	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                   nocloud-ubuntu-user-data 2020-04-23 2025-04-xx Focal_Fossa   " \
-	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-live-server-amd64.iso                                                  nocloud-ubuntu-user-data 2020-10-22 2021-07-xx Groovy_Gorilla" \
-	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                 nocloud-ubuntu-user-data 2021-04-22 2022-01-xx Hirsute_Hippo " \
-	    "centos https://ftp.tsukuba.wide.ad.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                 kickstart_centos.cfg     2021-06-03 2021-12-31 RHEL_8.4      " \
-	    "centos https://ftp.tsukuba.wide.ad.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-dvd1.iso                 kickstart_centos.cfg     2019-xx-xx 2024-05-31 RHEL_x.x      " \
-	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso    kickstart_fedora.cfg     2021-04-27 20xx-xx-xx kernel_5.11   " \
-	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64.iso                                yast_opensuse153.xml     2021-06-02 20xx-xx-xx kernel_5.3.18 " \
-	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml      2021-xx-xx 20xx-xx-xx kernel_x.x    " \
-	    "rocky  https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                    kickstart_rocky.cfg      2021-06-21 20xx-xx-xx RHEL_8.4      " \
-	)   # 区分  ダウンロード先URL                                                                                                        定義ファイル             リリース日 サポ終了日 備考
-#	    "debian https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg       2013-05-04 2018-05-31 wheezy        " \
-#	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg       2015-04-25 2020-06-30 oldoldstable  " \
-#	    "debian https://cdimage.debian.org/cdimage/bullseye_di_alpha3/amd64/iso-dvd/debian-bullseye-DI-alpha3-amd64-DVD-1.iso            preseed_debian.cfg       20xx-xx-xx 20xx-xx-xx testing       " \
-#	    "ubuntu http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg       2020-04-23 2025-04-xx Focal_Fossa   " \
-#	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg       2016-04-21 2021-04-xx Xenial_Xerus  " \
-#	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg       2018-04-26 2023-04-xx Bionic_Beaver " \
-#	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-20.04.2.0-desktop-amd64.iso                                                     preseed_ubuntu.cfg       2020-04-23 2025-04-xx Focal_Fossa   " \
-#	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-20.10-desktop-amd64.iso                                                        preseed_ubuntu.cfg       2020-10-22 2021-07-xx Groovy_Gorilla" \
-#	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-21.04-desktop-amd64.iso                                                       preseed_ubuntu.cfg       2021-04-22 2022-01-xx Hirsute_Hippo " \
-#	    "suse   http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml      2020-07-02 2021-11-xx kernel_5.3    " \
+	ARRAY_NAME=(                                                                                                                                                                                                           \
+	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                 preseed_debian.cfg                          2017-06-17 2022-xx-xx oldstable     " \
+	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                          preseed_debian.cfg                          2019-07-06 20xx-xx-xx stable        " \
+	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
+	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus  " \
+	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                        preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
+	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                   preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2025-04-xx Focal_Fossa   " \
+	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-live-server-amd64.iso                                                  preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-10-22 2021-07-xx Groovy_Gorilla" \
+	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                 preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22 2022-01-xx Hirsute_Hippo " \
+	    "centos https://ftp.tsukuba.wide.ad.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                 kickstart_centos.cfg                        2021-06-03 2021-12-31 RHEL_8.4      " \
+	    "centos https://ftp.tsukuba.wide.ad.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-dvd1.iso                 kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x      " \
+	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso    kickstart_fedora.cfg                        2021-04-27 20xx-xx-xx kernel_5.11   " \
+	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64.iso                                yast_opensuse153.xml                        2021-06-02 20xx-xx-xx kernel_5.3.18 " \
+	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml                         2021-xx-xx 20xx-xx-xx kernel_x.x    " \
+	    "rocky  https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                    kickstart_rocky.cfg                         2021-06-21 20xx-xx-xx RHEL_8.4      " \
+	)   # 区分  ダウンロード先URL                                                                                                        定義ファイル                                リリース日 サポ終了日 備考
+#	    "debian https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg                          2013-05-04 2018-05-31 wheezy        " \
+#	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg                          2015-04-25 2020-06-30 oldoldstable  " \
+#	    "debian https://cdimage.debian.org/cdimage/bullseye_di_alpha3/amd64/iso-dvd/debian-bullseye-DI-alpha3-amd64-DVD-1.iso            preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
+#	    "ubuntu http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg                          2020-04-23 2025-04-xx Focal_Fossa   " \
+#	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus  " \
+#	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
+#	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-20.04.2.0-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2020-04-23 2025-04-xx Focal_Fossa   " \
+#	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-20.10-desktop-amd64.iso                                                        preseed_ubuntu.cfg                          2020-10-22 2021-07-xx Groovy_Gorilla" \
+#	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-21.04-desktop-amd64.iso                                                       preseed_ubuntu.cfg                          2021-04-22 2022-01-xx Hirsute_Hippo " \
+#	    "suse   http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml                         2020-07-02 2021-11-xx kernel_5.3    " \
 
 # -----------------------------------------------------------------------------
 fncMenu () {
@@ -186,18 +187,28 @@ fncRemaster () {
 				"debian" | \
 				"ubuntu" )
 					case "${CODE_NAME[1]}" in
-						ubuntu*20.04*live*    | \
-						ubuntu*20.10*live*    | \
-						ubuntu*21.04*live*    )				# --- get user-data
+						*live* )							# --- get user-data
 							EFI_IMAG="boot/grub/efi.img"
 							ISO_NAME="${DVD_NAME}-nocloud"
+							# -------------------------------------------------
+							mkdir -p "preseed"
+							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $1;}'`
+							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
+							if [ -f "../../../${CFG_FILE}" ]; then
+								cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
+							else
+								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+							fi
+							# -------------------------------------------------
 							mkdir -p "nocloud"
 							touch nocloud/meta-data
 							touch nocloud/user-data
-							if [ -f "../../../${CFG_NAME}" ]; then
-								cp --preserve=timestamps "../../../${CFG_NAME}" "nocloud/user-data"
+							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
+							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
+							if [ -f "../../../${CFG_FILE}" ]; then
+								cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
 							else
-								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
+								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
 							fi
 							;;
 						* )									# --- get preseed.cfg

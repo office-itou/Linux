@@ -92,7 +92,7 @@ fncIPv4GetNetmaskBits () {
 		 	apt install      -q -y                                                    \
 		 	    network-manager chrony clamav curl rsync inxi                         \
 		 	    build-essential indent vim bc                                         \
-		 	    sudo tasksel                                                          \
+		 	    sudo tasksel whois                                                    \
 		 	    openssh-server                                                        \
 		 	    bind9 bind9utils dnsutils                                             \
 		 	    samba smbclient cifs-utils                                            \
