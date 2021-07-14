@@ -61,82 +61,88 @@ fncIPv4GetNetmaskBits () {
 #	rm -rf   ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg ./ubuntu-live/wkdir
 	mkdir -p ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg ./ubuntu-live/wkdir
 	# -------------------------------------------------------------------------
-	cat <<- '_EOT_SH_' > ./ubuntu-live/fsimg/ubuntu-setup.sh
+	TASK_LIST="standard, server, dns-server, openssh-server,                         \
+		       print-server, samba-server,                                           \
+		       ubuntu-desktop, ubuntu-desktop-minimal"
+	PACK_LIST="network-manager chrony clamav curl rsync inxi                         \
+		       build-essential indent vim bc                                         \
+		       sudo tasksel whois                                                    \
+		       openssh-server                                                        \
+		       bind9 bind9utils dnsutils                                             \
+		       samba smbclient cifs-utils                                            \
+		       isc-dhcp-server                                                       \
+		       cups cups-common                                                      \
+		       language-pack-gnome-ja language-pack-ja language-pack-ja-base         \
+		       ubuntu-server ubuntu-desktop fonts-noto ibus-mozc mozc-utils-gui      \
+		       gnome-getting-started-docs-ja gnome-user-docs-ja                      \
+		       libreoffice-help-ja libreoffice-l10n-ja                               \
+		       firefox-locale-ja thunderbird-locale-ja"
+#		      open-vm-tools open-vm-tools-desktop
+	# -------------------------------------------------------------------------
+	if [ -f "./${CFG_NAME}" ]; then
+		TASK_LIST=$(sed -z 's/\\ *\n//g' "./${CFG_NAME}" | sed -e '/tasksel\/first/!d'  -e 's/.*multiselect//')
+		PACK_LIST=$(sed -z 's/\\ *\n//g' "./${CFG_NAME}" | sed -e '/pkgsel\/include/!d' -e 's/.*string//'     )
+	fi
+	# -------------------------------------------------------------------------
+	cat <<- _EOT_SH_ > ./ubuntu-live/fsimg/ubuntu-setup.sh
 		#!/bin/bash
 		# -----------------------------------------------------------------------------
 		 	set -m								# ジョブ制御を有効にする
 		 	set -eu								# ステータス0以外と未定義変数の参照で終了
 		 	echo "*******************************************************************************"
-		 	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]"
+		 	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [\$0]"
 		 	echo "*******************************************************************************"
 		# -- terminate ----------------------------------------------------------------
 		fncEnd() {
 		 	echo "--- terminate -----------------------------------------------------------------"
-		 	RET_STS=$1
+		 	RET_STS=\$1
 		 	history -c
 		 	echo "*******************************************************************************"
-		 	echo "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]"
+		 	echo "`date +"%Y/%m/%d %H:%M:%S"` : end [\$0]"
 		 	echo "*******************************************************************************"
-		 	exit ${RET_STS}
+		 	exit \${RET_STS}
 		}
 		# -- initialize ---------------------------------------------------------------
 		 	echo "--- initialize ----------------------------------------------------------------"
 		 	trap 'fncEnd 1' 1 2 3 15
 		 	export PS1="(chroot) "
 		# -- module install -----------------------------------------------------------
-		#	sed -i.orig /etc/resolv.conf -e '$anameserver 1.1.1.1\nnameserver 1.0.0.1'
-		 	sed -i /etc/apt/sources.list -e 's/^\(deb .*\)/\1 universe multiverse/g'
+		#	sed -i.orig /etc/resolv.conf -e '\$anameserver 1.1.1.1\\nnameserver 1.0.0.1'
+		 	sed -i /etc/apt/sources.list -e 's/^\\(deb .*\\)/\\1 universe multiverse/g'
 		 	echo "--- module install ------------------------------------------------------------"
-		 	apt update       -q                                                    && \
-		 	apt upgrade      -q -y                                                 && \
-		 	apt install      -q -y                                                    \
-		 	    network-manager chrony clamav curl rsync inxi                         \
-		 	    build-essential indent vim bc                                         \
-		 	    sudo tasksel whois                                                    \
-		 	    openssh-server                                                        \
-		 	    bind9 bind9utils dnsutils                                             \
-		 	    samba smbclient cifs-utils                                            \
-		 	    isc-dhcp-server                                                       \
-		 	    cups cups-common                                                      \
-		 	    language-pack-gnome-ja language-pack-ja language-pack-ja-base         \
-		 	    ubuntu-server ubuntu-desktop fonts-noto ibus-mozc mozc-utils-gui      \
-		 	    gnome-getting-started-docs-ja gnome-user-docs-ja                      \
-		 	    libreoffice-help-ja libreoffice-l10n-ja                               \
-		 	    firefox-locale-ja thunderbird-locale-ja                               \
-		 	    open-vm-tools open-vm-tools-desktop                                && \
-		 	apt autoremove   -q -y                                                 && \
-		 	apt autoclean    -q -y                                                 && \
-		 	apt clean        -q -y                                                 || \
+		 	apt update       -q                                                    && \\
+		 	apt full-upgrade -q -y                                                 && \\
+		 	apt install      -q -y ${PACK_LIST}                                    && \\
+		 	apt autoremove   -q -y                                                 && \\
+		 	apt autoclean    -q -y                                                 && \\
+		 	apt clean        -q -y                                                 || \\
 		 	fncEnd 1
 		 	echo "--- task install --------------------------------------------------------------"
-		 	tasksel install                                                           \
-		 	    standard, server, dns-server, openssh-server,                         \
-		 	    print-server, samba-server,                                           \
-		 	    ubuntu-desktop, ubuntu-desktop-minimal                             || \
+		 	tasksel install ${TASK_LIST}                                           || \\
 		 	fncEnd 1
 		 	echo "--- google chrome install -----------------------------------------------------"
 		 	echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' > /etc/apt/sources.list.d/google-chrome.list
 		 	wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 		 	if [ -f Release.key ]; then rm -f Release.key; fi
-		 	apt update                                                             && \
-		 	apt install      -q -y                                                    \
-		 	    google-chrome-stable                                               || \
+		 	apt update                                                             && \\
+		 	apt install      -q -y                                                    \\
+		 	    google-chrome-stable                                               || \\
 		 	fncEnd 1
 		#	chmod 644 /usr/bin/gnome-keyring-daemon
 		#	echo "--- ungoogled chromium install ------------------------------------------------"
 		#	echo 'deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Ubuntu_Focal/ /' | tee /etc/apt/sources.list.d/home:ungoogled_chromium.list
 		#	curl -fsSL https://download.opensuse.org/repositories/home:ungoogled_chromium/Ubuntu_Focal/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/home:ungoogled_chromium.gpg > /dev/null
 		#	if [ -f Release.key ]; then rm -f Release.key; fi
-		#	apt update                                                             && \
-		#	apt install      -q -y                                                    \
-		#	    ungoogled-chromium ungoogled-chromium-common                          \
-		#	    ungoogled-chromium-driver ungoogled-chromium-sandbox                  \
-		#	    ungoogled-chromium-shell ungoogled-chromium-l10n                   || \
+		#	apt update                                                             && \\
+		#	apt install      -q -y                                                    \\
+		#	    ungoogled-chromium ungoogled-chromium-common                          \\
+		#	    ungoogled-chromium-driver ungoogled-chromium-sandbox                  \\
+		#	    ungoogled-chromium-shell ungoogled-chromium-l10n                   || \\
 		#	fncEnd 1
 		#	# -----------------------------------------------------------------------------
-		#	apt autoremove   -q -y                                                 && \
-		#	apt autoclean    -q                                                    && \
-		#	apt clean        -q                                                    || \
+		#	apt autoremove   -q -y                                                 && \\
+		#	apt autoclean    -q                                                    && \\
+		#	apt clean        -q                                                    || \\
 		#	fncEnd 1
 		#	mv /etc/resolv.conf.orig /etc/resolv.conf
 		 	# -----------------------------------------------------------------------------
@@ -159,39 +165,39 @@ fncIPv4GetNetmaskBits () {
 		#	freshclam --show-progress
 		# -- localize -----------------------------------------------------------------
 		 	echo "--- localize ------------------------------------------------------------------"
-		 	sed -i /etc/locale.gen                  \
-		 	    -e 's/^[A-Za-z]/# &/g'              \
-		 	    -e 's/# \(ja_JP.UTF-8 UTF-8\)/\1/g' \
-		 	    -e 's/# \(en_US.UTF-8 UTF-8\)/\1/g'
+		 	sed -i /etc/locale.gen                  \\
+		 	    -e 's/^[A-Za-z]/# &/g'              \\
+		 	    -e 's/# \\(ja_JP.UTF-8 UTF-8\\)/\\1/g' \\
+		 	    -e 's/# \\(en_US.UTF-8 UTF-8\\)/\\1/g'
 		 	locale-gen
 		 	update-locale LANG="ja_JP.UTF-8" LANGUAGE="ja:en"
 		 	localectl set-x11-keymap --no-convert "jp,us" "pc105"
 		# -- mozc ---------------------------------------------------------------------
-		 	sed -i /usr/share/ibus/component/mozc.xml                                     \
-		 	    -e '/<engine>/,/<\/engine>/ s/\(<layout>\)default\(<\/layout>\)/\1jp\2/g'
+		 	sed -i /usr/share/ibus/component/mozc.xml                                     \\
+		 	    -e '/<engine>/,/<\\/engine>/ s/\\(<layout>\\)default\\(<\\/layout>\\)/\\1jp\\2/g'
 		# -- open vm tools ------------------------------------------------------------
-		 	echo "--- open vm tools -------------------------------------------------------------"
-		 	mkdir -p /mnt/hgfs
-		 	echo -n '.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \
-		 	> /etc/fstab.vmware-sample
+		#	echo "--- open vm tools -------------------------------------------------------------"
+		#	mkdir -p /mnt/hgfs
+		#	echo -n '.host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults 0 0' \\
+		#	> /etc/fstab.vmware-sample
 		# memo: sudo bash -c '/etc/fstab.vmware-sample >> /etc/fstab'
 		# -- clamav -------------------------------------------------------------------
 		 	if [ -f /etc/clamav/freshclam.conf ]; then
 		 		echo "--- clamav --------------------------------------------------------------------"
-		 		sed -i /etc/clamav/freshclam.conf \
+		 		sed -i /etc/clamav/freshclam.conf \\
 		 		    -e 's/^NotifyClamd/#&/'
 		 	fi
 		# -- sshd ---------------------------------------------------------------------
 		 	if [ -f /etc/ssh/sshd_config ]; then
 		 		echo "--- sshd ----------------------------------------------------------------------"
-		 		sed -i /etc/ssh/sshd_config                          \
-		 		    -e 's/^\(PermitRootLogin\) .*/\1 yes/'           \
-		 		    -e 's/#\(PasswordAuthentication\) .*/\1 yes/'    \
-		 		    -e 's/#\(PermitEmptyPasswords\) .*/\1 yes/'      \
-		 		    -e 's/#\(UsePAM\) .*/\1 yes/'                    \
-		 		    -e '/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/d'   \
-		 		    -e '/HostKey \/etc\/ssh\/ssh_host_ed25519_key/d' \
-		 		    -e '$aUseDNS no\nIgnoreUserKnownHosts no'
+		 		sed -i /etc/ssh/sshd_config                          \\
+		 		    -e 's/^\\(PermitRootLogin\\) .*/\\1 yes/'           \\
+		 		    -e 's/#\\(PasswordAuthentication\\) .*/\\1 yes/'    \\
+		 		    -e 's/#\\(PermitEmptyPasswords\\) .*/\\1 yes/'      \\
+		 		    -e 's/#\\(UsePAM\\) .*/\\1 yes/'                    \\
+		 		    -e '/HostKey \\/etc\\/ssh\\/ssh_host_ecdsa_key/d'   \\
+		 		    -e '/HostKey \\/etc\\/ssh\\/ssh_host_ed25519_key/d' \\
+		 		    -e '\$aUseDNS no\\nIgnoreUserKnownHosts no'
 		 	fi
 		# -- ftpd ---------------------------------------------------------------------
 		 	if [ -f /etc/vsftpd.conf ]; then
@@ -203,55 +209,55 @@ fncIPv4GetNetmaskBits () {
 		 		touch /etc/vsftpd.banned_emails		# 接続拒否する電子メール・パスワードのリスト
 		 		touch /etc/vsftpd.email_passwords	# 匿名ログイン用の電子メール・パスワードのリスト
 		 		# -------------------------------------------------------------------------
-		 		chmod 0600 /etc/ftpusers               \
-		 				   /etc/vsftpd.conf            \
-		 				   /etc/vsftpd.chroot_list     \
-		 				   /etc/vsftpd.user_list       \
-		 				   /etc/vsftpd.banned_emails   \
+		 		chmod 0600 /etc/ftpusers               \\
+		 				   /etc/vsftpd.conf            \\
+		 				   /etc/vsftpd.chroot_list     \\
+		 				   /etc/vsftpd.user_list       \\
+		 				   /etc/vsftpd.banned_emails   \\
 		 				   /etc/vsftpd.email_passwords
 		 		# -------------------------------------------------------------------------
-		 		sed -i /etc/ftpusers \
+		 		sed -i /etc/ftpusers \\
 		 		    -e 's/root/# &/'
 		 		# -------------------------------------------------------------------------
-		 		sed -i /etc/vsftpd.conf                                           \
-		 		    -e 's/^\(listen\)=.*$/\1=NO/'                                 \
-		 		    -e 's/^\(listen_ipv6\)=.*$/\1=YES/'                           \
-		 		    -e 's/^\(anonymous_enable\)=.*$/\1=NO/'                       \
-		 		    -e 's/^\(local_enable\)=.*$/\1=YES/'                          \
-		 		    -e 's/^#\(write_enable\)=.*$/\1=YES/'                         \
-		 		    -e 's/^#\(local_umask\)=.*$/\1=022/'                          \
-		 		    -e 's/^\(dirmessage_enable\)=.*$/\1=NO/'                      \
-		 		    -e 's/^\(use_localtime\)=.*$/\1=YES/'                         \
-		 		    -e 's/^\(xferlog_enable\)=.*$/\1=YES/'                        \
-		 		    -e 's/^\(connect_from_port_20\)=.*$/\1=YES/'                  \
-		 		    -e 's/^#\(xferlog_std_format\)=.*$/\1=NO/'                    \
-		 		    -e 's/^#\(idle_session_timeout\)=.*$/\1=300/'                 \
-		 		    -e 's/^#\(data_connection_timeout\)=.*$/\1=30/'               \
-		 		    -e 's/^#\(ascii_upload_enable\)=.*$/\1=YES/'                  \
-		 		    -e 's/^#\(ascii_download_enable\)=.*$/\1=YES/'                \
-		 		    -e 's/^#\(chroot_local_user\)=.*$/\1=NO/'                     \
-		 		    -e 's/^#\(chroot_list_enable\)=.*$/\1=NO/'                    \
-		 		    -e "s~^#\(chroot_list_file\)=.*$~\1=/etc/vsftpd.chroot_list~" \
-		 		    -e 's/^#\(ls_recurse_enable\)=.*$/\1=YES/'                    \
-		 		    -e 's/^\(pam_service_name\)=.*$/\1=vsftpd/'                   \
-		 		    -e '$atcp_wrappers=YES'                                       \
-		 		    -e '$auserlist_enable=YES'                                    \
-		 		    -e '$auserlist_deny=YES'                                      \
-		 		    -e "\$auserlist_file=/etc\/vsftpd.user_list"                  \
-		 		    -e '$achmod_enable=YES'                                       \
-		 		    -e '$aforce_dot_files=YES'                                    \
-		 		    -e '$adownload_enable=YES'                                    \
-		 		    -e '$avsftpd_log_file=\/var\/log\/vsftpd\.log'                \
-		 		    -e '$adual_log_enable=NO'                                     \
-		 		    -e '$asyslog_enable=NO'                                       \
-		 		    -e '$alog_ftp_protocol=NO'                                    \
-		 		    -e '$aftp_data_port=20'                                       \
-		 		    -e '$apasv_enable=YES'
+		 		sed -i /etc/vsftpd.conf                                           \\
+		 		    -e 's/^\\(listen\\)=.*\$/\\1=NO/'                                 \\
+		 		    -e 's/^\\(listen_ipv6\\)=.*\$/\\1=YES/'                           \\
+		 		    -e 's/^\\(anonymous_enable\\)=.*\$/\\1=NO/'                       \\
+		 		    -e 's/^\\(local_enable\\)=.*\$/\\1=YES/'                          \\
+		 		    -e 's/^#\\(write_enable\\)=.*\$/\\1=YES/'                         \\
+		 		    -e 's/^#\\(local_umask\\)=.*\$/\\1=022/'                          \\
+		 		    -e 's/^\\(dirmessage_enable\\)=.*\$/\\1=NO/'                      \\
+		 		    -e 's/^\\(use_localtime\\)=.*\$/\\1=YES/'                         \\
+		 		    -e 's/^\\(xferlog_enable\\)=.*\$/\\1=YES/'                        \\
+		 		    -e 's/^\\(connect_from_port_20\\)=.*\$/\\1=YES/'                  \\
+		 		    -e 's/^#\\(xferlog_std_format\\)=.*\$/\\1=NO/'                    \\
+		 		    -e 's/^#\\(idle_session_timeout\\)=.*\$/\\1=300/'                 \\
+		 		    -e 's/^#\\(data_connection_timeout\\)=.*\$/\\1=30/'               \\
+		 		    -e 's/^#\\(ascii_upload_enable\\)=.*\$/\\1=YES/'                  \\
+		 		    -e 's/^#\\(ascii_download_enable\\)=.*\$/\\1=YES/'                \\
+		 		    -e 's/^#\\(chroot_local_user\\)=.*\$/\\1=NO/'                     \\
+		 		    -e 's/^#\\(chroot_list_enable\\)=.*\$/\\1=NO/'                    \\
+		 		    -e "s~^#\\(chroot_list_file\\)=.*\$~\\1=/etc/vsftpd.chroot_list~" \\
+		 		    -e 's/^#\\(ls_recurse_enable\\)=.*\$/\\1=YES/'                    \\
+		 		    -e 's/^\\(pam_service_name\\)=.*\$/\\1=vsftpd/'                   \\
+		 		    -e '\$atcp_wrappers=YES'                                       \\
+		 		    -e '\$auserlist_enable=YES'                                    \\
+		 		    -e '\$auserlist_deny=YES'                                      \\
+		 		    -e "\\\$auserlist_file=/etc\\/vsftpd.user_list"                  \\
+		 		    -e '\$achmod_enable=YES'                                       \\
+		 		    -e '\$aforce_dot_files=YES'                                    \\
+		 		    -e '\$adownload_enable=YES'                                    \\
+		 		    -e '\$avsftpd_log_file=\\/var\\/log\\/vsftpd\\.log'                \\
+		 		    -e '\$adual_log_enable=NO'                                     \\
+		 		    -e '\$asyslog_enable=NO'                                       \\
+		 		    -e '\$alog_ftp_protocol=NO'                                    \\
+		 		    -e '\$aftp_data_port=20'                                       \\
+		 		    -e '\$apasv_enable=YES'
 		 	fi
 		# -- smb ----------------------------------------------------------------------
 		 	if [ -f /etc/samba/smb.conf ]; then
 		 		echo "--- smb.conf ------------------------------------------------------------------"
-		 		testparm -s /etc/samba/smb.conf | sed -e '/global/ ados charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\nidmap config * : range = 1000-10000\n' > smb.conf
+		 		testparm -s /etc/samba/smb.conf | sed -e '/global/ ados charset = CP932\\nclient ipc min protocol = NT1\\nclient min protocol = NT1\\nserver min protocol = NT1\\nidmap config * : range = 1000-10000\\n' > smb.conf
 		 		testparm -s smb.conf > /etc/samba/smb.conf
 		 		rm -f smb.conf
 		 	fi
@@ -259,11 +265,11 @@ fncIPv4GetNetmaskBits () {
 		 	echo "--- root and user's setting ---------------------------------------------------"
 		 	for TARGET in "/etc/skel" "/root"
 		 	do
-		 		pushd ${TARGET} > /dev/null
+		 		pushd \${TARGET} > /dev/null
 		 			echo "---- .bashrc ------------------------------------------------------------------"
 		 			cat <<- '_EOT_' >> .bashrc
 		 				# --- 日本語文字化け対策 ---
-		 				case "${TERM}" in
+		 				case "\\\${TERM}" in
 		 				    "linux" ) export LANG=C;;
 		 				    * )                    ;;
 		 				esac
@@ -275,7 +281,7 @@ fncIPv4GetNetmaskBits () {
 		 			cat <<- '_EOT_' > .vimrc
 		 				set number              " Print the line number in front of each line.
 		 				set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
-		 				set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+		 				set list                " List mode: Show tabs as CTRL-I is displayed, display \\\$ after end of line.
 		 				set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
 		 				set nowrap              " This option changes how text is displayed.
 		 				set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
@@ -283,8 +289,8 @@ fncIPv4GetNetmaskBits () {
 		 				syntax on               " Vim5 and later versions support syntax highlighting.
 		_EOT_
 		 			if [ "`which vim 2> /dev/null`" = "" ]; then
-		 					sed -i .vimrc                    \
-		 					    -e 's/^\(syntax on\)/\" \1/'
+		 					sed -i .vimrc                    \\
+		 					    -e 's/^\\(syntax on\\)/\\" \\1/'
 		 			fi
 		 			echo "---- .curlrc ------------------------------------------------------------------"
 		 			cat <<- '_EOT_' > .curlrc
@@ -353,15 +359,15 @@ _EOT_SH_
 	fi
 # =============================================================================
 	if [ -f "./${CFG_NAME}" ]; then
-		IPV4_DHCP=`awk '/netcfg\/disable_dhcp/    {print $4;}' ./${CFG_NAME}`
+		IPV4_DHCP=`awk '/netcfg\/disable_dhcp/    && $1!="#" {print $4;}' ./${CFG_NAME}`
 		if [ "${IPV4_DHCP,,}" = "true" ]; then
-			IPV4_ADDR=`awk '/netcfg\/get_ipaddress/   {print $4;}' ./${CFG_NAME}`
-			IPV4_MASK=`awk '/netcfg\/get_netmask/     {print $4;}' ./${CFG_NAME}`
-			IPV4_GWAY=`awk '/netcfg\/get_gateway/     {print $4;}' ./${CFG_NAME}`
-			IPV4_NAME=`awk '/netcfg\/get_nameservers/ {print $4;}' ./${CFG_NAME}`
+			IPV4_ADDR=`awk '/netcfg\/get_ipaddress/   && $1!="#" {print $4;}' ./${CFG_NAME}`
+			IPV4_MASK=`awk '/netcfg\/get_netmask/     && $1!="#" {print $4;}' ./${CFG_NAME}`
+			IPV4_GWAY=`awk '/netcfg\/get_gateway/     && $1!="#" {print $4;}' ./${CFG_NAME}`
+			IPV4_NAME=`awk '/netcfg\/get_nameservers/ && $1!="#" {print $4;}' ./${CFG_NAME}`
 			IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
 			# -----------------------------------------------------------------
-			cat <<- _EOT_ >> ./ubuntu-live/fsimg/etc/netplan/99-network-manager-static.yaml.orig
+			cat <<- _EOT_ > ./ubuntu-live/fsimg/etc/netplan/99-network-manager-static.yaml.orig
 				network:
 				  version: 2
 				  renderer: NetworkManager
