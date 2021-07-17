@@ -18,7 +18,7 @@ fncIPv4GetNetmaskBits () {
 
 	for INP_ADDR in "$@"
 	do
-		OUT_ARRY+=`echo ${INP_ADDR} | awk -F. '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
+		OUT_ARRY+=`echo ${INP_ADDR} | awk -F '.' '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
 	done
 	echo "${OUT_ARRY[@]}"
 }
@@ -33,7 +33,7 @@ fncIPv4GetNetmaskBits () {
 		SYS_NOOP=0																# 対象OS=1,それ以外=0
 		# -- netplan ----------------------------------------------------------
 		IPV4_DHCP=`awk '!/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {print $4;}' ${CFG_NAME}`
-		if [ "${IPV4_DHCP,,}" = "true" ]; then
+		if [ "${IPV4_DHCP}" = "true" ]; then
 			ARRY_ETHS=(`nmcli device show | awk '/GENERAL.DEVICE:/&&!/lo/ {print $2;}'`)
 			IPV4_ADDR=`awk '!/#/&&/netcfg\/get_ipaddress/   {print $4;}' ${CFG_NAME}`
 			IPV4_MASK=`awk '!/#/&&/netcfg\/get_netmask/     {print $4;}' ${CFG_NAME}`
