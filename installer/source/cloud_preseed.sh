@@ -185,11 +185,11 @@ _EOT_
 		#   snap:
 		#     commands:
 		#     - snap install chromium
-		#   runcmd:
-		#   - mkdir -p /etc/NetworkManager/conf.d/
-		#   - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
-		#   - systemctl restart network-manager.service
-		#   - nmcli c modify ens160 +ipv4.dns 192.168.1.254
+		    runcmd:
+		    - mkdir -p /etc/NetworkManager/conf.d/
+		    - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+		    - systemctl restart network-manager.service
+		    - nmcli c modify ens160 +ipv4.dns 192.168.1.254
 		    power_state:
 		      delay: "+1"
 		      mode: reboot

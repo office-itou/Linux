@@ -28,7 +28,7 @@ autoinstall:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$J.DpMuSb$TTABQrSkwTNoA/OFoYZSZXEElYO1jMpLoVUJtJBEFM8.5eowoDG9gMhazY/wkhHFm2PobL6jfTec7nmMxvLHv0"
+    password: "$6$57bvF0vhJRdCSBB$sf1CNz8CUm74XIx.m4zWTWYdwcRTbFDwdNJinMduT/VQaFlP2Pn9SuQDGocygeCckaqvJN0v42jDQ7VEZrkAK1"
 # =============================================================================
   locale: ja_JP.UTF-8
   keyboard:
@@ -109,11 +109,11 @@ autoinstall:
 #   snap:
 #     commands:
 #     - snap install chromium
-#   runcmd:
-#   - mkdir -p /etc/NetworkManager/conf.d/
-#   - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
-#   - systemctl restart network-manager.service
-#   - nmcli c modify ens160 +ipv4.dns 192.168.1.254
+    runcmd:
+    - mkdir -p /etc/NetworkManager/conf.d/
+    - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+    - systemctl restart network-manager.service
+    - nmcli c modify ens160 +ipv4.dns 192.168.1.254
     power_state:
       delay: "+1"
       mode: reboot
