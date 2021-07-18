@@ -5,34 +5,46 @@ autoinstall:
   apt:
     geoip: true
     preserve_sources_list: false
+    primary:
+    - arches: [amd64, i386]
+      uri: http://jp.archive.ubuntu.com/ubuntu
 # =============================================================================
   storage:
-    layout:
-      name: lvm
+    config:
+    - {ptable: gpt,              path: /dev/sda, wipe: pvremove,                          preserve: false, name: '',        grub_device: false, type: disk,          id: dev-sda}
+    - {device: dev-sda,          size: 512MB,    wipe: superblock, flag: boot, number: 1, preserve: false,                  grub_device: true,  type: partition,     id: partition-0}
+    - {device: dev-sda,          size: 1GB,      wipe: superblock, flag: '',   number: 2, preserve: false,                                      type: partition,     id: partition-1}
+    - {device: dev-sda,          size: -1,       wipe: superblock, flag: '',   number: 3, preserve: false,                                      type: partition,     id: partition-2}
+    - {devices: [partition-2],                                                            preserve: false, name: vg-0,                          type: lvm_volgroup,  id: lvm_volgroup-0}
+    - {volgroup: lvm_volgroup-0, size: 100%,     wipe: superblock,                        preserve: false, name: lv-0,                          type: lvm_partition, id: lvm_partition-0}
+    - {volume: partition-0,      fstype: fat32,                                           preserve: false,                                      type: format,        id: format-0}
+    - {volume: partition-1,      fstype: ext4,                                            preserve: false,                                      type: format,        id: format-1}
+    - {volume: lvm_partition-0,  fstype: ext4,                                            preserve: false,                                      type: format,        id: format-2}
+    - {device: format-0,         path: /boot/efi,                                                                                               type: mount,         id: mount-0}
+    - {device: format-1,         path: /boot,                                                                                                   type: mount,         id: mount-1}
+    - {device: format-2,         path: /,                                                                                                       type: mount,         id: mount-2}
 # =============================================================================
   identity:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$/.H6NuGg1Yexu.QW$6bEipH7jsFIiFXDb.v30sp3QV/Yx1ZpwyjUgtrjfTCCPVWYy7LhIS.wclxtiN9FMgQSE5ZLFi/Erz64T57Jjv/"
-#   password="master"
+    password: "$6$J.DpMuSb$TTABQrSkwTNoA/OFoYZSZXEElYO1jMpLoVUJtJBEFM8.5eowoDG9gMhazY/wkhHFm2PobL6jfTec7nmMxvLHv0"
 # =============================================================================
-  locale: ja_JP
+  locale: ja_JP.UTF-8
   keyboard:
     layout: jp
 # =============================================================================
   network:
-    network:
-      version: 2
-      ethernets:
-        ens160:
-          dhcp4: false
+    version: 2
+    ethernets:
+      ens160:
+        dhcp4: false
+        addresses:
+        - 192.168.1.1/24
+        gateway4: 192.168.1.254
+        nameservers:
           addresses:
-          - 192.168.1.1/24
-          gateway4: 192.168.1.254
-          nameservers:
-            addresses:
-            - 192.168.1.254
+          - 192.168.1.254
 # =============================================================================
   ssh:
     install-server: true
@@ -55,49 +67,37 @@ autoinstall:
   - curl
   - rsync
   - inxi
-# -----------------------------------------------------------------------------
   - build-essential
   - indent
   - vim
   - bc
-# -----------------------------------------------------------------------------
   - sudo
   - tasksel
-# -----------------------------------------------------------------------------
+  - whois
+  - openssh-server
   - bind9
   - bind9utils
   - dnsutils
-# -----------------------------------------------------------------------------
   - samba
   - smbclient
   - cifs-utils
-# -----------------------------------------------------------------------------
   - isc-dhcp-server
-# -----------------------------------------------------------------------------
   - cups
   - cups-common
-# -----------------------------------------------------------------------------
   - language-pack-gnome-ja
   - language-pack-ja
   - language-pack-ja-base
-# -----------------------------------------------------------------------------
   - ubuntu-server
   - ubuntu-desktop
   - fonts-noto
   - ibus-mozc
   - mozc-utils-gui
-# -----------------------------------------------------------------------------
   - gnome-getting-started-docs-ja
   - gnome-user-docs-ja
-# -----------------------------------------------------------------------------
   - libreoffice-help-ja
   - libreoffice-l10n-ja
-# -----------------------------------------------------------------------------
   - firefox-locale-ja
   - thunderbird-locale-ja
-# -----------------------------------------------------------------------------
-# - open-vm-tools
-# - open-vm-tools-desktop
 # =============================================================================
   user-data:
     ntp:
@@ -109,11 +109,11 @@ autoinstall:
 #   snap:
 #     commands:
 #     - snap install chromium
-    runcmd:
-    - mkdir -p /etc/NetworkManager/conf.d/
-    - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
-    - systemctl restart network-manager.service
-    - nmcli c modify ens160 +ipv4.dns 192.168.1.254
+#   runcmd:
+#   - mkdir -p /etc/NetworkManager/conf.d/
+#   - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+#   - systemctl restart network-manager.service
+#   - nmcli c modify ens160 +ipv4.dns 192.168.1.254
     power_state:
       delay: "+1"
       mode: reboot

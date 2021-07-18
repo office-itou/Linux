@@ -7,7 +7,12 @@
 #	set -n								# 構文エラーのチェック
 #	set -x								# コマンドと引数の展開を表示
 	set -m								# ジョブ制御を有効にする
-	set -eu								# ステータス0以外と未定義変数の参照で終了
+#	set -eu								# ステータス0以外と未定義変数の参照で終了
+
+	if [ "$1" = "" ]; then
+		echo "$0 [preseedファイル名]"
+		exit 1
+	fi
 
 	echo "*******************************************************************************"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0}]"
@@ -41,19 +46,38 @@ fncIPv4GetNetmaskBits () {
 		  version: 1
 _EOT_
 	# --- apt -----------------------------------------------------------------
+	MIRROR_HTTP_MIRROR=`awk '!/#/&&/ mirror\/http\/mirror / {print $4;}' ${PRESEED_CFG}`
+	MIRROR_HTTP_DIRECTORY=`awk '!/#/&&/ mirror\/http\/directory / {print $4;}' ${PRESEED_CFG}| sed -e 's/^\///g'`
+	MIRROR_HTTP_PORTS=`awk '!/#/&&/ mirror\/http\/mirror / {print $4;}' ${PRESEED_CFG}`
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
 		  apt:
 		    geoip: true
 		    preserve_sources_list: false
+		    primary:
+		    - arches: [amd64, i386]
+		      uri: http://${MIRROR_HTTP_MIRROR}/${MIRROR_HTTP_DIRECTORY}
 _EOT_
 	# --- storage -------------------------------------------------------------
 	PARTMAN_AUTO_METHOD=`awk '!/#/&&/ partman-auto\/method / {print $4;}' ${PRESEED_CFG}`
+	PARTMAN_AUTO_DISK=`awk '!/#/&&/ partman-auto\/disk / {print $4;}' ${PRESEED_CFG}`
+	STORAGE_ID=`echo ${PARTMAN_AUTO_DISK} | sed -e 's/^\///g' -e 's/\//-/g'`
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
 		  storage:
-		    layout:
-		      name: ${PARTMAN_AUTO_METHOD}
+		    config:
+		    - {ptable: gpt,              path: ${PARTMAN_AUTO_DISK}, wipe: pvremove,                          preserve: false, name: '',        grub_device: false, type: disk,          id: ${STORAGE_ID}}
+		    - {device: ${STORAGE_ID},          size: 512MB,    wipe: superblock, flag: boot, number: 1, preserve: false,                  grub_device: true,  type: partition,     id: partition-0}
+		    - {device: ${STORAGE_ID},          size: 1GB,      wipe: superblock, flag: '',   number: 2, preserve: false,                                      type: partition,     id: partition-1}
+		    - {device: ${STORAGE_ID},          size: -1,       wipe: superblock, flag: '',   number: 3, preserve: false,                                      type: partition,     id: partition-2}
+		    - {devices: [partition-2],                                                            preserve: false, name: vg-0,                          type: lvm_volgroup,  id: lvm_volgroup-0}
+		    - {volgroup: lvm_volgroup-0, size: 100%,     wipe: superblock,                        preserve: false, name: lv-0,                          type: lvm_partition, id: lvm_partition-0}
+		    - {volume: partition-0,      fstype: fat32,                                           preserve: false,                                      type: format,        id: format-0}
+		    - {volume: partition-1,      fstype: ext4,                                            preserve: false,                                      type: format,        id: format-1}
+		    - {volume: lvm_partition-0,  fstype: ext4,                                            preserve: false,                                      type: format,        id: format-2}
+		    - {device: format-0,         path: /boot/efi,                                                                                               type: mount,         id: mount-0}
+		    - {device: format-1,         path: /boot,                                                                                                   type: mount,         id: mount-1}
+		    - {device: format-2,         path: /,                                                                                                       type: mount,         id: mount-2}
 _EOT_
 	# --- identity ------------------------------------------------------------
 	NETCFG_GET_HOSTNAME=`awk '!/#/&&/ netcfg\/get_hostname / {print $4;}' ${PRESEED_CFG}`
@@ -92,24 +116,23 @@ _EOT_
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
 		  network:
-		    network:
-		      version: 2
-		      ethernets:
-		        ens160:
+		    version: 2
+		    ethernets:
+		      ens160:
 _EOT_
 	if [ "${DISABLE_DHCP}" != "true" ]; then
 		cat <<- _EOT_ >> ${USER_DATA}
-			          dhcp4: true
+			        dhcp4: true
 _EOT_
 	else
 		cat <<- _EOT_ >> ${USER_DATA}
-			          dhcp4: false
+			        dhcp4: false
+			        addresses:
+			        - ${NETCFG_GET_IPADDRESS}/${NETCFG_GET_NETMASK_BITS}
+			        gateway4: ${NETCFG_GET_GATEWAY}
+			        nameservers:
 			          addresses:
-			          - ${NETCFG_GET_IPADDRESS}/${NETCFG_GET_NETMASK_BITS}
-			          gateway4: ${NETCFG_GET_GATEWAY}
-			          nameservers:
-			            addresses:
-			            - ${NETCFG_GET_NAMESERVERS}
+			          - ${NETCFG_GET_NAMESERVERS}
 _EOT_
 	fi
 	# --- ssh -----------------------------------------------------------------
