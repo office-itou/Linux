@@ -7,14 +7,12 @@
 		exit 1
 	fi
 
-#	LIVE_ARCH="amd64"
-#	LIVE_VNUM="20.04.2.0"
-#	LIVE_VNUM="20.10"
 	LIVE_ARCH="$1"
 	LIVE_VNUM="$2"
 	LIVE_FILE="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}.iso"
 	LIVE_DEST="ubuntu-${LIVE_VNUM}-desktop-${LIVE_ARCH}-custom.iso"
 	CFG_NAME="preseed_ubuntu.cfg"
+	SUB_PROG="ubuntu-sub_success_command.sh"
 	VERSION=`echo "${LIVE_VNUM}" | awk -F '.' '{print $1"."$2;}'`
 # == initialize ===============================================================
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -35,7 +33,7 @@ fncIPv4GetNetmaskBits () {
 
 	for INP_ADDR in "$@"
 	do
-		OUT_ARRY+=`echo ${INP_ADDR} | awk -F. '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
+		OUT_ARRY+=`echo ${INP_ADDR} | awk -F '.' '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
 	done
 	echo "${OUT_ARRY[@]}"
 }
@@ -342,10 +340,6 @@ _EOT_SH_
 	popd > /dev/null
 	umount ./ubuntu-live/media
 	# -------------------------------------------------------------------------
-#	if [ ! -f ./ubuntu-live/cdimg/casper/filesystem.squashfs.orig ]; then
-#		mv ./ubuntu-live/cdimg/casper/filesystem.squashfs ./ubuntu-live/filesystem.squashfs
-#	fi
-	# -------------------------------------------------------------------------
 	echo "--- copy media -> fsimg -------------------------------------------------------"
 	mount -r -o loop ./ubuntu-live/cdimg/casper/filesystem.squashfs ./ubuntu-live/media
 	pushd ./ubuntu-live/media > /dev/null
@@ -412,14 +406,14 @@ _EOT_
 	       ./ubuntu-live/fsimg/var/cache/apt/archives/*.deb \
 	       ./ubuntu-live/fsimg/ubuntu-setup.sh
 # =============================================================================
-	mv ./ubuntu-live/cdimg/casper/filesystem.size                    ./ubuntu-live/cdimg/casper/filesystem.size.orig
-	mv ./ubuntu-live/cdimg/casper/filesystem.manifest                ./ubuntu-live/cdimg/casper/filesystem.manifest.orig
-	mv ./ubuntu-live/cdimg/casper/filesystem.manifest-remove         ./ubuntu-live/cdimg/casper/filesystem.manifest-remove.orig
-	mv ./ubuntu-live/cdimg/casper/filesystem.manifest-minimal-remove ./ubuntu-live/cdimg/casper/filesystem.manifest-minimal-remove.orig
+	rm ./ubuntu-live/cdimg/casper/filesystem.size                    \
+	   ./ubuntu-live/cdimg/casper/filesystem.manifest                \
+	   ./ubuntu-live/cdimg/casper/filesystem.manifest-remove         
+#	   ./ubuntu-live/cdimg/casper/filesystem.manifest-minimal-remove 
 	# -------------------------------------------------------------------------
 	touch ./ubuntu-live/cdimg/casper/filesystem.size
 	touch ./ubuntu-live/cdimg/casper/filesystem.manifest
-#	touch ./ubuntu-live/cdimg/casper/filesystem.manifest-remove
+	touch ./ubuntu-live/cdimg/casper/filesystem.manifest-remove
 #	touch ./ubuntu-live/cdimg/casper/filesystem.manifest-minimal-remove
 	# -------------------------------------------------------------------------
 	printf $(LANG=C chroot ./ubuntu-live/fsimg du -sx --block-size=1 | cut -f1) > ./ubuntu-live/cdimg/casper/filesystem.size
@@ -433,11 +427,6 @@ _EOT_
 	    -e '/^ubiquity-frontend-gtk.*$/d'                         \
 	    -e '/^ubiquity-slideshow-ubuntu.*$/d'                     \
 	    -e '/^ubiquity-ubuntu-artwork.*$/d'
-#	    -e '/ubiquity/d'                                          \
-#	    -e '/casper/d'                                            \
-#	    -e '/discover/d'                                          \
-#	    -e '/laptop-detect/d'                                     \
-#	    -e '/os-prober/d'
 # =============================================================================
 	BOOT_MBR=`echo ${LIVE_FILE} | sed 's/iso$/mbr/'`
 	BOOT_EFI=`echo ${LIVE_FILE} | sed 's/iso$/efi/'`
@@ -474,11 +463,18 @@ _EOT_
 			mv txt.cfg isolinux/
 		fi
 		# --- preseed.cfg -----------------------------------------------------
-		if [ -f "../../${CFG_NAME}" ]; then
+		if [ -f "../../${CFG_NAME}" -a -f "../../${SUB_PROG}" ]; then
 			cp --preserve=timestamps "../../${CFG_NAME}" "preseed/preseed.cfg"
-#			sed -i preseed/preseed.cfg                     \
-#			    -e '/pkgsel\/upgrade .*none/ s/#/ /g'      \
-#			    -e '/pkgsel\/upgrade .*-upgrade/ s/^ /#/g'
+			cp --preserve=timestamps "../../${SUB_PROG}" "preseed/"
+			# -----------------------------------------------------------------
+			if [ `echo "${VERSION} < 20.04" | bc` -eq 1 ]; then
+				sed -i "preseed/preseed.cfg"              \
+				    -e 's/ubuntu-desktop-minimal[,| ]*//' \
+				    -e 's/[,| ]*$//'
+			fi
+			# -----------------------------------------------------------------
+			chmod 444 "preseed/preseed.cfg"
+			chmod 555 "preseed/${SUB_PROG}"
 			INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
 			# --- grub.cfg ----------------------------------------------------
 			INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"/ =' boot/grub/grub.cfg | head -n 1`-1))
@@ -486,7 +482,7 @@ _EOT_
 			sed -e 's/\"Install \(Ubuntu of Japanese\)\"/\"Auto Install \1\"/'                \
 			    -e 's/\"\(Ubuntu of Japanese\)\"/\"Auto Install \1\"/'                        \
 			    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                          \
-			    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity/'                    | \
+			    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity noprompt/'           | \
 			sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                              | \
 			sed -e 's/\(set default\)="1"/\1="0"/'                                            \
 			    -e 's/\(set timeout\).*$/\1=5/'                                               \
@@ -499,7 +495,7 @@ _EOT_
 				sed -e 's/^\(label\).*/\1 autoinst/'                                    \
 				    -e 's/\(Install\)/Auto \1/'                                         \
 				    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                \
-				    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity/'          | \
+				    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity noprompt/' | \
 				sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg                        \
 				> txt.cfg
 				mv txt.cfg isolinux/
