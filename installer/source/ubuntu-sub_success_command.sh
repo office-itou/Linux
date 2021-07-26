@@ -62,6 +62,7 @@ _EOT_
 		           sed -z 's/\n//g'                                                 | \
 		           sed -e 's/.* multiselect *//'                                      \
 		               -e 's/[,|\\\\]//g'                                             \
+		               -e 's/\t/ /g'                                                   \
 		               -e 's/  */ /g'                                                 \
 		               -e 's/^ *//'                                                   \
 		               -e 's/\(\S*\)/\1^/g'`
@@ -69,6 +70,7 @@ _EOT_
 		           sed -z 's/\n//g'                                                  | \
 		           sed -e 's/.* string *//'                                            \
 		               -e 's/[,|\\\\]//g'                                              \
+		               -e 's/\t/ /g'                                                   \
 		               -e 's/  */ /g'                                                  \
 		               -e 's/^ *//'`
 		in-target apt -qq    update;
