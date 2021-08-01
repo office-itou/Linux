@@ -79,21 +79,26 @@ fncIPv4GetNetmaskBits () {
 #		      open-vm-tools open-vm-tools-desktop
 	# -------------------------------------------------------------------------
 	if [ -f "./${CFG_NAME}" ]; then
-		LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' ${CFG_NAME} | \
-		           sed -z 's/\n//g'                                                 | \
-		           sed -e 's/.* multiselect *//'                                      \
-		               -e 's/[,|\\\\]//g'                                             \
+		LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' ${CFG_NAME}  | \
+		           sed -z 's/\n//g'                                                  | \
+		           sed -e 's/.* multiselect *//'                                       \
+		               -e 's/[,|\\\\]//g'                                              \
 		               -e 's/\t/ /g'                                                   \
-		               -e 's/  */ /g'                                                 \
-		               -e 's/^ *//'                                                   \
-		               -e 's/\(\S*\)/\1^/g'`
+		               -e 's/  */ /g'                                                  \
+		               -e 's/^ *//'`
 		LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' ${CFG_NAME} | \
 		           sed -z 's/\n//g'                                                  | \
 		           sed -e 's/.* string *//'                                            \
-		               -e 's/\t/ /g'                                                   \
 		               -e 's/[,|\\\\]//g'                                              \
+		               -e 's/\t/ /g'                                                   \
 		               -e 's/  */ /g'                                                  \
 		               -e 's/^ *//'`
+	fi
+	# -------------------------------------------------------------------------
+	if [ `echo "${VERSION} < 20.04" | bc` -eq 1 ]; then
+		LIST_TASK=$(echo ${LIST_TASK} | \
+		            sed -e 's/ubuntu-desktop-minimal.*[,| ]*//' \
+		                -e 's/[,| ]*$//')
 	fi
 #	# -------------------------------------------------------------------------
 #	cat <<- _EOT_SH_ > ./ubuntu-live/fsimg/ubuntu-setup.sh
@@ -347,6 +352,27 @@ fncIPv4GetNetmaskBits () {
 		fi
 	fi
 	# -------------------------------------------------------------------------
+#	WALL_URL="http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/netboot/ubuntu-installer/amd64/boot-screens/splash.png"
+	WALL_URL="http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/boot-screens/splash.png"
+	WALL_FILE="ubuntu_splash.png"
+	if [ ! -f "./${WALL_FILE}" ]; then
+		curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${WALL_FILE}" "${WALL_URL}" || { rm -f "./${WALL_FILE}"; exit 1; }
+	else
+		curl -L -s --connect-timeout 60 --dump-header "header.txt" "${WALL_URL}"
+		WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+		WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+		WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+		FILE_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "./${WALL_FILE}"`
+		FILE_SIZE=`echo ${FILE_INFO} | awk '{print $5;}'`
+		FILE_DATE=`echo ${FILE_INFO} | awk '{print $6;}'`
+		if [ "${WEB_SIZE}" != "${FILE_SIZE}" ] || [ "${WEB_DATE}" != "${FILE_DATE}" ]; then
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${WALL_FILE}" "${WALL_URL}" || { rm -f "./${WALL_FILE}"; exit 1; }
+		fi
+		if [ -f "header.txt" ]; then
+			rm -f "header.txt"
+		fi
+	fi
+	# -------------------------------------------------------------------------
 	echo "--- copy media -> cdimg -------------------------------------------------------"
 	mount -r -o loop ./${LIVE_FILE} ./ubuntu-live/media
 	pushd ./ubuntu-live/media > /dev/null
@@ -396,28 +422,28 @@ fncIPv4GetNetmaskBits () {
 #	       ./ubuntu-live/fsimg/var/cache/apt/archives/*.deb \
 #	       ./ubuntu-live/fsimg/ubuntu-setup.sh
 # =============================================================================
-	rm ./ubuntu-live/cdimg/casper/filesystem.size                    \
-	   ./ubuntu-live/cdimg/casper/filesystem.manifest-remove         
+#	rm ./ubuntu-live/cdimg/casper/filesystem.size                    \
+#	   ./ubuntu-live/cdimg/casper/filesystem.manifest-remove         
 #	   ./ubuntu-live/cdimg/casper/filesystem.manifest                \
 #	   ./ubuntu-live/cdimg/casper/filesystem.manifest-remove         
 #	   ./ubuntu-live/cdimg/casper/filesystem.manifest-minimal-remove 
 	# -------------------------------------------------------------------------
-	touch ./ubuntu-live/cdimg/casper/filesystem.size
+#	touch ./ubuntu-live/cdimg/casper/filesystem.size
 #	touch ./ubuntu-live/cdimg/casper/filesystem.manifest
-	touch ./ubuntu-live/cdimg/casper/filesystem.manifest-remove
+#	touch ./ubuntu-live/cdimg/casper/filesystem.manifest-remove
 #	touch ./ubuntu-live/cdimg/casper/filesystem.manifest-minimal-remove
-	# -------------------------------------------------------------------------
+#	# -------------------------------------------------------------------------
 #	printf $(LANG=C chroot ./ubuntu-live/fsimg du -sx --block-size=1 | cut -f1) > ./ubuntu-live/cdimg/casper/filesystem.size
 #	LANG=C chroot ./ubuntu-live/fsimg dpkg-query -W --showformat='${Package} ${Version}\n' > ./ubuntu-live/cdimg/casper/filesystem.manifest
-	cp -p ./ubuntu-live/cdimg/casper/filesystem.manifest ./ubuntu-live/cdimg/casper/filesystem.manifest-desktop
-	sed -i ./ubuntu-live/cdimg/casper/filesystem.manifest-desktop \
-	    -e '/^casper.*$/d'                                        \
-	    -e '/^lupin-casper.*$/d'                                  \
-	    -e '/^ubiquity.*$/d'                                      \
-	    -e '/^ubiquity-casper.*$/d'                               \
-	    -e '/^ubiquity-frontend-gtk.*$/d'                         \
-	    -e '/^ubiquity-slideshow-ubuntu.*$/d'                     \
-	    -e '/^ubiquity-ubuntu-artwork.*$/d'
+#	cp -p ./ubuntu-live/cdimg/casper/filesystem.manifest ./ubuntu-live/cdimg/casper/filesystem.manifest-desktop
+#	sed -i ./ubuntu-live/cdimg/casper/filesystem.manifest-desktop \
+#	    -e '/^casper.*$/d'                                        \
+#	    -e '/^lupin-casper.*$/d'                                  \
+#	    -e '/^ubiquity.*$/d'                                      \
+#	    -e '/^ubiquity-casper.*$/d'                               \
+#	    -e '/^ubiquity-frontend-gtk.*$/d'                         \
+#	    -e '/^ubiquity-slideshow-ubuntu.*$/d'                     \
+#	    -e '/^ubiquity-ubuntu-artwork.*$/d'
 # =============================================================================
 	LIVE_VOLID=`volname "${LIVE_FILE}"`
 	BOOT_MBR=`echo ${LIVE_FILE} | sed 's/iso$/mbr/'`
@@ -428,63 +454,115 @@ fncIPv4GetNetmaskBits () {
 	dd if=${LIVE_FILE} of=./ubuntu-live/${BOOT_EFI} bs=512 skip=${FILE_SKP} count=${FILE_CNT} status=none
 	# -------------------------------------------------------------------------
 	pushd ./ubuntu-live/cdimg > /dev/null
-		INS_CFG="locale=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp105 keyboard-layouts=jp"
+#		INS_CFG="locale=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp105 keyboard-layouts=jp"
+		INS_CFG="debian-installer/language=ja keyboard-configuration/layoutcode?=jp keyboard-configuration/modelcode?=jp106"
 		# --- grub.cfg --------------------------------------------------------
 		INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-		sed -n '/^menuentry \"Try Ubuntu.*\"\|\"Install Ubuntu\"\|\"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
-		sed -e 's/\"\(Try Ubuntu\)\(.*\)\"/\"\1 of Japanese\2\"/'                                         \
-		    -e 's/\"\(Install Ubuntu\)\"/\"\1 of Japanese\"/'                                             \
-		    -e 's/\"\(Ubuntu\)\"/\"\1 of Japanese\"/'                                                     \
-		    -e "s~\(file\)~${INS_CFG} \1~"                                                              | \
-		sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                                              | \
-		sed -e 's/\(set default\)="1"/\1="0"/'                                                            \
-		    -e 's/\(set timeout\).*$/\1=5/'                                                               \
+		sed -n '/^menuentry \"Try Ubuntu.*\"\|\"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
+		sed -e 's/\"\(Try Ubuntu.*\)\"/\"\1 for Japanese language\"/'                 \
+		    -e 's/\"\(Ubuntu\)\"/\"\1 for Japanese language\"/'                     | \
+		sed -e "s~\(file\)~${INS_CFG} \1~"                                          | \
+		sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                          | \
+		sed -e 's/\(set default\)="1"/\1="0"/'                                        \
+		    -e 's/\(set timeout\).*$/\1=5/'                                           \
 		> grub.cfg
 		mv grub.cfg boot/grub/
 		# --- txt.cfg ---------------------------------------------------------
-		if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then
+		if [ -f isolinux/txt.cfg ]; then
 			INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-			sed -n '/label live$\|live-install$/,/append/p' isolinux/txt.cfg | \
-			sed -e 's/^\(label\) \(.*\)/\1 \2_of_japanese/'                    \
-			    -e 's/\(Install Ubuntu\)/\1 of Japanese/'                      \
-			    -e 's/\(Try Ubuntu\)\(.*$\)/\1 of Japanese\2/'                 \
-			    -e "s~\(file\)~${INS_CFG} \1~"                               | \
-			sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg                 | \
-			sed -e 's/^\(default\) .*$/\1 live_of_japanese/'                   \
+			sed -n '/label live$/,/append/p' isolinux/txt.cfg            | \
+			sed -e 's/^\(label\) \(.*\)/\1 \2_for_japanese_language/'      \
+			    -e 's/\^\(Try Ubuntu.*\)/\1 for \^Japanese language/'    | \
+			sed -e "s~\(file\)~${INS_CFG} \1~"                           | \
+			sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg             | \
+			sed -e 's/^\(default\) .*$/\1 live_for_japanese_language/'     \
 			> txt.cfg
 			mv txt.cfg isolinux/
+			sed -i isolinux/isolinux.cfg                             \
+			    -e '/ui gfxboot bootlogo/d'
+			sed -i isolinux/stdmenu.cfg                              \
+			    -e '/menu vshift .*/d'                               \
+			    -e '/menu rows .*/d'
+#			    -e '/menu background .*/d'                           \
+			sed -i isolinux/menu.cfg                                 \
+			    -e 's/\(menu width\) .*/\1 60/'                      \
+			    -e 's/\(menu margin\) .*/\1 0/'                      \
+			    -e '/\(menu width\) .*/a menu rows 10'               \
+			    -e '/\(menu margin\) .*/a menu vshift 10'
+			cp -p ../../${WALL_FILE} isolinux/splash.png
 		fi
 		# --- preseed.cfg -----------------------------------------------------
 		if [ -f "../../${CFG_NAME}" -a -f "../../${SUB_PROG}" ]; then
 			cp --preserve=timestamps "../../${CFG_NAME}" "preseed/preseed.cfg"
-			cp --preserve=timestamps "../../${SUB_PROG}" "preseed/"
+#			cp --preserve=timestamps "../../${SUB_PROG}" "preseed/"
 			# -----------------------------------------------------------------
-			if [ `echo "${VERSION} < 20.04" | bc` -eq 1 ]; then
-				sed -i "preseed/preseed.cfg"              \
-				    -e 's/ubuntu-desktop-minimal[,| ]*//' \
-				    -e 's/[,| ]*$//'
+			OLD_IFS=${IFS}
+			IFS=$'\n'
+#			LATE_CMD="\      /cdrom/preseed/ubuntu-sub_success_command.sh /cdrom/preseed/preseed.cfg /target;"
+			LATE_CMD="\      in-target sed -i.orig /etc/apt/sources.list -e '/cdrom/ s/^ *\(deb\)/# \1/g'; \\\\\n"
+			LATE_CMD+="      in-target apt -qq    update; \\\\\n"
+			LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
+			LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
+			mount -r -o loop ./casper/filesystem.squashfs ../media
+			if [ -f ../media/usr/lib/systemd/system/connman.service ]; then
+				LATE_CMD+=" \\\\\n      in-target systemctl disable connman.service;"
 			fi
+			IPV4_DHCP=`awk 'BEGIN {result="true";} !/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {if ($4=="true") result="false";} END {print result;}' preseed/preseed.cfg`
+			if [ -d ../media/etc/netplan -a "${IPV4_DHCP}" != "true" ]; then
+				ENET_NICS=`awk '!/#/&&/netcfg\/choose_interface/ {print $4;}' preseed/preseed.cfg`
+				if [ "${ENET_NICS}" = "auto" -o "${ENET_NICS}" = "" ]; then
+					ENET_NIC1=ens160
+				else
+					ENET_NIC1=${ENET_NICS}
+				fi
+				IPV4_ADDR=`awk '!/#/&&/netcfg\/get_ipaddress/    {print $4;}' preseed/preseed.cfg`
+				IPV4_MASK=`awk '!/#/&&/netcfg\/get_netmask/      {print $4;}' preseed/preseed.cfg`
+				IPV4_GWAY=`awk '!/#/&&/netcfg\/get_gateway/      {print $4;}' preseed/preseed.cfg`
+				IPV4_NAME=`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' preseed/preseed.cfg`
+				NWRK_WGRP=`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' preseed/preseed.cfg`
+				IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
+				IPV4_YAML=$(IFS= cat <<- _EOT_ | xxd -ps | sed -z 's/\n//g'
+						network:
+						  version: 2
+						  renderer: NetworkManager
+						  ethernets:
+						    ${ENET_NIC1}:
+						      dhcp4: false
+						      addresses: [ ${IPV4_ADDR}/${IPV4_BITS} ]
+						      gateway4: ${IPV4_GWAY}
+						      nameservers:
+						          search: [ ${NWRK_WGRP} ]
+						          addresses: [ ${IPV4_NAME} ]
+_EOT_
+				)
+				LATE_CMD+=" \\\\\n      in-target bash -c \'echo \"${IPV4_YAML}\" | xxd -r -p > /etc/netplan/99-network-manager-static.yaml\'"
+			fi
+			umount ../media
+			sed -i "preseed/preseed.cfg"                  \
+			    -e '/ubiquity\/success_command/ s/#/ /g'      \
+			    -e "/ubiquity\/success_command/a ${LATE_CMD}"
+			IFS=${OLD_IFS}
 			# -----------------------------------------------------------------
 			chmod 444 "preseed/preseed.cfg"
-			chmod 555 "preseed/${SUB_PROG}"
+#			chmod 555 "preseed/${SUB_PROG}"
 			# -----------------------------------------------------------------
 			INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
 			# --- grub.cfg ----------------------------------------------------
 			INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"/ =' boot/grub/grub.cfg | head -n 1`-1))
-			sed -n '/^menuentry \"Install\|Ubuntu.*of Japanese\"/,/^}/p' boot/grub/grub.cfg | \
-			sed -e 's/\"Install \(Ubuntu of Japanese\)\"/\"Auto Install \1\"/'                \
-			    -e 's/\"\(Ubuntu of Japanese\)\"/\"Auto Install \1\"/'                        \
-			    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                          \
-			    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity noprompt/'           | \
-			sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                              | \
-			sed -e 's/\(set default\)="1"/\1="0"/'                                            \
-			    -e 's/\(set timeout\).*$/\1=5/'                                               \
+			sed -n '/^menuentry \"Install\|Ubuntu\"/,/^}/p' boot/grub/grub.cfg    | \
+			sed -e 's/\"Install \(Ubuntu\)\"/\"Auto Install \1\"/'                  \
+			    -e 's/\"\(Ubuntu\)\"/\"Auto Install \1\"/'                          \
+			    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                \
+			    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity noprompt/' | \
+			sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                    | \
+			sed -e 's/\(set default\)="1"/\1="0"/'                                  \
+			    -e 's/\(set timeout\).*$/\1=5/'                                     \
 			> grub.cfg
 			mv grub.cfg boot/grub/
 			# --- txt.cfg -----------------------------------------------------
-			if [ `echo "${VERSION} < 20.10" | bc` -eq 1 ]; then
+			if [ -f isolinux/txt.cfg ]; then
 				INS_ROW=$((`sed -n '/^label live$/ =' isolinux/txt.cfg | head -n 1`-1))
-				sed -n '/label live-install_of_japanese$/,/append/p' isolinux/txt.cfg | \
+				sed -n '/label live-install$/,/append/p' isolinux/txt.cfg             | \
 				sed -e 's/^\(label\).*/\1 autoinst/'                                    \
 				    -e 's/\(Install\)/Auto \1/'                                         \
 				    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                \
@@ -530,7 +608,7 @@ fncIPv4GetNetmaskBits () {
 		    .
 	popd > /dev/null
 	rm -rf ./ubuntu-live
-	ls -lht ubuntu*
+	ls -lthLgG ubuntu*
 	echo メディアは ${FSIMG_SIZE} 以上のメモリーを搭載する PC で使用して下さい。
 # =============================================================================
 	echo "*******************************************************************************"
