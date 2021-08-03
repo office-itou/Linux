@@ -29,6 +29,7 @@
 ##	2021/06/28 000.0000 J.Itou         Debian 11 対応
 ##	2021/07/02 000.0000 J.Itou         memo修正
 ##	2021/07/07 000.0000 J.Itou         cpio 表示出力抑制追加
+##	2021/08/02 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -52,8 +53,8 @@
 	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                    preseed_debian.cfg   2017-06-17 2022-06-xx oldstable     " \
 	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                             preseed_debian.cfg   2019-07-06 20xx-xx-xx stable        " \
 	    "debian https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg   20xx-xx-xx 20xx-xx-xx testing       " \
-	    "centos https://ftp.tsukuba.wide.ad.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-boot.iso                                     kickstart_centos.cfg 2021-06-03 2021-12-31 RHEL_8.4      " \
-	    "centos https://ftp.tsukuba.wide.ad.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-boot.iso                     kickstart_centos.cfg 20xx-xx-xx 2024-05-31 RHEL_x.x      " \
+	    "centos http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-boot.iso                                                kickstart_centos.cfg 2021-06-03 2021-12-31 RHEL_8.4      " \
+	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-boot.iso                                kickstart_centos.cfg 20xx-xx-xx 2024-05-31 RHEL_x.x      " \
 	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso    kickstart_fedora.cfg 2021-04-27 20xx-xx-xx kernel_5.11   " \
 	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                    yast_opensuse153.xml 2021-06-02 20xx-xx-xx kernel_5.3.18 " \
 	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml  20xx-xx-xx 20xx-xx-xx kernel_x.x    " \
@@ -793,7 +794,7 @@ fncRemaster () {
 		fi
 	done
 	# -------------------------------------------------------------------------
-	ls -alLt "${WORK_DIRS}/"*.iso
+	ls -lthLgG "${WORK_DIRS}/"*.iso
 # -----------------------------------------------------------------------------
 	echo "*******************************************************************************"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"

@@ -72,6 +72,7 @@
 ##	2021/03/16 000.0000 J.Itou         処理見直し(google chrome導入等)
 ##	2021/06/23 000.0000 J.Itou         処理見直し(Rocky Linux 8.4対応含む)
 ##	2021/07/09 000.0000 J.Itou         処理追加(関数追加)
+##	2021/08/03 000.0000 J.Itou         処理見直し(NICの順番をstatic優先に)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -435,7 +436,21 @@ fncInitialize () {
 	# ･････････････････････････････････････････････････････････････････････････
 #	NIC_ARRY=(`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`)	# NICデバイス名
 #	NIC_ARRY=(`LANG=C ip -4 -o a show scope global noprefixroute | awk -F '[: ]*' '{print $2;}'`)
-	NIC_ARRY=(`LANG=C ip -4 -o a show scope global | awk -F '[: ]*' '{print $2;}'`)
+	DEV_ARRY=(`LANG=C ip -4 -o a show scope global | awk -F '[: ]*' '{print $2;}'`)
+	for DEV_NAME in ${DEV_ARRY[@]}
+	do
+		WRK_DHCP=`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`
+		if [ "${WRK_DHCP}" != "auto" ]; then
+			NIC_ARRY+=(`echo ${DEV_NAME}`)
+		fi
+	done
+	for DEV_NAME in ${DEV_ARRY[@]}
+	do
+		WRK_DHCP=`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`
+		if [ "${WRK_DHCP}" = "auto" ]; then
+			NIC_ARRY+=(`echo ${DEV_NAME}`)
+		fi
+	done
 	for DEV_NAME in ${NIC_ARRY[@]}
 	do
 		IP4_ARRY+=(`fncGetIPaddr 4 "global primary" "${DEV_NAME}"`)				# IPv4:IPアドレス/サブネットマスク(bit)
@@ -446,7 +461,8 @@ fncInitialize () {
 		IP4_DNSA+=(`fncGetNM "IP4.DNS" "${DEV_NAME}" "${CON_UUID}"`)			# IPv4:DNSアドレス
 		IP6_DNSA+=(`fncGetNM "IP6.DNS" "${DEV_NAME}" "${CON_UUID}"`)			# IPv6:DNSアドレス
 	done
-	IP4_GATE=`ip -4 r show table all | awk '/default/ {print $3;}'`				# IPv4:デフォルトゲートウェイ
+																				# IPv4:デフォルトゲートウェイ
+	IP4_GATE=`ip -4 r show table all | awk '/default/ {print $3;}' | uniq | sed -z 's/\n/ /g'`
 	# ･････････････････････････････････････････････････････････････････････････
 	IP4_ADDR=("${IP4_ARRY[@]%/*}")												# IPv4:IPアドレス
 	IP4_BITS=("${IP4_ARRY[@]#*/}")												# IPv4:サブネットマスク(bit)
