@@ -7,7 +7,7 @@ autoinstall:
     preserve_sources_list: false
     primary:
     - arches: [amd64, i386]
-      uri: http://jp.archive.ubuntu.com/ubuntu
+      uri: http://jp.archive.ubuntu.com/ubuntu/
 # =============================================================================
   storage:
     config:
@@ -28,7 +28,7 @@ autoinstall:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$57bvF0vhJRdCSBB$sf1CNz8CUm74XIx.m4zWTWYdwcRTbFDwdNJinMduT/VQaFlP2Pn9SuQDGocygeCckaqvJN0v42jDQ7VEZrkAK1"
+    password: "$6$tlxIHO93of$DEZA75qFjEevRHlw0/JsRTyVoc/MotBKflP6iPZjOVJ.IJKNf6FKaqcdh8j9EobOVLZyvn8gE5V.eXR.A4J6V1"
 # =============================================================================
   locale: ja_JP.UTF-8
   keyboard:
@@ -59,12 +59,16 @@ autoinstall:
   - print-server^
   - samba-server^
   - ubuntu-desktop^
+  - ubuntu-desktop-default-languages^
   - ubuntu-desktop-minimal^
+  - ubuntu-desktop-minimal-default-languages^
 # -----------------------------------------------------------------------------
   - network-manager
+  - network-manager-gnome
   - chrony
   - clamav
   - curl
+  - wget
   - rsync
   - inxi
   - build-essential

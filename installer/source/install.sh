@@ -73,6 +73,7 @@
 ##	2021/06/23 000.0000 J.Itou         処理見直し(Rocky Linux 8.4対応含む)
 ##	2021/07/09 000.0000 J.Itou         処理追加(関数追加)
 ##	2021/08/03 000.0000 J.Itou         処理見直し(NICの順番をstatic優先に)
+##	2021/08/06 000.0000 J.Itou         処理見直し(不具合修正等を含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -114,7 +115,7 @@ fncProc () {
 		if [ "`which service 2> /dev/null`" != ""                              ] && \
 		   [ "`find ${DIR_SYSD}/system/ -name \"${INP_NAME}.*\" -print`" != "" ]; then
 			service ${INP_NAME} ${INP_COMD}; fncPause $?
-		else
+		elif [ -f /etc/init.d/${INP_NAME} ]; then
 			/etc/init.d/${INP_NAME} ${INP_COMD}
 		fi
 	else
@@ -130,8 +131,20 @@ fncProc () {
 				"enable"  )	chkconfig -a ${INP_NAME}; fncPause $?;;
 				"disable" )	chkconfig -d ${INP_NAME}; fncPause $?;;
 			esac
-		else
-			/etc/init.d/${INP_NAME} ${INP_COMD}
+		elif [ -d /etc/init/ ]; then
+			case "${INP_COMD}" in
+				"enable" )
+					if [ -f /etc/init/${INP_NAME}.override ]; then
+						rm -f /etc/init/${INP_NAME}.override
+					fi
+					;;
+				"disable" )
+					echo manual > /etc/init/${INP_NAME}.override
+					;;
+				* )	;;
+			esac
+#		elif [ -f /etc/init.d/${INP_NAME} ]; then
+#			/etc/init.d/${INP_NAME} ${INP_COMD}
 		fi
 	fi
 }
@@ -365,16 +378,20 @@ fncInitialize () {
 	SYS_VNUM=`echo ${SYS_VRID:--1} | bc`										#   〃          (取得できない場合は-1)
 	SYS_NOOP=0																	# 対象OS=1,それ以外=0
 	if [ "${SYS_CODE}" = "" ]; then
-		case "${SYS_NAME}" in
-			"debian"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
-			"ubuntu"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
-			"centos"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/centos-release`;;
-			"fedora"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/fedora-release`;;
-			"rocky"               ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/rocky-release` ;;
-			"opensuse-leap"       ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
-			"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
-			*                     )                                                                                   ;;
-		esac
+		if [ -f /etc/lsb-release ]; then
+			SYS_CODE=`awk -F '=' '$1=="DISTRIB_CODENAME" {gsub("\"",""); print $2;}' /etc/lsb-release`	# コード名
+		else
+			case "${SYS_NAME}" in
+				"debian"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
+				"ubuntu"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
+				"centos"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/centos-release`;;
+				"fedora"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/fedora-release`;;
+				"rocky"               ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/rocky-release` ;;
+				"opensuse-leap"       ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
+				"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
+				*                     )                                                                                   ;;
+			esac
+		fi
 	fi
 	if [ "${SYS_NAME}" = "debian" ] && [ "${SYS_CODE}" = "sid" -o `echo "${SYS_VNUM} ==  7" | bc` -ne 0 ]; then
 		SYS_NOOP=1
@@ -420,7 +437,11 @@ fncInitialize () {
 	if [ "`which nmcli 2> /dev/null`" != "" ]; then
 		if [ "`which systemctl 2> /dev/null`" != "" ]; then
 			ACT_NMAN="`systemctl -q status NetworkManager | awk '/Active:/ {print $2;}'`"
-		else
+		elif [ "`which status 2> /dev/null`" != "" ]; then
+			if [ "`status network-manager | sed -n '/^.*running.*$/p'`" != "" ]; then
+				ACT_NMAN="active"
+			fi
+		elif [ -f /etc/init.d/network-manager ]; then
 			if [ "`/etc/init.d/network-manager status | sed -n '/^.*is running.*$/p'`" != "" ]; then
 				ACT_NMAN="active"
 			fi
@@ -462,7 +483,7 @@ fncInitialize () {
 		IP6_DNSA+=(`fncGetNM "IP6.DNS" "${DEV_NAME}" "${CON_UUID}"`)			# IPv6:DNSアドレス
 	done
 																				# IPv4:デフォルトゲートウェイ
-	IP4_GATE=`ip -4 r show table all | awk '/default/ {print $3;}' | uniq | sed -z 's/\n/ /g'`
+	IP4_GATE=`ip -4 r show table all | awk 'BEGIN{ORS = ""} /default/&&!a[$3]++ {print $3 " ";}'`
 	# ･････････････････････････････････････････････････････････････････････････
 	IP4_ADDR=("${IP4_ARRY[@]%/*}")												# IPv4:IPアドレス
 	IP4_BITS=("${IP4_ARRY[@]#*/}")												# IPv4:サブネットマスク(bit)
@@ -974,7 +995,9 @@ _EOT_
 	fi
 	#--------------------------------------------------------------------------
 	if [ "${SYS_NAME}" = "ubuntu" ]; then										# Ubuntuの判定
-		fncProc systemd-resolved disable										# nameserver 127.0.0.53 の無効化
+		if [ "`awk '/nameserver 127.0.0.53/ {print $0;}' /etc/resolv.conf`" != "" ]; then
+			fncProc systemd-resolved disable									# nameserver 127.0.0.53 の無効化
+		fi
 	fi
 	# SELinux -----------------------------------------------------------------
 	echo "--- SELinux changed -----------------------------------------------------------"

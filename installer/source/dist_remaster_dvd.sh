@@ -32,6 +32,8 @@
 ##	2021/07/13 000.0000 J.Itou         ubuntu 無人インストール定義ファイルの処理変更
 ##	2021/07/17 000.0000 J.Itou         処理見直し
 ##	2021/08/02 000.0000 J.Itou         ubuntu desktop版対応
+##	2021/08/04 000.0000 J.Itou         debian-bullseye-DI-rc3-amd64-DVD-1.iso追加
+##	2021/08/06 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -55,6 +57,7 @@
 	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                 preseed_debian.cfg                          2017-06-17 2022-xx-xx oldstable     " \
 	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                          preseed_debian.cfg                          2019-07-06 20xx-xx-xx stable        " \
 	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
+	    "debian http://cdimage.debian.org/cdimage/bullseye_di_rc3/amd64/iso-dvd/debian-bullseye-DI-rc3-amd64-DVD-1.iso                   preseed_debian.cfg                          2021-08-xx 20xx-xx-xx testing       " \
 	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus  " \
 	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                        preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
 	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                   preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2025-04-xx Focal_Fossa   " \
@@ -163,6 +166,7 @@ fncRemaster () {
 	local CFG_NAME="${CODE_NAME[3]}"
 	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/${CFG_NAME}"
 	# -------------------------------------------------------------------------
+	umount -q ${WORK_DIRS}/${CODE_NAME[1]}/mnt > /dev/null 2>&1
 	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
 	mkdir -p ${WORK_DIRS}/${CODE_NAME[1]}/image ${WORK_DIRS}/${CODE_NAME[1]}/decomp ${WORK_DIRS}/${CODE_NAME[1]}/mnt
 	# --- remaster ------------------------------------------------------------
@@ -323,30 +327,35 @@ fncRemaster () {
 			if [ ! -f ${EFI_IMAG} ]; then
 				ISO_SKIPS=`fdisk -l "../../${DVD_NAME}.iso" | awk '/EFI/ {print $2;}'`
 				ISO_COUNT=`fdisk -l "../../${DVD_NAME}.iso" | awk '/EFI/ {print $4;}'`
-				dd if="../../${DVD_NAME}.iso" of=${EFI_IMAG} bs=512 skip=${ISO_SKIPS} count=${ISO_COUNT}
+				dd if="../../${DVD_NAME}.iso" of=${EFI_IMAG} bs=512 skip=${ISO_SKIPS} count=${ISO_COUNT} status=none
 			fi
 			# --- mrb:txt.cfg / efi:grub.cfg ----------------------------------
 			case "${CODE_NAME[0]}" in
 				"debian" )	# ･････････････････････････････････････････････････
 					case "${CODE_NAME[1]}" in
-						debian-7.* )
+						debian-7.*        | \
+						debian-8.*        )
 							sed -i "preseed/preseed.cfg"                                                                               \
 							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/hostname\).*$/\1 string archive.debian.org/'                     \
 							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/directory\).*$/\1 string \/debian-archive\/debian/'              \
-							    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'                       \
-							    -e 's/\(^[ \t]*d-i[ \t]*netcfg\/get_nameservers\)[ \t]*[A-Za-z]*[ \t]*\(.*\)$/\1 string 127.0.0.1 \2/'
+							    -e 's/\(^[ \t]*d-i[ \t]*mirror/http/mirror select\).*$/\1 select archive.debian.org/'                  \
+							    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'
+#							    -e 's/\(^[ \t]*d-i[ \t]*netcfg\/get_nameservers\)[ \t]*[A-Za-z]*[ \t]*\(.*\)$/\1 string 127.0.0.1 \2/'
 							;;
-						* )	;;
-					esac
-					case "${CODE_NAME[1]}" in
-						debian-11.*      | \
-						debian-testing-* )
+						debian-9.*        )
+							;;
+						debian-10.*       )
+							;;
+						debian-11.*       | \
+						debian-bullseye-* | \
+						debian-testing-*  )
 							sed -i "preseed/preseed.cfg"                                                 \
 							    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'             \
 							    -e 's/#[ \t]\([ \t]*in-target systemctl disable connman.service\)/  \1/'
 							;;
 						* )	;;
 					esac
+					# ---------------------------------------------------------
 					INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
 					# --- txt.cfg ---------------------------------------------
 					sed -i isolinux/isolinux.cfg     \
@@ -387,6 +396,9 @@ fncRemaster () {
 					sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg               | \
 					sed -e 's/\(set default\)="1"/\1="0"/'                             \
 					    -e '1i set timeout=5'                                          \
+					    -e 's/\(set theme\)/# \1/g'                                    \
+					    -e 's/\(set gfxmode\)/# \1/g'                                  \
+					    -e 's/ vga=[0-9]*//g'                                          \
 					> grub.cfg
 					mv grub.cfg boot/grub/
 					# ---------------------------------------------------------
@@ -417,6 +429,108 @@ fncRemaster () {
 						* )	;;
 					esac
 					case "${CODE_NAME[1]}" in
+						*live* )							# --- nocloud -----
+							case "${CODE_NAME[1]}" in
+								*20.04* )
+									INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
+									# --- txt.cfg -------------------------------------
+									INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+									INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^.*menu\).*$/\1 default/'`"
+									sed -n '/label live$/,/append/p' isolinux/txt.cfg | \
+									sed -e 's/^\(label\) live/\1 autoinst/'             \
+									    -e 's/\(Install\)/Auto \1/'                     \
+									    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"            \
+									    -e 's/\"//g'                                  | \
+									sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg    \
+									> txt.cfg
+									mv txt.cfg isolinux/
+									# --- grub.cfg ------------------------------------
+									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+									sed -n '/^menuentry \"Install.*Server\"/,/^}/p' boot/grub/grub.cfg | \
+									sed -n '0,/\}/p'                                                   | \
+									sed -e 's/\(Install\)/Auto \1/'                                      \
+									    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                          | \
+									sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                 | \
+									sed -e 's/\(set default\)="1"/\1="0"/'                               \
+									    -e 's/\(set timeout\).*$/\1=5/'                                  \
+									> grub.cfg
+									mv grub.cfg boot/grub/
+									;;
+								*20.10* | \
+								*21.04* )
+									INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
+									# --- txt.cfg -------------------------------------
+									# --- grub.cfg ------------------------------------
+									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+									sed -n '/^menuentry \"Ubuntu Server\"/,/^}/p' boot/grub/grub.cfg | \
+									sed -e 's/\(Ubuntu Server\)/Auto Install/'                         \
+									    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                        | \
+									sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg               | \
+									sed -e 's/\(set default\)="1"/\1="0"/'                             \
+									    -e 's/\(set timeout\).*$/\1=5/'                                \
+									> grub.cfg
+									mv grub.cfg boot/grub/
+									;;
+								* )	;;
+							esac
+							# -------------------------------------------------
+							chmod 444 "nocloud/meta-data"
+							chmod 444 "nocloud/user-data"
+							;;
+						*server* )							# --- preseed.cfg -
+							# === preseed =====================================
+							INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
+							# --- grub.cfg ------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry "Install Ubuntu Server/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry \"Install Ubuntu Server\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -n '0,/\}/p'                                                         | \
+							sed -e 's/\(Install\)/Auto \1/'                                            \
+							    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                 | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                       | \
+							sed -e '1i set timeout=5'                                                  \
+							    -e 's/\(set default\)="1"/\1="0"/'                                     \
+							    -e 's/\(set timeout\).*$/\1=5/'                                        \
+							    -e 's/\(set gfxmode\)/# \1/g'                                          \
+							    -e 's/ vga=[0-9]*//g'                                                  \
+							> grub.cfg
+							mv grub.cfg boot/grub/
+							# --- txt.cfg -------------------------------------
+							if [ -f isolinux/txt.cfg ]; then
+								INS_ROW=$((`sed -n '/^label install$/ =' isolinux/txt.cfg | head -n 1`-1))
+								sed -n '/label install$/,/append/p' isolinux/txt.cfg | \
+								sed -e 's/^\(label\).*/\1 autoinst/'                   \
+								    -e 's/\(Install\)/Auto \1/'                        \
+								    -e "s/\(file\).*seed/\1=${INS_CFG}/"             | \
+								sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg     | \
+								sed -e 's/\(default\) .*/\1 autoinst/'                 \
+								    -e 's/\(set gfxmode\)/# \1/g'                      \
+								    -e 's/ vga=[0-9]*//g'                              \
+								> txt.cfg
+								mv txt.cfg isolinux/
+								# --- isolinux.cfg ----------------------------
+								sed -i isolinux/isolinux.cfg         \
+								    -e 's/\(timeout\) .*/\1 50/'     \
+								    -e '/ui gfxboot bootlogo/d'
+								# --- menu.cfg --------------------------------
+								sed -i isolinux/menu.cfg             \
+								    -e '/menu hshift .*/d'           \
+								    -e '/menu width .*/d'            \
+								    -e '/menu margin .*/d'
+								# --- stdmenu.cfg -----------------------------
+								sed -i isolinux/stdmenu.cfg          \
+								    -e 's/\(menu vshift\) .*/\1 9/'  \
+								    -e '/menu rows .*/d'             \
+								    -e '/menu helpmsgrow .*/d'       \
+								    -e '/menu cmdlinerow .*/d'       \
+								    -e '/menu timeoutrow .*/d'       \
+								    -e '/menu tabmsgrow .*/d'
+								# --- splash.png ------------------------------
+								cp -p ../../../${WALL_FILE} isolinux/splash.png
+								chmod 444 "isolinux/splash.png"
+							fi
+							# -------------------------------------------------
+							chmod 444 "preseed/preseed.cfg"
+							;;
 						*desktop* )							# --- preseed.cfg -
 							# === 日本語化 ====================================
 							INS_CFG="debian-installer/language=ja keyboard-configuration/layoutcode?=jp keyboard-configuration/modelcode?=jp106"
@@ -443,19 +557,22 @@ fncRemaster () {
 								> txt.cfg
 								mv txt.cfg isolinux/
 								# --- isolinux.cfg ----------------------------
-								sed -i isolinux/isolinux.cfg                             \
+								sed -i isolinux/isolinux.cfg         \
+								    -e 's/\(timeout\) .*/\1 50/'     \
 								    -e '/ui gfxboot bootlogo/d'
-								# --- stdmenu.cfg -----------------------------
-								sed -i isolinux/stdmenu.cfg                              \
-								    -e '/menu vshift .*/d'                               \
-								    -e '/menu rows .*/d'
-#								    -e '/menu background .*/d'                           \
 								# --- menu.cfg --------------------------------
-								sed -i isolinux/menu.cfg                                 \
-								    -e 's/\(menu width\) .*/\1 60/'                      \
-								    -e 's/\(menu margin\) .*/\1 0/'                      \
-								    -e '/\(menu width\) .*/a menu rows 10'               \
-								    -e '/\(menu margin\) .*/a menu vshift 10'
+								sed -i isolinux/menu.cfg             \
+								    -e '/menu hshift .*/d'           \
+								    -e '/menu width .*/d'            \
+								    -e '/menu margin .*/d'
+								# --- stdmenu.cfg -----------------------------
+								sed -i isolinux/stdmenu.cfg          \
+								    -e 's/\(menu vshift\) .*/\1 9/'  \
+								    -e '/menu rows .*/d'             \
+								    -e '/menu helpmsgrow .*/d'       \
+								    -e '/menu cmdlinerow .*/d'       \
+								    -e '/menu timeoutrow .*/d'       \
+								    -e '/menu tabmsgrow .*/d'
 								# --- splash.png ------------------------------
 								cp -p ../../../${WALL_FILE} isolinux/splash.png
 								chmod 444 "isolinux/splash.png"
@@ -472,6 +589,8 @@ fncRemaster () {
 							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                    | \
 							sed -e 's/\(set default\)="1"/\1="0"/'                                  \
 							    -e 's/\(set timeout\).*$/\1=5/'                                     \
+							    -e 's/\(set gfxmode\)/# \1/g'                                       \
+							    -e 's/ vga=[0-9]*//g'                                               \
 							> grub.cfg
 							mv grub.cfg boot/grub/
 							# --- txt.cfg -------------------------------------
@@ -530,7 +649,7 @@ fncRemaster () {
 								IPV4_NAME=`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' preseed/preseed.cfg`
 								NWRK_WGRP=`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' preseed/preseed.cfg`
 								IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
-								if [ -d ../mnt/etc/netplan -a "${IPV4_DHCP}" != "true" ]; then
+								if [ -d ../mnt/etc/netplan ]; then
 									IPV4_YAML=$(IFS= cat <<- _EOT_ | xxd -ps | sed -z 's/\n//g'
 										network:
 										  version: 2
@@ -549,16 +668,17 @@ _EOT_
 								else
 									IPV4_NWRK=$(IFS= cat <<- _EOT_ | xxd -ps | sed -z 's/\n//g'
 										
-										auto ${ENET_NIC1}
+										allow-hotplug ${ENET_NIC1}
 										iface ${ENET_NIC1} inet static
-										address ${IPV4_ADDR}
-										netmask ${IPV4_MASK}
-										gateway ${IPV4_GWAY}
-										dns-nameservers ${IPV4_NAME}
+										    address ${IPV4_ADDR}
+										    netmask ${IPV4_MASK}
+										    gateway ${IPV4_GWAY}
+										    dns-nameservers ${IPV4_NAME}
+										    dns-search ${NWRK_WGRP}
 _EOT_
 									)
+									LATE_CMD+=" \\\\\n      in-target bash -c \'echo \"${IPV4_NWRK}\" | xxd -r -p >> /etc/network/interfaces\'"
 								fi
-								LATE_CMD+=" \\\\\n      in-target bash -c \'echo \"${IPV4_NWRK}\" | xxd -r -p >> /etc/network/interfaces\'"
 							fi
 							umount ../mnt
 							# --- success_command 変更 ------------------------
@@ -569,89 +689,6 @@ _EOT_
 							# -------------------------------------------------
 							chmod 444 "preseed/preseed.cfg"
 #							chmod 555 "preseed/${SUB_PROG}"
-							;;
-						*live* )							# --- nocloud -----
-							case "${CODE_NAME[1]}" in
-								*20.04* )
-									INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
-									# --- txt.cfg -------------------------------------
-									INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-									INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^.*menu\).*$/\1 default/'`"
-									sed -n '/label live$/,/append/p' isolinux/txt.cfg | \
-									sed -e 's/^\(label\) live/\1 autoinst/'             \
-									    -e 's/\(Install\)/Auto \1/'                     \
-									    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"            \
-									    -e 's/\"//g'                                  | \
-									sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg    \
-									> txt.cfg
-									mv txt.cfg isolinux/
-									# --- grub.cfg ------------------------------------
-									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-									sed -n '/^menuentry \"Install.*Server\"/,/^}/p' boot/grub/grub.cfg | \
-									sed -n '0,/\}/p'                                                   | \
-									sed -e 's/\(Install\)/Auto \1/'                                      \
-									    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                          | \
-									sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                 | \
-									sed -e 's/\(set default\)="1"/\1="0"/'                               \
-									    -e 's/\(set timeout\).*$/\1=5/'                                  \
-									> grub.cfg
-									mv grub.cfg boot/grub/
-									;;
-								*20.10* | \
-								*21.04* )
-									INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
-									# --- txt.cfg -------------------------------------
-									# --- grub.cfg ------------------------------------
-									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-									sed -n '/^menuentry \"Ubuntu Server\"/,/^}/p' boot/grub/grub.cfg | \
-									sed -e 's/\(Ubuntu Server\)/Auto Install/'                         \
-									    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                        | \
-									sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg               | \
-									sed -e 's/\(set default\)="1"/\1="0"/'                             \
-									    -e 's/\(set timeout\).*$/\1=5/'                                \
-									> grub.cfg
-									mv grub.cfg boot/grub/
-									;;
-								* )	;;
-							esac
-							# -------------------------------------------------
-							chmod 444 "nocloud/meta-data"
-							chmod 444 "nocloud/user-data"
-							;;
-						*server* )							# --- preseed.cfg -
-							INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
-							# --- txt.cfg -------------------------------------
-							INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-							INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^[ \t]*menu\).*$/\1 default/g' | head -n 1`"
-							sed -n '/label install/,/append/p' isolinux/txt.cfg | \
-							sed -e 's/^\(label\) install/\1 autoinst/'            \
-							    -e 's/\(Install\)/Auto \1/'                       \
-							    -e "s/\(file\).*seed/\1=${INS_CFG}/"              \
-							    -e "/menu label/a  ${INS_STR}"                  | \
-							sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg      \
-							> txt.cfg
-							mv txt.cfg isolinux/
-							# --- grub.cfg ------------------------------------
-							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-							sed -n '/^menuentry \"Install Ubuntu Server\"/,/^}/p' boot/grub/grub.cfg | \
-							sed -n '0,/\}/p'                                                         | \
-							sed -e 's/\(Install\)/Auto \1/'                                            \
-							    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                 | \
-							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                       | \
-							sed -e 's/\(set default\)="1"/\1="0"/'                                     \
-							    -e 's/\(set timeout\).*$/\1=5/'                                        \
-							> grub.cfg
-							if [ "`sed -n '/set default/p' grub.cfg`" = "" ]; then
-								sed -i grub.cfg           \
-								    -e '1i set default=0'
-							fi
-							if [ "`sed -n '/set timeout/p' grub.cfg`" = "" ]; then
-								sed -i grub.cfg           \
-								    -e '1i set timeout=5'
-							fi
-							mv grub.cfg boot/grub/
-							# -------------------------------------------------
-							chmod 444 "preseed/preseed.cfg"
 							;;
 						* )	;;
 					esac

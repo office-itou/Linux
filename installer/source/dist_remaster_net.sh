@@ -29,7 +29,7 @@
 ##	2021/06/28 000.0000 J.Itou         Debian 11 対応
 ##	2021/07/02 000.0000 J.Itou         memo修正
 ##	2021/07/07 000.0000 J.Itou         cpio 表示出力抑制追加
-##	2021/08/02 000.0000 J.Itou         処理見直し
+##	2021/08/06 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -132,6 +132,7 @@ fncRemaster () {
 	local CFG_NAME="${CODE_NAME[3]}"
 	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/${CFG_NAME}"
 	# -------------------------------------------------------------------------
+	umount -q ${WORK_DIRS}/${CODE_NAME[1]}/mnt > /dev/null 2>&1
 	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
 	mkdir -p ${WORK_DIRS}/${CODE_NAME[1]}/image ${WORK_DIRS}/${CODE_NAME[1]}/decomp ${WORK_DIRS}/${CODE_NAME[1]}/mnt
 	# --- remaster ------------------------------------------------------------
@@ -242,22 +243,25 @@ fncRemaster () {
 			if [ ! -f ${EFI_IMAG} ]; then
 				ISO_SKIPS=`fdisk -l "../../${DVD_NAME}.iso" | awk '/EFI/ {print $2;}'`
 				ISO_COUNT=`fdisk -l "../../${DVD_NAME}.iso" | awk '/EFI/ {print $4;}'`
-				dd if="../../${DVD_NAME}.iso" of=${EFI_IMAG} bs=512 skip=${ISO_SKIPS} count=${ISO_COUNT}
+				dd if="../../${DVD_NAME}.iso" of=${EFI_IMAG} bs=512 skip=${ISO_SKIPS} count=${ISO_COUNT} status=none
 			fi
 			# --- mrb:txt.cfg / efi:grub.cfg ----------------------------------
 			case "${CODE_NAME[0]}" in
 				"debian" )	# ･････････････････････････････････････････････････
 					case "${CODE_NAME[1]}" in
-						debian-7.* )
+						debian-7.*       | \
+						debian-8.*       )
 							sed -i "preseed/preseed.cfg"                                                                               \
 							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/hostname\).*$/\1 string archive.debian.org/'                     \
 							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/directory\).*$/\1 string \/debian-archive\/debian/'              \
-							    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'                       \
-							    -e 's/\(^[ \t]*d-i[ \t]*netcfg\/get_nameservers\)[ \t]*[A-Za-z]*[ \t]*\(.*\)$/\1 string 127.0.0.1 \2/'
+							    -e 's/\(^[ \t]*d-i[ \t]*mirror/http/mirror select\).*$/\1 select archive.debian.org/'                  \
+							    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'
+#							    -e 's/\(^[ \t]*d-i[ \t]*netcfg\/get_nameservers\)[ \t]*[A-Za-z]*[ \t]*\(.*\)$/\1 string 127.0.0.1 \2/'
 							;;
-						* )	;;
-					esac
-					case "${CODE_NAME[1]}" in
+						debian-9.*       )
+							;;
+						debian-10.*      )
+							;;
 						debian-11.*      | \
 						debian-testing-* )
 							sed -i "preseed/preseed.cfg"                                                 \
@@ -306,6 +310,9 @@ fncRemaster () {
 					sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg               | \
 					sed -e 's/\(set default\)="1"/\1="0"/'                             \
 					    -e '1i set timeout=5'                                          \
+					    -e 's/\(set theme\)/# \1/g'                                    \
+					    -e 's/\(set gfxmode\)/# \1/g'                                  \
+					    -e 's/ vga=[0-9]*//g'                                          \
 					> grub.cfg
 					mv grub.cfg boot/grub/
 					;;

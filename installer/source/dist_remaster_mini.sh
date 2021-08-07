@@ -26,7 +26,7 @@
 ##	2021/06/28 000.0000 J.Itou         Debian 11 対応
 ##	2021/07/02 000.0000 J.Itou         memo修正
 ##	2021/07/07 000.0000 J.Itou         cpio 表示出力抑制追加
-##	2021/08/02 000.0000 J.Itou         処理見直し
+##	2021/08/06 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -34,7 +34,7 @@
 #	set -eu													# ステータス0以外と未定義変数の参照で終了
 	set -u													# 未定義変数の参照で終了
 #	set -o ignoreof											# Ctrl+Dで終了しない
-#	trap 'exit 1' 1 2 3 15
+	trap 'exit 1' 1 2 3 15
 # -----------------------------------------------------------------------------
 	INP_INDX=${@:-""}										# 処理ID
 # -----------------------------------------------------------------------------
@@ -46,30 +46,45 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	readonly ARRAY_NAME=(      \
-	    "debian debian         oldoldstable" \
-	    "debian debian         oldstable"    \
-	    "debian debian         stable"       \
-	    "debian debian         testing"      \
-	    "ubuntu ubuntu-archive xenial"       \
-	    "ubuntu ubuntu-archive bionic"       \
-	    "ubuntu ubuntu-archive focal"        \
-	    "ubuntu ubuntu-archive groovy"       \
-	    "ubuntu ubuntu-archive hirsute"
-	)
+#	ARC_TYPE=i386											# CPUタイプ(32bit)
+	ARC_TYPE=amd64											# CPUタイプ(64bit)
+	ARRAY_NAME=(                                                                                                                                                                                                                       \
+	    "debian http://archive.debian.org/debian/dists/wheezy/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                     preseed_debian.cfg   2013-05-04 2018-05-31 wheezy       Debian__7.xx(wheezy)            " \
+	    "debian http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                   preseed_debian.cfg   2015-04-25 2020-06-30 oldoldstable Debian__8.xx(jessie)            " \
+	    "debian http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                      preseed_debian.cfg   2017-06-17 2022-06-xx oldstable    Debian__9.xx(stretch)           " \
+	    "debian http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         preseed_debian.cfg   2019-07-06 20xx-xx-xx stable       Debian_10.xx(buster)            " \
+	    "debian http://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                        preseed_debian.cfg   2021-xx-xx 20xx-xx-xx testing      Debian_11.xx(bullseye)          " \
+	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/trusty/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                     preseed_ubuntu.cfg   2014-04-17 2022-04-xx trusty       Ubuntu_14.04(Trusty_Tahr):LTS   " \
+	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/xenial-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso             preseed_ubuntu.cfg   2016-04-21 2024-04-xx xenial       Ubuntu_16.04(Xenial_Xerus):LTS  " \
+	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                     preseed_ubuntu.cfg   2018-04-26 2028-04-xx bionic       Ubuntu_18.04(Bionic_Beaver):LTS " \
+	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso               preseed_ubuntu.cfg   2020-04-23 2030-04-xx focal        Ubuntu_20.04(Focal_Fossa):LTS   " \
+	)   # 区分  ダウンロード先URL                                                                                                            定義ファイル         リリース日 サポ終了日 備考         備考2
+#	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                     preseed_ubuntu.cfg   2016-04-21 2024-04-xx xenial       Ubuntu_16.04(Xenial_Xerus):LTS  " \
+#	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/groovy/main/installer-${ARC_TYPE}/current/legacy-images/                              preseed_ubuntu.cfg   2020-10-22 2021-07-xx groovy       Ubuntu_20.10(Groovy_Gorilla)    " \
+#	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/hirsute/main/installer-${ARC_TYPE}/current/legacy-images/                             preseed_ubuntu.cfg   2021-04-22 2022-01-xx hirsute      Ubuntu_21.04(Hirsute_Hippo)     " \
+#	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/impish/main/installer-${ARC_TYPE}/current/legacy-images/                              preseed_ubuntu.cfg   2021-10-14 2022-07-xx impish       Ubuntu_21.10(Impish_Indri)      " \
 # -----------------------------------------------------------------------------
 fncMenu () {
+	local ARRY_NAME=()										# 配列展開
+	local CODE_NAME=()										# 配列宣言
+	local DIR_NAME											# ディレクトリ名
+	local FIL_NAME											# ファイル名
 	echo "#-----------------------------------------------------------------------------#"
-	echo "#ID：Version     ：コードネーム      ：リリース日：サポ終了日：備考           #"
-	echo "# 1：Debian  8.xx：jessie            ：2015-04-25：2020-06-30：oldoldstable   #"
-	echo "# 2：Debian  9.xx：stretch           ：2017-06-17：2022-06-xx：oldstable      #"
-	echo "# 3：Debian 10.xx：buster            ：2019-07-06：20xx-xx-xx：stable         #"
-	echo "# 4：Debian 11.xx：bullseye          ：2021-xx-xx：20xx-xx-xx：testing        #"
-	echo "# 5：Ubuntu 16.04：Xenial Xerus      ：2016-04-21：2021-04-xx：LTS            #"
-	echo "# 6：Ubuntu 18.04：Bionic Beaver     ：2018-04-26：2023-04-xx：LTS            #"
-	echo "# 7：Ubuntu 20.04：Focal Fossa       ：2020-04-23：2025-04-xx：LTS            #"
-#	echo "# 8：Ubuntu 20.10：Groovy Gorilla    ：2020-10-22：2021-07-xx：               #"
-#	echo "# 9：Ubuntu 21.04：Hirsute Hippo     ：2021-04-22：2022-01-xx：               #"
+	echo "#ID：Version                         ：リリース日：サポ終了日：備考           #"
+	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
+	do
+		ARRY_NAME=(${ARRAY_NAME[$I-1]})
+		CODE_NAME[0]=${ARRY_NAME[0]}						# 区分
+		CODE_NAME[1]="mini-${ARRY_NAME[5]}-${ARC_TYPE}"		# DVDファイル名
+		CODE_NAME[2]=${ARRY_NAME[1]}						# ダウンロード先URL
+		CODE_NAME[3]=${ARRY_NAME[2]}						# 定義ファイル
+		CODE_NAME[4]=${ARRY_NAME[3]}						# リリース日
+		CODE_NAME[5]=${ARRY_NAME[4]}						# サポ終了日
+		CODE_NAME[6]=${ARRY_NAME[5]}						# 備考
+		CODE_NAME[7]=${ARRY_NAME[6]}						# 備考2
+		# ---------------------------------------------------------------------
+		printf "#%2d：%-32.32s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[7]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+	done
 	echo "#-----------------------------------------------------------------------------#"
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
 		echo "ID番号+Enterを入力して下さい。"
@@ -95,49 +110,32 @@ fncPrint () {
 # -----------------------------------------------------------------------------
 fncRemaster () {
 	# --- ARRAY_NAME ----------------------------------------------------------
-	local CODE_NAME=($1)									# 配列展開
-	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[2]} -------------------------------------------------------------------------------"
-	# --- DVD -----------------------------------------------------------------
-#	local CPU_TYPE=i386										# CPUタイプ(32bit)
-	local CPU_TYPE=amd64									# CPUタイプ(64bit)
-	local DVD_NAME="mini-${CODE_NAME[2]}-${CPU_TYPE}"
-	case "${CODE_NAME[2]}" in
-		"oldoldstable" | \
-		"oldstable"    | \
-		"stable"       )
-			local DVD_URL="http://ftp.debian.org/debian/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
-			;;
-		"testing"     )
-			local DVD_URL="https://d-i.debian.org/daily-images/${CPU_TYPE}/daily/netboot/mini.iso"
-#			local DVD_URL="http://ftp.nl.debian.org/debian/dists/testing/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
-			;;
-		"xenial"  | \
-		"bionic"  )
-			local DVD_URL="http://archive.ubuntu.com/ubuntu/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/images/netboot/mini.iso"
-			;;
-		"focal"   | \
-		"groovy"  | \
-		"hirsute" )
-			local DVD_URL="http://archive.ubuntu.com/ubuntu/dists/${CODE_NAME[2]}/main/installer-${CPU_TYPE}/current/legacy-images/netboot/mini.iso"
-			;;
-		* )
-			;;
-	esac
-	# --- preseed.cfg ---------------------------------------------------------
-	local CFG_NAME="preseed_${CODE_NAME[0]}"
-	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/${CFG_NAME}.cfg"
+	local ARRY_NAME=($1)									# 配列展開
+	local CODE_NAME=()										# 配列宣言
+	CODE_NAME[0]=${ARRY_NAME[0]}							# 区分
+	CODE_NAME[1]="mini-${ARRY_NAME[5]}-${ARC_TYPE}"			# DVDファイル名
+	CODE_NAME[2]=${ARRY_NAME[1]}							# ダウンロード先URL
+	CODE_NAME[3]=${ARRY_NAME[2]}							# 定義ファイル
+	CODE_NAME[4]=${ARRY_NAME[3]}							# リリース日
+	CODE_NAME[5]=${ARRY_NAME[4]}							# サポ終了日
+	CODE_NAME[6]=${ARRY_NAME[5]}							# 備考
+	CODE_NAME[7]=${ARRY_NAME[6]}							# 備考2
 	# -------------------------------------------------------------------------
-	rm -rf   ${WORK_DIRS}/${CODE_NAME[2]}
-	mkdir -p ${WORK_DIRS}/${CODE_NAME[2]}/image ${WORK_DIRS}/${CODE_NAME[2]}/decomp ${WORK_DIRS}/${CODE_NAME[2]}/mnt
+	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
+	# --- DVD -----------------------------------------------------------------
+	local DVD_NAME="${CODE_NAME[1]}"
+	local DVD_URL="${CODE_NAME[2]}"
+	local EFI_IMAG="boot/grub/efi.img"
+	local ISO_NAME="${DVD_NAME}-preseed"
+	# --- preseed.cfg ---------------------------------------------------------
+	local CFG_NAME="${CODE_NAME[3]}"
+	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/${CFG_NAME}"
+	# -------------------------------------------------------------------------
+	umount -q ${WORK_DIRS}/${CODE_NAME[1]}/mnt > /dev/null 2>&1
+	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
+	mkdir -p ${WORK_DIRS}/${CODE_NAME[1]}/image ${WORK_DIRS}/${CODE_NAME[1]}/decomp ${WORK_DIRS}/${CODE_NAME[1]}/mnt
 	# --- remaster ------------------------------------------------------------
-	pushd ${WORK_DIRS}/${CODE_NAME[2]} > /dev/null
-		# --- get preseed.cfg -------------------------------------------------
-		if [ -f "../../${CFG_NAME}.cfg" ]; then
-			cp --preserve=timestamps "../../${CFG_NAME}.cfg" "preseed.cfg"
-		fi
-		if [ ! -f "preseed.cfg" ]; then
-			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
-		fi
+	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
 			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
@@ -172,28 +170,78 @@ fncRemaster () {
 		# --- image -> decomp -> image ----------------------------------------
 		pushd decomp > /dev/null							# initrd.gz 展開先
 			gunzip < ../image/initrd.gz | cpio -i --quiet
-			cp --preserve=timestamps ../preseed.cfg ./
-			# --- preseed.cfg -------------------------------------------------
-			if [ -f ../image/.disk/info ]; then
-				local VER_NUM=`awk '{print $3;}' ../image/.disk/info`
-				case "${VER_NUM}" in
-					11 )
-						sed -i "./preseed.cfg"                                                       \
-						    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'             \
-						    -e 's/#[ \t]\([ \t]*in-target systemctl disable connman.service\)/  \1/'
-						;;
-					* ) ;;
-				esac
+			# --- preseed.cfg -> image ----------------------------------------
+			if [ -f "../../../${CFG_NAME}" ]; then
+				cp --preserve=timestamps "../../../${CFG_NAME}" "./preseed.cfg"
+			else
+				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./preseed.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			fi
+			# --- preseed.cfg -------------------------------------------------
+			case "`echo ${CODE_NAME[7]} | sed -e 's/^.*(\(.*\)).*$/\1/'`" in
+				wheezy         )
+					sed -i "./preseed.cfg"                                                                        \
+					    -e 's/\(^[ \t]*d-i[ \t]*mirror\/country\).*$/\1 string manual/'                           \
+					    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/hostname\).*$/\1 string archive.debian.org/'        \
+					    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/directory\).*$/\1 string \/debian/'                 \
+					    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/mirror select\).*$/\1 select archive.debian.org/'   \
+					    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'
+					;;
+				jessie         | \
+				stretch        | \
+				buster         )
+					;;
+				bullseye       | \
+				testing        )
+					sed -i "./preseed.cfg"                                                       \
+					    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'             \
+					    -e 's/#[ \t]\([ \t]*in-target systemctl disable connman.service\)/  \1/'
+					;;
+				Trusty_Tahr    )
+					sed -i "./preseed.cfg"                     \
+					    -e 's/ubuntu-server//'                 \
+					    -e 's/gnome-getting-started-docs-ja//' \
+					    -e 's/gnome-user-docs-ja//'
+					;;
+				Xenial_Xerus   )
+					sed -i "./preseed.cfg"                     \
+					    -e 's/gnome-user-docs-ja//'
+					
+					;;
+				Bionic_Beaver  | \
+				Focal_Fossa    )
+					;;
+				Groovy_Gorilla | \
+				Hirsute_Hippo  | \
+				Impish_Indri   )
+					;;
+				* )	;;
+			esac
 			# --- make initps.gz ----------------------------------------------
 			find . | cpio -H newc --create --quiet | gzip -9 > ../image/initps.gz
 		popd > /dev/null
+		# --- image -----------------------------------------------------------
 		pushd image > /dev/null								# 作業用ディスクイメージ
-			# --- mrb:txt.cfg -------------------------------------------------
-			sed -i isolinux.cfg -e 's/\(timeout\).*[0-9]*/\1 50/'
-			sed -i prompt.cfg   -e 's/\(timeout\).*[0-9]*/\1 50/'
-			sed -i txt.cfg      -e '/menu default/d' \
-			                    -e '/timeout/d'
+			# --- Get EFI Image ---------------------------------------------------
+			if [ ! -f ${EFI_IMAG} ]; then
+				ISO_SKIPS=`fdisk -l "../../../${DVD_NAME}.iso" | awk '/EFI/ {print $2;}'`
+				ISO_COUNT=`fdisk -l "../../../${DVD_NAME}.iso" | awk '/EFI/ {print $4;}'`
+				dd if="../../../${DVD_NAME}.iso" of=${EFI_IMAG} bs=512 skip=${ISO_SKIPS} count=${ISO_COUNT} status=none
+			fi
+			if [ ! -d EFI ]; then
+				echo "--- copy EFI directory --------------------------------------------------------"
+				mount -r -o loop  ${EFI_IMAG} ../mnt/
+				pushd ../mnt/efi/ > /dev/null
+					find . -depth -print | cpio -pdm --quiet ../../image/EFI/
+				popd > /dev/null
+				umount ../mnt/
+			fi
+			# -------------------------------------------------
+#			INS_CFG="auto=true file=\/cdrom\/preseed.cfg"
+			# --- txt.cfg -------------------------------------
+			sed -i isolinux.cfg -e 's/\(timeout\).*$/\1 50/'
+			sed -i prompt.cfg   -e 's/\(timeout\).*$/\1 50/'
+#			sed -i gtk.cfg      -e '/^.*menu default.*$/d'
+			sed -i txt.cfg      -e '/^.*menu default.*$/d'
 			INS_ROW=$((`sed -n '/^label/ =' txt.cfg | head -n 1`-1))
 			INS_STR="\\`sed -n '/menu label/p' txt.cfg | head -n 1 | sed -e 's/\(^.*menu\).*/\1 default/'`"
 			if [ ${INS_ROW} -ge 1 ]; then
@@ -216,88 +264,192 @@ fncRemaster () {
 				cat txt.cfg >> txt.cfg.temp
 			fi
 			mv txt.cfg.temp txt.cfg
-			# --- efi:grub.cfg ------------------------------------------------
+			# --- grub.cfg ----------------------------------------------------
 			INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-			sed -n '/^menuentry .*['\''"]Install['\''\"]/,/^}/p' boot/grub/grub.cfg | \
-			sed -e 's/\(Install\)/Auto \1/'                                           \
-			    -e "s/initrd.gz/initps.gz/"                                           \
-			    -e 's/\(--hotkey\)=./\1=a/'                                         | \
-			sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                      | \
-			sed -e 's/\(set default\)="1"/\1="0"/'                                    \
-			    -e '1i set timeout=5'                                                 \
-			> grub.cfg.temp
-			mv grub.cfg.temp boot/grub/grub.cfg
-			# --- copy EFI directory ------------------------------------------
-			case "${CODE_NAME[0]}" in
-				"debian" )
-					if [ ! -d EFI ]; then
-						echo "--- copy EFI directory --------------------------------------------------------"
-						mount -r -o loop boot/grub/efi.img ../mnt/
-						pushd ../mnt/efi/ > /dev/null
-							find . -depth -print | cpio -pdm --quiet ../../image/EFI/
-						popd > /dev/null
-						umount ../mnt/
-					fi
-					;;
-				* )	;;
-			esac
+			if [ ${INS_ROW} -ge 1 ]; then
+				sed -n '/^menuentry .*['\''"]Install['\''\"]/,/^}/p' boot/grub/grub.cfg | \
+				sed -e 's/\(Install\)/Auto \1/'                                           \
+				    -e "s/initrd.gz/initps.gz/"                                           \
+				    -e 's/\(--hotkey\)=./\1=a/'                                         | \
+				sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                      | \
+				sed -e 's/\(set default\)="1"/\1="0"/'                                    \
+				    -e '1i set timeout=5'                                                 \
+				    -e 's/\(set theme\)/# \1/g'                                           \
+				    -e 's/\(set gfxmode\)/# \1/g'                                         \
+				    -e 's/ vga=[0-9]*//g'                                                 \
+				> grub.cfg.temp
+				mv grub.cfg.temp boot/grub/grub.cfg
+			else
+				cat <<- _EOT_ >> boot/grub/grub.cfg
+					menuentry 'Auto Install' {
+					    set background_color=black
+					    linux    /linux vga=788 --- quiet
+					    initrd   /initps.gz
+					}
+_EOT_
+			fi
 			# -----------------------------------------------------------------
 			rm -f md5sum.txt
 			find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" -type f -exec md5sum {} \; > md5sum.txt
 			# --- make iso file -----------------------------------------------
-			EFI_IMAG="boot/grub/efi.img"
-			ISO_NAME="${DVD_NAME}-preseed"
 			ELT_BOOT=isolinux.bin
 			ELT_CATA=boot.cat
-#			ELT_BOOT=boot/grub/i386-pc/eltorito.img
-#			ELT_CATA=boot.catalog
 			xorriso -as mkisofs \
 			    -quiet \
 			    -iso-level 3 \
 			    -full-iso9660-filenames \
 			    -volid "${VOLID}" \
-			    -eltorito-boot ${ELT_BOOT} \
-			    -eltorito-catalog ${ELT_CATA} \
+			    -eltorito-boot "${ELT_BOOT}" \
+			    -eltorito-catalog "${ELT_CATA}" \
 			    -no-emul-boot -boot-load-size 4 -boot-info-table \
-			    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
+			    -isohybrid-mbr "${DIR_LINX}" \
 			    -eltorito-alt-boot \
 			    -e "${EFI_IMAG}" \
 			    -no-emul-boot -isohybrid-gpt-basdat \
 			    -output "../../${ISO_NAME}.iso" \
 			    .
+			if [ "`which implantisomd5 2> /dev/nul`" != "" ]; then
+				LANG=C implantisomd5 "../../${ISO_NAME}.iso"
+			fi
 		popd > /dev/null
 	popd > /dev/null
-	rm -rf   ${WORK_DIRS}/${CODE_NAME[2]}
-	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[2]} -------------------------------------------------------------------------------"
+	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
+	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
 	return 0
 }
 # -----------------------------------------------------------------------------
 	echo "*******************************************************************************"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理を開始します。"
 	echo "*******************************************************************************"
+# cpu type --------------------------------------------------------------------
+	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
+# system info -----------------------------------------------------------------
+	SYS_NAME=`awk -F '=' '$1=="ID"               {gsub("\"",""); print $2;}' /etc/os-release`	# ディストリビューション名
+	SYS_CODE=`awk -F '=' '$1=="VERSION_CODENAME" {gsub("\"",""); print $2;}' /etc/os-release`	# コード名
+	SYS_VERS=`awk -F '=' '$1=="VERSION"          {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン名
+	SYS_VRID=`awk -F '=' '$1=="VERSION_ID"       {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン番号
+	SYS_VNUM=`echo ${SYS_VRID:--1} | bc`										#   〃          (取得できない場合は-1)
+	SYS_NOOP=0																	# 対象OS=1,それ以外=0
+	if [ "${SYS_CODE}" = "" ]; then
+		case "${SYS_NAME}" in
+			"debian"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
+			"ubuntu"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
+			"centos"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/centos-release`;;
+			"fedora"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/fedora-release`;;
+			"rocky"               ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/rocky-release` ;;
+			"opensuse-leap"       ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
+			"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
+			*                     )                                                                                   ;;
+		esac
+	fi
+	if [ "${CPU_TYPE}" = "x86_64" ]; then
+		case "${SYS_NAME}" in
+			"debian"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 10"       | bc`;;
+			"ubuntu"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 20.04"    | bc`;;
+			"centos"              ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
+			"fedora"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`;;
+			"rocky"               ) SYS_NOOP=`echo "${SYS_VNUM} >=  8.4"     | bc`;;
+			"opensuse-leap"       ) SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`;;
+			"opensuse-tumbleweed" ) SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`;;
+			*                     )                                               ;;
+		esac
+	fi
+	if [ ${SYS_NOOP} -eq 0 ]; then
+		echo "${SYS_NAME} ${SYS_VERS:-${SYS_CODE}} (${CPU_TYPE}) ではテストをしていないので実行できません。"
+		exit 1
+	fi
 # -----------------------------------------------------------------------------
-	if [ "`which xorriso 2> /dev/nul`" = "" ]; then
-		if [ ! -f /etc/redhat-release ]; then
-			apt -y update && apt -y upgrade && apt -y install xorriso
-		else
-			yum -y update && yum -y upgrade && yum -y install xorriso
-		fi
-	fi
-	if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
-		if [ ! -f /etc/redhat-release ]; then
-			apt -y update && apt -y upgrade && apt -y install isomd5sum
-		else
-			yum -y update && yum -y upgrade && yum -y install isomd5sum
-		fi
-	fi
-	if [ ! -f /usr/lib/ISOLINUX/isohdpfx.bin ]; then
-		if [ ! -f /etc/redhat-release ]; then
-			apt -y update && apt -y upgrade && apt -y install isolinux
-		else
-			yum -y update && yum -y upgrade && yum -y install isolinux
-		fi
-	fi
-	# -------------------------------------------------------------------------
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
+			if [ "`which aptitude 2> /dev/null`" != "" ]; then
+				CMD_AGET="aptitude -y -q"
+			else
+				CMD_AGET="apt -y -qq"
+			fi
+			DIR_LINX="/usr/lib/ISOLINUX/isohdpfx.bin"
+			;;
+		"centos" | \
+		"fedora" | \
+		"rocky"  )
+			if [ "`which dnf 2> /dev/null`" != "" ]; then
+				CMD_AGET="dnf -y -q --allowerasing"
+			else
+				CMD_AGET="yum -y -q"
+			fi
+			DIR_LINX="/usr/share/syslinux/isohdpfx.bin"
+			;;
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
+			CMD_AGET="zypper -n -t"
+			DIR_LINX="/usr/share/syslinux/isohdpfx.bin"
+			;;
+		* )
+			;;
+	esac
+# -----------------------------------------------------------------------------
+	case "${SYS_NAME}" in
+		"debian" | \
+		"ubuntu" )
+			if [ "`which xorriso 2> /dev/nul`" = ""       \
+			-o   "`which implantisomd5 2> /dev/nul`" = "" \
+			-o   ! -f "${DIR_LINX}" ]; then
+				${CMD_AGET} update
+				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+					${CMD_AGET} install xorriso
+				fi
+				if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
+					${CMD_AGET} install isomd5sum
+				fi
+				if [ ! -f "${DIR_LINX}" ]; then
+					${CMD_AGET} install isolinux
+				fi
+			fi
+			;;
+		"centos" | \
+		"fedora" | \
+		"rocky"  )
+			if [ "`which xorriso 2> /dev/nul`" = ""       \
+			-o   "`which implantisomd5 2> /dev/nul`" = "" \
+			-o   ! -f "${DIR_LINX}" ]; then
+				${CMD_AGET} update
+				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+					${CMD_AGET} install xorriso
+				fi
+				if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
+					${CMD_AGET} install isomd5sum
+				fi
+				if [ ! -f "${DIR_LINX}" ]; then
+					${CMD_AGET} install syslinux
+				fi
+			fi
+			;;
+		"opensuse-leap"       | \
+		"opensuse-tumbleweed" )
+			if [ "`which xorriso 2> /dev/nul`" = ""       \
+			-o   ! -f "${DIR_LINX}" ]; then
+				${CMD_AGET} update
+				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+					${CMD_AGET} install xorriso
+				fi
+				if [ ! -f "${DIR_LINX}" ]; then
+					${CMD_AGET} install isolinux
+				fi
+			fi
+			ARRAY_WORK=("${ARRAY_NAME[@]}")
+			for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
+			do
+				ARRY_NAME=(${ARRAY_WORK[$I-1]})
+				if [ "${ARRY_NAME[0]}" != "suse" ]; then
+					unset ARRAY_WORK[$I-1]
+				fi
+			done
+			ARRAY_NAME=("${ARRAY_WORK[@]}")
+			;;
+		* )
+			;;
+	esac
+# -----------------------------------------------------------------------------
 	fncMenu
 	# -------------------------------------------------------------------------
 	for I in `eval echo "${INP_INDX}"`						# 連番可

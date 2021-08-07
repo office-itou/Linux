@@ -17,7 +17,7 @@
 		"old stable"  | "stretch"  |  9* ) LIVE_SUITE="old stable" ; OBS_SUITE="Stretch";;
 		"stable"      | "buster"   | 10* ) LIVE_SUITE="stable"     ; OBS_SUITE="Buster" ;;
 		"testing"     | "bullseye" | 11* ) LIVE_SUITE="testing"    ; OBS_SUITE="Sid"    ;;
-		*                                ) LIVE_SUITE=""           ; OBS_SUITE=""       ;;
+		*                                ) LIVE_SUITE="$2"         ; OBS_SUITE="$2"     ;;
 	esac
 # == initialize ===============================================================
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -332,10 +332,11 @@ fncIPv4GetNetmaskBits () {
 #	sed -i ./debian-live/fsimg/debian-setup.sh -e 's/^ //g'
 	# -------------------------------------------------------------------------
 	case "${LIVE_SUITE}" in
-		"old stable" ) LIVE_URL="http://cdimage.debian.org/cdimage/archive/${LIVE_VNUM}-live/${LIVE_ARCH}/iso-hybrid/debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde.iso";;
-		"stable"     ) LIVE_URL="http://cdimage.debian.org/cdimage/release/current-live/${LIVE_ARCH}/iso-hybrid/debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde.iso";;
-		"testing"    ) LIVE_URL="http://cdimage.debian.org/cdimage/weekly-live-builds/${LIVE_ARCH}/iso-hybrid/debian-live-testing-${LIVE_ARCH}-lxde.iso";;
-		*            ) LIVE_URL="";;
+		"old stable"    ) LIVE_URL="http://cdimage.debian.org/cdimage/archive/${LIVE_VNUM}-live/${LIVE_ARCH}/iso-hybrid/debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde.iso";;
+		"stable"        ) LIVE_URL="http://cdimage.debian.org/cdimage/release/current-live/${LIVE_ARCH}/iso-hybrid/debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde.iso";;
+		"testing"       ) LIVE_URL="http://cdimage.debian.org/cdimage/weekly-live-builds/${LIVE_ARCH}/iso-hybrid/debian-live-testing-${LIVE_ARCH}-lxde.iso";;
+		"blseye-DI-rc3" ) LIVE_URL="http://cdimage.debian.org/cdimage/bullseye_di_rc3-live/${LIVE_ARCH}/iso-hybrid/debian-live-blseye-DI-rc3-${LIVE_ARCH}-lxde.iso";;
+		*               ) LIVE_URL="";;
 	esac
 	if [ "${LIVE_URL}" != "" ]; then
 		if [ ! -f "./${LIVE_FILE}" ]; then
@@ -448,6 +449,7 @@ fncIPv4GetNetmaskBits () {
 			# -----------------------------------------------------------------
 			LATE_CMD="\      in-target sed -i.orig /etc/apt/sources.list -e '/cdrom/ s/^ *\(deb\)/# \1/g'; \\\\\n"
 			LATE_CMD+="      in-target apt -qq    update; \\\\\n"
+			LATE_CMD+="      in-target apt -qq -y full-upgrade; \\\\\n"
 			LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
 			LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
 			mount -r -o loop ./live/filesystem.squashfs ../media

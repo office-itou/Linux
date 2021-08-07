@@ -501,6 +501,7 @@ fncIPv4GetNetmaskBits () {
 #			LATE_CMD="\      /cdrom/preseed/ubuntu-sub_success_command.sh /cdrom/preseed/preseed.cfg /target;"
 			LATE_CMD="\      in-target sed -i.orig /etc/apt/sources.list -e '/cdrom/ s/^ *\(deb\)/# \1/g'; \\\\\n"
 			LATE_CMD+="      in-target apt -qq    update; \\\\\n"
+			LATE_CMD+="      in-target apt -qq -y full-upgrade; \\\\\n"
 			LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
 			LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
 			mount -r -o loop ./casper/filesystem.squashfs ../media
