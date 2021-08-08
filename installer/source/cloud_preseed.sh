@@ -220,8 +220,10 @@ _EOT_
 		    runcmd:
 		    - mkdir -p /etc/NetworkManager/conf.d/
 		    - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
-		    - systemctl restart network-manager.service
+		    - systemctl restart NetworkManager.service
 		    - nmcli c modify ens160 +ipv4.dns 192.168.1.254
+		    - nmcli c down ens160
+		    - nmcli c up ens160
 		    power_state:
 		      delay: "+0"
 		      mode: reboot

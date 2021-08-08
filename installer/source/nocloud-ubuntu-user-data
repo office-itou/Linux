@@ -53,7 +53,7 @@ autoinstall:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$OJeWovyVK5m$xeT3h9GHmubu0ioigDxbc9YHtEVMZJxwPuCtDUqX4IMLFl.dKnZAUt3yMr.VoEvh10FccXjOIZPYkaaxMDNAh0"
+    password: "$6$yiuPN5xx$5mMD1nEDjWxT1xdN1ctpNKpo6vcn8W5XNtQ1W6.AQxG/3i45F.hvo.3zonaC4rO/pHU9Yt2563WvJx1./BOd91"
 # =============================================================================
   locale: ja_JP.UTF-8
   keyboard:
@@ -143,8 +143,10 @@ autoinstall:
     runcmd:
     - mkdir -p /etc/NetworkManager/conf.d/
     - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
-    - systemctl restart network-manager.service
+    - systemctl restart NetworkManager.service
     - nmcli c modify ens160 +ipv4.dns 192.168.1.254
+    - nmcli c down ens160
+    - nmcli c up ens160
     power_state:
       delay: "+0"
       mode: reboot
