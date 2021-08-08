@@ -44,6 +44,9 @@ fncIPv4GetNetmaskBits () {
 		#cloud-config
 		autoinstall:
 		  version: 1
+		# =============================================================================
+		# refresh-installer:
+		#   update: yes
 _EOT_
 	# --- apt -----------------------------------------------------------------
 	MIRROR_HTTP_MIRROR=`awk '!/#/&&/ mirror\/http\/mirror / {print $4;}' ${PRESEED_CFG}`
@@ -51,12 +54,21 @@ _EOT_
 	MIRROR_HTTP_PORTS=`awk '!/#/&&/ mirror\/http\/mirror / {print $4;}' ${PRESEED_CFG}`
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
-		  apt:
-		    geoip: true
-		    preserve_sources_list: false
-		    primary:
-		    - arches: [amd64, i386]
-		      uri: http://${MIRROR_HTTP_MIRROR}/${MIRROR_HTTP_DIRECTORY}
+		# apt:
+		#   geoip: true
+		#   preserve_sources_list: false
+		#   primary:
+		#   - arches: [amd64, i386]
+		#     uri: http://${MIRROR_HTTP_MIRROR}/${MIRROR_HTTP_DIRECTORY}
+		#   - arches: [default]
+		#     uri: http://ports.ubuntu.com/ubuntu-ports
+_EOT_
+	# --- early-commands ------------------------------------------------------
+	PARTMAN_AUTO_DISK=`awk '!/#/&&/ partman-auto\/disk / {print $4;}' ${PRESEED_CFG}`
+	cat <<- _EOT_ >> ${USER_DATA}
+		# =============================================================================
+		# early-commands:
+		#   - dd if=/dev/zero of=${PARTMAN_AUTO_DISK} bs=512 count=34
 _EOT_
 	# --- storage -------------------------------------------------------------
 	PARTMAN_AUTO_METHOD=`awk '!/#/&&/ partman-auto\/method / {print $4;}' ${PRESEED_CFG}`
@@ -65,19 +77,36 @@ _EOT_
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
 		  storage:
-		    config:
-		    - {ptable: gpt,              path: ${PARTMAN_AUTO_DISK}, wipe: pvremove,                          preserve: false, name: '',        grub_device: false, type: disk,          id: ${STORAGE_ID}}
-		    - {device: ${STORAGE_ID},          size: 512MB,    wipe: superblock, flag: boot, number: 1, preserve: false,                  grub_device: true,  type: partition,     id: partition-0}
-		    - {device: ${STORAGE_ID},          size: 1GB,      wipe: superblock, flag: '',   number: 2, preserve: false,                                      type: partition,     id: partition-1}
-		    - {device: ${STORAGE_ID},          size: -1,       wipe: superblock, flag: '',   number: 3, preserve: false,                                      type: partition,     id: partition-2}
-		    - {devices: [partition-2],                                                            preserve: false, name: vg-0,                          type: lvm_volgroup,  id: lvm_volgroup-0}
-		    - {volgroup: lvm_volgroup-0, size: 100%,     wipe: superblock,                        preserve: false, name: lv-0,                          type: lvm_partition, id: lvm_partition-0}
-		    - {volume: partition-0,      fstype: fat32,                                           preserve: false,                                      type: format,        id: format-0}
-		    - {volume: partition-1,      fstype: ext4,                                            preserve: false,                                      type: format,        id: format-1}
-		    - {volume: lvm_partition-0,  fstype: ext4,                                            preserve: false,                                      type: format,        id: format-2}
-		    - {device: format-0,         path: /boot/efi,                                                                                               type: mount,         id: mount-0}
-		    - {device: format-1,         path: /boot,                                                                                                   type: mount,         id: mount-1}
-		    - {device: format-2,         path: /,                                                                                                       type: mount,         id: mount-2}
+		    layout:
+		      name: lvm
+		# === efi =====================================================================
+		# storage:
+		#   config:
+		#   - {ptable: gpt,              path: ${PARTMAN_AUTO_DISK}, wipe: pvremove,                    preserve: false, name: '',   grub_device: false, type: disk,          id: ${STORAGE_ID}}
+		#   - {device: ${STORAGE_ID},          size: 512MB,    wipe: superblock, flag: boot,      preserve: false, number: 1,  grub_device: true,  type: partition,     id: partition-0}
+		#   - {device: ${STORAGE_ID},          size: 1GB,      wipe: superblock, flag: '',        preserve: false, number: 2,                      type: partition,     id: partition-1}
+		#   - {device: ${STORAGE_ID},          size: -1,       wipe: superblock, flag: '',        preserve: false, number: 3,                      type: partition,     id: partition-2}
+		#   - {devices: [partition-2],                                                      preserve: false, name: vg-0,                     type: lvm_volgroup,  id: lvm_volgroup-0}
+		#   - {volgroup: lvm_volgroup-0, size: 100%,                                        preserve: false, name: lv-0,                     type: lvm_partition, id: lvm_partition-0}
+		#   - {volume: partition-0,      fstype: fat32,                                     preserve: false,                                 type: format,        id: format-0}
+		#   - {volume: partition-1,      fstype: ext4,                                      preserve: false,                                 type: format,        id: format-1}
+		#   - {volume: lvm_partition-0,  fstype: ext4,                                      preserve: false,                                 type: format,        id: format-2}
+		#   - {device: format-0,         path: /boot/efi,                                                                                    type: mount,         id: mount-0}
+		#   - {device: format-1,         path: /boot,                                                                                        type: mount,         id: mount-1}
+		#   - {device: format-2,         path: /,                                                                                            type: mount,         id: mount-2}
+		# === bios ====================================================================
+		# storage:
+		#   config:
+		#   - {ptable: gpt,              path: ${PARTMAN_AUTO_DISK}, wipe: pvremove,                    preserve: false, name: '',   grub_device: true,  type: disk,          id: ${STORAGE_ID}}
+		#   - {device: ${STORAGE_ID},          size: 1MB,      wipe: superblock, flag: bios_grub, preserve: false, number: 1,                      type: partition,     id: partition-0}
+		#   - {device: ${STORAGE_ID},          size: 1GB,      wipe: superblock, flag: '',        preserve: false, number: 2,                      type: partition,     id: partition-1}
+		#   - {device: ${STORAGE_ID},          size: -1,       wipe: superblock, flag: '',        preserve: false, number: 3,                      type: partition,     id: partition-2}
+		#   - {devices: [partition-2],                                                      preserve: false, name: vg-0,                     type: lvm_volgroup,  id: lvm_volgroup-0}
+		#   - {volgroup: lvm_volgroup-0, size: 100%,     wipe: superblock,                  preserve: false, name: lv-0,                     type: lvm_partition, id: lvm_partition-0}
+		#   - {volume: partition-1,      fstype: ext4,                                      preserve: false,                                 type: format,        id: format-0}
+		#   - {volume: lvm_partition-0,  fstype: ext4,                                      preserve: false,                                 type: format,        id: format-1}
+		#   - {device: format-0,         path: /boot,                                                                                        type: mount,         id: mount-0}
+		#   - {device: format-1,         path: /,                                                                                            type: mount,         id: mount-1}
 _EOT_
 	# --- identity ------------------------------------------------------------
 	NETCFG_GET_HOSTNAME=`awk '!/#/&&/ netcfg\/get_hostname / {print $4;}' ${PRESEED_CFG}`
@@ -112,6 +141,7 @@ _EOT_
 	NETCFG_GET_GATEWAY=`awk '!/#/&&/ netcfg\/get_gateway / {print $4;}' ${PRESEED_CFG}`
 	NETCFG_GET_NAMESERVERS=`awk '!/#/&&/ netcfg\/get_nameservers / {print $4;}' ${PRESEED_CFG}`
 	NETCFG_GET_NETMASK_BITS=`fncIPv4GetNetmaskBits "${NETCFG_GET_NETMASK}"`
+	NETCFG_GET_DOMAIN=`awk '!/#/&&/ netcfg\/get_domain / {print $4;}' ${PRESEED_CFG}`
 	DISABLE_DHCP=`awk '!/#/&&(/ netcfg\/disable_dhcp /||/ netcfg\/disable_autoconfig /)&&/true/&&!a[$4]++ {print $4;}' ${PRESEED_CFG}`
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
@@ -133,6 +163,8 @@ _EOT_
 			        nameservers:
 			          addresses:
 			          - ${NETCFG_GET_NAMESERVERS}
+			          search:
+			          - ${NETCFG_GET_DOMAIN}
 _EOT_
 	fi
 	# --- ssh -----------------------------------------------------------------
@@ -157,8 +189,8 @@ _EOT_
 	               -e 's/^ *//'`
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
-		  package_update: false
-		  package_upgrade: false
+		# package_update: true
+		# package_upgrade: true
 		  packages:
 _EOT_
 	for TASK in ${LIST_TASK}
@@ -191,10 +223,10 @@ _EOT_
 		    - systemctl restart network-manager.service
 		    - nmcli c modify ens160 +ipv4.dns 192.168.1.254
 		    power_state:
-		      delay: "+1"
+		      delay: "+0"
 		      mode: reboot
 		      message: "System reboot."
-		      timeout: 5
+		      timeout: 0
 		# === EOF =====================================================================
 _EOT_
 # =============================================================================

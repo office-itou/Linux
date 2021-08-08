@@ -2,33 +2,58 @@
 autoinstall:
   version: 1
 # =============================================================================
-  apt:
-    geoip: true
-    preserve_sources_list: false
-    primary:
-    - arches: [amd64, i386]
-      uri: http://jp.archive.ubuntu.com/ubuntu/
+# refresh-installer:
+#   update: yes
+# =============================================================================
+# apt:
+#   geoip: true
+#   preserve_sources_list: false
+#   primary:
+#   - arches: [amd64, i386]
+#     uri: http://jp.archive.ubuntu.com/ubuntu/
+#   - arches: [default]
+#     uri: http://ports.ubuntu.com/ubuntu-ports
+# =============================================================================
+# early-commands:
+#   - dd if=/dev/zero of=/dev/sda bs=512 count=34
 # =============================================================================
   storage:
-    config:
-    - {ptable: gpt,              path: /dev/sda, wipe: pvremove,                          preserve: false, name: '',        grub_device: false, type: disk,          id: dev-sda}
-    - {device: dev-sda,          size: 512MB,    wipe: superblock, flag: boot, number: 1, preserve: false,                  grub_device: true,  type: partition,     id: partition-0}
-    - {device: dev-sda,          size: 1GB,      wipe: superblock, flag: '',   number: 2, preserve: false,                                      type: partition,     id: partition-1}
-    - {device: dev-sda,          size: -1,       wipe: superblock, flag: '',   number: 3, preserve: false,                                      type: partition,     id: partition-2}
-    - {devices: [partition-2],                                                            preserve: false, name: vg-0,                          type: lvm_volgroup,  id: lvm_volgroup-0}
-    - {volgroup: lvm_volgroup-0, size: 100%,     wipe: superblock,                        preserve: false, name: lv-0,                          type: lvm_partition, id: lvm_partition-0}
-    - {volume: partition-0,      fstype: fat32,                                           preserve: false,                                      type: format,        id: format-0}
-    - {volume: partition-1,      fstype: ext4,                                            preserve: false,                                      type: format,        id: format-1}
-    - {volume: lvm_partition-0,  fstype: ext4,                                            preserve: false,                                      type: format,        id: format-2}
-    - {device: format-0,         path: /boot/efi,                                                                                               type: mount,         id: mount-0}
-    - {device: format-1,         path: /boot,                                                                                                   type: mount,         id: mount-1}
-    - {device: format-2,         path: /,                                                                                                       type: mount,         id: mount-2}
+    layout:
+      name: lvm
+# === efi =====================================================================
+# storage:
+#   config:
+#   - {ptable: gpt,              path: /dev/sda, wipe: pvremove,                    preserve: false, name: '',   grub_device: false, type: disk,          id: dev-sda}
+#   - {device: dev-sda,          size: 512MB,    wipe: superblock, flag: boot,      preserve: false, number: 1,  grub_device: true,  type: partition,     id: partition-0}
+#   - {device: dev-sda,          size: 1GB,      wipe: superblock, flag: '',        preserve: false, number: 2,                      type: partition,     id: partition-1}
+#   - {device: dev-sda,          size: -1,       wipe: superblock, flag: '',        preserve: false, number: 3,                      type: partition,     id: partition-2}
+#   - {devices: [partition-2],                                                      preserve: false, name: vg-0,                     type: lvm_volgroup,  id: lvm_volgroup-0}
+#   - {volgroup: lvm_volgroup-0, size: 100%,                                        preserve: false, name: lv-0,                     type: lvm_partition, id: lvm_partition-0}
+#   - {volume: partition-0,      fstype: fat32,                                     preserve: false,                                 type: format,        id: format-0}
+#   - {volume: partition-1,      fstype: ext4,                                      preserve: false,                                 type: format,        id: format-1}
+#   - {volume: lvm_partition-0,  fstype: ext4,                                      preserve: false,                                 type: format,        id: format-2}
+#   - {device: format-0,         path: /boot/efi,                                                                                    type: mount,         id: mount-0}
+#   - {device: format-1,         path: /boot,                                                                                        type: mount,         id: mount-1}
+#   - {device: format-2,         path: /,                                                                                            type: mount,         id: mount-2}
+# === bios ====================================================================
+# storage:
+#   config:
+#   - {ptable: gpt,              path: /dev/sda, wipe: pvremove,                    preserve: false, name: '',   grub_device: true,  type: disk,          id: dev-sda}
+#   - {device: dev-sda,          size: 1MB,      wipe: superblock, flag: bios_grub, preserve: false, number: 1,                      type: partition,     id: partition-0}
+#   - {device: dev-sda,          size: 1GB,      wipe: superblock, flag: '',        preserve: false, number: 2,                      type: partition,     id: partition-1}
+#   - {device: dev-sda,          size: -1,       wipe: superblock, flag: '',        preserve: false, number: 3,                      type: partition,     id: partition-2}
+#   - {devices: [partition-2],                                                      preserve: false, name: vg-0,                     type: lvm_volgroup,  id: lvm_volgroup-0}
+#   - {volgroup: lvm_volgroup-0, size: 100%,     wipe: superblock,                  preserve: false, name: lv-0,                     type: lvm_partition, id: lvm_partition-0}
+#   - {volume: partition-1,      fstype: ext4,                                      preserve: false,                                 type: format,        id: format-0}
+#   - {volume: lvm_partition-0,  fstype: ext4,                                      preserve: false,                                 type: format,        id: format-1}
+#   - {device: format-0,         path: /boot,                                                                                        type: mount,         id: mount-0}
+#   - {device: format-1,         path: /,                                                                                            type: mount,         id: mount-1}
 # =============================================================================
   identity:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$tlxIHO93of$DEZA75qFjEevRHlw0/JsRTyVoc/MotBKflP6iPZjOVJ.IJKNf6FKaqcdh8j9EobOVLZyvn8gE5V.eXR.A4J6V1"
+    password: "$6$OJeWovyVK5m$xeT3h9GHmubu0ioigDxbc9YHtEVMZJxwPuCtDUqX4IMLFl.dKnZAUt3yMr.VoEvh10FccXjOIZPYkaaxMDNAh0"
 # =============================================================================
   locale: ja_JP.UTF-8
   keyboard:
@@ -45,12 +70,14 @@ autoinstall:
         nameservers:
           addresses:
           - 192.168.1.254
+          search:
+          - workgroup
 # =============================================================================
   ssh:
     install-server: true
 # =============================================================================
-  package_update: false
-  package_upgrade: false
+# package_update: true
+# package_upgrade: true
   packages:
   - standard^
   - server^
@@ -119,8 +146,8 @@ autoinstall:
     - systemctl restart network-manager.service
     - nmcli c modify ens160 +ipv4.dns 192.168.1.254
     power_state:
-      delay: "+1"
+      delay: "+0"
       mode: reboot
       message: "System reboot."
-      timeout: 5
+      timeout: 0
 # === EOF =====================================================================

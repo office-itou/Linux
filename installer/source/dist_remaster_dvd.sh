@@ -34,6 +34,7 @@
 ##	2021/08/02 000.0000 J.Itou         ubuntu desktop版対応
 ##	2021/08/04 000.0000 J.Itou         debian-bullseye-DI-rc3-amd64-DVD-1.iso追加
 ##	2021/08/06 000.0000 J.Itou         処理見直し
+##	2021/08/08 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -430,49 +431,56 @@ fncRemaster () {
 					esac
 					case "${CODE_NAME[1]}" in
 						*live* )							# --- nocloud -----
-							case "${CODE_NAME[1]}" in
-								*20.04* )
-									INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
-									# --- txt.cfg -------------------------------------
-									INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-									INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | sed -e 's/\(^.*menu\).*$/\1 default/'`"
-									sed -n '/label live$/,/append/p' isolinux/txt.cfg | \
-									sed -e 's/^\(label\) live/\1 autoinst/'             \
-									    -e 's/\(Install\)/Auto \1/'                     \
-									    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"            \
-									    -e 's/\"//g'                                  | \
-									sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg    \
-									> txt.cfg
-									mv txt.cfg isolinux/
-									# --- grub.cfg ------------------------------------
-									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-									sed -n '/^menuentry \"Install.*Server\"/,/^}/p' boot/grub/grub.cfg | \
-									sed -n '0,/\}/p'                                                   | \
-									sed -e 's/\(Install\)/Auto \1/'                                      \
-									    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                          | \
-									sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                 | \
-									sed -e 's/\(set default\)="1"/\1="0"/'                               \
-									    -e 's/\(set timeout\).*$/\1=5/'                                  \
-									> grub.cfg
-									mv grub.cfg boot/grub/
-									;;
-								*20.10* | \
-								*21.04* )
-									INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
-									# --- txt.cfg -------------------------------------
-									# --- grub.cfg ------------------------------------
-									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-									sed -n '/^menuentry \"Ubuntu Server\"/,/^}/p' boot/grub/grub.cfg | \
-									sed -e 's/\(Ubuntu Server\)/Auto Install/'                         \
-									    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                        | \
-									sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg               | \
-									sed -e 's/\(set default\)="1"/\1="0"/'                             \
-									    -e 's/\(set timeout\).*$/\1=5/'                                \
-									> grub.cfg
-									mv grub.cfg boot/grub/
-									;;
-								* )	;;
-							esac
+							# === nocloud =====================================
+							INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\""
+							# --- grub.cfg ------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry "Install Ubuntu Server/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry \"Install Ubuntu Server\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -n '0,/\}/p'                                                         | \
+							sed -e 's/\(Install\)/Auto \1/'                                            \
+							    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                                | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                       | \
+							sed -e '1i set timeout=5'                                                  \
+							    -e 's/\(set default\)="1"/\1="0"/'                                     \
+							    -e 's/\(set timeout\).*$/\1=5/'                                        \
+							    -e 's/\(set gfxmode\)/# \1/g'                                          \
+							    -e 's/ vga=[0-9]*//g'                                                  \
+							> grub.cfg
+							mv grub.cfg boot/grub/
+							# --- txt.cfg -------------------------------------
+							if [ -f isolinux/txt.cfg ]; then
+								INS_ROW=$((`sed -n '/^label live$/ =' isolinux/txt.cfg | head -n 1`-1))
+								sed -n '/label live$/,/append/p' isolinux/txt.cfg | \
+								sed -e 's/^\(label\).*/\1 autoinst/'                \
+								    -e 's/\(Install\)/Auto \1/'                     \
+								    -e "s/\(append.*\$\)/\1 ${INS_CFG//\"/}/"      | \
+								sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg  | \
+								sed -e 's/\(default\) .*/\1 autoinst/'              \
+								    -e 's/\(set gfxmode\)/# \1/g'                   \
+								    -e 's/ vga=[0-9]*//g'                           \
+								> txt.cfg
+								mv txt.cfg isolinux/
+								# --- isolinux.cfg ----------------------------
+								sed -i isolinux/isolinux.cfg         \
+								    -e 's/\(timeout\) .*/\1 50/'     \
+								    -e '/ui gfxboot bootlogo/d'
+								# --- menu.cfg --------------------------------
+								sed -i isolinux/menu.cfg             \
+								    -e '/menu hshift .*/d'           \
+								    -e '/menu width .*/d'            \
+								    -e '/menu margin .*/d'
+								# --- stdmenu.cfg -----------------------------
+								sed -i isolinux/stdmenu.cfg          \
+								    -e 's/\(menu vshift\) .*/\1 9/'  \
+								    -e '/menu rows .*/d'             \
+								    -e '/menu helpmsgrow .*/d'       \
+								    -e '/menu cmdlinerow .*/d'       \
+								    -e '/menu timeoutrow .*/d'       \
+								    -e '/menu tabmsgrow .*/d'
+								# --- splash.png ------------------------------
+								cp -p ../../../${WALL_FILE} isolinux/splash.png
+								chmod 444 "isolinux/splash.png"
+							fi
 							# -------------------------------------------------
 							chmod 444 "nocloud/meta-data"
 							chmod 444 "nocloud/user-data"
