@@ -68,7 +68,7 @@ _EOT_
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
 		# early-commands:
-		#   - dd if=/dev/zero of=${PARTMAN_AUTO_DISK} bs=512 count=34
+		# - dd if=/dev/zero of=${PARTMAN_AUTO_DISK} bs=512 count=34
 _EOT_
 	# --- storage -------------------------------------------------------------
 	PARTMAN_AUTO_METHOD=`awk '!/#/&&/ partman-auto\/method / {print $4;}' ${PRESEED_CFG}`
@@ -129,13 +129,16 @@ _EOT_
 	# --- locale --------------------------------------------------------------
 	DEBIAN_INSTALLER_LOCALE=`awk '!/#/&&/ debian-installer\/locale / {print $4;}' ${PRESEED_CFG}`
 	KEYBOARD_CONFIGURATION_LAYOUTCODE=`awk '!/#/&&/ keyboard-configuration\/layoutcode / {print $4;}' ${PRESEED_CFG}`
+	TIME_ZONE=`awk '!/#/&&/ time\/zone / {print $4;}' ${PRESEED_CFG}`
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
 		  locale: ${DEBIAN_INSTALLER_LOCALE}
 		  keyboard:
 		    layout: ${KEYBOARD_CONFIGURATION_LAYOUTCODE}
+		# timezone: ${TIME_ZONE}
 _EOT_
 	# --- network -------------------------------------------------------------
+	NETCFG_CHOOSE_INTERFACE=`awk '!/#/&&/ netcfg\/choose_interface / {print $4;}' ${PRESEED_CFG}`
 	NETCFG_GET_IPADDRESS=`awk '!/#/&&/ netcfg\/get_ipaddress / {print $4;}' ${PRESEED_CFG}`
 	NETCFG_GET_NETMASK=`awk '!/#/&&/ netcfg\/get_netmask / {print $4;}' ${PRESEED_CFG}`
 	NETCFG_GET_GATEWAY=`awk '!/#/&&/ netcfg\/get_gateway / {print $4;}' ${PRESEED_CFG}`
@@ -143,12 +146,15 @@ _EOT_
 	NETCFG_GET_NETMASK_BITS=`fncIPv4GetNetmaskBits "${NETCFG_GET_NETMASK}"`
 	NETCFG_GET_DOMAIN=`awk '!/#/&&/ netcfg\/get_domain / {print $4;}' ${PRESEED_CFG}`
 	DISABLE_DHCP=`awk '!/#/&&(/ netcfg\/disable_dhcp /||/ netcfg\/disable_autoconfig /)&&/true/&&!a[$4]++ {print $4;}' ${PRESEED_CFG}`
+	if [ "${NETCFG_CHOOSE_INTERFACE}" = "auto" ]; then
+		NETCFG_CHOOSE_INTERFACE=ens160
+	fi
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
 		  network:
 		    version: 2
 		    ethernets:
-		      ens160:
+		      ${NETCFG_CHOOSE_INTERFACE}:
 _EOT_
 	if [ "${DISABLE_DHCP}" != "true" ]; then
 		cat <<- _EOT_ >> ${USER_DATA}
@@ -203,32 +209,50 @@ _EOT_
 		echo "  - ${PACK}" >> ${USER_DATA}
 	done
 	# --- user-data -----------------------------------------------------------
-	TIME_ZONE=`awk '!/#/&&/ time\/zone / {print $4;}' ${PRESEED_CFG}`
-	CLOCK_SETUP_NTP_SERVER=`awk '!/#/&&/ clock-setup\/ntp-server / {print $4;}' ${PRESEED_CFG}`
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
 		  user-data:
+_EOT_
+	# --- user-data: timezone & ntp -------------------------------------------
+	TIME_ZONE=`awk '!/#/&&/ time\/zone / {print $4;}' ${PRESEED_CFG}`
+	CLOCK_SETUP_NTP_SERVER=`awk '!/#/&&/ clock-setup\/ntp-server / {print $4;}' ${PRESEED_CFG}`
+	cat <<- _EOT_ >> ${USER_DATA}
+		    timezone: ${TIME_ZONE}
 		    ntp:
 		      enabled: true
 		      ntp_client: chrony
 		      pools:
 		      - ${CLOCK_SETUP_NTP_SERVER}
-		    timezone: ${TIME_ZONE}
-		#   snap:
-		#     commands:
-		#     - snap install chromium
+_EOT_
+	# --- user-data: snap -----------------------------------------------------
+#	cat <<- _EOT_ >> ${USER_DATA}
+#		#   snap:
+#		#     commands:
+#		#     - snap install chromium
+#_EOT_
+	# --- user-data: runcmd ---------------------------------------------------
+	cat <<- _EOT_ >> ${USER_DATA}
 		    runcmd:
 		    - mkdir -p /etc/NetworkManager/conf.d/
 		    - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
-		    - systemctl restart NetworkManager.service
-		    - nmcli c modify ens160 +ipv4.dns 192.168.1.254
-		    - nmcli c down ens160
-		    - nmcli c up ens160
-		    power_state:
-		      delay: "+0"
-		      mode: reboot
-		      message: "System reboot."
-		      timeout: 0
+		    - shutdown -r now
+_EOT_
+	# --- late-commands -------------------------------------------------------
+#	cat <<- _EOT_ >> ${USER_DATA}
+#		# =============================================================================
+#		  late-commands:
+#		  - shutdown -r now
+#_EOT_
+#	# --- InstallProgress -----------------------------------------------------
+#	cat <<- _EOT_ >> ${USER_DATA}
+#		# =============================================================================
+#		# InstallProgress:
+#		#   reboot: yes
+#_EOT_
+	# --- end of file ---------------------------------------------------------
+	cat <<- _EOT_ >> ${USER_DATA}
+		# =============================================================================
+		# Created at `date +"%Y/%m/%d %H:%M:%S"`
 		# === EOF =====================================================================
 _EOT_
 # =============================================================================

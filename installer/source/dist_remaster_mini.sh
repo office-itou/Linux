@@ -27,6 +27,7 @@
 ##	2021/07/02 000.0000 J.Itou         memo修正
 ##	2021/07/07 000.0000 J.Itou         cpio 表示出力抑制追加
 ##	2021/08/06 000.0000 J.Itou         処理見直し
+##	2021/08/09 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -138,9 +139,9 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 		else
-			curl -f -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -149,7 +150,7 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
@@ -162,6 +163,7 @@ fncRemaster () {
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
+		echo "--- copy DVD -> work directory ------------------------------------------------"
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
 			find . -depth -print | cpio -pdm --quiet ../image/
@@ -174,7 +176,7 @@ fncRemaster () {
 			if [ -f "../../../${CFG_NAME}" ]; then
 				cp --preserve=timestamps "../../../${CFG_NAME}" "./preseed.cfg"
 			else
-				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./preseed.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./preseed.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			fi
 			# --- preseed.cfg -------------------------------------------------
 			case "`echo ${CODE_NAME[7]} | sed -e 's/^.*(\(.*\)).*$/\1/'`" in
@@ -221,7 +223,7 @@ fncRemaster () {
 		popd > /dev/null
 		# --- image -----------------------------------------------------------
 		pushd image > /dev/null								# 作業用ディスクイメージ
-			# --- Get EFI Image ---------------------------------------------------
+			# --- Get EFI Image -----------------------------------------------
 			if [ ! -f ${EFI_IMAG} ]; then
 				ISO_SKIPS=`fdisk -l "../../../${DVD_NAME}.iso" | awk '/EFI/ {print $2;}'`
 				ISO_COUNT=`fdisk -l "../../../${DVD_NAME}.iso" | awk '/EFI/ {print $4;}'`
@@ -289,11 +291,21 @@ fncRemaster () {
 _EOT_
 			fi
 			# -----------------------------------------------------------------
+			echo "--- make iso file -------------------------------------------------------------"
+			# -----------------------------------------------------------------
 			rm -f md5sum.txt
 			find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" -type f -exec md5sum {} \; > md5sum.txt
 			# --- make iso file -----------------------------------------------
-			ELT_BOOT=isolinux.bin
-			ELT_CATA=boot.cat
+			if [ -f isolinux.bin ]; then
+				ELT_BOOT=isolinux.bin
+				ELT_CATA=boot.cat
+			elif [ -f isolinux/isolinux.bin ]; then
+				ELT_BOOT=isolinux/isolinux.bin
+				ELT_CATA=isolinux/boot.cat
+			elif [ -f boot/grub/i386-pc/eltorito.img ]; then
+				ELT_BOOT=boot/grub/i386-pc/eltorito.img
+				ELT_CATA=boot.catalog
+			fi
 			xorriso -as mkisofs \
 			    -quiet \
 			    -iso-level 3 \

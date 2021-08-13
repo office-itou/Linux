@@ -30,6 +30,7 @@
 ##	2021/07/02 000.0000 J.Itou         memo修正
 ##	2021/07/07 000.0000 J.Itou         cpio 表示出力抑制追加
 ##	2021/08/06 000.0000 J.Itou         処理見直し
+##	2021/08/09 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -84,7 +85,7 @@ fncMenu () {
 		# ---------------------------------------------------------------------
 		if [ "`echo ${CODE_NAME[1]} | sed -n '/\.\*/p'`" != "" ]; then
 			DIR_NAME=`dirname ${CODE_NAME[2]}`
-			FIL_NAME=`curl -L -# -l -R -S "${DIR_NAME}" 2> /dev/null | sed -n "s/.*\"\(${CODE_NAME[1]}.iso\)\".*/\1/p"`
+			FIL_NAME=`curl -L -l -R -S -s -f "${DIR_NAME}" 2> /dev/null | sed -n "s/.*\"\(${CODE_NAME[1]}.iso\)\".*/\1/p" | uniq`
 			CODE_NAME[1]=`echo ${FIL_NAME} | sed -e 's/.iso//ig'`
 			CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_NAME}`
 			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
@@ -139,9 +140,9 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 		else
-			curl -f -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -150,7 +151,7 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
@@ -163,6 +164,7 @@ fncRemaster () {
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
+		echo "--- copy DVD -> work directory ------------------------------------------------"
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
 			find . -depth -print | cpio -pdm --quiet ../image/
@@ -174,32 +176,46 @@ fncRemaster () {
 			case "${CODE_NAME[0]}" in
 				"debian" | \
 				"ubuntu" )
+					EFI_IMAG="boot/grub/efi.img"
+					ISO_NAME="${DVD_NAME}-preseed"
+					# ---------------------------------------------------------
+					mkdir -p "preseed"
+					CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $1;}'`
+					CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
+					if [ -f "../../../${CFG_FILE}" ]; then
+						cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
+					else
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+					fi
+					# ---------------------------------------------------------
 					case "${CODE_NAME[1]}" in
-						ubuntu*20.04*live*    | \
-						ubuntu*20.10*live*    | \
-						ubuntu*20.04*desktop* | \
-						ubuntu*20.10*desktop* )				# --- get user-data
+						debian-live-* )
+							;;
+						*live-server* )						# --- get user-data
 							EFI_IMAG="boot/grub/efi.img"
 							ISO_NAME="${DVD_NAME}-nocloud"
+							# -------------------------------------------------
 							mkdir -p "nocloud"
 							touch nocloud/meta-data
 							touch nocloud/user-data
-							if [ -f "../../../${CFG_NAME}" ]; then
-								cp --preserve=timestamps "../../../${CFG_NAME}" "nocloud/user-data"
+							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
+							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
+							if [ -f "../../../${CFG_FILE}" ]; then
+								cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
 							else
-								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
+								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
 							fi
 							;;
-						* )									# --- get preseed.cfg
-							EFI_IMAG="boot/grub/efi.img"
-							ISO_NAME="${DVD_NAME}-preseed"
-							mkdir -p "preseed"
-							if [ -f "../../../${CFG_NAME}" ]; then
-								cp --preserve=timestamps "../../../${CFG_NAME}" "preseed/preseed.cfg"
-							else
-								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
-							fi
-							;;
+#						*desktop* )							# --- get sub shell
+#							SUB_PROG="ubuntu-sub_success_command.sh"
+#							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${SUB_PROG}~"`
+#							if [ -f "../../../${SUB_PROG}" ]; then
+#								cp --preserve=timestamps "../../../${SUB_PROG}" "preseed/${SUB_PROG}"
+#							else
+#								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/${SUB_PROG}" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+#							fi
+#							;;
+						* )	;;
 					esac
 					;;
 				"centos" | \
@@ -211,7 +227,7 @@ fncRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
 					else
-						curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
 					fi
 					case "${WORK_DIRS}" in
 						*net* )
@@ -234,12 +250,12 @@ fncRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
 					else
-						curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
 					fi
 					;;
 				* )	;;
 			esac
-			# --- Get EFI Image ---------------------------------------------------
+			# --- Get EFI Image -----------------------------------------------
 			if [ ! -f ${EFI_IMAG} ]; then
 				ISO_SKIPS=`fdisk -l "../../${DVD_NAME}.iso" | awk '/EFI/ {print $2;}'`
 				ISO_COUNT=`fdisk -l "../../${DVD_NAME}.iso" | awk '/EFI/ {print $4;}'`
@@ -598,6 +614,8 @@ fncRemaster () {
 					;;
 				* )	;;
 			esac
+			# -----------------------------------------------------------------
+			echo "--- make iso file -------------------------------------------------------------"
 			case "${CODE_NAME[0]}" in
 				"debian" | \
 				"ubuntu" | \
@@ -607,16 +625,16 @@ fncRemaster () {
 					rm -f md5sum.txt
 					find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 					# --- make iso file -----------------------------------------------
-					case "${CODE_NAME[1]}" in
-						ubuntu*20.10* )
-							ELT_BOOT=boot/grub/i386-pc/eltorito.img
-							ELT_CATA=boot.catalog
-							;;
-						* )
-							ELT_BOOT=isolinux/isolinux.bin
-							ELT_CATA=isolinux/boot.cat
-							;;
-					esac
+					if [ -f isolinux.bin ]; then
+						ELT_BOOT=isolinux.bin
+						ELT_CATA=boot.cat
+					elif [ -f isolinux/isolinux.bin ]; then
+						ELT_BOOT=isolinux/isolinux.bin
+						ELT_CATA=isolinux/boot.cat
+					elif [ -f boot/grub/i386-pc/eltorito.img ]; then
+						ELT_BOOT=boot/grub/i386-pc/eltorito.img
+						ELT_CATA=boot.catalog
+					fi
 					xorriso -as mkisofs \
 					    -quiet \
 					    -iso-level 3 \

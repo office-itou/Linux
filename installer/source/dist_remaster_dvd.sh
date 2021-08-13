@@ -35,6 +35,7 @@
 ##	2021/08/04 000.0000 J.Itou         debian-bullseye-DI-rc3-amd64-DVD-1.iso追加
 ##	2021/08/06 000.0000 J.Itou         処理見直し
 ##	2021/08/08 000.0000 J.Itou         不具合修正
+##	2021/08/09 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -55,13 +56,13 @@
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
 	ARRAY_NAME=(                                                                                                                                                                                                           \
-	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                 preseed_debian.cfg                          2017-06-17 2022-xx-xx oldstable     " \
-	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                          preseed_debian.cfg                          2019-07-06 20xx-xx-xx stable        " \
+	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                 preseed_debian.cfg                          2017-06-17 2022-06-30 oldstable     " \
+	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                          preseed_debian.cfg                          2019-07-06 2024-xx-xx stable        " \
 	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
-	    "debian http://cdimage.debian.org/cdimage/bullseye_di_rc3/amd64/iso-dvd/debian-bullseye-DI-rc3-amd64-DVD-1.iso                   preseed_debian.cfg                          2021-08-xx 20xx-xx-xx testing       " \
-	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus  " \
-	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                        preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
-	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                   preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2025-04-xx Focal_Fossa   " \
+	    "debian http://cdimage.debian.org/cdimage/bullseye_di_rc3/amd64/iso-dvd/debian-bullseye-DI-rc3-amd64-DVD-1.iso                   preseed_debian.cfg                          2021-08-xx 20xx-xx-xx bullseye      " \
+	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg                          2016-04-21 2024-04-xx Xenial_Xerus  " \
+	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                        preseed_ubuntu.cfg                          2018-04-26 2028-04-xx Bionic_Beaver " \
+	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                   preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2030-04-xx Focal_Fossa   " \
 	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-live-server-amd64.iso                                                  preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-10-22 2021-07-xx Groovy_Gorilla" \
 	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                 preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22 2022-01-xx Hirsute_Hippo " \
 	    "centos http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                            kickstart_centos.cfg                        2021-06-03 2021-12-31 RHEL_8.4      " \
@@ -70,11 +71,17 @@
 	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64.iso                                yast_opensuse153.xml                        2021-06-02 20xx-xx-xx kernel_5.3.18 " \
 	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml                         2021-xx-xx 20xx-xx-xx kernel_x.x    " \
 	    "rocky  https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                    kickstart_rocky.cfg                         2021-06-21 20xx-xx-xx RHEL_8.4      " \
-	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus  " \
-	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
-	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                       preseed_ubuntu.cfg                          2020-04-23 2025-04-xx Focal_Fossa   " \
-	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2020-10-22 2021-07-xx Groovy_Gorilla" \
+	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2016-04-21 2024-04-xx Xenial_Xerus  " \
+	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2028-04-xx Bionic_Beaver " \
+	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                       preseed_ubuntu.cfg                          2020-04-23 2030-04-xx Focal_Fossa   " \
+	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2020-10-22 2021-07-22 Groovy_Gorilla" \
 	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2021-04-22 2022-01-xx Hirsute_Hippo " \
+	    "ubuntu http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                    preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri  " \
+	    "ubuntu http://cdimage.ubuntu.com/daily-canary/current/impish-desktop-canary-amd64.iso                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-xx Impish_Indri  " \
+	    "debian http://cdimage.debian.org/cdimage/archive/9.13.0-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso                 preseed_debian.cfg                          2017-06-17 2022-06-30 oldstable     " \
+	    "debian http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-10.10.0-amd64-lxde.iso               preseed_debian.cfg                          2019-07-06 2024-xx-xx stable        " \
+	    "debian http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                 preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
+	    "debian http://cdimage.debian.org/cdimage/bullseye_di_rc3-live/amd64/iso-hybrid/debian-live-blseye-DI-rc3-amd64-lxde.iso         preseed_debian.cfg                          2021-08-xx 20xx-xx-xx bullseye      " \
 	)   # 区分  ダウンロード先URL                                                                                                        定義ファイル                                リリース日 サポ終了日 備考
 #	    "debian https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg                          2013-05-04 2018-05-31 wheezy        " \
 #	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg                          2015-04-25 2020-06-30 oldoldstable  " \
@@ -108,7 +115,7 @@ fncMenu () {
 		# ---------------------------------------------------------------------
 		if [ "`echo ${CODE_NAME[1]} | sed -n '/\.\*/p'`" != "" ]; then
 			DIR_NAME=`dirname ${CODE_NAME[2]}`
-			FIL_NAME=`curl -L -# -l -R -S "${DIR_NAME}" 2> /dev/null | sed -n "s/.*\"\(${CODE_NAME[1]}.iso\)\".*/\1/p" | uniq`
+			FIL_NAME=`curl -L -l -R -S -s -f "${DIR_NAME}" 2> /dev/null | sed -n "s/.*\"\(${CODE_NAME[1]}.iso\)\".*/\1/p" | uniq`
 			CODE_NAME[1]=`echo ${FIL_NAME} | sed -e 's/.iso//ig'`
 			CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_NAME}`
 			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
@@ -174,9 +181,9 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 		else
-			curl -f -L -s --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -185,7 +192,7 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
@@ -198,6 +205,7 @@ fncRemaster () {
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
+		echo "--- copy DVD -> work directory ------------------------------------------------"
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
 			find . -depth -print | cpio -pdm --quiet ../image/
@@ -213,9 +221,10 @@ fncRemaster () {
 					WALL_FILE="ubuntu_splash.png"
 					if [ -f isolinux/txt.cfg ]; then
 						if [ ! -f "../../../${WALL_FILE}" ]; then
+							echo "--- get splash.png ------------------------------------------------------------"
 							curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 						else
-							curl -L -s --connect-timeout 60 --dump-header "header.txt" "${WALL_URL}"
+							curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${WALL_URL}"
 							WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 							WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
 							WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
@@ -223,6 +232,7 @@ fncRemaster () {
 							FILE_SIZE=`echo ${FILE_INFO} | awk '{print $5;}'`
 							FILE_DATE=`echo ${FILE_INFO} | awk '{print $6;}'`
 							if [ "${WEB_SIZE}" != "${FILE_SIZE}" ] || [ "${WEB_DATE}" != "${FILE_DATE}" ]; then
+								echo "--- get splash.png ------------------------------------------------------------"
 								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 							fi
 							if [ -f "header.txt" ]; then
@@ -237,19 +247,26 @@ fncRemaster () {
 			case "${CODE_NAME[0]}" in
 				"debian" | \
 				"ubuntu" )
+					EFI_IMAG="boot/grub/efi.img"
+					ISO_NAME="${DVD_NAME}-preseed"
+					# ---------------------------------------------------------
+					mkdir -p "preseed"
+					CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $1;}'`
+					CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
+					if [ -f "../../../${CFG_FILE}" ]; then
+						cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
+					else
+						echo "--- get preseed.cfg -----------------------------------------------------------"
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+					fi
+					# ---------------------------------------------------------
 					case "${CODE_NAME[1]}" in
-						*live* )							# --- get user-data
+						debian-live-* )
+							;;
+						*canary*      | \
+						*live-server* )						# --- get user-data
 							EFI_IMAG="boot/grub/efi.img"
 							ISO_NAME="${DVD_NAME}-nocloud"
-							# -------------------------------------------------
-							mkdir -p "preseed"
-							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $1;}'`
-							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
-							if [ -f "../../../${CFG_FILE}" ]; then
-								cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
-							else
-								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
-							fi
 							# -------------------------------------------------
 							mkdir -p "nocloud"
 							touch nocloud/meta-data
@@ -259,31 +276,20 @@ fncRemaster () {
 							if [ -f "../../../${CFG_FILE}" ]; then
 								cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
 							else
-								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+								echo "--- get user-data -------------------------------------------------------------"
+								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
 							fi
 							;;
-						* )									# --- get preseed.cfg
-							EFI_IMAG="boot/grub/efi.img"
-							ISO_NAME="${DVD_NAME}-preseed"
-							mkdir -p "preseed"
-							if [ -f "../../../${CFG_NAME}" ]; then
-								cp --preserve=timestamps "../../../${CFG_NAME}" "preseed/preseed.cfg"
-							else
-								curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
-							fi
-							case "${CODE_NAME[1]}" in
-								*desktop* )						# --- get sub shell
-									SUB_PROG="ubuntu-sub_success_command.sh"
-									CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${SUB_PROG}~"`
-									if [ -f "../../../${SUB_PROG}" ]; then
-										cp --preserve=timestamps "../../../${SUB_PROG}" "preseed/${SUB_PROG}"
-									else
-										curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/${SUB_PROG}" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
-									fi
-									;;
-								* )	;;
-							esac
-							;;
+#						*desktop* )							# --- get sub shell
+#							SUB_PROG="ubuntu-sub_success_command.sh"
+#							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${SUB_PROG}~"`
+#							if [ -f "../../../${SUB_PROG}" ]; then
+#								cp --preserve=timestamps "../../../${SUB_PROG}" "preseed/${SUB_PROG}"
+#							else
+#								echo "--- get sub shell -------------------------------------------------------------"
+#								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/${SUB_PROG}" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+#							fi
+#							;;
 						* )	;;
 					esac
 					;;
@@ -296,7 +302,8 @@ fncRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
 					else
-						curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
+						echo "--- get ks.cfg ----------------------------------------------------------------"
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
 					fi
 					case "${WORK_DIRS}" in
 						*net* )
@@ -319,7 +326,8 @@ fncRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
 					else
-						curl -f -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
+						echo "--- get autoinst.xml ----------------------------------------------------------"
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
 					fi
 					;;
 				* )	;;
@@ -334,8 +342,136 @@ fncRemaster () {
 			case "${CODE_NAME[0]}" in
 				"debian" )	# ･････････････････････････････････････････････････
 					case "${CODE_NAME[1]}" in
-						debian-7.*        | \
-						debian-8.*        )
+						*-live-* )
+							# === 日本語化 ====================================
+							INS_CFG="locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp"
+							# --- grub.cfg --------------------------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry \"Debian GNU\/Linux.*\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\(Debian GNU\/Linux.*)\)/\1 for Japanese language/'                      \
+							    -e "s~\(components\)~\1 ${INS_CFG}~"                               | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                       \
+							    -e '1i set default=0'                                                \
+							    -e '1i set timeout=5'                                                \
+							> grub.cfg
+							mv grub.cfg boot/grub/
+							# --- menu.cfg --------------------------------------------------------
+							INS_ROW=$((`sed -n '/^LABEL/ =' isolinux/menu.cfg | head -n 1`-1))
+							INS_STR=`sed -n 's/LABEL \(Debian GNU\/Linux Live.*\)/\1 for Japanese language/p' isolinux/menu.cfg`
+							sed -n '/LABEL Debian GNU\/Linux Live.*/,/^$/p' isolinux/menu.cfg | \
+							sed -e "s~\(LABEL\) .*~\1 ${INS_STR}~"                              \
+							    -e "s~\(SAY\) .*~\1 \"${INS_STR}\.\.\.\"~"                      \
+							    -e "s~\(APPEND .* components\) \(.*$\)~\1 ${INS_CFG} \2~"     | \
+							sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg                 | \
+							sed -e "s~^\(DEFAULT\) .*$~\1 ${INS_STR}~"                          \
+							> menu.cfg
+							mv menu.cfg isolinux/
+							# ---------------------------------------------------------------------
+							sed -i isolinux/isolinux.cfg     \
+							    -e 's/\(timeout\).*$/\1 50/'
+							# === preseed =====================================
+							INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
+							# --- grub.cfg ----------------------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry "Graphical Debian Installer"/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry "Graphical Debian Installer"/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\(menuentry "Graphical Debian\) \(Installer"\)/\1 Auto \2/'         \
+							    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                                   | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                            \
+							> grub.cfg
+							mv grub.cfg boot/grub/
+							# --- menu.cfg ----------------------------------------------------
+							INS_ROW=$((`sed -n '/^LABEL Graphical Debian Installer/ =' isolinux/menu.cfg | head -n 1`-1))
+							sed -n '/LABEL Graphical Debian Installer$/,/^$/p' isolinux/menu.cfg | \
+							sed -e 's/^\(LABEL Graphical Debian\) \(Installer\)/\1 Auto \2/'       \
+							    -e "s/\(APPEND.*\$\)/\1 ${INS_CFG}/"                             | \
+							sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg                      \
+							> menu.cfg
+							mv menu.cfg isolinux/
+							# --- success_command -----------------------------
+							OLD_IFS=${IFS}
+							IFS=$'\n'
+							# --- packages ------------------------------------
+							LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' preseed/preseed.cfg  | \
+							           sed -z 's/\n//g'                                                          | \
+							           sed -e 's/.* multiselect *//'                                               \
+							               -e 's/[,|\\\\]//g'                                                      \
+							               -e 's/\t/ /g'                                                           \
+							               -e 's/  */ /g'                                                          \
+							               -e 's/^ *//'`
+							LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' preseed/preseed.cfg | \
+							           sed -z 's/\n//g'                                                          | \
+							           sed -e 's/.* string *//'                                                    \
+							               -e 's/[,|\\\\]//g'                                                      \
+							               -e 's/\t/ /g'                                                           \
+							               -e 's/  */ /g'                                                          \
+							               -e 's/^ *//'`
+							# -------------------------------------------------
+							LATE_CMD="\      in-target sed -i.orig /etc/apt/sources.list -e '/cdrom/ s/^ *\(deb\)/# \1/g'; \\\\\n"
+							LATE_CMD+="      in-target apt -qq    update; \\\\\n"
+							LATE_CMD+="      in-target apt -qq -y full-upgrade; \\\\\n"
+							LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
+							LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
+							mount -r -o loop ./live/filesystem.squashfs ../mnt
+							if [ -f ../media/usr/lib/systemd/system/connman.service ]; then
+								LATE_CMD+=" \\\\\n      in-target systemctl disable connman.service;"
+							fi
+							umount ../mnt
+							sed -i "preseed/preseed.cfg"                  \
+							    -e '/preseed\/late_command/ s/#/ /g'      \
+							    -e "/preseed\/late_command/a ${LATE_CMD}"
+							IFS=${OLD_IFS}
+							;;
+						* )
+							INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
+							# --- grub.cfg --------------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry .*'\''Install'\''/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\(Install\)/Auto \1/'                                    \
+							    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                          \
+							    -e 's/\(--hotkey\)=./\1=a/'                                  | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg               | \
+							sed -e 's/\(set default\)="1"/\1="0"/'                             \
+							    -e '1i set timeout=5'                                          \
+							    -e 's/\(set theme\)/# \1/g'                                    \
+							    -e 's/\(set gfxmode\)/# \1/g'                                  \
+							    -e 's/ vga=[0-9]*//g'                                          \
+							> grub.cfg
+							mv grub.cfg boot/grub/
+							# --- txt.cfg ---------------------------------------------
+							sed -i isolinux/isolinux.cfg     \
+							    -e 's/\(timeout\).*$/\1 50/'
+							sed -i isolinux/prompt.cfg       \
+							    -e 's/\(timeout\).*$/\1 50/'
+							sed -i isolinux/gtk.cfg        \
+							    -e '/^.*menu default.*$/d'
+							sed -i isolinux/txt.cfg        \
+							    -e '/^.*menu default.*$/d'
+							INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+							INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | head -n 1 | sed -e 's/\(^.*menu\) label.*$/\1 default/'`"
+							if [ ${INS_ROW} -ge 1 ]; then
+								sed -n '/label install/,/^$/p' isolinux/txt.cfg  | \
+								sed -e 's/^\(label\) install/\1 autoinst/'         \
+								    -e 's/\(Install\)/Auto \1/'                    \
+								    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"           \
+								    -e "/menu label/a  ${INS_STR}"               | \
+								sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg   \
+								    -e 's/\(timeout\).*$/\1 50/'                   \
+								> txt.cfg
+							else
+								sed -n '/label install/,/^$/p' isolinux/txt.cfg  | \
+								sed -e 's/^\(label\) install/\1 autoinst/'         \
+								    -e 's/\(Install\)/Auto \1/'                    \
+								    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"           \
+								    -e "/menu label/a  ${INS_STR}"                 \
+								> txt.cfg
+								cat isolinux/txt.cfg >> txt.cfg
+							fi
+							mv txt.cfg isolinux/
+							;;
+					esac
+					case "${CODE_NAME[1]}" in
+						*-7.*        | \
+						*-8.*        )
 							sed -i "preseed/preseed.cfg"                                                                               \
 							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/hostname\).*$/\1 string archive.debian.org/'                     \
 							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/directory\).*$/\1 string \/debian-archive\/debian/'              \
@@ -343,65 +479,19 @@ fncRemaster () {
 							    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'
 #							    -e 's/\(^[ \t]*d-i[ \t]*netcfg\/get_nameservers\)[ \t]*[A-Za-z]*[ \t]*\(.*\)$/\1 string 127.0.0.1 \2/'
 							;;
-						debian-9.*        )
+						*-9.*        )
 							;;
-						debian-10.*       )
+						*-10.*       )
 							;;
-						debian-11.*       | \
-						debian-bullseye-* | \
-						debian-testing-*  )
+						*-11.*       | \
+						*-bullseye-* | \
+						*-testing-*  )
 							sed -i "preseed/preseed.cfg"                                                 \
 							    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'             \
 							    -e 's/#[ \t]\([ \t]*in-target systemctl disable connman.service\)/  \1/'
 							;;
 						* )	;;
 					esac
-					# ---------------------------------------------------------
-					INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
-					# --- txt.cfg ---------------------------------------------
-					sed -i isolinux/isolinux.cfg     \
-					    -e 's/\(timeout\).*$/\1 50/'
-					sed -i isolinux/prompt.cfg       \
-					    -e 's/\(timeout\).*$/\1 50/'
-					sed -i isolinux/gtk.cfg        \
-					    -e '/^.*menu default.*$/d'
-					sed -i isolinux/txt.cfg        \
-					    -e '/^.*menu default.*$/d'
-					INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-					INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | head -n 1 | sed -e 's/\(^.*menu\) label.*$/\1 default/'`"
-					if [ ${INS_ROW} -ge 1 ]; then
-						sed -n '/label install/,/^$/p' isolinux/txt.cfg  | \
-						sed -e 's/^\(label\) install/\1 autoinst/'         \
-						    -e 's/\(Install\)/Auto \1/'                    \
-						    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"           \
-						    -e "/menu label/a  ${INS_STR}"               | \
-						sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg   \
-						    -e 's/\(timeout\).*$/\1 50/'                   \
-						> txt.cfg
-					else
-						sed -n '/label install/,/^$/p' isolinux/txt.cfg  | \
-						sed -e 's/^\(label\) install/\1 autoinst/'         \
-						    -e 's/\(Install\)/Auto \1/'                    \
-						    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"           \
-						    -e "/menu label/a  ${INS_STR}"                 \
-						> txt.cfg
-						cat isolinux/txt.cfg >> txt.cfg
-					fi
-					mv txt.cfg isolinux/
-					# --- grub.cfg --------------------------------------------
-					INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-					sed -n '/^menuentry .*'\''Install'\''/,/^}/p' boot/grub/grub.cfg | \
-					sed -e 's/\(Install\)/Auto \1/'                                    \
-					    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                          \
-					    -e 's/\(--hotkey\)=./\1=a/'                                  | \
-					sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg               | \
-					sed -e 's/\(set default\)="1"/\1="0"/'                             \
-					    -e '1i set timeout=5'                                          \
-					    -e 's/\(set theme\)/# \1/g'                                    \
-					    -e 's/\(set gfxmode\)/# \1/g'                                  \
-					    -e 's/ vga=[0-9]*//g'                                          \
-					> grub.cfg
-					mv grub.cfg boot/grub/
 					# ---------------------------------------------------------
 					chmod 444 "preseed/preseed.cfg"
 					;;
@@ -546,13 +636,17 @@ fncRemaster () {
 								chmod 444 "isolinux/splash.png"
 							fi
 							# === preseed =====================================
-							INS_CFG="\/cdrom\/preseed\/preseed.cfg auto=true"
+							case "${CODE_NAME[1]}" in
+								*canary* ) INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\" auto=true" ;;
+								*        ) INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"              ;;
+							esac
 							# --- grub.cfg ------------------------------------
 							INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"/ =' boot/grub/grub.cfg | head -n 1`-1))
 							sed -n '/^menuentry \"Install\|Ubuntu\"/,/^}/p' boot/grub/grub.cfg    | \
 							sed -e 's/\"Install \(Ubuntu\)\"/\"Auto Install \1\"/'                  \
 							    -e 's/\"\(Ubuntu\)\"/\"Auto Install \1\"/'                          \
-							    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                \
+							    -e 's/file.*seed//'                                                 \
+							    -e "s/\(vmlinuz\) */\1 ${INS_CFG} /"                                \
 							    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity noprompt/' | \
 							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                    | \
 							sed -e 's/\(set default\)="1"/\1="0"/'                                  \
@@ -567,7 +661,8 @@ fncRemaster () {
 								sed -n '/label live-install$/,/append/p' isolinux/txt.cfg             | \
 								sed -e 's/^\(label\).*/\1 autoinst/'                                    \
 								    -e 's/\(Install\)/Auto \1/'                                         \
-								    -e "s/\(file\).*seed/\1=${INS_CFG}/"                                \
+								    -e 's/file.*seed//'                                                 \
+								    -e "s/\(append\) */\1 ${INS_CFG//\"/} /"                            \
 								    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity noprompt/' | \
 								sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg                        \
 								> txt.cfg
@@ -599,7 +694,11 @@ fncRemaster () {
 							LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
 							LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
 							# --- network -------------------------------------
-							mount -r -o loop ./casper/filesystem.squashfs ../mnt
+							if [ -f ./casper/filesystem.squashfs ]; then
+								mount -r -o loop ./casper/filesystem.squashfs ../mnt
+							else
+								mount -r -o loop ./casper/minimal.squashfs    ../mnt
+							fi
 							if [ -f ../mnt/usr/lib/systemd/system/connman.service ]; then
 								LATE_CMD+=" \\\\\n      in-target systemctl disable connman.service;"
 							fi
@@ -655,8 +754,16 @@ _EOT_
 							    -e "/ubiquity\/success_command/a ${LATE_CMD}"
 							IFS=${OLD_IFS}
 							# -------------------------------------------------
-							chmod 444 "preseed/preseed.cfg"
-#							chmod 555 "preseed/${SUB_PROG}"
+							case "${CODE_NAME[1]}" in
+								*canary* )					# --- nocloud -----
+									chmod 444 "nocloud/meta-data"
+									chmod 444 "nocloud/user-data"
+									;;
+								* )							# --- preseed.cfg -
+									chmod 444 "preseed/preseed.cfg"
+#									chmod 555 "preseed/${SUB_PROG}"
+									;;
+							esac
 							;;
 						* )	;;
 					esac
@@ -788,6 +895,8 @@ _EOT_
 					;;
 				* )	;;
 			esac
+			# -----------------------------------------------------------------
+			echo "--- make iso file -------------------------------------------------------------"
 			case "${CODE_NAME[0]}" in
 				"debian" | \
 				"ubuntu" | \
@@ -797,17 +906,16 @@ _EOT_
 					rm -f md5sum.txt
 					find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 					# --- make iso file -----------------------------------------------
-					case "${CODE_NAME[1]}" in
-						ubuntu*20.10* | \
-						ubuntu*21.04* )
-							ELT_BOOT=boot/grub/i386-pc/eltorito.img
-							ELT_CATA=boot.catalog
-							;;
-						* )
-							ELT_BOOT=isolinux/isolinux.bin
-							ELT_CATA=isolinux/boot.cat
-							;;
-					esac
+					if [ -f isolinux.bin ]; then
+						ELT_BOOT=isolinux.bin
+						ELT_CATA=boot.cat
+					elif [ -f isolinux/isolinux.bin ]; then
+						ELT_BOOT=isolinux/isolinux.bin
+						ELT_CATA=isolinux/boot.cat
+					elif [ -f boot/grub/i386-pc/eltorito.img ]; then
+						ELT_BOOT=boot/grub/i386-pc/eltorito.img
+						ELT_CATA=boot.catalog
+					fi
 					xorriso -as mkisofs \
 					    -quiet \
 					    -iso-level 3 \
@@ -1066,7 +1174,7 @@ _EOT_
 # 19.04:Disco Dingo      :2019-04-18:2020-01-23
 # 19.10:Eoan Ermine      :2019-10-17:2020-07-17
 # 20.04:Focal Fossa      :2020-04-23:2025-04-xx/2030-04-xx:LTS
-# 20.10:Groovy Gorilla   :2020-10-22:2021-07-xx
+# 20.10:Groovy Gorilla   :2020-10-22:2021-07-22
 # 21.04:Hirsute Hippo    :2021-04-22:2022-01-xx
 # 21.10:Impish Indri     :2021-10-14:2022-07-xx
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
