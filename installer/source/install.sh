@@ -74,6 +74,7 @@
 ##	2021/07/09 000.0000 J.Itou         処理追加(関数追加)
 ##	2021/08/03 000.0000 J.Itou         処理見直し(NICの順番をstatic優先に)
 ##	2021/08/06 000.0000 J.Itou         処理見直し(不具合修正等を含む)
+##	2021/08/14 000.0000 J.Itou         処理見直し(不具合修正等を含む)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -237,9 +238,11 @@ fncIPv6Reverse () {
 
 	for INP_ADDR in "$@"
 	do
-		OUT_ARRY+=($(echo ${INP_ADDR//:/} | \
-		    awk '{for(i=length();i>1;i--) printf("%c.", substr($0,i,1));     \
-		                                  printf("%c" , substr($0,1,1));}'))
+		if [ "${INP_ADDR}" != "" ]; then
+			OUT_ARRY+=($(echo ${INP_ADDR//:/} | \
+			    awk '{for(i=length();i>1;i--) printf("%c.", substr($0,i,1));     \
+			                                  printf("%c" , substr($0,1,1));}'))
+		fi
 	done
 	echo "${OUT_ARRY[@]}"
 }
@@ -256,16 +259,18 @@ fncIPv6Conv () {
 
 	for INP_ADDR in "$@"
 	do
-		STR_FSEP=${INP_ADDR//[^:]}
-		CNT_FSEP=$((7-${#STR_FSEP}))
-		(($CNT_FSEP)) && \
-		    INP_ADDR=${INP_ADDR/::/"$(eval printf ':%.s' {1..$((CNT_FSEP+2))})"}
-		OLD_IFS=${IFS}
-		IFS=:
-		OUT_ARRY=(${INP_ADDR/%:/::})
-		IFS=${OLD_IFS}
-		OUT_TEMP=$(printf ':%04x' "${OUT_ARRY[@]/#/0x0}")
-		OUT_ADDR+=("${OUT_TEMP:1}")
+		if [ "${INP_ADDR}" != "" ]; then
+			STR_FSEP=${INP_ADDR//[^:]}
+			CNT_FSEP=$((7-${#STR_FSEP}))
+			(($CNT_FSEP)) && \
+			    INP_ADDR=${INP_ADDR/::/"$(eval printf ':%.s' {1..$((CNT_FSEP+2))})"}
+			OLD_IFS=${IFS}
+			IFS=:
+			OUT_ARRY=(${INP_ADDR/%:/::})
+			IFS=${OLD_IFS}
+			OUT_TEMP=$(printf ':%04x' "${OUT_ARRY[@]/#/0x0}")
+			OUT_ADDR+=("${OUT_TEMP:1}")
+		fi
 	done
 	echo "${OUT_ADDR[@]}"
 }
@@ -278,12 +283,14 @@ fncIPv4GetNetmask () {
 
 	for INP_ADDR in "$@"
 	do
-		DEC_ADDR=$((0xFFFFFFFF ^ ((2 ** (32-$((${INP_ADDR}))))-1)))
-		OUT_ARRY+=($(printf '%d.%d.%d.%d' \
-		    $((${DEC_ADDR} >> 24)) \
-		    $(((${DEC_ADDR} >> 16) & 0xFF)) \
-		    $(((${DEC_ADDR} >> 8) & 0xFF)) \
-		    $((${DEC_ADDR} & 0xFF))))
+		if [ "${INP_ADDR}" != "" ]; then
+			DEC_ADDR=$((0xFFFFFFFF ^ ((2 ** (32-$((${INP_ADDR}))))-1)))
+			OUT_ARRY+=($(printf '%d.%d.%d.%d' \
+			    $((${DEC_ADDR} >> 24)) \
+			    $(((${DEC_ADDR} >> 16) & 0xFF)) \
+			    $(((${DEC_ADDR} >> 8) & 0xFF)) \
+			    $((${DEC_ADDR} & 0xFF))))
+		fi
 	done
 	echo "${OUT_ARRY[@]}"
 }
@@ -295,7 +302,9 @@ fncIPv4GetNetmaskBits () {
 
 	for INP_ADDR in "$@"
 	do
-		OUT_ARRY+=`echo ${INP_ADDR} | awk -F. '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
+		if [ "${INP_ADDR}" != "" ]; then
+			OUT_ARRY+=`echo ${INP_ADDR} | awk -F. '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
+		fi
 	done
 	echo "${OUT_ARRY[@]}"
 }
@@ -967,7 +976,8 @@ _EOT_
 	if [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
 		nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
 		nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
-#		nmcli c up     "${CON_UUID}"
+		nmcli c down   "${CON_UUID}" 1> /dev/null
+		nmcli c up     "${CON_UUID}" 1> /dev/null
 	elif [ ! -f /etc/sysconfig/network/config.orig ] && \
 		 [   -f /etc/sysconfig/network/config      ] && \
 		 [ ! -h /etc/sysconfig/network/config      ]; then
@@ -996,6 +1006,7 @@ _EOT_
 	#--------------------------------------------------------------------------
 	if [ "${SYS_NAME}" = "ubuntu" ]; then										# Ubuntuの判定
 		if [ "`awk '/nameserver 127.0.0.53/ {print $0;}' /etc/resolv.conf`" != "" ]; then
+			echo "--- systemd-resolved disable --------------------------------------------------"
 			fncProc systemd-resolved disable									# nameserver 127.0.0.53 の無効化
 		fi
 	fi

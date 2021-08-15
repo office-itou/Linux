@@ -53,7 +53,7 @@ autoinstall:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$rkzAGLPdNjHz2r$aQjjTAfNZ4dxbipFi16W.u/1lYf181yT88fGL6AqmUEzO0xgIHlnHaIWGil72Y5KP/NDQNHxPDEHeK4ouKDpK0"
+    password: "$6$MSKdjuuejLv$SyQOzxtijp/b/4MN9JneS7MQYEMyJQdbC3DHcfHc.QsD/q2MweXggG/8zOOJ0Q3nToF422f97lfsI7yTczMoo."
 # =============================================================================
   locale: ja_JP.UTF-8
   keyboard:
@@ -98,7 +98,6 @@ autoinstall:
   - curl
   - wget
   - rsync
-  - inxi
   - build-essential
   - indent
   - vim
@@ -108,8 +107,8 @@ autoinstall:
   - whois
   - openssh-server
   - bind9
-  - bind9utils
-  - dnsutils
+  - bind9-utils
+  - bind9-dnsutils
   - samba
   - smbclient
   - cifs-utils
@@ -119,12 +118,8 @@ autoinstall:
   - language-pack-gnome-ja
   - language-pack-ja
   - language-pack-ja-base
-  - ubuntu-server
-  - ubuntu-desktop
-  - fonts-noto
+  - fonts-noto-core
   - ibus-mozc
-  - mozc-utils-gui
-  - gnome-getting-started-docs-ja
   - gnome-user-docs-ja
   - libreoffice-help-ja
   - libreoffice-l10n-ja
@@ -141,7 +136,9 @@ autoinstall:
     runcmd:
     - mkdir -p /etc/NetworkManager/conf.d/
     - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+    - apt -qq    update
+    - apt -qq -y full-upgrade
     - shutdown -r now
 # =============================================================================
-# Created at 2021/08/12 16:21:15
+# Created at 2021/08/14 15:23:09
 # === EOF =====================================================================

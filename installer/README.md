@@ -26,7 +26,7 @@
 | [kickstart_fedora.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_fedora.cfg)    | Fedora用 |
 | [kickstart_rocky.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_rocky.cfg)    | Rocky Linux用 |
 | [nocloud-ubuntu-user-data](https://github.com/office-itou/Linux/blob/master/installer/source/nocloud-ubuntu-user-data) | ubuntu用 |
-| [yast_opensuse15.xml](https://github.com/office-itou/Linux/blob/master/installer/source/yast_opensuse15.xml) | OpenSUSE15用 |
+| [yast_opensuse153.xml](https://github.com/office-itou/Linux/blob/master/installer/source/yast_opensuse153.xml) | OpenSUSE15.3用 |
 | [yast_opensuse16.xml](https://github.com/office-itou/Linux/blob/master/installer/source/yast_opensuse16.xml) | OpenSUSE16用 |
 
   
@@ -37,6 +37,7 @@
 | [install.sh](https://github.com/office-itou/Linux/blob/master/installer/source/install.sh)              | インストール作業用  |
 | [addusers.sh](https://github.com/office-itou/Linux/blob/master/installer/source/addusers.sh)             | ユーザー登録用      |
 | [addusers_txt_maker.sh](https://github.com/office-itou/Linux/blob/master/installer/source/addusers_txt_maker.sh)   | 登録ユーザー取得用  |
+| [cloud_preseed.sh](https://github.com/office-itou/Linux/blob/master/installer/source/cloud_preseed.sh)   | preseed.cfg→user-data変換  |
   
 【メニュー画面】  
   

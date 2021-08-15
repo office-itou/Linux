@@ -36,6 +36,7 @@
 ##	2021/08/06 000.0000 J.Itou         処理見直し
 ##	2021/08/08 000.0000 J.Itou         不具合修正
 ##	2021/08/09 000.0000 J.Itou         処理見直し
+##	2021/08/15 000.0000 J.Itou         debian 11 対応
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -56,10 +57,10 @@
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
 	ARRAY_NAME=(                                                                                                                                                                                                           \
-	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                 preseed_debian.cfg                          2017-06-17 2022-06-30 oldstable     " \
-	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                          preseed_debian.cfg                          2019-07-06 2024-xx-xx stable        " \
+	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso              preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable  " \
+	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                 preseed_debian.cfg                          2019-07-06 2024-xx-xx oldstable     " \
+	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                          preseed_debian.cfg                          2021-08-14 20xx-xx-xx stable        " \
 	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
-	    "debian http://cdimage.debian.org/cdimage/bullseye_di_rc3/amd64/iso-dvd/debian-bullseye-DI-rc3-amd64-DVD-1.iso                   preseed_debian.cfg                          2021-08-xx 20xx-xx-xx bullseye      " \
 	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg                          2016-04-21 2024-04-xx Xenial_Xerus  " \
 	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                        preseed_ubuntu.cfg                          2018-04-26 2028-04-xx Bionic_Beaver " \
 	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                   preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2030-04-xx Focal_Fossa   " \
@@ -78,14 +79,15 @@
 	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2021-04-22 2022-01-xx Hirsute_Hippo " \
 	    "ubuntu http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                    preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri  " \
 	    "ubuntu http://cdimage.ubuntu.com/daily-canary/current/impish-desktop-canary-amd64.iso                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-xx Impish_Indri  " \
-	    "debian http://cdimage.debian.org/cdimage/archive/9.13.0-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso                 preseed_debian.cfg                          2017-06-17 2022-06-30 oldstable     " \
-	    "debian http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-10.10.0-amd64-lxde.iso               preseed_debian.cfg                          2019-07-06 2024-xx-xx stable        " \
+	    "debian http://cdimage.debian.org/cdimage/archive/9.13.0-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso                 preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable  " \
+	    "debian http://cdimage.debian.org/cdimage/archive/10.10.0-live/amd64/iso-hybrid/debian-live-10.10.0-amd64-lxde.iso               preseed_debian.cfg                          2019-07-06 2024-xx-xx oldstable     " \
+	    "debian http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso               preseed_debian.cfg                          2021-08-14 20xx-xx-xx stable        " \
 	    "debian http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                 preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
-	    "debian http://cdimage.debian.org/cdimage/bullseye_di_rc3-live/amd64/iso-hybrid/debian-live-blseye-DI-rc3-amd64-lxde.iso         preseed_debian.cfg                          2021-08-xx 20xx-xx-xx bullseye      " \
 	)   # 区分  ダウンロード先URL                                                                                                        定義ファイル                                リリース日 サポ終了日 備考
 #	    "debian https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg                          2013-05-04 2018-05-31 wheezy        " \
 #	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg                          2015-04-25 2020-06-30 oldoldstable  " \
 #	    "debian https://cdimage.debian.org/cdimage/bullseye_di_alpha3/amd64/iso-dvd/debian-bullseye-DI-alpha3-amd64-DVD-1.iso            preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
+#	    "debian http://cdimage.debian.org/cdimage/bullseye_di_rc3/amd64/iso-dvd/debian-bullseye-DI-rc3-amd64-DVD-1.iso                   preseed_debian.cfg                          2021-08-xx 20xx-xx-xx bullseye      " \
 #	    "ubuntu http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg                          2020-04-23 2025-04-xx Focal_Fossa   " \
 #	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus  " \
 #	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
@@ -269,8 +271,10 @@ fncRemaster () {
 							ISO_NAME="${DVD_NAME}-nocloud"
 							# -------------------------------------------------
 							mkdir -p "nocloud"
-							touch nocloud/meta-data
-							touch nocloud/user-data
+							touch nocloud/user-data			# 必須
+							touch nocloud/meta-data			# 必須
+#							touch nocloud/vendor-data		# 省略可能
+#							touch nocloud/network-config	# 省略可能
 							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
 							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
 							if [ -f "../../../${CFG_FILE}" ]; then
@@ -520,26 +524,29 @@ fncRemaster () {
 						* )	;;
 					esac
 					case "${CODE_NAME[1]}" in
+						*canary* | \
 						*live*   | \
 						*server* )
 							case "${CODE_NAME[1]}" in
+								*canary* | \
 								*live*   ) INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\"" ;;
 								*server* ) INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"    ;;
 								* )	;;
 							esac
 							# --- grub.cfg ------------------------------------
-							INS_ROW=$((`sed -n '/^menuentry \"\(Install \)*Ubuntu Server\"/ =' boot/grub/grub.cfg | head -n 1`-1))
-							sed -n '/^menuentry \"\(Install \)*Ubuntu Server\"/,/^}/p' boot/grub/grub.cfg | \
-							sed -n '0,/\}/p'                                                              | \
-							sed -e 's/\"\(Install \)*\(Ubuntu Server\)\"/\"Auto Install \1\"/'              \
-							    -e 's/file.*seed//'                                                         \
-							    -e "s/\(vmlinuz\) */\1 ${INS_CFG} /"                                      | \
-							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                            | \
-							sed -e '1i set timeout=5'                                                       \
-							    -e 's/\(set default\)="1"/\1="0"/'                                          \
-							    -e 's/\(set timeout\).*$/\1=5/'                                             \
-							    -e 's/\(set gfxmode\)/# \1/g'                                               \
-							    -e 's/ vga=[0-9]*//g'                                                       \
+							INS_ROW=$((`sed -n '/^menuentry \"\(Install \)*Ubuntu\( Server\)*\"/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry \"\(Install \)*Ubuntu\( Server\)*\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -n '0,/\}/p'                                                                   | \
+							sed -e '/menuentry/ s/ *Install *//'                                                 \
+							    -e 's/\"\(Ubuntu.*\)\"/\"Auto Install \1\"/'                                     \
+							    -e 's/file.*seed//'                                                              \
+							    -e "s/\(vmlinuz\) */\1 ${INS_CFG} /"                                           | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                                 | \
+							sed -e '1i set timeout=5'                                                            \
+							    -e 's/\(set default\)="1"/\1="0"/'                                               \
+							    -e 's/\(set timeout\).*$/\1=5/'                                                  \
+							    -e 's/\(set gfxmode\)/# \1/g'                                                    \
+							    -e 's/ vga=[0-9]*//g'                                                            \
 							> grub.cfg
 							mv grub.cfg boot/grub/
 							# --- txt.cfg -------------------------------------
@@ -577,17 +584,6 @@ fncRemaster () {
 								cp -p ../../../${WALL_FILE} isolinux/splash.png
 								chmod 444 "isolinux/splash.png"
 							fi
-							# -------------------------------------------------
-							case "${CODE_NAME[1]}" in
-								*live* )					# --- nocloud -----
-									chmod 444 "nocloud/meta-data"
-									chmod 444 "nocloud/user-data"
-									;;
-								*server* )					# --- preseed.cfg -
-									chmod 444 "preseed/preseed.cfg"
-									;;
-								* )	;;
-							esac
 							;;
 						*desktop* )							# --- preseed.cfg -
 							# === 日本語化 ====================================
@@ -636,10 +632,7 @@ fncRemaster () {
 								chmod 444 "isolinux/splash.png"
 							fi
 							# === preseed =====================================
-							case "${CODE_NAME[1]}" in
-								*canary* ) INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\" auto=true" ;;
-								*        ) INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"              ;;
-							esac
+							INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"
 							# --- grub.cfg ------------------------------------
 							INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"/ =' boot/grub/grub.cfg | head -n 1`-1))
 							sed -n '/^menuentry \"Install\|Ubuntu\"/,/^}/p' boot/grub/grub.cfg    | \
@@ -668,105 +661,103 @@ fncRemaster () {
 								> txt.cfg
 								mv txt.cfg isolinux/
 							fi
-							# --- success_command -----------------------------
-							OLD_IFS=${IFS}
-							IFS=$'\n'
-#							LATE_CMD="\      /cdrom/preseed/ubuntu-sub_success_command.sh /cdrom/preseed/preseed.cfg /target;"
-							# --- packages ------------------------------------
-							LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' preseed/preseed.cfg  | \
-							           sed -z 's/\n//g'                                                          | \
-							           sed -e 's/.* multiselect *//'                                               \
-							               -e 's/[,|\\\\]//g'                                                      \
-							               -e 's/\t/ /g'                                                           \
-							               -e 's/  */ /g'                                                          \
-							               -e 's/^ *//'`
-							LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' preseed/preseed.cfg | \
-							           sed -z 's/\n//g'                                                          | \
-							           sed -e 's/.* string *//'                                                    \
-							               -e 's/[,|\\\\]//g'                                                      \
-							               -e 's/\t/ /g'                                                           \
-							               -e 's/  */ /g'                                                          \
-							               -e 's/^ *//'`
-							# -------------------------------------------------
-							LATE_CMD="\      in-target sed -i.orig /etc/apt/sources.list -e '/cdrom/ s/^ *\(deb\)/# \1/g'; \\\\\n"
-							LATE_CMD+="      in-target apt -qq    update; \\\\\n"
-							LATE_CMD+="      in-target apt -qq -y full-upgrade; \\\\\n"
-							LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
-							LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
-							# --- network -------------------------------------
-							if [ -f ./casper/filesystem.squashfs ]; then
-								mount -r -o loop ./casper/filesystem.squashfs ../mnt
-							else
-								mount -r -o loop ./casper/minimal.squashfs    ../mnt
-							fi
-							if [ -f ../mnt/usr/lib/systemd/system/connman.service ]; then
-								LATE_CMD+=" \\\\\n      in-target systemctl disable connman.service;"
-							fi
-							IPV4_DHCP=`awk 'BEGIN {result="true";} !/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {if ($4=="true") result="false";} END {print result;}' preseed/preseed.cfg`
-							if [ "${IPV4_DHCP}" != "true" ]; then
-								ENET_NICS=`awk '!/#/&&/netcfg\/choose_interface/ {print $4;}' preseed/preseed.cfg`
-								if [ "${ENET_NICS}" = "auto" -o "${ENET_NICS}" = "" ]; then
-									ENET_NIC1=ens160
-								else
-									ENET_NIC1=${ENET_NICS}
-								fi
-								IPV4_ADDR=`awk '!/#/&&/netcfg\/get_ipaddress/    {print $4;}' preseed/preseed.cfg`
-								IPV4_MASK=`awk '!/#/&&/netcfg\/get_netmask/      {print $4;}' preseed/preseed.cfg`
-								IPV4_GWAY=`awk '!/#/&&/netcfg\/get_gateway/      {print $4;}' preseed/preseed.cfg`
-								IPV4_NAME=`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' preseed/preseed.cfg`
-								NWRK_WGRP=`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' preseed/preseed.cfg`
-								IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
-								if [ -d ../mnt/etc/netplan ]; then
-									IPV4_YAML=$(IFS= cat <<- _EOT_ | xxd -ps | sed -z 's/\n//g'
-										network:
-										  version: 2
-										  renderer: NetworkManager
-										  ethernets:
-										    ${ENET_NIC1}:
-										      dhcp4: false
-										      addresses: [ ${IPV4_ADDR}/${IPV4_BITS} ]
-										      gateway4: ${IPV4_GWAY}
-										      nameservers:
-										          search: [ ${NWRK_WGRP} ]
-										          addresses: [ ${IPV4_NAME} ]
-_EOT_
-									)
-									LATE_CMD+=" \\\\\n      in-target bash -c \'echo \"${IPV4_YAML}\" | xxd -r -p > /etc/netplan/99-network-manager-static.yaml\'"
-								else
-									IPV4_NWRK=$(IFS= cat <<- _EOT_ | xxd -ps | sed -z 's/\n//g'
-										
-										allow-hotplug ${ENET_NIC1}
-										iface ${ENET_NIC1} inet static
-										    address ${IPV4_ADDR}
-										    netmask ${IPV4_MASK}
-										    gateway ${IPV4_GWAY}
-										    dns-nameservers ${IPV4_NAME}
-										    dns-search ${NWRK_WGRP}
-_EOT_
-									)
-									LATE_CMD+=" \\\\\n      in-target bash -c \'echo \"${IPV4_NWRK}\" | xxd -r -p >> /etc/network/interfaces\'"
-								fi
-							fi
-							umount ../mnt
-							# --- success_command 変更 ------------------------
-							sed -i "preseed/preseed.cfg"                      \
-							    -e '/ubiquity\/success_command/ s/#/ /g'      \
-							    -e "/ubiquity\/success_command/a ${LATE_CMD}"
-							IFS=${OLD_IFS}
-							# -------------------------------------------------
-							case "${CODE_NAME[1]}" in
-								*canary* )					# --- nocloud -----
-									chmod 444 "nocloud/meta-data"
-									chmod 444 "nocloud/user-data"
-									;;
-								* )							# --- preseed.cfg -
-									chmod 444 "preseed/preseed.cfg"
-#									chmod 555 "preseed/${SUB_PROG}"
-									;;
-							esac
 							;;
 						* )	;;
 					esac
+					# --- success_command -------------------------------------
+					OLD_IFS=${IFS}
+					IFS=$'\n'
+#					LATE_CMD="\      /cdrom/preseed/ubuntu-sub_success_command.sh /cdrom/preseed/preseed.cfg /target;"
+					# --- packages --------------------------------------------
+					LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' preseed/preseed.cfg  | \
+					           sed -z 's/\n//g'                                                          | \
+					           sed -e 's/.* multiselect *//'                                               \
+					               -e 's/[,|\\\\]//g'                                                      \
+					               -e 's/\t/ /g'                                                           \
+					               -e 's/  */ /g'                                                          \
+					               -e 's/^ *//'`
+					LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' preseed/preseed.cfg | \
+					           sed -z 's/\n//g'                                                          | \
+					           sed -e 's/.* string *//'                                                    \
+					               -e 's/[,|\\\\]//g'                                                      \
+					               -e 's/\t/ /g'                                                           \
+					               -e 's/  */ /g'                                                          \
+					               -e 's/^ *//'`
+					# ---------------------------------------------------------
+					LATE_CMD="\      in-target sed -i.orig /etc/apt/sources.list -e '/cdrom/ s/^ *\(deb\)/# \1/g'; \\\\\n"
+					LATE_CMD+="      in-target apt -qq    update; \\\\\n"
+					LATE_CMD+="      in-target apt -qq -y full-upgrade; \\\\\n"
+					LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
+					LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
+					# --- network ---------------------------------------------
+					if [ -f ./install/filesystem.squashfs ]; then
+						mount -r -o loop ./install/filesystem.squashfs ../mnt
+					elif [ -f ./casper/filesystem.squashfs ]; then
+						mount -r -o loop ./casper/filesystem.squashfs  ../mnt
+					else
+						mount -r -o loop ./casper/minimal.squashfs     ../mnt
+					fi
+					if [ -f ../mnt/usr/lib/systemd/system/connman.service ]; then
+						LATE_CMD+=" \\\\\n      in-target systemctl disable connman.service;"
+					fi
+					IPV4_DHCP=`awk 'BEGIN {result="true";} !/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {if ($4=="true") result="false";} END {print result;}' preseed/preseed.cfg`
+					if [ "${IPV4_DHCP}" != "true" ]; then
+						ENET_NICS=`awk '!/#/&&/netcfg\/choose_interface/ {print $4;}' preseed/preseed.cfg`
+						if [ "${ENET_NICS}" = "auto" -o "${ENET_NICS}" = "" ]; then
+							ENET_NIC1=ens160
+						else
+							ENET_NIC1=${ENET_NICS}
+						fi
+						IPV4_ADDR=`awk '!/#/&&/netcfg\/get_ipaddress/    {print $4;}' preseed/preseed.cfg`
+						IPV4_MASK=`awk '!/#/&&/netcfg\/get_netmask/      {print $4;}' preseed/preseed.cfg`
+						IPV4_GWAY=`awk '!/#/&&/netcfg\/get_gateway/      {print $4;}' preseed/preseed.cfg`
+						IPV4_NAME=`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' preseed/preseed.cfg`
+						NWRK_WGRP=`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' preseed/preseed.cfg`
+						IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
+						if [ -d ../mnt/etc/netplan ]; then
+							IPV4_YAML=$(IFS= cat <<- _EOT_ | xxd -ps | sed -z 's/\n//g'
+								network:
+								  version: 2
+								  renderer: NetworkManager
+								  ethernets:
+								    ${ENET_NIC1}:
+								      dhcp4: false
+								      addresses: [ ${IPV4_ADDR}/${IPV4_BITS} ]
+								      gateway4: ${IPV4_GWAY}
+								      nameservers:
+								          search: [ ${NWRK_WGRP} ]
+								          addresses: [ ${IPV4_NAME} ]
+_EOT_
+							)
+							LATE_CMD+=" \\\\\n      in-target bash -c \'echo \"${IPV4_YAML}\" | xxd -r -p > /etc/netplan/99-network-manager-static.yaml\'"
+						else
+							IPV4_NWRK=$(IFS= cat <<- _EOT_ | xxd -ps | sed -z 's/\n//g'
+								
+								allow-hotplug ${ENET_NIC1}
+								iface ${ENET_NIC1} inet static
+								    address ${IPV4_ADDR}
+								    netmask ${IPV4_MASK}
+								    gateway ${IPV4_GWAY}
+								    dns-nameservers ${IPV4_NAME}
+								    dns-search ${NWRK_WGRP}
+_EOT_
+							)
+							LATE_CMD+=" \\\\\n      in-target bash -c \'echo \"${IPV4_NWRK}\" | xxd -r -p >> /etc/network/interfaces\'"
+						fi
+					fi
+					umount ../mnt
+					# --- success_command 変更 --------------------------------
+					sed -i "preseed/preseed.cfg"                      \
+					    -e '/ubiquity\/success_command/ s/#/ /g'      \
+					    -e "/ubiquity\/success_command/a ${LATE_CMD}"
+					IFS=${OLD_IFS}
+					# ---------------------------------------------------------
+					if [ -f "nocloud/user-data"      ]; then chmod 444 "nocloud/user-data";      fi
+					if [ -f "nocloud/meta-data"      ]; then chmod 444 "nocloud/meta-data";      fi
+					if [ -f "nocloud/vendor-data"    ]; then chmod 444 "nocloud/vendor-data";    fi
+					if [ -f "nocloud/network-config" ]; then chmod 444 "nocloud/network-config"; fi
+					if [ -f "preseed/preseed.cfg"    ]; then chmod 444 "preseed/preseed.cfg";    fi
+#					if [ -f "preseed/${SUB_PROG}"    ]; then chmod 555 "preseed/${SUB_PROG}";    fi
 					;;
 				"centos" )	# ･････････････････････････････････････････････････
 					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
@@ -1134,11 +1125,11 @@ _EOT_
 #x  5.0:lenny            :2009-02-14:2012-02-06
 #x  6.0:squeeze          :2011-02-06:2014-05-31/2016-02-29[LTS]
 #x  7.0:wheezy           :2013-05-04:2016-04-25/2018-05-31[LTS]
-#x  8.0:jessie           :2015-04-25:2018-06-17/2020-06-30[LTS]:oldoldstable
-#   9.0:stretch          :2017-06-17:2020-07-06/2022-06-30[LTS]:oldstable
-#  10.0:buster           :2019-07-06:2022-xx-xx/2024-xx-xx[LTS]:stable
-#  11.0:bullseye         :2021(予定):                          :testing
-#  12.0:bookworm         :          :                          
+#x  8.0:jessie           :2015-04-25:2018-06-17/2020-06-30[LTS]
+#   9.0:stretch          :2017-06-17:2020-07-06/2022-06-30[LTS]:oldoldstable
+#  10.0:buster           :2019-07-06:2022-xx-xx/2024-xx-xx[LTS]:oldstable
+#  11.0:bullseye         :2021-08-14:                          :stable
+#  12.0:bookworm         :          :                           testing
 # --- https://en.wikipedia.org/wiki/Ubuntu_version_history --------------------
 # [https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja]
 # Ver. :コードネーム     :リリース日:サポート期限

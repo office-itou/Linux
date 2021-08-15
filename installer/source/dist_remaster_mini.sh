@@ -28,6 +28,7 @@
 ##	2021/07/07 000.0000 J.Itou         cpio 表示出力抑制追加
 ##	2021/08/06 000.0000 J.Itou         処理見直し
 ##	2021/08/09 000.0000 J.Itou         処理見直し
+##	2021/08/15 000.0000 J.Itou         debian 11 対応
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -51,10 +52,11 @@
 	ARC_TYPE=amd64											# CPUタイプ(64bit)
 	ARRAY_NAME=(                                                                                                                                                                                                                       \
 	    "debian http://archive.debian.org/debian/dists/wheezy/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                     preseed_debian.cfg   2013-05-04 2018-05-31 wheezy       Debian__7.xx(wheezy)            " \
-	    "debian http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                   preseed_debian.cfg   2015-04-25 2020-06-30 oldoldstable Debian__8.xx(jessie)            " \
-	    "debian http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                      preseed_debian.cfg   2017-06-17 2022-06-xx oldstable    Debian__9.xx(stretch)           " \
-	    "debian http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         preseed_debian.cfg   2019-07-06 20xx-xx-xx stable       Debian_10.xx(buster)            " \
-	    "debian http://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                        preseed_debian.cfg   2021-xx-xx 20xx-xx-xx testing      Debian_11.xx(bullseye)          " \
+	    "debian http://archive.debian.org/debian/dists/jessie/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                     preseed_debian.cfg   2015-04-25 2020-06-30 jessie       Debian__8.xx(jessie)            " \
+	    "debian http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                   preseed_debian.cfg   2017-06-17 2022-06-xx oldoldstable Debian__9.xx(stretch)           " \
+	    "debian http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                      preseed_debian.cfg   2019-07-06 20xx-xx-xx oldstable    Debian_10.xx(buster)            " \
+	    "debian http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         preseed_debian.cfg   2021-08-14 20xx-xx-xx stable       Debian_11.xx(bullseye)          " \
+	    "debian http://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                        preseed_debian.cfg   202x-xx-xx 20xx-xx-xx testing      Debian_12.xx(bookworm)          " \
 	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/trusty/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                     preseed_ubuntu.cfg   2014-04-17 2022-04-xx trusty       Ubuntu_14.04(Trusty_Tahr):LTS   " \
 	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/xenial-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso             preseed_ubuntu.cfg   2016-04-21 2024-04-xx xenial       Ubuntu_16.04(Xenial_Xerus):LTS  " \
 	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                     preseed_ubuntu.cfg   2018-04-26 2028-04-xx bionic       Ubuntu_18.04(Bionic_Beaver):LTS " \
@@ -505,11 +507,11 @@ _EOT_
 #x  5.0:lenny            :2009-02-14:2012-02-06
 #x  6.0:squeeze          :2011-02-06:2014-05-31/2016-02-29[LTS]
 #x  7.0:wheezy           :2013-05-04:2016-04-25/2018-05-31[LTS]
-#x  8.0:jessie           :2015-04-25:2018-06-17/2020-06-30[LTS]:oldoldstable
-#   9.0:stretch          :2017-06-17:2020-07-06/2022-06-30[LTS]:oldstable
-#  10.0:buster           :2019-07-06:2022-xx-xx/2024-xx-xx[LTS]:stable
-#  11.0:bullseye         :2021(予定):                          :testing
-#  12.0:bookworm         :          :                          
+#x  8.0:jessie           :2015-04-25:2018-06-17/2020-06-30[LTS]
+#   9.0:stretch          :2017-06-17:2020-07-06/2022-06-30[LTS]:oldoldstable
+#  10.0:buster           :2019-07-06:2022-xx-xx/2024-xx-xx[LTS]:oldstable
+#  11.0:bullseye         :2021-08-14:                          :stable
+#  12.0:bookworm         :          :                           testing
 # --- https://en.wikipedia.org/wiki/Ubuntu_version_history --------------------
 # [https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja]
 # Ver. :コードネーム     :リリース日:サポート期限
@@ -545,7 +547,7 @@ _EOT_
 # 19.04:Disco Dingo      :2019-04-18:2020-01-23
 # 19.10:Eoan Ermine      :2019-10-17:2020-07-17
 # 20.04:Focal Fossa      :2020-04-23:2025-04-xx/2030-04-xx:LTS
-# 20.10:Groovy Gorilla   :2020-10-22:2021-07-xx
+# 20.10:Groovy Gorilla   :2020-10-22:2021-07-22
 # 21.04:Hirsute Hippo    :2021-04-22:2022-01-xx
 # 21.10:Impish Indri     :2021-10-14:2022-07-xx
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------

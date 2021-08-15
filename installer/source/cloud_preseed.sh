@@ -7,7 +7,7 @@
 #	set -n								# 構文エラーのチェック
 #	set -x								# コマンドと引数の展開を表示
 	set -m								# ジョブ制御を有効にする
-#	set -eu								# ステータス0以外と未定義変数の参照で終了
+	set -eu								# ステータス0以外と未定義変数の参照で終了
 
 	if [ "$1" = "" ]; then
 		echo "$0 [preseedファイル名]"
@@ -192,7 +192,15 @@ _EOT_
 	           sed -e 's/.* string *//'                                               \
 	               -e 's/[,|\\\\]//g'                                                 \
 	               -e 's/  */ /g'                                                     \
-	               -e 's/^ *//'`
+	               -e 's/^ *//'                                                       \
+	               -e 's/ubuntu-desktop[,| ]*//'                                      \
+	               -e 's/ubuntu-server[,| ]*//'                                       \
+	               -e 's/inxi[,| ]*//'                                                \
+	               -e 's/mozc-utils-gui[,| ]*//'                                      \
+	               -e 's/gnome-getting-started-docs-ja[,| ]*//'                       \
+	               -e 's/fonts-noto\([,| ]\)/fonts-noto-core\1/'                      \
+	               -e 's/bind9utils\([,| ]\)/bind9-utils\1/'                          \
+	               -e 's/dnsutils\([,| ]\)/bind9-dnsutils\1/'`
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
 		# package_update: true
@@ -224,7 +232,7 @@ _EOT_
 		      pools:
 		      - ${CLOCK_SETUP_NTP_SERVER}
 _EOT_
-	# --- user-data: snap -----------------------------------------------------
+#	# --- user-data: snap -----------------------------------------------------
 #	cat <<- _EOT_ >> ${USER_DATA}
 #		#   snap:
 #		#     commands:
@@ -235,9 +243,11 @@ _EOT_
 		    runcmd:
 		    - mkdir -p /etc/NetworkManager/conf.d/
 		    - echo "[keyfile]\nunmanaged-devices=none" > /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+		    - apt -qq    update
+		    - apt -qq -y full-upgrade
 		    - shutdown -r now
 _EOT_
-	# --- late-commands -------------------------------------------------------
+#	# --- late-commands -------------------------------------------------------
 #	cat <<- _EOT_ >> ${USER_DATA}
 #		# =============================================================================
 #		  late-commands:
@@ -248,6 +258,12 @@ _EOT_
 #		# =============================================================================
 #		# InstallProgress:
 #		#   reboot: yes
+#_EOT_
+#	# --- power_state ---------------------------------------------------------
+#	cat <<- _EOT_ >> ${USER_DATA}
+#		# =============================================================================
+#		  power_state:
+#		    mode: reboot
 #_EOT_
 	# --- end of file ---------------------------------------------------------
 	cat <<- _EOT_ >> ${USER_DATA}
