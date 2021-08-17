@@ -61,13 +61,15 @@ fncIPv4GetNetmaskBits () {
 		apt -y install debootstrap squashfs-tools xorriso isolinux
 	fi
 # == initial processing =======================================================
-	rm -rf   ./debian-live
-#	rm -rf   ./debian-live/media ./debian-live/cdimg ./debian-live/fsimg ./debian-live/wkdir
-	mkdir -p ./debian-live/media ./debian-live/cdimg ./debian-live/fsimg ./debian-live/wkdir
+	WORK_DIR=`echo ${PGM_NAME}/${LIVE_FILE} | sed 's/\.iso$//'`
+	umount -q ${WORK_DIR}/media > /dev/null 2>&1
+	rm -rf   ./${WORK_DIR}
+#	rm -rf   ./${WORK_DIR}/media ./${WORK_DIR}/cdimg ./${WORK_DIR}/fsimg ./${WORK_DIR}/wkdir
+	mkdir -p ./${WORK_DIR}/media ./${WORK_DIR}/cdimg ./${WORK_DIR}/fsimg ./${WORK_DIR}/wkdir
 	# -------------------------------------------------------------------------
-	TASK_LIST="standard, desktop, laptop, lxde-desktop,                              \
+	LIST_TASK="standard, desktop, laptop, lxde-desktop,                              \
 		       ssh-server, dns-server, file-server, print-server"
-	PACK_LIST="network-manager chrony clamav curl wget rsync inxi                    \
+	LIST_PACK="network-manager chrony clamav curl wget rsync inxi                    \
 		       build-essential indent vim bc                                         \
 		       sudo tasksel                                                          \
 		       openssh-server                                                        \
@@ -97,7 +99,7 @@ fncIPv4GetNetmaskBits () {
 		               -e 's/^ *//'`
 	fi
 #	# -------------------------------------------------------------------------
-#	cat <<- _EOT_SH_ > ./debian-live/fsimg/debian-setup.sh
+#	cat <<- _EOT_SH_ > ./${WORK_DIR}/fsimg/debian-setup.sh
 #		#!/bin/bash
 #		# -----------------------------------------------------------------------------
 #		 	set -m								# ジョブ制御を有効にする
@@ -328,8 +330,8 @@ fncIPv4GetNetmaskBits () {
 #		#     Change Kanji mode:[Windows key]+[Space key]->[Zenkaku/Hankaku key]
 #		# *****************************************************************************
 #_EOT_SH_
-#	sed -i ./debian-live/fsimg/debian-setup.sh -e 's/^ //g' -e "s/\${OBS_SUITE}/${OBS_SUITE}/g"
-#	sed -i ./debian-live/fsimg/debian-setup.sh -e 's/^ //g'
+#	sed -i ./${WORK_DIR}/fsimg/debian-setup.sh -e 's/^ //g' -e "s/\${OBS_SUITE}/${OBS_SUITE}/g"
+#	sed -i ./${WORK_DIR}/fsimg/debian-setup.sh -e 's/^ //g'
 	# -------------------------------------------------------------------------
 	case "${LIVE_SUITE}" in
 		"old stable"    ) LIVE_URL="http://cdimage.debian.org/cdimage/archive/${LIVE_VNUM}-live/${LIVE_ARCH}/iso-hybrid/debian-live-${LIVE_VNUM}-${LIVE_ARCH}-lxde.iso";;
@@ -339,18 +341,18 @@ fncIPv4GetNetmaskBits () {
 		*               ) LIVE_URL="";;
 	esac
 	if [ "${LIVE_URL}" != "" ]; then
-		if [ ! -f "./${LIVE_FILE}" ]; then
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${LIVE_FILE}"; exit 1; }
+		if [ ! -f "./${PGM_NAME}/${LIVE_FILE}" ]; then
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${PGM_NAME}/${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${PGM_NAME}/${LIVE_FILE}"; exit 1; }
 		else
 			curl -L -s --connect-timeout 60 --dump-header "header.txt" "${LIVE_URL}"
 			WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
 			WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
-			DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "./${LIVE_FILE}"`
+			DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "./${PGM_NAME}/${LIVE_FILE}"`
 			DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${LIVE_FILE}"; exit 1; }
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${PGM_NAME}/${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${PGM_NAME}/${LIVE_FILE}"; exit 1; }
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
@@ -359,63 +361,63 @@ fncIPv4GetNetmaskBits () {
 	fi
 	# -------------------------------------------------------------------------
 	echo "--- copy media -> cdimg -------------------------------------------------------"
-	mount -r -o loop ./${LIVE_FILE} ./debian-live/media
-	pushd ./debian-live/media > /dev/null
+	mount -r -o loop ./${PGM_NAME}/${LIVE_FILE} ./${WORK_DIR}/media
+	pushd ./${WORK_DIR}/media > /dev/null
 		find . -depth -print | cpio -pdm --quiet ../cdimg/
 	popd > /dev/null
-	umount ./debian-live/media
+	umount ./${WORK_DIR}/media
 	# -------------------------------------------------------------------------
 #	echo "--- copy media -> fsimg -------------------------------------------------------"
-#	mount -r -o loop ./debian-live/cdimg/live/filesystem.squashfs ./debian-live/media
-#	pushd ./debian-live/media > /dev/null
+#	mount -r -o loop ./${WORK_DIR}/cdimg/live/filesystem.squashfs ./${WORK_DIR}/media
+#	pushd ./${WORK_DIR}/media > /dev/null
 #		find . -depth -print | cpio -pdm --quiet ../fsimg/
 #	popd > /dev/null
-#	umount ./debian-live/media
+#	umount ./${WORK_DIR}/media
 # =============================================================================
-#	if [ -d ./debian-live/rpack.${LIVE_ARCH} ]; then
+#	if [ -d ./${WORK_DIR}/rpack.${LIVE_ARCH} ]; then
 #		echo "--- deb file copy -------------------------------------------------------------"
-#		cp -p ./debian-live/rpack.${LIVE_ARCH}/*.deb ./debian-live/fsimg/var/cache/apt/archives/
+#		cp -p ./${WORK_DIR}/rpack.${LIVE_ARCH}/*.deb ./${WORK_DIR}/fsimg/var/cache/apt/archives/
 #	fi
 # =============================================================================
-#	rm -f ./debian-live/fsimg/etc/localtime
-#	ln -s /usr/share/zoneinfo/Asia/Tokyo ./debian-live/fsimg/etc/localtime
+#	rm -f ./${WORK_DIR}/fsimg/etc/localtime
+#	ln -s /usr/share/zoneinfo/Asia/Tokyo ./${WORK_DIR}/fsimg/etc/localtime
 	# -------------------------------------------------------------------------
-#	mount --bind /run     ./debian-live/fsimg/run
-#	mount --bind /dev     ./debian-live/fsimg/dev
-#	mount --bind /dev/pts ./debian-live/fsimg/dev/pts
-#	mount --bind /proc    ./debian-live/fsimg/proc
-##	mount --bind /sys     ./debian-live/fsimg/sys
+#	mount --bind /run     ./${WORK_DIR}/fsimg/run
+#	mount --bind /dev     ./${WORK_DIR}/fsimg/dev
+#	mount --bind /dev/pts ./${WORK_DIR}/fsimg/dev/pts
+#	mount --bind /proc    ./${WORK_DIR}/fsimg/proc
+##	mount --bind /sys     ./${WORK_DIR}/fsimg/sys
 	# -------------------------------------------------------------------------
-#	LANG=C chroot ./debian-live/fsimg /bin/bash /debian-setup.sh
+#	LANG=C chroot ./${WORK_DIR}/fsimg /bin/bash /debian-setup.sh
 #	RET_STS=$?
 	# -------------------------------------------------------------------------
-##	umount ./debian-live/fsimg/sys     || umount -lf ./debian-live/fsimg/sys
-#	umount ./debian-live/fsimg/proc    || umount -lf ./debian-live/fsimg/proc
-#	umount ./debian-live/fsimg/dev/pts || umount -lf ./debian-live/fsimg/dev/pts
-#	umount ./debian-live/fsimg/dev     || umount -lf ./debian-live/fsimg/dev
-#	umount ./debian-live/fsimg/run     || umount -lf ./debian-live/fsimg/run
+##	umount ./${WORK_DIR}/fsimg/sys     || umount -lf ./${WORK_DIR}/fsimg/sys
+#	umount ./${WORK_DIR}/fsimg/proc    || umount -lf ./${WORK_DIR}/fsimg/proc
+#	umount ./${WORK_DIR}/fsimg/dev/pts || umount -lf ./${WORK_DIR}/fsimg/dev/pts
+#	umount ./${WORK_DIR}/fsimg/dev     || umount -lf ./${WORK_DIR}/fsimg/dev
+#	umount ./${WORK_DIR}/fsimg/run     || umount -lf ./${WORK_DIR}/fsimg/run
 	# -------------------------------------------------------------------------
 #	if [ ${RET_STS} -ne 0 ]; then
 #		exit ${RET_STS}
 #	fi
 	# -------------------------------------------------------------------------
-#	find   ./debian-live/fsimg/var/log/ -type f -name \* -exec cp -f /dev/null {} \;
-#	rm -rf ./debian-live/fsimg/root/.bash_history           \
-#	       ./debian-live/fsimg/root/.viminfo                \
-#	       ./debian-live/fsimg/tmp/*                        \
-#	       ./debian-live/fsimg/var/cache/apt/*.bin          \
-#	       ./debian-live/fsimg/var/cache/apt/archives/*.deb \
-#	       ./debian-live/fsimg/debian-setup.sh
+#	find   ./${WORK_DIR}/fsimg/var/log/ -type f -name \* -exec cp -f /dev/null {} \;
+#	rm -rf ./${WORK_DIR}/fsimg/root/.bash_history           \
+#	       ./${WORK_DIR}/fsimg/root/.viminfo                \
+#	       ./${WORK_DIR}/fsimg/tmp/*                        \
+#	       ./${WORK_DIR}/fsimg/var/cache/apt/*.bin          \
+#	       ./${WORK_DIR}/fsimg/var/cache/apt/archives/*.deb \
+#	       ./${WORK_DIR}/fsimg/debian-setup.sh
 # =============================================================================
-	LIVE_VOLID=`volname "${LIVE_FILE}"`
+	LIVE_VOLID=`volname "${PGM_NAME}/${LIVE_FILE}"`
 	BOOT_MBR=`echo ${LIVE_FILE} | sed 's/iso$/mbr/'`
 	BOOT_EFI=`echo ${LIVE_FILE} | sed 's/iso$/efi/'`
-	FILE_SKP=`fdisk -l ${LIVE_FILE} | awk '/EFI/ {print $2;}'`
-	FILE_CNT=`fdisk -l ${LIVE_FILE} | awk '/EFI/ {print $4;}'`
-	dd if=${LIVE_FILE} of=./debian-live/${BOOT_MBR} bs=1 count=446 status=none
-	dd if=${LIVE_FILE} of=./debian-live/${BOOT_EFI} bs=512 skip=${FILE_SKP} count=${FILE_CNT} status=none
+	FILE_SKP=`fdisk -l ${PGM_NAME}/${LIVE_FILE} | awk '/EFI/ {print $2;}'`
+	FILE_CNT=`fdisk -l ${PGM_NAME}/${LIVE_FILE} | awk '/EFI/ {print $4;}'`
+	dd if=${PGM_NAME}/${LIVE_FILE} of=./${WORK_DIR}/${BOOT_MBR} bs=1 count=446 status=none
+	dd if=${PGM_NAME}/${LIVE_FILE} of=./${WORK_DIR}/${BOOT_EFI} bs=512 skip=${FILE_SKP} count=${FILE_CNT} status=none
 	# -------------------------------------------------------------------------
-	pushd ./debian-live/cdimg > /dev/null
+	pushd ./${WORK_DIR}/cdimg > /dev/null
 		INS_CFG="locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp"
 		# --- grub.cfg --------------------------------------------------------
 		INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
@@ -511,7 +513,8 @@ fncIPv4GetNetmaskBits () {
 		    -output "../../${LIVE_DEST}" \
 		    .
 	popd > /dev/null
-	rm -rf ./debian-live
+	rm -rf ./${WORK_DIR}
+#	rm -rf ./${WORK_DIR}/media ./${WORK_DIR}/cdimg ./${WORK_DIR}/fsimg ./${WORK_DIR}/wkdir
 	ls -lthLgG debian*
 	echo メディアは ${FSIMG_SIZE} 以上のメモリーを搭載する PC で使用して下さい。
 # =============================================================================
@@ -520,5 +523,5 @@ fncIPv4GetNetmaskBits () {
 	echo "*******************************************************************************"
 	exit 0
 # == memo =====================================================================
-# sudo bash -c 'for i in `ls debian-live-*-amd64-lxde.iso | sed -e '\''s/debian-live-//'\'' -e '\''s/-amd64-lxde.iso//'\''`; do ./debian-live.sh amd64 $i; done'
+# sudo bash -c 'for i in `ls debian-live/debian-live-*-amd64-lxde.iso | sed -e '\''s/.*\/debian-live-//'\'' -e '\''s/-amd64-lxde.iso//'\''`; do ./debian-live.sh amd64 $i; done'
 # == EOF ======================================================================

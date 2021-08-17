@@ -37,6 +37,7 @@
 ##	2021/08/08 000.0000 J.Itou         不具合修正
 ##	2021/08/09 000.0000 J.Itou         処理見直し
 ##	2021/08/15 000.0000 J.Itou         debian 11 対応
+##	2021/08/17 000.0000 J.Itou         対象OS整理
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -64,7 +65,6 @@
 	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg                          2016-04-21 2024-04-xx Xenial_Xerus  " \
 	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                        preseed_ubuntu.cfg                          2018-04-26 2028-04-xx Bionic_Beaver " \
 	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                   preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2030-04-xx Focal_Fossa   " \
-	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-live-server-amd64.iso                                                  preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-10-22 2021-07-xx Groovy_Gorilla" \
 	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                 preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22 2022-01-xx Hirsute_Hippo " \
 	    "centos http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                            kickstart_centos.cfg                        2021-06-03 2021-12-31 RHEL_8.4      " \
 	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-dvd1.iso                            kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x      " \
@@ -75,7 +75,6 @@
 	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2016-04-21 2024-04-xx Xenial_Xerus  " \
 	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2028-04-xx Bionic_Beaver " \
 	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                       preseed_ubuntu.cfg                          2020-04-23 2030-04-xx Focal_Fossa   " \
-	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2020-10-22 2021-07-22 Groovy_Gorilla" \
 	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2021-04-22 2022-01-xx Hirsute_Hippo " \
 	    "ubuntu http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                    preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri  " \
 	    "ubuntu http://cdimage.ubuntu.com/daily-canary/current/impish-desktop-canary-amd64.iso                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-xx Impish_Indri  " \
@@ -84,17 +83,8 @@
 	    "debian http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso               preseed_debian.cfg                          2021-08-14 20xx-xx-xx stable        " \
 	    "debian http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                 preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
 	)   # 区分  ダウンロード先URL                                                                                                        定義ファイル                                リリース日 サポ終了日 備考
-#	    "debian https://cdimage.debian.org/cdimage/archive/7.11.0/amd64/iso-dvd/debian-7.11.0-amd64-DVD-1.iso                            preseed_debian.cfg                          2013-05-04 2018-05-31 wheezy        " \
-#	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-dvd/debian-8.11.1-amd64-DVD-1.iso                            preseed_debian.cfg                          2015-04-25 2020-06-30 oldoldstable  " \
-#	    "debian https://cdimage.debian.org/cdimage/bullseye_di_alpha3/amd64/iso-dvd/debian-bullseye-DI-alpha3-amd64-DVD-1.iso            preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
-#	    "debian http://cdimage.debian.org/cdimage/bullseye_di_rc3/amd64/iso-dvd/debian-bullseye-DI-rc3-amd64-DVD-1.iso                   preseed_debian.cfg                          2021-08-xx 20xx-xx-xx bullseye      " \
-#	    "ubuntu http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/focal/release/ubuntu-20.04.1-legacy-server-amd64.iso             preseed_ubuntu.cfg                          2020-04-23 2025-04-xx Focal_Fossa   " \
-#	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-16.04.7-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus  " \
-#	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-18.04.5-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
-#	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-20.04.2.0-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2020-04-23 2025-04-xx Focal_Fossa   " \
-#	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-20.10-desktop-amd64.iso                                                        preseed_ubuntu.cfg                          2020-10-22 2021-07-xx Groovy_Gorilla" \
-#	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-21.04-desktop-amd64.iso                                                       preseed_ubuntu.cfg                          2021-04-22 2022-01-xx Hirsute_Hippo " \
-#	    "suse   http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-DVD-x86_64.iso                                yast_opensuse15.xml                         2020-07-02 2021-11-xx kernel_5.3    " \
+#	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-live-server-amd64.iso                                                  preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-10-22 2021-07-xx Groovy_Gorilla" \
+#	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2020-10-22 2021-07-22 Groovy_Gorilla" \
 
 # -----------------------------------------------------------------------------
 fncMenu () {

@@ -56,14 +56,16 @@ fncIPv4GetNetmaskBits () {
 		apt -y install debootstrap squashfs-tools xorriso isolinux
 	fi
 # == initial processing =======================================================
-	rm -rf   ./ubuntu-live
-#	rm -rf   ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg ./ubuntu-live/wkdir
-	mkdir -p ./ubuntu-live/media ./ubuntu-live/cdimg ./ubuntu-live/fsimg ./ubuntu-live/wkdir
+	WORK_DIR=`echo ${PGM_NAME}/${LIVE_FILE} | sed 's/\.iso$//'`
+	umount -q ${WORK_DIR}/media > /dev/null 2>&1
+	rm -rf   ./${WORK_DIR}
+#	rm -rf   ./${WORK_DIR}/media ./${WORK_DIR}/cdimg ./${WORK_DIR}/fsimg ./${WORK_DIR}/wkdir
+	mkdir -p ./${WORK_DIR}/media ./${WORK_DIR}/cdimg ./${WORK_DIR}/fsimg ./${WORK_DIR}/wkdir
 	# -------------------------------------------------------------------------
-	TASK_LIST="standard, server, dns-server, openssh-server,                         \
+	LIST_TASK="standard, server, dns-server, openssh-server,                         \
 		       print-server, samba-server,                                           \
 		       ubuntu-desktop, ubuntu-desktop-minimal"
-	PACK_LIST="network-manager chrony clamav curl wget rsync inxi                    \
+	LIST_PACK="network-manager chrony clamav curl wget rsync inxi                    \
 		       build-essential indent vim bc                                         \
 		       sudo tasksel whois                                                    \
 		       openssh-server                                                        \
@@ -101,7 +103,7 @@ fncIPv4GetNetmaskBits () {
 		                -e 's/[,| ]*$//')
 	fi
 #	# -------------------------------------------------------------------------
-#	cat <<- _EOT_SH_ > ./ubuntu-live/fsimg/ubuntu-setup.sh
+#	cat <<- _EOT_SH_ > ./${WORK_DIR}/fsimg/ubuntu-setup.sh
 #		#!/bin/bash
 #		# -----------------------------------------------------------------------------
 #		 	set -m								# ジョブ制御を有効にする
@@ -331,24 +333,26 @@ fncIPv4GetNetmaskBits () {
 #		#     Change Kanji mode:[Windows key]+[Space key]->[Zenkaku/Hankaku key]
 #		# *****************************************************************************
 #_EOT_SH_
-#	sed -i ./ubuntu-live/fsimg/ubuntu-setup.sh -e 's/^ //g'
+#	sed -i ./${WORK_DIR}/fsimg/ubuntu-setup.sh -e 's/^ //g'
 	# -------------------------------------------------------------------------
 	LIVE_URL="https://releases.ubuntu.com/${LIVE_VNUM}/${LIVE_FILE}"
-	if [ ! -f "./${LIVE_FILE}" ]; then
-		curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${LIVE_FILE}"; exit 1; }
-	else
-		curl -L -s --connect-timeout 60 --dump-header "header.txt" "${LIVE_URL}"
-		WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
-		WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
-		WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
-		DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "./${LIVE_FILE}"`
-		DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
-		DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
-		if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${LIVE_FILE}"; exit 1; }
-		fi
-		if [ -f "header.txt" ]; then
-			rm -f "header.txt"
+	if [ "${LIVE_URL}" != "" ]; then
+		if [ ! -f "./${PGM_NAME}/${LIVE_FILE}" ]; then
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${PGM_NAME}/${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${PGM_NAME}/${LIVE_FILE}"; exit 1; }
+		else
+			curl -L -s --connect-timeout 60 --dump-header "header.txt" "${LIVE_URL}"
+			WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+			WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+			WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+			DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "./${PGM_NAME}/${LIVE_FILE}"`
+			DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
+			DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
+			if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./${PGM_NAME}/${LIVE_FILE}" "${LIVE_URL}" || { rm -f "./${PGM_NAME}/${LIVE_FILE}"; exit 1; }
+			fi
+			if [ -f "header.txt" ]; then
+				rm -f "header.txt"
+			fi
 		fi
 	fi
 	# -------------------------------------------------------------------------
@@ -374,69 +378,69 @@ fncIPv4GetNetmaskBits () {
 	fi
 	# -------------------------------------------------------------------------
 	echo "--- copy media -> cdimg -------------------------------------------------------"
-	mount -r -o loop ./${LIVE_FILE} ./ubuntu-live/media
-	pushd ./ubuntu-live/media > /dev/null
+	mount -r -o loop ./${PGM_NAME}/${LIVE_FILE} ./${WORK_DIR}/media
+	pushd ./${WORK_DIR}/media > /dev/null
 		find . -depth -print | cpio -pdm --quiet ../cdimg/
 	popd > /dev/null
-	umount ./ubuntu-live/media
+	umount ./${WORK_DIR}/media
 	# -------------------------------------------------------------------------
 #	echo "--- copy media -> fsimg -------------------------------------------------------"
-#	mount -r -o loop ./ubuntu-live/cdimg/casper/filesystem.squashfs ./ubuntu-live/media
-#	pushd ./ubuntu-live/media > /dev/null
+#	mount -r -o loop ./${WORK_DIR}/cdimg/casper/filesystem.squashfs ./${WORK_DIR}/media
+#	pushd ./${WORK_DIR}/media > /dev/null
 #		find . -depth -print | cpio -pdm --quiet ../fsimg/
 #	popd > /dev/null
-#	umount ./ubuntu-live/media
+#	umount ./${WORK_DIR}/media
 # =============================================================================
-#	if [ -d ./ubuntu-live/rpack.${LIVE_ARCH} ]; then
+#	if [ -d ./${WORK_DIR}/rpack.${LIVE_ARCH} ]; then
 #		echo "--- deb file copy -------------------------------------------------------------"
-#		cp -p ./ubuntu-live/rpack.${LIVE_ARCH}/*.deb ./ubuntu-live/fsimg/var/cache/apt/archives/
+#		cp -p ./${WORK_DIR}/rpack.${LIVE_ARCH}/*.deb ./${WORK_DIR}/fsimg/var/cache/apt/archives/
 #	fi
 # =============================================================================
-#	rm -f ./ubuntu-live/fsimg/etc/localtime
-#	ln -s /usr/share/zoneinfo/Asia/Tokyo ./ubuntu-live/fsimg/etc/localtime
+#	rm -f ./${WORK_DIR}/fsimg/etc/localtime
+#	ln -s /usr/share/zoneinfo/Asia/Tokyo ./${WORK_DIR}/fsimg/etc/localtime
 	# -------------------------------------------------------------------------
-#	mount --bind /run     ./ubuntu-live/fsimg/run
-#	mount --bind /dev     ./ubuntu-live/fsimg/dev
-#	mount --bind /dev/pts ./ubuntu-live/fsimg/dev/pts
-#	mount --bind /proc    ./ubuntu-live/fsimg/proc
-##	mount --bind /sys     ./ubuntu-live/fsimg/sys
+#	mount --bind /run     ./${WORK_DIR}/fsimg/run
+#	mount --bind /dev     ./${WORK_DIR}/fsimg/dev
+#	mount --bind /dev/pts ./${WORK_DIR}/fsimg/dev/pts
+#	mount --bind /proc    ./${WORK_DIR}/fsimg/proc
+##	mount --bind /sys     ./${WORK_DIR}/fsimg/sys
 	# -------------------------------------------------------------------------
-#	LANG=C chroot ./ubuntu-live/fsimg /bin/bash /ubuntu-setup.sh
+#	LANG=C chroot ./${WORK_DIR}/fsimg /bin/bash /ubuntu-setup.sh
 #	RET_STS=$?
 	# -------------------------------------------------------------------------
-##	umount ./ubuntu-live/fsimg/sys     || umount -lf ./ubuntu-live/fsimg/sys
-#	umount ./ubuntu-live/fsimg/proc    || umount -lf ./ubuntu-live/fsimg/proc
-#	umount ./ubuntu-live/fsimg/dev/pts || umount -lf ./ubuntu-live/fsimg/dev/pts
-#	umount ./ubuntu-live/fsimg/dev     || umount -lf ./ubuntu-live/fsimg/dev
-#	umount ./ubuntu-live/fsimg/run     || umount -lf ./ubuntu-live/fsimg/run
+##	umount ./${WORK_DIR}/fsimg/sys     || umount -lf ./${WORK_DIR}/fsimg/sys
+#	umount ./${WORK_DIR}/fsimg/proc    || umount -lf ./${WORK_DIR}/fsimg/proc
+#	umount ./${WORK_DIR}/fsimg/dev/pts || umount -lf ./${WORK_DIR}/fsimg/dev/pts
+#	umount ./${WORK_DIR}/fsimg/dev     || umount -lf ./${WORK_DIR}/fsimg/dev
+#	umount ./${WORK_DIR}/fsimg/run     || umount -lf ./${WORK_DIR}/fsimg/run
 	# -------------------------------------------------------------------------
 #	if [ ${RET_STS} -ne 0 ]; then
 #		exit ${RET_STS}
 #	fi
 	# -------------------------------------------------------------------------
-#	find   ./ubuntu-live/fsimg/var/log/ -type f -name \* -exec cp -f /dev/null {} \;
-#	rm -rf ./ubuntu-live/fsimg/root/.bash_history           \
-#	       ./ubuntu-live/fsimg/root/.viminfo                \
-#	       ./ubuntu-live/fsimg/tmp/*                        \
-#	       ./ubuntu-live/fsimg/var/cache/apt/*.bin          \
-#	       ./ubuntu-live/fsimg/var/cache/apt/archives/*.deb \
-#	       ./ubuntu-live/fsimg/ubuntu-setup.sh
+#	find   ./${WORK_DIR}/fsimg/var/log/ -type f -name \* -exec cp -f /dev/null {} \;
+#	rm -rf ./${WORK_DIR}/fsimg/root/.bash_history           \
+#	       ./${WORK_DIR}/fsimg/root/.viminfo                \
+#	       ./${WORK_DIR}/fsimg/tmp/*                        \
+#	       ./${WORK_DIR}/fsimg/var/cache/apt/*.bin          \
+#	       ./${WORK_DIR}/fsimg/var/cache/apt/archives/*.deb \
+#	       ./${WORK_DIR}/fsimg/ubuntu-setup.sh
 # =============================================================================
-#	rm ./ubuntu-live/cdimg/casper/filesystem.size                    \
-#	   ./ubuntu-live/cdimg/casper/filesystem.manifest-remove         
-#	   ./ubuntu-live/cdimg/casper/filesystem.manifest                \
-#	   ./ubuntu-live/cdimg/casper/filesystem.manifest-remove         
-#	   ./ubuntu-live/cdimg/casper/filesystem.manifest-minimal-remove 
+#	rm ./${WORK_DIR}/cdimg/casper/filesystem.size                    \
+#	   ./${WORK_DIR}/cdimg/casper/filesystem.manifest-remove         
+#	   ./${WORK_DIR}/cdimg/casper/filesystem.manifest                \
+#	   ./${WORK_DIR}/cdimg/casper/filesystem.manifest-remove         
+#	   ./${WORK_DIR}/cdimg/casper/filesystem.manifest-minimal-remove 
 	# -------------------------------------------------------------------------
-#	touch ./ubuntu-live/cdimg/casper/filesystem.size
-#	touch ./ubuntu-live/cdimg/casper/filesystem.manifest
-#	touch ./ubuntu-live/cdimg/casper/filesystem.manifest-remove
-#	touch ./ubuntu-live/cdimg/casper/filesystem.manifest-minimal-remove
+#	touch ./${WORK_DIR}/cdimg/casper/filesystem.size
+#	touch ./${WORK_DIR}/cdimg/casper/filesystem.manifest
+#	touch ./${WORK_DIR}/cdimg/casper/filesystem.manifest-remove
+#	touch ./${WORK_DIR}/cdimg/casper/filesystem.manifest-minimal-remove
 #	# -------------------------------------------------------------------------
-#	printf $(LANG=C chroot ./ubuntu-live/fsimg du -sx --block-size=1 | cut -f1) > ./ubuntu-live/cdimg/casper/filesystem.size
-#	LANG=C chroot ./ubuntu-live/fsimg dpkg-query -W --showformat='${Package} ${Version}\n' > ./ubuntu-live/cdimg/casper/filesystem.manifest
-#	cp -p ./ubuntu-live/cdimg/casper/filesystem.manifest ./ubuntu-live/cdimg/casper/filesystem.manifest-desktop
-#	sed -i ./ubuntu-live/cdimg/casper/filesystem.manifest-desktop \
+#	printf $(LANG=C chroot ./${WORK_DIR}/fsimg du -sx --block-size=1 | cut -f1) > ./${WORK_DIR}/cdimg/casper/filesystem.size
+#	LANG=C chroot ./${WORK_DIR}/fsimg dpkg-query -W --showformat='${Package} ${Version}\n' > ./${WORK_DIR}/cdimg/casper/filesystem.manifest
+#	cp -p ./${WORK_DIR}/cdimg/casper/filesystem.manifest ./${WORK_DIR}/cdimg/casper/filesystem.manifest-desktop
+#	sed -i ./${WORK_DIR}/cdimg/casper/filesystem.manifest-desktop \
 #	    -e '/^casper.*$/d'                                        \
 #	    -e '/^lupin-casper.*$/d'                                  \
 #	    -e '/^ubiquity.*$/d'                                      \
@@ -445,15 +449,15 @@ fncIPv4GetNetmaskBits () {
 #	    -e '/^ubiquity-slideshow-ubuntu.*$/d'                     \
 #	    -e '/^ubiquity-ubuntu-artwork.*$/d'
 # =============================================================================
-	LIVE_VOLID=`volname "${LIVE_FILE}"`
+	LIVE_VOLID=`volname "${PGM_NAME}/${LIVE_FILE}"`
 	BOOT_MBR=`echo ${LIVE_FILE} | sed 's/iso$/mbr/'`
 	BOOT_EFI=`echo ${LIVE_FILE} | sed 's/iso$/efi/'`
-	FILE_SKP=`fdisk -l ${LIVE_FILE} | awk '/EFI/ {print $2;}'`
-	FILE_CNT=`fdisk -l ${LIVE_FILE} | awk '/EFI/ {print $4;}'`
-	dd if=${LIVE_FILE} of=./ubuntu-live/${BOOT_MBR} bs=1 count=446 status=none
-	dd if=${LIVE_FILE} of=./ubuntu-live/${BOOT_EFI} bs=512 skip=${FILE_SKP} count=${FILE_CNT} status=none
+	FILE_SKP=`fdisk -l ${PGM_NAME}/${LIVE_FILE} | awk '/EFI/ {print $2;}'`
+	FILE_CNT=`fdisk -l ${PGM_NAME}/${LIVE_FILE} | awk '/EFI/ {print $4;}'`
+	dd if=${PGM_NAME}/${LIVE_FILE} of=./${WORK_DIR}/${BOOT_MBR} bs=1 count=446 status=none
+	dd if=${PGM_NAME}/${LIVE_FILE} of=./${WORK_DIR}/${BOOT_EFI} bs=512 skip=${FILE_SKP} count=${FILE_CNT} status=none
 	# -------------------------------------------------------------------------
-	pushd ./ubuntu-live/cdimg > /dev/null
+	pushd ./${WORK_DIR}/cdimg > /dev/null
 #		INS_CFG="locale=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp105 keyboard-layouts=jp"
 		INS_CFG="debian-installer/language=ja keyboard-configuration/layoutcode?=jp keyboard-configuration/modelcode?=jp106"
 		# --- grub.cfg --------------------------------------------------------
@@ -489,7 +493,7 @@ fncIPv4GetNetmaskBits () {
 			    -e 's/\(menu margin\) .*/\1 0/'                      \
 			    -e '/\(menu width\) .*/a menu rows 10'               \
 			    -e '/\(menu margin\) .*/a menu vshift 10'
-			cp -p ../../${WALL_FILE} isolinux/splash.png
+			cp -p ../../../${WALL_FILE} isolinux/splash.png
 		fi
 		# --- preseed.cfg -----------------------------------------------------
 		if [ -f "../../${CFG_NAME}" -a -f "../../${SUB_PROG}" ]; then
@@ -608,7 +612,8 @@ _EOT_
 		    -output "../../${LIVE_DEST}" \
 		    .
 	popd > /dev/null
-	rm -rf ./ubuntu-live
+	rm -rf ./${WORK_DIR}
+#	rm -rf ./${WORK_DIR}/media ./${WORK_DIR}/cdimg ./${WORK_DIR}/fsimg ./${WORK_DIR}/wkdir
 	ls -lthLgG ubuntu*
 	echo メディアは ${FSIMG_SIZE} 以上のメモリーを搭載する PC で使用して下さい。
 # =============================================================================
@@ -618,5 +623,5 @@ _EOT_
 	exit 0
 # == memo =====================================================================
 # https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja
-# sudo bash -c 'for i in `ls ubuntu-*-desktop-amd64.iso | sed -e '\''s/ubuntu-//'\'' -e '\''s/-desktop-amd64.iso//'\''`; do ./ubuntu-live.sh amd64 $i; done'
+# sudo bash -c 'for i in `ls ubuntu-live/ubuntu-*-desktop-amd64.iso | sed -e '\''s/.*\/ubuntu-//'\'' -e '\''s/-desktop-amd64.iso//'\''`; do ./ubuntu-live.sh amd64 $i; done'
 # == EOF ======================================================================
