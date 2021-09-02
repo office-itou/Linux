@@ -36,6 +36,17 @@ fncIPv4GetNetmaskBits () {
 	NOW_DATE=`date +"%Y/%m/%d"`													# yyyy/mm/dd
 	NOW_TIME=`date +"%Y%m%d%H%M%S"`												# yyyymmddhhmmss
 	PGM_NAME=`basename $0 | sed -e 's/\..*$//'`									# プログラム名
+	#--------------------------------------------------------------------------
+	if [ "`which aptitude 2> /dev/null`" != "" ]; then
+		CMD_AGET="aptitude -y -q"
+	else
+		CMD_AGET="apt -y -qq"
+	fi
+	#--------------------------------------------------------------------------
+	if [ "`which mkpasswd 2> /dev/null`" = "" ]; then
+		sudo ${CMD_AGET} update
+		sudo ${CMD_AGET} install whois
+	fi
 # =============================================================================
 	PRESEED_CFG=$1
 	USER_DATA=${PRESEED_CFG}-user_data

@@ -39,6 +39,7 @@
 ##	2021/08/15 000.0000 J.Itou         debian 11 対応
 ##	2021/08/17 000.0000 J.Itou         対象OS整理
 ##	2021/08/21 000.0000 J.Itou         処理見直し
+##	2021/08/28 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -98,6 +99,7 @@ fncMenu () {
 #	local DVD_INFO											# DVD情報
 #	local DVD_SIZE											# DVDサイズ
 #	local DVD_DATE											# DVD日付
+	local TXT_COLOR
 	echo "#-----------------------------------------------------------------------------#"
 	echo "#ID：Version                         ：リリース日：サポ終了日：備考           #"
 	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
@@ -121,15 +123,23 @@ fncMenu () {
 			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
 #		fi
 		# ---------------------------------------------------------------------
-#		DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
-#		DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
-#		DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
+		TXT_COLOR=false
+		if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
+			TXT_COLOR=true
+		else
+			DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
+			DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
+			DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
+			if [ `date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"` -gt ${DVD_DATE} ]; then
+				TXT_COLOR=true
+			fi
+		fi
 		# ---------------------------------------------------------------------
-#		if [ "${FIL_DATE}" != "${DVD_DATE}" ]; then
-#			printf "#%2d：%-32.32s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
-#		else
+		if [ "${TXT_COLOR}" = "true" ]; then
+			printf "#%2d：%-32.32s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+		else
 			printf "#%2d：%-32.32s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
-#		fi
+		fi
 	done
 	echo "#-----------------------------------------------------------------------------#"
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
@@ -415,20 +425,6 @@ fncRemaster () {
 							               -e 's/\t/ /g'                                                           \
 							               -e 's/  */ /g'                                                          \
 							               -e 's/^ *//'`
-							# -------------------------------------------------
-							LATE_CMD="\      in-target sed -i.orig /etc/apt/sources.list -e '/cdrom/ s/^ *\(deb\)/# \1/g'; \\\\\n"
-							LATE_CMD+="      in-target apt -qq    update; \\\\\n"
-							LATE_CMD+="      in-target apt -qq -y full-upgrade; \\\\\n"
-							LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
-							LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
-							mount -r -o loop ./live/filesystem.squashfs ../mnt
-							if [ -f ../media/usr/lib/systemd/system/connman.service ]; then
-								LATE_CMD+=" \\\\\n      in-target systemctl disable connman.service;"
-							fi
-							umount ../mnt
-							sed -i "preseed/preseed.cfg"                  \
-							    -e '/preseed\/late_command/ s/#/ /g'      \
-							    -e "/preseed\/late_command/a ${LATE_CMD}"
 							IFS=${OLD_IFS}
 							;;
 						* )
@@ -496,9 +492,9 @@ fncRemaster () {
 						*-11.*       | \
 						*-bullseye-* | \
 						*-testing-*  )
-							sed -i "preseed/preseed.cfg"                                                 \
-							    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'             \
-							    -e 's/#[ \t]\([ \t]*in-target systemctl disable connman.service\)/  \1/'
+							sed -i "preseed/preseed.cfg"                                                               \
+							    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'                           \
+							    -e 's/#[ \t]\([ \t]*in-target --pass-stdout systemctl disable connman.service\)/  \1/'
 							;;
 						* )	;;
 					esac
@@ -667,103 +663,114 @@ fncRemaster () {
 								> txt.cfg
 								mv txt.cfg isolinux/
 							fi
+							# --- success_command -----------------------------
+							cat <<- '_EOT_' | sed 's/^ *//g' > preseed/sub_success_command.sh
+								#!/bin/bash
+								#	set -x													# コマンドと引数の展開を表示
+								#	set -n													# 構文エラーのチェック
+								#	set -eu													# ステータス0以外と未定義変数の参照で終了
+								#	set -o ignoreof											# Ctrl+Dで終了しない
+								 	trap 'exit 1' 1 2 3 15
+								# IPv4 netmask変換処理 --------------------------------------------------------
+								fncIPv4GetNetmaskBits () {
+								 	local INP_ADDR
+								 	local -a OUT_ARRY=()
+								 	# -------------------------------------------------------------------------
+								 	for INP_ADDR in "$@"
+								 	do
+								 		OUT_ARRY+=`echo ${INP_ADDR} | awk -F '.' '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
+								 	done
+								 	echo "${OUT_ARRY[@]}"
+								}
+								# --- packages ----------------------------------------------------------------
+								 	LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' /cdrom/preseed/preseed.cfg  | \
+								 	           sed -z 's/\n//g'                                                                 | \
+								 	           sed -e 's/.* multiselect *//'                                                      \
+								 	               -e 's/[,|\\\\]//g'                                                             \
+								 	               -e 's/\t/ /g'                                                                  \
+								 	               -e 's/  */ /g'                                                                 \
+								 	               -e 's/^ *//'`
+								 	LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' /cdrom/preseed/preseed.cfg | \
+								 	           sed -z 's/\n//g'                                                                 | \
+								 	           sed -e 's/.* string *//'                                                           \
+								 	               -e 's/[,|\\\\]//g'                                                             \
+								 	               -e 's/\t/ /g'                                                                  \
+								 	               -e 's/  */ /g'                                                                 \
+								 	               -e 's/^ *//'`
+								 	# -------------------------------------------------------------------------
+								 	sed -i.orig /target/etc/apt/sources.list -e '/cdrom/ s/^ *(deb)/# 1/g'
+								 	in-target apt -qq    update
+								 	in-target apt -qq -y full-upgrade
+								 	in-target apt -qq -y install ${LIST_PACK}
+								 	in-target tasksel install ${LIST_TASK}
+								 	if [ -f /target/usr/lib/systemd/system/connman.service ]; then
+								 		in-target systemctl disable connman.service
+								 	fi
+								# --- network -----------------------------------------------------------------
+								 	IPV4_DHCP=`awk 'BEGIN {result="true";} !/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {if ($4=="true") result="false";} END {print result;}' /cdrom/preseed/preseed.cfg`
+								 	if [ "${IPV4_DHCP}" != "true" ]; then
+								 		ENET_NICS=`awk '!/#/&&/netcfg\/choose_interface/ {print $4;}' /cdrom/preseed/preseed.cfg`
+								 		if [ "${ENET_NICS}" = "auto" -o "${ENET_NICS}" = "" ]; then
+								 			ENET_NIC1=ens160
+								 		else
+								 			ENET_NIC1=${ENET_NICS}
+								 		fi
+								 		IPV4_ADDR=`awk '!/#/&&/netcfg\/get_ipaddress/    {print $4;}' /cdrom/preseed/preseed.cfg`
+								 		IPV4_MASK=`awk '!/#/&&/netcfg\/get_netmask/      {print $4;}' /cdrom/preseed/preseed.cfg`
+								 		IPV4_GWAY=`awk '!/#/&&/netcfg\/get_gateway/      {print $4;}' /cdrom/preseed/preseed.cfg`
+								 		IPV4_NAME=`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' /cdrom/preseed/preseed.cfg`
+								 		NWRK_WGRP=`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' /cdrom/preseed/preseed.cfg`
+								 		IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
+								 		# ---------------------------------------------------------------------
+								 		if [ -d /target/etc/netplan ]; then
+								 			if [ -z "$(ls /target/etc/NetworkManager/system-connections/)" ]; then
+								 				cat <<- _EOT_ > /target/etc/netplan/99-network-manager-static.yaml
+								 					network:
+								 					  version: 2
+								 					  renderer: NetworkManager
+								 					  ethernets:
+								 					    ${ENET_NIC1}:
+								 					      dhcp4: false
+								 					      addresses: [ ${IPV4_ADDR}/${IPV4_BITS} ]
+								 					      gateway4: ${IPV4_GWAY}
+								 					      nameservers:
+								 					          search: [ ${NWRK_WGRP} ]
+								 					          addresses: [ ${IPV4_NAME} ]
+								 _EOT_
+								 			fi
+								 		else
+								 			cat <<- _EOT_ >> /target/etc/network/interfaces
+								 				
+								 				allow-hotplug ${ENET_NIC1}
+								 				iface ${ENET_NIC1} inet static
+								 				    address ${IPV4_ADDR}
+								 				    netmask ${IPV4_MASK}
+								 				    gateway ${IPV4_GWAY}
+								 				    dns-nameservers ${IPV4_NAME}
+								 				    dns-search ${NWRK_WGRP}
+								 _EOT_
+								 		fi
+								 	fi
+								# --- exit --------------------------------------------------------------------
+								 	exit 0
+_EOT_
+							LATE_CMD="\\      /cdrom/preseed/sub_success_command.sh;"
+							# --- success_command 変更 --------------------------------
+							sed -i "preseed/preseed.cfg"                       \
+							    -e '/ubiquity\/success_command/ s/#/ /g'       \
+							    -e '/ubiquity\/success_command/ s/[,|\\\\]//g' \
+							    -e '/ubiquity\/success_command/ s/$/ \\/g'     \
+							    -e "/ubiquity\/success_command/a ${LATE_CMD}"
 							;;
 						* )	;;
 					esac
-					# --- success_command -------------------------------------
-					OLD_IFS=${IFS}
-					IFS=$'\n'
-#					LATE_CMD="\      /cdrom/preseed/ubuntu-sub_success_command.sh /cdrom/preseed/preseed.cfg /target;"
-					# --- packages --------------------------------------------
-					LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' preseed/preseed.cfg  | \
-					           sed -z 's/\n//g'                                                          | \
-					           sed -e 's/.* multiselect *//'                                               \
-					               -e 's/[,|\\\\]//g'                                                      \
-					               -e 's/\t/ /g'                                                           \
-					               -e 's/  */ /g'                                                          \
-					               -e 's/^ *//'`
-					LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' preseed/preseed.cfg | \
-					           sed -z 's/\n//g'                                                          | \
-					           sed -e 's/.* string *//'                                                    \
-					               -e 's/[,|\\\\]//g'                                                      \
-					               -e 's/\t/ /g'                                                           \
-					               -e 's/  */ /g'                                                          \
-					               -e 's/^ *//'`
 					# ---------------------------------------------------------
-					LATE_CMD="\      in-target sed -i.orig /etc/apt/sources.list -e '/cdrom/ s/^ *\(deb\)/# \1/g'; \\\\\n"
-					LATE_CMD+="      in-target apt -qq    update; \\\\\n"
-					LATE_CMD+="      in-target apt -qq -y full-upgrade; \\\\\n"
-					LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
-					LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
-					# --- network ---------------------------------------------
-					if [ -f ./install/filesystem.squashfs ]; then
-						mount -r -o loop ./install/filesystem.squashfs ../mnt
-					elif [ -f ./casper/filesystem.squashfs ]; then
-						mount -r -o loop ./casper/filesystem.squashfs  ../mnt
-					else
-						mount -r -o loop ./casper/minimal.squashfs     ../mnt
-					fi
-					if [ -f ../mnt/usr/lib/systemd/system/connman.service ]; then
-						LATE_CMD+=" \\\\\n      in-target systemctl disable connman.service;"
-					fi
-					IPV4_DHCP=`awk 'BEGIN {result="true";} !/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {if ($4=="true") result="false";} END {print result;}' preseed/preseed.cfg`
-					if [ "${IPV4_DHCP}" != "true" ]; then
-						ENET_NICS=`awk '!/#/&&/netcfg\/choose_interface/ {print $4;}' preseed/preseed.cfg`
-						if [ "${ENET_NICS}" = "auto" -o "${ENET_NICS}" = "" ]; then
-							ENET_NIC1=ens160
-						else
-							ENET_NIC1=${ENET_NICS}
-						fi
-						IPV4_ADDR=`awk '!/#/&&/netcfg\/get_ipaddress/    {print $4;}' preseed/preseed.cfg`
-						IPV4_MASK=`awk '!/#/&&/netcfg\/get_netmask/      {print $4;}' preseed/preseed.cfg`
-						IPV4_GWAY=`awk '!/#/&&/netcfg\/get_gateway/      {print $4;}' preseed/preseed.cfg`
-						IPV4_NAME=`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' preseed/preseed.cfg`
-						NWRK_WGRP=`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' preseed/preseed.cfg`
-						IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
-						if [ -d ../mnt/etc/netplan ]; then
-							IPV4_YAML=$(IFS= cat <<- _EOT_ | xxd -ps | sed -z 's/\n//g'
-								network:
-								  version: 2
-								  renderer: NetworkManager
-								  ethernets:
-								    ${ENET_NIC1}:
-								      dhcp4: false
-								      addresses: [ ${IPV4_ADDR}/${IPV4_BITS} ]
-								      gateway4: ${IPV4_GWAY}
-								      nameservers:
-								          search: [ ${NWRK_WGRP} ]
-								          addresses: [ ${IPV4_NAME} ]
-_EOT_
-							)
-							LATE_CMD+=" \\\\\n      in-target bash -c \'echo \"${IPV4_YAML}\" | xxd -r -p > /etc/netplan/99-network-manager-static.yaml\'"
-						else
-							IPV4_NWRK=$(IFS= cat <<- _EOT_ | xxd -ps | sed -z 's/\n//g'
-								
-								allow-hotplug ${ENET_NIC1}
-								iface ${ENET_NIC1} inet static
-								    address ${IPV4_ADDR}
-								    netmask ${IPV4_MASK}
-								    gateway ${IPV4_GWAY}
-								    dns-nameservers ${IPV4_NAME}
-								    dns-search ${NWRK_WGRP}
-_EOT_
-							)
-							LATE_CMD+=" \\\\\n      in-target bash -c \'echo \"${IPV4_NWRK}\" | xxd -r -p >> /etc/network/interfaces\'"
-						fi
-					fi
-					umount ../mnt
-					# --- success_command 変更 --------------------------------
-					sed -i "preseed/preseed.cfg"                      \
-					    -e '/ubiquity\/success_command/ s/#/ /g'      \
-					    -e "/ubiquity\/success_command/a ${LATE_CMD}"
-					IFS=${OLD_IFS}
-					# ---------------------------------------------------------
-					if [ -f "nocloud/user-data"      ]; then chmod 444 "nocloud/user-data";      fi
-					if [ -f "nocloud/meta-data"      ]; then chmod 444 "nocloud/meta-data";      fi
-					if [ -f "nocloud/vendor-data"    ]; then chmod 444 "nocloud/vendor-data";    fi
-					if [ -f "nocloud/network-config" ]; then chmod 444 "nocloud/network-config"; fi
-					if [ -f "preseed/preseed.cfg"    ]; then chmod 444 "preseed/preseed.cfg";    fi
-#					if [ -f "preseed/${SUB_PROG}"    ]; then chmod 555 "preseed/${SUB_PROG}";    fi
+					if [ -f "nocloud/user-data"              ]; then chmod 444 "nocloud/user-data";              fi
+					if [ -f "nocloud/meta-data"              ]; then chmod 444 "nocloud/meta-data";              fi
+					if [ -f "nocloud/vendor-data"            ]; then chmod 444 "nocloud/vendor-data";            fi
+					if [ -f "nocloud/network-config"         ]; then chmod 444 "nocloud/network-config";         fi
+					if [ -f "preseed/preseed.cfg"            ]; then chmod 444 "preseed/preseed.cfg";            fi
+					if [ -f "preseed/sub_success_command.sh" ]; then chmod 544 "preseed/sub_success_command.sh"; fi
 					;;
 				"centos" )	# ･････････････････････････････････････････････････
 					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
@@ -784,7 +791,7 @@ _EOT_
 					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
 					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
 					sed -e 's/\(Install\)/Auto \1/'                             \
-					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                 | \
+					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                | \
 					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg         | \
 					sed -e 's/\(set default\)="1"/\1="0"/'                      \
 					    -e 's/\(set timeout\).*$/\1=5/'                         \
@@ -946,7 +953,7 @@ _EOT_
 					;;
 				* )	;;
 			esac
-			if [ "`which implantisomd5 2> /dev/nul`" != "" ]; then
+			if [ "`which implantisomd5 2> /dev/null`" != "" ]; then
 				LANG=C implantisomd5 "../../${ISO_NAME}.iso"
 			fi
 		popd > /dev/null
@@ -1029,14 +1036,14 @@ _EOT_
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`which xorriso 2> /dev/nul`" = ""       \
-			-o   "`which implantisomd5 2> /dev/nul`" = "" \
+			if [ "`which xorriso 2> /dev/null`" = ""       \
+			-o   "`which implantisomd5 2> /dev/null`" = "" \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+				if [ "`which xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
-				if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
+				if [ "`which implantisomd5 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install isomd5sum
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -1047,14 +1054,14 @@ _EOT_
 		"centos" | \
 		"fedora" | \
 		"rocky"  )
-			if [ "`which xorriso 2> /dev/nul`" = ""       \
-			-o   "`which implantisomd5 2> /dev/nul`" = "" \
+			if [ "`which xorriso 2> /dev/null`" = ""       \
+			-o   "`which implantisomd5 2> /dev/null`" = "" \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+				if [ "`which xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
-				if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
+				if [ "`which implantisomd5 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install isomd5sum
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -1064,10 +1071,10 @@ _EOT_
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-			if [ "`which xorriso 2> /dev/nul`" = ""       \
+			if [ "`which xorriso 2> /dev/null`" = ""       \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+				if [ "`which xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -1097,7 +1104,7 @@ _EOT_
 		fi
 	done
 	# -------------------------------------------------------------------------
-	ls -lthLgG "${WORK_DIRS}/"*.iso
+	ls -lthLgG "${WORK_DIRS}/"*.iso 2> /dev/null
 # -----------------------------------------------------------------------------
 	echo "*******************************************************************************"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"

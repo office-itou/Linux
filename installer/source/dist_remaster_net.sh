@@ -33,6 +33,7 @@
 ##	2021/08/09 000.0000 J.Itou         処理見直し
 ##	2021/08/15 000.0000 J.Itou         debian 11 対応
 ##	2021/08/21 000.0000 J.Itou         処理見直し
+##	2021/08/28 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -78,6 +79,7 @@ fncMenu () {
 #	local DVD_INFO											# DVD情報
 #	local DVD_SIZE											# DVDサイズ
 #	local DVD_DATE											# DVD日付
+	local TXT_COLOR
 	echo "#-----------------------------------------------------------------------------#"
 	echo "#ID：Version                         ：リリース日：サポ終了日：備考           #"
 	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
@@ -101,15 +103,23 @@ fncMenu () {
 			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
 #		fi
 		# ---------------------------------------------------------------------
-#		DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
-#		DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
-#		DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
+		TXT_COLOR=false
+		if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
+			TXT_COLOR=true
+		else
+			DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
+			DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
+			DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
+			if [ `date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"` -gt ${DVD_DATE} ]; then
+				TXT_COLOR=true
+			fi
+		fi
 		# ---------------------------------------------------------------------
-#		if [ "${FIL_DATE}" != "${DVD_DATE}" ]; then
-#			printf "#%2d：%-32.32s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
-#		else
+		if [ "${TXT_COLOR}" = "true" ]; then
+			printf "#%2d：%-32.32s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+		else
 			printf "#%2d：%-32.32s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
-#		fi
+		fi
 	done
 	echo "#-----------------------------------------------------------------------------#"
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
@@ -686,7 +696,7 @@ fncRemaster () {
 					;;
 				* )	;;
 			esac
-			if [ "`which implantisomd5 2> /dev/nul`" != "" ]; then
+			if [ "`which implantisomd5 2> /dev/null`" != "" ]; then
 				LANG=C implantisomd5 "../../${ISO_NAME}.iso"
 			fi
 		popd > /dev/null
@@ -769,14 +779,14 @@ fncRemaster () {
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`which xorriso 2> /dev/nul`" = ""       \
-			-o   "`which implantisomd5 2> /dev/nul`" = "" \
+			if [ "`which xorriso 2> /dev/null`" = ""       \
+			-o   "`which implantisomd5 2> /dev/null`" = "" \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+				if [ "`which xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
-				if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
+				if [ "`which implantisomd5 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install isomd5sum
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -787,14 +797,14 @@ fncRemaster () {
 		"centos" | \
 		"fedora" | \
 		"rocky"  )
-			if [ "`which xorriso 2> /dev/nul`" = ""       \
-			-o   "`which implantisomd5 2> /dev/nul`" = "" \
+			if [ "`which xorriso 2> /dev/null`" = ""       \
+			-o   "`which implantisomd5 2> /dev/null`" = "" \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+				if [ "`which xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
-				if [ "`which implantisomd5 2> /dev/nul`" = "" ]; then
+				if [ "`which implantisomd5 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install isomd5sum
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -804,10 +814,10 @@ fncRemaster () {
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-			if [ "`which xorriso 2> /dev/nul`" = ""       \
+			if [ "`which xorriso 2> /dev/null`" = ""       \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/nul`" = "" ]; then
+				if [ "`which xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -837,7 +847,7 @@ fncRemaster () {
 		fi
 	done
 	# -------------------------------------------------------------------------
-	ls -lthLgG "${WORK_DIRS}/"*.iso
+	ls -lthLgG "${WORK_DIRS}/"*.iso 2> /dev/null
 # -----------------------------------------------------------------------------
 	echo "*******************************************************************************"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"
