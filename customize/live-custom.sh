@@ -21,6 +21,7 @@
 ##	2021/08/16 000.0000 J.Itou         新規作成
 ##	2021/08/21 000.0000 J.Itou         処理見直し
 ##	2021/08/28 000.0000 J.Itou         処理見直し
+##	2021/09/05 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -274,7 +275,7 @@ fncRemaster () {
 					# --- grub.cfg --------------------------------------------
 					INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
 					sed -n '/^menuentry \"Debian GNU\/Linux.*\"/,/^}/p' boot/grub/grub.cfg | \
-					sed -e 's/\(Debian GNU\/Linux.*)\)/\1 for Japanese language/'                      \
+					sed -e 's/\(Debian GNU\/Linux.*)\)/\1 for Japanese language/'            \
 					    -e "s~\(components\)~\1 ${INS_CFG}~"                               | \
 					sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                       \
 					    -e '1i set default=0'                                                \
@@ -313,39 +314,6 @@ fncRemaster () {
 					sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg                      \
 					> menu.cfg
 					mv menu.cfg isolinux/
-					# --- success_command -------------------------------------
-					OLD_IFS=${IFS}
-					IFS=$'\n'
-					# --- packages --------------------------------------------
-					LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' preseed/preseed.cfg  | \
-					           sed -z 's/\n//g'                                                          | \
-					           sed -e 's/.* multiselect *//'                                               \
-					               -e 's/[,|\\\\]//g'                                                      \
-					               -e 's/\t/ /g'                                                           \
-					               -e 's/  */ /g'                                                          \
-					               -e 's/^ *//'`
-					LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' preseed/preseed.cfg | \
-					           sed -z 's/\n//g'                                                          | \
-					           sed -e 's/.* string *//'                                                    \
-					               -e 's/[,|\\\\]//g'                                                      \
-					               -e 's/\t/ /g'                                                           \
-					               -e 's/  */ /g'                                                          \
-					               -e 's/^ *//'`
-					# ---------------------------------------------------------
-					LATE_CMD="\      in-target sed -i.orig /etc/apt/sources.list -e '/cdrom/ s/^ *\(deb\)/# \1/g'; \\\\\n"
-					LATE_CMD+="      in-target apt -qq    update; \\\\\n"
-					LATE_CMD+="      in-target apt -qq -y full-upgrade; \\\\\n"
-					LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
-					LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
-					mount -r -o loop ./live/filesystem.squashfs ../mnt
-					if [ -f ../media/usr/lib/systemd/system/connman.service ]; then
-						LATE_CMD+=" \\\\\n      in-target systemctl disable connman.service;"
-					fi
-					umount ../mnt
-					sed -i "preseed/preseed.cfg"                  \
-					    -e '/preseed\/late_command/ s/#/ /g'      \
-					    -e "/preseed\/late_command/a ${LATE_CMD}"
-					IFS=${OLD_IFS}
 					case "${CODE_NAME[1]}" in
 						*-7.*        | \
 						*-8.*        )
@@ -369,8 +337,6 @@ fncRemaster () {
 							;;
 						* )	;;
 					esac
-					# ---------------------------------------------------------
-					chmod 444 "preseed/preseed.cfg"
 					;;
 				"ubuntu" )	# ･････････････････････････････････････････････････
 					if [ -f isolinux/isolinux.cfg ]; then
@@ -385,7 +351,9 @@ fncRemaster () {
 						ubuntu-16.04* )
 							sed -i "preseed/preseed.cfg"       \
 							    -e 's/fonts-noto-cjk-extra//'  \
-							    -e 's/gnome-user-docs-ja//'
+							    -e 's/gnome-user-docs-ja//'    \
+							    -e 's/firefox-esr-l10n-ja//'   \
+							    -e 's/thunderbird-l10n-ja//'
 							;;
 						ubuntu-18.04* )
 							sed -i "preseed/preseed.cfg"              \
@@ -526,101 +494,166 @@ fncRemaster () {
 						fi
 					fi
 					# --- success_command -------------------------------------
-					OLD_IFS=${IFS}
-					IFS=$'\n'
-					# --- packages --------------------------------------------
-					LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' preseed/preseed.cfg  | \
-					           sed -z 's/\n//g'                                                          | \
-					           sed -e 's/.* multiselect *//'                                               \
-					               -e 's/[,|\\\\]//g'                                                      \
-					               -e 's/\t/ /g'                                                           \
-					               -e 's/  */ /g'                                                          \
-					               -e 's/^ *//'`
-					LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' preseed/preseed.cfg | \
-					           sed -z 's/\n//g'                                                          | \
-					           sed -e 's/.* string *//'                                                    \
-					               -e 's/[,|\\\\]//g'                                                      \
-					               -e 's/\t/ /g'                                                           \
-					               -e 's/  */ /g'                                                          \
-					               -e 's/^ *//'`
-					# ---------------------------------------------------------
-					LATE_CMD="\      in-target sed -i.orig /etc/apt/sources.list -e '/cdrom/ s/^ *\(deb\)/# \1/g'; \\\\\n"
-					LATE_CMD+="      in-target apt -qq    update; \\\\\n"
-					LATE_CMD+="      in-target apt -qq -y full-upgrade; \\\\\n"
-					LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
-					LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
-					# --- network ---------------------------------------------
-					if [ -f ./install/filesystem.squashfs ]; then
-						mount -r -o loop ./install/filesystem.squashfs ../mnt
-					elif [ -f ./casper/filesystem.squashfs ]; then
-						mount -r -o loop ./casper/filesystem.squashfs  ../mnt
-					else
-						mount -r -o loop ./casper/minimal.squashfs     ../mnt
-					fi
-					if [ -f ../mnt/usr/lib/systemd/system/connman.service ]; then
-						LATE_CMD+=" \\\\\n      in-target systemctl disable connman.service;"
-					fi
-					IPV4_DHCP=`awk 'BEGIN {result="true";} !/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {if ($4=="true") result="false";} END {print result;}' preseed/preseed.cfg`
-					if [ "${IPV4_DHCP}" != "true" ]; then
-						ENET_NICS=`awk '!/#/&&/netcfg\/choose_interface/ {print $4;}' preseed/preseed.cfg`
-						if [ "${ENET_NICS}" = "auto" -o "${ENET_NICS}" = "" ]; then
-							ENET_NIC1=ens160
-						else
-							ENET_NIC1=${ENET_NICS}
-						fi
-						IPV4_ADDR=`awk '!/#/&&/netcfg\/get_ipaddress/    {print $4;}' preseed/preseed.cfg`
-						IPV4_MASK=`awk '!/#/&&/netcfg\/get_netmask/      {print $4;}' preseed/preseed.cfg`
-						IPV4_GWAY=`awk '!/#/&&/netcfg\/get_gateway/      {print $4;}' preseed/preseed.cfg`
-						IPV4_NAME=`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' preseed/preseed.cfg`
-						NWRK_WGRP=`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' preseed/preseed.cfg`
-						IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
-						if [ -d ../mnt/etc/netplan ]; then
-							IPV4_YAML=$(IFS= cat <<- _EOT_ | xxd -ps | sed -z 's/\n//g'
-								network:
-								  version: 2
-								  renderer: NetworkManager
-								  ethernets:
-								    ${ENET_NIC1}:
-								      dhcp4: false
-								      addresses: [ ${IPV4_ADDR}/${IPV4_BITS} ]
-								      gateway4: ${IPV4_GWAY}
-								      nameservers:
-								          search: [ ${NWRK_WGRP} ]
-								          addresses: [ ${IPV4_NAME} ]
+					cat <<- '_EOT_' | sed 's/^ *//g' > preseed/sub_success_command.sh
+						#!/bin/bash
+						#	set -x													# コマンドと引数の展開を表示
+						#	set -n													# 構文エラーのチェック
+						#	set -eu													# ステータス0以外と未定義変数の参照で終了
+						#	set -o ignoreof											# Ctrl+Dで終了しない
+						 	trap 'exit 1' 1 2 3 15
+						# IPv4 netmask変換処理 --------------------------------------------------------
+						fncIPv4GetNetmaskBits () {
+						 	local INP_ADDR
+						 	local -a OUT_ARRY=()
+						 	# -------------------------------------------------------------------------
+						 	for INP_ADDR in "$@"
+						 	do
+						 		OUT_ARRY+=`echo ${INP_ADDR} | awk -F '.' '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
+						 	done
+						 	echo "${OUT_ARRY[@]}"
+						}
+						# --- packages ----------------------------------------------------------------
+						#	LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' /cdrom/preseed/preseed.cfg  | \
+						#	           sed -z 's/\n//g'                                                                 | \
+						#	           sed -e 's/.* multiselect *//'                                                      \
+						#	               -e 's/[,|\\\\]//g'                                                             \
+						#	               -e 's/\t/ /g'                                                                  \
+						#	               -e 's/  */ /g'                                                                 \
+						#	               -e 's/^ *//'`
+						#	LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' /cdrom/preseed/preseed.cfg | \
+						#	           sed -z 's/\n//g'                                                                 | \
+						#	           sed -e 's/.* string *//'                                                           \
+						#	               -e 's/[,|\\\\]//g'                                                             \
+						#	               -e 's/\t/ /g'                                                                  \
+						#	               -e 's/  */ /g'                                                                 \
+						#	               -e 's/^ *//'`
+						#	# -------------------------------------------------------------------------
+						#	sed -i.orig /target/etc/apt/sources.list -e '/cdrom/ s/^ *(deb)/# 1/g'
+						#	in-target apt -qq    update
+						#	in-target apt -qq -y full-upgrade
+						#	in-target apt -qq -y install ${LIST_PACK}
+						#	in-target tasksel install ${LIST_TASK}
+						#	if [ -f /target/usr/lib/systemd/system/connman.service ]; then
+						#		in-target systemctl disable connman.service
+						#	fi
+						# --- network -----------------------------------------------------------------
+						 	IPV4_DHCP=`awk 'BEGIN {result="true";} !/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {if ($4=="true") result="false";} END {print result;}' /cdrom/preseed/preseed.cfg`
+						 	if [ "${IPV4_DHCP}" != "true" ]; then
+						 		ENET_NICS=`awk '!/#/&&/netcfg\/choose_interface/ {print $4;}' /cdrom/preseed/preseed.cfg`
+						 		if [ "${ENET_NICS}" = "auto" -o "${ENET_NICS}" = "" ]; then
+						 			ENET_NIC1=ens160
+						 		else
+						 			ENET_NIC1=${ENET_NICS}
+						 		fi
+						 		IPV4_ADDR=`awk '!/#/&&/netcfg\/get_ipaddress/    {print $4;}' /cdrom/preseed/preseed.cfg`
+						 		IPV4_MASK=`awk '!/#/&&/netcfg\/get_netmask/      {print $4;}' /cdrom/preseed/preseed.cfg`
+						 		IPV4_GWAY=`awk '!/#/&&/netcfg\/get_gateway/      {print $4;}' /cdrom/preseed/preseed.cfg`
+						 		IPV4_NAME=`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' /cdrom/preseed/preseed.cfg`
+						 		NWRK_WGRP=`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' /cdrom/preseed/preseed.cfg`
+						 		IPV4_BITS=`fncIPv4GetNetmaskBits "${IPV4_MASK}"`
+						 		# ---------------------------------------------------------------------
+						 		if [ -d /target/etc/netplan ]; then
+						 			if [ -z "$(ls /target/etc/NetworkManager/system-connections/)" ]; then
+						 				cat <<- _EOT_ > /target/etc/netplan/99-network-manager-static.yaml
+						 					network:
+						 					  version: 2
+						 					  renderer: NetworkManager
+						 					  ethernets:
+						 					    ${ENET_NIC1}:
+						 					      dhcp4: false
+						 					      addresses: [ ${IPV4_ADDR}/${IPV4_BITS} ]
+						 					      gateway4: ${IPV4_GWAY}
+						 					      nameservers:
+						 					          search: [ ${NWRK_WGRP} ]
+						 					          addresses: [ ${IPV4_NAME} ]
+						 _EOT_
+						 			fi
+						 		else
+						 			cat <<- _EOT_ >> /target/etc/network/interfaces
+						 				
+						 				allow-hotplug ${ENET_NIC1}
+						 				iface ${ENET_NIC1} inet static
+						 				    address ${IPV4_ADDR}
+						 				    netmask ${IPV4_MASK}
+						 				    gateway ${IPV4_GWAY}
+						 				    dns-nameservers ${IPV4_NAME}
+						 				    dns-search ${NWRK_WGRP}
+						 _EOT_
+						 		fi
+						 	fi
+						# --- exit --------------------------------------------------------------------
+						 	exit 0
 _EOT_
-							)
-							LATE_CMD+=" \\\\\n      in-target bash -c \'echo \"${IPV4_YAML}\" | xxd -r -p > /etc/netplan/99-network-manager-static.yaml\'"
-						else
-							IPV4_NWRK=$(IFS= cat <<- _EOT_ | xxd -ps | sed -z 's/\n//g'
-								
-								allow-hotplug ${ENET_NIC1}
-								iface ${ENET_NIC1} inet static
-								    address ${IPV4_ADDR}
-								    netmask ${IPV4_MASK}
-								    gateway ${IPV4_GWAY}
-								    dns-nameservers ${IPV4_NAME}
-								    dns-search ${NWRK_WGRP}
-_EOT_
-							)
-							LATE_CMD+=" \\\\\n      in-target bash -c \'echo \"${IPV4_NWRK}\" | xxd -r -p >> /etc/network/interfaces\'"
-						fi
-					fi
-					umount ../mnt
-					# --- success_command 変更 --------------------------------
-					sed -i "preseed/preseed.cfg"                      \
-					    -e '/ubiquity\/success_command/ s/#/ /g'      \
-					    -e "/ubiquity\/success_command/a ${LATE_CMD}"
-					IFS=${OLD_IFS}
-					# ---------------------------------------------------------
-					if [ -f "nocloud/user-data"      ]; then chmod 444 "nocloud/user-data";      fi
-					if [ -f "nocloud/meta-data"      ]; then chmod 444 "nocloud/meta-data";      fi
-					if [ -f "nocloud/vendor-data"    ]; then chmod 444 "nocloud/vendor-data";    fi
-					if [ -f "nocloud/network-config" ]; then chmod 444 "nocloud/network-config"; fi
-					if [ -f "preseed/preseed.cfg"    ]; then chmod 444 "preseed/preseed.cfg";    fi
-#					if [ -f "preseed/${SUB_PROG}"    ]; then chmod 555 "preseed/${SUB_PROG}";    fi
 					;;
 				* )	;;
 			esac
+			# --- success_command ---------------------------------------------
+			OLD_IFS=${IFS}
+			IFS=$'\n'
+			# --- packages ----------------------------------------------------
+			LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' preseed/preseed.cfg  | \
+			           sed -z 's/\n//g'                                                          | \
+			           sed -e 's/.* multiselect *//'                                               \
+			               -e 's/[,|\\\\]//g'                                                      \
+			               -e 's/\t/ /g'                                                           \
+			               -e 's/  */ /g'                                                          \
+			               -e 's/^ *//'`
+			LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' preseed/preseed.cfg | \
+			           sed -z 's/\n//g'                                                          | \
+			           sed -e 's/.* string *//'                                                    \
+			               -e 's/[,|\\\\]//g'                                                      \
+			               -e 's/\t/ /g'                                                           \
+			               -e 's/  */ /g'                                                          \
+			               -e 's/^ *//'`
+			# -----------------------------------------------------------------
+			LATE_CMD="\      in-target sed -i.orig /etc/apt/sources.list -e '/cdrom/ s/^ *\(deb\)/# \1/g'; \\\\\n"
+			LATE_CMD+="      in-target apt -qq    update; \\\\\n"
+			LATE_CMD+="      in-target apt -qq -y full-upgrade; \\\\\n"
+			LATE_CMD+="      in-target apt -qq -y install ${LIST_PACK}; \\\\\n"
+			LATE_CMD+="      in-target tasksel install ${LIST_TASK};"
+			if [ -f ./live/filesystem.squashfs ]; then
+				mount -r -o loop ./live/filesystem.squashfs ../mnt
+			elif [ -f ./install/filesystem.squashfs ]; then
+				mount -r -o loop ./install/filesystem.squashfs ../mnt
+			elif [ -f ./casper/filesystem.squashfs ]; then
+				mount -r -o loop ./casper/filesystem.squashfs  ../mnt
+			else
+				mount -r -o loop ./casper/minimal.squashfs     ../mnt
+			fi
+			if [ -f ../mnt/usr/lib/systemd/system/connman.service ]; then
+				LATE_CMD+=" \\\\\n      in-target systemctl disable connman.service;"
+			fi
+			umount ../mnt
+			if [ -f preseed/sub_success_command.sh ]; then
+				LATE_CMD+=" \\\\\n      /cdrom/preseed/sub_success_command.sh;"
+			fi
+			# --- success_command 変更 ----------------------------------------
+			case "${CODE_NAME[0]}" in
+				"debian" )
+					sed -i "preseed/preseed.cfg"                   \
+					    -e '/preseed\/late_command/ s/#/ /g'       \
+					    -e '/preseed\/late_command/ s/[,|\\\\]//g' \
+					    -e '/preseed\/late_command/ s/$/ \\/g'     \
+					    -e "/preseed\/late_command/a ${LATE_CMD}"
+					;;
+				"ubuntu" )
+					sed -i "preseed/preseed.cfg"                       \
+					    -e '/ubiquity\/success_command/ s/#/ /g'       \
+					    -e '/ubiquity\/success_command/ s/[,|\\\\]//g' \
+					    -e '/ubiquity\/success_command/ s/$/ \\/g'     \
+					    -e "/ubiquity\/success_command/a ${LATE_CMD}"
+					;;
+				* )	;;
+			esac
+			# -----------------------------------------------------------------
+			IFS=${OLD_IFS}
+			# -----------------------------------------------------------------
+			if [ -f "nocloud/user-data"              ]; then chmod 444 "nocloud/user-data";              fi
+			if [ -f "nocloud/meta-data"              ]; then chmod 444 "nocloud/meta-data";              fi
+			if [ -f "nocloud/vendor-data"            ]; then chmod 444 "nocloud/vendor-data";            fi
+			if [ -f "nocloud/network-config"         ]; then chmod 444 "nocloud/network-config";         fi
+			if [ -f "preseed/preseed.cfg"            ]; then chmod 444 "preseed/preseed.cfg";            fi
+			if [ -f "preseed/sub_success_command.sh" ]; then chmod 544 "preseed/sub_success_command.sh"; fi
 		popd > /dev/null
 		# ---------------------------------------------------------------------
 		OLD_IFS=${IFS}

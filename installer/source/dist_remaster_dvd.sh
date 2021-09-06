@@ -755,7 +755,7 @@ fncRemaster () {
 								 	exit 0
 _EOT_
 							LATE_CMD="\\      /cdrom/preseed/sub_success_command.sh;"
-							# --- success_command 変更 --------------------------------
+							# --- success_command 変更 ------------------------
 							sed -i "preseed/preseed.cfg"                       \
 							    -e '/ubiquity\/success_command/ s/#/ /g'       \
 							    -e '/ubiquity\/success_command/ s/[,|\\\\]//g' \
