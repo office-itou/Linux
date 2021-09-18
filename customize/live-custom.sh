@@ -22,6 +22,7 @@
 ##	2021/08/21 000.0000 J.Itou         処理見直し
 ##	2021/08/28 000.0000 J.Itou         処理見直し
 ##	2021/09/05 000.0000 J.Itou         処理見直し
+##	2021/09/18 000.0000 J.Itou         debian / ubuntu url見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -42,19 +43,15 @@
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
 	ARRAY_NAME=(                                                                                                                                                                                                           \
-	    "debian http://cdimage.debian.org/cdimage/archive/9.13.0-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso                 preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable  " \
-	    "debian http://cdimage.debian.org/cdimage/archive/10.10.0-live/amd64/iso-hybrid/debian-live-10.10.0-amd64-lxde.iso               preseed_debian.cfg                          2019-07-06 2024-xx-xx oldstable     " \
+	    "debian http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso   preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable  " \
+	    "debian http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso      preseed_debian.cfg                          2019-07-06 2024-xx-xx oldstable     " \
 	    "debian http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso               preseed_debian.cfg                          2021-08-14 20xx-xx-xx stable        " \
 	    "debian http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                 preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
-	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2016-04-21 2024-04-xx Xenial_Xerus  " \
-	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2028-04-xx Bionic_Beaver " \
-	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                       preseed_ubuntu.cfg                          2020-04-23 2030-04-xx Focal_Fossa   " \
+	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
+	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                       preseed_ubuntu.cfg                          2020-04-23 2025-04-xx Focal_Fossa   " \
 	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2021-04-22 2022-01-xx Hirsute_Hippo " \
 	    "ubuntu http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                    preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri  " \
 	)   # 区分  ダウンロード先URL                                                                                                        定義ファイル                                リリース日 サポ終了日 備考
-#	    "ubuntu https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2014-04-17 2022-04-xx Trusty Tahr   " \
-#	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2020-10-22 2021-07-22 Groovy_Gorilla" \
-#	    "ubuntu http://cdimage.ubuntu.com/daily-canary/current/impish-desktop-canary-amd64.iso                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-xx Impish_Indri  " \
 
 # -----------------------------------------------------------------------------
 fncMenu () {
@@ -359,6 +356,16 @@ fncRemaster () {
 							sed -i "preseed/preseed.cfg"              \
 							    -e 's/network-manager[,| ]*//'        \
 							    -e 's/ubuntu-desktop-minimal[,| ]*//' \
+							    -e 's/[,| ]*$//'
+							;;
+						impish-* )
+							sed -i "preseed/preseed.cfg"                      \
+							    -e 's/inxi[,| ]*//'                           \
+							    -e 's/mozc-utils-gui[,| ]*//'                 \
+							    -e 's/gnome-getting-started-docs-ja[,| ]*//'  \
+							    -e 's/fonts-noto\([,| ]\)/fonts-noto-core\1/' \
+							    -e 's/bind9utils\([,| ]\)/bind9-utils\1/'     \
+							    -e 's/dnsutils\([,| ]\)/bind9-dnsutils\1/'    \
 							    -e 's/[,| ]*$//'
 							;;
 						* )	;;

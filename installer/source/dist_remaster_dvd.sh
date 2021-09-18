@@ -40,6 +40,8 @@
 ##	2021/08/17 000.0000 J.Itou         対象OS整理
 ##	2021/08/21 000.0000 J.Itou         処理見直し
 ##	2021/08/28 000.0000 J.Itou         処理見直し
+##	2021/09/16 000.0000 J.Itou         CentOS-Stream-8ファイル名変更
+##	2021/09/18 000.0000 J.Itou         debian / ubuntu url見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -64,29 +66,33 @@
 	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                 preseed_debian.cfg                          2019-07-06 2024-xx-xx oldstable     " \
 	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                          preseed_debian.cfg                          2021-08-14 20xx-xx-xx stable        " \
 	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                            preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
-	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg                          2016-04-21 2024-04-xx Xenial_Xerus  " \
-	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                        preseed_ubuntu.cfg                          2018-04-26 2028-04-xx Bionic_Beaver " \
-	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                   preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2030-04-xx Focal_Fossa   " \
+	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                        preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
+	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                   preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2025-04-xx Focal_Fossa   " \
 	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                 preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22 2022-01-xx Hirsute_Hippo " \
 	    "centos http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                            kickstart_centos.cfg                        2021-06-03 2021-12-31 RHEL_8.4      " \
-	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-dvd1.iso                            kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x      " \
+	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-latest-dvd1.iso                       kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x      " \
 	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso    kickstart_fedora.cfg                        2021-04-27 20xx-xx-xx kernel_5.11   " \
 	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64.iso                                yast_opensuse153.xml                        2021-06-02 20xx-xx-xx kernel_5.3.18 " \
 	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   yast_opensuse16.xml                         2021-xx-xx 20xx-xx-xx kernel_x.x    " \
 	    "rocky  https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                    kickstart_rocky.cfg                         2021-06-21 20xx-xx-xx RHEL_8.4      " \
-	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2016-04-21 2024-04-xx Xenial_Xerus  " \
-	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2028-04-xx Bionic_Beaver " \
-	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                       preseed_ubuntu.cfg                          2020-04-23 2030-04-xx Focal_Fossa   " \
-	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2021-04-22 2022-01-xx Hirsute_Hippo " \
-	    "ubuntu http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                    preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri  " \
-	    "ubuntu http://cdimage.ubuntu.com/daily-canary/current/impish-desktop-canary-amd64.iso                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-xx Impish_Indri  " \
-	    "debian http://cdimage.debian.org/cdimage/archive/9.13.0-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso                 preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable  " \
-	    "debian http://cdimage.debian.org/cdimage/archive/10.10.0-live/amd64/iso-hybrid/debian-live-10.10.0-amd64-lxde.iso               preseed_debian.cfg                          2019-07-06 2024-xx-xx oldstable     " \
+	    "debian http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso   preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable  " \
+	    "debian http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso      preseed_debian.cfg                          2019-07-06 2024-xx-xx oldstable     " \
 	    "debian http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso               preseed_debian.cfg                          2021-08-14 20xx-xx-xx stable        " \
 	    "debian http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                 preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing       " \
+	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
+	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                       preseed_ubuntu.cfg                          2020-04-23 2025-04-xx Focal_Fossa   " \
+	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2021-04-22 2022-01-xx Hirsute_Hippo " \
+	    "ubuntu http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                    preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri  " \
 	)   # 区分  ダウンロード先URL                                                                                                        定義ファイル                                リリース日 サポ終了日 備考
-#	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-live-server-amd64.iso                                                  preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-10-22 2021-07-xx Groovy_Gorilla" \
+#	    "ubuntu https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg                          2014-04-17 2019-04-25 Trusty_Tahr   " \
+#	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus  " \
+#	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-live-server-amd64.iso                                                  preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2018-04-26 2023-04-xx Bionic_Beaver " \
+#	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-live-server-amd64.iso                                                  preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-10-22 2021-07-22 Groovy_Gorilla" \
+#	    "ubuntu https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2014-04-17 2019-04-25 Trusty_Tahr   " \
+#	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus  " \
 #	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2020-10-22 2021-07-22 Groovy_Gorilla" \
+#	    "ubuntu http://cdimage.ubuntu.com/daily-canary/current/impish-desktop-canary-amd64.iso                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-xx Impish_Indri  " \
+#	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-dvd1.iso                            kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x      " \
 
 # -----------------------------------------------------------------------------
 fncMenu () {
@@ -522,6 +528,22 @@ fncRemaster () {
 							    -e 's/network-manager[,| ]*//'        \
 							    -e 's/ubuntu-desktop-minimal[,| ]*//' \
 							    -e 's/[,| ]*$//'
+							if [ -f "nocloud/user-data" ]; then
+								sed -i "nocloud/user-data"  \
+								    -e '/bind9-utils/d'     \
+								    -e '/bind9-dnsutils/d'  \
+								    -e '/fonts-noto-core/d'
+							fi
+							;;
+						impish-* )
+							sed -i "preseed/preseed.cfg"                      \
+							    -e 's/inxi[,| ]*//'                           \
+							    -e 's/mozc-utils-gui[,| ]*//'                 \
+							    -e 's/gnome-getting-started-docs-ja[,| ]*//'  \
+							    -e 's/fonts-noto\([,| ]\)/fonts-noto-core\1/' \
+							    -e 's/bind9utils\([,| ]\)/bind9-utils\1/'     \
+							    -e 's/dnsutils\([,| ]\)/bind9-dnsutils\1/'    \
+							    -e 's/[,| ]*$//'
 							;;
 						* )	;;
 					esac
@@ -535,6 +557,7 @@ fncRemaster () {
 								*server* ) INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"    ;;
 								* )	;;
 							esac
+							INS_CFG+=" debian-installer\/language=ja keyboard-configuration\/layoutcode\?=jp keyboard-configuration\/modelcode\?=jp106"
 							# --- grub.cfg ------------------------------------
 							INS_ROW=$((`sed -n '/^menuentry \"\(Install \)*Ubuntu\( Server\)*\"/ =' boot/grub/grub.cfg | head -n 1`-1))
 							sed -n '/^menuentry \"\(Install \)*Ubuntu\( Server\)*\"/,/^}/p' boot/grub/grub.cfg | \
@@ -542,7 +565,8 @@ fncRemaster () {
 							sed -e '/menuentry/ s/ *Install *//'                                                 \
 							    -e 's/\"\(Ubuntu.*\)\"/\"Auto Install \1\"/'                                     \
 							    -e 's/file.*seed//'                                                              \
-							    -e "s/\(vmlinuz\) */\1 ${INS_CFG} /"                                           | \
+							    -e "s/\(vmlinuz\) */\1 ${INS_CFG} /"                                             \
+							    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity noprompt/'              | \
 							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                                 | \
 							sed -e '1i set timeout=5'                                                            \
 							    -e 's/\(set default\)="1"/\1="0"/'                                               \

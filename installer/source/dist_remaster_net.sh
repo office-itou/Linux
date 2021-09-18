@@ -34,6 +34,7 @@
 ##	2021/08/15 000.0000 J.Itou         debian 11 対応
 ##	2021/08/21 000.0000 J.Itou         処理見直し
 ##	2021/08/28 000.0000 J.Itou         処理見直し
+##	2021/09/16 000.0000 J.Itou         CentOS-Stream-8ファイル名変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -59,7 +60,7 @@
 	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                             preseed_debian.cfg   2019-07-06 20xx-xx-xx stable        " \
 	    "debian https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg   20xx-xx-xx 20xx-xx-xx testing       " \
 	    "centos http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-boot.iso                                                kickstart_centos.cfg 2021-06-03 2021-12-31 RHEL_8.4      " \
-	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-boot.iso                                kickstart_centos.cfg 20xx-xx-xx 2024-05-31 RHEL_x.x      " \
+	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-latest-boot.iso                           kickstart_centos.cfg 20xx-xx-xx 2024-05-31 RHEL_x.x      " \
 	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso    kickstart_fedora.cfg 2021-04-27 20xx-xx-xx kernel_5.11   " \
 	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                    yast_opensuse153.xml 2021-06-02 20xx-xx-xx kernel_5.3.18 " \
 	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml  20xx-xx-xx 20xx-xx-xx kernel_x.x    " \
@@ -68,6 +69,7 @@
 #	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"  20xx-xx-xx 20xx-xx-xx testing       " \
 #	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg   2015-04-25 2020-06-30 oldoldstable  " \
 #	    "suse   http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml  2020-07-02 2021-11-xx kernel_5.3    " \
+#	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-boot.iso                                kickstart_centos.cfg 20xx-xx-xx 2024-05-31 RHEL_x.x      " \
 # -----------------------------------------------------------------------------
 fncMenu () {
 	local ARRY_NAME=()										# 配列展開

@@ -31,6 +31,7 @@
 ##	2021/08/15 000.0000 J.Itou         debian 11 対応
 ##	2021/08/21 000.0000 J.Itou         処理見直し
 ##	2021/08/28 000.0000 J.Itou         処理見直し
+##	2021/09/18 000.0000 J.Itou         ubuntu url見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -59,10 +60,10 @@
 	    "debian http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                      preseed_debian.cfg   2019-07-06 20xx-xx-xx oldstable    Debian_10.xx(buster)            " \
 	    "debian http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         preseed_debian.cfg   2021-08-14 20xx-xx-xx stable       Debian_11.xx(bullseye)          " \
 	    "debian http://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                        preseed_debian.cfg   202x-xx-xx 20xx-xx-xx testing      Debian_12.xx(bookworm)          " \
-	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/trusty/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                     preseed_ubuntu.cfg   2014-04-17 2022-04-xx trusty       Ubuntu_14.04(Trusty_Tahr):LTS   " \
+	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso             preseed_ubuntu.cfg   2014-04-17 2022-04-xx trusty       Ubuntu_14.04(Trusty_Tahr):LTS   " \
 	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/xenial-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso             preseed_ubuntu.cfg   2016-04-21 2024-04-xx xenial       Ubuntu_16.04(Xenial_Xerus):LTS  " \
-	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                     preseed_ubuntu.cfg   2018-04-26 2028-04-xx bionic       Ubuntu_18.04(Bionic_Beaver):LTS " \
-	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso               preseed_ubuntu.cfg   2020-04-23 2030-04-xx focal        Ubuntu_20.04(Focal_Fossa):LTS   " \
+	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso             preseed_ubuntu.cfg   2018-04-26 2028-04-xx bionic       Ubuntu_18.04(Bionic_Beaver):LTS " \
+	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso       preseed_ubuntu.cfg   2020-04-23 2030-04-xx focal        Ubuntu_20.04(Focal_Fossa):LTS   " \
 	)   # 区分  ダウンロード先URL                                                                                                            定義ファイル         リリース日 サポ終了日 備考         備考2
 #	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                     preseed_ubuntu.cfg   2016-04-21 2024-04-xx xenial       Ubuntu_16.04(Xenial_Xerus):LTS  " \
 #	    "ubuntu http://archive.ubuntu.com/ubuntu/dists/groovy/main/installer-${ARC_TYPE}/current/legacy-images/                              preseed_ubuntu.cfg   2020-10-22 2021-07-xx groovy       Ubuntu_20.10(Groovy_Gorilla)    " \
@@ -117,7 +118,7 @@ fncMenu () {
 		fi
 		# ---------------------------------------------------------------------
 		if [ "${TXT_COLOR}" = "true" ]; then
-			printf "#%2d：%-32.32s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+			printf "#%2d：%-32.32s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[7]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 		else
 			printf "#%2d：%-32.32s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[7]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 		fi
