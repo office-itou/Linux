@@ -23,6 +23,7 @@
 ##	2021/08/28 000.0000 J.Itou         処理見直し
 ##	2021/09/05 000.0000 J.Itou         処理見直し
 ##	2021/09/18 000.0000 J.Itou         debian / ubuntu url見直し
+##	2021/08/25 000.0000 J.Itou         ubuntu 21.10(beta)追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -50,7 +51,7 @@
 	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
 	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                       preseed_ubuntu.cfg                          2020-04-23 2025-04-xx Focal_Fossa   " \
 	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2021-04-22 2022-01-xx Hirsute_Hippo " \
-	    "ubuntu http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                    preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri  " \
+	    "ubuntu https://releases.ubuntu.com/impish/ubuntu-[0-9].*-beta-desktop-amd64.iso                                                 preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri  " \
 	)   # 区分  ダウンロード先URL                                                                                                        定義ファイル                                リリース日 サポ終了日 備考
 
 # -----------------------------------------------------------------------------
@@ -358,7 +359,8 @@ fncRemaster () {
 							    -e 's/ubuntu-desktop-minimal[,| ]*//' \
 							    -e 's/[,| ]*$//'
 							;;
-						impish-* )
+						ubuntu-21.10* | \
+						impish-*      )
 							sed -i "preseed/preseed.cfg"                      \
 							    -e 's/inxi[,| ]*//'                           \
 							    -e 's/mozc-utils-gui[,| ]*//'                 \

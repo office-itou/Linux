@@ -42,6 +42,7 @@
 ##	2021/08/28 000.0000 J.Itou         処理見直し
 ##	2021/09/16 000.0000 J.Itou         CentOS-Stream-8ファイル名変更
 ##	2021/09/18 000.0000 J.Itou         debian / ubuntu url見直し
+##	2021/08/25 000.0000 J.Itou         ubuntu 21.10(beta)追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -69,6 +70,7 @@
 	    "ubuntu http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                        preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
 	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                   preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2025-04-xx Focal_Fossa   " \
 	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                 preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22 2022-01-xx Hirsute_Hippo " \
+	    "ubuntu https://releases.ubuntu.com/impish/ubuntu-[0-9].*-beta-live-server-amd64.iso                                             preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-xx Impish_Indri  " \
 	    "centos http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                            kickstart_centos.cfg                        2021-06-03 2021-12-31 RHEL_8.4      " \
 	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-latest-dvd1.iso                       kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x      " \
 	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso    kickstart_fedora.cfg                        2021-04-27 20xx-xx-xx kernel_5.11   " \
@@ -82,7 +84,7 @@
 	    "ubuntu https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver " \
 	    "ubuntu https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                       preseed_ubuntu.cfg                          2020-04-23 2025-04-xx Focal_Fossa   " \
 	    "ubuntu https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2021-04-22 2022-01-xx Hirsute_Hippo " \
-	    "ubuntu http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                    preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri  " \
+	    "ubuntu https://releases.ubuntu.com/impish/ubuntu-[0-9].*-beta-desktop-amd64.iso                                                 preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri  " \
 	)   # 区分  ダウンロード先URL                                                                                                        定義ファイル                                リリース日 サポ終了日 備考
 #	    "ubuntu https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg                          2014-04-17 2019-04-25 Trusty_Tahr   " \
 #	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                       preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus  " \
@@ -91,6 +93,7 @@
 #	    "ubuntu https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2014-04-17 2019-04-25 Trusty_Tahr   " \
 #	    "ubuntu https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus  " \
 #	    "ubuntu https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2020-10-22 2021-07-22 Groovy_Gorilla" \
+#	    "ubuntu http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                    preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri  " \
 #	    "ubuntu http://cdimage.ubuntu.com/daily-canary/current/impish-desktop-canary-amd64.iso                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-xx Impish_Indri  " \
 #	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-dvd1.iso                            kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x      " \
 
@@ -535,7 +538,8 @@ fncRemaster () {
 								    -e '/fonts-noto-core/d'
 							fi
 							;;
-						impish-* )
+						ubuntu-21.10* | \
+						impish-*      )
 							sed -i "preseed/preseed.cfg"                      \
 							    -e 's/inxi[,| ]*//'                           \
 							    -e 's/mozc-utils-gui[,| ]*//'                 \
