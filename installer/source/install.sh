@@ -75,6 +75,7 @@
 ##	2021/08/03 000.0000 J.Itou         処理見直し(NICの順番をstatic優先に)
 ##	2021/08/06 000.0000 J.Itou         処理見直し(不具合修正等を含む)
 ##	2021/08/14 000.0000 J.Itou         処理見直し(不具合修正等を含む)
+##	2021/10/08 000.0000 J.Itou         miraclelinux 8.4追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -391,14 +392,15 @@ fncInitialize () {
 			SYS_CODE=`awk -F '=' '$1=="DISTRIB_CODENAME" {gsub("\"",""); print $2;}' /etc/lsb-release`	# コード名
 		else
 			case "${SYS_NAME}" in
-				"debian"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
-				"ubuntu"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`;;
-				"centos"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/centos-release`;;
-				"fedora"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/fedora-release`;;
-				"rocky"               ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/rocky-release` ;;
-				"opensuse-leap"       ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
-				"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`    ;;
-				*                     )                                                                                   ;;
+				"debian"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`       ;;
+				"ubuntu"              ) SYS_CODE=`awk -F '/'             '{gsub("\"",""); print $2;}' /etc/debian_version`       ;;
+				"centos"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/centos-release`       ;;
+				"fedora"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/fedora-release`       ;;
+				"rocky"               ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/rocky-release`        ;;
+				"miraclelinux"        ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/miraclelinux-release` ;;
+				"opensuse-leap"       ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`           ;;
+				"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`           ;;
+				*                     )                                                                                          ;;
 			esac
 		fi
 	fi
@@ -412,6 +414,7 @@ fncInitialize () {
 				"centos"              ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
 				"fedora"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`;;
 				"rocky"               ) SYS_NOOP=`echo "${SYS_VNUM} >=  8.4"     | bc`;;
+				"miraclelinux"        ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
 				"opensuse-leap"       ) SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`;;
 				"opensuse-tumbleweed" ) SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`;;
 				*                     )                                               ;;
@@ -579,9 +582,10 @@ fncInitialize () {
 				CMD_AGET="apt -y -qq"
 			fi
 			;;
-		"centos" | \
-		"fedora" | \
-		"rocky"  )
+		"centos"       | \
+		"fedora"       | \
+		"rocky"        | \
+		"miraclelinux" )
 			if [ "`which dnf 2> /dev/null`" != "" ]; then
 				CMD_AGET="dnf -y -q --allowerasing"
 			else
@@ -623,7 +627,8 @@ fncInitialize () {
 			;;
 		"centos"              | \
 		"fedora"              | \
-		"rocky"               )
+		"rocky"               | \
+		"miraclelinux"        )
 			FIL_BOPT=${FIL_BIND}
 			;;
 		"opensuse-leap"       | \
@@ -697,9 +702,10 @@ fncMain () {
 			${CMD_AGET} upgrade
 			${CMD_AGET} dist-upgrade
 			;;
-		"centos" | \
-		"fedora" | \
-		"rocky"  )
+		"centos"       | \
+		"fedora"       | \
+		"rocky"        | \
+		"miraclelinux" )
 			echo "- System Update ---------------------------------------------------------------"
 			# --- パッケージ更新 ------------------------------------------------------
 			echo "--- Package Update ------------------------------------------------------------"
@@ -759,9 +765,10 @@ fncMain () {
 				${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb
 			fi
 			;;
-		"centos" | \
-		"fedora" | \
-		"rocky"  )
+		"centos"       | \
+		"fedora"       | \
+		"rocky"        | \
+		"miraclelinux" )
 			if [ "`LANG=C dnf list chromium ungoogled-chromium google-chrome-stable 2> /dev/null | sed -n '/Installed Packages/,/Available Packages/p' | awk '/chromium|chrome/ {print $1;}'`" = "" ]; then
 				fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
 				curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
@@ -835,9 +842,10 @@ fncMain () {
 				"ubuntu" )
 					LNG_FILE=".bashrc"
 					;;
-				"centos" | \
-				"fedora" | \
-				"rocky"  )
+				"centos"       | \
+				"fedora"       | \
+				"rocky"        | \
+				"miraclelinux" )
 					LNG_FILE=".i18n"
 					;;
 				"opensuse-leap"       | \
@@ -1160,11 +1168,12 @@ _EOT_
 	fi
 	# -------------------------------------------------------------------------
 	case "${SYS_NAME}" in
-		"debian" | \
-		"ubuntu" | \
-		"centos" | \
-		"fedora" | \
-		"rocky"  )
+		"debian"       | \
+		"ubuntu"       | \
+		"centos"       | \
+		"fedora"       | \
+		"rocky"        | \
+		"miraclelinux" )
 			echo "- Install clamav --------------------------------------------------------------"
 			# -------------------------------------------------------------------------
 			if [ "`which freshclam 2> /dev/null`" = "" ]; then					# Install clamav
@@ -1734,9 +1743,10 @@ _EOT_
 				fncProc nmbd "${RUN_SMBD[1]}"
 			fi
 			;;
-		"centos" | \
-		"fedora" | \
-		"rocky"  )
+		"centos"       | \
+		"fedora"       | \
+		"rocky"        | \
+		"miraclelinux" )
 			fncProc smb "${RUN_SMBD[0]}"
 			fncProc smb "${RUN_SMBD[1]}"
 			fncProc nmb "${RUN_SMBD[0]}"
@@ -2018,7 +2028,7 @@ _EOT_
 			    -e '/^GRUB_RECORDFAIL_TIMEOUT/d'                \
 			    -e '/^GRUB_TIMEOUT/a GRUB_RECORDFAIL_TIMEOUT=5'
 		fi
-		if [ "${SYS_NAME}" = "centos" ] || [ "${SYS_NAME}" = "fedora" ] || [ "${SYS_NAME}" = "rocky" ]; then
+		if [ "${SYS_NAME}" = "centos" ] || [ "${SYS_NAME}" = "fedora" ] || [ "${SYS_NAME}" = "rocky" ] || [ "${SYS_NAME}" = "miraclelinux" ]; then
 			sed -i /etc/default/grub                              \
 			    -e '$a GRUB_FONT=\/usr\/share\/grub\/unicode.pf2'
 		fi
@@ -2029,11 +2039,20 @@ _EOT_
 					update-grub
 					fncPause $?
 				;;
-			"centos" | \
-			"fedora" | \
-			"rocky"  )
+			"centos"       | \
+			"fedora"       | \
+			"rocky"        )
 					if [ -f /boot/efi/EFI/${SYS_NAME}/grub.cfg ]; then			# efi
 						grub2-mkconfig -o /boot/efi/EFI/${SYS_NAME}/grub.cfg
+						fncPause $?
+					else														# mbr
+						grub2-mkconfig -o /boot/grub2/grub.cfg
+						fncPause $?
+					fi
+				;;
+			"miraclelinux" )
+					if [ -f /boot/efi/EFI/asianux/grub.cfg ]; then				# efi
+						grub2-mkconfig -o /boot/efi/EFI/asianux/grub.cfg
 						fncPause $?
 					else														# mbr
 						grub2-mkconfig -o /boot/grub2/grub.cfg
@@ -2063,11 +2082,12 @@ _EOT_
 		echo "- Install VMware Tools --------------------------------------------------------"
 		# ---------------------------------------------------------------------
 		case "${SYS_NAME}" in
-			"debian" | \
-			"ubuntu" | \
-			"centos" | \
-			"fedora" | \
-			"rocky"  )
+			"debian"       | \
+			"ubuntu"       | \
+			"centos"       | \
+			"fedora"       | \
+			"rocky"        | \
+			"miraclelinux" )
 				if [ "`which vmware-checkvm 2> /dev/null`" = "" ]; then
 					if [ "`${CMD_AGET} search open-vm-tools-desktop`" = "" ]; then
 						${CMD_AGET} install open-vm-tools
@@ -2138,9 +2158,10 @@ _EOT_
 		"ubuntu" )
 			GRP_SUDO=sudo
 			;;
-		"centos" | \
-		"fedora" | \
-		"rocky"  )
+		"centos"       | \
+		"fedora"       | \
+		"rocky"        | \
+		"miraclelinux" )
 			GRP_SUDO=wheel
 			;;
 		"opensuse-leap"       | \
@@ -2207,9 +2228,10 @@ _EOT_
 			"ubuntu" )
 				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/cache/bind/
 				;;
-			"centos" | \
-			"fedora" | \
-			"rocky"  )
+			"centos"       | \
+			"fedora"       | \
+			"rocky"        | \
+			"miraclelinux" )
 				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/named/
 				;;
 			"opensuse-leap"       | \
