@@ -35,6 +35,7 @@
 ##	2021/08/21 000.0000 J.Itou         処理見直し
 ##	2021/08/28 000.0000 J.Itou         処理見直し
 ##	2021/09/16 000.0000 J.Itou         CentOS-Stream-8ファイル名変更
+##	2021/10/15 000.0000 J.Itou         fedora 35(beta)追加 / 処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -54,22 +55,23 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	ARRAY_NAME=(                                                                                                                                                                                        \
-	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                 preseed_debian.cfg   2017-06-17 2022-06-xx oldoldstable  " \
-	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                    preseed_debian.cfg   2019-07-06 20xx-xx-xx oldstable     " \
-	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                             preseed_debian.cfg   2019-07-06 20xx-xx-xx stable        " \
-	    "debian https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso              preseed_debian.cfg   20xx-xx-xx 20xx-xx-xx testing       " \
-	    "centos http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-boot.iso                                                kickstart_centos.cfg 2021-06-03 2021-12-31 RHEL_8.4      " \
-	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-latest-boot.iso                           kickstart_centos.cfg 20xx-xx-xx 2024-05-31 RHEL_x.x      " \
-	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso    kickstart_fedora.cfg 2021-04-27 20xx-xx-xx kernel_5.11   " \
-	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                    yast_opensuse153.xml 2021-06-02 20xx-xx-xx kernel_5.3.18 " \
-	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                       yast_opensuse16.xml  20xx-xx-xx 20xx-xx-xx kernel_x.x    " \
-	    "rocky  https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-boot.iso                                        kickstart_rocky.cfg  2021-06-21 20xx-xx-xx RHEL_8.4      " \
-	)   # 区分  ダウンロード先URL                                                                                                            定義ファイル         リリース日 サポ終了日 備考
-#	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                               preseed_debian.cfg"  20xx-xx-xx 20xx-xx-xx testing       " \
-#	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                               preseed_debian.cfg   2015-04-25 2020-06-30 oldoldstable  " \
-#	    "suse   http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                    yast_opensuse15.xml  2020-07-02 2021-11-xx kernel_5.3    " \
-#	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-boot.iso                                kickstart_centos.cfg 20xx-xx-xx 2024-05-31 RHEL_x.x      " \
+	ARRAY_NAME=(                                                                                                                                                                                                    \
+	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                             preseed_debian.cfg   2017-06-17 2022-06-xx oldoldstable  " \
+	    "debian https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                preseed_debian.cfg   2019-07-06 20xx-xx-xx oldstable     " \
+	    "debian https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                         preseed_debian.cfg   2019-07-06 20xx-xx-xx stable        " \
+	    "debian https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                          preseed_debian.cfg   20xx-xx-xx 20xx-xx-xx testing       " \
+	    "centos http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-boot.iso                                                            kickstart_centos.cfg 2021-06-03 2021-12-31 RHEL_8.4      " \
+	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-latest-boot.iso                                       kickstart_centos.cfg 20xx-xx-xx 2024-05-31 RHEL_x.x      " \
+	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso                kickstart_fedora.cfg 2021-04-27 20xx-xx-xx kernel_5.11   " \
+	    "fedora https://download.fedoraproject.org/pub/fedora/linux/releases/test/35_Beta/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35_Beta-1.2.iso kickstart_fedora.cfg 20xx-xx-xx 20xx-xx-xx kernel_x.xx   " \
+	    "suse   http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64.iso                                                yast_opensuse153.xml 2021-06-02 20xx-xx-xx kernel_5.3.18 " \
+	    "suse   http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                   yast_opensuse16.xml  20xx-xx-xx 20xx-xx-xx kernel_x.x    " \
+	    "rocky  https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-boot.iso                                                    kickstart_rocky.cfg  2021-06-21 20xx-xx-xx RHEL_8.4      " \
+	)   # 区分  ダウンロード先URL                                                                                                                        定義ファイル         リリース日 サポ終了日 備考
+#	    "debian https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso                                           preseed_debian.cfg"  20xx-xx-xx 20xx-xx-xx testing       " \
+#	    "debian https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso                                           preseed_debian.cfg   2015-04-25 2020-06-30 oldoldstable  " \
+#	    "suse   http://download.opensuse.org/distribution/leap/15.2/iso/openSUSE-Leap-15.2-NET-x86_64.iso                                                yast_opensuse15.xml  2020-07-02 2021-11-xx kernel_5.3    " \
+#	    "centos http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-boot.iso                                            kickstart_centos.cfg 20xx-xx-xx 2024-05-31 RHEL_x.x      " \
 # -----------------------------------------------------------------------------
 fncMenu () {
 	local ARRY_NAME=()										# 配列展開
@@ -97,12 +99,14 @@ fncMenu () {
 		# ---------------------------------------------------------------------
 #		if [ "`echo ${CODE_NAME[1]} | sed -n '/\.\*/p'`" != "" ]; then
 			DIR_NAME=`dirname ${CODE_NAME[2]}`
-			FIL_INFO=($(curl -L -l -R -S -s -f "${DIR_NAME}" 2> /dev/null | sed -n "s/.*>\(${CODE_NAME[1]}.iso\)<.*> *\([0-9A-Za-z]*-[0-9A-Za-z]*-[0-9A-Za-z]*\) *\([0-9]*:[0-9]*\).*<*.*/\1 \2 \3/p"))
-#			FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"`
-			CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
-			CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
-			CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
-			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
+			FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*>\(${CODE_NAME[1]}.iso\)<.*> *\([0-9A-Za-z]*-[0-9A-Za-z]*-[0-9A-Za-z]*\) *\([0-9]*:[0-9]*\).*<*.*/\1 \2 \3/p"))
+			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
+#				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"`
+				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
+				CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
+				CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
+				ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
+			fi
 #		fi
 		# ---------------------------------------------------------------------
 		TXT_COLOR=false
@@ -112,8 +116,10 @@ fncMenu () {
 			DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
 			DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
-			if [ `date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"` -gt ${DVD_DATE} ]; then
-				TXT_COLOR=true
+			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
+				if [ `date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"` -gt ${DVD_DATE} ]; then
+					TXT_COLOR=true
+				fi
 			fi
 		fi
 		# ---------------------------------------------------------------------
@@ -170,9 +176,9 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
 		else
-			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -181,7 +187,7 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
@@ -215,7 +221,7 @@ fncRemaster () {
 					if [ -f "../../../${CFG_FILE}" ]; then
 						cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
 					else
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
 					fi
 					# ---------------------------------------------------------
 					case "${CODE_NAME[1]}" in
@@ -233,7 +239,7 @@ fncRemaster () {
 							if [ -f "../../../${CFG_FILE}" ]; then
 								cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
 							else
-								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
 							fi
 							;;
 #						*desktop* )							# --- get sub shell
@@ -242,7 +248,7 @@ fncRemaster () {
 #							if [ -f "../../../${SUB_PROG}" ]; then
 #								cp --preserve=timestamps "../../../${SUB_PROG}" "preseed/${SUB_PROG}"
 #							else
-#								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/${SUB_PROG}" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+#								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/${SUB_PROG}" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
 #							fi
 #							;;
 						* )	;;
@@ -257,7 +263,7 @@ fncRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
 					else
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
 					fi
 					case "${WORK_DIRS}" in
 						*net* )
@@ -280,7 +286,7 @@ fncRemaster () {
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
 					else
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
 					fi
 					;;
 				* )	;;
@@ -576,6 +582,10 @@ fncRemaster () {
 					    -e 's/\(set timeout\).*$/\1=5/'                         \
 					> grub.cfg
 					mv grub.cfg EFI/BOOT/
+					# ---------------------------------------------------------
+					VER_NUM="`echo ${CODE_NAME[1]} | sed -e 's/.*-x86_64-\([0-9]*\).*/\1/'`"
+					sed -i kickstart/ks.cfg                          \
+					    -e "s/\(repo=fedora\)-[0-9]*/\1-${VER_NUM}/"
 					;;
 				"rocky" )	# ･････････････････････････････････････････････････
 					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"

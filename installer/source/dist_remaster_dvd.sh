@@ -44,6 +44,7 @@
 ##	2021/09/18 000.0000 J.Itou         debian / ubuntu url見直し
 ##	2021/08/25 000.0000 J.Itou         ubuntu 21.10(beta)追加
 ##	2021/10/08 000.0000 J.Itou         miraclelinux 8.4追加
+##	2021/10/15 000.0000 J.Itou         ubuntu 21.10(beta→正式版)変更 / fedora 35(beta)追加 / 処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -63,41 +64,42 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	ARRAY_NAME=(                                                                                                                                                                                                                    \
-	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso             preseed_debian.cfg                          2017-06-17  2022-06-30  oldoldstable  " \
-	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                preseed_debian.cfg                          2019-07-06  2024-xx-xx  oldstable     " \
-	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                         preseed_debian.cfg                          2021-08-14  20xx-xx-xx  stable        " \
-	    "debian         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                           preseed_debian.cfg                          20xx-xx-xx  20xx-xx-xx  testing       " \
-	    "ubuntu         http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                       preseed_ubuntu.cfg                          2018-04-26  2023-04-xx  Bionic_Beaver " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                  preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23  2025-04-xx  Focal_Fossa   " \
-	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22  2022-01-xx  Hirsute_Hippo " \
-	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-beta-live-server-amd64.iso                                            preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24  2022-07-xx  Impish_Indri  " \
-	    "centos         http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                           kickstart_centos.cfg                        2021-06-03  2021-12-31  RHEL_8.4      " \
-	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-latest-dvd1.iso                      kickstart_centos.cfg                        2019-xx-xx  2024-05-31  RHEL_x.x      " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso   kickstart_fedora.cfg                        2021-04-27  20xx-xx-xx  kernel_5.11   " \
-	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64.iso                               yast_opensuse153.xml                        2021-06-02  20xx-xx-xx  kernel_5.3.18 " \
-	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                  yast_opensuse16.xml                         2021-xx-xx  20xx-xx-xx  kernel_x.x    " \
-	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                   kickstart_rocky.cfg                         2021-06-21  20xx-xx-xx  RHEL_8.4      " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9].*-rtm-x86_64.iso            kickstart_miraclelinux.cfg                  20xx-xx-xx  20xx-xx-xx  RHEL_8.4      " \
-	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso  preseed_debian.cfg                          2017-06-17  2022-06-30  oldoldstable  " \
-	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso     preseed_debian.cfg                          2019-07-06  2024-xx-xx  oldstable     " \
-	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso              preseed_debian.cfg                          2021-08-14  20xx-xx-xx  stable        " \
-	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                preseed_debian.cfg                          20xx-xx-xx  20xx-xx-xx  testing       " \
-	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2018-04-26  2023-04-xx  Bionic_Beaver " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                      preseed_ubuntu.cfg                          2020-04-23  2025-04-xx  Focal_Fossa   " \
-	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                    preseed_ubuntu.cfg                          2021-04-22  2022-01-xx  Hirsute_Hippo " \
-	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-beta-desktop-amd64.iso                                                preseed_ubuntu.cfg                          2021-10-24  2022-07-xx  Impish_Indri  " \
-	)   # 区分          ダウンロード先URL                                                                                                       定義ファイル                                リリース日  サポ終了日  備考
-#	    "ubuntu         https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-server-amd64.iso                                                      preseed_ubuntu.cfg                          2014-04-17  2019-04-25  Trusty_Tahr   " \
-#	    "ubuntu         https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                      preseed_ubuntu.cfg                          2016-04-21  2021-04-xx  Xenial_Xerus  " \
-#	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-live-server-amd64.iso                                                 preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2018-04-26  2023-04-xx  Bionic_Beaver " \
-#	    "ubuntu         https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-live-server-amd64.iso                                                 preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-10-22  2021-07-22  Groovy_Gorilla" \
-#	    "ubuntu         https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2014-04-17  2019-04-25  Trusty_Tahr   " \
-#	    "ubuntu         https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2016-04-21  2021-04-xx  Xenial_Xerus  " \
-#	    "ubuntu         https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-desktop-amd64.iso                                                     preseed_ubuntu.cfg                          2020-10-22  2021-07-22  Groovy_Gorilla" \
-#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                   preseed_ubuntu.cfg                          2021-10-24  2022-07-xx  Impish_Indri  " \
-#	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/impish-desktop-canary-amd64.iso                                          preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24  2022-07-xx  Impish_Indri  " \
-#	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-dvd1.iso                           kickstart_centos.cfg                        2019-xx-xx  2024-05-31  RHEL_x.x      " \
+	ARRAY_NAME=(                                                                                                                                                                                                                                 \
+	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                          preseed_debian.cfg                          2017-06-17  2022-06-30  oldoldstable  " \
+	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                             preseed_debian.cfg                          2019-07-06  2024-xx-xx  oldstable     " \
+	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                      preseed_debian.cfg                          2021-08-14  20xx-xx-xx  stable        " \
+	    "debian         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                        preseed_debian.cfg                          20xx-xx-xx  20xx-xx-xx  testing       " \
+	    "ubuntu         http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                                    preseed_ubuntu.cfg                          2018-04-26  2023-04-xx  Bionic_Beaver " \
+	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                               preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23  2025-04-xx  Focal_Fossa   " \
+	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                             preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22  2022-01-xx  Hirsute_Hippo " \
+	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-live-server-amd64.iso                                                              preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24  2022-07-xx  Impish_Indri  " \
+	    "centos         http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                                        kickstart_centos.cfg                        2021-06-03  2021-12-31  RHEL_8.4      " \
+	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-latest-dvd1.iso                                   kickstart_centos.cfg                        2019-xx-xx  2024-05-31  RHEL_x.x      " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso                kickstart_fedora.cfg                        2021-04-27  20xx-xx-xx  kernel_5.11   " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/test/35_Beta/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35_Beta-1.2.iso kickstart_fedora.cfg                        20xx-xx-xx  20xx-xx-xx  kernel_x.xx   " \
+	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64.iso                                            yast_opensuse153.xml                        2021-06-02  20xx-xx-xx  kernel_5.3.18 " \
+	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                               yast_opensuse16.xml                         2021-xx-xx  20xx-xx-xx  kernel_x.x    " \
+	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                kickstart_rocky.cfg                         2021-06-21  20xx-xx-xx  RHEL_8.4      " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9].*-rtm-x86_64.iso                         kickstart_miraclelinux.cfg                  20xx-xx-xx  20xx-xx-xx  RHEL_8.4      " \
+	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso               preseed_debian.cfg                          2017-06-17  2022-06-30  oldoldstable  " \
+	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                  preseed_debian.cfg                          2019-07-06  2024-xx-xx  oldstable     " \
+	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                           preseed_debian.cfg                          2021-08-14  20xx-xx-xx  stable        " \
+	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                             preseed_debian.cfg                          20xx-xx-xx  20xx-xx-xx  testing       " \
+	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                                  preseed_ubuntu.cfg                          2018-04-26  2023-04-xx  Bionic_Beaver " \
+	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                   preseed_ubuntu.cfg                          2020-04-23  2025-04-xx  Focal_Fossa   " \
+	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                                 preseed_ubuntu.cfg                          2021-04-22  2022-01-xx  Hirsute_Hippo " \
+	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                  preseed_ubuntu.cfg                          2021-10-24  2022-07-xx  Impish_Indri  " \
+	)   # 区分          ダウンロード先URL                                                                                                                    定義ファイル                                リリース日  サポ終了日  備考
+#	    "ubuntu         https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-server-amd64.iso                                                                   preseed_ubuntu.cfg                          2014-04-17  2019-04-25  Trusty_Tahr   " \
+#	    "ubuntu         https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                                   preseed_ubuntu.cfg                          2016-04-21  2021-04-xx  Xenial_Xerus  " \
+#	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-live-server-amd64.iso                                                              preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2018-04-26  2023-04-xx  Bionic_Beaver " \
+#	    "ubuntu         https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-live-server-amd64.iso                                                              preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-10-22  2021-07-22  Groovy_Gorilla" \
+#	    "ubuntu         https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-desktop-amd64.iso                                                                  preseed_ubuntu.cfg                          2014-04-17  2019-04-25  Trusty_Tahr   " \
+#	    "ubuntu         https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-desktop-amd64.iso                                                                  preseed_ubuntu.cfg                          2016-04-21  2021-04-xx  Xenial_Xerus  " \
+#	    "ubuntu         https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-desktop-amd64.iso                                                                  preseed_ubuntu.cfg                          2020-10-22  2021-07-22  Groovy_Gorilla" \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                                preseed_ubuntu.cfg                          2021-10-24  2022-07-xx  Impish_Indri  " \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/impish-desktop-canary-amd64.iso                                                       preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24  2022-07-xx  Impish_Indri  " \
+#	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-dvd1.iso                                        kickstart_centos.cfg                        2019-xx-xx  2024-05-31  RHEL_x.x      " \
 
 # -----------------------------------------------------------------------------
 fncMenu () {
@@ -126,12 +128,14 @@ fncMenu () {
 		# ---------------------------------------------------------------------
 #		if [ "`echo ${CODE_NAME[1]} | sed -n '/\.\*/p'`" != "" ]; then
 			DIR_NAME=`dirname ${CODE_NAME[2]}`
-			FIL_INFO=($(curl -L -l -R -S -s -f "${DIR_NAME}" 2> /dev/null | sed -n "s/.*>\(${CODE_NAME[1]}.iso\)<.*> *\([0-9A-Za-z]*-[0-9A-Za-z]*-[0-9A-Za-z]*\) *\([0-9]*:[0-9]*\).*<*.*/\1 \2 \3/p"))
-#			FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"`
-			CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
-			CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
-			CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
-			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
+			FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*>\(${CODE_NAME[1]}.iso\)<.*> *\([0-9A-Za-z]*-[0-9A-Za-z]*-[0-9A-Za-z]*\) *\([0-9]*:[0-9]*\).*<*.*/\1 \2 \3/p"))
+			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
+#				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"`
+				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
+				CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
+				CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
+				ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
+			fi
 #		fi
 		# ---------------------------------------------------------------------
 		TXT_COLOR=false
@@ -141,8 +145,10 @@ fncMenu () {
 			DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
 			DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
-			if [ `date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"` -gt ${DVD_DATE} ]; then
-				TXT_COLOR=true
+			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
+				if [ `date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"` -gt ${DVD_DATE} ]; then
+					TXT_COLOR=true
+				fi
 			fi
 		fi
 		# ---------------------------------------------------------------------
@@ -210,9 +216,9 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 		else
-			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -221,7 +227,7 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
@@ -286,7 +292,7 @@ fncRemaster () {
 						cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
 					else
 						echo "--- get preseed.cfg -----------------------------------------------------------"
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 					fi
 					# ---------------------------------------------------------
 					case "${CODE_NAME[1]}" in
@@ -308,7 +314,7 @@ fncRemaster () {
 								cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
 							else
 								echo "--- get user-data -------------------------------------------------------------"
-								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 							fi
 							;;
 #						*desktop* )							# --- get sub shell
@@ -318,7 +324,7 @@ fncRemaster () {
 #								cp --preserve=timestamps "../../../${SUB_PROG}" "preseed/${SUB_PROG}"
 #							else
 #								echo "--- get sub shell -------------------------------------------------------------"
-#								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/${SUB_PROG}" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+#								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/${SUB_PROG}" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 #							fi
 #							;;
 						* )	;;
@@ -335,7 +341,7 @@ fncRemaster () {
 						cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
 					else
 						echo "--- get ks.cfg ----------------------------------------------------------------"
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 					fi
 					case "${WORK_DIRS}" in
 						*net* )
@@ -359,7 +365,7 @@ fncRemaster () {
 						cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
 					else
 						echo "--- get autoinst.xml ----------------------------------------------------------"
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 ]; then return 1; fi
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 					fi
 					;;
 				* )	;;
@@ -856,6 +862,10 @@ _EOT_
 					    -e 's/\(set timeout\).*$/\1=5/'                         \
 					> grub.cfg
 					mv grub.cfg EFI/BOOT/
+					# ---------------------------------------------------------
+					VER_NUM="`echo ${CODE_NAME[1]} | sed -e 's/.*-x86_64-\([0-9]*\).*/\1/'`"
+					sed -i kickstart/ks.cfg                          \
+					    -e "s/\(repo=fedora\)-[0-9]*/\1-${VER_NUM}/"
 					# ---------------------------------------------------------
 					chmod 444 "kickstart/ks.cfg"
 					;;
