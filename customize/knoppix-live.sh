@@ -14,7 +14,7 @@
 # == tools install ============================================================
 #	apt-get update && apt-get -y install debootstrap xorriso isolinux
 # == initial processing =======================================================
-	rm -rf   ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg ./knoppix-live/_work ./knoppix-live/_wrk0 ./knoppix-live/_wrk1
+	rm -rf   ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg ./knoppix-live/_work ./knoppix-live/_wrk0 ./knoppix-live/_wrk1 ./knoppix-live/KNOPPIX_FS.tmp ./knoppix-live/KNOPPIX1_FS.tmp
 	mkdir -p ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg ./knoppix-live/_work ./knoppix-live/_wrk0 ./knoppix-live/_wrk1
 	# -------------------------------------------------------------------------
 	cat <<- '_EOT_SH_' | sed 's/^ //g' > ./knoppix-live/fsimg/knoppix-setup.sh
@@ -57,19 +57,21 @@
 		 	dpkg --audit
 		 	dpkg --configure -a
 		# -----------------------------------------------------------------------------
-		 	apt-get update                                                                                  || fncEnd $?
-		#	apt-get upgrade      -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-overwrite || fncEnd $?
-		#	apt-get dist-upgrade -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-overwrite || fncEnd $?
-		 	apt-get install      -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-overwrite \
-		 	    chrony bind9utils dnsutils                                                                  \
-		 	    task-desktop task-laptop task-lxde-desktop task-ssh-server                                  \
-		 	    task-japanese task-japanese-desktop ibus-mozc mozc-utils-gui fonts-noto                     \
-		 	    libreoffice-help-ja libreoffice-l10n-ja                                                     \
-		 	    firefox-esr-l10n-ja firefox-l10n-ja thunderbird-l10n-ja                                     \
-		 	    open-vm-tools open-vm-tools-desktop                                                         || fncEnd $?
-		 	apt-get autoremove   -y                                                                         || fncEnd $?
-		 	apt-get autoclean    -y                                                                         || fncEnd $?
-		 	apt-get clean        -y                                                                         || fncEnd $?
+		 	export DEBIAN_FRONTEND=noninteractive
+		 	apt-get update                                                                                          || fncEnd $?
+		#	apt-get upgrade      -q -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-overwrite      || fncEnd $?
+		#	apt-get dist-upgrade -q -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-overwrite      || fncEnd $?
+		 	apt-get install      -q -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-overwrite      \
+		 	    --only-upgrade chromium firefox thunderbird firefox-esr-l10n-ja firefox-l10n-ja thunderbird-l10n-ja || fncEnd $?
+		 	apt-get install      -q -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-overwrite      \
+		 	    chrony bind9utils dnsutils                                                                          \
+		 	    task-desktop task-laptop task-lxde-desktop task-ssh-server                                          \
+		 	    task-japanese task-japanese-desktop ibus-mozc mozc-utils-gui fonts-noto                             \
+		 	    libreoffice-help-ja libreoffice-l10n-ja                                                             \
+		 	    open-vm-tools open-vm-tools-desktop                                                                 || fncEnd $?
+		 	apt-get autoremove   -q -y                                                                              || fncEnd $?
+		 	apt-get autoclean    -q -y                                                                              || fncEnd $?
+		 	apt-get clean        -q -y                                                                              || fncEnd $?
 		# -- open vm tools ------------------------------------------------------------
 		 	echo "--- open vm tools -------------------------------------------------------------"
 		 	# mkdir -p /media/hgfs
@@ -239,7 +241,11 @@ _EOT_SH_
 	    -e '$anameserver 1.1.1.1\nnameserver 1.0.0.1'
 	sed -i.orig ./knoppix-live/fsimg/etc/apt/sources.list             \
 	    -e 's/ftp.de.debian.org/deb.debian.org/g'                     \
-	    -e 's~^\(deb http://debian-knoppix.alioth.debian.org\)~#\1~g'
+	    -e 's~^\(deb http://debian-knoppix.alioth.debian.org\)~#\1~g' \
+	    -e 's~\(security.debian.org\)~\1/debian-security~g'           \
+	    -e '/security.debian.org/ s/stable/stable-security/g'         \
+	    -e '/security.debian.org/a deb http://security.debian.org/debian-security testing-security main contrib non-free' \
+	    -e '/^deb.*oldstable/i deb http://deb.debian.org/debian oldoldstable main contrib non-free'
 	# -------------------------------------------------------------------------
 #	sed -i /etc/NetworkManager/NetworkManager.conf \
 #	    -e 's/\(managed\)=.*$/\1=false/'
@@ -282,7 +288,8 @@ _EOT_SH_
 		LIVE_VOLID_FS1=`volname ./knoppix-live/KNOPPIX1_FS.iso`
 	fi
 	# -------------------------------------------------------------------------
-	rm -rf ./knoppix-live/_wrk0/* \
+	rm -rf ./knoppix-live/_work/* \
+	       ./knoppix-live/_wrk0/* \
 	       ./knoppix-live/_wrk1/*
 	# -------------------------------------------------------------------------
 	pushd ./knoppix-live/fsimg > /dev/null
@@ -306,12 +313,18 @@ _EOT_SH_
 		done < ../KNOPPIX1_FS.txt
 		cp -prnd * "../_wrk0/"
 		rm -rf *
-		xorriso -as mkisofs -D -R -U -V "${LIVE_VOLID_FS}"  -o ../KNOPPIX_FS.tmp  "../_wrk0/"
-		xorriso -as mkisofs -D -R -U -V "${LIVE_VOLID_FS1}" -o ../KNOPPIX1_FS.tmp "../_wrk1/"
+		xorriso -as mkisofs -D -R -U -V "${LIVE_VOLID_FS}"  -o ../KNOPPIX_FS.tmp  "../_wrk0/" || exit 1
+		xorriso -as mkisofs -D -R -U -V "${LIVE_VOLID_FS1}" -o ../KNOPPIX1_FS.tmp "../_wrk1/" || exit 1
 	popd > /dev/null
 	# -------------------------------------------------------------------------
-	create_compressed_fs -L  9 -f ./knoppix-live/isotemp -q ./knoppix-live/KNOPPIX_FS.tmp  ./knoppix-live/cdimg/KNOPPIX/KNOPPIX
-	create_compressed_fs -L  9 -f ./knoppix-live/isotemp -q ./knoppix-live/KNOPPIX1_FS.tmp ./knoppix-live/cdimg/KNOPPIX/KNOPPIX1
+	rm -rf ./knoppix-live/_work/* \
+	       ./knoppix-live/_wrk0/* \
+	       ./knoppix-live/_wrk1/*
+	# -------------------------------------------------------------------------
+	create_compressed_fs -L  9 -f ./knoppix-live/isotemp -q ./knoppix-live/KNOPPIX_FS.tmp  ./knoppix-live/cdimg/KNOPPIX/KNOPPIX  || exit 1
+	create_compressed_fs -L  9 -f ./knoppix-live/isotemp -q ./knoppix-live/KNOPPIX1_FS.tmp ./knoppix-live/cdimg/KNOPPIX/KNOPPIX1 || exit 1
+	rm -rf ./knoppix-live/KNOPPIX_FS.tmp  \
+	       ./knoppix-live/KNOPPIX1_FS.tmp
 	ls -lh ./knoppix-live/cdimg/KNOPPIX/KNOPPIX*
 	# -------------------------------------------------------------------------
 	cp ./knoppix-live/efiboot.img ./knoppix-live/cdimg/
@@ -330,14 +343,18 @@ _EOT_SH_
 	pushd ./knoppix-live/cdimg > /dev/null
 		find KNOPPIX -name "KNOPPIX*" -type f -exec sha1sum -b {} \; > KNOPPIX/sha1sums
 		xorriso -as mkisofs \
-		    -output "../../${LIVE_DEST}" \
+		    -iso-level 3 \
+		    -full-iso9660-filenames \
 		    -volid "${LIVE_VOLID}" \
-		    -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin \
-		    -c boot/isolinux/boot.cat \
-		    -b boot/isolinux/isolinux.bin \
+		    -eltorito-boot "boot/isolinux/isolinux.bin" \
+		    -eltorito-catalog "boot/isolinux/boot.cat" \
 		    -no-emul-boot -boot-load-size 4 -boot-info-table \
-		    -eltorito-alt-boot -e efiboot.img -no-emul-boot -isohybrid-gpt-basdat \
-		    "."
+		    -isohybrid-mbr "/usr/lib/ISOLINUX/isohdpfx.bin" \
+		    -eltorito-alt-boot \
+		    -e "efiboot.img" \
+		    -no-emul-boot -isohybrid-gpt-basdat \
+		    -output "../../${LIVE_DEST}" \
+		    .
 	popd > /dev/null
 	ls -lh KNOPPIX*
 # =============================================================================
