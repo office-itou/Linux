@@ -76,6 +76,7 @@
 ##	2021/08/06 000.0000 J.Itou         処理見直し(不具合修正等を含む)
 ##	2021/08/14 000.0000 J.Itou         処理見直し(不具合修正等を含む)
 ##	2021/10/08 000.0000 J.Itou         miraclelinux 8.4追加
+##	2021/11/09 000.0000 J.Itou         不具合修正(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -83,6 +84,8 @@
 #	set -x								# コマンドと引数の展開を表示
 	set -m								# ジョブ制御を有効にする
 	set -eu								# ステータス0以外と未定義変数の参照で終了
+
+	export PATH=${PATH}:/usr/local/bin
 
 	DBG_FLAG=${@:-0}
 
@@ -560,7 +563,7 @@ fncInitialize () {
 		FLG_VMTL=1																# 0以外でVMware Toolsをインストール
 	fi
 	# -------------------------------------------------------------------------
-	NUM_HDDS=`ls -l /dev/[hs]d[a-z] | wc -l`									# インストール先のHDD台数
+	NUM_HDDS=`ls -l /dev/[hs]d[a-z] 2> /dev/null | wc -l`						# インストール先のHDD台数
 	DEV_ARRY=("/dev/sda" "/dev/sdb" "/dev/sdc" "/dev/sdd" "/dev/sde" "/dev/sdf" "/dev/sdg" "/dev/sdh")
 	HDD_ARRY=(${DEV_ARRY[@]:0:${NUM_HDDS}})
 	USB_ARRY=(${DEV_ARRY[@]:${NUM_HDDS}:${#DEV_ARRY[@]}-${NUM_HDDS}})
@@ -1181,7 +1184,7 @@ _EOT_
 				fncPause $?
 			fi
 			# -------------------------------------------------------------------------
-			FILE_FRESHCONF=`find /etc/ -name "freshclam.conf" -type f -print`
+			FILE_FRESHCONF=`find /etc/ /usr/local/etc/ -name "freshclam.conf" -type f -print`
 			FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
 			# -------------------------------------------------------------------------
 			if [ ! -f ${FILE_CLAMDCONF} ]; then
