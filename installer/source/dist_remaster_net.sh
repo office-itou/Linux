@@ -37,6 +37,7 @@
 ##	2021/09/16 000.0000 J.Itou         CentOS-Stream-8ファイル名変更
 ##	2021/10/15 000.0000 J.Itou         fedora 35(beta)追加 / 処理見直し
 ##	2021/11/09 000.0000 J.Itou         CentOS-Stream-9追加 / リスト用配列整理
+##	2021/11/13 000.0000 J.Itou         fedora 35(beta→正式版)変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -65,7 +66,7 @@
 	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-latest-boot.iso                                  kickstart_centos.cfg                        20xx-xx-xx 2024-05-31 RHEL_x.x      " \
 	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-[0-9].*-latest-x86_64-boot.iso                                  kickstart_centos9.cfg                       2021-xx-xx 20xx-xx-xx RHEL_x.x      " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso                kickstart_fedora.cfg                        2021-04-27 20xx-xx-xx kernel_5.11   " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/test/35_Beta/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35_Beta-1.2.iso kickstart_fedora.cfg                        20xx-xx-xx 20xx-xx-xx kernel_x.xx   " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso                kickstart_fedora35.cfg                      20xx-xx-xx 20xx-xx-xx kernel_x.xx   " \
 	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64-Current.iso                                        yast_opensuse153.xml                        2021-06-02 20xx-xx-xx kernel_5.3.18 " \
 	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                   yast_opensuse16.xml                         20xx-xx-xx 20xx-xx-xx kernel_x.x    " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-boot.iso                                                    kickstart_rocky.cfg                         2021-06-21 20xx-xx-xx RHEL_8.4      " \
