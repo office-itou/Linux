@@ -55,22 +55,22 @@
 # -----------------------------------------------------------------------------
 #	ARC_TYPE=i386											# CPUタイプ(32bit)
 	ARC_TYPE=amd64											# CPUタイプ(64bit)
-	ARRAY_NAME=(                                                                                                                                                                                                                                                                  \
-	    "debian         http://archive.debian.org/debian/dists/wheezy/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 preseed_debian.cfg                          2013-05-04 2018-05-31 wheezy       Debian__7.xx(wheezy)            " \
-	    "debian         http://archive.debian.org/debian/dists/jessie/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 preseed_debian.cfg                          2015-04-25 2020-06-30 jessie       Debian__8.xx(jessie)            " \
-	    "debian         http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                               preseed_debian.cfg                          2017-06-17 2022-06-xx oldoldstable Debian__9.xx(stretch)           " \
-	    "debian         http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                  preseed_debian.cfg                          2019-07-06 20xx-xx-xx oldstable    Debian_10.xx(buster)            " \
-	    "debian         http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                     preseed_debian.cfg                          2021-08-14 20xx-xx-xx stable       Debian_11.xx(bullseye)          " \
-	    "debian         http://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                    preseed_debian.cfg                          202x-xx-xx 20xx-xx-xx testing      Debian_12.xx(bookworm)          " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         preseed_ubuntu.cfg                          2014-04-17 2022-04-xx trusty       Ubuntu_14.04(Trusty_Tahr):LTS   " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/xenial-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         preseed_ubuntu.cfg                          2016-04-21 2024-04-xx xenial       Ubuntu_16.04(Xenial_Xerus):LTS  " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         preseed_ubuntu.cfg                          2018-04-26 2028-04-xx bionic       Ubuntu_18.04(Bionic_Beaver):LTS " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso                   preseed_ubuntu.cfg                          2020-04-23 2030-04-xx focal        Ubuntu_20.04(Focal_Fossa):LTS   " \
-	)   # 区分          ダウンロード先URL                                                                                                                        定義ファイル                                リリース日 サポ終了日 備考         備考2
-#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 preseed_ubuntu.cfg                          2016-04-21 2024-04-xx xenial       Ubuntu_16.04(Xenial_Xerus):LTS  " \
-#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/groovy/main/installer-${ARC_TYPE}/current/legacy-images/                                          preseed_ubuntu.cfg                          2020-10-22 2021-07-xx groovy       Ubuntu_20.10(Groovy_Gorilla)    " \
-#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/hirsute/main/installer-${ARC_TYPE}/current/legacy-images/                                         preseed_ubuntu.cfg                          2021-04-22 2022-01-xx hirsute      Ubuntu_21.04(Hirsute_Hippo)     " \
-#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/impish/main/installer-${ARC_TYPE}/current/legacy-images/                                          preseed_ubuntu.cfg                          2021-10-14 2022-07-xx impish       Ubuntu_21.10(Impish_Indri)      " \
+	ARRAY_NAME=(                                                                                                                                                                                                                                                                                                                 \
+	    "debian         http://archive.debian.org/debian/dists/wheezy/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 -                                           preseed_debian.cfg                          2013-05-04 2018-05-31 wheezy          Debian__7.xx(wheezy)            " \
+	    "debian         http://archive.debian.org/debian/dists/jessie/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 -                                           preseed_debian.cfg                          2015-04-25 2020-06-30 jessie          Debian__8.xx(jessie)            " \
+	    "debian         http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                               -                                           preseed_debian.cfg                          2017-06-17 2022-06-xx oldoldstable    Debian__9.xx(stretch)           " \
+	    "debian         http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                  -                                           preseed_debian.cfg                          2019-07-06 20xx-xx-xx oldstable       Debian_10.xx(buster)            " \
+	    "debian         http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                     -                                           preseed_debian.cfg                          2021-08-14 20xx-xx-xx stable          Debian_11.xx(bullseye)          " \
+	    "debian         http://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                    -                                           preseed_debian.cfg                          202x-xx-xx 20xx-xx-xx testing         Debian_12.xx(bookworm)          " \
+	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2014-04-17 2022-04-xx trusty          Ubuntu_14.04(Trusty_Tahr):LTS   " \
+	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/xenial-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2016-04-21 2024-04-xx xenial          Ubuntu_16.04(Xenial_Xerus):LTS  " \
+	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-xx bionic          Ubuntu_18.04(Bionic_Beaver):LTS " \
+	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso                   -                                           preseed_ubuntu.cfg                          2020-04-23 2030-04-xx focal           Ubuntu_20.04(Focal_Fossa):LTS   " \
+	)   # 区分          ダウンロード先URL                                                                                                                        別名                                        定義ファイル                                リリース日 サポ終了日 備考            備考2
+#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 -                                           preseed_ubuntu.cfg                          2016-04-21 2024-04-xx xenial          Ubuntu_16.04(Xenial_Xerus):LTS  " \
+#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/groovy/main/installer-${ARC_TYPE}/current/legacy-images/                                          -                                           preseed_ubuntu.cfg                          2020-10-22 2021-07-xx groovy          Ubuntu_20.10(Groovy_Gorilla)    " \
+#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/hirsute/main/installer-${ARC_TYPE}/current/legacy-images/                                         -                                           preseed_ubuntu.cfg                          2021-04-22 2022-01-xx hirsute         Ubuntu_21.04(Hirsute_Hippo)     " \
+#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/impish/main/installer-${ARC_TYPE}/current/legacy-images/                                          -                                           preseed_ubuntu.cfg                          2021-10-14 2022-07-xx impish          Ubuntu_21.10(Impish_Indri)      " \
 # -----------------------------------------------------------------------------
 fncMenu () {
 	local ARRY_NAME=()										# 配列展開
@@ -91,11 +91,11 @@ fncMenu () {
 		CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
 		CODE_NAME[1]=`basename ${ARRY_NAME[1]} | sed -e 's/.iso//ig'`	# DVDファイル名
 		CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
-		CODE_NAME[3]=${ARRY_NAME[2]}									# 定義ファイル
-		CODE_NAME[4]=${ARRY_NAME[3]}									# リリース日
-		CODE_NAME[5]=${ARRY_NAME[4]}									# サポ終了日
-		CODE_NAME[6]=${ARRY_NAME[5]}									# 備考
-		CODE_NAME[7]=${ARRY_NAME[6]}									# 備考2
+		CODE_NAME[3]=${ARRY_NAME[3]}									# 定義ファイル
+		CODE_NAME[4]=${ARRY_NAME[4]}									# リリース日
+		CODE_NAME[5]=${ARRY_NAME[5]}									# サポ終了日
+		CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
+		CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
 		# ---------------------------------------------------------------------
 #		if [ "`echo ${CODE_NAME[1]} | sed -n '/\.\*/p'`" != "" ]; then
 			DIR_NAME=`dirname ${CODE_NAME[2]}`
@@ -103,16 +103,20 @@ fncMenu () {
 			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
 #				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"`
 #				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
-				CODE_NAME[1]="mini-${ARRY_NAME[5]}-${ARC_TYPE}"
+				CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
 				CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
 				CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
 			else
 				FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*> *\(${CODE_NAME[1]}.iso\) *<.*>/\1/p"))
-				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
+#				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
+				CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
 				CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
 			fi
-#			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
-			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]}`
+			if [ "${ARRY_NAME[2]}" != "-" ]; then							# DVDファイル別名
+				CODE_NAME[1]=`basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig'`
+			fi
+#			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]}.iso ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
+			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]}.iso ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]}`
 #		fi
 		# ---------------------------------------------------------------------
 		TXT_COLOR=false
@@ -160,16 +164,16 @@ fncPrint () {
 # -----------------------------------------------------------------------------
 fncRemaster () {
 	# --- ARRAY_NAME ----------------------------------------------------------
-	local ARRY_NAME=($1)									# 配列展開
-	local CODE_NAME=()										# 配列宣言
-	CODE_NAME[0]=${ARRY_NAME[0]}							# 区分
-	CODE_NAME[1]="mini-${ARRY_NAME[5]}-${ARC_TYPE}"			# DVDファイル名
-	CODE_NAME[2]=${ARRY_NAME[1]}							# ダウンロード先URL
-	CODE_NAME[3]=${ARRY_NAME[2]}							# 定義ファイル
-	CODE_NAME[4]=${ARRY_NAME[3]}							# リリース日
-	CODE_NAME[5]=${ARRY_NAME[4]}							# サポ終了日
-	CODE_NAME[6]=${ARRY_NAME[5]}							# 備考
-	CODE_NAME[7]=${ARRY_NAME[6]}							# 備考2
+	local ARRY_NAME=($1)											# 配列展開
+	local CODE_NAME=()												# 配列宣言
+	CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
+	CODE_NAME[1]=`basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig'`	# DVDファイル名
+	CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
+	CODE_NAME[3]=${ARRY_NAME[3]}									# 定義ファイル
+	CODE_NAME[4]=${ARRY_NAME[4]}									# リリース日
+	CODE_NAME[5]=${ARRY_NAME[5]}									# サポ終了日
+	CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
+	CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
 	# -------------------------------------------------------------------------
 	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
 	# --- DVD -----------------------------------------------------------------

@@ -114,10 +114,10 @@ fncProc () {
 		return
 	fi
 
-	if [ "`which systemctl 2> /dev/null`" != "" ]; then
+	if [ "`${CMD_WICH} systemctl 2> /dev/null`" != "" ]; then
 		systemctl ${INP_COMD} ${INP_NAME}; fncPause $?
 	elif [ "${INP_COMD}" != "enable" -a "${INP_COMD}" != "disable" ]; then
-		if [ "`which service 2> /dev/null`" != ""                              ] && \
+		if [ "`${CMD_WICH} service 2> /dev/null`" != ""                              ] && \
 		   [ "`find ${DIR_SYSD}/system/ -name \"${INP_NAME}.*\" -print`" != "" ]; then
 			service ${INP_NAME} ${INP_COMD}; fncPause $?
 		elif [ -f /etc/init.d/${INP_NAME} ]; then
@@ -126,12 +126,12 @@ fncProc () {
 	else
 		if [ -f ${DIR_SYSD}/systemd-sysv-install ]; then
 			${DIR_SYSD}/systemd-sysv-install ${INP_COMD} ${INP_NAME}; fncPause $?
-		elif [ "`which insserv 2> /dev/null`" != "" ]; then
+		elif [ "`${CMD_WICH} insserv 2> /dev/null`" != "" ]; then
 			case "${INP_COMD}" in
 				"enable"  )	insserv -d ${INP_NAME}; fncPause $?;;
 				"disable" )	insserv -r ${INP_NAME}; fncPause $?;;
 			esac
-		elif [ "`which chkconfig 2> /dev/null`" != "" ]; then
+		elif [ "`${CMD_WICH} chkconfig 2> /dev/null`" != "" ]; then
 			case "${INP_COMD}" in
 				"enable"  )	chkconfig -a ${INP_NAME}; fncPause $?;;
 				"disable" )	chkconfig -d ${INP_NAME}; fncPause $?;;
@@ -429,6 +429,13 @@ fncInitialize () {
 		exit 1
 	fi
 
+	# which command -----------------------------------------------------------
+	if [ "`command -v which 2> /dev/null`" != "" ]; then
+		CMD_WICH="command -v"
+	else
+		CMD_WICH="which"
+	fi
+
 	# samba -------------------------------------------------------------------
 	SMB_USER=sambauser															# smb.confのforce user
 	SMB_GRUP=sambashare															# smb.confのforce group
@@ -449,10 +456,10 @@ fncInitialize () {
 	fi
 	# -------------------------------------------------------------------------
 	ACT_NMAN=""
-	if [ "`which nmcli 2> /dev/null`" != "" ]; then
-		if [ "`which systemctl 2> /dev/null`" != "" ]; then
+	if [ "`${CMD_WICH} nmcli 2> /dev/null`" != "" ]; then
+		if [ "`${CMD_WICH} systemctl 2> /dev/null`" != "" ]; then
 			ACT_NMAN="`systemctl -q status NetworkManager | awk '/Active:/ {print $2;}'`"
-		elif [ "`which status 2> /dev/null`" != "" ]; then
+		elif [ "`${CMD_WICH} status 2> /dev/null`" != "" ]; then
 			if [ "`status network-manager | sed -n '/^.*running.*$/p'`" != "" ]; then
 				ACT_NMAN="active"
 			fi
@@ -579,7 +586,7 @@ fncInitialize () {
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`which aptitude 2> /dev/null`" != "" ]; then
+			if [ "`${CMD_WICH} aptitude 2> /dev/null`" != "" ]; then
 				CMD_AGET="aptitude -y -q"
 			else
 				CMD_AGET="apt -y -qq"
@@ -589,7 +596,7 @@ fncInitialize () {
 		"fedora"       | \
 		"rocky"        | \
 		"miraclelinux" )
-			if [ "`which dnf 2> /dev/null`" != "" ]; then
+			if [ "`${CMD_WICH} dnf 2> /dev/null`" != "" ]; then
 				CMD_AGET="dnf -y -q --allowerasing"
 			else
 				CMD_AGET="yum -y -q"
@@ -609,10 +616,10 @@ fncInitialize () {
 	else
 		LIN_CHSH=`find /bin/ /sbin/ /usr/sbin/ -mindepth 1 -maxdepth 1 \( -name 'false' -o -name 'nologin' \) -print | head -n 1`
 	fi
-	if [ "`which usermod 2> /dev/null`" != "" ]; then
-		CMD_CHSH="`which usermod` -s ${LIN_CHSH}"
+	if [ "`${CMD_WICH} usermod 2> /dev/null`" != "" ]; then
+		CMD_CHSH="`${CMD_WICH} usermod` -s ${LIN_CHSH}"
 	else
-		CMD_CHSH="`which chsh` -s ${LIN_CHSH}"
+		CMD_CHSH="`${CMD_WICH} chsh` -s ${LIN_CHSH}"
 	fi
 	# --- bind ----------------------------------------------------------------
 	INF_BIND=`LANG=C find /etc/ -name "named.conf" -type f -exec ls -l '{}' \;`
@@ -742,7 +749,7 @@ fncMain () {
 #				"bionic" | \
 #				"focal"  | \
 #				"groovy" )
-#					if [ "`which snap 2> /dev/null`" = "" ]; then
+#					if [ "`${CMD_WICH} snap 2> /dev/null`" = "" ]; then
 #						fncPrint "--- Install snapd [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
 #						${CMD_AGET} install snapd
 #					fi
@@ -890,7 +897,7 @@ fncMain () {
 						set laststatus=2        " The value of this option influences when the last window will have a status line always.
 						syntax on               " Vim5 and later versions support syntax highlighting.
 _EOT_
-					if [ "`which vim 2> /dev/null`" = "" -o `echo "${VIM_VER} < 8.0" | bc` -ne 0 ]; then
+					if [ "`${CMD_WICH} vim 2> /dev/null`" = "" -o `echo "${VIM_VER} < 8.0" | bc` -ne 0 ]; then
 						sed -i ${VIMRC}                  \
 						    -e 's/^\(syntax on\)/\" \1/'
 					fi
@@ -1023,7 +1030,7 @@ _EOT_
 	fi
 	# SELinux -----------------------------------------------------------------
 	echo "--- SELinux changed -----------------------------------------------------------"
-	if [ "`which getenforce 2> /dev/null`" != "" ] && [ "`getenforce`" = "Enforcing" ]; then
+	if [ "`${CMD_WICH} getenforce 2> /dev/null`" != "" ] && [ "`getenforce`" = "Enforcing" ]; then
 		sed -i.orig /etc/selinux/config                \
 		    -e 's/\(SELINUX\)=enforcing/\1=disabled/g'
 	fi
@@ -1179,7 +1186,7 @@ _EOT_
 		"miraclelinux" )
 			echo "- Install clamav --------------------------------------------------------------"
 			# -------------------------------------------------------------------------
-			if [ "`which freshclam 2> /dev/null`" = "" ]; then					# Install clamav
+			if [ "`${CMD_WICH} freshclam 2> /dev/null`" = "" ]; then					# Install clamav
 				${CMD_AGET} install clamav clamav-update clamav-scanner-systemd
 				fncPause $?
 			fi
@@ -1204,7 +1211,7 @@ _EOT_
 		"opensuse-tumbleweed" )
 			echo "- Install clamav --------------------------------------------------------------"
 			# -------------------------------------------------------------------------
-			if [ "`which freshclam 2> /dev/null`" = "" ]; then					# Install clamav
+			if [ "`${CMD_WICH} freshclam 2> /dev/null`" = "" ]; then					# Install clamav
 				${CMD_AGET} install clamav
 				fncPause $?
 			fi
@@ -1536,12 +1543,12 @@ _EOT_
 	echo "- Add smb.conf ----------------------------------------------------------------"
 	# -------------------------------------------------------------------------
 	if [ ! -f ${SMB_BACK} ]; then
-		CMD_UADD=`which useradd`
-		CMD_UDEL=`which userdel`
-		CMD_GADD=`which groupadd`
-		CMD_GDEL=`which groupdel`
-		CMD_GPWD=`which gpasswd`
-		CMD_FALS=`which false`
+		CMD_UADD=`${CMD_WICH} useradd`
+		CMD_UDEL=`${CMD_WICH} userdel`
+		CMD_GADD=`${CMD_WICH} groupadd`
+		CMD_GDEL=`${CMD_WICH} groupdel`
+		CMD_GPWD=`${CMD_WICH} gpasswd`
+		CMD_FALS=`${CMD_WICH} false`
 		# ---------------------------------------------------------------------
 		testparm -s -v ${SMB_CONF} |                                                                \
 			sed -e '/\[homes\]/,/^$/ d'                                                             \
@@ -2091,7 +2098,7 @@ _EOT_
 			"fedora"       | \
 			"rocky"        | \
 			"miraclelinux" )
-				if [ "`which vmware-checkvm 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} vmware-checkvm 2> /dev/null`" = "" ]; then
 					if [ "`${CMD_AGET} search open-vm-tools-desktop`" = "" ]; then
 						${CMD_AGET} install open-vm-tools
 						fncPause $?
@@ -2111,7 +2118,7 @@ _EOT_
 		mkdir -p /mnt/hgfs
 		# ---------------------------------------------------------------------
 		if [ ! -f /etc/fstab.vmware ]; then
-			if [ "`which vmhgfs-fuse 2> /dev/null`" != "" ]; then
+			if [ "`${CMD_WICH} vmhgfs-fuse 2> /dev/null`" != "" ]; then
 				HGFS_FS="fuse.vmhgfs-fuse"
 			else
 				HGFS_FS="vmhgfs"
@@ -2175,7 +2182,7 @@ _EOT_
 			;;
 	esac
 	# -------------------------------------------------------------------------
-	if [ "`which groupmems 2> /dev/null`" != "" ]; then
+	if [ "`${CMD_WICH} groupmems 2> /dev/null`" != "" ]; then
 		USR_SUDO=`groupmems -l -g ${GRP_SUDO}`
 	else
 		USR_SUDO=`awk -F ':' -v ORS="," '$1=="'${GRP_SUDO}'" {print $4;}' /etc/group | sed -e 's/,$//'`
@@ -2512,7 +2519,7 @@ fncDebug () {
 	# ･････････････････････････････････････････････････････････････････････････
 	set +e
 	echo "--- ping check ----------------------------------------------------------------"
-	if [ "`which ping4 2> /dev/null`" != "" ]; then
+	if [ "`${CMD_WICH} ping4 2> /dev/null`" != "" ]; then
 		ping4 -c 4 www.google.com
 	else
 		ping -4 -c 1 localhost > /dev/null 2>&1
@@ -2522,7 +2529,7 @@ fncDebug () {
 			ping -c 4 www.google.com
 		fi
 	fi
-	if [ "`which ping6 2> /dev/null`" != "" ]; then
+	if [ "`${CMD_WICH} ping6 2> /dev/null`" != "" ]; then
 		echo "･･･････････････････････････････････････････････････････････････････････････････"
 		ping6 -c 4 www.google.com
 	fi
