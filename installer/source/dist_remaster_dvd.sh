@@ -48,6 +48,7 @@
 ##	2021/11/09 000.0000 J.Itou         CentOS-Stream-9追加 / リスト用配列整理
 ##	2021/11/13 000.0000 J.Itou         fedora 35(beta→正式版)変更 / 不具合修正
 ##	2021/11/15 000.0000 J.Itou         ubuntu 22.04(Daily Build)追加
+##	2021/11/17 000.0000 J.Itou         リスト用配列更新
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -69,31 +70,31 @@
 # -----------------------------------------------------------------------------
 	ARRAY_NAME=(                                                                                                                                                                                                                                                                                \
 	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                              -                                           preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable   " \
-	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                 -                                           preseed_debian.cfg                          2019-07-06 2024-xx-xx oldstable      " \
-	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                          -                                           preseed_debian.cfg                          2021-08-14 20xx-xx-xx stable         " \
+	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                 -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable      " \
+	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                          -                                           preseed_debian.cfg                          2021-08-14 2026-xx-xx stable         " \
 	    "debian         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                            -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing        " \
-	    "ubuntu         http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                                        -                                           preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver  " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2025-04-xx Focal_Fossa    " \
-	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                                 -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22 2022-01-xx Hirsute_Hippo  " \
-	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-live-server-amd64.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-xx Impish_Indri   " \
-	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                                       -                                           kickstart_centos.cfg                        2021-06-03 2021-12-31 RHEL_8.4       " \
+	    "ubuntu         http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                                        -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 Bionic_Beaver  " \
+	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2030-04-23 Focal_Fossa    " \
+	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                                 -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22 2022-01-20 Hirsute_Hippo  " \
+	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-live-server-amd64.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-14 Impish_Indri   " \
+	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                                       -                                           kickstart_centos.cfg                        2021-11-16 2021-12-31 RHEL_8.5       " \
 	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-[0-9A-Za-z].*-dvd1.iso                           CentOS-Stream-8-x86_64-latest-dvd1.iso      kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x       " \
 	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-[0-9].*-[0-9A-Za-z].*-x86_64-dvd1.iso                           CentOS-Stream-9-latest-x86_64-dvd1.iso      kickstart_centos9.cfg                       2021-xx-xx 20xx-xx-xx RHEL_x.x       " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-04-27 20xx-xx-xx kernel_5.11    " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                    -                                           kickstart_fedora35.cfg                      20xx-xx-xx 20xx-xx-xx kernel_x.xx    " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-04-27 2022-05-17 kernel_5.11    " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                    -                                           kickstart_fedora35.cfg                      2021-11-02 2022-12-07 kernel_5.14    " \
 	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                                        -                                           yast_opensuse153.xml                        2021-06-02 20xx-xx-xx kernel_5.3.18  " \
 	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                   -                                           yast_opensuse16.xml                         2021-xx-xx 20xx-xx-xx kernel_x.x     " \
-	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                    -                                           kickstart_rocky.cfg                         2021-06-21 20xx-xx-xx RHEL_8.4       " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9].*-rtm-x86_64.iso                             -                                           kickstart_miraclelinux.cfg                  20xx-xx-xx 20xx-xx-xx RHEL_8.4       " \
+	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                    -                                           kickstart_rocky.cfg                         2021-11-15 20xx-xx-xx RHEL_8.5       " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9].*-rtm-x86_64.iso                             -                                           kickstart_miraclelinux.cfg                  2021-10-04 20xx-xx-xx RHEL_8.4       " \
 	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                   -                                           preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable   " \
-	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                      -                                           preseed_debian.cfg                          2019-07-06 2024-xx-xx oldstable      " \
-	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                               -                                           preseed_debian.cfg                          2021-08-14 20xx-xx-xx stable         " \
+	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                      -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable      " \
+	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                               -                                           preseed_debian.cfg                          2021-08-14 2026-xx-xx stable         " \
 	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                 -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing        " \
-	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2018-04-26 2023-04-xx Bionic_Beaver  " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2020-04-23 2025-04-xx Focal_Fossa    " \
-	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2021-04-22 2022-01-xx Hirsute_Hippo  " \
-	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri   " \
-	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/jammy-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          20xx-xx-xx 20xx-xx-xx Jammy_Jellyfish" \
+	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 Bionic_Beaver  " \
+	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2020-04-23 2030-04-23 Focal_Fossa    " \
+	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2021-04-22 2022-01-20 Hirsute_Hippo  " \
+	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2021-10-24 2022-07-14 Impish_Indri   " \
+	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/jammy-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy_Jellyfish" \
 	)   # 区分          ダウンロード先URL                                                                                                                        別名                                        定義ファイル                                リリース日 サポ終了日 備考
 #	    "ubuntu         https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2014-04-17 2019-04-25 Trusty_Tahr    " \
 #	    "ubuntu         https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus   " \
@@ -1231,8 +1232,8 @@ _EOT_
 #x  7.0:wheezy           :2013-05-04:2016-04-25/2018-05-31[LTS]
 #x  8.0:jessie           :2015-04-25:2018-06-17/2020-06-30[LTS]
 #   9.0:stretch          :2017-06-17:2020-07-06/2022-06-30[LTS]:oldoldstable
-#  10.0:buster           :2019-07-06:2022-xx-xx/2024-xx-xx[LTS]:oldstable
-#  11.0:bullseye         :2021-08-14:                          :stable
+#  10.0:buster           :2019-07-06:2022-06-xx/2024-06-xx[LTS]:oldstable
+#  11.0:bullseye         :2021-08-14:2024-xx-xx/2026-xx-xx[LTS]:stable
 #  12.0:bookworm         :          :                           testing
 # --- https://en.wikipedia.org/wiki/Ubuntu_version_history --------------------
 # [https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja]
@@ -1252,27 +1253,29 @@ _EOT_
 #x10.10:Maverick Meerkat :2010-10-10:2012-04-10
 #x11.04:Natty Narwhal    :2011-04-28:2012-10-28
 #x11.10:Oneiric Ocelot   :2011-10-13:2013-05-09
-#x12.04:Precise Pangolin :2012-04-26:2017-04-28/2019-04-xx:LTS
+#x12.04:Precise Pangolin :2012-04-26:2017-04-28/2019-04-26:LTS
 #x12.10:Quantal Quetzal  :2012-10-18:2014-05-16
 #x13.04:Raring Ringtail  :2013-04-25:2014-01-27
 #x13.10:Saucy Salamander :2013-10-17:2014-07-17
-#x14.04:Trusty Tahr      :2014-04-17:2019-04-25/2022-04-xx:LTS
+#x14.04:Trusty Tahr      :2014-04-17:2019-04-25/2024-04-25:LTS
 #x14.10:Utopic Unicorn   :2014-10-23:2015-07-23
 #x15.04:Vivid Vervet     :2015-04-23:2016-02-04
 #x15.10:Wily Werewolf    :2015-10-22:2016-07-28
-# 16.04:Xenial Xerus     :2016-04-21:2021-04-xx/2024-04-xx:LTS
+# 16.04:Xenial Xerus     :2016-04-21:2021-04-30/2026-04-23:LTS
 #x16.10:Yakkety Yak      :2016-10-13:2017-07-20
 #x17.04:Zesty Zapus      :2017-04-13:2018-01-13
 #x17.10:Artful Aardvark  :2017-10-19:2018-07-19
-# 18.04:Bionic Beaver    :2018-04-26:2023-04-xx/2028-04-xx:LTS
+# 18.04:Bionic Beaver    :2018-04-26:2023-04-26/2028-04-26:LTS
 #x18.10:Cosmic Cuttlefish:2018-10-18:2019-07-18
 # 19.04:Disco Dingo      :2019-04-18:2020-01-23
 # 19.10:Eoan Ermine      :2019-10-17:2020-07-17
-# 20.04:Focal Fossa      :2020-04-23:2025-04-xx/2030-04-xx:LTS
+# 20.04:Focal Fossa      :2020-04-23:2025-04-23/2030-04-23:LTS
 # 20.10:Groovy Gorilla   :2020-10-22:2021-07-22
-# 21.04:Hirsute Hippo    :2021-04-22:2022-01-xx
-# 21.10:Impish Indri     :2021-10-14:2022-07-xx
+# 21.04:Hirsute Hippo    :2021-04-22:2022-01-20
+# 21.10:Impish Indri     :2021-10-14:2022-07-14
+# 22.04:Jammy Jellyfish  :2022-04-21:2027-04-21/2032-04-21:LTS
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
+# [https://en.wikipedia.org/wiki/CentOS]
 # Ver.    :リリース日:RHEL      :メンテ期限:kernel
 # 7.4-1708:2017-09-14:2017-08-01:2024-06-30: 3.10.0- 693
 # 7.5-1804:2018-05-10:2018-04-10:2024-06-30: 3.10.0- 862
@@ -1284,23 +1287,33 @@ _EOT_
 # 8.2.2004:2020-06-15:2020-04-28:2021-12-31: 4.18.0-193
 # 8.3.2011:2020-11-03:2020-12-07:2021-12-31: 4.18.0-240
 # 8.4.2015:2021-06-03:2021-05-18:2021-12-31: 4.18.0-305
+# 8.5.2111:2021-11-16:2021-11-09:2021-12-31: 4.18.0-348
 # --- https://ja.wikipedia.org/wiki/Rocky_Linux -------------------------------
+# [https://en.wikipedia.org/wiki/Rocky_Linux]
 # Ver. :リリース日:RHEL      :メンテ期限:kernel
 #  8.4 :2021-06-21:2021-05-18:         : 4.18.0-305
+#  8.5 :2021-11-15:2021-11-09:         : 4.18.0-348
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
+# [https://en.wikipedia.org/wiki/Fedora_Linux]
 # Ver. :コードネーム     :リリース日:サポ期限  :kernel
 #x27   :                 :2017-11-14:2018-11-27: 4.13
 #x28   :                 :2018-05-01:2019-05-29: 4.16
 #x29   :                 :2018-10-30:2019-11-26: 4.18
 #x30   :                 :2019-04-29:2020-05-26: 5.0
 #x31   :                 :2019-10-29:2020-11-24: 5.3
-# 32   :                 :2020-04-28:2021-05-25: 5.6
-# 33   :                 :2020-10-27:          : 5.8
-# 34   :                 :2021-04-27:          : 5.11
-# 35   :                 :2021-10-19:          : 
+#x32   :                 :2020-04-28:2021-05-25: 5.6
+# 33   :                 :2020-10-27:2021-11-30: 5.8
+# 34   :                 :2021-04-27:2022-05-17: 5.11
+# 35   :                 :2021-11-02:2022-12-07: 5.14
+# 36   :                 :2022-04-19:2023-05-24:
 # --- https://ja.wikipedia.org/wiki/OpenSUSE ----------------------------------
+# [https://en.wikipedia.org/wiki/OpenSUSE]
 # Ver. :コードネーム       :リリース日:サポ期限  :kernel
 # 15.2 :openSUSE Leap      :2020-07-02:2021-12-31: 5.3.18
 # 15.3 :openSUSE Leap      :2021-06-02:          : 5.3.18
 # xx.x :openSUSE Tumbleweed:20xx-xx-xx:20xx-xx-xx:
+# --- https://ja.wikipedia.org/wiki/MIRACLE_LINUX -----------------------------
+# [https://en.wikipedia.org/wiki/Miracle_Linux]
+# Ver. :コードネーム       :リリース日:サポ期限  :kernel
+# 8.4  :Peony              :2021-10-04:          :4.18.0-305.el8
 # -----------------------------------------------------------------------------
