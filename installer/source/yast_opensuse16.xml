@@ -171,4 +171,12 @@ exit 0
       <username>root</username>
     </user>
   </users>
+  <services-manager t="map">
+    <default_target>graphical</default_target>
+    <services t="map">
+      <enable t="list">
+        <service>sshd</service>
+      </enable>
+    </services>
+  </services-manager>
 </profile>

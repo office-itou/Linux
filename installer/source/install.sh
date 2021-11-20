@@ -77,6 +77,7 @@
 ##	2021/08/14 000.0000 J.Itou         処理見直し(不具合修正等を含む)
 ##	2021/10/08 000.0000 J.Itou         miraclelinux 8.4追加
 ##	2021/11/09 000.0000 J.Itou         不具合修正(いろいろ)
+##	2021/11/20 000.0000 J.Itou         不具合修正(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -604,7 +605,7 @@ fncInitialize () {
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-				CMD_AGET="zypper -n -t"
+				CMD_AGET="zypper --non-interactive --terse --quiet"
 			;;
 		* )
 			;;
@@ -1172,69 +1173,60 @@ _EOT_
 	# *************************************************************************
 	# Install clamav
 	# *************************************************************************
-	if [ "${SYS_NAME}" = "debian" ] && [ "${CPU_TYPE}" = "armv5tel" ]; then
-		fncProc clamav-freshclam disable
-		fncProc clamav-freshclam stop
-	fi
+	echo "- Install clamav --------------------------------------------------------------"
 	# -------------------------------------------------------------------------
-	case "${SYS_NAME}" in
-		"debian"       | \
-		"ubuntu"       | \
-		"centos"       | \
-		"fedora"       | \
-		"rocky"        | \
-		"miraclelinux" )
-			echo "- Install clamav --------------------------------------------------------------"
-			# -------------------------------------------------------------------------
-			if [ "`${CMD_WICH} freshclam 2> /dev/null`" = "" ]; then					# Install clamav
-				${CMD_AGET} install clamav clamav-update clamav-scanner-systemd
-				fncPause $?
-			fi
-			# -------------------------------------------------------------------------
-			FILE_FRESHCONF=`find /etc/ /usr/local/etc/ -name "freshclam.conf" -type f -print`
-			FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
-			# -------------------------------------------------------------------------
-			if [ ! -f ${FILE_CLAMDCONF} ]; then
-				cp -p ${FILE_FRESHCONF} ${FILE_CLAMDCONF}
-				: > ${FILE_CLAMDCONF}
-			fi
-			# -------------------------------------------------------------------------
-			if [ ! -f ${FILE_FRESHCONF}.orig ]; then
-				sed -i.orig ${FILE_FRESHCONF}                                        \
-				    -e 's/^Example/#&/'                                              \
-				    -e 's/\(# Check for new database\) 24 \(times a day\)/\1 12 \2/' \
-				    -e 's/\(Checks\) 24/\1 12/'                                      \
-				    -e 's/^NotifyClamd/#&/'
-			fi
-			;;
-		"opensuse-leap"       | \
-		"opensuse-tumbleweed" )
-			echo "- Install clamav --------------------------------------------------------------"
-			# -------------------------------------------------------------------------
-			if [ "`${CMD_WICH} freshclam 2> /dev/null`" = "" ]; then					# Install clamav
-				${CMD_AGET} install clamav
-				fncPause $?
-			fi
-			# -------------------------------------------------------------------------
-			FILE_FRESHCONF=`find /etc/ -name "freshclam.conf" -type f -print`
-			FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
-			# -------------------------------------------------------------------------
-			if [ ! -f ${FILE_CLAMDCONF} ]; then
-				cp -p ${FILE_FRESHCONF} ${FILE_CLAMDCONF}
-				: > ${FILE_CLAMDCONF}
-			fi
-			# -------------------------------------------------------------------------
-			if [ ! -f ${FILE_FRESHCONF}.orig ]; then
-				sed -i.orig ${FILE_FRESHCONF}                                        \
-				    -e 's/^Example/#&/'                                              \
-				    -e 's/\(# Check for new database\) 24 \(times a day\)/\1 12 \2/' \
-				    -e 's/\(Checks\) 24/\1 12/'                                      \
-				    -e 's/^NotifyClamd/#&/'
-			fi
-			;;
-		* )
-			;;
-	esac
+#	if [ "`${CMD_WICH} freshclam 2> /dev/null`" = "" ]; then					# Install clamav
+#		case "${SYS_NAME}" in
+#			"debian"       | \
+#			"ubuntu"       )
+#				if [ "`apt-cache search clamav | awk '$1==\"clamav\" {print $1;}'`" = "clamav" ]; then
+#					${CMD_AGET} install clamav clamav-update clamav-scanner-systemd
+#					fncPause $?
+#				fi
+#				;;
+#			"centos"       | \
+#			"fedora"       | \
+#			"rocky"        | \
+#			"miraclelinux" )
+#				if [ "`${CMD_AGET} search clamav | awk -F '.' '$1==\"clamav\" {print $1;}'`" = "clamav" ]; then
+#					${CMD_AGET} install clamav clamav-update clamav-scanner-systemd
+#					fncPause $?
+#				fi
+#				;;
+#			"opensuse-leap"       | \
+#			"opensuse-tumbleweed" )
+#				if [ "`${CMD_AGET} search clamav | awk -F '|' '{gsub(\" \",\"\"); if($2==\"clamav\") print $2;}'`" = "clamav" ]; then
+#					${CMD_AGET} install clamav
+#					fncPause $?
+#				fi
+#				;;
+#			* )
+#				;;
+#		esac
+#	fi
+	# -------------------------------------------------------------------------
+	if [ "`${CMD_WICH} freshclam 2> /dev/null`" != "" ]; then
+		FILE_FRESHCONF=`find /etc/ -name "freshclam.conf" -type f -print`
+		FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
+		# ---------------------------------------------------------------------
+		if [ ! -f ${FILE_CLAMDCONF} ]; then
+			cp -p ${FILE_FRESHCONF} ${FILE_CLAMDCONF}
+			: > ${FILE_CLAMDCONF}
+		fi
+		# ---------------------------------------------------------------------
+		if [ ! -f ${FILE_FRESHCONF}.orig ]; then
+			sed -i.orig ${FILE_FRESHCONF}                                        \
+			    -e 's/^Example/#&/'                                              \
+			    -e 's/\(# Check for new database\) 24 \(times a day\)/\1 12 \2/' \
+			    -e 's/\(Checks\) 24/\1 12/'                                      \
+			    -e 's/^NotifyClamd/#&/'
+		fi
+		# ---------------------------------------------------------------------
+		if [ "${SYS_NAME}" = "debian" ] && [ "${CPU_TYPE}" = "armv5tel" ]; then
+			fncProc clamav-freshclam disable
+			fncProc clamav-freshclam stop
+		fi
+	fi
 
 	# *************************************************************************
 	# Install ssh
@@ -1345,11 +1337,13 @@ _EOT_
 		# ---------------------------------------------------------------------
 		if [ "${FIL_BOPT}" != "${FIL_BIND}" ] && [ "`sed -n "/include.*${FIL_BOPT}/p" ${DIR_BIND}/${FIL_BIND}`" = "" ]; then
 			INS_ROW=`sed -n '/^include/ =' ${DIR_BIND}/${FIL_BIND} | tail -n 1`
+			if [ "${INS_ROW:+UNSET}" = "" ]; then INS_ROW='$ '; fi
 			sed -i ${DIR_BIND}/${FIL_BIND}                            \
 			    -e "${INS_ROW}a include \"${DIR_BIND}/${FIL_BOPT}\";"
 		fi
 		if [ "${FIL_BLOC}" != "${FIL_BIND}" ] && [ "`sed -n "/include.*${FIL_BLOC}/p" ${DIR_BIND}/${FIL_BIND}`" = "" ]; then
 			INS_ROW=`sed -n '/^include/ =' ${DIR_BIND}/${FIL_BIND} | tail -n 1`
+			if [ "${INS_ROW:+UNSET}" = "" ]; then INS_ROW='$ '; fi
 			sed -i ${DIR_BIND}/${FIL_BIND}                            \
 			    -e "${INS_ROW}a include \"${DIR_BIND}/${FIL_BLOC}\";"
 		fi
