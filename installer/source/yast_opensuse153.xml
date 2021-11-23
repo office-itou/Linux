@@ -98,7 +98,10 @@
   </ntp-client>
   <partitioning t="list">
     <drive t="map">
+<!--
       <device>/dev/sda</device>
+-->
+      <device>/dev/nvme0n1</device>
       <initialize t="boolean">true</initialize>
       <partitions t="list"/>
       <type t="symbol">CT_DISK</type>
