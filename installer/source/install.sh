@@ -78,6 +78,7 @@
 ##	2021/10/08 000.0000 J.Itou         miraclelinux 8.4追加
 ##	2021/11/09 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2021/11/20 000.0000 J.Itou         不具合修正(いろいろ)
+##	2021/11/26 000.0000 J.Itou         不具合修正(プロセス制御処理)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -116,7 +117,11 @@ fncProc () {
 	fi
 
 	if [ "`${CMD_WICH} systemctl 2> /dev/null`" != "" ]; then
-		systemctl ${INP_COMD} ${INP_NAME}; fncPause $?
+		if [ "`systemctl is-enabled ${INP_NAME} 2> /dev/null`" != "masked" -o "${INP_COMD}" = "mask" -o "${INP_COMD}" = "unmask" ]; then
+			systemctl ${INP_COMD} ${INP_NAME}; fncPause $?
+		else
+			echo "${INP_NAME} is masked."
+		fi
 	elif [ "${INP_COMD}" != "enable" -a "${INP_COMD}" != "disable" ]; then
 		if [ "`${CMD_WICH} service 2> /dev/null`" != ""                              ] && \
 		   [ "`find ${DIR_SYSD}/system/ -name \"${INP_NAME}.*\" -print`" != "" ]; then
