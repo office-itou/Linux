@@ -42,6 +42,7 @@
 ##	2021/11/22 000.0000 J.Itou         リスト用配列更新
 ##	2021/11/28 000.0000 J.Itou         全リスト処理追加
 ##	2021/11/30 000.0000 J.Itou         処理見直し
+##	2021/12/03 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -118,9 +119,11 @@ fncMenu () {
 				CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
 			else
 				FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*> *\(${CODE_NAME[1]}.iso\) *<.*>/\1/p"))
-				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
-#				CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
-				CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
+				if [ "${FIL_INFO[0]:+UNSET}" != "" ]; then
+					CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
+#					CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
+					CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
+				fi
 			fi
 			if [ "${ARRY_NAME[2]}" != "-" ]; then							# DVDファイル別名
 				CODE_NAME[1]=`basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig'`
