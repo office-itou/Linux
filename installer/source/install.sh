@@ -79,6 +79,9 @@
 ##	2021/11/09 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2021/11/20 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2021/11/26 000.0000 J.Itou         不具合修正(プロセス制御処理)
+##	2021/12/07 000.0000 J.Itou         処理見直し(bind/samba周り)
+##	2021/12/11 000.0000 J.Itou         処理見直し(ネットワーク設定周り)
+##	2021/12/13 000.0000 J.Itou         処理見直し(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -772,39 +775,40 @@ fncMain () {
 	# Install chromium
 	# *************************************************************************
 	# google-chrome -----------------------------------------------------------
-	case "${SYS_NAME}" in
-		"debian" | \
-		"ubuntu" )
-			if [ "`LANG=C dpkg -l chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk '$1=="ii" {print $2;}'`" = "" ]; then
-				fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
-				curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
-				${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb
-			fi
-			;;
-		"centos"       | \
-		"fedora"       | \
-		"rocky"        | \
-		"miraclelinux" )
-			if [ "`LANG=C dnf list chromium ungoogled-chromium google-chrome-stable 2> /dev/null | sed -n '/Installed Packages/,/Available Packages/p' | awk '/chromium|chrome/ {print $1;}'`" = "" ]; then
-				fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
-				curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
-				${CMD_AGET} install google-chrome-stable_current_x86_64.rpm
-			fi
-			;;
-		"opensuse-leap"       | \
-		"opensuse-tumbleweed" )
-			if [ "`LANG=C zypper --quiet search chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk -F '|' '/chromium|chrome/ {print $1;}' | sed -e 's/ *//g'`" = "" ]; then
-				fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
-				curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
-				${CMD_AGET} --no-gpg-checks -n install google-chrome-stable_current_x86_64.rpm
-				zypper --gpg-auto-import-keys refresh
-			fi
-			;;
-		* )
-			;;
-	esac
-
-	# ungoogled-chromium ------------------------------------------------------
+	if [ "`${CMD_WICH} startx 2> /dev/null`" != "" ]; then
+		case "${SYS_NAME}" in
+			"debian" | \
+			"ubuntu" )
+				if [ "`LANG=C dpkg -l chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk '$1=="ii" {print $2;}'`" = "" ]; then
+					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
+					curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+					${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb
+				fi
+				;;
+			"centos"       | \
+			"fedora"       | \
+			"rocky"        | \
+			"miraclelinux" )
+				if [ "`LANG=C dnf list chromium ungoogled-chromium google-chrome-stable 2> /dev/null | sed -n '/Installed Packages/,/Available Packages/p' | awk '/chromium|chrome/ {print $1;}'`" = "" ]; then
+					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
+					curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
+					${CMD_AGET} install google-chrome-stable_current_x86_64.rpm
+				fi
+				;;
+			"opensuse-leap"       | \
+			"opensuse-tumbleweed" )
+				if [ "`LANG=C zypper --quiet search chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk -F '|' '/chromium|chrome/ {print $1;}' | sed -e 's/ *//g'`" = "" ]; then
+					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
+					curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
+					${CMD_AGET} --no-gpg-checks -n install google-chrome-stable_current_x86_64.rpm
+					zypper --gpg-auto-import-keys refresh
+				fi
+				;;
+			* )
+				;;
+		esac
+	fi
+	# ungoogled-chromium --------------------------------------------------
 #	URL_SYS=""
 #	URL_DEB=""
 #	URL_KEY=""
@@ -910,6 +914,15 @@ _EOT_
 				fi
 			done
 			# -----------------------------------------------------------------
+#			if [ ! -f .bash_history.orig ] && [ -f .bash_history ]; then
+#				echo "--- .bash_history -------------------------------------------------------------"
+#				cp -p .bash_history .bash_history.orig
+#				cat <<- '_EOT_' > .bash_history
+#					sudo bash -c 'apt update && apt -y upgrade && apt -y full-upgrade'
+#					sudo mount //windows-pc/share /mnt/share.win/ -t cifs -o vers=2.0,noperm,nounix,credentials=${HOME}/.credentials
+#_EOT_
+#			fi
+			# -----------------------------------------------------------------
 			if [ ! -f .curlrc.orig ]; then
 				echo "--- .curlrc -------------------------------------------------------------------"
 				cp -p .curlrc .curlrc.orig
@@ -959,8 +972,8 @@ _EOT_
 			ALL : 127.0.0.1
 			ALL : ${IP4_UADR[0]}.0/${IP4_BITS[0]}
 			ALL : [::1]
-			ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
 			ALL : [fe80::]/64
+			ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
 _EOT_
 	fi
 	# hosts.deny --------------------------------------------------------------
@@ -989,8 +1002,8 @@ _EOT_
 			chmod 0600 .credentials
 		popd > /dev/null
 	done
-	# ipv4 dns changed --------------------------------------------------------
-	echo "--- ipv4 dns changed ----------------------------------------------------------"
+	# ipv4 dns / ipv6 privacy changed -----------------------------------------
+	echo "--- ipv4 dns / ipv6 privacy changed -------------------------------------------"
 	if [ ! -f /etc/NetworkManager/NetworkManager.conf.orig ] && \
 	   [   -f /etc/NetworkManager/NetworkManager.conf      ] && \
 	   [ "`sed -n '/^dns/p' /etc/NetworkManager/NetworkManager.conf`" != "" ]; then
@@ -998,10 +1011,11 @@ _EOT_
 		    -e 's/^\(dns=.*$\)/#\1/'
 	fi
 	if [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
+		nmcli c modify "${CON_UUID}" ipv6.ip6-privacy 1
 		nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
 		nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
-		nmcli c down   "${CON_UUID}" 1> /dev/null
-		nmcli c up     "${CON_UUID}" 1> /dev/null
+#		nmcli c down   "${CON_UUID}" > /dev/null
+#		nmcli c up     "${CON_UUID}" > /dev/null
 	elif [ ! -f /etc/sysconfig/network/config.orig ] && \
 		 [   -f /etc/sysconfig/network/config      ] && \
 		 [ ! -h /etc/sysconfig/network/config      ]; then
@@ -1011,10 +1025,11 @@ _EOT_
 #			netconfig update -f
 		fi
 	elif [ -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
-		sed -i "/etc/NetworkManager/system-connections/${CON_NAME}"    \
-		    -e "/\[ipv4\]/a dns-search=${WGP_NAME}.;"
+		sed -i "/etc/NetworkManager/system-connections/${CON_NAME}" \
+		    -e "/\[ipv4\]/a dns-search=${WGP_NAME}.;"               \
+		    -e 's/\(ip6-privacy\)=.$/\1=1/'
 		if [ "`sed -n '/\[ipv4\]/,/\[.*\]/p' "\""/etc/NetworkManager/system-connections/${CON_NAME}"\"" | sed -n '/dns=.*127\.0\.0\.1;/p'`" = "" ]; then
-			sed -i "/etc/NetworkManager/system-connections/${CON_NAME}"    \
+			sed -i "/etc/NetworkManager/system-connections/${CON_NAME}"       \
 			    -e '/\[ipv4\]/,/\[.*\]/ s/\(dns\)=\(.*\)/\1=127\.0\.0\.1;\2/'
 		fi
 	elif [ ! -f /etc/resolv.conf.orig ] && \
@@ -1036,7 +1051,9 @@ _EOT_
 	fi
 	# SELinux -----------------------------------------------------------------
 	echo "--- SELinux changed -----------------------------------------------------------"
-	if [ "`${CMD_WICH} getenforce 2> /dev/null`" != "" ] && [ "`getenforce`" = "Enforcing" ]; then
+	if [ ! -f /etc/selinux/config.orig ] && \
+	   [ "`${CMD_WICH} getenforce 2> /dev/null`" != "" ] && \
+	   [ "`getenforce`" = "Enforcing" ]; then
 		sed -i.orig /etc/selinux/config                \
 		    -e 's/\(SELINUX\)=enforcing/\1=disabled/g'
 	fi
@@ -1268,7 +1285,7 @@ _EOT_
 		chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/master
 	fi
 	echo "--- db.xxx --------------------------------------------------------------------"
-	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa
+	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa ${IP6_RADU[0]}.ip6.arpa
 	do
 		cat <<- _EOT_ > ${DIR_ZONE}/master/db.${FIL_NAME}
 			\$TTL 1H																; 1 hour
@@ -1284,48 +1301,24 @@ _EOT_
 #		chmod 640 ${DIR_ZONE}/master/db.${FIL_NAME}
 		chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/master/db.${FIL_NAME}
 	done
-	if [ "${IP6_DHCP}" != "" ] && [ "${IP6_DHCP}" != "auto" ]; then
-		for FIL_NAME in ${WGP_NAME} ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
-		do
-			cat <<- _EOT_ > ${DIR_ZONE}/master/db.${FIL_NAME}
-				\$TTL 1H																; 1 hour
-				@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
-				 														${DNS_SCNT}	; serial
-				 														30M			; refresh (30 minutes)
-				 														15M			; retry (15 minutes)
-				 														1D			; expire (1 day)
-				 														20M			; minimum (20 minutes)
-				 												)
-				@										IN		NS		${SVR_NAME}.${WGP_NAME}.
-	_EOT_
-#			chmod 640 ${DIR_ZONE}/master/db.${FIL_NAME}
-			chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/master/db.${FIL_NAME}
-		done
-	fi
 	#--------------------------------------------------------------------------
 	cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${WGP_NAME}
 		${SVR_NAME}								IN		A		${IP4_ADDR[0]}
+		${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
+		${SVR_NAME}								IN		AAAA	${IP6_ADDR[0]}
 _EOT_
-	if [ "${IP6_DHCP}" != "" ] && [ "${IP6_DHCP}" != "auto" ]; then
-		cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${WGP_NAME}
-			${SVR_NAME}								IN		AAAA	${IP6_ADDR[0]}
-			${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
-_EOT_
-	fi
 	#--------------------------------------------------------------------------
 	cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa
 		${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	if [ "${IP6_DHCP}" != "" ] && [ "${IP6_DHCP}" != "auto" ]; then
-		cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa
-			${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
+	cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
+		${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
-		#--------------------------------------------------------------------------
-		cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
-			${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
+	#--------------------------------------------------------------------------
+	cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa
+		${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
-	fi
 	#--------------------------------------------------------------------------
 	if [ "${IP4_DHCP[0]}" = "auto" ]; then
 		echo "--- dhcp対応 ------------------------------------------------------------------"
@@ -1370,30 +1363,47 @@ _EOT_
 			cp -p ${DIR_BIND}/${FIL_BOPT} ${DIR_BIND}/${FIL_BOPT}.orig
 		fi
 		# ---------------------------------------------------------------------
-		INS_ROW=$((`sed -n '/^options/ =' ${DIR_BIND}/${FIL_BOPT} | head -n 1`-1))
 		OLD_IFS=${IFS}
+		# ---------------------------------------------------------------------
+		INS_ROW=$((`sed -n '/^options/ =' ${DIR_BIND}/${FIL_BOPT} | head -n 1`-1))
 		IFS= INS_STR=$(
 			cat <<- _EOT_
 				acl "${WGP_NAME}-network" {
 				\t127.0.0.1;
 				\t::1;
 				\t${IP4_UADR[0]}.0/${IP4_BITS[0]};
-				#\t${IP6_UADR[0]}::0/${IP6_BITS[0]};
-				#\tfe80::0/64;
+				\t${IP6_UADR[0]}::0/${IP6_BITS[0]};
+				\tfe80::0/64;
 				};\n
 _EOT_
 	)
-		# ---------------------------------------------------------------------
 		if [ ${INS_ROW} -ge 1 ]; then
 			IFS= INS_CFG=$(echo -e ${INS_STR} | sed "${INS_ROW}r /dev/stdin" ${DIR_BIND}/${FIL_BOPT})
 		else
 			IFS= INS_CFG=$(echo -e ${INS_STR} | cat /dev/stdin ${DIR_BIND}/${FIL_BOPT})
 		fi
 		# ---------------------------------------------------------------------
+		echo ${INS_CFG} > ${DIR_BIND}/${FIL_BOPT}
+		# ---------------------------------------------------------------------
+		INS_ROW=$((`sed -n '/^options/,/^};/ =' ${DIR_BIND}/${FIL_BOPT} | tail -n 1`-1))
+		IFS= INS_STR=$(
+			cat <<- _EOT_
+				\tallow-update { none; };
+				\tallow-transfer { ${WGP_NAME}-network; };
+				\tallow-query { any; };
+				\tnotify yes;
+_EOT_
+	)
+		if [ ${INS_ROW} -ge 1 ]; then
+			IFS= INS_CFG=$(echo -e ${INS_STR} | sed "${INS_ROW}r /dev/stdin" ${DIR_BIND}/${FIL_BOPT})
+		else
+			IFS= INS_CFG=$(echo -e ${INS_STR} | cat ${DIR_BIND}/${FIL_BOPT}) /dev/stdin
+		fi
+		# ---------------------------------------------------------------------
 		echo ${INS_CFG} | \
-		sed -e 's/\/.*\(listen-on-v6\)/\1/g'                      \
-		    -e '/listen-on-v6.*;$/a \\tallow-transfer { none; };' \
+		sed -e 's/\/.*\(listen-on-v6\)/\1/g' \
 		> ${DIR_BIND}/${FIL_BOPT}
+		# ---------------------------------------------------------------------
 		IFS=${OLD_IFS}
 		# ---------------------------------------------------------------------
 		if [ "${SYS_NAME}" = "ubuntu" ]; then
@@ -1415,35 +1425,16 @@ _EOT_
 			 # -----------------------------------------------------------------------------
 _EOT_
 		# ---------------------------------------------------------------------
-		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa
+		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa ${IP6_RADU[0]}.ip6.arpa
 		do
 			cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
 				zone "${FIL_NAME}" {
 				 	type master;
 				 	file "master/db.${FIL_NAME}";
-				 	allow-update { none; };
-				 	allow-transfer { ${WGP_NAME}-network; };
-				 	notify yes;
 				};
 
 _EOT_
 		done
-		# ---------------------------------------------------------------------
-		if [ "${IP6_DHCP}" != "" ] && [ "${IP6_DHCP}" != "auto" ]; then
-			for FIL_NAME in ${IP6_RADU[0]}.ip6.arpa ${LNK_RADU[0]}.ip6.arpa
-			do
-				cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
-					zone "${FIL_NAME}" {
-					 	type master;
-					 	file "master/db.${FIL_NAME}";
-					 	allow-update { none; };
-					 	allow-transfer { ${WGP_NAME}-network; };
-					 	notify yes;
-					};
-
-_EOT_
-		done
-		fi
 		# ---------------------------------------------------------------------
 		if [ "${EXT_ZONE}" != "" ]; then
 			echo "--- slaves --------------------------------------------------------------------"
@@ -1573,13 +1564,13 @@ _EOT_
 			    -e 's/\(logon script\) =.*$/\1 = logon.bat/'                                        \
 			    -e 's/\(logon path\) =.*$/\1 = \\\\%L\\profiles\\%U/'                               \
 			    -e 's/\(domain logons\) =.*$/\1 = Yes/'                                             \
-			    -e 's/\(os level\) =.*$/\1 = 35/'                                                   \
+			    -e 's/\(os level\) =.*$/# \1 = 35/'                                                 \
 			    -e 's/\(preferred master\) =.*$/\1 = Yes/'                                          \
 			    -e 's/\(domain master\) =.*$/\1 = Yes/'                                             \
 			    -e 's/\(wins support\) =.*$/\1 = Yes/'                                              \
 			    -e 's/\(unix password sync\) =.*$/\1 = No/'                                         \
 			    -e '/idmap config \* : backend =/i \\tidmap config \* : range = 1000-10000'         \
-			    -e 's/\(admin users\) =.*$/\1 = administrator/'                                     \
+			    -e 's/\(admin users\) =.*$/# \1 = administrator/'                                   \
 			    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
 			    -e '/map to guest =.*$/d'                                                           \
 			    -e '/null passwords =.*$/d'                                                         \
@@ -1630,6 +1621,15 @@ _EOT_
 			    -e '/blocking locks =.*$/d'                                                         \
 			    -e '/copy =.*$/d'                                                                   \
 			    -e '/winbind separator =.*$/d'                                                      \
+			    -e '/client ipc min protocol =.*$/d'                                                \
+			    -e '/client min protocol =.*$/d'                                                    \
+			    -e '/domain master =.*$/d'                                                          \
+			    -e '/logon path =.*$/d'                                                             \
+			    -e '/logon script =.*$/d'                                                           \
+			    -e '/pam password change =.*$/d'                                                    \
+			    -e '/preferred master =.*$/d'                                                       \
+			    -e '/server role =.*$/d'                                                            \
+			    -e '/wins support =.*$/d'                                                           \
 		> ${SMB_WORK}
 		# ---------------------------------------------------------------------
 		VER_BIND=`testparm -V | awk -F '.' '/Version/ {sub(".* ",""); printf "%d.%d",$1,$2;}'`
@@ -2227,8 +2227,6 @@ _EOT_
 		set +e
 		tar -czf ${DIR_WK}/bk_boot.tgz   --exclude "bk_*.tgz" boot
 		tar -czf ${DIR_WK}/bk_etc.tgz    --exclude "bk_*.tgz" etc
-		tar -czf ${DIR_WK}/bk_home.tgz   --exclude "bk_*.tgz" home
-		tar -czf ${DIR_WK}/bk_share.tgz  --exclude "bk_*.tgz" share
 		tar -czf ${DIR_WK}/bk_usr_sh.tgz --exclude "bk_*.tgz" usr/sh
 		tar -czf ${DIR_WK}/bk_cron.tgz   --exclude "bk_*.tgz" var/spool/cron
 		# ---------------------------------------------------------------------
@@ -2250,6 +2248,13 @@ _EOT_
 			* )
 				;;
 		esac
+		# ---------------------------------------------------------------------
+		if [ ! -f ${DIR_WK}/bk_home.tgz ]; then
+			tar -czf ${DIR_WK}/bk_home.tgz   --exclude "bk_*.tgz" home
+		fi
+		if [ ! -f ${DIR_WK}/bk_share.tgz ]; then
+			tar -czf ${DIR_WK}/bk_share.tgz  --exclude "bk_*.tgz" share
+		fi
 		set -e
 	popd > /dev/null
 }
