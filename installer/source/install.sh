@@ -82,6 +82,7 @@
 ##	2021/12/07 000.0000 J.Itou         処理見直し(bind/samba周り)
 ##	2021/12/11 000.0000 J.Itou         処理見直し(ネットワーク設定周り)
 ##	2021/12/13 000.0000 J.Itou         処理見直し(いろいろ)
+##	2021/12/14 000.0000 J.Itou         処理見直し(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -715,11 +716,15 @@ fncMain () {
 				    -e 's/^deb cdrom.*$/# &/'
 			fi
 			# --- パッケージ更新 ------------------------------------------------------
-			echo "--- Package Update ------------------------------------------------------------"
-			${CMD_AGET} update
-			echo "--- Package Upgrade -----------------------------------------------------------"
-			${CMD_AGET} upgrade
-			${CMD_AGET} dist-upgrade
+			if [ "${SYS_NAME}" = "debian" ] && [ "${CPU_TYPE}" = "armv5tel" ]; then
+				echo "--- Package Update & Upgrade skipped ------------------------------------------"
+			else
+				echo "--- Package Update ------------------------------------------------------------"
+				${CMD_AGET} update
+				echo "--- Package Upgrade -----------------------------------------------------------"
+				${CMD_AGET} upgrade
+				${CMD_AGET} dist-upgrade
+			fi
 			;;
 		"centos"       | \
 		"fedora"       | \
