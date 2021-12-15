@@ -83,6 +83,7 @@
 ##	2021/12/11 000.0000 J.Itou         処理見直し(ネットワーク設定周り)
 ##	2021/12/13 000.0000 J.Itou         処理見直し(いろいろ)
 ##	2021/12/14 000.0000 J.Itou         処理見直し(いろいろ)
+##	2021/12/15 000.0000 J.Itou         処理見直し(avahi-daemon)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -1084,6 +1085,17 @@ _EOT_
 		firewall-cmd --reload
 		# --- ファイルマネージャー対策 [一時的] -------------------------------
 #		iptables -t raw -A OUTPUT -p udp -m udp --dport 137 -j CT --helper netbios-ns
+	fi
+	# avahi-daemon ------------------------------------------------------------
+	echo "--- avahi-daemon changed ------------------------------------------------------"
+#	if [ "`fncProcFind \"avahi-daemon\"`" = "1" ]; then
+#		fncProc avahi-daemon disable
+#	fi
+	if [ ! -f /etc/avahi/avahi-daemon.conf.orig ] && \
+	   [   -f /etc/avahi/avahi-daemon.conf      ]; then
+		sed -i.orig /etc/avahi/avahi-daemon.conf \
+		    -e 's/.*\(use-ipv4\)=.*$/\1=no/'       \
+		    -e 's/.*\(use-ipv6\)=.*$/\1=no/'
 	fi
 	# *************************************************************************
 	# Make share dir
@@ -2450,6 +2462,13 @@ fncDebug () {
 	if [ -f /etc/gai.conf ] && [ -f /etc/gai.conf.orig ]; then
 		echo "--- diff /etc/gai.conf --------------------------------------------------------"
 		fncDiff /etc/gai.conf /etc/gai.conf.orig
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+#	echo "--- cat /etc/avahi/avahi-daemon.conf ------------------------------------------"
+#	expand -t 4 /etc/avahi/avahi-daemon.conf
+	if [ -f /etc/avahi/avahi-daemon.conf ] && [ -f /etc/avahi/avahi-daemon.conf.orig ]; then
+		echo "--- diff /etc/avahi/avahi-daemon.conf -----------------------------------------"
+		fncDiff /etc/avahi/avahi-daemon.conf /etc/avahi/avahi-daemon.conf.orig
 	fi
 	# Install clamav **********************************************************
 	FILE_FRESHCONF=`find /etc/ -name "freshclam.conf" -type f -print`
