@@ -84,6 +84,7 @@
 ##	2021/12/13 000.0000 J.Itou         処理見直し(いろいろ)
 ##	2021/12/14 000.0000 J.Itou         処理見直し(いろいろ)
 ##	2021/12/15 000.0000 J.Itou         処理見直し(avahi-daemon)
+##	2021/12/16 000.0000 J.Itou         処理見直し(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -543,6 +544,11 @@ fncInitialize () {
 	IP6_RADL=(`fncIPv6Reverse "${IP6_LADR[@]}"`)								# IPv6:BIND逆引き用下位値
 	LNK_RADU=(`fncIPv6Reverse "${LNK_UADR[@]}"`)								# Link:BIND逆引き用上位値
 	LNK_RADL=(`fncIPv6Reverse "${LNK_LADR[@]}"`)								# Link:BIND逆引き用下位値
+	IP6_CDNS=(`fncIPv6Conv "${IP6_DNSA[@]}"`)									# IPv6:補間済みアドレス[DNS]
+	IP6_UDNS=(`fncSubstr "${IP6_CDNS[@]}"  1 19`)								# IPv6:本機のIPアドレスの上位値(/64決め打ち)[DNS]
+	IP6_LDNS=(`fncSubstr "${IP6_CDNS[@]}" 21 19`)								# IPv6:本機のIPアドレスの下位値[DNS]
+	IP6_RDNU=(`fncIPv6Reverse "${IP6_UDNS[@]}"`)								# IPv6:BIND逆引き用上位値[DNS]
+	IP6_RDNL=(`fncIPv6Reverse "${IP6_LDNS[@]}"`)								# IPv6:BIND逆引き用下位値[DNS]
 	# ･････････････････････････････････････････････････････････････････････････
 	RNG_DHCP="${IP4_UADR[0]}.64 ${IP4_UADR[0]}.79"								# IPv4:DHCPの提供アドレス範囲
 	# プライベートIPアドレス --------------------------------------------------
@@ -976,8 +982,8 @@ _EOT_
 		cp -p /etc/hosts.allow /etc/hosts.allow.orig
 		cat <<- _EOT_ >> /etc/hosts.allow
 			ALL : 127.0.0.1
-			ALL : ${IP4_UADR[0]}.0/${IP4_BITS[0]}
 			ALL : [::1]
+			ALL : ${IP4_UADR[0]}.0/${IP4_BITS[0]}
 			ALL : [fe80::]/64
 			ALL : [${IP6_UADR[0]}::]/${IP6_BITS[0]}
 _EOT_
@@ -1018,6 +1024,8 @@ _EOT_
 	fi
 	if [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
 		nmcli c modify "${CON_UUID}" ipv6.ip6-privacy 1
+		nmcli c modify "${CON_UUID}" ipv6.dns "::1 ${IP6_DNSA[0]} ${IP6_UADR}:${IP6_LDNS}"
+		nmcli c modify "${CON_UUID}" ipv6.dns-search ${WGP_NAME}.
 		nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
 		nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
 #		nmcli c down   "${CON_UUID}" > /dev/null
@@ -1087,16 +1095,16 @@ _EOT_
 #		iptables -t raw -A OUTPUT -p udp -m udp --dport 137 -j CT --helper netbios-ns
 	fi
 	# avahi-daemon ------------------------------------------------------------
-	echo "--- avahi-daemon changed ------------------------------------------------------"
+#	echo "--- avahi-daemon changed ------------------------------------------------------"
 #	if [ "`fncProcFind \"avahi-daemon\"`" = "1" ]; then
 #		fncProc avahi-daemon disable
 #	fi
-	if [ ! -f /etc/avahi/avahi-daemon.conf.orig ] && \
-	   [   -f /etc/avahi/avahi-daemon.conf      ]; then
-		sed -i.orig /etc/avahi/avahi-daemon.conf \
-		    -e 's/.*\(use-ipv4\)=.*$/\1=no/'       \
-		    -e 's/.*\(use-ipv6\)=.*$/\1=no/'
-	fi
+#	if [ ! -f /etc/avahi/avahi-daemon.conf.orig ] && \
+#	   [   -f /etc/avahi/avahi-daemon.conf      ]; then
+#		sed -i.orig /etc/avahi/avahi-daemon.conf \
+#		    -e 's/.*\(use-ipv4\)=.*$/\1=no/'       \
+#		    -e 's/.*\(use-ipv6\)=.*$/\1=no/'
+#	fi
 	# *************************************************************************
 	# Make share dir
 	# *************************************************************************
@@ -1389,8 +1397,8 @@ _EOT_
 				\t127.0.0.1;
 				\t::1;
 				\t${IP4_UADR[0]}.0/${IP4_BITS[0]};
-				\t${IP6_UADR[0]}::0/${IP6_BITS[0]};
 				\tfe80::0/64;
+				\t${IP6_UADR[0]}::0/${IP6_BITS[0]};
 				};\n
 _EOT_
 	)
@@ -1589,6 +1597,7 @@ _EOT_
 			    -e '/idmap config \* : backend =/i \\tidmap config \* : range = 1000-10000'         \
 			    -e 's/\(admin users\) =.*$/# \1 = administrator/'                                   \
 			    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
+			    -e 's/\(multicast dns register\) =.*$/\1 = No/'                                     \
 			    -e '/map to guest =.*$/d'                                                           \
 			    -e '/null passwords =.*$/d'                                                         \
 			    -e '/obey pam restrictions =.*$/d'                                                  \
@@ -2348,6 +2357,11 @@ fncDebug () {
 	echo "LNK_LADR=${LNK_LADR[@]}"												# Link:本機のIPアドレスの下位値
 	echo "LNK_RADU=${LNK_RADU[@]}"												# Link:BIND逆引き用上位値
 	echo "LNK_RADL=${LNK_RADL[@]}"												# Link:BIND逆引き用下位値
+	echo "IP6_CDNS=${IP6_CDNS[@]}"												# IPv6:補間済みアドレス[DNS]
+	echo "IP6_UDNS=${IP6_UDNS[@]}"												# IPv6:本機のIPアドレスの上位値(/64決め打ち)[DNS]
+	echo "IP6_LDNS=${IP6_LDNS[@]}"												# IPv6:本機のIPアドレスの下位値[DNS]
+	echo "IP6_RDNU=${IP6_RDNU[@]}"												# IPv6:BIND逆引き用上位値[DNS]
+	echo "IP6_RDNL=${IP6_RDNL[@]}"												# IPv6:BIND逆引き用下位値[DNS]
 	echo "RNG_DHCP=${RNG_DHCP}"													# IPv4:DHCPの提供アドレス範囲
 #	echo "URL_SYS =${URL_SYS}"													# ungoogled-chromium:OS別URL
 #	echo "URL_DEB =${URL_DEB}"													# ungoogled-chromium:/etc/apt/sources.list.d/home:ungoogled_chromium.list
@@ -2565,6 +2579,14 @@ fncDebug () {
 	set -e
 	# ･････････････････････････････････････････････････････････････････････････
 	set +e
+	echo "--- nslookup ------------------------------------------------------------------"
+	nslookup ${SVR_NAME}
+	echo "･･･････････････････････････････････････････････････････････････････････････････"
+	nslookup ${IP4_ADDR[0]}
+	echo "･･･････････････････････････････････････････････････････････････････････････････"
+	nslookup ${IP6_ADDR[0]}
+	echo "･･･････････････････････････････････････････････････････････････････････････････"
+	nslookup ${LNK_ADDR[0]}
 	echo "--- dns check -----------------------------------------------------------------"
 	dig @localhost ${IP4_RADR[0]}.in-addr.arpa DNSKEY +dnssec +multi
 	echo "･･･････････････････････････････････････････････････････････････････････････････"
