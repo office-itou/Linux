@@ -85,6 +85,8 @@
 ##	2021/12/14 000.0000 J.Itou         処理見直し(いろいろ)
 ##	2021/12/15 000.0000 J.Itou         処理見直し(avahi-daemon)
 ##	2021/12/16 000.0000 J.Itou         処理見直し(いろいろ)
+##	2021/12/17 000.0000 J.Itou         処理見直し(/etc/nsswitch.conf)
+##	2021/12/19 000.0000 J.Itou         処理見直し(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -638,6 +640,11 @@ fncInitialize () {
 	else
 		CMD_CHSH="`${CMD_WICH} chsh` -s ${LIN_CHSH}"
 	fi
+
+	# --- chrony --------------------------------------------------------------
+	INF_CHRO=`LANG=C find /etc/ -name "chrony.conf" -type f -exec ls -l '{}' \;`
+	FUL_CHRO=`echo ${INF_CHRO} | awk '{print $9;}'`
+
 	# --- bind ----------------------------------------------------------------
 	INF_BIND=`LANG=C find /etc/ -name "named.conf" -type f -exec ls -l '{}' \;`
 	DNS_USER=`echo ${INF_BIND} | awk '{print $3;}'`
@@ -701,10 +708,10 @@ fncMain () {
 	# *************************************************************************
 	# NTP Setup
 	# *************************************************************************
-	if [ ! -f /etc/chrony/chrony.conf.orig ] && \
-	   [   -f /etc/chrony/chrony.conf      ]; then
-		INS_STR=`awk '($1=="pool" || $1=="server") && !a[$1]++ {print $1 " '${NTP_NAME}' iburst";}' /etc/chrony/chrony.conf`
-		sed -i.orig /etc/chrony/chrony.conf                                    \
+	if [ ! -f ${FUL_CHRO}.orig ] && \
+	   [   -f ${FUL_CHRO}      ]; then
+		INS_STR=`awk '($1=="pool" || $1=="server") && !a[$1]++ {print $1 " '${NTP_NAME}' iburst";}' ${FUL_CHRO}`
+		sed -i.orig ${FUL_CHRO}                                                \
 		    -e 's/^\([pool|server]\)/#\1/g'                                    \
 		    -e "0,/^#[pool|server]/{s/^\(#[pool|server].*$\)/${INS_STR}\n\1/}"
 		fncProc chrony restart
@@ -1023,6 +1030,7 @@ _EOT_
 		    -e 's/^\(dns=.*$\)/#\1/'
 	fi
 	if [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
+		nmcli c modify "${CON_UUID}" ipv6.method auto
 		nmcli c modify "${CON_UUID}" ipv6.ip6-privacy 1
 		nmcli c modify "${CON_UUID}" ipv6.dns "::1 ${IP6_DNSA[0]} ${IP6_UADR}:${IP6_LDNS}"
 		nmcli c modify "${CON_UUID}" ipv6.dns-search ${WGP_NAME}.
@@ -1105,6 +1113,25 @@ _EOT_
 #		    -e 's/.*\(use-ipv4\)=.*$/\1=no/'       \
 #		    -e 's/.*\(use-ipv6\)=.*$/\1=no/'
 #	fi
+	# nsswitch.conf -----------------------------------------------------------
+	echo "--- nsswitch.conf changed -----------------------------------------------------"
+	if [ ! -f /etc/nsswitch.conf.orig ] && \
+	   [   -f /etc/nsswitch.conf      ]; then
+#		sed -i.orig /etc/nsswitch.conf \
+#		    -e 's/mdns4/mdns/g'
+		cp -p /etc/nsswitch.conf /etc/nsswitch.conf.orig
+		OLD_IFS=${IFS}
+		IFS=$'\n'
+		INS_ROW=$((`sed -n '/^hosts:/ =' /etc/nsswitch.conf | head -n 1`))
+		INS_TXT=`sed -n '/^hosts:/ s/\(hosts: *\) file.*$/\1 mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns mdns/p' /etc/nsswitch.conf`
+		sed -e '/^hosts:/ s/^/#/' /etc/nsswitch.conf | \
+		sed -e "${INS_ROW}a ${INS_TXT}"                \
+		> nsswitch.conf
+		cat nsswitch.conf > /etc/nsswitch.conf
+		rm nsswitch.conf
+		IFS=${OLD_IFS}
+	fi
+
 	# *************************************************************************
 	# Make share dir
 	# *************************************************************************
@@ -1312,7 +1339,7 @@ _EOT_
 	echo "--- db.xxx --------------------------------------------------------------------"
 	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa ${IP6_RADU[0]}.ip6.arpa
 	do
-		cat <<- _EOT_ > ${DIR_ZONE}/master/db.${FIL_NAME}
+		cat <<- _EOT_ | sed -e 's/^ //g' > ${DIR_ZONE}/master/db.${FIL_NAME}
 			\$TTL 1H																; 1 hour
 			@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
 			 														${DNS_SCNT}	; serial
@@ -1321,27 +1348,31 @@ _EOT_
 			 														1D			; expire (1 day)
 			 														20M			; minimum (20 minutes)
 			 												)
-			@										IN		NS		${SVR_NAME}.${WGP_NAME}.
+			 										IN		NS		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 #		chmod 640 ${DIR_ZONE}/master/db.${FIL_NAME}
 		chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/master/db.${FIL_NAME}
 	done
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${WGP_NAME}
+	cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${WGP_NAME}
 		${SVR_NAME}								IN		A		${IP4_ADDR[0]}
-		${SVR_NAME}								IN		AAAA	${LNK_ADDR[0]}
-		${SVR_NAME}								IN		AAAA	${IP6_ADDR[0]}
+		 										IN		AAAA	${LNK_ADDR[0]}
+		 										IN		AAAA	${IP6_ADDR[0]}
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa
+	cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa
+		 										IN		PTR		${WGP_NAME}.
+		 										IN		A		${IP4_MASK}
 		${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
+	cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
+		 										IN		PTR		${WGP_NAME}.
 		${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
-	cat <<- _EOT_ >> ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa
+	cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa
+		 										IN		PTR		${WGP_NAME}.
 		${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 	#--------------------------------------------------------------------------
@@ -1371,6 +1402,7 @@ _EOT_
 			    -e "${INS_ROW}a include \"${DIR_BIND}/${FIL_BLOC}\";"
 		fi
 	fi
+	# -------------------------------------------------------------------------
 	for FIL_NAME in `sed -n 's/^include "\(.*\)";$/\1/gp' ${DIR_BIND}/${FIL_BIND}`
 	do
 		if [ ! -f ${FIL_NAME} ]; then
@@ -1388,17 +1420,24 @@ _EOT_
 			cp -p ${DIR_BIND}/${FIL_BOPT} ${DIR_BIND}/${FIL_BOPT}.orig
 		fi
 		# ---------------------------------------------------------------------
+		sed -i ${DIR_BIND}/${FIL_BOPT}    \
+		    -e '/allow-update/   s%^%//%' \
+		    -e '/allow-transfer/ s%^%//%' \
+		    -e '/allow-query/    s%^%//%' \
+		    -e '/notify/         s%^%//%' \
+		    -e '/recursion/      s%^%//%'
+		# ---------------------------------------------------------------------
 		OLD_IFS=${IFS}
 		# ---------------------------------------------------------------------
 		INS_ROW=$((`sed -n '/^options/ =' ${DIR_BIND}/${FIL_BOPT} | head -n 1`-1))
 		IFS= INS_STR=$(
-			cat <<- _EOT_
+			cat <<- _EOT_ | sed -e 's/^ //g'
 				acl "${WGP_NAME}-network" {
-				\t127.0.0.1;
-				\t::1;
-				\t${IP4_UADR[0]}.0/${IP4_BITS[0]};
-				\tfe80::0/64;
-				\t${IP6_UADR[0]}::0/${IP6_BITS[0]};
+				 	127.0.0.1;
+				 	::1;
+				 	${IP4_UADR[0]}.0/${IP4_BITS[0]};
+				 	fe80::0/64;
+				 	${IP6_UADR[0]}::0/${IP6_BITS[0]};
 				};\n
 _EOT_
 	)
@@ -1412,11 +1451,12 @@ _EOT_
 		# ---------------------------------------------------------------------
 		INS_ROW=$((`sed -n '/^options/,/^};/ =' ${DIR_BIND}/${FIL_BOPT} | tail -n 1`-1))
 		IFS= INS_STR=$(
-			cat <<- _EOT_
-				\tallow-update { none; };
-				\tallow-transfer { ${WGP_NAME}-network; };
-				\tallow-query { any; };
-				\tnotify yes;
+			cat <<- _EOT_ | sed -e 's/^ //g'
+				 	allow-update { none; };
+				 	allow-transfer { ${WGP_NAME}-network; };
+				 	allow-query { any; };
+				 	notify yes;
+				//	recursion no;
 _EOT_
 	)
 		if [ ${INS_ROW} -ge 1 ]; then
@@ -1445,14 +1485,14 @@ _EOT_
 		fi
 		# ---------------------------------------------------------------------
 		cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
-			 # -----------------------------------------------------------------------------
-			 # ${WGP_NAME}
-			 # -----------------------------------------------------------------------------
+			# -----------------------------------------------------------------------------
+			# ${WGP_NAME}
+			# -----------------------------------------------------------------------------
 _EOT_
 		# ---------------------------------------------------------------------
 		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa ${IP6_RADU[0]}.ip6.arpa
 		do
-			cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
+			cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_BIND}/${FIL_BLOC}
 				zone "${FIL_NAME}" {
 				 	type master;
 				 	file "master/db.${FIL_NAME}";
@@ -1467,7 +1507,7 @@ _EOT_
 				mkdir -p ${DIR_ZONE}/slaves
 				chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/slaves
 			fi
-			cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
+			cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_BIND}/${FIL_BLOC}
 				zone "${EXT_ZONE}" {
 				 	type slave;
 				 	file "slaves/db.${EXT_ZONE}";
@@ -1477,7 +1517,7 @@ _EOT_
 		fi
 		# ---------------------------------------------------------------------
 		cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
-			 # -----------------------------------------------------------------------------
+			# -----------------------------------------------------------------------------
 _EOT_
 	fi
 	# -------------------------------------------------------------------------
@@ -1509,7 +1549,7 @@ _EOT_
 		if [ ! -f ${DIR_DHCP}/${FIL_DHCP}.orig ] && \
 		   [   -f ${DIR_DHCP}/${FIL_DHCP}      ]; then
 			cp -p ${DIR_DHCP}/${FIL_DHCP} ${DIR_DHCP}/${FIL_DHCP}.orig
-			cat <<- _EOT_ > ${DIR_DHCP}/${FIL_DHCP}
+			cat <<- _EOT_ | sed -e 's/^ //g' > ${DIR_DHCP}/${FIL_DHCP}
 				subnet ${IP4_NTWK[0]} netmask ${IP4_MASK[0]} {
 				 	option time-servers ${NTP_NAME};
 				 	option domain-name-servers ${IP4_ADDR[0]};
@@ -1666,7 +1706,7 @@ _EOT_
 			    -e 's/\(max protocol\) =.*$/\1 = SMB2/'							# SMB2対応
 		fi
 		# ---------------------------------------------------------------------
-		cat <<- _EOT_ >> ${SMB_WORK}
+		cat <<- _EOT_ | sed -e 's/^ //g' >> ${SMB_WORK}
 			[homes]
 			 	comment = Home Directories
 			 	valid users = %S
@@ -2392,6 +2432,8 @@ fncDebug () {
 #	echo "FILE_USERDIRCONF=${FILE_USERDIRCONF}"									#  〃   ：
 #	echo "FILE_VSFTPDCONF=${FILE_VSFTPDCONF}"									#  〃   ：
 #	echo "DIR_VSFTPD=${DIR_VSFTPD}"												#  〃   ：
+	echo "INF_CHRO=${INF_CHRO}"													#  〃   ：chrony
+	echo "FUL_CHRO=${FUL_CHRO}"													#  〃   ：
 	echo "INF_BIND=${INF_BIND}"													#  〃   ：bind
 	echo "DNS_USER=${DNS_USER}"													#  〃   ：
 	echo "DNS_GRUP=${DNS_GRUP}"													#  〃   ：
@@ -2643,17 +2685,78 @@ fncDebug () {
 	fi
 }
 
+# Recovery ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+fncRecovery () {
+	echo "- Recovery mode ---------------------------------------------------------------"
+	[ -f /etc/NetworkManager/NetworkManager.conf.orig           ] && { sudo mv /etc/NetworkManager/NetworkManager.conf.orig            /etc/NetworkManager/NetworkManager.conf          ; }
+	[ -f /etc/apt/sources.list.orig                             ] && { sudo mv /etc/apt/sources.list.orig                              /etc/apt/sources.list                            ; }
+	[ -f /etc/avahi/avahi-daemon.conf.orig                      ] && { sudo mv /etc/avahi/avahi-daemon.conf.orig                       /etc/avahi/avahi-daemon.conf                     ; }
+	[ -f ${DIR_BIND}/${FIL_BLOC}.orig                           ] && { sudo mv ${DIR_BIND}/${FIL_BLOC}.orig                            ${DIR_BIND}/${FIL_BLOC}                          ; }
+	[ -f ${DIR_BIND}/${FIL_BOPT}.orig                           ] && { sudo mv ${DIR_BIND}/${FIL_BOPT}.orig                            ${DIR_BIND}/${FIL_BOPT}                          ; }
+	[ -f ${DIR_BIND}/${FIL_BIND}.orig                           ] && { sudo mv ${DIR_BIND}/${FIL_BIND}.orig                            ${DIR_BIND}/${FIL_BIND}                          ; }
+	[ -f ${FUL_CHRO}.orig                                       ] && { sudo mv ${FUL_CHRO}.orig                                        ${FUL_CHRO}                                      ; }
+	FILE_FRESHCONF=`find /etc/ -name "freshclam.conf" -type f -print`
+	if [ "${FILE_FRESHCONF}" != "" ]; then
+		[ -f ${FILE_FRESHCONF}.orig                                 ] && { sudo mv ${FILE_FRESHCONF}.orig                                  ${FILE_FRESHCONF}                                ; }
+	fi
+	[ -f /etc/default/grub.orig                                 ] && { sudo mv /etc/default/grub.orig                                  /etc/default/grub                                ; }
+	[ -f /etc/default/isc-dhcp-server.orig                      ] && { sudo mv /etc/default/isc-dhcp-server.orig                       /etc/default/isc-dhcp-server                     ; }
+	[ -f ${DIR_DHCP}/${FIL_DHCP}.orig                           ] && { sudo mv ${DIR_DHCP}/${FIL_DHCP}.orig                            ${DIR_DHCP}/${FIL_DHCP}                          ; }
+	[ -f /etc/hosts.allow.orig                                  ] && { sudo mv /etc/hosts.allow.orig                                   /etc/hosts.allow                                 ; }
+	[ -f /etc/hosts.deny.orig                                   ] && { sudo mv /etc/hosts.deny.orig                                    /etc/hosts.deny                                  ; }
+	[ -f /etc/hosts.orig                                        ] && { sudo mv /etc/hosts.orig                                         /etc/hosts                                       ; }
+	[ -f /etc/locale.gen.orig                                   ] && { sudo mv /etc/locale.gen.orig                                    /etc/locale.gen                                  ; }
+	[ -f /etc/nsswitch.conf.orig                                ] && { sudo mv /etc/nsswitch.conf.orig                                 /etc/nsswitch.conf                               ; }
+	[ -f /etc/resolv.conf.orig                                  ] && { sudo mv /etc/resolv.conf.orig                                   /etc/resolv.conf                                 ; }
+	[ -f ${SMB_BACK}                                            ] && { sudo mv ${SMB_BACK}                                             ${SMB_CONF}                                      ; }
+	[ -f /etc/selinux/config.orig                               ] && { sudo mv /etc/selinux/config.orig                                /etc/selinux/config                              ; }
+	[ -f /etc/ssh/sshd_config.orig                              ] && { sudo mv /etc/ssh/sshd_config.orig                               /etc/ssh/sshd_config                             ; }
+	[ -f /etc/sysconfig/network/config.orig                     ] && { sudo mv /etc/sysconfig/network/config.orig                      /etc/sysconfig/network/config                    ; }
+	for USER_NAME in "${USER}" "${SUDO_USER}"
+	do
+		USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
+		case "${SYS_NAME}" in
+			"debian" | \
+			"ubuntu" )
+				LNG_FILE=".bashrc"
+				;;
+			"centos"       | \
+			"fedora"       | \
+			"rocky"        | \
+			"miraclelinux" )
+				LNG_FILE=".i18n"
+				;;
+			"opensuse-leap"       | \
+			"opensuse-tumbleweed" )
+				LNG_FILE=".i18n"
+				;;
+			* )
+				;;
+		esac
+		[ -f /root/.bash_history.orig                               ] && { sudo mv /root/.bash_history.orig                                /root/.bash_history                              ; }
+		if [ "${LNG_FILE}" != "" ]; then
+			[ -f ${USER_HOME}/${LNG_FILE}.orig                                 ] && { sudo mv ${USER_HOME}/${LNG_FILE}.orig                                  ${USER_HOME}/${LNG_FILE}                                ; }
+		fi
+		[ -f ${USER_HOME}/.curlrc.orig                                     ] && { sudo mv ${USER_HOME}/.curlrc.orig                                      ${USER_HOME}/.curlrc                                    ; }
+		[ -f ${USER_HOME}/.vimrc.orig                                      ] && { sudo mv ${USER_HOME}/.vimrc.orig                                       ${USER_HOME}/.vimrc                                     ; }
+		[ -f ${USER_HOME}/.virc.orig                                       ] && { sudo mv ${USER_HOME}/.virc.orig                                        ${USER_HOME}/.virc                                      ; }
+	done
+	[ -f ${DIR_ZONE}/master/db.${WGP_NAME}.orig                 ] && { sudo mv ${DIR_ZONE}/master/db.${WGP_NAME}.orig                  ${DIR_ZONE}/master/db.${WGP_NAME}                ; }
+	[ -f ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa.orig ] && { sudo mv  ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa.orig ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa; }
+}
+
 # *****************************************************************************
 # Main処理                                                                    *
 # *****************************************************************************
 	# Common ------------------------------------------------------------------
 	fncInitialize
-	if [ ${DBG_FLAG} -lt 2 ]; then												# 引数<=1又は無しでmain処理
-		# Main ----------------------------------------------------------------
-		fncMain
-	else																		# 引数>=2でdebug処理のみ
-		fncDebug
-	fi
+	# Main --------------------------------------------------------------------
+	case "${DBG_FLAG}" in
+		"0" )	fncMain;;				# main処理
+		"d" )	fncDebug;;				# debug処理
+		"r" )	fncRecovery;;			# recovery処理
+		 *  )	;;
+	esac
 	# -------------------------------------------------------------------------
 	echo "--- End -----------------------------------------------------------------------"
 
