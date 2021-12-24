@@ -88,6 +88,7 @@
 ##	2021/12/17 000.0000 J.Itou         処理見直し(/etc/nsswitch.conf)
 ##	2021/12/19 000.0000 J.Itou         処理見直し(いろいろ)
 ##	2021/12/22 000.0000 J.Itou         処理見直し(いろいろ)
+##	2021/12/24 000.0000 J.Itou         処理見直し(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -1537,6 +1538,7 @@ _EOT_
 			sed -i.master ${DIR_BIND}/${FIL_BLOC}                  \
 			    -e 's/^\([ |\t]*type\).*$/\1 slave;/g'             \
 			    -e '/^[ |\t]*file[ |\t]*/ s/master/slaves/g'       \
+			    -e "/^[ |\t]*type/a \\\tmasterfile-format text;"   \
 			    -e "/^[ |\t]*type/a \\\tmasters { ${EXT_ADDR}; };"
 #			cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_BIND}/${FIL_BLOC}
 #				zone "${EXT_ZONE}" {
@@ -2284,7 +2286,7 @@ _EOT_
 		USR_SUDO=`awk -F ':' -v ORS="," '$1=="'${GRP_SUDO}'" {print $4;}' /etc/group | sed -e 's/,$//'`
 	fi
 	# -------------------------------------------------------------------------
-	if [ "${USR_SUDO}" != "" ] && [ "`awk -F ':' '/root/ {print $7;}' /etc/passwd`" != "${LIN_CHSH}" ]; then
+	if [ "${USR_SUDO}" != "" ] && [ "`awk -F ':' '/^root:/ {print $7;}' /etc/passwd`" != "${LIN_CHSH}" ]; then
 		fncPrint "=== 以下のユーザーが ${GRP_SUDO} に属しています。 ==============================================================================="
 		echo ${USR_SUDO}
 		echo "==============================================================================="
@@ -2594,22 +2596,31 @@ fncDebug () {
 #		fncDiff ${DIR_VSFTPD}/vsftpd.conf ${DIR_VSFTPD}/vsftpd.conf.orig
 #	fi
 	# Install bind9 ***********************************************************
-	if [ -f ${DIR_ZONE}/master/db.${WGP_NAME}                 ]; then
-		fncPrint "--- cat ${DIR_ZONE}/master/db.${WGP_NAME} -------------------------------------------------------------------------------"
-		expand -t 4 ${DIR_ZONE}/master/db.${WGP_NAME}
-	fi
-	if [ -f ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa ]; then
-		fncPrint "--- cat ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa -------------------------------------------------------------------------------"
-		expand -t 4 ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa
-	fi
-	if [ -f ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa     ]; then
-		fncPrint "--- cat ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa -------------------------------------------------------------------------------"
-		expand -t 4 ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa
-	fi
-	if [ -f ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa     ]; then
-		fncPrint "--- cat ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa -------------------------------------------------------------------------------"
-		expand -t 4 ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
-	fi
+#	if [ -f ${DIR_ZONE}/master/db.${WGP_NAME}                 ]; then
+#		fncPrint "--- cat ${DIR_ZONE}/master/db.${WGP_NAME} -------------------------------------------------------------------------------"
+#		expand -t 4 ${DIR_ZONE}/master/db.${WGP_NAME}
+#	fi
+#	if [ -f ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa ]; then
+#		fncPrint "--- cat ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa -------------------------------------------------------------------------------"
+#		expand -t 4 ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa
+#	fi
+#	if [ -f ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa     ]; then
+#		fncPrint "--- cat ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa -------------------------------------------------------------------------------"
+#		expand -t 4 ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa
+#	fi
+#	if [ -f ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa     ]; then
+#		fncPrint "--- cat ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa -------------------------------------------------------------------------------"
+#		expand -t 4 ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
+#	fi
+	for FILE in `find ${DIR_ZONE}/master ${DIR_ZONE}/slaves -type f -print`
+	do
+		if [ "file ${FILE} | grep text" = "" ]; then
+			fncPrint "--- cat ${FILE} is binary ---------------------------------------------------------------------------------------------"
+		else
+			fncPrint "--- cat ${FILE} -------------------------------------------------------------------------------------------------------"
+			expand -t 4 ${FILE}
+		fi
+	done
 	# ･････････････････････････････････････････････････････････････････････････
 	fncPrint "--- cat ${DIR_BIND}/${FIL_BIND} -------------------------------------------------------------------------------"
 	if [ -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
@@ -2704,6 +2715,8 @@ fncDebug () {
 	# Setup Samba User ********************************************************
 	echo "--- pdbedit -L ----------------------------------------------------------------"
 	pdbedit -L
+	fncPrint "--- smbclient -L ${SVR_NAME} ----------------------------------------------------------------------------------"
+	echo -e "\n" | smbclient -L ${SVR_NAME}
 	# GRUB ********************************************************************
 	if [ -f /etc/default/grub.orig ]; then
 		echo "--- diff /etc/default/grub ----------------------------------------------------"
