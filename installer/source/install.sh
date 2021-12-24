@@ -87,6 +87,7 @@
 ##	2021/12/16 000.0000 J.Itou         処理見直し(いろいろ)
 ##	2021/12/17 000.0000 J.Itou         処理見直し(/etc/nsswitch.conf)
 ##	2021/12/19 000.0000 J.Itou         処理見直し(いろいろ)
+##	2021/12/22 000.0000 J.Itou         処理見直し(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -647,8 +648,15 @@ fncInitialize () {
 
 	# --- bind ----------------------------------------------------------------
 	INF_BIND=`LANG=C find /etc/ -name "named.conf" -type f -exec ls -l '{}' \;`
-	DNS_USER=`echo ${INF_BIND} | awk '{print $3;}'`
-	DNS_GRUP=`echo ${INF_BIND} | awk '{print $4;}'`
+#	DNS_USER=`echo ${INF_BIND} | awk '{print $3;}'`
+#	DNS_GRUP=`echo ${INF_BIND} | awk '{print $4;}'`
+	if [ "`id bind 2> /dev/null`" != "" ]; then
+		DNS_USER="bind"
+		DNS_GRUP=""
+	else
+		DNS_USER="named"
+		DNS_GRUP=""
+	fi
 	FUL_BIND=`echo ${INF_BIND} | awk '{print $9;}'`
 	DIR_BIND=`dirname ${FUL_BIND}`
 	FIL_BIND=`basename ${FUL_BIND}`
@@ -710,11 +718,17 @@ fncMain () {
 	# *************************************************************************
 	if [ ! -f ${FUL_CHRO}.orig ] && \
 	   [   -f ${FUL_CHRO}      ]; then
-		INS_STR=`awk '($1=="pool" || $1=="server") && !a[$1]++ {print $1 " '${NTP_NAME}' iburst";}' ${FUL_CHRO}`
-		sed -i.orig ${FUL_CHRO}                                                \
-		    -e 's/^\([pool|server]\)/#\1/g'                                    \
-		    -e "0,/^#[pool|server]/{s/^\(#[pool|server].*$\)/${INS_STR}\n\1/}"
-		fncProc chrony restart
+		if [ "`awk '$1==\"server\" && $2==\"ntp.nict.jp\" {print;}' ${FUL_CHRO}`" = "" ]; then
+			INS_STR=`awk '($1=="pool" || $1=="server") && !a[$1]++ {print $1 " '${NTP_NAME}' iburst";}' ${FUL_CHRO}`
+			sed -i.orig ${FUL_CHRO}                                                \
+			    -e 's/^\([pool|server]\)/#\1/g'                                    \
+			    -e "0,/^#[pool|server]/{s/^\(#[pool|server].*$\)/${INS_STR}\n\1/}"
+			if [ "`fncProcFind \"chrony\"`" = "1" ]; then
+				fncProc chrony restart
+			elif [ "`fncProcFind \"chronyd\"`" = "1" ]; then
+				fncProc chronyd restart
+			fi
+		fi
 	fi
 
 	# *************************************************************************
@@ -798,10 +812,14 @@ fncMain () {
 		case "${SYS_NAME}" in
 			"debian" | \
 			"ubuntu" )
-				if [ "`LANG=C dpkg -l chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk '$1=="ii" {print $2;}'`" = "" ]; then
-					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
-					curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
-					${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb
+				if [ "${SYS_NAME}" = "debian" ] && [ `echo "${SYS_VNUM} < 10" | bc` ]; then
+					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] skipped -----------------------------------------------------------------------"
+				else
+					if [ "`LANG=C dpkg -l chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk '$1=="ii" {print $2;}'`" = "" ]; then
+						fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] -------------------------------------------------------------------------------"
+						curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+						${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb
+					fi
 				fi
 				;;
 			"centos"       | \
@@ -1429,33 +1447,37 @@ _EOT_
 		# ---------------------------------------------------------------------
 		OLD_IFS=${IFS}
 		# ---------------------------------------------------------------------
-		INS_ROW=$((`sed -n '/^options/ =' ${DIR_BIND}/${FIL_BOPT} | head -n 1`-1))
-		IFS= INS_STR=$(
-			cat <<- _EOT_ | sed -e 's/^ //g'
-				acl "${WGP_NAME}-network" {
-				 	127.0.0.1;
-				 	::1;
-				 	${IP4_UADR[0]}.0/${IP4_BITS[0]};
-				 	fe80::0/64;
-				 	${IP6_UADR[0]}::0/${IP6_BITS[0]};
-				};\n
-_EOT_
-	)
-		if [ ${INS_ROW} -ge 1 ]; then
-			IFS= INS_CFG=$(echo -e ${INS_STR} | sed "${INS_ROW}r /dev/stdin" ${DIR_BIND}/${FIL_BOPT})
-		else
-			IFS= INS_CFG=$(echo -e ${INS_STR} | cat /dev/stdin ${DIR_BIND}/${FIL_BOPT})
-		fi
+#		INS_ROW=$((`sed -n '/^options/ =' ${DIR_BIND}/${FIL_BOPT} | head -n 1`-1))
+#		IFS= INS_STR=$(
+#			cat <<- _EOT_ | sed -e 's/^ //g'
+#				acl "${WGP_NAME}-network" {
+#				 	127.0.0.1;
+#				 	::1;
+#				 	${IP4_UADR[0]}.0/${IP4_BITS[0]};
+#				 	fe80::0/64;
+#				 	${IP6_UADR[0]}::0/${IP6_BITS[0]};
+#				};\n
+#_EOT_
+#	)
+#		if [ ${INS_ROW} -ge 1 ]; then
+#			IFS= INS_CFG=$(echo -e ${INS_STR} | sed "${INS_ROW}r /dev/stdin" ${DIR_BIND}/${FIL_BOPT})
+#		else
+#			IFS= INS_CFG=$(echo -e ${INS_STR} | cat /dev/stdin ${DIR_BIND}/${FIL_BOPT})
+#		fi
 		# ---------------------------------------------------------------------
-		echo ${INS_CFG} > ${DIR_BIND}/${FIL_BOPT}
+#		echo ${INS_CFG} > ${DIR_BIND}/${FIL_BOPT}
 		# ---------------------------------------------------------------------
 		INS_ROW=$((`sed -n '/^options/,/^};/ =' ${DIR_BIND}/${FIL_BOPT} | tail -n 1`-1))
 		IFS= INS_STR=$(
 			cat <<- _EOT_ | sed -e 's/^ //g'
-				 	allow-update { none; };
-				 	allow-transfer { ${WGP_NAME}-network; };
-				 	allow-query { any; };
-				 	notify yes;
+				 	version "unknown";
+				 	listen-on-v6    { any; };
+				 	allow-update    { none; };
+				 	allow-query     { 127.0.0.1; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
+				 	allow-transfer  { 127.0.0.1; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
+				 	allow-recursion { 127.0.0.1; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
+				//	also-notify     { ; };
+				//	notify yes;
 				//	recursion no;
 _EOT_
 	)
@@ -1465,16 +1487,18 @@ _EOT_
 			IFS= INS_CFG=$(echo -e ${INS_STR} | cat ${DIR_BIND}/${FIL_BOPT}) /dev/stdin
 		fi
 		# ---------------------------------------------------------------------
-		echo ${INS_CFG} | \
-		sed -e 's/\/.*\(listen-on-v6\)/\1/g' \
-		> ${DIR_BIND}/${FIL_BOPT}
+		echo ${INS_CFG} > ${DIR_BIND}/${FIL_BOPT}
+		# ---------------------------------------------------------------------
+#		echo ${INS_CFG} | \
+#		sed -e 's/\/.*\(listen-on-v6\)/\1/g' \
+#		> ${DIR_BIND}/${FIL_BOPT}
 		# ---------------------------------------------------------------------
 		IFS=${OLD_IFS}
 		# ---------------------------------------------------------------------
-		if [ "${SYS_NAME}" = "ubuntu" ]; then
+#		if [ "${SYS_NAME}" = "ubuntu" ]; then
 			sed -i ${DIR_BIND}/${FIL_BOPT}    \
 			    -e 's/\(dnssec-validation\) auto;/\1 no;/'
-		fi
+#		fi
 	fi
 	# --- named.conf.local -----------------------------------------------------
 	if [ ! -f ${DIR_BIND}/${FIL_BLOC}.orig ] && \
@@ -1501,19 +1525,26 @@ _EOT_
 _EOT_
 		done
 		# ---------------------------------------------------------------------
-		if [ "${EXT_ZONE}" != "" ]; then
+		if [ "${EXT_ADDR}" != "" ]; then
 			echo "--- slaves --------------------------------------------------------------------"
 			if [ ! -d ${DIR_ZONE}/slaves ]; then
 				mkdir -p ${DIR_ZONE}/slaves
 				chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/slaves
 			fi
-			cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_BIND}/${FIL_BLOC}
-				zone "${EXT_ZONE}" {
-				 	type slave;
-				 	file "slaves/db.${EXT_ZONE}";
-				 	masters { ${EXT_ADDR}; };
-				};
-_EOT_
+			sed -i.master ${DIR_BIND}/${FIL_BOPT}                         \
+			    -e 's/^\([ |\t]*allow-query[ |\t]*\).*$/\1{ any; };/'     \
+			    -e 's/^\([ |\t]*allow-transfer[ |\t]*\).*$/\1{ none; };/'
+			sed -i.master ${DIR_BIND}/${FIL_BLOC}                  \
+			    -e 's/^\([ |\t]*type\).*$/\1 slave;/g'             \
+			    -e '/^[ |\t]*file[ |\t]*/ s/master/slaves/g'       \
+			    -e "/^[ |\t]*type/a \\\tmasters { ${EXT_ADDR}; };"
+#			cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_BIND}/${FIL_BLOC}
+#				zone "${EXT_ZONE}" {
+#				 	type slave;
+#				 	file "slaves/db.${EXT_ZONE}";
+#				 	masters { ${EXT_ADDR}; };
+#				};
+#_EOT_
 		fi
 		# ---------------------------------------------------------------------
 		cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}

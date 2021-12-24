@@ -3,10 +3,10 @@
 【事前準備】  
   
 ・開発環境  
-　**Debian 10.10.0 64bit版**  
+　**Debian 11.2.0 64bit版**  
   
 ・実行確認  
-　**debian 10.10.0 / ubuntu 21.04 / CentOS 8.4.2105 / Fedora 34-1.2 / openSUSE 15.3 各64bit版**  
+　**debian 11.2.0 / ubuntu 21.10 / CentOS 8.5.2111 / Fedora 35-1.2 / openSUSE 15.3 各64bit版**  
   
 【無人インストールISO作成シェル】  
   
@@ -100,21 +100,21 @@
 ```text
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers_txt_maker.sh"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cloud_preseed.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster_dvd.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster_mini.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster_net.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/install.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_centos.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_centos9.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_fedora.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/mk_initrd.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/mk_initrd_gtank.sh"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_fedora35.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_miraclelinux.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_rocky.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/nocloud-ubuntu-meta-data"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/nocloud-ubuntu-user-data"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_debian.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_debian_raid.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_glantank.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_ubuntu.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse15.xml"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse153.xml"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse16.xml"
 chmod u+x *.sh
