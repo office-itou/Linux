@@ -89,6 +89,7 @@
 ##	2021/12/19 000.0000 J.Itou         処理見直し(いろいろ)
 ##	2021/12/22 000.0000 J.Itou         処理見直し(いろいろ)
 ##	2021/12/24 000.0000 J.Itou         処理見直し(いろいろ)
+##	2021/12/24 000.0000 J.Itou         不具合修正(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -1142,7 +1143,7 @@ _EOT_
 		OLD_IFS=${IFS}
 		IFS=$'\n'
 		INS_ROW=$((`sed -n '/^hosts:/ =' /etc/nsswitch.conf | head -n 1`))
-		INS_TXT=`sed -n '/^hosts:/ s/\(hosts: *\) file.*$/\1 mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns mdns/p' /etc/nsswitch.conf`
+		INS_TXT=`sed -n '/^hosts:/ s/\(hosts:[ |\t]*\).*$/\1mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns mdns/p' /etc/nsswitch.conf`
 		sed -e '/^hosts:/ s/^/#/' /etc/nsswitch.conf | \
 		sed -e "${INS_ROW}a ${INS_TXT}"                \
 		> nsswitch.conf
@@ -1350,10 +1351,15 @@ _EOT_
 	# -------------------------------------------------------------------------
 	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
-	echo "--- masters -------------------------------------------------------------------"
 	if [ ! -d ${DIR_ZONE}/master ]; then
+		echo "--- mkdir master --------------------------------------------------------------"
 		mkdir -p ${DIR_ZONE}/master
 		chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/master
+	fi
+	if [ ! -d ${DIR_ZONE}/slaves ]; then
+		echo "--- mkdir slaves --------------------------------------------------------------"
+		mkdir -p ${DIR_ZONE}/slaves
+		chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/slaves
 	fi
 	echo "--- db.xxx --------------------------------------------------------------------"
 	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa ${IP6_RADU[0]}.ip6.arpa
@@ -1440,11 +1446,15 @@ _EOT_
 		fi
 		# ---------------------------------------------------------------------
 		sed -i ${DIR_BIND}/${FIL_BOPT}    \
-		    -e '/allow-update/   s%^%//%' \
-		    -e '/allow-transfer/ s%^%//%' \
-		    -e '/allow-query/    s%^%//%' \
-		    -e '/notify/         s%^%//%' \
-		    -e '/recursion/      s%^%//%'
+		    -e '/version/         s%^%//%' \
+		    -e '/listen-on-v6/    s%^%//%' \
+		    -e '/allow-update/    s%^%//%' \
+		    -e '/allow-query/     s%^%//%' \
+		    -e '/allow-transfer/  s%^%//%' \
+		    -e '/allow-recursion/ s%^%//%' \
+		    -e '/also-notify/     s%^%//%' \
+		    -e '/notify/          s%^%//%' \
+		    -e '/recursion/       s%^%//%'
 		# ---------------------------------------------------------------------
 		OLD_IFS=${IFS}
 		# ---------------------------------------------------------------------
@@ -1527,11 +1537,7 @@ _EOT_
 		done
 		# ---------------------------------------------------------------------
 		if [ "${EXT_ADDR}" != "" ]; then
-			echo "--- slaves --------------------------------------------------------------------"
-			if [ ! -d ${DIR_ZONE}/slaves ]; then
-				mkdir -p ${DIR_ZONE}/slaves
-				chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/slaves
-			fi
+			echo "--- setup slaves --------------------------------------------------------------"
 			sed -i.master ${DIR_BIND}/${FIL_BOPT}                         \
 			    -e 's/^\([ |\t]*allow-query[ |\t]*\).*$/\1{ any; };/'     \
 			    -e 's/^\([ |\t]*allow-transfer[ |\t]*\).*$/\1{ none; };/'
@@ -1540,13 +1546,6 @@ _EOT_
 			    -e '/^[ |\t]*file[ |\t]*/ s/master/slaves/g'       \
 			    -e "/^[ |\t]*type/a \\\tmasterfile-format text;"   \
 			    -e "/^[ |\t]*type/a \\\tmasters { ${EXT_ADDR}; };"
-#			cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_BIND}/${FIL_BLOC}
-#				zone "${EXT_ZONE}" {
-#				 	type slave;
-#				 	file "slaves/db.${EXT_ZONE}";
-#				 	masters { ${EXT_ADDR}; };
-#				};
-#_EOT_
 		fi
 		# ---------------------------------------------------------------------
 		cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
@@ -2328,6 +2327,7 @@ _EOT_
 		tar -czf ${DIR_WK}/bk_etc.tgz    --exclude "bk_*.tgz" etc
 		tar -czf ${DIR_WK}/bk_usr_sh.tgz --exclude "bk_*.tgz" usr/sh
 		tar -czf ${DIR_WK}/bk_cron.tgz   --exclude "bk_*.tgz" var/spool/cron
+		tar -czf ${DIR_WK}/bk_home.tgz   --exclude "bk_*.tgz" --exclude "google-chrome-*" home
 		# ---------------------------------------------------------------------
 		case "${SYS_NAME}" in
 			"debian" | \
@@ -2342,16 +2342,14 @@ _EOT_
 				;;
 			"opensuse-leap"       | \
 			"opensuse-tumbleweed" )
-				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/lib/named/
+				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" --exclude var/lib/named/dev/log var/lib/named/
 				;;
 			* )
 				;;
 		esac
 		# ---------------------------------------------------------------------
-		if [ ! -f ${DIR_WK}/bk_home.tgz ]; then
-			tar -czf ${DIR_WK}/bk_home.tgz   --exclude "bk_*.tgz" home
-		fi
-		if [ ! -f ${DIR_WK}/bk_share.tgz ]; then
+		SIZ_SHARE=($(du -s -b /share/ | awk '{print $1;}'))
+		if [ `echo "${SIZ_SHARE} < 1048576" | bc` -ge 1 ]; then
 			tar -czf ${DIR_WK}/bk_share.tgz  --exclude "bk_*.tgz" share
 		fi
 		set -e
