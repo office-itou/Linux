@@ -43,6 +43,7 @@
 ##	2021/11/28 000.0000 J.Itou         全リスト処理追加
 ##	2021/11/30 000.0000 J.Itou         処理見直し
 ##	2021/12/03 000.0000 J.Itou         不具合修正
+##	2022/01/05 000.0000 J.Itou         CentOS kickstart.cfg 処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -69,7 +70,7 @@
 	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                          -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing        " \
 	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-boot.iso                                                       -                                           kickstart_centos.cfg                        2021-11-16 2021-12-31 RHEL_8.5       " \
 	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                        -                                           kickstart_centos.cfg                        20xx-xx-xx 2024-05-31 RHEL_8.x       " \
-	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                                        -                                           kickstart_centos9.cfg                       2021-xx-xx 20xx-xx-xx RHEL_9.x       " \
+	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                                        -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x       " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso                -                                           kickstart_fedora.cfg                        2021-04-27 2022-05-17 kernel_5.11    " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso                -                                           kickstart_fedora35.cfg                      2021-11-02 2022-12-07 kernel_5.14    " \
 	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64-Current.iso                                        -                                           yast_opensuse153.xml                        2021-06-02 20xx-xx-xx kernel_5.3.18  " \
@@ -290,15 +291,55 @@ fncRemaster () {
 					fi
 					case "${WORK_DIRS}" in
 						*net* )
-							sed -i kickstart/ks.cfg     \
-							    -e 's/^\(cdrom\)/#\1/g' \
-							    -e 's/#\(url \)/\1/g'   \
-							    -e 's/#\(repo \)/\1/g'
+							sed -i kickstart/ks.cfg                   \
+							    -e '/^cdrom/                  s/^/#/' \
+							    -e '/^#url .* --url=/         s/^#//' \
+							    -e '/^#url .* --mirrorlist=/  s/^#//' \
+							    -e '/^#repo .* --mirrorlist=/ s/^#//'
 							;;
 						*dvd* )
-							sed -i kickstart/ks.cfg                              \
-							    -e 's/#\(cdrom\)/\1/g'                           \
-							    -e 's/^\(url \)/repo --name="New_Repository" /g'
+							sed -i kickstart/ks.cfg                    \
+							    -e '/^#cdrom/                 s/^#//'  \
+							    -e '/^url .* --url=/          s/^/#/'  \
+							    -e '/^url .* --mirrorlist=/   s/^/#/'  \
+							    -e '/^repo .* --mirrorlist=/  s/^/#/'
+							;;
+					esac
+					case "${CODE_NAME[1]}" in
+						*Stream-8* )
+							sed -i kickstart/ks.cfg                             \
+							    -e '/mirrorlist/ s/\(release\)=8/\1=8-stream/g'
+							;;
+						*Stream-9* )
+#							sed -i kickstart/ks.cfg                             \
+#							    -e '/mirrorlist/ s/\(release\)=9/\1=9-stream/g'
+							OLD_IFS=${IFS}
+							case "${WORK_DIRS}" in
+								*net* )
+									IFS= INS_STR=$(
+										cat <<- _EOT_ | sed -z 's/\n//g'
+											url                         --url=http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/\\n
+											#repo --name="AppStream" --baseurl=http://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/
+_EOT_
+									)
+									;;
+								*dvd* )
+									IFS= INS_STR=$(
+										cat <<- _EOT_ | sed -z 's/\n//g'
+											#url                         --url=http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/\\n
+											#repo --name="AppStream" --baseurl=http://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/
+_EOT_
+									)
+									;;
+							esac
+							IFS=${OLD_IFS}
+							sed -i kickstart/ks.cfg                         \
+							    -e 's/\(version\)=RHEL8/\1=RHEL9/'          \
+							    -e '/url .* --mirrorlist=/d'                \
+							    -e '/repo .* --mirrorlist=/d'               \
+							    -e "/Use network installation/a ${INS_STR}" \
+							    -e '/epel-release-.*$/ s/8/9/g'             \
+							    -e '/remi-release-.*$/ s/8/9/g'
 							;;
 					esac
 					;;
