@@ -362,14 +362,17 @@ _EOT_
 					case "${CODE_NAME[1]}" in
 						*Leap* )
 							VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '-' '{print $3;}')
-							sed -i autoyast/autoinst.xml                                                   \
-							    -e "/\<media_url\>/ s~\(update/leap\)/.*/\(oss\)~\1/${VER_NUM}/\2~"        \
-							    -e "/\<media_url\>/ s~\(distribution/leap\)/.*/\(repo\)~\1/${VER_NUM}/\2~"
+							sed -i autoyast/autoinst.xml                                                 \
+							    -e "/<media_url>/ s~\(update/leap\)/.*/\(oss\)~\1/${VER_NUM}/\2~"        \
+							    -e "/<media_url>/ s~\(distribution/leap\)/.*/\(repo\)~\1/${VER_NUM}/\2~" \
+							    -e 's~\(<product>\).*\(</product>\)~\1Leap\2~'
 							;;
 						*Tumbleweed* )
-							sed -i autoyast/autoinst.xml                                          \
-							    -e '/\<media_url\>/ s~update/leap/.*/oss~update/tumbleweed~'      \
-							    -e '/\<media_url\>/ s~distribution/leap/.*/repo~tumbleweed/repo~'
+							sed -i autoyast/autoinst.xml                                        \
+							    -e '/<media_url>/ s~update/leap/.*/oss~update/tumbleweed~'      \
+							    -e '/<media_url>/ s~distribution/leap/.*/repo~tumbleweed/repo~' \
+							    -e 's~\(<product>\).*\(</product>\)~\1openSUSE\2~'              \
+							    -e 's/eth0/ens160/g'
 							;;
 					esac
 					;;

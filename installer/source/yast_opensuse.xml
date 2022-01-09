@@ -142,15 +142,19 @@ exit 0</source>
       <pattern>basesystem</pattern>
       <pattern>console</pattern>
       <pattern>enhanced_base</pattern>
-      <pattern>lxde</pattern>
       <pattern>minimal_base</pattern>
       <pattern>sw_management</pattern>
       <pattern>x11</pattern>
       <pattern>x11_enhanced</pattern>
       <pattern>laptop</pattern>
       <pattern>multimedia</pattern>
+      <pattern>devel_basis</pattern>
       <pattern>fonts</pattern>
       <pattern>fonts_opt</pattern>
+      <pattern>lxde</pattern>
+      <pattern>lxde_laptop</pattern>
+      <pattern>lxde_office</pattern>
+      <pattern>dhcp_dns_server</pattern>
       <pattern>file_server</pattern>
       <pattern>x11_yast</pattern>
       <pattern>yast2_basis</pattern>
@@ -177,4 +181,12 @@ exit 0</source>
       <username>root</username>
     </user>
   </users>
+  <services-manager t="map">
+    <default_target>graphical</default_target>
+    <services t="map">
+      <enable t="list">
+        <service>sshd</service>
+      </enable>
+    </services>
+  </services-manager>
 </profile>
