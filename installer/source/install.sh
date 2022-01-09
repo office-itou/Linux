@@ -90,6 +90,7 @@
 ##	2021/12/22 000.0000 J.Itou         処理見直し(いろいろ)
 ##	2021/12/24 000.0000 J.Itou         処理見直し(いろいろ)
 ##	2021/12/24 000.0000 J.Itou         不具合修正(いろいろ)
+##	2022/01/09 000.0000 J.Itou         処理見直し(zypper --quiet削除:処理判別が不可能なため)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -626,7 +627,8 @@ fncInitialize () {
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-				CMD_AGET="zypper --non-interactive --terse --quiet"
+#				CMD_AGET="zypper --non-interactive --terse --quiet"
+				CMD_AGET="zypper --non-interactive --terse"
 			;;
 		* )
 			;;
