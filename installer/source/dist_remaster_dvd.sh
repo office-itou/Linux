@@ -54,6 +54,8 @@
 ##	2021/11/30 000.0000 J.Itou         処理見直し
 ##	2021/12/03 000.0000 J.Itou         不具合修正
 ##	2022/01/05 000.0000 J.Itou         CentOS kickstart.cfg 処理見直し
+##	2022/01/09 000.0000 J.Itou         Fedora kickstart.cfg 処理見直し
+##	2022/01/09 000.0000 J.Itou         openSUSE yast_opensuse.xml 処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -86,9 +88,9 @@
 	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                        -                                           kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_8.x       " \
 	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                                        -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x       " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-04-27 2022-05-17 kernel_5.11    " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                    -                                           kickstart_fedora35.cfg                      2021-11-02 2022-12-07 kernel_5.14    " \
-	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                                        -                                           yast_opensuse153.xml                        2021-06-02 20xx-xx-xx kernel_5.3.18  " \
-	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                   -                                           yast_opensuse16.xml                         2021-xx-xx 20xx-xx-xx kernel_x.x     " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-11-02 2022-12-07 kernel_5.14    " \
+	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                                        -                                           yast_opensuse.xml                           2021-06-02 20xx-xx-xx kernel_5.3.18  " \
+	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                   -                                           yast_opensuse.xml                           2021-xx-xx 20xx-xx-xx kernel_x.x     " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                    -                                           kickstart_rocky.cfg                         2021-11-15 20xx-xx-xx RHEL_8.5       " \
 	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9].*-rtm-x86_64.iso                             -                                           kickstart_miraclelinux.cfg                  2021-10-04 20xx-xx-xx RHEL_8.4       " \
 	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                   -                                           preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable   " \
@@ -414,11 +416,16 @@ _EOT_
 							IFS=${OLD_IFS}
 							sed -i kickstart/ks.cfg                         \
 							    -e 's/\(version\)=RHEL8/\1=RHEL9/'          \
-							    -e '/url .* --mirrorlist=/d'                \
-							    -e '/repo .* --mirrorlist=/d'               \
+							    -e '/url .*--mirrorlist=/d'                 \
+							    -e '/repo .*--mirrorlist=/d'                \
 							    -e "/Use network installation/a ${INS_STR}" \
 							    -e '/epel-release-.*$/ s/8/9/g'             \
 							    -e '/remi-release-.*$/ s/8/9/g'
+							;;
+						Fedora-* )
+							VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '-' '{print $5;}')
+							sed -i kickstart/ks.cfg                                           \
+							    -e "/url .*--mirrorlist/ s/\(fedora\)-[0-9]*/\1-${VER_NUM}/g"
 							;;
 					esac
 					;;
@@ -432,6 +439,19 @@ _EOT_
 						echo "--- get autoinst.xml ----------------------------------------------------------"
 						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 					fi
+					case "${CODE_NAME[1]}" in
+						*Leap* )
+							VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '-' '{print $3;}')
+							sed -i autoyast/autoinst.xml                                                   \
+							    -e "/\<media_url\>/ s~\(update/leap\)/.*/\(oss\)~\1/${VER_NUM}/\2~"        \
+							    -e "/\<media_url\>/ s~\(distribution/leap\)/.*/\(repo\)~\1/${VER_NUM}/\2~"
+							;;
+						*Tumbleweed* )
+							sed -i autoyast/autoinst.xml                                          \
+							    -e '/\<media_url\>/ s~update/leap/.*/oss~update/tumbleweed~'      \
+							    -e '/\<media_url\>/ s~distribution/leap/.*/repo~tumbleweed/repo~'
+							;;
+					esac
 					;;
 				* )	;;
 			esac
