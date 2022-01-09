@@ -106,17 +106,14 @@ wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/sourc
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster_net.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/install.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_centos.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_centos9.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_fedora.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_fedora35.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_miraclelinux.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_rocky.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/nocloud-ubuntu-meta-data"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/nocloud-ubuntu-user-data"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_debian.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_ubuntu.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse153.xml"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse16.xml"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse.xml"
 chmod u+x *.sh
 ```
   
