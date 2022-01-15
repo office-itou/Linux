@@ -46,6 +46,7 @@
 ##	2022/01/05 000.0000 J.Itou         CentOS kickstart.cfg 処理見直し
 ##	2022/01/09 000.0000 J.Itou         Fedora kickstart.cfg 処理見直し
 ##	2022/01/09 000.0000 J.Itou         openSUSE yast_opensuse.xml 処理見直し
+##	2022/01/15 000.0000 J.Itou         CentOS URL 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -70,8 +71,8 @@
 	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable      " \
 	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                         -                                           preseed_debian.cfg                          2019-07-06 2026-xx-xx stable         " \
 	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                          -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing        " \
-	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-boot.iso                                                       -                                           kickstart_centos.cfg                        2021-11-16 2021-12-31 RHEL_8.5       " \
-	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                        -                                           kickstart_centos.cfg                        20xx-xx-xx 2024-05-31 RHEL_8.x       " \
+	    "centos         http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-boot.iso                                                       -                                           kickstart_centos.cfg                        2021-11-16 2021-12-31 RHEL_8.5       " \
+	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                        -                                           kickstart_centos.cfg                        20xx-xx-xx 2024-05-31 RHEL_8.x       " \
 	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                                        -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x       " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso                -                                           kickstart_fedora.cfg                        2021-04-27 2022-05-17 kernel_5.11    " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso                -                                           kickstart_fedora.cfg                        2021-11-02 2022-12-07 kernel_5.14    " \
