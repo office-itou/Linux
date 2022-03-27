@@ -91,6 +91,7 @@
 ##	2021/12/24 000.0000 J.Itou         処理見直し(いろいろ)
 ##	2021/12/24 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2022/01/09 000.0000 J.Itou         処理見直し(zypper --quiet削除:処理判別が不可能なため)
+##	2022/03/27 000.0000 J.Itou         処理追加(minidlna.conf編集)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -1873,6 +1874,31 @@ _EOT_
 	esac
 
 	# *************************************************************************
+	# Install minidlna
+	# *************************************************************************
+	if [ ! -f /etc/minidlna.conf.orig ] && \
+	   [   -f /etc/minidlna.conf      ]; then
+		echo "- Install minidlna ------------------------------------------------------------"
+		OLD_IFS=${IFS}
+		IFS= INS_STR=$(
+		cat <<- _EOT_ | sed -z 's/\n//g'
+			media_dir=A,${DIR_SHAR}/dlna/sounds\\n
+			media_dir=P,${DIR_SHAR}/dlna/photos\\n
+			media_dir=V,${DIR_SHAR}/dlna/movies
+_EOT_
+		)
+		IFS=${OLD_IFS}
+		sed -i.orig /etc/minidlna.conf                     \
+		    -e 's/^\(media_dir\)=/#\1=/'                    \
+		    -e 's/^#\(friendly_name\)=.*$/\1=Media Server/' \
+		    -e 's/^#\(inotify\)=.*$/\1=yes/'                \
+		    -e 's/^#\(notify_interval\)=.*$/\1=10/'         \
+		    -e "/^#media_dir=/a ${INS_STR}"
+		# ---------------------------------------------------------------------
+		usermod -aG sambashare minidlna
+	fi
+
+	# *************************************************************************
 	# Make User file (${DIR_WK}/addusers.txtが有ればそれを使う)
 	# *************************************************************************
 	echo "- Make User file --------------------------------------------------------------"
@@ -2717,6 +2743,11 @@ fncDebug () {
 	pdbedit -L
 	fncPrint "--- smbclient -L ${SVR_NAME} ----------------------------------------------------------------------------------"
 	echo -e "\n" | smbclient -L ${SVR_NAME}
+	# Install minidlna ********************************************************
+	if [ -f /etc/minidlna.conf.orig ]; then
+		echo "--- diff /etc/minidlna.conf ---------------------------------------------------"
+		fncDiff /etc/minidlna.conf /etc/minidlna.conf.orig
+	fi
 	# GRUB ********************************************************************
 	if [ -f /etc/default/grub.orig ]; then
 		echo "--- diff /etc/default/grub ----------------------------------------------------"
