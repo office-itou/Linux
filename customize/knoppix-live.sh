@@ -14,6 +14,12 @@
 # == tools install ============================================================
 #	apt-get update && apt-get -y install debootstrap xorriso isolinux
 # == initial processing =======================================================
+	umount -lf ./knoppix-live/media         > /dev/null 2>&1
+	umount -lf ./knoppix-live/fsimg/sys     > /dev/null 2>&1
+	umount -lf ./knoppix-live/fsimg/proc    > /dev/null 2>&1
+	umount -lf ./knoppix-live/fsimg/dev/pts > /dev/null 2>&1
+	umount -lf ./knoppix-live/fsimg/dev     > /dev/null 2>&1
+	# -------------------------------------------------------------------------
 	rm -rf   ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg ./knoppix-live/_work ./knoppix-live/_wrk0 ./knoppix-live/_wrk1 ./knoppix-live/KNOPPIX_FS.tmp ./knoppix-live/KNOPPIX1_FS.tmp
 	mkdir -p ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg ./knoppix-live/_work ./knoppix-live/_wrk0 ./knoppix-live/_wrk1
 	# -------------------------------------------------------------------------
@@ -58,20 +64,24 @@
 		 	dpkg --configure -a
 		# -----------------------------------------------------------------------------
 		 	export DEBIAN_FRONTEND=noninteractive
+		 	APT_OPTIONS="-o Dpkg::Options::=--force-confdef    \
+		 	             -o Dpkg::Options::=--force-confnew    \
+		 	             -o Dpkg::Options::=--force-overwrite"
+		 	apt-mark hold                                                                                           \
+		 	    firmware-ipw2x00                                                                                    || fncEnd $?
 		 	apt-get update                                                                                          || fncEnd $?
-		#	apt-get upgrade      -q -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-overwrite      || fncEnd $?
-		#	apt-get dist-upgrade -q -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-overwrite      || fncEnd $?
-		 	apt-get install      -q -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-overwrite      \
-		 	    --only-upgrade chromium firefox thunderbird firefox-esr-l10n-ja firefox-l10n-ja thunderbird-l10n-ja || fncEnd $?
-		 	apt-get install      -q -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-overwrite      \
+		 	apt-get upgrade      -q -y ${APT_OPTIONS}                                                               || fncEnd $?
+		 	apt-get dist-upgrade -q -y ${APT_OPTIONS}                                                               || fncEnd $?
+		 	apt-get install      -q -y ${APT_OPTIONS} --auto-remove                                                 \
 		 	    chrony bind9utils dnsutils                                                                          \
-		 	    task-desktop task-laptop task-lxde-desktop task-ssh-server                                          \
+		 	    task-desktop task-laptop task-lxde-desktop                                                          \
 		 	    task-japanese task-japanese-desktop ibus-mozc mozc-utils-gui fonts-noto                             \
 		 	    libreoffice-help-ja libreoffice-l10n-ja                                                             \
 		 	    open-vm-tools open-vm-tools-desktop                                                                 || fncEnd $?
 		 	apt-get autoremove   -q -y                                                                              || fncEnd $?
 		 	apt-get autoclean    -q -y                                                                              || fncEnd $?
 		 	apt-get clean        -q -y                                                                              || fncEnd $?
+		 	export -n DEBIAN_FRONTEND
 		# -- open vm tools ------------------------------------------------------------
 		 	echo "--- open vm tools -------------------------------------------------------------"
 		 	# mkdir -p /media/hgfs
@@ -84,17 +94,19 @@
 		 	    -e 's/^NotifyClamd/#&/'
 		# -- sshd ---------------------------------------------------------------------
 		 	echo "--- sshd ----------------------------------------------------------------------"
-		 	sed -i /etc/ssh/sshd_config                                        \
-		 	    -e 's/^PermitRootLogin .*/PermitRootLogin yes/'                \
+		 	cat /etc/ssh/sshd_config.ucf-dist                                | \
+		 	sed -e 's/^PermitRootLogin .*/PermitRootLogin yes/'                \
 		 	    -e 's/#PasswordAuthentication yes/PasswordAuthentication yes/' \
-		 	    -e '/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/d'                 \
-		 	    -e '/HostKey \/etc\/ssh\/ssh_host_ed25519_key/d'               \
 		 	    -e '$aUseDNS no\nIgnoreUserKnownHosts no'                      \
 		 	    -e 's/^UsePrivilegeSeparation/#&/'                             \
 		 	    -e 's/^KeyRegenerationInterval/#&/'                            \
 		 	    -e 's/^ServerKeyBits/#&/'                                      \
 		 	    -e 's/^RSAAuthentication/#&/'                                  \
-		 	    -e 's/^RhostsRSAAuthentication/#&/'
+		 	    -e 's/^RhostsRSAAuthentication/#&/'                            \
+		 	    -e 's/^#\(HostKey\)/\1/g'                                      \
+		 	> /etc/ssh/sshd_config
+		 	ssh-keygen -N "" -t ecdsa   -f /etc/ssh/ssh_host_ecdsa_key
+		 	ssh-keygen -N "" -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
 		# -- samba --------------------------------------------------------------------
 		 	echo "--- samba ---------------------------------------------------------------------"
 		 	testparm -s /etc/samba/smb.conf.ucf-dist | sed -e '/global/ ados charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\n' > ./smb.conf
@@ -245,7 +257,9 @@ _EOT_SH_
 	    -e 's~\(security.debian.org\)~\1/debian-security~g'           \
 	    -e '/security.debian.org/ s/stable/stable-security/g'         \
 	    -e '/security.debian.org/a deb http://security.debian.org/debian-security testing-security main contrib non-free' \
-	    -e '/^deb.*oldstable/i deb http://deb.debian.org/debian oldoldstable main contrib non-free'
+	    -e '/^deb.*oldstable/i deb http://deb.debian.org/debian oldoldstable main contrib non-free' \
+	    -e 's~^\(deb .* experimental\)~#\1~g' \
+	    -e 's~^\(deb .* unstable\)~#\1~g'
 	# -------------------------------------------------------------------------
 #	sed -i /etc/NetworkManager/NetworkManager.conf \
 #	    -e 's/\(managed\)=.*$/\1=false/'
@@ -278,7 +292,7 @@ _EOT_SH_
 # =============================================================================
 	echo "--- Remaster HDD -> Compress --------------------------------------------------"
 	# -------------------------------------------------------------------------
-	if [ "${OS_ARCH}" = "i386" ]; then
+	if [ "${OS_ARCH}" = "i386" ] || [ "`which volname`" = "" ]; then
 		LIVE_VOLID="KNOPPIX_9"
 		LIVE_VOLID_FS="KNOPPIX_FS"
 		LIVE_VOLID_FS1="KNOPPIX_ADDONS1"
@@ -293,6 +307,7 @@ _EOT_SH_
 	       ./knoppix-live/_wrk1/*
 	# -------------------------------------------------------------------------
 	pushd ./knoppix-live/fsimg > /dev/null
+		echo "--- Remaster HDD -> Compress [_wrk0] ------------------------------------------"
 		while read f
 		do
 			if [ -e "$f" ]; then
@@ -302,6 +317,7 @@ _EOT_SH_
 				fi
 			fi
 		done < ../KNOPPIX_FS.txt
+		echo "--- Remaster HDD -> Compress [_wrk1] ------------------------------------------"
 		while read f
 		do
 			if [ -e "$f" ]; then
@@ -313,6 +329,7 @@ _EOT_SH_
 		done < ../KNOPPIX1_FS.txt
 		cp -prnd * "../_wrk0/"
 		rm -rf *
+		echo "--- Remaster HDD -> Compress [xorriso] ----------------------------------------"
 		xorriso -as mkisofs -D -R -U -V "${LIVE_VOLID_FS}"  -o ../KNOPPIX_FS.tmp  "../_wrk0/" || exit 1
 		xorriso -as mkisofs -D -R -U -V "${LIVE_VOLID_FS1}" -o ../KNOPPIX1_FS.tmp "../_wrk1/" || exit 1
 	popd > /dev/null
@@ -321,6 +338,7 @@ _EOT_SH_
 	       ./knoppix-live/_wrk0/* \
 	       ./knoppix-live/_wrk1/*
 	# -------------------------------------------------------------------------
+	echo "--- Remaster HDD -> Compress [create_compressed_fs] -------------------------------"
 	create_compressed_fs -L  9 -f ./knoppix-live/isotemp -q ./knoppix-live/KNOPPIX_FS.tmp  ./knoppix-live/cdimg/KNOPPIX/KNOPPIX  || exit 1
 	create_compressed_fs -L  9 -f ./knoppix-live/isotemp -q ./knoppix-live/KNOPPIX1_FS.tmp ./knoppix-live/cdimg/KNOPPIX/KNOPPIX1 || exit 1
 	rm -rf ./knoppix-live/KNOPPIX_FS.tmp  \
