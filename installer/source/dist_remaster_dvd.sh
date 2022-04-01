@@ -58,6 +58,7 @@
 ##	2022/01/09 000.0000 J.Itou         openSUSE yast_opensuse.xml 処理見直し
 ##	2022/01/15 000.0000 J.Itou         CentOS URL 変更
 ##	2022/01/31 000.0000 J.Itou         CentOS-8 リスト削除
+##	2022/04/01 000.0000 J.Itou         ubuntu 22.04(beta)追加
 ###	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -86,7 +87,8 @@
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2030-04-23 Focal_Fossa    " \
 	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                                 -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22 2022-01-20 Hirsute_Hippo  " \
 	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-live-server-amd64.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-14 Impish_Indri   " \
-	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                        -                                           kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_8.x       " \
+	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21 2032-04-21 Jammy Jellyfish" \
+	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                             -                                           kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_8.x       " \
 	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                                        -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x       " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-04-27 2022-05-17 kernel_5.11    " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-11-02 2022-12-07 kernel_5.14    " \
@@ -102,6 +104,7 @@
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2020-04-23 2030-04-23 Focal_Fossa    " \
 	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2021-04-22 2022-01-20 Hirsute_Hippo  " \
 	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2021-10-24 2022-07-14 Impish_Indri   " \
+	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy Jellyfish" \
 	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/jammy-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy_Jellyfish" \
 	)   # 区分          ダウンロード先URL                                                                                                                        別名                                        定義ファイル                                リリース日 サポ終了日 備考
 #	    "ubuntu         https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2014-04-17 2019-04-25 Trusty_Tahr    " \
