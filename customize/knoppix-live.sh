@@ -94,19 +94,16 @@
 		 	    -e 's/^NotifyClamd/#&/'
 		# -- sshd ---------------------------------------------------------------------
 		 	echo "--- sshd ----------------------------------------------------------------------"
-		 	cat /etc/ssh/sshd_config.ucf-dist                                | \
-		 	sed -e 's/^PermitRootLogin .*/PermitRootLogin yes/'                \
-		 	    -e 's/#PasswordAuthentication yes/PasswordAuthentication yes/' \
-		 	    -e '$aUseDNS no\nIgnoreUserKnownHosts no'                      \
-		 	    -e 's/^UsePrivilegeSeparation/#&/'                             \
-		 	    -e 's/^KeyRegenerationInterval/#&/'                            \
-		 	    -e 's/^ServerKeyBits/#&/'                                      \
-		 	    -e 's/^RSAAuthentication/#&/'                                  \
-		 	    -e 's/^RhostsRSAAuthentication/#&/'                            \
-		 	    -e 's/^#\(HostKey\)/\1/g'                                      \
+		 	cat /etc/ssh/sshd_config.ucf-dist             | \
+		 	sed -e '$a \\n# --- user settings ---'          \
+		 	    -e '$a PermitRootLogin no'                  \
+		 	    -e '$a PubkeyAuthentication yes'            \
+		 	    -e '$a PasswordAuthentication yes'          \
+		 	    -e '$a PubkeyAcceptedAlgorithms +ssh-rsa'   \
+		 	    -e '$a HostkeyAlgorithms +ssh-rsa'          \
 		 	> /etc/ssh/sshd_config
-		 	ssh-keygen -N "" -t ecdsa   -f /etc/ssh/ssh_host_ecdsa_key
-		 	ssh-keygen -N "" -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
+		#	ssh-keygen -N "" -t ecdsa   -f /etc/ssh/ssh_host_ecdsa_key
+		#	ssh-keygen -N "" -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
 		# -- samba --------------------------------------------------------------------
 		 	echo "--- samba ---------------------------------------------------------------------"
 		 	testparm -s /etc/samba/smb.conf.ucf-dist | sed -e '/global/ ados charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\n' > ./smb.conf
