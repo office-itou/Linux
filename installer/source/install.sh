@@ -92,6 +92,7 @@
 ##	2021/12/24 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2022/01/09 000.0000 J.Itou         処理見直し(zypper --quiet削除:処理判別が不可能なため)
 ##	2022/03/27 000.0000 J.Itou         処理追加(minidlna.conf編集)
+##	2022/04/05 000.0000 J.Itou         不具合修正(dhcpd)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -697,9 +698,11 @@ fncInitialize () {
 
 	# dhcpd -------------------------------------------------------------------
 	INF_DHCP=`LANG=C find /etc/ -name "dhcpd.conf" -type f -exec ls -l '{}' \;`
-	FUL_DHCP=`echo ${INF_DHCP} | awk '{print $9;}'`
-	DIR_DHCP=`dirname ${FUL_DHCP}`
-	FIL_DHCP=`basename ${FUL_DHCP}`
+	if [ "${INF_DHCP}" != "" ]; then
+		FUL_DHCP=`echo ${INF_DHCP} | awk '{print $9;}'`
+		DIR_DHCP=`dirname ${FUL_DHCP}`
+		FIL_DHCP=`basename ${FUL_DHCP}`
+	fi
 
 	# --- samba ---------------------------------------------------------------
 	pdbedit -L > /dev/null
@@ -1580,7 +1583,7 @@ _EOT_
 	# *************************************************************************
 	echo "- Install dhcp ----------------------------------------------------------------"
 	# -------------------------------------------------------------------------
-	if [ "${DIR_DHCP}" != "" ]; then
+	if [ "${INF_DHCP}" != "" ]; then
 		if [ ! -f ${DIR_DHCP}/${FIL_DHCP}.orig ] && \
 		   [   -f ${DIR_DHCP}/${FIL_DHCP}      ]; then
 			cp -p ${DIR_DHCP}/${FIL_DHCP} ${DIR_DHCP}/${FIL_DHCP}.orig

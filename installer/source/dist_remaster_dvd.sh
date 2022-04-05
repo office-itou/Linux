@@ -59,6 +59,7 @@
 ##	2022/01/15 000.0000 J.Itou         CentOS URL 変更
 ##	2022/01/31 000.0000 J.Itou         CentOS-8 リスト削除
 ##	2022/04/01 000.0000 J.Itou         ubuntu 22.04(beta)追加
+##	2022/04/01 000.0000 J.Itou         ubuntu 22.04(beta)リスト修正
 ###	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -104,7 +105,7 @@
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2020-04-23 2030-04-23 Focal_Fossa    " \
 	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2021-04-22 2022-01-20 Hirsute_Hippo  " \
 	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2021-10-24 2022-07-14 Impish_Indri   " \
-	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy Jellyfish" \
+	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy_Jellyfish" \
 	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/jammy-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy_Jellyfish" \
 	)   # 区分          ダウンロード先URL                                                                                                                        別名                                        定義ファイル                                リリース日 サポ終了日 備考
 #	    "ubuntu         https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2014-04-17 2019-04-25 Trusty_Tahr    " \
