@@ -94,14 +94,18 @@
 		 	    -e 's/^NotifyClamd/#&/'
 		# -- sshd ---------------------------------------------------------------------
 		 	echo "--- sshd ----------------------------------------------------------------------"
+		 	mkdir -p /run/sshd
 		 	cat /etc/ssh/sshd_config.ucf-dist             | \
 		 	sed -e '$a \\n# --- user settings ---'          \
 		 	    -e '$a PermitRootLogin no'                  \
 		 	    -e '$a PubkeyAuthentication yes'            \
 		 	    -e '$a PasswordAuthentication yes'          \
-		 	    -e '$a PubkeyAcceptedAlgorithms +ssh-rsa'   \
-		 	    -e '$a HostkeyAlgorithms +ssh-rsa'          \
 		 	> /etc/ssh/sshd_config
+		 	if [ "`ssh -V 2>&1 | awk -F '[^0-9]+' '{print $2;}'`" -ge 9 ]; then
+		 		sed -i /etc/ssh/sshd_config                     \
+		 		    -e '$a PubkeyAcceptedAlgorithms +ssh-rsa'   \
+		 		    -e '$a HostkeyAlgorithms +ssh-rsa'
+		 	fi
 		#	ssh-keygen -N "" -t ecdsa   -f /etc/ssh/ssh_host_ecdsa_key
 		#	ssh-keygen -N "" -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
 		# -- samba --------------------------------------------------------------------
@@ -257,6 +261,7 @@ _EOT_SH_
 	    -e '/^deb.*oldstable/i deb http://deb.debian.org/debian oldoldstable main contrib non-free' \
 	    -e 's~^\(deb .* experimental\)~#\1~g' \
 	    -e 's~^\(deb .* unstable\)~#\1~g'
+#	    -e 's~^\(deb .* testing\)~#\1~g'
 	# -------------------------------------------------------------------------
 #	sed -i /etc/NetworkManager/NetworkManager.conf \
 #	    -e 's/\(managed\)=.*$/\1=false/'
