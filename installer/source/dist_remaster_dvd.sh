@@ -60,6 +60,7 @@
 ##	2022/01/31 000.0000 J.Itou         CentOS-8 リスト削除
 ##	2022/04/01 000.0000 J.Itou         ubuntu 22.04(beta)追加
 ##	2022/04/01 000.0000 J.Itou         ubuntu 22.04(beta)リスト修正
+##	2022/04/13 000.0000 J.Itou         不具合修正
 ###	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -602,11 +603,15 @@ _EOT_
 						*-10.*       )
 							;;
 						*-11.*       | \
+						*-12.*       | \
 						*-bullseye-* | \
+						*-bookworm-* | \
 						*-testing-*  )
-							sed -i "preseed/preseed.cfg"                                                               \
-							    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'                           \
-							    -e 's/#[ \t]\([ \t]*in-target --pass-stdout systemctl disable connman.service\)/  \1/'
+#							sed -i "preseed/preseed.cfg"                                                               \
+#							    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'                           \
+#							    -e 's/#[ \t]\([ \t]*in-target --pass-stdout systemctl disable connman.service\)/  \1/'
+							sed -i "preseed/preseed.cfg" \
+							    -e '/network-manager/d'
 							;;
 						* )	;;
 					esac
@@ -724,13 +729,14 @@ _EOT_
 							INS_CFG="debian-installer/language=ja keyboard-configuration/layoutcode?=jp keyboard-configuration/modelcode?=jp106"
 							# --- grub.cfg ------------------------------------
 							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-							sed -n '/^menuentry \"Try Ubuntu.*\"\|\"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
-							sed -e 's/\"\(Try Ubuntu.*\)\"/\"\1 for Japanese language\"/'                 \
-							    -e 's/\"\(Ubuntu\)\"/\"\1 for Japanese language\"/'                     | \
-							sed -e "s~\(file\)~${INS_CFG} \1~"                                          | \
-							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                          | \
-							sed -e 's/\(set default\)="1"/\1="0"/'                                        \
-							    -e 's/\(set timeout\).*$/\1=5/'                                           \
+							sed -n '/^menuentry \"Try Ubuntu.*\"\|\"Ubuntu\"\|\"Try or Install Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\"\(Try Ubuntu.*\)\"/\"\1 for Japanese language\"/'                                            \
+							    -e 's/\"\(Ubuntu\)\"/\"\1 for Japanese language\"/'                                                  \
+							    -e 's/\"\(Try or Install Ubuntu\)\"/\"\1 for Japanese language\"/'                                 | \
+							sed -e "s~\(file\)~${INS_CFG} \1~"                                                                     | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                                                     | \
+							sed -e 's/\(set default\)="1"/\1="0"/'                                                                   \
+							    -e 's/\(set timeout\).*$/\1=5/'                                                                      \
 							> grub.cfg
 							mv grub.cfg boot/grub/
 							# --- txt.cfg -------------------------------------
@@ -768,10 +774,11 @@ _EOT_
 							# === preseed =====================================
 							INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"
 							# --- grub.cfg ------------------------------------
-							INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"/ =' boot/grub/grub.cfg | head -n 1`-1))
+							INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"\|menuentry "Ubuntu (safe graphics)"/ =' boot/grub/grub.cfg | head -n 1`-1))
 							sed -n '/^menuentry \"Install\|Ubuntu\"/,/^}/p' boot/grub/grub.cfg    | \
 							sed -e 's/\"Install \(Ubuntu\)\"/\"Auto Install \1\"/'                  \
 							    -e 's/\"\(Ubuntu\)\"/\"Auto Install \1\"/'                          \
+							    -e 's/\"Try or Install \(Ubuntu\)\"/\"Auto Install \1\"/'           \
 							    -e 's/file.*seed//'                                                 \
 							    -e "s/\(vmlinuz\) */\1 ${INS_CFG} /"                                \
 							    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity noprompt/' | \

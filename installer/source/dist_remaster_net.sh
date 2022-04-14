@@ -48,6 +48,7 @@
 ##	2022/01/09 000.0000 J.Itou         openSUSE yast_opensuse.xml 処理見直し
 ##	2022/01/15 000.0000 J.Itou         CentOS URL 変更
 ##	2022/01/31 000.0000 J.Itou         CentOS-8 リスト削除
+##	2022/04/13 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -72,7 +73,7 @@
 	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable      " \
 	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                         -                                           preseed_debian.cfg                          2019-07-06 2026-xx-xx stable         " \
 	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                          -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing        " \
-	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                        -                                           kickstart_centos.cfg                        20xx-xx-xx 2024-05-31 RHEL_8.x       " \
+	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                             -                                           kickstart_centos.cfg                        20xx-xx-xx 2024-05-31 RHEL_8.x       " \
 	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                                        -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x       " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso                -                                           kickstart_fedora.cfg                        2021-04-27 2022-05-17 kernel_5.11    " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso                -                                           kickstart_fedora.cfg                        2021-11-02 2022-12-07 kernel_5.14    " \
@@ -404,10 +405,13 @@ _EOT_
 						debian-10.*      )
 							;;
 						debian-11.*      | \
+						debian-12.*      | \
 						debian-testing-* )
-							sed -i "preseed/preseed.cfg"                                                 \
-							    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'             \
-							    -e 's/#[ \t]\([ \t]*in-target systemctl disable connman.service\)/  \1/'
+#							sed -i "preseed/preseed.cfg"                                                               \
+#							    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'                           \
+#							    -e 's/#[ \t]\([ \t]*in-target --pass-stdout systemctl disable connman.service\)/  \1/'
+							sed -i "preseed/preseed.cfg" \
+							    -e '/network-manager/d'
 							;;
 						* )	;;
 					esac

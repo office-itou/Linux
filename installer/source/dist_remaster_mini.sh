@@ -38,6 +38,7 @@
 ##	2021/11/28 000.0000 J.Itou         全リスト処理追加
 ##	2021/12/03 000.0000 J.Itou         不具合修正
 ##	2021/12/20 000.0000 J.Itou         Debian testingのURLを変更
+##	2022/04/13 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -65,7 +66,7 @@
 	    "debian         http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                               -                                           preseed_debian.cfg                          2017-06-17 2022-06-xx oldoldstable    Debian__9.xx(stretch)           " \
 	    "debian         http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                  -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable       Debian_10.xx(buster)            " \
 	    "debian         http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                     -                                           preseed_debian.cfg                          2021-08-14 2026-xx-xx stable          Debian_11.xx(bullseye)          " \
-	    "debian         https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/netboot/mini.iso                                    -                                           preseed_debian.cfg                          202x-xx-xx 20xx-xx-xx testing         Debian_12.xx(bookworm)          " \
+	    "debian         https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/netboot/mini.iso                                                                   -                                           preseed_debian.cfg                          202x-xx-xx 20xx-xx-xx testing         Debian_12.xx(bookworm)          " \
 	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2014-04-17 2024-04-25 trusty          Ubuntu_14.04(Trusty_Tahr):LTS   " \
 	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/xenial-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2016-04-21 2026-04-23 xenial          Ubuntu_16.04(Xenial_Xerus):LTS  " \
 	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 bionic          Ubuntu_18.04(Bionic_Beaver):LTS " \
@@ -253,10 +254,13 @@ fncRemaster () {
 				buster         )
 					;;
 				bullseye       | \
+				bookworm       | \
 				testing        )
-					sed -i "./preseed.cfg"                                                       \
-					    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'             \
-					    -e 's/#[ \t]\([ \t]*in-target systemctl disable connman.service\)/  \1/'
+#					sed -i "./preseed.cfg"                                                                     \
+#					    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'                           \
+#					    -e 's/#[ \t]\([ \t]*in-target --pass-stdout systemctl disable connman.service\)/  \1/'
+					sed -i "./preseed.cfg"      \
+					    -e '/network-manager/d'
 					;;
 				Trusty_Tahr    )
 					sed -i "./preseed.cfg"                     \

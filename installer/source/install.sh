@@ -93,6 +93,7 @@
 ##	2022/01/09 000.0000 J.Itou         処理見直し(zypper --quiet削除:処理判別が不可能なため)
 ##	2022/03/27 000.0000 J.Itou         処理追加(minidlna.conf編集)
 ##	2022/04/05 000.0000 J.Itou         不具合修正(dhcpd)
+##	2022/04/13 000.0000 J.Itou         不具合修正(ネットワーク設定周り)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -396,6 +397,7 @@ fncInitialize () {
 	RUN_BIND=("enable"  "")														#   〃        ：bind9 / named
 	RUN_DHCP=("disable" "")														#   〃        ：isc-dhcp-server / dhcpd
 	RUN_SMBD=("enable"  "")														#   〃        ：samba / smbd,nmbd / smb,nmb
+	RUN_DLNA=("disable" "")														#   〃        ：minidlna
 	# -------------------------------------------------------------------------
 	FLG_SVER=1																	# 0以外でサーバー仕様でセッティング
 	DEF_USER="${SUDO_USER}"														# インストール時に作成したユーザー名
@@ -476,7 +478,10 @@ fncInitialize () {
 	fi
 	# -------------------------------------------------------------------------
 	ACT_NMAN=""
-	if [ "`${CMD_WICH} nmcli 2> /dev/null`" != "" ]; then
+	if [ "`${CMD_WICH} connmanctl 2> /dev/null`" != "" ] && [ "`systemctl is-enabled connman`" = "enabled" ]; then
+		CON_NAME=`LANG=C connmanctl services | awk '{print $3;}'`				# 接続名
+		CON_UUID=""																# 接続UUID
+	elif [ "`${CMD_WICH} nmcli 2> /dev/null`" != "" ]; then
 		if [ "`${CMD_WICH} systemctl 2> /dev/null`" != "" ]; then
 			ACT_NMAN="`systemctl -q status NetworkManager | awk '/Active:/ {print $2;}'`"
 		elif [ "`${CMD_WICH} status 2> /dev/null`" != "" ]; then
@@ -488,13 +493,13 @@ fncInitialize () {
 				ACT_NMAN="active"
 			fi
 		fi
-	fi
-	if [ "$ACT_NMAN" = "active" ]; then
-		CON_NAME=`nmcli -t -f name c | head -n 1`								# 接続名
-		CON_UUID=`nmcli -t -f uuid c | head -n 1`								# 接続UUID
-	else
-		CON_NAME=`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`	# 接続名
-		CON_UUID=""																# 接続UUID
+		if [ "$ACT_NMAN" = "active" ]; then
+			CON_NAME=`nmcli -t -f name c | head -n 1`								# 接続名
+			CON_UUID=`nmcli -t -f uuid c | head -n 1`								# 接続UUID
+		else
+			CON_NAME=`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`	# 接続名
+			CON_UUID=""																# 接続UUID
+		fi
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
 #	NIC_ARRY=(`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`)	# NICデバイス名
@@ -533,6 +538,12 @@ fncInitialize () {
 	IP6_BITS=("${IP6_ARRY[@]#*/}")												# IPv6:サブネットマスク(bit)
 	LNK_ADDR=("${LNK_ARRY[@]%/*}")												# Link:IPアドレス
 	LNK_BITS=("${LNK_ARRY[@]#*/}")												# Link:サブネットマスク(bit)
+	if [ "`${CMD_WICH} connmanctl 2> /dev/null`" != "" ] && [ "`systemctl is-enabled connman`" = "enabled" ]; then
+		IP4_ADDR[0]=`sed -n "/iface ${NIC_ARRY[0]}/,/^$/p" /etc/network/interfaces | awk -F '[/ \t]*' '$2=="address" {print $3;}'`
+		IP4_BITS[0]=`sed -n "/iface ${NIC_ARRY[0]}/,/^$/p" /etc/network/interfaces | awk -F '[/ \t]*' '$2=="address" {print $4;}'`
+		IP4_GATE[0]=`sed -n "/iface ${NIC_ARRY[0]}/,/^$/p" /etc/network/interfaces | awk -F '[/ \t]*' '$2=="gateway" {print $3;}'`
+		IP4_MASK[0]=`fncIPv4GetNetmask "${IP4_BITS[0]}"`
+	fi
 	# ･････････････････････････････････････････････････････････････････････････
 	IP4_UADR=("${IP4_ADDR[@]%.*}")												# IPv4:本機のIPアドレスの上位値(/24決め打ち)
 	IP4_LADR=("${IP4_ADDR[@]##*.}")												# IPv4:本機のIPアドレスの下位値
@@ -1055,7 +1066,19 @@ _EOT_
 		sed -i.orig /etc/NetworkManager/NetworkManager.conf \
 		    -e 's/^\(dns=.*$\)/#\1/'
 	fi
-	if [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
+	if [ "`${CMD_WICH} connmanctl 2> /dev/null`" != "" ] && [ "`systemctl is-enabled connman`" = "enabled" ]; then
+		connmanctl config "${CON_NAME}" --ipv4 manual "${IP4_ADDR[0]}" "${IP4_MASK[0]}" "${IP4_GATE[0]}"
+		connmanctl config "${CON_NAME}" --ipv6 auto disable
+		connmanctl config "${CON_NAME}" --nameservers "127.0.0.1 ${IP4_DNSA[0]}"
+		connmanctl config "${CON_NAME}" --domains ${WGP_NAME}
+		if [ ! -f /etc/resolv.conf.orig ] && \
+			 [   -f /etc/resolv.conf      ] && \
+			 [ ! -h /etc/resolv.conf      ]; then
+			sed -i.orig /etc/resolv.conf                                       \
+			    -e "s/\(search\) .*$/\1 ${WGP_NAME}/g"                         \
+			    -e "s/\(nameserver\) .*$/\1 127\.0\.0\.1\n\1 ${IP4_DNSA[0]}/g"
+		fi
+	elif [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
 		nmcli c modify "${CON_UUID}" ipv6.method auto
 		nmcli c modify "${CON_UUID}" ipv6.ip6-privacy 1
 		nmcli c modify "${CON_UUID}" ipv6.dns "::1 ${IP6_DNSA[0]} ${IP6_UADR}:${IP6_LDNS}"
@@ -1063,7 +1086,15 @@ _EOT_
 		nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
 		nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
 #		nmcli c down   "${CON_UUID}" > /dev/null
-#		nmcli c up     "${CON_UUID}" > /dev/null
+		nmcli c up     "${CON_UUID}" > /dev/null
+		for CON_INFO in `nmcli -t -f device,uuid c`
+		do
+			CON_INFO_DEV=`echo ${CON_INFO} | awk -F ':' '{print $1;}'`
+			CON_INFO_UUID=`echo ${CON_INFO} | awk -F ':' '{print $2;}'`
+			if [ "${CON_INFO_DEV}" != "${DEV_NAME}" ]; then
+				nmcli c delete uuid ${CON_INFO_UUID}
+			fi
+		done
 	elif [ ! -f /etc/sysconfig/network/config.orig ] && \
 		 [   -f /etc/sysconfig/network/config      ] && \
 		 [ ! -h /etc/sysconfig/network/config      ]; then
@@ -1335,10 +1366,16 @@ _EOT_
 	# -------------------------------------------------------------------------
 	if [ ! -f /etc/ssh/sshd_config.orig ] && \
 	   [   -f /etc/ssh/sshd_config      ]; then
+#		sed -i.orig /etc/ssh/sshd_config           \
+#		    -e 's/^\(PermitRootLogin\) .*/\1 no/'  \
+#		    -e 's/^#\(PermitRootLogin\) .*/\1 no/' \
+#		    -e '$a UseDNS no'
 		sed -i.orig /etc/ssh/sshd_config           \
-		    -e 's/^\(PermitRootLogin\) .*/\1 no/'  \
-		    -e 's/^#\(PermitRootLogin\) .*/\1 no/' \
-		    -e '$a UseDNS no'
+		    -e '$a \\n# --- user settings ---'     \
+		    -e '$a PermitRootLogin no'             \
+		    -e '$a UseDNS no'                      \
+		    -e '$a #PubkeyAuthentication yes'      \
+		    -e '$a #PasswordAuthentication yes'
 	fi
 	# -------------------------------------------------------------------------
 	if [ "`fncProcFind \"ssh\"`" = "1" ]; then
@@ -1899,6 +1936,8 @@ _EOT_
 		    -e "/^#media_dir=/a ${INS_STR}"
 		# ---------------------------------------------------------------------
 		usermod -aG sambashare minidlna
+		fncProc minidlna "${RUN_DLNA[0]}"
+		fncProc minidlna "${RUN_DLNA[1]}"
 	fi
 
 	# *************************************************************************
@@ -2354,11 +2393,11 @@ _EOT_
 	# -------------------------------------------------------------------------
 	pushd / > /dev/null
 		set +e
-		tar -czf ${DIR_WK}/bk_boot.tgz   --exclude "bk_*.tgz" boot
-		tar -czf ${DIR_WK}/bk_etc.tgz    --exclude "bk_*.tgz" etc
-		tar -czf ${DIR_WK}/bk_usr_sh.tgz --exclude "bk_*.tgz" usr/sh
-		tar -czf ${DIR_WK}/bk_cron.tgz   --exclude "bk_*.tgz" var/spool/cron
-		tar -czf ${DIR_WK}/bk_home.tgz   --exclude "bk_*.tgz" --exclude "google-chrome-*" home
+		tar -czf ${DIR_WK}/bk_boot.tgz   --exclude="bk_*.tgz" boot
+		tar -czf ${DIR_WK}/bk_etc.tgz    --exclude="bk_*.tgz" etc
+		tar -czf ${DIR_WK}/bk_usr_sh.tgz --exclude="bk_*.tgz" usr/sh
+		tar -czf ${DIR_WK}/bk_cron.tgz   --exclude="bk_*.tgz" var/spool/cron
+		tar -czf ${DIR_WK}/bk_home.tgz   --exclude="bk_*.tgz" --exclude="google-chrome-*" home
 		# ---------------------------------------------------------------------
 		case "${SYS_NAME}" in
 			"debian" | \
