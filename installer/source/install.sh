@@ -1067,17 +1067,36 @@ _EOT_
 		    -e 's/^\(dns=.*$\)/#\1/'
 	fi
 	if [ "`${CMD_WICH} connmanctl 2> /dev/null`" != "" ] && [ "`systemctl is-enabled connman`" = "enabled" ]; then
-		connmanctl config "${CON_NAME}" --ipv4 manual "${IP4_ADDR[0]}" "${IP4_MASK[0]}" "${IP4_GATE[0]}"
-		connmanctl config "${CON_NAME}" --ipv6 auto disable
-		connmanctl config "${CON_NAME}" --nameservers "127.0.0.1 ${IP4_DNSA[0]}"
-		connmanctl config "${CON_NAME}" --domains ${WGP_NAME}
+		if [ ! -d /etc/systemd/system/connman.service.d/ ]; then
+			mkdir -p /etc/systemd/system/connman.service.d/
+		fi
+		cat <<- _EOT_ > /etc/systemd/system/connman.service.d/disable_dns_proxy.conf
+			[Service]
+			ExecStart=
+			ExecStart=/usr/bin/connmand -n --nodnsproxy
+_EOT_
+		if [ ! -f /etc/connman/main.conf.orig ] && \
+		   [   -f /etc/connman/main.conf      ]; then
+			sed -i.orig /etc/connman/main.conf \
+			    -e 's/^[ \t]*\(AllowHostnameUpdates\)/# \1/'      \
+			    -e 's/^[ \t]*\(PreferredTechnologies\)/# \1/'     \
+			    -e 's/^[ \t]*\(SingleConnectedTechnology\)/# \1/' \
+			    -e '$a \\n# --- user settings ---'                \
+			    -e '$a AllowHostnameUpdates = false'              \
+			    -e '$a PreferredTechnologies = ethernet,wifi'     \
+			    -e '$a SingleConnectedTechnology = true'
+		fi
 		if [ ! -f /etc/resolv.conf.orig ] && \
-			 [   -f /etc/resolv.conf      ] && \
-			 [ ! -h /etc/resolv.conf      ]; then
+		   [   -f /etc/resolv.conf      ] && \
+		   [ ! -h /etc/resolv.conf      ]; then
 			sed -i.orig /etc/resolv.conf                                       \
 			    -e "s/\(search\) .*$/\1 ${WGP_NAME}/g"                         \
 			    -e "s/\(nameserver\) .*$/\1 127\.0\.0\.1\n\1 ${IP4_DNSA[0]}/g"
 		fi
+		connmanctl config "${CON_NAME}" --ipv4 manual "${IP4_ADDR[0]}" "${IP4_MASK[0]}" "${IP4_GATE[0]}"
+		connmanctl config "${CON_NAME}" --ipv6 auto disable
+		connmanctl config "${CON_NAME}" --nameservers "127.0.0.1 ${IP4_DNSA[0]}"
+		connmanctl config "${CON_NAME}" --domains ${WGP_NAME}
 	elif [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
 		nmcli c modify "${CON_UUID}" ipv6.method auto
 		nmcli c modify "${CON_UUID}" ipv6.ip6-privacy 1
@@ -2731,6 +2750,8 @@ fncDebug () {
 	set -e
 	# ･････････････････････････････････････････････････････････････････････････
 	set +e
+	echo "--- connman chk ---------------------------------------------------------------"
+	ss -tulpn | grep ":53"
 	echo "--- nslookup ------------------------------------------------------------------"
 	nslookup ${SVR_NAME}
 	echo "･･･････････････････････････････････････････････････････････････････････････････"
