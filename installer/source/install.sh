@@ -94,6 +94,7 @@
 ##	2022/03/27 000.0000 J.Itou         処理追加(minidlna.conf編集)
 ##	2022/04/05 000.0000 J.Itou         不具合修正(dhcpd)
 ##	2022/04/13 000.0000 J.Itou         不具合修正(ネットワーク設定周り)
+##	2022/04/15 000.0000 J.Itou         不具合修正(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -831,7 +832,8 @@ fncMain () {
 		case "${SYS_NAME}" in
 			"debian" | \
 			"ubuntu" )
-				if [ "${SYS_NAME}" = "debian" ] && [ `echo "${SYS_VNUM} < 10" | bc` ]; then
+				if [ "${SYS_NAME}" = "debian" ] \
+				&& [ ${SYS_VNUM} -lt 10 ] && [ ${SYS_VNUM} -ge 0 ]; then				# Debian 10以前の判定
 					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] skipped -----------------------------------------------------------------------"
 				else
 					if [ "`LANG=C dpkg -l chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk '$1=="ii" {print $2;}'`" = "" ]; then
@@ -1070,11 +1072,13 @@ _EOT_
 		if [ ! -d /etc/systemd/system/connman.service.d/ ]; then
 			mkdir -p /etc/systemd/system/connman.service.d/
 		fi
-		cat <<- _EOT_ > /etc/systemd/system/connman.service.d/disable_dns_proxy.conf
-			[Service]
-			ExecStart=
-			ExecStart=/usr/bin/connmand -n --nodnsproxy
+		if [ "`${CMD_WICH} connmand 2> /dev/null`" != "" ]; then
+			cat <<- _EOT_ > /etc/systemd/system/connman.service.d/disable_dns_proxy.conf
+				[Service]
+				ExecStart=
+				ExecStart=`${CMD_WICH} connmand` -n --nodnsproxy
 _EOT_
+		fi
 		if [ ! -f /etc/connman/main.conf.orig ] && \
 		   [   -f /etc/connman/main.conf      ]; then
 			sed -i.orig /etc/connman/main.conf \
