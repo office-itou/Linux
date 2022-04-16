@@ -39,6 +39,7 @@
 ##	2021/12/03 000.0000 J.Itou         不具合修正
 ##	2021/12/20 000.0000 J.Itou         Debian testingのURLを変更
 ##	2022/04/13 000.0000 J.Itou         不具合修正
+##	2022/04/16 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -61,8 +62,6 @@
 #	ARC_TYPE=i386											# CPUタイプ(32bit)
 	ARC_TYPE=amd64											# CPUタイプ(64bit)
 	ARRAY_NAME=(                                                                                                                                                                                                                                                                                                                 \
-	    "debian         http://archive.debian.org/debian/dists/wheezy/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 -                                           preseed_debian.cfg                          2013-05-04 2018-05-31 wheezy          Debian__7.xx(wheezy)            " \
-	    "debian         http://archive.debian.org/debian/dists/jessie/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 -                                           preseed_debian.cfg                          2015-04-25 2020-06-30 jessie          Debian__8.xx(jessie)            " \
 	    "debian         http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                               -                                           preseed_debian.cfg                          2017-06-17 2022-06-xx oldoldstable    Debian__9.xx(stretch)           " \
 	    "debian         http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                  -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable       Debian_10.xx(buster)            " \
 	    "debian         http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                     -                                           preseed_debian.cfg                          2021-08-14 2026-xx-xx stable          Debian_11.xx(bullseye)          " \
@@ -72,6 +71,8 @@
 	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 bionic          Ubuntu_18.04(Bionic_Beaver):LTS " \
 	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso                   -                                           preseed_ubuntu.cfg                          2020-04-23 2030-04-23 focal           Ubuntu_20.04(Focal_Fossa):LTS   " \
 	)   # 区分          ダウンロード先URL                                                                                                                        別名                                        定義ファイル                                リリース日 サポ終了日 備考            備考2
+#	    "debian         http://archive.debian.org/debian/dists/wheezy/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 -                                           preseed_debian.cfg                          2013-05-04 2018-05-31 wheezy          Debian__7.xx(wheezy)            " \
+#	    "debian         http://archive.debian.org/debian/dists/jessie/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 -                                           preseed_debian.cfg                          2015-04-25 2020-06-30 jessie          Debian__8.xx(jessie)            " \
 #	    "debian         http://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                    -                                           preseed_debian.cfg                          202x-xx-xx 20xx-xx-xx testing         Debian_12.xx(bookworm)          " \
 #	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 -                                           preseed_ubuntu.cfg                          2016-04-21 2024-04-xx xenial          Ubuntu_16.04(Xenial_Xerus):LTS  " \
 #	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/groovy/main/installer-${ARC_TYPE}/current/legacy-images/                                          -                                           preseed_ubuntu.cfg                          2020-10-22 2021-07-xx groovy          Ubuntu_20.10(Groovy_Gorilla)    " \
@@ -249,7 +250,14 @@ fncRemaster () {
 					    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/mirror select\).*$/\1 select archive.debian.org/'   \
 					    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'
 					;;
-				jessie         | \
+				jessie         )
+					sed -i "./preseed.cfg"                                                                        \
+					    -e 's/\(^[ \t]*d-i[ \t]*mirror\/country\).*$/\1 string manual/'                           \
+					    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/hostname\).*$/\1 string archive.debian.org/'        \
+					    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/directory\).*$/\1 string \/debian/'                 \
+					    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/mirror select\).*$/\1 select archive.debian.org/'   \
+					    -e 's/^#\([ \t]*d-i debian-installer\/allow_unauthenticated .*$\)/ \1/'
+					;;
 				stretch        | \
 				buster         )
 					;;

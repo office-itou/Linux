@@ -95,6 +95,7 @@
 ##	2022/04/05 000.0000 J.Itou         不具合修正(dhcpd)
 ##	2022/04/13 000.0000 J.Itou         不具合修正(ネットワーク設定周り)
 ##	2022/04/15 000.0000 J.Itou         不具合修正(いろいろ)
+##	2022/04/16 000.0000 J.Itou         不具合修正(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -1944,7 +1945,7 @@ _EOT_
 		echo "- Install minidlna ------------------------------------------------------------"
 		OLD_IFS=${IFS}
 		IFS= INS_STR=$(
-		cat <<- _EOT_ | sed -z 's/\n//g'
+		cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
 			media_dir=A,${DIR_SHAR}/dlna/sounds\\n
 			media_dir=P,${DIR_SHAR}/dlna/photos\\n
 			media_dir=V,${DIR_SHAR}/dlna/movies
@@ -2416,26 +2417,26 @@ _EOT_
 	# -------------------------------------------------------------------------
 	pushd / > /dev/null
 		set +e
+		tar -czf ${DIR_WK}/bk_home.tgz   --exclude="bk_*.tgz" --exclude="google-chrome-*" home
 		tar -czf ${DIR_WK}/bk_boot.tgz   --exclude="bk_*.tgz" boot
 		tar -czf ${DIR_WK}/bk_etc.tgz    --exclude="bk_*.tgz" etc
 		tar -czf ${DIR_WK}/bk_usr_sh.tgz --exclude="bk_*.tgz" usr/sh
 		tar -czf ${DIR_WK}/bk_cron.tgz   --exclude="bk_*.tgz" var/spool/cron
-		tar -czf ${DIR_WK}/bk_home.tgz   --exclude="bk_*.tgz" --exclude="google-chrome-*" home
 		# ---------------------------------------------------------------------
 		case "${SYS_NAME}" in
 			"debian" | \
 			"ubuntu" )
-				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/cache/bind/
+				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude="bk_*.tgz" var/cache/bind/
 				;;
 			"centos"       | \
 			"fedora"       | \
 			"rocky"        | \
 			"miraclelinux" )
-				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" var/named/
+				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude="bk_*.tgz" var/named/
 				;;
 			"opensuse-leap"       | \
 			"opensuse-tumbleweed" )
-				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude "bk_*.tgz" --exclude var/lib/named/dev/log var/lib/named/
+				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude="bk_*.tgz" --exclude var/lib/named/dev/log var/lib/named/
 				;;
 			* )
 				;;
@@ -2443,7 +2444,7 @@ _EOT_
 		# ---------------------------------------------------------------------
 		SIZ_SHARE=($(du -s -b /share/ | awk '{print $1;}'))
 		if [ `echo "${SIZ_SHARE} < 1048576" | bc` -ge 1 ]; then
-			tar -czf ${DIR_WK}/bk_share.tgz  --exclude "bk_*.tgz" share
+			tar -czf ${DIR_WK}/bk_share.tgz  --exclude="bk_*.tgz" share
 		fi
 		set -e
 	popd > /dev/null
@@ -2808,8 +2809,8 @@ fncDebug () {
 	# Setup Samba User ********************************************************
 	echo "--- pdbedit -L ----------------------------------------------------------------"
 	pdbedit -L
-	fncPrint "--- smbclient -L ${SVR_NAME} ----------------------------------------------------------------------------------"
-	echo -e "\n" | smbclient -L ${SVR_NAME}
+	fncPrint "--- smbclient -N -L ${SVR_NAME} -------------------------------------------------------------------------------"
+	smbclient -N -L ${SVR_NAME}
 	# Install minidlna ********************************************************
 	if [ -f /etc/minidlna.conf.orig ]; then
 		echo "--- diff /etc/minidlna.conf ---------------------------------------------------"
@@ -2854,6 +2855,7 @@ fncRecovery () {
 	[ -f /etc/selinux/config.orig                               ] && { sudo mv /etc/selinux/config.orig                                /etc/selinux/config                              ; }
 	[ -f /etc/ssh/sshd_config.orig                              ] && { sudo mv /etc/ssh/sshd_config.orig                               /etc/ssh/sshd_config                             ; }
 	[ -f /etc/sysconfig/network/config.orig                     ] && { sudo mv /etc/sysconfig/network/config.orig                      /etc/sysconfig/network/config                    ; }
+	[ -f /etc/minidlna.conf.orig                                ] && { sudo mv /etc/minidlna.conf.orig                                 /etc/minidlna.conf                               ; }
 	for USER_NAME in "${USER}" "${SUDO_USER}"
 	do
 		USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
