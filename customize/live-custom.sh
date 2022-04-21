@@ -31,6 +31,7 @@
 ##	2021/12/03 000.0000 J.Itou         不具合修正
 ##	2022/04/05 000.0000 J.Itou         ubuntu 22.04(beta)追加
 ##	2022/04/13 000.0000 J.Itou         不具合修正
+##	2022/04/21 000.0000 J.Itou         CentOSのURL変更/処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -75,8 +76,8 @@ fncMenu () {
 #	local DVD_SIZE											# DVDサイズ
 #	local DVD_DATE											# DVD日付
 	local TXT_COLOR
-	echo "#-----------------------------------------------------------------------------#"
-	echo "#ID：Version                         ：リリース日：サポ終了日：備考           #"
+	fncPrint "# $(fncString $((${COL_SIZE}-5)) '-') #"
+	fncPrint "#ID：Version$(fncString $((${COL_SIZE}-55)) ' ')：リリース日：サポ終了日：備考           #"
 	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
 	do
 		ARRY_NAME=(${ARRAY_NAME[$I-1]})
@@ -95,7 +96,7 @@ fncMenu () {
 			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
 #				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"`
 				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
-#				CODE_NAME[1]="mini-${ARRY_NAME[5]}-${ARC_TYPE}"
+#				CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
 				CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
 				CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
 			else
@@ -128,12 +129,12 @@ fncMenu () {
 		fi
 		# ---------------------------------------------------------------------
 		if [ "${TXT_COLOR}" = "true" ]; then
-			printf "#%2d：%-32.32s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+			printf "#%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 		else
-			printf "#%2d：%-32.32s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+			printf "#%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 		fi
 	done
-	echo "#-----------------------------------------------------------------------------#"
+	fncPrint "# $(fncString $((${COL_SIZE}-5)) '-') #"
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
 		echo "ID番号+Enterを入力して下さい。"
 		read INP_INDX
@@ -147,11 +148,21 @@ fncIsInt () {
 	set -e
 }
 # -----------------------------------------------------------------------------
+fncString () {
+	if [ "$2" = " " ]; then
+		echo $1      | awk '{s=sprintf("%"$1"."$1"s"," "); print s;}'
+	else
+		echo $1 "$2" | awk '{s=sprintf("%"$1"."$1"s"," "); gsub(" ",$2,s); print s;}'
+	fi
+}
+# -----------------------------------------------------------------------------
 fncPrint () {
 	local RET_STR=""
-	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -79 | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+	MAX_COLS=$((COL_SIZE-1))
+	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
 	if [ $? -ne 0 ]; then
-		RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -78 | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+		MAX_COLS=$((COL_SIZE-2))
+		RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
 	fi
 	echo "${RET_STR}"
 }
@@ -176,7 +187,7 @@ fncRemaster () {
 	CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
 	CODE_NAME[3]=${ARRY_NAME[3]}									# 定義ファイル
 	# -------------------------------------------------------------------------
-	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
+	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '-')"
 	# --- DVD -----------------------------------------------------------------
 	local DVD_NAME="${CODE_NAME[1]}"
 	local DVD_URL="${CODE_NAME[2]}"
@@ -191,9 +202,9 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 		else
-			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -202,20 +213,20 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 ]; then return 1; fi
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
 			fi
 		fi
 															# Volume ID
-		if [ "`which volname 2> /dev/null`" != "" ]; then
+		if [ "`${CMD_WICH} volname 2> /dev/null`" != "" ]; then
 			local VOLID=`volname "../${DVD_NAME}.iso"`
 		else
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
-		echo "--- copy DVD -> work directory ------------------------------------------------"
+		fncPrint "--- copy DVD -> work directory $(fncString ${COL_SIZE} '-')"
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
 			find . -depth -print | cpio -pdm --quiet ../image/
@@ -231,7 +242,7 @@ fncRemaster () {
 					WALL_FILE="ubuntu_splash.png"
 					if [ -f isolinux/txt.cfg ]; then
 						if [ ! -f "../../../${WALL_FILE}" ]; then
-							echo "--- get splash.png ------------------------------------------------------------"
+							fncPrint "--- get splash.png $(fncString ${COL_SIZE} '-')"
 							curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 						else
 							curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${WALL_URL}"
@@ -242,7 +253,7 @@ fncRemaster () {
 							FILE_SIZE=`echo ${FILE_INFO} | awk '{print $5;}'`
 							FILE_DATE=`echo ${FILE_INFO} | awk '{print $6;}'`
 							if [ "${WEB_SIZE}" != "${FILE_SIZE}" ] || [ "${WEB_DATE}" != "${FILE_DATE}" ]; then
-								echo "--- get splash.png ------------------------------------------------------------"
+								fncPrint "--- get splash.png $(fncString ${COL_SIZE} '-')"
 								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 							fi
 							if [ -f "header.txt" ]; then
@@ -263,7 +274,7 @@ fncRemaster () {
 			if [ -f "../../../${CFG_FILE}" ]; then
 				cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
 			else
-				echo "--- get preseed.cfg -----------------------------------------------------------"
+				fncPrint "--- get preseed.cfg $(fncString ${COL_SIZE} '-')"
 				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
 			fi
 			# ---------------------------------------------------------
@@ -281,7 +292,7 @@ fncRemaster () {
 				if [ -f "../../../${CFG_FILE}" ]; then
 					cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
 				else
-					echo "--- get user-data -------------------------------------------------------------"
+					fncPrint "--- get user-data $(fncString ${COL_SIZE} '-')"
 					curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
 				fi
 			fi
@@ -1047,7 +1058,7 @@ _EOT_
 _EOT_SH_
 		sed -i ./decomp/setup.sh -e 's/^ //g'
 		# --- copy media -> fsimg ---------------------------------------------
-		echo "--- copy media -> fsimg -------------------------------------------------------"
+		fncPrint "--- copy media -> fsimg $(fncString ${COL_SIZE} '-')"
 		if [ -f ./image/live/filesystem.squashfs ]; then
 			mount -r -o loop ./image/live/filesystem.squashfs    ./mnt
 		elif [ -f ./image/install/filesystem.squashfs ]; then
@@ -1123,7 +1134,7 @@ _EOT_SH_
 		# --- copy fsimg -> media ---------------------------------------------
 		case "${CODE_NAME[0]}" in
 			"debian" )	# ･････････････････････････････････････････････････････
-				echo "--- copy fsimg -> media -------------------------------------------------------"
+				fncPrint "--- copy fsimg -> media $(fncString ${COL_SIZE} '-')"
 				rm -f ./image/live/filesystem.squashfs
 				mksquashfs ./decomp ./image/live/filesystem.squashfs -mem 1G
 				ls -lht ./image/live/filesystem.squashfs
@@ -1139,7 +1150,7 @@ _EOT_SH_
 		esac
 		# --- image -> dvd ----------------------------------------------------
 		pushd image > /dev/null								# 作業用ディスクイメージ
-			echo "--- make iso file -------------------------------------------------------------"
+			fncPrint "--- copy make iso file $(fncString ${COL_SIZE} '-')"
 			rm -f md5sum.txt
 			find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 			# --- make iso file -----------------------------------------------
@@ -1173,13 +1184,32 @@ _EOT_SH_
 		popd > /dev/null
 	popd > /dev/null
 	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
-	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
+	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '-')"
 	return 0
 }
+# which command ---------------------------------------------------------------
+	if [ "`command -v which 2> /dev/null`" != "" ]; then
+		CMD_WICH="command -v"
+	else
+		CMD_WICH="which"
+	fi
+# terminal size ---------------------------------------------------------------
+	ROW_SIZE=25
+	COL_SIZE=80
+	if [ "`${CMD_WICH} tput 2> /dev/null`" != "" ]; then
+		ROW_SIZE=`tput lines`
+		COL_SIZE=`tput cols`
+	fi
+	if [ ${COL_SIZE} -lt 80 ]; then
+		COL_SIZE=80
+	fi
+	if [ ${COL_SIZE} -gt 100 ]; then
+		COL_SIZE=100
+	fi
 # -----------------------------------------------------------------------------
-	echo "*******************************************************************************"
-	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理を開始します。"
-	echo "*******************************************************************************"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
+	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` 作成処理を開始します。"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
 # cpu type --------------------------------------------------------------------
 	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
 # system info -----------------------------------------------------------------
@@ -1221,7 +1251,7 @@ _EOT_SH_
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`which aptitude 2> /dev/null`" != "" ]; then
+			if [ "`${CMD_WICH} aptitude 2> /dev/null`" != "" ]; then
 				CMD_AGET="aptitude -y -q"
 			else
 				CMD_AGET="apt -y -qq"
@@ -1231,7 +1261,7 @@ _EOT_SH_
 		"centos" | \
 		"fedora" | \
 		"rocky"  )
-			if [ "`which dnf 2> /dev/null`" != "" ]; then
+			if [ "`${CMD_WICH} dnf 2> /dev/null`" != "" ]; then
 				CMD_AGET="dnf -y -q --allowerasing"
 			else
 				CMD_AGET="yum -y -q"
@@ -1250,42 +1280,32 @@ _EOT_SH_
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`which debootstrap 2> /dev/null`" = ""  \
-			-o   "`which mksquashfs 2> /dev/null`" = ""    \
-			-o   "`which xorriso 2> /dev/null`" = ""       \
-			-o   "`which implantisomd5 2> /dev/null`" = "" \
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
+			-o   "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" \
 			-o   ! -f "${DIR_LINX}" ]; then
-				LST_PACK=""
-				if [ "`which debootstrap 2> /dev/null`" = "" ]; then
-					LST_PACK+=" debootstrap"
+				${CMD_AGET} update
+				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
+					${CMD_AGET} install xorriso
 				fi
-				if [ "`which mksquashfs 2> /dev/null`" = "" ]; then
-					LST_PACK+=" squashfs-tools"
-				fi
-				if [ "`which xorriso 2> /dev/null`" = "" ]; then
-					LST_PACK+=" xorriso"
-				fi
-				if [ "`which implantisomd5 2> /dev/null`" = "" ]; then
-					LST_PACK+=" isomd5sum"
+				if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" ]; then
+					${CMD_AGET} install isomd5sum
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
-					LST_PACK+=" isolinux"
+					${CMD_AGET} install isolinux
 				fi
-				${CMD_AGET} update
-				${CMD_AGET} install ${LST_PACK}
 			fi
 			;;
 		"centos" | \
 		"fedora" | \
 		"rocky"  )
-			if [ "`which xorriso 2> /dev/null`" = ""       \
-			-o   "`which implantisomd5 2> /dev/null`" = "" \
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
+			-o   "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
-				if [ "`which implantisomd5 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install isomd5sum
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -1295,10 +1315,10 @@ _EOT_SH_
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-			if [ "`which xorriso 2> /dev/null`" = ""       \
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -1338,9 +1358,9 @@ _EOT_SH_
 	# -------------------------------------------------------------------------
 	ls -lthLgG "${WORK_DIRS}/"*.iso 2> /dev/null
 # -----------------------------------------------------------------------------
-	echo "*******************************************************************************"
-	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"
-	echo "*******************************************************************************"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
+	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
 # -----------------------------------------------------------------------------
 	exit 0
 # = eof =======================================================================

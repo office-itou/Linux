@@ -40,6 +40,7 @@
 ##	2021/12/20 000.0000 J.Itou         Debian testingのURLを変更
 ##	2022/04/13 000.0000 J.Itou         不具合修正
 ##	2022/04/16 000.0000 J.Itou         不具合修正
+##	2022/04/21 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -90,8 +91,8 @@ fncMenu () {
 #	local DVD_SIZE											# DVDサイズ
 #	local DVD_DATE											# DVD日付
 	local TXT_COLOR
-	echo "#-----------------------------------------------------------------------------#"
-	echo "#ID：Version                         ：リリース日：サポ終了日：備考           #"
+	fncPrint "# $(fncString $((${COL_SIZE}-5)) '-') #"
+	fncPrint "#ID：Version$(fncString $((${COL_SIZE}-55)) ' ')：リリース日：サポ終了日：備考           #"
 	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
 	do
 		ARRY_NAME=(${ARRAY_NAME[$I-1]})
@@ -143,12 +144,12 @@ fncMenu () {
 		fi
 		# ---------------------------------------------------------------------
 		if [ "${TXT_COLOR}" = "true" ]; then
-			printf "#%2d：%-32.32s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+			printf "#%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 		else
-			printf "#%2d：%-32.32s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+			printf "#%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 		fi
 	done
-	echo "#-----------------------------------------------------------------------------#"
+	fncPrint "# $(fncString $((${COL_SIZE}-5)) '-') #"
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
 		echo "ID番号+Enterを入力して下さい。"
 		read INP_INDX
@@ -162,13 +163,34 @@ fncIsInt () {
 	set -e
 }
 # -----------------------------------------------------------------------------
+fncString () {
+	if [ "$2" = " " ]; then
+		echo $1      | awk '{s=sprintf("%"$1"."$1"s"," "); print s;}'
+	else
+		echo $1 "$2" | awk '{s=sprintf("%"$1"."$1"s"," "); gsub(" ",$2,s); print s;}'
+	fi
+}
+# -----------------------------------------------------------------------------
 fncPrint () {
 	local RET_STR=""
-	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -79 | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+	MAX_COLS=$((COL_SIZE-1))
+	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
 	if [ $? -ne 0 ]; then
-		RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -78 | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+		MAX_COLS=$((COL_SIZE-2))
+		RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
 	fi
 	echo "${RET_STR}"
+}
+# IPv4 netmask変換処理 --------------------------------------------------------
+fncIPv4GetNetmaskBits () {
+	local INP_ADDR
+	local -a OUT_ARRY=()
+
+	for INP_ADDR in "$@"
+	do
+		OUT_ARRY+=`echo ${INP_ADDR} | awk -F '.' '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
+	done
+	echo "${OUT_ARRY[@]}"
 }
 # -----------------------------------------------------------------------------
 fncRemaster () {
@@ -184,7 +206,7 @@ fncRemaster () {
 	CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
 	CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
 	# -------------------------------------------------------------------------
-	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
+	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '-')"
 	# --- DVD -----------------------------------------------------------------
 	local DVD_NAME="${CODE_NAME[1]}"
 	local DVD_URL="${CODE_NAME[2]}"
@@ -219,13 +241,13 @@ fncRemaster () {
 			fi
 		fi
 															# Volume ID
-		if [ "`which volname 2> /dev/null`" != "" ]; then
+		if [ "`${CMD_WICH} volname 2> /dev/null`" != "" ]; then
 			local VOLID=`volname "../${DVD_NAME}.iso"`
 		else
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
-		echo "--- copy DVD -> work directory ------------------------------------------------"
+		fncPrint "--- copy DVD -> work directory $(fncString ${COL_SIZE} '-')"
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
 			find . -depth -print | cpio -pdm --quiet ../image/
@@ -302,7 +324,7 @@ fncRemaster () {
 				dd if="../../../${DVD_NAME}.iso" of=${EFI_IMAG} bs=512 skip=${ISO_SKIPS} count=${ISO_COUNT} status=none
 			fi
 			if [ ! -d EFI ]; then
-				echo "--- copy EFI directory --------------------------------------------------------"
+				fncPrint "--- copy EFI directory $(fncString ${COL_SIZE} '-')"
 				mount -r -o loop  ${EFI_IMAG} ../mnt/
 				pushd ../mnt/efi/ > /dev/null
 					find . -depth -print | cpio -pdm --quiet ../../image/EFI/
@@ -363,7 +385,7 @@ fncRemaster () {
 _EOT_
 			fi
 			# -----------------------------------------------------------------
-			echo "--- make iso file -------------------------------------------------------------"
+			fncPrint "--- make iso file $(fncString ${COL_SIZE} '-')"
 			# -----------------------------------------------------------------
 			rm -f md5sum.txt
 			find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" -type f -exec md5sum {} \; > md5sum.txt
@@ -392,19 +414,38 @@ _EOT_
 			    -no-emul-boot -isohybrid-gpt-basdat \
 			    -output "../../${ISO_NAME}.iso" \
 			    .
-			if [ "`which implantisomd5 2> /dev/null`" != "" ]; then
+			if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" != "" ]; then
 				LANG=C implantisomd5 "../../${ISO_NAME}.iso"
 			fi
 		popd > /dev/null
 	popd > /dev/null
 	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
-	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
+	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '-')"
 	return 0
 }
+# which command ---------------------------------------------------------------
+	if [ "`command -v which 2> /dev/null`" != "" ]; then
+		CMD_WICH="command -v"
+	else
+		CMD_WICH="which"
+	fi
+# terminal size ---------------------------------------------------------------
+	ROW_SIZE=25
+	COL_SIZE=80
+	if [ "`${CMD_WICH} tput 2> /dev/null`" != "" ]; then
+		ROW_SIZE=`tput lines`
+		COL_SIZE=`tput cols`
+	fi
+	if [ ${COL_SIZE} -lt 80 ]; then
+		COL_SIZE=80
+	fi
+	if [ ${COL_SIZE} -gt 100 ]; then
+		COL_SIZE=100
+	fi
 # -----------------------------------------------------------------------------
-	echo "*******************************************************************************"
-	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理を開始します。"
-	echo "*******************************************************************************"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
+	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` 作成処理を開始します。"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
 # cpu type --------------------------------------------------------------------
 	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
 # system info -----------------------------------------------------------------
@@ -446,7 +487,7 @@ _EOT_
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`which aptitude 2> /dev/null`" != "" ]; then
+			if [ "`${CMD_WICH} aptitude 2> /dev/null`" != "" ]; then
 				CMD_AGET="aptitude -y -q"
 			else
 				CMD_AGET="apt -y -qq"
@@ -456,7 +497,7 @@ _EOT_
 		"centos" | \
 		"fedora" | \
 		"rocky"  )
-			if [ "`which dnf 2> /dev/null`" != "" ]; then
+			if [ "`${CMD_WICH} dnf 2> /dev/null`" != "" ]; then
 				CMD_AGET="dnf -y -q --allowerasing"
 			else
 				CMD_AGET="yum -y -q"
@@ -475,14 +516,14 @@ _EOT_
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`which xorriso 2> /dev/null`" = ""       \
-			-o   "`which implantisomd5 2> /dev/null`" = "" \
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
+			-o   "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
-				if [ "`which implantisomd5 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install isomd5sum
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -493,14 +534,14 @@ _EOT_
 		"centos" | \
 		"fedora" | \
 		"rocky"  )
-			if [ "`which xorriso 2> /dev/null`" = ""       \
-			-o   "`which implantisomd5 2> /dev/null`" = "" \
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
+			-o   "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
-				if [ "`which implantisomd5 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install isomd5sum
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -510,10 +551,10 @@ _EOT_
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-			if [ "`which xorriso 2> /dev/null`" = ""       \
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -553,9 +594,9 @@ _EOT_
 	# -------------------------------------------------------------------------
 	ls -lthLgG "${WORK_DIRS}/"*.iso 2> /dev/null
 # -----------------------------------------------------------------------------
-	echo "*******************************************************************************"
-	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"
-	echo "*******************************************************************************"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
+	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
 # -----------------------------------------------------------------------------
 	exit 0
 # = eof =======================================================================

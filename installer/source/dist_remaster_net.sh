@@ -49,6 +49,7 @@
 ##	2022/01/15 000.0000 J.Itou         CentOS URL 変更
 ##	2022/01/31 000.0000 J.Itou         CentOS-8 リスト削除
 ##	2022/04/13 000.0000 J.Itou         不具合修正
+##	2022/04/21 000.0000 J.Itou         CentOSのURL変更/処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -73,8 +74,8 @@
 	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable      " \
 	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                         -                                           preseed_debian.cfg                          2019-07-06 2026-xx-xx stable         " \
 	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                          -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing        " \
-	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                             -                                           kickstart_centos.cfg                        20xx-xx-xx 2024-05-31 RHEL_8.x       " \
-	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                                        -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x       " \
+	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                             -                                           kickstart_centos.cfg                        20xx-xx-xx 2024-05-31 RHEL_8.x       " \
+	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x       " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-netinst-x86_64-34-1.2.iso                -                                           kickstart_fedora.cfg                        2021-04-27 2022-05-17 kernel_5.11    " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso                -                                           kickstart_fedora.cfg                        2021-11-02 2022-12-07 kernel_5.14    " \
 	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64-Current.iso                                        -                                           yast_opensuse.xml                           2021-06-02 20xx-xx-xx kernel_5.3.18  " \
@@ -88,6 +89,8 @@
 #	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-[0-9A-Za-z].*-boot.iso                           CentOS-Stream-8-x86_64-latest-boot.iso      kickstart_centos.cfg                        20xx-xx-xx 2024-05-31 RHEL_x.x       " \
 #	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-[0-9].*-[0-9A-Za-z].*-x86_64-boot.iso                           CentOS-Stream-9-latest-x86_64-boot.iso      kickstart_centos9.cfg                       2021-xx-xx 20xx-xx-xx RHEL_x.x       " \
 #	    "centos         http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-boot.iso                                                       -                                           kickstart_centos.cfg                        2021-11-16 2021-12-31 RHEL_8.5       " \
+#	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                             -                                           kickstart_centos.cfg                        20xx-xx-xx 2024-05-31 RHEL_8.x       " \
+#	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                                        -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x       " \
 # -----------------------------------------------------------------------------
 fncMenu () {
 	local ARRY_NAME=()										# 配列展開
@@ -100,8 +103,8 @@ fncMenu () {
 #	local DVD_SIZE											# DVDサイズ
 #	local DVD_DATE											# DVD日付
 	local TXT_COLOR
-	echo "#-----------------------------------------------------------------------------#"
-	echo "#ID：Version                         ：リリース日：サポ終了日：備考           #"
+	fncPrint "# $(fncString $((${COL_SIZE}-5)) '-') #"
+	fncPrint "#ID：Version$(fncString $((${COL_SIZE}-55)) ' ')：リリース日：サポ終了日：備考           #"
 	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
 	do
 		ARRY_NAME=(${ARRAY_NAME[$I-1]})
@@ -120,7 +123,7 @@ fncMenu () {
 			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
 #				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"`
 				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
-#				CODE_NAME[1]="mini-${ARRY_NAME[5]}-${ARC_TYPE}"
+#				CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
 				CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
 				CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
 			else
@@ -153,12 +156,12 @@ fncMenu () {
 		fi
 		# ---------------------------------------------------------------------
 		if [ "${TXT_COLOR}" = "true" ]; then
-			printf "#%2d：%-32.32s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+			printf "#%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 		else
-			printf "#%2d：%-32.32s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+			printf "#%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 		fi
 	done
-	echo "#-----------------------------------------------------------------------------#"
+	fncPrint "# $(fncString $((${COL_SIZE}-5)) '-') #"
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
 		echo "ID番号+Enterを入力して下さい。"
 		read INP_INDX
@@ -172,13 +175,34 @@ fncIsInt () {
 	set -e
 }
 # -----------------------------------------------------------------------------
+fncString () {
+	if [ "$2" = " " ]; then
+		echo $1      | awk '{s=sprintf("%"$1"."$1"s"," "); print s;}'
+	else
+		echo $1 "$2" | awk '{s=sprintf("%"$1"."$1"s"," "); gsub(" ",$2,s); print s;}'
+	fi
+}
+# -----------------------------------------------------------------------------
 fncPrint () {
 	local RET_STR=""
-	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -79 | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+	MAX_COLS=$((COL_SIZE-1))
+	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
 	if [ $? -ne 0 ]; then
-		RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -78 | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+		MAX_COLS=$((COL_SIZE-2))
+		RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
 	fi
 	echo "${RET_STR}"
+}
+# IPv4 netmask変換処理 --------------------------------------------------------
+fncIPv4GetNetmaskBits () {
+	local INP_ADDR
+	local -a OUT_ARRY=()
+
+	for INP_ADDR in "$@"
+	do
+		OUT_ARRY+=`echo ${INP_ADDR} | awk -F '.' '{split($0, octets); for (i in octets) {mask += 8 - log(2^8 - octets[i])/log(2);} print mask}'`
+	done
+	echo "${OUT_ARRY[@]}"
 }
 # -----------------------------------------------------------------------------
 fncRemaster () {
@@ -190,7 +214,7 @@ fncRemaster () {
 	CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
 	CODE_NAME[3]=${ARRY_NAME[3]}									# 定義ファイル
 	# -------------------------------------------------------------------------
-	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
+	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '-')"
 	# --- DVD -----------------------------------------------------------------
 	local DVD_NAME="${CODE_NAME[1]}"
 	local DVD_URL="${CODE_NAME[2]}"
@@ -205,9 +229,9 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 		else
-			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -216,20 +240,20 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
 			fi
 		fi
 															# Volume ID
-		if [ "`which volname 2> /dev/null`" != "" ]; then
+		if [ "`${CMD_WICH} volname 2> /dev/null`" != "" ]; then
 			local VOLID=`volname "../${DVD_NAME}.iso"`
 		else
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
-		echo "--- copy DVD -> work directory ------------------------------------------------"
+		fncPrint "--- copy DVD -> work directory $(fncString ${COL_SIZE} '-')"
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
 			find . -depth -print | cpio -pdm --quiet ../image/
@@ -237,6 +261,36 @@ fncRemaster () {
 		umount mnt
 		# --- image -----------------------------------------------------------
 		pushd image > /dev/null								# 作業用ディスクイメージ
+			# --- splash.png --------------------------------------------------
+			case "${CODE_NAME[0]}" in
+				"ubuntu" )
+#					WALL_URL="http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/netboot/ubuntu-installer/amd64/boot-screens/splash.png"
+					WALL_URL="http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/boot-screens/splash.png"
+					WALL_FILE="ubuntu_splash.png"
+					if [ -f isolinux/txt.cfg ]; then
+						if [ ! -f "../../../${WALL_FILE}" ]; then
+							fncPrint "--- get splash.png $(fncString ${COL_SIZE} '-')"
+							curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
+						else
+							curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${WALL_URL}"
+							WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+							WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+							WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+							FILE_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "../../../${WALL_FILE}"`
+							FILE_SIZE=`echo ${FILE_INFO} | awk '{print $5;}'`
+							FILE_DATE=`echo ${FILE_INFO} | awk '{print $6;}'`
+							if [ "${WEB_SIZE}" != "${FILE_SIZE}" ] || [ "${WEB_DATE}" != "${FILE_DATE}" ]; then
+								fncPrint "--- get splash.png $(fncString ${COL_SIZE} '-')"
+								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
+							fi
+							if [ -f "header.txt" ]; then
+								rm -f "header.txt"
+							fi
+						fi
+					fi
+					;;
+				* )	;;
+			esac
 			# --- preseed.cfg -> image ----------------------------------------
 			case "${CODE_NAME[0]}" in
 				"debian" | \
@@ -250,25 +304,30 @@ fncRemaster () {
 					if [ -f "../../../${CFG_FILE}" ]; then
 						cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
 					else
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
+						fncPrint "--- get preseed.cfg $(fncString ${COL_SIZE} '-')"
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 					fi
 					# ---------------------------------------------------------
 					case "${CODE_NAME[1]}" in
 						debian-live-* )
 							;;
+						*canary*      | \
 						*live-server* )						# --- get user-data
 							EFI_IMAG="boot/grub/efi.img"
 							ISO_NAME="${DVD_NAME}-nocloud"
 							# -------------------------------------------------
 							mkdir -p "nocloud"
-							touch nocloud/meta-data
-							touch nocloud/user-data
+							touch nocloud/user-data			# 必須
+							touch nocloud/meta-data			# 必須
+#							touch nocloud/vendor-data		# 省略可能
+#							touch nocloud/network-config	# 省略可能
 							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
 							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
 							if [ -f "../../../${CFG_FILE}" ]; then
 								cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
 							else
-								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
+								fncPrint "--- get user-data $(fncString ${COL_SIZE} '-')"
+								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 							fi
 							;;
 #						*desktop* )							# --- get sub shell
@@ -277,22 +336,25 @@ fncRemaster () {
 #							if [ -f "../../../${SUB_PROG}" ]; then
 #								cp --preserve=timestamps "../../../${SUB_PROG}" "preseed/${SUB_PROG}"
 #							else
-#								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/${SUB_PROG}" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
+#								fncPrint "--- get sub shell $(fncString ${COL_SIZE} '-')"
+#								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/${SUB_PROG}" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 #							fi
 #							;;
 						* )	;;
 					esac
 					;;
-				"centos" | \
-				"fedora" | \
-				"rocky"  )	# --- get ks.cfg ----------------------------------
+				"centos"       | \
+				"fedora"       | \
+				"rocky"        | \
+				"miraclelinux" )	# --- get ks.cfg ----------------------------------
 					EFI_IMAG="EFI/BOOT/efiboot.img"
 					ISO_NAME="${DVD_NAME}-kickstart"
 					mkdir -p "kickstart"
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
 					else
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
+						fncPrint "--- get ks.cfg $(fncString ${COL_SIZE} '-')"
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 					fi
 					case "${WORK_DIRS}" in
 						*net* )
@@ -360,7 +422,8 @@ _EOT_
 					if [ -f "../../../${CFG_NAME}" ]; then
 						cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
 					else
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28 ]; then return 1; fi
+						fncPrint "--- get autoinst.xml $(fncString ${COL_SIZE} '-')"
+						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 					fi
 					case "${CODE_NAME[1]}" in
 						*Leap* )
@@ -391,8 +454,122 @@ _EOT_
 			case "${CODE_NAME[0]}" in
 				"debian" )	# ･････････････････････････････････････････････････
 					case "${CODE_NAME[1]}" in
-						debian-7.*       | \
-						debian-8.*       )
+						*-live-* )
+							# === 日本語化 ====================================
+							INS_CFG="locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp"
+							# --- grub.cfg --------------------------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry \"Debian GNU\/Linux.*\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\(Debian GNU\/Linux.*)\)/\1 for Japanese language/'                      \
+							    -e "s~\(components\)~\1 ${INS_CFG}~"                               | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                       \
+							    -e '1i set default=0'                                                \
+							    -e '1i set timeout=5'                                                \
+							> grub.cfg
+							mv grub.cfg boot/grub/
+							# --- menu.cfg --------------------------------------------------------
+							INS_ROW=$((`sed -n '/^LABEL/ =' isolinux/menu.cfg | head -n 1`-1))
+							INS_STR=`sed -n 's/LABEL \(Debian GNU\/Linux Live.*\)/\1 for Japanese language/p' isolinux/menu.cfg`
+							sed -n '/LABEL Debian GNU\/Linux Live.*/,/^$/p' isolinux/menu.cfg | \
+							sed -e "s~\(LABEL\) .*~\1 ${INS_STR}~"                              \
+							    -e "s~\(SAY\) .*~\1 \"${INS_STR}\.\.\.\"~"                      \
+							    -e "s~\(APPEND .* components\) \(.*$\)~\1 ${INS_CFG} \2~"     | \
+							sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg                 | \
+							sed -e "s~^\(DEFAULT\) .*$~\1 ${INS_STR}~"                          \
+							> menu.cfg
+							mv menu.cfg isolinux/
+							# ---------------------------------------------------------------------
+							sed -i isolinux/isolinux.cfg     \
+							    -e 's/\(timeout\).*$/\1 50/'
+							# === preseed =====================================
+							INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
+							# --- grub.cfg ----------------------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry "Graphical Debian Installer"/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry "Graphical Debian Installer"/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\(menuentry "Graphical Debian\) \(Installer"\)/\1 Auto \2/'         \
+							    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                                   | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                            \
+							> grub.cfg
+							mv grub.cfg boot/grub/
+							# --- menu.cfg ----------------------------------------------------
+							INS_ROW=$((`sed -n '/^LABEL Graphical Debian Installer/ =' isolinux/menu.cfg | head -n 1`-1))
+							sed -n '/LABEL Graphical Debian Installer$/,/^$/p' isolinux/menu.cfg | \
+							sed -e 's/^\(LABEL Graphical Debian\) \(Installer\)/\1 Auto \2/'       \
+							    -e "s/\(APPEND.*\$\)/\1 ${INS_CFG}/"                             | \
+							sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg                      \
+							> menu.cfg
+							mv menu.cfg isolinux/
+							# --- success_command -----------------------------
+							OLD_IFS=${IFS}
+							IFS=$'\n'
+							# --- packages ------------------------------------
+							LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' preseed/preseed.cfg  | \
+							           sed -z 's/\n//g'                                                          | \
+							           sed -e 's/.* multiselect *//'                                               \
+							               -e 's/[,|\\\\]//g'                                                      \
+							               -e 's/\t/ /g'                                                           \
+							               -e 's/  */ /g'                                                          \
+							               -e 's/^ *//'`
+							LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' preseed/preseed.cfg | \
+							           sed -z 's/\n//g'                                                          | \
+							           sed -e 's/.* string *//'                                                    \
+							               -e 's/[,|\\\\]//g'                                                      \
+							               -e 's/\t/ /g'                                                           \
+							               -e 's/  */ /g'                                                          \
+							               -e 's/^ *//'`
+							IFS=${OLD_IFS}
+							;;
+						* )
+							INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
+							# --- grub.cfg --------------------------------------------
+							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+							sed -n '/^menuentry .*'\''Install'\''/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\(Install\)/Auto \1/'                                    \
+							    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                          \
+							    -e 's/\(--hotkey\)=./\1=a/'                                  | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg               | \
+							sed -e 's/\(set default\)="1"/\1="0"/'                             \
+							    -e '1i set timeout=5'                                          \
+							    -e 's/\(set theme\)/# \1/g'                                    \
+							    -e 's/\(set gfxmode\)/# \1/g'                                  \
+							    -e 's/ vga=[0-9]*//g'                                          \
+							> grub.cfg
+							mv grub.cfg boot/grub/
+							# --- txt.cfg ---------------------------------------------
+							sed -i isolinux/isolinux.cfg     \
+							    -e 's/\(timeout\).*$/\1 50/'
+							sed -i isolinux/prompt.cfg       \
+							    -e 's/\(timeout\).*$/\1 50/'
+							sed -i isolinux/gtk.cfg        \
+							    -e '/^.*menu default.*$/d'
+							sed -i isolinux/txt.cfg        \
+							    -e '/^.*menu default.*$/d'
+							INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+							INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | head -n 1 | sed -e 's/\(^.*menu\) label.*$/\1 default/'`"
+							if [ ${INS_ROW} -ge 1 ]; then
+								sed -n '/label install/,/^$/p' isolinux/txt.cfg  | \
+								sed -e 's/^\(label\) install/\1 autoinst/'         \
+								    -e 's/\(Install\)/Auto \1/'                    \
+								    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"           \
+								    -e "/menu label/a  ${INS_STR}"               | \
+								sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg   \
+								    -e 's/\(timeout\).*$/\1 50/'                   \
+								> txt.cfg
+							else
+								sed -n '/label install/,/^$/p' isolinux/txt.cfg  | \
+								sed -e 's/^\(label\) install/\1 autoinst/'         \
+								    -e 's/\(Install\)/Auto \1/'                    \
+								    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"           \
+								    -e "/menu label/a  ${INS_STR}"                 \
+								> txt.cfg
+								cat isolinux/txt.cfg >> txt.cfg
+							fi
+							mv txt.cfg isolinux/
+							;;
+					esac
+					case "${CODE_NAME[1]}" in
+						*-7.*        | \
+						*-8.*        )
 							sed -i "preseed/preseed.cfg"                                                                               \
 							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/hostname\).*$/\1 string archive.debian.org/'                     \
 							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/directory\).*$/\1 string \/debian-archive\/debian/'              \
@@ -400,13 +577,15 @@ _EOT_
 							    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'
 #							    -e 's/\(^[ \t]*d-i[ \t]*netcfg\/get_nameservers\)[ \t]*[A-Za-z]*[ \t]*\(.*\)$/\1 string 127.0.0.1 \2/'
 							;;
-						debian-9.*       )
+						*-9.*        )
 							;;
-						debian-10.*      )
+						*-10.*       )
 							;;
-						debian-11.*      | \
-						debian-12.*      | \
-						debian-testing-* )
+						*-11.*       | \
+						*-12.*       | \
+						*-bullseye-* | \
+						*-bookworm-* | \
+						*-testing-*  )
 #							sed -i "preseed/preseed.cfg"                                                               \
 #							    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/'                           \
 #							    -e 's/#[ \t]\([ \t]*in-target --pass-stdout systemctl disable connman.service\)/  \1/'
@@ -415,51 +594,8 @@ _EOT_
 							;;
 						* )	;;
 					esac
-					INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
-					# --- txt.cfg -------------------------------------
-					sed -i isolinux/isolinux.cfg     \
-					    -e 's/\(timeout\).*$/\1 50/'
-					sed -i isolinux/prompt.cfg       \
-					    -e 's/\(timeout\).*$/\1 50/'
-					sed -i isolinux/gtk.cfg        \
-					    -e '/^.*menu default.*$/d'
-					sed -i isolinux/txt.cfg        \
-					    -e '/^.*menu default.*$/d'
-					INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-					INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | head -n 1 | sed -e 's/\(^.*menu\) label.*$/\1 default/'`"
-					if [ ${INS_ROW} -ge 1 ]; then
-						sed -n '/label install/,/^$/p' isolinux/txt.cfg  | \
-						sed -e 's/^\(label\) install/\1 autoinst/'         \
-						    -e 's/\(Install\)/Auto \1/'                    \
-						    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"           \
-						    -e "/menu label/a  ${INS_STR}"               | \
-						sed -e "${INS_ROW}r /dev/stdin" isolinux/txt.cfg   \
-						    -e 's/\(timeout\).*$/\1 50/'                   \
-						> txt.cfg
-					else
-						sed -n '/label install/,/^$/p' isolinux/txt.cfg  | \
-						sed -e 's/^\(label\) install/\1 autoinst/'         \
-						    -e 's/\(Install\)/Auto \1/'                    \
-						    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"           \
-						    -e "/menu label/a  ${INS_STR}"                 \
-						> txt.cfg
-						cat isolinux/txt.cfg >> txt.cfg
-					fi
-					mv txt.cfg isolinux/
-					# --- grub.cfg ------------------------------------
-					INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-					sed -n '/^menuentry .*'\''Install'\''/,/^}/p' boot/grub/grub.cfg | \
-					sed -e 's/\(Install\)/Auto \1/'                                    \
-					    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                          \
-					    -e 's/\(--hotkey\)=./\1=a/'                                  | \
-					sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg               | \
-					sed -e 's/\(set default\)="1"/\1="0"/'                             \
-					    -e '1i set timeout=5'                                          \
-					    -e 's/\(set theme\)/# \1/g'                                    \
-					    -e 's/\(set gfxmode\)/# \1/g'                                  \
-					    -e 's/ vga=[0-9]*//g'                                          \
-					> grub.cfg
-					mv grub.cfg boot/grub/
+					# ---------------------------------------------------------
+					chmod 444 "preseed/preseed.cfg"
 					;;
 				"ubuntu" )	# ･････････････････････････････････････････････････
 					if [ -f isolinux/isolinux.cfg ]; then
@@ -572,13 +708,14 @@ _EOT_
 							INS_CFG="debian-installer/language=ja keyboard-configuration/layoutcode?=jp keyboard-configuration/modelcode?=jp106"
 							# --- grub.cfg ------------------------------------
 							INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-							sed -n '/^menuentry \"Try Ubuntu.*\"\|\"Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
-							sed -e 's/\"\(Try Ubuntu.*\)\"/\"\1 for Japanese language\"/'                 \
-							    -e 's/\"\(Ubuntu\)\"/\"\1 for Japanese language\"/'                     | \
-							sed -e "s~\(file\)~${INS_CFG} \1~"                                          | \
-							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                          | \
-							sed -e 's/\(set default\)="1"/\1="0"/'                                        \
-							    -e 's/\(set timeout\).*$/\1=5/'                                           \
+							sed -n '/^menuentry \"Try Ubuntu.*\"\|\"Ubuntu\"\|\"Try or Install Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
+							sed -e 's/\"\(Try Ubuntu.*\)\"/\"\1 for Japanese language\"/'                                            \
+							    -e 's/\"\(Ubuntu\)\"/\"\1 for Japanese language\"/'                                                  \
+							    -e 's/\"\(Try or Install Ubuntu\)\"/\"\1 for Japanese language\"/'                                 | \
+							sed -e "s~\(file\)~${INS_CFG} \1~"                                                                     | \
+							sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                                                     | \
+							sed -e 's/\(set default\)="1"/\1="0"/'                                                                   \
+							    -e 's/\(set timeout\).*$/\1=5/'                                                                      \
 							> grub.cfg
 							mv grub.cfg boot/grub/
 							# --- txt.cfg -------------------------------------
@@ -616,10 +753,11 @@ _EOT_
 							# === preseed =====================================
 							INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"
 							# --- grub.cfg ------------------------------------
-							INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"/ =' boot/grub/grub.cfg | head -n 1`-1))
+							INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"\|menuentry "Ubuntu (safe graphics)"/ =' boot/grub/grub.cfg | head -n 1`-1))
 							sed -n '/^menuentry \"Install\|Ubuntu\"/,/^}/p' boot/grub/grub.cfg    | \
 							sed -e 's/\"Install \(Ubuntu\)\"/\"Auto Install \1\"/'                  \
 							    -e 's/\"\(Ubuntu\)\"/\"Auto Install \1\"/'                          \
+							    -e 's/\"Try or Install \(Ubuntu\)\"/\"Auto Install \1\"/'           \
 							    -e 's/file.*seed//'                                                 \
 							    -e "s/\(vmlinuz\) */\1 ${INS_CFG} /"                                \
 							    -e 's/maybe-ubiquity\|only-ubiquity/automatic-ubiquity noprompt/' | \
@@ -771,12 +909,14 @@ _EOT_
 					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
 					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
 					sed -e 's/\(Install\)/Auto \1/'                             \
-					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                 | \
+					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                | \
 					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg         | \
 					sed -e 's/\(set default\)="1"/\1="0"/'                      \
 					    -e 's/\(set timeout\).*$/\1=5/'                         \
 					> grub.cfg
 					mv grub.cfg EFI/BOOT/
+					# ---------------------------------------------------------
+					chmod 444 "kickstart/ks.cfg"
 					;;
 				"fedora" )	# ･････････････････････････････････････････････････
 					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
@@ -807,6 +947,8 @@ _EOT_
 					VER_NUM="`echo ${CODE_NAME[1]} | sed -e 's/.*-x86_64-\([0-9]*\).*/\1/'`"
 					sed -i kickstart/ks.cfg                          \
 					    -e "s/\(repo=fedora\)-[0-9]*/\1-${VER_NUM}/"
+					# ---------------------------------------------------------
+					chmod 444 "kickstart/ks.cfg"
 					;;
 				"rocky" )	# ･････････････････････････････････････････････････
 					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
@@ -833,6 +975,36 @@ _EOT_
 					    -e 's/\(set timeout\).*$/\1=5/'                         \
 					> grub.cfg
 					mv grub.cfg EFI/BOOT/
+					# ---------------------------------------------------------
+					chmod 444 "kickstart/ks.cfg"
+					;;
+				"miraclelinux" ) # ････････････････････････････････････････････
+					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
+					# --- isolinux.cfg ----------------------------------------
+					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
+					INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
+					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg    | \
+					sed -e 's/^\(label\) linux/\1 autoinst/'                \
+					    -e 's/\(Install\)/Auto \1/'                         \
+					    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"                \
+					    -e "/menu label/a  ${INS_STR}"                    | \
+					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg   \
+					    -e '/menu default/{/menu default/d}'                \
+					    -e 's/\(timeout\).*$/\1 50/'                        \
+					> isolinux.cfg
+					mv isolinux.cfg isolinux/
+					# --- grub.cfg --------------------------------------------
+					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
+					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
+					sed -e 's/\(Install\)/Auto \1/'                             \
+					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                 | \
+					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg         | \
+					sed -e 's/\(set default\)="1"/\1="0"/'                      \
+					    -e 's/\(set timeout\).*$/\1=5/'                         \
+					> grub.cfg
+					mv grub.cfg EFI/BOOT/
+					# ---------------------------------------------------------
+					chmod 444 "kickstart/ks.cfg"
 					;;
 				"suse" )	# ･････････････････････････････････････････････････
 					INS_CFG="autoyast=cd:\/autoyast\/autoinst\.xml ifcfg=e*=dhcp"
@@ -872,17 +1044,20 @@ _EOT_
 							mv grub.cfg EFI/BOOT/
 							;;
 					esac
+					# ---------------------------------------------------------
+					chmod 444 "autoyast/autoinst.xml"
 					;;
 				* )	;;
 			esac
 			# -----------------------------------------------------------------
-			echo "--- make iso file -------------------------------------------------------------"
+			fncPrint "--- make iso file $(fncString ${COL_SIZE} '-')"
 			case "${CODE_NAME[0]}" in
-				"debian" | \
-				"ubuntu" | \
-				"centos" | \
-				"fedora" | \
-				"rocky"  )	# ･････････････････････････････････････････････････
+				"debian"       | \
+				"ubuntu"       | \
+				"centos"       | \
+				"fedora"       | \
+				"rocky"        | \
+				"miraclelinux" )	# ･････････････････････････････････････････････････
 					rm -f md5sum.txt
 					find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 					# --- make iso file -----------------------------------------------
@@ -929,19 +1104,38 @@ _EOT_
 					;;
 				* )	;;
 			esac
-			if [ "`which implantisomd5 2> /dev/null`" != "" ]; then
+			if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" != "" ]; then
 				LANG=C implantisomd5 "../../${ISO_NAME}.iso"
 			fi
 		popd > /dev/null
 	popd > /dev/null
 	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
-	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} -------------------------------------------------------------------------------"
+	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '-')"
 	return 0
 }
+# which command ---------------------------------------------------------------
+	if [ "`command -v which 2> /dev/null`" != "" ]; then
+		CMD_WICH="command -v"
+	else
+		CMD_WICH="which"
+	fi
+# terminal size ---------------------------------------------------------------
+	ROW_SIZE=25
+	COL_SIZE=80
+	if [ "`${CMD_WICH} tput 2> /dev/null`" != "" ]; then
+		ROW_SIZE=`tput lines`
+		COL_SIZE=`tput cols`
+	fi
+	if [ ${COL_SIZE} -lt 80 ]; then
+		COL_SIZE=80
+	fi
+	if [ ${COL_SIZE} -gt 100 ]; then
+		COL_SIZE=100
+	fi
 # -----------------------------------------------------------------------------
-	echo "*******************************************************************************"
-	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理を開始します。"
-	echo "*******************************************************************************"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
+	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` 作成処理を開始します。"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
 # cpu type --------------------------------------------------------------------
 	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
 # system info -----------------------------------------------------------------
@@ -983,7 +1177,7 @@ _EOT_
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`which aptitude 2> /dev/null`" != "" ]; then
+			if [ "`${CMD_WICH} aptitude 2> /dev/null`" != "" ]; then
 				CMD_AGET="aptitude -y -q"
 			else
 				CMD_AGET="apt -y -qq"
@@ -993,7 +1187,7 @@ _EOT_
 		"centos" | \
 		"fedora" | \
 		"rocky"  )
-			if [ "`which dnf 2> /dev/null`" != "" ]; then
+			if [ "`${CMD_WICH} dnf 2> /dev/null`" != "" ]; then
 				CMD_AGET="dnf -y -q --allowerasing"
 			else
 				CMD_AGET="yum -y -q"
@@ -1012,14 +1206,14 @@ _EOT_
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`which xorriso 2> /dev/null`" = ""       \
-			-o   "`which implantisomd5 2> /dev/null`" = "" \
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
+			-o   "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
-				if [ "`which implantisomd5 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install isomd5sum
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -1030,14 +1224,14 @@ _EOT_
 		"centos" | \
 		"fedora" | \
 		"rocky"  )
-			if [ "`which xorriso 2> /dev/null`" = ""       \
-			-o   "`which implantisomd5 2> /dev/null`" = "" \
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
+			-o   "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
-				if [ "`which implantisomd5 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install isomd5sum
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -1047,10 +1241,10 @@ _EOT_
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-			if [ "`which xorriso 2> /dev/null`" = ""       \
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
-				if [ "`which xorriso 2> /dev/null`" = "" ]; then
+				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install xorriso
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
@@ -1090,9 +1284,9 @@ _EOT_
 	# -------------------------------------------------------------------------
 	ls -lthLgG "${WORK_DIRS}/"*.iso 2> /dev/null
 # -----------------------------------------------------------------------------
-	echo "*******************************************************************************"
-	echo "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"
-	echo "*******************************************************************************"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
+	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
 # -----------------------------------------------------------------------------
 	exit 0
 # = eof =======================================================================
