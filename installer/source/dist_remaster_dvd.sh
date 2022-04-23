@@ -63,6 +63,7 @@
 ##	2022/04/13 000.0000 J.Itou         不具合修正
 ##	2022/04/21 000.0000 J.Itou         CentOSのURL変更/処理見直し
 ##	2022/04/22 000.0000 J.Itou         不具合修正
+##	2022/04/23 000.0000 J.Itou         リスト更新
 ###	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -89,7 +90,6 @@
 	    "debian         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                            -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing        " \
 	    "ubuntu         http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                                        -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 Bionic_Beaver  " \
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2030-04-23 Focal_Fossa    " \
-	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                                 -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22 2022-01-20 Hirsute_Hippo  " \
 	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-live-server-amd64.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-14 Impish_Indri   " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21 2032-04-21 Jammy_Jellyfish" \
 	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                             -                                           kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_8.x       " \
@@ -106,10 +106,8 @@
 	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                 -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing        " \
 	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 Bionic_Beaver  " \
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2020-04-23 2030-04-23 Focal_Fossa    " \
-	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2021-04-22 2022-01-20 Hirsute_Hippo  " \
 	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2021-10-24 2022-07-14 Impish_Indri   " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy_Jellyfish" \
-	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/jammy-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy_Jellyfish" \
 	)   # 区分          ダウンロード先URL                                                                                                                        別名                                        定義ファイル                                リリース日 サポ終了日 備考
 #	    "ubuntu         https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2014-04-17 2019-04-25 Trusty_Tahr    " \
 #	    "ubuntu         https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus   " \
@@ -118,8 +116,11 @@
 #	    "ubuntu         https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2014-04-17 2019-04-25 Trusty_Tahr    " \
 #	    "ubuntu         https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus   " \
 #	    "ubuntu         https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2020-10-22 2021-07-22 Groovy_Gorilla " \
+#	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                                 -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22 2022-01-20 Hirsute_Hippo  " \
+#	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2021-04-22 2022-01-20 Hirsute_Hippo  " \
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                                    -                                           preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri   " \
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/impish-desktop-canary-amd64.iso                                                           -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-xx Impish_Indri   " \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/jammy-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy_Jellyfish" \
 #	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-dvd1.iso                                            -                                           kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x       " \
 #	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-[0-9A-Za-z].*-dvd1.iso                           CentOS-Stream-8-x86_64-latest-dvd1.iso      kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x       " \
 #	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-[0-9].*-[0-9A-Za-z].*-x86_64-dvd1.iso                           CentOS-Stream-9-latest-x86_64-dvd1.iso      kickstart_centos9.cfg                       2021-xx-xx 20xx-xx-xx RHEL_x.x       " \
@@ -1391,17 +1392,17 @@ _EOT_
 #x14.10:Utopic Unicorn   :2014-10-23:2015-07-23
 #x15.04:Vivid Vervet     :2015-04-23:2016-02-04
 #x15.10:Wily Werewolf    :2015-10-22:2016-07-28
-# 16.04:Xenial Xerus     :2016-04-21:2021-04-30/2026-04-23:LTS
+#x16.04:Xenial Xerus     :2016-04-21:2021-04-30/2026-04-23:LTS
 #x16.10:Yakkety Yak      :2016-10-13:2017-07-20
 #x17.04:Zesty Zapus      :2017-04-13:2018-01-13
 #x17.10:Artful Aardvark  :2017-10-19:2018-07-19
 # 18.04:Bionic Beaver    :2018-04-26:2023-04-26/2028-04-26:LTS
 #x18.10:Cosmic Cuttlefish:2018-10-18:2019-07-18
-# 19.04:Disco Dingo      :2019-04-18:2020-01-23
-# 19.10:Eoan Ermine      :2019-10-17:2020-07-17
+#x19.04:Disco Dingo      :2019-04-18:2020-01-23
+#x19.10:Eoan Ermine      :2019-10-17:2020-07-17
 # 20.04:Focal Fossa      :2020-04-23:2025-04-23/2030-04-23:LTS
-# 20.10:Groovy Gorilla   :2020-10-22:2021-07-22
-# 21.04:Hirsute Hippo    :2021-04-22:2022-01-20
+#x20.10:Groovy Gorilla   :2020-10-22:2021-07-22
+#x21.04:Hirsute Hippo    :2021-04-22:2022-01-20
 # 21.10:Impish Indri     :2021-10-14:2022-07-14
 # 22.04:Jammy Jellyfish  :2022-04-21:2027-04-21/2032-04-21:LTS
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
@@ -1412,12 +1413,12 @@ _EOT_
 # 7.6-1810:2018-12-03:2018-10-30:2024-06-30: 3.10.0- 957
 # 7.7-1908:2019-09-17:2019-08-06:2024-06-30: 3.10.0-1062
 # 7.8-2003:2020-04-27:2020-03-30:2024-06-30: 3.10.0-1127
-# 8.0-1905:2019-09-24:2019-05-07:2021-12-31: 4.18.0- 80
-# 8.1-1911:2020-01-15:2019-11-05:2021-12-31: 4.18.0-147
-# 8.2.2004:2020-06-15:2020-04-28:2021-12-31: 4.18.0-193
-# 8.3.2011:2020-11-03:2020-12-07:2021-12-31: 4.18.0-240
-# 8.4.2015:2021-06-03:2021-05-18:2021-12-31: 4.18.0-305
-# 8.5.2111:2021-11-16:2021-11-09:2021-12-31: 4.18.0-348
+#x8.0-1905:2019-09-24:2019-05-07:2021-12-31: 4.18.0- 80
+#x8.1-1911:2020-01-15:2019-11-05:2021-12-31: 4.18.0-147
+#x8.2.2004:2020-06-15:2020-04-28:2021-12-31: 4.18.0-193
+#x8.3.2011:2020-11-03:2020-12-07:2021-12-31: 4.18.0-240
+#x8.4.2015:2021-06-03:2021-05-18:2021-12-31: 4.18.0-305
+#x8.5.2111:2021-11-16:2021-11-09:2021-12-31: 4.18.0-348
 # --- https://ja.wikipedia.org/wiki/Rocky_Linux -------------------------------
 # [https://en.wikipedia.org/wiki/Rocky_Linux]
 # Ver. :リリース日:RHEL      :メンテ期限:kernel

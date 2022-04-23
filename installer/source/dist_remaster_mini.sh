@@ -42,6 +42,7 @@
 ##	2022/04/16 000.0000 J.Itou         不具合修正
 ##	2022/04/21 000.0000 J.Itou         処理見直し
 ##	2022/04/22 000.0000 J.Itou         不具合修正
+##	2022/04/23 000.0000 J.Itou         リスト更新
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -68,8 +69,6 @@
 	    "debian         http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                  -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable       Debian_10.xx(buster)            " \
 	    "debian         http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                     -                                           preseed_debian.cfg                          2021-08-14 2026-xx-xx stable          Debian_11.xx(bullseye)          " \
 	    "debian         https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/netboot/mini.iso                                                                   -                                           preseed_debian.cfg                          202x-xx-xx 20xx-xx-xx testing         Debian_12.xx(bookworm)          " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2014-04-17 2024-04-25 trusty          Ubuntu_14.04(Trusty_Tahr):LTS   " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/xenial-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2016-04-21 2026-04-23 xenial          Ubuntu_16.04(Xenial_Xerus):LTS  " \
 	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 bionic          Ubuntu_18.04(Bionic_Beaver):LTS " \
 	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso                   -                                           preseed_ubuntu.cfg                          2020-04-23 2030-04-23 focal           Ubuntu_20.04(Focal_Fossa):LTS   " \
 	)   # 区分          ダウンロード先URL                                                                                                                        別名                                        定義ファイル                                リリース日 サポ終了日 備考            備考2
@@ -80,6 +79,8 @@
 #	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/groovy/main/installer-${ARC_TYPE}/current/legacy-images/                                          -                                           preseed_ubuntu.cfg                          2020-10-22 2021-07-xx groovy          Ubuntu_20.10(Groovy_Gorilla)    " \
 #	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/hirsute/main/installer-${ARC_TYPE}/current/legacy-images/                                         -                                           preseed_ubuntu.cfg                          2021-04-22 2022-01-xx hirsute         Ubuntu_21.04(Hirsute_Hippo)     " \
 #	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/impish/main/installer-${ARC_TYPE}/current/legacy-images/                                          -                                           preseed_ubuntu.cfg                          2021-10-14 2022-07-xx impish          Ubuntu_21.10(Impish_Indri)      " \
+#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2014-04-17 2024-04-25 trusty          Ubuntu_14.04(Trusty_Tahr):LTS   " \
+#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/xenial-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2016-04-21 2026-04-23 xenial          Ubuntu_16.04(Xenial_Xerus):LTS  " \
 # -----------------------------------------------------------------------------
 fncMenu () {
 	local ARRY_NAME=()										# 配列展開
@@ -667,17 +668,17 @@ _EOT_
 #x14.10:Utopic Unicorn   :2014-10-23:2015-07-23
 #x15.04:Vivid Vervet     :2015-04-23:2016-02-04
 #x15.10:Wily Werewolf    :2015-10-22:2016-07-28
-# 16.04:Xenial Xerus     :2016-04-21:2021-04-30/2026-04-23:LTS
+#x16.04:Xenial Xerus     :2016-04-21:2021-04-30/2026-04-23:LTS
 #x16.10:Yakkety Yak      :2016-10-13:2017-07-20
 #x17.04:Zesty Zapus      :2017-04-13:2018-01-13
 #x17.10:Artful Aardvark  :2017-10-19:2018-07-19
 # 18.04:Bionic Beaver    :2018-04-26:2023-04-26/2028-04-26:LTS
 #x18.10:Cosmic Cuttlefish:2018-10-18:2019-07-18
-# 19.04:Disco Dingo      :2019-04-18:2020-01-23
-# 19.10:Eoan Ermine      :2019-10-17:2020-07-17
+#x19.04:Disco Dingo      :2019-04-18:2020-01-23
+#x19.10:Eoan Ermine      :2019-10-17:2020-07-17
 # 20.04:Focal Fossa      :2020-04-23:2025-04-23/2030-04-23:LTS
-# 20.10:Groovy Gorilla   :2020-10-22:2021-07-22
-# 21.04:Hirsute Hippo    :2021-04-22:2022-01-20
+#x20.10:Groovy Gorilla   :2020-10-22:2021-07-22
+#x21.04:Hirsute Hippo    :2021-04-22:2022-01-20
 # 21.10:Impish Indri     :2021-10-14:2022-07-14
 # 22.04:Jammy Jellyfish  :2022-04-21:2027-04-21/2032-04-21:LTS
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
@@ -688,12 +689,12 @@ _EOT_
 # 7.6-1810:2018-12-03:2018-10-30:2024-06-30: 3.10.0- 957
 # 7.7-1908:2019-09-17:2019-08-06:2024-06-30: 3.10.0-1062
 # 7.8-2003:2020-04-27:2020-03-30:2024-06-30: 3.10.0-1127
-# 8.0-1905:2019-09-24:2019-05-07:2021-12-31: 4.18.0- 80
-# 8.1-1911:2020-01-15:2019-11-05:2021-12-31: 4.18.0-147
-# 8.2.2004:2020-06-15:2020-04-28:2021-12-31: 4.18.0-193
-# 8.3.2011:2020-11-03:2020-12-07:2021-12-31: 4.18.0-240
-# 8.4.2015:2021-06-03:2021-05-18:2021-12-31: 4.18.0-305
-# 8.5.2111:2021-11-16:2021-11-09:2021-12-31: 4.18.0-348
+#x8.0-1905:2019-09-24:2019-05-07:2021-12-31: 4.18.0- 80
+#x8.1-1911:2020-01-15:2019-11-05:2021-12-31: 4.18.0-147
+#x8.2.2004:2020-06-15:2020-04-28:2021-12-31: 4.18.0-193
+#x8.3.2011:2020-11-03:2020-12-07:2021-12-31: 4.18.0-240
+#x8.4.2015:2021-06-03:2021-05-18:2021-12-31: 4.18.0-305
+#x8.5.2111:2021-11-16:2021-11-09:2021-12-31: 4.18.0-348
 # --- https://ja.wikipedia.org/wiki/Rocky_Linux -------------------------------
 # [https://en.wikipedia.org/wiki/Rocky_Linux]
 # Ver. :リリース日:RHEL      :メンテ期限:kernel
