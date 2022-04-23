@@ -32,6 +32,7 @@
 ##	2022/04/05 000.0000 J.Itou         ubuntu 22.04(beta)追加
 ##	2022/04/13 000.0000 J.Itou         不具合修正
 ##	2022/04/21 000.0000 J.Itou         CentOSのURL変更/処理見直し
+##	2022/04/22 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -1352,7 +1353,17 @@ _EOT_SH_
 	for I in `eval echo "${INP_INDX}"`						# 連番可
 	do
 		if [ `fncIsInt "$I"` -eq 0 ] && [ $I -ge 1 ] && [ $I -le ${#ARRAY_NAME[@]} ]; then
-			fncRemaster "${ARRAY_NAME[$I-1]}" || exit 1
+			fncRemaster "${ARRAY_NAME[$I-1]}"
+			if [ $? != 0 ]; then
+				while true
+				do
+					popd > /dev/null 2>&1
+					if [ $? != 0 ]; then
+						break
+					fi
+				done
+				echo "skip"
+			fi
 		fi
 	done
 	# -------------------------------------------------------------------------

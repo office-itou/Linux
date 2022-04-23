@@ -50,6 +50,7 @@
 ##	2022/01/31 000.0000 J.Itou         CentOS-8 リスト削除
 ##	2022/04/13 000.0000 J.Itou         不具合修正
 ##	2022/04/21 000.0000 J.Itou         CentOSのURL変更/処理見直し
+##	2022/04/22 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -x													# コマンドと引数の展開を表示
@@ -120,17 +121,16 @@ fncMenu () {
 #		if [ "`echo ${CODE_NAME[1]} | sed -n '/\.\*/p'`" != "" ]; then
 			DIR_NAME=`dirname ${CODE_NAME[2]}`
 			FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*> *\(${CODE_NAME[1]}.iso\) *<.*> *\([0-9A-Za-z]*-[0-9A-Za-z]*-[0-9A-Za-z]*\) *\([0-9]*:[0-9]*\).*<*.*/\1 \2 \3/p"))
+#			CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
 			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
 #				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"`
 				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
-#				CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
 				CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
 				CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
 			else
 				FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*> *\(${CODE_NAME[1]}.iso\) *<.*>/\1/p"))
 				if [ "${FIL_INFO[0]:+UNSET}" != "" ]; then
 					CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
-#					CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
 					CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
 				fi
 			fi
@@ -1278,7 +1278,17 @@ _EOT_
 	for I in `eval echo "${INP_INDX}"`						# 連番可
 	do
 		if [ `fncIsInt "$I"` -eq 0 ] && [ $I -ge 1 ] && [ $I -le ${#ARRAY_NAME[@]} ]; then
-			fncRemaster "${ARRAY_NAME[$I-1]}" || exit 1
+			fncRemaster "${ARRAY_NAME[$I-1]}"
+			if [ $? != 0 ]; then
+				while true
+				do
+					popd > /dev/null 2>&1
+					if [ $? != 0 ]; then
+						break
+					fi
+				done
+				echo "skip"
+			fi
 		fi
 	done
 	# -------------------------------------------------------------------------
