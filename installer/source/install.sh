@@ -97,6 +97,7 @@
 ##	2022/04/15 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2022/04/16 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2022/04/21 000.0000 J.Itou         処理見直し
+##	2022/04/25 000.0000 J.Itou         不具合修正(いろいろ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -110,6 +111,8 @@
 	export PATH=${PATH}:/usr/local/bin
 
 	DBG_FLAG=${@:-0}
+	OWN_PIDS=$$
+	OWN_RSTA=0
 
 # Pause処理 -------------------------------------------------------------------
 fncPause () {
@@ -1070,7 +1073,27 @@ _EOT_
 		sed -i.orig /etc/NetworkManager/NetworkManager.conf \
 		    -e 's/^\(dns=.*$\)/#\1/'
 	fi
-	if [ "`${CMD_WICH} connmanctl 2> /dev/null`" != "" ] && [ "`systemctl is-enabled connman`" = "enabled" ]; then
+	if [ -d /etc/netplan/ ]; then
+		if [   -f /etc/netplan/99-network-manager-static.yaml      ]; then
+			if [ ! -f /etc/netplan/99-network-manager-static.yaml.orig ]; then
+				sed -i.orig /etc/netplan/99-network-manager-static.yaml                                                        \
+				    -e '$ a \      dhcp6: true'                                                                                \
+				    -e '$ a \      ipv6-privacy: true'                                                                         \
+				    -e "/nameservers:/,/addresses:/ s/\(addresses:\) .*\$/\1 \[ 127.0.0.1, ${IP4_DNSA[0]}, ${IP6_DNSA[0]} \]/"
+			fi
+		elif [ -f /etc/netplan/00-installer-config.yaml ]; then
+			if [ ! -f /etc/netplan/00-installer-config.yaml.orig ]; then
+				cp -p /etc/netplan/00-installer-config.yaml /etc/netplan/00-installer-config.yaml.orig
+				cat /etc/netplan/00-installer-config.yaml.orig                                                               | \
+				sed -z 's/\(\w\+\):\n *- *\( \w\+\)/\1:\2/g'                                                                 | \
+				sed -e 's/\(addresses\|search\): \(.\+\)/\1: \[ \2 \]/g'                                                       \
+				    -e '/version: 2/ i \      dhcp6: true'                                                                     \
+				    -e '/version: 2/ i \      ipv6-privacy: true'                                                              \
+				    -e "/nameservers:/,/addresses:/ s/\(addresses:\) .*/\1 \[ 127.0.0.1, ${IP4_DNSA[0]}, ${IP6_DNSA[0]} \]/"   \
+				> /etc/netplan/00-installer-config.yaml
+			fi
+		fi
+	elif [ "`${CMD_WICH} connmanctl 2> /dev/null`" != "" ] && [ "`systemctl is-enabled connman`" = "enabled" ]; then
 		if [ ! -d /etc/systemd/system/connman.service.d/ ]; then
 			mkdir -p /etc/systemd/system/connman.service.d/
 		fi
@@ -1139,16 +1162,17 @@ _EOT_
 	elif [ ! -f /etc/resolv.conf.orig ] && \
 		 [   -f /etc/resolv.conf      ] && \
 		 [ ! -h /etc/resolv.conf      ]; then
-		sed -i.orig /etc/resolv.conf                \
-		    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"
+			sed -i.orig /etc/resolv.conf                \
+			    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"
 		if [ "`sed -n '/nameserver[ \t]*127\.0\.0\.1/p' /etc/resolv.conf`" = "" ]; then
 			sed -i /etc/resolv.conf                                                       \
 			    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1\n\1 ${IP4_DNSA[0]}/g"
 		fi
 	fi
 	#--------------------------------------------------------------------------
-	if [ "${SYS_NAME}" = "ubuntu" ]; then										# Ubuntuの判定
-		if [ "`awk '/nameserver 127.0.0.53/ {print $0;}' /etc/resolv.conf`" != "" ]; then
+	if [ "${SYS_NAME}" = "ubuntu" ] && [ ! -h /etc/resolv.conf ]; then			# Ubuntuの判定
+#		if [ "`awk '/nameserver 127.0.0.53/ {print $0;}' /etc/resolv.conf`" != "" ]; then
+		if [ "`systemctl is-enabled systemd-resolved`" = "enabled" ]; then
 			fncPrint "--- systemd-resolved disable $(fncString ${COL_SIZE} '-')"
 			fncProc systemd-resolved disable									# nameserver 127.0.0.53 の無効化
 		fi
@@ -2387,7 +2411,14 @@ _EOT_
 		while :
 		do
 			echo -n "root ログインできないように変更しますか？ ('YES' or 'no') "
-			read DUMMY
+			set +e
+			read -t 10 DUMMY
+			set -e
+			if [ "${DUMMY}" = "" ]; then
+				OWN_RSTA=1
+				DUMMY="YES"
+				echo ${DUMMY}
+			fi
 			case "${DUMMY}" in
 				"YES" )
 					${CMD_CHSH} root
@@ -2609,7 +2640,25 @@ fncDebug () {
 		fi
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	if [ -f /etc/resolv.conf ]; then
+	if [  -f /etc/netplan/99-network-manager-static.yaml ]; then
+		fncPrint "--- cat /etc/netplan/99-network-manager-static.yaml $(fncString ${COL_SIZE} '-')"
+		expand -t 4 /etc/netplan/99-network-manager-static.yaml
+		if [ -f /etc/netplan/99-network-manager-static.yaml.orig ]; then
+			fncPrint "--- diff /etc/netplan/99-network-manager-static.yaml $(fncString ${COL_SIZE} '-')"
+			fncDiff /etc/netplan/99-network-manager-static.yaml /etc/netplan/99-network-manager-static.yaml.orig
+		fi
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+	if [  -f /etc/netplan/00-installer-config.yaml ]; then
+		fncPrint "--- cat /etc/netplan/00-installer-config.yaml $(fncString ${COL_SIZE} '-')"
+		expand -t 4 /etc/netplan/00-installer-config.yaml
+		if [ -f /etc/netplan/00-installer-config.yaml.orig ]; then
+			fncPrint "--- diff /etc/netplan/00-installer-config.yaml $(fncString ${COL_SIZE} '-')"
+			fncDiff /etc/netplan/00-installer-config.yaml /etc/netplan/00-installer-config.yaml.orig
+		fi
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+	if [ -f /etc/resolv.conf ] && [ ! -h /etc/resolv.conf ]; then
 		fncPrint "--- cat /etc/resolv.conf $(fncString ${COL_SIZE} '-')"
 		expand -t 4 /etc/resolv.conf
 		if [ -f /etc/resolv.conf.orig ]; then
@@ -2705,15 +2754,17 @@ fncDebug () {
 #		fncPrint "--- cat ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa $(fncString ${COL_SIZE} '-')"
 #		expand -t 4 ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
 #	fi
-	for FILE in `find ${DIR_ZONE}/master ${DIR_ZONE}/slaves -type f -print`
-	do
-		if [ "file ${FILE} | grep text" = "" ]; then
-			fncPrint "--- cat ${FILE} is binary $(fncString ${COL_SIZE} '-')"
-		else
-			fncPrint "--- cat ${FILE} $(fncString ${COL_SIZE} '-')"
-			expand -t 4 ${FILE}
-		fi
-	done
+	if [ -d ${DIR_ZONE}/master ]; then
+		for FILE in `find ${DIR_ZONE}/master ${DIR_ZONE}/slaves -type f -print`
+		do
+			if [ "file ${FILE} | grep text" = "" ]; then
+				fncPrint "--- cat ${FILE} is binary $(fncString ${COL_SIZE} '-')"
+			else
+				fncPrint "--- cat ${FILE} $(fncString ${COL_SIZE} '-')"
+				expand -t 4 ${FILE}
+			fi
+		done
+	fi
 	# ･････････････････････････････････････････････････････････････････････････
 	fncPrint "--- cat ${DIR_BIND}/${FIL_BIND} $(fncString ${COL_SIZE} '-')"
 	if [ -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
@@ -2759,7 +2810,7 @@ fncDebug () {
 	fncPrint "--- connman chk $(fncString ${COL_SIZE} '-')"
 	ss -tulpn | grep ":53"
 	fncPrint "--- nslookup $(fncString ${COL_SIZE} '-')"
-	nslookup ${SVR_NAME}
+	nslookup ${SVR_FQDN}
 	fncPrint "$(fncString ${COL_SIZE} '･')"
 	nslookup ${IP4_ADDR[0]}
 	fncPrint "$(fncString ${COL_SIZE} '･')"
@@ -2777,9 +2828,9 @@ fncDebug () {
 #	fncPrint "$(fncString ${COL_SIZE} '･')"
 #	dig @${LNK_ADDR[0]} ${WGP_NAME} axfr
 	fncPrint "$(fncString ${COL_SIZE} '･')"
-	dig ${SVR_NAME}.${WGP_NAME} A +nostats +nocomments
+	dig ${SVR_FQDN} A +nostats +nocomments
 	fncPrint "$(fncString ${COL_SIZE} '･')"
-	dig ${SVR_NAME}.${WGP_NAME} AAAA +nostats +nocomments
+	dig ${SVR_FQDN} AAAA +nostats +nocomments
 	fncPrint "$(fncString ${COL_SIZE} '･')"
 	dig -x ${IP4_ADDR[0]} +nostats +nocomments
 	fncPrint "$(fncString ${COL_SIZE} '･')"
@@ -2852,6 +2903,10 @@ fncRecovery () {
 	[ -f /etc/hosts.orig                                        ] && { mv /etc/hosts.orig                                         /etc/hosts                                       ; }
 	[ -f /etc/locale.gen.orig                                   ] && { mv /etc/locale.gen.orig                                    /etc/locale.gen                                  ; }
 	[ -f /etc/nsswitch.conf.orig                                ] && { mv /etc/nsswitch.conf.orig                                 /etc/nsswitch.conf                               ; }
+	[ -f /etc/NetworkManager/NetworkManager.conf.orig           ] && { mv /etc/NetworkManager/NetworkManager.conf.orig            /etc/NetworkManager/NetworkManager.conf          ; }
+	[ -f /etc/netplan/99-network-manager-static.yaml.orig       ] && { mv /etc/netplan/99-network-manager-static.yaml.orig        /etc/netplan/99-network-manager-static.yaml      ; }
+	[ -f /etc/netplan/00-installer-config.yaml.orig             ] && { mv /etc/netplan/00-installer-config.yaml.orig              /etc/netplan/00-installer-config.yaml            ; }
+	[ -f /etc/connman/main.conf.orig                            ] && { mv /etc/connman/main.conf.orig                             /etc/connman/main.conf                           ; }
 	[ -f /etc/resolv.conf.orig                                  ] && { mv /etc/resolv.conf.orig                                   /etc/resolv.conf                                 ; }
 	[ -f ${SMB_BACK}                                            ] && { mv ${SMB_BACK}                                             ${SMB_CONF}                                      ; }
 	[ -f /etc/selinux/config.orig                               ] && { mv /etc/selinux/config.orig                                /etc/selinux/config                              ; }
@@ -2938,9 +2993,25 @@ fncRecovery () {
 # *****************************************************************************
 	fncPrint "$(fncString ${COL_SIZE} '*')"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` 設定処理が終了しました。"
-	echo " [ sudo reboot ] して下さい。"
+	case "${DBG_FLAG}" in
+		"0" )							# main処理
+				echo " [ sudo reboot ] して下さい。"
+				;;
+		"d" )	;;						# debug処理
+		"r" )	;;						# recovery処理
+		 *  )	;;
+	esac
 	fncPrint "$(fncString ${COL_SIZE} '*')"
-
+	case "${DBG_FLAG}" in
+		"0" )							# main処理
+				if [ ${OWN_RSTA} -ne 0 ]; then
+					reboot
+				fi
+				;;
+		"d" )	;;						# debug処理
+		"r" )	;;						# recovery処理
+		 *  )	;;
+	esac
 	exit 0
 
 ###############################################################################

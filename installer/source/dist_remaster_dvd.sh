@@ -889,6 +889,8 @@ _EOT_
 								 					      nameservers:
 								 					          search: [ ${NWRK_WGRP} ]
 								 					          addresses: [ ${IPV4_NAME} ]
+								 					#     dhcp6: true
+								 					#     ipv6-privacy: true
 								 _EOT_
 								 			fi
 								 		else
