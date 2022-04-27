@@ -1171,12 +1171,15 @@ _EOT_
 		fi
 	fi
 	#--------------------------------------------------------------------------
-	if [ "${SYS_NAME}" = "ubuntu" ] && [ ! -h /etc/resolv.conf ]; then			# Ubuntuの判定
+#	if [ "${SYS_NAME}" = "ubuntu" ] && [ ! -h /etc/resolv.conf ]; then			# Ubuntuの判定
 #		if [ "`awk '/nameserver 127.0.0.53/ {print $0;}' /etc/resolv.conf`" != "" ]; then
-		if [ "`systemctl is-enabled systemd-resolved`" = "enabled" ]; then
-			fncPrint "--- systemd-resolved disable $(fncString ${COL_SIZE} '-')"
-			fncProc systemd-resolved disable									# nameserver 127.0.0.53 の無効化
-		fi
+#			fncPrint "--- systemd-resolved disable $(fncString ${COL_SIZE} '-')"
+#			fncProc systemd-resolved disable									# nameserver 127.0.0.53 の無効化
+#		fi
+#	fi
+	if [ "${SYS_NAME}" = "ubuntu" ] && [ "`systemctl is-enabled systemd-resolved`" = "enabled" ]; then
+		fncPrint "--- systemd-resolved disable $(fncString ${COL_SIZE} '-')"
+		fncProc systemd-resolved disable										# nameserver 127.0.0.53 の無効化
 	fi
 	# SELinux -----------------------------------------------------------------
 	fncPrint "--- SELinux changed $(fncString ${COL_SIZE} '-')"
