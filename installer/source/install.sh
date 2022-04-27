@@ -98,6 +98,7 @@
 ##	2022/04/16 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2022/04/21 000.0000 J.Itou         処理見直し
 ##	2022/04/25 000.0000 J.Itou         不具合修正(いろいろ)
+##	2022/04/27 000.0000 J.Itou         不具合修正(ネットワーク設定周り)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -1079,7 +1080,7 @@ _EOT_
 				sed -i.orig /etc/netplan/99-network-manager-static.yaml                                                        \
 				    -e '$ a \      dhcp6: true'                                                                                \
 				    -e '$ a \      ipv6-privacy: true'                                                                         \
-				    -e "/nameservers:/,/addresses:/ s/\(addresses:\) .*\$/\1 \[ 127.0.0.1, ${IP4_DNSA[0]}, ${IP6_DNSA[0]} \]/"
+				    -e "/nameservers:/,/addresses:/ s/\(addresses:\) .*\$/\1 \[ 127.0.0.1, ${IP4_DNSA[0]} \]/"
 			fi
 		elif [ -f /etc/netplan/00-installer-config.yaml ]; then
 			if [ ! -f /etc/netplan/00-installer-config.yaml.orig ]; then
@@ -1089,7 +1090,7 @@ _EOT_
 				sed -e 's/\(addresses\|search\): \(.\+\)/\1: \[ \2 \]/g'                                                       \
 				    -e '/version: 2/ i \      dhcp6: true'                                                                     \
 				    -e '/version: 2/ i \      ipv6-privacy: true'                                                              \
-				    -e "/nameservers:/,/addresses:/ s/\(addresses:\) .*/\1 \[ 127.0.0.1, ${IP4_DNSA[0]}, ${IP6_DNSA[0]} \]/"   \
+				    -e "/nameservers:/,/addresses:/ s/\(addresses:\) .*/\1 \[ 127.0.0.1, ${IP4_DNSA[0]} \]/"                   \
 				> /etc/netplan/00-installer-config.yaml
 			fi
 		fi
