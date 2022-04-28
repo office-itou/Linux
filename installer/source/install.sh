@@ -99,6 +99,7 @@
 ##	2022/04/21 000.0000 J.Itou         処理見直し
 ##	2022/04/25 000.0000 J.Itou         不具合修正(いろいろ)
 ##	2022/04/27 000.0000 J.Itou         不具合修正(ネットワーク設定周り)
+##	2022/04/28 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -365,10 +366,6 @@ fncInitialize () {
 	# *************************************************************************
 	fncPrint "- Initialize $(fncString ${COL_SIZE} '-')"
 	#--------------------------------------------------------------------------
-	NOW_DATE=`date +"%Y/%m/%d"`													# yyyy/mm/dd
-	NOW_TIME=`date +"%Y%m%d%H%M%S"`												# yyyymmddhhmmss
-	PGM_NAME=`basename $0 | sed -e 's/\..*$//'`									# プログラム名
-	#--------------------------------------------------------------------------
 	WHO_AMI=`whoami`															# 実行ユーザー名
 	if [ "${WHO_AMI}" != "root" ]; then
 		echo "rootユーザーで実行して下さい。"
@@ -632,7 +629,7 @@ fncInitialize () {
 			if [ "`${CMD_WICH} aptitude 2> /dev/null`" != "" ]; then
 				CMD_AGET="aptitude -y -q"
 			else
-				CMD_AGET="apt -y -qq"
+				CMD_AGET="apt-get -y -qq"
 			fi
 			;;
 		"centos"       | \
@@ -732,6 +729,15 @@ fncInitialize () {
 
 # Main処理 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 fncMain () {
+	fncPrint "$(fncString ${COL_SIZE} '*')"
+	echo "`date +"%Y/%m/%d %H:%M:%S"` 設定処理を開始します。"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
+
+	# *************************************************************************
+	# Initialize
+	# *************************************************************************
+	fncInitialize
+
 	# *************************************************************************
 	# Make work dir
 	# *************************************************************************
@@ -1580,9 +1586,9 @@ _EOT_
 				 	version "unknown";
 				 	listen-on-v6    { any; };
 				 	allow-update    { none; };
-				 	allow-query     { 127.0.0.1; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
-				 	allow-transfer  { 127.0.0.1; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
-				 	allow-recursion { 127.0.0.1; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
+				 	allow-query     { localhost; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
+				 	allow-transfer  { localhost; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
+				 	allow-recursion { localhost; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
 				//	also-notify     { ; };
 				//	notify yes;
 				//	recursion no;
@@ -2453,11 +2459,11 @@ _EOT_
 	# -------------------------------------------------------------------------
 	pushd / > /dev/null
 #		set +e
-		tar -czf ${DIR_WK}/bk_boot.tgz                                             boot           || [[ $? == 1 ]]
-		tar -czf ${DIR_WK}/bk_etc.tgz                                              etc            || [[ $? == 1 ]]
-		tar -czf ${DIR_WK}/bk_usr_sh.tgz                                           usr/sh         || [[ $? == 1 ]]
-		tar -czf ${DIR_WK}/bk_cron.tgz                                             var/spool/cron || [[ $? == 1 ]]
-		tar -czf ${DIR_WK}/bk_home.tgz   --exclude="bk_*.tgz" --exclude="*chrome*" home           || [[ $? == 1 ]]
+		tar -czf ${DIR_WK}/bk_boot.tgz                                                               boot           || [[ $? == 1 ]]
+		tar -czf ${DIR_WK}/bk_etc.tgz                                                                etc            || [[ $? == 1 ]]
+		tar -czf ${DIR_WK}/bk_usr_sh.tgz                                                             usr/sh         || [[ $? == 1 ]]
+		tar -czf ${DIR_WK}/bk_cron.tgz                                                               var/spool/cron || [[ $? == 1 ]]
+		tar -czf ${DIR_WK}/bk_home.tgz   --exclude="bk_*.tgz" --exclude="*chrome*" --exclude="*.log" home           || [[ $? == 1 ]]
 		# ---------------------------------------------------------------------
 		case "${SYS_NAME}" in
 			"debian" | \
@@ -2484,10 +2490,19 @@ _EOT_
 		fi
 #		set -e
 	popd > /dev/null
+
+	fncPrint "$(fncString ${COL_SIZE} '*')"
+	echo "`date +"%Y/%m/%d %H:%M:%S"` 設定処理が終了しました。"
+	echo " [ sudo reboot ] して下さい。"
+	fncPrint "$(fncString ${COL_SIZE} '*')"
+	if [ ${OWN_RSTA} -ne 0 ]; then
+		reboot
+	fi
 }
 
 # Debug :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 fncDebug () {
+	fncInitialize
 	fncPrint "- Debug mode $(fncString ${COL_SIZE} '-')"
 	echo "NOW_DATE=${NOW_DATE}"													# yyyy/mm/dd
 	echo "NOW_TIME=${NOW_TIME}"													# yyyymmddhhmmss
@@ -2886,6 +2901,7 @@ fncDebug () {
 
 # Recovery ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 fncRecovery () {
+	fncInitialize
 #	set +e
 	fncPrint "- Recovery mode start $(fncString ${COL_SIZE} '-')"
 	[ -f /etc/NetworkManager/NetworkManager.conf.orig           ] && { mv /etc/NetworkManager/NetworkManager.conf.orig            /etc/NetworkManager/NetworkManager.conf          ; }
@@ -2952,9 +2968,15 @@ fncRecovery () {
 #	set -e
 }
 
+{
 # *****************************************************************************
 # Main処理                                                                    *
 # *****************************************************************************
+	# initialize --------------------------------------------------------------
+	NOW_DATE=`date +"%Y/%m/%d"`													# yyyy/mm/dd
+	NOW_TIME=`date +"%Y%m%d%H%M%S"`												# yyyymmddhhmmss
+	PGM_NAME=`basename $0 | sed -e 's/\..*$//'`									# プログラム名
+
 	# which command -----------------------------------------------------------
 	if [ "`command -v which 2> /dev/null`" != "" ]; then
 		CMD_WICH="command -v"
@@ -2976,47 +2998,17 @@ fncRecovery () {
 		COL_SIZE=100
 	fi
 
-	fncPrint "$(fncString ${COL_SIZE} '*')"
-	echo "`date +"%Y/%m/%d %H:%M:%S"` 設定処理を開始します。"
-	fncPrint "$(fncString ${COL_SIZE} '*')"
-
-	# Common ------------------------------------------------------------------
-	fncInitialize
 	# Main --------------------------------------------------------------------
 	case "${DBG_FLAG}" in
-		"0" )	fncMain;;				# main処理
-		"d" )	fncDebug;;				# debug処理
-		"r" )	fncRecovery;;			# recovery処理
+		"0" )	fncMain 2>&1 | tee -a "${PGM_NAME}.log";;	# main処理
+		"d" )	fncDebug;;									# debug処理
+		"r" )	fncRecovery;;								# recovery処理
 		 *  )	;;
 	esac
-	# -------------------------------------------------------------------------
-#	fncPrint "--- End $(fncString ${COL_SIZE} '-')"
 
-# *****************************************************************************
-# Exit
-# *****************************************************************************
-	fncPrint "$(fncString ${COL_SIZE} '*')"
-	echo "`date +"%Y/%m/%d %H:%M:%S"` 設定処理が終了しました。"
-	case "${DBG_FLAG}" in
-		"0" )							# main処理
-				echo " [ sudo reboot ] して下さい。"
-				;;
-		"d" )	;;						# debug処理
-		"r" )	;;						# recovery処理
-		 *  )	;;
-	esac
-	fncPrint "$(fncString ${COL_SIZE} '*')"
-	case "${DBG_FLAG}" in
-		"0" )							# main処理
-				if [ ${OWN_RSTA} -ne 0 ]; then
-					reboot
-				fi
-				;;
-		"d" )	;;						# debug処理
-		"r" )	;;						# recovery処理
-		 *  )	;;
-	esac
+	# Exit --------------------------------------------------------------------
 	exit 0
+}
 
 ###############################################################################
 # memo                                                                        #
