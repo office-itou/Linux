@@ -47,6 +47,12 @@
 		 	echo "--- initialize ----------------------------------------------------------------"
 		 	trap 'fncEnd 1' 1 2 3 15
 		 	export PS1="(chroot) "
+		# -- which command ------------------------------------------------------------
+		 	if [ "`command -v which 2> /dev/null`" != "" ]; then
+		 		CMD_WICH="command -v"
+		 	else
+		 		CMD_WICH="which"
+		 	fi
 		# -- localize -----------------------------------------------------------------
 		 	echo "--- localize ------------------------------------------------------------------"
 		 	sed -i /etc/locale.gen                  \
@@ -66,9 +72,13 @@
 		 	export DEBIAN_FRONTEND=noninteractive
 		 	APT_OPTIONS="-o Dpkg::Options::=--force-confdef    \
 		 	             -o Dpkg::Options::=--force-confnew    \
-		 	             -o Dpkg::Options::=--force-overwrite"
+		 	             -o Dpkg::Options::=--force-overwrite  \
+		 	             -t stable"
+		#	apt-mark unhold `apt-mark showhold`                                                                     || fncEnd $?
 		 	apt-mark hold                                                                                           \
 		 	    firmware-ipw2x00                                                                                    || fncEnd $?
+		#	apt-get purge        -q -y                                                                              \
+		#	    firmware-ipw2x00                                                                                    || fncEnd $?
 		 	apt-get update                                                                                          || fncEnd $?
 		 	apt-get upgrade      -q -y ${APT_OPTIONS}                                                               || fncEnd $?
 		 	apt-get dist-upgrade -q -y ${APT_OPTIONS}                                                               || fncEnd $?
@@ -82,6 +92,19 @@
 		 	apt-get autoclean    -q -y                                                                              || fncEnd $?
 		 	apt-get clean        -q -y                                                                              || fncEnd $?
 		 	export -n DEBIAN_FRONTEND
+		# -- network ------------------------------------------------------------------
+		#	echo "--- network -------------------------------------------------------------------"
+		#	CON_NAME=`nmcli -t -f name c | head -n 1`								# 接続名
+		#	CON_UUID=`nmcli -t -f uuid c | head -n 1`								# 接続UUID
+		 	# -------------------------------------------------------------------------
+		#	nmcli c modify "${CON_UUID}" ipv6.method auto
+		#	nmcli c modify "${CON_UUID}" ipv6.ip6-privacy 1
+		#	nmcli c modify "${CON_UUID}" ipv6.dns "::1"
+		#	nmcli c modify "${CON_UUID}" ipv6.dns-search ${WGP_NAME}.
+		#	nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1"
+		#	nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
+		#	nmcli c down   "${CON_UUID}" > /dev/null
+		#	nmcli c up     "${CON_UUID}" > /dev/null
 		# -- open vm tools ------------------------------------------------------------
 		 	echo "--- open vm tools -------------------------------------------------------------"
 		 	# mkdir -p /media/hgfs
@@ -92,6 +115,18 @@
 		 	echo "--- clamav --------------------------------------------------------------------"
 		 	sed -i /etc/clamav/freshclam.conf \
 		 	    -e 's/^NotifyClamd/#&/'
+		# -- avahi-daemon -------------------------------------------------------------
+		 	echo "--- avahi-daemon --------------------------------------------------------------"
+		 	OLD_IFS=${IFS}
+		 	IFS=$'\n'
+		 	INS_ROW=$((`sed -n '/^hosts:/ =' /etc/nsswitch.conf | head -n 1`))
+		 	INS_TXT=`sed -n '/^hosts:/ s/\(hosts:[ |\t]*\).*$/\1mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns mdns/p' /etc/nsswitch.conf`
+		 	sed -e '/^hosts:/ s/^/#/' /etc/nsswitch.conf | \
+		 	sed -e "${INS_ROW}a ${INS_TXT}"                \
+		 	> nsswitch.conf
+		 	cat nsswitch.conf > /etc/nsswitch.conf
+		 	rm nsswitch.conf
+		IFS=${OLD_IFS}
 		# -- sshd ---------------------------------------------------------------------
 		 	echo "--- sshd ----------------------------------------------------------------------"
 		 	mkdir -p /run/sshd
@@ -110,7 +145,135 @@
 		#	ssh-keygen -N "" -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
 		# -- samba --------------------------------------------------------------------
 		 	echo "--- samba ---------------------------------------------------------------------"
-		 	testparm -s /etc/samba/smb.conf.ucf-dist | sed -e '/global/ ados charset = CP932\nclient ipc min protocol = NT1\nclient min protocol = NT1\nserver min protocol = NT1\n' > ./smb.conf
+		 	SVR_FQDN=`hostname`															# 本機のFQDN
+		 	SVR_NAME=`hostname -s`														# 本機のホスト名
+		 	if [ "${SVR_FQDN}" != "${SVR_NAME}" ]; then									# ワークグループ名(ドメイン名)
+		 		WGP_NAME=`hostname | awk -F '.' '{ print $2; }'`
+		 	else
+		 		WGP_NAME=`hostname -d`
+		 		SVR_FQDN=${SVR_NAME}.${WGP_NAME}										# 本機のFQDN
+		 	fi
+		 	CMD_UADD=`${CMD_WICH} useradd`
+		 	CMD_UDEL=`${CMD_WICH} userdel`
+		 	CMD_GADD=`${CMD_WICH} groupadd`
+		 	CMD_GDEL=`${CMD_WICH} groupdel`
+		 	CMD_GPWD=`${CMD_WICH} gpasswd`
+		 	CMD_FALS=`${CMD_WICH} false`
+		 	# -------------------------------------------------------------------------
+		 	testparm -s -v |                                                                        \
+		 	sed -e 's/\(dos charset\) =.*$/\1 = CP932/'                                             \
+		 	    -e "s/\(workgroup\) =.*$/\1 = ${WGP_NAME}/"                                         \
+		 	    -e "s/\(netbios name\) =.*$/\1 = ${SVR_NAME}/"                                      \
+		 	    -e 's/\(security\) =.*$/\1 = USER/'                                                 \
+		 	    -e 's/\(server role\) =.*$/\1 = standalone server/'                                 \
+		 	    -e 's/\(pam password change\) =.*$/\1 = Yes/'                                       \
+		 	    -e 's/\(load printers\) =.*$/\1 = No/'                                              \
+		 	    -e 's~\(log file\) =.*$~\1 = /var/log/samba/log.%m~'                                \
+		 	    -e 's/\(max log size\) =.*$/\1 = 1000/'                                             \
+		 	    -e 's/\(min protocol\) =.*$/\1 = NT1/g'                                             \
+		 	    -e 's~\(printcap name\) =.*$~\1 = /dev/null~'                                       \
+		 	    -e "s~\(add user script\) =.*$~\1 = ${CMD_UADD} %u~"                                \
+		 	    -e "s~\(delete user script\) =.*$~\1 = ${CMD_UDEL} %u~"                             \
+		 	    -e "s~\(add group script\) =.*$~\1 = ${CMD_GADD} %g~"                               \
+		 	    -e "s~\(delete group script\) =.*$~\1 = ${CMD_GDEL} %g~"                            \
+		 	    -e "s~\(add user to group script\) =.*$~\1 = ${CMD_GPWD} -a %u %g~"                 \
+		 	    -e "s~\(delete user from group script\) =.*$~\1 = ${CMD_GPWD} -d %u %g~"            \
+		 	    -e "s~\(add machine script\) =.*$~\1 = ${CMD_UADD} -d /dev/null -s ${CMD_FALS} %u~" \
+		 	    -e 's/\(logon script\) =.*$/\1 = logon.bat/'                                        \
+		 	    -e 's/\(logon path\) =.*$/\1 = \\\\%L\\profiles\\%U/'                               \
+		 	    -e 's/\(domain logons\) =.*$/\1 = Yes/'                                             \
+		 	    -e 's/\(os level\) =.*$/# \1 = 35/'                                                 \
+		 	    -e 's/\(preferred master\) =.*$/\1 = Yes/'                                          \
+		 	    -e 's/\(domain master\) =.*$/\1 = Yes/'                                             \
+		 	    -e 's/\(wins support\) =.*$/\1 = Yes/'                                              \
+		 	    -e 's/\(unix password sync\) =.*$/\1 = No/'                                         \
+		 	    -e '/idmap config \* : backend =/i \\tidmap config \* : range = 1000-10000'         \
+		 	    -e 's/\(admin users\) =.*$/# \1 = administrator/'                                   \
+		 	    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
+		 	    -e 's/\(multicast dns register\) =.*$/\1 = No/'                                     \
+		 	    -e '/map to guest =.*$/d'                                                           \
+		 	    -e '/null passwords =.*$/d'                                                         \
+		 	    -e '/obey pam restrictions =.*$/d'                                                  \
+		 	    -e '/enable privileges =.*$/d'                                                      \
+		 	    -e '/password level =.*$/d'                                                         \
+		 	    -e '/client use spnego principal =.*$/d'                                            \
+		 	    -e '/syslog =.*$/d'                                                                 \
+		 	    -e '/syslog only =.*$/d'                                                            \
+		 	    -e '/use spnego =.*$/d'                                                             \
+		 	    -e '/paranoid server security =.*$/d'                                               \
+		 	    -e '/dns proxy =.*$/d'                                                              \
+		 	    -e '/time offset =.*$/d'                                                            \
+		 	    -e '/usershare allow guests =.*$/d'                                                 \
+		 	    -e '/idmap backend =.*$/d'                                                          \
+		 	    -e '/idmap uid =.*$/d'                                                              \
+		 	    -e '/idmap gid =.*$/d'                                                              \
+		 	    -e '/winbind separator =.*$/d'                                                      \
+		 	    -e '/acl check permissions =.*$/d'                                                  \
+		 	    -e '/only user =.*$/d'                                                              \
+		 	    -e '/share modes =.*$/d'                                                            \
+		 	    -e '/nbt client socket address =.*$/d'                                              \
+		 	    -e '/lsa over netlogon =.*$/d'                                                      \
+		 	    -e '/.* = $/d'                                                                      \
+		 	    -e '/client lanman auth =.*$/d'                                                     \
+		 	    -e '/client NTLMv2 auth =.*$/d'                                                     \
+		 	    -e '/client plaintext auth =.*$/d'                                                  \
+		 	    -e '/client schannel =.*$/d'                                                        \
+		 	    -e '/client use spnego principal =.*$/d'                                            \
+		 	    -e '/client use spnego =.*$/d'                                                      \
+		 	    -e '/domain logons =.*$/d'                                                          \
+		 	    -e '/enable privileges =.*$/d'                                                      \
+		 	    -e '/encrypt passwords =.*$/d'                                                      \
+		 	    -e '/idmap backend =.*$/d'                                                          \
+		 	    -e '/idmap gid =.*$/d'                                                              \
+		 	    -e '/idmap uid =.*$/d'                                                              \
+		 	    -e '/lanman auth =.*$/d'                                                            \
+		 	    -e '/lsa over netlogon =.*$/d'                                                      \
+		 	    -e '/nbt client socket address =.*$/d'                                              \
+		 	    -e '/null passwords =.*$/d'                                                         \
+		 	    -e '/raw NTLMv2 auth =.*$/d'                                                        \
+		 	    -e '/server schannel =.*$/d'                                                        \
+		 	    -e '/syslog =.*$/d'                                                                 \
+		 	    -e '/syslog only =.*$/d'                                                            \
+		 	    -e '/unicode =.*$/d'                                                                \
+		 	    -e '/acl check permissions =.*$/d'                                                  \
+		 	    -e '/allocation roundup size =.*$/d'                                                \
+		 	    -e '/blocking locks =.*$/d'                                                         \
+		 	    -e '/copy =.*$/d'                                                                   \
+		 	    -e '/winbind separator =.*$/d'                                                      \
+		 	    -e '/domain master =.*$/d'                                                          \
+		 	    -e '/logon path =.*$/d'                                                             \
+		 	    -e '/logon script =.*$/d'                                                           \
+		 	    -e '/pam password change =.*$/d'                                                    \
+		 	    -e '/preferred master =.*$/d'                                                       \
+		 	    -e '/server role =.*$/d'                                                            \
+		 	    -e '/wins support =.*$/d'                                                           \
+		 	    -e '/dns proxy =.*$/d'                                                              \
+		 	    -e '/map to guest =.*$/d'                                                           \
+		 	    -e '/obey pam restrictions =.*$/d'                                                  \
+		 	    -e '/pam password change =.*$/d'                                                    \
+		 	    -e '/realm =.*$/d'                                                                  \
+		 	    -e '/server role =.*$/d'                                                            \
+		 	    -e '/server services =.*$/d'                                                        \
+		 	    -e '/server string =.*$/d'                                                          \
+		 	    -e '/syslog =.*$/d'                                                                 \
+		 	    -e '/unix password sync =.*$/d'                                                     \
+		 	    -e '/usershare allow guests =.*$/d'                                                 \
+		 	> ./smb.conf
+		 	# -------------------------------------------------------------------------
+		 	IFS= INS_STR=$(
+		 	cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
+		 		dos charset = CP932\\n
+		 		#client ipc min protocol = NT1\\n
+		 		#client min protocol = NT1\\n
+		 		#server min protocol = NT1\\n
+		 		multicast dns register = No
+		_EOT_
+		 	)
+		 	IFS=${OLD_IFS}
+		#	testparm -s /etc/samba/smb.conf |                                                       \
+		#	sed -e "/global/a ${INS_STR}"                                                           \
+		#	> ./smb.conf
+		 	# -------------------------------------------------------------------------
 		 	testparm -s ./smb.conf > /etc/samba/smb.conf
 		 	rm -f ./smb.conf /etc/samba/smb.conf.ucf-dist
 		# -- root and user's setting --------------------------------------------------
@@ -247,21 +410,48 @@ _EOT_SH_
 	    -e 's/^\(pool\)/#\1/g'                    \
 	    -e '/^# pool:/ a pool ntp.nict.jp iburst'
 	# -------------------------------------------------------------------------
-	sed -i ./knoppix-live/fsimg/etc/rc.local                                      \
-	    -e 's/^SERVICES="\([a-z]*\)"/SERVICES="\1 rsyslog named ssh smbd nmbd"/g'
+	sed -i ./knoppix-live/fsimg/etc/rc.local                                         \
+	    -e 's/^\(SERVICES\)="\([a-z]*\)"/\1="\2 named ssh smbd nmbd avahi-daemon"/g'
 	# -------------------------------------------------------------------------
 	sed -i.orig ./knoppix-live/fsimg/etc/resolv.conf  \
 	    -e '$anameserver 1.1.1.1\nnameserver 1.0.0.1'
-	sed -i.orig ./knoppix-live/fsimg/etc/apt/sources.list             \
-	    -e 's/ftp.de.debian.org/deb.debian.org/g'                     \
-	    -e 's~^\(deb http://debian-knoppix.alioth.debian.org\)~#\1~g' \
-	    -e 's~\(security.debian.org\)~\1/debian-security~g'           \
-	    -e '/security.debian.org/ s/stable/stable-security/g'         \
-	    -e '/security.debian.org/a deb http://security.debian.org/debian-security testing-security main contrib non-free' \
-	    -e '/^deb.*oldstable/i deb http://deb.debian.org/debian oldoldstable main contrib non-free' \
-	    -e 's~^\(deb .* experimental\)~#\1~g' \
-	    -e 's~^\(deb .* unstable\)~#\1~g'
-#	    -e 's~^\(deb .* testing\)~#\1~g'
+	cp -p ./knoppix-live/fsimg/etc/apt/sources.list \
+	      ./knoppix-live/fsimg/etc/apt/sources.list.orig
+	OLD_IFS=${IFS}
+	IFS= INS_STR1=$(
+	cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
+		deb http://security.debian.org/debian-security testing-security main contrib non-free
+_EOT_
+	)
+	IFS= INS_STR2=$(
+	cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
+		deb http://deb.debian.org/debian testing-updates main contrib non-free
+_EOT_
+	)
+	IFS= INS_STR3=$(
+	cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
+		deb http://deb.debian.org/debian stable-backports-sloppy main contrib non-free\n
+		deb http://deb.debian.org/debian stable-backports main contrib non-free\n
+		deb http://deb.debian.org/debian stable-proposed-updates main contrib non-free\n
+		deb http://deb.debian.org/debian stable-updates main contrib non-free\n
+		deb http://deb.debian.org/debian testing-backports main contrib non-free\n
+		deb http://deb.debian.org/debian testing-proposed-updates main contrib non-free\n
+		deb http://deb.debian.org/debian testing-updates main contrib non-free
+_EOT_
+	)
+	IFS=${OLD_IFS}
+	EXCLUS='oldoldstable\|oldstable\|testing\|unstable\|experimental'
+	cat ./knoppix-live/fsimg/etc/apt/sources.list.orig                             | \
+	sed  -e 's/ftp\.de/deb/g'                                                        \
+	     -e 's~\(security\.debian\.org\)~\1/debian-security~g'                       \
+	     -e 's~stable/updates~stable-security~g'                                   | \
+	sed  -e "/^deb http:\/\/deb\.debian\.org\/debian testing/a ${INS_STR1}"        | \
+	sed  -e "/^deb http:\/\/deb\.debian\.org\/debian stable-updates/a ${INS_STR2}" | \
+	sed  -e "s/^\(deb .* \(${EXCLUS}\)\(\|-[A-Za-z]*\) .*$\)/#\1/g"                | \
+	sed  -e 's/^\(deb .* \([A-Za-z]*\)-backports-sloppy .*$\)/#\1/g'                 \
+	     -e 's/^\(deb .* \([A-Za-z]*\)-backports .*$\)/#\1/g'                        \
+	     -e 's/^\(deb .* \([A-Za-z]*\)-proposed-updates .*$\)/#\1/g'                 \
+	> ./knoppix-live/fsimg/etc/apt/sources.list
 	# -------------------------------------------------------------------------
 #	sed -i /etc/NetworkManager/NetworkManager.conf \
 #	    -e 's/\(managed\)=.*$/\1=false/'
@@ -331,8 +521,9 @@ _EOT_SH_
 		done < ../KNOPPIX1_FS.txt
 		cp -prnd * "../_wrk0/"
 		rm -rf *
-		echo "--- Remaster HDD -> Compress [xorriso] ----------------------------------------"
+		echo "--- Remaster HDD -> Compress [xorriso:KNOPPIX_FS] -----------------------------"
 		xorriso -as mkisofs -D -R -U -V "${LIVE_VOLID_FS}"  -o ../KNOPPIX_FS.tmp  "../_wrk0/" || exit 1
+		echo "--- Remaster HDD -> Compress [xorriso:KNOPPIX1_FS] ----------------------------"
 		xorriso -as mkisofs -D -R -U -V "${LIVE_VOLID_FS1}" -o ../KNOPPIX1_FS.tmp "../_wrk1/" || exit 1
 	popd > /dev/null
 	# -------------------------------------------------------------------------
@@ -340,8 +531,9 @@ _EOT_SH_
 	       ./knoppix-live/_wrk0/* \
 	       ./knoppix-live/_wrk1/*
 	# -------------------------------------------------------------------------
-	echo "--- Remaster HDD -> Compress [create_compressed_fs] -------------------------------"
+	echo "--- Remaster HDD -> Compress [create_compressed_fs:KNOPPIX] -----------------------"
 	create_compressed_fs -L  9 -f ./knoppix-live/isotemp -q ./knoppix-live/KNOPPIX_FS.tmp  ./knoppix-live/cdimg/KNOPPIX/KNOPPIX  || exit 1
+	echo "--- Remaster HDD -> Compress [create_compressed_fs:KNOPPIX1] ----------------------"
 	create_compressed_fs -L  9 -f ./knoppix-live/isotemp -q ./knoppix-live/KNOPPIX1_FS.tmp ./knoppix-live/cdimg/KNOPPIX/KNOPPIX1 || exit 1
 	rm -rf ./knoppix-live/KNOPPIX_FS.tmp  \
 	       ./knoppix-live/KNOPPIX1_FS.tmp

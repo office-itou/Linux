@@ -29,77 +29,8 @@
 ##	   日付       版         名前      改訂内容
 ##	---------- -------- -------------- ----------------------------------------
 ##	2014/11/02 000.0000 J.Itou         新規作成
-##	2018/02/28 000.0000 J.Itou         IPV6対応等
-##	2018/03/07 000.0000 J.Itou         cron用シェル修正
-##	2018/03/10 000.0000 J.Itou         .curlrc追加
-##	2018/03/12 000.0000 J.Itou         cifs関連修正
-##	2018/03/20 000.0000 J.Itou         rootログインの抑制追加・他
-##	2018/04/29 000.0000 J.Itou         処理見直し(CentOS 7対応含む)
-##	2018/05/19 000.0000 J.Itou         処理見直し(ネットワーク周り)
-##	2018/05/21 000.0000 J.Itou         処理見直し(ネットワーク周り)
-##	2018/05/28 000.0000 J.Itou         処理見直し(smb.conf:SMB2対応)
-##	2018/06/03 000.0000 J.Itou         処理見直し(addusers.txtの不具合修正)
-##	2018/06/07 000.0000 J.Itou         処理見直し(bind周り)
-##	2018/06/07 000.0000 J.Itou         処理見直し(.vimrc周り)
-##	2018/06/15 000.0000 J.Itou         処理見直し(nfs/cifs/その他)
-##	2018/06/28 000.0000 J.Itou         処理見直し(aptitude/apt,dnf/yum)
-##	2018/06/29 000.0000 J.Itou         処理見直し(Fedora 28対応含む)
-##	2018/07/01 000.0000 J.Itou         不具合修正(Fedora 28対応含む)
-##	2018/07/07 000.0000 J.Itou         処理見直し(CentOS 7対応含む)
-##	2018/07/07 000.0000 J.Itou         不具合修正(bind周り)
-##	2018/11/23 000.0000 J.Itou         不具合修正(vsftp周り)
-##	2019/07/10 000.0000 J.Itou         不具合修正(最新化対応)
-##	2018/06/29 000.0000 J.Itou         処理見直し(webmin導入停止)
-##	2019/07/13 000.0000 J.Itou         不具合修正(ipv6周り)
-##	2020/01/04 000.0000 J.Itou         不具合修正(nologin検索)
-##	2020/01/10 000.0000 J.Itou         不具合修正(.vimrc加筆)
-##	2020/05/09 000.0000 J.Itou         不具合修正(Ubuntu 20.04対応含む)
-##	2020/09/28 000.0000 J.Itou         不具合修正(対象OSの変更含む)
-##	2020/09/30 000.0000 J.Itou         不具合修正(openSUSE対応含む)
-##	2020/10/15 000.0000 J.Itou         不具合修正(openSUSE対応含む)
-##	2020/10/19 000.0000 J.Itou         不具合修正(いろいろ)
-##	2020/11/03 000.0000 J.Itou         不具合修正(いろいろ)
-##	2020/11/04 000.0000 J.Itou         不具合修正(対象OSの確認処理)
-##	2020/11/08 000.0000 J.Itou         処理追加(chrony.conf編集)
-##	2020/11/09 000.0000 J.Itou         処理追加(ubuntu通信障害対策)
-##	2020/11/11 000.0000 J.Itou         処理追加(いろいろ)
-##	2020/11/18 000.0000 J.Itou         不具合修正(いろいろ)
-##	2020/12/22 000.0000 J.Itou         不具合修正(nologin設定値)
-##	2021/01/10 000.0000 J.Itou         不具合修正(chromium導入関係)
-##	2021/02/06 000.0000 J.Itou         不具合修正(chromium導入関係)
-##	2021/02/25 000.0000 J.Itou         不具合修正(find周り)
-##	2021/03/09 000.0000 J.Itou         処理見直し(chromium導入停止)
-##	2021/03/16 000.0000 J.Itou         処理見直し(google chrome導入等)
-##	2021/06/23 000.0000 J.Itou         処理見直し(Rocky Linux 8.4対応含む)
-##	2021/07/09 000.0000 J.Itou         処理追加(関数追加)
-##	2021/08/03 000.0000 J.Itou         処理見直し(NICの順番をstatic優先に)
-##	2021/08/06 000.0000 J.Itou         処理見直し(不具合修正等を含む)
-##	2021/08/14 000.0000 J.Itou         処理見直し(不具合修正等を含む)
-##	2021/10/08 000.0000 J.Itou         miraclelinux 8.4追加
-##	2021/11/09 000.0000 J.Itou         不具合修正(いろいろ)
-##	2021/11/20 000.0000 J.Itou         不具合修正(いろいろ)
-##	2021/11/26 000.0000 J.Itou         不具合修正(プロセス制御処理)
-##	2021/12/07 000.0000 J.Itou         処理見直し(bind/samba周り)
-##	2021/12/11 000.0000 J.Itou         処理見直し(ネットワーク設定周り)
-##	2021/12/13 000.0000 J.Itou         処理見直し(いろいろ)
-##	2021/12/14 000.0000 J.Itou         処理見直し(いろいろ)
-##	2021/12/15 000.0000 J.Itou         処理見直し(avahi-daemon)
-##	2021/12/16 000.0000 J.Itou         処理見直し(いろいろ)
-##	2021/12/17 000.0000 J.Itou         処理見直し(/etc/nsswitch.conf)
-##	2021/12/19 000.0000 J.Itou         処理見直し(いろいろ)
-##	2021/12/22 000.0000 J.Itou         処理見直し(いろいろ)
-##	2021/12/24 000.0000 J.Itou         処理見直し(いろいろ)
-##	2021/12/24 000.0000 J.Itou         不具合修正(いろいろ)
-##	2022/01/09 000.0000 J.Itou         処理見直し(zypper --quiet削除:処理判別が不可能なため)
-##	2022/03/27 000.0000 J.Itou         処理追加(minidlna.conf編集)
-##	2022/04/05 000.0000 J.Itou         不具合修正(dhcpd)
-##	2022/04/13 000.0000 J.Itou         不具合修正(ネットワーク設定周り)
-##	2022/04/15 000.0000 J.Itou         不具合修正(いろいろ)
-##	2022/04/16 000.0000 J.Itou         不具合修正(いろいろ)
-##	2022/04/21 000.0000 J.Itou         処理見直し
-##	2022/04/25 000.0000 J.Itou         不具合修正(いろいろ)
-##	2022/04/27 000.0000 J.Itou         不具合修正(ネットワーク設定周り)
-##	2022/04/28 000.0000 J.Itou         処理見直し
+##	2022/05/02 000.0000 J.Itou         処理見直し
+##	2022/05/06 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -o ignoreof						# Ctrl+Dで終了しない
@@ -116,6 +47,46 @@
 	OWN_PIDS=$$
 	OWN_RSTA=0
 
+# ユーザー設定 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+fncUserSetting () {
+	# ユーザー環境に合わせて変更する部分 --------------------------------------
+	# 登録ユーザーリスト (pdbedit -L -w の出力結果を拡張) ･････････････････････
+	#   UAR_ARRAY=("login name:full name:uid::lanman passwd hash:nt passwd hash:account flag:last change time:admin flag")
+	# sample: administrator's password="password"
+	#         NT Password hash: echo -n "password" | iconv -f UTF-8 -t UTF-16LE | openssl md4 | tr a-z A-Z
+	#         Last Change Time: echo "obase=16; `date +%s -d '2018-02-24 08:54:00'`" | bc
+	USR_ARRY=(                                                                                                                             \
+	    "administrator:Administrator:1001::XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:1" \
+	)
+
+	# ･････････････････････････････････････････････････････････････････････････
+	NTP_NAME=ntp.nict.jp														# NTPサーバー
+	# ･････････････････････････････････････････････････････････････････････････
+	EXT_ZONE=""																	# マスターDNSのドメイン名
+	EXT_ADDR=""																	#   〃         IPアドレス
+	# ･････････････････････････････････････････････････････････････････････････
+#	VGA_RESO=("800x600x32"   "789")												# コンソールの解像度： 800× 600：1600万色
+#	VGA_RESO=("1024x768x32"  "792")												#   〃              ：1024× 768：1600万色
+	VGA_RESO=("1280x1024x32" "795")												#   〃              ：1280×1024：1600万色
+#	VGA_RESO=("1920x1080x32"    "")												#   〃              ：1920×1080：1600万色
+	# ･････････････････････････････････････････････････････････････････････････
+	DIR_SHAR=/share																# 共有ディレクトリーのルート
+	# ･････････････････････････････････････････････････････････････････････････
+	SET_LANG="ja_JP.UTF-8"														# 使用言語設定
+#	SET_LNGE="ja:en"															# 環境変数 LANGUAGE
+	# ･････････････････････････････････････････････････････････････････････････
+#	RUN_CLAM=("enable"  "")														# 起動停止設定：clamav-freshclam
+	RUN_SSHD=("enable"  "")														#   〃        ：ssh / sshd
+	RUN_BIND=("enable"  "")														#   〃        ：bind9 / named
+	RUN_DHCP=("disable" "")														#   〃        ：isc-dhcp-server / dhcpd
+	RUN_SMBD=("enable"  "")														#   〃        ：samba / smbd,nmbd / smb,nmb
+	RUN_DLNA=("disable" "")														#   〃        ：minidlna
+	# -------------------------------------------------------------------------
+	FLG_SVER=1																	# 0以外でサーバー仕様でセッティング
+	DEF_USER="${SUDO_USER}"														# インストール時に作成したユーザー名
+}
+
+# 共通処理 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # Pause処理 -------------------------------------------------------------------
 fncPause () {
 	local RET_STS=$1
@@ -380,38 +351,9 @@ fncInitialize () {
 #		echo "rootユーザーで実行して下さい。"
 #		exit 1
 	fi
-	# ユーザー環境に合わせて変更する部分 --------------------------------------
-	# 登録ユーザーリスト (pdbedit -L -w の出力結果を拡張) ･････････････････････
-	#   UAR_ARRAY=("login name:full name:uid::lanman passwd hash:nt passwd hash:account flag:last change time:admin flag")
-	USR_ARRY=(                                                                                                                             \
-	    "administrator:Administrator:1001::XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:1" \
-	)	# sample: administrator's password="password"
 
-	# ･････････････････････････････････････････････････････････････････････････
-	NTP_NAME=ntp.nict.jp
-	# ･････････････････････････････････････････････････････････････････････････
-	EXT_ZONE=""																	# マスターDNSのドメイン名
-	EXT_ADDR=""																	#   〃         IPアドレス
-	# ･････････････････････････････････････････････････････････････････････････
-#	VGA_RESO=("800x600x32"   "789")												# コンソールの解像度： 800× 600：1600万色
-#	VGA_RESO=("1024x768x32"  "792")												#   〃              ：1024× 768：1600万色
-	VGA_RESO=("1280x1024x32" "795")												#   〃              ：1280×1024：1600万色
-#	VGA_RESO=("1920x1080x32"    "")												#   〃              ：1920×1080：1600万色
-	# ･････････････････････････････････････････････････････････････････････････
-	DIR_SHAR=/share																# 共有ディレクトリーのルート
-	# ･････････････････････････････････････････････････････････････････････････
-	SET_LANG="ja_JP.UTF-8"														# 使用言語設定
-#	SET_LNGE="ja:en"															# 環境変数 LANGUAGE
-	# ･････････････････････････････････････････････････････････････････････････
-#	RUN_CLAM=("enable"  "")														# 起動停止設定：clamav-freshclam
-	RUN_SSHD=("enable"  "")														#   〃        ：ssh / sshd
-	RUN_BIND=("enable"  "")														#   〃        ：bind9 / named
-	RUN_DHCP=("disable" "")														#   〃        ：isc-dhcp-server / dhcpd
-	RUN_SMBD=("enable"  "")														#   〃        ：samba / smbd,nmbd / smb,nmb
-	RUN_DLNA=("disable" "")														#   〃        ：minidlna
-	# -------------------------------------------------------------------------
-	FLG_SVER=1																	# 0以外でサーバー仕様でセッティング
-	DEF_USER="${SUDO_USER}"														# インストール時に作成したユーザー名
+	# user setting ------------------------------------------------------------
+	fncUserSetting
 
 	# cpu type ----------------------------------------------------------------
 	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
@@ -851,7 +793,8 @@ fncMain () {
 					if [ "`LANG=C dpkg -l chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk '$1=="ii" {print $2;}'`" = "" ]; then
 						fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] $(fncString ${COL_SIZE} '-')"
 						curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
-						${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb
+						DUMMY=`${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb || :`
+						echo "${DUMMY}"
 					fi
 				fi
 				;;
@@ -862,7 +805,8 @@ fncMain () {
 				if [ "`LANG=C dnf list chromium ungoogled-chromium google-chrome-stable 2> /dev/null | sed -n '/Installed Packages/,/Available Packages/p' | awk '/chromium|chrome/ {print $1;}'`" = "" ]; then
 					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] $(fncString ${COL_SIZE} '-')"
 					curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
-					${CMD_AGET} install google-chrome-stable_current_x86_64.rpm
+					DUMMY=`${CMD_AGET} install google-chrome-stable_current_x86_64.rpm || :`
+					echo "${DUMMY}"
 				fi
 				;;
 			"opensuse-leap"       | \
@@ -870,7 +814,8 @@ fncMain () {
 				if [ "`LANG=C zypper --quiet search chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk -F '|' '/chromium|chrome/ {print $1;}' | sed -e 's/ *//g'`" = "" ]; then
 					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] $(fncString ${COL_SIZE} '-')"
 					curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
-					${CMD_AGET} --no-gpg-checks -n install google-chrome-stable_current_x86_64.rpm
+					DUMMY=`${CMD_AGET} --no-gpg-checks -n install google-chrome-stable_current_x86_64.rpm || :`
+					echo "${DUMMY}"
 					zypper --gpg-auto-import-keys refresh
 				fi
 				;;
@@ -878,6 +823,7 @@ fncMain () {
 				;;
 		esac
 	fi
+
 	# ungoogled-chromium --------------------------------------------------
 #	URL_SYS=""
 #	URL_DEB=""
@@ -1081,25 +1027,26 @@ _EOT_
 		    -e 's/^\(dns=.*$\)/#\1/'
 	fi
 	if [ -d /etc/netplan/ ]; then
-		if [   -f /etc/netplan/99-network-manager-static.yaml      ]; then
-			if [ ! -f /etc/netplan/99-network-manager-static.yaml.orig ]; then
-				sed -i.orig /etc/netplan/99-network-manager-static.yaml                                                        \
-				    -e '$ a \      dhcp6: true'                                                                                \
-				    -e '$ a \      ipv6-privacy: true'                                                                         \
-				    -e "/nameservers:/,/addresses:/ s/\(addresses:\) .*\$/\1 \[ 127.0.0.1, ${IP4_DNSA[0]} \]/"
+		for FIL_NAME in /etc/netplan/99-network-manager-static.yaml /etc/netplan/00-installer-config.yaml
+		do
+			if [ ! -f ${FIL_NAME}.orig ] && \
+			   [   -f ${FIL_NAME}      ]; then
+				cp -p ${FIL_NAME} ${FIL_NAME}.orig
+				cat ${FIL_NAME}.orig                                                                                              | \
+				sed -e '/[ |\t]*version:/d'                                                                                       | \
+				sed -e '$ a \  version: 2'                                                                                        | \
+				sed -e '/[ |\t]*dhcp6:/d'                                                                                           \
+				    -e '/[ |\t]*ipv6-privacy:/d'                                                                                    \
+				    -e '/[ |\t]*version: 2/ i \      dhcp6: false'                                                                  \
+				    -e '/[ |\t]*version: 2/ i \      ipv6-privacy: true'                                                          | \
+				sed -z 's/\(\w\+\):\n *- *\( \w\+\)/\1:\2/g'                                                                      | \
+				sed -e 's/\([ |\t]*addresses\|search\): \(.\+\)/\1: \[ \2 \]/g'                                                     \
+				    -e 's/\[[ |\t]*\[/[/g'                                                                                          \
+				    -e 's/\][ |\t]*\]/]/g'                                                                                          \
+				    -e "/[ |\t]*nameservers:/,/[ |\t]*addresses:/ s/\([ |\t]*addresses:\) .*/\1 \[ 127.0.0.1, ${IP4_DNSA[0]} \]/"   \
+				> ${FIL_NAME}
 			fi
-		elif [ -f /etc/netplan/00-installer-config.yaml ]; then
-			if [ ! -f /etc/netplan/00-installer-config.yaml.orig ]; then
-				cp -p /etc/netplan/00-installer-config.yaml /etc/netplan/00-installer-config.yaml.orig
-				cat /etc/netplan/00-installer-config.yaml.orig                                                               | \
-				sed -z 's/\(\w\+\):\n *- *\( \w\+\)/\1:\2/g'                                                                 | \
-				sed -e 's/\(addresses\|search\): \(.\+\)/\1: \[ \2 \]/g'                                                       \
-				    -e '/version: 2/ i \      dhcp6: true'                                                                     \
-				    -e '/version: 2/ i \      ipv6-privacy: true'                                                              \
-				    -e "/nameservers:/,/addresses:/ s/\(addresses:\) .*/\1 \[ 127.0.0.1, ${IP4_DNSA[0]} \]/"                   \
-				> /etc/netplan/00-installer-config.yaml
-			fi
-		fi
+		done
 	elif [ "`${CMD_WICH} connmanctl 2> /dev/null`" != "" ] && [ "`systemctl is-enabled connman`" = "enabled" ]; then
 		if [ ! -d /etc/systemd/system/connman.service.d/ ]; then
 			mkdir -p /etc/systemd/system/connman.service.d/
@@ -1750,8 +1697,6 @@ _EOT_
 			    -e 's/\(load printers\) =.*$/\1 = No/'                                              \
 			    -e 's~\(log file\) =.*$~\1 = /var/log/samba/log.%m~'                                \
 			    -e 's/\(max log size\) =.*$/\1 = 1000/'                                             \
-			    -e 's/\(min protocol\) =.*$/\1 = NT1/'                                              \
-			    -e 's/\(server min protocol\) =.*$/\1 = NT1/'                                       \
 			    -e 's~\(printcap name\) =.*$~\1 = /dev/null~'                                       \
 			    -e "s~\(add user script\) =.*$~\1 = ${CMD_UADD} %u~"                                \
 			    -e "s~\(delete user script\) =.*$~\1 = ${CMD_UDEL} %u~"                             \
@@ -2785,25 +2730,31 @@ fncDebug () {
 		done
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	fncPrint "--- cat ${DIR_BIND}/${FIL_BIND} $(fncString ${COL_SIZE} '-')"
-	if [ -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
-		fncDiff ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BIND}.orig
-	elif [ -f ${DIR_BIND}/${FIL_BIND} ]; then
+	if [ -f ${DIR_BIND}/${FIL_BIND} ]; then
+		fncPrint "--- cat ${DIR_BIND}/${FIL_BIND} $(fncString ${COL_SIZE} '-')"
 		expand -t 4 ${DIR_BIND}/${FIL_BIND}
 	fi
-	# ･････････････････････････････････････････････････････････････････････････
-	fncPrint "--- cat ${DIR_BIND}/${FIL_BIND}.local $(fncString ${COL_SIZE} '-')"
-	if [ -f ${DIR_BIND}/${FIL_BIND}.local.orig ]; then
-		fncDiff ${DIR_BIND}/${FIL_BIND}.local ${DIR_BIND}/${FIL_BIND}.local.orig
-	elif [ -f ${DIR_BIND}/${FIL_BIND}.local ]; then
-		expand -t 4 ${DIR_BIND}/${FIL_BIND}.local
+	if [ -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
+		fncPrint "--- diff ${DIR_BIND}/${FIL_BIND} $(fncString ${COL_SIZE} '-')"
+		fncDiff ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BIND}.orig
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	fncPrint "--- cat ${DIR_BIND}/${FIL_BIND}.options $(fncString ${COL_SIZE} '-')"
-	if [ -f ${DIR_BIND}/${FIL_BIND}.options.orig ]; then
-		fncDiff ${DIR_BIND}/${FIL_BIND}.options ${DIR_BIND}/${FIL_BIND}.options.orig
-	elif [ -f ${DIR_BIND}/${FIL_BIND}.options ]; then
+	if [ -f ${DIR_BIND}/${FIL_BIND}.local ]; then
+		fncPrint "--- cat ${DIR_BIND}/${FIL_BIND}.local $(fncString ${COL_SIZE} '-')"
+		expand -t 4 ${DIR_BIND}/${FIL_BIND}.local
+	fi
+	if [ -f ${DIR_BIND}/${FIL_BIND}.local.orig ]; then
+		fncPrint "--- diff ${DIR_BIND}/${FIL_BIND}.local $(fncString ${COL_SIZE} '-')"
+		fncDiff ${DIR_BIND}/${FIL_BIND}.local ${DIR_BIND}/${FIL_BIND}.local.orig
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+	if [ -f ${DIR_BIND}/${FIL_BIND}.options ]; then
+		fncPrint "--- cat ${DIR_BIND}/${FIL_BIND}.options $(fncString ${COL_SIZE} '-')"
 		expand -t 4 ${DIR_BIND}/${FIL_BIND}.options
+	fi
+	if [ -f ${DIR_BIND}/${FIL_BIND}.options.orig ]; then
+		fncPrint "--- diff ${DIR_BIND}/${FIL_BIND}.options $(fncString ${COL_SIZE} '-')"
+		fncDiff ${DIR_BIND}/${FIL_BIND}.options ${DIR_BIND}/${FIL_BIND}.options.orig
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
 	set +e
@@ -2811,7 +2762,7 @@ fncDebug () {
 	if [ "`${CMD_WICH} ping4 2> /dev/null`" != "" ]; then
 		ping4 -c 4 www.google.com
 	else
-		ping -4 -c 1 localhost > /dev/null 2>&1
+		ping -4 -c 1 localhost &> /dev/null
 		if [ $? -eq 0 ]; then
 			ping -4 -c 4 www.google.com
 		else
@@ -2968,6 +2919,7 @@ fncRecovery () {
 #	set -e
 }
 
+# Main ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 {
 # *****************************************************************************
 # Main処理                                                                    *
@@ -3000,9 +2952,10 @@ fncRecovery () {
 
 	# Main --------------------------------------------------------------------
 	case "${DBG_FLAG}" in
-		"0" )	fncMain 2>&1 | tee -a "${PGM_NAME}.log";;	# main処理
-		"d" )	fncDebug;;									# debug処理
-		"r" )	fncRecovery;;								# recovery処理
+		"0" )	exec &> >(tee -a "${PGM_NAME}.log")
+				fncMain;;				# main処理
+		"d" )	fncDebug;;				# debug処理
+		"r" )	fncRecovery;;			# recovery処理
 		 *  )	;;
 	esac
 
