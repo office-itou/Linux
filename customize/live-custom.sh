@@ -34,13 +34,16 @@
 ##	2022/04/21 000.0000 J.Itou         CentOSのURL変更/処理見直し
 ##	2022/04/22 000.0000 J.Itou         不具合修正
 ##	2022/04/23 000.0000 J.Itou         リスト更新
+##	2022/05/06 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
-#	set -x													# コマンドと引数の展開を表示
-#	set -n													# 構文エラーのチェック
-#	set -eu													# ステータス0以外と未定義変数の参照で終了
-	set -u													# 未定義変数の参照で終了
-#	set -o ignoreof											# Ctrl+Dで終了しない
+#	set -n								# 構文エラーのチェック
+#	set -x								# コマンドと引数の展開を表示
+	set -o ignoreeof					# Ctrl+Dで終了しない
+	set +m								# ジョブ制御を無効にする
+	set -e								# ステータス0以外で終了
+	set -u								# 未定義変数の参照で終了
+
 	trap 'exit 1' 1 2 3 15
 # -----------------------------------------------------------------------------
 	INP_INDX=${@:-""}										# 処理ID
@@ -94,7 +97,9 @@ fncMenu () {
 		# ---------------------------------------------------------------------
 #		if [ "`echo ${CODE_NAME[1]} | sed -n '/\.\*/p'`" != "" ]; then
 			DIR_NAME=`dirname ${CODE_NAME[2]}`
+			set +e
 			FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*> *\(${CODE_NAME[1]}.iso\) *<.*> *\([0-9A-Za-z]*-[0-9A-Za-z]*-[0-9A-Za-z]*\) *\([0-9]*:[0-9]*\).*<*.*/\1 \2 \3/p"))
+			set -e
 			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
 #				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"`
 				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
@@ -102,7 +107,9 @@ fncMenu () {
 				CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
 				CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
 			else
+				set +e
 				FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*> *\(${CODE_NAME[1]}.iso\) *<.*>/\1/p"))
+				set -e
 				if [ "${FIL_INFO[0]:+UNSET}" != "" ]; then
 					CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
 #					CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
@@ -197,16 +204,22 @@ fncRemaster () {
 	local CFG_NAME="${CODE_NAME[3]}"
 	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/${CFG_NAME}"
 	# -------------------------------------------------------------------------
+	set +e
 	umount -q ${WORK_DIRS}/${CODE_NAME[1]}/mnt > /dev/null 2>&1
+	set -e
 	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
 	mkdir -p ${WORK_DIRS}/${CODE_NAME[1]}/image ${WORK_DIRS}/${CODE_NAME[1]}/decomp ${WORK_DIRS}/${CODE_NAME[1]}/mnt
 	# --- remaster ------------------------------------------------------------
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
+			set +e
 			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			set -e
 		else
+			set +e
 			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			set -e
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -215,7 +228,9 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
+				set +e
 				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+				set -e
 			fi
 			if [ -f "header.txt" ]; then
 				rm -f "header.txt"
@@ -245,9 +260,13 @@ fncRemaster () {
 					if [ -f isolinux/txt.cfg ]; then
 						if [ ! -f "../../../${WALL_FILE}" ]; then
 							fncPrint "--- get splash.png $(fncString ${COL_SIZE} '-')"
+							set +e
 							curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
+							set -e
 						else
+							set +e
 							curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${WALL_URL}"
+							set -e
 							WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 							WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
 							WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
@@ -256,7 +275,9 @@ fncRemaster () {
 							FILE_DATE=`echo ${FILE_INFO} | awk '{print $6;}'`
 							if [ "${WEB_SIZE}" != "${FILE_SIZE}" ] || [ "${WEB_DATE}" != "${FILE_DATE}" ]; then
 								fncPrint "--- get splash.png $(fncString ${COL_SIZE} '-')"
+								set +e
 								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
+								set -e
 							fi
 							if [ -f "header.txt" ]; then
 								rm -f "header.txt"
@@ -277,7 +298,9 @@ fncRemaster () {
 				cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
 			else
 				fncPrint "--- get preseed.cfg $(fncString ${COL_SIZE} '-')"
+				set +e
 				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+				set -e
 			fi
 			# ---------------------------------------------------------
 			if [ "`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`" != "" ]; then
@@ -295,7 +318,9 @@ fncRemaster () {
 					cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
 				else
 					fncPrint "--- get user-data $(fncString ${COL_SIZE} '-')"
+					set +e
 					curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 ]; then return 1; fi
+					set -e
 				fi
 			fi
 			# --- Get EFI Image -----------------------------------------------

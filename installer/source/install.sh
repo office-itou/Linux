@@ -31,13 +31,16 @@
 ##	2014/11/02 000.0000 J.Itou         新規作成
 ##	2022/05/02 000.0000 J.Itou         処理見直し
 ##	2022/05/06 000.0000 J.Itou         処理見直し
+##	2022/05/06 000.0000 J.Itou         処理見直し(unattended-upgrades対策)
+##	2022/05/06 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
-#	set -o ignoreof						# Ctrl+Dで終了しない
 #	set -n								# 構文エラーのチェック
 #	set -x								# コマンドと引数の展開を表示
-	set -m								# ジョブ制御を有効にする
-	set -eu								# ステータス0以外と未定義変数の参照で終了
+	set -o ignoreeof					# Ctrl+Dで終了しない
+	set +m								# ジョブ制御を無効にする
+	set -e								# ステータス0以外で終了
+	set -u								# 未定義変数の参照で終了
 
 	trap 'exit 1' 1 2 3 15
 
@@ -597,7 +600,10 @@ fncInitialize () {
 	if [ -f /etc/lightdm/users.conf ]; then
 		LIN_CHSH=`awk -F '[ =]' '$1=="hidden-shells" {print $2;}' /etc/lightdm/users.conf`
 	else
-		LIN_CHSH=`find /bin/ /sbin/ /usr/sbin/ -mindepth 1 -maxdepth 1 \( -name 'false' -o -name 'nologin' \) -print | head -n 1`
+		LIN_CHSH=`awk -F ':' '$1=="root" && $7~/(false|nologin)/ {print $7;}' /etc/passwd`
+		if [ "${LIN_CHSH}" = "" ]; then
+			LIN_CHSH=`${CMD_WICH} nologin 2> /dev/null || ${CMD_WICH} false 2> /dev/null`
+		fi
 	fi
 	if [ "`${CMD_WICH} usermod 2> /dev/null`" != "" ]; then
 		CMD_CHSH="`${CMD_WICH} usermod` -s ${LIN_CHSH}"
@@ -712,6 +718,13 @@ fncMain () {
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
+			# --- unattended-upgrades停止 ---------------------------------------------
+			if [ "`${CMD_WICH} unattended-upgrades 2> /dev/null`" != "" ] \
+			&& [ "`systemctl is-active unattended-upgrades.service`" = "active" ]; then
+				fncPrint "- stopping unattended-upgrades $(fncString ${COL_SIZE} '-')"
+				systemctl stop unattended-upgrades.service
+			fi
+			# --- sources.list更新 ----------------------------------------------------
 			fncPrint "- System Update $(fncString ${COL_SIZE} '-')"
 			if [ ! -f /etc/apt/sources.list.orig ]; then
 				sed -i.orig /etc/apt/sources.list \
@@ -793,8 +806,7 @@ fncMain () {
 					if [ "`LANG=C dpkg -l chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk '$1=="ii" {print $2;}'`" = "" ]; then
 						fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] $(fncString ${COL_SIZE} '-')"
 						curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
-						DUMMY=`${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb || :`
-						echo "${DUMMY}"
+						${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb
 					fi
 				fi
 				;;
@@ -805,8 +817,7 @@ fncMain () {
 				if [ "`LANG=C dnf list chromium ungoogled-chromium google-chrome-stable 2> /dev/null | sed -n '/Installed Packages/,/Available Packages/p' | awk '/chromium|chrome/ {print $1;}'`" = "" ]; then
 					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] $(fncString ${COL_SIZE} '-')"
 					curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
-					DUMMY=`${CMD_AGET} install google-chrome-stable_current_x86_64.rpm || :`
-					echo "${DUMMY}"
+					${CMD_AGET} install google-chrome-stable_current_x86_64.rpm
 				fi
 				;;
 			"opensuse-leap"       | \
@@ -814,8 +825,7 @@ fncMain () {
 				if [ "`LANG=C zypper --quiet search chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk -F '|' '/chromium|chrome/ {print $1;}' | sed -e 's/ *//g'`" = "" ]; then
 					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] $(fncString ${COL_SIZE} '-')"
 					curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
-					DUMMY=`${CMD_AGET} --no-gpg-checks -n install google-chrome-stable_current_x86_64.rpm || :`
-					echo "${DUMMY}"
+					${CMD_AGET} --no-gpg-checks -n install google-chrome-stable_current_x86_64.rpm
 					zypper --gpg-auto-import-keys refresh
 				fi
 				;;
@@ -2359,7 +2369,8 @@ _EOT_
 		USR_SUDO=`awk -F ':' -v ORS="," '$1=="'${GRP_SUDO}'" {print $4;}' /etc/group | sed -e 's/,$//'`
 	fi
 	# -------------------------------------------------------------------------
-	if [ "${USR_SUDO}" != "" ] && [ "`awk -F ':' '/^root:/ {print $7;}' /etc/passwd`" != "${LIN_CHSH}" ]; then
+	OLD_CHSH=`awk -F ':' '$1=="root" {print $7;}' /etc/passwd`
+	if [ "${USR_SUDO}" != "" ] && [ "`echo ${OLD_CHSH} | awk '$1~/(false|nologin)/ {print $1;}'`" = "" ]; then
 		fncPrint "=== 以下のユーザーが ${GRP_SUDO} に属しています。 $(fncString ${COL_SIZE} '=')"
 		echo ${USR_SUDO}
 		fncPrint "$(fncString ${COL_SIZE} '=')"
@@ -2368,26 +2379,29 @@ _EOT_
 			echo -n "root ログインできないように変更しますか？ ('YES' or 'no') "
 			set +e
 			read -t 10 DUMMY
+			RET_CD=$?
 			set -e
-			if [ "${DUMMY}" = "" ]; then
+			if [ ${RET_CD} -ne 0 ] && [ "${DUMMY}" = "" ]; then
 				OWN_RSTA=1
 				DUMMY="YES"
 				echo ${DUMMY}
 			fi
 			case "${DUMMY}" in
 				"YES" )
-					${CMD_CHSH} root
-					if [ $? -ne 0 ]; then
-						echo "変更に失敗しました。"
+					${CMD_CHSH} root	# sudo usermod -s `which bash` root 等で復元
+					RET_CD=$?
+					NEW_CHSH=`awk -F ':' '$1=="root" {print $7;}' /etc/passwd`
+					if [ ${RET_CD} -ne 0 ]; then
+						echo "変更に失敗しました。: '${OLD_CHSH}'→'${NEW_CHSH}'"
 						fncPrint "$(fncString ${COL_SIZE} '=')"
 					else
-						echo "変更を実行しました。"
+						echo "変更を実行しました。: '${OLD_CHSH}'→'${NEW_CHSH}'"
 						fncPrint "$(fncString ${COL_SIZE} '=')"
 						break
 					fi
 					;;
 				"no" )
-					echo "変更を中止しました。"
+					echo "変更を中止しました。: '${OLD_CHSH}'"
 					fncPrint "$(fncString ${COL_SIZE} '=')"
 					break
 					;;
@@ -2440,9 +2454,9 @@ _EOT_
 	echo "`date +"%Y/%m/%d %H:%M:%S"` 設定処理が終了しました。"
 	echo " [ sudo reboot ] して下さい。"
 	fncPrint "$(fncString ${COL_SIZE} '*')"
-	if [ ${OWN_RSTA} -ne 0 ]; then
-		reboot
-	fi
+#	if [ ${OWN_RSTA} -ne 0 ]; then
+#		reboot
+#	fi
 }
 
 # Debug :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

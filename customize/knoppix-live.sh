@@ -5,8 +5,13 @@
 	LIVE_FILE="KNOPPIX_V9.1DVD-2021-01-25-EN.iso"
 	LIVE_DEST=`echo "${LIVE_FILE}" | sed -e 's/-EN/-JP/g'`
 # == initialize ===============================================================
-#	set -m								# ジョブ制御を有効にする
-#	set -eu								# ステータス0以外と未定義変数の参照で終了
+#	set -n								# 構文エラーのチェック
+#	set -x								# コマンドと引数の展開を表示
+	set -o ignoreeof					# Ctrl+Dで終了しない
+	set +m								# ジョブ制御を無効にする
+	set -e								# ステータス0以外で終了
+	set -u								# 未定義変数の参照で終了
+
 	echo "*******************************************************************************"
 	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]"
 	echo "*******************************************************************************"
@@ -14,11 +19,13 @@
 # == tools install ============================================================
 #	apt-get update && apt-get -y install debootstrap xorriso isolinux
 # == initial processing =======================================================
+	set +e
 	umount -lf ./knoppix-live/media         > /dev/null 2>&1
 	umount -lf ./knoppix-live/fsimg/sys     > /dev/null 2>&1
 	umount -lf ./knoppix-live/fsimg/proc    > /dev/null 2>&1
 	umount -lf ./knoppix-live/fsimg/dev/pts > /dev/null 2>&1
 	umount -lf ./knoppix-live/fsimg/dev     > /dev/null 2>&1
+	set -e
 	# -------------------------------------------------------------------------
 	rm -rf   ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg ./knoppix-live/_work ./knoppix-live/_wrk0 ./knoppix-live/_wrk1 ./knoppix-live/KNOPPIX_FS.tmp ./knoppix-live/KNOPPIX1_FS.tmp
 	mkdir -p ./knoppix-live/media ./knoppix-live/cdimg ./knoppix-live/fsimg ./knoppix-live/_work ./knoppix-live/_wrk0 ./knoppix-live/_wrk1
