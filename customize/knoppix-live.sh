@@ -265,18 +265,19 @@
 		 	    -e '/syslog =.*$/d'                                                                 \
 		 	    -e '/unix password sync =.*$/d'                                                     \
 		 	    -e '/usershare allow guests =.*$/d'                                                 \
+		 	    -e '/(client ipc\|client\|server) min protocol = .*$/d'                             \
 		 	> ./smb.conf
 		 	# -------------------------------------------------------------------------
-		 	IFS= INS_STR=$(
-		 	cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
-		 		dos charset = CP932\\n
-		 		#client ipc min protocol = NT1\\n
-		 		#client min protocol = NT1\\n
-		 		#server min protocol = NT1\\n
-		 		multicast dns register = No
-		_EOT_
-		 	)
-		 	IFS=${OLD_IFS}
+		#	IFS= INS_STR=$(
+		#	cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
+		#		dos charset = CP932\\n
+		#		#client ipc min protocol = NT1\\n
+		#		#client min protocol = NT1\\n
+		#		#server min protocol = NT1\\n
+		#		multicast dns register = No
+		#_EOT_
+		#	)
+		#	IFS=${OLD_IFS}
 		#	testparm -s /etc/samba/smb.conf |                                                       \
 		#	sed -e "/global/a ${INS_STR}"                                                           \
 		#	> ./smb.conf
