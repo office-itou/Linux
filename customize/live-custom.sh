@@ -1309,6 +1309,7 @@ _EOT_SH_
 		"ubuntu" )
 			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
 			-o   "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" \
+			-o   "`${CMD_WICH} mksquashfs 2> /dev/null`" = ""    \
 			-o   ! -f "${DIR_LINX}" ]; then
 				${CMD_AGET} update
 				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
@@ -1316,6 +1317,9 @@ _EOT_SH_
 				fi
 				if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" ]; then
 					${CMD_AGET} install isomd5sum
+				fi
+				if [ "`${CMD_WICH} mksquashfs 2> /dev/null`" = "" ]; then
+					${CMD_AGET} install squashfs-tools
 				fi
 				if [ ! -f "${DIR_LINX}" ]; then
 					${CMD_AGET} install isolinux
