@@ -468,7 +468,7 @@ _EOT_
 	mount --bind /proc    ./knoppix-live/fsimg/proc
 	mount --bind /sys     ./knoppix-live/fsimg/sys
 	# -------------------------------------------------------------------------
-	chroot ./knoppix-live/fsimg /bin/bash /knoppix-setup.sh $1 $2
+	chroot ./knoppix-live/fsimg /bin/bash /knoppix-setup.sh
 	RET_STS=$?
 	# -------------------------------------------------------------------------
 	umount ./knoppix-live/fsimg/sys     || umount -lf ./knoppix-live/fsimg/sys
