@@ -33,8 +33,13 @@
 	cat <<- '_EOT_SH_' | sed 's/^ //g' > ./knoppix-live/fsimg/knoppix-setup.sh
 		#!/bin/bash
 		# -----------------------------------------------------------------------------
-		 	set -m								# ジョブ制御を有効にする
-		 	set -eu								# ステータス0以外と未定義変数の参照で終了
+		#	set -n								# 構文エラーのチェック
+		#	set -x								# コマンドと引数の展開を表示
+		 	set -o ignoreeof					# Ctrl+Dで終了しない
+		 	set +m								# ジョブ制御を無効にする
+		 	set -e								# ステータス0以外で終了
+		 	set -u								# 未定義変数の参照で終了
+		 	trap 'exit 1' 1 2 3 15
 		 	echo "*******************************************************************************"
 		 	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]"
 		 	echo "*******************************************************************************"
@@ -52,7 +57,7 @@
 		}
 		# -- initialize ---------------------------------------------------------------
 		 	echo "--- initialize ----------------------------------------------------------------"
-		 	trap 'fncEnd 1' 1 2 3 15
+		#	trap 'fncEnd 1' 1 2 3 15
 		 	export PS1="(chroot) "
 		# -- which command ------------------------------------------------------------
 		 	if [ "`command -v which 2> /dev/null`" != "" ]; then
@@ -349,6 +354,12 @@
 		 			if [ "${USER_NAME}" != "skel" ]; then
 		 				chown ${USER_NAME}. .credentials
 		 				chmod 0600 .credentials
+		 			fi
+		 			if [   -f .config/libfm/libfm.conf      ] \
+		 			&& [ ! -f .config/libfm/libfm.conf.orig ]; then
+		 				echo "--- libfm.conf ----------------------------------------------------------------"
+		 				sed -i.orig .config/libfm/libfm.conf   \
+		 				    -e 's/^\(single_click\)=.*$/\1=0/'
 		 			fi
 		 		popd > /dev/null
 		 	done
