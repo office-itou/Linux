@@ -198,74 +198,75 @@
 		 	    -e 's/\(admin users\) =.*$/# \1 = administrator/'                                   \
 		 	    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
 		 	    -e 's/\(multicast dns register\) =.*$/\1 = No/'                                     \
-		 	    -e '/map to guest =.*$/d'                                                           \
-		 	    -e '/null passwords =.*$/d'                                                         \
-		 	    -e '/obey pam restrictions =.*$/d'                                                  \
-		 	    -e '/enable privileges =.*$/d'                                                      \
-		 	    -e '/password level =.*$/d'                                                         \
-		 	    -e '/client use spnego principal =.*$/d'                                            \
-		 	    -e '/syslog =.*$/d'                                                                 \
-		 	    -e '/syslog only =.*$/d'                                                            \
-		 	    -e '/use spnego =.*$/d'                                                             \
-		 	    -e '/paranoid server security =.*$/d'                                               \
-		 	    -e '/dns proxy =.*$/d'                                                              \
-		 	    -e '/time offset =.*$/d'                                                            \
-		 	    -e '/usershare allow guests =.*$/d'                                                 \
-		 	    -e '/idmap backend =.*$/d'                                                          \
-		 	    -e '/idmap uid =.*$/d'                                                              \
-		 	    -e '/idmap gid =.*$/d'                                                              \
-		 	    -e '/winbind separator =.*$/d'                                                      \
-		 	    -e '/acl check permissions =.*$/d'                                                  \
-		 	    -e '/only user =.*$/d'                                                              \
-		 	    -e '/share modes =.*$/d'                                                            \
-		 	    -e '/nbt client socket address =.*$/d'                                              \
-		 	    -e '/lsa over netlogon =.*$/d'                                                      \
-		 	    -e '/.* = $/d'                                                                      \
-		 	    -e '/client lanman auth =.*$/d'                                                     \
-		 	    -e '/client NTLMv2 auth =.*$/d'                                                     \
-		 	    -e '/client plaintext auth =.*$/d'                                                  \
-		 	    -e '/client schannel =.*$/d'                                                        \
-		 	    -e '/client use spnego principal =.*$/d'                                            \
-		 	    -e '/client use spnego =.*$/d'                                                      \
-		 	    -e '/domain logons =.*$/d'                                                          \
-		 	    -e '/enable privileges =.*$/d'                                                      \
-		 	    -e '/encrypt passwords =.*$/d'                                                      \
-		 	    -e '/idmap backend =.*$/d'                                                          \
-		 	    -e '/idmap gid =.*$/d'                                                              \
-		 	    -e '/idmap uid =.*$/d'                                                              \
-		 	    -e '/lanman auth =.*$/d'                                                            \
-		 	    -e '/lsa over netlogon =.*$/d'                                                      \
-		 	    -e '/nbt client socket address =.*$/d'                                              \
-		 	    -e '/null passwords =.*$/d'                                                         \
-		 	    -e '/raw NTLMv2 auth =.*$/d'                                                        \
-		 	    -e '/server schannel =.*$/d'                                                        \
-		 	    -e '/syslog =.*$/d'                                                                 \
-		 	    -e '/syslog only =.*$/d'                                                            \
-		 	    -e '/unicode =.*$/d'                                                                \
-		 	    -e '/acl check permissions =.*$/d'                                                  \
-		 	    -e '/allocation roundup size =.*$/d'                                                \
-		 	    -e '/blocking locks =.*$/d'                                                         \
-		 	    -e '/copy =.*$/d'                                                                   \
-		 	    -e '/winbind separator =.*$/d'                                                      \
-		 	    -e '/domain master =.*$/d'                                                          \
-		 	    -e '/logon path =.*$/d'                                                             \
-		 	    -e '/logon script =.*$/d'                                                           \
-		 	    -e '/pam password change =.*$/d'                                                    \
-		 	    -e '/preferred master =.*$/d'                                                       \
-		 	    -e '/server role =.*$/d'                                                            \
-		 	    -e '/wins support =.*$/d'                                                           \
-		 	    -e '/dns proxy =.*$/d'                                                              \
-		 	    -e '/map to guest =.*$/d'                                                           \
-		 	    -e '/obey pam restrictions =.*$/d'                                                  \
-		 	    -e '/pam password change =.*$/d'                                                    \
-		 	    -e '/realm =.*$/d'                                                                  \
-		 	    -e '/server role =.*$/d'                                                            \
-		 	    -e '/server services =.*$/d'                                                        \
-		 	    -e '/server string =.*$/d'                                                          \
-		 	    -e '/syslog =.*$/d'                                                                 \
-		 	    -e '/unix password sync =.*$/d'                                                     \
-		 	    -e '/usershare allow guests =.*$/d'                                                 \
-		 	    -e '/(client ipc\|client\|server) min protocol = .*$/d'                             \
+		 	    -e '/[ |\t]*map to guest =.*$/d'                                                    \
+		 	    -e '/[ |\t]*null passwords =.*$/d'                                                  \
+		 	    -e '/[ |\t]*obey pam restrictions =.*$/d'                                           \
+		 	    -e '/[ |\t]*enable privileges =.*$/d'                                               \
+		 	    -e '/[ |\t]*password level =.*$/d'                                                  \
+		 	    -e '/[ |\t]*client use spnego principal =.*$/d'                                     \
+		 	    -e '/[ |\t]*syslog =.*$/d'                                                          \
+		 	    -e '/[ |\t]*syslog only =.*$/d'                                                     \
+		 	    -e '/[ |\t]*use spnego =.*$/d'                                                      \
+		 	    -e '/[ |\t]*paranoid server security =.*$/d'                                        \
+		 	    -e '/[ |\t]*dns proxy =.*$/d'                                                       \
+		 	    -e '/[ |\t]*time offset =.*$/d'                                                     \
+		 	    -e '/[ |\t]*usershare allow guests =.*$/d'                                          \
+		 	    -e '/[ |\t]*idmap backend =.*$/d'                                                   \
+		 	    -e '/[ |\t]*idmap uid =.*$/d'                                                       \
+		 	    -e '/[ |\t]*idmap gid =.*$/d'                                                       \
+		 	    -e '/[ |\t]*winbind separator =.*$/d'                                               \
+		 	    -e '/[ |\t]*acl check permissions =.*$/d'                                           \
+		 	    -e '/[ |\t]*only user =.*$/d'                                                       \
+		 	    -e '/[ |\t]*share modes =.*$/d'                                                     \
+		 	    -e '/[ |\t]*nbt client socket address =.*$/d'                                       \
+		 	    -e '/[ |\t]*lsa over netlogon =.*$/d'                                               \
+		 	    -e '/[ |\t]*.* = $/d'                                                               \
+		 	    -e '/[ |\t]*client lanman auth =.*$/d'                                              \
+		 	    -e '/[ |\t]*client NTLMv2 auth =.*$/d'                                              \
+		 	    -e '/[ |\t]*client plaintext auth =.*$/d'                                           \
+		 	    -e '/[ |\t]*client schannel =.*$/d'                                                 \
+		 	    -e '/[ |\t]*client use spnego principal =.*$/d'                                     \
+		 	    -e '/[ |\t]*client use spnego =.*$/d'                                               \
+		 	    -e '/[ |\t]*domain logons =.*$/d'                                                   \
+		 	    -e '/[ |\t]*enable privileges =.*$/d'                                               \
+		 	    -e '/[ |\t]*encrypt passwords =.*$/d'                                               \
+		 	    -e '/[ |\t]*idmap backend =.*$/d'                                                   \
+		 	    -e '/[ |\t]*idmap gid =.*$/d'                                                       \
+		 	    -e '/[ |\t]*idmap uid =.*$/d'                                                       \
+		 	    -e '/[ |\t]*lanman auth =.*$/d'                                                     \
+		 	    -e '/[ |\t]*lsa over netlogon =.*$/d'                                               \
+		 	    -e '/[ |\t]*nbt client socket address =.*$/d'                                       \
+		 	    -e '/[ |\t]*null passwords =.*$/d'                                                  \
+		 	    -e '/[ |\t]*raw NTLMv2 auth =.*$/d'                                                 \
+		 	    -e '/[ |\t]*server schannel =.*$/d'                                                 \
+		 	    -e '/[ |\t]*syslog =.*$/d'                                                          \
+		 	    -e '/[ |\t]*syslog only =.*$/d'                                                     \
+		 	    -e '/[ |\t]*unicode =.*$/d'                                                         \
+		 	    -e '/[ |\t]*acl check permissions =.*$/d'                                           \
+		 	    -e '/[ |\t]*allocation roundup size =.*$/d'                                         \
+		 	    -e '/[ |\t]*blocking locks =.*$/d'                                                  \
+		 	    -e '/[ |\t]*copy =.*$/d'                                                            \
+		 	    -e '/[ |\t]*winbind separator =.*$/d'                                               \
+		 	    -e '/[ |\t]*domain master =.*$/d'                                                   \
+		 	    -e '/[ |\t]*logon path =.*$/d'                                                      \
+		 	    -e '/[ |\t]*logon script =.*$/d'                                                    \
+		 	    -e '/[ |\t]*pam password change =.*$/d'                                             \
+		 	    -e '/[ |\t]*preferred master =.*$/d'                                                \
+		 	    -e '/[ |\t]*server role =.*$/d'                                                     \
+		 	    -e '/[ |\t]*wins support =.*$/d'                                                    \
+		 	    -e '/[ |\t]*dns proxy =.*$/d'                                                       \
+		 	    -e '/[ |\t]*map to guest =.*$/d'                                                    \
+		 	    -e '/[ |\t]*obey pam restrictions =.*$/d'                                           \
+		 	    -e '/[ |\t]*pam password change =.*$/d'                                             \
+		 	    -e '/[ |\t]*realm =.*$/d'                                                           \
+		 	    -e '/[ |\t]*server role =.*$/d'                                                     \
+		 	    -e '/[ |\t]*server services =.*$/d'                                                 \
+		 	    -e '/[ |\t]*server string =.*$/d'                                                   \
+		 	    -e '/[ |\t]*syslog =.*$/d'                                                          \
+		 	    -e '/[ |\t]*unix password sync =.*$/d'                                              \
+		 	    -e '/[ |\t]*usershare allow guests =.*$/d'                                          \
+		 	    -e '/[ |\t]*\(client ipc\|client\|server\) min protocol = .*$/d'                    \
+		 	    -e '/[ |\t]*security =.*$/d'                                                        \
 		 	> ./smb.conf
 		 	# -------------------------------------------------------------------------
 		#	IFS= INS_STR=$(
@@ -358,8 +359,8 @@
 _EOT_SH_
 	# -------------------------------------------------------------------------
 	if [ ! -f ./${LIVE_FILE} ]; then
-		wget "http://ftp.riken.jp/Linux/knoppix/knoppix-dvd/${LIVE_FILE}"
-#		wget "http://ftp.kddilabs.jp/.017/Linux/packages/knoppix/knoppix-dvd/${LIVE_FILE}"
+		curl -L -# -O -R -S "http://ftp.riken.jp/Linux/knoppix/knoppix-dvd/${LIVE_FILE}"
+#		curl -L -# -O -R -S "http://ftp.kddilabs.jp/.017/Linux/packages/knoppix/knoppix-dvd/${LIVE_FILE}"
 	fi
 	# -------------------------------------------------------------------------
 	OS_ARCH=`dpkg --print-architecture`
