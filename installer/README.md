@@ -1,4 +1,4 @@
-**Debian/Ubuntu/CentOS/Fedora/OpenSUSEの無人インストール用メディアのカスタマイズ**  
+**Debian/Ubuntu/CentOS/Fedora/OpenSUSEの無人インストール用メディア作成シェル**  
   
 【事前準備】  
 　・開発環境：**Debian 11.3.0 64bit版**  
