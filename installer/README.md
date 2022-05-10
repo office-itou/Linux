@@ -8,7 +8,7 @@
 　・sudo ./dist_remaster_dvd.sh  [ a | {1..nn} | 1 2 5 ]  
 　・sudo ./dist_remaster_mini.sh [ a | {1..nn} | 1 2 5 ]  
 　・sudo ./dist_remaster_net.sh  [ a | {1..nn} | 1 2 5 ]  
-　＜注意＞
+　＜注意＞  
 　・引数省略時はメニュー画面で指定（数値入力のみ）  
 　・必要パッケージは初回実行時に本シェルが導入  
   
