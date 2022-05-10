@@ -1,15 +1,18 @@
 **Debian/Ubuntu/CentOS/Fedora/OpenSUSEの無人インストール用メディアのカスタマイズ**  
   
 【事前準備】  
+　・開発環境：**Debian 11.3.0 64bit版**  
+　・実行確認：**debian 11.3.0 64bit版**  
   
-・開発環境  
-　**Debian 11.3.0 64bit版**  
-  
-・実行確認  
-　**debian 11.3.0 64bit版**  
+【実行方法】  
+　・sudo ./dist_remaster_dvd.sh  [ a | {1..nn} | 1 2 5 ]  
+　・sudo ./dist_remaster_mini.sh [ a | {1..nn} | 1 2 5 ]  
+　・sudo ./dist_remaster_net.sh  [ a | {1..nn} | 1 2 5 ]  
+　＜注意＞
+　・引数省略時はメニュー画面で指定（数値入力のみ）  
+　・必要パッケージは初回実行時に本シェルが導入  
   
 【無人インストールISO作成シェル】  
-  
 | ファイル名              | 機能                  |
 | ----------------------- | --------------------- |
 | [dist_remaster_dvd.sh](https://github.com/office-itou/Linux/blob/master/installer/source/dist_remaster_dvd.sh)    | DVDイメージ用         |
@@ -17,7 +20,6 @@
 | [dist_remaster_net.sh](https://github.com/office-itou/Linux/blob/master/installer/source/dist_remaster_net.sh)    | net installファイル用 |
   
 【無人インストール定義ファイル】  
-  
 | ファイル名              | 機能     |
 | ----------------------- | -------- |
 | [preseed_debian.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/preseed_debian.cfg)      | debian用 |
@@ -31,7 +33,6 @@
 
   
 【インストール補助作業シェル】  
-  
 | ファイル名              | 機能                |
 | ----------------------- | ------------------- |
 | [install.sh](https://github.com/office-itou/Linux/blob/master/installer/source/install.sh)              | インストール作業用  |
@@ -46,7 +47,6 @@
 　・赤：通信障害（ダウンロード不可）  
 **ログについて**  
 　・exec &> >(tee -a "working.log") でのログ取得が可能
-  
 | 作業内容              | スクリーンショット                                                              |
 | --------------------- | ------------------------------------------------------------------------------- |
 | dist_remaster_dvd.sh  | ![dist_remaster_dvd.sh](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_dvd.sh.jpg) |
