@@ -40,6 +40,10 @@
 | [cloud_preseed.sh](https://github.com/office-itou/Linux/blob/master/installer/source/cloud_preseed.sh)   | preseed.cfg→user-data変換  |
   
 【メニュー画面】  
+**文字色について
+　・白：作成不要（ローカルが最新）  
+　・黄：作成必要（ローカルが古い）  
+　・赤：通信障害（ダウンロード不可）  
   
 | 作業内容              | スクリーンショット                                                              |
 | --------------------- | ------------------------------------------------------------------------------- |
