@@ -19,52 +19,7 @@
 ##	   日付       版         名前      改訂内容
 ##	---------- -------- -------------- ----------------------------------------
 ##	2018/05/01 000.0000 J.Itou         新規作成
-##	2021/05/29 000.0000 J.Itou         memo修正 / 履歴整理 / 不具合修正 / CentOS-Stream-8-x86_64-20210524-dvd1 変更
-##	2021/06/03 000.0000 J.Itou         情報登録用配列の修正 / CentOS-Stream-8-x86_64-20210528-dvd1 変更
-##	2021/06/04 000.0000 J.Itou         memo修正 / openSUSE対応 / CentOS-8.4.2105-x86_64-dvd1 / CentOS-Stream-8-x86_64-20210603-dvd1 変更
-##	2021/06/12 000.0000 J.Itou         URLのワイルドカード対応
-##	2021/06/13 000.0000 J.Itou         作業ディレクトリ削除処理追加
-##	2021/06/21 000.0000 J.Itou         CentOSの接続先変更 / [0-9].* 変更
-##	2021/06/23 000.0000 J.Itou         Rocky Linux 追加
-##	2021/06/28 000.0000 J.Itou         Debian 11 対応
-##	2021/07/02 000.0000 J.Itou         memo修正
-##	2021/07/07 000.0000 J.Itou         cpio 表示出力抑制追加
-##	2021/07/13 000.0000 J.Itou         ubuntu 無人インストール定義ファイルの処理変更
-##	2021/07/17 000.0000 J.Itou         処理見直し
-##	2021/08/02 000.0000 J.Itou         ubuntu desktop版対応
-##	2021/08/04 000.0000 J.Itou         debian-bullseye-DI-rc3-amd64-DVD-1.iso追加
-##	2021/08/06 000.0000 J.Itou         処理見直し
-##	2021/08/08 000.0000 J.Itou         不具合修正
-##	2021/08/09 000.0000 J.Itou         処理見直し
-##	2021/08/15 000.0000 J.Itou         debian 11 対応
-##	2021/08/17 000.0000 J.Itou         対象OS整理
-##	2021/08/21 000.0000 J.Itou         処理見直し
-##	2021/08/28 000.0000 J.Itou         処理見直し
-##	2021/09/16 000.0000 J.Itou         CentOS-Stream-8ファイル名変更
-##	2021/09/18 000.0000 J.Itou         debian / ubuntu url見直し
-##	2021/08/25 000.0000 J.Itou         ubuntu 21.10(beta)追加
-##	2021/10/08 000.0000 J.Itou         miraclelinux 8.4追加
-##	2021/10/15 000.0000 J.Itou         ubuntu 21.10(beta→正式版)変更 / fedora 35(beta)追加 / 処理見直し
-##	2021/11/09 000.0000 J.Itou         CentOS-Stream-9追加 / リスト用配列整理
-##	2021/11/13 000.0000 J.Itou         fedora 35(beta→正式版)変更 / 不具合修正
-##	2021/11/15 000.0000 J.Itou         ubuntu 22.04(Daily Build)追加
-##	2021/11/17 000.0000 J.Itou         リスト用配列更新
-##	2021/11/22 000.0000 J.Itou         リスト用配列更新
-##	2021/11/28 000.0000 J.Itou         全リスト処理追加
-##	2021/11/30 000.0000 J.Itou         処理見直し
-##	2021/12/03 000.0000 J.Itou         不具合修正
-##	2022/01/05 000.0000 J.Itou         CentOS kickstart.cfg 処理見直し
-##	2022/01/09 000.0000 J.Itou         Fedora kickstart.cfg 処理見直し
-##	2022/01/09 000.0000 J.Itou         openSUSE yast_opensuse.xml 処理見直し
-##	2022/01/15 000.0000 J.Itou         CentOS URL 変更
-##	2022/01/31 000.0000 J.Itou         CentOS-8 リスト削除
-##	2022/04/01 000.0000 J.Itou         ubuntu 22.04(beta)追加
-##	2022/04/01 000.0000 J.Itou         ubuntu 22.04(beta)リスト修正
-##	2022/04/13 000.0000 J.Itou         不具合修正
-##	2022/04/21 000.0000 J.Itou         CentOSのURL変更/処理見直し
-##	2022/04/22 000.0000 J.Itou         不具合修正
-##	2022/04/23 000.0000 J.Itou         リスト更新
-##	2022/05/06 000.0000 J.Itou         不具合修正
+##	2022/05/10 000.0000 J.Itou         処理見直し
 ###	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -86,67 +41,68 @@
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
-	ARRAY_NAME=(                                                                                                                                                                                                                                                                                \
-	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                              -                                           preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable   " \
-	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                 -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable      " \
-	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                          -                                           preseed_debian.cfg                          2021-08-14 2026-xx-xx stable         " \
-	    "debian         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                            -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing        " \
-	    "ubuntu         http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                                        -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 Bionic_Beaver  " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2030-04-23 Focal_Fossa    " \
-	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-live-server-amd64.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-14 Impish_Indri   " \
-	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21 2032-04-21 Jammy_Jellyfish" \
-	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                             -                                           kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_8.x       " \
-	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x       " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-04-27 2022-05-17 kernel_5.11    " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-11-02 2022-12-07 kernel_5.14    " \
-	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                                        -                                           yast_opensuse.xml                           2021-06-02 20xx-xx-xx kernel_5.3.18  " \
-	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                   -                                           yast_opensuse.xml                           2021-xx-xx 20xx-xx-xx kernel_x.x     " \
-	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                    -                                           kickstart_rocky.cfg                         2021-11-15 20xx-xx-xx RHEL_8.5       " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9].*-rtm-x86_64.iso                             -                                           kickstart_miraclelinux.cfg                  2021-10-04 20xx-xx-xx RHEL_8.4       " \
-	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                   -                                           preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable   " \
-	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                      -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable      " \
-	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                               -                                           preseed_debian.cfg                          2021-08-14 2026-xx-xx stable         " \
-	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                 -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing        " \
-	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 Bionic_Beaver  " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2020-04-23 2030-04-23 Focal_Fossa    " \
-	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2021-10-24 2022-07-14 Impish_Indri   " \
-	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy_Jellyfish" \
-	)   # 区分          ダウンロード先URL                                                                                                                        別名                                        定義ファイル                                リリース日 サポ終了日 備考
-#	    "ubuntu         https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2014-04-17 2019-04-25 Trusty_Tahr    " \
-#	    "ubuntu         https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus   " \
-#	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-live-server-amd64.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2018-04-26 2023-04-xx Bionic_Beaver  " \
-#	    "ubuntu         https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-live-server-amd64.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-10-22 2021-07-22 Groovy_Gorilla " \
-#	    "ubuntu         https://releases.ubuntu.com/trusty/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2014-04-17 2019-04-25 Trusty_Tahr    " \
-#	    "ubuntu         https://releases.ubuntu.com/xenial/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2016-04-21 2021-04-xx Xenial_Xerus   " \
-#	    "ubuntu         https://releases.ubuntu.com/groovy/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2020-10-22 2021-07-22 Groovy_Gorilla " \
-#	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-live-server-amd64.iso                                                                 -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-04-22 2022-01-20 Hirsute_Hippo  " \
-#	    "ubuntu         https://releases.ubuntu.com/hirsute/ubuntu-[0-9].*-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2021-04-22 2022-01-20 Hirsute_Hippo  " \
-#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/impish-desktop-amd64.iso                                                                    -                                           preseed_ubuntu.cfg                          2021-10-24 2022-07-xx Impish_Indri   " \
-#	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/impish-desktop-canary-amd64.iso                                                           -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-xx Impish_Indri   " \
-#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/jammy-desktop-amd64.iso                                                                     -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy_Jellyfish" \
-#	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/jammy-desktop-canary-amd64.iso                                                            -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy_Jellyfish" \
-#	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-[0-9].*-dvd1.iso                                            -                                           kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x       " \
-#	    "centos         http://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-[0-9].*-x86_64-[0-9A-Za-z].*-dvd1.iso                           CentOS-Stream-8-x86_64-latest-dvd1.iso      kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_x.x       " \
-#	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-[0-9].*-[0-9A-Za-z].*-x86_64-dvd1.iso                           CentOS-Stream-9-latest-x86_64-dvd1.iso      kickstart_centos9.cfg                       2021-xx-xx 20xx-xx-xx RHEL_x.x       " \
-#	    "centos         http://ftp.riken.jp/Linux/centos/8/isos/x86_64/CentOS-[0-9].*-x86_64-dvd1.iso                                                       -                                           kickstart_centos.cfg                        2021-11-16 2021-12-31 RHEL_8.5       " \
-#	    "centos         http://ftp.riken.jp/Linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                             -                                           kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_8.x       " \
-#	    "centos         http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                                        -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x       " \
+	ARRAY_NAME=(                                                                                                                                                                                                                                                                                                                  \
+	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                              -                                           preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable    Debian__9.xx(stretch)            " \
+	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                 -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable       Debian_10.xx(buster)             " \
+	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                          -                                           preseed_debian.cfg                          2021-08-14 2026-xx-xx stable          Debian_11.xx(bullseye)           " \
+	    "debian         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                            -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing         Debian_12.xx(bookworm)           " \
+	    "ubuntu         http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                                        -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
+	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23 2030-04-23 Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
+	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-live-server-amd64.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24 2022-07-14 Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
+	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21 2032-04-21 Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
+	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                             -                                           kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_8.x        -                                " \
+	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x        -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-04-27 2022-05-17 kernel_5.11     -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-11-02 2022-12-07 kernel_5.14     -                                " \
+	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                                        -                                           yast_opensuse.xml                           2021-06-02 20xx-xx-xx kernel_5.3.18   -                                " \
+	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                   -                                           yast_opensuse.xml                           2021-xx-xx 20xx-xx-xx kernel_x.x      -                                " \
+	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                    -                                           kickstart_rocky.cfg                         2021-11-15 20xx-xx-xx RHEL_8.5        -                                " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9].*-rtm-x86_64.iso                             -                                           kickstart_miraclelinux.cfg                  2021-10-04 20xx-xx-xx RHEL_8.4        -                                " \
+	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                   -                                           preseed_debian.cfg                          2017-06-17 2022-06-30 oldoldstable    Debian__9.xx(stretch)            " \
+	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                      -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable       Debian_10.xx(buster)             " \
+	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                               -                                           preseed_debian.cfg                          2021-08-14 2026-xx-xx stable          Debian_11.xx(bullseye)           " \
+	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                 -                                           preseed_debian.cfg                          20xx-xx-xx 20xx-xx-xx testing         Debian_12.xx(bookworm)           " \
+	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
+	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2020-04-23 2030-04-23 Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
+	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2021-10-24 2022-07-14 Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
+	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-04-21 2032-04-21 Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
+	)   # 区分          ダウンロード先URL                                                                                                                        別名                                        定義ファイル                                リリース日 サポ終了日 備考            備考2
+# -----------------------------------------------------------------------------
+	TXT_RESET="\033[m"
+	TXT_BLACK="\033[30m"
+	TXT_RED="\033[31m"
+	TXT_GREEN="\033[32m"
+	TXT_YELLOW="\033[33m"
+	TXT_BLUE="\033[34m"
+	TXT_MAGENTA="\033[35m"
+	TXT_CYAN="\033[36m"
+	TXT_WHITE="\033[37m"
 # -----------------------------------------------------------------------------
 fncMenu () {
+	local OLD_IFS
+	local RET_CD											# 戻り値退避用
 	local ARRY_NAME=()										# 配列展開
 	local CODE_NAME=()										# 配列宣言
 	local DIR_NAME											# ディレクトリ名
 	local FIL_INFO=()										# ファイル情報
+	local WEB_INFO=()										# WEB情報
 #	local FIL_NAME											# ファイル名
-#	local FIL_DATE											# ファイル日付
-#	local DVD_INFO											# DVD情報
-#	local DVD_SIZE											# DVDサイズ
-#	local DVD_DATE											# DVD日付
+	local FIL_DATE											# ファイル日付
+	local DVD_INFO											# DVD情報
+	local DVD_SIZE											# DVDサイズ
+	local DVD_DATE											# DVD日付
+	local WEB_STAT
+	local WEB_SIZE
+	local WEB_LAST
+	local WEB_DATE
 	local TXT_COLOR
+	local DST_FILE
+	local DST_DATE
 	fncPrint "# $(fncString $((${COL_SIZE}-5)) '-') #"
 	fncPrint "#ID：Version$(fncString $((${COL_SIZE}-55)) ' ')：リリース日：サポ終了日：備考           #"
 	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
 	do
+		TXT_COLOR=""
 		ARRY_NAME=(${ARRAY_NAME[$I-1]})
 		CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
 		CODE_NAME[1]=`basename ${ARRY_NAME[1]} | sed -e 's/.iso//ig'`	# DVDファイル名
@@ -155,54 +111,83 @@ fncMenu () {
 		CODE_NAME[4]=${ARRY_NAME[4]}									# リリース日
 		CODE_NAME[5]=${ARRY_NAME[5]}									# サポ終了日
 		CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
-#		CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
+		CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
+		DIR_NAME=`dirname ${CODE_NAME[2]}`
 		# ---------------------------------------------------------------------
-#		if [ "`echo ${CODE_NAME[1]} | sed -n '/\.\*/p'`" != "" ]; then
-			DIR_NAME=`dirname ${CODE_NAME[2]}`
-			set +e
-			FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*> *\(${CODE_NAME[1]}.iso\) *<.*> *\([0-9A-Za-z]*-[0-9A-Za-z]*-[0-9A-Za-z]*\) *\([0-9]*:[0-9]*\).*<*.*/\1 \2 \3/p"))
-			set -e
-#			CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
-			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
-#				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"`
-				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
-				CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
-				CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
+		OLD_IFS=${IFS}
+		IFS=
+		set +e
+		WEB_INFO=($(curl -L -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null))
+		RET_CD=$?
+		set -e
+		IFS=${OLD_IFS}
+		# ---------------------------------------------------------------------
+		if [ ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then	# WEB情報取得失敗
+			TXT_COLOR=${TXT_RED}
+		else												# WEB取得取得成功
+			FIL_INFO=($(echo "${WEB_INFO[@]}" | LANG=C sed -n "s/^.*<a href=.*> *\(${CODE_NAME[1]}\.iso\) *<\/a.*> *\([0-9a-zA-Z]*-[0-9a-zA-Z]*-[0-9a-zA-Z]*\) *\([0-9]*:[0-9]*\).*$/\1 \2 \3/p"))
+			if [ "${FIL_INFO[2]:+UNSET}" = "" ]; then
+				FIL_INFO[2]="00:00"
+			fi
+			CODE_NAME[1]=`echo "${FIL_INFO[0]}" | sed -e 's/.iso//ig'`	# dvd/net
+			CODE_NAME[2]=`echo "${DIR_NAME}/${FIL_INFO[0]}"`
+			CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
+			if [ "${CODE_NAME[1]}" = "mini" ]; then
+				CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"			# mini.iso
+			fi
+		fi
+		# ---------------------------------------------------------------------
+		if [ "${ARRY_NAME[2]}" != "-" ]; then							# DVDファイル別名
+			CODE_NAME[1]=`basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig'`
+		fi
+		# ---------------------------------------------------------------------
+		if [ "${TXT_COLOR}" != "${TXT_RED}" ]; then
+			if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
+				TXT_COLOR=${TXT_YELLOW}
 			else
-				set +e
-				FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*> *\(${CODE_NAME[1]}.iso\) *<.*>/\1/p"))
-				set -e
-				if [ "${FIL_INFO[0]:+UNSET}" != "" ]; then
-					CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
-					CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
+				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M%S"`
+				DVD_DATE=`ls -lL --time-style="+%Y%m%d%H%M%S" "${WORK_DIRS}/${CODE_NAME[1]}.iso" | awk '{print $6;}'`
+				DST_FILE=`find "${WORK_DIRS}/" -regextype posix-basic -regex ".*/${CODE_NAME[1]}-\(autoyast\|kickstart\|nocloud\|preseed\).iso.*" -print`
+				if [ "${DST_FILE}" = "" ]; then
+					DST_DATE=""
+					TXT_COLOR=${TXT_YELLOW}
+				else
+					DST_DATE=`ls -lL --time-style="+%Y%m%d%H%M%S" "${DST_FILE}" | awk '{print $6;}'`
+					if [ ${DVD_DATE} -gt ${DST_DATE} ]; then
+						TXT_COLOR=${TXT_YELLOW}
+					fi
 				fi
-			fi
-			if [ "${ARRY_NAME[2]}" != "-" ]; then							# DVDファイル別名
-				CODE_NAME[1]=`basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig'`
-			fi
-			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]}.iso ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
-#			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]}.iso ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]}`
-#		fi
-		# ---------------------------------------------------------------------
-		TXT_COLOR=false
-		if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
-			TXT_COLOR=true
-		else
-			DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
-			DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
-			DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
-			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
-				if [ `date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"` -gt ${DVD_DATE} ]; then
-					TXT_COLOR=true
+				if [ ${FIL_DATE} -gt ${DVD_DATE} ]; then
+					set +e
+					curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "header.txt" "${CODE_NAME[2]}" > /dev/null
+					RET_CD=$?
+					set -e
+					# -------------------------------------------------------------
+					if [ ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then
+						TXT_COLOR=${TXT_RED}
+					else
+						DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
+						DVD_SIZE=`echo "${DVD_INFO}" | awk '{print $5;}'`
+						DVD_DATE=`echo "${DVD_INFO}" | awk '{print $6;}'`
+						WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
+						WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+						WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+						WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+						if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" -ne "${DVD_SIZE}" -o "${WEB_DATE}" -gt "${DVD_DATE}" ]; then
+							TXT_COLOR=${TXT_YELLOW}
+							CODE_NAME[4]=`echo "${WEB_DATE:0:4}-${WEB_DATE:4:2}-${WEB_DATE:6:2}"`
+						fi
+						if [ -f "header.txt" ]; then
+							rm -f "header.txt"
+						fi
+					fi
 				fi
 			fi
 		fi
 		# ---------------------------------------------------------------------
-		if [ "${TXT_COLOR}" = "true" ]; then
-			printf "#%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
-		else
-			printf "#%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
-		fi
+		ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]}.iso ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]}`
+		# ---------------------------------------------------------------------
+		printf "#${TXT_COLOR}%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：%-10.10s：%-10.10s：%-15.15s${TXT_RESET}#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 	done
 	fncPrint "# $(fncString $((${COL_SIZE}-5)) '-') #"
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
@@ -274,12 +259,13 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
+			fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 			set +e
 			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			set -e
 		else
 			set +e
-			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 60 -I --dump-header "header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			set -e
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
@@ -289,6 +275,7 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
+				fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 				set +e
 				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 				set -e
@@ -320,13 +307,13 @@ fncRemaster () {
 					WALL_FILE="ubuntu_splash.png"
 					if [ -f isolinux/txt.cfg ]; then
 						if [ ! -f "../../../${WALL_FILE}" ]; then
-							fncPrint "--- get splash.png $(fncString ${COL_SIZE} '-')"
+							fncPrint "--- get ${WALL_FILE} $(fncString ${COL_SIZE} '-')"
 							set +e
-							curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
+							curl -L -# -R -S -f --connect-timeout 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 							set -e
 						else
 							set +e
-							curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${WALL_URL}"
+							curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "header.txt" "${WALL_URL}" > /dev/null
 							set -e
 							WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 							WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -335,9 +322,9 @@ fncRemaster () {
 							FILE_SIZE=`echo ${FILE_INFO} | awk '{print $5;}'`
 							FILE_DATE=`echo ${FILE_INFO} | awk '{print $6;}'`
 							if [ "${WEB_SIZE}" != "${FILE_SIZE}" ] || [ "${WEB_DATE}" != "${FILE_DATE}" ]; then
-								fncPrint "--- get splash.png $(fncString ${COL_SIZE} '-')"
+								fncPrint "--- get ${WALL_FILE} $(fncString ${COL_SIZE} '-')"
 								set +e
-								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
+								curl -L -# -R -S -f --connect-timeout 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 								set -e
 							fi
 							if [ -f "header.txt" ]; then
@@ -358,14 +345,14 @@ fncRemaster () {
 					mkdir -p "preseed"
 					CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $1;}'`
 					CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
-					if [ -f "../../../${CFG_FILE}" ]; then
-						cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
-					else
-						fncPrint "--- get preseed.cfg $(fncString ${COL_SIZE} '-')"
+					# --- preseed.cfg -> image --------------------------------
+					if [ ! -f "../../../${CFG_FILE}" ]; then
+						fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
 						set +e
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/preseed.cfg" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 						set -e
 					fi
+					cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
 					# ---------------------------------------------------------
 					case "${CODE_NAME[1]}" in
 						debian-live-* )
@@ -382,27 +369,14 @@ fncRemaster () {
 #							touch nocloud/network-config	# 省略可能
 							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
 							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
-							if [ -f "../../../${CFG_FILE}" ]; then
-								cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
-							else
-								fncPrint "--- get user-data $(fncString ${COL_SIZE} '-')"
+							if [ ! -f "../../../${CFG_FILE}" ]; then
+								fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
 								set +e
-								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "nocloud/user-data" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+								curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 								set -e
 							fi
+							cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
 							;;
-#						*desktop* )							# --- get sub shell
-#							SUB_PROG="ubuntu-sub_success_command.sh"
-#							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${SUB_PROG}~"`
-#							if [ -f "../../../${SUB_PROG}" ]; then
-#								cp --preserve=timestamps "../../../${SUB_PROG}" "preseed/${SUB_PROG}"
-#							else
-#								fncPrint "--- get sub shell $(fncString ${COL_SIZE} '-')"
-#								set +e
-#								curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "preseed/${SUB_PROG}" "${CFG_ADDR}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
-#								set -e
-#							fi
-#							;;
 						* )	;;
 					esac
 					;;
@@ -413,14 +387,13 @@ fncRemaster () {
 					EFI_IMAG="EFI/BOOT/efiboot.img"
 					ISO_NAME="${DVD_NAME}-kickstart"
 					mkdir -p "kickstart"
-					if [ -f "../../../${CFG_NAME}" ]; then
-						cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
-					else
-						fncPrint "--- get ks.cfg $(fncString ${COL_SIZE} '-')"
+					if [ ! -f "../../../${CFG_NAME}" ]; then
+						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
 						set +e
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "kickstart/ks.cfg" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 						set -e
 					fi
+					cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
 					case "${WORK_DIRS}" in
 						*net* )
 							sed -i kickstart/ks.cfg                   \
@@ -484,14 +457,13 @@ _EOT_
 					EFI_IMAG="EFI/BOOT/efiboot.img"
 					ISO_NAME="${DVD_NAME}-autoyast"
 					mkdir -p "autoyast"
-					if [ -f "../../../${CFG_NAME}" ]; then
-						cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
-					else
-						fncPrint "--- get autoinst.xml $(fncString ${COL_SIZE} '-')"
+					if [ ! -f "../../../${CFG_NAME}" ]; then
+						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
 						set +e
-						curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "autoyast/autoinst.xml" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 						set -e
 					fi
+					cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
 					case "${CODE_NAME[1]}" in
 						*Leap* )
 							VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '-' '{print $3;}')

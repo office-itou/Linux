@@ -19,31 +19,7 @@
 ##	   日付       版         名前      改訂内容
 ##	---------- -------- -------------- ----------------------------------------
 ##	2018/05/01 000.0000 J.Itou         新規作成
-##	2021/05/29 000.0000 J.Itou         memo修正 / 履歴整理 / 不具合修正
-##	2021/06/04 000.0000 J.Itou         memo修正
-##	2021/06/12 000.0000 J.Itou         menu修正
-##	2021/06/13 000.0000 J.Itou         作業ディレクトリ削除処理追加
-##	2021/06/28 000.0000 J.Itou         Debian 11 対応
-##	2021/07/02 000.0000 J.Itou         memo修正
-##	2021/07/07 000.0000 J.Itou         cpio 表示出力抑制追加
-##	2021/08/06 000.0000 J.Itou         処理見直し
-##	2021/08/09 000.0000 J.Itou         処理見直し
-##	2021/08/15 000.0000 J.Itou         debian 11 対応
-##	2021/08/21 000.0000 J.Itou         処理見直し
-##	2021/08/28 000.0000 J.Itou         処理見直し
-##	2021/09/18 000.0000 J.Itou         ubuntu url見直し
-##	2021/10/15 000.0000 J.Itou         処理見直し
-##	2021/11/09 000.0000 J.Itou         リスト用配列整理
-##	2021/11/17 000.0000 J.Itou         リスト用配列更新
-##	2021/11/28 000.0000 J.Itou         全リスト処理追加
-##	2021/12/03 000.0000 J.Itou         不具合修正
-##	2021/12/20 000.0000 J.Itou         Debian testingのURLを変更
-##	2022/04/13 000.0000 J.Itou         不具合修正
-##	2022/04/16 000.0000 J.Itou         不具合修正
-##	2022/04/21 000.0000 J.Itou         処理見直し
-##	2022/04/22 000.0000 J.Itou         不具合修正
-##	2022/04/23 000.0000 J.Itou         リスト更新
-##	2022/05/06 000.0000 J.Itou         不具合修正
+##	2022/05/10 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -67,39 +43,50 @@
 # -----------------------------------------------------------------------------
 #	ARC_TYPE=i386											# CPUタイプ(32bit)
 	ARC_TYPE=amd64											# CPUタイプ(64bit)
-	ARRAY_NAME=(                                                                                                                                                                                                                                                                                                                 \
-	    "debian         http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                               -                                           preseed_debian.cfg                          2017-06-17 2022-06-xx oldoldstable    Debian__9.xx(stretch)           " \
-	    "debian         http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                  -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable       Debian_10.xx(buster)            " \
-	    "debian         http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                     -                                           preseed_debian.cfg                          2021-08-14 2026-xx-xx stable          Debian_11.xx(bullseye)          " \
-	    "debian         https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/netboot/mini.iso                                                                   -                                           preseed_debian.cfg                          202x-xx-xx 20xx-xx-xx testing         Debian_12.xx(bookworm)          " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 bionic          Ubuntu_18.04(Bionic_Beaver):LTS " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso                   -                                           preseed_ubuntu.cfg                          2020-04-23 2030-04-23 focal           Ubuntu_20.04(Focal_Fossa):LTS   " \
+	ARRAY_NAME=(                                                                                                                                                                                                                                                                                                                  \
+	    "debian         http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                               -                                           preseed_debian.cfg                          2017-06-17 2022-06-xx oldoldstable    Debian__9.xx(stretch)            " \
+	    "debian         http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                  -                                           preseed_debian.cfg                          2019-07-06 2024-06-xx oldstable       Debian_10.xx(buster)             " \
+	    "debian         http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                     -                                           preseed_debian.cfg                          2021-08-14 2026-xx-xx stable          Debian_11.xx(bullseye)           " \
+	    "debian         https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/netboot/mini.iso                                                                   -                                           preseed_debian.cfg                          202x-xx-xx 20xx-xx-xx testing         Debian_12.xx(bookworm)           " \
+	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2018-04-26 2028-04-26 bionic          Ubuntu_18.04(Bionic_Beaver):LTS  " \
+	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso                   -                                           preseed_ubuntu.cfg                          2020-04-23 2030-04-23 focal           Ubuntu_20.04(Focal_Fossa):LTS    " \
 	)   # 区分          ダウンロード先URL                                                                                                                        別名                                        定義ファイル                                リリース日 サポ終了日 備考            備考2
-#	    "debian         http://archive.debian.org/debian/dists/wheezy/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 -                                           preseed_debian.cfg                          2013-05-04 2018-05-31 wheezy          Debian__7.xx(wheezy)            " \
-#	    "debian         http://archive.debian.org/debian/dists/jessie/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 -                                           preseed_debian.cfg                          2015-04-25 2020-06-30 jessie          Debian__8.xx(jessie)            " \
-#	    "debian         http://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                    -                                           preseed_debian.cfg                          202x-xx-xx 20xx-xx-xx testing         Debian_12.xx(bookworm)          " \
-#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                 -                                           preseed_ubuntu.cfg                          2016-04-21 2024-04-xx xenial          Ubuntu_16.04(Xenial_Xerus):LTS  " \
-#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/groovy/main/installer-${ARC_TYPE}/current/legacy-images/                                          -                                           preseed_ubuntu.cfg                          2020-10-22 2021-07-xx groovy          Ubuntu_20.10(Groovy_Gorilla)    " \
-#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/hirsute/main/installer-${ARC_TYPE}/current/legacy-images/                                         -                                           preseed_ubuntu.cfg                          2021-04-22 2022-01-xx hirsute         Ubuntu_21.04(Hirsute_Hippo)     " \
-#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/impish/main/installer-${ARC_TYPE}/current/legacy-images/                                          -                                           preseed_ubuntu.cfg                          2021-10-14 2022-07-xx impish          Ubuntu_21.10(Impish_Indri)      " \
-#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2014-04-17 2024-04-25 trusty          Ubuntu_14.04(Trusty_Tahr):LTS   " \
-#	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/xenial-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2016-04-21 2026-04-23 xenial          Ubuntu_16.04(Xenial_Xerus):LTS  " \
+# -----------------------------------------------------------------------------
+	TXT_RESET="\033[m"
+	TXT_BLACK="\033[30m"
+	TXT_RED="\033[31m"
+	TXT_GREEN="\033[32m"
+	TXT_YELLOW="\033[33m"
+	TXT_BLUE="\033[34m"
+	TXT_MAGENTA="\033[35m"
+	TXT_CYAN="\033[36m"
+	TXT_WHITE="\033[37m"
 # -----------------------------------------------------------------------------
 fncMenu () {
+	local OLD_IFS
+	local RET_CD											# 戻り値退避用
 	local ARRY_NAME=()										# 配列展開
 	local CODE_NAME=()										# 配列宣言
 	local DIR_NAME											# ディレクトリ名
 	local FIL_INFO=()										# ファイル情報
+	local WEB_INFO=()										# WEB情報
 #	local FIL_NAME											# ファイル名
-#	local FIL_DATE											# ファイル日付
-#	local DVD_INFO											# DVD情報
-#	local DVD_SIZE											# DVDサイズ
-#	local DVD_DATE											# DVD日付
+	local FIL_DATE											# ファイル日付
+	local DVD_INFO											# DVD情報
+	local DVD_SIZE											# DVDサイズ
+	local DVD_DATE											# DVD日付
+	local WEB_STAT
+	local WEB_SIZE
+	local WEB_LAST
+	local WEB_DATE
 	local TXT_COLOR
+	local DST_FILE
+	local DST_DATE
 	fncPrint "# $(fncString $((${COL_SIZE}-5)) '-') #"
 	fncPrint "#ID：Version$(fncString $((${COL_SIZE}-55)) ' ')：リリース日：サポ終了日：備考           #"
 	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
 	do
+		TXT_COLOR=""
 		ARRY_NAME=(${ARRAY_NAME[$I-1]})
 		CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
 		CODE_NAME[1]=`basename ${ARRY_NAME[1]} | sed -e 's/.iso//ig'`	# DVDファイル名
@@ -109,53 +96,82 @@ fncMenu () {
 		CODE_NAME[5]=${ARRY_NAME[5]}									# サポ終了日
 		CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
 		CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
+		DIR_NAME=`dirname ${CODE_NAME[2]}`
 		# ---------------------------------------------------------------------
-#		if [ "`echo ${CODE_NAME[1]} | sed -n '/\.\*/p'`" != "" ]; then
-			DIR_NAME=`dirname ${CODE_NAME[2]}`
-			set +e
-			FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*> *\(${CODE_NAME[1]}.iso\) *<.*> *\([0-9A-Za-z]*-[0-9A-Za-z]*-[0-9A-Za-z]*\) *\([0-9]*:[0-9]*\).*<*.*/\1 \2 \3/p"))
-			set -e
-			CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"
-			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
-#				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"`
-#				CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`
-				CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
-				CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
+		OLD_IFS=${IFS}
+		IFS=
+		set +e
+		WEB_INFO=($(curl -L -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null))
+		RET_CD=$?
+		set -e
+		IFS=${OLD_IFS}
+		# ---------------------------------------------------------------------
+		if [ ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then	# WEB情報取得失敗
+			TXT_COLOR=${TXT_RED}
+		else												# WEB取得取得成功
+			FIL_INFO=($(echo "${WEB_INFO[@]}" | LANG=C sed -n "s/^.*<a href=.*> *\(${CODE_NAME[1]}\.iso\) *<\/a.*> *\([0-9a-zA-Z]*-[0-9a-zA-Z]*-[0-9a-zA-Z]*\) *\([0-9]*:[0-9]*\).*$/\1 \2 \3/p"))
+			if [ "${FIL_INFO[2]:+UNSET}" = "" ]; then
+				FIL_INFO[2]="00:00"
+			fi
+			CODE_NAME[1]=`echo "${FIL_INFO[0]}" | sed -e 's/.iso//ig'`	# dvd/net
+			CODE_NAME[2]=`echo "${DIR_NAME}/${FIL_INFO[0]}"`
+			CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
+			if [ "${CODE_NAME[1]}" = "mini" ]; then
+				CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"			# mini.iso
+			fi
+		fi
+		# ---------------------------------------------------------------------
+		if [ "${ARRY_NAME[2]}" != "-" ]; then							# DVDファイル別名
+			CODE_NAME[1]=`basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig'`
+		fi
+		# ---------------------------------------------------------------------
+		if [ "${TXT_COLOR}" != "${TXT_RED}" ]; then
+			if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
+				TXT_COLOR=${TXT_YELLOW}
 			else
-				set +e
-				FIL_INFO=($(curl -L -l -R -S -s -f --connect-timeout 3 "${DIR_NAME}" 2> /dev/null | sed -n "s/.*> *\(${CODE_NAME[1]}.iso\) *<.*>/\1/p"))
-				set -e
-				if [ "${FIL_INFO[0]:+UNSET}" != "" ]; then
-#					CODE_NAME[1]=`echo ${FIL_INFO[0]} | sed -e 's/.iso//ig'`1
-					CODE_NAME[2]=`echo ${DIR_NAME}/${FIL_INFO[0]}`
+				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M%S"`
+				DVD_DATE=`ls -lL --time-style="+%Y%m%d%H%M%S" "${WORK_DIRS}/${CODE_NAME[1]}.iso" | awk '{print $6;}'`
+				DST_FILE=`find "${WORK_DIRS}/" -regextype posix-basic -regex ".*/${CODE_NAME[1]}-\(autoyast\|kickstart\|nocloud\|preseed\).iso.*" -print`
+				if [ "${DST_FILE}" = "" ]; then
+					DST_DATE=""
+					TXT_COLOR=${TXT_YELLOW}
+				else
+					DST_DATE=`ls -lL --time-style="+%Y%m%d%H%M%S" "${DST_FILE}" | awk '{print $6;}'`
+					if [ ${DVD_DATE} -gt ${DST_DATE} ]; then
+						TXT_COLOR=${TXT_YELLOW}
+					fi
 				fi
-			fi
-			if [ "${ARRY_NAME[2]}" != "-" ]; then							# DVDファイル別名
-				CODE_NAME[1]=`basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig'`
-			fi
-#			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]}.iso ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}`
-			ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]}.iso ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]}`
-#		fi
-		# ---------------------------------------------------------------------
-		TXT_COLOR=false
-		if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
-			TXT_COLOR=true
-		else
-			DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
-			DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
-			DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
-			if [ "${FIL_INFO[0]:+UNSET}" != "" -a "${FIL_INFO[1]:+UNSET}" != "" -a "${FIL_INFO[2]:+UNSET}" != "" ]; then
-				if [ `date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M"` -gt ${DVD_DATE} ]; then
-					TXT_COLOR=true
+				if [ ${FIL_DATE} -gt ${DVD_DATE} ]; then
+					set +e
+					curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "header.txt" "${CODE_NAME[2]}" > /dev/null
+					RET_CD=$?
+					set -e
+					# -------------------------------------------------------------
+					if [ ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then
+						TXT_COLOR=${TXT_RED}
+					else
+						DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
+						DVD_SIZE=`echo "${DVD_INFO}" | awk '{print $5;}'`
+						DVD_DATE=`echo "${DVD_INFO}" | awk '{print $6;}'`
+						WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
+						WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+						WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+						WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+						if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" -ne "${DVD_SIZE}" -o "${WEB_DATE}" -gt "${DVD_DATE}" ]; then
+							TXT_COLOR=${TXT_YELLOW}
+							CODE_NAME[4]=`echo "${WEB_DATE:0:4}-${WEB_DATE:4:2}-${WEB_DATE:6:2}"`
+						fi
+						if [ -f "header.txt" ]; then
+							rm -f "header.txt"
+						fi
+					fi
 				fi
 			fi
 		fi
 		# ---------------------------------------------------------------------
-		if [ "${TXT_COLOR}" = "true" ]; then
-			printf "#%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：\033[31m%-10.10s\033[m：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
-		else
-			printf "#%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：%-10.10s：%-10.10s：%-15.15s#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
-		fi
+		ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]}.iso ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]}`
+		# ---------------------------------------------------------------------
+		printf "#${TXT_COLOR}%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：%-10.10s：%-10.10s：%-15.15s${TXT_RESET}#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 	done
 	fncPrint "# $(fncString $((${COL_SIZE}-5)) '-') #"
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
@@ -233,12 +249,13 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
+			fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 			set +e
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			set -e
 		else
 			set +e
-			curl -L -R -S -s -f --connect-timeout 60 --dump-header "header.txt" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			set -e
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
@@ -248,8 +265,9 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
+				fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 				set +e
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+				curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 				set -e
 			fi
 			if [ -f "header.txt" ]; then
@@ -273,13 +291,13 @@ fncRemaster () {
 		pushd decomp > /dev/null							# initrd.gz 展開先
 			gunzip < ../image/initrd.gz | cpio -i --quiet
 			# --- preseed.cfg -> image ----------------------------------------
-			if [ -f "../../../${CFG_NAME}" ]; then
-				cp --preserve=timestamps "../../../${CFG_NAME}" "./preseed.cfg"
-			else
+			if [ ! -f "../../../${CFG_NAME}" ]; then
+				fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
 				set +e
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "./preseed.cfg" "${CFG_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+				curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 				set -e
 			fi
+			cp --preserve=timestamps "../../../${CFG_NAME}" "./preseed.cfg"
 			# --- preseed.cfg -------------------------------------------------
 			case "`echo ${CODE_NAME[7]} | sed -e 's/^.*(\(.*\)).*$/\1/'`" in
 				wheezy         )
