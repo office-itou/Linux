@@ -52,8 +52,8 @@
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21 2032-04-21 Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
 	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                             -                                           kickstart_centos.cfg                        2019-xx-xx 2024-05-31 RHEL_8.x        -                                " \
 	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                -                                           kickstart_centos.cfg                        2021-xx-xx 20xx-xx-xx RHEL_9.x        -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/34/Server/x86_64/iso/Fedora-Server-dvd-x86_64-34-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-04-27 2022-05-17 kernel_5.11     -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-11-02 2022-12-07 kernel_5.14     -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-11-02 2022-12-07 kernel_5.15     -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-dvd-x86_64-36-1.5.iso                    -                                           kickstart_fedora.cfg                        2022-05-10 2023-05-16 kernel_5.17     -                                " \
 	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                                        -                                           yast_opensuse.xml                           2021-06-02 20xx-xx-xx kernel_5.3.18   -                                " \
 	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                   -                                           yast_opensuse.xml                           2021-xx-xx 20xx-xx-xx kernel_x.x      -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                    -                                           kickstart_rocky.cfg                         2021-11-15 20xx-xx-xx RHEL_8.5        -                                " \
@@ -69,6 +69,10 @@
 	)   # 区分          ダウンロード先URL                                                                                                                        別名                                        定義ファイル                                リリース日 サポ終了日 備考            備考2
 # -----------------------------------------------------------------------------
 	TXT_RESET="\033[m"
+	TXT_ULINE="\033[4m"
+	TXT_ULINERST="\033[24m"
+	TXT_REV="\033[7m"
+	TXT_REVRST="\033[27m"
 	TXT_BLACK="\033[30m"
 	TXT_RED="\033[31m"
 	TXT_GREEN="\033[32m"
@@ -77,6 +81,14 @@
 	TXT_MAGENTA="\033[35m"
 	TXT_CYAN="\033[36m"
 	TXT_WHITE="\033[37m"
+	TXT_BBLACK="\033[40m"
+	TXT_BRED="\033[41m"
+	TXT_BGREEN="\033[42m"
+	TXT_BYELLOW="\033[43m"
+	TXT_BBLUE="\033[44m"
+	TXT_BMAGENTA="\033[45m"
+	TXT_BCYAN="\033[46m"
+	TXT_BWHITE="\033[47m"
 # -----------------------------------------------------------------------------
 fncMenu () {
 	local OLD_IFS
@@ -183,6 +195,9 @@ fncMenu () {
 					fi
 				fi
 			fi
+		fi
+		if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
+			TXT_COLOR+=${TXT_REV}
 		fi
 		# ---------------------------------------------------------------------
 		ARRAY_NAME[$I-1]=`printf "%s %s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]}.iso ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]}`
@@ -1441,8 +1456,9 @@ _EOT_
 #x32   :                 :2020-04-28:2021-05-25: 5.6
 # 33   :                 :2020-10-27:2021-11-30: 5.8
 # 34   :                 :2021-04-27:2022-05-17: 5.11
-# 35   :                 :2021-11-02:2022-12-07: 5.14
-# 36   :                 :2022-04-19:2023-05-24:
+# 35   :                 :2021-11-02:2022-12-07: 5.15
+# 36   :                 :2022-05-10:2023-05-16: 5.17
+# 37   :                 :2022-10-18:2023-11-22:
 # --- https://ja.wikipedia.org/wiki/OpenSUSE ----------------------------------
 # [https://en.wikipedia.org/wiki/OpenSUSE]
 # Ver. :コードネーム       :リリース日:サポ期限  :kernel
