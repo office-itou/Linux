@@ -193,7 +193,7 @@ fncMenu () {
 		set -e
 		IFS=${OLD_IFS}
 		# ---------------------------------------------------------------------
-		if [ ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then	# WEB情報取得失敗
+		if [ ${RET_CD} -eq 18 -o ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then	# WEB情報取得失敗
 			TXT_COLOR=${TXT_RED}
 		else												# WEB取得取得成功
 			FIL_INFO=($(echo "${WEB_INFO[@]}" | LANG=C sed -n "s/^.*<a href=.*> *\(${CODE_NAME[1]}\.iso\) *<\/a.*> *\([0-9a-zA-Z]*-[0-9a-zA-Z]*-[0-9a-zA-Z]*\) *\([0-9]*:[0-9]*\).*$/\1 \2 \3/p"))
@@ -220,7 +220,7 @@ fncMenu () {
 				DVD_DATE=`ls -lL --time-style="+%Y%m%d%H%M%S" "${WORK_DIRS}/${CODE_NAME[1]}.iso" | awk '{print $6;}'`
 #				DST_FILE=`find "${WORK_DIRS}/" -regextype posix-basic -regex ".*/${CODE_NAME[1]}-\(custom-\)*\(autoyast\|kickstart\|nocloud\|preseed\)\.iso.*" -print`
 				set +e
-				DST_FILE=`ls live-custom/*iso | grep -e "${CODE_NAME[1]}-\(custom\)*-\(autoyast\|kickstart\|noclou\|preseed\).iso"`
+				DST_FILE=`ls "${WORK_DIRS}/"*iso | grep -e "${CODE_NAME[1]}-*\(custom\)*-\(autoyast\|kickstart\|nocloud\|preseed\).iso"`
 				set -e
 				if [ "${DST_FILE}" = "" ]; then
 					DST_DATE=""
@@ -231,13 +231,13 @@ fncMenu () {
 						TXT_COLOR=${TXT_YELLOW}
 					fi
 				fi
-				if [ ${FIL_DATE} -gt ${DVD_DATE} ]; then
+				if [ ${FIL_DATE} -ge ${DVD_DATE} ]; then
 					set +e
 					curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "header.txt" "${CODE_NAME[2]}" > /dev/null
 					RET_CD=$?
 					set -e
 					# -------------------------------------------------------------
-					if [ ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then
+					if [ ${RET_CD} -eq 18 -o ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then
 						TXT_COLOR=${TXT_RED}
 					else
 						DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
@@ -360,11 +360,11 @@ fncRemaster_mini () {
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
 			fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 			set +e
-			curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			set -e
 		else
 			set +e
-			curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			set -e
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
@@ -376,7 +376,7 @@ fncRemaster_mini () {
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
 				fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 				set +e
-				curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+				curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 				set -e
 			fi
 			if [ -f "header.txt" ]; then
@@ -403,7 +403,7 @@ fncRemaster_mini () {
 			if [ ! -f "../../../${CFG_NAME}" ]; then
 				fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
 				set +e
-				curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+				curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 				set -e
 			fi
 			cp --preserve=timestamps "../../../${CFG_NAME}" "./preseed.cfg"
@@ -606,11 +606,11 @@ fncRemaster () {
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
 			fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 			set +e
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			set -e
 		else
 			set +e
-			curl -L -R -S -s -f --connect-timeout 60 -I --dump-header "header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 60 -I --dump-header "header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			set -e
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
@@ -622,7 +622,7 @@ fncRemaster () {
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
 				fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 				set +e
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 				set -e
 			fi
 			if [ -f "header.txt" ]; then
@@ -694,7 +694,7 @@ fncRemaster () {
 					if [ ! -f "../../../${CFG_FILE}" ]; then
 						fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
 						set +e
-						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 						set -e
 					fi
 					cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
@@ -717,7 +717,7 @@ fncRemaster () {
 							if [ ! -f "../../../${CFG_FILE}" ]; then
 								fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
 								set +e
-								curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+								curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 								set -e
 							fi
 							cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
@@ -735,7 +735,7 @@ fncRemaster () {
 					if [ ! -f "../../../${CFG_NAME}" ]; then
 						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
 						set +e
-						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 						set -e
 					fi
 					cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
@@ -808,7 +808,7 @@ _EOT_
 					if [ ! -f "../../../${CFG_NAME}" ]; then
 						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
 						set +e
-						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 						set -e
 					fi
 					cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
@@ -1720,7 +1720,7 @@ if [ 1 -eq 1 ]; then
 									 		set +e
 									 		curl -L -# -R -S -f --connect-timeout 3                                \
 									 		    -O "https://dl-ssl.google.com/linux/linux_signing_key.pub"         \
-									 		                                                                       || if [ $? -eq 22 -o $? -eq 28  ]; then fncEnd $?; fi
+									 		                                                                       || if [ ${RET_CD} -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then fncEnd $?; fi
 									 		set -e
 									 		apt-key add ./linux_signing_key.pub
 									 		if [ -f ./linux_signing_key.pub ]; then
@@ -1737,7 +1737,7 @@ if [ 1 -eq 1 ]; then
 									 		set +e
 									 		curl -L -# -R -S -f --connect-timeout 3                                \
 									 		    -O "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" \
-									 		                                                                       || if [ $? -eq 22 -o $? -eq 28  ]; then fncEnd $?; fi
+									 		                                                                       || if [ ${RET_CD} -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then fncEnd $?; fi
 									 		set -e
 									 		apt-get install      -q -y ${APT_OPTIONS} --auto-remove                \
 									 		    ./google-chrome-stable_current_amd64.deb                           \
