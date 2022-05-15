@@ -5,8 +5,9 @@
 　・**Debian 11.3.0 64bit版**（他環境未確認、knoppix-live.shを除く）  
 　・**220GiBの空き容量があるHDD等**（原本100GiB、作成物120GiB消費）  
   
-　当方の開発環境のディスク構成。/homeが作業場所。
-　原本のISOファイルはVMware共有の/mnt/hgfsに置いてシンボリックリンを設定し作業している。
+　当方の開発環境のディスク構成。/homeが作業場所。  
+　原本のISOファイルはVMware共有の/mnt/hgfsに置いてシンボリックリンを設定し作業している。  
+  
 ```bash:df -h
 master@sv-server:~/mkcd$ df -h
 ファイルシス          サイズ  使用  残り 使用% マウント位置
