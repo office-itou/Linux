@@ -64,6 +64,7 @@ chmod +x *.sh
 | dist_remaster_dvd.sh  | ![dist_remaster_dvd.sh.jpg](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_dvd.sh.jpg) |
 | dist_remaster_mini.sh | ![dist_remaster_mini.sh.jpg](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_mini.sh.jpg) |
 | dist_remaster_net.sh  | ![dist_remaster_net.sh.jpg](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_net.sh.jpg) |
+| live-custom.sh        | ![dist_remaster_net.sh.jpg](https://github.com/office-itou/Linux/blob/master/installer/picture/live-custom.sh.jpg) |
   
 【ダウンロード用コピペ】  
   
