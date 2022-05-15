@@ -1,23 +1,34 @@
-**Debian/Ubuntu/CentOS/Fedora/OpenSUSEの無人インストール用メディア作成シェル**  
+**・Debian/Ubuntu/CentOS/Fedora/OpenSUSEの無人インストール用メディア作成シェル**  
+**・Knoppix日本語化メディア作成シェル**  
   
-【事前準備】  
-　・開発環境：**Debian 11.3.0 64bit版**  
-　・実行確認：**Debian 11.3.0 64bit版**  
+【開発環境】  
+　・**Debian 11.3.0 64bit版**（他環境未確認、knoppix-live.shを除く）  
+　・**180GiBの空き容量があるHDD等**（作成ファイルだけで120GiB消費）  
   
 【実行方法】  
 　・**sudo ./dist_remaster_dvd.sh** [ a | {1..nn} | 1 2 5 ]  
 　・**sudo ./dist_remaster_mini.sh** [ a | {1..nn} | 1 2 5 ]  
 　・**sudo ./dist_remaster_net.sh** [ a | {1..nn} | 1 2 5 ]  
+　・**sudo ./live-custom.sh** [ a | {1..nn} | 1 2 5 ]  
+　・**sudo ./knoppix-live.sh**  
 　＜注意＞  
-　・引数省略時はメニュー画面で指定（数値入力のみ）  
+　・引数省略時はメニュー画面で指定(knoppix-live.shを除く)  
 　・必要パッケージは初回実行時に本シェルが導入  
   
-【無人インストールISO作成シェル】  
-| ファイル名              | 機能                  |
-| ----------------------- | --------------------- |
-| [dist_remaster_dvd.sh](https://github.com/office-itou/Linux/blob/master/installer/source/dist_remaster_dvd.sh)    | DVDイメージ用         |
-| [dist_remaster_mini.sh](https://github.com/office-itou/Linux/blob/master/installer/source/dist_remaster_mini.sh)   | mini.iso用            |
-| [dist_remaster_net.sh](https://github.com/office-itou/Linux/blob/master/installer/source/dist_remaster_net.sh)    | net installファイル用 |
+【メディア作成シェル】  
+| ファイル名         | 機能                  |
+| ------------------ | --------------------- |
+| [dist_remaster.sh](https://github.com/office-itou/Linux/blob/master/installer/source/dist_remaster.sh)    | メディア作成シェル |
+| [knoppix-live.sh](https://github.com/office-itou/Linux/blob/master/installer/source//knoppix-live.sh)    | Knoppix日本語化用 |
+  
+　・ファイル名によって処理内容が変わるのでリンクを利用
+```text
+ln -s ./dist_remaster.sh ./dist_remaster_dvd.sh		# DVDイメージ用
+ln -s ./dist_remaster.sh ./dist_remaster_mini.sh	# miniイメージ用
+ln -s ./dist_remaster.sh ./dist_remaster_net.sh		# Netイメージ用
+ln -s ./dist_remaster.sh ./live-custom.sh			# Liveイメージ用
+chmod +x *.sh
+```
   
 【無人インストール定義ファイル】  
 | ファイル名              | 機能     |
@@ -50,9 +61,37 @@
 　・exec &> >(tee -a "working.log") でのログ取得が可能
 | 作業内容              | スクリーンショット                                                              |
 | --------------------- | ------------------------------------------------------------------------------- |
-| dist_remaster_dvd.sh  | ![dist_remaster_dvd.sh](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_dvd.sh.jpg) |
-| dist_remaster_mini.sh | ![dist_remaster_mini.sh](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_mini.sh.jpg) |
-| dist_remaster_net.sh  | ![dist_remaster_net.sh](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_net.sh.jpg) |
+| dist_remaster_dvd.sh  | ![dist_remaster_dvd.sh.jpg](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_dvd.sh.jpg) |
+| dist_remaster_mini.sh | ![dist_remaster_mini.sh.jpg](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_mini.sh.jpg) |
+| dist_remaster_net.sh  | ![dist_remaster_net.sh.jpg](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_net.sh.jpg) |
+  
+【ダウンロード用コピペ】  
+  
+```text
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers.sh"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers_txt_maker.sh"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cloud_preseed.sh"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster.sh"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/install.sh"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_centos.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_fedora.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_miraclelinux.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_rocky.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/knoppix-live.sh"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/live-debian_config.conf"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/nocloud-ubuntu-meta-data"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/nocloud-ubuntu-user-data"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_debian.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_ubuntu.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse.xml"
+# -----------------------------------------------------------------------------
+ln -s ./dist_remaster.sh ./dist_remaster_dvd.sh
+ln -s ./dist_remaster.sh ./dist_remaster_mini.sh
+ln -s ./dist_remaster.sh ./dist_remaster_net.sh
+ln -s ./dist_remaster.sh ./live-custom.sh
+# -----------------------------------------------------------------------------
+chmod +x *.sh
+```
   
 **preseed.cfgの環境設定値例** (各自の環境に合わせて変更願います)  
 　*※USBメモリーからMBR環境にインストールする場合は以下の様に変更願います。*  
@@ -100,27 +139,5 @@
     perl apt-show-versions libapt-pkg-perl libauthen-pam-perl libio-pty-perl libnet-ssleay-perl perl-openssl-defaults \
     clamav bind9 dnsutils apache2 vsftpd isc-dhcp-server ntpdate samba smbclient cifs-utils rsync \
     chromium chromium-l10n
-```
-  
-【ダウンロード用コピペ】  
-  
-```text
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers_txt_maker.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cloud_preseed.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster_dvd.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster_mini.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster_net.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/install.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_centos.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_fedora.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_miraclelinux.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_rocky.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/nocloud-ubuntu-meta-data"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/nocloud-ubuntu-user-data"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_debian.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_ubuntu.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse.xml"
-chmod u+x *.sh
 ```
   
