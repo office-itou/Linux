@@ -1474,7 +1474,8 @@ _EOT_
 									cat <<- '_EOT_' | sed 's/^ //g' | sed -e "s/_HOSTNAME_/${CODE_NAME[0]}/" > ./image/live/config.conf
 										# *****************************************************************************
 										#set -e
-										set -o allexport
+										#set -o allexport
+										#set +o | tee
 										# === Fix Parameters [ /lib/live/init-config.sh ] =============================
 										#LIVE_HOSTNAME="debian"
 										#LIVE_USERNAME="user"
@@ -1489,15 +1490,17 @@ _EOT_
 										# -----------------------------------------------------------------------------
 										LIVE_USER_FULLNAME="Master"				# full name
 										LIVE_USERNAME="master"					# user name
-										LIVE_PASSWORD="master"					# pass word
+										LIVE_PASSWORD="master"					# password
 										#LIVE_CRYPTPWD='8Ab05sVQ4LLps'
 										# -----------------------------------------------------------------------------
 										LIVE_LOCALES="ja_JP.UTF-8"
 										LIVE_KEYBOARD_MODEL="pc105"
 										LIVE_KEYBOARD_LAYOUTS="jp"
-										LIVE_KEYBOARD_VARIANTS="OADG109"
+										LIVE_KEYBOARD_VARIANTS="OADG109A"
 										LIVE_TIMEZONE="Asia/Tokyo"
 										LIVE_UTC="yes"
+										# -----------------------------------------------------------------------------
+										#set | grep -e "^LIVE_" | tee
 										# === Change hostname =========================================================
 										if [ -n "${LIVE_HOSTNAME}" ]; then
 										 	/bin/echo "${LIVE_HOSTNAME}" > /etc/hostname
@@ -1577,6 +1580,8 @@ _EOT_
 										 	/bin/echo "End 9999-user-setting :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
 										_EOT_SH_
 										chmod +x /lib/live/config/9999-user-setting
+										# -----------------------------------------------------------------------------
+										#set | grep -e "^LIVE_" | tee
 										# === Creating state file =====================================================
 										touch /var/lib/live/config/config-conf
 										# =============================================================================
