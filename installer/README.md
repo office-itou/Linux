@@ -22,7 +22,7 @@
 | [knoppix-live.sh](https://github.com/office-itou/Linux/blob/master/installer/source//knoppix-live.sh)    | Knoppix日本語化用 |
   
 　・ファイル名によって処理内容が変わるのでリンクを利用
-```bash:
+```text
 ln -s ./dist_remaster.sh ./dist_remaster_dvd.sh  # DVDイメージ用
 ln -s ./dist_remaster.sh ./dist_remaster_mini.sh # miniイメージ用
 ln -s ./dist_remaster.sh ./dist_remaster_net.sh  # Netイメージ用
