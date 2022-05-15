@@ -202,7 +202,7 @@ fncMenu () {
 			fi
 			CODE_NAME[1]=`echo "${FIL_INFO[0]}" | sed -e 's/.iso//ig'`	# dvd/net
 			CODE_NAME[2]=`echo "${DIR_NAME}/${FIL_INFO[0]}"`
-			CODE_NAME[4]=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
+			CODE_NAME[4]=`TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
 		fi
 		if [ "${CODE_NAME[1]}" = "mini" ]; then
 			CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"	# mini.iso
@@ -216,8 +216,8 @@ fncMenu () {
 			if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
 				TXT_COLOR=${TXT_YELLOW}
 			else
-				FIL_DATE=`date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M%S"`
-				DVD_DATE=`ls -lL --time-style="+%Y%m%d%H%M%S" "${WORK_DIRS}/${CODE_NAME[1]}.iso" | awk '{print $6;}'`
+				FIL_DATE=`TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M%S"`
+				DVD_DATE=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${WORK_DIRS}/${CODE_NAME[1]}.iso" | awk '{print $6;}'`
 #				DST_FILE=`find "${WORK_DIRS}/" -regextype posix-basic -regex ".*/${CODE_NAME[1]}-\(custom-\)*\(autoyast\|kickstart\|nocloud\|preseed\)\.iso.*" -print`
 				set +e
 				DST_FILE=`ls "${WORK_DIRS}/"*iso | grep -e "${CODE_NAME[1]}-*\(custom\)*-\(autoyast\|kickstart\|nocloud\|preseed\).iso"`
@@ -226,12 +226,12 @@ fncMenu () {
 					DST_DATE=""
 					TXT_COLOR=${TXT_YELLOW}
 				else
-					DST_DATE=`ls -lL --time-style="+%Y%m%d%H%M%S" "${DST_FILE}" | awk '{print $6;}'`
+					DST_DATE=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${DST_FILE}" | awk '{print $6;}'`
 					if [ ${DVD_DATE} -gt ${DST_DATE} ]; then
 						TXT_COLOR=${TXT_YELLOW}
 					fi
 				fi
-				if [ ${FIL_DATE} -ge ${DVD_DATE} ]; then
+				if [ ${FIL_DATE} -gt ${DVD_DATE} ]; then
 					set +e
 					curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "header.txt" "${CODE_NAME[2]}" > /dev/null
 					RET_CD=$?
@@ -240,13 +240,13 @@ fncMenu () {
 					if [ ${RET_CD} -eq 18 -o ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then
 						TXT_COLOR=${TXT_RED}
 					else
-						DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
+						DVD_INFO=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
 						DVD_SIZE=`echo "${DVD_INFO}" | awk '{print $5;}'`
 						DVD_DATE=`echo "${DVD_INFO}" | awk '{print $6;}'`
 						WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 						WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 						WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
-						WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+						WEB_DATE=`TZ=UTC date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
 						if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" -ne "${DVD_SIZE}" -o "${WEB_DATE}" -gt "${DVD_DATE}" ]; then
 							TXT_COLOR=${TXT_YELLOW}
 							CODE_NAME[4]=`echo "${WEB_DATE:0:4}-${WEB_DATE:4:2}-${WEB_DATE:6:2}"`
@@ -369,8 +369,8 @@ fncRemaster_mini () {
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
-			local WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
-			local DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "../${DVD_NAME}.iso"`
+			local WEB_DATE=`TZ=UTC date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+			local DVD_INFO=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "../${DVD_NAME}.iso"`
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
@@ -615,8 +615,8 @@ fncRemaster () {
 			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
-			local WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
-			local DVD_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "../${DVD_NAME}.iso"`
+			local WEB_DATE=`TZ=UTC date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+			local DVD_INFO=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "../${DVD_NAME}.iso"`
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
@@ -662,8 +662,8 @@ fncRemaster () {
 							set -e
 							WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 							WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
-							WEB_DATE=`date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
-							FILE_INFO=`ls -lL --time-style="+%Y%m%d%H%M%S" "../../../${WALL_FILE}"`
+							WEB_DATE=`TZ=UTC date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
+							FILE_INFO=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "../../../${WALL_FILE}"`
 							FILE_SIZE=`echo ${FILE_INFO} | awk '{print $5;}'`
 							FILE_DATE=`echo ${FILE_INFO} | awk '{print $6;}'`
 							if [ "${WEB_SIZE}" != "${FILE_SIZE}" ] || [ "${WEB_DATE}" != "${FILE_DATE}" ]; then
@@ -2432,7 +2432,9 @@ fi
 	done
 	# -------------------------------------------------------------------------
 	set +e
-	ls -lthLgG "${WORK_DIRS}/"*.iso 2> /dev/null
+	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${WORK_DIRS}/"*iso 2> /dev/null | \
+	    grep -e ".*-*\(custom\)*-\(autoyast\|kickstart\|nocloud\|preseed\).iso"   | \
+	    cut -c 13-
 	set -e
 # -----------------------------------------------------------------------------
 	fncPrint "$(fncString ${COL_SIZE} '*')"
