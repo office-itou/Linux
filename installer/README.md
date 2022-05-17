@@ -1,4 +1,5 @@
-**・Debian/Ubuntu/CentOS/Fedora/OpenSUSEの無人インストール用メディア作成シェル**  
+**・無人インストール用メディア作成シェル**  
+　Debian/Ubuntu/CentOS/Fedora/OpenSUSE対応
 **・Knoppix日本語化メディア作成シェル**  
   
 # 【開発環境】  
@@ -41,11 +42,26 @@ master@sv-server:~/mkcd$
 ```
   
 # 【実行方法】  
-　・**sudo ./dist_remaster_dvd.sh** [ a | {1..nn} | 1 2 5 ]  
-　・**sudo ./dist_remaster_mini.sh** [ a | {1..nn} | 1 2 5 ]  
-　・**sudo ./dist_remaster_net.sh** [ a | {1..nn} | 1 2 5 ]  
-　・**sudo ./live-custom.sh** [ a | {1..nn} | 1 2 5 ]  
+　・**sudo ./dist_remaster_dvd.sh** [OPTION]... [NUMBER]...  
+　・**sudo ./dist_remaster_mini.sh** [OPTION]... [NUMBER]...  
+　・**sudo ./dist_remaster_net.sh** [OPTION]... [NUMBER]...  
+　・**sudo ./live-custom.sh** [OPTION]... [NUMBER]...  
 　・**sudo ./knoppix-live.sh**  
+  
+| OPTION      | 説明                                 |
+| ----------- | ------------------------------------ |
+| -h, --help  | このヘルプ                           |
+| -i, --init  | 初期設定                             |
+| -l, --log   | ログ出力（メディア作成時）           |
+| -d, --debug | デバッグモード（未実装）             |
+| -s, --skip  | サブシェル処理スキップ               |
+| -a, --all   | 全登録リスト処理                     |
+  
+| NUMBER      | 説明
+| ----------- | ------------------------------------ |
+|             | 処理する登録リスト番号               |
+|             | ブレース展開可（重複チェック未実装） |
+  
 　＜注意＞  
 　・引数省略時はメニュー画面で指定(knoppix-live.shを除く)  
 　・必要パッケージは初回実行時に本シェルが導入  
@@ -57,7 +73,7 @@ master@sv-server:~/mkcd$
 | [knoppix-live.sh](https://github.com/office-itou/Linux/blob/master/installer/source//knoppix-live.sh)    | Knoppix日本語化用 |
   
 　・ファイル名によって処理内容が変わるのでリンクを利用
-```text
+```bash:
 ln -s ./dist_remaster.sh ./dist_remaster_dvd.sh     # DVDイメージ用
 ln -s ./dist_remaster.sh ./dist_remaster_mini.sh    # miniイメージ用
 ln -s ./dist_remaster.sh ./dist_remaster_net.sh     # Netイメージ用
@@ -88,22 +104,26 @@ chmod +x *.sh
   
 # 【メニュー画面】  
 **・文字色について**  
-　・反転：作成必要（ローカルに無い）  
-　・白色：作成不要（ローカルが最新）  
-　・黄色：作成必要（ローカルが古い）  
-　・赤色：通信障害（ダウンロード不可）  
-**・ログについて**  
-　・exec &> >(tee -a "working.log") でのログ取得が可能
+| 属性 | 説明                                 |
+| ---- | ------------------------------------ |
+| 赤色 | 通信エラー（リンク先消失等）         |
+| 白色 | 作成ファイル最新（ダウンロード不要） |
+| 緑色 | 作成ファイル無し（ファイル作成対象） |
+| 黄色 | 作成ファイル在り（ファイル作成対象） |
+| 水色 | 原本ファイル無し（ファイル作成対象） |
+| 反転 | 原本ダウンロード（ファイル作成対象） |
+  
+**・スクリーンショット**  
 | 作業内容              | スクリーンショット                                                              |
 | --------------------- | ------------------------------------------------------------------------------- |
-| dist_remaster_dvd.sh  | ![dist_remaster_dvd.sh.jpg](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_dvd.sh.jpg) |
-| dist_remaster_mini.sh | ![dist_remaster_mini.sh.jpg](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_mini.sh.jpg) |
-| dist_remaster_net.sh  | ![dist_remaster_net.sh.jpg](https://github.com/office-itou/Linux/blob/master/installer/picture/dist_remaster_net.sh.jpg) |
-| live-custom.sh        | ![dist_remaster_net.sh.jpg](https://github.com/office-itou/Linux/blob/master/installer/picture/live-custom.sh.jpg) |
+| dist_remaster_dvd.sh  | ![dist_remaster_dvd.sh.jpg](https://github.com/office-itou/Linux/raw/master/installer/picture/dist_remaster_dvd.sh.jpg) |
+| dist_remaster_mini.sh | ![dist_remaster_mini.sh.jpg](https://github.com/office-itou/Linux/raw/master/installer/picture/dist_remaster_mini.sh.jpg) |
+| dist_remaster_net.sh  | ![dist_remaster_net.sh.jpg](https://github.com/office-itou/Linux/raw/master/installer/picture/dist_remaster_net.sh.jpg) |
+| live-custom.sh        | ![dist_remaster_net.sh.jpg](https://github.com/office-itou/Linux/raw/master/installer/picture/live-custom.sh.jpg) |
   
 # 【ダウンロード用コピペ】  
   
-```text
+```bash:
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/addusers_txt_maker.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cloud_preseed.sh"
@@ -121,60 +141,11 @@ wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/sourc
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/preseed_ubuntu.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/yast_opensuse.xml"
 # -----------------------------------------------------------------------------
-ln -s ./dist_remaster.sh ./dist_remaster_dvd.sh
-ln -s ./dist_remaster.sh ./dist_remaster_mini.sh
-ln -s ./dist_remaster.sh ./dist_remaster_net.sh
-ln -s ./dist_remaster.sh ./live-custom.sh
+ln -s ./dist_remaster.sh ./dist_remaster_dvd.sh     # DVDイメージ用
+ln -s ./dist_remaster.sh ./dist_remaster_mini.sh    # miniイメージ用
+ln -s ./dist_remaster.sh ./dist_remaster_net.sh     # Netイメージ用
+ln -s ./dist_remaster.sh ./live-custom.sh           # Liveイメージ用
 # -----------------------------------------------------------------------------
 chmod +x *.sh
-```
-  
-# **preseed.cfgの環境設定値例** 
-(各自の環境に合わせて変更願います)  
-　*※USBメモリーからMBR環境にインストールする場合は以下の様に変更願います。*  
-　・partman-auto/disk string /dev/sdb ← 実際のドライブに合わせる  
-　・grub-installer/bootdev string /dev/sdb ← 実際のドライブに合わせる  
-　　参照：[preseedの利用](https://www.debian.org/releases/stable/amd64/apbs02.ja.html)  
-  
-```text
-# == Network configuration ====================================================
-  d-i netcfg/choose_interface select auto
-  d-i netcfg/disable_dhcp boolean true
-# -- Static network configuration. --------------------------------------------
-  d-i netcfg/get_ipaddress string 192.168.1.1
-  d-i netcfg/get_netmask string 255.255.255.0
-  d-i netcfg/get_gateway string 192.168.1.254
-  d-i netcfg/get_nameservers string 192.168.1.254
-  d-i netcfg/confirm_static boolean true
-# -- hostname and domain names ------------------------------------------------
-  d-i netcfg/get_hostname string sv-debian
-  d-i netcfg/get_domain string workgroup
-```
-  
-```text
-# == Account setup ============================================================
-  d-i passwd/root-login boolean false
-  d-i passwd/make-user boolean true
-# -- Root password, either in clear text or encrypted -------------------------
-# d-i passwd/root-password password r00tme
-# d-i passwd/root-password-again password r00tme
-# d-i passwd/root-password-crypted password [crypt(3) hash]
-# -- Normal user's password, either in clear text or encrypted ----------------
-  d-i passwd/user-fullname string Master
-  d-i passwd/username string master
-  d-i passwd/user-password password master
-  d-i passwd/user-password-again password master
-# d-i passwd/user-password-crypted password [crypt(3) hash]
-```
-  
-```text
-# == Package selection ========================================================
-  tasksel tasksel/first multiselect \
-    desktop, lxde-desktop, ssh-server, web-server
-  d-i pkgsel/include string \
-    sudo tasksel network-manager curl bc \
-    perl apt-show-versions libapt-pkg-perl libauthen-pam-perl libio-pty-perl libnet-ssleay-perl perl-openssl-defaults \
-    clamav bind9 dnsutils apache2 vsftpd isc-dhcp-server ntpdate samba smbclient cifs-utils rsync \
-    chromium chromium-l10n
 ```
   

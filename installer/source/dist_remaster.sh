@@ -24,6 +24,7 @@
 ##	2021/08/16 000.0000 J.Itou         新規作成
 ##	2022/05/14 000.0000 J.Itou         シェル統合
 ##	2022/05/15 000.0000 J.Itou         不具合修正
+##	2022/05/16 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -35,29 +36,11 @@
 
 	trap 'exit 1' 1 2 3 15
 # -----------------------------------------------------------------------------
-	INP_INDX=${@:-""}					# 処理ID
+	INP_INDX=""							# 処理ID
 # -----------------------------------------------------------------------------
-	if [ "${INP_INDX}" = "init" ]; then
-		SCRIPT_NAME=`basename $0`
-		FLG_LINK=0
-		for TARGET in "dist_remaster_mini" "dist_remaster_net" "dist_remaster_dvd" "live-custom"
-		do
-			if [ ! -f "./${TARGET}.sh" ] && [ ! -L "./${TARGET}.sh" ]; then
-				ln -s "./${SCRIPT_NAME}" "./${TARGET}.sh"
-				FLG_LINK=1
-			fi
-		done
-		if [ ${FLG_LINK} -ne 0 ]; then
-			echo "シンボリックリンクを作成しました。"
-		fi
-		exit 0
-	fi
-# -----------------------------------------------------------------------------
-	WHO_AMI=`whoami`					# 実行ユーザー名
-	if [ "${WHO_AMI}" != "root" ]; then
-		echo "rootユーザーで実行して下さい。"
-		exit 1
-	fi
+	FLG_LOGOUT=0						# ログ出力フラグ
+	FLG_DEBUG=0							# Debugフラグ
+	FLG_SKIP=0							# サブシェルスキップフラグ
 # -----------------------------------------------------------------------------
 	readonly WORK_DIRS=`basename $0 | sed -e 's/\..*$//'`	# 作業ディレクトリ名(プログラム名)
 # -----------------------------------------------------------------------------
@@ -126,28 +109,119 @@
 	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-xx   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                      2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+
+	case "${WORK_DIRS}" in
+		"dist_remaster_mini" )	ARRAY_NAME=("${ARRAY_NAME_MINI[@]}");;
+		"dist_remaster_net"  )	ARRAY_NAME=("${ARRAY_NAME_NET[@]}");;
+		"dist_remaster_dvd"  )	ARRAY_NAME=("${ARRAY_NAME_DVD[@]}");;
+		"live-custom"        )	ARRAY_NAME=("${ARRAY_NAME_LIVE[@]}");;
+		*                    )	;;
+	esac
 # -----------------------------------------------------------------------------
-	readonly TXT_RESET="\033[m"
-	readonly TXT_ULINE="\033[4m"
-	readonly TXT_ULINERST="\033[24m"
-	readonly TXT_REV="\033[7m"
-	readonly TXT_REVRST="\033[27m"
-	readonly TXT_BLACK="\033[30m"
-	readonly TXT_RED="\033[31m"
-	readonly TXT_GREEN="\033[32m"
-	readonly TXT_YELLOW="\033[33m"
-	readonly TXT_BLUE="\033[34m"
-	readonly TXT_MAGENTA="\033[35m"
-	readonly TXT_CYAN="\033[36m"
-	readonly TXT_WHITE="\033[37m"
-	readonly TXT_BBLACK="\033[40m"
-	readonly TXT_BRED="\033[41m"
-	readonly TXT_BGREEN="\033[42m"
-	readonly TXT_BYELLOW="\033[43m"
-	readonly TXT_BBLUE="\033[44m"
-	readonly TXT_BMAGENTA="\033[45m"
-	readonly TXT_BCYAN="\033[46m"
-	readonly TXT_BWHITE="\033[47m"
+	readonly TXT_RESET="\033[m"			# 全属性解除
+	readonly TXT_ULINE="\033[4m"		# 下線設定
+	readonly TXT_ULINERST="\033[24m"	# 下線解除
+	readonly TXT_REV="\033[7m"			# 反転設定
+	readonly TXT_REVRST="\033[27m"		# 反転解除
+	readonly TXT_BLACK="\033[30m"		# 文字黒色
+	readonly TXT_RED="\033[31m"			#  〃 赤色
+	readonly TXT_GREEN="\033[32m"		#  〃 緑色
+	readonly TXT_YELLOW="\033[33m"		#  〃 黄色
+	readonly TXT_BLUE="\033[34m"		#  〃 青色
+	readonly TXT_MAGENTA="\033[35m"		#  〃 紫色
+	readonly TXT_CYAN="\033[36m"		#  〃 水色
+	readonly TXT_WHITE="\033[37m"		#  〃 白色
+	readonly TXT_BBLACK="\033[40m"		# 背景黒色
+	readonly TXT_BRED="\033[41m"		#  〃 赤色
+	readonly TXT_BGREEN="\033[42m"		#  〃 緑色
+	readonly TXT_BYELLOW="\033[43m"		#  〃 黄色
+	readonly TXT_BBLUE="\033[44m"		#  〃 青色
+	readonly TXT_BMAGENTA="\033[45m"	#  〃 紫色
+	readonly TXT_BCYAN="\033[46m"		#  〃 水色
+	readonly TXT_BWHITE="\033[47m"		#  〃 白色
+# -----------------------------------------------------------------------------
+funcHelp () {
+	cat <<- _EOT_
+		使用法: sudo $0 [OPTION]... [NUMBER]...
+		  [OPTION]
+		    -h, --help      このヘルプ
+		    -i, --init      初期設定
+		    -l, --log       ログ出力（メディア作成時）
+		    -d, --debug     デバッグモード（未実装）
+		    -s, --skip      サブシェル処理スキップ
+		    -a, --all       全登録リスト処理
+		  [NUMBER]
+		    処理する登録リスト番号
+		    ブレース展開可（重複チェック未実装）
+_EOT_
+}
+# -----------------------------------------------------------------------------
+funcOption () {
+	local RET_CD
+	local SCRIPT_NAME
+	local PARAM
+	local TARGET
+	local FLG_LINK
+
+	PARAM=$(getopt -n $0 -o hildas -l help,init,log,debug,all,skip -- "$@")
+	eval set -- "$PARAM"
+
+	while [ -n "${1:-}" ]
+	do
+		case $1 in
+			-h | --help )
+				funcHelp
+				exit 0
+				;;
+			-i | --init )
+				SCRIPT_NAME=`basename $0`
+				FLG_LINK=0
+				for TARGET in "dist_remaster_mini" "dist_remaster_net" "dist_remaster_dvd" "live-custom"
+				do
+					if [ ! -f "./${TARGET}.sh" ] && [ ! -L "./${TARGET}.sh" ]; then
+						ln -s "./${SCRIPT_NAME}" "./${TARGET}.sh"
+						FLG_LINK=1
+					fi
+				done
+				if [ ${FLG_LINK} -ne 0 ]; then
+					echo "シンボリックリンクを作成しました。"
+				fi
+				exit 0
+				;;
+			-l | --log )
+				shift
+				FLG_LOGOUT=1
+				;;
+			-d | --debug )
+				shift
+				FLG_DEBUG=1
+				;;
+			-a | --all )
+				shift
+				INP_INDX="{1..${#ARRAY_NAME[@]}}"
+				;;
+			-s | --skip )
+				shift
+				FLG_SKIP=1
+				;;
+			-- )
+				shift
+				if [ -z "${INP_INDX}" ]; then
+					set +e
+					printf "%d" $@ > /dev/null 2>&1
+					RET_CD=$?
+					set -e
+					if [ ${RET_CD} -eq 0 ]; then
+						INP_INDX=$@
+					fi
+				fi
+				;;
+			* )
+				shift
+				;;
+		esac
+	done
+}
 # -----------------------------------------------------------------------------
 fncMenu () {
 	local OLD_IFS
@@ -193,6 +267,14 @@ fncMenu () {
 		set -e
 		IFS=${OLD_IFS}
 		# ---------------------------------------------------------------------
+		# <表示色>
+		#  赤色：通信エラー（リンク先消失等）
+		#  白色：作成ファイル最新（ダウンロード不要）
+		#  緑色：作成ファイル無し（ファイル作成対象）
+		#  黄色：作成ファイル在り（ファイル作成対象）
+		#  水色：原本ファイル無し（ファイル作成対象）
+		#  反転：原本ダウンロード（ファイル作成対象）
+		# ---------------------------------------------------------------------
 		if [ ${RET_CD} -eq 18 -o ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then	# WEB情報取得失敗
 			TXT_COLOR=${TXT_RED}
 		else												# WEB取得取得成功
@@ -200,6 +282,7 @@ fncMenu () {
 			if [ "${FIL_INFO[2]:+UNSET}" = "" ]; then
 				FIL_INFO[2]="00:00"
 			fi
+			FIL_DATE=`TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M%S"`
 			CODE_NAME[1]=`echo "${FIL_INFO[0]}" | sed -e 's/.iso//ig'`	# dvd/net
 			CODE_NAME[2]=`echo "${DIR_NAME}/${FIL_INFO[0]}"`
 			CODE_NAME[4]=`TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
@@ -212,24 +295,28 @@ fncMenu () {
 			CODE_NAME[1]=`basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig'`
 		fi
 		# ---------------------------------------------------------------------
+		if [ -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
+			CODE_NAME[4]=`TZ=UTC ls -lL --time-style="+%Y-%m-%d JST" "${WORK_DIRS}/${CODE_NAME[1]}.iso" | awk '{print $6;}'`
+		fi
+		# ---------------------------------------------------------------------
 		if [ "${TXT_COLOR}" != "${TXT_RED}" ]; then
 			if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
-				TXT_COLOR=${TXT_YELLOW}
+				TXT_COLOR=${TXT_CYAN}
+				TXT_COLOR+=${TXT_REV}
 			else
-				FIL_DATE=`TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M%S"`
-				DVD_DATE=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${WORK_DIRS}/${CODE_NAME[1]}.iso" | awk '{print $6;}'`
-#				DST_FILE=`find "${WORK_DIRS}/" -regextype posix-basic -regex ".*/${CODE_NAME[1]}-\(custom-\)*\(autoyast\|kickstart\|nocloud\|preseed\)\.iso.*" -print`
 				set +e
 				DST_FILE=`ls "${WORK_DIRS}/"*iso | grep -e "${CODE_NAME[1]}-*\(custom\)*-\(autoyast\|kickstart\|nocloud\|preseed\).iso"`
 				set -e
 				if [ "${DST_FILE}" = "" ]; then
 					DST_DATE=""
-					TXT_COLOR=${TXT_YELLOW}
+					TXT_COLOR=${TXT_GREEN}
 				else
 					DST_DATE=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${DST_FILE}" | awk '{print $6;}'`
-					if [ ${DVD_DATE} -gt ${DST_DATE} ]; then
-						TXT_COLOR=${TXT_YELLOW}
-					fi
+				fi
+				# -------------------------------------------------------------
+				DVD_DATE=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${WORK_DIRS}/${CODE_NAME[1]}.iso" | awk '{print $6;}'`
+				if [ -n "${DST_DATE}" ] && [ ${DVD_DATE} -gt ${DST_DATE} ]; then
+					TXT_COLOR=${TXT_YELLOW}
 				fi
 				if [ ${FIL_DATE} -gt ${DVD_DATE} ]; then
 					set +e
@@ -248,7 +335,10 @@ fncMenu () {
 						WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
 						WEB_DATE=`TZ=UTC date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
 						if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" -ne "${DVD_SIZE}" -o "${WEB_DATE}" -gt "${DVD_DATE}" ]; then
-							TXT_COLOR=${TXT_YELLOW}
+							if [ -n "${DST_DATE}" ] && [ ${WEB_DATE} -gt ${DST_DATE} ]; then
+								TXT_COLOR=${TXT_YELLOW}
+							fi
+							TXT_COLOR+=${TXT_REV}
 							CODE_NAME[4]=`echo "${WEB_DATE:0:4}-${WEB_DATE:4:2}-${WEB_DATE:6:2}"`
 						fi
 						if [ -f "header.txt" ]; then
@@ -288,22 +378,28 @@ fncIsInt () {
 }
 # -----------------------------------------------------------------------------
 fncString () {
+	local OLD_IFS=${IFS}
+	IFS=$'\n'
 	if [ "$2" = " " ]; then
 		echo $1      | awk '{s=sprintf("%"$1"."$1"s"," "); print s;}'
 	else
 		echo $1 "$2" | awk '{s=sprintf("%"$1"."$1"s"," "); gsub(" ",$2,s); print s;}'
 	fi
+	IFS=${OLD_IFS}
 }
 # -----------------------------------------------------------------------------
 fncPrint () {
 	local RET_STR=""
 	MAX_COLS=$((COL_SIZE-1))
+	local OLD_IFS=${IFS}
+	IFS=$'\n'
 	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
 	if [ $? -ne 0 ]; then
 		MAX_COLS=$((COL_SIZE-2))
 		RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
 	fi
 	echo "${RET_STR}"
+	IFS=${OLD_IFS}
 }
 # IPv4 netmask変換処理 --------------------------------------------------------
 fncIPv4GetNetmaskBits () {
@@ -330,7 +426,7 @@ fncRemaster_mini () {
 	CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
 	CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
 	# -------------------------------------------------------------------------
-	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '-')"
+	fncPrint "=== ↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '=')"
 	# --- DVD -----------------------------------------------------------------
 	local DVD_NAME="${CODE_NAME[1]}"
 	local DVD_URL="${CODE_NAME[2]}"
@@ -358,7 +454,8 @@ fncRemaster_mini () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
+#			fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
+			fncPrint "    get ${DVD_NAME}.iso"
 			set +e
 			curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			set -e
@@ -374,7 +471,8 @@ fncRemaster_mini () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
+#				fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
+				fncPrint "    get ${DVD_NAME}.iso"
 				set +e
 				curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 				set -e
@@ -390,7 +488,8 @@ fncRemaster_mini () {
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
-		fncPrint "--- copy DVD -> work directory $(fncString ${COL_SIZE} '-')"
+#		fncPrint "--- copy DVD -> work directory $(fncString ${COL_SIZE} '-')"
+		fncPrint "    copy DVD -> work directory"
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
 			find . -depth -print | cpio -pdm --quiet ../image/
@@ -401,7 +500,8 @@ fncRemaster_mini () {
 			gunzip < ../image/initrd.gz | cpio -i --quiet
 			# --- preseed.cfg -> image ----------------------------------------
 			if [ ! -f "../../../${CFG_NAME}" ]; then
-				fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
+#				fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
+				fncPrint "    get ${CFG_NAME}"
 				set +e
 				curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 				set -e
@@ -469,7 +569,8 @@ fncRemaster_mini () {
 				dd if="../../../${DVD_NAME}.iso" of=${EFI_IMAG} bs=512 skip=${ISO_SKIPS} count=${ISO_COUNT} status=none
 			fi
 			if [ ! -d EFI ]; then
-				fncPrint "--- copy EFI directory $(fncString ${COL_SIZE} '-')"
+#				fncPrint "--- copy EFI directory $(fncString ${COL_SIZE} '-')"
+				fncPrint "    copy EFI directory"
 				mount -r -o loop  ${EFI_IMAG} ../mnt/
 				pushd ../mnt/efi/ > /dev/null
 					find . -depth -print | cpio -pdm --quiet ../../image/EFI/
@@ -530,7 +631,8 @@ fncRemaster_mini () {
 _EOT_
 			fi
 			# -----------------------------------------------------------------
-			fncPrint "--- make iso file $(fncString ${COL_SIZE} '-')"
+#			fncPrint "--- make iso file $(fncString ${COL_SIZE} '-')"
+			fncPrint "    make iso file"
 			# -----------------------------------------------------------------
 			rm -f md5sum.txt
 			find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" -type f -exec md5sum {} \; > md5sum.txt
@@ -558,14 +660,14 @@ _EOT_
 			    -e "${EFI_IMAG}" \
 			    -no-emul-boot -isohybrid-gpt-basdat \
 			    -output "../../${ISO_NAME}.iso" \
-			    . > /dev/null
+			    . > /dev/null 2>&1
 			if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" != "" ]; then
 				LANG=C implantisomd5 "../../${ISO_NAME}.iso" > /dev/null
 			fi
 		popd > /dev/null
 	popd > /dev/null
 	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
-	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '-')"
+	fncPrint "=== ↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '=')"
 	return 0
 }
 # -----------------------------------------------------------------------------
@@ -578,7 +680,7 @@ fncRemaster () {
 	CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
 	CODE_NAME[3]=${ARRY_NAME[3]}									# 定義ファイル
 	# -------------------------------------------------------------------------
-	fncPrint "↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '-')"
+	fncPrint "=== ↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '=')"
 	# --- DVD -----------------------------------------------------------------
 	local DVD_NAME="${CODE_NAME[1]}"
 	local DVD_URL="${CODE_NAME[2]}"
@@ -604,7 +706,8 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
+#			fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
+			fncPrint "    get ${DVD_NAME}.iso"
 			set +e
 			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 			set -e
@@ -620,7 +723,8 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
+#				fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
+				fncPrint "    get ${DVD_NAME}.iso"
 				set +e
 				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 				set -e
@@ -636,7 +740,8 @@ fncRemaster () {
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
-		fncPrint "--- copy DVD -> work directory $(fncString ${COL_SIZE} '-')"
+#		fncPrint "--- copy DVD -> work directory $(fncString ${COL_SIZE} '-')"
+		fncPrint "    copy DVD -> work directory"
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
 			find . -depth -print | cpio -pdm --quiet ../image/
@@ -652,7 +757,8 @@ fncRemaster () {
 					WALL_FILE="ubuntu_splash.png"
 					if [ -f isolinux/txt.cfg ]; then
 						if [ ! -f "../../../${WALL_FILE}" ]; then
-							fncPrint "--- get ${WALL_FILE} $(fncString ${COL_SIZE} '-')"
+#							fncPrint "--- get ${WALL_FILE} $(fncString ${COL_SIZE} '-')"
+							fncPrint "    get ${WALL_FILE}"
 							set +e
 							curl -L -# -R -S -f --connect-timeout 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 							set -e
@@ -667,7 +773,8 @@ fncRemaster () {
 							FILE_SIZE=`echo ${FILE_INFO} | awk '{print $5;}'`
 							FILE_DATE=`echo ${FILE_INFO} | awk '{print $6;}'`
 							if [ "${WEB_SIZE}" != "${FILE_SIZE}" ] || [ "${WEB_DATE}" != "${FILE_DATE}" ]; then
-								fncPrint "--- get ${WALL_FILE} $(fncString ${COL_SIZE} '-')"
+#								fncPrint "--- get ${WALL_FILE} $(fncString ${COL_SIZE} '-')"
+								fncPrint "    get ${WALL_FILE}"
 								set +e
 								curl -L -# -R -S -f --connect-timeout 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 								set -e
@@ -692,7 +799,8 @@ fncRemaster () {
 					CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
 					# --- preseed.cfg -> image --------------------------------
 					if [ ! -f "../../../${CFG_FILE}" ]; then
-						fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
+#						fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
+						fncPrint "    get ${CFG_FILE}"
 						set +e
 						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 						set -e
@@ -715,7 +823,8 @@ fncRemaster () {
 							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
 							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
 							if [ ! -f "../../../${CFG_FILE}" ]; then
-								fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
+#								fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
+								fncPrint "    get ${CFG_FILE}"
 								set +e
 								curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 								set -e
@@ -733,7 +842,8 @@ fncRemaster () {
 					ISO_NAME="${DVD_NAME}-kickstart"
 					mkdir -p "kickstart"
 					if [ ! -f "../../../${CFG_NAME}" ]; then
-						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
+#						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
+						fncPrint "    get ${CFG_NAME}"
 						set +e
 						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 						set -e
@@ -806,7 +916,8 @@ _EOT_
 					ISO_NAME="${DVD_NAME}-autoyast"
 					mkdir -p "autoyast"
 					if [ ! -f "../../../${CFG_NAME}" ]; then
-						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
+#						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
+						fncPrint "    get ${CFG_NAME}"
 						set +e
 						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
 						set -e
@@ -1437,7 +1548,8 @@ _EOT_
 			case "${WORK_DIRS}" in
 				"live-custom" )
 					# --- customize live disc [chroot] ------------------------
-					fncPrint "--- customize live disc [chroot] $(fncString ${COL_SIZE} '-')"
+#					fncPrint "--- customize live disc [chroot] $(fncString ${COL_SIZE} '-')"
+					fncPrint "    customize live disc [chroot]"
 					ISO_NAME="${DVD_NAME}-custom-preseed"
 					pushd ../ > /dev/null							# 作業用ディレクトリー
 						case "${CODE_NAME[0]}" in
@@ -1471,8 +1583,10 @@ _EOT_
 									#LIVE_CONFIG_NOROOT=true|																		# 
 									#LIVE_CONFIG_NOX11AUTOLOGIN=true|																# 
 									#LIVE_SESSION=plasma.desktop|lxqt.desktop														# 固定値
-									fncPrint "--- live configure $(fncString ${COL_SIZE} '-')"
-									cat <<- '_EOT_' | sed 's/^ //g' | sed -e "s/_HOSTNAME_/${CODE_NAME[0]}/" > ./image/live/config.conf
+#									fncPrint "--- live configure $(fncString ${COL_SIZE} '-')"
+									fncPrint "    live configure"
+									# -----------------------------------------
+									cat <<- '_EOT_' | sed 's/^ //g' > ./image/live/config.conf
 										# *****************************************************************************
 										#set -e
 										#set -o allexport
@@ -1489,10 +1603,10 @@ _EOT_
 										# === User parameters =========================================================
 										LIVE_HOSTNAME="_HOSTNAME_-live"
 										# -----------------------------------------------------------------------------
-										LIVE_USER_FULLNAME="Master"				# full name
-										LIVE_USERNAME="master"					# user name
-										LIVE_PASSWORD="master"					# password
-										#LIVE_CRYPTPWD='8Ab05sVQ4LLps'
+										LIVE_USER_FULLNAME="Debian Live user"	# full name
+										LIVE_USERNAME="user"					# user name
+										LIVE_PASSWORD="live"					# password
+										#LIVE_CRYPTPWD='8Ab05sVQ4LLps'			# '/bin/echo "live" | mkpasswd -s'
 										# -----------------------------------------------------------------------------
 										LIVE_LOCALES="ja_JP.UTF-8"
 										LIVE_KEYBOARD_MODEL="pc105"
@@ -1595,9 +1709,25 @@ _EOT_
 										#	/lib/live/config/1160-openssh-server
 										# *****************************************************************************
 _EOT_
+									# -----------------------------------------
+									OLD_IFS=${IFS}
+									IFS=$'\n'
+									FULLNAME="`awk '(!/#/&&/d-i[ \t]+passwd\/user-fullname[ \t]+/),(!/\\\\/) {print $0;}' image/preseed/preseed.cfg | sed -z 's/\n//g' | sed -e 's/.*[ \t]*string[ \t]*//'`"
+									USERNAME="`awk '(!/#/&&/d-i[ \t]+passwd\/username[ \t]+/),(!/\\\\/)      {print $0;}' image/preseed/preseed.cfg | sed -z 's/\n//g' | sed -e 's/.*[ \t]*string[ \t]*//'`"
+									PASSWORD="`awk '(!/#/&&/d-i[ \t]+passwd\/user-password[ \t]+/),(!/\\\\/) {print $0;}' image/preseed/preseed.cfg | sed -z 's/\n//g' | sed -e 's/.*[ \t]*password[ \t]*//'`"
+									IFS=${OLD_IFS}
+									if [ -z "${CODE_NAME[0]}" ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_HOSTNAME=\)/#\1/'; fi
+									if [ -z "${FULLNAME}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_USER_FULLNAME=\)/#\1/'; fi
+									if [ -z "${USERNAME}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_USERNAME=\)/#\1/'; fi
+									if [ -z "${PASSWORD}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_PASSWORD=\)/#\1/'; fi
+									sed -i ./image/live/config.conf                          \
+									    -e "s/_HOSTNAME_/${CODE_NAME[0]}/"                   \
+									    -e "s/^\(LIVE_USER_FULLNAME\)=.*$/\1='${FULLNAME}'/" \
+									    -e "s/^\(LIVE_USERNAME\)=.*$/\1='${USERNAME}'/"      \
+									    -e "s/^\(LIVE_PASSWORD\)=.*$/\1='${PASSWORD}'/"
 								fi
 								# ---------------------------------------------
-if [ 1 -eq 1 ]; then
+if [ ${FLG_SKIP} -eq 0 ]; then
 #								WORKGROUP=`sed -n 's/^[ \t]*d-i[ \t]*netcfg\/get_domain[ \t]*string[ \t]*\(.*\)$/\1/p' image/preseed/preseed.cfg`
 #								cat <<- '_EOT_SH_' | sed 's/^ //g' | sed -e "s/_WORKGROUP_/${WORKGROUP:-localdomain}/" > ./decomp/setup.sh
 								cat <<- '_EOT_SH_' | sed 's/^ //g' > ./decomp/setup.sh
@@ -2046,13 +2176,14 @@ _EOT_SH_
 								               -e 's/^ *//'`
 								INST_TASK=${LIST_TASK}
 								INST_PACK=`echo "${LIST_PACK}" | sed -e 's/ *isc-dhcp-server//'`
-								INST_PACK+=" whois"
+#								INST_PACK+=" whois"
 								sed -i ./decomp/setup.sh               \
 								    -e "s/__INST_PACK__/${INST_PACK}/" \
 								    -e "s/__INST_TASK__/${INST_TASK}/"
 								IFS=${OLD_IFS}
 								# --- copy media -> fsimg ---------------------
-								fncPrint "--- copy media -> fsimg $(fncString ${COL_SIZE} '-')"
+#								fncPrint "--- copy media -> fsimg $(fncString ${COL_SIZE} '-')"
+								fncPrint "    copy media -> fsimg"
 								if [ -f ./image/live/filesystem.squashfs ]; then
 									mount -r -o loop ./image/live/filesystem.squashfs    ./mnt
 								elif [ -f ./image/install/filesystem.squashfs ]; then
@@ -2143,7 +2274,8 @@ _EOT_SH_
 									* )	;;
 								esac
 								# --- copy fsimg -> media ---------------------
-								fncPrint "--- copy fsimg -> media $(fncString ${COL_SIZE} '-')"
+#								fncPrint "--- copy fsimg -> media $(fncString ${COL_SIZE} '-')"
+								fncPrint "    copy fsimg -> media"
 								case "${CODE_NAME[0]}" in
 									"debian" )	# ･････････････････････････････････････
 										rm -f ./image/live/filesystem.squashfs
@@ -2175,7 +2307,8 @@ fi
 				* ) ;;
 			esac
 			# --- make iso file -----------------------------------------------
-			fncPrint "--- make iso file $(fncString ${COL_SIZE} '-')"
+#			fncPrint "--- make iso file $(fncString ${COL_SIZE} '-')"
+			fncPrint "    make iso"
 			case "${CODE_NAME[0]}" in
 				"debian"       | \
 				"ubuntu"       | \
@@ -2209,7 +2342,7 @@ fi
 					    -e "${EFI_IMAG}" \
 					    -no-emul-boot -isohybrid-gpt-basdat \
 					    -output "../../${ISO_NAME}.iso" \
-					    .
+					    . > /dev/null 2>&1
 					;;
 				"suse" )	# ･････････････････････････････････････････････････
 #					find boot EFI docu media.1 -type f -exec sha256sum {} \; > CHECKSUMS
@@ -2225,7 +2358,7 @@ fi
 					    -e boot/x86_64/efi \
 					    -no-emul-boot -isohybrid-gpt-basdat \
 					    -output "../../${ISO_NAME}.iso" \
-					    . > /dev/null
+					    . > /dev/null 2>&1
 					;;
 				* )	;;
 			esac
@@ -2235,7 +2368,7 @@ fi
 		popd > /dev/null
 	popd > /dev/null
 	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
-	fncPrint "↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '-')"
+	fncPrint "=== ↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '=')"
 	return 0
 }
 # which command ---------------------------------------------------------------
@@ -2256,6 +2389,18 @@ fi
 	fi
 	if [ ${COL_SIZE} -gt 100 ]; then
 		COL_SIZE=100
+	fi
+# -----------------------------------------------------------------------------
+	funcOption $@
+	# -------------------------------------------------------------------------
+	WHO_AMI=`whoami`					# 実行ユーザー名
+	if [ "${WHO_AMI}" != "root" ]; then
+		echo "rootユーザーで実行して下さい。"
+		exit 1
+	fi
+	# -------------------------------------------------------------------------
+	if [ ${FLG_LOGOUT} -ne 0 ]; then
+		exec &> >(tee "./${WORK_DIRS}.log")
 	fi
 # -----------------------------------------------------------------------------
 	fncPrint "$(fncString ${COL_SIZE} '*')"
@@ -2390,21 +2535,13 @@ fi
 			;;
 	esac
 # -----------------------------------------------------------------------------
-	case "${WORK_DIRS}" in
-		"dist_remaster_mini" )	ARRAY_NAME=("${ARRAY_NAME_MINI[@]}");;
-		"dist_remaster_net"  )	ARRAY_NAME=("${ARRAY_NAME_NET[@]}");;
-		"dist_remaster_dvd"  )	ARRAY_NAME=("${ARRAY_NAME_DVD[@]}");;
-		"live-custom"        )	ARRAY_NAME=("${ARRAY_NAME_LIVE[@]}");;
-		*                    )	;;
-	esac
-	# -------------------------------------------------------------------------
-	case "${INP_INDX,,}" in
-		"a" | "all" )
-			INP_INDX="{1..${#ARRAY_NAME[@]}}"
-			;;
-		* )
-			;;
-	esac
+#	case "${INP_INDX,,}" in
+#		"a" | "all" )
+#			INP_INDX="{1..${#ARRAY_NAME[@]}}"
+#			;;
+#		* )
+#			;;
+#	esac
 	# -------------------------------------------------------------------------
 	fncMenu
 	# -------------------------------------------------------------------------
@@ -2426,7 +2563,7 @@ fi
 						break
 					fi
 				done
-				echo "skip"
+				printf "    ${TXT_RED}${TXT_REV}エラー${TXT_REVRST}により処理をスキップしました。 [${RET_CD}]${TXT_RESET}\n"
 			fi
 		fi
 	done
