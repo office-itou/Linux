@@ -1,5 +1,5 @@
 **・無人インストール用メディア作成シェル**  
-　Debian/Ubuntu/CentOS/Fedora/OpenSUSE対応
+　Debian/Ubuntu/CentOS/Fedora/OpenSUSE対応  
 **・Knoppix日本語化メディア作成シェル**  
   
 # 【開発環境】  
