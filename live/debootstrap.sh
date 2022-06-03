@@ -167,14 +167,15 @@ fncInitialize_List () {
 					return;
 				fi
 			done
+			ARRAY=("${ARRAY_LIST[@]}")
 			for ((I=0; I<${#ARRAY_LIST[@]}; I++))
 			do
-				LIST=(${ARRAY_LIST[I]})
+				LIST=(${ARRAY[I]})
 				if [ "${LIST[0]}" = "ubuntu" ]; then
-					unset ARRAY_LIST[I]
+					unset ARRAY[I]
 				fi
 			done
-			ARRAY_LIST=("${ARRAY_LIST[@]}")
+			ARRAY_LIST=("${ARRAY[@]}")
 			;;
 		"ubuntu" )
 			for FILE in /etc/apt/trusted.gpg.d/debian*.gpg "${TARGET_KEYRING}"/debian*.gpg
@@ -183,14 +184,15 @@ fncInitialize_List () {
 					return;
 				fi
 			done
+			ARRAY=("${ARRAY_LIST[@]}")
 			for ((I=0; I<${#ARRAY_LIST[@]}; I++))
 			do
-				LIST=(${ARRAY_LIST[I]})
+				LIST=(${ARRAY[I]})
 				if [ "${LIST[0]}" = "debian" ]; then
-					unset ARRAY_LIST[I]
+					unset ARRAY[I]
 				fi
 			done
-			ARRAY_LIST=("${ARRAY_LIST[@]}")
+			ARRAY_LIST=("${ARRAY[@]}")
 			;;
 		*        )
 			;;
@@ -228,7 +230,11 @@ fncOption () {
 			-k | --key   )
 				shift
 				if [ -n "$1" ]; then
-					TARGET_KEYRING="$1"
+					if [ -d "$1" ]; then
+						TARGET_KEYRING="$1"
+					elif [ -f "$1" ]; then
+						TARGET_KEYRING=`dirname "$1"`
+					fi
 				fi
 				shift
 				;;
@@ -379,7 +385,10 @@ fncGet_debian_installer () {
 			TAR_URL="https://cdimage.debian.org/debian/dists/${TARGET_SUITE}/main/installer-${TARGET_ARCH}/current/images/cdrom/debian-cd_info.tar.gz"
 			if [ ! -f "${DIR_TOP}/${TAR_INST}" ]; then
 				curl -L -# -R -S -f --connect-timeout 3 -o "${DIR_TOP}/${TAR_INST}" "${TAR_URL}" || \
-				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then exit 1; fi
+				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
+					echo "URL: ${TAR_URL}"
+					exit 1;
+				fi
 			fi
 			tar -xzf "${DIR_TOP}/${TAR_INST}" -C "${DIR_TOP}/_work/"
 			;;
@@ -391,11 +400,17 @@ fncGet_debian_installer () {
 			PNG_URL="http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/boot-screens/splash.png"
 			if [ ! -f "${DIR_TOP}/${TAR_INST}" ]; then
 				curl -L -# -R -S -f --connect-timeout 3 -o "${DIR_TOP}/${TAR_INST}" "${TAR_URL}" || \
-				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then exit 1; fi
+				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
+					echo "URL: ${TAR_URL}"
+					exit 1;
+				fi
 			fi
 			if [ ! -f "${DIR_TOP}/splash.png" ]; then
 				curl -L -# -R -S -f --connect-timeout 3 -o "${DIR_TOP}/splash.png"  "${PNG_URL}" || \
-				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then exit 1; fi
+				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
+					echo "URL: ${PNG_URL}"
+					exit 1;
+				fi
 			fi
 			tar -xzf "${DIR_TOP}/${TAR_INST}" -C "${DIR_TOP}/_work/"
 			cp -p "${DIR_TOP}/splash.png" "${DIR_TOP}/_work/"
@@ -484,16 +499,18 @@ fncMake_inst_net_sh () {
 		# -- module update, upgrade, tasksel, install ---------------------------------
 		 	fncPrint "--- module update, install, clean $(fncString ${COL_SIZE} '-')"
 		 	if [ `getconf LONG_BIT` -eq 32 ]; then
-		 		WEB_APPS=""
+		 		APP_CHROME=""
 		 	else
 		 		fncPrint "---- google-chrome signing key install $(fncString ${COL_SIZE} '-')"
-		 		WEB_APPS="google-chrome-stable"
+		 		APP_CHROME="google-chrome-stable"
+		 		KEY_CHROME="https://dl-ssl.google.com/linux/linux_signing_key.pub"
 		 		pushd /tmp/ > /dev/null
 		 			set +e
-		 			curl -L -s -R -S -f --connect-timeout 3                           \
-		 			    -O "https://dl-ssl.google.com/linux/linux_signing_key.pub"    \
-		 			                                                               || \
-		 			    if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then fncEnd $?; fi
+		 			curl -L -s -R -S -f --connect-timeout 3 -O "${KEY_CHROME} "    || \
+		 			if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
+		 				echo "URL: ${PNG_URL}"
+		 				fncEnd 1;
+		 			fi
 		 			set -e
 		 			if [ ! -d /etc/apt/trusted.gpg.d/ ]; then
 		 				mkdir -p /etc/apt/trusted.gpg.d
@@ -526,7 +543,7 @@ fncMake_inst_net_sh () {
 		 	apt-get dist-upgrade -qq  -y ${APT_OPTIONS}                > /dev/null || fncEnd $?
 		 	fncPrint "---- module apt-get install $(fncString ${COL_SIZE} '-')"
 		 	apt-get install      -qq  -y ${APT_OPTIONS} --auto-remove               \
-		 	    ${WEB_APPS}                                                         \
+		 	    ${APP_CHROME}                                                       \
 		 	                                                           > /dev/null || fncEnd $?
 		#	fncPrint "---- tasksel $(fncString ${COL_SIZE} '-')"
 		#	tasksel install                                                         \
