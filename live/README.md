@@ -38,5 +38,31 @@ done
 '
 ```
   
+### ・GPG keyファイルのダウンロードと解凍（Ubuntu上にて）  
+``` bash:GPG keyファイルのダウンロードと解凍（Ubuntu上にて）
+sudo rm -rf ./work/ ./keyring/
+sudo mkdir -p ./work ./keyring
+apt-get download ubuntu-keyring
+apt-get download debian-archive-keyring
+ls -l
+sudo dpkg -x ./debian-archive-keyring_2021.1.1ubuntu2_all.deb ./work/
+sudo dpkg -x ./ubuntu-keyring_2021.03.26_all.deb ./work/
+sudo find ./work/ -type f -name "*.gpg" -print -exec cp -p {} ./keyring/ \;
+```
+  
+### ・GPG keyファイルの保存例  
+``` bash:ls ./keyring/
+master@sv-ubuntu:~/mkcd$ ls ./keyring/
+debian-archive-bullseye-automatic.gpg           debian-archive-stretch-security-automatic.gpg
+debian-archive-bullseye-security-automatic.gpg  debian-archive-stretch-stable.gpg
+debian-archive-bullseye-stable.gpg              ubuntu-archive-keyring.gpg
+debian-archive-buster-automatic.gpg             ubuntu-archive-removed-keys.gpg
+debian-archive-buster-security-automatic.gpg    ubuntu-cloudimage-keyring.gpg
+debian-archive-buster-stable.gpg                ubuntu-cloudimage-removed-keys.gpg
+debian-archive-keyring.gpg                      ubuntu-keyring-2012-cdimage.gpg
+debian-archive-removed-keys.gpg                 ubuntu-keyring-2018-archive.gpg
+debian-archive-stretch-automatic.gpg            ubuntu-master-keyring.gpg
+```
+  
 ## 参考  
 * [日本語版Live DVDの作成：mmdebstrap debian / ubuntu](https://qiita.com/office-itou/items/f212b93d990ac97f6c98)  
