@@ -38,6 +38,8 @@ done
 '
 ```
   
+実行時のログ例：[debootstrap.log](https://github.com/office-itou/Linux/blob/master/live/debootstrap.log)
+  
 ### ・GPG keyファイルのダウンロードと解凍（Ubuntu上にて）  
 ``` bash:GPG keyファイルのダウンロードと解凍（Ubuntu上にて）
 sudo rm -rf ./work/ ./keyring/
