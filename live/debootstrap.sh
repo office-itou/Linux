@@ -20,6 +20,7 @@
 ##	   日付       版         名前      改訂内容
 ##	---------- -------- -------------- ----------------------------------------
 ##	2022/06/01 000.0000 J.Itou         新規作成
+##	2022/06/04 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 
@@ -505,13 +506,15 @@ fncMake_inst_net_sh () {
 		 		APP_CHROME="google-chrome-stable"
 		 		KEY_CHROME="https://dl-ssl.google.com/linux/linux_signing_key.pub"
 		 		pushd /tmp/ > /dev/null
-		 			set +e
-		 			curl -L -s -R -S -f --connect-timeout 3 -O "${KEY_CHROME} "    || \
-		 			if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
-		 				echo "URL: ${PNG_URL}"
-		 				fncEnd 1;
+		 			if [ ! -f ./linux_signing_key.pub ]; then
+		 				set +e
+		 				curl -L -s -R -S -f --connect-timeout 3 -O "${KEY_CHROME} "    || \
+		 				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
+		 					echo "URL: ${KEY_CHROME}"
+		 					fncEnd 1;
+		 				fi
+		 				set -e
 		 			fi
-		 			set -e
 		 			if [ ! -d /etc/apt/trusted.gpg.d/ ]; then
 		 				mkdir -p /etc/apt/trusted.gpg.d
 		 			fi
@@ -1233,11 +1236,37 @@ fncRun_mmdebstrap () {
 	fncPrint "-- run mmdebstrap $(fncString ${COL_SIZE} '-')"
 	rm -rf "${DIR_TOP}"/fsimg/*
 	mkdir -p "${DIR_TOP}/fsimg"
+	HOOK_CMD=""
 	# -------------------------------------------------------------------------
-	HOOK_CMD=" \
-	    cp -p \"${DIR_TOP}/inst-net.sh\" \"${DIR_TOP}/fsimg/\"; \
-	    chroot \"${DIR_TOP}/fsimg/\" /bin/bash /inst-net.sh; \
-	"
+	KEY_CHROME="https://dl-ssl.google.com/linux/linux_signing_key.pub"
+	case ${TARGET_ARCH} in
+		"amd64" )
+			if [ ! -f "${DIR_TOP}/linux_signing_key.pub" ]; then
+				fncPrint "--- get google-chrome signing key $(fncString ${COL_SIZE} '-')"
+				curl -L -# -R -S -f --connect-timeout 3 -o "${DIR_TOP}/linux_signing_key.pub"  "${KEY_CHROME}" || \
+				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
+					echo "URL: ${KEY_CHROME}"
+					exit 1;
+				fi
+			fi
+			HOOK_CMD+=$(
+				cat <<- _EOT_
+					cp -p "${DIR_TOP}/linux_signing_key.pub" "${DIR_TOP}/fsimg/tmp/";
+_EOT_
+			)
+			;;
+		"i386"  )
+			;;
+		*       )
+			;;
+	esac
+	# -------------------------------------------------------------------------
+	HOOK_CMD+=$(
+		cat <<- _EOT_
+			cp -p "${DIR_TOP}/inst-net.sh" "${DIR_TOP}/fsimg/";
+			chroot "${DIR_TOP}/fsimg/" /bin/bash /inst-net.sh;
+_EOT_
+	)
 	# -------------------------------------------------------------------------
 	if [ "${TARGET_KEYRING}" != "" ]; then
 		KEYRING="--keyring=${TARGET_KEYRING}"
