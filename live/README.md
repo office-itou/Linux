@@ -84,8 +84,9 @@ debian.stable.amd64
 * [日本語版Live DVDの作成：mmdebstrap debian / ubuntu](https://qiita.com/office-itou/items/f212b93d990ac97f6c98)  
   
 ## スクリーンショット  
-| OS Ver.              | 画像1 | 画像2 | 画像3 |
-| ---------------------| ----- | ----- | ----- |
-| debian 11    stable  | ![debian-live-11-stable-amd64-debootstrap.01.png](https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.01.png) | ![debian-live-11-stable-amd64-debootstrap.02.png](https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.02.png) | ![debian-live-11-stable-amd64-debootstrap.03.png](https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.03.png) |
-| ubuntu 22.10 kinetic | ![ubuntu-live-22.10-kinetic-amd64-debootstrap.01.png](https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.01.png) | ![ubuntu-live-22.10-kinetic-amd64-debootstrap.02.png](https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.02.png) | ![ubuntu-live-22.10-kinetic-amd64-debootstrap.03.png](https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.03.png) |
+| 画 像 |   debian 11 stable   | ubuntu 22.10 kinetic |
+| ----- | ---------------------| ---------------------| 
+| 画像1 | ![debian-live-11-stable-amd64-debootstrap.01.png](https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.01.png) | ![ubuntu-live-22.10-kinetic-amd64-debootstrap.01.png](https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.01.png) |
+| 画像2 | ![debian-live-11-stable-amd64-debootstrap.02.png](https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.02.png) | ![ubuntu-live-22.10-kinetic-amd64-debootstrap.02.png](https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.02.png) |
+| 画像3 | ![debian-live-11-stable-amd64-debootstrap.03.png](https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.03.png) | ![ubuntu-live-22.10-kinetic-amd64-debootstrap.03.png](https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.03.png) |
   
