@@ -1,5 +1,6 @@
 ## mmdebstrapを使用したDebian/Ubuntuの**日本語版Live DVD**の作成シェル  
   
+:::note info
 ### Debian上のdebootstrap.sh のヘルプ画面（GPG key指定有り）
   
 ``` bash:Debian上のdebootstrap.sh のヘルプ画面（GPG key指定有り）
@@ -23,7 +24,9 @@ master@sv-server:~/mkcd$ ./debootstrap.sh -k ./keyring/
     amd64      : jammy           : Ubuntu 22.04(Jammy Jellyfish):LTS
     amd64      : kinetic         : Ubuntu 22.10(Kinetic Kudu)
 ```
+:::
   
+:::note info
 ### 実行方法の例（全スイート対象・GPG key指定・ログ出力）  
 ``` bash:実行方法の例（全スイート対象・GPG key指定・ログ出力）
 sudo bash -c '
@@ -37,6 +40,7 @@ do
 done
 '
 ```
+:::
   
 ## 参考  
 * [日本語版Live DVDの作成：mmdebstrap debian / ubuntu](https://qiita.com/office-itou/items/f212b93d990ac97f6c98)  
