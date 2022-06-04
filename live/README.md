@@ -82,6 +82,70 @@ debian.oldstable.i386                             ubuntu.kinetic.amd64
 debian.stable.amd64
 ```
   
+### ：ディレクトリー／ファイル構成  
+``` bash: ディレクトリー／ファイル構成
+.
+|-- debootstrap
+|   |   debian-live-9-oldoldstable-amd64-debootstrap.iso    amd64：oldoldstable
+|   |   debian-live-9-oldoldstable-i386-debootstrap.iso     i386 ：oldoldstable
+|   |   debian-live-10-oldstable-amd64-debootstrap.iso      amd64：oldstable
+|   |   debian-live-10-oldstable-i386-debootstrap.iso       i386 ：oldstable
+|   |   debian-live-11-stable-amd64-debootstrap.iso         amd64：stable
+|   |   debian-live-11-stable-i386-debootstrap.iso          i386 ：stable (2022/6/5現在作成不可)
+|   |   debian-live-sid-testing-amd64-debootstrap.iso       amd64：testing
+|   |   debian-live-sid-testing-i386-debootstrap.iso        i386 ：testing
+|   |   ubuntu-live-18.04-bionic-amd64-debootstrap.iso      amd64：bionic
+|   |   ubuntu-live-18.04-bionic-i386-debootstrap.iso       i386 ：bionic
+|   |   ubuntu-live-20.04-focal-amd64-debootstrap.iso       amd64：focal
+|   |   ubuntu-live-21.10-impish-amd64-debootstrap.iso      amd64：impish
+|   |   ubuntu-live-22.04-jammy-amd64-debootstrap.iso       amd64：jammy
+|   |   ubuntu-live-22.10-kinetic-amd64-debootstrap.iso     amd64：kinetic
+|   |-- debian.oldoldstable.amd64
+|   |-- debian.oldoldstable.i386
+|   |-- debian.oldstable.amd64
+|   |-- debian.oldstable.i386
+|   |-- debian.stable.amd64
+|   |-- debian.stable.i386
+|   |-- debian.testing.amd64
+|   |-- debian.testing.i386
+|   |-- ubuntu.bionic.amd64
+|   |-- ubuntu.bionic.i386
+|   |-- ubuntu.focal.amd64
+|   |-- ubuntu.impish.amd64
+|   |-- ubuntu.jammy.amd64
+|   +-- ubuntu.kinetic.amd64
+|       |   0000-user.conf
+|       |   9999-user-setting
+|       |   9999-user.conf
+|       |   debian-cd_info-stable-amd64.tar.gz
+|       |   inst-net.sh
+|       |   linux_signing_key.pub
+|       |   splash.png
+|       |-- _work
+|       |-- cdimg
+|       |-- fsimg
+|       +-- media
++-- keyring
+        debian-archive-bullseye-automatic.gpg
+        debian-archive-bullseye-security-automatic.gpg
+        debian-archive-bullseye-stable.gpg
+        debian-archive-buster-automatic.gpg
+        debian-archive-buster-security-automatic.gpg
+        debian-archive-buster-stable.gpg
+        debian-archive-keyring.gpg
+        debian-archive-removed-keys.gpg
+        debian-archive-stretch-automatic.gpg
+        debian-archive-stretch-security-automatic.gpg
+        debian-archive-stretch-stable.gpg
+        ubuntu-archive-keyring.gpg
+        ubuntu-archive-removed-keys.gpg
+        ubuntu-cloudimage-keyring.gpg
+        ubuntu-cloudimage-removed-keys.gpg
+        ubuntu-keyring-2012-cdimage.gpg
+        ubuntu-keyring-2018-archive.gpg
+        ubuntu-master-keyring.gpg
+```
+  
 ## 参考  
 * [日本語版Live DVDの作成：mmdebstrap debian / ubuntu](https://qiita.com/office-itou/items/f212b93d990ac97f6c98)  
   
