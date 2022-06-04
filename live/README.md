@@ -86,7 +86,7 @@ debian.stable.amd64
 ## スクリーンショット  
 | 画像 |   debian 11 stable   | ubuntu 22.10 kinetic |
 | ---- | ---------------------| ---------------------| 
-|   1  | ![debian-live-11-stable-amd64-debootstrap.01.png](https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.01.png) | ![ubuntu-live-22.10-kinetic-amd64-debootstrap.01.png](https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.01.png) |
-|   2  | ![debian-live-11-stable-amd64-debootstrap.02.png](https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.02.png) | ![ubuntu-live-22.10-kinetic-amd64-debootstrap.02.png](https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.02.png) |
-|   3  | ![debian-live-11-stable-amd64-debootstrap.03.png](https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.03.png) | ![ubuntu-live-22.10-kinetic-amd64-debootstrap.03.png](https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.03.png) |
+|   1  | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.01.png" width="400"> | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.01.png" width="400"> |
+|   2  | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.02.png" width="400"> | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.02.png" width="400"> |
+|   3  | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.03.png" width="400"> | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.03.png" width="400"> |
   
