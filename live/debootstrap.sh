@@ -529,6 +529,11 @@ fncMake_inst_net_sh () {
 		 	sed -i /etc/apt/sources.list \
 		 	    -e 's/\(deb\) \[.*\] \(.*\)$/\1 \2/g'
 		 	# -------------------------------------------------------------------------
+		 	if [ -d /var/lib/apt/lists ]; then
+		 		fncPrint "---- remove /var/lib/apt/lists $(fncString ${COL_SIZE} '-')"
+		 		rm -rf /var/lib/apt/lists
+		 	fi
+		 	# -------------------------------------------------------------------------
 		 	export DEBIAN_FRONTEND=noninteractive
 		 	APT_OPTIONS="-o Dpkg::Options::=--force-confdef    \
 		 	             -o Dpkg::Options::=--force-confnew    \
@@ -605,7 +610,7 @@ fncMake_inst_net_sh () {
 		 		OLD_IFS=${IFS}
 		 		IFS=$'\n'
 		 		INS_ROW=$((`sed -n '/^hosts:/ =' /etc/nsswitch.conf | head -n 1`))
-		 		INS_TXT=`sed -n '/^hosts:/ s/\(hosts:[ |\t]*\).*$/\1mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns mdns/p' /etc/nsswitch.conf`
+		 		INS_TXT=`sed -n '/^hosts:/ s/\(hosts:[ \t]*\).*$/\1mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns mdns/p' /etc/nsswitch.conf`
 		 		sed -e '/^hosts:/ s/^/#/' /etc/nsswitch.conf | \
 		 		sed -e "${INS_ROW}a ${INS_TXT}"                \
 		 		> nsswitch.conf
@@ -671,104 +676,85 @@ fncMake_inst_net_sh () {
 		 		# ---------------------------------------------------------------------
 		 		testparm -s -v |                                                                        \
 		 		sed -e 's/\(dos charset\) =.*$/\1 = CP932/'                                             \
-		 		    -e "s/\(workgroup\) =.*$/\1 = ${WGP_NAME}/"                                         \
 		 		    -e "s/\(netbios name\) =.*$/\1 = ${SVR_NAME}/"                                      \
-		 		    -e 's/\(security\) =.*$/\1 = USER/'                                                 \
-		 		    -e 's/\(server role\) =.*$/\1 = standalone server/'                                 \
-		 		    -e 's/\(pam password change\) =.*$/\1 = Yes/'                                       \
-		 		    -e 's/\(load printers\) =.*$/\1 = No/'                                              \
-		 		    -e 's~\(log file\) =.*$~\1 = /var/log/samba/log.%m~'                                \
-		 		    -e 's/\(max log size\) =.*$/\1 = 1000/'                                             \
-		 		    -e 's/\(min protocol\) =.*$/\1 = NT1/g'                                             \
-		 		    -e 's~\(printcap name\) =.*$~\1 = /dev/null~'                                       \
-		 		    -e "s~\(add user script\) =.*$~\1 = ${CMD_UADD} %u~"                                \
-		 		    -e "s~\(delete user script\) =.*$~\1 = ${CMD_UDEL} %u~"                             \
+		 		    -e "s/\(workgroup\) =.*$/\1 = ${WGP_NAME}/"                                         \
 		 		    -e "s~\(add group script\) =.*$~\1 = ${CMD_GADD} %g~"                               \
-		 		    -e "s~\(delete group script\) =.*$~\1 = ${CMD_GDEL} %g~"                            \
-		 		    -e "s~\(add user to group script\) =.*$~\1 = ${CMD_GPWD} -a %u %g~"                 \
-		 		    -e "s~\(delete user from group script\) =.*$~\1 = ${CMD_GPWD} -d %u %g~"            \
 		 		    -e "s~\(add machine script\) =.*$~\1 = ${CMD_UADD} -d /dev/null -s ${CMD_FALS} %u~" \
-		 		    -e 's/\(logon script\) =.*$/\1 = logon.bat/'                                        \
-		 		    -e 's/\(logon path\) =.*$/\1 = \\\\%L\\profiles\\%U/'                               \
-		 		    -e 's/\(domain logons\) =.*$/\1 = Yes/'                                             \
-		 		    -e 's/\(os level\) =.*$/# \1 = 35/'                                                 \
-		 		    -e 's/\(preferred master\) =.*$/\1 = Yes/'                                          \
-		 		    -e 's/\(domain master\) =.*$/\1 = Yes/'                                             \
-		 		    -e 's/\(wins support\) =.*$/\1 = Yes/'                                              \
-		 		    -e 's/\(unix password sync\) =.*$/\1 = No/'                                         \
+		 		    -e "s~\(add user script\) =.*$~\1 = ${CMD_UADD} %u~"                                \
+		 		    -e "s~\(add user to group script\) =.*$~\1 = ${CMD_GPWD} -a %u %g~"                 \
+		 		    -e "s~\(delete group script\) =.*$~\1 = ${CMD_GDEL} %g~"                            \
+		 		    -e "s~\(delete user from group script\) =.*$~\1 = ${CMD_GPWD} -d %u %g~"            \
+		 		    -e "s~\(delete user script\) =.*$~\1 = ${CMD_UDEL} %u~"                             \
 		 		    -e '/idmap config \* : backend =/i \\tidmap config \* : range = 1000-10000'         \
 		 		    -e 's/\(admin users\) =.*$/# \1 = administrator/'                                   \
-		 		    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
+		 		    -e 's/\(domain logons\) =.*$/\1 = Yes/'                                             \
+		 		    -e 's/\(domain master\) =.*$/\1 = Yes/'                                             \
+		 		    -e 's/\(load printers\) =.*$/\1 = No/'                                              \
+		 		    -e 's/\(logon path\) =.*$/\1 = \\\\%L\\profiles\\%U/'                               \
+		 		    -e 's/\(logon script\) =.*$/\1 = logon.bat/'                                        \
+		 		    -e 's/\(max log size\) =.*$/\1 = 1000/'                                             \
+		 		    -e 's/\(min protocol\) =.*$/\1 = NT1/g'                                             \
 		 		    -e 's/\(multicast dns register\) =.*$/\1 = No/'                                     \
-		 		    -e '/[ |\t]*map to guest =.*$/d'                                                    \
-		 		    -e '/[ |\t]*null passwords =.*$/d'                                                  \
-		 		    -e '/[ |\t]*obey pam restrictions =.*$/d'                                           \
-		 		    -e '/[ |\t]*enable privileges =.*$/d'                                               \
-		 		    -e '/[ |\t]*password level =.*$/d'                                                  \
-		 		    -e '/[ |\t]*client use spnego principal =.*$/d'                                     \
-		 		    -e '/[ |\t]*syslog =.*$/d'                                                          \
-		 		    -e '/[ |\t]*syslog only =.*$/d'                                                     \
-		 		    -e '/[ |\t]*use spnego =.*$/d'                                                      \
-		 		    -e '/[ |\t]*paranoid server security =.*$/d'                                        \
-		 		    -e '/[ |\t]*dns proxy =.*$/d'                                                       \
-		 		    -e '/[ |\t]*time offset =.*$/d'                                                     \
-		 		    -e '/[ |\t]*usershare allow guests =.*$/d'                                          \
-		 		    -e '/[ |\t]*idmap backend =.*$/d'                                                   \
-		 		    -e '/[ |\t]*idmap uid =.*$/d'                                                       \
-		 		    -e '/[ |\t]*idmap gid =.*$/d'                                                       \
-		 		    -e '/[ |\t]*winbind separator =.*$/d'                                               \
-		 		    -e '/[ |\t]*acl check permissions =.*$/d'                                           \
-		 		    -e '/[ |\t]*only user =.*$/d'                                                       \
-		 		    -e '/[ |\t]*share modes =.*$/d'                                                     \
-		 		    -e '/[ |\t]*nbt client socket address =.*$/d'                                       \
-		 		    -e '/[ |\t]*lsa over netlogon =.*$/d'                                               \
-		 		    -e '/[ |\t]*.* = $/d'                                                               \
-		 		    -e '/[ |\t]*client lanman auth =.*$/d'                                              \
-		 		    -e '/[ |\t]*client NTLMv2 auth =.*$/d'                                              \
-		 		    -e '/[ |\t]*client plaintext auth =.*$/d'                                           \
-		 		    -e '/[ |\t]*client schannel =.*$/d'                                                 \
-		 		    -e '/[ |\t]*client use spnego principal =.*$/d'                                     \
-		 		    -e '/[ |\t]*client use spnego =.*$/d'                                               \
-		 		    -e '/[ |\t]*domain logons =.*$/d'                                                   \
-		 		    -e '/[ |\t]*enable privileges =.*$/d'                                               \
-		 		    -e '/[ |\t]*encrypt passwords =.*$/d'                                               \
-		 		    -e '/[ |\t]*idmap backend =.*$/d'                                                   \
-		 		    -e '/[ |\t]*idmap gid =.*$/d'                                                       \
-		 		    -e '/[ |\t]*idmap uid =.*$/d'                                                       \
-		 		    -e '/[ |\t]*lanman auth =.*$/d'                                                     \
-		 		    -e '/[ |\t]*lsa over netlogon =.*$/d'                                               \
-		 		    -e '/[ |\t]*nbt client socket address =.*$/d'                                       \
-		 		    -e '/[ |\t]*null passwords =.*$/d'                                                  \
-		 		    -e '/[ |\t]*raw NTLMv2 auth =.*$/d'                                                 \
-		 		    -e '/[ |\t]*server schannel =.*$/d'                                                 \
-		 		    -e '/[ |\t]*syslog =.*$/d'                                                          \
-		 		    -e '/[ |\t]*syslog only =.*$/d'                                                     \
-		 		    -e '/[ |\t]*unicode =.*$/d'                                                         \
-		 		    -e '/[ |\t]*acl check permissions =.*$/d'                                           \
-		 		    -e '/[ |\t]*allocation roundup size =.*$/d'                                         \
-		 		    -e '/[ |\t]*blocking locks =.*$/d'                                                  \
-		 		    -e '/[ |\t]*copy =.*$/d'                                                            \
-		 		    -e '/[ |\t]*winbind separator =.*$/d'                                               \
-		 		    -e '/[ |\t]*domain master =.*$/d'                                                   \
-		 		    -e '/[ |\t]*logon path =.*$/d'                                                      \
-		 		    -e '/[ |\t]*logon script =.*$/d'                                                    \
-		 		    -e '/[ |\t]*pam password change =.*$/d'                                             \
-		 		    -e '/[ |\t]*preferred master =.*$/d'                                                \
-		 		    -e '/[ |\t]*server role =.*$/d'                                                     \
-		 		    -e '/[ |\t]*wins support =.*$/d'                                                    \
-		 		    -e '/[ |\t]*dns proxy =.*$/d'                                                       \
-		 		    -e '/[ |\t]*map to guest =.*$/d'                                                    \
-		 		    -e '/[ |\t]*obey pam restrictions =.*$/d'                                           \
-		 		    -e '/[ |\t]*pam password change =.*$/d'                                             \
-		 		    -e '/[ |\t]*realm =.*$/d'                                                           \
-		 		    -e '/[ |\t]*server role =.*$/d'                                                     \
-		 		    -e '/[ |\t]*server services =.*$/d'                                                 \
-		 		    -e '/[ |\t]*server string =.*$/d'                                                   \
-		 		    -e '/[ |\t]*syslog =.*$/d'                                                          \
-		 		    -e '/[ |\t]*unix password sync =.*$/d'                                              \
-		 		    -e '/[ |\t]*usershare allow guests =.*$/d'                                          \
-		 		    -e '/[ |\t]*\(client ipc\|client\|server\) min protocol = .*$/d'                    \
-		 		    -e '/[ |\t]*security =.*$/d'                                                        \
+		 		    -e 's/\(os level\) =.*$/# \1 = 35/'                                                 \
+		 		    -e 's/\(pam password change\) =.*$/\1 = Yes/'                                       \
+		 		    -e 's/\(preferred master\) =.*$/\1 = Yes/'                                          \
+		 		    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
+		 		    -e 's/\(security\) =.*$/\1 = USER/'                                                 \
+		 		    -e 's/\(server role\) =.*$/\1 = standalone server/'                                 \
+		 		    -e 's/\(unix password sync\) =.*$/\1 = No/'                                         \
+		 		    -e 's/\(wins support\) =.*$/\1 = Yes/'                                              \
+		 		    -e 's~\(log file\) =.*$~\1 = /var/log/samba/log.%m~'                                \
+		 		    -e 's~\(printcap name\) =.*$~\1 = /dev/null~'                                       \
+		 		    -e '/[ \t]*.* = $/d'                                                                \
+		 		    -e '/[ \t]*\(client ipc\|client\|server\) min protocol = .*$/d'                     \
+		 		    -e '/[ \t]*acl check permissions =.*$/d'                                            \
+		 		    -e '/[ \t]*allocation roundup size =.*$/d'                                          \
+		 		    -e '/[ \t]*blocking locks =.*$/d'                                                   \
+		 		    -e '/[ \t]*client NTLMv2 auth =.*$/d'                                               \
+		 		    -e '/[ \t]*client lanman auth =.*$/d'                                               \
+		 		    -e '/[ \t]*client plaintext auth =.*$/d'                                            \
+		 		    -e '/[ \t]*client schannel =.*$/d'                                                  \
+		 		    -e '/[ \t]*client use spnego =.*$/d'                                                \
+		 		    -e '/[ \t]*client use spnego principal =.*$/d'                                      \
+		 		    -e '/[ \t]*copy =.*$/d'                                                             \
+		 		    -e '/[ \t]*dns proxy =.*$/d'                                                        \
+		 		    -e '/[ \t]*domain logons =.*$/d'                                                    \
+		 		    -e '/[ \t]*domain master =.*$/d'                                                    \
+		 		    -e '/[ \t]*enable privileges =.*$/d'                                                \
+		 		    -e '/[ \t]*encrypt passwords =.*$/d'                                                \
+		 		    -e '/[ \t]*idmap backend =.*$/d'                                                    \
+		 		    -e '/[ \t]*idmap gid =.*$/d'                                                        \
+		 		    -e '/[ \t]*idmap uid =.*$/d'                                                        \
+		 		    -e '/[ \t]*lanman auth =.*$/d'                                                      \
+		 		    -e '/[ \t]*logon path =.*$/d'                                                       \
+		 		    -e '/[ \t]*logon script =.*$/d'                                                     \
+		 		    -e '/[ \t]*lsa over netlogon =.*$/d'                                                \
+		 		    -e '/[ \t]*map to guest =.*$/d'                                                     \
+		 		    -e '/[ \t]*nbt client socket address =.*$/d'                                        \
+		 		    -e '/[ \t]*null passwords =.*$/d'                                                   \
+		 		    -e '/[ \t]*obey pam restrictions =.*$/d'                                            \
+		 		    -e '/[ \t]*only user =.*$/d'                                                        \
+		 		    -e '/[ \t]*pam password change =.*$/d'                                              \
+		 		    -e '/[ \t]*paranoid server security =.*$/d'                                         \
+		 		    -e '/[ \t]*password level =.*$/d'                                                   \
+		 		    -e '/[ \t]*preferred master =.*$/d'                                                 \
+		 		    -e '/[ \t]*raw NTLMv2 auth =.*$/d'                                                  \
+		 		    -e '/[ \t]*realm =.*$/d'                                                            \
+		 		    -e '/[ \t]*security =.*$/d'                                                         \
+		 		    -e '/[ \t]*server role =.*$/d'                                                      \
+		 		    -e '/[ \t]*server schannel =.*$/d'                                                  \
+		 		    -e '/[ \t]*server services =.*$/d'                                                  \
+		 		    -e '/[ \t]*server string =.*$/d'                                                    \
+		 		    -e '/[ \t]*share modes =.*$/d'                                                      \
+		 		    -e '/[ \t]*syslog =.*$/d'                                                           \
+		 		    -e '/[ \t]*syslog only =.*$/d'                                                      \
+		 		    -e '/[ \t]*time offset =.*$/d'                                                      \
+		 		    -e '/[ \t]*unicode =.*$/d'                                                          \
+		 		    -e '/[ \t]*unix password sync =.*$/d'                                               \
+		 		    -e '/[ \t]*use spnego =.*$/d'                                                       \
+		 		    -e '/[ \t]*usershare allow guests =.*$/d'                                           \
+		 		    -e '/[ \t]*winbind separator =.*$/d'                                                \
+		 		    -e '/[ \t]*wins support =.*$/d'                                                     \
 		 		> ./smb.conf
 		 		# ---------------------------------------------------------------------
 		 		testparm -s ./smb.conf > /etc/samba/smb.conf
@@ -1403,7 +1389,7 @@ _EOT_
 	        -output "../../${DVD_NAME}"                           \
 	        .
 	popd > /dev/null
-	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "./${DVD_NAME}" 2> /dev/null | cut -c 13-
+	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_TOP}/../${DVD_NAME}" 2> /dev/null | cut -c 13-
 }
 
 # === main ====================================================================
