@@ -85,13 +85,15 @@ debian.stable.amd64
 ### ・ディレクトリー／ファイル構成  
 ``` bash: ディレクトリー／ファイル構成
 .
+|   debootstrap.sh  （実行ファイル）
+|   debootstrap.log （ログファイル）
 |-- debootstrap
 |   |   debian-live-9-oldoldstable-amd64-debootstrap.iso    amd64：oldoldstable
 |   |   debian-live-9-oldoldstable-i386-debootstrap.iso     i386 ：〃
 |   |   debian-live-10-oldstable-amd64-debootstrap.iso      amd64：oldstable
 |   |   debian-live-10-oldstable-i386-debootstrap.iso       i386 ：〃
 |   |   debian-live-11-stable-amd64-debootstrap.iso         amd64：stable
-|   |   debian-live-11-stable-i386-debootstrap.iso          i386 ：〃 (2022/6/5現在作成不可)
+|   |   debian-live-11-stable-i386-debootstrap.iso          i386 ：〃 （2022/6/5現在作成不可）
 |   |   debian-live-sid-testing-amd64-debootstrap.iso       amd64：testing
 |   |   debian-live-sid-testing-i386-debootstrap.iso        i386 ：〃
 |   |   ubuntu-live-18.04-bionic-amd64-debootstrap.iso      amd64：bionic
@@ -100,6 +102,7 @@ debian.stable.amd64
 |   |   ubuntu-live-21.10-impish-amd64-debootstrap.iso      amd64：impish
 |   |   ubuntu-live-22.04-jammy-amd64-debootstrap.iso       amd64：jammy
 |   |   ubuntu-live-22.10-kinetic-amd64-debootstrap.iso     amd64：kinetic
+|   |
 |   |-- debian.oldoldstable.amd64
 |   |-- debian.oldoldstable.i386
 |   |-- debian.oldstable.amd64
@@ -121,10 +124,12 @@ debian.stable.amd64
 |       |   inst-net.sh
 |       |   linux_signing_key.pub
 |       |   splash.png
+|       |
 |       |-- _work
 |       |-- cdimg
 |       |-- fsimg
 |       +-- media
+|
 +-- keyring
         debian-archive-bullseye-automatic.gpg
         debian-archive-bullseye-security-automatic.gpg
