@@ -87,15 +87,15 @@ debian.stable.amd64
 .
 |-- debootstrap
 |   |   debian-live-9-oldoldstable-amd64-debootstrap.iso    amd64：oldoldstable
-|   |   debian-live-9-oldoldstable-i386-debootstrap.iso     i386 ：oldoldstable
+|   |   debian-live-9-oldoldstable-i386-debootstrap.iso     i386 ：〃
 |   |   debian-live-10-oldstable-amd64-debootstrap.iso      amd64：oldstable
-|   |   debian-live-10-oldstable-i386-debootstrap.iso       i386 ：oldstable
+|   |   debian-live-10-oldstable-i386-debootstrap.iso       i386 ：〃
 |   |   debian-live-11-stable-amd64-debootstrap.iso         amd64：stable
-|   |   debian-live-11-stable-i386-debootstrap.iso          i386 ：stable (2022/6/5現在作成不可)
+|   |   debian-live-11-stable-i386-debootstrap.iso          i386 ：〃 (2022/6/5現在作成不可)
 |   |   debian-live-sid-testing-amd64-debootstrap.iso       amd64：testing
-|   |   debian-live-sid-testing-i386-debootstrap.iso        i386 ：testing
+|   |   debian-live-sid-testing-i386-debootstrap.iso        i386 ：〃
 |   |   ubuntu-live-18.04-bionic-amd64-debootstrap.iso      amd64：bionic
-|   |   ubuntu-live-18.04-bionic-i386-debootstrap.iso       i386 ：bionic
+|   |   ubuntu-live-18.04-bionic-i386-debootstrap.iso       i386 ：〃
 |   |   ubuntu-live-20.04-focal-amd64-debootstrap.iso       amd64：focal
 |   |   ubuntu-live-21.10-impish-amd64-debootstrap.iso      amd64：impish
 |   |   ubuntu-live-22.04-jammy-amd64-debootstrap.iso       amd64：jammy
@@ -115,8 +115,8 @@ debian.stable.amd64
 |   |-- ubuntu.jammy.amd64
 |   +-- ubuntu.kinetic.amd64
 |       |   0000-user.conf
-|       |   9999-user-setting
 |       |   9999-user.conf
+|       |   9999-user-setting
 |       |   debian-cd_info-stable-amd64.tar.gz
 |       |   inst-net.sh
 |       |   linux_signing_key.pub
