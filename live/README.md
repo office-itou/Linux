@@ -1,5 +1,7 @@
 ## mmdebstrapを使用したDebian/Ubuntuの**日本語版Live DVD**の作成シェル  
   
+### Debian上のdebootstrap.sh のヘルプ画面（GPG key指定有り）
+  
 ``` bash:Debian上のdebootstrap.sh のヘルプ画面（GPG key指定有り）
 master@sv-server:~/mkcd$ ./debootstrap.sh -k ./keyring/
   usage: sudo ./debootstrap.sh -a architecture -s suite [ -k directory ]
@@ -22,6 +24,7 @@ master@sv-server:~/mkcd$ ./debootstrap.sh -k ./keyring/
     amd64      : kinetic         : Ubuntu 22.10(Kinetic Kudu)
 ```
   
+### 実行方法の例（全スイート対象・GPG key指定・ログ出力）  
 ``` bash:実行方法の例（全スイート対象・GPG key指定・ログ出力）
 sudo bash -c '
 rm -f ./debootstrap.log
