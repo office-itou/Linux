@@ -82,7 +82,7 @@ debian.oldstable.i386                             ubuntu.kinetic.amd64
 debian.stable.amd64
 ```
   
-### ：ディレクトリー／ファイル構成  
+### ・ディレクトリー／ファイル構成  
 ``` bash: ディレクトリー／ファイル構成
 .
 |-- debootstrap
