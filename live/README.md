@@ -87,6 +87,7 @@ debian.stable.amd64
 .
 |   debootstrap.sh  （実行ファイル）
 |   debootstrap.log （ログファイル）
+|
 |-- debootstrap
 |   |   debian-live-9-oldoldstable-amd64-debootstrap.iso    amd64：oldoldstable
 |   |   debian-live-9-oldoldstable-i386-debootstrap.iso     i386 ：〃
