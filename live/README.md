@@ -52,7 +52,7 @@ sudo find ./work/ -type f -name "*.gpg" -print -exec cp -p {} ./keyring/ \;
   
 ### ・GPG keyファイルの保存例  
 ``` bash:ls ./keyring/
-master@sv-ubuntu:~/mkcd$ ls ./keyring/
+master@sv-server:~/mkcd$ ls ./keyring/
 debian-archive-bullseye-automatic.gpg           debian-archive-stretch-security-automatic.gpg
 debian-archive-bullseye-security-automatic.gpg  debian-archive-stretch-stable.gpg
 debian-archive-bullseye-stable.gpg              ubuntu-archive-keyring.gpg
@@ -62,6 +62,22 @@ debian-archive-buster-stable.gpg                ubuntu-cloudimage-removed-keys.g
 debian-archive-keyring.gpg                      ubuntu-keyring-2012-cdimage.gpg
 debian-archive-removed-keys.gpg                 ubuntu-keyring-2018-archive.gpg
 debian-archive-stretch-automatic.gpg            ubuntu-master-keyring.gpg
+```
+  
+### ・実行結果の例  
+``` bash:ls ./debootstrap/
+master@sv-server:~/mkcd$ ls ./debootstrap/
+debian-live-10-oldstable-amd64-debootstrap.iso    debian.stable.i386
+debian-live-10-oldstable-i386-debootstrap.iso     debian.testing.amd64
+debian-live-11-stable-amd64-debootstrap.iso       debian.testing.i386
+debian-live-9-oldoldstable-amd64-debootstrap.iso  ubuntu-live-18.04-bionic-i386-debootstrap.iso
+debian-live-9-oldoldstable-i386-debootstrap.iso   ubuntu.bionic.amd64
+debian-live-sid-testing-amd64-debootstrap.iso     ubuntu.bionic.i386
+debian.oldoldstable.amd64                         ubuntu.focal.amd64
+debian.oldoldstable.i386                          ubuntu.impish.amd64
+debian.oldstable.amd64                            ubuntu.jammy.amd64
+debian.oldstable.i386                             ubuntu.kinetic.amd64
+debian.stable.amd64
 ```
   
 ## 参考  
