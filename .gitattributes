@@ -16,4 +16,4 @@ Makefile     diff=binaryfile
 Makefile.am  diff=binaryfile
 configure.ac diff=binaryfile
 *.conf       diff=binaryfile
-*.           diff=binaryfile
+*            diff=binaryfile

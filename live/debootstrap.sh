@@ -21,6 +21,7 @@
 ##	---------- -------- -------------- ----------------------------------------
 ##	2022/06/01 000.0000 J.Itou         新規作成
 ##	2022/06/04 000.0000 J.Itou         不具合修正
+##	2022/06/05 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 
@@ -297,7 +298,7 @@ fncCheck () {
 }
 
 # === default =================================================================
-fncDefault () {
+fncSet_default () {
 	local _DIST="`echo \"${TARGET_DIST}\" | sed -e 's/\(.\)\(.*\)/\U\1\L\2/g'`"
 
 	fncPrint "--- set default value $(fncString ${COL_SIZE} '-')"
@@ -312,63 +313,52 @@ fncDefault () {
 fncSet_parameter () {
 	fncPrint "--- set parameter $(fncString ${COL_SIZE} '-')"
 	# --- 個別パラメータ設定 --------------------------------------------------
+	# --variant=[ extract | custom | essential | apt | minbase | buildd | debootstrap | standard ]
+	TARGET_VARIANT="debootstrap"
 	TARGET_COMPONENTS=""
 	TARGET_MIRROR=""
-	TARGET_PACKAGE=""
+	TARGET_PACKAGE=" \
+	    open-infrastructure-system-boot \
+	    open-infrastructure-system-build \
+	    open-infrastructure-system-config \
+	    open-infrastructure-system-images \
+	    isolinux syslinux \
+	    build-essential curl vim \
+	    open-vm-tools open-vm-tools-desktop \
+	    clamav \
+	    bind9 \
+	    openssh-server \
+	    samba smbclient cifs-utils \
+	    isc-dhcp-server \
+	    minidlna \
+	    task-laptop \
+	    task-japanese \
+	    fonts-noto \
+	    ibus-mozc mozc-utils-gui \
+	    libreoffice-l10n-ja libreoffice-help-ja \
+	"
 	case "${TARGET_DIST}" in
 		"debian" )
 			TARGET_COMPONENTS="main non-free contrib"
 			TARGET_MIRROR="http://deb.debian.org/debian/"
-			TARGET_PACKAGE=" \
-			    open-infrastructure-system-boot \
-			    open-infrastructure-system-build \
-			    open-infrastructure-system-config \
-			    open-infrastructure-system-images \
-			    isolinux syslinux \
+			TARGET_PACKAGE+=" \
 			    linux-headers-${TARGET_ARCH//i386/686} \
 			    linux-image-${TARGET_ARCH//i386/686} \
-			    task-lxde-desktop task-laptop \
-			    build-essential curl vim \
-			    open-vm-tools-desktop \
-			    clamav \
-			    bind9 \
-			    openssh-server \
-			    samba smbclient cifs-utils \
-			    isc-dhcp-server \
-			    minidlna \
+			    task-lxde-desktop \
 			    task-japanese-desktop \
 			    task-japanese-gnome-desktop \
-			    fonts-noto \
-			    ibus-mozc mozc-utils-gui \
-			    libreoffice-l10n-ja libreoffice-help-ja \
 			    thunderbird-l10n-ja \
 			"
 			;;
 		"ubuntu" )
 			TARGET_COMPONENTS="main multiverse restricted universe"
 			TARGET_MIRROR="http://archive.ubuntu.com/ubuntu/"
-			TARGET_PACKAGE=" \
-			    open-infrastructure-system-boot \
-			    open-infrastructure-system-build \
-			    open-infrastructure-system-config \
-			    open-infrastructure-system-images \
-			    isolinux syslinux \
+			TARGET_PACKAGE+=" \
 			    linux-headers-generic \
 			    linux-image-generic \
 			    ubuntu-desktop ubuntu-server \
-			    build-essential curl vim \
-			    open-vm-tools-desktop \
-			    clamav \
-			    bind9 \
-			    openssh-server \
-			    samba smbclient cifs-utils \
-			    isc-dhcp-server \
-			    minidlna \
 			    language-pack-ja \
 			    language-pack-gnome-ja \
-			    fonts-noto \
-			    ibus-mozc mozc-utils-gui \
-			    libreoffice-l10n-ja libreoffice-help-ja \
 			    thunderbird-locale-ja \
 			"
 			;;
@@ -473,7 +463,7 @@ fncMake_inst_net_sh () {
 		}
 		# -- terminate ----------------------------------------------------------------
 		fncEnd() {
-		 	fncPrint "--- terminate $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "--- termination $(fncString ${COL_SIZE} '-')"
 		 	RET_STS=$1
 		 	history -c
 		 	fncPrint "$(fncString ${COL_SIZE} '=')"
@@ -562,28 +552,32 @@ fncMake_inst_net_sh () {
 		 	apt-get autoclean    -qq                                   > /dev/null || fncEnd $?
 		 	apt-get clean        -qq                                   > /dev/null || fncEnd $?
 		# -- Change system control ----------------------------------------------------
-		 	fncPrint "--- Change system control $(fncString ${COL_SIZE} '-')"
-		 	systemctl --quiet  enable clamav-freshclam
-		 	systemctl --quiet  enable ssh
-		 	if [ -f ${DIR_SYSD}/system/bind9.service ]; then
-		 		systemctl --quiet enable bind9
-		 	elif [ -f ${DIR_SYSD}/system/named.service ]; then
-		 		systemctl --quiet enable named
+		# 	Set disable to mask because systemd-sysv-generator will recreate the symbolic link.
+		 	fncPrint "--- change system control $(fncString ${COL_SIZE} '-')"
+		 	systemctl --quiet --no-reload  enable clamav-freshclam
+		 	systemctl --quiet --no-reload  enable ssh
+		 	if [ "`systemctl is-enabled named 2> /dev/null || :`" != "" ]; then
+		 		systemctl --quiet --no-reload enable named
+		 	else
+		 		systemctl --quiet --no-reload enable bind9
 		 	fi
-		 	systemctl --quiet  enable smbd
-		 	systemctl --quiet  enable nmbd
-		 	systemctl --quiet mask isc-dhcp-server
-		 	systemctl --quiet mask minidlna
-		#	if [ -f ${DIR_SYSD}/system/unattended-upgrades.service ]; then
-		#		systemctl --quiet mask unattended-upgrades
-		#	fi
-		 	if [ -f ${DIR_SYSD}/system/brltty.service ]; then
-		 		systemctl --quiet mask brltty-udev
-		 		systemctl --quiet mask brltty
+		 	systemctl --quiet --no-reload  enable smbd
+		 	systemctl --quiet --no-reload  enable nmbd
+		 	systemctl --quiet --no-reload    mask isc-dhcp-server
+		 	if [ "`systemctl is-enabled isc-dhcp-server6 2> /dev/null || :`" != "" ]; then
+		 		systemctl --quiet --no-reload    mask isc-dhcp-server6
+		 	fi
+		 	systemctl --quiet --no-reload    mask minidlna
+		 	if [ "`systemctl is-enabled unattended-upgrades 2> /dev/null || :`" != "" ]; then
+		 		systemctl --quiet --no-reload    mask unattended-upgrades
+		 	fi
+		 	if [ "`systemctl is-enabled brltty 2> /dev/null || :`" != "" ]; then
+		 		systemctl --quiet --no-reload    mask brltty-udev
+		 		systemctl --quiet --no-reload    mask brltty
 		 	fi
 		# -- Change service configure -------------------------------------------------
 		#	if [ -f /etc/systemd/system/multi-user.IMG_TGET.wants/cups-browsed.service ]; then
-		#		fncPrint "--- Change cups-browsed configure $(fncString ${COL_SIZE} '-')"
+		#		fncPrint "--- change cups-browsed configure $(fncString ${COL_SIZE} '-')"
 		#		cat <<- _EOT_ > /etc/systemd/system/multi-user.IMG_TGET.wants/cups-browsed.service.override
 		#			[Service]
 		#			TimeoutStopSec=3
@@ -591,13 +585,13 @@ fncMake_inst_net_sh () {
 		#	fi
 		# -- Change resolv configure --------------------------------------------------
 		 	if [ -d /etc/NetworkManager/ ]; then
-		 		fncPrint "--- Change NetworkManager configure $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "--- change NetworkManager configure $(fncString ${COL_SIZE} '-')"
 		 		touch /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
 		 		cat <<- _EOT_ > /etc/NetworkManager/conf.d/NetworkManager.conf.override
 		 			[main]
 		 			dns=default
 		 _EOT_
-		 		fncPrint "--- Change resolv.conf configure $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "--- change resolv.conf configure $(fncString ${COL_SIZE} '-')"
 		 		cat <<- _EOT_ > /etc/systemd/resolved.conf.override
 		 			[Resolve]
 		 			DNSStubListener=no
@@ -606,7 +600,7 @@ fncMake_inst_net_sh () {
 		 	fi
 		# -- Change avahi-daemon configure --------------------------------------------
 		 	if [ -f /etc/nsswitch.conf ]; then
-		 		fncPrint "--- Change avahi-daemon configure $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "--- change avahi-daemon configure $(fncString ${COL_SIZE} '-')"
 		 		OLD_IFS=${IFS}
 		 		IFS=$'\n'
 		 		INS_ROW=$((`sed -n '/^hosts:/ =' /etc/nsswitch.conf | head -n 1`))
@@ -620,20 +614,20 @@ fncMake_inst_net_sh () {
 		 	fi
 		# -- Change clamav configure --------------------------------------------------
 		 	if [ "`which freshclam 2> /dev/null`" != "" ]; then
-		 		fncPrint "---- Change freshclam.conf $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "---- change freshclam.conf $(fncString ${COL_SIZE} '-')"
 		 		sed -i /etc/clamav/freshclam.conf     \
 		 		    -e 's/^Example/#&/'               \
 		 		    -e 's/^CompressLocalDatabase/#&/' \
 		 		    -e 's/^SafeBrowsing/#&/'          \
 		 		    -e 's/^NotifyClamd/#&/'
-		 		fncPrint "---- Run freshclam $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "---- run freshclam $(fncString ${COL_SIZE} '-')"
 		 		set +e
 		 		freshclam --quiet
 		 		set -e
 		 	fi
 		# -- Change sshd configure ----------------------------------------------------
 		 	if [ -d /etc/ssh/ ]; then
-		 		fncPrint "--- Change sshd configure $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "--- change sshd configure $(fncString ${COL_SIZE} '-')"
 		 		if [ ! -d /etc/ssh/sshd_config.d/ ]; then
 		 			cat <<- _EOT_ >> /etc/ssh/sshd_config
 		 				
@@ -664,7 +658,7 @@ fncMake_inst_net_sh () {
 		 	fi
 		# -- Change samba configure ---------------------------------------------------
 			if [ -f /etc/samba/smb.conf ]; then
-		 		fncPrint "--- Change samba configure $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "--- change samba configure $(fncString ${COL_SIZE} '-')"
 		 		SVR_NAME="_HOSTNAME_"						# 本機のホスト名
 		 		WGP_NAME="_WORKGROUP_"						# 本機のワークグループ名
 		 		CMD_UADD=`which useradd`
@@ -760,23 +754,30 @@ fncMake_inst_net_sh () {
 		 		testparm -s ./smb.conf > /etc/samba/smb.conf
 		 		rm -f ./smb.conf /etc/samba/smb.conf.ucf-dist
 		fi
+		# -- Change gdm3 configure ----------------------------------------------------
+		 	if [ -f /etc/gdm3/custom.conf ] && [ ! -f /etc/gdm3/daemon.conf ]; then
+		 		fncPrint "--- create gdm3 daemon.conf $(fncString ${COL_SIZE} '-')"
+		 		cp -p /etc/gdm3/custom.conf /etc/gdm3/daemon.conf
+		 		: > /etc/gdm3/daemon.conf
+		 	fi
+		
 		# -- Change xdg configure -----------------------------------------------------
 		 	if [  -f /etc/xdg/autostart/gnome-initial-setup-first-login.desktop ]; then
-		 		fncPrint "--- Change xdg configure $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "--- change xdg configure $(fncString ${COL_SIZE} '-')"
 		 		mkdir -p /etc/skel/.config
 		 		touch /etc/skel/.config/gnome-initial-setup-done
 		 	fi
 		# -- Change gsettings configure -----------------------------------------------
 		#	if [ "`which gsettings 2> /dev/null`" != "" ]; then
-		#		fncPrint "--- Change gsettings configure $(fncString ${COL_SIZE} '-')"
+		#		fncPrint "--- change gsettings configure $(fncString ${COL_SIZE} '-')"
 		#		gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
 		#		gsettings set org.gnome.desktop.screensaver lock-enabled false
 		#	fi
 		# -- Change dconf configure ---------------------------------------------------
 		 	if [ "`which dconf 2> /dev/null`" != "" ]; then
-		 		fncPrint "--- Change dconf configure $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "--- change dconf configure $(fncString ${COL_SIZE} '-')"
 		 		# -- create dconf profile ---------------------------------------------
-		 		fncPrint "--- Create dconf profile $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "--- create dconf profile $(fncString ${COL_SIZE} '-')"
 		 		if [ ! -d /etc/dconf/db/local.d/ ]; then
 		 			mkdir -p /etc/dconf/db/local.d
 		 		fi
@@ -920,7 +921,7 @@ fncMake_9999_user_conf () {
 		#set -u								# 未定義変数の参照で終了
 		#set -e
 		#set -o allexport
-		#set -o | tee
+		#set -o
 		
 		# === Fix Parameters ==========================================================
 		# /bin/live-config or /lib/live/init-config.sh
@@ -1025,7 +1026,7 @@ fncMake_9999_user_setting () {
 		#set -u								# 未定義変数の参照で終了
 		#set -e
 		#set -o allexport
-		#set -o | tee
+		#set -o
 		
 		/bin/echo ""
 		/bin/echo "Start 9999-user-setting :::::::::::::::::::::::::::::::::::::::::::::::::::::::"
@@ -1120,6 +1121,7 @@ fncMake_9999_user_setting () {
 		 	if [ -f /etc/gdm3/custom.conf ] && [ -n "${LIVE_USERNAME:-""}" ]; then
 		 		/bin/echo ""
 		 		/bin/echo "Change gdm3 configure :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 		OLD_IFS=${IFS}
 		 		IFS= INS_STR=$(
 		 			cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
 		 				WaylandEnable=false\\n
@@ -1144,7 +1146,7 @@ fncMake_9999_user_setting () {
 		 		/bin/echo ""
 		 		/bin/echo "Change video mode configure :::::::::::::::::::::::::::::::::::::::::::::::::::"
 		 		sed -i /etc/X11/Xsession.d/21xvidemode \
-		 		    -e '1i {\nsleep 5' \
+		 		    -e '1i {\nsleep 10' \
 		 		    -e '$a } &'
 		 	fi
 		}
@@ -1157,7 +1159,7 @@ fncMake_9999_user_setting () {
 		 	# === Display of parameters ===============================================
 		 	/bin/echo ""
 		 	/bin/echo "Display of parameters :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-		 	set | grep -e "^LIVE_.*=" | tee
+		 	set | grep -e "^LIVE_.*="
 		 	/bin/echo "-------------------------------------------------------------------------------"
 		 	dconf dump /org/gnome/desktop/screensaver/
 		 	/bin/echo "-------------------------------------------------------------------------------"
@@ -1165,16 +1167,16 @@ fncMake_9999_user_setting () {
 		 	/bin/echo "-------------------------------------------------------------------------------"
 		 	printenv | sort
 		 	/bin/echo "-------------------------------------------------------------------------------"
-		 	for F in  /lib/systemd/system/*.service
+		 	for F in $(find "/lib/systemd/system/" -type f -name "*.service" -print | sort -u)
 		 	do
 		 		S=`basename $F`
-		 		R=`systemctl is-enabled "$S"`
+		 		R=`systemctl is-enabled "$S" || :`
 		 		/bin/echo "$S: $R"
 		 	done
 		 	/bin/echo "-------------------------------------------------------------------------------"
 		 	mount | sort
 		 	/bin/echo "-------------------------------------------------------------------------------"
-		 	set -o | tee
+		 	set -o
 		 	/bin/echo "-------------------------------------------------------------------------------"
 		}
 		
@@ -1219,7 +1221,7 @@ _EOT_SH_
 
 # === run mmdebstrap ==========================================================
 fncRun_mmdebstrap () {
-	fncPrint "-- run mmdebstrap $(fncString ${COL_SIZE} '-')"
+	fncPrint "-- Run mmdebstrap $(fncString ${COL_SIZE} '-')"
 	rm -rf "${DIR_TOP}"/fsimg/*
 	mkdir -p "${DIR_TOP}/fsimg"
 	HOOK_CMD=""
@@ -1260,7 +1262,7 @@ _EOT_
 	# -------------------------------------------------------------------------
 	mmdebstrap \
 	    --components="${TARGET_COMPONENTS}" \
-	    --variant=standard \
+	    --variant=${TARGET_VARIANT} \
 	    --mode=sudo \
 	    --aptopt='Apt::Install-Recommends "true"' \
 	    --include="${TARGET_PACKAGE} " \
@@ -1283,7 +1285,7 @@ _EOT_
 
 # === make dvd image ==========================================================
 fncMake_dvd_image () {
-	fncPrint "-- make dvd image $(fncString ${COL_SIZE} '-')"
+	fncPrint "-- Make dvd image $(fncString ${COL_SIZE} '-')"
 	rm -rf "${DIR_TOP}"/cdimg/*
 	mkdir -p "${DIR_TOP}/cdimg/.disk"              \
 	         "${DIR_TOP}/cdimg/EFI"                \
@@ -1294,7 +1296,7 @@ fncMake_dvd_image () {
 	         "${DIR_TOP}/cdimg/preseed"
 	# --- DVDイメージ展開用パラメーター ---------------------------------------
 	OS_KERNEL="`find \"${DIR_TOP}\"/fsimg/boot/ -name \"vmlinuz*\" -print | sed -n 's/.*vmlinuz-//gp'`"
-	OS_NAME="`sed -n '/^NAME=/ s/^.*="\([a-zA-Z]*\)"*$/\1/p' ${DIR_TOP}/fsimg/etc/os-release | tr A-Z a-z`"
+	OS_NAME="`sed -n '/^NAME=/ s/.*="\([a-zA-Z]*\).*"/\1/p' ${DIR_TOP}/fsimg/etc/os-release | tr A-Z a-z`"
 	OS_VERSION="`sed -n '/^VERSION=/ s/^.*=\(.*\)/\1/p' ${DIR_TOP}/fsimg/etc/os-release | sed -e 's/\"//g'`"
 	OS_VERSION_ID="`sed -n '/^VERSION=/ s/^.*="*\([0-9.]*\).*"*$/\1/p' ${DIR_TOP}/fsimg/etc/os-release`"
 	OS_NAME="${OS_NAME:-${TARGET_DIST}}"
@@ -1345,7 +1347,7 @@ fncMake_dvd_image () {
 	# --- ファイルシステムイメージの作成 --------------------------------------
 	fncPrint "--- make file system image $(fncString ${COL_SIZE} '-')"
 	rm -f "${DIR_TOP}/cdimg/live/filesystem.squashfs"
-	mksquashfs "${DIR_TOP}/fsimg" "${DIR_TOP}/cdimg/live/filesystem.squashfs" -noappend -quiet
+	mksquashfs "${DIR_TOP}/fsimg" "${DIR_TOP}/cdimg/live/filesystem.squashfs" -noappend -quiet -mem 1G
 	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_TOP}/cdimg/live/filesystem.squashfs" 2> /dev/null | cut -c 13-
 	# --- ブートメニューの作成 ------------------------------------------------
 	fncPrint "--- edit grub.cfg file $(fncString ${COL_SIZE} '-')"
@@ -1401,13 +1403,11 @@ _EOT_
 	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]: ${TARGET_DIST} (${TARGET_SUITE})-${TARGET_ARCH}"
 	fncPrint "$(fncString ${COL_SIZE} '*')"
 	# -------------------------------------------------------------------------
-	fncPrint "-- Initialize $(fncString ${COL_SIZE} '-')"
-	# -------------------------------------------------------------------------
 	DIR_TOP="./${PGM_NAME}/${TARGET_DIST}.${TARGET_SUITE}.${TARGET_ARCH}"
 	# --- マウント強制解除 ----------------------------------------------------
 	MONT_LIST="`mount | grep "${DIR_TOP#*/}" | awk '{print $3;}'`"
 	if [ "${MONT_LIST}" != "" ]; then
-		fncPrint "-- unmount $(fncString ${COL_SIZE} '-')"
+		fncPrint "-- Unmount $(fncString ${COL_SIZE} '-')"
 		for POINT in ${MONT_LIST}
 		do
 			set +e
@@ -1423,11 +1423,13 @@ _EOT_
 			set -e
 		done
 	fi
+	# -------------------------------------------------------------------------
+	fncPrint "-- Initialize $(fncString ${COL_SIZE} '-')"
 	# --- ディレクトリー作成 --------------------------------------------------
 	rm -rf   "${DIR_TOP}/media" "${DIR_TOP}/cdimg" "${DIR_TOP}/fsimg" "${DIR_TOP}/_work"
 	mkdir -p "${DIR_TOP}/media" "${DIR_TOP}/cdimg" "${DIR_TOP}/fsimg" "${DIR_TOP}/_work"
-	# -------------------------------------------------------------------------
-	fncDefault
+	# --- main処理 ------------------------------------------------------------
+	fncSet_default
 	fncSet_parameter
 	fncGet_debian_installer
 	fncMake_inst_net_sh
@@ -1436,6 +1438,8 @@ _EOT_
 	fncMake_9999_user_setting
 	fncRun_mmdebstrap
 	fncMake_dvd_image
+	# -------------------------------------------------------------------------
+	fncPrint "-- Termination $(fncString ${COL_SIZE} '-')"
 	# -------------------------------------------------------------------------
 	rm -rf   "${DIR_TOP}/media" "${DIR_TOP}/cdimg" "${DIR_TOP}/fsimg" "${DIR_TOP}/_work"
 	# -------------------------------------------------------------------------

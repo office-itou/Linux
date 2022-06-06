@@ -127,7 +127,7 @@ sudo find ./work/ -type f -name "*.gpg" -print -exec cp -p {} ./keyring/ \;
   
 ## スクリーンショット  
 |   debian 11 stable   | ubuntu 22.10 kinetic |
-| ---------------------| ---------------------| 
+| :------------------: | :------------------: |
 | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.01.png" width="640"> | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.01.png" width="640"> |
 | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.02.png" width="640"> | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.02.png" width="640"> |
 | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/debian-live-11-stable-amd64-debootstrap.03.png" width="640"> | <img src="https://github.com/office-itou/Linux/raw/master/live/picture/ubuntu-live-22.10-kinetic-amd64-debootstrap.03.png" width="640"> |

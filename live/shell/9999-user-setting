@@ -6,7 +6,7 @@
 #set -u								# 未定義変数の参照で終了
 #set -e
 #set -o allexport
-#set -o | tee
+#set -o
 
 /bin/echo ""
 /bin/echo "Start 9999-user-setting :::::::::::::::::::::::::::::::::::::::::::::::::::::::"
@@ -101,6 +101,7 @@ _EOT_
 	if [ -f /etc/gdm3/custom.conf ] && [ -n "${LIVE_USERNAME:-""}" ]; then
 		/bin/echo ""
 		/bin/echo "Change gdm3 configure :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		OLD_IFS=${IFS}
 		IFS= INS_STR=$(
 			cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
 				WaylandEnable=false\\n
@@ -125,7 +126,7 @@ _EOT_
 		/bin/echo ""
 		/bin/echo "Change video mode configure :::::::::::::::::::::::::::::::::::::::::::::::::::"
 		sed -i /etc/X11/Xsession.d/21xvidemode \
-		    -e '1i {\nsleep 5' \
+		    -e '1i {\nsleep 10' \
 		    -e '$a } &'
 	fi
 }
@@ -138,7 +139,7 @@ Debug ()
 	# === Display of parameters ===============================================
 	/bin/echo ""
 	/bin/echo "Display of parameters :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-	set | grep -e "^LIVE_.*=" | tee
+	set | grep -e "^LIVE_.*="
 	/bin/echo "-------------------------------------------------------------------------------"
 	dconf dump /org/gnome/desktop/screensaver/
 	/bin/echo "-------------------------------------------------------------------------------"
@@ -146,16 +147,16 @@ Debug ()
 	/bin/echo "-------------------------------------------------------------------------------"
 	printenv | sort
 	/bin/echo "-------------------------------------------------------------------------------"
-	for F in  /lib/systemd/system/*.service
+	for F in $(find "/lib/systemd/system/" -type f -name "*.service" -print | sort -u)
 	do
 		S=`basename $F`
-		R=`systemctl is-enabled "$S"`
+		R=`systemctl is-enabled "$S" || :`
 		/bin/echo "$S: $R"
 	done
 	/bin/echo "-------------------------------------------------------------------------------"
 	mount | sort
 	/bin/echo "-------------------------------------------------------------------------------"
-	set -o | tee
+	set -o
 	/bin/echo "-------------------------------------------------------------------------------"
 }
 

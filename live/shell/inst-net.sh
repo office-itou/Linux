@@ -41,7 +41,7 @@ fncPrint () {
 }
 # -- terminate ----------------------------------------------------------------
 fncEnd() {
-	fncPrint "--- terminate $(fncString ${COL_SIZE} '-')"
+	fncPrint "--- termination $(fncString ${COL_SIZE} '-')"
 	RET_STS=$1
 	history -c
 	fncPrint "$(fncString ${COL_SIZE} '=')"
@@ -130,28 +130,32 @@ fncEnd() {
 	apt-get autoclean    -qq                                   > /dev/null || fncEnd $?
 	apt-get clean        -qq                                   > /dev/null || fncEnd $?
 # -- Change system control ----------------------------------------------------
-	fncPrint "--- Change system control $(fncString ${COL_SIZE} '-')"
-	systemctl --quiet  enable clamav-freshclam
-	systemctl --quiet  enable ssh
-	if [ -f ${DIR_SYSD}/system/bind9.service ]; then
-		systemctl --quiet enable bind9
-	elif [ -f ${DIR_SYSD}/system/named.service ]; then
-		systemctl --quiet enable named
+# 	Set disable to mask because systemd-sysv-generator will recreate the symbolic link.
+	fncPrint "--- change system control $(fncString ${COL_SIZE} '-')"
+	systemctl --quiet --no-reload  enable clamav-freshclam
+	systemctl --quiet --no-reload  enable ssh
+	if [ "`systemctl is-enabled named 2> /dev/null || :`" != "" ]; then
+		systemctl --quiet --no-reload enable named
+	else
+		systemctl --quiet --no-reload enable bind9
 	fi
-	systemctl --quiet  enable smbd
-	systemctl --quiet  enable nmbd
-	systemctl --quiet mask isc-dhcp-server
-	systemctl --quiet mask minidlna
-#	if [ -f ${DIR_SYSD}/system/unattended-upgrades.service ]; then
-#		systemctl --quiet mask unattended-upgrades
-#	fi
-	if [ -f ${DIR_SYSD}/system/brltty.service ]; then
-		systemctl --quiet mask brltty-udev
-		systemctl --quiet mask brltty
+	systemctl --quiet --no-reload  enable smbd
+	systemctl --quiet --no-reload  enable nmbd
+	systemctl --quiet --no-reload    mask isc-dhcp-server
+	if [ "`systemctl is-enabled isc-dhcp-server6 2> /dev/null || :`" != "" ]; then
+		systemctl --quiet --no-reload    mask isc-dhcp-server6
+	fi
+	systemctl --quiet --no-reload    mask minidlna
+	if [ "`systemctl is-enabled unattended-upgrades 2> /dev/null || :`" != "" ]; then
+		systemctl --quiet --no-reload    mask unattended-upgrades
+	fi
+	if [ "`systemctl is-enabled brltty 2> /dev/null || :`" != "" ]; then
+		systemctl --quiet --no-reload    mask brltty-udev
+		systemctl --quiet --no-reload    mask brltty
 	fi
 # -- Change service configure -------------------------------------------------
 #	if [ -f /etc/systemd/system/multi-user.IMG_TGET.wants/cups-browsed.service ]; then
-#		fncPrint "--- Change cups-browsed configure $(fncString ${COL_SIZE} '-')"
+#		fncPrint "--- change cups-browsed configure $(fncString ${COL_SIZE} '-')"
 #		cat <<- _EOT_ > /etc/systemd/system/multi-user.IMG_TGET.wants/cups-browsed.service.override
 #			[Service]
 #			TimeoutStopSec=3
@@ -159,13 +163,13 @@ fncEnd() {
 #	fi
 # -- Change resolv configure --------------------------------------------------
 	if [ -d /etc/NetworkManager/ ]; then
-		fncPrint "--- Change NetworkManager configure $(fncString ${COL_SIZE} '-')"
+		fncPrint "--- change NetworkManager configure $(fncString ${COL_SIZE} '-')"
 		touch /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
 		cat <<- _EOT_ > /etc/NetworkManager/conf.d/NetworkManager.conf.override
 			[main]
 			dns=default
 _EOT_
-		fncPrint "--- Change resolv.conf configure $(fncString ${COL_SIZE} '-')"
+		fncPrint "--- change resolv.conf configure $(fncString ${COL_SIZE} '-')"
 		cat <<- _EOT_ > /etc/systemd/resolved.conf.override
 			[Resolve]
 			DNSStubListener=no
@@ -174,7 +178,7 @@ _EOT_
 	fi
 # -- Change avahi-daemon configure --------------------------------------------
 	if [ -f /etc/nsswitch.conf ]; then
-		fncPrint "--- Change avahi-daemon configure $(fncString ${COL_SIZE} '-')"
+		fncPrint "--- change avahi-daemon configure $(fncString ${COL_SIZE} '-')"
 		OLD_IFS=${IFS}
 		IFS=$'\n'
 		INS_ROW=$((`sed -n '/^hosts:/ =' /etc/nsswitch.conf | head -n 1`))
@@ -188,20 +192,20 @@ _EOT_
 	fi
 # -- Change clamav configure --------------------------------------------------
 	if [ "`which freshclam 2> /dev/null`" != "" ]; then
-		fncPrint "---- Change freshclam.conf $(fncString ${COL_SIZE} '-')"
+		fncPrint "---- change freshclam.conf $(fncString ${COL_SIZE} '-')"
 		sed -i /etc/clamav/freshclam.conf     \
 		    -e 's/^Example/#&/'               \
 		    -e 's/^CompressLocalDatabase/#&/' \
 		    -e 's/^SafeBrowsing/#&/'          \
 		    -e 's/^NotifyClamd/#&/'
-		fncPrint "---- Run freshclam $(fncString ${COL_SIZE} '-')"
+		fncPrint "---- run freshclam $(fncString ${COL_SIZE} '-')"
 		set +e
 		freshclam --quiet
 		set -e
 	fi
 # -- Change sshd configure ----------------------------------------------------
 	if [ -d /etc/ssh/ ]; then
-		fncPrint "--- Change sshd configure $(fncString ${COL_SIZE} '-')"
+		fncPrint "--- change sshd configure $(fncString ${COL_SIZE} '-')"
 		if [ ! -d /etc/ssh/sshd_config.d/ ]; then
 			cat <<- _EOT_ >> /etc/ssh/sshd_config
 				
@@ -232,7 +236,7 @@ _EOT_
 	fi
 # -- Change samba configure ---------------------------------------------------
 if [ -f /etc/samba/smb.conf ]; then
-		fncPrint "--- Change samba configure $(fncString ${COL_SIZE} '-')"
+		fncPrint "--- change samba configure $(fncString ${COL_SIZE} '-')"
 		SVR_NAME="live-debian"						# 本機のホスト名
 		WGP_NAME="workgroup"						# 本機のワークグループ名
 		CMD_UADD=`which useradd`
@@ -328,23 +332,30 @@ if [ -f /etc/samba/smb.conf ]; then
 		testparm -s ./smb.conf > /etc/samba/smb.conf
 		rm -f ./smb.conf /etc/samba/smb.conf.ucf-dist
 fi
+# -- Change gdm3 configure ----------------------------------------------------
+	if [ -f /etc/gdm3/custom.conf ] && [ ! -f /etc/gdm3/daemon.conf ]; then
+		fncPrint "--- create gdm3 daemon.conf $(fncString ${COL_SIZE} '-')"
+		cp -p /etc/gdm3/custom.conf /etc/gdm3/daemon.conf
+		: > /etc/gdm3/daemon.conf
+	fi
+
 # -- Change xdg configure -----------------------------------------------------
 	if [  -f /etc/xdg/autostart/gnome-initial-setup-first-login.desktop ]; then
-		fncPrint "--- Change xdg configure $(fncString ${COL_SIZE} '-')"
+		fncPrint "--- change xdg configure $(fncString ${COL_SIZE} '-')"
 		mkdir -p /etc/skel/.config
 		touch /etc/skel/.config/gnome-initial-setup-done
 	fi
 # -- Change gsettings configure -----------------------------------------------
 #	if [ "`which gsettings 2> /dev/null`" != "" ]; then
-#		fncPrint "--- Change gsettings configure $(fncString ${COL_SIZE} '-')"
+#		fncPrint "--- change gsettings configure $(fncString ${COL_SIZE} '-')"
 #		gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
 #		gsettings set org.gnome.desktop.screensaver lock-enabled false
 #	fi
 # -- Change dconf configure ---------------------------------------------------
 	if [ "`which dconf 2> /dev/null`" != "" ]; then
-		fncPrint "--- Change dconf configure $(fncString ${COL_SIZE} '-')"
+		fncPrint "--- change dconf configure $(fncString ${COL_SIZE} '-')"
 		# -- create dconf profile ---------------------------------------------
-		fncPrint "--- Create dconf profile $(fncString ${COL_SIZE} '-')"
+		fncPrint "--- create dconf profile $(fncString ${COL_SIZE} '-')"
 		if [ ! -d /etc/dconf/db/local.d/ ]; then
 			mkdir -p /etc/dconf/db/local.d
 		fi
