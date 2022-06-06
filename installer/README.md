@@ -49,7 +49,7 @@ master@sv-server:~/mkcd$
 　・**sudo ./knoppix-live.sh**  
   
 | OPTION      | 説明                                 |
-| ----------- | ------------------------------------ |
+| :---------: | :----------------------------------: |
 | -h, --help  | このヘルプ                           |
 | -i, --init  | 初期設定                             |
 | -l, --log   | ログ出力（メディア作成時）           |
@@ -58,7 +58,7 @@ master@sv-server:~/mkcd$
 | -a, --all   | 全登録リスト処理                     |
   
 | NUMBER      | 説明
-| ----------- | ------------------------------------ |
+| :---------: | :----------------------------------: |
 |             | 処理する登録リスト番号               |
 |             | ブレース展開可（重複チェック未実装） |
   
@@ -68,7 +68,7 @@ master@sv-server:~/mkcd$
   
 【メディア作成シェル】  
 | ファイル名         | 機能                  |
-| ------------------ | --------------------- |
+| :----------------: | :-------------------: |
 | [dist_remaster.sh](https://github.com/office-itou/Linux/blob/master/installer/source/dist_remaster.sh)    | メディア作成シェル |
 | [knoppix-live.sh](https://github.com/office-itou/Linux/blob/master/installer/source//knoppix-live.sh)    | Knoppix日本語化用 |
   
@@ -83,20 +83,20 @@ chmod +x *.sh
   
 # 【無人インストール定義ファイル】  
 | ファイル名              | 機能     |
-| ----------------------- | -------- |
+| :---------------------: | :------: |
 | [preseed_debian.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/preseed_debian.cfg)      | debian用 |
 | [preseed_ubuntu.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/preseed_ubuntu.cfg)      | ubuntu用 |
 | [kickstart_centos.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_centos.cfg)    | CentOS用 |
 | [kickstart_fedora.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_fedora.cfg)    | Fedora用 |
 | [kickstart_miraclelinux.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_miraclelinux.cfg)    | MIRACLELINUX用 |
 | [kickstart_rocky.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_rocky.cfg)    | Rocky Linux用 |
+| [kickstart_almalinux.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_almalinux.cfg)    | AlmaLinux用 |
 | [yast_opensuse.xml](https://github.com/office-itou/Linux/blob/master/installer/source/yast_opensuse.xml) | OpenSUSE用 |
 | [nocloud-ubuntu-user-data](https://github.com/office-itou/Linux/blob/master/installer/source/nocloud-ubuntu-user-data) | ubuntu用nocloud |
-
   
 # 【インストール補助作業シェル】  
 | ファイル名              | 機能                |
-| ----------------------- | ------------------- |
+| :---------------------: | :-----------------: |
 | [install.sh](https://github.com/office-itou/Linux/blob/master/installer/source/install.sh)              | インストール作業用  |
 | [addusers.sh](https://github.com/office-itou/Linux/blob/master/installer/source/addusers.sh)             | ユーザー登録用      |
 | [addusers_txt_maker.sh](https://github.com/office-itou/Linux/blob/master/installer/source/addusers_txt_maker.sh)   | 登録ユーザー取得用  |
@@ -105,7 +105,7 @@ chmod +x *.sh
 # 【メニュー画面】  
 **・文字色について**  
 | 属性 | 説明                                 |
-| ---- | ------------------------------------ |
+| :--: | :----------------------------------: |
 | 赤色 | 通信エラー（リンク先消失等）         |
 | 白色 | 作成ファイル最新（ダウンロード不要） |
 | 緑色 | 作成ファイル無し（ファイル作成対象） |
@@ -115,7 +115,7 @@ chmod +x *.sh
   
 **・スクリーンショット**  
 | 作業内容              | スクリーンショット                                                              |
-| --------------------- | ------------------------------------------------------------------------------- |
+| :-------------------: | :-----------------------------------------------------------------------------: |
 | dist_remaster_dvd.sh  | ![dist_remaster_dvd.sh.jpg](https://github.com/office-itou/Linux/raw/master/installer/picture/dist_remaster_dvd.sh.jpg) |
 | dist_remaster_mini.sh | ![dist_remaster_mini.sh.jpg](https://github.com/office-itou/Linux/raw/master/installer/picture/dist_remaster_mini.sh.jpg) |
 | dist_remaster_net.sh  | ![dist_remaster_net.sh.jpg](https://github.com/office-itou/Linux/raw/master/installer/picture/dist_remaster_net.sh.jpg) |
@@ -129,6 +129,7 @@ wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/sourc
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cloud_preseed.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/install.sh"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_almalinux.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_centos.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_fedora.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_miraclelinux.cfg"
