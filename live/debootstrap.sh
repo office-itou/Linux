@@ -22,6 +22,7 @@
 ##	2022/06/01 000.0000 J.Itou         新規作成
 ##	2022/06/04 000.0000 J.Itou         不具合修正
 ##	2022/06/05 000.0000 J.Itou         処理見直し
+##	2022/06/06 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 
@@ -331,8 +332,6 @@ fncSet_parameter () {
 	    samba smbclient cifs-utils \
 	    isc-dhcp-server \
 	    minidlna \
-	    task-laptop \
-	    task-japanese \
 	    fonts-noto \
 	    ibus-mozc mozc-utils-gui \
 	    libreoffice-l10n-ja libreoffice-help-ja \
@@ -363,6 +362,20 @@ fncSet_parameter () {
 			"
 			;;
 		*        )
+			;;
+	esac
+	case "${TARGET_SUITE}" in
+		"oldoldstable" | \
+		"oldstable"    | \
+		"stable"       | \
+		"testing"      | \
+		"jammy"        | \
+		"kinetic"      )
+			TARGET_PACKAGE+=" \
+			    task-laptop \
+			    task-japanese \
+			"
+		*              )
 			;;
 	esac
 }
