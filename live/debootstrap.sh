@@ -375,6 +375,7 @@ fncSet_parameter () {
 			    task-laptop \
 			    task-japanese \
 			"
+			;;
 		*              )
 			;;
 	esac
