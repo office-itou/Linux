@@ -25,6 +25,8 @@
 ##	2022/05/14 000.0000 J.Itou         シェル統合
 ##	2022/05/15 000.0000 J.Itou         不具合修正
 ##	2022/05/16 000.0000 J.Itou         処理見直し
+##	2022/05/28 000.0000 J.Itou         AlmaLinux追加
+##	2022/06/06 000.0000 J.Itou         リスト更新
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -49,66 +51,68 @@
 # -----------------------------------------------------------------------------
 	ARRAY_NAME=()
 
-	readonly ARRAY_NAME_MINI=(                                                                                                                                                                                                                                                                                                        \
-	    "debian         http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                               -                                           preseed_debian.cfg                          2017-06-17   2022-06-xx   oldoldstable    Debian__9.xx(stretch)            " \
-	    "debian         http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                  -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
-	    "debian         http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                     -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/netboot/mini.iso                                                                   -                                           preseed_debian.cfg                          202x-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                         -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   bionic          Ubuntu_18.04(Bionic_Beaver):LTS  " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso                   -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   focal           Ubuntu_20.04(Focal_Fossa):LTS    " \
-	)   # 0:区分        1:ダウンロード先URL                                                                                                                      2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+	readonly ARRAY_NAME_MINI=(                                                                                                                                                                                                                                                                                                            \
+	    "debian         http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                   -                                           preseed_debian.cfg                          2017-06-17   2022-06-xx   oldoldstable    Debian__9.xx(stretch)            " \
+	    "debian         http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                      -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
+	    "debian         http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                         -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
+	    "debian         https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/netboot/mini.iso                                                                       -                                           preseed_debian.cfg                          202x-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
+	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                             -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   bionic          Ubuntu_18.04(Bionic_Beaver):LTS  " \
+	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso                       -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   focal           Ubuntu_20.04(Focal_Fossa):LTS    " \
+	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 
-	readonly ARRAY_NAME_NET=(                                                                                                                                                                                                                                                                                                         \
-	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                             -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable   Debian__9.xx(stretch)             " \
-	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable      Debian_10.xx(buster)              " \
-	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                         -                                           preseed_debian.cfg                          2019-07-06   2026-xx-xx   stable         Debian_11.xx(bullseye)            " \
-	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                          -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing        Debian_12.xx(bookworm)            " \
-	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                             -                                           kickstart_centos.cfg                        20xx-xx-xx   2024-05-31   RHEL_8.x       -                                 " \
-	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                -                                           kickstart_centos.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x       -                                 " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso                -                                           kickstart_fedora.cfg                        2021-11-02   2022-12-07   kernel_5.14    -                                 " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-netinst-x86_64-36-1.5.iso                -                                           kickstart_fedora.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
-	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64-Current.iso                                        -                                           yast_opensuse.xml                           2021-06-02   20xx-xx-xx   kernel_5.3.18  -                                 " \
-	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                   -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
-	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-boot.iso                                                    -                                           kickstart_rocky.cfg                         2021-11-15   20xx-xx-xx   RHEL_8.5       -                                 " \
-	)   # 0:区分        1:ダウンロード先URL                                                                                                                      2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+	readonly ARRAY_NAME_NET=(                                                                                                                                                                                                                                                                                                             \
+	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                 -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable   Debian__9.xx(stretch)             " \
+	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                    -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable      Debian_10.xx(buster)              " \
+	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-[0-9].*-amd64-netinst.iso                                             -                                           preseed_debian.cfg                          2019-07-06   2026-xx-xx   stable         Debian_11.xx(bullseye)            " \
+	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                              -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing        Debian_12.xx(bookworm)            " \
+	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                 -                                           kickstart_centos.cfg                        20xx-xx-xx   2024-05-31   RHEL_8.x       -                                 " \
+	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                    -                                           kickstart_centos.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x       -                                 " \
+	    "fedora         https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora-projects/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso -                                           kickstart_fedora.cfg                        2021-11-02   2022-12-07   kernel_5.14    -                                 " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-netinst-x86_64-36-1.5.iso                    -                                           kickstart_fedora.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
+	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64-Current.iso                                            -                                           yast_opensuse.xml                           2021-06-02   20xx-xx-xx   kernel_5.3.18  -                                 " \
+	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                       -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
+	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-boot.iso                                                        -                                           kickstart_rocky.cfg                         2021-11-15   20xx-xx-xx   RHEL_8.5       -                                 " \
+	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9].*-latest-x86_64-boot.iso                                                  -                                           kickstart_almalinux.cfg                     2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
+	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 
-	readonly ARRAY_NAME_DVD=(                                                                                                                                                                                                                                                                                                         \
-	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                              -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
-	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                 -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
-	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                          -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                            -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "ubuntu         http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                                        -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
-	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-live-server-amd64.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
-	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-live-server-amd64.iso                                                                   -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
-	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                             -                                           kickstart_centos.cfg                        2019-xx-xx   2024-05-31   RHEL_8.x        -                                " \
-	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                -                                           kickstart_centos.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                    -                                           kickstart_fedora.cfg                        2021-11-02   2022-12-07   kernel_5.15     -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-dvd-x86_64-36-1.5.iso                    -                                           kickstart_fedora.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
-	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                                        -                                           yast_opensuse.xml                           2021-06-02   20xx-xx-xx   kernel_5.3.18   -                                " \
-	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                   -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
-	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                    -                                           kickstart_rocky.cfg                         2021-11-15   20xx-xx-xx   RHEL_8.5        -                                " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9].*-rtm-x86_64.iso                             -                                           kickstart_miraclelinux.cfg                  2021-10-04   20xx-xx-xx   RHEL_8.4        -                                " \
-	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                   -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
-	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                      -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
-	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                               -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                 -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
-	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
-	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
-	)   # 0:区分        1:ダウンロード先URL                                                                                                                      2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+	readonly ARRAY_NAME_DVD=(                                                                                                                                                                                                                                                                                                             \
+	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                  -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
+	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                     -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
+	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9].*-amd64-DVD-1.iso                                              -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
+	    "debian         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                                -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
+	    "ubuntu         http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9].*-server-amd64.iso                                                            -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
+	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-live-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
+	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-live-server-amd64.iso                                                                      -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
+	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-live-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
+	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                 -                                           kickstart_centos.cfg                        2019-xx-xx   2024-05-31   RHEL_8.x        -                                " \
+	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                    -                                           kickstart_centos.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x        -                                " \
+	    "fedora         https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora-projects/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso     -                                           kickstart_fedora.cfg                        2021-11-02   2022-12-07   kernel_5.15     -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-dvd-x86_64-36-1.5.iso                        -                                           kickstart_fedora.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
+	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                                            -                                           yast_opensuse.xml                           2021-06-02   20xx-xx-xx   kernel_5.3.18   -                                " \
+	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                       -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
+	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                        -                                           kickstart_rocky.cfg                         2021-11-15   20xx-xx-xx   RHEL_8.5        -                                " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9].*-rtm-x86_64.iso                                 -                                           kickstart_miraclelinux.cfg                  2021-10-04   20xx-xx-xx   RHEL_8.4        -                                " \
+	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9].*-latest-x86_64-dvd.iso                                                   -                                           kickstart_almalinux.cfg                     2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
+	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                       -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
+	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                          -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
+	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                                   -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
+	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                     -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
+	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
+	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
+	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
+	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
+	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 
-	readonly ARRAY_NAME_LIVE=(                                                                                                                                                                                                                                                                                                        \
-	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                   -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
-	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                      -                                           preseed_debian.cfg                          2019-07-06   2024-xx-xx   oldstable       Debian_10.xx(buster)             " \
-	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                               -                                           preseed_debian.cfg                          2021-08-14   20xx-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                 -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2018-04-26   2023-04-xx   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2020-04-23   2025-04-xx   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
-	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                      -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-xx   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
-	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
-	)   # 0:区分        1:ダウンロード先URL                                                                                                                      2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+	readonly ARRAY_NAME_LIVE=(                                                                                                                                                                                                                                                                                                            \
+	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                       -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
+	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                          -                                           preseed_debian.cfg                          2019-07-06   2024-xx-xx   oldstable       Debian_10.xx(buster)             " \
+	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                                   -                                           preseed_debian.cfg                          2021-08-14   20xx-xx-xx   stable          Debian_11.xx(bullseye)           " \
+	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                     -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
+	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9].*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2018-04-26   2023-04-xx   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
+	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9].*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2025-04-xx   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
+	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9].*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-xx   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
+	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9].*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
+	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 
 	case "${WORK_DIRS}" in
 		"dist_remaster_mini" )	ARRAY_NAME=("${ARRAY_NAME_MINI[@]}");;
@@ -320,7 +324,7 @@ fncMenu () {
 				fi
 				if [ ${FIL_DATE} -gt ${DVD_DATE} ]; then
 					set +e
-					curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "header.txt" "${CODE_NAME[2]}" > /dev/null
+					curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "${WORK_DIRS}/header.txt" "${CODE_NAME[2]}" > /dev/null
 					RET_CD=$?
 					set -e
 					# -------------------------------------------------------------
@@ -330,9 +334,9 @@ fncMenu () {
 						DVD_INFO=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${WORK_DIRS}/${CODE_NAME[1]}.iso"`
 						DVD_SIZE=`echo "${DVD_INFO}" | awk '{print $5;}'`
 						DVD_DATE=`echo "${DVD_INFO}" | awk '{print $6;}'`
-						WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
-						WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
-						WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+						WEB_STAT=`cat ${WORK_DIRS}/header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
+						WEB_SIZE=`cat ${WORK_DIRS}/header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+						WEB_LAST=`cat ${WORK_DIRS}/header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
 						WEB_DATE=`TZ=UTC date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
 						if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" -ne "${DVD_SIZE}" -o "${WEB_DATE}" -gt "${DVD_DATE}" ]; then
 							if [ -n "${DST_DATE}" ] && [ ${WEB_DATE} -gt ${DST_DATE} ]; then
@@ -341,8 +345,8 @@ fncMenu () {
 							TXT_COLOR+=${TXT_REV}
 							CODE_NAME[4]=`echo "${WEB_DATE:0:4}-${WEB_DATE:4:2}-${WEB_DATE:6:2}"`
 						fi
-						if [ -f "header.txt" ]; then
-							rm -f "header.txt"
+						if [ -f "${WORK_DIRS}/header.txt" ]; then
+							rm -f "${WORK_DIRS}/header.txt"
 						fi
 					fi
 				fi
@@ -457,15 +461,15 @@ fncRemaster_mini () {
 #			fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 			fncPrint "    get ${DVD_NAME}.iso"
 			set +e
-			curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 			set -e
 		else
 			set +e
-			curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "./header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 			set -e
-			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
-			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
-			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+			local WEB_STAT=`cat ./header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
+			local WEB_SIZE=`cat ./header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+			local WEB_LAST=`cat ./header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
 			local WEB_DATE=`TZ=UTC date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
 			local DVD_INFO=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "../${DVD_NAME}.iso"`
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
@@ -474,11 +478,11 @@ fncRemaster_mini () {
 #				fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 				fncPrint "    get ${DVD_NAME}.iso"
 				set +e
-				curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+				curl -L -# -R -S -f --connect-timeout 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 				set -e
 			fi
-			if [ -f "header.txt" ]; then
-				rm -f "header.txt"
+			if [ -f "./header.txt" ]; then
+				rm -f "./header.txt"
 			fi
 		fi
 															# Volume ID
@@ -503,7 +507,7 @@ fncRemaster_mini () {
 #				fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
 				fncPrint "    get ${CFG_NAME}"
 				set +e
-				curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+				curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 				set -e
 			fi
 			cp --preserve=timestamps "../../../${CFG_NAME}" "./preseed.cfg"
@@ -709,15 +713,15 @@ fncRemaster () {
 #			fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 			fncPrint "    get ${DVD_NAME}.iso"
 			set +e
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 			set -e
 		else
 			set +e
-			curl -L -R -S -s -f --connect-timeout 60 -I --dump-header "header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+			curl -L -R -S -s -f --connect-timeout 60 -I --dump-header "./header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 			set -e
-			local WEB_STAT=`cat header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
-			local WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
-			local WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+			local WEB_STAT=`cat ./header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
+			local WEB_SIZE=`cat ./header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+			local WEB_LAST=`cat ./header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
 			local WEB_DATE=`TZ=UTC date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
 			local DVD_INFO=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "../${DVD_NAME}.iso"`
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
@@ -726,11 +730,11 @@ fncRemaster () {
 #				fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 				fncPrint "    get ${DVD_NAME}.iso"
 				set +e
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 				set -e
 			fi
-			if [ -f "header.txt" ]; then
-				rm -f "header.txt"
+			if [ -f "./header.txt" ]; then
+				rm -f "./header.txt"
 			fi
 		fi
 															# Volume ID
@@ -764,10 +768,10 @@ fncRemaster () {
 							set -e
 						else
 							set +e
-							curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "header.txt" "${WALL_URL}" > /dev/null
+							curl -L -R -S -s -f --connect-timeout 3 -I --dump-header "./header.txt" "${WALL_URL}" > /dev/null
 							set -e
-							WEB_SIZE=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
-							WEB_LAST=`cat header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
+							WEB_SIZE=`cat ./header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
+							WEB_LAST=`cat ./header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
 							WEB_DATE=`TZ=UTC date -d "${WEB_LAST}" "+%Y%m%d%H%M%S"`
 							FILE_INFO=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "../../../${WALL_FILE}"`
 							FILE_SIZE=`echo ${FILE_INFO} | awk '{print $5;}'`
@@ -779,8 +783,8 @@ fncRemaster () {
 								curl -L -# -R -S -f --connect-timeout 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 								set -e
 							fi
-							if [ -f "header.txt" ]; then
-								rm -f "header.txt"
+							if [ -f "./header.txt" ]; then
+								rm -f "./header.txt"
 							fi
 						fi
 					fi
@@ -802,7 +806,7 @@ fncRemaster () {
 #						fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
 						fncPrint "    get ${CFG_FILE}"
 						set +e
-						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 						set -e
 					fi
 					cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
@@ -826,7 +830,7 @@ fncRemaster () {
 #								fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
 								fncPrint "    get ${CFG_FILE}"
 								set +e
-								curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+								curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 								set -e
 							fi
 							cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
@@ -837,7 +841,8 @@ fncRemaster () {
 				"centos"       | \
 				"fedora"       | \
 				"rocky"        | \
-				"miraclelinux" )	# --- get ks.cfg ----------------------------------
+				"miraclelinux" | \
+				"almalinux"    )	# --- get ks.cfg ----------------------------------
 					EFI_IMAG="EFI/BOOT/efiboot.img"
 					ISO_NAME="${DVD_NAME}-kickstart"
 					mkdir -p "kickstart"
@@ -845,7 +850,7 @@ fncRemaster () {
 #						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
 						fncPrint "    get ${CFG_NAME}"
 						set +e
-						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 						set -e
 					fi
 					cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
@@ -919,7 +924,7 @@ _EOT_
 #						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
 						fncPrint "    get ${CFG_NAME}"
 						set +e
-						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then return 1; fi
+						curl -L -# -R -S -f --connect-timeout 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 						set -e
 					fi
 					cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
@@ -1390,7 +1395,11 @@ _EOT_
 					if [ -f "preseed/preseed.cfg"            ]; then chmod 444 "preseed/preseed.cfg";            fi
 					if [ -f "preseed/sub_success_command.sh" ]; then chmod 544 "preseed/sub_success_command.sh"; fi
 					;;
-				"centos" )	# ･････････････････････････････････････････････････
+				"centos"       | \
+				"fedora"       | \
+				"rocky"        | \
+				"miraclelinux" | \
+				"almalinux"    )	# ･････････････････････････････････････････
 					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
 					# --- isolinux.cfg ----------------------------------------
 					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
@@ -1410,90 +1419,6 @@ _EOT_
 					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
 					sed -e 's/\(Install\)/Auto \1/'                             \
 					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                | \
-					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg         | \
-					sed -e 's/\(set default\)="1"/\1="0"/'                      \
-					    -e 's/\(set timeout\).*$/\1=5/'                         \
-					> grub.cfg
-					mv grub.cfg EFI/BOOT/
-					# ---------------------------------------------------------
-					chmod 444 "kickstart/ks.cfg"
-					;;
-				"fedora" )	# ･････････････････････････････････････････････････
-					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
-					# --- isolinux.cfg ----------------------------------------
-					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
-					INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
-					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg    | \
-					sed -e 's/^\(label\) linux/\1 autoinst/'                \
-					    -e 's/\(Install\)/Auto \1/'                         \
-					    -e "s/\(append.*$\)/\1 ${INS_CFG}/"                 \
-					    -e "/menu label/a  ${INS_STR}"                    | \
-					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg   \
-					    -e '/menu default/{/menu default/d}'                \
-					    -e 's/\(timeout\).*$/\1 50/'                        \
-					> isolinux.cfg
-					mv isolinux.cfg isolinux/
-					# --- grub.cfg --------------------------------------------
-					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
-					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
-					sed -e 's/\(Install\)/Auto \1/'                             \
-					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                | \
-					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg         | \
-					sed -e 's/\(set default\)="1"/\1="0"/'                      \
-					    -e 's/\(set timeout\).*$/\1=5/'                         \
-					> grub.cfg
-					mv grub.cfg EFI/BOOT/
-					# ---------------------------------------------------------
-					chmod 444 "kickstart/ks.cfg"
-					;;
-				"rocky" )	# ･････････････････････････････････････････････････
-					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
-					# --- isolinux.cfg ----------------------------------------
-					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
-					INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
-					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg    | \
-					sed -e 's/^\(label\) linux/\1 autoinst/'                \
-					    -e 's/\(Install\)/Auto \1/'                         \
-					    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"                \
-					    -e "/menu label/a  ${INS_STR}"                    | \
-					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg   \
-					    -e '/menu default/{/menu default/d}'                \
-					    -e 's/\(timeout\).*$/\1 50/'                        \
-					> isolinux.cfg
-					mv isolinux.cfg isolinux/
-					# --- grub.cfg --------------------------------------------
-					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
-					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
-					sed -e 's/\(Install\)/Auto \1/'                             \
-					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                 | \
-					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg         | \
-					sed -e 's/\(set default\)="1"/\1="0"/'                      \
-					    -e 's/\(set timeout\).*$/\1=5/'                         \
-					> grub.cfg
-					mv grub.cfg EFI/BOOT/
-					# ---------------------------------------------------------
-					chmod 444 "kickstart/ks.cfg"
-					;;
-				"miraclelinux" ) # ････････････････････････････････････････････
-					INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
-					# --- isolinux.cfg ----------------------------------------
-					INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
-					INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
-					sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg    | \
-					sed -e 's/^\(label\) linux/\1 autoinst/'                \
-					    -e 's/\(Install\)/Auto \1/'                         \
-					    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"                \
-					    -e "/menu label/a  ${INS_STR}"                    | \
-					sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg   \
-					    -e '/menu default/{/menu default/d}'                \
-					    -e 's/\(timeout\).*$/\1 50/'                        \
-					> isolinux.cfg
-					mv isolinux.cfg isolinux/
-					# --- grub.cfg --------------------------------------------
-					INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
-					sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
-					sed -e 's/\(Install\)/Auto \1/'                             \
-					    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                 | \
 					sed -e "${INS_ROW}r /dev/stdin" EFI/BOOT/grub.cfg         | \
 					sed -e 's/\(set default\)="1"/\1="0"/'                      \
 					    -e 's/\(set timeout\).*$/\1=5/'                         \
@@ -1850,7 +1775,7 @@ if [ ${FLG_SKIP} -eq 0 ]; then
 									 		set +e
 									 		curl -L -# -R -S -f --connect-timeout 3                                \
 									 		    -O "https://dl-ssl.google.com/linux/linux_signing_key.pub"         \
-									 		                                                                       || if [ ${RET_CD} -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then fncEnd $?; fi
+									 		                                                                       || if [ ${RET_CD} -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then fncEnd $?; fi
 									 		set -e
 									 		apt-key add ./linux_signing_key.pub
 									 		if [ -f ./linux_signing_key.pub ]; then
@@ -1867,7 +1792,7 @@ if [ ${FLG_SKIP} -eq 0 ]; then
 									 		set +e
 									 		curl -L -# -R -S -f --connect-timeout 3                                \
 									 		    -O "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" \
-									 		                                                                       || if [ ${RET_CD} -eq 18 -o $? -eq 22 -o $? -eq 28  ]; then fncEnd $?; fi
+									 		                                                                       || if [ ${RET_CD} -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then fncEnd $?; fi
 									 		set -e
 									 		apt-get install      -q -y ${APT_OPTIONS} --auto-remove                \
 									 		    ./google-chrome-stable_current_amd64.deb                           \
@@ -1962,104 +1887,85 @@ if [ ${FLG_SKIP} -eq 0 ]; then
 									 		# ---------------------------------------------------------------------
 									 		testparm -s -v |                                                                        \
 									 		sed -e 's/\(dos charset\) =.*$/\1 = CP932/'                                             \
-									 		    -e "s/\(workgroup\) =.*$/\1 = ${WGP_NAME}/"                                         \
 									 		    -e "s/\(netbios name\) =.*$/\1 = ${SVR_NAME}/"                                      \
-									 		    -e 's/\(security\) =.*$/\1 = USER/'                                                 \
-									 		    -e 's/\(server role\) =.*$/\1 = standalone server/'                                 \
-									 		    -e 's/\(pam password change\) =.*$/\1 = Yes/'                                       \
-									 		    -e 's/\(load printers\) =.*$/\1 = No/'                                              \
-									 		    -e 's~\(log file\) =.*$~\1 = /var/log/samba/log.%m~'                                \
-									 		    -e 's/\(max log size\) =.*$/\1 = 1000/'                                             \
-									 		    -e 's/\(min protocol\) =.*$/\1 = NT1/g'                                             \
-									 		    -e 's~\(printcap name\) =.*$~\1 = /dev/null~'                                       \
-									 		    -e "s~\(add user script\) =.*$~\1 = ${CMD_UADD} %u~"                                \
-									 		    -e "s~\(delete user script\) =.*$~\1 = ${CMD_UDEL} %u~"                             \
+									 		    -e "s/\(workgroup\) =.*$/\1 = ${WGP_NAME}/"                                         \
 									 		    -e "s~\(add group script\) =.*$~\1 = ${CMD_GADD} %g~"                               \
-									 		    -e "s~\(delete group script\) =.*$~\1 = ${CMD_GDEL} %g~"                            \
-									 		    -e "s~\(add user to group script\) =.*$~\1 = ${CMD_GPWD} -a %u %g~"                 \
-									 		    -e "s~\(delete user from group script\) =.*$~\1 = ${CMD_GPWD} -d %u %g~"            \
 									 		    -e "s~\(add machine script\) =.*$~\1 = ${CMD_UADD} -d /dev/null -s ${CMD_FALS} %u~" \
-									 		    -e 's/\(logon script\) =.*$/\1 = logon.bat/'                                        \
-									 		    -e 's/\(logon path\) =.*$/\1 = \\\\%L\\profiles\\%U/'                               \
-									 		    -e 's/\(domain logons\) =.*$/\1 = Yes/'                                             \
-									 		    -e 's/\(os level\) =.*$/# \1 = 35/'                                                 \
-									 		    -e 's/\(preferred master\) =.*$/\1 = Yes/'                                          \
-									 		    -e 's/\(domain master\) =.*$/\1 = Yes/'                                             \
-									 		    -e 's/\(wins support\) =.*$/\1 = Yes/'                                              \
-									 		    -e 's/\(unix password sync\) =.*$/\1 = No/'                                         \
+									 		    -e "s~\(add user script\) =.*$~\1 = ${CMD_UADD} %u~"                                \
+									 		    -e "s~\(add user to group script\) =.*$~\1 = ${CMD_GPWD} -a %u %g~"                 \
+									 		    -e "s~\(delete group script\) =.*$~\1 = ${CMD_GDEL} %g~"                            \
+									 		    -e "s~\(delete user from group script\) =.*$~\1 = ${CMD_GPWD} -d %u %g~"            \
+									 		    -e "s~\(delete user script\) =.*$~\1 = ${CMD_UDEL} %u~"                             \
 									 		    -e '/idmap config \* : backend =/i \\tidmap config \* : range = 1000-10000'         \
 									 		    -e 's/\(admin users\) =.*$/# \1 = administrator/'                                   \
-									 		    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
+									 		    -e 's/\(domain logons\) =.*$/\1 = Yes/'                                             \
+									 		    -e 's/\(domain master\) =.*$/\1 = Yes/'                                             \
+									 		    -e 's/\(load printers\) =.*$/\1 = No/'                                              \
+									 		    -e 's/\(logon path\) =.*$/\1 = \\\\%L\\profiles\\%U/'                               \
+									 		    -e 's/\(logon script\) =.*$/\1 = logon.bat/'                                        \
+									 		    -e 's/\(max log size\) =.*$/\1 = 1000/'                                             \
+									 		    -e 's/\(min protocol\) =.*$/\1 = NT1/g'                                             \
 									 		    -e 's/\(multicast dns register\) =.*$/\1 = No/'                                     \
-									 		    -e '/[ |\t]*map to guest =.*$/d'                                                    \
-									 		    -e '/[ |\t]*null passwords =.*$/d'                                                  \
-									 		    -e '/[ |\t]*obey pam restrictions =.*$/d'                                           \
-									 		    -e '/[ |\t]*enable privileges =.*$/d'                                               \
-									 		    -e '/[ |\t]*password level =.*$/d'                                                  \
-									 		    -e '/[ |\t]*client use spnego principal =.*$/d'                                     \
-									 		    -e '/[ |\t]*syslog =.*$/d'                                                          \
-									 		    -e '/[ |\t]*syslog only =.*$/d'                                                     \
-									 		    -e '/[ |\t]*use spnego =.*$/d'                                                      \
-									 		    -e '/[ |\t]*paranoid server security =.*$/d'                                        \
-									 		    -e '/[ |\t]*dns proxy =.*$/d'                                                       \
-									 		    -e '/[ |\t]*time offset =.*$/d'                                                     \
-									 		    -e '/[ |\t]*usershare allow guests =.*$/d'                                          \
-									 		    -e '/[ |\t]*idmap backend =.*$/d'                                                   \
-									 		    -e '/[ |\t]*idmap uid =.*$/d'                                                       \
-									 		    -e '/[ |\t]*idmap gid =.*$/d'                                                       \
-									 		    -e '/[ |\t]*winbind separator =.*$/d'                                               \
-									 		    -e '/[ |\t]*acl check permissions =.*$/d'                                           \
-									 		    -e '/[ |\t]*only user =.*$/d'                                                       \
-									 		    -e '/[ |\t]*share modes =.*$/d'                                                     \
-									 		    -e '/[ |\t]*nbt client socket address =.*$/d'                                       \
-									 		    -e '/[ |\t]*lsa over netlogon =.*$/d'                                               \
+									 		    -e 's/\(os level\) =.*$/# \1 = 35/'                                                 \
+									 		    -e 's/\(pam password change\) =.*$/\1 = Yes/'                                       \
+									 		    -e 's/\(preferred master\) =.*$/\1 = Yes/'                                          \
+									 		    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
+									 		    -e 's/\(security\) =.*$/\1 = USER/'                                                 \
+									 		    -e 's/\(server role\) =.*$/\1 = standalone server/'                                 \
+									 		    -e 's/\(unix password sync\) =.*$/\1 = No/'                                         \
+									 		    -e 's/\(wins support\) =.*$/\1 = Yes/'                                              \
+									 		    -e 's~\(log file\) =.*$~\1 = /var/log/samba/log.%m~'                                \
+									 		    -e 's~\(printcap name\) =.*$~\1 = /dev/null~'                                       \
 									 		    -e '/[ |\t]*.* = $/d'                                                               \
-									 		    -e '/[ |\t]*client lanman auth =.*$/d'                                              \
+									 		    -e '/[ |\t]*\(client ipc\|client\|server\) min protocol = .*$/d'                    \
+									 		    -e '/[ |\t]*acl check permissions =.*$/d'                                           \
+									 		    -e '/[ |\t]*allocation roundup size =.*$/d'                                         \
+									 		    -e '/[ |\t]*blocking locks =.*$/d'                                                  \
 									 		    -e '/[ |\t]*client NTLMv2 auth =.*$/d'                                              \
+									 		    -e '/[ |\t]*client lanman auth =.*$/d'                                              \
 									 		    -e '/[ |\t]*client plaintext auth =.*$/d'                                           \
 									 		    -e '/[ |\t]*client schannel =.*$/d'                                                 \
-									 		    -e '/[ |\t]*client use spnego principal =.*$/d'                                     \
 									 		    -e '/[ |\t]*client use spnego =.*$/d'                                               \
+									 		    -e '/[ |\t]*client use spnego principal =.*$/d'                                     \
+									 		    -e '/[ |\t]*copy =.*$/d'                                                            \
+									 		    -e '/[ |\t]*dns proxy =.*$/d'                                                       \
 									 		    -e '/[ |\t]*domain logons =.*$/d'                                                   \
+									 		    -e '/[ |\t]*domain master =.*$/d'                                                   \
 									 		    -e '/[ |\t]*enable privileges =.*$/d'                                               \
 									 		    -e '/[ |\t]*encrypt passwords =.*$/d'                                               \
 									 		    -e '/[ |\t]*idmap backend =.*$/d'                                                   \
 									 		    -e '/[ |\t]*idmap gid =.*$/d'                                                       \
 									 		    -e '/[ |\t]*idmap uid =.*$/d'                                                       \
 									 		    -e '/[ |\t]*lanman auth =.*$/d'                                                     \
-									 		    -e '/[ |\t]*lsa over netlogon =.*$/d'                                               \
-									 		    -e '/[ |\t]*nbt client socket address =.*$/d'                                       \
-									 		    -e '/[ |\t]*null passwords =.*$/d'                                                  \
-									 		    -e '/[ |\t]*raw NTLMv2 auth =.*$/d'                                                 \
-									 		    -e '/[ |\t]*server schannel =.*$/d'                                                 \
-									 		    -e '/[ |\t]*syslog =.*$/d'                                                          \
-									 		    -e '/[ |\t]*syslog only =.*$/d'                                                     \
-									 		    -e '/[ |\t]*unicode =.*$/d'                                                         \
-									 		    -e '/[ |\t]*acl check permissions =.*$/d'                                           \
-									 		    -e '/[ |\t]*allocation roundup size =.*$/d'                                         \
-									 		    -e '/[ |\t]*blocking locks =.*$/d'                                                  \
-									 		    -e '/[ |\t]*copy =.*$/d'                                                            \
-									 		    -e '/[ |\t]*winbind separator =.*$/d'                                               \
-									 		    -e '/[ |\t]*domain master =.*$/d'                                                   \
 									 		    -e '/[ |\t]*logon path =.*$/d'                                                      \
 									 		    -e '/[ |\t]*logon script =.*$/d'                                                    \
-									 		    -e '/[ |\t]*pam password change =.*$/d'                                             \
-									 		    -e '/[ |\t]*preferred master =.*$/d'                                                \
-									 		    -e '/[ |\t]*server role =.*$/d'                                                     \
-									 		    -e '/[ |\t]*wins support =.*$/d'                                                    \
-									 		    -e '/[ |\t]*dns proxy =.*$/d'                                                       \
+									 		    -e '/[ |\t]*lsa over netlogon =.*$/d'                                               \
 									 		    -e '/[ |\t]*map to guest =.*$/d'                                                    \
+									 		    -e '/[ |\t]*nbt client socket address =.*$/d'                                       \
+									 		    -e '/[ |\t]*null passwords =.*$/d'                                                  \
 									 		    -e '/[ |\t]*obey pam restrictions =.*$/d'                                           \
+									 		    -e '/[ |\t]*only user =.*$/d'                                                       \
 									 		    -e '/[ |\t]*pam password change =.*$/d'                                             \
+									 		    -e '/[ |\t]*paranoid server security =.*$/d'                                        \
+									 		    -e '/[ |\t]*password level =.*$/d'                                                  \
+									 		    -e '/[ |\t]*preferred master =.*$/d'                                                \
+									 		    -e '/[ |\t]*raw NTLMv2 auth =.*$/d'                                                 \
 									 		    -e '/[ |\t]*realm =.*$/d'                                                           \
+									 		    -e '/[ |\t]*security =.*$/d'                                                        \
 									 		    -e '/[ |\t]*server role =.*$/d'                                                     \
+									 		    -e '/[ |\t]*server schannel =.*$/d'                                                 \
 									 		    -e '/[ |\t]*server services =.*$/d'                                                 \
 									 		    -e '/[ |\t]*server string =.*$/d'                                                   \
+									 		    -e '/[ |\t]*share modes =.*$/d'                                                     \
 									 		    -e '/[ |\t]*syslog =.*$/d'                                                          \
+									 		    -e '/[ |\t]*syslog only =.*$/d'                                                     \
+									 		    -e '/[ |\t]*time offset =.*$/d'                                                     \
+									 		    -e '/[ |\t]*unicode =.*$/d'                                                         \
 									 		    -e '/[ |\t]*unix password sync =.*$/d'                                              \
+									 		    -e '/[ |\t]*use spnego =.*$/d'                                                      \
 									 		    -e '/[ |\t]*usershare allow guests =.*$/d'                                          \
-									 		    -e '/[ |\t]*\(client ipc\|client\|server\) min protocol = .*$/d'                    \
-									 		    -e '/[ |\t]*security =.*$/d'                                                        \
+									 		    -e '/[ |\t]*winbind separator =.*$/d'                                               \
+									 		    -e '/[ |\t]*wins support =.*$/d'                                                    \
 									 		> ./smb.conf
 									 		# ---------------------------------------------------------------------
 									 		testparm -s ./smb.conf > /etc/samba/smb.conf
@@ -2296,7 +2202,8 @@ fi
 							"centos"       | \
 							"fedora"       | \
 							"rocky"        | \
-							"miraclelinux" )		# ･････････････････････････････････
+							"miraclelinux" | \
+							"almalinux"    )		# ･････････････････････････････････
 								;;
 							"suse"         )		# ･････････････････････････････････
 								;;
@@ -2315,7 +2222,8 @@ fi
 				"centos"       | \
 				"fedora"       | \
 				"rocky"        | \
-				"miraclelinux" )	# ･････････････････････････････････････････････････
+				"miraclelinux" | \
+				"almalinux"    )	# ･････････････････････････････････････････････････
 					rm -f md5sum.txt
 					find . ! -name "md5sum.txt" ! -name "boot.catalog" ! -name "boot.cat" ! -name "isolinux.bin" ! -name "eltorito.img" ! -path "./isolinux/*" -type f -exec md5sum {} \; > md5sum.txt
 					# --- make iso file -----------------------------------------------

@@ -33,6 +33,7 @@
 ##	2022/05/06 000.0000 J.Itou         処理見直し
 ##	2022/05/06 000.0000 J.Itou         処理見直し(unattended-upgrades対策)
 ##	2022/05/06 000.0000 J.Itou         不具合修正
+##	2022/06/06 000.0000 J.Itou         AlmaLinux追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -379,6 +380,7 @@ fncInitialize () {
 				"fedora"              ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/fedora-release`       ;;
 				"rocky"               ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/rocky-release`        ;;
 				"miraclelinux"        ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/miraclelinux-release` ;;
+				"almalinux"           ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/redhat-release`       ;;
 				"opensuse-leap"       ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`           ;;
 				"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`           ;;
 				*                     )                                                                                          ;;
@@ -396,6 +398,7 @@ fncInitialize () {
 				"fedora"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`;;
 				"rocky"               ) SYS_NOOP=`echo "${SYS_VNUM} >=  8.4"     | bc`;;
 				"miraclelinux"        ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
+				"almalinux"           ) SYS_NOOP=`echo "${SYS_VNUM} >=  9"       | bc`;;
 				"opensuse-leap"       ) SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`;;
 				"opensuse-tumbleweed" ) SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`;;
 				*                     )                                               ;;
@@ -580,7 +583,8 @@ fncInitialize () {
 		"centos"       | \
 		"fedora"       | \
 		"rocky"        | \
-		"miraclelinux" )
+		"miraclelinux" | \
+		"almalinux"    )
 			if [ "`${CMD_WICH} dnf 2> /dev/null`" != "" ]; then
 				CMD_AGET="dnf -y -q --allowerasing"
 			else
@@ -639,7 +643,8 @@ fncInitialize () {
 		"centos"              | \
 		"fedora"              | \
 		"rocky"               | \
-		"miraclelinux"        )
+		"miraclelinux"        |  \
+		"almalinux"           )
 			FIL_BOPT=${FIL_BIND}
 			;;
 		"opensuse-leap"       | \
@@ -744,7 +749,8 @@ fncMain () {
 		"centos"       | \
 		"fedora"       | \
 		"rocky"        | \
-		"miraclelinux" )
+		"miraclelinux" | \
+		"almalinux"    )
 			fncPrint "- System Update $(fncString ${COL_SIZE} '-')"
 			# --- パッケージ更新 ------------------------------------------------------
 			fncPrint "- Package Update $(fncString ${COL_SIZE} '-')"
@@ -813,7 +819,8 @@ fncMain () {
 			"centos"       | \
 			"fedora"       | \
 			"rocky"        | \
-			"miraclelinux" )
+			"miraclelinux" | \
+			"almalinux"    )
 				if [ "`LANG=C dnf list chromium ungoogled-chromium google-chrome-stable 2> /dev/null | sed -n '/Installed Packages/,/Available Packages/p' | awk '/chromium|chrome/ {print $1;}'`" = "" ]; then
 					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] $(fncString ${COL_SIZE} '-')"
 					curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
@@ -891,7 +898,8 @@ fncMain () {
 				"centos"       | \
 				"fedora"       | \
 				"rocky"        | \
-				"miraclelinux" )
+				"miraclelinux" | \
+				"almalinux"    )
 					LNG_FILE=".i18n"
 					;;
 				"opensuse-leap"       | \
@@ -1334,7 +1342,8 @@ _EOT_
 #			"centos"       | \
 #			"fedora"       | \
 #			"rocky"        | \
-#			"miraclelinux" )
+#			"miraclelinux" | \
+#			"almalinux"    )
 #				if [ "`${CMD_AGET} search clamav | awk -F '.' '$1==\"clamav\" {print $1;}'`" = "clamav" ]; then
 #					${CMD_AGET} install clamav clamav-update clamav-scanner-systemd
 #					fncPause $?
@@ -1910,7 +1919,8 @@ _EOT_
 		"centos"       | \
 		"fedora"       | \
 		"rocky"        | \
-		"miraclelinux" )
+		"miraclelinux" | \
+		"almalinux"    )
 			fncProc smb "${RUN_SMBD[0]}"
 			fncProc smb "${RUN_SMBD[1]}"
 			fncProc nmb "${RUN_SMBD[0]}"
@@ -2219,10 +2229,18 @@ _EOT_
 			    -e '/^GRUB_RECORDFAIL_TIMEOUT/d'                \
 			    -e '/^GRUB_TIMEOUT/a GRUB_RECORDFAIL_TIMEOUT=5'
 		fi
-		if [ "${SYS_NAME}" = "centos" ] || [ "${SYS_NAME}" = "fedora" ] || [ "${SYS_NAME}" = "rocky" ] || [ "${SYS_NAME}" = "miraclelinux" ]; then
-			sed -i /etc/default/grub                              \
-			    -e '$a GRUB_FONT=\/usr\/share\/grub\/unicode.pf2'
-		fi
+		case "${SYS_NAME}" in
+			"centos"       | \
+			"fedora"       | \
+			"rocky"        | \
+			"miraclelinux" | \
+			"almalinux"    )
+				sed -i /etc/default/grub                              \
+				    -e '$a GRUB_FONT=\/usr\/share\/grub\/unicode.pf2'
+				;;
+			*              )
+				;;
+		esac
 		# ---------------------------------------------------------------------
 		case "${SYS_NAME}" in
 			"debian" | \
@@ -2232,7 +2250,8 @@ _EOT_
 				;;
 			"centos"       | \
 			"fedora"       | \
-			"rocky"        )
+			"rocky"        | \
+			"almalinux"    )
 					if [ -f /boot/efi/EFI/${SYS_NAME}/grub.cfg ]; then			# efi
 						grub2-mkconfig -o /boot/efi/EFI/${SYS_NAME}/grub.cfg
 						fncPause $?
@@ -2278,7 +2297,8 @@ _EOT_
 			"centos"       | \
 			"fedora"       | \
 			"rocky"        | \
-			"miraclelinux" )
+			"miraclelinux" | \
+			"almalinux"    )
 				if [ "`${CMD_WICH} vmware-checkvm 2> /dev/null`" = "" ]; then
 					if [ "`${CMD_AGET} search open-vm-tools-desktop`" = "" ]; then
 						${CMD_AGET} install open-vm-tools
@@ -2352,7 +2372,8 @@ _EOT_
 		"centos"       | \
 		"fedora"       | \
 		"rocky"        | \
-		"miraclelinux" )
+		"miraclelinux" | \
+		"almalinux"    )
 			GRP_SUDO=wheel
 			;;
 		"opensuse-leap"       | \
@@ -2432,7 +2453,8 @@ _EOT_
 			"centos"       | \
 			"fedora"       | \
 			"rocky"        | \
-			"miraclelinux" )
+			"miraclelinux" | \
+			"almalinux"    )
 				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude="bk_*.tgz" var/named/ || [[ $? == 1 ]]
 				;;
 			"opensuse-leap"       | \
@@ -2909,7 +2931,8 @@ fncRecovery () {
 			"centos"       | \
 			"fedora"       | \
 			"rocky"        | \
-			"miraclelinux" )
+			"miraclelinux" | \
+			"almalinux"    )
 				LNG_FILE=".i18n"
 				;;
 			"opensuse-leap"       | \
