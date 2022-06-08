@@ -23,6 +23,7 @@
 ##	2022/06/04 000.0000 J.Itou         不具合修正
 ##	2022/06/05 000.0000 J.Itou         処理見直し
 ##	2022/06/06 000.0000 J.Itou         不具合修正
+##	2022/06/08 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 
@@ -327,7 +328,7 @@ fncSet_parameter () {
 	    build-essential curl vim \
 	    open-vm-tools open-vm-tools-desktop \
 	    clamav \
-	    bind9 \
+	    bind9 dnsutils \
 	    openssh-server \
 	    samba smbclient cifs-utils \
 	    isc-dhcp-server \
@@ -430,9 +431,9 @@ fncGet_debian_installer () {
 fncMake_inst_net_sh () {
 	fncPrint "--- make inst-net.sh $(fncString ${COL_SIZE} '-')"
 	cat <<- '_EOT_SH_' | \
-		sed -e 's/^ //g'                        \
-		    -e "s/_HOSTNAME_ */${HOSTNAME}/g"   \
-		    -e "s/_WORKGROUP_ */${WORKGROUP}/g" \
+		sed -e 's/^ //g'                      \
+		    -e "s/_HOSTNAME_/${HOSTNAME}/g"   \
+		    -e "s/_WORKGROUP_/${WORKGROUP}/g" \
 		> "${DIR_TOP}/inst-net.sh"
 		#!/bin/bash
 		# =============================================================================
@@ -475,6 +476,25 @@ fncMake_inst_net_sh () {
 		 	fi
 		 	echo "${RET_STR}"
 		}
+		# -- systemctl ----------------------------------------------------------------
+		fncSystemctl () {
+		 	echo "systemctl $@"
+		 	case "$1" in
+		 		"disable" | "mask" )
+		 			shift
+		 			systemctl --quiet --no-reload disable $@
+		 			systemctl --quiet --no-reload mask $@
+		 			;;
+		 		"enable" | "unmask" )
+		 			shift
+		 			systemctl --quiet --no-reload unmask $@
+		 			systemctl --quiet --no-reload enable $@
+		 			;;
+		 		* )
+		 			systemctl --quiet --no-reload $@
+		 			;;
+		 	esac
+		}
 		# -- terminate ----------------------------------------------------------------
 		fncEnd() {
 		 	fncPrint "--- termination $(fncString ${COL_SIZE} '-')"
@@ -492,8 +512,13 @@ fncMake_inst_net_sh () {
 		 	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]: ${OS_NAME} ${VERSION}"
 		 	fncPrint "$(fncString ${COL_SIZE} '=')"
 		 	fncPrint "--- initialize $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "---- os name  : ${OS_NAME} $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "---- version  : ${VERSION} $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "---- hostname : _HOSTNAME_ $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "---- workgroup: _WORKGROUP_ $(fncString ${COL_SIZE} '-')"
 		 	export PS1="(chroot) "
-		#	hostname -b -F /etc/hostname
+		 	echo "_HOSTNAME_" > /etc/hostname
+		 	hostname -b -F /etc/hostname
 		 	if [ -d "/usr/lib/systemd/" ]; then
 		 		DIR_SYSD="/usr/lib/systemd/"
 		 	elif [ -d "/lib/systemd/" ]; then
@@ -568,27 +593,39 @@ fncMake_inst_net_sh () {
 		# -- Change system control ----------------------------------------------------
 		# 	Set disable to mask because systemd-sysv-generator will recreate the symbolic link.
 		 	fncPrint "--- change system control $(fncString ${COL_SIZE} '-')"
-		 	systemctl --quiet --no-reload  enable clamav-freshclam
-		 	systemctl --quiet --no-reload  enable ssh
+		 	fncSystemctl  enable clamav-freshclam
+		 	fncSystemctl  enable ssh
 		 	if [ "`systemctl is-enabled named 2> /dev/null || :`" != "" ]; then
-		 		systemctl --quiet --no-reload enable named
+		 		fncSystemctl enable named
 		 	else
-		 		systemctl --quiet --no-reload enable bind9
+		 		fncSystemctl enable bind9
 		 	fi
-		 	systemctl --quiet --no-reload  enable smbd
-		 	systemctl --quiet --no-reload  enable nmbd
-		 	systemctl --quiet --no-reload    mask isc-dhcp-server
+		 	fncSystemctl  enable smbd
+		 	fncSystemctl  enable nmbd
+		 	fncSystemctl disable isc-dhcp-server
 		 	if [ "`systemctl is-enabled isc-dhcp-server6 2> /dev/null || :`" != "" ]; then
-		 		systemctl --quiet --no-reload    mask isc-dhcp-server6
+		 		fncSystemctl disable isc-dhcp-server6
 		 	fi
-		 	systemctl --quiet --no-reload    mask minidlna
+		 	fncSystemctl disable minidlna
 		 	if [ "`systemctl is-enabled unattended-upgrades 2> /dev/null || :`" != "" ]; then
-		 		systemctl --quiet --no-reload    mask unattended-upgrades
+		 		fncSystemctl disable unattended-upgrades
 		 	fi
 		 	if [ "`systemctl is-enabled brltty 2> /dev/null || :`" != "" ]; then
-		 		systemctl --quiet --no-reload    mask brltty-udev
-		 		systemctl --quiet --no-reload    mask brltty
+		 		fncSystemctl disable brltty-udev
+		 		fncSystemctl disable brltty
 		 	fi
+		 	case "`sed -n '/^UBUNTU_CODENAME=/ s/.*=\(.*\)/\1/p' /etc/os-release`" in
+		 		"focal"   | \
+		 		"impish"  | \
+		 		"jammy"   | \
+		 		"kinetic" )
+		 			if [ "`systemctl is-enabled systemd-udev-settle 2> /dev/null || :`" != "" ]; then
+		 				fncSystemctl disable systemd-udev-settle
+		 			fi
+		 			;;
+		 		* )
+		 			;;
+		 	esac
 		# -- Change service configure -------------------------------------------------
 		#	if [ -f /etc/systemd/system/multi-user.IMG_TGET.wants/cups-browsed.service ]; then
 		#		fncPrint "--- change cups-browsed configure $(fncString ${COL_SIZE} '-')"
@@ -769,24 +806,17 @@ fncMake_inst_net_sh () {
 		 		rm -f ./smb.conf /etc/samba/smb.conf.ucf-dist
 		fi
 		# -- Change gdm3 configure ----------------------------------------------------
-		 	if [ -f /etc/gdm3/custom.conf ] && [ ! -f /etc/gdm3/daemon.conf ]; then
-		 		fncPrint "--- create gdm3 daemon.conf $(fncString ${COL_SIZE} '-')"
-		 		cp -p /etc/gdm3/custom.conf /etc/gdm3/daemon.conf
-		 		: > /etc/gdm3/daemon.conf
-		 	fi
-		
+		#	if [ -f /etc/gdm3/custom.conf ] && [ ! -f /etc/gdm3/daemon.conf ]; then
+		#		fncPrint "--- create gdm3 daemon.conf $(fncString ${COL_SIZE} '-')"
+		#		cp -p /etc/gdm3/custom.conf /etc/gdm3/daemon.conf
+		#		: > /etc/gdm3/daemon.conf
+		#	fi
 		# -- Change xdg configure -----------------------------------------------------
 		 	if [  -f /etc/xdg/autostart/gnome-initial-setup-first-login.desktop ]; then
 		 		fncPrint "--- change xdg configure $(fncString ${COL_SIZE} '-')"
 		 		mkdir -p /etc/skel/.config
 		 		touch /etc/skel/.config/gnome-initial-setup-done
 		 	fi
-		# -- Change gsettings configure -----------------------------------------------
-		#	if [ "`which gsettings 2> /dev/null`" != "" ]; then
-		#		fncPrint "--- change gsettings configure $(fncString ${COL_SIZE} '-')"
-		#		gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
-		#		gsettings set org.gnome.desktop.screensaver lock-enabled false
-		#	fi
 		# -- Change dconf configure ---------------------------------------------------
 		 	if [ "`which dconf 2> /dev/null`" != "" ]; then
 		 		fncPrint "--- change dconf configure $(fncString ${COL_SIZE} '-')"
@@ -809,9 +839,38 @@ fncMake_inst_net_sh () {
 		 			idle-activation-enabled=false
 		 			lock-enabled=false
 		_EOT_
+		 		# -- dconf org/gnome/shell/extensions/dash-to-dock --------------------
+		 		fncPrint "---- dconf org/gnome/shell/extensions/dash-to-dock $(fncString ${COL_SIZE} '-')"
+		 		cat <<- _EOT_ > /etc/dconf/db/local.d/01-dash-to-dock
+		 			[org/gnome/shell/extensions/dash-to-dock]
+		 			hot-keys=false
+		 			hotkeys-overlay=false
+		 			hotkeys-show-dock=false
+		_EOT_
+		 		# -- dconf org/gnome/shell/extensions/dash-to-dock --------------------
+		 		fncPrint "---- dconf apps/update-manager $(fncString ${COL_SIZE} '-')"
+		 		cat <<- _EOT_ > /etc/dconf/db/local.d/01-update-manager
+		 			[apps/update-manager]
+		 			check-dist-upgrades=false
+		 			first-run=false
+		_EOT_
 		 		# -- dconf update -----------------------------------------------------
 		 		fncPrint "---- dconf update $(fncString ${COL_SIZE} '-')"
 		 		dconf update
+		 	fi
+		# -- Change release-upgrades configure ----------------------------------------
+		#	if [ -f /etc/update-manager/release-upgrades ]; then
+		#		fncPrint "--- change release-upgrades configure $(fncString ${COL_SIZE} '-')"
+		#		sed -i /etc/update-manager/release-upgrades \
+		#		    -e 's/^\(Prompt\)=.*$/\1=never/'
+		#	fi
+		#	if [ -f /usr/lib/ubuntu-release-upgrader/check-new-release-gtk ]; then
+		#	fi
+		# -- Copy pulse configure -----------------------------------------------------
+		 	if [ -f /usr/share/gdm/default.pa ]; then
+		 		fncPrint "--- copy pulse configure $(fncString ${COL_SIZE} '-')"
+		 		mkdir -p /etc/skel/.config/pulse
+		 		cp -p /usr/share/gdm/default.pa /etc/skel/.config/pulse/
 		 	fi
 		# -- root and user's setting --------------------------------------------------
 		 	fncPrint "--- root and user's setting $(fncString ${COL_SIZE} '-')"
@@ -1362,12 +1421,17 @@ fncMake_dvd_image () {
 	fncPrint "--- make file system image $(fncString ${COL_SIZE} '-')"
 	rm -f "${DIR_TOP}/cdimg/live/filesystem.squashfs"
 	mksquashfs "${DIR_TOP}/fsimg" "${DIR_TOP}/cdimg/live/filesystem.squashfs" -noappend -quiet -mem 1G
-	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_TOP}/cdimg/live/filesystem.squashfs" 2> /dev/null | cut -c 13-
+	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_TOP}/cdimg/live/filesystem.squashfs" 2> /dev/null | awk '{gsub(/.*\//,"",$6); print $4,$5,$3,$6;}'
 	# --- ブートメニューの作成 ------------------------------------------------
 	fncPrint "--- edit grub.cfg file $(fncString ${COL_SIZE} '-')"
 	cat <<- _EOT_ >> "${DIR_TOP}/cdimg/boot/grub/grub.cfg"
+		if [ \${iso_path} ] ; then
+		set loopback="findiso=\${iso_path}"
+		export loopback
+		fi
+		
 		menuentry "${MNU_LABEL}" {
-		  linux  /live/vmlinuz-${OS_KERNEL} boot=live components splash quiet noeject
+		  linux  /live/vmlinuz-${OS_KERNEL} boot=live components splash quiet "\${loopback}"
 		  initrd /live/initrd.img-${OS_KERNEL}
 		}
 
@@ -1405,7 +1469,7 @@ _EOT_
 	        -output "../../${DVD_NAME}"                           \
 	        .
 	popd > /dev/null
-	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_TOP}/../${DVD_NAME}" 2> /dev/null | cut -c 13-
+	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_TOP}/../${DVD_NAME}" 2> /dev/null | awk '{gsub(/.*\//,"",$6); print $4,$5,$3,$6;}'
 }
 
 # === main ====================================================================
