@@ -24,9 +24,10 @@
 ##	2022/06/05 000.0000 J.Itou         処理見直し
 ##	2022/06/06 000.0000 J.Itou         不具合修正
 ##	2022/06/08 000.0000 J.Itou         処理見直し
+##	2022/06/09 000.0000 J.Itou         動作環境追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
-
+#	sudo apt-get -y install mmdebstrap squashfs-tools xorriso
 # *****************************************************************************
 # debootstrap for stable/testing cdrom
 #  debian: sudo apt-get install ubuntu-keyring (ubuntuから入手)
@@ -149,7 +150,12 @@ fncInitialize () {
 
 	if [ "${CPU_TYPE}" = "x86_64" ]; then
 		case "${SYS_NAME}" in
-			"debian"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 11"       | bc`;;
+			"debian"              ) if [ "${SYS_CODE}" = "sid" ]; then
+										SYS_NOOP=1
+									else
+										SYS_NOOP=`echo "${SYS_VNUM} >= 11"       | bc`
+									fi
+									;;
 			"ubuntu"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 22.04"    | bc`;;
 #			"centos"              ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
 #			"fedora"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`;;
