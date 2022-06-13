@@ -27,8 +27,11 @@
 ##	2022/05/16 000.0000 J.Itou         処理見直し
 ##	2022/05/28 000.0000 J.Itou         AlmaLinux追加
 ##	2022/06/06 000.0000 J.Itou         リスト更新
+##	2022/06/10 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
+#	sudo apt-get install curl xorriso isomd5sum isolinux
+# -----------------------------------------------------------------------------
 #	set -n								# 構文エラーのチェック
 #	set -x								# コマンドと引数の展開を表示
 	set -o ignoreeof					# Ctrl+Dで終了しない
@@ -2381,53 +2384,52 @@ fi
 			;;
 	esac
 # -----------------------------------------------------------------------------
+	LST_PACK=""
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
-			-o   "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" \
-			-o   ! -f "${DIR_LINX}" ]; then
-				${CMD_AGET} update
-				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
-					${CMD_AGET} install xorriso
-				fi
-				if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" ]; then
-					${CMD_AGET} install isomd5sum
-				fi
-				if [ ! -f "${DIR_LINX}" ]; then
-					${CMD_AGET} install isolinux
-				fi
+			if [ "`${CMD_WICH} curl 2> /dev/null`" = "" ]; then
+				LST_PACK+="curl "
+			fi
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
+				LST_PACK+="xorriso "
+			fi
+			if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" ]; then
+				LST_PACK+="isomd5sum "
+			fi
+			if [ ! -f "${DIR_LINX}" ]; then
+				LST_PACK+="isolinux "
+			fi
+			if [ "`which mksquashfs 2> /dev/null`" = "" ]; then
+				LST_PACK+="squashfs-tools "
 			fi
 			;;
 		"centos" | \
 		"fedora" | \
 		"rocky"  )
-			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
-			-o   "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" \
-			-o   ! -f "${DIR_LINX}" ]; then
-				${CMD_AGET} update
-				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
-					${CMD_AGET} install xorriso
-				fi
-				if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" ]; then
-					${CMD_AGET} install isomd5sum
-				fi
-				if [ ! -f "${DIR_LINX}" ]; then
-					${CMD_AGET} install syslinux
-				fi
+			if [ "`${CMD_WICH} curl 2> /dev/null`" = "" ]; then
+				LST_PACK+="curl "
+			fi
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
+				LST_PACK+="xorriso "
+			fi
+			if [ "`${CMD_WICH} implantisomd5 2> /dev/null`" = "" ]; then
+				LST_PACK+="isomd5sum "
+			fi
+			if [ ! -f "${DIR_LINX}" ]; then
+				LST_PACK+="syslinux "
 			fi
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = ""       \
-			-o   ! -f "${DIR_LINX}" ]; then
-				${CMD_AGET} update
-				if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
-					${CMD_AGET} install xorriso
-				fi
-				if [ ! -f "${DIR_LINX}" ]; then
-					${CMD_AGET} install isolinux
-				fi
+			if [ "`${CMD_WICH} curl 2> /dev/null`" = "" ]; then
+				LST_PACK+="curl "
+			fi
+			if [ "`${CMD_WICH} xorriso 2> /dev/null`" = "" ]; then
+				LST_PACK+="xorriso "
+			fi
+			if [ ! -f "${DIR_LINX}" ]; then
+				LST_PACK+="isolinux "
 			fi
 			ARRAY_WORK=("${ARRAY_NAME[@]}")
 			for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
@@ -2442,6 +2444,10 @@ fi
 		* )
 			;;
 	esac
+	if [ "${LST_PACK}" != "" ]; then
+		${CMD_AGET} update
+		${CMD_AGET} install ${LST_PACK}
+	fi
 # -----------------------------------------------------------------------------
 #	case "${INP_INDX,,}" in
 #		"a" | "all" )

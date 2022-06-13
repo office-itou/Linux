@@ -25,6 +25,7 @@
 ##	2022/06/06 000.0000 J.Itou         不具合修正
 ##	2022/06/08 000.0000 J.Itou         処理見直し
 ##	2022/06/09 000.0000 J.Itou         動作環境追加
+##	2022/06/11 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get -y install mmdebstrap squashfs-tools xorriso
@@ -47,6 +48,7 @@
 	TARGET_ARCH=""
 	TARGET_SUITE=""
 	TARGET_KEYRING=""
+	TARGET_MIRROR=""
 
 	ARRAY_LIST=(
 	    "debian         amd64,i386 preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
@@ -88,13 +90,14 @@ fncHelp () {
 
 	fncInitialize_List
 
-	printf "  usage: sudo $0 -a architecture -s suite [ -k directory ]\n"
+	printf "  usage: sudo $0 -a architecture -s suite [ -k directory ] [ -m mirror ]\n"
 	printf "\n"
-	printf "    %-10.10s : %s\n" "-h,--help"  "This message."
-	printf "    %-10.10s : %s\n" "-l,--log"   "Output log to text file."
-	printf "    %-10.10s : %s\n" "-a,--arch"  "See arch below."
-	printf "    %-10.10s : %s\n" "-s,--suite" "See suite below."
-	printf "    %-10.10s : %s\n" "-k,--key"   "GPG key file directory."
+	printf "    %-10.10s : %s\n" "-h,--help"   "This message."
+	printf "    %-10.10s : %s\n" "-l,--log"    "Output log to text file."
+	printf "    %-10.10s : %s\n" "-a,--arch"   "See arch below."
+	printf "    %-10.10s : %s\n" "-s,--suite"  "See suite below."
+	printf "    %-10.10s : %s\n" "-k,--key"    "GPG key file directory."
+	printf "    %-10.10s : %s\n" "-m,--mirror" "Mirror server."
 	printf "\n"
 	printf "    %-10.10s : %-15.15s : %s\n" "arch" "suite" "distribution"
 	for LINE in "${ARRAY_LIST[@]}"
@@ -110,6 +113,9 @@ fncInitialize () {
 	NOW_DATE=`date +"%Y/%m/%d"`													# yyyy/mm/dd
 	NOW_DTTM=`date +"%Y%m%d%H%M%S"`												# yyyymmddhhmmss
 	PGM_NAME=`basename $0 | sed -e 's/\..*$//'`									# プログラム名
+	PGM_DIR=$(cd $(dirname $0); pwd)											# プログラムディレクトリー名
+	WRK_DIR=${PGM_DIR}															# ワークディレクトリー名
+#	WRK_DIR=`awk -F ':' '$1=='\"${SUDO_USER:-${USER}}\"' {print $6;}' /etc/passwd`
 	#--- 画面表示領域設定 -----------------------------------------------------
 	ROW_SIZE=25																	# 行の最小値
 	COL_SIZE=80																	# 列の最小値
@@ -213,31 +219,31 @@ fncInitialize_List () {
 fncOption () {
 	local PARAM
 
-	PARAM=$(getopt -n $0 -o hla:s:k: -l help,log,arch:,suite:,-key: -- "$@")
+	PARAM=$(getopt -n $0 -o hla:s:k:m: -l help,log,arch:,suite:,key:mirror: -- "$@")
 	eval set -- "$PARAM"
 
 	while [ -n "${1:-}" ]
 	do
 		case $1 in
-			-h | --help  )
+			-h | --help   )
 				fncHelp
 				exit 1
 				;;
-			-l | --log   )
+			-l | --log    )
 				FLG_LOGOUT="true"
 				shift
 				;;
-			-a | --arch  )
+			-a | --arch   )
 				shift
 				TARGET_ARCH="$1"
 				shift
 				;;
-			-s | --suite )
+			-s | --suite  )
 				shift
 				TARGET_SUITE="$1"
 				shift
 				;;
-			-k | --key   )
+			-k | --key    )
 				shift
 				if [ -n "$1" ]; then
 					if [ -d "$1" ]; then
@@ -245,6 +251,13 @@ fncOption () {
 					elif [ -f "$1" ]; then
 						TARGET_KEYRING=`dirname "$1"`
 					fi
+				fi
+				shift
+				;;
+			-m | --mirror )
+				shift
+				if [ -n "$1" ]; then
+					TARGET_MIRROR="$1"
 				fi
 				shift
 				;;
@@ -324,7 +337,7 @@ fncSet_parameter () {
 	# --variant=[ extract | custom | essential | apt | minbase | buildd | debootstrap | standard ]
 	TARGET_VARIANT="debootstrap"
 	TARGET_COMPONENTS=""
-	TARGET_MIRROR=""
+#	TARGET_MIRROR=""
 	TARGET_PACKAGE=" \
 	    open-infrastructure-system-boot \
 	    open-infrastructure-system-build \
@@ -346,7 +359,7 @@ fncSet_parameter () {
 	case "${TARGET_DIST}" in
 		"debian" )
 			TARGET_COMPONENTS="main non-free contrib"
-			TARGET_MIRROR="http://deb.debian.org/debian/"
+			TARGET_MIRROR="${TARGET_MIRROR:-http://deb.debian.org/debian/}"
 			TARGET_PACKAGE+=" \
 			    linux-headers-${TARGET_ARCH//i386/686} \
 			    linux-image-${TARGET_ARCH//i386/686} \
@@ -358,7 +371,7 @@ fncSet_parameter () {
 			;;
 		"ubuntu" )
 			TARGET_COMPONENTS="main multiverse restricted universe"
-			TARGET_MIRROR="http://archive.ubuntu.com/ubuntu/"
+			TARGET_MIRROR="${TARGET_MIRROR:-http://archive.ubuntu.com/ubuntu/}"
 			TARGET_PACKAGE+=" \
 			    linux-headers-generic \
 			    linux-image-generic \
@@ -402,7 +415,7 @@ fncGet_debian_installer () {
 					exit 1;
 				fi
 			fi
-			tar -xzf "${DIR_TOP}/${TAR_INST}" -C "${DIR_TOP}/_work/"
+			tar -xzf "${DIR_TOP}/${TAR_INST}" -C "${DIR_WRK}/_work/"
 			;;
 		"ubuntu" )
 #			TAR_INST=debian-cd_info-focal-${TARGET_ARCH}.tar.gz
@@ -424,9 +437,9 @@ fncGet_debian_installer () {
 					exit 1;
 				fi
 			fi
-			tar -xzf "${DIR_TOP}/${TAR_INST}" -C "${DIR_TOP}/_work/"
-			cp -p "${DIR_TOP}/splash.png" "${DIR_TOP}/_work/"
-			chown root.root "${DIR_TOP}/_work/splash.png"
+			tar -xzf "${DIR_TOP}/${TAR_INST}" -C "${DIR_WRK}/_work/"
+			cp -p "${DIR_TOP}/splash.png" "${DIR_WRK}/_work/"
+			chown root.root "${DIR_WRK}/_work/splash.png"
 			;;
 		*        )
 			;;
@@ -524,7 +537,7 @@ fncMake_inst_net_sh () {
 		 	fncPrint "---- workgroup: _WORKGROUP_ $(fncString ${COL_SIZE} '-')"
 		 	export PS1="(chroot) "
 		 	echo "_HOSTNAME_" > /etc/hostname
-		 	hostname -b -F /etc/hostname
+		#	hostname -b -F /etc/hostname
 		 	if [ -d "/usr/lib/systemd/" ]; then
 		 		DIR_SYSD="/usr/lib/systemd/"
 		 	elif [ -d "/lib/systemd/" ]; then
@@ -561,8 +574,21 @@ fncMake_inst_net_sh () {
 		 	fi
 		 	# ----------------------------------------------------------------------- #
 		 	fncPrint "---- update sources.list $(fncString ${COL_SIZE} '-')"
-		 	sed -i /etc/apt/sources.list \
-		 	    -e 's/\(deb\) \[.*\] \(.*\)$/\1 \2/g'
+		 	case "`echo ${OS_NAME} | awk '{print tolower($1);}'`" in
+		 		"debian" )	APT_MIRROR="http://deb.debian.org/debian/"		;;
+		 		"ubuntu" )	APT_MIRROR="http://archive.ubuntu.com/ubuntu/"	;;
+		 		*        )	APT_MIRROR=""									;;
+		 	esac
+		 	if [ "${APT_MIRROR}" != "" ]; then
+		 		OLD_MIRROR=`sed -n '/^deb .* main */p' /etc/apt/sources.list | sed -e 's/\[.*\] //g' | awk '$3!~/-/ {print $2;}'`
+		 		APT_SUITE=`sed -n '/^deb .* main */p' /etc/apt/sources.list | sed -e 's/\[.*\] //g' | awk '$3!~/-/ {print $3;}'`
+		 		APT_COMPONENTS=`sed -n "s/^deb .* ${APT_SUITE} \(.*\)\$/\1/p" /etc/apt/sources.list | sed -z 's/\n/ /g'`
+		 		sed -i /etc/apt/sources.list \
+		 		    -e '/^deb/ s/^/#/g'
+		 		cat <<- _EOT_ >> /etc/apt/sources.list
+		 			deb ${APT_MIRROR} ${APT_SUITE} ${APT_COMPONENTS}
+		_EOT_
+		 	fi
 		 	# -------------------------------------------------------------------------
 		 	if [ -d /var/lib/apt/lists ]; then
 		 		fncPrint "---- remove /var/lib/apt/lists $(fncString ${COL_SIZE} '-')"
@@ -1301,8 +1327,8 @@ _EOT_SH_
 # === run mmdebstrap ==========================================================
 fncRun_mmdebstrap () {
 	fncPrint "-- Run mmdebstrap $(fncString ${COL_SIZE} '-')"
-	rm -rf "${DIR_TOP}"/fsimg/*
-	mkdir -p "${DIR_TOP}/fsimg"
+	rm -rf "${DIR_WRK}"/fsimg/*
+	mkdir -p "${DIR_WRK}/fsimg"
 	HOOK_CMD=""
 	# -------------------------------------------------------------------------
 	KEY_CHROME="https://dl-ssl.google.com/linux/linux_signing_key.pub"
@@ -1318,7 +1344,7 @@ fncRun_mmdebstrap () {
 			fi
 			HOOK_CMD+=$(
 				cat <<- _EOT_
-					cp -p "${DIR_TOP}/linux_signing_key.pub" "${DIR_TOP}/fsimg/tmp/";
+					cp -p "${DIR_TOP}/linux_signing_key.pub" "${DIR_WRK}/fsimg/tmp/";
 _EOT_
 			)
 			;;
@@ -1330,8 +1356,8 @@ _EOT_
 	# -------------------------------------------------------------------------
 	HOOK_CMD+=$(
 		cat <<- _EOT_
-			cp -p "${DIR_TOP}/inst-net.sh" "${DIR_TOP}/fsimg/";
-			chroot "${DIR_TOP}/fsimg/" /bin/bash /inst-net.sh;
+			cp -p "${DIR_TOP}/inst-net.sh" "${DIR_WRK}/fsimg/";
+			chroot "${DIR_WRK}/fsimg/" /bin/bash /inst-net.sh;
 _EOT_
 	)
 	# -------------------------------------------------------------------------
@@ -1349,38 +1375,38 @@ _EOT_
 	    --customize-hook="${HOOK_CMD}" \
 	    ${KEYRING:-} \
 	    ${TARGET_SUITE} \
-	    "${DIR_TOP}/fsimg/" \
+	    "${DIR_WRK}/fsimg/" \
 	    ${TARGET_MIRROR}
 	# -------------------------------------------------------------------------
 	fncPrint "--- cleaning $(fncString ${COL_SIZE} '-')"
-	find "${DIR_TOP}/fsimg/var/log/" -type f -name \* -exec cp -f /dev/null {} \;
-	rm -rf "${DIR_TOP}/fsimg/inst-net.sh"                  \
-	       "${DIR_TOP}/fsimg/root/.bash_history"           \
-	       "${DIR_TOP}/fsimg/root/.viminfo"                \
-	       "${DIR_TOP}"/fsimg/tmp/*                        \
-	       "${DIR_TOP}/fsimg/var/cache/apt/*.bin"          \
-	       "${DIR_TOP}/fsimg/var/cache/apt/archives/*.deb"
+	find "${DIR_WRK}/fsimg/var/log/" -type f -name \* -exec cp -f /dev/null {} \;
+	rm -rf "${DIR_WRK}/fsimg/inst-net.sh"                  \
+	       "${DIR_WRK}/fsimg/root/.bash_history"           \
+	       "${DIR_WRK}/fsimg/root/.viminfo"                \
+	       "${DIR_WRK}"/fsimg/tmp/*                        \
+	       "${DIR_WRK}/fsimg/var/cache/apt/*.bin"          \
+	       "${DIR_WRK}/fsimg/var/cache/apt/archives/*.deb"
 }
 
 # === make dvd image ==========================================================
 fncMake_dvd_image () {
 	fncPrint "-- Make dvd image $(fncString ${COL_SIZE} '-')"
-	rm -rf "${DIR_TOP}"/cdimg/*
-	mkdir -p "${DIR_TOP}/cdimg/.disk"              \
-	         "${DIR_TOP}/cdimg/EFI"                \
-	         "${DIR_TOP}/cdimg/boot/grub"          \
-	         "${DIR_TOP}/cdimg/isolinux"           \
-	         "${DIR_TOP}/cdimg/live"               \
-	         "${DIR_TOP}/cdimg/live/config.conf.d" \
-	         "${DIR_TOP}/cdimg/preseed"
+	rm -rf "${DIR_WRK}"/cdimg/*
+	mkdir -p "${DIR_WRK}/cdimg/.disk"              \
+	         "${DIR_WRK}/cdimg/EFI"                \
+	         "${DIR_WRK}/cdimg/boot/grub"          \
+	         "${DIR_WRK}/cdimg/isolinux"           \
+	         "${DIR_WRK}/cdimg/live"               \
+	         "${DIR_WRK}/cdimg/live/config.conf.d" \
+	         "${DIR_WRK}/cdimg/preseed"
 	# --- DVDイメージ展開用パラメーター ---------------------------------------
-	OS_KERNEL="`find \"${DIR_TOP}\"/fsimg/boot/ -name \"vmlinuz*\" -print | sed -n 's/.*vmlinuz-//gp'`"
-	OS_NAME="`sed -n '/^NAME=/ s/.*="\([a-zA-Z]*\).*"/\1/p' ${DIR_TOP}/fsimg/etc/os-release | tr A-Z a-z`"
-	OS_VERSION="`sed -n '/^VERSION=/ s/^.*=\(.*\)/\1/p' ${DIR_TOP}/fsimg/etc/os-release | sed -e 's/\"//g'`"
-	OS_VERSION_ID="`sed -n '/^VERSION=/ s/^.*="*\([0-9.]*\).*"*$/\1/p' ${DIR_TOP}/fsimg/etc/os-release`"
+	OS_KERNEL="`find \"${DIR_WRK}\"/fsimg/boot/ -name \"vmlinuz*\" -print | sed -n 's/.*vmlinuz-//gp'`"
+	OS_NAME="`sed -n '/^NAME=/ s/.*="\([a-zA-Z]*\).*"/\1/p' ${DIR_WRK}/fsimg/etc/os-release | tr A-Z a-z`"
+	OS_VERSION="`sed -n '/^VERSION=/ s/^.*=\(.*\)/\1/p' ${DIR_WRK}/fsimg/etc/os-release | sed -e 's/\"//g'`"
+	OS_VERSION_ID="`sed -n '/^VERSION=/ s/^.*="*\([0-9.]*\).*"*$/\1/p' ${DIR_WRK}/fsimg/etc/os-release`"
 	OS_NAME="${OS_NAME:-${TARGET_DIST}}"
 	if [ "${OS_VERSION}" = "" ] || [ "${OS_VERSION_ID}" = "" ]; then
-		OS_VERSION="`cat ${DIR_TOP}/fsimg/etc/debian_version`"
+		OS_VERSION="`cat ${DIR_WRK}/fsimg/etc/debian_version`"
 		OS_VERSION_ID="${OS_VERSION##*/}"
 	fi
 	MNU_LABEL="${OS_NAME} ${OS_VERSION} Live ${TARGET_ARCH} (kernel ${OS_KERNEL})"
@@ -1388,49 +1414,49 @@ fncMake_dvd_image () {
 	DVD_VOLID="d-live ${OS_NAME} ${TARGET_SUITE} ${TARGET_ARCH}"
 	# --- DVDイメージの展開 ---------------------------------------------------
 	fncPrint "--- copy system file $(fncString ${COL_SIZE} '-')"
-	echo -en "${OS_NAME} ${OS_VERSION} Live ${TARGET_ARCH} `date +"%Y-%m-%d %H:%M"`" > "${DIR_TOP}/cdimg/.disk/info"
-	cp -pr "${DIR_TOP}"/_work/grub/*                                     "${DIR_TOP}/cdimg/boot/grub/"
-	cp -p  "${DIR_TOP}/_work/splash.png"                                 "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/_work/menu.cfg"                                   "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/_work/stdmenu.cfg"                                "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/_work/isolinux.cfg"                               "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/fsimg/usr/lib/ISOLINUX/isolinux.bin"              "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/hdt.c32"      "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/ldlinux.c32"  "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/libcom32.c32" "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/libgpl.c32"   "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/libmenu.c32"  "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/libutil.c32"  "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/fsimg/usr/lib/syslinux/modules/bios/vesamenu.c32" "${DIR_TOP}/cdimg/isolinux/"
-	cp -p  "${DIR_TOP}/fsimg/usr/lib/syslinux/memdisk"                   "${DIR_TOP}/cdimg/isolinux/"
-	cp -pr "${DIR_TOP}"/fsimg/boot/*                                     "${DIR_TOP}/cdimg/live/"
+	echo -en "${OS_NAME} ${OS_VERSION} Live ${TARGET_ARCH} `date +"%Y-%m-%d %H:%M"`" > "${DIR_WRK}/cdimg/.disk/info"
+	cp -pr "${DIR_WRK}"/_work/grub/*                                     "${DIR_WRK}/cdimg/boot/grub/"
+	cp -p  "${DIR_WRK}/_work/splash.png"                                 "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/_work/menu.cfg"                                   "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/_work/stdmenu.cfg"                                "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/_work/isolinux.cfg"                               "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/fsimg/usr/lib/ISOLINUX/isolinux.bin"              "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/hdt.c32"      "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/ldlinux.c32"  "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/libcom32.c32" "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/libgpl.c32"   "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/libmenu.c32"  "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/libutil.c32"  "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/vesamenu.c32" "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/memdisk"                   "${DIR_WRK}/cdimg/isolinux/"
+	cp -pr "${DIR_WRK}"/fsimg/boot/*                                     "${DIR_WRK}/cdimg/live/"
 	# --- メニューの背景 ------------------------------------------------------
 	if [ -f "${DIR_TOP}/splash.png" ]; then
-		cp -p  "${DIR_TOP}/splash.png" "${DIR_TOP}/cdimg/isolinux/"
-		chown root.root "${DIR_TOP}/cdimg/isolinux/splash.png"
+		cp -p  "${DIR_TOP}/splash.png" "${DIR_WRK}/cdimg/isolinux/"
+		chown root.root "${DIR_WRK}/cdimg/isolinux/splash.png"
 	fi
 	# --- 変更するパラメーター関係とユーザー設定関係のシェル ------------------
-	cp -p "${DIR_TOP}"/9999-* "${DIR_TOP}/cdimg/live/config.conf.d/"
-	chown root.root "${DIR_TOP}"/cdimg/live/config.conf.d/*
-	chmod +x "${DIR_TOP}"/cdimg/live/config.conf.d/*
+	cp -p "${DIR_TOP}"/9999-* "${DIR_WRK}/cdimg/live/config.conf.d/"
+	chown root.root "${DIR_WRK}"/cdimg/live/config.conf.d/*
+	chmod +x "${DIR_WRK}"/cdimg/live/config.conf.d/*
 	# --- mountpoint="/live/medium" -> "/run/live/medium" の暫定対応 ----------
-	cp -p "${DIR_TOP}/0000-user.conf" "${DIR_TOP}/fsimg/etc/live/config.conf.d/"
-	chown root.root "${DIR_TOP}/fsimg/etc/live/config.conf.d/0000-user.conf"
-	chmod +x "${DIR_TOP}/fsimg/etc/live/config.conf.d/0000-user.conf"
+	cp -p "${DIR_TOP}/0000-user.conf" "${DIR_WRK}/fsimg/etc/live/config.conf.d/"
+	chown root.root "${DIR_WRK}/fsimg/etc/live/config.conf.d/0000-user.conf"
+	chmod +x "${DIR_WRK}/fsimg/etc/live/config.conf.d/0000-user.conf"
 	# --- DVDイメージへEFIファイルの展開 --------------------------------------
 	fncPrint "--- copy EFI directory $(fncString ${COL_SIZE} '-')"
-	mkdir -p "${DIR_TOP}/media/"
-	mount -r -o loop "${DIR_TOP}/cdimg/boot/grub/efi.img" "${DIR_TOP}/media/"
-	cp -pr "${DIR_TOP}"/media/efi/* "${DIR_TOP}/cdimg/EFI/"
-	umount -q "${DIR_TOP}/media/" || umount -q -lf "${DIR_TOP}/media/"
+	mkdir -p "${DIR_WRK}/media/"
+	mount -r -o loop "${DIR_WRK}/cdimg/boot/grub/efi.img" "${DIR_WRK}/media/"
+	cp -pr "${DIR_WRK}"/media/efi/* "${DIR_WRK}/cdimg/EFI/"
+	umount -q "${DIR_WRK}/media/" || umount -q -lf "${DIR_WRK}/media/"
 	# --- ファイルシステムイメージの作成 --------------------------------------
 	fncPrint "--- make file system image $(fncString ${COL_SIZE} '-')"
-	rm -f "${DIR_TOP}/cdimg/live/filesystem.squashfs"
-	mksquashfs "${DIR_TOP}/fsimg" "${DIR_TOP}/cdimg/live/filesystem.squashfs" -noappend -quiet -mem 1G
-	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_TOP}/cdimg/live/filesystem.squashfs" 2> /dev/null | awk '{gsub(/.*\//,"",$6); print $4,$5,$3,$6;}'
+	rm -f "${DIR_WRK}/cdimg/live/filesystem.squashfs"
+	mksquashfs "${DIR_WRK}/fsimg" "${DIR_WRK}/cdimg/live/filesystem.squashfs" -noappend -quiet -mem 1G
+	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_WRK}/cdimg/live/filesystem.squashfs" 2> /dev/null | awk '{gsub(/.*\//,"",$6); print $4,$5,$3,$6;}'
 	# --- ブートメニューの作成 ------------------------------------------------
 	fncPrint "--- edit grub.cfg file $(fncString ${COL_SIZE} '-')"
-	cat <<- _EOT_ >> "${DIR_TOP}/cdimg/boot/grub/grub.cfg"
+	cat <<- _EOT_ >> "${DIR_WRK}/cdimg/boot/grub/grub.cfg"
 		if [ \${iso_path} ] ; then
 		set loopback="findiso=\${iso_path}"
 		export loopback
@@ -1444,7 +1470,7 @@ fncMake_dvd_image () {
 		set timeout=5
 _EOT_
 	fncPrint "--- edit menu.cfg file $(fncString ${COL_SIZE} '-')"
-	cat <<- _EOT_ > "${DIR_TOP}/cdimg/isolinux/menu.cfg"
+	cat <<- _EOT_ > "${DIR_WRK}/cdimg/isolinux/menu.cfg"
 		INCLUDE stdmenu.cfg
 		MENU title Main Menu
 		DEFAULT ${MNU_LABEL}
@@ -1454,11 +1480,11 @@ _EOT_
 		  APPEND initrd=/live/initrd.img-${OS_KERNEL} boot=live components splash quiet
 _EOT_
 	fncPrint "--- edit isolinux.cfg file $(fncString ${COL_SIZE} '-')"
-	sed -i "${DIR_TOP}/cdimg/isolinux/isolinux.cfg" \
+	sed -i "${DIR_WRK}/cdimg/isolinux/isolinux.cfg" \
 	    -e 's/^\(timeout\) .*/\1 50/'
 	# --- DVDイメージの作成 ---------------------------------------------------
 	fncPrint "--- make iso image $(fncString ${COL_SIZE} '-')"
-	pushd "${DIR_TOP}/cdimg" > /dev/null
+	pushd "${DIR_WRK}/cdimg" > /dev/null
 	    find . ! -name "md5sum.txt" -type f -exec md5sum -b {} \; > md5sum.txt
 	    xorriso -as mkisofs                                       \
 	        -quiet                                                \
@@ -1472,10 +1498,10 @@ _EOT_
 	        -eltorito-alt-boot                                    \
 	        -e boot/grub/efi.img                                  \
 	        -no-emul-boot -isohybrid-gpt-basdat                   \
-	        -output "../../${DVD_NAME}"                           \
+	        -output "${PGM_DIR}/${PGM_NAME}/${DVD_NAME}"          \
 	        .
 	popd > /dev/null
-	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_TOP}/../${DVD_NAME}" 2> /dev/null | awk '{gsub(/.*\//,"",$6); print $4,$5,$3,$6;}'
+	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${PGM_DIR}/${PGM_NAME}/${DVD_NAME}" 2> /dev/null | awk '{gsub(/.*\//,"",$6); print $4,$5,$3,$6;}'
 }
 
 # === main ====================================================================
@@ -1487,9 +1513,28 @@ _EOT_
 	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]: ${TARGET_DIST} (${TARGET_SUITE})-${TARGET_ARCH}"
 	fncPrint "$(fncString ${COL_SIZE} '*')"
 	# -------------------------------------------------------------------------
-	DIR_TOP="./${PGM_NAME}/${TARGET_DIST}.${TARGET_SUITE}.${TARGET_ARCH}"
+	LST_PACK=""
+	if [ "`which curl 2> /dev/null`" = "" ]; then
+		LST_PACK+="curl "
+	fi
+	if [ "`which mmdebstrap 2> /dev/null`" = "" ]; then
+		LST_PACK+="mmdebstrap "
+	fi
+	if [ "`which mksquashfs 2> /dev/null`" = "" ]; then
+		LST_PACK+="squashfs-tools "
+	fi
+	if [ "`which xorriso 2> /dev/null`" = "" ]; then
+		LST_PACK+="xorriso "
+	fi
+	if [ "${LST_PACK}" != "" ]; then
+		apt-get -qq update
+		apt-get -qq -y install ${LST_PACK}
+	fi
+	# -------------------------------------------------------------------------
+	DIR_TOP="${PGM_DIR}/${PGM_NAME}/${TARGET_DIST}.${TARGET_SUITE}.${TARGET_ARCH}"
+	DIR_WRK="${WRK_DIR}/${PGM_NAME}/${TARGET_DIST}.${TARGET_SUITE}.${TARGET_ARCH}/work"
 	# --- マウント強制解除 ----------------------------------------------------
-	MONT_LIST="`mount | grep "${DIR_TOP#*/}" | awk '{print $3;}'`"
+	MONT_LIST="`mount | grep "${DIR_WRK#*/}" | awk '{print $3;}'`"
 	if [ "${MONT_LIST}" != "" ]; then
 		fncPrint "-- Unmount $(fncString ${COL_SIZE} '-')"
 		for POINT in ${MONT_LIST}
@@ -1510,8 +1555,8 @@ _EOT_
 	# -------------------------------------------------------------------------
 	fncPrint "-- Initialize $(fncString ${COL_SIZE} '-')"
 	# --- ディレクトリー作成 --------------------------------------------------
-	rm -rf   "${DIR_TOP}/media" "${DIR_TOP}/cdimg" "${DIR_TOP}/fsimg" "${DIR_TOP}/_work"
-	mkdir -p "${DIR_TOP}/media" "${DIR_TOP}/cdimg" "${DIR_TOP}/fsimg" "${DIR_TOP}/_work"
+	rm -rf   "${DIR_WRK}"
+	mkdir -p "${DIR_TOP}" "${DIR_WRK}/media" "${DIR_WRK}/cdimg" "${DIR_WRK}/fsimg" "${DIR_WRK}/_work"
 	# --- main処理 ------------------------------------------------------------
 	fncSet_default
 	fncSet_parameter
@@ -1525,7 +1570,7 @@ _EOT_
 	# -------------------------------------------------------------------------
 	fncPrint "-- Termination $(fncString ${COL_SIZE} '-')"
 	# -------------------------------------------------------------------------
-	rm -rf   "${DIR_TOP}/media" "${DIR_TOP}/cdimg" "${DIR_TOP}/fsimg" "${DIR_TOP}/_work"
+	rm -rf   "${DIR_WRK}"
 	# -------------------------------------------------------------------------
 	fncPrint "$(fncString ${COL_SIZE} '*')"
 	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]: ${TARGET_DIST} (${TARGET_SUITE})-${TARGET_ARCH}"
