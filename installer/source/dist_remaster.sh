@@ -28,6 +28,7 @@
 ##	2022/05/28 000.0000 J.Itou         AlmaLinux追加
 ##	2022/06/06 000.0000 J.Itou         リスト更新
 ##	2022/06/10 000.0000 J.Itou         処理見直し
+##	2022/06/14 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -1097,6 +1098,13 @@ _EOT_
 #							    -e 's/#[ \t]\([ \t]*in-target --pass-stdout systemctl disable connman.service\)/  \1/'
 							sed -i "preseed/preseed.cfg" \
 							    -e '/network-manager/d'
+							;;
+						* )	;;
+					esac
+					case "${CODE_NAME[1]}" in
+						*netinst* )
+							sed -i "preseed/preseed.cfg"                                              \
+							    -e 's/\(^[ \t]*d-i[ \t]*debian-installer\/language\).*$/\1 string C/'
 							;;
 						* )	;;
 					esac
