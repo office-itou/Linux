@@ -34,6 +34,7 @@
 ##	2022/05/06 000.0000 J.Itou         処理見直し(unattended-upgrades対策)
 ##	2022/05/06 000.0000 J.Itou         不具合修正
 ##	2022/06/06 000.0000 J.Itou         AlmaLinux追加
+##	2022/06/15 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -2484,7 +2485,7 @@ _EOT_
 # Debug :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 fncDebug () {
 	fncInitialize
-	fncPrint "- Debug mode $(fncString ${COL_SIZE} '-')"
+	fncPrint "- Debug mode start $(fncString ${COL_SIZE} '-')"
 	echo "NOW_DATE=${NOW_DATE}"													# yyyy/mm/dd
 	echo "NOW_TIME=${NOW_TIME}"													# yyyymmddhhmmss
 	echo "PGM_NAME=${PGM_NAME}"													# プログラム名
@@ -2867,8 +2868,8 @@ fncDebug () {
 	# Setup Samba User ********************************************************
 	fncPrint "--- pdbedit -L $(fncString ${COL_SIZE} '-')"
 	pdbedit -L
-	fncPrint "--- smbclient -N -L ${SVR_NAME} $(fncString ${COL_SIZE} '-')"
-	smbclient -N -L ${SVR_NAME}
+	fncPrint "--- smbclient -N -L ${SVR_FQDN} $(fncString ${COL_SIZE} '-')"
+	smbclient -N -L ${SVR_FQDN}
 	# Install minidlna ********************************************************
 	if [ -f /etc/minidlna.conf.orig ]; then
 		fncPrint "--- diff /etc/minidlna.conf $(fncString ${COL_SIZE} '-')"
@@ -2884,6 +2885,7 @@ fncDebug () {
 		fncPrint "--- diff /etc/fstab /etc/fstab.vmware $(fncString ${COL_SIZE} '-')"
 		fncDiff /etc/fstab /etc/fstab.vmware
 	fi
+	fncPrint "- Debug mode end $(fncString ${COL_SIZE} '-')"
 }
 
 # Recovery ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
