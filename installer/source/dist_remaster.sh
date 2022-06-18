@@ -29,6 +29,7 @@
 ##	2022/06/06 000.0000 J.Itou         リスト更新
 ##	2022/06/10 000.0000 J.Itou         処理見直し
 ##	2022/06/14 000.0000 J.Itou         処理見直し
+##	2022/06/18 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -421,6 +422,101 @@ fncIPv4GetNetmaskBits () {
 	echo "${OUT_ARRY[@]}"
 }
 # -----------------------------------------------------------------------------
+fncCreate_late_command () {
+	fncPrint "    create_late_command"
+	DIR_PRESEED="$1"
+	cat <<- '_EOT_SH_' | sed 's/^ *//g' > ${DIR_PRESEED}/sub_late_command.sh
+		#!/bin/bash
+		
+		# --- Initialization ----------------------------------------------------------
+		#	set -n								# Check for syntax errors
+		#	set -x								# Show command and argument expansion
+		 	set -o ignoreeof					# Do not exit with Ctrl+D
+		 	set +m								# Disable job control
+		 	set -e								# Ends with status other than 0
+		 	set -u								# End with undefined variable reference
+		
+		 	trap 'exit 1' 1 2 3 15
+		
+		# --- IPv4 netmask conversion -------------------------------------------------
+		fncIPv4GetNetmask () {
+		 	local INP_ADDR="$@"
+		 	local DEC_ADDR
+		
+		 	DEC_ADDR=$((0xFFFFFFFF ^ ((2 ** (32-$((${INP_ADDR}))))-1)))
+		 	printf '%d.%d.%d.%d' \
+		 	    $((${DEC_ADDR} >> 24)) \
+		 	    $(((${DEC_ADDR} >> 16) & 0xFF)) \
+		 	    $(((${DEC_ADDR} >> 8) & 0xFF)) \
+		 	    $((${DEC_ADDR} & 0xFF))
+		}
+		
+		# --- Get network interface information ---------------------------------------
+		 	NIC_INFO="`sed -n '/^iface.*static$/,/^iface/ s/^[ \t]*//gp' /etc/network/interfaces`"
+		 	NIC_NAME="`echo "${NIC_INFO[@]}" | awk -F '[ \t/]' '$1==\"iface\" {print $2;}'`"
+		 	NIC_IPV4="`echo "${NIC_INFO[@]}" | awk -F '[ \t/]' '$1==\"address\" {print $2;}'`"
+		 	NIC_BITS="`echo "${NIC_INFO[@]}" | awk -F '[ \t/]' '$1==\"address\" {print $3;}'`"
+		 	NIC_GATE="`echo "${NIC_INFO[@]}" | awk -F '[ \t/]' '$1==\"gateway\" {print $2;}'`"
+		 	NIC_DNS4="`echo "${NIC_INFO[@]}" | awk -F '[ \t/]' '$1==\"dns-nameservers\" {print $2;}'`"
+		 	NIC_WGRP="`echo "${NIC_INFO[@]}" | awk -F '[ \t/]' '$1==\"dns-search\" {print $2;}'`"
+		 	NIC_MASK="`fncIPv4GetNetmask "${NIC_BITS}"`"
+		 	NIC_MADR="`ip address show "${NIC_NAME}" | sed -n '/link\/ether/ s/^[ \t]*//gp' | awk '{gsub(":","",$2); print $2;}'`"
+		 	CON_NAME="ethernet_${NIC_MADR}_cable"
+		
+		# --- Set up IPv4/IPv6 --------------------------------------------------------
+		 	mkdir -p /var/lib/connman/${CON_NAME}
+		 	cat <<- _EOT_ | sed 's/^ *//g' > /var/lib/connman/settings
+		 		[global]
+		 		OfflineMode=false
+		 		
+		 		[Wired]
+		 		Enable=true
+		 		Tethering=false
+		_EOT_
+		 	cat <<- _EOT_ | sed 's/^ *//g' > /var/lib/connman/${CON_NAME}/settings
+		 		[${CON_NAME}]
+		 		Name=Wired
+		 		AutoConnect=true
+		 		Modified=
+		 		IPv6.method=auto
+		 		IPv6.privacy=preferred
+		 		IPv6.DHCP.DUID=
+		 		IPv4.method=manual
+		 		IPv4.DHCP.LastAddress=
+		 		IPv4.netmask_prefixlen=${NIC_BITS}
+		 		IPv4.local_address=${NIC_IPV4}
+		 		IPv4.gateway=${NIC_GATE}
+		 		Nameservers=127.0.0.1;${NIC_DNS4};
+		 		Domains=${NIC_WGRP};
+		_EOT_
+		#	CON_NAME="`connmanctl services | awk '$3~/'${NIC_MADR}'/ {print $3;}'`"
+		#	connmanctl config "${CON_NAME}" --ipv4 manual "${NIC_IPV4}" "${NIC_MASK}" "${NIC_GATE}"
+		#	connmanctl config "${CON_NAME}" --ipv6 auto preferred
+		#	connmanctl config "${CON_NAME}" --nameservers "127.0.0.1 ${NIC_DNS4}"
+		#	connmanctl config "${CON_NAME}" --domains ${NIC_WGRP}
+		
+		# --- Termination -------------------------------------------------------------
+		 	exit 0
+		# --- EOF ---------------------------------------------------------------------
+_EOT_SH_
+	chmod 544 "${DIR_PRESEED}/sub_late_command.sh"
+	OLD_IFS=${IFS}
+	case "basename ${DIR_PRESEED}" in
+		"." )	DIR_CDROM="";;								# mini.iso
+		*   )	DIR_CDROM="/cdrom/preseed";;				# dvd/netinst
+	esac
+	IFS= INS_STR=$(
+		cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
+			      cp -p ${DIR_CDROM}/sub_late_command.sh /target/tmp/; \\\\\\n
+			      in-target --pass-stdout /tmp/sub_late_command.sh;
+_EOT_
+	)
+	sed -i "${DIR_PRESEED}/preseed.cfg"                              \
+	    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/' \
+	    -e "/preseed\/late_command/a \\${INS_STR}"
+	IFS=${OLD_IFS}
+}
+# -----------------------------------------------------------------------------
 fncRemaster_mini () {
 	# --- ARRAY_NAME ----------------------------------------------------------
 	local ARRY_NAME=($1)											# 配列展開
@@ -516,6 +612,14 @@ fncRemaster_mini () {
 			fi
 			cp --preserve=timestamps "../../../${CFG_NAME}" "./preseed.cfg"
 			# --- preseed.cfg -------------------------------------------------
+			# oldoldstable    Debian__9.xx(stretch)
+			# oldstable       Debian_10.xx(buster)
+			# stable          Debian_11.xx(bullseye)
+			# testing         Debian_12.xx(bookworm)
+			# Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS
+			# Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS
+			# Impish_Indri    Ubuntu_21.10(Impish_Indri)
+			# Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS
 			case "`echo ${CODE_NAME[7]} | sed -e 's/^.*(\(.*\)).*$/\1/'`" in
 				wheezy         )
 					sed -i "./preseed.cfg"                                                                        \
@@ -544,6 +648,7 @@ fncRemaster_mini () {
 #					    -e 's/#[ \t]\([ \t]*in-target --pass-stdout systemctl disable connman.service\)/  \1/'
 					sed -i "./preseed.cfg"      \
 					    -e '/network-manager/d'
+					fncCreate_late_command "."
 					;;
 				Trusty_Tahr    )
 					sed -i "./preseed.cfg"                     \
@@ -566,6 +671,7 @@ fncRemaster_mini () {
 				* )	;;
 			esac
 			# --- make initps.gz ----------------------------------------------
+			fncPrint "    make initps.gz"
 			find . | cpio -H newc --create --quiet | gzip -9 > ../image/initps.gz
 		popd > /dev/null
 		# --- image -----------------------------------------------------------
@@ -687,6 +793,10 @@ fncRemaster () {
 	CODE_NAME[1]=`basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig'`	# DVDファイル名
 	CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
 	CODE_NAME[3]=${ARRY_NAME[3]}									# 定義ファイル
+	CODE_NAME[4]=${ARRY_NAME[4]}									# リリース日
+	CODE_NAME[5]=${ARRY_NAME[5]}									# サポ終了日
+	CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
+	CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
 	# -------------------------------------------------------------------------
 	fncPrint "=== ↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '=')"
 	# --- DVD -----------------------------------------------------------------
@@ -838,6 +948,35 @@ fncRemaster () {
 								set -e
 							fi
 							cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
+							;;
+						* )	;;
+					esac
+					# oldoldstable    Debian__9.xx(stretch)
+					# oldstable       Debian_10.xx(buster)
+					# stable          Debian_11.xx(bullseye)
+					# testing         Debian_12.xx(bookworm)
+					# Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS
+					# Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS
+					# Impish_Indri    Ubuntu_21.10(Impish_Indri)
+					# Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS
+					case "`echo ${CODE_NAME[7]} | sed -e 's/^.*(\(.*\)).*$/\1/'`" in
+						wheezy         | \
+						jessie         | \
+						stretch        | \
+						buster         )
+							;;
+						bullseye       | \
+						bookworm       | \
+						testing        )
+							fncCreate_late_command "./preseed"
+							;;
+						Trusty_Tahr    | \
+						Xenial_Xerus   | \
+						Bionic_Beaver  | \
+						Focal_Fossa    | \
+						Groovy_Gorilla | \
+						Hirsute_Hippo  | \
+						Impish_Indri   )
 							;;
 						* )	;;
 					esac

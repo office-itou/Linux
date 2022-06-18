@@ -35,6 +35,7 @@
 ##	2022/05/06 000.0000 J.Itou         不具合修正
 ##	2022/06/06 000.0000 J.Itou         AlmaLinux追加
 ##	2022/06/15 000.0000 J.Itou         不具合修正
+##	2022/06/17 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -113,7 +114,7 @@ fncProc () {
 
 	if [ "`${CMD_WICH} systemctl 2> /dev/null`" != "" ]; then
 		if [ "`systemctl is-enabled ${INP_NAME} 2> /dev/null`" != "masked" -o "${INP_COMD}" = "mask" -o "${INP_COMD}" = "unmask" ]; then
-			systemctl ${INP_COMD} ${INP_NAME}; fncPause $?
+			systemctl --quiet --no-reload ${INP_COMD} ${INP_NAME}; fncPause $?
 		else
 			echo "${INP_NAME} is masked."
 		fi
@@ -575,11 +576,11 @@ fncInitialize () {
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`${CMD_WICH} aptitude 2> /dev/null`" != "" ]; then
-				CMD_AGET="aptitude -y -q"
-			else
+#			if [ "`${CMD_WICH} aptitude 2> /dev/null`" != "" ]; then
+#				CMD_AGET="aptitude -y -q"
+#			else
 				CMD_AGET="apt-get -y -qq"
-			fi
+#			fi
 			;;
 		"centos"       | \
 		"fedora"       | \
@@ -728,7 +729,7 @@ fncMain () {
 			if [ "`${CMD_WICH} unattended-upgrades 2> /dev/null`" != "" ] \
 			&& [ "`systemctl is-active unattended-upgrades.service`" = "active" ]; then
 				fncPrint "- stopping unattended-upgrades $(fncString ${COL_SIZE} '-')"
-				systemctl stop unattended-upgrades.service
+				systemctl --quiet --no-reload stop unattended-upgrades.service
 			fi
 			# --- sources.list更新 ----------------------------------------------------
 			fncPrint "- System Update $(fncString ${COL_SIZE} '-')"
@@ -1096,7 +1097,7 @@ _EOT_
 			    -e "s/\(nameserver\) .*$/\1 127\.0\.0\.1\n\1 ${IP4_DNSA[0]}/g"
 		fi
 		connmanctl config "${CON_NAME}" --ipv4 manual "${IP4_ADDR[0]}" "${IP4_MASK[0]}" "${IP4_GATE[0]}"
-		connmanctl config "${CON_NAME}" --ipv6 auto disable
+		connmanctl config "${CON_NAME}" --ipv6 auto preferred
 		connmanctl config "${CON_NAME}" --nameservers "127.0.0.1 ${IP4_DNSA[0]}"
 		connmanctl config "${CON_NAME}" --domains ${WGP_NAME}
 	elif [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
@@ -2301,7 +2302,7 @@ _EOT_
 			"miraclelinux" | \
 			"almalinux"    )
 				if [ "`${CMD_WICH} vmware-checkvm 2> /dev/null`" = "" ]; then
-					if [ "`${CMD_AGET} search open-vm-tools-desktop`" = "" ]; then
+					if [ "`${CMD_AGET/apt-get -y/apt-cache} search open-vm-tools-desktop`" = "" ]; then
 						${CMD_AGET} install open-vm-tools
 						fncPause $?
 					else
