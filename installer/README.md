@@ -86,11 +86,7 @@ chmod +x *.sh
 | ----------------------- | -------- |
 | [preseed_debian.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/preseed_debian.cfg)      | debian用 |
 | [preseed_ubuntu.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/preseed_ubuntu.cfg)      | ubuntu用 |
-| [kickstart_centos.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_centos.cfg)    | CentOS用 |
-| [kickstart_fedora.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_fedora.cfg)    | Fedora用 |
-| [kickstart_miraclelinux.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_miraclelinux.cfg)    | MIRACLELINUX用 |
-| [kickstart_rocky.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_rocky.cfg)    | Rocky Linux用 |
-| [kickstart_almalinux.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_almalinux.cfg)    | AlmaLinux用 |
+| [kickstart_common.cfg](https://github.com/office-itou/Linux/blob/master/installer/source/kickstart_common.cfg)    | CentOS系 |
 | [yast_opensuse.xml](https://github.com/office-itou/Linux/blob/master/installer/source/yast_opensuse.xml) | OpenSUSE用 |
 | [nocloud-ubuntu-user-data](https://github.com/office-itou/Linux/blob/master/installer/source/nocloud-ubuntu-user-data) | ubuntu用nocloud |
   
@@ -129,11 +125,7 @@ wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/sourc
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cloud_preseed.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/dist_remaster.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/install.sh"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_almalinux.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_centos.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_fedora.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_miraclelinux.cfg"
-wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_rocky.cfg"
+wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/kickstart_common.cfg"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/knoppix-live.sh"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/live-debian_config.conf"
 wget "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/nocloud-ubuntu-meta-data"
