@@ -36,6 +36,7 @@
 ##	2022/06/06 000.0000 J.Itou         AlmaLinux追加
 ##	2022/06/15 000.0000 J.Itou         不具合修正
 ##	2022/06/17 000.0000 J.Itou         処理見直し
+##	2022/06/19 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -118,7 +119,7 @@ fncProc () {
 		else
 			echo "${INP_NAME} is masked."
 		fi
-	elif [ "${INP_COMD}" != "enable" -a "${INP_COMD}" != "disable" ]; then
+	elif [ "${INP_COMD}" != "enable" ] && [ "${INP_COMD}" != "disable" ]; then
 		if [ "`${CMD_WICH} service 2> /dev/null`" != ""                              ] && \
 		   [ "`find ${DIR_SYSD}/system/ -name \"${INP_NAME}.*\" -print`" != "" ]; then
 			service ${INP_NAME} ${INP_COMD}; fncPause $?
@@ -126,7 +127,7 @@ fncProc () {
 			/etc/init.d/${INP_NAME} ${INP_COMD}
 		fi
 	else
-		if [ -f ${DIR_SYSD}/systemd-sysv-install ]; then
+		if [ ${DIR_SYSD} != "" ] && [ -f ${DIR_SYSD}/systemd-sysv-install ]; then
 			${DIR_SYSD}/systemd-sysv-install ${INP_COMD} ${INP_NAME}; fncPause $?
 		elif [ "`${CMD_WICH} insserv 2> /dev/null`" != "" ]; then
 			case "${INP_COMD}" in
@@ -196,7 +197,7 @@ fncAddstr () {
 
 # IPアドレス取得処理 ----------------------------------------------------------
 fncGetIPaddr () {
-	LANG=C ip -o -$1 a show scope $2 dev $3 | awk '{print $4;}'
+	LANG=C ip -oneline -$1 address show scope $2 dev $3 | awk '{print $4;}'
 }
 
 # NetworkManager設定値取得処理 ------------------------------------------------
@@ -205,27 +206,27 @@ fncGetNM () {
 
 	case "$1" in
 		"DHCP4" )
-			if [ "`LANG=C ip -4 a show dev $2 scope global dynamic`" = "" ]; then
+			if [ "`LANG=C ip -oneline -4 address show dev $2 scope global dynamic`" = "" ]; then
 				DMY_STAT="static"
 			else
 				DMY_STAT="auto"
 			fi
 			;;
 		"DHCP6" )
-			if [ "`LANG=C ip -6 a show dev $2 scope global dynamic`" = "" ]; then
+			if [ "`LANG=C ip -oneline -6 address show dev $2 scope global dynamic`" = "" ]; then
 				DMY_STAT="static"
 			else
 				DMY_STAT="auto"
 			fi
 			;;
 		"IP4.DNS" )
-				DMY_STAT="`LANG=C ip -4 r show dev $2 default | awk '{print $3;}'`"
+				DMY_STAT="`LANG=C ip -oneline -4 route list dev $2 default | awk '{print $3;}'`"
 				if [ "${DMY_STAT}" = "" ]; then
 					DMY_STAT="`LANG=C awk '/nameserver.*\./ {print$2}' /etc/resolv.conf`"
 				fi
 			;;
 		"IP6.DNS" )
-				DMY_STAT="`LANG=C ip -6 r show dev $2 default | awk '{print $3;}'`"
+				DMY_STAT="`LANG=C ip -oneline -6 route list dev $2 default | awk '{print $3;}'`"
 				if [ "${DMY_STAT}" = "" ]; then
 					DMY_STAT="`LANG=C awk '/nameserver.*\:/ {print$2}' /etc/resolv.conf`"
 				fi
@@ -350,13 +351,13 @@ fncInitialize () {
 	fi
 	#--------------------------------------------------------------------------
 	WHO_USER=`who | awk -v ORS="," '$1!="root" {print $1;}' | sed -e 's/,$//'`	# ログイン中ユーザ一覧
-	if [ "${WHO_USER}" != "" ]; then
-		echo "以下のユーザーがログインしています。"
-		echo "[${WHO_USER}]"
+#	if [ "${WHO_USER}" != "" ]; then
+#		echo "以下のユーザーがログインしています。"
+#		echo "[${WHO_USER}]"
 #		echo "全てのユーザーをログアウトしてから、"
 #		echo "rootユーザーで実行して下さい。"
 #		exit 1
-	fi
+#	fi
 
 	# user setting ------------------------------------------------------------
 	fncUserSetting
@@ -394,8 +395,8 @@ fncInitialize () {
 	else
 		if [ "${CPU_TYPE}" = "x86_64" ]; then
 			case "${SYS_NAME}" in
-				"debian"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 10"       | bc`;;
-				"ubuntu"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 20.04"    | bc`;;
+				"debian"              ) SYS_NOOP=`echo "${SYS_VNUM} >=  9"       | bc`;;
+				"ubuntu"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 18.04"    | bc`;;
 				"centos"              ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
 				"fedora"              ) SYS_NOOP=`echo "${SYS_VNUM} >= 32"       | bc`;;
 				"rocky"               ) SYS_NOOP=`echo "${SYS_VNUM} >=  8.4"     | bc`;;
@@ -475,9 +476,9 @@ fncInitialize () {
 	done
 	for DEV_NAME in ${NIC_ARRY[@]}
 	do
-		IP4_ARRY+=(`fncGetIPaddr 4 "global primary" "${DEV_NAME}"`)				# IPv4:IPアドレス/サブネットマスク(bit)
-		IP6_ARRY+=(`fncGetIPaddr 6 "global primary" "${DEV_NAME}"`)				# IPv6:IPアドレス/サブネットマスク(bit)
-		LNK_ARRY+=(`fncGetIPaddr 6 "link"           "${DEV_NAME}"`)				# Link:IPアドレス/サブネットマスク(bit)
+		IP4_ARRY+=(`fncGetIPaddr 4 "global"               "${DEV_NAME}"`)		# IPv4:IPアドレス/サブネットマスク(bit)
+		IP6_ARRY+=(`fncGetIPaddr 6 "global mngtmpaddr"    "${DEV_NAME}"`)		# IPv6:IPアドレス/サブネットマスク(bit)
+		LNK_ARRY+=(`fncGetIPaddr 6 "link"                 "${DEV_NAME}"`)		# Link:IPアドレス/サブネットマスク(bit)
 		IP4_DHCP+=(`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`)			# IPv4:DHCPフラグ(auto/static)
 		IP6_DHCP+=(`fncGetNM "DHCP6"   "${DEV_NAME}" "${CON_UUID}"`)			# IPv6:DHCPフラグ(auto/static)
 		IP4_DNSA+=(`fncGetNM "IP4.DNS" "${DEV_NAME}" "${CON_UUID}"`)			# IPv4:DNSアドレス
@@ -576,11 +577,7 @@ fncInitialize () {
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-#			if [ "`${CMD_WICH} aptitude 2> /dev/null`" != "" ]; then
-#				CMD_AGET="aptitude -y -q"
-#			else
-				CMD_AGET="apt-get -y -qq"
-#			fi
+			CMD_AGET="apt-get -y -qq"
 			;;
 		"centos"       | \
 		"fedora"       | \
@@ -602,7 +599,6 @@ fncInitialize () {
 			;;
 	esac
 	# -------------------------------------------------------------------------
-#	LIN_CHSH=`find /usr/bin/ /usr/sbin/ -name nologin -print`
 	if [ -f /etc/lightdm/users.conf ]; then
 		LIN_CHSH=`awk -F '[ =]' '$1=="hidden-shells" {print $2;}' /etc/lightdm/users.conf`
 	else
@@ -658,7 +654,7 @@ fncInitialize () {
 	esac
 	for FIL_NAME in ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BOPT} ${DIR_BIND}/${FIL_BIND}
 	do
-		if [ -f ${FIL_NAME} ]; then
+		if [ "${FIL_NAME}" != "" ] && [ -f ${FIL_NAME} ]; then
 			DIR_ZONE=`sed -n '/^options {/,/^};/p' ${FIL_NAME} | awk '$1=="directory" {gsub("[\";]", ""); print $2;}'`
 			if [ "${DIR_ZONE}" != "" ]; then
 				break
@@ -692,6 +688,7 @@ fncMain () {
 	# Initialize
 	# *************************************************************************
 	fncInitialize
+	fncPrint "    ${SYS_NAME} ${SYS_VERS:-${SYS_CODE}} (${CPU_TYPE})"
 
 	# *************************************************************************
 	# Make work dir
@@ -703,11 +700,15 @@ fncMain () {
 	# *************************************************************************
 	# NTP Setup
 	# *************************************************************************
-	if [ ! -f ${FUL_CHRO}.orig ] && \
-	   [   -f ${FUL_CHRO}      ]; then
+	if [ "${FUL_CHRO}" != "" ] && [ -f ${FUL_CHRO} ]; then
+		fncPrint "- Set Up chrony $(fncString ${COL_SIZE} '-')"
+		if [ ! -f ${FUL_CHRO}.orig ]; then
+			cp -p ${FUL_CHRO} ${FUL_CHRO}.orig
+		fi
+		cp -p ${FUL_CHRO}.orig ${FUL_CHRO}
 		if [ "`awk '$1==\"server\" && $2==\"ntp.nict.jp\" {print;}' ${FUL_CHRO}`" = "" ]; then
 			INS_STR=`awk '($1=="pool" || $1=="server") && !a[$1]++ {print $1 " '${NTP_NAME}' iburst";}' ${FUL_CHRO}`
-			sed -i.orig ${FUL_CHRO}                                                \
+			sed -i ${FUL_CHRO}                                                     \
 			    -e 's/^\([pool|server]\)/#\1/g'                                    \
 			    -e "0,/^#[pool|server]/{s/^\(#[pool|server].*$\)/${INS_STR}\n\1/}"
 			if [ "`fncProcFind \"chrony\"`" = "1" ]; then
@@ -717,6 +718,23 @@ fncMain () {
 			fi
 		fi
 	fi
+	# -------------------------------------------------------------------------
+	if [ -f /etc/systemd/timesyncd.conf ]; then
+		fncPrint "- Set Up timesyncd $(fncString ${COL_SIZE} '-')"
+		if [ ! -d /etc/systemd/timesyncd.conf.d/ ]; then
+			mkdir -p /etc/systemd/timesyncd.conf.d/
+		fi
+		if [ ! -f /etc/systemd/timesyncd.conf.d/* ]; then
+			cat <<- _EOT_ > /etc/systemd/timesyncd.conf.d/ntp.conf
+				# --- user settings ---
+				[Time]
+				NTP=${NTP_NAME}
+_EOT_
+		fi
+		timedatectl set-timezone Asia/Tokyo
+		timedatectl set-ntp true
+		fncProc systemd-timesyncd restart
+	fi
 
 	# *************************************************************************
 	# System Update
@@ -725,19 +743,21 @@ fncMain () {
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			# --- unattended-upgrades停止 ---------------------------------------------
+			# --- unattended-upgrades停止 -------------------------------------
 			if [ "`${CMD_WICH} unattended-upgrades 2> /dev/null`" != "" ] \
 			&& [ "`systemctl is-active unattended-upgrades.service`" = "active" ]; then
 				fncPrint "- stopping unattended-upgrades $(fncString ${COL_SIZE} '-')"
 				systemctl --quiet --no-reload stop unattended-upgrades.service
 			fi
-			# --- sources.list更新 ----------------------------------------------------
+			# --- sources.list更新 --------------------------------------------
 			fncPrint "- System Update $(fncString ${COL_SIZE} '-')"
 			if [ ! -f /etc/apt/sources.list.orig ]; then
-				sed -i.orig /etc/apt/sources.list \
-				    -e 's/^deb cdrom.*$/# &/'
+				cp -p /etc/apt/sources.list /etc/apt/sources.list.orig
 			fi
-			# --- パッケージ更新 ------------------------------------------------------
+			cp -p /etc/apt/sources.list.orig /etc/apt/sources.list
+			sed -i /etc/apt/sources.list \
+			    -e 's/^deb cdrom.*$/# &/'
+			# --- パッケージ更新 ----------------------------------------------
 			if [ "${SYS_NAME}" = "debian" ] && [ "${CPU_TYPE}" = "armv5tel" ]; then
 				fncPrint "- Package Update & Upgrade skipped $(fncString ${COL_SIZE} '-')"
 			else
@@ -754,7 +774,7 @@ fncMain () {
 		"miraclelinux" | \
 		"almalinux"    )
 			fncPrint "- System Update $(fncString ${COL_SIZE} '-')"
-			# --- パッケージ更新 ------------------------------------------------------
+			# --- パッケージ更新 ----------------------------------------------
 			fncPrint "- Package Update $(fncString ${COL_SIZE} '-')"
 			${CMD_AGET} check-update
 			fncPrint "- Package Upgrade $(fncString ${COL_SIZE} '-')"
@@ -763,7 +783,7 @@ fncMain () {
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
 			fncPrint "- System Update $(fncString ${COL_SIZE} '-')"
-			# --- パッケージ更新 ------------------------------------------------------
+			# --- パッケージ更新 ----------------------------------------------
 			fncPrint "- Package Update $(fncString ${COL_SIZE} '-')"
 			${CMD_AGET} update
 			fncPrint "- Package Upgrade $(fncString ${COL_SIZE} '-')"
@@ -807,15 +827,10 @@ fncMain () {
 		case "${SYS_NAME}" in
 			"debian" | \
 			"ubuntu" )
-				if [ "${SYS_NAME}" = "debian" ] \
-				&& [ ${SYS_VNUM} -lt 10 ] && [ ${SYS_VNUM} -ge 0 ]; then				# Debian 10以前の判定
-					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] skipped $(fncString ${COL_SIZE} '-')"
-				else
-					if [ "`LANG=C dpkg -l chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk '$1=="ii" {print $2;}'`" = "" ]; then
-						fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] $(fncString ${COL_SIZE} '-')"
-						curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
-						${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb
-					fi
+				if [ "`LANG=C dpkg -l chromium ungoogled-chromium google-chrome-stable 2> /dev/null | awk '$1=="ii" {print $2;}'`" = "" ]; then
+					fncPrint "--- Install google-chrome [${SYS_NAME} ${SYS_CODE}] $(fncString ${COL_SIZE} '-')"
+					curl -L -# -O -R -S "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+					${CMD_AGET} install ${DIR_WK}/google-chrome-stable_current_amd64.deb
 				fi
 				;;
 			"centos"       | \
@@ -876,11 +891,14 @@ fncMain () {
 	# *************************************************************************
 	# Locale Setup
 	# *************************************************************************
-	fncPrint "- Locale Setup [${SYS_NAME} ${SYS_CODE}] $(fncString ${COL_SIZE} '-')"
+	fncPrint "- Set Up Locale $(fncString ${COL_SIZE} '-')"
 	# --- /etc/locale.gen -----------------------------------------------------
-	if [ ! -f /etc/locale.gen.orig ] && \
-	   [   -f /etc/locale.gen      ]; then
-		sed -i.orig /etc/locale.gen                         \
+	if [ -f /etc/locale.gen ]; then
+		if [ ! -f /etc/locale.gen.orig ]; then
+			cp -p /etc/locale.gen /etc/locale.gen.orig
+		fi
+		cp -p /etc/locale.gen.orig /etc/locale.gen
+		sed -i /etc/locale.gen                              \
 		    -e '/^#\|^$/! s/.*/# \0/'                       \
 		    -e '1,/en_US.UTF-8/ s/.*\(en_US.UTF-8 .*\)/\1/' \
 		    -e "1,/${SET_LANG}/ s/.*\(${SET_LANG} .*\)/\1/"
@@ -888,8 +906,10 @@ fncMain () {
 		update-locale LANG=${SET_LANG}; fncPause $?
 	fi
 	#--------------------------------------------------------------------------
+	fncPrint "- Set Up User environment $(fncString ${COL_SIZE} '-')"
 	for USER_NAME in "${USER}" "${SUDO_USER}"
 	do
+		fncPrint "--- ${USER_NAME}: $(fncString ${COL_SIZE} '-')"
 		USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
 		pushd ${USER_HOME} > /dev/null
 			case "${SYS_NAME}" in
@@ -915,25 +935,29 @@ fncMain () {
 			VIM_ARRY=`find /etc/ -name 'vimrc' -o -name 'virc' -type f | awk '{gsub("\"", ""); gsub(".*/", ""); print $0;}'`
 			if [ "${VIM_ARRY}" = "" ]; then
 				VIM_FILE=`LANG=C vi --version | awk '/^[ \t]*user vimrc file/ {gsub("\"", ""); gsub(".*/", ""); print $0;}'`
-				[ "${VIM_FILE}" != "" -a ! -f ${VIM_FILE} ] && { touch ${VIM_FILE}; chown ${USER_NAME}. ${VIM_FILE}; }
+				[ "${VIM_FILE}" != "" ] && [ ! -f ${VIM_FILE} ] && { touch ${VIM_FILE}; chown ${USER_NAME}. ${VIM_FILE}; }
 			else
 				for VIMRC in ${VIM_ARRY}
 				do
 					[ ! -f .${VIMRC} ] && { touch .${VIMRC}; chown ${USER_NAME}. .${VIMRC}; }
 				done
 			fi
-			[                        ! -f .curlrc     ] && { touch .curlrc;     chown ${USER_NAME}. .curlrc;     }
-			[ "${LNG_FILE}" != "" -a ! -f ${LNG_FILE} ] && { touch ${LNG_FILE}; chown ${USER_NAME}. ${LNG_FILE}; }
+			[                            ! -f .curlrc     ] && { touch .curlrc;     chown ${USER_NAME}. .curlrc;     }
+			[ "${LNG_FILE}" != "" ] && [ ! -f ${LNG_FILE} ] && { touch ${LNG_FILE}; chown ${USER_NAME}. ${LNG_FILE}; }
 			# -----------------------------------------------------------------
 			# 参照: http://vimdoc.sourceforge.net/htmldoc/usr_toc.html
 			#       http://vimdoc.sourceforge.net/htmldoc/options.html
 			# -----------------------------------------------------------------
 			for VIMRC in ".vimrc" ".virc"
 			do
-				if [ ! -f ${VIMRC}.orig ] && [ -f ${VIMRC} ]; then
-					fncPrint "--- ${VIMRC} $(fncString ${COL_SIZE} '-')"
+				if [ "${VIMRC}" != "" ] && [ -f ${VIMRC} ]; then
+					fncPrint "---- ${VIMRC} $(fncString ${COL_SIZE} '-')"
+					if [ ! -f ${VIMRC}.orig ]; then
+						cp -p ${VIMRC} ${VIMRC}.orig
+					fi
+					cp -p ${VIMRC}.orig ${VIMRC}
 					cp -p ${VIMRC} ${VIMRC}.orig
-					cat <<- _EOT_ >> ${VIMRC}
+					cat <<- '_EOT_' >> ${VIMRC}
 						set number              " Print the line number in front of each line.
 						set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
 						set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
@@ -951,7 +975,7 @@ _EOT_
 			done
 			# -----------------------------------------------------------------
 #			if [ ! -f .bash_history.orig ] && [ -f .bash_history ]; then
-#				fncPrint "--- .bash_history $(fncString ${COL_SIZE} '-')"
+#				fncPrint "---- .bash_history $(fncString ${COL_SIZE} '-')"
 #				cp -p .bash_history .bash_history.orig
 #				cat <<- '_EOT_' > .bash_history
 #					sudo bash -c 'apt update && apt -y upgrade && apt -y full-upgrade'
@@ -960,9 +984,9 @@ _EOT_
 #			fi
 			# -----------------------------------------------------------------
 			if [ ! -f .curlrc.orig ]; then
-				fncPrint "--- .curlrc $(fncString ${COL_SIZE} '-')"
+				fncPrint "---- .curlrc $(fncString ${COL_SIZE} '-')"
 				cp -p .curlrc .curlrc.orig
-				cat <<- _EOT_ >> .curlrc
+				cat <<- '_EOT_' >> .curlrc
 					location
 					progress-bar
 					remote-time
@@ -970,12 +994,12 @@ _EOT_
 _EOT_
 			fi
 			# -----------------------------------------------------------------
-			if [ ! -f ${LNG_FILE}.orig ]; then
-				fncPrint "--- ${LNG_FILE} $(fncString ${COL_SIZE} '-')"
+			if [ "${LNG_FILE}" != "" ] && [ ! -f ${LNG_FILE}.orig ]; then
+				fncPrint "---- ${LNG_FILE} $(fncString ${COL_SIZE} '-')"
 				cp -p ${LNG_FILE} ${LNG_FILE}.orig
-				cat <<- _EOT_ >> ${LNG_FILE}
+				cat <<- '_EOT_' >> ${LNG_FILE}
 					# --- 日本語文字化け対策 ---
-					case "\${TERM}" in
+					case "${TERM}" in
 					    "linux" ) export LANG=C;;
 					    *       )              ;;
 					esac
@@ -988,22 +1012,27 @@ _EOT_
 	# *************************************************************************
 	# Network Setup
 	# *************************************************************************
-	fncPrint "- Network Setup $(fncString ${COL_SIZE} '-')"
+	fncPrint "- Set Up Network $(fncString ${COL_SIZE} '-')"
 	# hosts -------------------------------------------------------------------
-	fncPrint "--- hosts $(fncString ${COL_SIZE} '-')"
-	if [ ! -f /etc/hosts.orig ] && \
-	   [   -f /etc/hosts      ]; then
+	if [ -f /etc/hosts ]; then
+		fncPrint "--- hosts $(fncString ${COL_SIZE} '-')"
+		if [ ! -f /etc/hosts.orig ]; then
+			cp -p /etc/hosts /etc/hosts.orig
+		fi
+		cp -p /etc/hosts.orig /etc/hosts
 		if [ "${IP4_DHCP[0]}" != "auto" ]; then
-			sed -i.orig /etc/hosts                      \
+			sed -i /etc/hosts.orig                      \
 			    -e "s/127.0.1.1/${IP4_ADDR}/"           \
 			    -e "s/\(${SVR_FQDN}\)$/\1 ${SVR_NAME}/"
 		fi
 	fi
 	# hosts.allow -------------------------------------------------------------
-	fncPrint "--- hosts.allow $(fncString ${COL_SIZE} '-')"
-	if [ ! -f /etc/hosts.allow.orig ] && \
-	   [   -f /etc/hosts.allow      ]; then
-		cp -p /etc/hosts.allow /etc/hosts.allow.orig
+	if [ -f /etc/hosts.allow ]; then
+		fncPrint "--- hosts.allow $(fncString ${COL_SIZE} '-')"
+		if [ ! -f /etc/hosts.allow.orig ]; then
+			cp -p /etc/hosts.allow /etc/hosts.allow.orig
+		fi
+		cp -p /etc/hosts.allow.orig /etc/hosts.allow
 		cat <<- _EOT_ >> /etc/hosts.allow
 			ALL : 127.0.0.1
 			ALL : [::1]
@@ -1013,11 +1042,13 @@ _EOT_
 _EOT_
 	fi
 	# hosts.deny --------------------------------------------------------------
-	fncPrint "--- hosts.deny $(fncString ${COL_SIZE} '-')"
-	if [ ! -f /etc/hosts.deny.orig ] && \
-	   [   -f /etc/hosts.deny      ]; then
-		cp -p /etc/hosts.deny /etc/hosts.deny.orig
-		cat <<- _EOT_ >> /etc/hosts.deny
+	if [ -f /etc/hosts.deny ]; then
+		fncPrint "--- hosts.deny $(fncString ${COL_SIZE} '-')"
+		if [ ! -f /etc/hosts.deny.orig ]; then
+			cp -p /etc/hosts.deny /etc/hosts.deny.orig
+		fi
+		cp -p /etc/hosts.deny.orig /etc/hosts.deny
+		cat <<- '_EOT_' >> /etc/hosts.deny
 			ALL : ALL
 _EOT_
 	fi
@@ -1029,7 +1060,7 @@ _EOT_
 	do
 		USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
 		pushd ${USER_HOME} > /dev/null
-			cat <<- _EOT_ > .credentials
+			cat <<- '_EOT_' > .credentials
 				username=value
 				password=value
 				domain=value
@@ -1038,49 +1069,47 @@ _EOT_
 			chmod 0600 .credentials
 		popd > /dev/null
 	done
-	# ipv4 dns / ipv6 privacy changed -----------------------------------------
-	fncPrint "--- ipv4 dns / ipv6 privacy changed $(fncString ${COL_SIZE} '-')"
-	if [ ! -f /etc/NetworkManager/NetworkManager.conf.orig ] && \
-	   [   -f /etc/NetworkManager/NetworkManager.conf      ] && \
-	   [ "`sed -n '/^dns/p' /etc/NetworkManager/NetworkManager.conf`" != "" ]; then
-		sed -i.orig /etc/NetworkManager/NetworkManager.conf \
-		    -e 's/^\(dns=.*$\)/#\1/'
-	fi
-	if [ -d /etc/netplan/ ]; then
-		for FIL_NAME in /etc/netplan/99-network-manager-static.yaml /etc/netplan/00-installer-config.yaml
-		do
-			if [ ! -f ${FIL_NAME}.orig ] && \
-			   [   -f ${FIL_NAME}      ]; then
-				cp -p ${FIL_NAME} ${FIL_NAME}.orig
-				cat ${FIL_NAME}.orig                                                                                              | \
-				sed -e '/[ |\t]*version:/d'                                                                                       | \
-				sed -e '$ a \  version: 2'                                                                                        | \
-				sed -e '/[ |\t]*dhcp6:/d'                                                                                           \
-				    -e '/[ |\t]*ipv6-privacy:/d'                                                                                    \
-				    -e '/[ |\t]*version: 2/ i \      dhcp6: false'                                                                  \
-				    -e '/[ |\t]*version: 2/ i \      ipv6-privacy: true'                                                          | \
-				sed -z 's/\(\w\+\):\n *- *\( \w\+\)/\1:\2/g'                                                                      | \
-				sed -e 's/\([ |\t]*addresses\|search\): \(.\+\)/\1: \[ \2 \]/g'                                                     \
-				    -e 's/\[[ |\t]*\[/[/g'                                                                                          \
-				    -e 's/\][ |\t]*\]/]/g'                                                                                          \
-				    -e "/[ |\t]*nameservers:/,/[ |\t]*addresses:/ s/\([ |\t]*addresses:\) .*/\1 \[ 127.0.0.1, ${IP4_DNSA[0]} \]/"   \
-				> ${FIL_NAME}
-			fi
-		done
-	elif [ "`${CMD_WICH} connmanctl 2> /dev/null`" != "" ] && [ "`systemctl is-enabled connman`" = "enabled" ]; then
-		if [ ! -d /etc/systemd/system/connman.service.d/ ]; then
-			mkdir -p /etc/systemd/system/connman.service.d/
+	# ipv4 / ipv6 -------------------------------------------------------------
+	fncPrint "--- ipv4 / ipv6 $(fncString ${COL_SIZE} '-')"
+	# --- /etc/resolv.conf ------------------------------------------------
+	if [   -f /etc/resolv.conf ] && \
+	   [ ! -h /etc/resolv.conf ]; then
+		fncPrint "----- /etc/resolv.conf $(fncString ${COL_SIZE} '-')"
+		if [ ! -f /etc/resolv.conf.orig ]; then
+			cp -p /etc/resolv.conf /etc/resolv.conf.orig
 		fi
-		if [ "`${CMD_WICH} connmand 2> /dev/null`" != "" ]; then
-			cat <<- _EOT_ > /etc/systemd/system/connman.service.d/disable_dns_proxy.conf
-				[Service]
-				ExecStart=
-				ExecStart=`${CMD_WICH} connmand` -n --nodnsproxy
+		cp -p /etc/resolv.conf.orig /etc/resolv.conf
+		sed -i /etc/resolv.conf     \
+		    -e '/^search .*$/d'     \
+		    -e '/^nameserver .*$/d'
+		cat <<- _EOT_ >> /etc/resolv.conf
+			search ${WGP_NAME}
+			nameserver ::1
+			nameserver 127.0.0.1
 _EOT_
+	fi
+	# --- /etc/resolvconf/resolv.conf.d/head ----------------------------------
+	if [ -f /etc/resolvconf/resolv.conf.d/head ]; then
+		fncPrint "---- /etc/resolvconf/resolv.conf.d/head $(fncString ${COL_SIZE} '-')"
+		if [ ! -f /etc/resolvconf/resolv.conf.d/head.orig ]; then
+			cp -p /etc/resolvconf/resolv.conf.d/head /etc/resolvconf/resolv.conf.d/head.orig
 		fi
-		if [ ! -f /etc/connman/main.conf.orig ] && \
-		   [   -f /etc/connman/main.conf      ]; then
-			sed -i.orig /etc/connman/main.conf \
+		cp -p /etc/resolvconf/resolv.conf.d/head.orig /etc/resolvconf/resolv.conf.d/head
+		cat <<- _EOT_ >> /etc/resolvconf/resolv.conf.d/head
+			# /etc/resolvconf/resolv.conf.d/head
+			nameserver ::1
+			nameserver 127.0.0.1
+_EOT_
+	fi
+	# --- connmanctl ----------------------------------------------------------
+	if [ "`${CMD_WICH} connmanctl 2> /dev/null`" != "" ]; then
+		fncPrint "---- connmanctl $(fncString ${COL_SIZE} '-')"
+		if [ -f /etc/connman/main.conf ]; then
+			if [ ! -f /etc/connman/main.conf.orig ]; then
+				cp -p /etc/connman/main.conf /etc/connman/main.conf.orig
+			fi
+			cp -p /etc/connman/main.conf.orig /etc/connman/main.conf
+			sed -i /etc/connman/main.conf                         \
 			    -e 's/^[ \t]*\(AllowHostnameUpdates\)/# \1/'      \
 			    -e 's/^[ \t]*\(PreferredTechnologies\)/# \1/'     \
 			    -e 's/^[ \t]*\(SingleConnectedTechnology\)/# \1/' \
@@ -1089,87 +1118,94 @@ _EOT_
 			    -e '$a PreferredTechnologies = ethernet,wifi'     \
 			    -e '$a SingleConnectedTechnology = true'
 		fi
-		if [ ! -f /etc/resolv.conf.orig ] && \
-		   [   -f /etc/resolv.conf      ] && \
-		   [ ! -h /etc/resolv.conf      ]; then
-			sed -i.orig /etc/resolv.conf                                       \
-			    -e "s/\(search\) .*$/\1 ${WGP_NAME}/g"                         \
-			    -e "s/\(nameserver\) .*$/\1 127\.0\.0\.1\n\1 ${IP4_DNSA[0]}/g"
-		fi
-		connmanctl config "${CON_NAME}" --ipv4 manual "${IP4_ADDR[0]}" "${IP4_MASK[0]}" "${IP4_GATE[0]}"
-		connmanctl config "${CON_NAME}" --ipv6 auto preferred
-		connmanctl config "${CON_NAME}" --nameservers "127.0.0.1 ${IP4_DNSA[0]}"
-		connmanctl config "${CON_NAME}" --domains ${WGP_NAME}
-	elif [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
-		nmcli c modify "${CON_UUID}" ipv6.method auto
-		nmcli c modify "${CON_UUID}" ipv6.ip6-privacy 1
-		nmcli c modify "${CON_UUID}" ipv6.dns "::1 ${IP6_DNSA[0]} ${IP6_UADR}:${IP6_LDNS}"
-		nmcli c modify "${CON_UUID}" ipv6.dns-search ${WGP_NAME}.
-		nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
-		nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
-#		nmcli c down   "${CON_UUID}" > /dev/null
-		nmcli c up     "${CON_UUID}" > /dev/null
-		for CON_INFO in `nmcli -t -f device,uuid c`
-		do
-			CON_INFO_DEV=`echo ${CON_INFO} | awk -F ':' '{print $1;}'`
-			CON_INFO_UUID=`echo ${CON_INFO} | awk -F ':' '{print $2;}'`
-			if [ "${CON_INFO_DEV}" != "${DEV_NAME}" ]; then
-				nmcli c delete uuid ${CON_INFO_UUID}
+		mkdir -p /etc/systemd/system/connman.service.d/
+		cat <<- _EOT_ > /etc/systemd/system/connman.service.d/disable_dns_proxy.conf
+			[Service]
+			ExecStart=
+			ExecStart=`${CMD_WICH} connmand` -n --nodnsproxy
+_EOT_
+#		connmanctl config "${CON_NAME}" --ipv4 manual "${IP4_ADDR[0]}" "${IP4_MASK[0]}" "${IP4_GATE[0]}"
+#		connmanctl config "${CON_NAME}" --ipv6 auto preferred
+#		connmanctl config "${CON_NAME}" --nameservers ${IP6_DNSA[0]} ${IP4_DNSA[0]} 127.0.0.1
+#		connmanctl config "${CON_NAME}" --domains ${WGP_NAME}
+#		connmanctl config "${CON_NAME}" timeservers ${NTP_NAME};
+#		connmanctl config "${CON_NAME}" mdns true
+	fi
+	# --- NetworkManager ------------------------------------------------------
+	if [ "`${CMD_WICH} nmcli 2> /dev/null`" != "" ]; then
+		fncPrint "---- NetworkManager $(fncString ${COL_SIZE} '-')"
+		if [ -f /etc/NetworkManager/NetworkManager.conf ]; then
+			if [ ! -f /etc/NetworkManager/NetworkManager.conf.orig ]; then
+				cp -p /etc/NetworkManager/NetworkManager.conf /etc/NetworkManager/NetworkManager.conf.orig
 			fi
-		done
-	elif [ ! -f /etc/sysconfig/network/config.orig ] && \
-		 [   -f /etc/sysconfig/network/config      ] && \
-		 [ ! -h /etc/sysconfig/network/config      ]; then
-		if [ "`sed -n '/NETCONFIG_DNS_STATIC_SERVERS=.*127\.0\.0\.1/p' /etc/sysconfig/network/config`" = "" ]; then
-			sed -i.orig /etc/sysconfig/network/config                                                           \
-			    -e "s/\(NETCONFIG_DNS_STATIC_SERVERS\)=\"${IP4_DNSA[0]}\"/\1=\"127\.0\.0\.1 ${IP4_DNSA[0]}\"/g"
-#			netconfig update -f
+			cp -p /etc/NetworkManager/NetworkManager.conf.orig /etc/NetworkManager/NetworkManager.conf
+			if [ "`sed -n '/^dns/p' /etc/NetworkManager/NetworkManager.conf`" != "" ]; then
+				sed -i /etc/NetworkManager/NetworkManager.conf \
+				    -e 's/^\(dns=.*$\)/#\1/'
+			fi
 		fi
-	elif [ -f "/etc/NetworkManager/system-connections/${CON_NAME}" ]; then
-		sed -i "/etc/NetworkManager/system-connections/${CON_NAME}" \
-		    -e "/\[ipv4\]/a dns-search=${WGP_NAME}.;"               \
-		    -e 's/\(ip6-privacy\)=.$/\1=1/'
-		if [ "`sed -n '/\[ipv4\]/,/\[.*\]/p' "\""/etc/NetworkManager/system-connections/${CON_NAME}"\"" | sed -n '/dns=.*127\.0\.0\.1;/p'`" = "" ]; then
-			sed -i "/etc/NetworkManager/system-connections/${CON_NAME}"       \
-			    -e '/\[ipv4\]/,/\[.*\]/ s/\(dns\)=\(.*\)/\1=127\.0\.0\.1;\2/'
-		fi
-	elif [ ! -f /etc/resolv.conf.orig ] && \
-		 [   -f /etc/resolv.conf      ] && \
-		 [ ! -h /etc/resolv.conf      ]; then
-			sed -i.orig /etc/resolv.conf                \
-			    -e "s/\(search .*\)/\1 ${WGP_NAME}\./g"
-		if [ "`sed -n '/nameserver[ \t]*127\.0\.0\.1/p' /etc/resolv.conf`" = "" ]; then
-			sed -i /etc/resolv.conf                                                       \
-			    -e "s/\(nameserver\) ${IP4_DNSA[0]}/\1 127\.0\.0\.1\n\1 ${IP4_DNSA[0]}/g"
+#		if [ "${CON_UUID}" != "" ] && [ "`LANG=C nmcli con help 2>&1 | sed -n '/COMMAND :=.*modify/p'`" != "" ]; then
+#			nmcli c modify "${CON_UUID}" ipv6.method auto
+#			nmcli c modify "${CON_UUID}" ipv6.ip6-privacy 1
+#			nmcli c modify "${CON_UUID}" ipv6.dns "::1 ${IP6_DNSA[0]} ${IP6_UADR}:${IP6_LDNS}"
+#			nmcli c modify "${CON_UUID}" ipv6.dns-search ${WGP_NAME}.
+#			nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1 ${IP4_DNSA[0]}"
+#			nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
+#			nmcli c down   "${CON_UUID}" > /dev/null
+#			nmcli c up     "${CON_UUID}" > /dev/null
+#			for CON_INFO in `nmcli -t -f device,uuid c`
+#			do
+#				CON_INFO_DEV=`echo ${CON_INFO} | awk -F ':' '{print $1;}'`
+#				CON_INFO_UUID=`echo ${CON_INFO} | awk -F ':' '{print $2;}'`
+#				if [ "${CON_INFO_DEV}" != "${DEV_NAME}" ]; then
+#					nmcli c delete uuid ${CON_INFO_UUID}
+#				fi
+#			done
+#		fi
+	fi
+	# --- netplan -------------------------------------------------------------
+	if [ "`${CMD_WICH} netplan 2> /dev/null`" != "" ]; then
+		fncPrint "---- netplan $(fncString ${COL_SIZE} '-')"
+		if [ -d /etc/netplan/ ]; then
+			for FIL_NAME in /etc/netplan/99-network-manager-static.yaml /etc/netplan/00-installer-config.yaml
+			do
+				if [ "${FIL_NAME}" != "" ] && [ -f ${FIL_NAME} ]; then
+					fncPrint "----- ${FIL_NAME} $(fncString ${COL_SIZE} '-')"
+					if [ ! -f ${FIL_NAME}.orig ]; then
+						cp -p ${FIL_NAME} ${FIL_NAME}.orig
+					fi
+					cp -p ${FIL_NAME}.orig ${FIL_NAME}
+				fi
+			done
 		fi
 	fi
-	#--------------------------------------------------------------------------
-#	if [ "${SYS_NAME}" = "ubuntu" ] && [ ! -h /etc/resolv.conf ]; then			# Ubuntuの判定
-#		if [ "`awk '/nameserver 127.0.0.53/ {print $0;}' /etc/resolv.conf`" != "" ]; then
-#			fncPrint "--- systemd-resolved disable $(fncString ${COL_SIZE} '-')"
-#			fncProc systemd-resolved disable									# nameserver 127.0.0.53 の無効化
-#		fi
-#	fi
-	if [ "${SYS_NAME}" = "ubuntu" ] && [ "`systemctl is-enabled systemd-resolved`" = "enabled" ]; then
-		fncPrint "--- systemd-resolved disable $(fncString ${COL_SIZE} '-')"
+	# --- systemd-resolved ----------------------------------------------------
+	if [ "`systemctl is-enabled systemd-resolved`" = "enabled" ] && \
+	   [ "`sed -n '/127.0.0.53/p' /etc/resolv.conf`" != "" ]; then
+		fncPrint "--- Disable systemd-resolved $(fncString ${COL_SIZE} '-')"
 		fncProc systemd-resolved disable										# nameserver 127.0.0.53 の無効化
 	fi
 	# SELinux -----------------------------------------------------------------
-	fncPrint "--- SELinux changed $(fncString ${COL_SIZE} '-')"
-	if [ ! -f /etc/selinux/config.orig ] && \
-	   [ "`${CMD_WICH} getenforce 2> /dev/null`" != "" ] && \
-	   [ "`getenforce`" = "Enforcing" ]; then
-		sed -i.orig /etc/selinux/config                \
-		    -e 's/\(SELINUX\)=enforcing/\1=disabled/g'
+	if [ "`${CMD_WICH} getenforce 2> /dev/null`" != "" ]; then
+		fncPrint "--- SELinux $(fncString ${COL_SIZE} '-')"
+		if [ ! -f /etc/selinux/config.orig ]; then
+			cp -p /etc/selinux/config /etc/selinux/config.orig
+		fi
+		cp -p /etc/selinux/config.orig /etc/selinux/config
+		if [ "`getenforce`" = "Enforcing" ]; then
+			fncPrint "---- Disabled SELinux $(fncString ${COL_SIZE} '-')"
+			sed -i /etc/selinux/config                     \
+			    -e 's/\(SELINUX\)=enforcing/\1=disabled/g'
+		fi
 	fi
 	# Virtual Bridge ----------------------------------------------------------
-	fncPrint "--- Virtual Bridge changed $(fncString ${COL_SIZE} '-')"
 	if [ "`fncProcFind \"libvirtd\"`" = "1" ]; then
+		fncPrint "--- Disable Virtual Bridge $(fncString ${COL_SIZE} '-')"
 		fncProc libvirtd disable
 	fi
 	# firewalld ---------------------------------------------------------------
-	fncPrint "--- firewalld changed $(fncString ${COL_SIZE} '-')"
 	if [ "`fncProcFind \"firewalld\"`" = "1" ]; then
+		fncPrint "--- firewalld $(fncString ${COL_SIZE} '-')"
 		fncProc firewalld enable
 		fncProc firewalld restart
 		# --- 	Firewalld を有効にしている場合 --------------------------------
@@ -1185,24 +1221,15 @@ _EOT_
 		# --- ファイルマネージャー対策 [一時的] -------------------------------
 #		iptables -t raw -A OUTPUT -p udp -m udp --dport 137 -j CT --helper netbios-ns
 	fi
-	# avahi-daemon ------------------------------------------------------------
-#	fncPrint "--- avahi-daemon changed $(fncString ${COL_SIZE} '-')"
-#	if [ "`fncProcFind \"avahi-daemon\"`" = "1" ]; then
-#		fncProc avahi-daemon disable
-#	fi
-#	if [ ! -f /etc/avahi/avahi-daemon.conf.orig ] && \
-#	   [   -f /etc/avahi/avahi-daemon.conf      ]; then
-#		sed -i.orig /etc/avahi/avahi-daemon.conf \
-#		    -e 's/.*\(use-ipv4\)=.*$/\1=no/'       \
-#		    -e 's/.*\(use-ipv6\)=.*$/\1=no/'
-#	fi
 	# nsswitch.conf -----------------------------------------------------------
-	fncPrint "--- nsswitch.conf changed $(fncString ${COL_SIZE} '-')"
-	if [ ! -f /etc/nsswitch.conf.orig ] && \
-	   [   -f /etc/nsswitch.conf      ]; then
-#		sed -i.orig /etc/nsswitch.conf \
+	if [   -f /etc/nsswitch.conf ]; then
+		fncPrint "--- nsswitch.conf $(fncString ${COL_SIZE} '-')"
+		if [ ! -f /etc/nsswitch.conf.orig ]; then
+			cp -p /etc/nsswitch.conf /etc/nsswitch.conf.orig
+		fi
+		cp -p /etc/nsswitch.conf.orig /etc/nsswitch.conf
+#		sed -i /etc/nsswitch.conf \
 #		    -e 's/mdns4/mdns/g'
-		cp -p /etc/nsswitch.conf /etc/nsswitch.conf.orig
 		OLD_IFS=${IFS}
 		IFS=$'\n'
 		INS_ROW=$((`sed -n '/^hosts:/ =' /etc/nsswitch.conf | head -n 1`))
@@ -1263,122 +1290,90 @@ _EOT_
 	# *************************************************************************
 	# Make usb dir
 	# *************************************************************************
-	fncPrint "- Make usb dir $(fncString ${COL_SIZE} '-')"
+#	fncPrint "- Make usb dir $(fncString ${COL_SIZE} '-')"
 	# -------------------------------------------------------------------------
-	mkdir -p /mnt/usb1
-	mkdir -p /mnt/usb2
-	mkdir -p /mnt/usb3
-	mkdir -p /mnt/usb4
+#	mkdir -p /mnt/usb1
+#	mkdir -p /mnt/usb2
+#	mkdir -p /mnt/usb3
+#	mkdir -p /mnt/usb4
 
 	# *************************************************************************
 	# Make shell dir
 	# *************************************************************************
-	fncPrint "- Make shell dir $(fncString ${COL_SIZE} '-')"
-	# -------------------------------------------------------------------------
-	mkdir -p /usr/sh
-	mkdir -p /var/log/sh
-	# -------------------------------------------------------------------------
-	cat <<- _EOT_ > /usr/sh/USRCOMMON.def
-		#!/bin/bash
-		###############################################################################
-		##
-		##	ファイル名	:	USRCOMMON.def
-		##
-		##	機能概要	:	ユーザー環境共通処理
-		##
-		##	入出力 I/F
-		##		INPUT	:	
-		##		OUTPUT	:	
-		##
-		##	作成者		:	J.Itou
-		##
-		##	作成日付	:	2014/10/27
-		##
-		##	改訂履歴	:	
-		##	   日付       版         名前      改訂内容
-		##	---------- -------- -------------- ----------------------------------------
-		##	2013/10/27 000.0000 J.Itou         新規作成
-		##	2014/11/04 000.0000 J.Itou         4HDD版仕様変更
-		##	2018/03/20 000.0000 J.Itou         処理見直し
-		##	${NOW_DATE} 000.0000 J.Itou         自動作成
-		##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
-		##	---------- -------- -------------- ----------------------------------------
-		###############################################################################
-
-		#------------------------------------------------------------------------------
-		# ユーザー変数定義
-		#------------------------------------------------------------------------------
-
-		# USBデバイス変数定義
-		APL_MNT_DV1="${USB_ARRY[0]}1"
-		APL_MNT_DV2="${USB_ARRY[1]}1"
-		APL_MNT_DV3="${USB_ARRY[2]}1"
-		APL_MNT_DV4="${USB_ARRY[3]}1"
-
-		# USBデバイス変数定義
-		APL_MNT_LN1="/mnt/usb1"
-		APL_MNT_LN2="/mnt/usb2"
-		APL_MNT_LN3="/mnt/usb3"
-		APL_MNT_LN4="/mnt/usb4"
-
-		SYS_MNT_DV1="/sys/block/`echo ${USB_ARRY[0]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
-		SYS_MNT_DV2="/sys/block/`echo ${USB_ARRY[1]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
-		SYS_MNT_DV3="/sys/block/`echo ${USB_ARRY[2]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
-		SYS_MNT_DV4="/sys/block/`echo ${USB_ARRY[3]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
-_EOT_
-
+#	fncPrint "- Make shell dir $(fncString ${COL_SIZE} '-')"
+#	# -------------------------------------------------------------------------
+#	mkdir -p /usr/sh
+#	mkdir -p /var/log/sh
+#	# -------------------------------------------------------------------------
+#	cat <<- _EOT_ > /usr/sh/USRCOMMON.def
+#		#!/bin/bash
+#		###############################################################################
+#		##
+#		##	ファイル名	:	USRCOMMON.def
+#		##
+#		##	機能概要	:	ユーザー環境共通処理
+#		##
+#		##	入出力 I/F
+#		##		INPUT	:	
+#		##		OUTPUT	:	
+#		##
+#		##	作成者		:	J.Itou
+#		##
+#		##	作成日付	:	2014/10/27
+#		##
+#		##	改訂履歴	:	
+#		##	   日付       版         名前      改訂内容
+#		##	---------- -------- -------------- ----------------------------------------
+#		##	2013/10/27 000.0000 J.Itou         新規作成
+#		##	2014/11/04 000.0000 J.Itou         4HDD版仕様変更
+#		##	2018/03/20 000.0000 J.Itou         処理見直し
+#		##	${NOW_DATE} 000.0000 J.Itou         自動作成
+#		##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
+#		##	---------- -------- -------------- ----------------------------------------
+#		###############################################################################
+#
+#		#------------------------------------------------------------------------------
+#		# ユーザー変数定義
+#		#------------------------------------------------------------------------------
+#
+#		# USBデバイス変数定義
+#		APL_MNT_DV1="${USB_ARRY[0]}1"
+#		APL_MNT_DV2="${USB_ARRY[1]}1"
+#		APL_MNT_DV3="${USB_ARRY[2]}1"
+#		APL_MNT_DV4="${USB_ARRY[3]}1"
+#
+#		# USBデバイス変数定義
+#		APL_MNT_LN1="/mnt/usb1"
+#		APL_MNT_LN2="/mnt/usb2"
+#		APL_MNT_LN3="/mnt/usb3"
+#		APL_MNT_LN4="/mnt/usb4"
+#
+#		SYS_MNT_DV1="/sys/block/`echo ${USB_ARRY[0]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
+#		SYS_MNT_DV2="/sys/block/`echo ${USB_ARRY[1]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
+#		SYS_MNT_DV3="/sys/block/`echo ${USB_ARRY[2]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
+#		SYS_MNT_DV4="/sys/block/`echo ${USB_ARRY[3]} | awk -F '/' '{print $3}'`/device/scsi_disk/*/cache_type"
+#_EOT_
+#
 	# *************************************************************************
 	# Install clamav
 	# *************************************************************************
-	fncPrint "- Install clamav $(fncString ${COL_SIZE} '-')"
-	# -------------------------------------------------------------------------
-#	if [ "`${CMD_WICH} freshclam 2> /dev/null`" = "" ]; then					# Install clamav
-#		case "${SYS_NAME}" in
-#			"debian"       | \
-#			"ubuntu"       )
-#				if [ "`apt-cache search clamav | awk '$1==\"clamav\" {print $1;}'`" = "clamav" ]; then
-#					${CMD_AGET} install clamav clamav-update clamav-scanner-systemd
-#					fncPause $?
-#				fi
-#				;;
-#			"centos"       | \
-#			"fedora"       | \
-#			"rocky"        | \
-#			"miraclelinux" | \
-#			"almalinux"    )
-#				if [ "`${CMD_AGET} search clamav | awk -F '.' '$1==\"clamav\" {print $1;}'`" = "clamav" ]; then
-#					${CMD_AGET} install clamav clamav-update clamav-scanner-systemd
-#					fncPause $?
-#				fi
-#				;;
-#			"opensuse-leap"       | \
-#			"opensuse-tumbleweed" )
-#				if [ "`${CMD_AGET} search clamav | awk -F '|' '{gsub(\" \",\"\"); if($2==\"clamav\") print $2;}'`" = "clamav" ]; then
-#					${CMD_AGET} install clamav
-#					fncPause $?
-#				fi
-#				;;
-#			* )
-#				;;
-#		esac
-#	fi
-	# -------------------------------------------------------------------------
 	if [ "`${CMD_WICH} freshclam 2> /dev/null`" != "" ]; then
+		fncPrint "- Set Up clamav $(fncString ${COL_SIZE} '-')"
 		FILE_FRESHCONF=`find /etc/ -name "freshclam.conf" -type f -print`
 		FILE_CLAMDCONF=`dirname ${FILE_FRESHCONF}`/clamd.conf
 		# ---------------------------------------------------------------------
-		if [ ! -f ${FILE_CLAMDCONF} ]; then
-			cp -p ${FILE_FRESHCONF} ${FILE_CLAMDCONF}
-			: > ${FILE_CLAMDCONF}
-		fi
+		cp -p ${FILE_FRESHCONF} ${FILE_CLAMDCONF}
+		: > ${FILE_CLAMDCONF}
 		# ---------------------------------------------------------------------
-		if [ ! -f ${FILE_FRESHCONF}.orig ]; then
-			sed -i.orig ${FILE_FRESHCONF}                                        \
-			    -e 's/^Example/#&/'                                              \
-			    -e 's/\(# Check for new database\) 24 \(times a day\)/\1 12 \2/' \
-			    -e 's/\(Checks\) 24/\1 12/'                                      \
-			    -e 's/^NotifyClamd/#&/'
+		if [ "${FILE_FRESHCONF}" != "" ] && [ ! -f ${FILE_FRESHCONF}.orig ]; then
+			cp -p ${FILE_FRESHCONF} ${FILE_FRESHCONF}.orig
 		fi
+		cp -p ${FILE_FRESHCONF}.orig ${FILE_FRESHCONF}
+		sed -i ${FILE_FRESHCONF}                                             \
+		    -e 's/^Example/#&/'                                              \
+		    -e 's/\(# Check for new database\) 24 \(times a day\)/\1 12 \2/' \
+		    -e 's/\(Checks\) 24/\1 12/'                                      \
+		    -e 's/^NotifyClamd/#&/'
 		# ---------------------------------------------------------------------
 		if [ "${SYS_NAME}" = "debian" ] && [ "${CPU_TYPE}" = "armv5tel" ]; then
 			fncProc clamav-freshclam disable
@@ -1389,35 +1384,33 @@ _EOT_
 	# *************************************************************************
 	# Install ssh
 	# *************************************************************************
-	fncPrint "- Install ssh $(fncString ${COL_SIZE} '-')"
 	# -------------------------------------------------------------------------
-	if [ ! -f /etc/ssh/sshd_config.orig ] && \
-	   [   -f /etc/ssh/sshd_config      ]; then
-#		sed -i.orig /etc/ssh/sshd_config           \
-#		    -e 's/^\(PermitRootLogin\) .*/\1 no/'  \
-#		    -e 's/^#\(PermitRootLogin\) .*/\1 no/' \
-#		    -e '$a UseDNS no'
-		sed -i.orig /etc/ssh/sshd_config           \
-		    -e '$a \\n# --- user settings ---'     \
-		    -e '$a PermitRootLogin no'             \
-		    -e '$a UseDNS no'                      \
-		    -e '$a #PubkeyAuthentication yes'      \
+	if [ -f /etc/ssh/sshd_config ]; then
+		fncPrint "- Set Up ssh $(fncString ${COL_SIZE} '-')"
+		if [ ! -f /etc/ssh/sshd_config.orig ]; then
+			cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config.orig
+		fi
+		cp -p /etc/ssh/sshd_config.orig /etc/ssh/sshd_config
+		sed -i /etc/ssh/sshd_config             \
+		    -e '$a \\n# --- user settings ---'  \
+		    -e '$a PermitRootLogin no'          \
+		    -e '$a UseDNS no'                   \
+		    -e '$a #PubkeyAuthentication yes'   \
 		    -e '$a #PasswordAuthentication yes'
-	fi
-	# -------------------------------------------------------------------------
-	if [ "`fncProcFind \"ssh\"`" = "1" ]; then
-		fncProc ssh "${RUN_SSHD[0]}"
-		fncProc ssh "${RUN_SSHD[1]}"
-	fi
-	if [ "`fncProcFind \"sshd\"`" = "1" ]; then
-		fncProc sshd "${RUN_SSHD[0]}"
-		fncProc sshd "${RUN_SSHD[1]}"
+		if [ "`fncProcFind \"ssh\"`" = "1" ]; then
+			fncProc ssh "${RUN_SSHD[0]}"
+			fncProc ssh "${RUN_SSHD[1]}"
+		fi
+		if [ "`fncProcFind \"sshd\"`" = "1" ]; then
+			fncProc sshd "${RUN_SSHD[0]}"
+			fncProc sshd "${RUN_SSHD[1]}"
+		fi
 	fi
 
 	# *************************************************************************
 	# Install bind9
 	# *************************************************************************
-	fncPrint "- Install bind9 $(fncString ${COL_SIZE} '-')"
+	fncPrint "- Set Up bind9 $(fncString ${COL_SIZE} '-')"
 	# -------------------------------------------------------------------------
 	DNS_SCNT="`date +"%Y%m%d"`01"
 	#--------------------------------------------------------------------------
@@ -1477,12 +1470,12 @@ _EOT_
 		sed -i.orig ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
 	fi
 	# --- named.conf ----------------------------------------------------------
-	if [ ! -f ${DIR_BIND}/${FIL_BIND}.orig ] && \
-	   [   -f ${DIR_BIND}/${FIL_BIND}      ]; then
+	if [ "${DIR_BIND}" != "" ] && [ "${FIL_BIND}" != "" ] && [ -f ${DIR_BIND}/${FIL_BIND} ]; then
 		fncPrint "--- ${FIL_BIND} $(fncString ${COL_SIZE} '-')"
 		if [ ! -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
 			cp -p ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BIND}.orig
 		fi
+		cp -p ${DIR_BIND}/${FIL_BIND}.orig ${DIR_BIND}/${FIL_BIND}
 		# ---------------------------------------------------------------------
 		if [ "${FIL_BOPT}" != "${FIL_BIND}" ] && [ "`sed -n "/include.*${FIL_BOPT}/p" ${DIR_BIND}/${FIL_BIND}`" = "" ]; then
 			INS_ROW=`sed -n '/^include/ =' ${DIR_BIND}/${FIL_BIND} | tail -n 1`
@@ -1500,20 +1493,19 @@ _EOT_
 	# -------------------------------------------------------------------------
 	for FIL_NAME in `sed -n 's/^include "\(.*\)";$/\1/gp' ${DIR_BIND}/${FIL_BIND}`
 	do
-		if [ ! -f ${FIL_NAME} ]; then
+		if [ "${FIL_NAME}" != "" ] && [ ! -f ${FIL_NAME} ]; then
 			fncPrint "---- make ${FIL_NAME} $(fncString ${COL_SIZE} '-')"
 			cp -p ${DIR_BIND}/named.conf ${FIL_NAME}
 			: > ${FIL_NAME}
 		fi
 	done
 	# --- named.conf.options --------------------------------------------------
-	if [ ! -f ${DIR_BIND}/${FIL_BOPT}.orig -o "${FIL_BOPT}" = "${FIL_BIND}"                      ] && \
-	   [   -f ${DIR_BIND}/${FIL_BOPT}                                                            ] && \
-	   [ "`sed -n \"/^acl \\"${WGP_NAME}-network\\" {$/,/^};$/p\" ${DIR_BIND}/${FIL_BOPT}`" = "" ]; then
+	if [ "${DIR_BIND}" != "" ] && [ "${FIL_BOPT}" != "" ] && [ -f ${DIR_BIND}/${FIL_BOPT} ]; then
 		fncPrint "--- ${FIL_BOPT} $(fncString ${COL_SIZE} '-')"
 		if [ ! -f ${DIR_BIND}/${FIL_BOPT}.orig ]; then
 			cp -p ${DIR_BIND}/${FIL_BOPT} ${DIR_BIND}/${FIL_BOPT}.orig
 		fi
+		cp -p ${DIR_BIND}/${FIL_BOPT}.orig ${DIR_BIND}/${FIL_BOPT}
 		# ---------------------------------------------------------------------
 		sed -i ${DIR_BIND}/${FIL_BOPT}    \
 		    -e '/version/         s%^%//%' \
@@ -1527,26 +1519,6 @@ _EOT_
 		    -e '/recursion/       s%^%//%'
 		# ---------------------------------------------------------------------
 		OLD_IFS=${IFS}
-		# ---------------------------------------------------------------------
-#		INS_ROW=$((`sed -n '/^options/ =' ${DIR_BIND}/${FIL_BOPT} | head -n 1`-1))
-#		IFS= INS_STR=$(
-#			cat <<- _EOT_ | sed -e 's/^ //g'
-#				acl "${WGP_NAME}-network" {
-#				 	127.0.0.1;
-#				 	::1;
-#				 	${IP4_UADR[0]}.0/${IP4_BITS[0]};
-#				 	fe80::0/64;
-#				 	${IP6_UADR[0]}::0/${IP6_BITS[0]};
-#				};\n
-#_EOT_
-#	)
-#		if [ ${INS_ROW} -ge 1 ]; then
-#			IFS= INS_CFG=$(echo -e ${INS_STR} | sed "${INS_ROW}r /dev/stdin" ${DIR_BIND}/${FIL_BOPT})
-#		else
-#			IFS= INS_CFG=$(echo -e ${INS_STR} | cat /dev/stdin ${DIR_BIND}/${FIL_BOPT})
-#		fi
-		# ---------------------------------------------------------------------
-#		echo ${INS_CFG} > ${DIR_BIND}/${FIL_BOPT}
 		# ---------------------------------------------------------------------
 		INS_ROW=$((`sed -n '/^options/,/^};/ =' ${DIR_BIND}/${FIL_BOPT} | tail -n 1`-1))
 		IFS= INS_STR=$(
@@ -1582,12 +1554,12 @@ _EOT_
 #		fi
 	fi
 	# --- named.conf.local -----------------------------------------------------
-	if [ ! -f ${DIR_BIND}/${FIL_BLOC}.orig ] && \
-	   [   -f ${DIR_BIND}/${FIL_BLOC}      ]; then
+	if [ "${DIR_BIND}" != "" ] && [ "${FIL_BLOC}" != "" ] && [ -f ${DIR_BIND}/${FIL_BLOC} ]; then
 		fncPrint "--- ${FIL_BLOC} $(fncString ${COL_SIZE} '-')"
 		if [ ! -f ${DIR_BIND}/${FIL_BLOC}.orig ]; then
 			cp -p ${DIR_BIND}/${FIL_BLOC} ${DIR_BIND}/${FIL_BLOC}.orig
 		fi
+		cp -p ${DIR_BIND}/${FIL_BLOC}.orig ${DIR_BIND}/${FIL_BLOC}
 		# ---------------------------------------------------------------------
 		cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
 			# -----------------------------------------------------------------------------
@@ -1607,7 +1579,7 @@ _EOT_
 		done
 		# ---------------------------------------------------------------------
 		if [ "${EXT_ADDR}" != "" ]; then
-			fncPrint "--- setup slaves $(fncString ${COL_SIZE} '-')"
+			fncPrint "--- Set Up slaves $(fncString ${COL_SIZE} '-')"
 			sed -i.master ${DIR_BIND}/${FIL_BOPT}                         \
 			    -e 's/^\([ |\t]*allow-query[ |\t]*\).*$/\1{ any; };/'     \
 			    -e 's/^\([ |\t]*allow-transfer[ |\t]*\).*$/\1{ none; };/'
@@ -1645,12 +1617,15 @@ _EOT_
 	# *************************************************************************
 	# Install dhcp
 	# *************************************************************************
-	fncPrint "- Install dhcp $(fncString ${COL_SIZE} '-')"
 	# -------------------------------------------------------------------------
 	if [ "${INF_DHCP}" != "" ]; then
-		if [ ! -f ${DIR_DHCP}/${FIL_DHCP}.orig ] && \
-		   [   -f ${DIR_DHCP}/${FIL_DHCP}      ]; then
-			cp -p ${DIR_DHCP}/${FIL_DHCP} ${DIR_DHCP}/${FIL_DHCP}.orig
+		fncPrint "- Set Up dhcp $(fncString ${COL_SIZE} '-')"
+		if [ "${DIR_DHCP}" != "" ] && [ "${FIL_DHCP}" != "" ] && [ -f ${DIR_DHCP}/${FIL_DHCP} ]; then
+			fncPrint "--- ${FIL_DHCP} $(fncString ${COL_SIZE} '-')"
+			if [ ! -f ${DIR_DHCP}/${FIL_DHCP}.orig ]; then
+				cp -p ${DIR_DHCP}/${FIL_DHCP} ${DIR_DHCP}/${FIL_DHCP}.orig
+			fi
+			cp -p ${DIR_DHCP}/${FIL_DHCP}.orig ${DIR_DHCP}/${FIL_DHCP}
 			cat <<- _EOT_ | sed -e 's/^ //g' > ${DIR_DHCP}/${FIL_DHCP}
 				subnet ${IP4_NTWK[0]} netmask ${IP4_MASK[0]} {
 				 	option time-servers ${NTP_NAME};
@@ -1668,9 +1643,13 @@ _EOT_
 _EOT_
 		fi
 		# -------------------------------------------------------------------------
-		if [ ! -f /etc/default/isc-dhcp-server.orig ] && \
-		   [   -f /etc/default/isc-dhcp-server      ]; then
-			sed -i.orig /etc/default/isc-dhcp-server     \
+		if [ -f /etc/default/isc-dhcp-server ]; then
+			fncPrint "--- isc-dhcp-server $(fncString ${COL_SIZE} '-')"
+			if [ ! -f /etc/default/isc-dhcp-server.orig ]; then
+				cp -p /etc/default/isc-dhcp-server /etc/default/isc-dhcp-server.orig
+			fi
+			cp -p /etc/default/isc-dhcp-server.orig /etc/default/isc-dhcp-server
+			sed -i /etc/default/isc-dhcp-server                 \
 			    -e "s/^\(INTERFACESv4\)=.*$/\1=${NIC_ARRY[0]}/" \
 			    -e 's/^INTERFACESv6=/#&/'
 		fi
@@ -1697,9 +1676,14 @@ _EOT_
 	# *************************************************************************
 	# Add smb.conf
 	# *************************************************************************
-	fncPrint "- Add smb.conf $(fncString ${COL_SIZE} '-')"
 	# -------------------------------------------------------------------------
-	if [ ! -f ${SMB_BACK} ]; then
+	if [ "${SMB_CONF}" != "" ] && [ -f ${SMB_CONF} ]; then
+		fncPrint "- Set Up samba $(fncString ${COL_SIZE} '-')"
+		if [ "${SMB_BACK}" != "" ] && [ ! -f ${SMB_BACK} ]; then
+			cp -p ${SMB_CONF} ${SMB_BACK}
+		fi
+		cp -p ${SMB_BACK} ${SMB_CONF}
+		# ---------------------------------------------------------------------
 		CMD_UADD=`${CMD_WICH} useradd`
 		CMD_UDEL=`${CMD_WICH} userdel`
 		CMD_GADD=`${CMD_WICH} groupadd`
@@ -1895,56 +1879,59 @@ _EOT_
 		cp -p ${SMB_CONF} ${SMB_BACK}
 		testparm -s ${SMB_WORK} > ${SMB_CONF}
 		fncPause $?
-	fi
-	# -------------------------------------------------------------------------
-	case "${SYS_NAME}" in
-		"debian" | \
-		"ubuntu" )
-			if [ -f /etc/init.d/samba ]; then
-				if [ "${SYS_NAME}" = "debian" ] \
-				&& [ ${SYS_VNUM} -lt 8 ] && [ ${SYS_VNUM} -ge 0 ]; then				# Debian 8以前の判定
-					fncProc samba "${RUN_SMBD[0]}"
-					fncProc samba "${RUN_SMBD[1]}"
+		# ---------------------------------------------------------------------
+		case "${SYS_NAME}" in
+			"debian" | \
+			"ubuntu" )
+				if [ -f /etc/init.d/samba ]; then
+					if [ "${SYS_NAME}" = "debian" ] \
+					&& [ ${SYS_VNUM} -lt 8 ] && [ ${SYS_VNUM} -ge 0 ]; then		# Debian 8以前の判定
+						fncProc samba "${RUN_SMBD[0]}"
+						fncProc samba "${RUN_SMBD[1]}"
+					else
+						fncProc smbd "${RUN_SMBD[0]}"
+						fncProc nmbd "${RUN_SMBD[0]}"
+						fncProc smbd "${RUN_SMBD[1]}"
+						fncProc nmbd "${RUN_SMBD[1]}"
+					fi
 				else
 					fncProc smbd "${RUN_SMBD[0]}"
 					fncProc nmbd "${RUN_SMBD[0]}"
 					fncProc smbd "${RUN_SMBD[1]}"
 					fncProc nmbd "${RUN_SMBD[1]}"
 				fi
-			else
-				fncProc smbd "${RUN_SMBD[0]}"
-				fncProc nmbd "${RUN_SMBD[0]}"
-				fncProc smbd "${RUN_SMBD[1]}"
-				fncProc nmbd "${RUN_SMBD[1]}"
-			fi
-			;;
-		"centos"       | \
-		"fedora"       | \
-		"rocky"        | \
-		"miraclelinux" | \
-		"almalinux"    )
-			fncProc smb "${RUN_SMBD[0]}"
-			fncProc smb "${RUN_SMBD[1]}"
-			fncProc nmb "${RUN_SMBD[0]}"
-			fncProc nmb "${RUN_SMBD[1]}"
-			;;
-		"opensuse-leap"       | \
-		"opensuse-tumbleweed" )
-			fncProc smb "${RUN_SMBD[0]}"
-			fncProc smb "${RUN_SMBD[1]}"
-			fncProc nmb "${RUN_SMBD[0]}"
-			fncProc nmb "${RUN_SMBD[1]}"
-			;;
-		* )
-			;;
-	esac
+				;;
+			"centos"       | \
+			"fedora"       | \
+			"rocky"        | \
+			"miraclelinux" | \
+			"almalinux"    )
+				fncProc smb "${RUN_SMBD[0]}"
+				fncProc smb "${RUN_SMBD[1]}"
+				fncProc nmb "${RUN_SMBD[0]}"
+				fncProc nmb "${RUN_SMBD[1]}"
+				;;
+			"opensuse-leap"       | \
+			"opensuse-tumbleweed" )
+				fncProc smb "${RUN_SMBD[0]}"
+				fncProc smb "${RUN_SMBD[1]}"
+				fncProc nmb "${RUN_SMBD[0]}"
+				fncProc nmb "${RUN_SMBD[1]}"
+				;;
+			* )
+				;;
+		esac
+	fi
 
 	# *************************************************************************
 	# Install minidlna
 	# *************************************************************************
-	if [ ! -f /etc/minidlna.conf.orig ] && \
-	   [   -f /etc/minidlna.conf      ]; then
-		fncPrint "- Install minidlna $(fncString ${COL_SIZE} '-')"
+	if [ -f /etc/minidlna.conf ]; then
+		fncPrint "- Set Up minidlna $(fncString ${COL_SIZE} '-')"
+		if [ ! -f /etc/minidlna.conf.orig ]; then
+			cp -p /etc/minidlna.conf /etc/minidlna.conf.orig
+		fi
+		cp -p /etc/minidlna.conf.orig /etc/minidlna.conf
 		OLD_IFS=${IFS}
 		IFS= INS_STR=$(
 		cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
@@ -1954,7 +1941,7 @@ _EOT_
 _EOT_
 		)
 		IFS=${OLD_IFS}
-		sed -i.orig /etc/minidlna.conf                     \
+		sed -i /etc/minidlna.conf                           \
 		    -e 's/^\(media_dir\)=/#\1=/'                    \
 		    -e 's/^#\(friendly_name\)=.*$/\1=Media Server/' \
 		    -e 's/^#\(inotify\)=.*$/\1=yes/'                \
@@ -1976,7 +1963,7 @@ _EOT_
 	touch ${USR_FILE}
 	touch ${SMB_FILE}
 	# -------------------------------------------------------------------------
-	if [ ! -f ${LST_USER} ]; then
+	if [ "${LST_USER}" != "" ] && [ ! -f ${LST_USER} ]; then
 		touch ${LST_USER}
 		for I in "${USR_ARRY[@]}"
 		do
@@ -1996,7 +1983,7 @@ _EOT_
 	# *************************************************************************
 	# Setup Login User
 	# *************************************************************************
-	fncPrint "- Setup Login User $(fncString ${COL_SIZE} '-')"
+	fncPrint "- Set Up Login User $(fncString ${COL_SIZE} '-')"
 	# -------------------------------------------------------------------------
 	while IFS=: read WORKNAME FULLNAME USERIDNO PASSWORD ADMINFLG
 	do
@@ -2021,7 +2008,7 @@ _EOT_
 			chmod -R 770 ${DIR_SHAR}/data/usr/${USERNAME}; fncPause $?
 			chown -R ${SMB_USER}:${SMB_GRUP} ${DIR_SHAR}/data/usr/${USERNAME}; fncPause $?
 			if [ -d /var/lib/AccountsService/users/ ] && [ ! -f "/var/lib/AccountsService/users/${USERNAME}" ]; then
-				cat <<- _EOT_ > "/var/lib/AccountsService/users/${USERNAME}"
+				cat <<- '_EOT_' > "/var/lib/AccountsService/users/${USERNAME}"
 					[User]
 					SystemAccount=true
 _EOT_
@@ -2038,7 +2025,7 @@ _EOT_
 	# *************************************************************************
 	# Setup Samba User
 	# *************************************************************************
-	fncPrint "- Setup Samba User $(fncString ${COL_SIZE} '-')"
+	fncPrint "- Set Up Samba User $(fncString ${COL_SIZE} '-')"
 	# -------------------------------------------------------------------------
 	pdbedit -i smbpasswd:${SMB_FILE} -e tdbsam:${SMB_PWDB}
 	fncPause $?
@@ -2048,7 +2035,7 @@ _EOT_
 	# *************************************************************************
 	fncPrint "- Cron shell $(fncString ${COL_SIZE} '-')"
 	# -------------------------------------------------------------------------
-	cat <<- _EOT_ > ${TGZ_WORK}
+	cat <<- '_EOT_' > ${TGZ_WORK}
 		1f8b0800dea99f5a0003ed5c7d5313491ae7dfcca7e81de1d0dd0a939924
 		c4838a5748a2a00cb192b09ee552189281a40c099799a0ac47152487e2db
 		6aed2aee2abb7be72aabbbe75bedbaeaeae277719800dfe2bae72599c9eb
@@ -2155,11 +2142,11 @@ _EOT_
 		054b73e57f56a7191f00780000
 _EOT_
 	# -------------------------------------------------------------------------
-	pushd /usr/sh > /dev/null
-		xxd -r -p ${TGZ_WORK} | tar -xz
-		fncPause $?
-		ls -al
-	popd > /dev/null
+#	pushd /usr/sh > /dev/null
+#		xxd -r -p ${TGZ_WORK} | tar -xz
+#		fncPause $?
+#		ls -al
+#	popd > /dev/null
 
 	# *************************************************************************
 	# Crontab
@@ -2209,12 +2196,15 @@ _EOT_
 	#     792  1024×768：1600万色
 	#     795  1280×1024：1600万色
 	# *************************************************************************
-	if [ ! -f /etc/default/grub.orig ] && \
-	   [   -f /etc/default/grub      ]; then
-		fncPrint "- GRUB $(fncString ${COL_SIZE} '-')"
+	if [ -f /etc/default/grub ]; then
+		fncPrint "- Set Up GRUB $(fncString ${COL_SIZE} '-')"
+		if [ ! -f /etc/default/grub.orig ]; then
+			cp -p /etc/default/grub /etc/default/grub.orig
+		fi
+		cp -p /etc/default/grub.orig /etc/default/grub
 		# ---------------------------------------------------------------------
 		VGA_MODE=`echo ${VGA_RESO[0]} | sed -e "s/\(.*\)x\(.*\)x\(.*\)/\1x\2x\3/"`
-		sed -i.orig /etc/default/grub                        \
+		sed -i /etc/default/grub                             \
 		    -e 's/^GRUB_GFXMODE.*$/#&/'                      \
 		    -e 's/^GRUB_GFXPAYLOAD_LINUX.*$/#&/'             \
 		    -e 's/^aGRUB_CMDLINE_LINUX_DEFAULT.*$/#&/'       \
@@ -2291,7 +2281,7 @@ _EOT_
 	# Install VMware Tools
 	# *************************************************************************
 	if [ ${FLG_VMTL} -ne 0 ]; then
-		fncPrint "- Install VMware Tools $(fncString ${COL_SIZE} '-')"
+		fncPrint "- Set Up VMware Tools $(fncString ${COL_SIZE} '-')"
 		# ---------------------------------------------------------------------
 		case "${SYS_NAME}" in
 			"debian"       | \
@@ -2302,6 +2292,7 @@ _EOT_
 			"miraclelinux" | \
 			"almalinux"    )
 				if [ "`${CMD_WICH} vmware-checkvm 2> /dev/null`" = "" ]; then
+					fncPrint "--- Install VMware Tools $(fncString ${COL_SIZE} '-')"
 					if [ "`${CMD_AGET/apt-get -y/apt-cache} search open-vm-tools-desktop`" = "" ]; then
 						${CMD_AGET} install open-vm-tools
 						fncPause $?
@@ -2443,7 +2434,7 @@ _EOT_
 #		set +e
 		tar -czf ${DIR_WK}/bk_boot.tgz                                                               boot           || [[ $? == 1 ]]
 		tar -czf ${DIR_WK}/bk_etc.tgz                                                                etc            || [[ $? == 1 ]]
-		tar -czf ${DIR_WK}/bk_usr_sh.tgz                                                             usr/sh         || [[ $? == 1 ]]
+#		tar -czf ${DIR_WK}/bk_usr_sh.tgz                                                             usr/sh         || [[ $? == 1 ]]
 		tar -czf ${DIR_WK}/bk_cron.tgz                                                               var/spool/cron || [[ $? == 1 ]]
 		tar -czf ${DIR_WK}/bk_home.tgz   --exclude="bk_*.tgz" --exclude="*chrome*" --exclude="*.log" home           || [[ $? == 1 ]]
 		# ---------------------------------------------------------------------
@@ -2516,7 +2507,7 @@ fncDebug () {
 	echo "SMB_USER=${SMB_USER}"													# smb.confのforce user
 	echo "SMB_GRUP=${SMB_GRUP}"													# smb.confのforce group
 	echo "SMB_GADM=${SMB_GADM}"													# smb.confのadmin group
-#	echo "WWW_DATA=${WWW_DATA}"													# apach2 / httpdのユーザ名
+#	echo "WWW_DATA=${WWW_DATA}"													# apache2 / httpdのユーザ名
 	echo "CPU_TYPE=${CPU_TYPE}"													# CPU TYPE (x86_64/armv5tel/...)
 	echo "SVR_FQDN=${SVR_FQDN}"													# 本機のFQDN
 	echo "SVR_NAME=${SVR_NAME}"													# 本機のホスト名
@@ -2660,7 +2651,16 @@ fncDebug () {
 		fi
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	if [ -f /etc/resolv.conf ] && [ ! -h /etc/resolv.conf ]; then
+	if [ -f /etc/resolv.conf ]; then
+		fncPrint "--- cat /etc/resolv.conf $(fncString ${COL_SIZE} '-')"
+		expand -t 4 /etc/resolv.conf
+		if [ -f /etc/resolv.conf.orig ]; then
+			fncPrint "--- diff /etc/resolv.conf $(fncString ${COL_SIZE} '-')"
+			fncDiff /etc/resolv.conf /etc/resolv.conf.orig
+		fi
+	fi
+	# ･････････････････････････････････････････････････････････････････････････
+	if [ -f /etc/resolv.conf ]; then
 		fncPrint "--- cat /etc/resolv.conf $(fncString ${COL_SIZE} '-')"
 		expand -t 4 /etc/resolv.conf
 		if [ -f /etc/resolv.conf.orig ]; then
@@ -2869,8 +2869,10 @@ fncDebug () {
 	# Setup Samba User ********************************************************
 	fncPrint "--- pdbedit -L $(fncString ${COL_SIZE} '-')"
 	pdbedit -L
-	fncPrint "--- smbclient -N -L ${SVR_FQDN} $(fncString ${COL_SIZE} '-')"
-	smbclient -N -L ${SVR_FQDN}
+	fncPrint "--- smbclient -N -L ${SVR_NAME} $(fncString ${COL_SIZE} '-')"
+	smbclient -N -L ${SVR_NAME}
+#	fncPrint "--- smbclient -N -L ${SVR_FQDN} $(fncString ${COL_SIZE} '-')"
+#	smbclient -N -L ${SVR_FQDN}
 	# Install minidlna ********************************************************
 	if [ -f /etc/minidlna.conf.orig ]; then
 		fncPrint "--- diff /etc/minidlna.conf $(fncString ${COL_SIZE} '-')"
@@ -2886,6 +2888,20 @@ fncDebug () {
 		fncPrint "--- diff /etc/fstab /etc/fstab.vmware $(fncString ${COL_SIZE} '-')"
 		fncDiff /etc/fstab /etc/fstab.vmware
 	fi
+	# NTP *********************************************************************
+	if [ -f /etc/systemd/timesyncd.conf ]; then
+		if [ -f /etc/systemd/timesyncd.conf.orig ]; then
+			fncPrint "--- diff /etc/systemd/timesyncd.conf $(fncString ${COL_SIZE} '-')"
+			fncDiff /etc/systemd/timesyncd.conf /etc/systemd/timesyncd.conf.orig
+		fi
+		fncPrint "--- timedatectl status $(fncString ${COL_SIZE} '-')"
+		timedatectl status
+		fncPrint "--- timedatectl timesync-status $(fncString ${COL_SIZE} '-')"
+		set +e
+		timedatectl timesync-status
+		set -e
+	fi
+	# *************************************************************************
 	fncPrint "- Debug mode end $(fncString ${COL_SIZE} '-')"
 }
 
