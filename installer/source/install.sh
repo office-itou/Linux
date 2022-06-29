@@ -37,6 +37,8 @@
 ##	2022/06/15 000.0000 J.Itou         不具合修正
 ##	2022/06/17 000.0000 J.Itou         処理見直し
 ##	2022/06/19 000.0000 J.Itou         不具合修正
+##	2022/06/27 000.0000 J.Itou         処理見直し
+##	2022/06/29 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -84,9 +86,12 @@ fncUserSetting () {
 	# ･････････････････････････････････････････････････････････････････････････
 #	RUN_CLAM=("enable"  "")														# 起動停止設定：clamav-freshclam
 	RUN_SSHD=("enable"  "")														#   〃        ：ssh / sshd
+	RUN_HTTP=("disable" "")														#   〃        ：apache2 / httpd
+#	RUN_FTPD=("disable" "")														#   〃        ：vsftpd
 	RUN_BIND=("enable"  "")														#   〃        ：bind9 / named
 	RUN_DHCP=("disable" "")														#   〃        ：isc-dhcp-server / dhcpd
 	RUN_SMBD=("enable"  "")														#   〃        ：samba / smbd,nmbd / smb,nmb
+#	RUN_WMIN=("disable" "")														#   〃        ：webmin
 	RUN_DLNA=("disable" "")														#   〃        ：minidlna
 	# -------------------------------------------------------------------------
 	FLG_SVER=1																	# 0以外でサーバー仕様でセッティング
@@ -197,7 +202,13 @@ fncAddstr () {
 
 # IPアドレス取得処理 ----------------------------------------------------------
 fncGetIPaddr () {
-	LANG=C ip -oneline -$1 address show scope $2 dev $3 | awk '{print $4;}'
+	local DMY_STAT
+
+	DMY_STAT="`LANG=C ip -oneline -$1 address show scope $2 dev $3 mngtmpaddr | awk '{print $4;}'`"
+	if [ "${DMY_STAT}" = "" ]; then
+		DMY_STAT="`LANG=C ip -oneline -$1 address show scope $2 dev $3 | awk '{print $4;}'`"
+	fi
+	echo "${DMY_STAT}"
 }
 
 # NetworkManager設定値取得処理 ------------------------------------------------
@@ -476,9 +487,9 @@ fncInitialize () {
 	done
 	for DEV_NAME in ${NIC_ARRY[@]}
 	do
-		IP4_ARRY+=(`fncGetIPaddr 4 "global"               "${DEV_NAME}"`)		# IPv4:IPアドレス/サブネットマスク(bit)
-		IP6_ARRY+=(`fncGetIPaddr 6 "global mngtmpaddr"    "${DEV_NAME}"`)		# IPv6:IPアドレス/サブネットマスク(bit)
-		LNK_ARRY+=(`fncGetIPaddr 6 "link"                 "${DEV_NAME}"`)		# Link:IPアドレス/サブネットマスク(bit)
+		IP4_ARRY+=(`fncGetIPaddr 4 "global" "${DEV_NAME}"`)						# IPv4:IPアドレス/サブネットマスク(bit)
+		IP6_ARRY+=(`fncGetIPaddr 6 "global" "${DEV_NAME}"`)						# IPv6:IPアドレス/サブネットマスク(bit)
+		LNK_ARRY+=(`fncGetIPaddr 6 "link"   "${DEV_NAME}"`)						# Link:IPアドレス/サブネットマスク(bit)
 		IP4_DHCP+=(`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`)			# IPv4:DHCPフラグ(auto/static)
 		IP6_DHCP+=(`fncGetNM "DHCP6"   "${DEV_NAME}" "${CON_UUID}"`)			# IPv6:DHCPフラグ(auto/static)
 		IP4_DNSA+=(`fncGetNM "IP4.DNS" "${DEV_NAME}" "${CON_UUID}"`)			# IPv4:DNSアドレス
@@ -584,16 +595,12 @@ fncInitialize () {
 		"rocky"        | \
 		"miraclelinux" | \
 		"almalinux"    )
-			if [ "`${CMD_WICH} dnf 2> /dev/null`" != "" ]; then
-				CMD_AGET="dnf -y -q --allowerasing"
-			else
-				CMD_AGET="yum -y -q"
-			fi
+			CMD_AGET="dnf -y -q"
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
-#				CMD_AGET="zypper --non-interactive --terse --quiet"
-				CMD_AGET="zypper --non-interactive --terse"
+#			CMD_AGET="zypper --non-interactive --terse --quiet"
+			CMD_AGET="zypper --non-interactive --terse"
 			;;
 		* )
 			;;
@@ -719,6 +726,7 @@ fncMain () {
 		fi
 	fi
 	# -------------------------------------------------------------------------
+	# memo: sudo journalctl -xeu systemd-timesyncd.service
 	if [ -f /etc/systemd/timesyncd.conf ]; then
 		fncPrint "- Set Up timesyncd $(fncString ${COL_SIZE} '-')"
 		if [ ! -d /etc/systemd/timesyncd.conf.d/ ]; then
@@ -731,9 +739,14 @@ fncMain () {
 				NTP=${NTP_NAME}
 _EOT_
 		fi
-		timedatectl set-timezone Asia/Tokyo
-		timedatectl set-ntp true
-		fncProc systemd-timesyncd restart
+		if [ "`systemctl is-enabled systemd-timesyncd 2> /dev/null`" = "enabled" ]; then
+			fncPrint "--- timedatectl set-timezone $(fncString ${COL_SIZE} '-')"
+			timedatectl set-timezone Asia/Tokyo
+			fncPrint "--- timedatectl set-ntp $(fncString ${COL_SIZE} '-')"
+			timedatectl set-ntp true
+			fncPrint "--- timesyncd restart $(fncString ${COL_SIZE} '-')"
+			fncProc systemd-timesyncd restart
+		fi
 	fi
 
 	# *************************************************************************
@@ -776,9 +789,9 @@ _EOT_
 			fncPrint "- System Update $(fncString ${COL_SIZE} '-')"
 			# --- パッケージ更新 ----------------------------------------------
 			fncPrint "- Package Update $(fncString ${COL_SIZE} '-')"
-			${CMD_AGET} check-update
+			${CMD_AGET} --refresh check-update
 			fncPrint "- Package Upgrade $(fncString ${COL_SIZE} '-')"
-			${CMD_AGET} upgrade
+			${CMD_AGET} update
 			;;
 		"opensuse-leap"       | \
 		"opensuse-tumbleweed" )
@@ -1025,6 +1038,11 @@ _EOT_
 			    -e "s/127.0.1.1/${IP4_ADDR}/"           \
 			    -e "s/\(${SVR_FQDN}\)$/\1 ${SVR_NAME}/"
 		fi
+		if [ "`sed -n '/${SVR_NAME}/p' /etc/hosts`" = "" ]; then
+			cat <<- _EOT_ >> /etc/hosts
+				${IP4_ADDR[0]}	${SVR_FQDN} ${SVR_NAME}
+_EOT_
+		fi
 	fi
 	# hosts.allow -------------------------------------------------------------
 	if [ -f /etc/hosts.allow ]; then
@@ -1180,7 +1198,7 @@ _EOT_
 		fi
 	fi
 	# --- systemd-resolved ----------------------------------------------------
-	if [ "`systemctl is-enabled systemd-resolved`" = "enabled" ] && \
+	if [ "`systemctl is-enabled systemd-resolved 2> /dev/null`" = "enabled" ] && \
 	   [ "`sed -n '/127.0.0.53/p' /etc/resolv.conf`" != "" ]; then
 		fncPrint "--- Disable systemd-resolved $(fncString ${COL_SIZE} '-')"
 		fncProc systemd-resolved disable										# nameserver 127.0.0.53 の無効化
@@ -1382,9 +1400,22 @@ _EOT_
 	fi
 
 	# *************************************************************************
+	# Install apache2 / httpd
+	# *************************************************************************
+	if [ -f /etc/apache2/apache2.conf ]; then
+		fncPrint "- Set Up apache2 $(fncString ${COL_SIZE} '-')"
+		fncProc apache2 "${RUN_SSHD[0]}"
+		fncProc apache2 "${RUN_SSHD[1]}"
+	fi
+	if [ -f /etc/httpd/conf/httpd.conf ]; then
+		fncPrint "- Set Up httpd $(fncString ${COL_SIZE} '-')"
+		fncProc httpd "${RUN_SSHD[0]}"
+		fncProc httpd "${RUN_SSHD[1]}"
+	fi
+
+	# *************************************************************************
 	# Install ssh
 	# *************************************************************************
-	# -------------------------------------------------------------------------
 	if [ -f /etc/ssh/sshd_config ]; then
 		fncPrint "- Set Up ssh $(fncString ${COL_SIZE} '-')"
 		if [ ! -f /etc/ssh/sshd_config.orig ]; then
@@ -1502,10 +1533,12 @@ _EOT_
 	# --- named.conf.options --------------------------------------------------
 	if [ "${DIR_BIND}" != "" ] && [ "${FIL_BOPT}" != "" ] && [ -f ${DIR_BIND}/${FIL_BOPT} ]; then
 		fncPrint "--- ${FIL_BOPT} $(fncString ${COL_SIZE} '-')"
-		if [ ! -f ${DIR_BIND}/${FIL_BOPT}.orig ]; then
-			cp -p ${DIR_BIND}/${FIL_BOPT} ${DIR_BIND}/${FIL_BOPT}.orig
+		if [ "${FIL_BOPT}" != "${FIL_BIND}" ]; then
+			if [ ! -f ${DIR_BIND}/${FIL_BOPT}.orig ]; then
+				cp -p ${DIR_BIND}/${FIL_BOPT} ${DIR_BIND}/${FIL_BOPT}.orig
+			fi
+			cp -p ${DIR_BIND}/${FIL_BOPT}.orig ${DIR_BIND}/${FIL_BOPT}
 		fi
-		cp -p ${DIR_BIND}/${FIL_BOPT}.orig ${DIR_BIND}/${FIL_BOPT}
 		# ---------------------------------------------------------------------
 		sed -i ${DIR_BIND}/${FIL_BOPT}    \
 		    -e '/version/         s%^%//%' \
@@ -2487,12 +2520,13 @@ fncDebug () {
 	echo "DIR_SHAR=${DIR_SHAR}"													# 共有ディレクトリーのルート
 #	echo "RUN_CLAM=${RUN_CLAM[@]}"												# 起動停止設定：clamav-freshclam
 	echo "RUN_SSHD=${RUN_SSHD[@]}"												#   〃        ：ssh / sshd
-#	echo "RUN_HTTP=${RUN_HTTP[@]}"												#   〃        ：apache2 / httpd
+	echo "RUN_HTTP=${RUN_HTTP[@]}"												#   〃        ：apache2 / httpd
 #	echo "RUN_FTPD=${RUN_FTPD[@]}"												#   〃        ：vsftpd
 	echo "RUN_BIND=${RUN_BIND[@]}"												#   〃        ：bind9 / named
 	echo "RUN_DHCP=${RUN_DHCP[@]}"												#   〃        ：isc-dhcp-server / dhcpd
 	echo "RUN_SMBD=${RUN_SMBD[@]}"												#   〃        ：samba / smbd,nmbd / smb,nmb
 #	echo "RUN_WMIN=${RUN_WMIN[@]}"												#   〃        ：webmin
+	echo "RUN_DLNA=${RUN_DLNA[@]}"												#   〃        ：minidlna
 	echo "EXT_ZONE=${EXT_ZONE}"													# マスターDNSのドメイン名
 	echo "EXT_ADDR=${EXT_ADDR}"													#   〃         IPアドレス
 #	echo "FLG_RHAT=${FLG_RHAT}"													# CentOS時=1,その他=0
@@ -2648,15 +2682,6 @@ fncDebug () {
 		if [ -f /etc/netplan/00-installer-config.yaml.orig ]; then
 			fncPrint "--- diff /etc/netplan/00-installer-config.yaml $(fncString ${COL_SIZE} '-')"
 			fncDiff /etc/netplan/00-installer-config.yaml /etc/netplan/00-installer-config.yaml.orig
-		fi
-	fi
-	# ･････････････････････････････････････････････････････････････････････････
-	if [ -f /etc/resolv.conf ]; then
-		fncPrint "--- cat /etc/resolv.conf $(fncString ${COL_SIZE} '-')"
-		expand -t 4 /etc/resolv.conf
-		if [ -f /etc/resolv.conf.orig ]; then
-			fncPrint "--- diff /etc/resolv.conf $(fncString ${COL_SIZE} '-')"
-			fncDiff /etc/resolv.conf /etc/resolv.conf.orig
 		fi
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
@@ -2889,16 +2914,16 @@ fncDebug () {
 		fncDiff /etc/fstab /etc/fstab.vmware
 	fi
 	# NTP *********************************************************************
-	if [ -f /etc/systemd/timesyncd.conf ]; then
-		if [ -f /etc/systemd/timesyncd.conf.orig ]; then
-			fncPrint "--- diff /etc/systemd/timesyncd.conf $(fncString ${COL_SIZE} '-')"
-			fncDiff /etc/systemd/timesyncd.conf /etc/systemd/timesyncd.conf.orig
-		fi
+	if [ -f /etc/systemd/timesyncd.conf.orig ]; then
+		fncPrint "--- diff /etc/systemd/timesyncd.conf $(fncString ${COL_SIZE} '-')"
+		fncDiff /etc/systemd/timesyncd.conf /etc/systemd/timesyncd.conf.orig
+	fi
+	if [ "`${CMD_WICH} timedatectl 2> /dev/null`" != "" ]; then
 		fncPrint "--- timedatectl status $(fncString ${COL_SIZE} '-')"
 		timedatectl status
 		fncPrint "--- timedatectl timesync-status $(fncString ${COL_SIZE} '-')"
 		set +e
-		timedatectl timesync-status
+		timedatectl timesync-status 2> /dev/null
 		set -e
 	fi
 	# *************************************************************************

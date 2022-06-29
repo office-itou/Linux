@@ -31,6 +31,8 @@
 ##	2022/06/14 000.0000 J.Itou         処理見直し
 ##	2022/06/18 000.0000 J.Itou         処理見直し
 ##	2022/06/19 000.0000 J.Itou         処理見直し
+##	2022/06/27 000.0000 J.Itou         処理見直し
+##	2022/06/29 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -78,7 +80,7 @@
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-netinst-x86_64-36-1.5.iso                    -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2021-11-15   20xx-xx-xx   RHEL_8.5       -                                 " \
 	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9].*-latest-x86_64-boot.iso                                                  -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-NET-x86_64-Current.iso                                            -                                           yast_opensuse.xml                           2021-06-02   20xx-xx-xx   kernel_5.3.18  -                                 " \
+	    "suse           http://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9].*-NET-x86_64-Current.iso                                  -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21 -                                 " \
 	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                       -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 
@@ -98,7 +100,7 @@
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                        -                                           kickstart_common.cfg                        2021-11-15   20xx-xx-xx   RHEL_8.5        -                                " \
 	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9].*-rtm-x86_64.iso                                 -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_8.4        -                                " \
 	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9].*-latest-x86_64-dvd.iso                                                   -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "suse           http://download.opensuse.org/distribution/leap/15.3/iso/openSUSE-Leap-15.3-DVD-x86_64-Current.iso                                            -                                           yast_opensuse.xml                           2021-06-02   20xx-xx-xx   kernel_5.3.18   -                                " \
+	    "suse           http://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9].*-DVD-x86_64-Current.iso                                  -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
 	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                       -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
 	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                       -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
 	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9].*-amd64-lxde.iso                          -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
@@ -399,7 +401,7 @@ fncString () {
 # -----------------------------------------------------------------------------
 fncPrint () {
 	local RET_STR=""
-	MAX_COLS=$((COL_SIZE-1))
+	local MAX_COLS=$((COL_SIZE-1))
 	local OLD_IFS=${IFS}
 	IFS=$'\n'
 	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
@@ -424,7 +426,10 @@ fncIPv4GetNetmaskBits () {
 # -----------------------------------------------------------------------------
 fncCreate_late_command () {
 	fncPrint "    create_late_command"
-	DIR_PRESEED="$1"
+	local DIR_PRESEED="$1"
+	local OLD_IFS
+	local INS_STR
+	local DIR_CDROM
 	cat <<- '_EOT_SH_' | sed 's/^ *//g' > ${DIR_PRESEED}/sub_late_command.sh
 		#!/bin/bash
 		
@@ -539,7 +544,9 @@ _EOT_
 # -----------------------------------------------------------------------------
 fncCreate_success_command () {
 	fncPrint "    create_success_command"
-	DIR_PRESEED="$1"
+	local DIR_PRESEED="$1"
+	local OLD_IFS
+	local INS_STR
 	cat <<- '_EOT_SH_' | sed 's/^ *//g' > ${DIR_PRESEED}/sub_success_command.sh
 		#!/bin/bash
 		
@@ -709,6 +716,921 @@ _EOT_
 	IFS=${OLD_IFS}
 }
 # -----------------------------------------------------------------------------
+fncMake_setup_sh () {
+	fncPrint "      make setup.sh"
+	# --- copy media -> fsimg -------------------------------------------------
+	fncPrint "      copy media -> fsimg"
+	if [ -f ./image/live/filesystem.squashfs ]; then
+		mount -r -o loop ./image/live/filesystem.squashfs    ./mnt
+	elif [ -f ./image/install/filesystem.squashfs ]; then
+		mount -r -o loop ./image/install/filesystem.squashfs ./mnt
+	elif [ -f ./image/casper/filesystem.squashfs ]; then
+		mount -r -o loop ./image/casper/filesystem.squashfs  ./mnt
+	elif [ -f ./image/casper/minimal.squashfs ]; then
+		mount -r -o loop ./image/casper/minimal.squashfs     ./mnt
+	fi
+	cp -pr ./mnt/* ./decomp/
+	umount ./mnt
+	# -------------------------------------------------------------------------
+	HOSTNAME="`cat ./decomp/etc/hostname`"
+	WORKGROUP="`sed -n "s/^[^ \t]*[ \t]${HOSTNAME}\.\([^ \t]*\).*/\1/p" ./decomp/etc/hostname`"
+#	HOSTFQDN="cat ./decomp/etc/hosts`"
+#	HOSTNAME="${HOSTFQDN%%\.*}"
+#	WORKGROUP="${HOSTFQDN#*\.}"
+#	if [ "${WORKGROUP}" = "${HOSTNAME}" ]; then
+#		WORKGROUP=""
+#	fi
+	# -------------------------------------------------------------------------
+	cat <<- '_EOT_SH_' | \
+		sed -e 's/^ //g'                      \
+		    -e "s/_HOSTNAME_/${HOSTNAME}/g"   \
+		    -e "s/_WORKGROUP_/${WORKGROUP}/g" \
+		> ./decomp/setup.sh
+		#!/bin/bash
+		# =============================================================================
+		#	set -n								# 構文エラーのチェック
+		#	set -x								# コマンドと引数の展開を表示
+		 	set -o ignoreeof					# Ctrl+Dで終了しない
+		 	set +m								# ジョブ制御を無効にする
+		 	set -e								# ステータス0以外で終了
+		 	set -u								# 未定義変数の参照で終了
+		 	trap 'exit 1' 1 2 3 15
+		# -- initialize ---------------------------------------------------------------
+		 	ROW_SIZE=25
+		 	COL_SIZE=80
+		 	if [ "`which tput 2> /dev/null`" != "" ]; then
+		 		ROW_SIZE=`tput lines`
+		 		COL_SIZE=`tput cols`
+		 	fi
+		 	if [ ${COL_SIZE} -lt 80 ]; then
+		 		COL_SIZE=80
+		 	fi
+		 	if [ ${COL_SIZE} -gt 100 ]; then
+		 		COL_SIZE=100
+		 	fi
+		# -- string -------------------------------------------------------------------
+		fncString () {
+		 	if [ "$2" = " " ]; then
+		 		echo $1      | awk '{s=sprintf("%"$1"."$1"s"," "); print s;}'
+		 	else
+		 		echo $1 "$2" | awk '{s=sprintf("%"$1"."$1"s"," "); gsub(" ",$2,s); print s;}'
+		 	fi
+		}
+		# -- print --------------------------------------------------------------------
+		fncPrint () {
+		 	local RET_STR=""
+		 	MAX_COLS=$((COL_SIZE-1))
+		 	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+		 	if [ $? -ne 0 ]; then
+		 		MAX_COLS=$((COL_SIZE-2))
+		 		RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
+		 	fi
+		 	echo "${RET_STR}"
+		}
+		# -- systemctl ----------------------------------------------------------------
+		fncSystemctl () {
+		 	echo "systemctl $@"
+		 	case "$1" in
+		 		"disable" | "mask" )
+		 			shift
+		 			systemctl --quiet --no-reload disable $@ 2> /dev/null
+		 			systemctl --quiet --no-reload mask $@ 2> /dev/null
+		 			;;
+		 		"enable" | "unmask" )
+		 			shift
+		 			systemctl --quiet --no-reload unmask $@ 2> /dev/null
+		 			systemctl --quiet --no-reload enable $@ 2> /dev/null
+		 			;;
+		 		* )
+		 			systemctl --quiet --no-reload $@ 2> /dev/null
+		 			;;
+		 	esac
+		}
+		# -- terminate ----------------------------------------------------------------
+		fncEnd() {
+		 	fncPrint "--- termination $(fncString ${COL_SIZE} '-')"
+		 	RET_STS=$1
+		 	history -c
+		 	fncPrint "$(fncString ${COL_SIZE} '=')"
+		 	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]: ${OS_NAME} ${OS_VERS}"
+		 	fncPrint "$(fncString ${COL_SIZE} '=')"
+		 	exit ${RET_STS}
+		}
+		# == main =====================================================================
+		 	OS_NAME=`awk -F '=' '$1=="NAME"             {gsub("\"",""); print $2;}' /etc/os-release`	# ディストリビューション名
+		 	OS_VRID=`awk -F '=' '$1=="VERSION_ID"       {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン番号
+		 	OS_VERS=`awk -F '=' '$1=="VERSION"          {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン名
+		 	OS_CODE=`awk -F '=' '$1=="VERSION_CODENAME" {gsub("\"",""); print $2;}' /etc/os-release`	# コード名
+		 	OS_DIST=`awk -F '=' '$1=="ID"               {gsub("\"",""); print $2;}' /etc/os-release`	# ディストリビューション名
+		 	if [ "${OS_CODE}" = "" ]; then
+		 		OS_CODE=`echo ${OS_VERS} | awk -F ',' '{split($2,array," "); print tolower(array[1]);}'`
+		 	fi
+		# -----------------------------------------------------------------------------
+		 	fncPrint "$(fncString ${COL_SIZE} '=')"
+		 	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]: ${OS_NAME} ${OS_VERS}"
+		 	fncPrint "$(fncString ${COL_SIZE} '=')"
+		 	fncPrint "--- initialize $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "---- os name  : ${OS_NAME} $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "---- version  : ${OS_VERS} $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "---- hostname : _HOSTNAME_ $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "---- workgroup: _WORKGROUP_ $(fncString ${COL_SIZE} '-')"
+		 	export PS1="(chroot) "
+		#	echo "_HOSTNAME_" > /etc/hostname
+		#	hostname -b -F /etc/hostname
+		 	if [ -d "/usr/lib/systemd/" ]; then
+		 		DIR_SYSD="/usr/lib/systemd/"
+		 	elif [ -d "/lib/systemd/" ]; then
+		 		DIR_SYSD="/lib/systemd"
+		 	else
+		 		DIR_SYSD=""
+		 	fi
+		# -- module update, upgrade, tasksel, install ---------------------------------
+		 	fncPrint "--- module update, install, clean $(fncString ${COL_SIZE} '-')"
+		 	# -- apt setup ---------------------------------------------------------- #
+		 	fncPrint "---- update sources.list $(fncString ${COL_SIZE} '-')"
+		 	case "`echo ${OS_NAME} | awk '{print tolower($1);}'`" in
+		 		"debian" )
+		 			APT_HOST="http://deb.debian.org/debian/"
+		 			APT_SECU="http://security.debian.org/debian-security"
+		 			APT_OPTI=""
+		#			cp -p > /etc/apt/sources.list > /etc/apt/sources.list.orig
+		 			cat <<- _EOT_ > /etc/apt/sources.list
+		 				deb     ${APT_HOST} ${OS_CODE} main non-free contrib
+		 				deb-src ${APT_HOST} ${OS_CODE} main non-free contrib
+		 				deb     ${APT_SECU} ${OS_CODE}-security main non-free contrib
+		 				deb-src ${APT_SECU} ${OS_CODE}-security main non-free contrib
+		 				deb     ${APT_HOST} ${OS_CODE}-updates main non-free contrib
+		 				deb-src ${APT_HOST} ${OS_CODE}-updates main non-free contrib
+		 				deb     ${APT_HOST} ${OS_CODE}-backports main non-free contrib
+		 				deb-src ${APT_HOST} ${OS_CODE}-backports main non-free contrib
+		_EOT_
+		 			if [ ${OS_VRID} -ge 9 ]; then
+		 				sed -i /etc/apt/sources.list    \
+		 				    -e '/security.debian.org/d'
+		 			fi
+		 			;;
+		 		"ubuntu" )
+		 			APT_HOST="http://jp.archive.ubuntu.com/ubuntu/"
+		 			APT_SECU="http://security.ubuntu.com/ubuntu"
+		 			APT_OPTI="http://archive.canonical.com/ubuntu"
+		#			cp -p > /etc/apt/sources.list > /etc/apt/sources.list.orig
+		 			cat <<- _EOT_ > /etc/apt/sources.list
+		 				deb     ${APT_HOST} ${OS_CODE} main restricted universe multiverse
+		 				deb-src ${APT_HOST} ${OS_CODE} main restricted universe multiverse
+		 				deb     ${APT_SECU} ${OS_CODE}-security main restricted universe multiverse
+		 				deb-src ${APT_SECU} ${OS_CODE}-security main restricted universe multiverse
+		 				deb     ${APT_HOST} ${OS_CODE}-updates main restricted universe multiverse
+		 				deb-src ${APT_HOST} ${OS_CODE}-updates main restricted universe multiverse
+		 				deb     ${APT_HOST} ${OS_CODE}-backports main restricted universe multiverse
+		 				deb-src ${APT_HOST} ${OS_CODE}-backports main restricted universe multiverse
+		 				deb     ${APT_OPTI} ${OS_CODE} partner
+		 				deb-src ${APT_OPTI} ${OS_CODE} partner
+		_EOT_
+		 			;;
+		 		* ) ;;
+		 	esac
+		 	# -------------------------------------------------------------------------
+		 	if [ -d /var/lib/apt/lists ]; then
+		 		fncPrint "---- remove /var/lib/apt/lists $(fncString ${COL_SIZE} '-')"
+		 		rm -rf /var/lib/apt/lists
+		 	fi
+		 	# -------------------------------------------------------------------------
+		 	export DEBIAN_FRONTEND=noninteractive
+		 	APT_OPTIONS="-o Dpkg::Options::=--force-confdef    \
+		 	             -o Dpkg::Options::=--force-confnew    \
+		 	             -o Dpkg::Options::=--force-overwrite"
+		 	# ----------------------------------------------------------------------- #
+		 	fncPrint "---- module dpkg $(fncString ${COL_SIZE} '-')"
+		 	dpkg --audit                                                           || fncEnd $?
+		 	dpkg --configure -a                                                    || fncEnd $?
+		 	# ----------------------------------------------------------------------- #
+		 	fncPrint "---- module apt-get update $(fncString ${COL_SIZE} '-')"
+		 	apt-get update       -qq                                   > /dev/null || fncEnd $?
+		 	fncPrint "---- module apt-get upgrade $(fncString ${COL_SIZE} '-')"
+		 	apt-get upgrade      -qq -y ${APT_OPTIONS}                 > /dev/null || fncEnd $?
+		 	fncPrint "---- module apt-get dist-upgrade $(fncString ${COL_SIZE} '-')"
+		 	apt-get dist-upgrade -qq -y ${APT_OPTIONS}                 > /dev/null || fncEnd $?
+		 	fncPrint "---- module apt-get install $(fncString ${COL_SIZE} '-')"
+		 	apt-get install      -qq -y ${APT_OPTIONS} --auto-remove                \
+		 	    __INST_PACK__                                                       \
+		 	                                                                       || fncEnd $?
+		 	if [ "`which tasksel 2> /dev/null`" != "" ]; then
+		 		fncPrint "---- tasksel $(fncString ${COL_SIZE} '-')"
+		 		tasksel install                                                     \
+		 		    _LST_TASK_                                                      \
+		 		                                                                   || fncEnd $?
+		 	fi
+		 	fncPrint "---- module autoremove, autoclean, clean $(fncString ${COL_SIZE} '-')"
+		 	# ----------------------------------------------------------------------- #
+		 	if [ `getconf LONG_BIT` -eq 64 ]; then
+		 		fncPrint "---- google-chrome install $(fncString ${COL_SIZE} '-')"
+		 		APP_CHROME="google-chrome-stable_current_amd64.deb"
+		 		URL_CHROME="https://dl.google.com/linux/direct/${APP_CHROME}"
+		 		KEY_CHROME="https://dl-ssl.google.com/linux/linux_signing_key.pub"
+		 		pushd /tmp/ > /dev/null
+		 			if [ "`which curl 2> /dev/null`" != "" ]; then
+		 				curl -L -# -O -R -S "${URL_CHROME}" || fncEnd $?
+		 			elif [ "`which wget 2> /dev/null`" != "" ]; then
+		 				wget -q -N "${URL_CHROME}" || fncEnd $?
+		 			fi
+		 			apt-get install -qq -y ${APT_OPTIONS} --auto-remove            \
+		 			    ./${APP_CHROME}                                            \
+		 			                                                               || fncEnd $?
+		 		popd > /dev/null
+		 	fi
+		 	# ----------------------------------------------------------------------- #
+		 	apt-get autoremove   -qq -y                                            || fncEnd $?
+		 	apt-get autoclean    -qq                                               || fncEnd $?
+		 	apt-get clean        -qq                                               || fncEnd $?
+		# -- Change system control ----------------------------------------------------
+		# 	Set disable to mask because systemd-sysv-generator will recreate the symbolic link.
+		 	fncPrint "--- change system control $(fncString ${COL_SIZE} '-')"
+		 	fncSystemctl  enable clamav-freshclam
+		 	fncSystemctl  enable ssh
+		 	if [ "`systemctl is-enabled named 2> /dev/null || :`" != "" ]; then
+		 		fncSystemctl enable named
+		 	else
+		 		fncSystemctl enable bind9
+		 	fi
+		 	fncSystemctl  enable smbd
+		 	fncSystemctl  enable nmbd
+		 	fncSystemctl disable isc-dhcp-server
+		 	if [ "`systemctl is-enabled isc-dhcp-server6 2> /dev/null || :`" != "" ]; then
+		 		fncSystemctl disable isc-dhcp-server6
+		 	fi
+		 	if [ "`systemctl is-enabled apache2 2> /dev/null || :`" != "" ]; then
+		 		fncSystemctl disable apache2
+		 	fi
+		 	fncSystemctl disable minidlna
+		 	if [ "`systemctl is-enabled unattended-upgrades 2> /dev/null || :`" != "" ]; then
+		 		fncSystemctl disable unattended-upgrades
+		 	fi
+		 	if [ "`systemctl is-enabled brltty 2> /dev/null || :`" != "" ]; then
+		 		fncSystemctl disable brltty-udev
+		 		fncSystemctl disable brltty
+		 	fi
+		 	case "`sed -n '/^UBUNTU_CODENAME=/ s/.*=\(.*\)/\1/p' /etc/os-release`" in
+		 		"focal"   | \
+		 		"impish"  | \
+		 		"jammy"   | \
+		 		"kinetic" )
+		 			if [ "`systemctl is-enabled systemd-udev-settle 2> /dev/null || :`" != "" ]; then
+		 				fncSystemctl disable systemd-udev-settle
+		 			fi
+		 			;;
+		 		* )
+		 			;;
+		 	esac
+		# -- Change service configure -------------------------------------------------
+		#	if [ -f /etc/systemd/system/multi-user.IMG_TGET.wants/cups-browsed.service ]; then
+		#		fncPrint "--- change cups-browsed configure $(fncString ${COL_SIZE} '-')"
+		#		cat <<- _EOT_ > /etc/systemd/system/multi-user.IMG_TGET.wants/cups-browsed.service.override
+		#			[Service]
+		#			TimeoutStopSec=3
+		#_EOT_
+		#	fi
+		# -- Change resolv configure --------------------------------------------------
+		 	if [ -d /etc/NetworkManager/ ]; then
+		 		fncPrint "--- change NetworkManager configure $(fncString ${COL_SIZE} '-')"
+		 		touch /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+		 		cat <<- _EOT_ > /etc/NetworkManager/conf.d/NetworkManager.conf.override
+		 			[main]
+		 			dns=default
+		 _EOT_
+		 		fncPrint "--- change resolv.conf configure $(fncString ${COL_SIZE} '-')"
+		 		cat <<- _EOT_ > /etc/systemd/resolved.conf.override
+		 			[Resolve]
+		 			DNSStubListener=no
+		_EOT_
+		 		ln -sf /run/systemd/resolve/resolv.conf etc/resolv.conf
+		 	fi
+		# -- Change avahi-daemon configure --------------------------------------------
+		 	if [ -f /etc/nsswitch.conf ]; then
+		 		fncPrint "--- change avahi-daemon configure $(fncString ${COL_SIZE} '-')"
+		 		OLD_IFS=${IFS}
+		 		IFS=$'\n'
+		 		INS_ROW=$((`sed -n '/^hosts:/ =' /etc/nsswitch.conf | head -n 1`))
+		 		INS_TXT=`sed -n '/^hosts:/ s/\(hosts:[ \t]*\).*$/\1mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns mdns/p' /etc/nsswitch.conf`
+		 		sed -e '/^hosts:/ s/^/#/' /etc/nsswitch.conf | \
+		 		sed -e "${INS_ROW}a ${INS_TXT}"                \
+		 		> nsswitch.conf
+		 		cat nsswitch.conf > /etc/nsswitch.conf
+		 		rm nsswitch.conf
+		 		IFS=${OLD_IFS}
+		 	fi
+		# -- Change localize configure ------------------------------------------------
+		 	if [ -f /etc/locale.gen ]; then
+		 		fncPrint "--- change localize configure $(fncString ${COL_SIZE} '-')"
+		 		sed -i /etc/locale.gen                   \
+		 		    -e 's/^[a-zA-Z]/# &/g'               \
+		 		    -e 's/# *\(ja_JP.UTF-8 UTF-8\)/\1/g' \
+		 		    -e 's/# *\(en_US.UTF-8 UTF-8\)/\1/g'
+		 		locale-gen
+		 		update-locale LANG="ja_JP.UTF-8" LANGUAGE="ja:en"
+		 		localectl set-x11-keymap --no-convert "jp,us" "pc105"
+		 	fi
+		# -- Change mozc configure ----------------------------------------------------
+		 	if [ -f /usr/share/ibus/component/mozc.xml ]; then
+		 		fncPrint "--- change mozc configure $(fncString ${COL_SIZE} '-')"
+		 		sed -i /usr/share/ibus/component/mozc.xml                                     \
+		 		    -e '/<engine>/,/<\/engine>/ s/\(<layout>\)default\(<\/layout>\)/\1jp\2/g'
+		 	fi
+		# -- Change clamav configure --------------------------------------------------
+		 	if [ "`which freshclam 2> /dev/null`" != "" ]; then
+		 		fncPrint "---- change freshclam.conf $(fncString ${COL_SIZE} '-')"
+		 		sed -i /etc/clamav/freshclam.conf     \
+		 		    -e 's/^Example/#&/'               \
+		 		    -e 's/^CompressLocalDatabase/#&/' \
+		 		    -e 's/^SafeBrowsing/#&/'          \
+		 		    -e 's/^NotifyClamd/#&/'
+		 		fncPrint "---- run freshclam $(fncString ${COL_SIZE} '-')"
+		 		set +e
+		 		freshclam --quiet
+		 		set -e
+		 	fi
+		# -- Change sshd configure ----------------------------------------------------
+		 	if [ -d /etc/ssh/ ]; then
+		 		fncPrint "--- change sshd configure $(fncString ${COL_SIZE} '-')"
+		 		if [ ! -d /etc/ssh/sshd_config.d/ ]; then
+		 			cat <<- _EOT_ >> /etc/ssh/sshd_config
+		 				
+		 				# --- user settings ---
+		 				PermitRootLogin no
+		 				PubkeyAuthentication yes
+		 				PasswordAuthentication yes
+		_EOT_
+		 			if [ "`ssh -V 2>&1 | awk -F '[^0-9]+' '{print $2;}'`" -ge 9 ]; then
+		 				cat <<- _EOT_ >> /etc/ssh/sshd_config
+		 					PubkeyAcceptedAlgorithms +ssh-rsa
+		 					HostkeyAlgorithms +ssh-rsa
+		_EOT_
+		 			fi
+		 		else
+		 			cat <<- _EOT_ > /etc/ssh/sshd_config.d/sshd_config.override
+		 				PermitRootLogin no
+		 				PubkeyAuthentication yes
+		 				PasswordAuthentication yes
+		_EOT_
+		 			if [ "`ssh -V 2>&1 | awk -F '[^0-9]+' '{print $2;}'`" -ge 9 ]; then
+		 				cat <<- _EOT_ >> /etc/ssh/sshd_config.d/sshd_config.override
+		 					PubkeyAcceptedAlgorithms +ssh-rsa
+		 					HostkeyAlgorithms +ssh-rsa
+		_EOT_
+		 			fi
+		 		fi
+		 	fi
+		# -- Change samba configure ---------------------------------------------------
+			if [ -f /etc/samba/smb.conf ]; then
+		 		fncPrint "--- change samba configure $(fncString ${COL_SIZE} '-')"
+		 		SVR_NAME="_HOSTNAME_"						# 本機のホスト名
+		 		WGP_NAME="_WORKGROUP_"						# 本機のワークグループ名
+		 		CMD_UADD=`which useradd`
+		 		CMD_UDEL=`which userdel`
+		 		CMD_GADD=`which groupadd`
+		 		CMD_GDEL=`which groupdel`
+		 		CMD_GPWD=`which gpasswd`
+		 		CMD_FALS=`which false`
+		 		# ---------------------------------------------------------------------
+		 		testparm -s -v |                                                                        \
+		 		sed -e 's/\(dos charset\) =.*$/\1 = CP932/'                                             \
+		 		    -e "s/\(netbios name\) =.*$/\1 = ${SVR_NAME}/"                                      \
+		 		    -e "s/\(workgroup\) =.*$/\1 = ${WGP_NAME}/"                                         \
+		 		    -e "s~\(add group script\) =.*$~\1 = ${CMD_GADD} %g~"                               \
+		 		    -e "s~\(add machine script\) =.*$~\1 = ${CMD_UADD} -d /dev/null -s ${CMD_FALS} %u~" \
+		 		    -e "s~\(add user script\) =.*$~\1 = ${CMD_UADD} %u~"                                \
+		 		    -e "s~\(add user to group script\) =.*$~\1 = ${CMD_GPWD} -a %u %g~"                 \
+		 		    -e "s~\(delete group script\) =.*$~\1 = ${CMD_GDEL} %g~"                            \
+		 		    -e "s~\(delete user from group script\) =.*$~\1 = ${CMD_GPWD} -d %u %g~"            \
+		 		    -e "s~\(delete user script\) =.*$~\1 = ${CMD_UDEL} %u~"                             \
+		 		    -e '/idmap config \* : backend =/i \\tidmap config \* : range = 1000-10000'         \
+		 		    -e 's/\(admin users\) =.*$/# \1 = administrator/'                                   \
+		 		    -e 's/\(domain logons\) =.*$/\1 = Yes/'                                             \
+		 		    -e 's/\(domain master\) =.*$/\1 = Yes/'                                             \
+		 		    -e 's/\(load printers\) =.*$/\1 = No/'                                              \
+		 		    -e 's/\(logon path\) =.*$/\1 = \\\\%L\\profiles\\%U/'                               \
+		 		    -e 's/\(logon script\) =.*$/\1 = logon.bat/'                                        \
+		 		    -e 's/\(max log size\) =.*$/\1 = 1000/'                                             \
+		 		    -e 's/\(min protocol\) =.*$/\1 = NT1/g'                                             \
+		 		    -e 's/\(multicast dns register\) =.*$/\1 = No/'                                     \
+		 		    -e 's/\(os level\) =.*$/# \1 = 35/'                                                 \
+		 		    -e 's/\(pam password change\) =.*$/\1 = Yes/'                                       \
+		 		    -e 's/\(preferred master\) =.*$/\1 = Yes/'                                          \
+		 		    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
+		 		    -e 's/\(security\) =.*$/\1 = USER/'                                                 \
+		 		    -e 's/\(server role\) =.*$/\1 = standalone server/'                                 \
+		 		    -e 's/\(unix password sync\) =.*$/\1 = No/'                                         \
+		 		    -e 's/\(wins support\) =.*$/\1 = Yes/'                                              \
+		 		    -e 's~\(log file\) =.*$~\1 = /var/log/samba/log.%m~'                                \
+		 		    -e 's~\(printcap name\) =.*$~\1 = /dev/null~'                                       \
+		 		    -e '/[ \t]*.* = $/d'                                                                \
+		 		    -e '/[ \t]*\(client ipc\|client\|server\) min protocol = .*$/d'                     \
+		 		    -e '/[ \t]*acl check permissions =.*$/d'                                            \
+		 		    -e '/[ \t]*allocation roundup size =.*$/d'                                          \
+		 		    -e '/[ \t]*blocking locks =.*$/d'                                                   \
+		 		    -e '/[ \t]*client NTLMv2 auth =.*$/d'                                               \
+		 		    -e '/[ \t]*client lanman auth =.*$/d'                                               \
+		 		    -e '/[ \t]*client plaintext auth =.*$/d'                                            \
+		 		    -e '/[ \t]*client schannel =.*$/d'                                                  \
+		 		    -e '/[ \t]*client use spnego =.*$/d'                                                \
+		 		    -e '/[ \t]*client use spnego principal =.*$/d'                                      \
+		 		    -e '/[ \t]*copy =.*$/d'                                                             \
+		 		    -e '/[ \t]*dns proxy =.*$/d'                                                        \
+		 		    -e '/[ \t]*domain logons =.*$/d'                                                    \
+		 		    -e '/[ \t]*domain master =.*$/d'                                                    \
+		 		    -e '/[ \t]*enable privileges =.*$/d'                                                \
+		 		    -e '/[ \t]*encrypt passwords =.*$/d'                                                \
+		 		    -e '/[ \t]*idmap backend =.*$/d'                                                    \
+		 		    -e '/[ \t]*idmap gid =.*$/d'                                                        \
+		 		    -e '/[ \t]*idmap uid =.*$/d'                                                        \
+		 		    -e '/[ \t]*lanman auth =.*$/d'                                                      \
+		 		    -e '/[ \t]*logon path =.*$/d'                                                       \
+		 		    -e '/[ \t]*logon script =.*$/d'                                                     \
+		 		    -e '/[ \t]*lsa over netlogon =.*$/d'                                                \
+		 		    -e '/[ \t]*map to guest =.*$/d'                                                     \
+		 		    -e '/[ \t]*nbt client socket address =.*$/d'                                        \
+		 		    -e '/[ \t]*null passwords =.*$/d'                                                   \
+		 		    -e '/[ \t]*obey pam restrictions =.*$/d'                                            \
+		 		    -e '/[ \t]*only user =.*$/d'                                                        \
+		 		    -e '/[ \t]*pam password change =.*$/d'                                              \
+		 		    -e '/[ \t]*paranoid server security =.*$/d'                                         \
+		 		    -e '/[ \t]*password level =.*$/d'                                                   \
+		 		    -e '/[ \t]*preferred master =.*$/d'                                                 \
+		 		    -e '/[ \t]*raw NTLMv2 auth =.*$/d'                                                  \
+		 		    -e '/[ \t]*realm =.*$/d'                                                            \
+		 		    -e '/[ \t]*security =.*$/d'                                                         \
+		 		    -e '/[ \t]*server role =.*$/d'                                                      \
+		 		    -e '/[ \t]*server schannel =.*$/d'                                                  \
+		 		    -e '/[ \t]*server services =.*$/d'                                                  \
+		 		    -e '/[ \t]*server string =.*$/d'                                                    \
+		 		    -e '/[ \t]*share modes =.*$/d'                                                      \
+		 		    -e '/[ \t]*syslog =.*$/d'                                                           \
+		 		    -e '/[ \t]*syslog only =.*$/d'                                                      \
+		 		    -e '/[ \t]*time offset =.*$/d'                                                      \
+		 		    -e '/[ \t]*unicode =.*$/d'                                                          \
+		 		    -e '/[ \t]*unix password sync =.*$/d'                                               \
+		 		    -e '/[ \t]*use spnego =.*$/d'                                                       \
+		 		    -e '/[ \t]*usershare allow guests =.*$/d'                                           \
+		 		    -e '/[ \t]*winbind separator =.*$/d'                                                \
+		 		    -e '/[ \t]*wins support =.*$/d'                                                     \
+		 		> ./smb.conf
+		 		# ---------------------------------------------------------------------
+		 		testparm -s ./smb.conf > /etc/samba/smb.conf
+		 		rm -f ./smb.conf /etc/samba/smb.conf.ucf-dist
+		fi
+		# -- Change open vm tools configure -------------------------------------------
+		 	if [ "`dpkg -l open-vm-tools | awk '$1==\"ii\" && $2=\"open-vm-tools\" {print $2;}'`" = "open-vm-tools" ]; then
+		 		fncPrint "--- change open vm tools configure $(fncString ${COL_SIZE} '-')"
+		 		if [ ! -d /media/hgfs ]; then
+		 			mkdir -p /media/hgfs
+		 		fi
+		 		echo -e '# Added by User\n' \
+		 		        '.host:/ /media/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,noauto,users,defaults 0 0' \
+		 		>> /etc/fstab
+		 	fi
+		# -- Change gdm3 configure ----------------------------------------------------
+		#	if [ -f /etc/gdm3/custom.conf ] && [ ! -f /etc/gdm3/daemon.conf ]; then
+		#		fncPrint "--- create gdm3 daemon.conf $(fncString ${COL_SIZE} '-')"
+		#		cp -p /etc/gdm3/custom.conf /etc/gdm3/daemon.conf
+		#		: > /etc/gdm3/daemon.conf
+		#	fi
+		# -- Change xdg configure -----------------------------------------------------
+		 	if [  -f /etc/xdg/autostart/gnome-initial-setup-first-login.desktop ]; then
+		 		fncPrint "--- change xdg configure $(fncString ${COL_SIZE} '-')"
+		 		mkdir -p /etc/skel/.config
+		 		touch /etc/skel/.config/gnome-initial-setup-done
+		 	fi
+		# -- Change dconf configure ---------------------------------------------------
+		 	if [ "`which dconf 2> /dev/null`" != "" ]; then
+		 		fncPrint "--- change dconf configure $(fncString ${COL_SIZE} '-')"
+		 		# -- create dconf profile ---------------------------------------------
+		 		fncPrint "--- create dconf profile $(fncString ${COL_SIZE} '-')"
+		 		if [ ! -d /etc/dconf/db/local.d/ ]; then
+		 			mkdir -p /etc/dconf/db/local.d
+		 		fi
+		 		if [ ! -d /etc/dconf/profile/ ]; then
+		 			mkdir -p /etc/dconf/profile
+		 		fi
+		 		cat <<- _EOT_ > /etc/dconf/profile/user
+		 			user-db:user
+		 			system-db:local
+		_EOT_
+		 		# -- dconf org/gnome/desktop/screensaver ------------------------------
+		 		fncPrint "---- dconf org/gnome/desktop/screensaver $(fncString ${COL_SIZE} '-')"
+		 		cat <<- _EOT_ > /etc/dconf/db/local.d/01-screensaver
+		 			[org/gnome/desktop/screensaver]
+		 			idle-activation-enabled=false
+		 			lock-enabled=false
+		_EOT_
+		 		# -- dconf org/gnome/shell/extensions/dash-to-dock --------------------
+		 		fncPrint "---- dconf org/gnome/shell/extensions/dash-to-dock $(fncString ${COL_SIZE} '-')"
+		 		cat <<- _EOT_ > /etc/dconf/db/local.d/01-dash-to-dock
+		 			[org/gnome/shell/extensions/dash-to-dock]
+		 			hot-keys=false
+		 			hotkeys-overlay=false
+		 			hotkeys-show-dock=false
+		_EOT_
+		 		# -- dconf org/gnome/shell/extensions/dash-to-dock --------------------
+		 		fncPrint "---- dconf apps/update-manager $(fncString ${COL_SIZE} '-')"
+		 		cat <<- _EOT_ > /etc/dconf/db/local.d/01-update-manager
+		 			[apps/update-manager]
+		 			check-dist-upgrades=false
+		 			first-run=false
+		_EOT_
+		 		# -- dconf update -----------------------------------------------------
+		 		fncPrint "---- dconf update $(fncString ${COL_SIZE} '-')"
+		 		dconf update
+		 	fi
+		# -- Change release-upgrades configure ----------------------------------------
+		#	if [ -f /etc/update-manager/release-upgrades ]; then
+		#		fncPrint "--- change release-upgrades configure $(fncString ${COL_SIZE} '-')"
+		#		sed -i /etc/update-manager/release-upgrades \
+		#		    -e 's/^\(Prompt\)=.*$/\1=never/'
+		#	fi
+		#	if [ -f /usr/lib/ubuntu-release-upgrader/check-new-release-gtk ]; then
+		#	fi
+		# -- Copy pulse configure -----------------------------------------------------
+		 	if [ -f /usr/share/gdm/default.pa ]; then
+		 		fncPrint "--- copy pulse configure $(fncString ${COL_SIZE} '-')"
+		 		mkdir -p /etc/skel/.config/pulse
+		 		cp -p /usr/share/gdm/default.pa /etc/skel/.config/pulse/
+		 	fi
+		# -- root and user's setting --------------------------------------------------
+		 	fncPrint "--- root and user's setting $(fncString ${COL_SIZE} '-')"
+		 	LST_SHELL="`sed -n '/^#/! s~/~\\\\/~gp' /etc/shells |  sed -z 's/\n/|/g' | sed -e 's/|$//'`"
+		 	for USER_NAME in "skel" `awk -F ':' '$7~/'"${LST_SHELL}"'/ {print $1;}' /etc/passwd`
+		 	do
+		 		fncPrint "---- ${USER_NAME}'s setting $(fncString ${COL_SIZE} '-')"
+		 		if [ "${USER_NAME}" == "skel" ]; then
+		 			USER_HOME="/etc/skel"
+		 		else
+		 			USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
+		 		fi
+		 		if [ "${USER_HOME}" != "" ]; then
+		 			pushd ${USER_HOME} > /dev/null
+		 				# --- .bashrc -------------------------------------------------
+		 				cat <<- _EOT_ >> .bashrc
+		 					# --- 日本語文字化け対策 ---
+		 					case "\${TERM}" in
+		 					    "linux" ) export LANG=C;;
+		 					    * )                    ;;
+		 					esac
+		 					export GTK_IM_MODULE=ibus
+		 					export XMODIFIERS=@im=ibus
+		 					export QT_IM_MODULE=ibus
+		_EOT_
+		 				# --- .vimrc --------------------------------------------------
+		 				cat <<- _EOT_ > .vimrc
+		 					set number              " Print the line number in front of each line.
+		 					set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+		 					set list                " List mode: Show tabs as CTRL-I is displayed, display $ after end of line.
+		 					set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+		 					set nowrap              " This option changes how text is displayed.
+		 					set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+		 					set laststatus=2        " The value of this option influences when the last window will have a status line always.
+		 					syntax on               " Vim5 and later versions support syntax highlighting.
+		_EOT_
+		 				if [ "${USER_NAME}" != "skel" ]; then
+		 					chown ${USER_NAME}. .vimrc
+		 				fi
+		 				# --- .curlrc -------------------------------------------------
+		 				cat <<- _EOT_ > .curlrc
+		 					location
+		 					progress-bar
+		 					remote-time
+		 					show-error
+		_EOT_
+		 				if [ "${USER_NAME}" != "skel" ]; then
+		 					chown ${USER_NAME}. .curlrc
+		 				fi
+		 				# --- xinput.d ------------------------------------------------
+		 				if [ "${USER_NAME}" != "skel" ]; then
+		 					mkdir .xinput.d
+		 					ln -s /etc/X11/xinit/xinput.d/ja_JP .xinput.d/ja_JP
+		 					chown -R ${USER_NAME}:${USER_NAME} .xinput.d .bashrc .vimrc .curlrc
+		 				fi
+		 				# --- .credentials --------------------------------------------
+		 				cat <<- _EOT_ > .credentials
+		 					username=value
+		 					password=value
+		 					domain=value
+		_EOT_
+		 				if [ "${USER_NAME}" != "skel" ]; then
+		 					chown ${USER_NAME}. .credentials
+		 					chmod 0600 .credentials
+		 				fi
+		 				# --- libfm.conf ----------------------------------------------
+		 				if [   -f .config/libfm/libfm.conf      ] \
+		 				&& [ ! -f .config/libfm/libfm.conf.orig ]; then
+		 					sed -i.orig .config/libfm/libfm.conf   \
+		 					    -e 's/^\(single_click\)=.*$/\1=0/'
+		 				fi
+		 			popd > /dev/null
+		 		fi
+		 	done
+		# -----------------------------------------------------------------------------
+		 	fncPrint "--- cleaning and exit $(fncString ${COL_SIZE} '-')"
+		 	fncEnd 0
+		# == EOF ======================================================================
+		# *****************************************************************************
+		# <memo>
+		#   [im-config]
+		#     Change Kanji mode:[Windows key]+[Space key]->[Zenkaku/Hankaku key]
+		# *****************************************************************************
+_EOT_SH_
+	# -------------------------------------------------------------------------
+	chmod +x ./decomp/setup.sh
+}
+# -----------------------------------------------------------------------------
+fncExec_setup_sh () {
+	fncPrint "      exec setup.sh"
+	# --- packages ------------------------------------------------------------
+	OLD_IFS=${IFS}
+	IFS=$'\n'
+	LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' image/preseed/preseed.cfg  | \
+	           sed -z 's/\n//g'                                                                | \
+	           sed -e 's/.* multiselect *//'                                                     \
+	               -e 's/[,|\\\\]//g'                                                            \
+	               -e 's/\t/ /g'                                                                 \
+	               -e 's/  */ /g'                                                                \
+	               -e 's/^ *//'`
+	LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' image/preseed/preseed.cfg | \
+	           sed -z 's/\n//g'                                                                | \
+	           sed -e 's/.* string *//'                                                          \
+	               -e 's/[,|\\\\]//g'                                                            \
+	               -e 's/\t/ /g'                                                                 \
+	               -e 's/  */ /g'                                                                \
+	               -e 's/^ *//'`
+	INST_TASK=${LIST_TASK}
+	INST_PACK=`echo "${LIST_PACK}" | sed -e 's/ *isc-dhcp-server//'`
+#	INST_PACK+=" whois"
+	sed -i ./decomp/setup.sh               \
+	    -e "s/__INST_PACK__/${INST_PACK}/" \
+	    -e "s/__INST_TASK__/${INST_TASK}/"
+	IFS=${OLD_IFS}
+	# --- network -------------------------------------------------------------
+	cp -p ./decomp/etc/apt/sources.list      \
+	      ./decomp/etc/apt/sources.list.orig
+	# --- time zone -----------------------------------------------------------
+	rm -f ./decomp/etc/localtime
+	ln -s /usr/share/zoneinfo/Asia/Tokyo ./decomp/etc/localtime
+	# --- mount ---------------------------------------------------------------
+	mount --bind /run     ./decomp/run
+	mount --bind /dev     ./decomp/dev
+	mount --bind /dev/pts ./decomp/dev/pts
+	mount --bind /proc    ./decomp/proc
+	mount --bind /sys     ./decomp/sys
+	# --- chroot --------------------------------------------------------------
+	LANG=C chroot ./decomp /bin/bash /setup.sh
+	RET_STS=$?
+	# --- unmount -------------------------------------------------------------
+	umount ./decomp/sys     || umount -lf ./decomp/sys
+	umount ./decomp/proc    || umount -lf ./decomp/proc
+	umount ./decomp/dev/pts || umount -lf ./decomp/dev/pts
+	umount ./decomp/dev     || umount -lf ./decomp/dev
+	umount ./decomp/run     || umount -lf ./decomp/run
+	# --- error check ---------------------------------------------------------
+	if [ ${RET_STS} -ne 0 ]; then
+		exit ${RET_STS}
+	fi
+	# --- cleaning ------------------------------------------------------------
+	if [ -f ./decomp/etc/resolv.conf.orig ]; then
+		mv ./decomp/etc/resolv.conf.orig \
+		   ./decomp/etc/resolv.conf
+	fi
+	if [ -f ./decomp/etc/apt/sources..orig ]; then
+		mv ./decomp/etc/apt/sources.list.orig \
+		   ./decomp/etc/apt/sources.list
+	fi
+	find   ./decomp/var/log/ -type f -name \* -exec cp -f /dev/null {} \;
+	rm -rf ./decomp/root/.bash_history           \
+	       ./decomp/root/.viminfo                \
+	       ./decomp/tmp/*                        \
+	       ./decomp/var/cache/apt/*.bin          \
+	       ./decomp/var/cache/apt/archives/*.deb \
+	       ./decomp/setup.sh
+	# --- filesystem manifest -------------------------------------------------
+	case "${CODE_NAME[0]}" in
+		"debian" )	# ･････････････････････････････････････････････････････････
+			;;
+		"ubuntu" )	# ･････････････････････････････････････････････････････････
+			rm ./image/casper/filesystem.size                    \
+			   ./image/casper/filesystem.manifest                \
+			   ./image/casper/filesystem.manifest-remove         
+#			   ./image/casper/filesystem.manifest-minimal-remove 
+			# -----------------------------------------------------------------
+			touch ./image/casper/filesystem.size
+			touch ./image/casper/filesystem.manifest
+			touch ./image/casper/filesystem.manifest-remove
+#			touch ./image/casper/filesystem.manifest-minimal-remove
+			# -----------------------------------------------------------------
+			printf $(LANG=C chroot ./decomp du -sx --block-size=1 | cut -f1) > ./image/casper/filesystem.size
+			LANG=C chroot ./decomp dpkg-query -W --showformat='${Package} ${Version}\n' > ./image/casper/filesystem.manifest
+			cp -p ./image/casper/filesystem.manifest ./image/casper/filesystem.manifest-desktop
+			sed -i ./image/casper/filesystem.manifest-desktop \
+			    -e '/^casper.*$/d'                            \
+			    -e '/^lupin-casper.*$/d'                      \
+			    -e '/^ubiquity.*$/d'                          \
+			    -e '/^ubiquity-casper.*$/d'                   \
+			    -e '/^ubiquity-frontend-gtk.*$/d'             \
+			    -e '/^ubiquity-slideshow-ubuntu.*$/d'         \
+			    -e '/^ubiquity-ubuntu-artwork.*$/d'
+			;;
+		* )	;;
+	esac
+	# --- copy fsimg -> media -------------------------------------------------
+	fncPrint "    copy fsimg -> media"
+	case "${CODE_NAME[0]}" in
+		"debian" )			# ･････････････････････････････････････････････････
+			rm -f ./image/live/filesystem.squashfs
+			mksquashfs ./decomp ./image/live/filesystem.squashfs -noappend -quiet -mem 1G
+			ls -lht ./image/live/filesystem.squashfs
+			FSIMG_SIZE=`LANG=C ls -lh ./image/live/filesystem.squashfs | awk '{print $5;}'`
+			;;
+		"ubuntu" )			# ･････････････････････････････････････････････････
+			rm -f ./image/casper/filesystem.squashfs
+			mksquashfs ./decomp ./image/casper/filesystem.squashfs -noappend -quiet -mem 1G
+			ls -lht ./image/casper/filesystem.squashfs
+			FSIMG_SIZE=`LANG=C ls -lh ./image/casper/filesystem.squashfs | awk '{print $5;}'`
+			;;
+		* )	;;
+	esac
+}
+# -----------------------------------------------------------------------------
+fncLive_custom () {
+	if [ ! -d ./image/live/ ]; then
+		return
+	fi
+	fncPrint "      make live/config.conf"
+	# --- live configure --------------------------------------
+	#LIVE_CONFIG_CMDLINE=パラメータ1 パラメータ2 ... パラメータn									# この変数はブートローダのコマンドラインに相当します。
+	#LIVE_CONFIG_COMPONENTS=構成要素1,構成要素2, ... 構成要素n										# この変数は「live-config.components=構成要素1,構成要素2, ...  構成要素n」パラメータに相当します。
+	#LIVE_CONFIG_NOCOMPONENTS=構成要素1,構成要素2, ... 構成要素n									# この変数は「live-config.nocomponents=構成要素1,構成要素2,  ... 構成要素n」パラメータに相当します。
+	#LIVE_DEBCONF_PRESEED=filesystem|medium|URL1|URL2| ... |URLn									# この変数は「live-config.debconf-preseed=filesystem|medium|URL1|URL2|  ...  |URLn」パラメータに相当します。
+	#LIVE_HOSTNAME=ホスト名																			# この変数は「live-config.hostname=ホスト名」パラメータに相当します。
+	#LIVE_USERNAME=ユーザ名																			# この変数は「live-config.username=ユーザ名」パラメータに相当します。
+	#LIVE_USER_DEFAULT_GROUPS=グループ1,グループ2 ... グループn										# この変数は「live-config.user-default-groups="グループ1,グループ2  ... グループn"」パラメータに相当します。
+	#LIVE_USER_FULLNAME="ユーザのフルネーム"														# この変数は「live-config.user-fullname="ユーザのフルネーム"」パラメータに相当します。
+	#LIVE_LOCALES=ロケール1,ロケール2 ... ロケールn													# この変数は「live-config.locales=ロケール1,ロケール2 ...  ロケールn」パラメータに相当します。
+	#LIVE_TIMEZONE=タイムゾーン																		# この変数は「live-config.timezone=タイムゾーン」パラメータに相当します。
+	#LIVE_KEYBOARD_MODEL=キーボードの種類															# この変数は「live-config.keyboard-model=キーボードの種類」パラメータに相当します。
+	#LIVE_KEYBOARD_LAYOUTS=キーボードレイアウト1,キーボードレイアウト2  ...  キーボードレイアウトn	# この変数は「live-config.keyboard-layouts=キーボードレイアウト1,キーボードレイアウト2... キーボードレイアウトn」パラメータに相当します。
+	#LIVE_KEYBOARD_VARIANTS=キーボード配列1,キーボード配列2 ... キーボード配列n						# この変数は「live-config.keyboard-variants=キーボード配列1,キーボード配列2 ... キーボード配列n」パラメータに相当します。
+	#LIVE_KEYBOARD_OPTIONS=キーボードオプション														# この変数は「live-config.keyboard-options=キーボードオプション」パラメータに相当します。
+	#LIVE_SYSV_RC=サービス1,サービス2 ... サービスn													# この変数は「live-config.sysv-rc=サービス1,サービス2  ... サービスn」パラメータに相当します。
+	#LIVE_UTC=yes|no																				# この変数は「live-config.utc=yes|no」パラメータに相当します。
+	#LIVE_X_SESSION_MANAGER=Xセッションマネージャ													# この変数は「live-config.x-session-manager=Xセッションマネージャ」パラメータに相当します。
+	#LIVE_XORG_DRIVER=XORGドライバ																	# この変数は「live-config.xorg-driver=XORGドライバ」パラメータに相当します。
+	#LIVE_XORG_RESOLUTION=XORG解像度																# この変数は「live-config.xorg-resolution=XORG解像度」パラメータに相当します。
+	#LIVE_WLAN_DRIVER=WLANドライバ																	# この変数は「live-config.wlan-driver=WLANドライバ」パラメータに相当します。
+	#LIVE_HOOKS=filesystem|medium|URL1|URL2| ... |URLn												# この変数は「live-config.hooks=filesystem|medium|URL1|URL2| ... |URLn」パラメータに相当します。
+	#LIVE_CONFIG_DEBUG=true|false																	# この変数は「live-config.debug」パラメータに相当します。
+	#LIVE_CONFIG_NOAUTOLOGIN=true|																	# 
+	#LIVE_CONFIG_NOROOT=true|																		# 
+	#LIVE_CONFIG_NOX11AUTOLOGIN=true|																# 
+	#LIVE_SESSION=plasma.desktop|lxqt.desktop														# 固定値
+	fncPrint "    live configure"
+	# ---------------------------------------------------------
+	cat <<- '_EOT_' | sed 's/^ //g' > ./image/live/config.conf
+		# *****************************************************************************
+		#set -e
+		#set -o allexport
+		#set +o | tee
+		# === Fix Parameters [ /lib/live/init-config.sh ] =============================
+		#LIVE_HOSTNAME="debian"
+		#LIVE_USERNAME="user"
+		#LIVE_USER_FULLNAME="Debian Live user"
+		#LIVE_USER_DEFAULT_GROUPS="audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth debian-tor"
+		# === Fix Parameters [ /lib/live/config/0030-live-debconfig_passwd ] ==========
+		#_PASSWORD="8Ab05sVQ4LLps"				# '/bin/echo "live" | mkpasswd -s'
+		# === Fix Parameters [ /lib/live/config/0030-user-setup ] =====================
+		#_PASSWORD="8Ab05sVQ4LLps"				# '/bin/echo "live" | mkpasswd -s'
+		# === User parameters =========================================================
+		LIVE_HOSTNAME="_HOSTNAME_-live"
+		# -----------------------------------------------------------------------------
+		LIVE_USER_FULLNAME="Debian Live user"	# full name
+		LIVE_USERNAME="user"					# user name
+		LIVE_PASSWORD="live"					# password
+		#LIVE_CRYPTPWD='8Ab05sVQ4LLps'			# '/bin/echo "live" | mkpasswd -s'
+		# -----------------------------------------------------------------------------
+		LIVE_LOCALES="ja_JP.UTF-8"
+		LIVE_KEYBOARD_MODEL="pc105"
+		LIVE_KEYBOARD_LAYOUTS="jp"
+		LIVE_KEYBOARD_VARIANTS="OADG109A"
+		LIVE_TIMEZONE="Asia/Tokyo"
+		LIVE_UTC="yes"
+		# -----------------------------------------------------------------------------
+		#set | grep -e "^LIVE_" | tee
+		# === Change hostname =========================================================
+		if [ -n "${LIVE_HOSTNAME}" ]; then
+		 	/bin/echo "${LIVE_HOSTNAME}" > /etc/hostname
+		fi
+		# === Output to shell files ===================================================
+		cat <<- '_EOT_SH_' | sed 's/^ //g' > /lib/live/config/9999-user-setting
+		 	#!/bin/sh
+		
+		 	/bin/echo ""
+		 	/bin/echo "Start 9999-user-setting :::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		
+		 	#. /lib/live/config.sh
+		 
+		 	#set -e
+		
+		 	Cmdline ()
+		 	{
+		 	 	:
+		 	}
+		 	
+		 	Init ()
+		 	{
+		 	 	:
+		 	}
+		
+		 	Config ()
+		 	{
+		 	 	# === Change user password ================================================
+		 	 	if [ -n "${LIVE_USERNAME}" ] && [ -n "${LIVE_PASSWORD}" ]; then
+		 	 		/bin/echo ""
+		 	 		/bin/echo "Change user password ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 	#		useradd ${LIVE_USERNAME}
+		 	 		/bin/echo -e "${LIVE_PASSWORD}\n${LIVE_PASSWORD}" | passwd ${LIVE_USERNAME}
+		 	 	fi
+		 	 	# === Change smb password =================================================
+		 	 	if [ -n "`which smbpasswd 2> /dev/null`" ] && [ -n "${LIVE_USERNAME}" ] && [ -n "${LIVE_PASSWORD}" ]; then
+		 	 		/bin/echo ""
+		 	 		/bin/echo "Change smb password :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 	 		smbpasswd -a ${LIVE_USERNAME} -n
+		 	 		/bin/echo -e "${LIVE_PASSWORD}\n${LIVE_PASSWORD}" | smbpasswd ${LIVE_USERNAME}
+		 	 	fi
+		 	 	# === Change sshd configure ===============================================
+		 	 	if [ -f /etc/ssh/sshd_config ]; then
+		 	 		/bin/echo ""
+		 	 		/bin/echo "Change sshd configure :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 	 		sed -i /etc/ssh/sshd_config \
+		 	 		    -e 's/^#*[ \t]*\(PasswordAuthentication\)[ \t]*.*$/\1 yes/g'
+		 	 	fi
+		 	 	# --- Creating state file -------------------------------------------------
+		 	 	/bin/echo "Creating state file :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 	 	touch /var/lib/live/config/user-setting
+		 	}
+		
+		 	Debug ()
+		 	{
+		 	 	# === Display of parameters ===============================================
+		 	 	/bin/echo ""
+		 	 	/bin/echo "Display of parameters :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 	 	/bin/echo "LIVE_USER_FULLNAME    =${LIVE_USER_FULLNAME}"
+		 	 	/bin/echo "LIVE_USERNAME         =${LIVE_USERNAME}"
+		 	 	/bin/echo "LIVE_PASSWORD         =${LIVE_PASSWORD}"
+		 	 	/bin/echo "LIVE_CRYPTPWD         =${LIVE_CRYPTPWD}"
+		 	 	/bin/echo "LIVE_LOCALES          =${LIVE_LOCALES}"
+		 	 	/bin/echo "LIVE_KEYBOARD_MODEL   =${LIVE_KEYBOARD_MODEL}"
+		 	 	/bin/echo "LIVE_KEYBOARD_LAYOUTS =${LIVE_KEYBOARD_LAYOUTS}"
+		 	 	/bin/echo "LIVE_KEYBOARD_VARIANTS=${LIVE_KEYBOARD_VARIANTS}"
+		 	 	/bin/echo "LIVE_TIMEZONE         =${LIVE_TIMEZONE}"
+		 	 	/bin/echo "LIVE_UTC              =${LIVE_UTC}"
+		 	}
+		
+		 	Cmdline
+		 	Init
+		 	Config
+		 	#Debug
+		
+		 	/bin/echo ""
+		 	/bin/echo "End 9999-user-setting :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		_EOT_SH_
+		chmod +x /lib/live/config/9999-user-setting
+		# -----------------------------------------------------------------------------
+		#set | grep -e "^LIVE_" | tee
+		# === Creating state file =====================================================
+		touch /var/lib/live/config/config-conf
+		# =============================================================================
+		#set +e
+		# === Memo ====================================================================
+		#	/lib/live/init-config.sh
+		#	/lib/live/config/0020-hostname
+		#	/lib/live/config/0030-live-debconfig_passwd
+		#	/lib/live/config/0030-user-setup
+		#	/lib/live/config/1160-openssh-server
+		# *****************************************************************************
+_EOT_
+	# ---------------------------------------------------------
+	OLD_IFS=${IFS}
+	IFS=$'\n'
+	FULLNAME="`awk '(!/#/&&/d-i[ \t]+passwd\/user-fullname[ \t]+/),(!/\\\\/) {print $0;}' image/preseed/preseed.cfg | sed -z 's/\n//g' | sed -e 's/.*[ \t]*string[ \t]*//'`"
+	USERNAME="`awk '(!/#/&&/d-i[ \t]+passwd\/username[ \t]+/),(!/\\\\/)      {print $0;}' image/preseed/preseed.cfg | sed -z 's/\n//g' | sed -e 's/.*[ \t]*string[ \t]*//'`"
+	PASSWORD="`awk '(!/#/&&/d-i[ \t]+passwd\/user-password[ \t]+/),(!/\\\\/) {print $0;}' image/preseed/preseed.cfg | sed -z 's/\n//g' | sed -e 's/.*[ \t]*password[ \t]*//'`"
+	IFS=${OLD_IFS}
+	if [ -z "${CODE_NAME[0]}" ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_HOSTNAME=\)/#\1/'; fi
+	if [ -z "${FULLNAME}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_USER_FULLNAME=\)/#\1/'; fi
+	if [ -z "${USERNAME}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_USERNAME=\)/#\1/'; fi
+	if [ -z "${PASSWORD}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_PASSWORD=\)/#\1/'; fi
+	sed -i ./image/live/config.conf                          \
+	    -e "s/_HOSTNAME_/${CODE_NAME[0]}/"                   \
+	    -e "s/^\(LIVE_USER_FULLNAME\)=.*$/\1='${FULLNAME}'/" \
+	    -e "s/^\(LIVE_USERNAME\)=.*$/\1='${USERNAME}'/"      \
+	    -e "s/^\(LIVE_PASSWORD\)=.*$/\1='${PASSWORD}'/"
+}
+# -----------------------------------------------------------------------------
 fncRemaster () {
 	# --- ARRAY_NAME ----------------------------------------------------------
 	local ARRY_NAME=($1)											# 配列展開
@@ -748,7 +1670,6 @@ fncRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-#			fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 			fncPrint "    get ${DVD_NAME}.iso"
 			set +e
 			curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
@@ -765,7 +1686,6 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ ${WEB_STAT:--1} -eq 200 ] && [ "${WEB_SIZE}" != "${DVD_SIZE}" -o "${WEB_DATE}" != "${DVD_DATE}" ]; then
-#				fncPrint "--- get ${DVD_NAME}.iso $(fncString ${COL_SIZE} '-')"
 				fncPrint "    get ${DVD_NAME}.iso"
 				set +e
 				curl -L -# -R -S -f --create-dirs --connect-timeout 60 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
@@ -782,7 +1702,6 @@ fncRemaster () {
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
-#		fncPrint "--- copy DVD -> work directory $(fncString ${COL_SIZE} '-')"
 		fncPrint "    copy DVD -> work directory"
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		pushd mnt > /dev/null								# 作業用マウント先
@@ -799,7 +1718,6 @@ fncRemaster () {
 					WALL_FILE="ubuntu_splash.png"
 					if [ -f isolinux/txt.cfg ]; then
 						if [ ! -f "../../../${WALL_FILE}" ]; then
-#							fncPrint "--- get ${WALL_FILE} $(fncString ${COL_SIZE} '-')"
 							fncPrint "    get ${WALL_FILE}"
 							set +e
 							curl -L -# -R -S -f --connect-timeout 3 --retry 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
@@ -815,7 +1733,6 @@ fncRemaster () {
 							FILE_SIZE=`echo ${FILE_INFO} | awk '{print $5;}'`
 							FILE_DATE=`echo ${FILE_INFO} | awk '{print $6;}'`
 							if [ "${WEB_SIZE}" != "${FILE_SIZE}" ] || [ "${WEB_DATE}" != "${FILE_DATE}" ]; then
-#								fncPrint "--- get ${WALL_FILE} $(fncString ${COL_SIZE} '-')"
 								fncPrint "    get ${WALL_FILE}"
 								set +e
 								curl -L -# -R -S -f --connect-timeout 3 --retry 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
@@ -841,7 +1758,6 @@ fncRemaster () {
 					CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
 					# --- preseed.cfg -> image --------------------------------
 					if [ ! -f "../../../${CFG_FILE}" ]; then
-#						fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
 						fncPrint "    get ${CFG_FILE}"
 						set +e
 						curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
@@ -865,7 +1781,6 @@ fncRemaster () {
 							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
 							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
 							if [ ! -f "../../../${CFG_FILE}" ]; then
-#								fncPrint "--- get ${CFG_FILE} $(fncString ${COL_SIZE} '-')"
 								fncPrint "    get ${CFG_FILE}"
 								set +e
 								curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
@@ -897,7 +1812,6 @@ fncRemaster () {
 							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/directory\).*$/\1 string \/debian-archive\/debian/'              \
 							    -e 's/\(^[ \t]*d-i[ \t]*mirror/http/mirror select\).*$/\1 select archive.debian.org/'                  \
 							    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'
-#							    -e 's/\(^[ \t]*d-i[ \t]*netcfg\/get_nameservers\)[ \t]*[A-Za-z]*[ \t]*\(.*\)$/\1 string 127.0.0.1 \2/'
 							;;
 						stretch        | \
 						buster         )
@@ -967,7 +1881,6 @@ fncRemaster () {
 					ISO_NAME="${DVD_NAME}-kickstart"
 					mkdir -p "kickstart"
 					if [ ! -f "../../../${CFG_NAME}" ]; then
-#						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
 						fncPrint "    get ${CFG_NAME}"
 						set +e
 						curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
@@ -975,56 +1888,77 @@ fncRemaster () {
 					fi
 					cp --preserve=timestamps "../../../${CFG_NAME}" "kickstart/ks.cfg"
 					sed -i kickstart/ks.cfg                \
-					    -e "s/_HOSTNAME_/${CODE_NAME[0]}/"
-					case "${WORK_DIRS}" in
-						*dvd* )
-							sed -i kickstart/ks.cfg                                    \
-							    -e '/^#cdrom/                                  s/^#//' \
-							    -e "/^url .* --mirrorlist=.*${CODE_NAME[0]}/   s/^/#/" \
-							    -e "/^url .* --url=.*${CODE_NAME[0]}/          s/^/#/" \
-							    -e "/^#repo .* --mirrorlist=.*${CODE_NAME[0]}/ s/^#//" \
-							    -e "/^#repo .* --baseurl=.*${CODE_NAME[0]}/    s/^#//"
-							;;
-						*     )
-							sed -i kickstart/ks.cfg                                    \
-							    -e '/^cdrom/                                   s/^/#/' \
-							    -e "/^#url .* --mirrorlist=.*${CODE_NAME[0]}/  s/^#//" \
-							    -e "/^#url .* --url=.*${CODE_NAME[0]}/         s/^#//" \
-							    -e "/^#repo .* --mirrorlist=.*${CODE_NAME[0]}/ s/^#//" \
-							    -e "/^#repo .* --baseurl=.*${CODE_NAME[0]}/    s/^#//"
-							;;
-					esac
-					case "${CODE_NAME[0]}" in
-						"fedora" )
+					    -e "s/_HOSTNAME_/${CODE_NAME[0]}/" \
+					    -e '/^url /   s/^/#/g'             \
+					    -e '/^repo /  s/^/#/g'
+					case "${CODE_NAME[1]}" in
+						Fedora-* )
 							VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '-' '{print $5;}')
-							sed -i kickstart/ks.cfg                                            \
-							    -e "/url .*--mirrorlist/ s/\(fedora\)-[0-9]*/\1-${VER_NUM}/g"  \
-							    -e "/repo .*--mirrorlist/ s/\(fedora\)-[0-9]*/\1-${VER_NUM}/g"
+							sed -i kickstart/ks.cfg                                                          \
+							    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"                                      \
+							    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"                                      \
+							    -e "/url /  {/${CODE_NAME[0]}/ s/\(${CODE_NAME[0]}\)-[0-9]*/\1-${VER_NUM}/}" \
+							    -e "/repo / {/${CODE_NAME[0]}/ s/\(${CODE_NAME[0]}\)-[0-9]*/\1-${VER_NUM}/}"
 							if [ ${VER_NUM} -ge 36 ]; then
 								sed -i kickstart/ks.cfg                    \
 								    -e '/%anaconda/,/%end/{/^#/! s/^/#/g}'
 							fi
 							;;
 						* )
-							sed -i kickstart/ks.cfg                       \
-							    -e '/%post/,/%end/{/systemctl/! s/^#//g}'
 							case "${CODE_NAME[1]}" in
 								CentOS-Stream-8* )
-									sed -i kickstart/ks.cfg            \
-									    -e '/^#/!{/9-stream/ s/^/#/g}'
+									sed -i kickstart/ks.cfg                                   \
+									    -e "/url .*mirrorlist\./  {/${CODE_NAME[0]}/ s/^#//}" \
+									    -e "/repo .*mirrorlist\./ {/${CODE_NAME[0]}/ s/^#//}"
 									;;
 								CentOS-Stream-9* )
-									sed -i kickstart/ks.cfg             \
-									    -e '/^#/!{/8-stream/ s/^/#/g}'  \
-									    -e '/epel-release-.*$/ s/8/9/g' \
-									    -e '/remi-release-.*$/ s/8/9/g'
+									sed -i kickstart/ks.cfg                                     \
+									    -e "/url .*mirror\.stream/  {/${CODE_NAME[0]}/ s/^#//}" \
+									    -e "/repo .*mirror\.stream/ {/${CODE_NAME[0]}/ s/^#//}" \
+									    -e '/%anaconda/,/%end/ {/^#/! s/^/#/g}'                 \
+									    -e '/%packages/,/%end/ {/^ibus-mozc/ s/^/#/}'
 									;;
-								AlmaLinux-9* )
-									sed -i kickstart/ks.cfg             \
-									    -e '/epel-release-.*$/ s/8/9/g' \
-									    -e '/remi-release-.*$/ s/8/9/g'
+								AlmaLinux-9*     )
+									sed -i kickstart/ks.cfg                      \
+									    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"  \
+									    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"  \
+									    -e '/%anaconda/,/%end/{/^#/!   s/^/#/g}'
+									;;
+								* )
+									sed -i kickstart/ks.cfg                     \
+									    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}" \
+									    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"
 									;;
 							esac
+							case "${CODE_NAME[1]}" in
+								CentOS-Stream-8* | \
+								MIRACLELINUX-8*  | \
+								Rocky-8*         )
+									local TMZONE=`awk '$1=="timezone" {print $2;}' kickstart/ks.cfg`
+									local NTPSVR=`awk -F '[ \t=]' '$1=="timesource" {print $3;}' kickstart/ks.cfg`
+									sed -i kickstart/ks.cfg                                                   \
+									    -e "s~^\(timezone\).*\$~\1 ${TMZONE} --isUtc --ntpservers=${NTPSVR}~" \
+									    -e '/timesource/d'
+									;;
+								* )
+									;;
+							esac
+							sed -i kickstart/ks.cfg             \
+							    -e '/--name=epel/      s/^#//'  \
+							    -e '/--name=epel_next/ s/^#//'  \
+							    -e '/--name=Remi/      s/^#//'  \
+							    -e '/%packages/,/%end/ s/^#//g'
+							;;
+					esac
+					case "${WORK_DIRS}" in
+						*dvd* )
+							sed -i kickstart/ks.cfg    \
+							    -e '/^#cdrom/ s/^#//'  \
+							    -e '/^url /   s/^/#/g'
+							;;
+						*     )
+							sed -i kickstart/ks.cfg    \
+							    -e '/^cdrom/  s/^/#/'
 							;;
 					esac
 					;;
@@ -1033,7 +1967,6 @@ fncRemaster () {
 					ISO_NAME="${DVD_NAME}-autoyast"
 					mkdir -p "autoyast"
 					if [ ! -f "../../../${CFG_NAME}" ]; then
-#						fncPrint "--- get ${CFG_NAME} $(fncString ${COL_SIZE} '-')"
 						fncPrint "    get ${CFG_NAME}"
 						set +e
 						curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
@@ -1481,748 +2414,33 @@ _EOT_
 			case "${WORK_DIRS}" in
 				"live-custom" )
 					# --- customize live disc [chroot] ------------------------
-#					fncPrint "--- customize live disc [chroot] $(fncString ${COL_SIZE} '-')"
-					fncPrint "    customize live disc [chroot]"
+					fncPrint "    customize live disc"
 					ISO_NAME="${DVD_NAME}-custom-preseed"
-					pushd ../ > /dev/null					# 作業用ディレクトリー
-						case "${CODE_NAME[0]}" in
-							"debian"       | \
-							"ubuntu"       )		# ･････････････････････････
-								if [ -d ./image/live/ ]; then
-									# --- live configure ----------------------------------
-									#LIVE_CONFIG_CMDLINE=パラメータ1 パラメータ2 ... パラメータn									# この変数はブートローダのコマンドラインに相当します。
-									#LIVE_CONFIG_COMPONENTS=構成要素1,構成要素2, ... 構成要素n										# この変数は「live-config.components=構成要素1,構成要素2, ...  構成要素n」パラメータに相当します。
-									#LIVE_CONFIG_NOCOMPONENTS=構成要素1,構成要素2, ... 構成要素n									# この変数は「live-config.nocomponents=構成要素1,構成要素2,  ... 構成要素n」パラメータに相当します。
-									#LIVE_DEBCONF_PRESEED=filesystem|medium|URL1|URL2| ... |URLn									# この変数は「live-config.debconf-preseed=filesystem|medium|URL1|URL2|  ...  |URLn」パラメータに相当します。
-									#LIVE_HOSTNAME=ホスト名																			# この変数は「live-config.hostname=ホスト名」パラメータに相当します。
-									#LIVE_USERNAME=ユーザ名																			# この変数は「live-config.username=ユーザ名」パラメータに相当します。
-									#LIVE_USER_DEFAULT_GROUPS=グループ1,グループ2 ... グループn										# この変数は「live-config.user-default-groups="グループ1,グループ2  ... グループn"」パラメータに相当します。
-									#LIVE_USER_FULLNAME="ユーザのフルネーム"														# この変数は「live-config.user-fullname="ユーザのフルネーム"」パラメータに相当します。
-									#LIVE_LOCALES=ロケール1,ロケール2 ... ロケールn													# この変数は「live-config.locales=ロケール1,ロケール2 ...  ロケールn」パラメータに相当します。
-									#LIVE_TIMEZONE=タイムゾーン																		# この変数は「live-config.timezone=タイムゾーン」パラメータに相当します。
-									#LIVE_KEYBOARD_MODEL=キーボードの種類															# この変数は「live-config.keyboard-model=キーボードの種類」パラメータに相当します。
-									#LIVE_KEYBOARD_LAYOUTS=キーボードレイアウト1,キーボードレイアウト2  ...  キーボードレイアウトn	# この変数は「live-config.keyboard-layouts=キーボードレイアウト1,キーボードレイアウト2... キーボードレイアウトn」パラメータに相当します。
-									#LIVE_KEYBOARD_VARIANTS=キーボード配列1,キーボード配列2 ... キーボード配列n						# この変数は「live-config.keyboard-variants=キーボード配列1,キーボード配列2 ... キーボード配列n」パラメータに相当します。
-									#LIVE_KEYBOARD_OPTIONS=キーボードオプション														# この変数は「live-config.keyboard-options=キーボードオプション」パラメータに相当します。
-									#LIVE_SYSV_RC=サービス1,サービス2 ... サービスn													# この変数は「live-config.sysv-rc=サービス1,サービス2  ... サービスn」パラメータに相当します。
-									#LIVE_UTC=yes|no																				# この変数は「live-config.utc=yes|no」パラメータに相当します。
-									#LIVE_X_SESSION_MANAGER=Xセッションマネージャ													# この変数は「live-config.x-session-manager=Xセッションマネージャ」パラメータに相当します。
-									#LIVE_XORG_DRIVER=XORGドライバ																	# この変数は「live-config.xorg-driver=XORGドライバ」パラメータに相当します。
-									#LIVE_XORG_RESOLUTION=XORG解像度																# この変数は「live-config.xorg-resolution=XORG解像度」パラメータに相当します。
-									#LIVE_WLAN_DRIVER=WLANドライバ																	# この変数は「live-config.wlan-driver=WLANドライバ」パラメータに相当します。
-									#LIVE_HOOKS=filesystem|medium|URL1|URL2| ... |URLn												# この変数は「live-config.hooks=filesystem|medium|URL1|URL2| ... |URLn」パラメータに相当します。
-									#LIVE_CONFIG_DEBUG=true|false																	# この変数は「live-config.debug」パラメータに相当します。
-									#LIVE_CONFIG_NOAUTOLOGIN=true|																	# 
-									#LIVE_CONFIG_NOROOT=true|																		# 
-									#LIVE_CONFIG_NOX11AUTOLOGIN=true|																# 
-									#LIVE_SESSION=plasma.desktop|lxqt.desktop														# 固定値
-#									fncPrint "--- live configure $(fncString ${COL_SIZE} '-')"
-									fncPrint "    live configure"
-									# -----------------------------------------
-									cat <<- '_EOT_' | sed 's/^ //g' > ./image/live/config.conf
-										# *****************************************************************************
-										#set -e
-										#set -o allexport
-										#set +o | tee
-										# === Fix Parameters [ /lib/live/init-config.sh ] =============================
-										#LIVE_HOSTNAME="debian"
-										#LIVE_USERNAME="user"
-										#LIVE_USER_FULLNAME="Debian Live user"
-										#LIVE_USER_DEFAULT_GROUPS="audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth debian-tor"
-										# === Fix Parameters [ /lib/live/config/0030-live-debconfig_passwd ] ==========
-										#_PASSWORD="8Ab05sVQ4LLps"				# '/bin/echo "live" | mkpasswd -s'
-										# === Fix Parameters [ /lib/live/config/0030-user-setup ] =====================
-										#_PASSWORD="8Ab05sVQ4LLps"				# '/bin/echo "live" | mkpasswd -s'
-										# === User parameters =========================================================
-										LIVE_HOSTNAME="_HOSTNAME_-live"
-										# -----------------------------------------------------------------------------
-										LIVE_USER_FULLNAME="Debian Live user"	# full name
-										LIVE_USERNAME="user"					# user name
-										LIVE_PASSWORD="live"					# password
-										#LIVE_CRYPTPWD='8Ab05sVQ4LLps'			# '/bin/echo "live" | mkpasswd -s'
-										# -----------------------------------------------------------------------------
-										LIVE_LOCALES="ja_JP.UTF-8"
-										LIVE_KEYBOARD_MODEL="pc105"
-										LIVE_KEYBOARD_LAYOUTS="jp"
-										LIVE_KEYBOARD_VARIANTS="OADG109A"
-										LIVE_TIMEZONE="Asia/Tokyo"
-										LIVE_UTC="yes"
-										# -----------------------------------------------------------------------------
-										#set | grep -e "^LIVE_" | tee
-										# === Change hostname =========================================================
-										if [ -n "${LIVE_HOSTNAME}" ]; then
-										 	/bin/echo "${LIVE_HOSTNAME}" > /etc/hostname
-										fi
-										# === Output to shell files ===================================================
-										cat <<- '_EOT_SH_' | sed 's/^ //g' > /lib/live/config/9999-user-setting
-										 	#!/bin/sh
-										
-										 	/bin/echo ""
-										 	/bin/echo "Start 9999-user-setting :::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-										
-										 	#. /lib/live/config.sh
-										 
-										 	#set -e
-										
-										 	Cmdline ()
-										 	{
-										 	 	:
-										 	}
-										 	
-										 	Init ()
-										 	{
-										 	 	:
-										 	}
-										
-										 	Config ()
-										 	{
-										 	 	# === Change user password ================================================
-										 	 	if [ -n "${LIVE_USERNAME}" ] && [ -n "${LIVE_PASSWORD}" ]; then
-										 	 		/bin/echo ""
-										 	 		/bin/echo "Change user password ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-										 	#		useradd ${LIVE_USERNAME}
-										 	 		/bin/echo -e "${LIVE_PASSWORD}\n${LIVE_PASSWORD}" | passwd ${LIVE_USERNAME}
-										 	 	fi
-										 	 	# === Change smb password =================================================
-										 	 	if [ -n "`which smbpasswd 2> /dev/null`" ] && [ -n "${LIVE_USERNAME}" ] && [ -n "${LIVE_PASSWORD}" ]; then
-										 	 		/bin/echo ""
-										 	 		/bin/echo "Change smb password :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-										 	 		smbpasswd -a ${LIVE_USERNAME} -n
-										 	 		/bin/echo -e "${LIVE_PASSWORD}\n${LIVE_PASSWORD}" | smbpasswd ${LIVE_USERNAME}
-										 	 	fi
-										 	 	# === Change sshd configure ===============================================
-										 	 	if [ -f /etc/ssh/sshd_config ]; then
-										 	 		/bin/echo ""
-										 	 		/bin/echo "Change sshd configure :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-										 	 		sed -i /etc/ssh/sshd_config \
-										 	 		    -e 's/^#*[ \t]*\(PasswordAuthentication\)[ \t]*.*$/\1 yes/g'
-										 	 	fi
-										 	 	# --- Creating state file -------------------------------------------------
-										 	 	/bin/echo "Creating state file :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-										 	 	touch /var/lib/live/config/user-setting
-										 	}
-										
-										 	Debug ()
-										 	{
-										 	 	# === Display of parameters ===============================================
-										 	 	/bin/echo ""
-										 	 	/bin/echo "Display of parameters :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-										 	 	/bin/echo "LIVE_USER_FULLNAME    =${LIVE_USER_FULLNAME}"
-										 	 	/bin/echo "LIVE_USERNAME         =${LIVE_USERNAME}"
-										 	 	/bin/echo "LIVE_PASSWORD         =${LIVE_PASSWORD}"
-										 	 	/bin/echo "LIVE_CRYPTPWD         =${LIVE_CRYPTPWD}"
-										 	 	/bin/echo "LIVE_LOCALES          =${LIVE_LOCALES}"
-										 	 	/bin/echo "LIVE_KEYBOARD_MODEL   =${LIVE_KEYBOARD_MODEL}"
-										 	 	/bin/echo "LIVE_KEYBOARD_LAYOUTS =${LIVE_KEYBOARD_LAYOUTS}"
-										 	 	/bin/echo "LIVE_KEYBOARD_VARIANTS=${LIVE_KEYBOARD_VARIANTS}"
-										 	 	/bin/echo "LIVE_TIMEZONE         =${LIVE_TIMEZONE}"
-										 	 	/bin/echo "LIVE_UTC              =${LIVE_UTC}"
-										 	}
-										
-										 	Cmdline
-										 	Init
-										 	Config
-										 	#Debug
-										
-										 	/bin/echo ""
-										 	/bin/echo "End 9999-user-setting :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-										_EOT_SH_
-										chmod +x /lib/live/config/9999-user-setting
-										# -----------------------------------------------------------------------------
-										#set | grep -e "^LIVE_" | tee
-										# === Creating state file =====================================================
-										touch /var/lib/live/config/config-conf
-										# =============================================================================
-										#set +e
-										# === Memo ====================================================================
-										#	/lib/live/init-config.sh
-										#	/lib/live/config/0020-hostname
-										#	/lib/live/config/0030-live-debconfig_passwd
-										#	/lib/live/config/0030-user-setup
-										#	/lib/live/config/1160-openssh-server
-										# *****************************************************************************
-_EOT_
-									# -----------------------------------------
-									OLD_IFS=${IFS}
-									IFS=$'\n'
-									FULLNAME="`awk '(!/#/&&/d-i[ \t]+passwd\/user-fullname[ \t]+/),(!/\\\\/) {print $0;}' image/preseed/preseed.cfg | sed -z 's/\n//g' | sed -e 's/.*[ \t]*string[ \t]*//'`"
-									USERNAME="`awk '(!/#/&&/d-i[ \t]+passwd\/username[ \t]+/),(!/\\\\/)      {print $0;}' image/preseed/preseed.cfg | sed -z 's/\n//g' | sed -e 's/.*[ \t]*string[ \t]*//'`"
-									PASSWORD="`awk '(!/#/&&/d-i[ \t]+passwd\/user-password[ \t]+/),(!/\\\\/) {print $0;}' image/preseed/preseed.cfg | sed -z 's/\n//g' | sed -e 's/.*[ \t]*password[ \t]*//'`"
-									IFS=${OLD_IFS}
-									if [ -z "${CODE_NAME[0]}" ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_HOSTNAME=\)/#\1/'; fi
-									if [ -z "${FULLNAME}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_USER_FULLNAME=\)/#\1/'; fi
-									if [ -z "${USERNAME}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_USERNAME=\)/#\1/'; fi
-									if [ -z "${PASSWORD}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_PASSWORD=\)/#\1/'; fi
-									sed -i ./image/live/config.conf                          \
-									    -e "s/_HOSTNAME_/${CODE_NAME[0]}/"                   \
-									    -e "s/^\(LIVE_USER_FULLNAME\)=.*$/\1='${FULLNAME}'/" \
-									    -e "s/^\(LIVE_USERNAME\)=.*$/\1='${USERNAME}'/"      \
-									    -e "s/^\(LIVE_PASSWORD\)=.*$/\1='${PASSWORD}'/"
+					case "${CODE_NAME[0]}" in
+						"debian"       | \
+						"ubuntu"       )					# ･････････････････
+							pushd ../ > /dev/null			# 作業用ディレクトリー
+								fncLive_custom
+								if [ ${FLG_SKIP} -eq 0 ]; then
+									fncMake_setup_sh
+									fncExec_setup_sh
 								fi
-								# ---------------------------------------------
-if [ ${FLG_SKIP} -eq 0 ]; then
-#								WORKGROUP=`sed -n 's/^[ \t]*d-i[ \t]*netcfg\/get_domain[ \t]*string[ \t]*\(.*\)$/\1/p' image/preseed/preseed.cfg`
-#								cat <<- '_EOT_SH_' | sed 's/^ //g' | sed -e "s/_WORKGROUP_/${WORKGROUP:-localdomain}/" > ./decomp/setup.sh
-								cat <<- '_EOT_SH_' | sed 's/^ //g' > ./decomp/setup.sh
-									#!/bin/bash
-									# -----------------------------------------------------------------------------
-									#	set -n								# 構文エラーのチェック
-									#	set -x								# コマンドと引数の展開を表示
-									 	set -o ignoreeof					# Ctrl+Dで終了しない
-									 	set +m								# ジョブ制御を無効にする
-									 	set -e								# ステータス0以外で終了
-									 	set -u								# 未定義変数の参照で終了
-									 	trap 'exit 1' 1 2 3 15
-									 	echo "*******************************************************************************"
-									 	echo "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]"
-									 	echo "*******************************************************************************"
-									# -- terminate ----------------------------------------------------------------
-									fncEnd() {
-									 	echo "--- terminate -----------------------------------------------------------------"
-									 	RET_STS=$1
-									 	history -c
-									 	echo "*******************************************************************************"
-									 	echo "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]"
-									 	echo "*******************************************************************************"
-									 	exit ${RET_STS}
-									}
-									# -- initialize ---------------------------------------------------------------
-									 	echo "--- initialize ----------------------------------------------------------------"
-									#	trap 'fncEnd 1' 1 2 3 15
-									 	export PS1="(chroot) "
-									 	# --- 追加ユーザー情報 ----------------------------------------------------
-									#	username="master"
-									#	password="master"
-									# -- which command ------------------------------------------------------------
-									 	if [ "`command -v which 2> /dev/null`" != "" ]; then
-									 		CMD_WICH="command -v"
-									 	else
-									 		CMD_WICH="which"
-									 	fi
-									# -- system info --------------------------------------------------------------
-									 	echo "--- system info ---------------------------------------------------------------"
-									 	SYS_NAME=`awk -F '=' '$1=="ID"               {gsub("\"",""); print $2;}' /etc/os-release`	# ディストリビューション名
-									 	SYS_CODE=`awk -F '=' '$1=="VERSION_CODENAME" {gsub("\"",""); print $2;}' /etc/os-release`	# コード名
-									 	SYS_VERS=`awk -F '=' '$1=="VERSION"          {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン名
-									 	SYS_VRID=`awk -F '=' '$1=="VERSION_ID"       {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン番号
-									 	if [ "${SYS_CODE}" = "" ]; then
-									 		SYS_CODE=`echo ${SYS_VERS} | awk -F ',' '{split($2,array," "); print tolower(array[1]);}'`
-									 	fi
-									# -- apt setup ----------------------------------------------------------------
-									 	echo "--- apt setup -----------------------------------------------------------------"
-									 	case "${SYS_NAME}" in
-									 		"debian" )
-									 			APT_HOST="http://deb.debian.org/debian/"
-									 			APT_SECU="http://security.debian.org/debian-security"
-									 			APT_OPTI=""
-									#			cp -p > /etc/apt/sources.list > /etc/apt/sources.list.orig
-									 			cat <<- _EOT_ > /etc/apt/sources.list
-									 				deb     ${APT_HOST} ${SYS_CODE} main non-free contrib
-									 				deb-src ${APT_HOST} ${SYS_CODE} main non-free contrib
-									 				deb     ${APT_SECU} ${SYS_CODE}-security main non-free contrib
-									 				deb-src ${APT_SECU} ${SYS_CODE}-security main non-free contrib
-									 				deb     ${APT_HOST} ${SYS_CODE}-updates main non-free contrib
-									 				deb-src ${APT_HOST} ${SYS_CODE}-updates main non-free contrib
-									 				deb     ${APT_HOST} ${SYS_CODE}-backports main non-free contrib
-									 				deb-src ${APT_HOST} ${SYS_CODE}-backports main non-free contrib
-									_EOT_
-									 			if [ ${SYS_VRID} -ge 9 ]; then
-									 				sed -i /etc/apt/sources.list    \
-									 				    -e '/security.debian.org/d'
-									 			fi
-									 			;;
-									 		"ubuntu" )
-									 			APT_HOST="http://jp.archive.ubuntu.com/ubuntu/"
-									 			APT_SECU="http://security.ubuntu.com/ubuntu"
-									 			APT_OPTI="http://archive.canonical.com/ubuntu"
-									#			cp -p > /etc/apt/sources.list > /etc/apt/sources.list.orig
-									 			cat <<- _EOT_ > /etc/apt/sources.list
-									 				deb     ${APT_HOST} ${SYS_CODE} main restricted universe multiverse
-									 				deb-src ${APT_HOST} ${SYS_CODE} main restricted universe multiverse
-									 				deb     ${APT_SECU} ${SYS_CODE}-security main restricted universe multiverse
-									 				deb-src ${APT_SECU} ${SYS_CODE}-security main restricted universe multiverse
-									 				deb     ${APT_HOST} ${SYS_CODE}-updates main restricted universe multiverse
-									 				deb-src ${APT_HOST} ${SYS_CODE}-updates main restricted universe multiverse
-									 				deb     ${APT_HOST} ${SYS_CODE}-backports main restricted universe multiverse
-									 				deb-src ${APT_HOST} ${SYS_CODE}-backports main restricted universe multiverse
-									 				deb     ${APT_OPTI} ${SYS_CODE} partner
-									 				deb-src ${APT_OPTI} ${SYS_CODE} partner
-									_EOT_
-									 			;;
-									 		* ) ;;
-									 	esac
-									# -- module install -----------------------------------------------------------
-									 	echo "--- module install ------------------------------------------------------------"
-									 	# -------------------------------------------------------------------------
-									 	dpkg --audit
-									 	dpkg --configure -a
-									 	# -------------------------------------------------------------------------
-									 	export DEBIAN_FRONTEND=noninteractive
-									 	# -------------------------------------------------------------------------
-									 	APT_OPTIONS="-o Dpkg::Options::=--force-confdef    \
-									 	             -o Dpkg::Options::=--force-confnew    \
-									 	             -o Dpkg::Options::=--force-overwrite"
-									 	# -------------------------------------------------------------------------
-									 	echo "--- apt-get -------------------------------------------------------------------"
-									 	apt-get update                                                             || fncEnd $?
-									 	apt-get upgrade      -q -y ${APT_OPTIONS}                                  || fncEnd $?
-									 	apt-get dist-upgrade -q -y ${APT_OPTIONS}                                  || fncEnd $?
-									 	apt-get install      -q -y ${APT_OPTIONS} --auto-remove                    \
-									 	    __INST_PACK__                                                          \
-									 	                                                                           || fncEnd $?
-									 	# -------------------------------------------------------------------------
-									 	echo "--- tasksel -------------------------------------------------------------------"
-									 	tasksel install                                                            \
-									 	    __INST_TASK__                                                          \
-									 	                                                                           || fncEnd $?
-									# --- google chrome install ---------------------------------------------------
-									 	echo "--- google chrome install -----------------------------------------------------"
-									#	if [ "${SYS_NAME}" = "debian" -a ("${SYS_CODE}" = "oldstable" -o "${SYS_CODE}" = "oldoldstable" -o "${SYS_CODE}" = "oldoldoldstable") ]; then
-									 	if [ 1 -eq 1 ]; then
-									 		# --- apt-get ---------------------------------------------------------
-									 		set +e
-									 		curl -L -# -R -S -f --connect-timeout 3 --retry 3                      \
-									 		    -O "https://dl-ssl.google.com/linux/linux_signing_key.pub"         \
-									 		                                                                       || if [ ${RET_CD} -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then fncEnd $?; fi
-									 		set -e
-									 		apt-key add ./linux_signing_key.pub
-									 		if [ -f ./linux_signing_key.pub ]; then
-									 			rm -f ./linux_signing_key.pub
-									 		fi
-									 		echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' \
-									 		    > /etc/apt/sources.list.d/google-chrome.list
-									 		apt-get update                                                         || fncEnd $?
-									 		apt-get install      -q -y ${APT_OPTIONS} --auto-remove                \
-									 		    google-chrome-stable                                               \
-									 		                                                                       || fncEnd $?
-									 	else
-									 		# --- deb package -----------------------------------------------------
-									 		set +e
-									 		curl -L -# -R -S -f --connect-timeout 3 --retry 3                      \
-									 		    -O "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" \
-									 		                                                                       || if [ ${RET_CD} -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then fncEnd $?; fi
-									 		set -e
-									 		apt-get install      -q -y ${APT_OPTIONS} --auto-remove                \
-									 		    ./google-chrome-stable_current_amd64.deb                           \
-									 		                                                                       || fncEnd $?
-									 		if [ -f ./google-chrome-stable_current_amd64.deb ]; then
-									 			rm -f ./google-chrome-stable_current_amd64.deb
-									 		fi
-									 	fi
-									# --- cleaning ----------------------------------------------------------------
-									 	apt-get autoremove   -q -y                                                 || fncEnd $?
-									 	apt-get autoclean    -q -y                                                 || fncEnd $?
-									 	apt-get clean        -q -y                                                 || fncEnd $?
-									 	# -------------------------------------------------------------------------
-									 	export -n DEBIAN_FRONTEND
-									# -- network ------------------------------------------------------------------
-									#	echo "--- network -------------------------------------------------------------------"
-									#	CON_NAME=`nmcli -t -f name c | head -n 1`								# 接続名
-									#	CON_UUID=`nmcli -t -f uuid c | head -n 1`								# 接続UUID
-									 	# -------------------------------------------------------------------------
-									#	nmcli c modify "${CON_UUID}" ipv6.method auto
-									#	nmcli c modify "${CON_UUID}" ipv6.ip6-privacy 1
-									#	nmcli c modify "${CON_UUID}" ipv6.dns "::1"
-									#	nmcli c modify "${CON_UUID}" ipv6.dns-search ${WGP_NAME}.
-									#	nmcli c modify "${CON_UUID}" ipv4.dns "127.0.0.1"
-									#	nmcli c modify "${CON_UUID}" ipv4.dns-search ${WGP_NAME}.
-									#	nmcli c down   "${CON_UUID}" > /dev/null
-									#	nmcli c up     "${CON_UUID}" > /dev/null
-									# -- localize -----------------------------------------------------------------
-									 	echo "--- localize ------------------------------------------------------------------"
-									 	sed -i /etc/locale.gen                   \
-									 	    -e 's/^[a-zA-Z]/# &/g'               \
-									 	    -e 's/# *\(ja_JP.UTF-8 UTF-8\)/\1/g' \
-									 	    -e 's/# *\(en_US.UTF-8 UTF-8\)/\1/g'
-									 	locale-gen
-									 	update-locale LANG="ja_JP.UTF-8" LANGUAGE="ja:en"
-									 	localectl set-x11-keymap --no-convert "jp,us" "pc105"
-									# -- mozc ---------------------------------------------------------------------
-									 	if [ -f /usr/share/ibus/component/mozc.xml ]; then
-									 		sed -i /usr/share/ibus/component/mozc.xml                                     \
-									 		    -e '/<engine>/,/<\/engine>/ s/\(<layout>\)default\(<\/layout>\)/\1jp\2/g'
-									 	fi
-									# -- clamav -------------------------------------------------------------------
-									 	if [ -f /etc/clamav/freshclam.conf ]; then
-									 		echo "--- clamav --------------------------------------------------------------------"
-									 		sed -i /etc/clamav/freshclam.conf \
-									 		    -e 's/^NotifyClamd/#&/'
-									 	fi
-									# -- sshd ---------------------------------------------------------------------
-									 	if [ -f /etc/ssh/sshd_config ]; then
-									 		echo "--- sshd ----------------------------------------------------------------------"
-									 		sed -i /etc/ssh/sshd_config                    \
-									 		    -e 's/^\( *PermitRootLogin \)/#\1/'        \
-									 		    -e 's/^\( *PubkeyAuthentication \)/#\1/'   \
-									 		    -e 's/^\( *PasswordAuthentication \)/#\1/' \
-									 		    -e '$a \\n# --- user settings ---'         \
-									 		    -e '$a PermitRootLogin no'                 \
-									 		    -e '$a UseDNS no'                          \
-									 		    -e '$a #PubkeyAuthentication yes'          \
-									 		    -e '$a #PasswordAuthentication yes'
-									 		if [ "`ssh -V 2>&1 | awk -F '[^0-9]+' '{print $2;}'`" -ge 9 ]; then
-									 			sed -i /etc/ssh/sshd_config                     \
-									 			    -e '$a PubkeyAcceptedAlgorithms +ssh-rsa'   \
-									 			    -e '$a HostkeyAlgorithms +ssh-rsa'
-									 		fi
-									#		ssh-keygen -N "" -t ecdsa   -f /etc/ssh/ssh_host_ecdsa_key
-									#		ssh-keygen -N "" -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
-									 	fi
-									# -- ftpd ---------------------------------------------------------------------
-									 	if [ -f /etc/vsftpd.conf ]; then
-									 		echo "--- ftpd ----------------------------------------------------------------------"
-									 	fi
-									# -- samba --------------------------------------------------------------------
-									 	if [ -f /etc/samba/smb.conf ]; then
-									 		echo "--- samba ---------------------------------------------------------------------"
-									 		SVR_FQDN=`hostname`														# 本機のFQDN
-									 		SVR_NAME=`hostname -s`													# 本機のホスト名
-									 		if [ "${SVR_FQDN}" != "${SVR_NAME}" ]; then								# ワークグループ名(ドメイン名)
-									 			WGP_NAME=`hostname | awk -F '.' '{ print $2; }'`
-									 		else
-									 			WGP_NAME=`hostname -d 2> /dev/null || :`
-									#			if [ -z ${WGP_NAME} ]; then
-									#				WGP_NAME="_WORKGROUP_"
-									#			fi
-									 			SVR_FQDN=${SVR_NAME}.${WGP_NAME}									# 本機のFQDN
-									 		fi
-									 		CMD_UADD=`${CMD_WICH} useradd`
-									 		CMD_UDEL=`${CMD_WICH} userdel`
-									 		CMD_GADD=`${CMD_WICH} groupadd`
-									 		CMD_GDEL=`${CMD_WICH} groupdel`
-									 		CMD_GPWD=`${CMD_WICH} gpasswd`
-									 		CMD_FALS=`${CMD_WICH} false`
-									 		# ---------------------------------------------------------------------
-									 		testparm -s -v |                                                                        \
-									 		sed -e 's/\(dos charset\) =.*$/\1 = CP932/'                                             \
-									 		    -e "s/\(netbios name\) =.*$/\1 = ${SVR_NAME}/"                                      \
-									 		    -e "s/\(workgroup\) =.*$/\1 = ${WGP_NAME}/"                                         \
-									 		    -e "s~\(add group script\) =.*$~\1 = ${CMD_GADD} %g~"                               \
-									 		    -e "s~\(add machine script\) =.*$~\1 = ${CMD_UADD} -d /dev/null -s ${CMD_FALS} %u~" \
-									 		    -e "s~\(add user script\) =.*$~\1 = ${CMD_UADD} %u~"                                \
-									 		    -e "s~\(add user to group script\) =.*$~\1 = ${CMD_GPWD} -a %u %g~"                 \
-									 		    -e "s~\(delete group script\) =.*$~\1 = ${CMD_GDEL} %g~"                            \
-									 		    -e "s~\(delete user from group script\) =.*$~\1 = ${CMD_GPWD} -d %u %g~"            \
-									 		    -e "s~\(delete user script\) =.*$~\1 = ${CMD_UDEL} %u~"                             \
-									 		    -e '/idmap config \* : backend =/i \\tidmap config \* : range = 1000-10000'         \
-									 		    -e 's/\(admin users\) =.*$/# \1 = administrator/'                                   \
-									 		    -e 's/\(domain logons\) =.*$/\1 = Yes/'                                             \
-									 		    -e 's/\(domain master\) =.*$/\1 = Yes/'                                             \
-									 		    -e 's/\(load printers\) =.*$/\1 = No/'                                              \
-									 		    -e 's/\(logon path\) =.*$/\1 = \\\\%L\\profiles\\%U/'                               \
-									 		    -e 's/\(logon script\) =.*$/\1 = logon.bat/'                                        \
-									 		    -e 's/\(max log size\) =.*$/\1 = 1000/'                                             \
-									 		    -e 's/\(min protocol\) =.*$/\1 = NT1/g'                                             \
-									 		    -e 's/\(multicast dns register\) =.*$/\1 = No/'                                     \
-									 		    -e 's/\(os level\) =.*$/# \1 = 35/'                                                 \
-									 		    -e 's/\(pam password change\) =.*$/\1 = Yes/'                                       \
-									 		    -e 's/\(preferred master\) =.*$/\1 = Yes/'                                          \
-									 		    -e 's/\(printing\) =.*$/\1 = bsd/'                                                  \
-									 		    -e 's/\(security\) =.*$/\1 = USER/'                                                 \
-									 		    -e 's/\(server role\) =.*$/\1 = standalone server/'                                 \
-									 		    -e 's/\(unix password sync\) =.*$/\1 = No/'                                         \
-									 		    -e 's/\(wins support\) =.*$/\1 = Yes/'                                              \
-									 		    -e 's~\(log file\) =.*$~\1 = /var/log/samba/log.%m~'                                \
-									 		    -e 's~\(printcap name\) =.*$~\1 = /dev/null~'                                       \
-									 		    -e '/[ |\t]*.* = $/d'                                                               \
-									 		    -e '/[ |\t]*\(client ipc\|client\|server\) min protocol = .*$/d'                    \
-									 		    -e '/[ |\t]*acl check permissions =.*$/d'                                           \
-									 		    -e '/[ |\t]*allocation roundup size =.*$/d'                                         \
-									 		    -e '/[ |\t]*blocking locks =.*$/d'                                                  \
-									 		    -e '/[ |\t]*client NTLMv2 auth =.*$/d'                                              \
-									 		    -e '/[ |\t]*client lanman auth =.*$/d'                                              \
-									 		    -e '/[ |\t]*client plaintext auth =.*$/d'                                           \
-									 		    -e '/[ |\t]*client schannel =.*$/d'                                                 \
-									 		    -e '/[ |\t]*client use spnego =.*$/d'                                               \
-									 		    -e '/[ |\t]*client use spnego principal =.*$/d'                                     \
-									 		    -e '/[ |\t]*copy =.*$/d'                                                            \
-									 		    -e '/[ |\t]*dns proxy =.*$/d'                                                       \
-									 		    -e '/[ |\t]*domain logons =.*$/d'                                                   \
-									 		    -e '/[ |\t]*domain master =.*$/d'                                                   \
-									 		    -e '/[ |\t]*enable privileges =.*$/d'                                               \
-									 		    -e '/[ |\t]*encrypt passwords =.*$/d'                                               \
-									 		    -e '/[ |\t]*idmap backend =.*$/d'                                                   \
-									 		    -e '/[ |\t]*idmap gid =.*$/d'                                                       \
-									 		    -e '/[ |\t]*idmap uid =.*$/d'                                                       \
-									 		    -e '/[ |\t]*lanman auth =.*$/d'                                                     \
-									 		    -e '/[ |\t]*logon path =.*$/d'                                                      \
-									 		    -e '/[ |\t]*logon script =.*$/d'                                                    \
-									 		    -e '/[ |\t]*lsa over netlogon =.*$/d'                                               \
-									 		    -e '/[ |\t]*map to guest =.*$/d'                                                    \
-									 		    -e '/[ |\t]*nbt client socket address =.*$/d'                                       \
-									 		    -e '/[ |\t]*null passwords =.*$/d'                                                  \
-									 		    -e '/[ |\t]*obey pam restrictions =.*$/d'                                           \
-									 		    -e '/[ |\t]*only user =.*$/d'                                                       \
-									 		    -e '/[ |\t]*pam password change =.*$/d'                                             \
-									 		    -e '/[ |\t]*paranoid server security =.*$/d'                                        \
-									 		    -e '/[ |\t]*password level =.*$/d'                                                  \
-									 		    -e '/[ |\t]*preferred master =.*$/d'                                                \
-									 		    -e '/[ |\t]*raw NTLMv2 auth =.*$/d'                                                 \
-									 		    -e '/[ |\t]*realm =.*$/d'                                                           \
-									 		    -e '/[ |\t]*security =.*$/d'                                                        \
-									 		    -e '/[ |\t]*server role =.*$/d'                                                     \
-									 		    -e '/[ |\t]*server schannel =.*$/d'                                                 \
-									 		    -e '/[ |\t]*server services =.*$/d'                                                 \
-									 		    -e '/[ |\t]*server string =.*$/d'                                                   \
-									 		    -e '/[ |\t]*share modes =.*$/d'                                                     \
-									 		    -e '/[ |\t]*syslog =.*$/d'                                                          \
-									 		    -e '/[ |\t]*syslog only =.*$/d'                                                     \
-									 		    -e '/[ |\t]*time offset =.*$/d'                                                     \
-									 		    -e '/[ |\t]*unicode =.*$/d'                                                         \
-									 		    -e '/[ |\t]*unix password sync =.*$/d'                                              \
-									 		    -e '/[ |\t]*use spnego =.*$/d'                                                      \
-									 		    -e '/[ |\t]*usershare allow guests =.*$/d'                                          \
-									 		    -e '/[ |\t]*winbind separator =.*$/d'                                               \
-									 		    -e '/[ |\t]*wins support =.*$/d'                                                    \
-									 		> ./smb.conf
-									 		# ---------------------------------------------------------------------
-									 		testparm -s ./smb.conf > /etc/samba/smb.conf
-									 		rm -f ./smb.conf /etc/samba/smb.conf.ucf-dist
-									 	fi
-									# -- minidlna -----------------------------------------------------------------
-									 	if [ -f /etc/minidlna.conf ]; then
-									 		echo "--- minidlna.conf -------------------------------------------------------------"
-									 		systemctl disable minidlna.service
-									 	fi
-									# -- open vm tools ------------------------------------------------------------
-									 	if [ "`dpkg -l open-vm-tools | awk '$1==\"ii\" && $2=\"open-vm-tools\" {print $2;}'`" = "open-vm-tools" ]; then
-									 		echo "--- open vm tools -------------------------------------------------------------"
-									 		if [ ! -d /media/hgfs ]; then
-									 			mkdir -p /media/hgfs
-									 		fi
-									 		echo -e '# Added by User\n' \
-									 		        '.host:/ /media/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,noauto,users,defaults 0 0' \
-									 		>> /etc/fstab
-									 	fi
-									# -- root and user's setting --------------------------------------------------
-									 	echo "--- root and user's setting ---------------------------------------------------"
-									#	useradd ${username}
-									#	echo -e "${password}\n${password}\n" | passwd ${username}
-									#	smbpasswd -a ${username} -n
-									#	echo -e "${password}\n${password}\n" | smbpasswd ${username}
-									 	# -------------------------------------------------------------------------
-									 	for USER_NAME in "skel" "root"
-									 	do
-									 		if [ "${USER_NAME}" == "skel" ]; then
-									 			USER_HOME="/etc/skel"
-									 		else
-									 			USER_HOME=`awk -F ':' '$1=="'${USER_NAME}'" {print $6;}' /etc/passwd`
-									 		fi
-									 		pushd ${USER_HOME} > /dev/null
-									 			echo "--- .bashrc -------------------------------------------------------------------"
-									 			cat <<- _EOT_ >> .bashrc
-									 				# --- 日本語文字化け対策 ---
-									 				case "\${TERM}" in
-									 				    "linux" ) export LANG=C;;
-									 				    * )                    ;;
-									 				esac
-									 				export GTK_IM_MODULE=ibus
-									 				export XMODIFIERS=@im=ibus
-									 				export QT_IM_MODULE=ibus
-									_EOT_
-									 			echo "--- .vimrc --------------------------------------------------------------------"
-									 			cat <<- _EOT_ > .vimrc
-									 				set number              " Print the line number in front of each line.
-									 				set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
-									 				set list                " List mode: Show tabs as CTRL-I is displayed, display $ after end of line.
-									 				set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
-									 				set nowrap              " This option changes how text is displayed.
-									 				set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
-									 				set laststatus=2        " The value of this option influences when the last window will have a status line always.
-									 				syntax on               " Vim5 and later versions support syntax highlighting.
-									_EOT_
-									 			if [ "${USER_NAME}" != "skel" ]; then
-									 				chown ${USER_NAME}. .vimrc
-									 			fi
-									 			echo "--- .curlrc -------------------------------------------------------------------"
-									 			cat <<- _EOT_ > .curlrc
-									 				location
-									 				progress-bar
-									 				remote-time
-									 				show-error
-									_EOT_
-									 			if [ "${USER_NAME}" != "skel" ]; then
-									 				chown ${USER_NAME}. .curlrc
-									 			fi
-									 			if [ "${USER_NAME}" != "skel" ]; then
-									 				echo "--- .credentials --------------------------------------------------------------"
-									 				cat <<- _EOT_ > .credentials
-									 					username=value
-									 					password=value
-									 					domain=value
-									_EOT_
-									 				chown ${USER_NAME}. .credentials
-									 				chmod 0600 .credentials
-									 			fi
-									 			if [ -f .config/libfm/libfm.conf ]; then
-									 				echo "--- libfm.conf ----------------------------------------------------------------"
-									 				sed -i .config/libfm/libfm.conf   \
-									 				    -e 's/^\(single_click\)=.*$/\1=0/'
-									 			fi
-									 		popd > /dev/null
-									 	done
-									# -- cleaning -----------------------------------------------------------------
-									 	echo "--- cleaning ------------------------------------------------------------------"
-									 	fncEnd 0
-									# -- EOF ----------------------------------------------------------------------
-									# *****************************************************************************
-									# <memo>
-									#   [im-config]
-									#     Change Kanji mode:[Windows key]+[Space key]->[Zenkaku/Hankaku key]
-									# *****************************************************************************
-_EOT_SH_
-								# --- packages --------------------------------
-								OLD_IFS=${IFS}
-								IFS=$'\n'
-								LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' image/preseed/preseed.cfg  | \
-								           sed -z 's/\n//g'                                                                | \
-								           sed -e 's/.* multiselect *//'                                                     \
-								               -e 's/[,|\\\\]//g'                                                            \
-								               -e 's/\t/ /g'                                                                 \
-								               -e 's/  */ /g'                                                                \
-								               -e 's/^ *//'`
-								LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' image/preseed/preseed.cfg | \
-								           sed -z 's/\n//g'                                                                | \
-								           sed -e 's/.* string *//'                                                          \
-								               -e 's/[,|\\\\]//g'                                                            \
-								               -e 's/\t/ /g'                                                                 \
-								               -e 's/  */ /g'                                                                \
-								               -e 's/^ *//'`
-								INST_TASK=${LIST_TASK}
-								INST_PACK=`echo "${LIST_PACK}" | sed -e 's/ *isc-dhcp-server//'`
-#								INST_PACK+=" whois"
-								sed -i ./decomp/setup.sh               \
-								    -e "s/__INST_PACK__/${INST_PACK}/" \
-								    -e "s/__INST_TASK__/${INST_TASK}/"
-								IFS=${OLD_IFS}
-								# --- copy media -> fsimg ---------------------
-#								fncPrint "--- copy media -> fsimg $(fncString ${COL_SIZE} '-')"
-								fncPrint "    copy media -> fsimg"
-								if [ -f ./image/live/filesystem.squashfs ]; then
-									mount -r -o loop ./image/live/filesystem.squashfs    ./mnt
-								elif [ -f ./image/install/filesystem.squashfs ]; then
-									mount -r -o loop ./image/install/filesystem.squashfs ./mnt
-								elif [ -f ./image/casper/filesystem.squashfs ]; then
-									mount -r -o loop ./image/casper/filesystem.squashfs  ./mnt
-								elif [ -f ./image/casper/minimal.squashfs ]; then
-									mount -r -o loop ./image/casper/minimal.squashfs     ./mnt
-								fi
-								cp -pr ./mnt/* ./decomp/
-								umount ./mnt
-								# --- network ---------------------------------
-#								if [ -f ./decomp/etc/resolv.conf ]; then
-#									sed -i.orig ./decomp/etc/resolv.conf \
-#									    -e '$a nameserver 1.1.1.1'       \
-#									    -e '$a nameserver 1.0.0.1'
-#								fi
-								cp -p ./decomp/etc/apt/sources.list      \
-								      ./decomp/etc/apt/sources.list.orig
-								# --- time zone -------------------------------
-								rm -f ./decomp/etc/localtime
-								ln -s /usr/share/zoneinfo/Asia/Tokyo ./decomp/etc/localtime
-								# --- mount -----------------------------------
-								mount --bind /run     ./decomp/run
-								mount --bind /dev     ./decomp/dev
-								mount --bind /dev/pts ./decomp/dev/pts
-								mount --bind /proc    ./decomp/proc
-								mount --bind /sys     ./decomp/sys
-								# --- chroot ----------------------------------
-								LANG=C chroot ./decomp /bin/bash /setup.sh
-								RET_STS=$?
-								# --- unmount ---------------------------------
-								umount ./decomp/sys     || umount -lf ./decomp/sys
-								umount ./decomp/proc    || umount -lf ./decomp/proc
-								umount ./decomp/dev/pts || umount -lf ./decomp/dev/pts
-								umount ./decomp/dev     || umount -lf ./decomp/dev
-								umount ./decomp/run     || umount -lf ./decomp/run
-								# --- error check -----------------------------
-								if [ ${RET_STS} -ne 0 ]; then
-									exit ${RET_STS}
-								fi
-								# --- cleaning --------------------------------
-								if [ -f ./decomp/etc/resolv.conf.orig ]; then
-									mv ./decomp/etc/resolv.conf.orig \
-									   ./decomp/etc/resolv.conf
-								fi
-								if [ -f ./decomp/etc/apt/sources..orig ]; then
-									mv ./decomp/etc/apt/sources.list.orig \
-									   ./decomp/etc/apt/sources.list
-								fi
-								find   ./decomp/var/log/ -type f -name \* -exec cp -f /dev/null {} \;
-								rm -rf ./decomp/root/.bash_history           \
-								       ./decomp/root/.viminfo                \
-								       ./decomp/tmp/*                        \
-								       ./decomp/var/cache/apt/*.bin          \
-								       ./decomp/var/cache/apt/archives/*.deb \
-								       ./decomp/setup.sh
-#								if [ -f ./decomp/etc/hostname ]; then
-#									mv ./decomp/etc/hostname ./decomp/etc/hostname.orig
-#								fi
-								# --- filesystem manifest ---------------------
-								case "${CODE_NAME[0]}" in
-									"debian" )	# ･････････････････････････････
-										;;
-									"ubuntu" )	# ･････････････････････････････
-										rm ./image/casper/filesystem.size                    \
-										   ./image/casper/filesystem.manifest                \
-										   ./image/casper/filesystem.manifest-remove         
-#										   ./image/casper/filesystem.manifest-minimal-remove 
-										# -------------------------------------
-										touch ./image/casper/filesystem.size
-										touch ./image/casper/filesystem.manifest
-										touch ./image/casper/filesystem.manifest-remove
-#										touch ./image/casper/filesystem.manifest-minimal-remove
-										# -------------------------------------
-										printf $(LANG=C chroot ./decomp du -sx --block-size=1 | cut -f1) > ./image/casper/filesystem.size
-										LANG=C chroot ./decomp dpkg-query -W --showformat='${Package} ${Version}\n' > ./image/casper/filesystem.manifest
-										cp -p ./image/casper/filesystem.manifest ./image/casper/filesystem.manifest-desktop
-										sed -i ./image/casper/filesystem.manifest-desktop \
-										    -e '/^casper.*$/d'                            \
-										    -e '/^lupin-casper.*$/d'                      \
-										    -e '/^ubiquity.*$/d'                          \
-										    -e '/^ubiquity-casper.*$/d'                   \
-										    -e '/^ubiquity-frontend-gtk.*$/d'             \
-										    -e '/^ubiquity-slideshow-ubuntu.*$/d'         \
-										    -e '/^ubiquity-ubuntu-artwork.*$/d'
-										;;
-									* )	;;
-								esac
-								# --- copy fsimg -> media ---------------------
-#								fncPrint "--- copy fsimg -> media $(fncString ${COL_SIZE} '-')"
-								fncPrint "    copy fsimg -> media"
-								case "${CODE_NAME[0]}" in
-									"debian" )	# ･････････････････････････････
-										rm -f ./image/live/filesystem.squashfs
-										mksquashfs ./decomp ./image/live/filesystem.squashfs -mem 1G
-										ls -lht ./image/live/filesystem.squashfs
-										FSIMG_SIZE=`LANG=C ls -lh ./image/live/filesystem.squashfs | awk '{print $5;}'`
-										;;
-									"ubuntu" )	# ･････････････････････････････
-										rm -f ./image/casper/filesystem.squashfs
-										mksquashfs ./decomp ./image/casper/filesystem.squashfs -mem 1G
-										ls -lht ./image/casper/filesystem.squashfs
-										FSIMG_SIZE=`LANG=C ls -lh ./image/casper/filesystem.squashfs | awk '{print $5;}'`
-										;;
-									* )	;;
-								esac
-fi
-								;;
-							"centos"       | \
-							"fedora"       | \
-							"rocky"        | \
-							"miraclelinux" | \
-							"almalinux"    )		# ･････････････････････････
-								;;
-							"suse"         )		# ･････････････････････････
-								;;
-							*              ) ;;		# ･････････････････････････
-						esac
-					popd > /dev/null
+							popd > /dev/null
+							;;
+						"centos"       | \
+						"fedora"       | \
+						"rocky"        | \
+						"miraclelinux" | \
+						"almalinux"    )					# ･････････････････
+							;;
+						"suse"         )					# ･････････････････
+							;;
+						*              ) ;;					# ･････････････････
+					esac
 					;;
 				* ) ;;
 			esac
 			# --- create iso file ---------------------------------------------
-#			fncPrint "--- create iso file $(fncString ${COL_SIZE} '-')"
 			fncPrint "    create iso"
 			case "${CODE_NAME[0]}" in
 				"debian"       | \
@@ -2362,11 +2580,7 @@ fi
 	case "${SYS_NAME}" in
 		"debian" | \
 		"ubuntu" )
-			if [ "`${CMD_WICH} aptitude 2> /dev/null`" != "" ]; then
-				CMD_AGET="aptitude -y -q"
-			else
-				CMD_AGET="apt -y -qq"
-			fi
+			CMD_AGET="apt-get -y -qq"
 			DIR_LINX="/usr/lib/ISOLINUX/isohdpfx.bin"
 			;;
 		"centos" | \
@@ -2453,14 +2667,6 @@ fi
 		${CMD_AGET} install ${LST_PACK}
 	fi
 # -----------------------------------------------------------------------------
-#	case "${INP_INDX,,}" in
-#		"a" | "all" )
-#			INP_INDX="{1..${#ARRAY_NAME[@]}}"
-#			;;
-#		* )
-#			;;
-#	esac
-	# -------------------------------------------------------------------------
 	fncMenu
 	# -------------------------------------------------------------------------
 	for I in `eval echo "${INP_INDX}"`						# 連番可
@@ -2605,7 +2811,9 @@ fi
 # [https://en.wikipedia.org/wiki/OpenSUSE]
 # Ver. :コードネーム       :リリース日:サポ期限  :kernel
 # 15.2 :openSUSE Leap      :2020-07-02:2021-12-31: 5.3.18
-# 15.3 :openSUSE Leap      :2021-06-02:          : 5.3.18
+# 15.3 :openSUSE Leap      :2021-06-02:2022-11-30: 5.3.18
+# 15.4 :openSUSE Leap      :2022-06-02:2023-xx-xx: 5.14.21
+# 15.5 :openSUSE Leap      :2023-xx-xx:2024-xx-xx: x.xx.xx
 # xx.x :openSUSE Tumbleweed:20xx-xx-xx:20xx-xx-xx:
 # --- https://ja.wikipedia.org/wiki/MIRACLE_LINUX -----------------------------
 # [https://en.wikipedia.org/wiki/Miracle_Linux]
