@@ -717,6 +717,9 @@ _EOT_
 }
 # -----------------------------------------------------------------------------
 fncMake_setup_sh () {
+	local HOSTNAME=""
+	local WORKGROUP=""
+
 	fncPrint "      make setup.sh"
 	# --- copy media -> fsimg -------------------------------------------------
 	fncPrint "      copy media -> fsimg"
@@ -731,6 +734,17 @@ fncMake_setup_sh () {
 	fi
 	cp -pr ./mnt/* ./decomp/
 	umount ./mnt
+	# ---------------------------------------------------------
+	if [ -f ./image/live/config.conf.d/0000-user.conf ]; then
+		fncPrint "      copy 0000-user.conf"
+		if [ ! -d ./decomp/etc/live/config.conf.d/ ]; then
+			mkdir -p ./decomp/etc/live/config.conf.d
+		fi
+#		cp -p ./image/live/config.conf.d/0000-user.conf ./decomp/etc/live/config.conf.d/
+		mv ./image/live/config.conf.d/0000-user.conf ./decomp/etc/live/config.conf.d/
+		chown root.root ./decomp/etc/live/config.conf.d/0000-user.conf
+		chmod +x ./decomp/etc/live/config.conf.d/0000-user.conf
+	fi
 	# -------------------------------------------------------------------------
 	HOSTNAME="`cat ./decomp/etc/hostname`"
 	WORKGROUP="`sed -n "s/^[^ \t]*[ \t]${HOSTNAME}\.\([^ \t]*\).*/\1/p" ./decomp/etc/hostname`"
@@ -913,6 +927,7 @@ fncMake_setup_sh () {
 		 	fncPrint "---- module apt-get install $(fncString ${COL_SIZE} '-')"
 		 	apt-get install      -qq -y ${APT_OPTIONS} --auto-remove                \
 		 	    __INST_PACK__                                                       \
+		 	    open-vm-tools open-vm-tools-desktop                                 \
 		 	                                                                       || fncEnd $?
 		 	if [ "`which tasksel 2> /dev/null`" != "" ]; then
 		 		fncPrint "---- tasksel $(fncString ${COL_SIZE} '-')"
@@ -1172,21 +1187,23 @@ fncMake_setup_sh () {
 		 		    -e '/[ \t]*usershare allow guests =.*$/d'                                           \
 		 		    -e '/[ \t]*winbind separator =.*$/d'                                                \
 		 		    -e '/[ \t]*wins support =.*$/d'                                                     \
+		 		    -e '/[ \t]*netbios name =.*$/d'                                                     \
+		 		    -e '/[ \t]*workgroup =.*$/d'                                                        \
 		 		> ./smb.conf
 		 		# ---------------------------------------------------------------------
 		 		testparm -s ./smb.conf > /etc/samba/smb.conf
 		 		rm -f ./smb.conf /etc/samba/smb.conf.ucf-dist
 		fi
 		# -- Change open vm tools configure -------------------------------------------
-		 	if [ "`dpkg -l open-vm-tools | awk '$1==\"ii\" && $2=\"open-vm-tools\" {print $2;}'`" = "open-vm-tools" ]; then
-		 		fncPrint "--- change open vm tools configure $(fncString ${COL_SIZE} '-')"
-		 		if [ ! -d /media/hgfs ]; then
-		 			mkdir -p /media/hgfs
-		 		fi
-		 		echo -e '# Added by User\n' \
-		 		        '.host:/ /media/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,noauto,users,defaults 0 0' \
-		 		>> /etc/fstab
-		 	fi
+		#	if [ "`dpkg -l open-vm-tools | awk '$1==\"ii\" && $2=\"open-vm-tools\" {print $2;}'`" = "open-vm-tools" ]; then
+		#		fncPrint "--- change open vm tools configure $(fncString ${COL_SIZE} '-')"
+		#		if [ ! -d /media/hgfs ]; then
+		#			mkdir -p /media/hgfs
+		#		fi
+		#		echo -e '# Added by User\n' \
+		#		        '.host:/ /media/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,noauto,users,defaults 0 0' \
+		#		>> /etc/fstab
+		#	fi
 		# -- Change gdm3 configure ----------------------------------------------------
 		#	if [ -f /etc/gdm3/custom.conf ] && [ ! -f /etc/gdm3/daemon.conf ]; then
 		#		fncPrint "--- create gdm3 daemon.conf $(fncString ${COL_SIZE} '-')"
@@ -1457,152 +1474,126 @@ fncExec_setup_sh () {
 }
 # -----------------------------------------------------------------------------
 fncLive_custom () {
+	local HOSTNAME="$1"
+
 	if [ ! -d ./image/live/ ]; then
 		return
 	fi
-	fncPrint "      make live/config.conf"
-	# --- live configure --------------------------------------
-	#LIVE_CONFIG_CMDLINE=パラメータ1 パラメータ2 ... パラメータn									# この変数はブートローダのコマンドラインに相当します。
-	#LIVE_CONFIG_COMPONENTS=構成要素1,構成要素2, ... 構成要素n										# この変数は「live-config.components=構成要素1,構成要素2, ...  構成要素n」パラメータに相当します。
-	#LIVE_CONFIG_NOCOMPONENTS=構成要素1,構成要素2, ... 構成要素n									# この変数は「live-config.nocomponents=構成要素1,構成要素2,  ... 構成要素n」パラメータに相当します。
-	#LIVE_DEBCONF_PRESEED=filesystem|medium|URL1|URL2| ... |URLn									# この変数は「live-config.debconf-preseed=filesystem|medium|URL1|URL2|  ...  |URLn」パラメータに相当します。
-	#LIVE_HOSTNAME=ホスト名																			# この変数は「live-config.hostname=ホスト名」パラメータに相当します。
-	#LIVE_USERNAME=ユーザ名																			# この変数は「live-config.username=ユーザ名」パラメータに相当します。
-	#LIVE_USER_DEFAULT_GROUPS=グループ1,グループ2 ... グループn										# この変数は「live-config.user-default-groups="グループ1,グループ2  ... グループn"」パラメータに相当します。
-	#LIVE_USER_FULLNAME="ユーザのフルネーム"														# この変数は「live-config.user-fullname="ユーザのフルネーム"」パラメータに相当します。
-	#LIVE_LOCALES=ロケール1,ロケール2 ... ロケールn													# この変数は「live-config.locales=ロケール1,ロケール2 ...  ロケールn」パラメータに相当します。
-	#LIVE_TIMEZONE=タイムゾーン																		# この変数は「live-config.timezone=タイムゾーン」パラメータに相当します。
-	#LIVE_KEYBOARD_MODEL=キーボードの種類															# この変数は「live-config.keyboard-model=キーボードの種類」パラメータに相当します。
-	#LIVE_KEYBOARD_LAYOUTS=キーボードレイアウト1,キーボードレイアウト2  ...  キーボードレイアウトn	# この変数は「live-config.keyboard-layouts=キーボードレイアウト1,キーボードレイアウト2... キーボードレイアウトn」パラメータに相当します。
-	#LIVE_KEYBOARD_VARIANTS=キーボード配列1,キーボード配列2 ... キーボード配列n						# この変数は「live-config.keyboard-variants=キーボード配列1,キーボード配列2 ... キーボード配列n」パラメータに相当します。
-	#LIVE_KEYBOARD_OPTIONS=キーボードオプション														# この変数は「live-config.keyboard-options=キーボードオプション」パラメータに相当します。
-	#LIVE_SYSV_RC=サービス1,サービス2 ... サービスn													# この変数は「live-config.sysv-rc=サービス1,サービス2  ... サービスn」パラメータに相当します。
-	#LIVE_UTC=yes|no																				# この変数は「live-config.utc=yes|no」パラメータに相当します。
-	#LIVE_X_SESSION_MANAGER=Xセッションマネージャ													# この変数は「live-config.x-session-manager=Xセッションマネージャ」パラメータに相当します。
-	#LIVE_XORG_DRIVER=XORGドライバ																	# この変数は「live-config.xorg-driver=XORGドライバ」パラメータに相当します。
-	#LIVE_XORG_RESOLUTION=XORG解像度																# この変数は「live-config.xorg-resolution=XORG解像度」パラメータに相当します。
-	#LIVE_WLAN_DRIVER=WLANドライバ																	# この変数は「live-config.wlan-driver=WLANドライバ」パラメータに相当します。
-	#LIVE_HOOKS=filesystem|medium|URL1|URL2| ... |URLn												# この変数は「live-config.hooks=filesystem|medium|URL1|URL2| ... |URLn」パラメータに相当します。
-	#LIVE_CONFIG_DEBUG=true|false																	# この変数は「live-config.debug」パラメータに相当します。
-	#LIVE_CONFIG_NOAUTOLOGIN=true|																	# 
-	#LIVE_CONFIG_NOROOT=true|																		# 
-	#LIVE_CONFIG_NOX11AUTOLOGIN=true|																# 
-	#LIVE_SESSION=plasma.desktop|lxqt.desktop														# 固定値
-	fncPrint "    live configure"
+	mkdir -p ./image/live/config.conf.d
 	# ---------------------------------------------------------
-	cat <<- '_EOT_' | sed 's/^ //g' > ./image/live/config.conf
-		# *****************************************************************************
+	fncPrint "      make 0000-user.conf"
+	cat <<- '_EOT_SH_' | sed 's/^ //g' > ./image/live/config.conf.d/0000-user.conf
+		#!/bin/sh
+		
+		#set -o ignoreeof					# Ctrl+Dで終了しない
+		#set +m								# ジョブ制御を無効にする
+		#set -e								# ステータス0以外で終了
+		#set -u								# 未定義変数の参照で終了
+		#set -e
+		
+		# Reading configuration files from filesystem and live-media
+		set -o allexport
+		for _FILE in /run/live/medium/live/config.conf /run/live/medium/live/config.conf.d/*.conf \
+		 	         ${rootmnt}/lib/live/mount/medium/live/config.conf ${rootmnt}/lib/live/mount/medium/live/config.conf.d/*.conf
+		do
+		 	if [ -e "${_FILE}" ]; then
+		 		. "${_FILE}"
+		 	fi
+		done
+		set +o allexport
+_EOT_SH_
+
+	chmod +x ./image/live/config.conf.d/0000-user.conf
+	# ---------------------------------------------------------
+	fncPrint "      make 9999-user.conf"
+	cat <<- '_EOT_SH_' | sed 's/^ //g' > ./image/live/config.conf.d/9999-user.conf
+		#!/bin/sh
+		
+		#set -o ignoreeof					# Ctrl+Dで終了しない
+		#set +m								# ジョブ制御を無効にする
+		#set -e								# ステータス0以外で終了
+		#set -u								# 未定義変数の参照で終了
 		#set -e
 		#set -o allexport
-		#set +o | tee
-		# === Fix Parameters [ /lib/live/init-config.sh ] =============================
-		#LIVE_HOSTNAME="debian"
-		#LIVE_USERNAME="user"
-		#LIVE_USER_FULLNAME="Debian Live user"
-		#LIVE_USER_DEFAULT_GROUPS="audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth debian-tor"
-		# === Fix Parameters [ /lib/live/config/0030-live-debconfig_passwd ] ==========
+		#set -o
+		
+		# === Fix Parameters ==========================================================
+		# /bin/live-config or /lib/live/init-config.sh
+		#  LIVE_HOSTNAME="debian"
+		#  LIVE_USERNAME="user"
+		#  LIVE_USER_FULLNAME="Debian Live user"
+		#  LIVE_USER_DEFAULT_GROUPS="audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth debian-tor"
+		
+		# === Fix Parameters [ /lib/live/config/0030-live-debconfig_passwd ] ======
 		#_PASSWORD="8Ab05sVQ4LLps"				# '/bin/echo "live" | mkpasswd -s'
-		# === Fix Parameters [ /lib/live/config/0030-user-setup ] =====================
+		
+		# === Fix Parameters [ /lib/live/config/0030-user-setup ] =================
 		#_PASSWORD="8Ab05sVQ4LLps"				# '/bin/echo "live" | mkpasswd -s'
+		
 		# === User parameters =========================================================
-		LIVE_HOSTNAME="_HOSTNAME_-live"
-		# -----------------------------------------------------------------------------
+		export LIVE_CONFIG_CMDLINE				# この変数はブートローダのコマンドラインに相当します。(/proc/cmdline)
+		export LIVE_CONFIG_COMPONENTS			# この変数は「live-config.components=構成要素1,構成要素2, ...  構成要素n」パラメータに相当します。
+		export LIVE_CONFIG_NOCOMPONENTS			# この変数は「live-config.nocomponents=構成要素1,構成要素2,  ... 構成要素n」パラメータに相当します。
+		export LIVE_DEBCONF_PRESEED				# この変数は「live-config.debconf-preseed=filesystem|medium|URL1|URL2|  ...  |URLn」パラメータに相当します。
+		export LIVE_HOSTNAME					# この変数は「live-config.hostname=ホスト名」パラメータに相当します。
+		export LIVE_USERNAME					# この変数は「live-config.username=ユーザ名」パラメータに相当します。
+		export LIVE_PASSWORD					# ユーザーパスワード
+		export LIVE_EMPTYPWD					# TRUEで空パスワード
+		export LIVE_CRYPTPWD					# 暗号化パスワード
+		export LIVE_USER_DEFAULT_GROUPS			# この変数は「live-config.user-default-groups="グループ1,グループ2  ... グループn"」パラメータに相当します。
+		export LIVE_USER_FULLNAME				# この変数は「live-config.user-fullname="ユーザのフルネーム"」パラメータに相当します。
+		export LIVE_LOCALES						# この変数は「live-config.locales=ロケール1,ロケール2 ...  ロケールn」パラメータに相当します。
+		export LIVE_TIMEZONE					# この変数は「live-config.timezone=タイムゾーン」パラメータに相当します。
+		export LIVE_KEYBOARD_MODEL				# この変数は「live-config.keyboard-model=キーボードの種類」パラメータに相当します。
+		export LIVE_KEYBOARD_LAYOUTS			# この変数は「live-config.keyboard-layouts=キーボードレイアウト1,キーボードレイアウト2... キーボードレイアウトn」パラメータに相当します。
+		export LIVE_KEYBOARD_VARIANTS			# この変数は「live-config.keyboard-variants=キーボード配列1,キーボード配列2 ... キーボード配列n」パラメータに相当します。
+		export LIVE_KEYBOARD_OPTIONS			# この変数は「live-config.keyboard-options=キーボードオプション」パラメータに相当します。
+		export LIVE_SYSV_RC						# この変数は「live-config.sysv-rc=サービス1,サービス2  ... サービスn」パラメータに相当します。
+		export LIVE_UTC							# この変数は「live-config.utc=yes|no」パラメータに相当します。
+		export LIVE_X_SESSION_MANAGER			# この変数は「live-config.x-session-manager=Xセッションマネージャ」パラメータに相当します。
+		export LIVE_XORG_DRIVER					# この変数は「live-config.xorg-driver=XORGドライバ」パラメータに相当します。
+		export LIVE_XORG_RESOLUTION				# この変数は「live-config.xorg-resolution=XORG解像度」パラメータに相当します。
+		export LIVE_WLAN_DRIVER					# この変数は「live-config.wlan-driver=WLANドライバ」パラメータに相当します。
+		export LIVE_HOOKS						# この変数は「live-config.hooks=filesystem|medium|URL1|URL2| ... |URLn」パラメータに相当します。
+		export LIVE_CONFIG_DEBUG				# この変数は「live-config.debug」パラメータに相当します。
+		export LIVE_CONFIG_NOAUTOLOGIN			# 
+		export LIVE_CONFIG_NOROOT				# 
+		export LIVE_CONFIG_NOX11AUTOLOGIN		# 
+		export LIVE_SESSION						# 固定値
+		export LIVE_DEBUGOUT					# Debug変数
+		
+		LIVE_HOSTNAME="_HOSTNAME_"				# hostname
+		
 		LIVE_USER_FULLNAME="Debian Live user"	# full name
 		LIVE_USERNAME="user"					# user name
 		LIVE_PASSWORD="live"					# password
 		#LIVE_CRYPTPWD='8Ab05sVQ4LLps'			# '/bin/echo "live" | mkpasswd -s'
-		# -----------------------------------------------------------------------------
-		LIVE_LOCALES="ja_JP.UTF-8"
-		LIVE_KEYBOARD_MODEL="pc105"
+		
+		LIVE_LOCALES="ja_JP.UTF-8"				# locales
+		LIVE_KEYBOARD_MODEL="pc105"				# keybord
 		LIVE_KEYBOARD_LAYOUTS="jp"
 		LIVE_KEYBOARD_VARIANTS="OADG109A"
-		LIVE_TIMEZONE="Asia/Tokyo"
+		LIVE_TIMEZONE="Asia/Tokyo"				# timezone
 		LIVE_UTC="yes"
-		# -----------------------------------------------------------------------------
-		#set | grep -e "^LIVE_" | tee
+		LIVE_XORG_RESOLUTION="1024x768"			# xorg resolution
+		
 		# === Change hostname =========================================================
-		if [ -n "${LIVE_HOSTNAME}" ]; then
+		if [ -n "${LIVE_HOSTNAME:-""}" ]; then
 		 	/bin/echo "${LIVE_HOSTNAME}" > /etc/hostname
 		fi
-		# === Output to shell files ===================================================
-		cat <<- '_EOT_SH_' | sed 's/^ //g' > /lib/live/config/9999-user-setting
-		 	#!/bin/sh
 		
-		 	/bin/echo ""
-		 	/bin/echo "Start 9999-user-setting :::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		# === Copy shell file =========================================================
+		for _FILE in /lib/live/mount/medium/live/config.conf.d/????-user-* \
+		             /run/live/medium/live/config.conf.d/????-user-*
+		do
+		 	if [ -e "${_FILE}" ]; then
+		 		cp -p "${_FILE}" /lib/live/config/
+		 	fi
+		done
 		
-		 	#. /lib/live/config.sh
-		 
-		 	#set -e
-		
-		 	Cmdline ()
-		 	{
-		 	 	:
-		 	}
-		 	
-		 	Init ()
-		 	{
-		 	 	:
-		 	}
-		
-		 	Config ()
-		 	{
-		 	 	# === Change user password ================================================
-		 	 	if [ -n "${LIVE_USERNAME}" ] && [ -n "${LIVE_PASSWORD}" ]; then
-		 	 		/bin/echo ""
-		 	 		/bin/echo "Change user password ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-		 	#		useradd ${LIVE_USERNAME}
-		 	 		/bin/echo -e "${LIVE_PASSWORD}\n${LIVE_PASSWORD}" | passwd ${LIVE_USERNAME}
-		 	 	fi
-		 	 	# === Change smb password =================================================
-		 	 	if [ -n "`which smbpasswd 2> /dev/null`" ] && [ -n "${LIVE_USERNAME}" ] && [ -n "${LIVE_PASSWORD}" ]; then
-		 	 		/bin/echo ""
-		 	 		/bin/echo "Change smb password :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-		 	 		smbpasswd -a ${LIVE_USERNAME} -n
-		 	 		/bin/echo -e "${LIVE_PASSWORD}\n${LIVE_PASSWORD}" | smbpasswd ${LIVE_USERNAME}
-		 	 	fi
-		 	 	# === Change sshd configure ===============================================
-		 	 	if [ -f /etc/ssh/sshd_config ]; then
-		 	 		/bin/echo ""
-		 	 		/bin/echo "Change sshd configure :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-		 	 		sed -i /etc/ssh/sshd_config \
-		 	 		    -e 's/^#*[ \t]*\(PasswordAuthentication\)[ \t]*.*$/\1 yes/g'
-		 	 	fi
-		 	 	# --- Creating state file -------------------------------------------------
-		 	 	/bin/echo "Creating state file :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-		 	 	touch /var/lib/live/config/user-setting
-		 	}
-		
-		 	Debug ()
-		 	{
-		 	 	# === Display of parameters ===============================================
-		 	 	/bin/echo ""
-		 	 	/bin/echo "Display of parameters :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-		 	 	/bin/echo "LIVE_USER_FULLNAME    =${LIVE_USER_FULLNAME}"
-		 	 	/bin/echo "LIVE_USERNAME         =${LIVE_USERNAME}"
-		 	 	/bin/echo "LIVE_PASSWORD         =${LIVE_PASSWORD}"
-		 	 	/bin/echo "LIVE_CRYPTPWD         =${LIVE_CRYPTPWD}"
-		 	 	/bin/echo "LIVE_LOCALES          =${LIVE_LOCALES}"
-		 	 	/bin/echo "LIVE_KEYBOARD_MODEL   =${LIVE_KEYBOARD_MODEL}"
-		 	 	/bin/echo "LIVE_KEYBOARD_LAYOUTS =${LIVE_KEYBOARD_LAYOUTS}"
-		 	 	/bin/echo "LIVE_KEYBOARD_VARIANTS=${LIVE_KEYBOARD_VARIANTS}"
-		 	 	/bin/echo "LIVE_TIMEZONE         =${LIVE_TIMEZONE}"
-		 	 	/bin/echo "LIVE_UTC              =${LIVE_UTC}"
-		 	}
-		
-		 	Cmdline
-		 	Init
-		 	Config
-		 	#Debug
-		
-		 	/bin/echo ""
-		 	/bin/echo "End 9999-user-setting :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-		_EOT_SH_
-		chmod +x /lib/live/config/9999-user-setting
-		# -----------------------------------------------------------------------------
-		#set | grep -e "^LIVE_" | tee
 		# === Creating state file =====================================================
-		touch /var/lib/live/config/config-conf
+		touch /var/lib/live/config/9999-user-config
+		
 		# =============================================================================
 		#set +e
 		# === Memo ====================================================================
@@ -1612,7 +1603,189 @@ fncLive_custom () {
 		#	/lib/live/config/0030-user-setup
 		#	/lib/live/config/1160-openssh-server
 		# *****************************************************************************
-_EOT_
+_EOT_SH_
+
+	chmod +x ./image/live/config.conf.d/9999-user.conf
+	# ---------------------------------------------------------
+	fncPrint "      make 9999-user-setting"
+	cat <<- '_EOT_SH_' | sed 's/^ //g' > ./image/live/config.conf.d/9999-user-setting
+		#!/bin/sh
+		
+		#set -o ignoreeof					# Ctrl+Dで終了しない
+		#set +m								# ジョブ制御を無効にする
+		#set -e								# ステータス0以外で終了
+		#set -u								# 未定義変数の参照で終了
+		#set -e
+		#set -o allexport
+		#set -o
+		
+		/bin/echo ""
+		/bin/echo "Start 9999-user-setting :::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		
+		#. /lib/live/config.sh
+		
+		#set -e
+		
+		Cmdline ()
+		{
+		 	# Reading kernel command line
+		 	for _PARAMETER in ${LIVE_CONFIG_CMDLINE}
+		 	do
+		 		case "${_PARAMETER}" in
+		 			debug   | \
+		 			debugout)
+		 				LIVE_DEBUGOUT="true"
+		 				;;
+		 			username=*)
+		 				LIVE_USERNAME="${_PARAMETER#*username=}"
+		 				;;
+		 			password=*)
+		 				LIVE_PASSWORD="${_PARAMETER#*password=}"
+		 				;;
+		 			emptypwd=*)
+		 				LIVE_EMPTYPWD="${_PARAMETER#*emptypwd=}"
+		 				;;
+		 		esac
+		 	done
+		}
+		
+		Init ()
+		{
+		 	:
+		}
+		
+		Config ()
+		{
+		 	# === Change user password ================================================
+		 	if [ -n "${LIVE_USERNAME:-""}" ]; then
+		#		useradd ${LIVE_USERNAME}
+		 		if [ "${LIVE_EMPTYPWD:-""}" = "true" ]; then
+		 			/bin/echo ""
+		 			/bin/echo "Remove user password ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 			passwd -d ${LIVE_USERNAME}
+		 			LIVE_PASSWORD=""
+		 		elif [ -n "${LIVE_PASSWORD:-""}" ]; then
+		 			/bin/echo ""
+		 			/bin/echo "Change user password ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 			/bin/echo -e "${LIVE_PASSWORD}\n${LIVE_PASSWORD}" | passwd ${LIVE_USERNAME}
+		 		fi
+		 		# === Change smb password =============================================
+		 		if [ -n "`which smbpasswd 2> /dev/null`" ]; then
+		 			/bin/echo ""
+		 			/bin/echo "Create an smb user ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 			smbpasswd -a ${LIVE_USERNAME} -n
+		 			/bin/echo ""
+		 			/bin/echo "Change smb password :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 			/bin/echo -e "${LIVE_PASSWORD}\n${LIVE_PASSWORD}" | smbpasswd ${LIVE_USERNAME}
+		 		fi
+		 		# === Change user mode ====================================================
+		 		if [ `passwd -S ${LIVE_USERNAME} | awk '{print $7;}'` -ne -1 ]; then
+		 			/bin/echo ""
+		 			/bin/echo "Change user mode ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 			usermod -f -1 ${LIVE_USERNAME}
+		 		fi
+		 	fi
+		
+		 	# === Change sshd configure ===============================================
+		 	if [ -f /etc/ssh/sshd_config ]; then
+		 		/bin/echo ""
+		 		/bin/echo "Change sshd configure :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 		sed -i /etc/ssh/sshd_config \
+		 		    -e 's/^#*[ \t]*\(PasswordAuthentication\)[ \t]*.*$/\1 yes/g'
+		 	fi
+		
+		 	# === Setup VMware configure ==============================================
+		 	if [ "`lscpu | grep -i vmware`" != "" ]; then
+		 		/bin/echo ""
+		 		/bin/echo "Setup VMware configure ::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 		mkdir -p /media/hgfs
+		 		chmod a+w /media/hgfs
+		 		cat <<- _EOT_ >> /etc/fstab
+		 			.host:/ /media/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults,users 0 0
+		 _EOT_
+		 		cat <<- _EOT_ >> /etc/fuse.conf
+		 			user_allow_other
+		 _EOT_
+		 	fi
+		
+		 	# === Change gdm3 configure ===============================================
+		 	if [ -f /etc/gdm3/custom.conf ] && [ -n "${LIVE_USERNAME:-""}" ]; then
+		 		/bin/echo ""
+		 		/bin/echo "Change gdm3 configure :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 		OLD_IFS=${IFS}
+		 		IFS= INS_STR=$(
+		 			cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
+		 				WaylandEnable=false\\n
+		 				AutomaticLoginEnable=true\n
+		 				AutomaticLogin=${LIVE_USERNAME}\\n
+		 				TimedLoginEnable=false\\n
+		 _EOT_
+		 		)
+		 		IFS=${OLD_IFS}
+		 		sed -i /etc/gdm3/custom.conf \
+		 		    -e '/^\[daemon\]/,/^\[/ {/^[#|\[]/! s/\(.*\)$/#  \1/g}' \
+		 		    -e "/^\\[daemon\\]/a ${INS_STR}"
+		 		if [ ! -f /etc/gdm3/daemon.conf ]; then
+		 			/bin/echo ""
+		 			/bin/echo "Create gdm3 daemon.conf :::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 			touch /etc/gdm3/daemon.conf
+		 		fi
+		 	fi
+		
+		 	# === Change video mode configure =========================================
+		 	if [ -f /etc/X11/Xsession.d/21xvidemode ]; then
+		 		/bin/echo ""
+		 		/bin/echo "Change video mode configure :::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 		sed -i /etc/X11/Xsession.d/21xvidemode \
+		 		    -e '1i {\nsleep 10' \
+		 		    -e '$a } &'
+		 	fi
+		}
+		
+		Debug ()
+		{
+		 	if [ -z ${LIVE_DEBUGOUT:-""} ]; then
+		 		return 0
+		 	fi
+		 	# === Display of parameters ===============================================
+		 	/bin/echo ""
+		 	/bin/echo "Display of parameters :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		 	set | grep -e "^LIVE_.*="
+		 	/bin/echo "-------------------------------------------------------------------------------"
+		 	dconf dump /org/gnome/desktop/screensaver/
+		 	/bin/echo "-------------------------------------------------------------------------------"
+		 	dconf dump /org/gnome/todo/
+		 	/bin/echo "-------------------------------------------------------------------------------"
+		 	printenv | sort
+		 	/bin/echo "-------------------------------------------------------------------------------"
+		 	for F in $(find "/lib/systemd/system/" -type f -name "*.service" -print | sort -u)
+		 	do
+		 		S=`basename $F`
+		 		R=`systemctl is-enabled "$S" || :`
+		 		/bin/echo "$S: $R"
+		 	done
+		 	/bin/echo "-------------------------------------------------------------------------------"
+		 	mount | sort
+		 	/bin/echo "-------------------------------------------------------------------------------"
+		 	set -o
+		 	/bin/echo "-------------------------------------------------------------------------------"
+		}
+		
+		Cmdline
+		Init
+		Config
+		Debug
+		
+		# === Creating state file =====================================================
+		/bin/echo ""
+		/bin/echo "Creating state file :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+		touch /var/lib/live/config/9999-user-setting
+
+		/bin/echo ""
+		/bin/echo "End 9999-user-setting :::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+_EOT_SH_
+
+	chmod +x ./image/live/config.conf.d/9999-user-setting
 	# ---------------------------------------------------------
 	OLD_IFS=${IFS}
 	IFS=$'\n'
@@ -1620,12 +1793,14 @@ _EOT_
 	USERNAME="`awk '(!/#/&&/d-i[ \t]+passwd\/username[ \t]+/),(!/\\\\/)      {print $0;}' image/preseed/preseed.cfg | sed -z 's/\n//g' | sed -e 's/.*[ \t]*string[ \t]*//'`"
 	PASSWORD="`awk '(!/#/&&/d-i[ \t]+passwd\/user-password[ \t]+/),(!/\\\\/) {print $0;}' image/preseed/preseed.cfg | sed -z 's/\n//g' | sed -e 's/.*[ \t]*password[ \t]*//'`"
 	IFS=${OLD_IFS}
-	if [ -z "${CODE_NAME[0]}" ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_HOSTNAME=\)/#\1/'; fi
-	if [ -z "${FULLNAME}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_USER_FULLNAME=\)/#\1/'; fi
-	if [ -z "${USERNAME}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_USERNAME=\)/#\1/'; fi
-	if [ -z "${PASSWORD}"     ]; then sed -i ./image/live/config.conf -e 's/^[ \t]*\(LIVE_PASSWORD=\)/#\1/'; fi
-	sed -i ./image/live/config.conf                          \
-	    -e "s/_HOSTNAME_/${CODE_NAME[0]}/"                   \
+	# ---------------------------------------------------------
+	if [ -z "${CODE_NAME[0]}" ]; then sed -i ./image/live/config.conf.d/9999-user.conf -e 's/^[ \t]*\(LIVE_HOSTNAME=\)/#\1/'; fi
+	if [ -z "${FULLNAME}"     ]; then sed -i ./image/live/config.conf.d/9999-user.conf -e 's/^[ \t]*\(LIVE_USER_FULLNAME=\)/#\1/'; fi
+	if [ -z "${USERNAME}"     ]; then sed -i ./image/live/config.conf.d/9999-user.conf -e 's/^[ \t]*\(LIVE_USERNAME=\)/#\1/'; fi
+	if [ -z "${PASSWORD}"     ]; then sed -i ./image/live/config.conf.d/9999-user.conf -e 's/^[ \t]*\(LIVE_PASSWORD=\)/#\1/'; fi
+	# ---------------------------------------------------------
+	sed -i ./image/live/config.conf.d/9999-user.conf         \
+	    -e "s/_HOSTNAME_/${HOSTNAME}/"                       \
 	    -e "s/^\(LIVE_USER_FULLNAME\)=.*$/\1='${FULLNAME}'/" \
 	    -e "s/^\(LIVE_USERNAME\)=.*$/\1='${USERNAME}'/"      \
 	    -e "s/^\(LIVE_PASSWORD\)=.*$/\1='${PASSWORD}'/"
@@ -2420,7 +2595,8 @@ _EOT_
 						"debian"       | \
 						"ubuntu"       )					# ･････････････････
 							pushd ../ > /dev/null			# 作業用ディレクトリー
-								fncLive_custom
+								local HOSTNAME="live-${CODE_NAME[0]}"
+								fncLive_custom "${HOSTNAME}"
 								if [ ${FLG_SKIP} -eq 0 ]; then
 									fncMake_setup_sh
 									fncExec_setup_sh
