@@ -33,6 +33,7 @@
 ##	2022/06/19 000.0000 J.Itou         処理見直し
 ##	2022/06/27 000.0000 J.Itou         処理見直し
 ##	2022/06/29 000.0000 J.Itou         処理見直し
+##	2022/07/05 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -844,10 +845,10 @@ fncMake_setup_sh () {
 		 	fncPrint "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]: ${OS_NAME} ${OS_VERS}"
 		 	fncPrint "$(fncString ${COL_SIZE} '=')"
 		 	fncPrint "--- initialize $(fncString ${COL_SIZE} '-')"
-		 	fncPrint "---- os name  : ${OS_NAME} $(fncString ${COL_SIZE} '-')"
-		 	fncPrint "---- version  : ${OS_VERS} $(fncString ${COL_SIZE} '-')"
-		 	fncPrint "---- hostname : _HOSTNAME_ $(fncString ${COL_SIZE} '-')"
-		 	fncPrint "---- workgroup: _WORKGROUP_ $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "     os name  : ${OS_NAME}"
+		 	fncPrint "     version  : ${OS_VERS}"
+		 	fncPrint "     hostname : _HOSTNAME_"
+		 	fncPrint "     workgroup: _WORKGROUP_"
 		 	export PS1="(chroot) "
 		#	echo "_HOSTNAME_" > /etc/hostname
 		#	hostname -b -F /etc/hostname
@@ -861,7 +862,7 @@ fncMake_setup_sh () {
 		# -- module update, upgrade, tasksel, install ---------------------------------
 		 	fncPrint "--- module update, install, clean $(fncString ${COL_SIZE} '-')"
 		 	# -- apt setup ---------------------------------------------------------- #
-		 	fncPrint "---- update sources.list $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "     update sources.list"
 		 	case "`echo ${OS_NAME} | awk '{print tolower($1);}'`" in
 		 		"debian" )
 		 			APT_HOST="http://deb.debian.org/debian/"
@@ -905,7 +906,7 @@ fncMake_setup_sh () {
 		 	esac
 		 	# -------------------------------------------------------------------------
 		 	if [ -d /var/lib/apt/lists ]; then
-		 		fncPrint "---- remove /var/lib/apt/lists $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "     remove /var/lib/apt/lists"
 		 		rm -rf /var/lib/apt/lists
 		 	fi
 		 	# -------------------------------------------------------------------------
@@ -914,31 +915,30 @@ fncMake_setup_sh () {
 		 	             -o Dpkg::Options::=--force-confnew    \
 		 	             -o Dpkg::Options::=--force-overwrite"
 		 	# ----------------------------------------------------------------------- #
-		 	fncPrint "---- module dpkg $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "     module dpkg --audit / dpkg --configure -a"
 		 	dpkg --audit                                                           || fncEnd $?
 		 	dpkg --configure -a                                                    || fncEnd $?
 		 	# ----------------------------------------------------------------------- #
-		 	fncPrint "---- module apt-get update $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "     module apt-get update"
 		 	apt-get update       -qq                                   > /dev/null || fncEnd $?
-		 	fncPrint "---- module apt-get upgrade $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "     module apt-get upgrade"
 		 	apt-get upgrade      -qq -y ${APT_OPTIONS}                 > /dev/null || fncEnd $?
-		 	fncPrint "---- module apt-get dist-upgrade $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "     module apt-get dist-upgrade"
 		 	apt-get dist-upgrade -qq -y ${APT_OPTIONS}                 > /dev/null || fncEnd $?
-		 	fncPrint "---- module apt-get install $(fncString ${COL_SIZE} '-')"
+		 	fncPrint "     module apt-get install"
 		 	apt-get install      -qq -y ${APT_OPTIONS} --auto-remove                \
 		 	    __INST_PACK__                                                       \
 		 	    open-vm-tools open-vm-tools-desktop                                 \
-		 	                                                                       || fncEnd $?
+		 	                                                           > /dev/null || fncEnd $?
 		 	if [ "`which tasksel 2> /dev/null`" != "" ]; then
-		 		fncPrint "---- tasksel $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "     tasksel"
 		 		tasksel install                                                     \
 		 		    _LST_TASK_                                                      \
-		 		                                                                   || fncEnd $?
+		 		                                                       > /dev/null || fncEnd $?
 		 	fi
-		 	fncPrint "---- module autoremove, autoclean, clean $(fncString ${COL_SIZE} '-')"
 		 	# ----------------------------------------------------------------------- #
 		 	if [ `getconf LONG_BIT` -eq 64 ]; then
-		 		fncPrint "---- google-chrome install $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "     google-chrome install"
 		 		APP_CHROME="google-chrome-stable_current_amd64.deb"
 		 		URL_CHROME="https://dl.google.com/linux/direct/${APP_CHROME}"
 		 		KEY_CHROME="https://dl-ssl.google.com/linux/linux_signing_key.pub"
@@ -948,15 +948,16 @@ fncMake_setup_sh () {
 		 			elif [ "`which wget 2> /dev/null`" != "" ]; then
 		 				wget -q -N "${URL_CHROME}" || fncEnd $?
 		 			fi
-		 			apt-get install -qq -y ${APT_OPTIONS} --auto-remove            \
-		 			    ./${APP_CHROME}                                            \
-		 			                                                               || fncEnd $?
+		 			apt-get install -qq -y ${APT_OPTIONS} --auto-remove             \
+		 			    ./${APP_CHROME}                                             \
+		 			                                                   > /dev/null || fncEnd $?
 		 		popd > /dev/null
 		 	fi
 		 	# ----------------------------------------------------------------------- #
-		 	apt-get autoremove   -qq -y                                            || fncEnd $?
-		 	apt-get autoclean    -qq                                               || fncEnd $?
-		 	apt-get clean        -qq                                               || fncEnd $?
+		 	fncPrint "     module autoremove, autoclean, clean"
+		 	apt-get autoremove   -qq -y                                > /dev/null || fncEnd $?
+		 	apt-get autoclean    -qq                                   > /dev/null || fncEnd $?
+		 	apt-get clean        -qq                                   > /dev/null || fncEnd $?
 		# -- Change system control ----------------------------------------------------
 		# 	Set disable to mask because systemd-sysv-generator will recreate the symbolic link.
 		 	fncPrint "--- change system control $(fncString ${COL_SIZE} '-')"
@@ -1052,13 +1053,13 @@ fncMake_setup_sh () {
 		 	fi
 		# -- Change clamav configure --------------------------------------------------
 		 	if [ "`which freshclam 2> /dev/null`" != "" ]; then
-		 		fncPrint "---- change freshclam.conf $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "     change freshclam.conf"
 		 		sed -i /etc/clamav/freshclam.conf     \
 		 		    -e 's/^Example/#&/'               \
 		 		    -e 's/^CompressLocalDatabase/#&/' \
 		 		    -e 's/^SafeBrowsing/#&/'          \
 		 		    -e 's/^NotifyClamd/#&/'
-		 		fncPrint "---- run freshclam $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "     run freshclam"
 		 		set +e
 		 		freshclam --quiet
 		 		set -e
@@ -1232,14 +1233,14 @@ fncMake_setup_sh () {
 		 			system-db:local
 		_EOT_
 		 		# -- dconf org/gnome/desktop/screensaver ------------------------------
-		 		fncPrint "---- dconf org/gnome/desktop/screensaver $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "     dconf org/gnome/desktop/screensaver"
 		 		cat <<- _EOT_ > /etc/dconf/db/local.d/01-screensaver
 		 			[org/gnome/desktop/screensaver]
 		 			idle-activation-enabled=false
 		 			lock-enabled=false
 		_EOT_
 		 		# -- dconf org/gnome/shell/extensions/dash-to-dock --------------------
-		 		fncPrint "---- dconf org/gnome/shell/extensions/dash-to-dock $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "     dconf org/gnome/shell/extensions/dash-to-dock"
 		 		cat <<- _EOT_ > /etc/dconf/db/local.d/01-dash-to-dock
 		 			[org/gnome/shell/extensions/dash-to-dock]
 		 			hot-keys=false
@@ -1247,14 +1248,14 @@ fncMake_setup_sh () {
 		 			hotkeys-show-dock=false
 		_EOT_
 		 		# -- dconf org/gnome/shell/extensions/dash-to-dock --------------------
-		 		fncPrint "---- dconf apps/update-manager $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "     dconf apps/update-manager"
 		 		cat <<- _EOT_ > /etc/dconf/db/local.d/01-update-manager
 		 			[apps/update-manager]
 		 			check-dist-upgrades=false
 		 			first-run=false
 		_EOT_
 		 		# -- dconf update -----------------------------------------------------
-		 		fncPrint "---- dconf update $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "     dconf update"
 		 		dconf update
 		 	fi
 		# -- Change release-upgrades configure ----------------------------------------
@@ -1276,7 +1277,7 @@ fncMake_setup_sh () {
 		 	LST_SHELL="`sed -n '/^#/! s~/~\\\\/~gp' /etc/shells |  sed -z 's/\n/|/g' | sed -e 's/|$//'`"
 		 	for USER_NAME in "skel" `awk -F ':' '$7~/'"${LST_SHELL}"'/ {print $1;}' /etc/passwd`
 		 	do
-		 		fncPrint "---- ${USER_NAME}'s setting $(fncString ${COL_SIZE} '-')"
+		 		fncPrint "     ${USER_NAME}'s setting"
 		 		if [ "${USER_NAME}" == "skel" ]; then
 		 			USER_HOME="/etc/skel"
 		 		else
@@ -1464,6 +1465,7 @@ fncExec_setup_sh () {
 			FSIMG_SIZE=`LANG=C ls -lh ./image/live/filesystem.squashfs | awk '{print $5;}'`
 			;;
 		"ubuntu" )			# ･････････････････････････････････････････････････
+			rm -f ./image/casper/filesystem.squashfs.gpg
 			rm -f ./image/casper/filesystem.squashfs
 			mksquashfs ./decomp ./image/casper/filesystem.squashfs -noappend -quiet -mem 1G
 			ls -lht ./image/casper/filesystem.squashfs
@@ -2421,14 +2423,16 @@ _EOT_
 									fi
 									;;
 								*desktop* )					# --- preseed.cfg -
+									# https://manpages.ubuntu.com/manpages/jammy/man7/casper.7.html
 									# === 日本語化 ============================
-									INS_CFG="debian-installer/language=ja keyboard-configuration/layoutcode?=jp keyboard-configuration/modelcode?=jp106"
+									INS_CFG="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode?=jp keyboard-configuration/modelcode?=jp106"
 									# --- grub.cfg ----------------------------
 									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
 									sed -n '/^menuentry \"Try Ubuntu.*\"\|\"Ubuntu\"\|\"Try or Install Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
 									sed -e 's/\"\(Try Ubuntu.*\)\"/\"\1 for Japanese language\"/'                                            \
 									    -e 's/\"\(Ubuntu\)\"/\"\1 for Japanese language\"/'                                                  \
-									    -e 's/\"\(Try or Install Ubuntu\)\"/\"\1 for Japanese language\"/'                                 | \
+									    -e 's/\"\(Try or Install Ubuntu\)\"/\"\1 for Japanese language\"/'                                   \
+									    -e 's/textonly\|\(automatic\|only\|maybe\)-ubiquity/noninteractive/'                               | \
 									sed -e "s~\(file\)~${INS_CFG} \1~"                                                                     | \
 									sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                                                     | \
 									sed -e 's/\(set default\)="1"/\1="0"/'                                                                   \
