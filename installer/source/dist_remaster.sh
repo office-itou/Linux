@@ -34,6 +34,7 @@
 ##	2022/06/27 000.0000 J.Itou         処理見直し
 ##	2022/06/29 000.0000 J.Itou         処理見直し
 ##	2022/07/05 000.0000 J.Itou         処理見直し
+##	2022/07/15 000.0000 J.Itou         Rocky Linux 9.0追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -80,6 +81,7 @@
 	    "fedora         https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora-projects/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso -                                           kickstart_common.cfg                        2021-11-02   2022-12-07   kernel_5.14    -                                 " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-netinst-x86_64-36-1.5.iso                    -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2021-11-15   20xx-xx-xx   RHEL_8.5       -                                 " \
+	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-[0-9].*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x       -                                 " \
 	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9].*-latest-x86_64-boot.iso                                                  -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
 	    "suse           http://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9].*-NET-x86_64-Current.iso                                  -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21 -                                 " \
 	    "suse           http://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                       -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
@@ -99,6 +101,7 @@
 	    "fedora         https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora-projects/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso     -                                           kickstart_common.cfg                        2021-11-02   2022-12-07   kernel_5.15     -                                " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-dvd-x86_64-36-1.5.iso                        -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                        -                                           kickstart_common.cfg                        2021-11-15   20xx-xx-xx   RHEL_8.5        -                                " \
+	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-[0-9].*-x86_64-dvd1.iso                                                        -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x       -                                 " \
 	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9].*-rtm-x86_64.iso                                 -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_8.4        -                                " \
 	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9].*-latest-x86_64-dvd.iso                                                   -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
 	    "suse           http://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9].*-DVD-x86_64-Current.iso                                  -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
@@ -2082,6 +2085,11 @@ fncRemaster () {
 							fi
 							;;
 						* )
+							sed -i kickstart/ks.cfg             \
+							    -e '/--name=epel/      s/^#//'  \
+							    -e '/--name=epel_next/ s/^#//'  \
+							    -e '/--name=Remi/      s/^#//'  \
+							    -e '/%packages/,/%end/ s/^#//g'
 							case "${CODE_NAME[1]}" in
 								CentOS-Stream-8* )
 									sed -i kickstart/ks.cfg                                   \
@@ -2100,6 +2108,18 @@ fncRemaster () {
 									    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"  \
 									    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"  \
 									    -e '/%anaconda/,/%end/{/^#/!   s/^/#/g}'
+									;;
+								Rocky-9*         )
+									VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $2;}')
+									ARC_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $4;}')
+									sed -i kickstart/ks.cfg                       \
+									    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"   \
+									    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"   \
+									    -e '/%anaconda/,/%end/{/^#/!   s/^/#/g}'  \
+									    -e "/^url /  s/\$releasever/${VER_NUM}/g" \
+									    -e "/^url /  s/\$basearch/${ARC_NUM}/g"   \
+									    -e "/^repo / s/\$releasever/${VER_NUM}/g" \
+									    -e "/^repo / s/\$basearch/${ARC_NUM}/g"
 									;;
 								* )
 									sed -i kickstart/ks.cfg                     \
@@ -2120,11 +2140,6 @@ fncRemaster () {
 								* )
 									;;
 							esac
-							sed -i kickstart/ks.cfg             \
-							    -e '/--name=epel/      s/^#//'  \
-							    -e '/--name=epel_next/ s/^#//'  \
-							    -e '/--name=Remi/      s/^#//'  \
-							    -e '/%packages/,/%end/ s/^#//g'
 							;;
 					esac
 					case "${WORK_DIRS}" in
@@ -2973,6 +2988,8 @@ _EOT_
 # Ver. :リリース日:RHEL      :メンテ期限:kernel
 #  8.4 :2021-06-21:2021-05-18:         : 4.18.0-305
 #  8.5 :2021-11-15:2021-11-09:         : 4.18.0-348
+#  8.6 :2022-05-16:2022-05-10:         : 4.18.0-372.9.1
+#  9.0 :2022-07-14:2022-05-17:         : 5.14.0-70.13.1
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # [https://en.wikipedia.org/wiki/Fedora_Linux]
 # Ver. :コードネーム     :リリース日:サポ期限  :kernel
