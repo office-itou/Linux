@@ -36,6 +36,7 @@
 ##	2022/07/05 000.0000 J.Itou         処理見直し
 ##	2022/07/15 000.0000 J.Itou         Rocky Linux 9.0追加
 ##	2022/07/22 000.0000 J.Itou         不具合修正
+##	2022/07/27 000.0000 J.Itou         Ubuntu 22.10 (Kinetic Kudu) Daily Build追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -115,18 +116,22 @@
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
+	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 
 	readonly ARRAY_NAME_LIVE=(                                                                                                                                                                                                                                                                                                            \
 	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9.]*-amd64-lxde.iso                       -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
 	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9.]*-amd64-lxde.iso                          -                                           preseed_debian.cfg                          2019-07-06   2024-xx-xx   oldstable       Debian_10.xx(buster)             " \
 	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9.]*-amd64-lxde.iso                                   -                                           preseed_debian.cfg                          2021-08-14   20xx-xx-xx   stable          Debian_11.xx(bullseye)           " \
 	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                     -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2018-04-26   2023-04-xx   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2025-04-xx   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
-	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-xx   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
+	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2018-04-26   2023-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
+	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2025-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
+	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
+	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 
 	case "${WORK_DIRS}" in
 		"dist_remaster_mini" )	ARRAY_NAME=("${ARRAY_NAME_MINI[@]}");;
@@ -902,8 +907,8 @@ fncMake_setup_sh () {
 		 				deb-src ${APT_HOST} ${OS_CODE}-updates main restricted universe multiverse
 		 				deb     ${APT_HOST} ${OS_CODE}-backports main restricted universe multiverse
 		 				deb-src ${APT_HOST} ${OS_CODE}-backports main restricted universe multiverse
-		 				deb     ${APT_OPTI} ${OS_CODE} partner
-		 				deb-src ${APT_OPTI} ${OS_CODE} partner
+		 				#deb     ${APT_OPTI} ${OS_CODE} partner
+		 				#deb-src ${APT_OPTI} ${OS_CODE} partner
 		_EOT_
 		 			;;
 		 		* ) ;;
@@ -1435,10 +1440,10 @@ fncExec_setup_sh () {
 		"debian" )	# ･････････････････････････････････････････････････････････
 			;;
 		"ubuntu" )	# ･････････････････････････････････････････････････････････
-			rm ./image/casper/filesystem.size                    \
-			   ./image/casper/filesystem.manifest                \
-			   ./image/casper/filesystem.manifest-remove         
-#			   ./image/casper/filesystem.manifest-minimal-remove 
+			rm -f ./image/casper/filesystem.size                    \
+			      ./image/casper/filesystem.manifest                \
+			      ./image/casper/filesystem.manifest-remove         
+#			      ./image/casper/filesystem.manifest-minimal-remove 
 			# -----------------------------------------------------------------
 			touch ./image/casper/filesystem.size
 			touch ./image/casper/filesystem.manifest
@@ -1949,7 +1954,8 @@ fncRemaster () {
 					case "${CODE_NAME[1]}" in
 						debian-live-* )
 							;;
-						*canary*      | \
+						*canary*      )
+							;;
 						*live-server* )						# --- get user-data
 							EFI_IMAG="boot/grub/efi.img"
 							ISO_NAME="${DVD_NAME}-nocloud"
@@ -1981,6 +1987,7 @@ fncRemaster () {
 					# Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS
 					# Impish_Indri    Ubuntu_21.10(Impish_Indri)
 					# Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS
+					# Kinetic_Kudu    Ubuntu_22.10(Kinetic Kudu)
 					fncCreate_late_command "./preseed"
 					case "`echo ${CODE_NAME[7]} | sed -e 's/^.*(\(.*\)).*$/\1/'`" in
 						wheezy         | \
@@ -2376,11 +2383,11 @@ _EOT_
 								    -e 's/\(timeout\).*$/\1 50/'
 							fi
 							case "${CODE_NAME[1]}" in
-								*canary* | \
+#								*canary* | \
 								*live*   | \
 								*server* )
 									case "${CODE_NAME[1]}" in
-										*canary* | \
+#										*canary* | \
 										*live*   ) INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\" ipv6.disable=1";;
 										*server* ) INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"                  ;;
 										* )	;;
@@ -2970,6 +2977,7 @@ _EOT_
 #x21.04:Hirsute Hippo    :2021-04-22:2022-01-20
 # 21.10:Impish Indri     :2021-10-14:2022-07-14
 # 22.04:Jammy Jellyfish  :2022-04-21:2027-04-21/2032-04-21:LTS
+# 22.10:Kinetic Kudu     :2022-10-20:2023-07-xx
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
 # [https://en.wikipedia.org/wiki/CentOS]
 # Ver.    :リリース日:RHEL      :メンテ期限:kernel
