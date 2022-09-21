@@ -39,6 +39,7 @@
 ##	2022/07/27 000.0000 J.Itou         Ubuntu 22.10 (Kinetic Kudu) Daily Build追加
 ##	2022/08/02 000.0000 J.Itou         リスト更新: Ubuntu 21.10 (Impish_Indri) 削除
 ##	2022/09/19 000.0000 J.Itou         処理見直し
+##	2022/09/21 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -1873,7 +1874,7 @@ fncRemaster () {
 		fi
 															# Download
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			fncPrint "    get ${DVD_NAME}.iso"
+			fncPrint "    get ${DVD_NAME}.iso (${WEB_SIZE} byte)"
 			set +e
 			curl -L -# -R -S -f --create-dirs --connect-timeout 60 --retry 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 			set -e
@@ -1882,7 +1883,7 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ "${WEB_SIZE}" -ne 0 -a "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				fncPrint "    get ${DVD_NAME}.iso"
+				fncPrint "    get ${DVD_NAME}.iso (${WEB_SIZE} byte)"
 				set +e
 				curl -L -# -R -S -f --create-dirs --connect-timeout 60 --retry 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 				set -e
