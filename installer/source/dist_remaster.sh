@@ -40,6 +40,7 @@
 ##	2022/08/02 000.0000 J.Itou         リスト更新: Ubuntu 21.10 (Impish_Indri) 削除
 ##	2022/09/19 000.0000 J.Itou         処理見直し
 ##	2022/09/21 000.0000 J.Itou         処理見直し
+##	2022/09/23 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -88,9 +89,11 @@
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2021-11-15   2029-05-31   RHEL_8.5       -                                 " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-[0-9.]*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x       -                                 " \
 	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9.]*-latest-x86_64-boot.iso                                                  -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "suse           https://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Current.iso                                 -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21 -                                 " \
-	    "suse           https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                      -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
+	    "suse           https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                             -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21 -                                 " \
+	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+#	    "suse           https://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Current.iso                                 -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21 -                                 " \
+#	    "suse           https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                      -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
 
 	readonly ARRAY_NAME_DVD=(                                                                                                                                                                                                                                                                                                             \
 	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-[0-9.]*-amd64-DVD-1.iso                                  -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
@@ -108,8 +111,8 @@
 	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-[0-9.]*-x86_64-dvd.iso                                                         -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x       -                                 " \
 	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                                 -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_8.4        -                                " \
 	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9.]*-latest-x86_64-dvd.iso                                                   -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "suse           https://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Current.iso                                 -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
-	    "suse           https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                      -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
+	    "suse           https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                             -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
+	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
 	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9.]*-amd64-lxde.iso                       -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
 	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9.]*-amd64-lxde.iso                          -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
 	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9.]*-amd64-lxde.iso                                   -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
@@ -122,6 +125,8 @@
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-live-server-amd64.iso                                                                      -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
+#	    "suse           https://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Current.iso                                 -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
+#	    "suse           https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                      -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
 
 	readonly ARRAY_NAME_LIVE=(                                                                                                                                                                                                                                                                                                            \
 	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9.]*-amd64-lxde.iso                       -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
@@ -342,7 +347,7 @@ fncMenu () {
 				if [ -n "${DST_DATE}" ] && [ ${DVD_DATE} -gt ${DST_DATE} ]; then
 					TXT_COLOR=${TXT_YELLOW}
 				fi
-				if [ ${FIL_DATE} -gt ${DVD_DATE} ]; then
+				if [ ${FIL_DATE} -ne ${DVD_DATE} ]; then
 					set +e
 					curl -L -R -S -s -f --connect-timeout 3 --retry 3 -I --dump-header "${WORK_DIRS}/header.txt" "${CODE_NAME[2]}" > /dev/null
 					RET_CD=$?
@@ -1882,7 +1887,7 @@ fncRemaster () {
 			local DVD_INFO=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "../${DVD_NAME}.iso"`
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
-			if [ "${WEB_SIZE}" -ne 0 -a "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
+			if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
 				fncPrint "    get ${DVD_NAME}.iso (${WEB_SIZE} byte)"
 				set +e
 				curl -L -# -R -S -f --create-dirs --connect-timeout 60 --retry 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
@@ -1897,7 +1902,7 @@ fncRemaster () {
 		local DVD_INFO=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "../${DVD_NAME}.iso"`
 		local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 		local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
-		if [ "${WEB_SIZE}" -ne 0 -a "${WEB_SIZE}" != "${DVD_SIZE}" ]; then
+		if [ "${WEB_SIZE}" != "${DVD_SIZE}" ]; then
 			echo "file size error: ../${DVD_NAME}.iso (${WEB_SIZE} != ${DVD_SIZE})"
 			return 1
 		fi
