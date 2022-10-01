@@ -41,6 +41,7 @@
 ##	2022/09/19 000.0000 J.Itou         処理見直し
 ##	2022/09/21 000.0000 J.Itou         処理見直し
 ##	2022/09/23 000.0000 J.Itou         処理見直し
+##	2022/09/26 000.0000 J.Itou         処理見直し(Ubuntu 22.10 login画面対策)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -310,13 +311,17 @@ fncMenu () {
 			TXT_COLOR=${TXT_RED}
 		else												# WEB取得取得成功
 			FIL_INFO=($(echo "${WEB_INFO[@]}" | LANG=C sed -n "s/^.*<a href=.*> *\(${CODE_NAME[1]}\.iso\) *<\/a.*> *\([0-9a-zA-Z]*-[0-9a-zA-Z]*-[0-9a-zA-Z]*\) *\([0-9]*:[0-9]*\).*$/\1 \2 \3/p"))
-			if [ "${FIL_INFO[2]:+UNSET}" = "" ]; then
-				FIL_INFO[2]="00:00"
+			if [ "${FIL_INFO[1]:+UNSET}" = "" ]; then
+				TXT_COLOR=${TXT_RED}
+			else
+				if [ "${FIL_INFO[2]:+UNSET}" = "" ]; then
+					FIL_INFO[2]="00:00"
+				fi
+				FIL_DATE=`TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M%S"`
+				CODE_NAME[1]=`echo "${FIL_INFO[0]}" | sed -e 's/.iso//ig'`	# dvd/net
+				CODE_NAME[2]=`echo "${DIR_NAME}/${FIL_INFO[0]}"`
+				CODE_NAME[4]=`TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
 			fi
-			FIL_DATE=`TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M%S"`
-			CODE_NAME[1]=`echo "${FIL_INFO[0]}" | sed -e 's/.iso//ig'`	# dvd/net
-			CODE_NAME[2]=`echo "${DIR_NAME}/${FIL_INFO[0]}"`
-			CODE_NAME[4]=`TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d"`
 		fi
 		if [ "${CODE_NAME[1]}" = "mini" ]; then
 			CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"	# mini.iso
@@ -578,6 +583,9 @@ fncCreate_success_command () {
 		
 		 	trap 'exit 1' 1 2 3 15
 		
+		 	readonly PGM_NAME=`basename $0 | sed -e 's/\..*$//'`
+		 	readonly LOG_NAME="/var/log/installer/${PGM_NAME}.log"
+		
 		# --- IPv4 netmask conversion -------------------------------------------------
 		fncIPv4GetNetmask () {
 		 	local INP_ADDR="$@"
@@ -607,6 +615,7 @@ fncCreate_success_command () {
 		
 		# --- packages ----------------------------------------------------------------
 		fncInstallPackages () {
+		 	echo "fncInstallPackages" 2>&1 | tee -a /target/${LOG_NAME}
 		 	LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' /cdrom/preseed/preseed.cfg  | \
 		 	           sed -z 's/\n//g'                                                                 | \
 		 	           sed -e 's/.* multiselect *//'                                                      \
@@ -626,22 +635,35 @@ fncCreate_success_command () {
 		 	    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
 		 	set +e
 		 	in-target --pass-stdout bash -c "
-		 		apt-get -qq    update
-		 		apt-get -qq -y upgrade
-		 		apt-get -qq -y dist-upgrade
-		 		apt-get -qq -y install ${LIST_PACK}
+		 		apt-get -qq    update               2>&1 | tee -a ${LOG_NAME}
+		 		apt-get -qq -y upgrade              2>&1 | tee -a ${LOG_NAME}
+		 		apt-get -qq -y dist-upgrade         2>&1 | tee -a ${LOG_NAME}
+		 		apt-get -qq -y install ${LIST_PACK} 2>&1 | tee -a ${LOG_NAME}
 		 		if [ \"`which tasksel 2> /dev/null`\" != \"\" ]; then
-		 			tasksel install ${LIST_TASK}
+		 			tasksel install ${LIST_TASK}    2>&1 | tee -a ${LOG_NAME}
 		 		fi
-		 		if [ -f /usr/lib/systemd/system/connman.service ]; then
-		 			systemctl disable connman.service
-		 		fi
+		 	# -------------------------------------------------------------------------
+		 	if [ -f /etc/bind/named.conf.options ]; then
+		 		cp -p /etc/bind/named.conf.options /etc/bind/named.conf.options.original
+		 		sed -i /etc/bind/named.conf.options            \
+		 		    -e 's/\(dnssec-validation\) auto;/\1 no;/'
+		 	fi
+		 	# -------------------------------------------------------------------------
+		#		if [ -f /usr/lib/systemd/system/connman.service ]; then
+		#			systemctl disable connman.service 2>&1 | tee -a ${LOG_NAME}
+		#			systemctl stop connman.service    2>&1 | tee -a ${LOG_NAME}
+		#		fi
+		#		if [ -f /usr/lib/systemd/system/NetworkManager.service ]; then
+		#			systemctl enable NetworkManager.service  2>&1 | tee -a ${LOG_NAME}
+		#			systemctl restart NetworkManager.service 2>&1 | tee -a ${LOG_NAME}
+		#		fi
 		 	"
 		 	set -e
 		}
 		
 		# --- network -----------------------------------------------------------------
 		fncSetupNetwork () {
+		 	echo "fncSetupNetwork" 2>&1 | tee -a /target/${LOG_NAME}
 		 	IPV4_DHCP=`awk 'BEGIN {result="true";}
 		 	                !/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {if ($4=="true") result="false";}
 		 	                END {print result;}' /cdrom/preseed/preseed.cfg`
@@ -653,14 +675,14 @@ fncCreate_success_command () {
 		 		NIC_DNS4="`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' /cdrom/preseed/preseed.cfg`"
 		 		NIC_WGRP="`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' /cdrom/preseed/preseed.cfg`"
 		 		NIC_BIT4="`fncIPv4GetNetmaskBits "${NIC_MASK}"`"
-				# --- connman ---------------------------------------------------------
-		 		if [ -d /etc/connman ]; then
+		 		# --- connman ---------------------------------------------------------
+		 		if [ -d /target/etc/connman ]; then
 		 			set +e
 		 			NIC_MADR="`LANG=C ip address show dev "${NIC_NAME}" 2> /dev/null | sed -n '/link\/ether/ s/^[ \t]*//gp' | awk '{gsub(":","",$2); print $2;}'`"
 		 			CON_NAME="ethernet_${NIC_MADR}_cable"
 		 			set -e
-		 			mkdir -p /var/lib/connman/${CON_NAME}
-		 			cat <<- _EOT_ | sed 's/^ *//g' > /var/lib/connman/settings
+		 			mkdir -p /target/var/lib/connman/${CON_NAME}
+		 			cat <<- _EOT_ | sed 's/^ *//g' > /target/var/lib/connman/settings
 		 				[global]
 		 				OfflineMode=false
 		 				
@@ -669,7 +691,7 @@ fncCreate_success_command () {
 		 				Tethering=false
 		_EOT_
 		 			if [ "${CON_NAME}" != ""]; then
-		 				cat <<- _EOT_ | sed 's/^ *//g' > /var/lib/connman/${CON_NAME}/settings
+		 				cat <<- _EOT_ | sed 's/^ *//g' > /target/var/lib/connman/${CON_NAME}/settings
 		 					[${CON_NAME}]
 		 					Name=Wired
 		 					AutoConnect=true
@@ -689,8 +711,8 @@ fncCreate_success_command () {
 		_EOT_
 		 			fi
 		 		fi
-				# --- netplan ---------------------------------------------------------
-		 		if [ -d /etc/netplan ]; then
+		 		# --- netplan ---------------------------------------------------------
+		 		if [ -d /target/etc/netplan ]; then
 		 			cat <<- _EOT_ > /target/etc/netplan/99-network-manager-static.yaml
 		 				network:
 		 				  version: 2
@@ -709,9 +731,19 @@ fncCreate_success_command () {
 		 	fi
 		}
 		
+		# --- gdm3 --------------------------------------------------------------------
+		fncChange_gdm3_configure () {
+		 	echo "fncChange_gdm3_configure" 2>&1 | tee -a /target/${LOG_NAME}
+		 	if [ -f /target/etc/gdm3/custom.conf ]; then
+		 		sed -i.orig /target/etc/gdm3/custom.conf \
+		 		    -e '/WaylandEnable=false/ s/^#//'
+		 	fi
+		}
+		
 		# --- Main --------------------------------------------------------------------
 		 	fncInstallPackages
 		 	fncSetupNetwork
+		 	fncChange_gdm3_configure
 		
 		# --- Termination -------------------------------------------------------------
 		 	exit 0
@@ -2039,18 +2071,26 @@ fncRemaster () {
 						Trusty_Tahr    | \
 						Xenial_Xerus   | \
 						Bionic_Beaver  )
-							fncCreate_success_command "./preseed"
+#							sed -i preseed/preseed.cfg                                                \
+#							    -e 's/\(^[ \t]*d-i[ \t]*debian-installer\/language\).*$/\1 string C/' \
+#							    -e 's/bind9-utils/bind9utils/'                                        \
+#							    -e 's/bind9-dnsutils/dnsutils/'                                       \
+#							    -e 's/network-manager//'
+#							if [ -f "nocloud/user-data" ]; then
+#								sed -i "nocloud/user-data"          \
+#								    -e 's/bind9-utils/bind9utils/'  \
+#								    -e 's/bind9-dnsutils/dnsutils/' \
+#								    -e 's/network-manager//'
+#							fi
 							sed -i preseed/preseed.cfg                                                \
-							    -e 's/\(^[ \t]*d-i[ \t]*debian-installer\/language\).*$/\1 string C/' \
 							    -e 's/bind9-utils/bind9utils/'                                        \
-							    -e 's/bind9-dnsutils/dnsutils/'                                       \
-							    -e 's/network-manager//'
+							    -e 's/bind9-dnsutils/dnsutils/'                                       
 							if [ -f "nocloud/user-data" ]; then
 								sed -i "nocloud/user-data"          \
 								    -e 's/bind9-utils/bind9utils/'  \
-								    -e 's/bind9-dnsutils/dnsutils/' \
-								    -e 's/network-manager//'
+								    -e 's/bind9-dnsutils/dnsutils/' 
 							fi
+							fncCreate_success_command "./preseed"
 							;;
 						Focal_Fossa     | \
 						Groovy_Gorilla  | \
