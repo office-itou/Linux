@@ -42,6 +42,7 @@
 ##	2022/09/21 000.0000 J.Itou         処理見直し
 ##	2022/09/23 000.0000 J.Itou         処理見直し
 ##	2022/09/26 000.0000 J.Itou         処理見直し(Ubuntu 22.10 login画面対策)
+##	2022/10/05 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -275,6 +276,8 @@ fncMenu () {
 	local TXT_COLOR
 	local DST_FILE
 	local DST_DATE
+	local DSP_INDX=(`eval echo "${INP_INDX}"`)
+	local DSP_WORK=()
 	# -------------------------------------------------------------------------
 	# <表示色>
 	#  赤色：通信エラー（リンク先消失等）
@@ -288,6 +291,17 @@ fncMenu () {
 	fncPrint "#ID：Version$(fncString $((${COL_SIZE}-55)) ' ')：リリース日：サポ終了日：備考           #"
 	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
 	do
+		if [ "${INP_INDX}" != "" ]; then
+			if [ ${#DSP_INDX[@]} -le 0 ]; then
+				continue
+			elif [ "${DSP_INDX[0]}" != "$I" ]; then
+				continue
+			else
+				DSP_WORK=("${DSP_INDX[@]}")
+				unset DSP_WORK[0]
+				DSP_INDX=("${DSP_WORK[@]}")
+			fi
+		fi
 		TXT_COLOR=""
 		ARRY_NAME=(${ARRAY_NAME[$I-1]})
 		CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
