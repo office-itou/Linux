@@ -100,6 +100,8 @@ _EOT_
 		  storage:
 		    layout:
 		      name: lvm
+		      match:
+		        ssd: yes
 		# -----------------------------------------------------------------------------
 		# /dev/nvme0n1p1: 512MB: efi
 		#      nvme0n1p2: 512MB: /boot

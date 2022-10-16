@@ -43,6 +43,8 @@
 ##	2022/09/23 000.0000 J.Itou         処理見直し
 ##	2022/09/26 000.0000 J.Itou         処理見直し(Ubuntu 22.10 login画面対策)
 ##	2022/10/05 000.0000 J.Itou         処理見直し
+##	2022/10/10 000.0000 J.Itou         処理見直し
+##	2022/10/15 000.0000 J.Itou         リスト更新: Ubuntu 22.10 (Kinetic Kudu) Beta 追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -71,7 +73,7 @@
 	ARRAY_NAME=()
 
 	readonly ARRAY_NAME_MINI=(                                                                                                                                                                                                                                                                                                            \
-	    "debian         http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                   -                                           preseed_debian.cfg                          2017-06-17   2022-06-xx   oldoldstable    Debian__9.xx(stretch)            " \
+	    "debian         http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                   -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
 	    "debian         http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                      -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
 	    "debian         http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                         -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
 	    "debian         https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/netboot/mini.iso                                                                       -                                           preseed_debian.cfg                          202x-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
@@ -105,6 +107,7 @@
 	    "ubuntu         http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9.]*-server-amd64.iso                                                            -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-live-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-live-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
+	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-beta-live-server-amd64.iso                                                                -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                 -                                           kickstart_common.cfg                        2019-xx-xx   2024-05-31   RHEL_8.x        -                                " \
 	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                    -                                           kickstart_common.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x        -                                " \
 	    "fedora         https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora-projects/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso     -                                           kickstart_common.cfg                        2021-11-02   2022-12-07   kernel_5.15     -                                " \
@@ -122,6 +125,7 @@
 	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
+	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-beta-desktop-amd64.iso                                                                    -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-live-server-amd64.iso                                                                      -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
@@ -138,6 +142,7 @@
 	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2018-04-26   2023-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2025-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
+	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-beta-desktop-amd64.iso                                                                    -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
@@ -760,6 +765,7 @@ fncCreate_success_command () {
 		 	fncChange_gdm3_configure
 		
 		# --- Termination -------------------------------------------------------------
+		 	cp -p /var/log/syslog /target/var/log/installer/syslog.source
 		 	exit 0
 		# --- EOF ---------------------------------------------------------------------
 _EOT_SH_
