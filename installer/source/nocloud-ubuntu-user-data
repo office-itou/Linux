@@ -14,7 +14,7 @@ autoinstall:
     preserve_sources_list: false
     primary:
     - arches: [amd64, i386]
-      uri: http://jp.archive.ubuntu.com/ubuntu
+      uri: http://archive.ubuntu.com/ubuntu
     - arches: [default]
       uri: http://ports.ubuntu.com/ubuntu-ports
 # =============================================================================
@@ -88,7 +88,7 @@ autoinstall:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$k2o5YAKGBnIN.7y6$uw18S1ewDj16gVGLqA64F6wY.vOxQIdG35SVR3wsX9r7xMJ7Y/XrwowLVL0NAwmwYcT9HUh17lsbkyMmZ.1SZ."
+    password: "$6$96dc48kAIUwc/Glm$PpzBY8VTdo7ZBTStiQWLpsA5m.bmwQdL8auOj5qLexZQK6B0BbMFKTjTuDjRhjoH44g5WdQvk8a0EO7xI6jBR/"
 # =============================================================================
   locale: ja_JP.UTF-8
   keyboard:
@@ -141,11 +141,13 @@ autoinstall:
   - isc-dhcp-server
   - minidlna
   - apache2
+  - ubuntu-desktop
   - ubuntu-gnome-desktop
   - language-pack-ja
   - language-pack-gnome-ja
-  - fonts-noto-core
+  - fonts-noto
   - ibus-mozc
+  - mozc-utils-gui
   - libreoffice-l10n-ja
   - libreoffice-help-ja
   - firefox-locale-ja
@@ -163,5 +165,5 @@ autoinstall:
 #   https://cloudinit.readthedocs.io/
 #   https://curtin.readthedocs.io/
 # =============================================================================
-# Created at 2022/10/16 15:28:54
+# Created at 2022/10/21 21:24:56
 # === EOF =====================================================================

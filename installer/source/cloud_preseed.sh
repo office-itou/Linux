@@ -250,13 +250,13 @@ _EOT_
 	           sed -e 's/.* string *//'                                               \
 	               -e 's/[,|\\\\]//g'                                                 \
 	               -e 's/  */ /g'                                                     \
-	               -e 's/^ *//'                                                       \
-	               -e 's/ubuntu-desktop[,| ]*//'                                      \
-	               -e 's/ubuntu-server[,| ]*//'                                       \
-	               -e 's/inxi[,| ]*//'                                                \
-	               -e 's/mozc-utils-gui[,| ]*//'                                      \
-	               -e 's/gnome-getting-started-docs-ja[,| ]*//'                       \
-	               -e 's/fonts-noto\([,| ]\)/fonts-noto-core\1/'`
+	               -e 's/^ *//'
+#	               -e 's/ubuntu-desktop[,| ]*//'                                      \
+#	               -e 's/ubuntu-server[,| ]*//'                                       \
+#	               -e 's/inxi[,| ]*//'                                                \
+#	               -e 's/mozc-utils-gui[,| ]*//'                                      \
+#	               -e 's/gnome-getting-started-docs-ja[,| ]*//'                       \
+#	               -e 's/fonts-noto\([,| ]\)/fonts-noto-core\1/'`
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
 		  updates: security
