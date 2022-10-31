@@ -26,6 +26,7 @@
 ##	2022/06/08 000.0000 J.Itou         処理見直し
 ##	2022/06/09 000.0000 J.Itou         動作環境追加
 ##	2022/06/11 000.0000 J.Itou         処理見直し
+##	2022/10/29 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get -y install mmdebstrap squashfs-tools xorriso
@@ -1452,7 +1453,7 @@ fncMake_dvd_image () {
 	# --- ファイルシステムイメージの作成 --------------------------------------
 	fncPrint "--- make file system image $(fncString ${COL_SIZE} '-')"
 	rm -f "${DIR_WRK}/cdimg/live/filesystem.squashfs"
-	mksquashfs "${DIR_WRK}/fsimg" "${DIR_WRK}/cdimg/live/filesystem.squashfs" -noappend -quiet -mem 1G
+	mksquashfs "${DIR_WRK}/fsimg" "${DIR_WRK}/cdimg/live/filesystem.squashfs" -not-reproducible -xattrs -wildcards -noappend -quiet -mem 2G
 	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_WRK}/cdimg/live/filesystem.squashfs" 2> /dev/null | awk '{gsub(/.*\//,"",$6); print $4,$5,$3,$6;}'
 	# --- ブートメニューの作成 ------------------------------------------------
 	fncPrint "--- edit grub.cfg file $(fncString ${COL_SIZE} '-')"
