@@ -46,6 +46,7 @@
 ##	2022/10/10 000.0000 J.Itou         処理見直し
 ##	2022/10/15 000.0000 J.Itou         リスト更新: Ubuntu 22.10 (Kinetic Kudu) Beta 追加
 ##	2022/10/15 000.0000 J.Itou         リスト更新: Ubuntu 22.10 (Kinetic Kudu) 変更
+##	2022/11/01 000.0000 J.Itou         リスト更新: MIRACLELINUX 8.6 / 9.0 追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -93,6 +94,8 @@
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-netinst-x86_64-36-1.5.iso                    -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2021-11-15   2029-05-31   RHEL_8.5       -                                 " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-[0-9.]*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x       -                                 " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.6-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-minimal-x86_64.iso                         -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.0-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-minimal-x86_64.iso                         -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
 	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9.]*-latest-x86_64-boot.iso                                                  -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                             -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21 -                                 " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
@@ -115,7 +118,8 @@
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-dvd-x86_64-36-1.5.iso                        -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-dvd1.iso                                                        -                                           kickstart_common.cfg                        2021-11-15   2029-05-31   RHEL_8.5        -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-[0-9.]*-x86_64-dvd.iso                                                         -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x       -                                 " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.4-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                                 -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_8.4        -                                " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.6-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                                 -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.0-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                                 -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
 	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9.]*-latest-x86_64-dvd.iso                                                   -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                             -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
@@ -2178,6 +2182,21 @@ fncRemaster () {
 								    -e '/%anaconda/,/%end/{/^#/! s/^/#/g}'
 							fi
 							;;
+						MIRACLELINUX-8* | \
+						MIRACLELINUX-9* )
+							VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $2;}')
+							ARC_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $5;}')
+							if [ "${ARC_NUM}" = "minimal" ]; then
+								ARC_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $6;}')
+							fi
+							sed -i kickstart/ks.cfg                       \
+							    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"   \
+							    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"   \
+							    -e "/^url /  s/\$releasever/${VER_NUM}/g" \
+							    -e "/^url /  s/\$basearch/${ARC_NUM}/g"   \
+							    -e "/^repo / s/\$releasever/${VER_NUM}/g" \
+							    -e "/^repo / s/\$basearch/${ARC_NUM}/g"
+							;;
 						* )
 							sed -i kickstart/ks.cfg             \
 							    -e '/--name=epel/      s/^#//'  \
@@ -2221,26 +2240,27 @@ fncRemaster () {
 									    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"
 									;;
 							esac
-							case "${CODE_NAME[1]}" in
-								CentOS-Stream-8* | \
-								MIRACLELINUX-8*  | \
-								Rocky-8*         )
-									local TMZONE=`awk '$1=="timezone" {print $2;}' kickstart/ks.cfg`
-									local NTPSVR=`awk -F '[ \t=]' '$1=="timesource" {print $3;}' kickstart/ks.cfg`
-									sed -i kickstart/ks.cfg                                                   \
-									    -e "s~^\(timezone\).*\$~\1 ${TMZONE} --isUtc --ntpservers=${NTPSVR}~" \
-									    -e '/timesource/d'
-									;;
-								* )
-									;;
-							esac
+							;;
+					esac
+					case "${CODE_NAME[1]}" in
+						CentOS-Stream-8* | \
+						MIRACLELINUX-8*  | \
+						Rocky-8*         )
+							local TMZONE=`awk '$1=="timezone" {print $2;}' kickstart/ks.cfg`
+							local NTPSVR=`awk -F '[ \t=]' '$1=="timesource" {print $3;}' kickstart/ks.cfg`
+							sed -i kickstart/ks.cfg                                                   \
+							    -e "s~^\(timezone\).*\$~\1 ${TMZONE} --isUtc --ntpservers=${NTPSVR}~" \
+							    -e '/timesource/d'
+							;;
+						* )
 							;;
 					esac
 					case "${WORK_DIRS}" in
 						*dvd* )
-							sed -i kickstart/ks.cfg    \
-							    -e '/^#cdrom/ s/^#//'  \
-							    -e '/^url /   s/^/#/g'
+							sed -i kickstart/ks.cfg                      \
+							    -e '/^#cdrom/                   s/^#//'  \
+							    -e '/^url /                     s/^/#/g' \
+							    -e '/^repo .* --name=AppStream/ s/^/#/g'
 							;;
 						*     )
 							sed -i kickstart/ks.cfg    \
@@ -2286,7 +2306,7 @@ fncRemaster () {
 			fi
 			# --- mrb:txt.cfg / efi:grub.cfg ----------------------------------
 			case "${CODE_NAME[1]}" in
-				*mini* )
+				mini* )
 					# --- txt.cfg -------------------------------------
 					sed -i isolinux.cfg -e 's/\(timeout\).*$/\1 50/'
 					sed -i prompt.cfg   -e 's/\(timeout\).*$/\1 50/'
