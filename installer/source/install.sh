@@ -39,6 +39,7 @@
 ##	2022/06/19 000.0000 J.Itou         不具合修正
 ##	2022/06/27 000.0000 J.Itou         処理見直し
 ##	2022/06/29 000.0000 J.Itou         処理見直し
+##	2022/11/19 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -948,15 +949,15 @@ _EOT_
 			VIM_ARRY=`find /etc/ -name 'vimrc' -o -name 'virc' -type f | awk '{gsub("\"", ""); gsub(".*/", ""); print $0;}'`
 			if [ "${VIM_ARRY}" = "" ]; then
 				VIM_FILE=`LANG=C vi --version | awk '/^[ \t]*user vimrc file/ {gsub("\"", ""); gsub(".*/", ""); print $0;}'`
-				[ "${VIM_FILE}" != "" ] && [ ! -f ${VIM_FILE} ] && { touch ${VIM_FILE}; chown ${USER_NAME}. ${VIM_FILE}; }
+				[ "${VIM_FILE}" != "" ] && [ ! -f ${VIM_FILE} ] && { touch ${VIM_FILE}; chown ${USER_NAME}: ${VIM_FILE}; }
 			else
 				for VIMRC in ${VIM_ARRY}
 				do
-					[ ! -f .${VIMRC} ] && { touch .${VIMRC}; chown ${USER_NAME}. .${VIMRC}; }
+					[ ! -f .${VIMRC} ] && { touch .${VIMRC}; chown ${USER_NAME}: .${VIMRC}; }
 				done
 			fi
-			[                            ! -f .curlrc     ] && { touch .curlrc;     chown ${USER_NAME}. .curlrc;     }
-			[ "${LNG_FILE}" != "" ] && [ ! -f ${LNG_FILE} ] && { touch ${LNG_FILE}; chown ${USER_NAME}. ${LNG_FILE}; }
+			[                            ! -f .curlrc     ] && { touch .curlrc;     chown ${USER_NAME}: .curlrc;     }
+			[ "${LNG_FILE}" != "" ] && [ ! -f ${LNG_FILE} ] && { touch ${LNG_FILE}; chown ${USER_NAME}: ${LNG_FILE}; }
 			# -----------------------------------------------------------------
 			# 参照: http://vimdoc.sourceforge.net/htmldoc/usr_toc.html
 			#       http://vimdoc.sourceforge.net/htmldoc/options.html
@@ -1083,7 +1084,7 @@ _EOT_
 				password=value
 				domain=value
 _EOT_
-			chown ${USER_NAME}. .credentials
+			chown ${USER_NAME}: .credentials
 			chmod 0600 .credentials
 		popd > /dev/null
 	done
@@ -1448,12 +1449,12 @@ _EOT_
 	if [ ! -d ${DIR_ZONE}/master ]; then
 		fncPrint "--- mkdir master $(fncString ${COL_SIZE} '-')"
 		mkdir -p ${DIR_ZONE}/master
-		chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/master
+		chown ${DNS_USER}:${DNS_GRUP} ${DIR_ZONE}/master
 	fi
 	if [ ! -d ${DIR_ZONE}/slaves ]; then
 		fncPrint "--- mkdir slaves $(fncString ${COL_SIZE} '-')"
 		mkdir -p ${DIR_ZONE}/slaves
-		chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/slaves
+		chown ${DNS_USER}:${DNS_GRUP} ${DIR_ZONE}/slaves
 	fi
 	fncPrint "--- db.xxx $(fncString ${COL_SIZE} '-')"
 	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa ${IP6_RADU[0]}.ip6.arpa
@@ -1470,7 +1471,7 @@ _EOT_
 			 										IN		NS		${SVR_NAME}.${WGP_NAME}.
 _EOT_
 #		chmod 640 ${DIR_ZONE}/master/db.${FIL_NAME}
-		chown ${DNS_USER}.${DNS_GRUP} ${DIR_ZONE}/master/db.${FIL_NAME}
+		chown ${DNS_USER}:${DNS_GRUP} ${DIR_ZONE}/master/db.${FIL_NAME}
 	done
 	#--------------------------------------------------------------------------
 	cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${WGP_NAME}

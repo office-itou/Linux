@@ -47,6 +47,7 @@
 ##	2022/10/15 000.0000 J.Itou         リスト更新: Ubuntu 22.10 (Kinetic Kudu) Beta 追加
 ##	2022/10/15 000.0000 J.Itou         リスト更新: Ubuntu 22.10 (Kinetic Kudu) 変更
 ##	2022/11/01 000.0000 J.Itou         リスト更新: MIRACLELINUX 8.6 / 9.0 追加
+##	2022/11/01 000.0000 J.Itou         リスト更新: Fedora 37 追加・その他修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -90,9 +91,10 @@
 	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                              -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing        Debian_12.xx(bookworm)            " \
 	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                 -                                           kickstart_common.cfg                        20xx-xx-xx   2024-05-31   RHEL_8.x       -                                 " \
 	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                    -                                           kickstart_common.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x       -                                 " \
-	    "fedora         https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora-projects/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso -                                           kickstart_common.cfg                        2021-11-02   2022-12-07   kernel_5.14    -                                 " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso                    -                                           kickstart_common.cfg                        2021-11-02   2022-12-13   kernel_5.14    -                                 " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-netinst-x86_64-36-1.5.iso                    -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
-	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2021-11-15   2029-05-31   RHEL_8.5       -                                 " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-netinst-x86_64-37-1.7.iso                    -                                           kickstart_common.cfg                        2022-11-15   2023-11-14   kernel_6.0      -                                " \
+	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2022-11-14   20xx-xx-xx   RHEL_8.x       -                                 " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-[0-9.]*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x       -                                 " \
 	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.6-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-minimal-x86_64.iso                         -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
 	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.0-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-minimal-x86_64.iso                         -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
@@ -114,9 +116,10 @@
 	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-live-server-amd64.iso                                                                     -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                 -                                           kickstart_common.cfg                        2019-xx-xx   2024-05-31   RHEL_8.x        -                                " \
 	    "centos         https://ftp.yz.yamagata-u.ac.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                    -                                           kickstart_common.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "fedora         https://ftp.yz.yamagata-u.ac.jp/pub/linux/fedora-projects/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso     -                                           kickstart_common.cfg                        2021-11-02   2022-12-07   kernel_5.15     -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                        -                                           kickstart_common.cfg                        2021-11-02   2022-12-13   kernel_5.14     -                                " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-dvd-x86_64-36-1.5.iso                        -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
-	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-dvd1.iso                                                        -                                           kickstart_common.cfg                        2021-11-15   2029-05-31   RHEL_8.5        -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-dvd-x86_64-37-1.7.iso                        -                                           kickstart_common.cfg                        2022-11-15   2023-11-14   kernel_6.0      -                                " \
+	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-dvd1.iso                                                        -                                           kickstart_common.cfg                        2022-11-14   20xx-xx-xx   RHEL_8.x        -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-[0-9.]*-x86_64-dvd.iso                                                         -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x       -                                 " \
 	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.6-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                                 -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
 	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.0-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                                 -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
@@ -2172,11 +2175,9 @@ fncRemaster () {
 					case "${CODE_NAME[1]}" in
 						Fedora-* )
 							VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '-' '{print $5;}')
-							sed -i kickstart/ks.cfg                                                          \
-							    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"                                      \
-							    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"                                      \
-							    -e "/url /  {/${CODE_NAME[0]}/ s/\(${CODE_NAME[0]}\)-[0-9]*/\1-${VER_NUM}/}" \
-							    -e "/repo / {/${CODE_NAME[0]}/ s/\(${CODE_NAME[0]}\)-[0-9]*/\1-${VER_NUM}/}"
+							sed -i kickstart/ks.cfg                          \
+							    -e "/url /  {/repo=${CODE_NAME[0]}/ s/^#//}" \
+							    -e "/repo / {/repo=${CODE_NAME[0]}/ s/^#//}"
 							if [ ${VER_NUM} -ge 36 ]; then
 								sed -i kickstart/ks.cfg                    \
 								    -e '/%anaconda/,/%end/{/^#/! s/^/#/g}'
@@ -2649,18 +2650,20 @@ _EOT_
 						"almalinux"    )	# ･････････････････････････････････
 							INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
 							# --- isolinux.cfg --------------------------------
-							INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
-							INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
-							sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg    | \
-							sed -e 's/^\(label\) linux/\1 autoinst/'                \
-							    -e 's/\(Install\)/Auto \1/'                         \
-							    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"                \
-							    -e "/menu label/a  ${INS_STR}"                    | \
-							sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg   \
-							    -e '/menu default/{/menu default/d}'                \
-							    -e 's/\(timeout\).*$/\1 50/'                        \
-							> isolinux.cfg
-							mv isolinux.cfg isolinux/
+							if [ -f isolinux/isolinux.cfg ]; then
+								INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
+								INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
+								sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg    | \
+								sed -e 's/^\(label\) linux/\1 autoinst/'                \
+								    -e 's/\(Install\)/Auto \1/'                         \
+								    -e "s/\(append.*\$\)/\1 ${INS_CFG}/"                \
+								    -e "/menu label/a  ${INS_STR}"                    | \
+								sed -e "${INS_ROW}r /dev/stdin" isolinux/isolinux.cfg   \
+								    -e '/menu default/{/menu default/d}'                \
+								    -e 's/\(timeout\).*$/\1 50/'                        \
+								> isolinux.cfg
+								mv isolinux.cfg isolinux/
+							fi
 							# --- grub.cfg ------------------------------------
 							INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
 							sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
@@ -2769,6 +2772,9 @@ _EOT_
 						ELT_CATA=isolinux/boot.cat
 					elif [ -f boot/grub/i386-pc/eltorito.img ]; then
 						ELT_BOOT=boot/grub/i386-pc/eltorito.img
+						ELT_CATA=boot.catalog
+					elif [ -f images/eltorito.img ]; then
+						ELT_BOOT=images/eltorito.img
 						ELT_CATA=boot.catalog
 					fi
 					xorriso -as mkisofs \
@@ -3104,6 +3110,7 @@ _EOT_
 #  8.4 :2021-06-21:2021-05-18:          : 4.18.0-305
 #  8.5 :2021-11-15:2021-11-09:          : 4.18.0-348
 #  8.6 :2022-05-16:2022-05-10:2029-05-31: 4.18.0-372.9.1
+#  8.7 :2022-11-14:2022-11-09:          : 4.18.0-425.3.1
 #  9.0 :2022-07-14:2022-05-17:          : 5.14.0-70.13.1
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # [https://en.wikipedia.org/wiki/Fedora_Linux]
@@ -3116,9 +3123,10 @@ _EOT_
 #x32   :                 :2020-04-28:2021-05-25: 5.6
 # 33   :                 :2020-10-27:2021-11-30: 5.8
 # 34   :                 :2021-04-27:2022-05-17: 5.11
-# 35   :                 :2021-11-02:2022-12-07: 5.15
+# 35   :                 :2021-11-02:2022-12-13: 5.14
 # 36   :                 :2022-05-10:2023-05-16: 5.17
-# 37   :                 :2022-10-18:2023-11-22:
+# 37   :                 :2022-11-15:2023-11-14: 6.0
+# 38   :                 :2023-04-18:2024-05-14:
 # --- https://ja.wikipedia.org/wiki/OpenSUSE ----------------------------------
 # [https://en.wikipedia.org/wiki/OpenSUSE]
 # Ver. :コードネーム       :リリース日:サポ期限  :kernel
