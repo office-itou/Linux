@@ -27,6 +27,7 @@
 ##	2022/06/09 000.0000 J.Itou         動作環境追加
 ##	2022/06/11 000.0000 J.Itou         処理見直し
 ##	2022/10/29 000.0000 J.Itou         処理見直し
+##	2022/11/23 000.0000 J.Itou         リスト更新
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get -y install mmdebstrap squashfs-tools xorriso
@@ -58,10 +59,11 @@
 	    "debian         amd64,i386 preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 	    "ubuntu         amd64,i386 preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
-	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
-	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-10-20   20xx-xx-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
+	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
+	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 	)   # 0:区分        1:arch     2:定義ファイル                              3:リリース日 4:サポ終了日 5:備考          6:備考2
+#	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 
 # === 共通関数: string ========================================================
 fncString () {
@@ -440,7 +442,7 @@ fncGet_debian_installer () {
 			fi
 			tar -xzf "${DIR_TOP}/${TAR_INST}" -C "${DIR_WRK}/_work/"
 			cp -p "${DIR_TOP}/splash.png" "${DIR_WRK}/_work/"
-			chown root.root "${DIR_WRK}/_work/splash.png"
+			chown root:root "${DIR_WRK}/_work/splash.png"
 			;;
 		*        )
 			;;
@@ -941,7 +943,7 @@ fncMake_inst_net_sh () {
 		 					syntax on               " Vim5 and later versions support syntax highlighting.
 		_EOT_
 		 				if [ "${USER_NAME}" != "skel" ]; then
-		 					chown ${USER_NAME}. .vimrc
+		 					chown ${USER_NAME}: .vimrc
 		 				fi
 		 				# --- .curlrc -------------------------------------------------
 		 				cat <<- _EOT_ > .curlrc
@@ -951,7 +953,7 @@ fncMake_inst_net_sh () {
 		 					show-error
 		_EOT_
 		 				if [ "${USER_NAME}" != "skel" ]; then
-		 					chown ${USER_NAME}. .curlrc
+		 					chown ${USER_NAME}: .curlrc
 		 				fi
 		 				# --- xinput.d ------------------------------------------------
 		 				if [ "${USER_NAME}" != "skel" ]; then
@@ -966,7 +968,7 @@ fncMake_inst_net_sh () {
 		 					domain=value
 		_EOT_
 		 				if [ "${USER_NAME}" != "skel" ]; then
-		 					chown ${USER_NAME}. .credentials
+		 					chown ${USER_NAME}: .credentials
 		 					chmod 0600 .credentials
 		 				fi
 		 				# --- libfm.conf ----------------------------------------------
@@ -1434,15 +1436,15 @@ fncMake_dvd_image () {
 	# --- メニューの背景 ------------------------------------------------------
 	if [ -f "${DIR_TOP}/splash.png" ]; then
 		cp -p  "${DIR_TOP}/splash.png" "${DIR_WRK}/cdimg/isolinux/"
-		chown root.root "${DIR_WRK}/cdimg/isolinux/splash.png"
+		chown root:root "${DIR_WRK}/cdimg/isolinux/splash.png"
 	fi
 	# --- 変更するパラメーター関係とユーザー設定関係のシェル ------------------
 	cp -p "${DIR_TOP}"/9999-* "${DIR_WRK}/cdimg/live/config.conf.d/"
-	chown root.root "${DIR_WRK}"/cdimg/live/config.conf.d/*
+	chown root:root "${DIR_WRK}"/cdimg/live/config.conf.d/*
 	chmod +x "${DIR_WRK}"/cdimg/live/config.conf.d/*
 	# --- mountpoint="/live/medium" -> "/run/live/medium" の暫定対応 ----------
 	cp -p "${DIR_TOP}/0000-user.conf" "${DIR_WRK}/fsimg/etc/live/config.conf.d/"
-	chown root.root "${DIR_WRK}/fsimg/etc/live/config.conf.d/0000-user.conf"
+	chown root:root "${DIR_WRK}/fsimg/etc/live/config.conf.d/0000-user.conf"
 	chmod +x "${DIR_WRK}/fsimg/etc/live/config.conf.d/0000-user.conf"
 	# --- DVDイメージへEFIファイルの展開 --------------------------------------
 	fncPrint "--- copy EFI directory $(fncString ${COL_SIZE} '-')"
@@ -1453,7 +1455,7 @@ fncMake_dvd_image () {
 	# --- ファイルシステムイメージの作成 --------------------------------------
 	fncPrint "--- make file system image $(fncString ${COL_SIZE} '-')"
 	rm -f "${DIR_WRK}/cdimg/live/filesystem.squashfs"
-	mksquashfs "${DIR_WRK}/fsimg" "${DIR_WRK}/cdimg/live/filesystem.squashfs" -not-reproducible -xattrs -wildcards -noappend -quiet -mem 2G
+	mksquashfs "${DIR_WRK}/fsimg" "${DIR_WRK}/cdimg/live/filesystem.squashfs" -not-reproducible -xattrs -wildcards -noappend -quiet
 	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_WRK}/cdimg/live/filesystem.squashfs" 2> /dev/null | awk '{gsub(/.*\//,"",$6); print $4,$5,$3,$6;}'
 	# --- ブートメニューの作成 ------------------------------------------------
 	fncPrint "--- edit grub.cfg file $(fncString ${COL_SIZE} '-')"
