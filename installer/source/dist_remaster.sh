@@ -48,6 +48,7 @@
 ##	2022/10/15 000.0000 J.Itou         リスト更新: Ubuntu 22.10 (Kinetic Kudu) 変更
 ##	2022/11/01 000.0000 J.Itou         リスト更新: MIRACLELINUX 8.6 / 9.0 追加
 ##	2022/11/01 000.0000 J.Itou         リスト更新: Fedora 37 追加・その他修正
+##	2022/11/23 000.0000 J.Itou         リスト更新: Ubuntu 22.10 (Kinetic Kudu) Daily Build 削除
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -134,11 +135,11 @@
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
 	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
-	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-live-server-amd64.iso                                                                      -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 #	    "suse           https://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Current.iso                                 -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
 #	    "suse           https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                      -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
 
@@ -151,10 +152,10 @@
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2025-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
 	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
-	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
 
 	case "${WORK_DIRS}" in
 		"dist_remaster_mini" )	ARRAY_NAME=("${ARRAY_NAME_MINI[@]}");;
@@ -820,7 +821,7 @@ fncMake_setup_sh () {
 		fi
 #		cp -p ./image/live/config.conf.d/0000-user.conf ./decomp/etc/live/config.conf.d/
 		mv ./image/live/config.conf.d/0000-user.conf ./decomp/etc/live/config.conf.d/
-		chown root.root ./decomp/etc/live/config.conf.d/0000-user.conf
+		chown root:root ./decomp/etc/live/config.conf.d/0000-user.conf
 		chmod +x ./decomp/etc/live/config.conf.d/0000-user.conf
 	fi
 	# -------------------------------------------------------------------------
@@ -1385,7 +1386,7 @@ fncMake_setup_sh () {
 		 					syntax on               " Vim5 and later versions support syntax highlighting.
 		_EOT_
 		 				if [ "${USER_NAME}" != "skel" ]; then
-		 					chown ${USER_NAME}. .vimrc
+		 					chown ${USER_NAME}: .vimrc
 		 				fi
 		 				# --- .curlrc -------------------------------------------------
 		 				cat <<- _EOT_ > .curlrc
@@ -1395,7 +1396,7 @@ fncMake_setup_sh () {
 		 					show-error
 		_EOT_
 		 				if [ "${USER_NAME}" != "skel" ]; then
-		 					chown ${USER_NAME}. .curlrc
+		 					chown ${USER_NAME}: .curlrc
 		 				fi
 		 				# --- xinput.d ------------------------------------------------
 		 				if [ "${USER_NAME}" != "skel" ]; then
@@ -1410,7 +1411,7 @@ fncMake_setup_sh () {
 		 					domain=value
 		_EOT_
 		 				if [ "${USER_NAME}" != "skel" ]; then
-		 					chown ${USER_NAME}. .credentials
+		 					chown ${USER_NAME}: .credentials
 		 					chmod 0600 .credentials
 		 				fi
 		 				# --- libfm.conf ----------------------------------------------
@@ -1537,14 +1538,14 @@ fncExec_setup_sh () {
 	case "${CODE_NAME[0]}" in
 		"debian" )			# ･････････････････････････････････････････････････
 			rm -f ./image/live/filesystem.squashfs
-			mksquashfs ./decomp ./image/live/filesystem.squashfs -noappend -quiet -mem 1G
+			mksquashfs ./decomp ./image/live/filesystem.squashfs -noappend -quiet
 			ls -lht ./image/live/filesystem.squashfs
 			FSIMG_SIZE=`LANG=C ls -lh ./image/live/filesystem.squashfs | awk '{print $5;}'`
 			;;
 		"ubuntu" )			# ･････････････････････････････････････････････････
 			rm -f ./image/casper/filesystem.squashfs.gpg
 			rm -f ./image/casper/filesystem.squashfs
-			mksquashfs ./decomp ./image/casper/filesystem.squashfs -noappend -quiet -mem 1G
+			mksquashfs ./decomp ./image/casper/filesystem.squashfs -noappend -quiet
 			ls -lht ./image/casper/filesystem.squashfs
 			FSIMG_SIZE=`LANG=C ls -lh ./image/casper/filesystem.squashfs | awk '{print $5;}'`
 			;;
@@ -3090,6 +3091,7 @@ _EOT_
 # 21.10:Impish Indri     :2021-10-14:2022-07-14
 # 22.04:Jammy Jellyfish  :2022-04-21:2027-04-21/2032-04-21:LTS
 # 22.10:Kinetic Kudu     :2022-10-20:2023-07-xx
+# 23.04:Lunar Lobster    :2023-04-20:2024-01-20
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
 # [https://en.wikipedia.org/wiki/CentOS]
 # Ver.    :リリース日:RHEL      :メンテ期限:kernel
