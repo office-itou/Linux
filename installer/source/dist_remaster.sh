@@ -49,6 +49,8 @@
 ##	2022/11/01 000.0000 J.Itou         リスト更新: MIRACLELINUX 8.6 / 9.0 追加
 ##	2022/11/01 000.0000 J.Itou         リスト更新: Fedora 37 追加・その他修正
 ##	2022/11/23 000.0000 J.Itou         リスト更新: Ubuntu 22.10 (Kinetic Kudu) Daily Build 削除
+##	2022/11/27 000.0000 J.Itou         メモ欄更新
+##	2022/12/17 000.0000 J.Itou         処理見直し(Ubuntu 22.10 login画面対策)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -671,11 +673,11 @@ fncCreate_success_command () {
 		 			tasksel install ${LIST_TASK}    2>&1 | tee -a ${LOG_NAME}
 		 		fi
 		 	# -------------------------------------------------------------------------
-		 	if [ -f /etc/bind/named.conf.options ]; then
-		 		cp -p /etc/bind/named.conf.options /etc/bind/named.conf.options.original
-		 		sed -i /etc/bind/named.conf.options            \
-		 		    -e 's/\(dnssec-validation\) auto;/\1 no;/'
-		 	fi
+		#	if [ -f /etc/bind/named.conf.options ]; then
+		#		cp -p /etc/bind/named.conf.options /etc/bind/named.conf.options.original
+		#		sed -i /etc/bind/named.conf.options            \
+		#		    -e 's/\(dnssec-validation\) auto;/\1 no;/'
+		#	fi
 		 	# -------------------------------------------------------------------------
 		#		if [ -f /usr/lib/systemd/system/connman.service ]; then
 		#			systemctl disable connman.service 2>&1 | tee -a ${LOG_NAME}
@@ -771,7 +773,7 @@ fncCreate_success_command () {
 		# --- Main --------------------------------------------------------------------
 		 	fncInstallPackages
 		 	fncSetupNetwork
-		 	fncChange_gdm3_configure
+		#	fncChange_gdm3_configure
 		
 		# --- Termination -------------------------------------------------------------
 		 	cp -p /var/log/syslog /target/var/log/installer/syslog.source
@@ -3114,6 +3116,7 @@ _EOT_
 #  8.6 :2022-05-16:2022-05-10:2029-05-31: 4.18.0-372.9.1
 #  8.7 :2022-11-14:2022-11-09:          : 4.18.0-425.3.1
 #  9.0 :2022-07-14:2022-05-17:          : 5.14.0-70.13.1
+#  9.1 :2022-11-xx:2022-11-15:          : 5.14.0-162.6.1
 # --- https://ja.wikipedia.org/wiki/Fedora ------------------------------------
 # [https://en.wikipedia.org/wiki/Fedora_Linux]
 # Ver. :コードネーム     :リリース日:サポ期限  :kernel
