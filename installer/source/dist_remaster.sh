@@ -52,6 +52,8 @@
 ##	2022/11/27 000.0000 J.Itou         メモ欄更新
 ##	2022/12/17 000.0000 J.Itou         処理見直し(Ubuntu 22.10 login画面対策)
 ##	2023/01/03 000.0000 J.Itou         リスト更新: CentOS 取得先変更
+##	2023/02/26 000.0000 J.Itou         リスト更新: Ubuntu 23.04 (Lunar Lobster) Daily Build 追加 / Fedora 35 削除
+##	2023/03/01 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -95,7 +97,6 @@
 	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                              -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing        Debian_12.xx(bookworm)            " \
 	    "centos         https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                           -                                           kickstart_common.cfg                        20xx-xx-xx   2024-05-31   RHEL_8.x       -                                 " \
 	    "centos         https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                              -                                           kickstart_common.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x       -                                 " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso                    -                                           kickstart_common.cfg                        2021-11-02   2022-12-13   kernel_5.14    -                                 " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-netinst-x86_64-36-1.5.iso                    -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-netinst-x86_64-37-1.7.iso                    -                                           kickstart_common.cfg                        2022-11-15   2023-11-14   kernel_6.0      -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2022-11-14   20xx-xx-xx   RHEL_8.x       -                                 " \
@@ -106,6 +107,7 @@
 	    "suse           https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                             -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21 -                                 " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+#	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso                    -                                           kickstart_common.cfg                        2021-11-02   2022-12-13   kernel_5.14    -                                 " \
 #	    "suse           https://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Current.iso                                 -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21 -                                 " \
 #	    "suse           https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                      -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
 
@@ -117,10 +119,9 @@
 	    "ubuntu         http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9.]*-server-amd64.iso                                                            -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-live-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-live-server-amd64.iso                                                                       -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
-	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-live-server-amd64.iso                                                                     -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
+	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-live-server-amd64.iso                                                                     -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
 	    "centos         https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                           -                                           kickstart_common.cfg                        2019-xx-xx   2024-05-31   RHEL_8.x        -                                " \
 	    "centos         https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                              -                                           kickstart_common.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                        -                                           kickstart_common.cfg                        2021-11-02   2022-12-13   kernel_5.14     -                                " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-dvd-x86_64-36-1.5.iso                        -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
 	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-dvd-x86_64-37-1.7.iso                        -                                           kickstart_common.cfg                        2022-11-15   2023-11-14   kernel_6.0      -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-dvd1.iso                                                        -                                           kickstart_common.cfg                        2022-11-14   20xx-xx-xx   RHEL_8.x        -                                " \
@@ -137,12 +138,15 @@
 	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
-	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
+	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
+	    "ubuntu         http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso                                                                -                                           preseed_ubuntu.cfg                          2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+#	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                        -                                           kickstart_common.cfg                        2021-11-02   2022-12-13   kernel_5.14     -                                " \
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-live-server-amd64.iso                                                                      -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
-#	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
-#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/lunar-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 #	    "suse           https://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Current.iso                                 -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
 #	    "suse           https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                      -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
 
@@ -154,11 +158,13 @@
 	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2018-04-26   2023-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2025-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
-	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
+	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
+	    "ubuntu         http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso                                                                -                                           preseed_ubuntu.cfg                          2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
-#	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
-#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)"        \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/lunar-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 
 	case "${WORK_DIRS}" in
 		"dist_remaster_mini" )	ARRAY_NAME=("${ARRAY_NAME_MINI[@]}");;
@@ -1070,7 +1076,8 @@ fncMake_setup_sh () {
 		 		"focal"   | \
 		 		"impish"  | \
 		 		"jammy"   | \
-		 		"kinetic" )
+		 		"kinetic" | \
+		 		"lunar"   )
 		 			if [ "`systemctl is-enabled systemd-udev-settle 2> /dev/null || :`" != "" ]; then
 		 				fncSystemctl disable systemd-udev-settle
 		 			fi
@@ -1943,7 +1950,7 @@ fncRemaster () {
 		fi
 															# Download
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			fncPrint "    get ${DVD_NAME}.iso (${WEB_SIZE} byte)"
+			fncPrint "    get ${DVD_NAME}.iso (`printf \"%'d\n\" ${WEB_SIZE}` byte)"
 			set +e
 			curl -L -# -R -S -f --create-dirs --connect-timeout 60 --retry 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 			set -e
@@ -1952,7 +1959,7 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				fncPrint "    get ${DVD_NAME}.iso (${WEB_SIZE} byte)"
+				fncPrint "    get ${DVD_NAME}.iso (`printf \"%'d\n\" ${WEB_SIZE}` byte)"
 				set +e
 				curl -L -# -R -S -f --create-dirs --connect-timeout 60 --retry 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 				set -e
@@ -1967,7 +1974,7 @@ fncRemaster () {
 		local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 		local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 		if [ "${WEB_SIZE}" != "${DVD_SIZE}" ]; then
-			echo "file size error: ../${DVD_NAME}.iso (${WEB_SIZE} != ${DVD_SIZE})"
+			echo "file size error: ../${DVD_NAME}.iso (`printf \"%'d\n\" ${WEB_SIZE}` != `printf \"%'d\n\" ${DVD_SIZE}`)"
 			return 1
 		fi
 															# Volume ID
@@ -2052,7 +2059,7 @@ fncRemaster () {
 							mkdir -p "nocloud"
 							touch nocloud/user-data			# 必須
 							touch nocloud/meta-data			# 必須
-#							touch nocloud/vendor-data		# 省略可能
+							touch nocloud/vendor-data		# 省略可能
 #							touch nocloud/network-config	# 省略可能
 							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
 							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
@@ -2063,6 +2070,27 @@ fncRemaster () {
 								set -e
 							fi
 							cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
+							;;
+						lunar-desktop-* )
+							if [ ! -f casper/filesystem.squashfs ]; then
+								EFI_IMAG="boot/grub/efi.img"
+								ISO_NAME="${DVD_NAME}-nocloud"
+								# ---------------------------------------------
+								mkdir -p "nocloud"
+								touch nocloud/user-data			# 必須
+								touch nocloud/meta-data			# 必須
+								touch nocloud/vendor-data		# 省略可能
+#								touch nocloud/network-config	# 省略可能
+								CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
+								CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
+								if [ ! -f "../../../${CFG_FILE}" ]; then
+									fncPrint "    get ${CFG_FILE}"
+									set +e
+									curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
+									set -e
+								fi
+								cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
+							fi
 							;;
 						* )	;;
 					esac
@@ -2077,6 +2105,7 @@ fncRemaster () {
 					# Impish_Indri    Ubuntu_21.10(Impish_Indri)
 					# Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS
 					# Kinetic_Kudu    Ubuntu_22.10(Kinetic Kudu)
+					# Lunar_Lobster   Ubuntu_23.04(Lunar Lobster)
 					fncCreate_late_command "./preseed"
 					case "`echo ${CODE_NAME[7]} | sed -e 's/^.*(\(.*\)).*$/\1/'`" in
 						wheezy         | \
@@ -2129,7 +2158,8 @@ fncRemaster () {
 						Hirsute_Hippo   | \
 						Impish_Indri    | \
 						Jammy_Jellyfish | \
-						Kinetic_Kudu    )
+						Kinetic_Kudu    | \
+						Lunar_Lobster   )
 							fncCreate_success_command "./preseed"
 							;;
 						* )	;;
@@ -2568,6 +2598,7 @@ _EOT_
 									    -e 's/\"\(Try or Install Ubuntu\)\"/\"\1 for Japanese language\"/'                                   \
 									    -e 's/textonly\|\(automatic\|only\|maybe\)-ubiquity/noninteractive/'                               | \
 									sed -e "s~\(file\)~${INS_CFG} \1~"                                                                     | \
+									sed -e "s~\(layerfs-path\)~${INS_CFG} \1~"                                                             | \
 									sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                                                     | \
 									sed -e 's/\(set default\)="1"/\1="0"/'                                                                   \
 									    -e 's/\(set timeout\).*$/\1=5/'                                                                      \
@@ -2605,8 +2636,11 @@ _EOT_
 										cp -p ../../../${WALL_FILE} isolinux/splash.png
 										chmod 444 "isolinux/splash.png"
 									fi
-									# === preseed =============================
-									INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"
+									if [ -f "nocloud/user-data" ]; then 
+										INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\" only-ubiquity"
+									else
+										INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"
+									fi
 									# --- grub.cfg ----------------------------
 									INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"\|menuentry "Ubuntu (safe graphics)"/ =' boot/grub/grub.cfg | head -n 1`-1))
 									sed -n '/^menuentry \"Install\|Ubuntu\"/,/^}/p' boot/grub/grub.cfg    | \
