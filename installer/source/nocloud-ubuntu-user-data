@@ -6,17 +6,20 @@ autoinstall:
 #   verbose: true
 #   output:
 # =============================================================================
-  refresh-installer:
-    update: yes
+# refresh-installer:
+#   update: yes
 # =============================================================================
+# apt:
+#   geoip: false
+#   preserve_sources_list: false
+#   primary:
+#   - arches: [amd64, i386]
+#     uri: http://archive.ubuntu.com/ubuntu
+#   - arches: [default]
+#     uri: http://ports.ubuntu.com/ubuntu-ports
   apt:
-    geoip: false
-    preserve_sources_list: false
-    primary:
-    - arches: [amd64, i386]
-      uri: http://archive.ubuntu.com/ubuntu
-    - arches: [default]
-      uri: http://ports.ubuntu.com/ubuntu-ports
+    disable_components:
+    - restricted
 # =============================================================================
 # bootcmd:
 # =============================================================================
@@ -88,12 +91,12 @@ autoinstall:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$96dc48kAIUwc/Glm$PpzBY8VTdo7ZBTStiQWLpsA5m.bmwQdL8auOj5qLexZQK6B0BbMFKTjTuDjRhjoH44g5WdQvk8a0EO7xI6jBR/"
+    password: "$6$anPDIZuiZcoTBDJ0$/uFqPNoXvhmXntEtphF7okvAH37uBaDV3nVtpCNLdZojVD7IjjjxTpmHHbQWOT96omKxNy4pyonllbWyoNQin0"
 # =============================================================================
   locale: ja_JP.UTF-8
   keyboard:
     layout: jp
-# timezone: Asia/Tokyo
+  timezone: Asia/Tokyo
 # =============================================================================
   network:
     version: 2
@@ -118,9 +121,12 @@ autoinstall:
     authorized-keys: []
     install-server: true
 # =============================================================================
-  updates: security
-  package_update: true
-  package_upgrade: true
+  codecs:
+    install: true
+  drivers:
+    install: true
+# =============================================================================
+  updates: all
   packages:
   - standard^
   - apt-transport-https
@@ -155,15 +161,15 @@ autoinstall:
   - thunderbird-locale-ja
 # =============================================================================
   user-data:
-    timezone: Asia/Tokyo
     ntp:
       servers:
       - ntp.nict.jp
+    timezone: Asia/Tokyo
 # =============================================================================
 # memo:
 #   https://github.com/canonical/cloud-init/
 #   https://cloudinit.readthedocs.io/
 #   https://curtin.readthedocs.io/
 # =============================================================================
-# Created at 2022/10/21 21:24:56
+# Created at 2023/03/11 00:21:36
 # === EOF =====================================================================
