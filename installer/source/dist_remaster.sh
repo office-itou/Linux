@@ -54,6 +54,7 @@
 ##	2023/01/03 000.0000 J.Itou         リスト更新: CentOS 取得先変更
 ##	2023/02/26 000.0000 J.Itou         リスト更新: Ubuntu 23.04 (Lunar Lobster) Daily Build 追加 / Fedora 35 削除
 ##	2023/03/01 000.0000 J.Itou         処理見直し
+##	2023/03/10 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -140,6 +141,7 @@
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
 	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
 	    "ubuntu         http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso                                                                -                                           preseed_ubuntu.cfg                          2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
+	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/lunar-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 #	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                        -                                           kickstart_common.cfg                        2021-11-02   2022-12-13   kernel_5.14     -                                " \
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-live-server-amd64.iso                                                                      -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
@@ -2060,7 +2062,7 @@ fncRemaster () {
 							touch nocloud/user-data			# 必須
 							touch nocloud/meta-data			# 必須
 							touch nocloud/vendor-data		# 省略可能
-#							touch nocloud/network-config	# 省略可能
+							touch nocloud/network-config	# 省略可能
 							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
 							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
 							if [ ! -f "../../../${CFG_FILE}" ]; then
@@ -2080,7 +2082,7 @@ fncRemaster () {
 								touch nocloud/user-data			# 必須
 								touch nocloud/meta-data			# 必須
 								touch nocloud/vendor-data		# 省略可能
-#								touch nocloud/network-config	# 省略可能
+								touch nocloud/network-config	# 省略可能
 								CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
 								CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
 								if [ ! -f "../../../${CFG_FILE}" ]; then
@@ -2529,8 +2531,8 @@ _EOT_
 								*server* )
 									case "${CODE_NAME[1]}" in
 #										*canary* | \
-										*live*   ) INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\" ipv6.disable=1";;
-										*server* ) INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"                  ;;
+										*live*   ) INS_CFG="fsck.mode=skip autoinstall \"ds=nocloud-net;s=file:\/\/\/cdrom\/nocloud\/\" ip=dhcp ipv6.disable=1";;
+										*server* ) INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"                                                      ;;
 										* )	;;
 									esac
 									INS_CFG+=" debian-installer\/language=ja keyboard-configuration\/layoutcode\?=jp keyboard-configuration\/modelcode\?=jp106"
@@ -2637,7 +2639,11 @@ _EOT_
 										chmod 444 "isolinux/splash.png"
 									fi
 									if [ -f "nocloud/user-data" ]; then 
-										INS_CFG="autoinstall \"ds=nocloud;s=\/cdrom\/nocloud\/\" only-ubiquity"
+										INS_CFG="fsck.mode=skip autoinstall \"ds=nocloud-net;s=file:\/\/\/cdrom\/nocloud\/\" ip=dhcp ipv6.disable=1"
+										INS_CFG+=" debian-installer\/locale=ja_JP.UTF-8 keyboard-configuration\/layoutcode\?=jp keyboard-configuration\/modelcode\?=jp106"
+#										INS_CFG+=" timezone=Asia\/Tokyo"
+#										INS_CFG+=" automatic-ubiquity noprompt"
+#										INS_CFG+=" iso-url=http:\/\/cdimage.ubuntu.com\/daily-live\/current\/lunar-desktop-amd64\.iso"
 									else
 										INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"
 									fi
