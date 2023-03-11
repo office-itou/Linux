@@ -61,8 +61,8 @@ fncIPv4GetNetmaskBits () {
 		#   verbose: true
 		#   output:
 		# =============================================================================
-		  refresh-installer:
-		    update: yes
+		# refresh-installer:
+		#   update: yes
 _EOT_
 	# --- apt -----------------------------------------------------------------
 	MIRROR_HTTP_MIRROR=`awk '!/#/&&/ mirror\/http\/mirror / {print $4;}' ${PRESEED_CFG}`
@@ -70,14 +70,17 @@ _EOT_
 	MIRROR_HTTP_PORTS=`awk '!/#/&&/ mirror\/http\/mirror / {print $4;}' ${PRESEED_CFG}`
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
+		# apt:
+		#   geoip: false
+		#   preserve_sources_list: false
+		#   primary:
+		#   - arches: [amd64, i386]
+		#     uri: http://${MIRROR_HTTP_MIRROR}/${MIRROR_HTTP_DIRECTORY}
+		#   - arches: [default]
+		#     uri: http://ports.ubuntu.com/ubuntu-ports
 		  apt:
-		    geoip: false
-		    preserve_sources_list: false
-		    primary:
-		    - arches: [amd64, i386]
-		      uri: http://${MIRROR_HTTP_MIRROR}/${MIRROR_HTTP_DIRECTORY}
-		    - arches: [default]
-		      uri: http://ports.ubuntu.com/ubuntu-ports
+		    disable_components:
+		    - restricted
 _EOT_
 	# --- bootcmd -------------------------------------------------------------
 	cat <<- _EOT_ >> ${USER_DATA}
@@ -185,7 +188,7 @@ _EOT_
 		  locale: ${DEBIAN_INSTALLER_LOCALE}
 		  keyboard:
 		    layout: ${KEYBOARD_CONFIGURATION_LAYOUTCODE}
-		# timezone: ${TIME_ZONE}
+		  timezone: ${TIME_ZONE}
 _EOT_
 	# --- network -------------------------------------------------------------
 	NETCFG_CHOOSE_INTERFACE=`awk '!/#/&&/ netcfg\/choose_interface / {print $4;}' ${PRESEED_CFG}`
@@ -259,9 +262,12 @@ _EOT_
 #	               -e 's/fonts-noto\([,| ]\)/fonts-noto-core\1/'`
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
-		  updates: security
-		  package_update: true
-		  package_upgrade: true
+		  codecs:
+		    install: true
+		  drivers:
+		    install: true
+		# =============================================================================
+		  updates: all
 		  packages:
 _EOT_
 	for TASK in ${LIST_TASK}
@@ -282,10 +288,10 @@ _EOT_
 	TIME_ZONE=`awk '!/#/&&/ time\/zone / {print $4;}' ${PRESEED_CFG}`
 	CLOCK_SETUP_NTP_SERVER=`awk '!/#/&&/ clock-setup\/ntp-server / {print $4;}' ${PRESEED_CFG}`
 	cat <<- _EOT_ >> ${USER_DATA}
-		    timezone: ${TIME_ZONE}
 		    ntp:
 		      servers:
 		      - ${CLOCK_SETUP_NTP_SERVER}
+		    timezone: ${TIME_ZONE}
 _EOT_
 #	# --- user-data: runcmd ---------------------------------------------------
 #	cat <<- _EOT_ >> ${USER_DATA}
