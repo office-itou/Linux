@@ -55,6 +55,7 @@
 ##	2023/02/26 000.0000 J.Itou         リスト更新: Ubuntu 23.04 (Lunar Lobster) Daily Build 追加 / Fedora 35 削除
 ##	2023/03/01 000.0000 J.Itou         処理見直し
 ##	2023/03/10 000.0000 J.Itou         処理見直し
+##	2023/03/12 000.0000 J.Itou         リスト更新: Ubuntu 23.04 (Lunar Lobster) Daily Build 変更
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -140,8 +141,9 @@
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-amd64.iso                                                                           -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
 	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
+	    "ubuntu         http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/lunar-live-server-amd64.iso                                                       -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 	    "ubuntu         http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso                                                                -                                           preseed_ubuntu.cfg                          2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
-	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/lunar-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
+	    "ubuntu         http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 #	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                        -                                           kickstart_common.cfg                        2021-11-02   2022-12-13   kernel_5.14     -                                " \
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-live-server-amd64.iso                                                                      -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
@@ -149,6 +151,8 @@
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/lunar-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/lunar-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
+#	    "ubuntu         http://cdimage.ubuntu.com/daily-live/pending/lunar-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 #	    "suse           https://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Current.iso                                 -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
 #	    "suse           https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                      -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
 
@@ -167,6 +171,7 @@
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/kinetic-desktop-amd64.iso                                                                       -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/lunar-desktop-amd64.iso                                                                         -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
+#	    "ubuntu         http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso                                                                  -                                           preseed_ubuntu.cfg                          2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 
 	case "${WORK_DIRS}" in
 		"dist_remaster_mini" )	ARRAY_NAME=("${ARRAY_NAME_MINI[@]}");;
@@ -2049,15 +2054,11 @@ fncRemaster () {
 					fi
 					cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
 					# ---------------------------------------------------------
-					case "${CODE_NAME[1]}" in
-						debian-live-* )
-							;;
-						*canary*      )
-							;;
-						*live-server* )						# --- get user-data
+					if [ "${CODE_NAME[0]}" = "ubuntu" ]; then
+						if [[ "${CODE_NAME[1]}" =~ ^.*-live-server-.*$ ]] || [ ! -f casper/filesystem.squashfs -a ! -f install/filesystem.squashfs ]; then
 							EFI_IMAG="boot/grub/efi.img"
 							ISO_NAME="${DVD_NAME}-nocloud"
-							# -------------------------------------------------
+							# ---------------------------------------------
 							mkdir -p "nocloud"
 							touch nocloud/user-data			# 必須
 							touch nocloud/meta-data			# 必須
@@ -2072,30 +2073,8 @@ fncRemaster () {
 								set -e
 							fi
 							cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
-							;;
-						lunar-desktop-* )
-							if [ ! -f casper/filesystem.squashfs ]; then
-								EFI_IMAG="boot/grub/efi.img"
-								ISO_NAME="${DVD_NAME}-nocloud"
-								# ---------------------------------------------
-								mkdir -p "nocloud"
-								touch nocloud/user-data			# 必須
-								touch nocloud/meta-data			# 必須
-								touch nocloud/vendor-data		# 省略可能
-								touch nocloud/network-config	# 省略可能
-								CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
-								CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
-								if [ ! -f "../../../${CFG_FILE}" ]; then
-									fncPrint "    get ${CFG_FILE}"
-									set +e
-									curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
-									set -e
-								fi
-								cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
-							fi
-							;;
-						* )	;;
-					esac
+						fi
+					fi
 					# oldoldstable    Debian__9.xx(stretch)
 					# oldstable       Debian_10.xx(buster)
 					# stable          Debian_11.xx(bullseye)
