@@ -2055,7 +2055,8 @@ fncRemaster () {
 					cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
 					# ---------------------------------------------------------
 					if [ "${CODE_NAME[0]}" = "ubuntu" ]; then
-						if [[ "${CODE_NAME[1]}" =~ ^.*-live-server-.*$ ]] || [ ! -f casper/filesystem.squashfs -a ! -f install/filesystem.squashfs ]; then
+						if [[ "${CODE_NAME[1]}" =~ ^.*-live-server-.*$ ]] || \
+						 { [[ "${CODE_NAME[1]}" =~ ^.*-desktop-.*$ ]] && [ ! -f casper/filesystem.squashfs ] && [ ! -f install/filesystem.squashfs ]; } then
 							EFI_IMAG="boot/grub/efi.img"
 							ISO_NAME="${DVD_NAME}-nocloud"
 							# ---------------------------------------------
