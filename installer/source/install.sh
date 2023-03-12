@@ -40,6 +40,7 @@
 ##	2022/06/27 000.0000 J.Itou         処理見直し
 ##	2022/06/29 000.0000 J.Itou         処理見直し
 ##	2022/11/19 000.0000 J.Itou         不具合修正
+##	2023/03/12 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -68,7 +69,6 @@ fncUserSetting () {
 	USR_ARRY=(                                                                                                                             \
 	    "administrator:Administrator:1001::XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-5A90A998:1" \
 	)
-
 	# ･････････････････････････････････････････････････････････････････････････
 	NTP_NAME=ntp.nict.jp														# NTPサーバー
 	# ･････････････････････････････････････････････････････････････････････････
@@ -467,19 +467,22 @@ fncInitialize () {
 			CON_NAME=`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`	# 接続名
 			CON_UUID=""																# 接続UUID
 		fi
+	else
+		CON_NAME=`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`	# 接続名
+		CON_UUID=""																# 接続UUID
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
 #	NIC_ARRY=(`LANG=C ip -o link show | awk -F '[: ]*' '!/lo:/ {print $2;}'`)	# NICデバイス名
 #	NIC_ARRY=(`LANG=C ip -4 -o a show scope global noprefixroute | awk -F '[: ]*' '{print $2;}'`)
-	DEV_ARRY=(`LANG=C ip -4 -o a show scope global | awk -F '[: ]*' '{print $2;}'`)
-	for DEV_NAME in ${DEV_ARRY[@]}
+	DEV_NICS=(`LANG=C ip -4 -o a show scope global | awk -F '[: ]*' '{print $2;}'`)
+	for DEV_NAME in ${DEV_NICS[@]}
 	do
 		WRK_DHCP=`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`
 		if [ "${WRK_DHCP}" != "auto" ]; then
 			NIC_ARRY+=(`echo ${DEV_NAME}`)
 		fi
 	done
-	for DEV_NAME in ${DEV_ARRY[@]}
+	for DEV_NAME in ${DEV_NICS[@]}
 	do
 		WRK_DHCP=`fncGetNM "DHCP4"   "${DEV_NAME}" "${CON_UUID}"`
 		if [ "${WRK_DHCP}" = "auto" ]; then
@@ -574,9 +577,9 @@ fncInitialize () {
 	fi
 	# -------------------------------------------------------------------------
 	NUM_HDDS=`ls -l /dev/[hs]d[a-z] 2> /dev/null | wc -l`						# インストール先のHDD台数
-	DEV_ARRY=("/dev/sda" "/dev/sdb" "/dev/sdc" "/dev/sdd" "/dev/sde" "/dev/sdf" "/dev/sdg" "/dev/sdh")
-	HDD_ARRY=(${DEV_ARRY[@]:0:${NUM_HDDS}})
-	USB_ARRY=(${DEV_ARRY[@]:${NUM_HDDS}:${#DEV_ARRY[@]}-${NUM_HDDS}})
+	DEV_HDDS=("/dev/sda" "/dev/sdb" "/dev/sdc" "/dev/sdd" "/dev/sde" "/dev/sdf" "/dev/sdg" "/dev/sdh")
+	HDD_ARRY=(${DEV_HDDS[@]:0:${NUM_HDDS}})
+	USB_ARRY=(${DEV_HDDS[@]:${NUM_HDDS}:${#DEV_HDDS[@]}-${NUM_HDDS}})
 	# -------------------------------------------------------------------------
 	if [ -d "/lib/systemd/" ]; then
 		DIR_SYSD="/lib/systemd"
@@ -676,6 +679,10 @@ fncInitialize () {
 		FUL_DHCP=`echo ${INF_DHCP} | awk '{print $9;}'`
 		DIR_DHCP=`dirname ${FUL_DHCP}`
 		FIL_DHCP=`basename ${FUL_DHCP}`
+	else
+		FUL_DHCP=""
+		DIR_DHCP=""
+		FIL_DHCP=""
 	fi
 
 	# --- samba ---------------------------------------------------------------
@@ -2550,6 +2557,7 @@ fncDebug () {
 	echo "ACT_NMAN=${ACT_NMAN}"													# NetworkManager起動状態
 	echo "CON_NAME=${CON_NAME}"													# 接続名
 	echo "CON_UUID=${CON_UUID}"													# 接続UUID
+	echo "DEV_NICS=${DEV_NICS[@]}"												# NICデバイス名
 	echo "NIC_ARRY=${NIC_ARRY[@]}"												# NICデバイス名
 	echo "IP4_ARRY=${IP4_ARRY[@]}"												# IPv4:IPアドレス/サブネットマスク(bit)
 	echo "IP6_ARRY=${IP6_ARRY[@]}"												# IPv6:IPアドレス/サブネットマスク(bit)
@@ -2606,7 +2614,7 @@ fncDebug () {
 #	echo "SVR_NAME=${SVR_NAME}"													#  〃   ：
 	echo "FLG_VMTL=${FLG_VMTL}"													#  〃   ：0以外でVMware Toolsをインストール
 	echo "NUM_HDDS=${NUM_HDDS}"													#  〃   ：インストール先のHDD台数
-	echo "DEV_ARRY=${DEV_ARRY[@]}"												#  〃   ：
+	echo "DEV_HDDS=${DEV_HDDS[@]}"												#  〃   ：
 	echo "HDD_ARRY=${HDD_ARRY[@]}"												#  〃   ：
 	echo "USB_ARRY=${USB_ARRY[@]}"												#  〃   ：
 #	echo "DEV_RATE=${DEV_RATE[@]}"												#  〃   ：
@@ -2874,12 +2882,11 @@ fncDebug () {
 	fncPrint "--- dns check $(fncString ${COL_SIZE} '-')"
 	set -e
 	# Install dhcp ************************************************************
-#	fncPrint "--- diff ${DIR_DHCP}/dhcpd.conf $(fncString ${COL_SIZE} '-')"
-#	expand -t 4 /etc/dhcp/dhcpd.conf
-#	fncDiff /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.orig
-	fncPrint "--- diff ${DIR_DHCP}/dhcpd.conf $(fncString ${COL_SIZE} '-')"
-	expand -t 4 ${DIR_DHCP}/dhcpd.conf
-#	fncDiff ${DIR_DHCP}/dhcpd.conf ${DIR_DHCP}/dhcpd.conf.orig
+	if [ -f ${DIR_DHCP}/dhcpd.conf ]; then
+		fncPrint "--- diff ${DIR_DHCP}/dhcpd.conf $(fncString ${COL_SIZE} '-')"
+		expand -t 4 ${DIR_DHCP}/dhcpd.conf
+#		fncDiff ${DIR_DHCP}/dhcpd.conf ${DIR_DHCP}/dhcpd.conf.orig
+	fi
 	# Install Webmin **********************************************************
 	if [ -f /etc/webmin/config.orig ]; then
 		fncPrint "--- diff /etc/webmin/config $(fncString ${COL_SIZE} '-')"
@@ -2895,8 +2902,10 @@ fncDebug () {
 	# Setup Samba User ********************************************************
 	fncPrint "--- pdbedit -L $(fncString ${COL_SIZE} '-')"
 	pdbedit -L
-	fncPrint "--- smbclient -N -L ${SVR_NAME} $(fncString ${COL_SIZE} '-')"
-	smbclient -N -L ${SVR_NAME}
+	if [ "`${CMD_WICH} smbclient 2> /dev/null`" != "" ]; then
+		fncPrint "--- smbclient -N -L ${SVR_NAME} $(fncString ${COL_SIZE} '-')"
+		smbclient -N -L ${SVR_NAME}
+	fi
 #	fncPrint "--- smbclient -N -L ${SVR_FQDN} $(fncString ${COL_SIZE} '-')"
 #	smbclient -N -L ${SVR_FQDN}
 	# Install minidlna ********************************************************
