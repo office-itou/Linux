@@ -56,6 +56,7 @@
 ##	2023/03/01 000.0000 J.Itou         処理見直し
 ##	2023/03/10 000.0000 J.Itou         処理見直し
 ##	2023/03/12 000.0000 J.Itou         リスト更新: Ubuntu 23.04 (Lunar Lobster) Daily Build 変更
+##	2023/03/13 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -1120,7 +1121,7 @@ fncMake_setup_sh () {
 		 		fncPrint "--- change avahi-daemon configure $(fncString ${COL_SIZE} '-')"
 		 		OLD_IFS=${IFS}
 		 		IFS=$'\n'
-		 		INS_ROW=$((`sed -n '/^hosts:/ =' /etc/nsswitch.conf | head -n 1`))
+		 		INS_ROW=$((`sed -n '/^hosts:/ =' /etc/nsswitch.conf | awk 'NR==1 {print}'`))
 		 		INS_TXT=`sed -n '/^hosts:/ s/\(hosts:[ \t]*\).*$/\1mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns mdns/p' /etc/nsswitch.conf`
 		 		sed -e '/^hosts:/ s/^/#/' /etc/nsswitch.conf | \
 		 		sed -e "${INS_ROW}a ${INS_TXT}"                \
@@ -2329,8 +2330,8 @@ fncRemaster () {
 					sed -i prompt.cfg   -e 's/\(timeout\).*$/\1 50/'
 #					sed -i gtk.cfg      -e '/^.*menu default.*$/d'
 					sed -i txt.cfg      -e '/^.*menu default.*$/d'
-					INS_ROW=$((`sed -n '/^label/ =' txt.cfg | head -n 1`-1))
-					INS_STR="\\`sed -n '/menu label/p' txt.cfg | head -n 1 | sed -e 's/\(^.*menu\).*/\1 default/'`"
+					INS_ROW=$((`sed -n '/^label/ =' txt.cfg | awk 'NR==1 {print}'`-1))
+					INS_STR="\\`sed -n '/menu label/p' txt.cfg | awk 'NR==1 {print}' | sed -e 's/\(^.*menu\).*/\1 default/'`"
 					if [ ${INS_ROW} -ge 1 ]; then
 						sed -n '/label install/,/append/p' txt.cfg | \
 						sed -e 's/^\(label\) install/\1 autoinst/'   \
@@ -2352,7 +2353,7 @@ fncRemaster () {
 					fi
 					mv txt.cfg.temp txt.cfg
 					# --- grub.cfg ----------------------------------------------------
-					INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+					INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | awk 'NR==1 {print}'`-1))
 					if [ ${INS_ROW} -ge 1 ]; then
 						sed -n '/^menuentry .*['\''"]Install['\''\"]/,/^}/p' boot/grub/grub.cfg | \
 						sed -e 's/\(Install\)/Auto \1/'                                           \
@@ -2384,25 +2385,53 @@ _EOT_
 									# === 日本語化 ============================
 									INS_CFG="locales=ja_JP.UTF-8 timezone=Asia\/Tokyo keyboard-model=jp106 keyboard-layouts=jp"
 									# --- grub.cfg --------------------------------------------------------
-									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
-									sed -n '/^menuentry \"Debian GNU\/Linux.*\"/,/^}/p' boot/grub/grub.cfg | \
-									sed -e 's/\(Debian GNU\/Linux.*)\)/\1 for Japanese language/'            \
-									    -e "s~\(components\)~\1 ${INS_CFG}~"                               | \
-									sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                       \
-									    -e '1i set default=0'                                                \
-									    -e '1i set timeout=5'                                                \
-									> grub.cfg
+									touch grub.cfg
+									if [ "`sed -n '/^menuentry \"Debian GNU\/Linux.*\"/,/^}/p' boot/grub/grub.cfg`" != "" ]; then
+										INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | awk 'NR==1 {print}'`-1))
+										sed -n '/^menuentry \"Debian GNU\/Linux.*\"/,/^}/p' boot/grub/grub.cfg | \
+										sed -e 's/\(Debian GNU\/Linux.*)\)/\1 for Japanese language/'            \
+										    -e "s~\(components\)~\1 ${INS_CFG}~"                               | \
+										sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                       \
+										    -e '1i set default=0'                                                \
+										    -e '1i set timeout=5'                                                \
+										> grub.cfg
+									else
+										INS_ROW=$((`sed -n '/^# Live boot/ =' boot/grub/grub.cfg | awk 'NR==1 {print}'`-1))
+										sed -n '/^menuentry \"Live system (amd64)\"/,/^}/p' boot/grub/grub.cfg | \
+										sed -e 's/\(Live system.*)\)/\1 for Japanese language/'                  \
+										    -e "s~\(components\)~\1 ${INS_CFG}~"                                 \
+										    -e 's/--hotkey=. *//'                                                \
+										    -e '1i # User added menu'                                            \
+										    -e '$ a \\n'                                                       | \
+										sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                       \
+										    -e '1i set default=0'                                                \
+										    -e '1i set timeout=5'                                                \
+										> grub.cfg
+									fi
 									mv grub.cfg boot/grub/
 									# --- menu.cfg ----------------------------
-									INS_ROW=$((`sed -n '/^LABEL/ =' isolinux/menu.cfg | head -n 1`-1))
-									INS_STR=`sed -n 's/LABEL \(Debian GNU\/Linux Live.*\)/\1 for Japanese language/p' isolinux/menu.cfg`
-									sed -n '/LABEL Debian GNU\/Linux Live.*/,/^$/p' isolinux/menu.cfg | \
-									sed -e "s~\(LABEL\) .*~\1 ${INS_STR}~"                              \
-									    -e "s~\(SAY\) .*~\1 \"${INS_STR}\.\.\.\"~"                      \
-									    -e "s~\(APPEND .* components\) \(.*$\)~\1 ${INS_CFG} \2~"     | \
-									sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg                 | \
-									sed -e "s~^\(DEFAULT\) .*$~\1 ${INS_STR}~"                          \
-									> menu.cfg
+									touch menu.cfg
+									if [ "`sed -n '/LABEL Debian GNU\/Linux Live.*/,/^$/p' isolinux/menu.cfg`" != "" ]; then
+										INS_ROW=$((`sed -n '/^LABEL/ =' isolinux/menu.cfg | awk 'NR==1 {print}'`-1))
+										INS_STR=`sed -n 's/LABEL \(Debian GNU\/Linux Live.*\)/\1 for Japanese language/p' isolinux/menu.cfg`
+										sed -n '/LABEL Debian GNU\/Linux Live.*/,/^$/p' isolinux/menu.cfg | \
+										sed -e "s~\(LABEL\) .*~\1 ${INS_STR}~"                              \
+										    -e "s~\(SAY\) .*~\1 \"${INS_STR}\.\.\.\"~"                      \
+										    -e "s~\(APPEND .* components\) \(.*$\)~\1 ${INS_CFG} \2~"     | \
+										sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg                 | \
+										sed -e "s~^\(DEFAULT\) .*$~\1 ${INS_STR}~"                          \
+										> menu.cfg
+									else
+										INS_ROW=$((`sed -n '/^include live.cfg/ =' isolinux/menu.cfg | awk 'NR==1 {print}'`-1))
+										sed -n '/^label live-amd64$/,/^$/p' isolinux/live.cfg         | \
+										sed -e "s~^\(label .*$\)~\1-jp~"                                \
+										    -e "s~\(menu label .*\)~\1 for Japanese language~"          \
+										    -e "s~\(append .* components\) \(.*$\)~\1 ${INS_CFG} \2~"   \
+										    -e '1i # User added menu'                                 | \
+										sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg               \
+										> menu.cfg
+										sed -e '/menu default/d' -i isolinux/live.cfg
+									fi
 									mv menu.cfg isolinux/
 									# -----------------------------------------
 									sed -i isolinux/isolinux.cfg     \
@@ -2410,20 +2439,45 @@ _EOT_
 									# === preseed =============================
 									INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
 									# --- grub.cfg ----------------------------
-									INS_ROW=$((`sed -n '/^menuentry "Graphical Debian Installer"/ =' boot/grub/grub.cfg | head -n 1`-1))
-									sed -n '/^menuentry "Graphical Debian Installer"/,/^}/p' boot/grub/grub.cfg | \
-									sed -e 's/\(menuentry "Graphical Debian\) \(Installer"\)/\1 Auto \2/'         \
-									    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                                   | \
-									sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                            \
-									> grub.cfg
+									touch grub.cfg
+									if [ "`sed -n '/^menuentry \"Graphical Debian Installer\"/,/^}/p' boot/grub/grub.cfg`" != "" ]; then
+										INS_ROW=$((`sed -n '/^menuentry "Graphical Debian Installer"/ =' boot/grub/grub.cfg | awk 'NR==1 {print}'`-1))
+										sed -n '/^menuentry "Graphical Debian Installer"/,/^}/p' boot/grub/grub.cfg | \
+										sed -e 's/\(menuentry "Graphical Debian\) \(Installer"\)/\1 Auto \2/'         \
+										    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                                   | \
+										sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                            \
+										> grub.cfg
+									else
+										INS_ROW=$((`sed -n '/^menuentry ".* for Japanese language"/,/^}/ =' boot/grub/grub.cfg | awk 'END{print}'`))
+										sed -n '/^submenu '\''Graphical installer \.\.\./,/^}/p' boot/grub/install.cfg | \
+										sed -n '/menuentry '\''Install'\''/,/}/p'                                      | \
+										sed -e 's/\(menuentry '\''\)\(Install'\''\)/\1Graphical Auto \2/'                \
+										    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                                        \
+										    -e 's/--hotkey=. *//'                                                        \
+										    -e 's/^[ \t]//g'                                                           | \
+										sed -e "${INS_ROW}r /dev/stdin" boot/grub/grub.cfg                               \
+										> grub.cfg
+									fi
 									mv grub.cfg boot/grub/
 									# --- menu.cfg ----------------------------
-									INS_ROW=$((`sed -n '/^LABEL Graphical Debian Installer/ =' isolinux/menu.cfg | head -n 1`-1))
-									sed -n '/LABEL Graphical Debian Installer$/,/^$/p' isolinux/menu.cfg | \
-									sed -e 's/^\(LABEL Graphical Debian\) \(Installer\)/\1 Auto \2/'       \
-									    -e "s/\(APPEND.*\$\)/\1 ${INS_CFG}/"                             | \
-									sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg                      \
-									> menu.cfg
+									touch menu.cfg
+									if [ "`sed -n '/LABEL Graphical Debian Installer$/,/^$/p' isolinux/menu.cfg`" != "" ]; then
+										INS_ROW=$((`sed -n '/^LABEL Graphical Debian Installer/ =' isolinux/menu.cfg | awk 'NR==1 {print}'`-1))
+										sed -n '/LABEL Graphical Debian Installer$/,/^$/p' isolinux/menu.cfg | \
+										sed -e 's/^\(LABEL Graphical Debian\) \(Installer\)/\1 Auto \2/'       \
+										    -e "s/\(APPEND.*\$\)/\1 ${INS_CFG}/"                             | \
+										sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg                      \
+										> menu.cfg
+									else
+										INS_ROW=$((`sed -n '/^include live.cfg/ =' isolinux/menu.cfg | awk 'NR==1 {print}'`-1))
+										sed -n '/^label installstart$/,/^$/p' isolinux/install.cfg | \
+										sed -e "s~^\(label\) installstart$~\1 install-gui~"          \
+										    -e "s~\(menu label\).*~\1 ^Auto Install~"                \
+										    -e "s~\(append\) \(.*$\)~\1 ${INS_CFG} \2~"            | \
+										sed -e "${INS_ROW}r /dev/stdin" isolinux/menu.cfg            \
+										> menu.cfg
+										sed -e '/menu default/d' -i isolinux/install.cfg
+									fi
 									mv menu.cfg isolinux/
 									# -----------------------------------------
 									OLD_IFS=${IFS}
@@ -2444,11 +2498,19 @@ _EOT_
 									               -e 's/  */ /g'                                                          \
 									               -e 's/^ *//'`
 									IFS=${OLD_IFS}
+									# --- firmware ----------------------------
+#									fncPrint "    firmware download"
+#									CODE_VER="`cat .disk/info | sed -e 's/.*"\(.*\)".*/\L\1/'`"
+#									FIRM_URL="https://cdimage.debian.org/cdimage/unofficial/non-free/firmware/${CODE_VER}/current/firmware.zip"
+#									set +e
+#									curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "firmware/" -O "${FIRM_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
+#									set -e
+#									unzip -q -o firmware/firmware.zip -d firmware/
 									;;
 								* )
 									INS_CFG="auto=true file=\/cdrom\/preseed\/preseed.cfg"
 									# --- grub.cfg ----------------------------
-									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | awk 'NR==1 {print}'`-1))
 									sed -n '/^menuentry .*'\''Install'\''/,/^}/p' boot/grub/grub.cfg | \
 									sed -e 's/\(Install\)/Auto \1/'                                    \
 									    -e "s/\(vmlinuz.*\$\)/\1 ${INS_CFG}/"                          \
@@ -2470,8 +2532,8 @@ _EOT_
 									    -e '/^.*menu default.*$/d'
 									sed -i isolinux/txt.cfg        \
 									    -e '/^.*menu default.*$/d'
-									INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
-									INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | head -n 1 | sed -e 's/\(^.*menu\) label.*$/\1 default/'`"
+									INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | awk 'NR==1 {print}'`-1))
+									INS_STR="\\`sed -n '/menu label/p' isolinux/txt.cfg | awk 'NR==1 {print}' | sed -e 's/\(^.*menu\) label.*$/\1 default/'`"
 									if [ ${INS_ROW} -ge 1 ]; then
 										sed -n '/label install/,/^$/p' isolinux/txt.cfg  | \
 										sed -e 's/^\(label\) install/\1 autoinst/'         \
@@ -2517,7 +2579,7 @@ _EOT_
 									esac
 									INS_CFG+=" debian-installer\/language=ja keyboard-configuration\/layoutcode\?=jp keyboard-configuration\/modelcode\?=jp106"
 									# --- grub.cfg ----------------------------
-									INS_ROW=$((`sed -n '/^menuentry \".*\(Install \)*Ubuntu\( Server\)*\"/ =' boot/grub/grub.cfg | head -n 1`-1))
+									INS_ROW=$((`sed -n '/^menuentry \".*\(Install \)*Ubuntu\( Server\)*\"/ =' boot/grub/grub.cfg | awk 'NR==1 {print}'`-1))
 									sed -n '/^menuentry \".*\(Install \)*Ubuntu\( Server\)*\"/,/^}/p' boot/grub/grub.cfg | \
 									sed -n '0,/\}/p'                                                                     | \
 									sed -e 's/\".*\(Install \)*\(Ubuntu.*\)\"/\"Auto Install \2\"/'                        \
@@ -2534,7 +2596,7 @@ _EOT_
 									mv grub.cfg boot/grub/
 									# --- txt.cfg -----------------------------
 									if [ -f isolinux/txt.cfg ]; then
-										INS_ROW=$((`sed -n '/^label \(install\|live\)$/ =' isolinux/txt.cfg | head -n 1`-1))
+										INS_ROW=$((`sed -n '/^label \(install\|live\)$/ =' isolinux/txt.cfg | awk 'NR==1 {print}'`-1))
 										sed -n '/label \(install\|live\)$/,/append/p' isolinux/txt.cfg | \
 										sed -e 's/^\(label\).*/\1 autoinst/'                             \
 										    -e 's/\(Install\)/Auto \1/'                                  \
@@ -2573,7 +2635,7 @@ _EOT_
 									# === 日本語化 ============================
 									INS_CFG="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode?=jp keyboard-configuration/modelcode?=jp106"
 									# --- grub.cfg ----------------------------
-									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | head -n 1`-1))
+									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | awk 'NR==1 {print}'`-1))
 									sed -n '/^menuentry \"Try Ubuntu.*\"\|\"Ubuntu\"\|\"Try or Install Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
 									sed -e 's/\"\(Try Ubuntu.*\)\"/\"\1 for Japanese language\"/'                                            \
 									    -e 's/\"\(Ubuntu\)\"/\"\1 for Japanese language\"/'                                                  \
@@ -2588,7 +2650,7 @@ _EOT_
 									mv grub.cfg boot/grub/
 									# --- txt.cfg -----------------------------
 									if [ -f isolinux/txt.cfg ]; then
-										INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | head -n 1`-1))
+										INS_ROW=$((`sed -n '/^label/ =' isolinux/txt.cfg | awk 'NR==1 {print}'`-1))
 										sed -n '/label live$/,/append/p' isolinux/txt.cfg            | \
 										sed -e 's/^\(label\) \(.*\)/\1 \2_for_japanese_language/'      \
 										    -e 's/\^\(Try Ubuntu.*\)/\1 for \^Japanese language/'    | \
@@ -2628,7 +2690,7 @@ _EOT_
 										INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"
 									fi
 									# --- grub.cfg ----------------------------
-									INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"\|menuentry "Ubuntu (safe graphics)"/ =' boot/grub/grub.cfg | head -n 1`-1))
+									INS_ROW=$((`sed -n '/^menuentry "Try Ubuntu without installing"\|menuentry "Ubuntu"\|menuentry "Ubuntu (safe graphics)"/ =' boot/grub/grub.cfg | awk 'NR==1 {print}'`-1))
 									sed -n '/^menuentry \"Install\|Ubuntu\"/,/^}/p' boot/grub/grub.cfg    | \
 									sed -e 's/\"Install \(Ubuntu\)\"/\"Auto Install \1\"/'                  \
 									    -e 's/\"\(Ubuntu\)\"/\"Auto Install \1\"/'                          \
@@ -2645,7 +2707,7 @@ _EOT_
 									mv grub.cfg boot/grub/
 									# --- txt.cfg -----------------------------
 									if [ -f isolinux/txt.cfg ]; then
-										INS_ROW=$((`sed -n '/^label live$/ =' isolinux/txt.cfg | head -n 1`-1))
+										INS_ROW=$((`sed -n '/^label live$/ =' isolinux/txt.cfg | awk 'NR==1 {print}'`-1))
 										sed -n '/label live-install$/,/append/p' isolinux/txt.cfg             | \
 										sed -e 's/^\(label\).*/\1 autoinst/'                                    \
 										    -e 's/\(Install\)/Auto \1/'                                         \
@@ -2675,7 +2737,7 @@ _EOT_
 							INS_CFG="inst.ks=cdrom:\/kickstart\/ks.cfg"
 							# --- isolinux.cfg --------------------------------
 							if [ -f isolinux/isolinux.cfg ]; then
-								INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | head -n 1`-1))
+								INS_ROW=$((`sed -n '/^label/ =' isolinux/isolinux.cfg | awk 'NR==1 {print}'`-1))
 								INS_STR="\\`sed -n '/menu default/p' isolinux/isolinux.cfg`"
 								sed -n '/label linux/,/^$/p' isolinux/isolinux.cfg    | \
 								sed -e 's/^\(label\) linux/\1 autoinst/'                \
@@ -2689,7 +2751,7 @@ _EOT_
 								mv isolinux.cfg isolinux/
 							fi
 							# --- grub.cfg ------------------------------------
-							INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
+							INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | awk 'NR==1 {print}'`-1))
 							sed -n '/^menuentry '\''Install/,/^}/p' EFI/BOOT/grub.cfg | \
 							sed -e 's/\(Install\)/Auto \1/'                             \
 							    -e "s/\(linuxefi.*\$\)/\1 ${INS_CFG}/"                | \
@@ -2727,7 +2789,7 @@ _EOT_
 									mv grub.cfg EFI/BOOT/
 									;;
 								* )
-									INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | head -n 1`-1))
+									INS_ROW=$((`sed -n '/^menuentry/ =' EFI/BOOT/grub.cfg | awk 'NR==1 {print}'`-1))
 									sed -n '/menuentry[ \t][ \t]*'\''Installation'\''.*{/,/}/p' EFI/BOOT/grub.cfg             | \
 									sed -e 's/^}/}\n/'                                                                          \
 									    -e 's/'\''\(Installation\)'\''/'\''Auto \1'\''/'                                        \
