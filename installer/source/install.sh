@@ -42,6 +42,7 @@
 ##	2022/11/19 000.0000 J.Itou         不具合修正
 ##	2023/03/12 000.0000 J.Itou         不具合修正
 ##	2023/03/16 000.0000 J.Itou         不具合修正
+##	2023/03/19 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -386,7 +387,7 @@ fncInitialize () {
 	SYS_VRID=`awk -F '=' '$1=="VERSION_ID"       {gsub("\"",""); print $2;}' /etc/os-release`	# バージョン番号
 	SYS_VNUM=`echo ${SYS_VRID:--1} | bc`										#   〃          (取得できない場合は-1)
 	SYS_NOOP=0																	# 対象OS=1,それ以外=0
-	if [ "${SYS_CODE}" = "" -o ${SYS_VNUM} -lt 0 ]; then
+	if [ "${SYS_CODE}" = "" -o `echo "${SYS_VNUM} <= 0" | bc` -ne 0 ]; then
 		if [ -f /etc/lsb-release ]; then
 			SYS_CODE=`awk -F '=' '$1=="DISTRIB_CODENAME" {gsub("\"",""); print $2;}' /etc/lsb-release`	# コード名
 		else
