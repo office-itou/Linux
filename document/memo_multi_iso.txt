@@ -1,0 +1,494 @@
+# *****************************************************************************
+# * 作業中のメモ                                                              *
+# *****************************************************************************
+sudo apt-get install syslinux
+# -----------------------------------------------------------------------------
+sudo rm -rf ./cfg/ \
+            ./iso/ \
+            ./mnt/ \
+            ./wrk/ \
+            ./usb/
+# -----------------------------------------------------------------------------
+mkdir -p    ./cfg/ \
+            ./iso/ \
+            ./mnt/ \
+            ./wrk/ \
+            ./usb/
+# -----------------------------------------------------------------------------
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                              "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/preseed.cfg"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                              "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/sub_late_command.sh"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                      "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/preseed.cfg"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                      "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_late_command.sh"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                      "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_success_command.sh"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.server"                       "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.server/user-data"
+# ::: oldoldstable ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable"     "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable"     "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable"     "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable/gtk" "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable/gtk" "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+# ::: oldstable :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable"        "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable"        "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable"        "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable/gtk"    "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable/gtk"    "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+# ::: stable ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable"           "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable"           "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable"           "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable/gtk"       "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable/gtk"       "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+# ::: testing :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/vmlinuz"
+# ::: debian mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -R -S -f --create-dirs -o "./iso/mini-oldoldstable-amd64.iso"                   "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/netboot/mini.iso"
+curl -L -# -R -S -f --create-dirs -o "./iso/mini-oldstable-amd64.iso"                      "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/netboot/mini.iso"
+curl -L -# -R -S -f --create-dirs -o "./iso/mini-stable-amd64.iso"                         "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/mini.iso"
+curl -L -# -R -S -f --create-dirs -o "./iso/mini-testing-amd64.iso"                        "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso"
+# ::: debian netinst ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-10.13.0-amd64-netinst.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-11.6.0-amd64-netinst.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
+# ::: debian DVD ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-10.13.0-amd64-DVD-1.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-11.6.0-amd64-DVD-1.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso"
+# ::: debian live DVD :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-10.13.0-amd64-lxde.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.6.0-amd64-lxde.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
+# ::: ubuntu mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -R -S -f --create-dirs -o "./iso/mini-bionic-amd64.iso"                         "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso"
+curl -L -# -R -S -f --create-dirs -o "./iso/mini-focal-amd64.iso"                          "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso"
+# ::: ubuntu server :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.6-server-amd64.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-live-server-amd64.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-live-server-amd64.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/kinetic/ubuntu-22.10-live-server-amd64.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/lunar-live-server-amd64.iso"
+# ::: ubuntu desktop ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-desktop-amd64.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-desktop-amd64.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-desktop-amd64.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/ubuntu-22.10-desktop-amd64.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso"
+# -----------------------------------------------------------------------------
+sudo sfdisk /dev/sdb << _EOT_
+label: dos
+,,c,*
+_EOT_
+sudo bash -c 'cat /usr/lib/syslinux/mbr/mbr.bin > /dev/sdb'
+sudo mkdosfs -F32 /dev/sdb1
+# -----------------------------------------------------------------------------
+sudo syslinux /dev/sdb1
+sudo mount /dev/sdb1 ./usb/
+sudo grub-install --target=x86_64-efi --efi-directory=./usb/ --boot-directory=./usb/boot/ --no-floppy --removable
+# -----------------------------------------------------------------------------
+sudo mkdir -p ./usb/syslinux                        \
+              ./usb/images                          \
+              ./usb/preseed/debian                  \
+              ./usb/preseed/ubuntu                  \
+              ./usb/nocloud                         \
+              ./usb/install.amd/debian/testing      \
+              ./usb/install.amd/debian/stable       \
+              ./usb/install.amd/debian/oldstable    \
+              ./usb/install.amd/debian/oldoldstable \
+              ./usb/install.amd/ubuntu/lunar        \
+              ./usb/install.amd/ubuntu/kinetic      \
+              ./usb/install.amd/ubuntu/jammy        \
+              ./usb/install.amd/ubuntu/focal        \
+              ./usb/install.amd/ubuntu/bionic
+# sudo mkdir -p ./usb/.disk/id/
+# sudo touch ./usb/.disk/info
+# -----------------------------------------------------------------------------
+sudo gzip -dk ./cfg/installer-hd-media/testing/boot.img.gz
+sudo mv ./cfg/installer-hd-media/testing/boot.img ./wrk/
+sudo mount -r -o loop ./wrk/boot.img ./mnt/
+sudo cp --preserve=timestamps ./mnt/*.c32 ./usb/syslinux/
+sudo umount ./mnt
+sudo rm ./wrk/boot.img
+# -----------------------------------------------------------------------------
+#sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/testing/!(boot.img.gz)      ./usb/install.amd/
+sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/testing/!(boot.img.gz)      ./usb/install.amd/debian/testing/
+sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/stable/!(boot.img.gz)       ./usb/install.amd/debian/stable/
+sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/oldstable/!(boot.img.gz)    ./usb/install.amd/debian/oldstable/
+sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/oldoldstable/!(boot.img.gz) ./usb/install.amd/debian/oldoldstable/
+# -----------------------------------------------------------------------------
+sudo mount -r -o loop ./iso/lunar-live-server-amd64.iso ./mnt/
+sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/lunar/
+sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/lunar/
+sudo umount ./mnt
+sudo mount -r -o loop ./iso/ubuntu-22.10-live-server-amd64.iso ./mnt/
+sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/kinetic/
+sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/kinetic/
+sudo umount ./mnt
+sudo mount -r -o loop ./iso/ubuntu-22.04.2-live-server-amd64.iso ./mnt/
+sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/jammy/
+sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/jammy/
+sudo umount ./mnt
+sudo mount -r -o loop ./iso/ubuntu-20.04.6-live-server-amd64.iso ./mnt/
+sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/focal/
+sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/focal/
+sudo umount ./mnt
+sudo mount -r -o loop ./iso/ubuntu-18.04.6-server-amd64.iso ./mnt/
+sudo cp --preserve=timestamps -r ./mnt/install/vmlinuz                                ./usb/install.amd/ubuntu/bionic/
+sudo cp --preserve=timestamps -r ./mnt/install/initrd.gz                              ./usb/install.amd/ubuntu/bionic/
+sudo umount ./mnt
+# -----------------------------------------------------------------------------
+#sudo cp --preserve=timestamps    ./cfg/debian/preseed.cfg                             ./usb/preseed/debian/
+sudo cp --preserve=timestamps    ./cfg/debian/sub_late_command.sh                     ./usb/preseed/debian/
+#sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/preseed.cfg                     ./usb/preseed/ubuntu/
+sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/sub_late_command.sh             ./usb/preseed/ubuntu/
+sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/sub_success_command.sh          ./usb/preseed/ubuntu/
+sudo cp --preserve=timestamps    ./cfg/ubuntu.server/user-data                        ./usb/nocloud/
+sudo touch ./usb/nocloud/meta-data
+sudo touch ./usb/nocloud/vendor-data
+sudo touch ./usb/nocloud/network-config
+# -----------------------------------------------------------------------------
+sed -e 's~ /cdrom/preseed/~ /media/preseed/debian/~g' ./cfg/debian/preseed.cfg         | sudo tee ./usb/preseed/debian/preseed.cfg > /dev/null
+sed -e 's~ /cdrom/preseed/~ /media/preseed/ubuntu/~g' ./cfg/ubuntu.desktop/preseed.cfg | sudo tee ./usb/preseed/ubuntu/preseed.cfg > /dev/null
+# -----------------------------------------------------------------------------
+cat << '_EOT_' | sudo tee ./usb/boot/grub/grub.cfg > /dev/null
+set timeout=5
+set default=0
+
+# insmod part_acorn
+# insmod part_amiga
+# insmod part_apple
+# insmod part_bsd
+# insmod part_dfly
+# insmod part_dvh
+# insmod part_gpt
+# insmod part_msdos
+# insmod part_plan
+# insmod part_sun
+# insmod part_sunpc
+
+# insmod font
+
+if loadfont /boot/grub/fonts/unicode.pf2 ; then
+  set gfxmode=auto
+  set gfxpayload=keep
+  insmod efi_gop
+  insmod efi_uga
+  insmod video_bochs
+  insmod video_cirrus
+  insmod gfxterm
+  insmod png
+  terminal_output gfxterm
+fi
+
+if background_image /isolinux/splash.png; then
+  set color_normal=light-gray/black
+  set color_highlight=white/black
+elif background_image /splash.png; then
+  set color_normal=light-gray/black
+  set color_highlight=white/black
+else
+  set menu_color_normal=cyan/blue
+  set menu_color_highlight=white/blue
+fi
+
+insmod play
+play 960 440 1 0 4 440 1
+set background_color=black
+
+set lang=ja_JP
+
+menuentry 'Install (Debian 12:testing)' {
+    set gfxpayload=keep
+    set isofile="/images/debian-testing-amd64-netinst.iso"
+    set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (testing)'"
+    set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+    rmmod tpm
+    linux   ($root)/install.amd/debian/testing/vmlinuz $isoscan $locales fsck.mode=skip $preseed ---
+    initrd  ($root)/install.amd/debian/testing/initrd.gz
+}
+menuentry 'Install (Debian 11:stable)' {
+    set gfxpayload=keep
+    set isofile="/images/debian-11.6.0-amd64-netinst.iso"
+    set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (stable - 11.6)'"
+    set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+    rmmod tpm
+    linux   ($root)/install.amd/debian/stable/vmlinuz $isoscan $locales fsck.mode=skip $preseed ---
+    initrd  ($root)/install.amd/debian/stable/initrd.gz
+}
+menuentry 'Install (Debian 10:oldstable)' {
+    set gfxpayload=keep
+    set isofile="/images/debian-10.13.0-amd64-netinst.iso"
+    set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (oldstable - 10.13)'"
+    set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+    rmmod tpm
+    linux   ($root)/install.amd/debian/oldstable/vmlinuz $isoscan $locales fsck.mode=skip $preseed ---
+    initrd  ($root)/install.amd/debian/oldstable/initrd.gz
+}
+menuentry 'Install (Debian 9:oldoldstable)' {
+    set gfxpayload=keep
+    set isofile="/images/debian-9.13.0-amd64-netinst.iso"
+    set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (oldstable - 9.13)'"
+    set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+    rmmod tpm
+    linux   ($root)/install.amd/debian/oldoldstable/vmlinuz $isoscan $locales fsck.mode=skip $preseed ---
+    initrd  ($root)/install.amd/debian/oldoldstable/initrd.gz
+}
+menuentry 'Install (Ubuntu 23.04:Lunar Lobster)' {
+    set gfxpayload=keep
+    set isofile="/images/lunar-live-server-amd64.iso"
+    set isoscan="iso-scan/filename=$isofile"
+    set nocloud="autoinstall \"ds=nocloud-net;s=file:///isodevice/nocloud/\""
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+    rmmod tpm
+    linux   ($root)/install.amd/ubuntu/lunar/vmlinuz $isoscan $locales fsck.mode=skip boot=casper $nocloud ip=dhcp ipv6.disable=1 ---
+    initrd  ($root)/install.amd/ubuntu/lunar/initrd
+}
+menuentry 'Install (Ubuntu 22.10:Kinetic Kudu)' {
+    set gfxpayload=keep
+    set isofile="/images/ubuntu-22.10-live-server-amd64.iso"
+    set isoscan="iso-scan/filename=$isofile"
+    set nocloud="autoinstall \"ds=nocloud-net;s=file:///isodevice/nocloud/\""
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+    rmmod tpm
+    linux   ($root)/install.amd/ubuntu/kinetic/vmlinuz $isoscan $locales fsck.mode=skip boot=casper $nocloud ip=dhcp ipv6.disable=1 ---
+    initrd  ($root)/install.amd/ubuntu/kinetic/initrd
+}
+menuentry 'Install (Ubuntu 22.04:Jammy Jellyfish)' {
+    set gfxpayload=keep
+    set isofile="/images/ubuntu-22.04.2-live-server-amd64.iso"
+    set isoscan="iso-scan/filename=$isofile"
+    set nocloud="autoinstall \"ds=nocloud-net;s=file:///isodevice/nocloud/\""
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+    rmmod tpm
+    linux   ($root)/install.amd/ubuntu/jammy/vmlinuz $isoscan $locales fsck.mode=skip boot=casper $nocloud ip=dhcp ipv6.disable=1 ---
+    initrd  ($root)/install.amd/ubuntu/jammy/initrd
+}
+menuentry 'Install (Ubuntu 20.04:Focal Fossa)' {
+    set gfxpayload=keep
+    set isofile="/images/ubuntu-20.04.6-live-server-amd64.iso"
+    set isoscan="iso-scan/filename=$isofile"
+    set nocloud="autoinstall \"ds=nocloud-net;s=file:///isodevice/nocloud/\""
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+    rmmod tpm
+    linux   ($root)/install.amd/ubuntu/focal/vmlinuz $isoscan $locales fsck.mode=skip boot=casper $nocloud ip=dhcp ipv6.disable=1 ---
+    initrd  ($root)/install.amd/ubuntu/focal/initrd
+}
+menuentry 'Install (Ubuntu 18.04:Bionic Beaver)' {
+    set gfxpayload=keep
+    set isofile="/images/ubuntu-18.04.6-server-amd64.iso"
+    set isoscan="iso-scan/filename=$isofile"
+    set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+    rmmod tpm
+    linux   ($root)/install.amd/ubuntu/bionic/vmlinuz $isoscan $locales fsck.mode=skip $preseed ---
+    initrd  ($root)/install.amd/ubuntu/bionic/initrd.gz
+}
+submenu 'loopback menu ...' {
+    menuentry 'Install (Debian 12:testing)' {
+        set gfxpayload=keep
+        set isofile="/images/debian-testing-amd64-netinst.iso"
+        set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (testing)'"
+        set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+        rmmod tpm
+        loopback loop ($root)$isofile
+        linux   (loop)/install.amd/vmlinuz $isoscan $locales fsck.mode=skip $preseed ---
+        initrd  (loop)/install.amd/initrd.gz
+    }
+    menuentry 'Install (Debian 11:stable)' {
+        set gfxpayload=keep
+        set isofile="/images/debian-11.6.0-amd64-netinst.iso"
+        set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (stable - 11.6)'"
+        set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+        rmmod tpm
+        loopback loop ($root)$isofile
+        linux   (loop)/install.amd/vmlinuz $isoscan $locales fsck.mode=skip $preseed ---
+        initrd  (loop)/install.amd/initrd.gz
+    }
+    menuentry 'Install (Debian 10:oldstable)' {
+        set gfxpayload=keep
+        set isofile="/images/debian-10.13.0-amd64-netinst.iso"
+        set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (oldstable - 10.13)'"
+        set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+        rmmod tpm
+        loopback loop ($root)$isofile
+        linux   (loop)/install.amd/vmlinuz $isoscan $locales fsck.mode=skip $preseed ---
+        initrd  (loop)/install.amd/initrd.gz
+    }
+    menuentry 'Install (Debian 9:oldoldstable)' {
+        set gfxpayload=keep
+        set isofile="/images/debian-9.13.0-amd64-netinst.iso"
+        set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (oldstable - 9.13)'"
+        set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+        rmmod tpm
+        loopback loop ($root)$isofile
+        linux   (loop)/install.amd/vmlinuz $isoscan $locales fsck.mode=skip $preseed ---
+        initrd  (loop)/install.amd/initrd.gz
+    }
+    menuentry 'Install (Ubuntu 23.04:Lunar Lobster)' {
+        set gfxpayload=keep
+        set isofile="/images/lunar-live-server-amd64.iso"
+        set isoscan="iso-scan/filename=$isofile"
+        set nocloud="autoinstall \"ds=nocloud-net;s=file:///isodevice/nocloud/\""
+        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+        rmmod tpm
+        loopback loop ($root)$isofile
+        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper $nocloud ip=dhcp ipv6.disable=1 ---
+        initrd  (loop)/casper/initrd
+    }
+    menuentry 'Install (Ubuntu 22.10:Kinetic Kudu)' {
+        set gfxpayload=keep
+        set isofile="/images/ubuntu-22.10-live-server-amd64.iso"
+        set isoscan="iso-scan/filename=$isofile"
+        set nocloud="autoinstall \"ds=nocloud-net;s=file:///isodevice/nocloud/\""
+        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+        rmmod tpm
+        loopback loop ($root)$isofile
+        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper $nocloud ip=dhcp ipv6.disable=1 ---
+        initrd  (loop)/casper/initrd
+    }
+    menuentry 'Install (Ubuntu 22.04:Jammy Jellyfish)' {
+        set gfxpayload=keep
+        set isofile="/images/ubuntu-22.04.2-live-server-amd64.iso"
+        set isoscan="iso-scan/filename=$isofile"
+        set nocloud="autoinstall \"ds=nocloud-net;s=file:///isodevice/nocloud/\""
+        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+        rmmod tpm
+        loopback loop ($root)$isofile
+        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper $nocloud ip=dhcp ipv6.disable=1 ---
+        initrd  (loop)/casper/initrd
+    }
+    menuentry 'Install (Ubuntu 20.04:Focal Fossa)' {
+        set gfxpayload=keep
+        set isofile="/images/ubuntu-20.04.6-live-server-amd64.iso"
+        set isoscan="iso-scan/filename=$isofile"
+        set nocloud="autoinstall \"ds=nocloud-net;s=file:///isodevice/nocloud/\""
+        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+        rmmod tpm
+        loopback loop ($root)$isofile
+        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper $nocloud ip=dhcp ipv6.disable=1 ---
+        initrd  (loop)/casper/initrd
+    }
+    menuentry 'Install (Ubuntu 18.04:Bionic Beaver)' {
+        set gfxpayload=keep
+        set isofile="/images/ubuntu-18.04.6-server-amd64.iso"
+        set isoscan="iso-scan/filename=$isofile"
+        set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+        rmmod tpm
+        loopback loop ($root)$isofile
+        linux   (loop)/install/vmlinuz $isoscan $locales fsck.mode=skip $preseed ---
+        initrd  (loop)/install/initrd.gz
+    }
+}
+_EOT_
+# -----------------------------------------------------------------------------
+cat << '_EOT_' | sudo tee ./usb/syslinux/syslinux.cfg > /dev/null
+timeout 50
+default install
+ui vesamenu.c32
+prompt 0
+
+menu resolution 800x600
+
+menu color screen       * #00000000 #00000000 none
+menu color title        * #FFFFFFFF *
+menu color border       * #00000000 #00000000 none
+menu color sel          * #ffffffff #76a1d0ff *
+menu color hotsel       1;7;37;40 #ffffffff #76a1d0ff *
+menu color tabmsg       * #ffffffff #00000000 *
+menu color help         37;40 #ffdddd00 #00000000 none
+
+menu tabmsg Press ENTER to boot or TAB to edit a menu entry
+
+set lang=ja_JP
+set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+export locales
+
+menu title _Debian GNU/Linux installer menu (BIOS mode)
+
+label install_testing
+	menu label Install (Debian 12:testing)
+	set gfxpayload=keep
+	set isofile="/images/debian-testing-amd64-netinst.iso"
+	set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (testing)'"
+	set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+	set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	rmmod tpm
+	kernel  /install.amd/debian/testing/vmlinuz
+	initrd  /install.amd/debian/testing/initrd.gz
+	append  $isoscan $locales fsck.mode=skip $preseed ---
+label install_stable
+	menu label Install (Debian 11:stable)
+	set gfxpayload=keep
+	set isofile="/images/debian-11.6.0-amd64-netinst.iso"
+	set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (stable - 11.6)'"
+	set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+	set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	rmmod tpm
+	kernel  /install.amd/debian/stable/vmlinuz
+	initrd  /install.amd/debian/stable/initrd.gz
+	append  $isoscan $locales fsck.mode=skip $preseed ---
+label install_oldstable
+	menu label Install (Debian 10:oldstable)
+	set gfxpayload=keep
+	set isofile="/images/debian-10.13.0-amd64-netinst.iso"
+	set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (oldstable - 10.13)'"
+	set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+	set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	rmmod tpm
+	kernel  /install.amd/debian/oldstable/vmlinuz
+	initrd  /install.amd/debian/oldstable/initrd.gz
+	append  $isoscan $locales fsck.mode=skip $preseed ---
+label install_oldoldstable
+	menu label Install (Debian 9:oldoldstable)
+	set gfxpayload=keep
+	set isofile="/images/debian-9.13.0-amd64-netinst.iso"
+	set isoscan="iso-scan/ask_which_iso='[sdb1] '$isofile' (oldstable - 9.13)'"
+	set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+	set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	rmmod tpm
+	kernel  /install.amd/debian/oldoldstable/vmlinuz
+	initrd  /install.amd/debian/oldoldstable/initrd.gz
+	append  $isoscan $locales fsck.mode=skip $preseed ---
+label install_bionic
+	menu label Install (Ubuntu 18.04:Bionic Beaver)
+	set gfxpayload=keep
+	set isofile="/images/ubuntu-18.04.6-server-amd64.iso"
+	set isoscan="iso-scan/filename=$isofile"
+	set preseed="auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg"
+	set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	rmmod tpm
+	loopback loop ($root)$isofile
+	kernel  (loop)/install/vmlinuz
+	initrd  (loop)/install/initrd.gz
+	append  $isoscan $locales fsck.mode=skip $preseed ---
+
+_EOT_
+# -----------------------------------------------------------------------------
+sudo cp --preserve=timestamps    ./iso/debian-testing-amd64-netinst.iso               ./usb/images/
+sudo cp --preserve=timestamps    ./iso/debian-11.6.0-amd64-netinst.iso                ./usb/images/
+sudo cp --preserve=timestamps    ./iso/debian-10.13.0-amd64-netinst.iso               ./usb/images/
+sudo cp --preserve=timestamps    ./iso/debian-9.13.0-amd64-netinst.iso                ./usb/images/
+sudo cp --preserve=timestamps    ./iso/ubuntu-18.04.6-server-amd64.iso                ./usb/images/
+sudo cp --preserve=timestamps    ./iso/ubuntu-20.04.6-live-server-amd64.iso           ./usb/images/
+sudo cp --preserve=timestamps    ./iso/ubuntu-22.04.2-live-server-amd64.iso           ./usb/images/
+sudo cp --preserve=timestamps    ./iso/ubuntu-22.10-live-server-amd64.iso             ./usb/images/
+sudo cp --preserve=timestamps    ./iso/lunar-live-server-amd64.iso                    ./usb/images/
+# -----------------------------------------------------------------------------
+sudo umount ./usb
+# =============================================================================
