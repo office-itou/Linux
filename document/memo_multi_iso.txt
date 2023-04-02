@@ -132,7 +132,7 @@ sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/testing/!(boot.img.gz)
 sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/stable/!(boot.img.gz)       ./usb/install.amd/debian/stable/
 sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/oldstable/!(boot.img.gz)    ./usb/install.amd/debian/oldstable/
 sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/oldoldstable/!(boot.img.gz) ./usb/install.amd/debian/oldoldstable/
-sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/focal/!(boot.img.gz)        ./usb/install.amd/ubuntu/focal/
+#sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/focal/!(boot.img.gz)        ./usb/install.amd/ubuntu/focal/
 sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/bionic/!(boot.img.gz)       ./usb/install.amd/ubuntu/bionic/
 # -----------------------------------------------------------------------------
 sudo mount -r -o loop ./iso/lunar-live-server-amd64.iso ./mnt/
@@ -147,10 +147,10 @@ sudo mount -r -o loop ./iso/ubuntu-22.04.2-live-server-amd64.iso ./mnt/
 sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/jammy/
 sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/jammy/
 sudo umount ./mnt
-#sudo mount -r -o loop ./iso/ubuntu-20.04.6-live-server-amd64.iso ./mnt/
-#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/focal/
-#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/focal/
-#sudo umount ./mnt
+sudo mount -r -o loop ./iso/ubuntu-20.04.6-live-server-amd64.iso ./mnt/
+sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/focal/
+sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/focal/
+sudo umount ./mnt
 #sudo mount -r -o loop ./iso/ubuntu-18.04.6-server-amd64.iso ./mnt/
 #sudo cp --preserve=timestamps -r ./mnt/install/vmlinuz                                ./usb/install.amd/ubuntu/bionic/
 #sudo cp --preserve=timestamps -r ./mnt/install/initrd.gz                              ./usb/install.amd/ubuntu/bionic/
@@ -196,7 +196,7 @@ set default=0
 # insmod font
 
 if loadfont /boot/grub/fonts/unicode.pf2 ; then
-  set gfxmode=800x600
+  set gfxmode=auto
   set gfxpayload=keep
   insmod efi_gop
   insmod efi_uga
@@ -302,7 +302,7 @@ menuentry 'Install (Ubuntu 20.04:Focal Fossa)' {
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
     linux   ($root)/install.amd/ubuntu/focal/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
-    initrd  ($root)/install.amd/ubuntu/focal/initrd.gz
+    initrd  ($root)/install.amd/ubuntu/focal/initrd
 }
 menuentry 'Install (Ubuntu 18.04:Bionic Beaver)' {
     set gfxpayload=keep
