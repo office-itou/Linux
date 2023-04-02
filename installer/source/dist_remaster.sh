@@ -59,6 +59,7 @@
 ##	2023/03/13 000.0000 J.Itou         処理見直し
 ##	2023/03/16 000.0000 J.Itou         不具合修正
 ##	2023/03/23 000.0000 J.Itou         リスト更新:
+##	2023/04/01 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -159,6 +160,7 @@
 #	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-xfce.iso                                     -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 #	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_alpha2/amd64/iso-dvd/debian-bookworm-DI-alpha2-amd64-DVD-1.iso                                -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing        Debian_12.xx(bookworm)            " \
 #	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-dvd-x86_64-35-1.2.iso                        -                                           kickstart_common.cfg                        2021-11-02   2022-12-13   kernel_5.14     -                                " \
+#	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9.]*-live-server-amd64.iso                                                                      -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-live-server-amd64.iso                                                                      -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 #	    "ubuntu         https://releases.ubuntu.com/impish/ubuntu-[0-9.]*-desktop-amd64.iso                                                                          -                                           preseed_ubuntu.cfg                          2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 #	    "ubuntu         http://cdimage.ubuntu.com/daily-canary/current/kinetic-desktop-canary-amd64.iso                                                              -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
@@ -2589,7 +2591,7 @@ _EOT_
 										*server* ) INS_CFG="file=\/cdrom\/preseed\/preseed.cfg auto=true"                                                      ;;
 										* )	;;
 									esac
-									INS_CFG+=" debian-installer\/language=ja keyboard-configuration\/layoutcode\?=jp keyboard-configuration\/modelcode\?=jp106"
+									INS_CFG+=" debian-installer\/language=ja keyboard-configuration\/layoutcode\=jp keyboard-configuration\/modelcode\=jp106"
 									# --- grub.cfg ----------------------------
 									INS_ROW=$((`sed -n '/^menuentry \".*\(Install \)*Ubuntu\( Server\)*\"/ =' boot/grub/grub.cfg | awk 'NR==1 {print}'`-1))
 									sed -n '/^menuentry \".*\(Install \)*Ubuntu\( Server\)*\"/,/^}/p' boot/grub/grub.cfg | \
@@ -2645,7 +2647,7 @@ _EOT_
 								*desktop* )					# --- preseed.cfg -
 									# https://manpages.ubuntu.com/manpages/jammy/man7/casper.7.html
 									# === 日本語化 ============================
-									INS_CFG="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode?=jp keyboard-configuration/modelcode?=jp106"
+									INS_CFG="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 									# --- grub.cfg ----------------------------
 									INS_ROW=$((`sed -n '/^menuentry/ =' boot/grub/grub.cfg | awk 'NR==1 {print}'`-1))
 									sed -n '/^menuentry \"Try Ubuntu.*\"\|\"Ubuntu\"\|\"Try or Install Ubuntu\"/,/^}/p' boot/grub/grub.cfg | \
@@ -2694,7 +2696,7 @@ _EOT_
 									fi
 									if [ -f "nocloud/user-data" ]; then 
 										INS_CFG="fsck.mode=skip autoinstall \"ds=nocloud-net;s=file:\/\/\/cdrom\/nocloud\/\" ip=dhcp ipv6.disable=1"
-										INS_CFG+=" debian-installer\/locale=ja_JP.UTF-8 keyboard-configuration\/layoutcode\?=jp keyboard-configuration\/modelcode\?=jp106"
+										INS_CFG+=" debian-installer\/locale=ja_JP.UTF-8 keyboard-configuration\/layoutcode\=jp keyboard-configuration\/modelcode\=jp106"
 #										INS_CFG+=" timezone=Asia\/Tokyo"
 #										INS_CFG+=" automatic-ubiquity noprompt"
 #										INS_CFG+=" iso-url=http:\/\/cdimage.ubuntu.com\/daily-live\/current\/lunar-desktop-amd64\.iso"
