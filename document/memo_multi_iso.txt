@@ -166,11 +166,19 @@ sudo touch ./usb/nocloud/meta-data
 sudo touch ./usb/nocloud/vendor-data
 sudo touch ./usb/nocloud/network-config
 # -----------------------------------------------------------------------------
-sed -e 's~ /cdrom/preseed/~ /media/preseed/debian/~g' ./cfg/debian/preseed.cfg         | sudo tee ./usb/preseed/debian/preseed.cfg > /dev/null
-sed -e 's~ /cdrom/preseed/~ /media/preseed/ubuntu/~g' ./cfg/ubuntu.desktop/preseed.cfg | sudo tee ./usb/preseed/ubuntu/preseed.cfg > /dev/null
+sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/debian/~g' ./cfg/debian/preseed.cfg         | sudo tee ./usb/preseed/debian/preseed.cfg > /dev/null
+sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/ubuntu/~g' ./cfg/ubuntu.desktop/preseed.cfg | sudo tee ./usb/preseed/ubuntu/preseed.cfg > /dev/null
+sed -e 's/bind9-utils/bind9utils/'                          \
+    -e 's/bind9-dnsutils/dnsutils/'                         \
+           ./usb/preseed/debian/preseed.cfg                 \
+| sudo tee ./usb/preseed/debian/preseed_old.cfg > /dev/null
+sed -e 's/bind9-utils/bind9utils/'                          \
+    -e 's/bind9-dnsutils/dnsutils/'                         \
+           ./usb/preseed/ubuntu/preseed.cfg                 \
+| sudo tee ./usb/preseed/ubuntu/preseed_old.cfg > /dev/null
 # -----------------------------------------------------------------------------
 cat << '_EOT_' | sudo tee ./usb/boot/grub/grub.cfg > /dev/null
-set timeout=5
+# set timeout=5
 set default=0
 
 # insmod part_acorn
@@ -188,7 +196,7 @@ set default=0
 # insmod font
 
 if loadfont /boot/grub/fonts/unicode.pf2 ; then
-  set gfxmode=auto
+  set gfxmode=800x600
   set gfxpayload=keep
   insmod efi_gop
   insmod efi_uga
@@ -240,7 +248,7 @@ menuentry 'Install (Debian 10:oldstable)' {
     set gfxpayload=keep
     set isofile="/images/debian-10.13.0-amd64-netinst.iso"
     set isoscan="$isofile (oldstable - 10.13)"
-    set preseed="file:///hd-media/preseed/debian/preseed.cfg"
+    set preseed="file:///hd-media/preseed/debian/preseed_old.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
     rmmod tpm
     linux   ($root)/install.amd/debian/oldstable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
@@ -250,7 +258,7 @@ menuentry 'Install (Debian 9:oldoldstable)' {
     set gfxpayload=keep
     set isofile="/images/debian-9.13.0-amd64-netinst.iso"
     set isoscan="$isofile (oldstable - 9.13)"
-    set preseed="file:///hd-media/preseed/debian/preseed.cfg"
+    set preseed="file:///hd-media/preseed/debian/preseed_old.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
     rmmod tpm
     linux   ($root)/install.amd/debian/oldoldstable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
@@ -263,7 +271,7 @@ menuentry 'Install (Ubuntu 23.04:Lunar Lobster)' {
     set nocloud="file:///isodevice/nocloud"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/ubuntu/lunar/vmlinuz $isoscan $locales fsck.mode=skip boot=casper "autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
+    linux   ($root)/install.amd/ubuntu/lunar/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
     initrd  ($root)/install.amd/ubuntu/lunar/initrd
 }
 menuentry 'Install (Ubuntu 22.10:Kinetic Kudu)' {
@@ -273,7 +281,7 @@ menuentry 'Install (Ubuntu 22.10:Kinetic Kudu)' {
     set nocloud="file:///isodevice/nocloud"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/ubuntu/kinetic/vmlinuz $isoscan $locales fsck.mode=skip boot=casper "autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
+    linux   ($root)/install.amd/ubuntu/kinetic/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
     initrd  ($root)/install.amd/ubuntu/kinetic/initrd
 }
 menuentry 'Install (Ubuntu 22.04:Jammy Jellyfish)' {
@@ -283,7 +291,7 @@ menuentry 'Install (Ubuntu 22.04:Jammy Jellyfish)' {
     set nocloud="file:///isodevice/nocloud"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/ubuntu/jammy/vmlinuz $isoscan $locales fsck.mode=skip boot=casper "autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
+    linux   ($root)/install.amd/ubuntu/jammy/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
     initrd  ($root)/install.amd/ubuntu/jammy/initrd
 }
 menuentry 'Install (Ubuntu 20.04:Focal Fossa)' {
@@ -293,14 +301,14 @@ menuentry 'Install (Ubuntu 20.04:Focal Fossa)' {
     set nocloud="file:///isodevice/nocloud"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/ubuntu/focal/vmlinuz $isoscan $locales fsck.mode=skip boot=casper "autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
+    linux   ($root)/install.amd/ubuntu/focal/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
     initrd  ($root)/install.amd/ubuntu/focal/initrd.gz
 }
 menuentry 'Install (Ubuntu 18.04:Bionic Beaver)' {
     set gfxpayload=keep
     set isofile="/images/ubuntu-18.04.6-server-amd64.iso"
     set isoscan="$isofile (bionic - 18.04)"
-    set preseed="file:///hd-media/preseed/ubuntu/preseed.cfg"
+    set preseed="file:///hd-media/preseed/ubuntu/preseed_old.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
     linux   ($root)/install.amd/ubuntu/bionic/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
@@ -333,7 +341,7 @@ submenu 'loopback menu ...' {
         set gfxpayload=keep
         set isofile="/images/debian-10.13.0-amd64-netinst.iso"
         set isoscan="$isofile (oldstable - 10.13)"
-        set preseed="file:///hd-media/preseed/debian/preseed.cfg"
+        set preseed="file:///hd-media/preseed/debian/preseed_old.cfg"
         set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
         rmmod tpm
         loopback loop ($root)$isofile
@@ -344,7 +352,7 @@ submenu 'loopback menu ...' {
         set gfxpayload=keep
         set isofile="/images/debian-9.13.0-amd64-netinst.iso"
         set isoscan="$isofile (oldstable - 9.13)"
-        set preseed="file:///hd-media/preseed/debian/preseed.cfg"
+        set preseed="file:///hd-media/preseed/debian/preseed_old.cfg"
         set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
         rmmod tpm
         loopback loop ($root)$isofile
@@ -359,7 +367,7 @@ submenu 'loopback menu ...' {
         set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
         rmmod tpm
         loopback loop ($root)$isofile
-        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper "autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
+        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
         initrd  (loop)/casper/initrd
     }
     menuentry 'Install (Ubuntu 22.10:Kinetic Kudu)' {
@@ -370,7 +378,7 @@ submenu 'loopback menu ...' {
         set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
         rmmod tpm
         loopback loop ($root)$isofile
-        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper "autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
+        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
         initrd  (loop)/casper/initrd
     }
     menuentry 'Install (Ubuntu 22.04:Jammy Jellyfish)' {
@@ -381,7 +389,7 @@ submenu 'loopback menu ...' {
         set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
         rmmod tpm
         loopback loop ($root)$isofile
-        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper "autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
+        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
         initrd  (loop)/casper/initrd
     }
     menuentry 'Install (Ubuntu 20.04:Focal Fossa)' {
@@ -392,14 +400,14 @@ submenu 'loopback menu ...' {
         set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
         rmmod tpm
         loopback loop ($root)$isofile
-        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper "autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
+        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
         initrd  (loop)/casper/initrd
     }
     menuentry 'Install (Ubuntu 18.04:Bionic Beaver)' {
         set gfxpayload=keep
         set isofile="/images/ubuntu-18.04.6-server-amd64.iso"
         set isoscan="$isofile (bionic - 18.04)"
-        set preseed="file:///hd-media/preseed/debian/preseed.cfg"
+        set preseed="file:///hd-media/preseed/debian/preseed_old.cfg"
         set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
         rmmod tpm
         loopback loop ($root)$isofile
@@ -410,8 +418,8 @@ submenu 'loopback menu ...' {
 _EOT_
 # -----------------------------------------------------------------------------
 cat << '_EOT_' | sudo tee ./usb/syslinux/syslinux.cfg > /dev/null
-timeout 50
-default install
+# timeout 50
+default install_testing
 ui vesamenu.c32
 prompt 0
 
@@ -443,17 +451,17 @@ label install_oldstable
 	menu label Install (Debian 10:oldstable)
 	kernel  /install.amd/debian/oldstable/vmlinuz
 	initrd  /install.amd/debian/oldstable/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/debian-10.13.0-amd64-netinst.iso (oldstable - 10.13)" fsck.mode=skip auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/debian-10.13.0-amd64-netinst.iso (oldstable - 10.13)" fsck.mode=skip auto=true preseed/url=file:///hd-media/preseed/debian/preseed_old.cfg ---
 label install_oldoldstable
 	menu label Install (Debian 9:oldoldstable)
 	kernel  /install.amd/debian/oldoldstable/vmlinuz
 	initrd  /install.amd/debian/oldoldstable/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/debian-9.13.0-amd64-netinst.iso (oldstable - 9.13)" fsck.mode=skip auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/debian-9.13.0-amd64-netinst.iso (oldstable - 9.13)" fsck.mode=skip auto=true preseed/url=file:///hd-media/preseed/debian/preseed_old.cfg ---
 label install_bionic
 	menu label Install (Ubuntu 18.04:Bionic Beaver)
 	kernel  /install.amd/ubuntu/bionic/vmlinuz
 	initrd  /install.amd/ubuntu/bionic/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/ubuntu-18.04.6-server-amd64.iso (bionic - 18.04)" fsck.mode=skip auto=true preseed/url=file:///hd-media/preseed/ubuntu/preseed.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/ubuntu-18.04.6-server-amd64.iso (bionic - 18.04)" fsck.mode=skip auto=true preseed/url=file:///hd-media/preseed/ubuntu/preseed_old.cfg ---
 
 _EOT_
 # -----------------------------------------------------------------------------
