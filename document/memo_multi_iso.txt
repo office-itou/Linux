@@ -92,12 +92,15 @@ curl -L -# -O -R -S --create-dirs --output-dir "./iso"                          
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso"
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso"
 # -----------------------------------------------------------------------------
-sudo sfdisk /dev/sdb << _EOT_
+lsblk /dev/sdb
+sudo bash -c 'umount -q /dev/sdb1 || umount -q -lf /dev/sdb1'
+sudo sfdisk --wipe always --wipe-partitions always /dev/sdb << _EOT_
 label: dos
-,,c,*
+4MiB,,c,*
 _EOT_
 sudo bash -c 'cat /usr/lib/syslinux/mbr/mbr.bin > /dev/sdb'
 sudo mkdosfs -F32 /dev/sdb1
+sudo mlabel -i /dev/sdb1 ::"cidata"
 # -----------------------------------------------------------------------------
 sudo syslinux /dev/sdb1
 sudo mount /dev/sdb1 ./usb/
@@ -155,16 +158,44 @@ sudo umount ./mnt
 #sudo cp --preserve=timestamps -r ./mnt/install/vmlinuz                                ./usb/install.amd/ubuntu/bionic/
 #sudo cp --preserve=timestamps -r ./mnt/install/initrd.gz                              ./usb/install.amd/ubuntu/bionic/
 #sudo umount ./mnt
+#sudo mount -r -o loop ./iso/lunar-desktop-amd64.iso ./mnt/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/lunar/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/lunar/
+#sudo umount ./mnt
+#sudo mount -r -o loop ./iso/lunar-desktop-legacy-amd64.iso ./mnt/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/lunar/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/lunar/
+#sudo umount ./mnt
+#sudo mount -r -o loop ./iso/ubuntu-22.10-desktop-amd64.iso ./mnt/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/kinetic/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/kinetic/
+#sudo umount ./mnt
+#sudo mount -r -o loop ./iso/ubuntu-22.04.2-desktop-amd64.iso ./mnt/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/jammy/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/jammy/
+#sudo umount ./mnt
+#sudo mount -r -o loop ./iso/ubuntu-20.04.6-desktop-amd64.iso ./mnt/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/focal/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/focal/
+#sudo umount ./mnt
+#sudo mount -r -o loop ./iso/ubuntu-18.04.6-desktop-amd64.iso ./mnt/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/bionic/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/bionic/
+#sudo umount ./mnt
 # -----------------------------------------------------------------------------
 #sudo cp --preserve=timestamps    ./cfg/debian/preseed.cfg                             ./usb/preseed/debian/
 sudo cp --preserve=timestamps    ./cfg/debian/sub_late_command.sh                     ./usb/preseed/debian/
 #sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/preseed.cfg                     ./usb/preseed/ubuntu/
 sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/sub_late_command.sh             ./usb/preseed/ubuntu/
 sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/sub_success_command.sh          ./usb/preseed/ubuntu/
-sudo cp --preserve=timestamps    ./cfg/ubuntu.server/user-data                        ./usb/nocloud/
-sudo touch ./usb/nocloud/meta-data
-sudo touch ./usb/nocloud/vendor-data
-sudo touch ./usb/nocloud/network-config
+#sudo cp --preserve=timestamps    ./cfg/ubuntu.server/user-data                        ./usb/nocloud/
+#sudo touch ./usb/nocloud/meta-data
+#sudo touch ./usb/nocloud/vendor-data
+#sudo touch ./usb/nocloud/network-config
+sudo cp --preserve=timestamps    ./cfg/ubuntu.server/user-data                        ./usb/
+sudo touch ./usb/meta-data
+sudo touch ./usb/vendor-data
+sudo touch ./usb/network-config
 # -----------------------------------------------------------------------------
 sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/debian/~g' ./cfg/debian/preseed.cfg         | sudo tee ./usb/preseed/debian/preseed.cfg > /dev/null
 sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/ubuntu/~g' ./cfg/ubuntu.desktop/preseed.cfg | sudo tee ./usb/preseed/ubuntu/preseed.cfg > /dev/null
@@ -181,17 +212,11 @@ cat << '_EOT_' | sudo tee ./usb/boot/grub/grub.cfg > /dev/null
 # set timeout=5
 set default=0
 
-# insmod part_acorn
-# insmod part_amiga
-# insmod part_apple
-# insmod part_bsd
-# insmod part_dfly
-# insmod part_dvh
-# insmod part_gpt
-# insmod part_msdos
-# insmod part_plan
-# insmod part_sun
-# insmod part_sunpc
+insmod part_gpt
+insmod part_msdos
+insmod fat
+# insmod ntfs
+# insmod ntldr
 
 # insmod font
 
@@ -207,16 +232,8 @@ if loadfont /boot/grub/fonts/unicode.pf2 ; then
   terminal_output gfxterm
 fi
 
-if background_image /isolinux/splash.png; then
-  set color_normal=light-gray/black
-  set color_highlight=white/black
-elif background_image /splash.png; then
-  set color_normal=light-gray/black
-  set color_highlight=white/black
-else
-  set menu_color_normal=cyan/blue
-  set menu_color_highlight=white/blue
-fi
+set menu_color_normal=cyan/blue
+set menu_color_highlight=white/blue
 
 insmod play
 play 960 440 1 0 4 440 1
@@ -224,197 +241,111 @@ set background_color=black
 
 set lang=ja_JP
 
-menuentry 'Install (Debian 12:testing)' {
+menuentry 'Unattended installation (Debian 12:testing)' {
     set gfxpayload=keep
     set isofile="/images/debian-testing-amd64-netinst.iso"
     set isoscan="$isofile (testing)"
-    set preseed="file:///hd-media/preseed/debian/preseed.cfg"
+    set preseed="/hd-media/preseed/debian/preseed.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/debian/testing/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
+    linux   ($root)/install.amd/debian/testing/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
     initrd  ($root)/install.amd/debian/testing/initrd.gz
 }
-menuentry 'Install (Debian 11:stable)' {
+menuentry 'Unattended installation (Debian 11:stable)' {
     set gfxpayload=keep
     set isofile="/images/debian-11.6.0-amd64-netinst.iso"
     set isoscan="$isofile (stable - 11.6)"
-    set preseed="file:///hd-media/preseed/debian/preseed.cfg"
+    set preseed="/hd-media/preseed/debian/preseed.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/debian/stable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
+    linux   ($root)/install.amd/debian/stable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
     initrd  ($root)/install.amd/debian/stable/initrd.gz
 }
-menuentry 'Install (Debian 10:oldstable)' {
+menuentry 'Unattended installation (Debian 10:oldstable)' {
     set gfxpayload=keep
     set isofile="/images/debian-10.13.0-amd64-netinst.iso"
     set isoscan="$isofile (oldstable - 10.13)"
-    set preseed="file:///hd-media/preseed/debian/preseed_old.cfg"
+    set preseed="/hd-media/preseed/debian/preseed_old.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/debian/oldstable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
+    linux   ($root)/install.amd/debian/oldstable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
     initrd  ($root)/install.amd/debian/oldstable/initrd.gz
 }
-menuentry 'Install (Debian 9:oldoldstable)' {
+menuentry 'Unattended installation (Debian 9:oldoldstable)' {
     set gfxpayload=keep
     set isofile="/images/debian-9.13.0-amd64-netinst.iso"
     set isoscan="$isofile (oldstable - 9.13)"
-    set preseed="file:///hd-media/preseed/debian/preseed_old.cfg"
+    set preseed="/hd-media/preseed/debian/preseed_old.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/debian/oldoldstable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
+    linux   ($root)/install.amd/debian/oldoldstable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
     initrd  ($root)/install.amd/debian/oldoldstable/initrd.gz
 }
-menuentry 'Install (Ubuntu 23.04:Lunar Lobster)' {
+menuentry 'Unattended installation (Ubuntu 23.04:Lunar Lobster)' {
     set gfxpayload=keep
     set isofile="/images/lunar-live-server-amd64.iso"
     set isoscan="iso-scan/filename=$isofile"
-    set nocloud="file:///isodevice/nocloud"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/ubuntu/lunar/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
-    initrd  ($root)/install.amd/ubuntu/lunar/initrd
+    loopback loop ($root)$isofile
+    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall quiet splash ip=dhcp ipv6.disable=1 ---
+    initrd  (loop)/casper/initrd
+    loopback --delete loop
 }
-menuentry 'Install (Ubuntu 22.10:Kinetic Kudu)' {
+menuentry 'Unattended installation (Ubuntu 22.10:Kinetic Kudu)' {
     set gfxpayload=keep
     set isofile="/images/ubuntu-22.10-live-server-amd64.iso"
     set isoscan="iso-scan/filename=$isofile"
-    set nocloud="file:///isodevice/nocloud"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/ubuntu/kinetic/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
-    initrd  ($root)/install.amd/ubuntu/kinetic/initrd
+    loopback loop ($root)$isofile
+    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall quiet splash ip=dhcp ipv6.disable=1 ---
+    initrd  (loop)/casper/initrd
+    loopback --delete loop
 }
-menuentry 'Install (Ubuntu 22.04:Jammy Jellyfish)' {
+menuentry 'Unattended installation (Ubuntu 22.04:Jammy Jellyfish)' {
     set gfxpayload=keep
     set isofile="/images/ubuntu-22.04.2-live-server-amd64.iso"
     set isoscan="iso-scan/filename=$isofile"
-    set nocloud="file:///isodevice/nocloud"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/ubuntu/jammy/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
-    initrd  ($root)/install.amd/ubuntu/jammy/initrd
+    loopback loop ($root)$isofile
+    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall quiet splash ip=dhcp ipv6.disable=1 ---
+    initrd  (loop)/casper/initrd
+    loopback --delete loop
 }
-menuentry 'Install (Ubuntu 20.04:Focal Fossa)' {
+menuentry 'Unattended installation (Ubuntu 20.04:Focal Fossa)' {
     set gfxpayload=keep
     set isofile="/images/ubuntu-20.04.6-live-server-amd64.iso"
     set isoscan="iso-scan/filename=$isofile"
-    set nocloud="file:///isodevice/nocloud"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/ubuntu/focal/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
-    initrd  ($root)/install.amd/ubuntu/focal/initrd
+    loopback loop ($root)$isofile
+    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall quiet splash ip=dhcp ipv6.disable=1 ---
+    initrd  (loop)/casper/initrd
+    loopback --delete loop
 }
-menuentry 'Install (Ubuntu 18.04:Bionic Beaver)' {
+menuentry 'Unattended installation (Ubuntu 18.04:Bionic Beaver)' {
     set gfxpayload=keep
     set isofile="/images/ubuntu-18.04.6-server-amd64.iso"
     set isoscan="$isofile (bionic - 18.04)"
-    set preseed="file:///hd-media/preseed/ubuntu/preseed_old.cfg"
+    set preseed="/hd-media/preseed/ubuntu/preseed_old.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/ubuntu/bionic/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
-    initrd  ($root)/install.amd/ubuntu/bionic/initrd.gz
+    loopback loop ($root)$isofile
+    linux   (loop)/install/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
+    initrd  (loop)/install/initrd.gz
+    loopback --delete loop
 }
-submenu 'loopback menu ...' {
-    menuentry 'Install (Debian 12:testing)' {
-        set gfxpayload=keep
-        set isofile="/images/debian-testing-amd64-netinst.iso"
-        set isoscan="$isofile (testing)"
-        set preseed="file:///hd-media/preseed/debian/preseed.cfg"
-        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-        rmmod tpm
-        loopback loop ($root)$isofile
-        linux   (loop)/install.amd/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
-        initrd  (loop)/install.amd/initrd.gz
-    }
-    menuentry 'Install (Debian 11:stable)' {
-        set gfxpayload=keep
-        set isofile="/images/debian-11.6.0-amd64-netinst.iso"
-        set isoscan="$isofile (stable - 11.6)"
-        set preseed="file:///hd-media/preseed/debian/preseed.cfg"
-        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-        rmmod tpm
-        loopback loop ($root)$isofile
-        linux   (loop)/install.amd/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
-        initrd  (loop)/install.amd/initrd.gz
-    }
-    menuentry 'Install (Debian 10:oldstable)' {
-        set gfxpayload=keep
-        set isofile="/images/debian-10.13.0-amd64-netinst.iso"
-        set isoscan="$isofile (oldstable - 10.13)"
-        set preseed="file:///hd-media/preseed/debian/preseed_old.cfg"
-        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-        rmmod tpm
-        loopback loop ($root)$isofile
-        linux   (loop)/install.amd/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
-        initrd  (loop)/install.amd/initrd.gz
-    }
-    menuentry 'Install (Debian 9:oldoldstable)' {
-        set gfxpayload=keep
-        set isofile="/images/debian-9.13.0-amd64-netinst.iso"
-        set isoscan="$isofile (oldstable - 9.13)"
-        set preseed="file:///hd-media/preseed/debian/preseed_old.cfg"
-        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-        rmmod tpm
-        loopback loop ($root)$isofile
-        linux   (loop)/install.amd/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
-        initrd  (loop)/install.amd/initrd.gz
-    }
-    menuentry 'Install (Ubuntu 23.04:Lunar Lobster)' {
-        set gfxpayload=keep
-        set isofile="/images/lunar-live-server-amd64.iso"
-        set isoscan="iso-scan/filename=$isofile"
-        set nocloud="file:///isodevice/nocloud"
-        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-        rmmod tpm
-        loopback loop ($root)$isofile
-        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
-        initrd  (loop)/casper/initrd
-    }
-    menuentry 'Install (Ubuntu 22.10:Kinetic Kudu)' {
-        set gfxpayload=keep
-        set isofile="/images/ubuntu-22.10-live-server-amd64.iso"
-        set isoscan="iso-scan/filename=$isofile"
-        set nocloud="file:///isodevice/nocloud"
-        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-        rmmod tpm
-        loopback loop ($root)$isofile
-        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
-        initrd  (loop)/casper/initrd
-    }
-    menuentry 'Install (Ubuntu 22.04:Jammy Jellyfish)' {
-        set gfxpayload=keep
-        set isofile="/images/ubuntu-22.04.2-live-server-amd64.iso"
-        set isoscan="iso-scan/filename=$isofile"
-        set nocloud="file:///isodevice/nocloud"
-        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-        rmmod tpm
-        loopback loop ($root)$isofile
-        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
-        initrd  (loop)/casper/initrd
-    }
-    menuentry 'Install (Ubuntu 20.04:Focal Fossa)' {
-        set gfxpayload=keep
-        set isofile="/images/ubuntu-20.04.6-live-server-amd64.iso"
-        set isoscan="iso-scan/filename=$isofile"
-        set nocloud="file:///isodevice/nocloud"
-        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-        rmmod tpm
-        loopback loop ($root)$isofile
-        linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall "ds=nocloud-net;s=$nocloud" ip=dhcp ipv6.disable=1 ---
-        initrd  (loop)/casper/initrd
-    }
-    menuentry 'Install (Ubuntu 18.04:Bionic Beaver)' {
-        set gfxpayload=keep
-        set isofile="/images/ubuntu-18.04.6-server-amd64.iso"
-        set isoscan="$isofile (bionic - 18.04)"
-        set preseed="file:///hd-media/preseed/debian/preseed_old.cfg"
-        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-        rmmod tpm
-        loopback loop ($root)$isofile
-        linux   (loop)/install/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true preseed/url=$preseed ---
-        initrd  (loop)/install/initrd.gz
-    }
+grub_platform
+if [ "$grub_platform" = "efi" ]; then
+menuentry 'Boot from next volume' {
+    exit 1
 }
+menuentry 'UEFI Firmware Settings' {
+    fwsetup
+}
+fi
 _EOT_
 # -----------------------------------------------------------------------------
 cat << '_EOT_' | sudo tee ./usb/syslinux/syslinux.cfg > /dev/null
@@ -438,30 +369,30 @@ menu tabmsg Press ENTER to boot or TAB to edit a menu entry
 menu title _Debian GNU/Linux installer menu (BIOS mode)
 
 label install_testing
-	menu label Install (Debian 12:testing)
+	menu label Unattended installation (Debian 12:testing)
 	kernel  /install.amd/debian/testing/vmlinuz
 	initrd  /install.amd/debian/testing/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/debian-testing-amd64-netinst.iso (testing)" fsck.mode=skip auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/debian-testing-amd64-netinst.iso (testing)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed.cfg ---
 label install_stable
-	menu label Install (Debian 11:stable)
+	menu label Unattended installation (Debian 11:stable)
 	kernel  /install.amd/debian/stable/vmlinuz
 	initrd  /install.amd/debian/stable/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/debian-11.6.0-amd64-netinst.iso (stable - 11.6)" fsck.mode=skip auto=true preseed/url=file:///hd-media/preseed/debian/preseed.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/debian-11.6.0-amd64-netinst.iso (stable - 11.6)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed.cfg ---
 label install_oldstable
-	menu label Install (Debian 10:oldstable)
+	menu label Unattended installation (Debian 10:oldstable)
 	kernel  /install.amd/debian/oldstable/vmlinuz
 	initrd  /install.amd/debian/oldstable/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/debian-10.13.0-amd64-netinst.iso (oldstable - 10.13)" fsck.mode=skip auto=true preseed/url=file:///hd-media/preseed/debian/preseed_old.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/debian-10.13.0-amd64-netinst.iso (oldstable - 10.13)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed_old.cfg ---
 label install_oldoldstable
-	menu label Install (Debian 9:oldoldstable)
+	menu label Unattended installation (Debian 9:oldoldstable)
 	kernel  /install.amd/debian/oldoldstable/vmlinuz
 	initrd  /install.amd/debian/oldoldstable/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/debian-9.13.0-amd64-netinst.iso (oldstable - 9.13)" fsck.mode=skip auto=true preseed/url=file:///hd-media/preseed/debian/preseed_old.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/debian-9.13.0-amd64-netinst.iso (oldstable - 9.13)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed_old.cfg ---
 label install_bionic
-	menu label Install (Ubuntu 18.04:Bionic Beaver)
+	menu label Unattended installation (Ubuntu 18.04:Bionic Beaver)
 	kernel  /install.amd/ubuntu/bionic/vmlinuz
 	initrd  /install.amd/ubuntu/bionic/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/ubuntu-18.04.6-server-amd64.iso (bionic - 18.04)" fsck.mode=skip auto=true preseed/url=file:///hd-media/preseed/ubuntu/preseed_old.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/ubuntu-18.04.6-server-amd64.iso (bionic - 18.04)" fsck.mode=skip auto=true file=/hd-media/preseed/ubuntu/preseed_old.cfg ---
 
 _EOT_
 # -----------------------------------------------------------------------------
@@ -469,12 +400,17 @@ sudo cp --preserve=timestamps    ./iso/debian-testing-amd64-netinst.iso         
 sudo cp --preserve=timestamps    ./iso/debian-11.6.0-amd64-netinst.iso                ./usb/images/
 sudo cp --preserve=timestamps    ./iso/debian-10.13.0-amd64-netinst.iso               ./usb/images/
 sudo cp --preserve=timestamps    ./iso/debian-9.13.0-amd64-netinst.iso                ./usb/images/
+sudo cp --preserve=timestamps    ./iso/lunar-live-server-amd64.iso                    ./usb/images/
+sudo cp --preserve=timestamps    ./iso/ubuntu-22.10-live-server-amd64.iso             ./usb/images/
+sudo cp --preserve=timestamps    ./iso/ubuntu-22.04.2-live-server-amd64.iso           ./usb/images/
+sudo cp --preserve=timestamps    ./iso/ubuntu-20.04.6-live-server-amd64.iso           ./usb/images/
 sudo cp --preserve=timestamps    ./iso/ubuntu-18.04.6-server-amd64.iso                ./usb/images/
 #sudo cp --preserve=timestamps    ./iso/ubuntu-18.04.6-live-server-amd64.iso           ./usb/images/
-sudo cp --preserve=timestamps    ./iso/ubuntu-20.04.6-live-server-amd64.iso           ./usb/images/
-sudo cp --preserve=timestamps    ./iso/ubuntu-22.04.2-live-server-amd64.iso           ./usb/images/
-sudo cp --preserve=timestamps    ./iso/ubuntu-22.10-live-server-amd64.iso             ./usb/images/
-sudo cp --preserve=timestamps    ./iso/lunar-live-server-amd64.iso                    ./usb/images/
+#sudo cp --preserve=timestamps    ./iso/lunar-desktop-amd64.iso                        ./usb/images/
+#sudo cp --preserve=timestamps    ./iso/ubuntu-22.10-desktop-amd64.iso                 ./usb/images/
+#sudo cp --preserve=timestamps    ./iso/ubuntu-22.04.2-desktop-amd64.iso               ./usb/images/
+#sudo cp --preserve=timestamps    ./iso/ubuntu-20.04.6-desktop-amd64.iso               ./usb/images/
+#sudo cp --preserve=timestamps    ./iso/ubuntu-18.04.6-desktop-amd64.iso               ./usb/images/
 # -----------------------------------------------------------------------------
 sudo umount ./usb
 # =============================================================================
