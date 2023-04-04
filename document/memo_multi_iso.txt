@@ -332,9 +332,8 @@ menuentry 'Unattended installation (Ubuntu 18.04:Bionic Beaver)' {
     set preseed="/hd-media/preseed/ubuntu/preseed_old.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
-    loopback loop ($root)$isofile
-    linux   (loop)/install/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
-    initrd  (loop)/install/initrd.gz
+    linux   ($root)/install.amd/ubuntu/bionic/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
+    initrd  ($root)/install.amd/ubuntu/bionic/initrd.gz
     loopback --delete loop
 }
 grub_platform
