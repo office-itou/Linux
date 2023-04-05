@@ -2,8 +2,8 @@
 # * 作業中のメモ                                                              *
 # * インストール用USBメモリーの作成手順                                       *
 # *****************************************************************************
-dpkg -l syslinux dosfstools
-sudo apt-get install syslinux dosfstools
+dpkg -l syslinux dosfstools mtools
+sudo apt-get install syslinux dosfstools mtools
 # -----------------------------------------------------------------------------
 sudo rm -rf ./cfg/ \
             ./iso/ \
@@ -48,13 +48,19 @@ curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing
 curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/initrd.gz"
 curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/vmlinuz"
 # ::: bionic ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/boot.img.gz"
-curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/initrd.gz"
-curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/vmlinuz"
 # ::: focal :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
-curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
-curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
 # -----------------------------------------------------------------------------
 # ::: debian mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 curl -L -# -R -S -f --create-dirs -o "./iso/mini-oldoldstable-amd64.iso"                   "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/netboot/mini.iso"
@@ -100,6 +106,7 @@ sudo sfdisk --wipe always --wipe-partitions always /dev/sdb << _EOT_
 label: dos
 ,,c,*
 _EOT_
+sudo blockdev --rereadpt /dev/sdb
 sudo bash -c 'cat /usr/lib/syslinux/mbr/mbr.bin > /dev/sdb'
 sudo mkdosfs -F32 /dev/sdb1
 sudo mlabel -i /dev/sdb1 ::"CIDATA"
@@ -135,69 +142,71 @@ sudo cp --preserve=timestamps ./mnt/*.c32 ./usb/syslinux/
 sudo umount ./mnt
 sudo rm ./wrk/boot.img
 # -----------------------------------------------------------------------------
-#sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/testing/!(boot.img.gz)      ./usb/install.amd/
-sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/testing/!(boot.img.gz)      ./usb/install.amd/debian/testing/
-sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/stable/!(boot.img.gz)       ./usb/install.amd/debian/stable/
-sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/oldstable/!(boot.img.gz)    ./usb/install.amd/debian/oldstable/
-sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/oldoldstable/!(boot.img.gz) ./usb/install.amd/debian/oldoldstable/
-#sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/focal/!(boot.img.gz)        ./usb/install.amd/ubuntu/focal/
-sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/bionic/!(boot.img.gz)       ./usb/install.amd/ubuntu/bionic/
+#sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/testing/!(boot.img.gz)       ./usb/install.amd/
+sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/testing/!(boot.img.gz)       ./usb/install.amd/debian/testing/
+sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/stable/!(boot.img.gz)        ./usb/install.amd/debian/stable/
+sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/oldstable/!(boot.img.gz)     ./usb/install.amd/debian/oldstable/
+sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/oldoldstable/!(boot.img.gz)  ./usb/install.amd/debian/oldoldstable/
+#sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/focal/!(boot.img.gz)          ./usb/install.amd/ubuntu/focal/
+#sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/focal-updates/!(boot.img.gz)  ./usb/install.amd/ubuntu/focal/
+sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/bionic/!(boot.img.gz)         ./usb/install.amd/ubuntu/bionic/
+sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/bionic-updates/!(boot.img.gz) ./usb/install.amd/ubuntu/bionic/
 # -----------------------------------------------------------------------------
 sudo mount -r -o loop ./iso/lunar-live-server-amd64.iso ./mnt/
-sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/lunar/
-sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/lunar/
+sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/lunar/
+sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/lunar/
 sudo umount ./mnt
 sudo mount -r -o loop ./iso/ubuntu-22.10-live-server-amd64.iso ./mnt/
-sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/kinetic/
-sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/kinetic/
+sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/kinetic/
+sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/kinetic/
 sudo umount ./mnt
 sudo mount -r -o loop ./iso/ubuntu-22.04.2-live-server-amd64.iso ./mnt/
-sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/jammy/
-sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/jammy/
+sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/jammy/
+sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/jammy/
 sudo umount ./mnt
 sudo mount -r -o loop ./iso/ubuntu-20.04.6-live-server-amd64.iso ./mnt/
-sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/focal/
-sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/focal/
+sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/focal/
+sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/focal/
 sudo umount ./mnt
 #sudo mount -r -o loop ./iso/ubuntu-18.04.6-server-amd64.iso ./mnt/
-#sudo cp --preserve=timestamps -r ./mnt/install/vmlinuz                                ./usb/install.amd/ubuntu/bionic/
-#sudo cp --preserve=timestamps -r ./mnt/install/initrd.gz                              ./usb/install.amd/ubuntu/bionic/
+#sudo cp --preserve=timestamps -r ./mnt/install/vmlinuz                                  ./usb/install.amd/ubuntu/bionic/
+#sudo cp --preserve=timestamps -r ./mnt/install/initrd.gz                                ./usb/install.amd/ubuntu/bionic/
 #sudo umount ./mnt
 #sudo mount -r -o loop ./iso/lunar-desktop-amd64.iso ./mnt/
-#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/lunar/
-#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/lunar/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/lunar/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/lunar/
 #sudo umount ./mnt
 #sudo mount -r -o loop ./iso/lunar-desktop-legacy-amd64.iso ./mnt/
-#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/lunar/
-#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/lunar/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/lunar/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/lunar/
 #sudo umount ./mnt
 #sudo mount -r -o loop ./iso/ubuntu-22.10-desktop-amd64.iso ./mnt/
-#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/kinetic/
-#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/kinetic/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/kinetic/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/kinetic/
 #sudo umount ./mnt
 #sudo mount -r -o loop ./iso/ubuntu-22.04.2-desktop-amd64.iso ./mnt/
-#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/jammy/
-#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/jammy/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/jammy/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/jammy/
 #sudo umount ./mnt
 #sudo mount -r -o loop ./iso/ubuntu-20.04.6-desktop-amd64.iso ./mnt/
-#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/focal/
-#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/focal/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/focal/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/focal/
 #sudo umount ./mnt
 #sudo mount -r -o loop ./iso/ubuntu-18.04.6-desktop-amd64.iso ./mnt/
-#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                 ./usb/install.amd/ubuntu/bionic/
-#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                  ./usb/install.amd/ubuntu/bionic/
+#sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/bionic/
+#sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/bionic/
 #sudo umount ./mnt
 # -----------------------------------------------------------------------------
-#sudo cp --preserve=timestamps    ./cfg/debian/preseed.cfg                             ./usb/preseed/debian/
-sudo cp --preserve=timestamps    ./cfg/debian/sub_late_command.sh                     ./usb/preseed/debian/
-#sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/preseed.cfg                     ./usb/preseed/ubuntu/
-sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/sub_late_command.sh             ./usb/preseed/ubuntu/
-sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/sub_success_command.sh          ./usb/preseed/ubuntu/
-#sudo cp --preserve=timestamps    ./cfg/ubuntu.server/user-data                        ./usb/nocloud/
+#sudo cp --preserve=timestamps    ./cfg/debian/preseed.cfg                               ./usb/preseed/debian/
+sudo cp --preserve=timestamps    ./cfg/debian/sub_late_command.sh                       ./usb/preseed/debian/
+#sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/preseed.cfg                       ./usb/preseed/ubuntu/
+sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/sub_late_command.sh               ./usb/preseed/ubuntu/
+sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/sub_success_command.sh            ./usb/preseed/ubuntu/
+#sudo cp --preserve=timestamps    ./cfg/ubuntu.server/user-data                          ./usb/nocloud/
 #sudo touch ./usb/nocloud/meta-data
 #sudo touch ./usb/nocloud/vendor-data
 #sudo touch ./usb/nocloud/network-config
-sudo cp --preserve=timestamps    ./cfg/ubuntu.server/user-data                        ./usb/
+sudo cp --preserve=timestamps    ./cfg/ubuntu.server/user-data                          ./usb/
 sudo touch ./usb/meta-data
 sudo touch ./usb/vendor-data
 sudo touch ./usb/network-config
@@ -217,23 +226,17 @@ cat << '_EOT_' | sudo tee ./usb/boot/grub/grub.cfg > /dev/null
 # set timeout=5
 set default=0
 
-insmod part_gpt
-insmod part_msdos
-insmod fat
+# insmod part_gpt
+# insmod part_msdos
+# insmod fat
 # insmod ntfs
 # insmod ntldr
 
-# insmod font
-
 if loadfont /boot/grub/fonts/unicode.pf2 ; then
   set gfxmode=auto
-  set gfxpayload=keep
   insmod efi_gop
   insmod efi_uga
-  insmod video_bochs
-  insmod video_cirrus
   insmod gfxterm
-  insmod png
   terminal_output gfxterm
 fi
 
@@ -253,7 +256,7 @@ menuentry 'Unattended installation (Debian 12:testing)' {
     set preseed="/hd-media/preseed/debian/preseed.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/debian/testing/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
+    linux   ($root)/install.amd/debian/testing/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed netcfg/disable_autoconfig=true ---
     initrd  ($root)/install.amd/debian/testing/initrd.gz
 }
 menuentry 'Unattended installation (Debian 11:stable)' {
@@ -263,7 +266,7 @@ menuentry 'Unattended installation (Debian 11:stable)' {
     set preseed="/hd-media/preseed/debian/preseed.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/debian/stable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
+    linux   ($root)/install.amd/debian/stable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed netcfg/disable_autoconfig=true ---
     initrd  ($root)/install.amd/debian/stable/initrd.gz
 }
 menuentry 'Unattended installation (Debian 10:oldstable)' {
@@ -273,7 +276,7 @@ menuentry 'Unattended installation (Debian 10:oldstable)' {
     set preseed="/hd-media/preseed/debian/preseed_old.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/debian/oldstable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
+    linux   ($root)/install.amd/debian/oldstable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed netcfg/disable_autoconfig=true ---
     initrd  ($root)/install.amd/debian/oldstable/initrd.gz
 }
 menuentry 'Unattended installation (Debian 9:oldoldstable)' {
@@ -283,7 +286,7 @@ menuentry 'Unattended installation (Debian 9:oldoldstable)' {
     set preseed="/hd-media/preseed/debian/preseed_old.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/debian/oldoldstable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
+    linux   ($root)/install.amd/debian/oldoldstable/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed netcfg/disable_autoconfig=true ---
     initrd  ($root)/install.amd/debian/oldoldstable/initrd.gz
 }
 menuentry 'Unattended installation (Ubuntu 23.04:Lunar Lobster)' {
@@ -337,7 +340,7 @@ menuentry 'Unattended installation (Ubuntu 18.04:Bionic Beaver)' {
     set preseed="/hd-media/preseed/ubuntu/preseed_old.cfg"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
-    linux   ($root)/install.amd/ubuntu/bionic/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
+    linux   ($root)/install.amd/ubuntu/bionic/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed netcfg/disable_autoconfig=true ---
     initrd  ($root)/install.amd/ubuntu/bionic/initrd.gz
 }
 grub_platform
@@ -375,45 +378,50 @@ label install_testing
 	menu label Unattended installation (Debian 12:testing)
 	kernel  /install.amd/debian/testing/vmlinuz
 	initrd  /install.amd/debian/testing/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/debian-testing-amd64-netinst.iso (testing)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/debian-testing-amd64-netinst.iso (testing)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true ---
 label install_stable
 	menu label Unattended installation (Debian 11:stable)
 	kernel  /install.amd/debian/stable/vmlinuz
 	initrd  /install.amd/debian/stable/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/debian-11.6.0-amd64-netinst.iso (stable - 11.6)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/debian-11.6.0-amd64-netinst.iso (stable - 11.6)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true ---
 label install_oldstable
 	menu label Unattended installation (Debian 10:oldstable)
 	kernel  /install.amd/debian/oldstable/vmlinuz
 	initrd  /install.amd/debian/oldstable/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/debian-10.13.0-amd64-netinst.iso (oldstable - 10.13)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed_old.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/debian-10.13.0-amd64-netinst.iso (oldstable - 10.13)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed_old.cfg netcfg/disable_autoconfig=true ---
 label install_oldoldstable
 	menu label Unattended installation (Debian 9:oldoldstable)
 	kernel  /install.amd/debian/oldoldstable/vmlinuz
 	initrd  /install.amd/debian/oldoldstable/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/debian-9.13.0-amd64-netinst.iso (oldstable - 9.13)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed_old.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/debian-9.13.0-amd64-netinst.iso (oldstable - 9.13)" fsck.mode=skip auto=true file=/hd-media/preseed/debian/preseed_old.cfg netcfg/disable_autoconfig=true ---
 label install_bionic
 	menu label Unattended installation (Ubuntu 18.04:Bionic Beaver)
 	kernel  /install.amd/ubuntu/bionic/vmlinuz
 	initrd  /install.amd/ubuntu/bionic/initrd.gz
-	append  iso-scan/ask_which_iso="[sdb1] /images/ubuntu-18.04.6-server-amd64.iso (bionic - 18.04)" fsck.mode=skip auto=true file=/hd-media/preseed/ubuntu/preseed_old.cfg ---
+	append  iso-scan/ask_which_iso="[sdb1] /images/ubuntu-18.04.6-server-amd64.iso (bionic - 18.04)" fsck.mode=skip auto=true file=/hd-media/preseed/ubuntu/preseed_old.cfg netcfg/disable_autoconfig=true ---
 
 _EOT_
 # -----------------------------------------------------------------------------
-sudo cp --preserve=timestamps    ./iso/debian-testing-amd64-netinst.iso               ./usb/images/
-sudo cp --preserve=timestamps    ./iso/debian-11.6.0-amd64-netinst.iso                ./usb/images/
-sudo cp --preserve=timestamps    ./iso/debian-10.13.0-amd64-netinst.iso               ./usb/images/
-sudo cp --preserve=timestamps    ./iso/debian-9.13.0-amd64-netinst.iso                ./usb/images/
-sudo cp --preserve=timestamps    ./iso/lunar-live-server-amd64.iso                    ./usb/images/
-sudo cp --preserve=timestamps    ./iso/ubuntu-22.10-live-server-amd64.iso             ./usb/images/
-sudo cp --preserve=timestamps    ./iso/ubuntu-22.04.2-live-server-amd64.iso           ./usb/images/
-sudo cp --preserve=timestamps    ./iso/ubuntu-20.04.6-live-server-amd64.iso           ./usb/images/
-sudo cp --preserve=timestamps    ./iso/ubuntu-18.04.6-server-amd64.iso                ./usb/images/
-#sudo cp --preserve=timestamps    ./iso/ubuntu-18.04.6-live-server-amd64.iso           ./usb/images/
-#sudo cp --preserve=timestamps    ./iso/lunar-desktop-amd64.iso                        ./usb/images/
-#sudo cp --preserve=timestamps    ./iso/ubuntu-22.10-desktop-amd64.iso                 ./usb/images/
-#sudo cp --preserve=timestamps    ./iso/ubuntu-22.04.2-desktop-amd64.iso               ./usb/images/
-#sudo cp --preserve=timestamps    ./iso/ubuntu-20.04.6-desktop-amd64.iso               ./usb/images/
-#sudo cp --preserve=timestamps    ./iso/ubuntu-18.04.6-desktop-amd64.iso               ./usb/images/
+for F in \
+  debian-testing-amd64-netinst.iso     \
+  debian-11.6.0-amd64-netinst.iso      \
+  debian-10.13.0-amd64-netinst.iso     \
+  debian-9.13.0-amd64-netinst.iso      \
+  lunar-live-server-amd64.iso          \
+  ubuntu-22.10-live-server-amd64.iso   \
+  ubuntu-22.04.2-live-server-amd64.iso \
+  ubuntu-20.04.6-live-server-amd64.iso \
+  ubuntu-18.04.6-server-amd64.iso
+# ubuntu-18.04.6-live-server-amd64.iso \
+# lunar-desktop-amd64.iso              \
+# ubuntu-22.10-desktop-amd64.iso       \
+# ubuntu-22.04.2-desktop-amd64.iso     \
+# ubuntu-20.04.6-desktop-amd64.iso     \
+# ubuntu-18.04.6-desktop-amd64.iso
+do
+  echo "copy $F"
+  sudo cp --preserve=timestamps ./iso/$F ./usb/images/
+done
 # -----------------------------------------------------------------------------
 sudo umount ./usb
 # =============================================================================
