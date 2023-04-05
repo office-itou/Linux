@@ -1,0 +1,90 @@
+# *****************************************************************************
+# * 作業中のメモ                                                              *
+# * USBメモリーのファイル構成                                                 *
+# *****************************************************************************
+\ [CIDATA]
+|   user-data
+|   meta-data
+|   vendor-data
+|   network-config
++---boot
+|   \---grub
+|       |   grub.cfg
+|       |   grubenv
+|       +---x86_64-efi
+|       +---locale
+|       \---fonts
+|               unicode.pf2
++---EFI
+|   \---BOOT
++---syslinux
+|       ldlinux.c32
+|       libcom32.c32
+|       libutil.c32
+|       vesamenu.c32
+|       syslinux.cfg
++---images
+|       debian-testing-amd64-netinst.iso
+|       debian-11.6.0-amd64-netinst.iso
+|       debian-10.13.0-amd64-netinst.iso
+|       debian-9.13.0-amd64-netinst.iso
+|       lunar-live-server-amd64.iso
+|       ubuntu-22.10-live-server-amd64.iso
+|       ubuntu-22.04.2-live-server-amd64.iso
+|       ubuntu-20.04.6-live-server-amd64.iso
+|       ubuntu-18.04.6-server-amd64.iso
++---preseed
+|   +---debian
+|   |       sub_late_command.sh
+|   |       preseed.cfg
+|   |       preseed_old.cfg
+|   \---ubuntu
+|           sub_late_command.sh
+|           sub_success_command.sh
+|           preseed.cfg
+|           preseed_old.cfg
++---nocloud
++---install.amd
+|   +---debian
+|   |   +---testing
+|   |   |   |   initrd.gz
+|   |   |   |   vmlinuz
+|   |   |   \---gtk
+|   |   |           initrd.gz
+|   |   |           vmlinuz
+|   |   +---stable
+|   |   |   |   initrd.gz
+|   |   |   |   vmlinuz
+|   |   |   \---gtk
+|   |   |           initrd.gz
+|   |   |           vmlinuz
+|   |   +---oldstable
+|   |   |   |   initrd.gz
+|   |   |   |   vmlinuz
+|   |   |   \---gtk
+|   |   |           initrd.gz
+|   |   |           vmlinuz
+|   |   \---oldoldstable
+|   |       |   initrd.gz
+|   |       |   vmlinuz
+|   |       \---gtk
+|   |               initrd.gz
+|   |               vmlinuz
+|   \---ubuntu
+|       +---lunar
+|       |       vmlinuz
+|       |       initrd
+|       +---kinetic
+|       |       vmlinuz
+|       |       initrd
+|       +---jammy
+|       |       vmlinuz
+|       |       initrd
+|       +---focal
+|       |       vmlinuz
+|       |       initrd
+|       \---bionic
+|               initrd.gz
+|               vmlinuz
+\---.disk
+        info
