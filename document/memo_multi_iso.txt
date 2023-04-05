@@ -1,7 +1,9 @@
 # *****************************************************************************
 # * 作業中のメモ                                                              *
+# * インストール用USBメモリーの作成手順                                       *
 # *****************************************************************************
-sudo apt-get install syslinux
+dpkg -l syslinux dosfstools
+sudo apt-get install syslinux dosfstools
 # -----------------------------------------------------------------------------
 sudo rm -rf ./cfg/ \
             ./iso/ \
@@ -96,13 +98,16 @@ lsblk /dev/sdb
 sudo bash -c 'umount -q /dev/sdb1 || umount -q -lf /dev/sdb1'
 sudo sfdisk --wipe always --wipe-partitions always /dev/sdb << _EOT_
 label: dos
-4MiB,,c,*
+,,c,*
 _EOT_
 sudo bash -c 'cat /usr/lib/syslinux/mbr/mbr.bin > /dev/sdb'
 sudo mkdosfs -F32 /dev/sdb1
-sudo mlabel -i /dev/sdb1 ::"cidata"
+sudo mlabel -i /dev/sdb1 ::"CIDATA"
 # -----------------------------------------------------------------------------
 sudo syslinux /dev/sdb1
+sudo dd if=/dev/sdb1 of=bootrec.dat bs=512 count=1
+sudo dd if=bootrec.dat of=/dev/sdb1 bs=512 seek=6
+sudo sync
 sudo mount /dev/sdb1 ./usb/
 sudo grub-install --target=x86_64-efi --efi-directory=./usb/ --boot-directory=./usb/boot/ --no-floppy --removable
 # -----------------------------------------------------------------------------
@@ -334,7 +339,6 @@ menuentry 'Unattended installation (Ubuntu 18.04:Bionic Beaver)' {
     rmmod tpm
     linux   ($root)/install.amd/ubuntu/bionic/vmlinuz iso-scan/ask_which_iso="[sdb1] $isoscan" $locales fsck.mode=skip auto=true file=$preseed ---
     initrd  ($root)/install.amd/ubuntu/bionic/initrd.gz
-    loopback --delete loop
 }
 grub_platform
 if [ "$grub_platform" = "efi" ]; then
