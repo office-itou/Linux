@@ -99,7 +99,7 @@ curl -L -# -O -R -S --create-dirs --output-dir "./iso"                          
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/ubuntu-22.10-desktop-amd64.iso"
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso"
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso"
-# -----------------------------------------------------------------------------
+# --- partition and format ----------------------------------------------------
 lsblk /dev/sdb
 sudo bash -c 'umount -q /dev/sdb1 || umount -q -lf /dev/sdb1'
 sudo sfdisk --wipe always --wipe-partitions always /dev/sdb << _EOT_
@@ -110,14 +110,14 @@ sudo blockdev --rereadpt /dev/sdb
 sudo bash -c 'cat /usr/lib/syslinux/mbr/mbr.bin > /dev/sdb'
 sudo mkdosfs -F32 /dev/sdb1
 sudo mlabel -i /dev/sdb1 ::"CIDATA"
-# -----------------------------------------------------------------------------
+# --- boot loader -------------------------------------------------------------
 sudo syslinux /dev/sdb1
 sudo dd if=/dev/sdb1 of=bootrec.dat bs=512 count=1
 sudo dd if=bootrec.dat of=/dev/sdb1 bs=512 seek=6
 sudo sync
 sudo mount /dev/sdb1 ./usb/
 sudo grub-install --target=x86_64-efi --efi-directory=./usb/ --boot-directory=./usb/boot/ --no-floppy --removable
-# -----------------------------------------------------------------------------
+# --- directory ---------------------------------------------------------------
 sudo mkdir -p ./usb/syslinux                        \
               ./usb/images                          \
               ./usb/preseed/debian                  \
@@ -134,14 +134,15 @@ sudo mkdir -p ./usb/syslinux                        \
               ./usb/install.amd/ubuntu/bionic
 sudo mkdir -p ./usb/.disk
 sudo touch ./usb/.disk/info
-# -----------------------------------------------------------------------------
+# --- syslinux ----------------------------------------------------------------
+sudo rm -rf ./wrk/*
 sudo gzip -dk ./cfg/installer-hd-media/testing/boot.img.gz
 sudo mv ./cfg/installer-hd-media/testing/boot.img ./wrk/
 sudo mount -r -o loop ./wrk/boot.img ./mnt/
 sudo cp --preserve=timestamps ./mnt/*.c32 ./usb/syslinux/
 sudo umount ./mnt
-sudo rm ./wrk/boot.img
-# -----------------------------------------------------------------------------
+sudo rm -rf ./wrk/*
+# --- initrd and vmlinuz (hd-media) -------------------------------------------
 #sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/testing/!(boot.img.gz)       ./usb/install.amd/
 sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/testing/!(boot.img.gz)       ./usb/install.amd/debian/testing/
 sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/stable/!(boot.img.gz)        ./usb/install.amd/debian/stable/
@@ -151,7 +152,7 @@ sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/oldoldstable/!(boot.im
 #sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/focal-updates/!(boot.img.gz)  ./usb/install.amd/ubuntu/focal/
 sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/bionic/!(boot.img.gz)         ./usb/install.amd/ubuntu/bionic/
 sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/bionic-updates/!(boot.img.gz) ./usb/install.amd/ubuntu/bionic/
-# -----------------------------------------------------------------------------
+# --- initrd and vmlinuz (iso file) -------------------------------------------
 sudo mount -r -o loop ./iso/lunar-live-server-amd64.iso ./mnt/
 sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/lunar/
 sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/lunar/
@@ -196,7 +197,7 @@ sudo umount ./mnt
 #sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/bionic/
 #sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/bionic/
 #sudo umount ./mnt
-# -----------------------------------------------------------------------------
+# --- config file copy --------------------------------------------------------
 #sudo cp --preserve=timestamps    ./cfg/debian/preseed.cfg                               ./usb/preseed/debian/
 sudo cp --preserve=timestamps    ./cfg/debian/sub_late_command.sh                       ./usb/preseed/debian/
 #sudo cp --preserve=timestamps    ./cfg/ubuntu.desktop/preseed.cfg                       ./usb/preseed/ubuntu/
@@ -210,7 +211,7 @@ sudo cp --preserve=timestamps    ./cfg/ubuntu.server/user-data                  
 sudo touch ./usb/meta-data
 sudo touch ./usb/vendor-data
 sudo touch ./usb/network-config
-# -----------------------------------------------------------------------------
+# --- config file change ------------------------------------------------------
 sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/debian/~g' ./cfg/debian/preseed.cfg         | sudo tee ./usb/preseed/debian/preseed.cfg > /dev/null
 sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/ubuntu/~g' ./cfg/ubuntu.desktop/preseed.cfg | sudo tee ./usb/preseed/ubuntu/preseed.cfg > /dev/null
 sed -e 's/bind9-utils/bind9utils/'                          \
@@ -221,7 +222,23 @@ sed -e 's/bind9-utils/bind9utils/'                          \
     -e 's/bind9-dnsutils/dnsutils/'                         \
            ./usb/preseed/ubuntu/preseed.cfg                 \
 | sudo tee ./usb/preseed/ubuntu/preseed_old.cfg > /dev/null
-# -----------------------------------------------------------------------------
+# --- initrd ------------------------------------------------------------------
+sudo rm -rf ./wrk/*
+sudo bash -c 'for D in focal jammy kinetic lunar
+do
+  echo "$D"
+  mkdir -p ./wrk/$D
+  unmkinitramfs ./usb/install.amd/ubuntu/$D/initrd ./wrk/$D
+  if [ -f ./wrk/$D/main/scripts/casper-premount/20iso_scan ]; then
+    sed -i ./wrk/$D/main/scripts/casper-premount/20iso_scan \
+        -e "s~\(/isodevice\) *rw~\1 ro~"
+    pushd ./wrk/$D/main/ > /dev/null
+    find . | cpio -R 0:0 -o -H newc | gzip > ../../../usb/install.amd/ubuntu/$D/initrd.img
+    popd > /dev/null
+  fi
+done'
+sudo rm -rf ./wrk/*
+# --- grub.cfg ----------------------------------------------------------------
 cat << '_EOT_' | sudo tee ./usb/boot/grub/grub.cfg > /dev/null
 # set timeout=5
 set default=0
@@ -296,8 +313,9 @@ menuentry 'Unattended installation (Ubuntu 23.04:Lunar Lobster)' {
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
     loopback loop ($root)$isofile
-    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall quiet splash ip=dhcp ipv6.disable=1 ---
-    initrd  (loop)/casper/initrd
+    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+#   initrd  (loop)/casper/initrd
+    initrd  ($root)/install.amd/ubuntu/lunar/initrd.img
     loopback --delete loop
 }
 menuentry 'Unattended installation (Ubuntu 22.10:Kinetic Kudu)' {
@@ -307,8 +325,9 @@ menuentry 'Unattended installation (Ubuntu 22.10:Kinetic Kudu)' {
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
     loopback loop ($root)$isofile
-    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall quiet splash ip=dhcp ipv6.disable=1 ---
-    initrd  (loop)/casper/initrd
+    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+#   initrd  (loop)/casper/initrd
+    initrd  ($root)/install.amd/ubuntu/kinetic/initrd.img
     loopback --delete loop
 }
 menuentry 'Unattended installation (Ubuntu 22.04:Jammy Jellyfish)' {
@@ -318,8 +337,9 @@ menuentry 'Unattended installation (Ubuntu 22.04:Jammy Jellyfish)' {
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
     loopback loop ($root)$isofile
-    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall quiet splash ip=dhcp ipv6.disable=1 ---
-    initrd  (loop)/casper/initrd
+    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+#   initrd  (loop)/casper/initrd
+    initrd  ($root)/install.amd/ubuntu/jammy/initrd.img
     loopback --delete loop
 }
 menuentry 'Unattended installation (Ubuntu 20.04:Focal Fossa)' {
@@ -329,8 +349,9 @@ menuentry 'Unattended installation (Ubuntu 20.04:Focal Fossa)' {
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
     rmmod tpm
     loopback loop ($root)$isofile
-    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip boot=casper autoinstall quiet splash ip=dhcp ipv6.disable=1 ---
+    linux   (loop)/casper/vmlinuz $isoscan $locales fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
     initrd  (loop)/casper/initrd
+#   initrd  ($root)/install.amd/ubuntu/focal/initrd.img
     loopback --delete loop
 }
 menuentry 'Unattended installation (Ubuntu 18.04:Bionic Beaver)' {
@@ -353,7 +374,7 @@ menuentry 'UEFI Firmware Settings' {
 }
 fi
 _EOT_
-# -----------------------------------------------------------------------------
+# --- syslinux.cfg ------------------------------------------------------------
 cat << '_EOT_' | sudo tee ./usb/syslinux/syslinux.cfg > /dev/null
 # timeout 50
 default install_testing
@@ -401,7 +422,7 @@ label install_bionic
 	append  iso-scan/ask_which_iso="[sdb1] /images/ubuntu-18.04.6-server-amd64.iso (bionic - 18.04)" fsck.mode=skip auto=true file=/hd-media/preseed/ubuntu/preseed_old.cfg netcfg/disable_autoconfig=true ---
 
 _EOT_
-# -----------------------------------------------------------------------------
+# --- iso file copy -----------------------------------------------------------
 for F in \
   debian-testing-amd64-netinst.iso     \
   debian-11.6.0-amd64-netinst.iso      \
@@ -422,6 +443,6 @@ do
   echo "copy $F"
   sudo cp --preserve=timestamps ./iso/$F ./usb/images/
 done
-# -----------------------------------------------------------------------------
+# --- unmount -----------------------------------------------------------------
 sudo umount ./usb
 # =============================================================================
