@@ -40,6 +40,8 @@ autoinstall:
       name: lvm
       match:
         ssd: yes
+    swap:
+      size: 0
 # -----------------------------------------------------------------------------
 # /dev/nvme0n1p1: 512MB: /boot/efi
 #      nvme0n1p2: 512MB: /boot
@@ -91,7 +93,8 @@ autoinstall:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$H0t.qr/L8sa2NR/u$QuBoyz25WSaN2NCM1yNEJN1JSo9yYeo48jztYcAIiY3pvDwf8Y4QUCSDlIQ8h.DreVgGz7hMEbgQObqh079C71"
+    password: "$6$rounds=4096$yEW7TnYBgS9M7DDN$iAku1SD8YEEoAqvREQEqHSqUDAvGubptaG.H5C6XiXxjF8KPoNZ5lmkJTLYB4AeehhGsM721MmHMe.ATl.rHe0"
+#   plain_text_passwd: "master"
 # =============================================================================
   locale: ja_JP.UTF-8
   keyboard:
@@ -183,5 +186,5 @@ autoinstall:
 #   https://cloudinit.readthedocs.io/
 #   https://curtin.readthedocs.io/
 # =============================================================================
-# Created at 2023/03/19 08:13:21
+# Created at 2023/04/07 19:26:21
 # === EOF =====================================================================
