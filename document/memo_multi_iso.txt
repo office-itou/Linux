@@ -2,7 +2,7 @@
 # * 作業中のメモ                                                              *
 # * インストール用USBメモリーの作成手順                                       *
 # *****************************************************************************
-dpkg -l syslinux dosfstools mtools
+dpkg --no-pager -l syslinux dosfstools mtools
 sudo apt-get install syslinux dosfstools mtools
 # -----------------------------------------------------------------------------
 sudo rm -rf ./cfg/ \
@@ -220,6 +220,8 @@ sed -e 's/bind9-utils/bind9utils/'                          \
 | sudo tee ./usb/preseed/debian/preseed_old.cfg > /dev/null
 sed -e 's/bind9-utils/bind9utils/'                          \
     -e 's/bind9-dnsutils/dnsutils/'                         \
+    -e '/d-i partman\/unmount_active/ s/^#/ /g'             \
+    -e '/d-i partman\/early_command/,/exit 0/ s/^#/ /g'     \
            ./usb/preseed/ubuntu/preseed.cfg                 \
 | sudo tee ./usb/preseed/ubuntu/preseed_old.cfg > /dev/null
 # --- initrd ------------------------------------------------------------------
