@@ -114,6 +114,8 @@ _EOT_
 		      name: lvm
 		      match:
 		        ssd: yes
+		    swap:
+		      size: 0
 		# -----------------------------------------------------------------------------
 		# /dev/nvme0n1p1: 512MB: /boot/efi
 		#      nvme0n1p2: 512MB: /boot
@@ -169,7 +171,7 @@ _EOT_
 	PASSWD_USER_PASSWORD=`awk '!/#/&&/ passwd\/user-password / {print $4;}' ${PRESEED_CFG}`
 	PASSWD_USER_PASSWORD_CRYPTED=`awk '!/#/&&/ passwd\/user-password-crypted / {print $4;}' ${PRESEED_CFG}`
 	if [ "${PASSWD_USER_PASSWORD_CRYPTED}" = "" ]; then
-		PASSWD_USER_PASSWORD_CRYPTED=`mkpasswd -m SHA-512 ${PASSWD_USER_PASSWORD}`
+		PASSWD_USER_PASSWORD_CRYPTED=`mkpasswd --method=SHA-512 --rounds=4096 ${PASSWD_USER_PASSWORD}`
 	fi
 	cat <<- _EOT_ >> ${USER_DATA}
 		# =============================================================================
@@ -178,6 +180,7 @@ _EOT_
 		    realname: ${PASSWD_USER_FULLNAME}
 		    username: ${PASSWD_USERNAME}
 		    password: "${PASSWD_USER_PASSWORD_CRYPTED}"
+		#   plain_text_passwd: "${PASSWD_USER_PASSWORD}"
 _EOT_
 	# --- locale --------------------------------------------------------------
 	DEBIAN_INSTALLER_LOCALE=`awk '!/#/&&/ debian-installer\/locale / {print $4;}' ${PRESEED_CFG}`
