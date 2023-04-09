@@ -43,6 +43,7 @@
 ##	2023/03/12 000.0000 J.Itou         不具合修正
 ##	2023/03/16 000.0000 J.Itou         不具合修正
 ##	2023/03/19 000.0000 J.Itou         不具合修正
+##	2023/04/08 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -2249,22 +2250,24 @@ _EOT_
 		# ---------------------------------------------------------------------
 		VGA_MODE=`echo ${VGA_RESO[0]} | sed -e "s/\(.*\)x\(.*\)x\(.*\)/\1x\2x\3/"`
 		sed -i /etc/default/grub                             \
-		    -e 's/^GRUB_GFXMODE.*$/#&/'                      \
-		    -e 's/^GRUB_GFXPAYLOAD_LINUX.*$/#&/'             \
-		    -e 's/^aGRUB_CMDLINE_LINUX_DEFAULT.*$/#&/'       \
-		    -e '/^GRUB_TERMINAL/ s/ *console//'              \
-		    -e '/^GRUB_CMDLINE_LINUX/ s/ *rhgb//'            \
-		    -e '/^GRUB_CMDLINE_LINUX/ s/ *quiet//'           \
 		    -e "\$a\\\n### User Custom ###"                  \
 		    -e "\$aGRUB_GFXMODE=${VGA_MODE}"                 \
 		    -e "\$aGRUB_GFXPAYLOAD_LINUX=keep"               \
+		    -e "\$aGRUB_CMDLINE_LINUX_DEFAULT=quiet"         \
+		    -e "\$aGRUB_RECORDFAIL_TIMEOUT=5"                \
+		    -e "\$aGRUB_TIMEOUT=0"                           \
 		    -e 's/[ \t][ \t]*/ /g'                           \
 		    -e 's/[ \t]*$//g'
-		if [ "${SYS_NAME}" = "ubuntu" ]; then
-			sed -i /etc/default/grub                            \
-			    -e '/^GRUB_RECORDFAIL_TIMEOUT/d'                \
-			    -e '/^GRUB_TIMEOUT/a GRUB_RECORDFAIL_TIMEOUT=5'
-		fi
+#		sed -i /etc/default/grub                             \
+#		    -e '/^GRUB_TERMINAL/ s/ *console//'              \
+#		    -e '/^GRUB_CMDLINE_LINUX/ s/ *rhgb//'            \
+#		    -e '/^GRUB_CMDLINE_LINUX/ s/ *quiet//'           \
+#		...
+#		if [ "${SYS_NAME}" = "ubuntu" ]; then
+#			sed -i /etc/default/grub                             \
+#			    -e '/^GRUB_RECORDFAIL_TIMEOUT=/d'                \
+#			    -e '/^GRUB_TIMEOUT=/a GRUB_RECORDFAIL_TIMEOUT=5'
+#		fi
 		case "${SYS_NAME}" in
 			"centos"       | \
 			"fedora"       | \
