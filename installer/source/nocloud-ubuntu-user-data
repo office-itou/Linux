@@ -93,7 +93,7 @@ autoinstall:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$rounds=4096$yEW7TnYBgS9M7DDN$iAku1SD8YEEoAqvREQEqHSqUDAvGubptaG.H5C6XiXxjF8KPoNZ5lmkJTLYB4AeehhGsM721MmHMe.ATl.rHe0"
+    password: "$6$rounds=4096$aSjHW5tdpKFMLN2/$Y0Cr9CFfgrCm.ghmaxDNhGqLZ9VIKHJakdeuGHvaZdCvS/jp301d1GMCLnr2nT7xjYvpLScoPzg9KAuJUZRYY0"
 #   plain_text_passwd: "master"
 # =============================================================================
   locale: ja_JP.UTF-8
@@ -186,5 +186,5 @@ autoinstall:
 #   https://cloudinit.readthedocs.io/
 #   https://curtin.readthedocs.io/
 # =============================================================================
-# Created at 2023/04/07 19:26:21
+# Created at 2023/04/08 04:41:48
 # === EOF =====================================================================
