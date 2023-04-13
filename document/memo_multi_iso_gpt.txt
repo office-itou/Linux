@@ -14,6 +14,9 @@
 # =============================================================================
 # Initial setting
 # =============================================================================
+# https://packages.debian.org/index
+dpkg -l fdisk curl dosfstools grub2-common initramfs-tools-core cpio gzip lz4
+sudo apt-get install fdisk curl dosfstools grub2-common initramfs-tools-core cpio gzip lz4
 # -----------------------------------------------------------------------------
 sudo rm -rf ./cfg/ \
             ./ird/ \
