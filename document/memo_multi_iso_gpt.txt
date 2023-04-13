@@ -1,15 +1,15 @@
 # *****************************************************************************
 # Unattended installation USB stick for multiple ISO files. (GPT Ver.)
 # -----------------------------------------------------------------------------
-#   Debian 12    : testing         : debian-testing-amd64-netinst.iso     : 6.1.0-7-amd64
-#   Debian 11    : stable          : debian-11.6.0-amd64-netinst.iso      : 5.10.0-20-amd64
-#   Debian 10    : oldstable       : debian-10.13.0-amd64-netinst.iso     : 4.19.0-21-amd64
-#   Debian  9    : oldoldstable    : debian-9.13.0-amd64-netinst.iso      : 4.9.0-13-amd64
-#   Ubuntu 23.04 : Lunar Lobster   : lunar-live-server-amd64.iso          : 6.2.0-18-generic
-#   Ubuntu 22.10 : Kinetic Kudu    : ubuntu-22.10-live-server-amd64.iso   : 5.19.0-21-generic
-#   Ubuntu 22.04 : Jammy Jellyfish : ubuntu-22.04.2-live-server-amd64.iso : 5.15.0-60-generic
-#   Ubuntu 20.04 : Focal Fossa     : ubuntu-20.04.6-live-server-amd64.iso : 5.4.0-42-generic
-#   Ubuntu 18.04 : Bionic Beaver   : ubuntu-18.04.6-server-amd64.iso      : 4.15.0-156-generic
+#   Debian 12    : testing         : debian-testing-amd64-netinst.iso        : 6.1.0-7-amd64
+#   Debian 11    : stable          : debian-11.6.0-amd64-netinst.iso         : 5.10.0-20-amd64
+#   Debian 10    : oldstable       : debian-10.13.0-amd64-netinst.iso        : 4.19.0-21-amd64
+#   Debian  9    : oldoldstable    : debian-9.13.0-amd64-netinst.iso         : 4.9.0-13-amd64
+#   Ubuntu 23.04 : Lunar Lobster   : ubuntu-23.04-beta-live-server-amd64.iso : 6.2.0-18-generic
+#   Ubuntu 22.10 : Kinetic Kudu    : ubuntu-22.10-live-server-amd64.iso      : 5.19.0-21-generic
+#   Ubuntu 22.04 : Jammy Jellyfish : ubuntu-22.04.2-live-server-amd64.iso    : 5.15.0-60-generic
+#   Ubuntu 20.04 : Focal Fossa     : ubuntu-20.04.6-live-server-amd64.iso    : 5.4.0-42-generic
+#   Ubuntu 18.04 : Bionic Beaver   : ubuntu-18.04.6-server-amd64.iso         : 4.15.0-156-generic
 # *****************************************************************************
 # =============================================================================
 # Initial setting
@@ -80,47 +80,55 @@ curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-u
 curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
 # -----------------------------------------------------------------------------
 # ::: debian mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-curl -L -# -R -S -f --create-dirs -o "./iso/mini-oldoldstable-amd64.iso"                   "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/netboot/mini.iso"
-curl -L -# -R -S -f --create-dirs -o "./iso/mini-oldstable-amd64.iso"                      "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/netboot/mini.iso"
-curl -L -# -R -S -f --create-dirs -o "./iso/mini-stable-amd64.iso"                         "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/mini.iso"
-curl -L -# -R -S -f --create-dirs -o "./iso/mini-testing-amd64.iso"                        "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso"
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-oldoldstable-amd64.iso"                   "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/netboot/mini.iso"
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-oldstable-amd64.iso"                      "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/netboot/mini.iso"
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-stable-amd64.iso"                         "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/mini.iso"
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-testing-amd64.iso"                        "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso"
 # ::: debian netinst ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso"
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-10.13.0-amd64-netinst.iso"
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-11.6.0-amd64-netinst.iso"
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
 # ::: debian DVD ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso"
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-10.13.0-amd64-DVD-1.iso"
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-11.6.0-amd64-DVD-1.iso"
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-10.13.0-amd64-DVD-1.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-11.6.0-amd64-DVD-1.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso"
 # ::: debian live DVD :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso"
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-10.13.0-amd64-lxde.iso"
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.6.0-amd64-lxde.iso"
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-10.13.0-amd64-lxde.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.6.0-amd64-lxde.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
 # ::: ubuntu mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-curl -L -# -R -S -f --create-dirs -o "./iso/mini-bionic-amd64.iso"                         "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso"
-curl -L -# -R -S -f --create-dirs -o "./iso/mini-focal-amd64.iso"                          "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso"
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-bionic-amd64.iso"                         "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso"
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-focal-amd64.iso"                          "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso"
 # ::: ubuntu server :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.6-server-amd64.iso"
 #curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-live-server-amd64.iso"
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-live-server-amd64.iso"
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-live-server-amd64.iso"
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/kinetic/ubuntu-22.10-live-server-amd64.iso"
+curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/lunar/ubuntu-23.04-beta-live-server-amd64.iso"
 curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/lunar-live-server-amd64.iso"
 # ::: ubuntu desktop ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-desktop-amd64.iso"
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-desktop-amd64.iso"
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-desktop-amd64.iso"
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/ubuntu-22.10-desktop-amd64.iso"
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso"
-curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-desktop-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-desktop-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-desktop-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/ubuntu-22.10-desktop-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/lunar/ubuntu-23.04-beta-desktop-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso"
 # =============================================================================
 # USB Device
 # =============================================================================
 # --- partition ---------------------------------------------------------------
 # [ USB device: /dev/sdb ]
+# --- device and mount check --------------------------------------------------
+lsblk /dev/sdb
+sudo bash -c 'umount -q /dev/sdb1 || umount -q -lf /dev/sdb1'
+sudo bash -c 'umount -q /dev/sdb2 || umount -q -lf /dev/sdb2'
+sudo bash -c 'umount -q /dev/sdb3 || umount -q -lf /dev/sdb3'
+# --- partition ---------------------------------------------------------------
 sudo sfdisk --wipe always --wipe-partitions always /dev/sdb << _EOT_
 label: gpt
 first-lba: 34
@@ -217,7 +225,7 @@ menuentry 'Unattended installation (Debian 9:oldoldstable)' {
 }
 menuentry 'Unattended installation (Ubuntu 23.04:Lunar Lobster)' {
     set gfxpayload=keep
-    set isofile="/images/lunar-live-server-amd64.iso"
+    set isofile="/images/ubuntu-23.04-beta-live-server-amd64.iso"
     set isoscan="iso-scan/filename=$isofile"
     set isodist="ubuntu/lunar"
     set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
@@ -361,7 +369,7 @@ do
   esac
 done
 # --- initrd and vmlinuz (iso file) -------------------------------------------
-sudo mount -r -o loop ./iso/lunar-live-server-amd64.iso ./mnt/
+sudo mount -r -o loop ./iso/ubuntu-23.04-beta-live-server-amd64.iso ./mnt/
 sudo cp --preserve=timestamps -r ./mnt/casper/vmlinuz                                   ./usb/install.amd/ubuntu/lunar/
 sudo cp --preserve=timestamps -r ./mnt/casper/initrd                                    ./usb/install.amd/ubuntu/lunar/
 sudo umount ./mnt
@@ -501,20 +509,20 @@ do
 done
 # --- iso file copy -----------------------------------------------------------
 for F in \
-  debian-testing-amd64-netinst.iso     \
-  debian-11.6.0-amd64-netinst.iso      \
-  debian-10.13.0-amd64-netinst.iso     \
-  debian-9.13.0-amd64-netinst.iso      \
-  lunar-live-server-amd64.iso          \
-  ubuntu-22.10-live-server-amd64.iso   \
-  ubuntu-22.04.2-live-server-amd64.iso \
-  ubuntu-20.04.6-live-server-amd64.iso \
+  debian-testing-amd64-netinst.iso        \
+  debian-11.6.0-amd64-netinst.iso         \
+  debian-10.13.0-amd64-netinst.iso        \
+  debian-9.13.0-amd64-netinst.iso         \
+  ubuntu-23.04-beta-live-server-amd64.iso \
+  ubuntu-22.10-live-server-amd64.iso      \
+  ubuntu-22.04.2-live-server-amd64.iso    \
+  ubuntu-20.04.6-live-server-amd64.iso    \
   ubuntu-18.04.6-server-amd64.iso
-# ubuntu-18.04.6-live-server-amd64.iso \
-# lunar-desktop-amd64.iso              \
-# ubuntu-22.10-desktop-amd64.iso       \
-# ubuntu-22.04.2-desktop-amd64.iso     \
-# ubuntu-20.04.6-desktop-amd64.iso     \
+# ubuntu-18.04.6-live-server-amd64.iso    \
+# ubuntu-23.04-beta-desktop-amd64.iso     \
+# ubuntu-22.10-desktop-amd64.iso          \
+# ubuntu-22.04.2-desktop-amd64.iso        \
+# ubuntu-20.04.6-desktop-amd64.iso        \
 # ubuntu-18.04.6-desktop-amd64.iso
 do
   echo "copy $F"
