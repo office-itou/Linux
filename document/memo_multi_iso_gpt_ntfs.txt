@@ -1,0 +1,657 @@
+# 【 作業途中 】
+# *****************************************************************************
+# Unattended installation USB stick for multiple ISO files. (GPT Ver.)
+# -----------------------------------------------------------------------------
+#   Debian 12    : testing         : debian-testing-amd64-netinst.iso        : 6.1.0-7-amd64
+#   Debian 11    : stable          : debian-11.6.0-amd64-netinst.iso         : 5.10.0-20-amd64
+#   Debian 10    : oldstable       : debian-10.13.0-amd64-netinst.iso        : 4.19.0-21-amd64
+#   Debian  9    : oldoldstable    : debian-9.13.0-amd64-netinst.iso         : 4.9.0-13-amd64
+#   Ubuntu 23.04 : Lunar Lobster   : ubuntu-23.04-beta-live-server-amd64.iso : 6.2.0-18-generic
+#   Ubuntu 22.10 : Kinetic Kudu    : ubuntu-22.10-live-server-amd64.iso      : 5.19.0-21-generic
+#   Ubuntu 22.04 : Jammy Jellyfish : ubuntu-22.04.2-live-server-amd64.iso    : 5.15.0-60-generic
+#   Ubuntu 20.04 : Focal Fossa     : ubuntu-20.04.6-live-server-amd64.iso    : 5.4.0-42-generic
+#   Ubuntu 18.04 : Bionic Beaver   : ubuntu-18.04.6-server-amd64.iso         : 4.15.0-156-generic
+# *****************************************************************************
+# =============================================================================
+# Initial setting
+# =============================================================================
+# https://packages.debian.org/index
+dpkg -l fdisk curl dosfstools grub2-common initramfs-tools-core cpio gzip lz4
+sudo apt-get install fdisk curl dosfstools grub2-common initramfs-tools-core cpio gzip lz4
+# -----------------------------------------------------------------------------
+sudo rm -rf ./cfg/ \
+            ./iso/ \
+            ./mnt/ \
+            ./deb/ \
+            ./pac/ \
+            ./ram/ \
+            ./ird/ \
+            ./wrk/ \
+            ./usb/
+# -----------------------------------------------------------------------------
+mkdir -p    ./cfg/ \
+            ./iso/ \
+            ./mnt/ \
+            ./deb/ \
+            ./pac/ \
+            ./ram/ \
+            ./ird/ \
+            ./wrk/ \
+            ./usb/
+# -----------------------------------------------------------------------------
+# ::: oldoldstable 4.9.0-13-amd64 :::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://archive.debian.org/debian/pool/main/l/linux/linux-image-4.9.0-13-amd64_4.9.228-1_amd64.deb"
+# ::: oldstable    4.19.0-21-amd64 ::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://deb.debian.org/debian/pool/main/l/linux-signed-amd64/linux-image-4.19.0-21-amd64_4.19.249-2_amd64.deb"
+# ::: stable       5.10.0-20-amd64 ::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://deb.debian.org/debian/pool/main/l/linux-signed-amd64/linux-image-5.10.0-20-amd64_5.10.158-2_amd64.deb"
+# ::: testing      6.1.0-7-amd64 ::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://deb.debian.org/debian/pool/main/l/linux-signed-amd64/linux-image-6.1.0-7-amd64_6.1.20-1_amd64.deb"
+# ::: bionic       4.15.0-156-generic :::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-4.15.0-156-generic_4.15.0-156.163_amd64.deb"
+curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-extra-4.15.0-156-generic_4.15.0-156.163_amd64.deb"
+# ::: focal        5.4.0-42-generic :::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-5.4.0-42-generic_5.4.0-42.46_amd64.deb"
+#curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-extra-5.4.0-42-generic_5.4.0-42.46_amd64.deb"
+# ::: jammy        5.15.0-60-generic ::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-5.15.0-60-generic_5.15.0-60.66_amd64.deb"
+#curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-extra-5.15.0-60-generic_5.15.0-60.66_amd64.deb"
+# ::: kinetic      5.19.0-21-generic ::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-5.19.0-21-generic_5.19.0-21.21_amd64.deb"
+#curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-extra-5.19.0-21-generic_5.19.0-21.21_amd64.deb"
+# ::: lunar        6.2.0-18-generic :::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-extra-6.2.0-20-generic_6.2.0-20.20_amd64.deb"
+#curl -L -# -O -R -S --create-dirs --output-dir "./deb"                                     "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-6.2.0-20-generic_6.2.0-20.20_amd64.deb"
+# -----------------------------------------------------------------------------
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                              "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/preseed.cfg"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                              "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/sub_late_command.sh"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                      "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/preseed.cfg"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                      "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_late_command.sh"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                      "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_success_command.sh"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.server"                       "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.server/user-data"
+# ::: oldoldstable ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable"     "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable"     "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable"     "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable/gtk" "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable/gtk" "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+# ::: oldstable :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable"        "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable"        "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable"        "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable/gtk"    "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable/gtk"    "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+# ::: stable ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable"           "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable"           "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable"           "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable/gtk"       "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable/gtk"       "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+# ::: testing :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/vmlinuz"
+# ::: bionic ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/boot.img.gz"
+#curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/initrd.gz"
+#curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/vmlinuz"
+# ::: focal :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
+#curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
+#curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
+curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
+# -----------------------------------------------------------------------------
+# ::: debian mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-oldoldstable-amd64.iso"                   "http://deb.debian.org/debian/dists/oldoldstable/main/installer-amd64/current/images/netboot/mini.iso"
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-oldstable-amd64.iso"                      "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/netboot/mini.iso"
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-stable-amd64.iso"                         "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/mini.iso"
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-testing-amd64.iso"                        "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso"
+# ::: debian netinst ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-10.13.0-amd64-netinst.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-11.6.0-amd64-netinst.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
+# ::: debian DVD ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-10.13.0-amd64-DVD-1.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-11.6.0-amd64-DVD-1.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso"
+# ::: debian live DVD :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-10.13.0-amd64-lxde.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.6.0-amd64-lxde.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
+# ::: ubuntu mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-bionic-amd64.iso"                         "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso"
+#curl -L -# -R -S -f --create-dirs -o "./iso/mini-focal-amd64.iso"                          "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso"
+# ::: ubuntu server :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.6-server-amd64.iso"
+##curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-live-server-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-live-server-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-live-server-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/kinetic/ubuntu-22.10-live-server-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/lunar/ubuntu-23.04-beta-live-server-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/lunar-live-server-amd64.iso"
+# ::: ubuntu desktop ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-desktop-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-desktop-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-desktop-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/ubuntu-22.10-desktop-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/lunar/ubuntu-23.04-beta-desktop-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso"
+#curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso"
+# -----------------------------------------------------------------------------
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-DVD-1.iso          ./iso/debian-10.13.0-amd64-DVD-1.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-netinst.iso        ./iso/debian-10.13.0-amd64-netinst.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-11.6.0-amd64-DVD-1.iso           ./iso/debian-11.6.0-amd64-DVD-1.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-11.6.0-amd64-netinst.iso         ./iso/debian-11.6.0-amd64-netinst.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-9.13.0-amd64-DVD-1.iso           ./iso/debian-9.13.0-amd64-DVD-1.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-9.13.0-amd64-netinst.iso         ./iso/debian-9.13.0-amd64-netinst.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-10.13.0-amd64-lxde.iso      ./iso/debian-live-10.13.0-amd64-lxde.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-11.6.0-amd64-lxde.iso       ./iso/debian-live-11.6.0-amd64-lxde.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-9.13.0-amd64-lxde.iso       ./iso/debian-live-9.13.0-amd64-lxde.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso      ./iso/debian-live-testing-amd64-lxde.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso          ./iso/debian-testing-amd64-DVD-1.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-netinst.iso        ./iso/debian-testing-amd64-netinst.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-oldoldstable-amd64.iso             ./iso/mini-oldoldstable-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-oldstable-amd64.iso                ./iso/mini-oldstable-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-stable-amd64.iso                   ./iso/mini-stable-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-testing-amd64.iso                  ./iso/mini-testing-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/lunar-desktop-amd64.iso                 ./iso/lunar-desktop-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/lunar-desktop-legacy-amd64.iso          ./iso/lunar-desktop-legacy-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/lunar-live-server-amd64.iso             ./iso/lunar-live-server-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/mini-bionic-amd64.iso                   ./iso/mini-bionic-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/mini-focal-amd64.iso                    ./iso/mini-focal-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-desktop-amd64.iso        ./iso/ubuntu-18.04.6-desktop-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-server-amd64.iso         ./iso/ubuntu-18.04.6-server-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-live-server-amd64.iso    ./iso/ubuntu-18.04.6-live-server-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-desktop-amd64.iso        ./iso/ubuntu-20.04.6-desktop-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-live-server-amd64.iso    ./iso/ubuntu-20.04.6-live-server-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.2-desktop-amd64.iso        ./iso/ubuntu-22.04.2-desktop-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.2-live-server-amd64.iso    ./iso/ubuntu-22.04.2-live-server-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-desktop-amd64.iso          ./iso/ubuntu-22.10-desktop-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-live-server-amd64.iso      ./iso/ubuntu-22.10-live-server-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-beta-desktop-amd64.iso     ./iso/ubuntu-23.04-beta-desktop-amd64.iso
+ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-beta-live-server-amd64.iso ./iso/ubuntu-23.04-beta-live-server-amd64.iso
+# =============================================================================
+# USB Device
+# =============================================================================
+# --- partition ---------------------------------------------------------------
+# [ USB device: /dev/sdb ]
+# --- device and mount check --------------------------------------------------
+lsblk -f /dev/sdb
+sudo bash -c 'umount -q /dev/sdb1 || umount -q -lf /dev/sdb1'
+sudo bash -c 'umount -q /dev/sdb2 || umount -q -lf /dev/sdb2'
+sudo bash -c 'umount -q /dev/sdb3 || umount -q -lf /dev/sdb3'
+sudo bash -c 'umount -q /dev/sdb4 || umount -q -lf /dev/sdb4'
+# --- partition ---------------------------------------------------------------
+sudo sfdisk --wipe always --wipe-partitions always /dev/sdb << _EOT_
+label: gpt
+first-lba: 34
+start=34, size=  2014, type=21686148-6449-6E6F-744E-656564454649, attrs="GUID:62,63"
+start=  , size=256MiB, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
+start=  , size=  2GiB, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
+start=  , size=      , type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
+_EOT_
+# --- format ------------------------------------------------------------------
+sudo mkfs.vfat -F 32              /dev/sdb2
+sudo mkfs.vfat -F 32 -n "CIDATA"  /dev/sdb3
+#sudo mkfs.exfat      -n "ISOFILE" /dev/sdb4
+sudo mkfs.ntfs -Q    -L "ISOFILE" /dev/sdb4
+sleep 1
+sudo sync
+lsblk -f /dev/sdb
+# =============================================================================
+# [ /dev/sdX1, /dev/sdX2 ] Boot and EFI partition
+# =============================================================================
+# --- boot loader -------------------------------------------------------------
+sudo mount /dev/sdb2 ./usb/
+sudo grub-install --target=i386-pc    --recheck   --boot-directory=./usb/boot /dev/sdb
+sudo grub-install --target=x86_64-efi --removable --boot-directory=./usb/boot --efi-directory=./usb
+# --- directory ---------------------------------------------------------------
+sudo mkdir -p ./usb/.disk
+sudo touch ./usb/.disk/info
+# --- grub.cfg ----------------------------------------------------------------
+cat << '_EOT_' | sudo tee ./usb/boot/grub/grub.cfg > /dev/null
+set default=0
+set timeout=-1
+
+search.fs_label "CIDATA"  cfgpart hd1,gpt3
+search.fs_label "ISOFILE" isopart hd1,gpt4
+
+loadfont $prefix/fonts/unicode.pf2
+
+set lang=ja_JP
+
+set gfxmode=1280x720
+insmod all_video
+insmod gfxterm
+terminal_output gfxterm
+
+set menu_color_normal=cyan/blue
+set menu_color_highlight=white/blue
+
+grub_platform
+
+insmod play
+play 960 440 1 0 4 440 1
+
+menuentry 'Unattended installation (Debian 12:testing)' {
+    set gfxpayload=keep
+    set isofile="/images/debian-testing-amd64-netinst.iso"
+    set isoscan="$isofile (testing)"
+    set isodist="debian/testing"
+    set preseed="/hd-media/preseed/debian/preseed.cfg"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+    if [ "$grub_platform" = "efi" ]; then rmmod tpm; fi
+    linux   ($cfgpart)/install.amd/$isodist/vmlinuz root=$cfgpart iso-scan/ask_which_iso="[sdb4] $isoscan" $locales fsck.mode=skip auto=true file=$preseed netcfg/disable_autoconfig=true ---
+#   initrd  ($cfgpart)/install.amd/$isodist/initrd.gz
+    initrd  ($cfgpart)/install.amd/$isodist/initrd.img
+}
+menuentry 'Unattended installation (Debian 11:stable)' {
+    set gfxpayload=keep
+    set isofile="/images/debian-11.6.0-amd64-netinst.iso"
+    set isoscan="$isofile (stable - 11.6)"
+    set isodist="debian/stable"
+    set preseed="/hd-media/preseed/debian/preseed.cfg"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+    if [ "$grub_platform" = "efi" ]; then rmmod tpm; fi
+    linux   ($cfgpart)/install.amd/$isodist/vmlinuz root=$cfgpart iso-scan/ask_which_iso="[sdb4] $isoscan" $locales fsck.mode=skip auto=true file=$preseed netcfg/disable_autoconfig=true ---
+#   initrd  ($cfgpart)/install.amd/$isodist/initrd.gz
+    initrd  ($cfgpart)/install.amd/$isodist/initrd.img
+}
+menuentry 'Unattended installation (Debian 10:oldstable)' {
+    set gfxpayload=keep
+    set isofile="/images/debian-10.13.0-amd64-netinst.iso"
+    set isoscan="$isofile (oldstable - 10.13)"
+    set isodist="debian/oldstable"
+    set preseed="/hd-media/preseed/debian/preseed_old.cfg"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+    if [ "$grub_platform" = "efi" ]; then rmmod tpm; fi
+    linux   ($cfgpart)/install.amd/$isodist/vmlinuz root=$cfgpart iso-scan/ask_which_iso="[sdb4] $isoscan" $locales fsck.mode=skip auto=true file=$preseed netcfg/disable_autoconfig=true ---
+#   initrd  ($cfgpart)/install.amd/$isodist/initrd.gz
+    initrd  ($cfgpart)/install.amd/$isodist/initrd.img
+}
+menuentry 'Unattended installation (Debian 9:oldoldstable)' {
+    set gfxpayload=keep
+    set isofile="/images/debian-9.13.0-amd64-netinst.iso"
+    set isoscan="$isofile (oldstable - 9.13)"
+    set isodist="debian/oldoldstable"
+    set preseed="/hd-media/preseed/debian/preseed_old.cfg"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+    if [ "$grub_platform" = "efi" ]; then rmmod tpm; fi
+    linux   ($cfgpart)/install.amd/$isodist/vmlinuz root=$cfgpart iso-scan/ask_which_iso="[sdb4] $isoscan" $locales fsck.mode=skip auto=true file=$preseed netcfg/disable_autoconfig=true ---
+#   initrd  ($cfgpart)/install.amd/$isodist/initrd.gz
+    initrd  ($cfgpart)/install.amd/$isodist/initrd.img
+}
+menuentry 'Unattended installation (Ubuntu 23.04:Lunar Lobster)' {
+    set gfxpayload=keep
+    set isofile="/images/ubuntu-23.04-beta-live-server-amd64.iso"
+    set isoscan="iso-scan/filename=$isofile"
+    set isodist="ubuntu/lunar"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+    if [ "$grub_platform" = "efi" ]; then rmmod tpm; fi
+    loopback loop ($isopart)$isofile
+    linux   (loop)/casper/vmlinuz root=$cfgpart $isoscan $locales fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+#   initrd  (loop)/casper/initrd
+    initrd  ($cfgpart)/install.amd/$isodist/initrd.img
+    loopback --delete loop
+}
+menuentry 'Unattended installation (Ubuntu 22.10:Kinetic Kudu)' {
+    set gfxpayload=keep
+    set isofile="/images/ubuntu-22.10-live-server-amd64.iso"
+    set isoscan="iso-scan/filename=$isofile"
+    set isodist="ubuntu/kinetic"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+    if [ "$grub_platform" = "efi" ]; then rmmod tpm; fi
+    loopback loop ($isopart)$isofile
+    linux   (loop)/casper/vmlinuz root=$cfgpart $isoscan $locales fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+#   initrd  (loop)/casper/initrd
+    initrd  ($cfgpart)/install.amd/$isodist/initrd.img
+    loopback --delete loop
+}
+menuentry 'Unattended installation (Ubuntu 22.04:Jammy Jellyfish)' {
+    set gfxpayload=keep
+    set isofile="/images/ubuntu-22.04.2-live-server-amd64.iso"
+    set isoscan="iso-scan/filename=$isofile"
+    set isodist="ubuntu/jammy"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+    if [ "$grub_platform" = "efi" ]; then rmmod tpm; fi
+    loopback loop ($isopart)$isofile
+    linux   (loop)/casper/vmlinuz root=$cfgpart $isoscan $locales fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+#   initrd  (loop)/casper/initrd
+    initrd  ($cfgpart)/install.amd/$isodist/initrd.img
+    loopback --delete loop
+}
+menuentry 'Unattended installation (Ubuntu 20.04:Focal Fossa)' {
+    set gfxpayload=keep
+    set isofile="/images/ubuntu-20.04.6-live-server-amd64.iso"
+    set isoscan="iso-scan/filename=$isofile"
+    set isodist="ubuntu/focal"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+    if [ "$grub_platform" = "efi" ]; then rmmod tpm; fi
+    loopback loop ($isopart)$isofile
+    linux   (loop)/casper/vmlinuz root=$cfgpart $isoscan $locales fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+#   initrd  (loop)/casper/initrd
+    initrd  ($cfgpart)/install.amd/$isodist/initrd.img
+    loopback --delete loop
+}
+menuentry 'Unattended installation (Ubuntu 18.04:Bionic Beaver)' {
+    set gfxpayload=keep
+    set isofile="/images/ubuntu-18.04.6-server-amd64.iso"
+    set isoscan="$isofile (bionic - 18.04)"
+    set isodist="ubuntu/bionic"
+    set preseed="/hd-media/preseed/ubuntu/preseed_old.cfg"
+    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+    if [ "$grub_platform" = "efi" ]; then rmmod tpm; fi
+    linux   ($cfgpart)/install.amd/$isodist/vmlinuz root=$cfgpart iso-scan/ask_which_iso="[sdb4] $isoscan" $locales fsck.mode=skip auto=true file=$preseed netcfg/disable_autoconfig=true ---
+#   initrd  ($cfgpart)/install.amd/$isodist/initrd.gz
+    initrd  ($cfgpart)/install.amd/$isodist/initrd.img
+}
+
+menuentry "System shutdown" {
+    echo "System shutting down..."
+    halt
+}
+menuentry "System restart" {
+    echo "System rebooting..."
+    reboot
+}
+_EOT_
+sudo umount ./usb/
+# =============================================================================
+# [ /dev/sdX3 ] Data partition
+# =============================================================================
+# --- directory ---------------------------------------------------------------
+sudo mount /dev/sdb3 ./usb/
+sudo mkdir -p ./usb/install.amd/debian/testing      \
+              ./usb/install.amd/debian/stable       \
+              ./usb/install.amd/debian/oldstable    \
+              ./usb/install.amd/debian/oldoldstable \
+              ./usb/install.amd/ubuntu/lunar        \
+              ./usb/install.amd/ubuntu/kinetic      \
+              ./usb/install.amd/ubuntu/jammy        \
+              ./usb/install.amd/ubuntu/focal        \
+              ./usb/install.amd/ubuntu/bionic
+#sudo mkdir -p ./usb/.disk
+#sudo touch ./usb/.disk/info
+# --- config file copy --------------------------------------------------------
+sudo cp --preserve=timestamps ./cfg/ubuntu.server/user-data                       ./usb/
+sudo touch ./usb/meta-data
+sudo touch ./usb/vendor-data
+sudo touch ./usb/network-config
+# --- initrd and vmlinuz (hd-media) -------------------------------------------
+for S in $(ls ./cfg/installer-hd-media/ | sed -e "s/^\(.*\)-.*$/\1/g")
+do
+  echo "copy $S initrd file."
+  case $S in
+    testing      | \
+    stable       | \
+    oldstable    | \
+    oldoldstable )
+      sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/$S/!(boot.img.gz) ./usb/install.amd/debian/$S/
+      ;;
+    lunar        | \
+    kinetic      | \
+    jammy        | \
+    focal        )
+      ;;
+    bionic       )
+      sudo cp --preserve=timestamps -r ./cfg/installer-hd-media/$S-updates/!(boot.img.gz) ./usb/install.amd/ubuntu/$S/
+      ;;
+    *            )
+      ;;
+  esac
+done
+# --- initrd and vmlinuz (iso file) -------------------------------------------
+sudo mount -r -o loop ./iso/ubuntu-23.04-beta-live-server-amd64.iso ./mnt/
+sudo cp -a ./mnt/casper/vmlinuz                                                   ./usb/install.amd/ubuntu/lunar/
+sudo cp -a ./mnt/casper/initrd                                                    ./usb/install.amd/ubuntu/lunar/
+sudo cp -a ./mnt/pool/main/l/linux/linux-modules-*_amd64.deb                      ./deb/
+sudo umount ./mnt
+sudo mount -r -o loop ./iso/ubuntu-22.10-live-server-amd64.iso ./mnt/
+sudo cp -a ./mnt/casper/vmlinuz                                                   ./usb/install.amd/ubuntu/kinetic/
+sudo cp -a ./mnt/casper/initrd                                                    ./usb/install.amd/ubuntu/kinetic/
+sudo cp -a ./mnt/pool/main/l/linux/linux-modules-*_amd64.deb                      ./deb/
+sudo umount ./mnt
+sudo mount -r -o loop ./iso/ubuntu-22.04.2-live-server-amd64.iso ./mnt/
+sudo cp -a ./mnt/casper/vmlinuz                                                   ./usb/install.amd/ubuntu/jammy/
+sudo cp -a ./mnt/casper/initrd                                                    ./usb/install.amd/ubuntu/jammy/
+sudo cp -a ./mnt/pool/main/l/linux/linux-modules-*_amd64.deb                      ./deb/
+sudo umount ./mnt
+sudo mount -r -o loop ./iso/ubuntu-20.04.6-live-server-amd64.iso ./mnt/
+sudo cp -a ./mnt/casper/vmlinuz                                                   ./usb/install.amd/ubuntu/focal/
+sudo cp -a ./mnt/casper/initrd                                                    ./usb/install.amd/ubuntu/focal/
+sudo cp -a ./mnt/pool/main/l/linux/linux-modules-*_amd64.deb                      ./deb/
+sudo umount ./mnt
+#sudo mount -r -o loop ./iso/ubuntu-18.04.6-server-amd64.iso ./mnt/
+#sudo cp -a ./mnt/install/vmlinuz                                                  ./usb/install.amd/ubuntu/bionic/
+#sudo cp -a ./mnt/install/initrd.gz                                                ./usb/install.amd/ubuntu/bionic/
+#sudo cp -a ./mnt/pool/main/l/linux/linux-modules-*_amd64.deb                      ./deb/
+#sudo umount ./mnt
+#sudo mount -r -o loop ./iso/lunar-desktop-amd64.iso ./mnt/
+#sudo cp -a ./mnt/casper/vmlinuz                                                   ./usb/install.amd/ubuntu/lunar/
+#sudo cp -a ./mnt/casper/initrd                                                    ./usb/install.amd/ubuntu/lunar/
+#sudo cp -a ./mnt/pool/main/l/linux/linux-modules-*_amd64.deb                      ./deb/
+#sudo umount ./mnt
+#sudo mount -r -o loop ./iso/lunar-desktop-legacy-amd64.iso ./mnt/
+#sudo cp -a ./mnt/casper/vmlinuz                                                   ./usb/install.amd/ubuntu/lunar/
+#sudo cp -a ./mnt/casper/initrd                                                    ./usb/install.amd/ubuntu/lunar/
+#sudo cp -a ./mnt/pool/main/l/linux/linux-modules-*_amd64.deb                      ./deb/
+#sudo umount ./mnt
+#sudo mount -r -o loop ./iso/ubuntu-22.10-desktop-amd64.iso ./mnt/
+#sudo cp -a ./mnt/casper/vmlinuz                                                   ./usb/install.amd/ubuntu/kinetic/
+#sudo cp -a ./mnt/casper/initrd                                                    ./usb/install.amd/ubuntu/kinetic/
+#sudo cp -a ./mnt/pool/main/l/linux/linux-modules-*_amd64.deb                      ./deb/
+#sudo umount ./mnt
+#sudo mount -r -o loop ./iso/ubuntu-22.04.2-desktop-amd64.iso ./mnt/
+#sudo cp -a ./mnt/casper/vmlinuz                                                   ./usb/install.amd/ubuntu/jammy/
+#sudo cp -a ./mnt/casper/initrd                                                    ./usb/install.amd/ubuntu/jammy/
+#sudo cp -a ./mnt/pool/main/l/linux/linux-modules-*_amd64.deb                      ./deb/
+#sudo umount ./mnt
+#sudo mount -r -o loop ./iso/ubuntu-20.04.6-desktop-amd64.iso ./mnt/
+#sudo cp -a ./mnt/casper/vmlinuz                                                   ./usb/install.amd/ubuntu/focal/
+#sudo cp -a ./mnt/casper/initrd                                                    ./usb/install.amd/ubuntu/focal/
+#sudo cp -a ./mnt/pool/main/l/linux/linux-modules-*_amd64.deb                      ./deb/
+#sudo umount ./mnt
+#sudo mount -r -o loop ./iso/ubuntu-18.04.6-desktop-amd64.iso ./mnt/
+#sudo cp -a ./mnt/casper/vmlinuz                                                   ./usb/install.amd/ubuntu/bionic/
+#sudo cp -a ./mnt/casper/initrd                                                    ./usb/install.amd/ubuntu/bionic/
+#sudo cp -a ./mnt/pool/main/l/linux/linux-modules-*_amd64.deb                      ./deb/
+#sudo umount ./mnt
+# --- initrd.gz ---------------------------------------------------------------
+sudo bash -c 'for S in testing stable oldstable oldoldstable \
+                       lunar kinetic jammy focal bionic
+do
+  echo "unzip $S initrd file."
+  rm -rf   ./ram/$S
+  mkdir -p ./ram/$S
+  case $S in
+    testing      | \
+    stable       | \
+    oldstable    | \
+    oldoldstable )
+      unmkinitramfs ./usb/install.amd/debian/$S/initrd.gz ./ram/$S
+      ;;
+    lunar        | \
+    kinetic      | \
+    jammy        | \
+    focal        | \
+    bionic       )
+      if [ -f ./usb/install.amd/ubuntu/$S/initrd ]; then
+        unmkinitramfs ./usb/install.amd/ubuntu/$S/initrd    ./ram/$S
+      else
+        unmkinitramfs ./usb/install.amd/ubuntu/$S/initrd.gz ./ram/$S
+      fi
+      ;;
+    *            )
+      ;;
+  esac
+done'
+# -----------------------------------------------------------------------------
+#   Debian 12    : testing         : debian-testing-amd64-netinst.iso        : 6.1.0-7-amd64
+#   Debian 11    : stable          : debian-11.6.0-amd64-netinst.iso         : 5.10.0-20-amd64
+#   Debian 10    : oldstable       : debian-10.13.0-amd64-netinst.iso        : 4.19.0-21-amd64
+#   Debian  9    : oldoldstable    : debian-9.13.0-amd64-netinst.iso         : 4.9.0-13-amd64
+#   Ubuntu 23.04 : Lunar Lobster   : ubuntu-23.04-beta-live-server-amd64.iso : 6.2.0-18-generic
+#   Ubuntu 22.10 : Kinetic Kudu    : ubuntu-22.10-live-server-amd64.iso      : 5.19.0-21-generic
+#   Ubuntu 22.04 : Jammy Jellyfish : ubuntu-22.04.2-live-server-amd64.iso    : 5.15.0-60-generic
+#   Ubuntu 20.04 : Focal Fossa     : ubuntu-20.04.6-live-server-amd64.iso    : 5.4.0-42-generic
+#   Ubuntu 18.04 : Bionic Beaver   : ubuntu-18.04.6-server-amd64.iso         : 4.15.0-156-generic
+# -----------------------------------------------------------------------------
+sudo rm -rf ./pac/*
+for F in $(ls ./deb/)
+do
+  echo "unpack $F"
+  V=$(echo $F | sed -e 's/\(linux-image\|linux-modules-extra\|linux-modules\)-\(.*\)_.*_.*$/\2/')
+  sudo dpkg -x ./deb/$F ./pac/$V
+done
+# -----------------------------------------------------------------------------
+for D in $(find ./ram/  -regextype posix-basic -regex '.*/lib/modules/.*/kernel/.*' -type d | sed -e 's~\(.*/lib/modules/.*/kernel\)/.*~\1~g' | sort -u)
+do
+  V=$(echo $D | sed -e 's~.*/lib/modules/\(.*\)/kernel~\1~g')
+  echo "copy kernel module: $V"
+  for T in fat exfat ntfs ntfs3 fuse
+  do
+    S=./pac/$V/lib/modules/$V/kernel/fs/$T
+    if [ -d $S/. ]; then
+      sudo cp -a $S $D/fs
+    fi
+  done
+done
+# -----------------------------------------------------------------------------
+sudo bash -c 'for S in $(ls ./ram/)
+do
+  if [ -d ./ram/$S/main/. ]; then
+    D="$S/main"
+  else
+    D="$S"
+  fi
+  if [ -f ./ram/$D/scripts/casper-premount/20iso_scan ]; then
+    sed -i ./ram/$D/scripts/casper-premount/20iso_scan \
+        -e "s~\(/isodevice\) *rw~\1 ro~"
+  fi
+  if [ ! -d ./ram/$D/etc/udev/rules.d/. ]; then
+    mkdir -p ./ram/$D/etc/udev/rules.d
+  fi
+  cat <<- _EOT_ > ./ram/$D/etc/udev/rules.d/99-filesystem.rules
+	ENV{ID_FS_TYPE}=="exfat", RUN{builtin}+="kmod load exfat"
+	ENV{ID_FS_TYPE}=="ntfs",  RUN{builtin}+="kmod load ntfs3"
+	ENV{ID_FS_TYPE}=="ntfs",  RUN{builtin}+="kmod load ntfs"
+_EOT_
+  if [ -d ./ram/$D/lib/modules/. ]; then
+    pushd ./ram/$D/lib/modules/ > /dev/null
+      K=$(ls)
+    popd > /dev/null
+    touch ./ram/$D/lib/modules/$K/modules.builtin.modinfo
+    depmod -a -b ram/$D $K
+  fi
+  if [ -d ./ram/$D/conf/. ]; then
+    cat <<- _EOT_ >> ./ram/$D/conf/modules
+		exfat
+		ntfs3
+		ntfs
+_EOT_
+  fi
+done'
+# -----------------------------------------------------------------------------
+for S in $(ls ./ram/)
+do
+  echo "make initrd-$S.img"
+  if [ -d ./ram/$S/main/. ]; then
+    D="$S/main"
+  else
+    D="$S"
+  fi
+  O=$(pwd)
+  pushd ./ram/$D/ > /dev/null
+    sudo bash -c "find . | cpio -R 0:0 -o -H newc --quie | gzip > $O/ird/initrd-$S.img"
+  popd > /dev/null
+done
+ls -lh ./ird/
+# -----------------------------------------------------------------------------
+for S in $(ls ./ram/)
+do
+  echo "copy initrd-$S.img"
+  case $S in
+    testing      | \
+    stable       | \
+    oldstable    | \
+    oldoldstable )
+      sudo cp -a ./ird/initrd-$S.img ./usb/install.amd/debian/$S/initrd.img
+      ;;
+    lunar        | \
+    kinetic      | \
+    jammy        | \
+    focal        | \
+    bionic       )
+      sudo cp -a ./ird/initrd-$S.img ./usb/install.amd/ubuntu/$S/initrd.img
+      ;;
+    *            )
+      ;;
+  esac
+done
+sudo umount ./usb/
+# =============================================================================
+# [ /dev/sdX4 ] Data partition
+# =============================================================================
+# --- directory ---------------------------------------------------------------
+sudo mount /dev/sdb4 ./usb/
+sudo mkdir -p ./usb/images                          \
+              ./usb/preseed/debian                  \
+              ./usb/preseed/ubuntu                  \
+              ./usb/nocloud
+# --- config file copy --------------------------------------------------------
+#sudo cp --preserve=timestamps ./cfg/debian/preseed.cfg                            ./usb/preseed/debian/
+sudo cp --preserve=timestamps ./cfg/debian/sub_late_command.sh                    ./usb/preseed/debian/
+#sudo cp --preserve=timestamps ./cfg/ubuntu.desktop/preseed.cfg                    ./usb/preseed/ubuntu/
+sudo cp --preserve=timestamps ./cfg/ubuntu.desktop/sub_late_command.sh            ./usb/preseed/ubuntu/
+sudo cp --preserve=timestamps ./cfg/ubuntu.desktop/sub_success_command.sh         ./usb/preseed/ubuntu/
+#sudo cp --preserve=timestamps ./cfg/ubuntu.server/user-data                       ./usb/nocloud/
+#sudo touch ./usb/nocloud/meta-data
+#sudo touch ./usb/nocloud/vendor-data
+#sudo touch ./usb/nocloud/network-config
+# --- config file change ------------------------------------------------------
+sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/debian/~g' ./cfg/debian/preseed.cfg         | sudo tee ./usb/preseed/debian/preseed.cfg > /dev/null
+sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/ubuntu/~g' ./cfg/ubuntu.desktop/preseed.cfg | sudo tee ./usb/preseed/ubuntu/preseed.cfg > /dev/null
+sed -e 's/bind9-utils/bind9utils/'                          \
+    -e 's/bind9-dnsutils/dnsutils/'                         \
+           ./usb/preseed/debian/preseed.cfg                 \
+| sudo tee ./usb/preseed/debian/preseed_old.cfg > /dev/null
+sed -e 's/bind9-utils/bind9utils/'                          \
+    -e 's/bind9-dnsutils/dnsutils/'                         \
+    -e '/d-i partman\/unmount_active/ s/^#/ /g'             \
+    -e '/d-i partman\/early_command/,/exit 0/ s/^#/ /g'     \
+           ./usb/preseed/ubuntu/preseed.cfg                 \
+| sudo tee ./usb/preseed/ubuntu/preseed_old.cfg > /dev/null
+# --- iso file copy -----------------------------------------------------------
+for F in \
+  debian-testing-amd64-netinst.iso        \
+  debian-11.6.0-amd64-netinst.iso         \
+  debian-10.13.0-amd64-netinst.iso        \
+  debian-9.13.0-amd64-netinst.iso         \
+  ubuntu-23.04-beta-live-server-amd64.iso \
+  ubuntu-22.10-live-server-amd64.iso      \
+  ubuntu-22.04.2-live-server-amd64.iso    \
+  ubuntu-20.04.6-live-server-amd64.iso    \
+  ubuntu-18.04.6-server-amd64.iso
+# ubuntu-18.04.6-live-server-amd64.iso    \
+# ubuntu-23.04-beta-desktop-amd64.iso     \
+# ubuntu-22.10-desktop-amd64.iso          \
+# ubuntu-22.04.2-desktop-amd64.iso        \
+# ubuntu-20.04.6-desktop-amd64.iso        \
+# ubuntu-18.04.6-desktop-amd64.iso
+do
+  echo "copy $F"
+  sudo cp --preserve=timestamps ./iso/$F ./usb/images/
+done
+# --- unmount -----------------------------------------------------------------
+sudo umount ./usb
+# =============================================================================
