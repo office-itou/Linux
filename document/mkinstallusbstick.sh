@@ -229,11 +229,11 @@ do
   mkdir -p ./lnx/$S
   mkdir -p ./deb/$S
   if [ -d ./mnt/casper/. ]; then
-    cp -a ./mnt/casper/initrd* ./mnt/casper/vmlinuz ./bld/$S/
-  elif [ -d ./mnt/install/. ]; then
-    cp -a ./mnt/install/.                           ./bld/$S/
+    cp -a ./mnt/casper/initrd* ./mnt/casper/vmlinuz   ./bld/$S/
+  elif [ -d ./mnt/install.amd/. ]; then
+    cp -a ./mnt/install.amd/.                         ./bld/$S/
   else
-    cp -a ./mnt/install.amd/.                       ./bld/$S/
+    cp -a ./mnt/install/initrd* ./mnt/install/vmlinuz ./bld/$S/
   fi
 #    linux-image-[0-9]*-amd64_*_* \
 #    linux-modules-[0-9]*-generic_*_* \
@@ -272,20 +272,20 @@ do
     libmd0-udeb_* \
     libmount1-udeb_* \
     libnettle8_* \
-    libnewt0\\.*-udeb_* \
+    libnewt0\.*-udeb_* \
     libp11-kit0_* \
     libpam-modules-bin_* \
     libpam-modules_* \
     libpam0g_* \
     libpcre2-8-0-udeb_* \
     libpcre3_* \
-    libperl5\\.*_* \
+    libperl5\.*_* \
     libreadline8-udeb_8.2-* \
     libselinux1-udeb_* \
+    libselinux1_* \
     libsemanage-common_* \
     libsemanage2_* \
     libsepol2_* \
-    libslang2_* \
     libslang2_* \
     libsmartcols1-udeb_* \
     libtasn1-* \
@@ -296,9 +296,11 @@ do
     locales_* \
     mount_* \
     ntfs-3g-udeb_* \
+    partman-auto-lvm_59ubuntu3_all.udeb \
+    partman-lvm_123_all.udeb \
     passwd_* \
     perl-base_* \
-    perl-modules-5\\.* \
+    perl-modules-5\.* \
     readline-common-udeb_* \
     sed_* \
     tar_* \
