@@ -174,6 +174,35 @@ funcDownload () {
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso"
 }
 funcDownload
+# === download: deb file ======================================================
+funcDownload_deb () {
+  sudo rm -rf ./opt/
+  mkdir -p ./opt
+  # ::: exfat :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  # --- stretch ---------------------------------------------------------------
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/stretch"                             "http://ftp.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.2.5-2_amd64.deb"
+  # --- buster ----------------------------------------------------------------
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "http://ftp.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-1_amd64.deb"
+  # --- bullseye --------------------------------------------------------------
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bullseye"                            "http://ftp.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-2_amd64.deb"
+  # --- bookworm --------------------------------------------------------------
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bookworm"                            "http://ftp.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
+  # --- bionic ----------------------------------------------------------------
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.2.8-1_amd64.deb"
+  # --- focal -----------------------------------------------------------------
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0-1_amd64.deb"
+  # --- jammy -----------------------------------------------------------------
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/jammy"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
+  # --- kinetic ---------------------------------------------------------------
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
+  # --- lunar -----------------------------------------------------------------
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.4.0-1_amd64.deb"
+  # ::: mount :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  # --- bionic ----------------------------------------------------------------
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/mount_2.31.1-0.4ubuntu3.7_amd64.deb"
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/libmount1_2.31.1-0.4ubuntu3.7_amd64.deb"
+}
+funcDownload_deb
 # ### make initramfs and deb file #############################################
 # === copy initrd and vmlinuz =================================================
 # apt-cache depends package
@@ -181,34 +210,38 @@ funcDownload
 # -----------------------------------------------------------------------------
 echo "copy initrd and vmlinuz"
 sudo bash -c 'mountpoint -q ./mnt/ && (umount -q -f ./mnt || umount -q -lf ./mnt)'
-sudo bash -c 'mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb)'
+sudo bash -c 'mountpoint -q ./usb/sdb/ && (umount -q -f ./usb/sdb || umount -q -lf ./usb/sdb)'
 sudo rm -rf ./mnt/
 sudo rm -rf ./bld/
 sudo rm -rf ./deb/
 mkdir -p ./mnt
 mkdir -p ./bld
 mkdir -p ./deb
-sudo bash -c 'for P in $(find ./iso/ \( -name 'debian-*-amd64-netinst.iso' -o -name 'ubuntu-*-live-server-amd64.iso' \) \( -type f -o -type l \))
+sudo bash -c 'for P in $(find ./iso/ \( -name 'debian-*-amd64-netinst.iso' \
+                                     -o -name 'ubuntu-2*-live-server-amd64.iso' \
+                                     -o -name 'ubuntu-1*[!live]-server-amd64.iso' \) \( -type f -o -type l \))
 do
   mount -r -o loop $P ./mnt
-  N=$(cat ./mnt/.disk/info | awk -F '\''\ '\'' '\''{split($1,A,"-"); print tolower(A[1]);}'\'')
-  S=$(cat ./mnt/.disk/info | awk -F '\''\"'\'' '\''{split($2,A," "); print tolower(A[1]);}'\'')
+  N=$(awk -F '\''\ '\'' '\''{split($1,A,"-"); print tolower(A[1]);}'\'' ./mnt/.disk/info)
+  S=$(awk -F '\''\"'\'' '\''{split($2,A," "); print tolower(A[1]);}'\'' ./mnt/.disk/info)
   printf "copy initrd and vmlinuz: %-6.6s : %-8.8s : %s\n" $N $S $P
   mkdir -p ./bld/$S
   mkdir -p ./lnx/$S
   mkdir -p ./deb/$S
   if [ -d ./mnt/casper/. ]; then
     cp -a ./mnt/casper/initrd* ./mnt/casper/vmlinuz ./bld/$S/
+  elif [ -d ./mnt/install/. ]; then
+    cp -a ./mnt/install/.                           ./bld/$S/
   else
     cp -a ./mnt/install.amd/.                       ./bld/$S/
   fi
+#    linux-image-[0-9]*-amd64_*_* \
+#    linux-modules-[0-9]*-generic_*_* \
+#    linux-modules-extra-[0-9]*-generic_*_* \
 #    cdebconf-* \
 #    debconf_* \
 #    libacl1-udeb_* \
   for F in \
-    linux-image-[0-9]*-amd64_*_* \
-    linux-modules-[0-9]*-generic_*_* \
-    linux-modules-extra-[0-9]*-generic_*_* \
     adduser_* \
     dpkg_* \
     exfat-fuse_* \
@@ -271,37 +304,12 @@ do
     tar_* \
     zlib1g-udeb_*
   do
-    printf '\''  %-20.20s : '\'' '\"'$F'\"'
-    find ./mnt/pool/ -name '\"'$F'\"' \( -type f -o -type l \) -printf '\''%f'\'' -exec cp -a '\'{}\'' ./deb/$S/ \;
-    printf '\''\n'\''
+    printf '\''  %-20.20s : %s\n'\'' '\"'$F'\"' "$(find ./mnt/pool/main/ -name ''$F'' -type f -printf '%f' -exec cp -a '\'{}\'' ./deb/$S/ \;)"
   done
+  find ./mnt/pool/ -regextype posix-basic -regex '\''.*/\(linux\|linux-signed\(-amd64\)*\)/linux-\(image\|modules\).*-[0-9]*-\(amd64\|generic\)*_.*'\'' \
+     -type f -printf '\''  linux image file     : %f\n'\'' -exec cp -a '\'{}\'' ./deb/$S/ \;
   umount ./mnt
 done'
-# === download: deb file ======================================================
-funcDownload_deb () {
-  sudo rm -rf ./opt/
-  mkdir -p ./opt
-  # ::: exfat :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  # --- stretch ---------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/stretch"                             "http://ftp.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.2.5-2_amd64.deb"
-  # --- buster ----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "http://ftp.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-1_amd64.deb"
-  # --- bullseye --------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bullseye"                            "http://ftp.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-2_amd64.deb"
-  # --- bookworm --------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bookworm"                            "http://ftp.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
-  # --- bionic ----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.2.8-1_amd64.deb"
-  # --- focal -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0-1_amd64.deb"
-  # --- jammy -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/jammy"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
-  # --- kinetic ---------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
-  # --- lunar -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.4.0-1_amd64.deb"
-}
-funcDownload_deb
 # === unpack deb file =========================================================
 echo "unpack deb file"
 sudo rm -rf ./pac/
@@ -481,7 +489,7 @@ do
   echo "enter Ctrl+C"
   read DUMMY
 done
-sudo bash -c 'mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb)'
+sudo bash -c 'mountpoint -q ./usb/sdb/ && (umount -q -f ./usb/sdb || umount -q -lf ./usb/sdb)'
 sudo bash -c 'umount -q /dev/sdb1 || umount -q -lf /dev/sdb1'
 sudo bash -c 'umount -q /dev/sdb2 || umount -q -lf /dev/sdb2'
 sudo bash -c 'umount -q /dev/sdb3 || umount -q -lf /dev/sdb3'
@@ -509,20 +517,20 @@ lsblk -f /dev/sdb
 # *** [ USB device: /dev/sdb1, /dev/sdb2 ] ***
 # === mount /dev/sdX2 =========================================================
 echo "mount /dev/sdX2"
-sudo rm -rf ./usb/
-mkdir -p ./usb
-sudo mount /dev/sdb2 ./usb/
+sudo rm -rf ./usb/sdb/sdb/
+mkdir -p ./usb/sdb
+sudo mount /dev/sdb2 ./usb/sdb/
 # === install boot loader =====================================================
 echo "install boot loader"
-sudo grub-install --target=i386-pc    --recheck   --boot-directory=./usb/boot /dev/sdb
-sudo grub-install --target=x86_64-efi --removable --boot-directory=./usb/boot --efi-directory=./usb
+sudo grub-install --target=i386-pc    --recheck   --boot-directory=./usb/sdb/boot /dev/sdb
+sudo grub-install --target=x86_64-efi --removable --boot-directory=./usb/sdb/boot --efi-directory=./usb/sdb
 # === make .disk directory ====================================================
 echo "make .disk directory"
-sudo mkdir -p ./usb/.disk
-sudo touch ./usb/.disk/info
+sudo mkdir -p ./usb/sdb/.disk
+sudo touch ./usb/sdb/.disk/info
 # === grub.cfg ================================================================
 echo "grub.cfg"
-cat << '_EOT_' | sudo tee ./usb/boot/grub/grub.cfg > /dev/null
+cat << '_EOT_' | sudo tee ./usb/sdb/boot/grub/grub.cfg > /dev/null
 set default=0
 set timeout=-1
 
@@ -670,34 +678,34 @@ menuentry "System restart" {
 _EOT_
 # === unmount =================================================================
 echo "unmount"
-sudo umount ./usb/
+sudo umount ./usb/sdb/
 # ### USB Device: [ /dev/sdX3 ] Data partition ################################
 # *** [ USB device: /dev/sdb3 ] ***
 # === mount /dev/sdX3 =========================================================
 echo "mount /dev/sdX3"
-sudo mount /dev/sdb3 ./usb/
+sudo mount /dev/sdb3 ./usb/sdb/
 # === copy boot loader and setting files ======================================
 echo "copy boot loader and setting files"
-sudo cp --preserve=timestamps -u -r ./img/install.amd/ ./usb/
-sudo cp --preserve=timestamps -u    ./cfg/ubuntu.server/user-data ./usb/
-sudo touch ./usb/meta-data
-sudo touch ./usb/vendor-data
-sudo touch ./usb/network-config
+sudo cp --preserve=timestamps -u -r ./img/install.amd/ ./usb/sdb/
+sudo cp --preserve=timestamps -u    ./cfg/ubuntu.server/user-data ./usb/sdb/
+sudo touch ./usb/sdb/meta-data
+sudo touch ./usb/sdb/vendor-data
+sudo touch ./usb/sdb/network-config
 # === unmount =================================================================
 echo "unmount"
-sudo umount ./usb/
+sudo umount ./usb/sdb/
 # ### USB Device: [ /dev/sdX4 ] Data partition ################################
 # *** [ USB device: /dev/sdb4 ] ***
 # === mount /dev/sdX4 =========================================================
 echo "mount /dev/sdX4"
-sudo mount /dev/sdb4 ./usb/
+sudo mount /dev/sdb4 ./usb/sdb/
 # === copy iso files ==========================================================
 echo "copy iso files"
-sudo cp --preserve=timestamps -u -r ./img/images/  ./usb/
-sudo cp --preserve=timestamps -u -r ./img/nocloud/ ./usb/
-sudo cp --preserve=timestamps -u -r ./img/preseed/ ./usb/
+sudo cp --preserve=timestamps -u -r ./img/images/  ./usb/sdb/
+sudo cp --preserve=timestamps -u -r ./img/nocloud/ ./usb/sdb/
+sudo cp --preserve=timestamps -u -r ./img/preseed/ ./usb/sdb/
 # === unmount =================================================================
-sudo umount ./usb
+sudo umount ./usb/sdb
 echo "unmount"
 # =============================================================================
 echo "complete"
