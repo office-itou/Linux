@@ -62,6 +62,8 @@
 ##	2023/04/01 000.0000 J.Itou         処理見直し
 ##	2023/04/13 000.0000 J.Itou         リスト更新: Ubuntu 23.04 (Lunar Lobster) Beta 変更
 ##	2023/04/20 000.0000 J.Itou         リスト更新: Ubuntu 23.04 (Lunar Lobster) 変更
+##	2023/04/24 000.0000 J.Itou         リスト更新: Debian oldoldstable mini.iso 変更
+##	2023/04/25 000.0000 J.Itou         リスト更新: Debian oldoldstable 削除 (公式サポート切れ)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -90,17 +92,16 @@
 	ARRAY_NAME=()
 
 	readonly ARRAY_NAME_MINI=(                                                                                                                                                                                                                                                                                                            \
-	    "debian         http://deb.debian.org/debian/dists/oldoldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                   -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
 	    "debian         http://deb.debian.org/debian/dists/oldstable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                      -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
 	    "debian         http://deb.debian.org/debian/dists/stable/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                         -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
 	    "debian         https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/netboot/mini.iso                                                                       -                                           preseed_debian.cfg                          202x-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                             -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   bionic          Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso                       -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   focal           Ubuntu_20.04(Focal_Fossa):LTS    " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+#	    "debian         http://archive.debian.org/debian/dists/stretch/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                    -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
 #	    "debian         http://deb.debian.org/debian/dists/bookworm/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                       mini-bookworm-${ARC_TYPE}.iso               preseed_debian.cfg                          202x-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 
 	readonly ARRAY_NAME_NET=(                                                                                                                                                                                                                                                                                                             \
-	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-[0-9.]*-amd64-netinst.iso                                 -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable   Debian__9.xx(stretch)             " \
 	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-[0-9.]*-amd64-netinst.iso                                    -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable      Debian_10.xx(buster)              " \
 	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-[0-9.]*-amd64-netinst.iso                                             -                                           preseed_debian.cfg                          2019-07-06   2026-xx-xx   stable         Debian_11.xx(bullseye)            " \
 	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                              -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing        Debian_12.xx(bookworm)            " \
@@ -116,13 +117,13 @@
 	    "suse           https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                             -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21 -                                 " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+#	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-[0-9.]*-amd64-netinst.iso                                 -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable   Debian__9.xx(stretch)             " \
 #	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_alpha2/amd64/iso-cd/debian-bookworm-DI-alpha2-amd64-netinst.iso                               -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing        Debian_12.xx(bookworm)            " \
 #	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/35/Server/x86_64/iso/Fedora-Server-netinst-x86_64-35-1.2.iso                    -                                           kickstart_common.cfg                        2021-11-02   2022-12-13   kernel_5.14    -                                 " \
 #	    "suse           https://download.opensuse.org/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Current.iso                                 -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21 -                                 " \
 #	    "suse           https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                      -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x     -                                 " \
 
 	readonly ARRAY_NAME_DVD=(                                                                                                                                                                                                                                                                                                             \
-	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-[0-9.]*-amd64-DVD-1.iso                                  -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
 	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-[0-9.]*-amd64-DVD-1.iso                                     -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
 	    "debian         https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-[0-9.]*-amd64-DVD-1.iso                                              -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
 	    "debian         https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                                -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
@@ -142,7 +143,6 @@
 	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9.]*-latest-x86_64-dvd.iso                                                   -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                             -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
-	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9.]*-amd64-lxde.iso                       -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
 	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-[0-9.]*-amd64-lxde.iso                          -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
 	    "debian         http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-[0-9.]*-amd64-lxde.iso                                   -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
 	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                     -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
@@ -155,6 +155,8 @@
 	    "ubuntu         http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 	    "ubuntu         http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso                                                                -                                           preseed_ubuntu.cfg                          2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+#	    "debian         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-[0-9.]*-amd64-DVD-1.iso                                  -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
+#	    "debian         http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-[0-9.]*-amd64-lxde.iso                       -                                           preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
 #	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-cinnamon.iso                                 -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 #	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-gnome.iso                                    -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 #	    "debian         http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-kde.iso                                      -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
@@ -2112,17 +2114,17 @@ fncRemaster () {
 					fncCreate_late_command "./preseed"
 					case "`echo ${CODE_NAME[7]} | sed -e 's/^.*(\(.*\)).*$/\1/'`" in
 						wheezy         | \
-						jessie         )
+						jessie         | \
+						stretch        )
 							sed -i preseed/preseed.cfg          \
 							    -e 's/bind9-utils/bind9utils/'  \
 							    -e 's/bind9-dnsutils/dnsutils/'
-							sed -i "preseed/preseed.cfg"                                                                               \
-							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/hostname\).*$/\1 string archive.debian.org/'                     \
-							    -e 's/\(^[ \t]*d-i[ \t]*mirror\/http\/directory\).*$/\1 string \/debian-archive\/debian/'              \
-							    -e 's/\(^[ \t]*d-i[ \t]*mirror/http/mirror select\).*$/\1 select archive.debian.org/'                  \
-							    -e 's/\(^[ \t]*d-i[ \t]*apt-setup\/services-select\).*$/\1 multiselect updates/'
+							sed -i "preseed/preseed.cfg"                                                              \
+							    -e 's~\(^[ \t]*d-i[ \t]*mirror/http/hostname\).*$~\1 string archive.debian.org~'      \
+							    -e 's~\(^[ \t]*d-i[ \t]*mirror/http/mirror select\).*$~\1 select archive.debian.org~' \
+							    -e 's~\(^[ \t]*d-i[ \t]*apt-setup/services-select\).*$~\1 multiselect~'               \
+							    -e 's~\(^[ \t]*d-i[ \t]*apt-setup/security_host\).*$~\1 string archive.debian.org~'
 							;;
-						stretch        | \
 						buster         )
 							sed -i preseed/preseed.cfg          \
 							    -e 's/bind9-utils/bind9utils/'  \
