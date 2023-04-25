@@ -406,9 +406,9 @@ do
 			 	local iso_size=$(ls -sk /hd-media/$iso_to_try | { read size filename; echo ${size:-0}; })
 			 	#
 			 	if [ $(( $iso_size + 100000 )) -lt $ram ]; then
-			 		db_input low iso-scan/copy_iso_to_ram || true
-			 		db_go
-			 		db_get iso-scan/copy_iso_to_ram
+			#		db_input low iso-scan/copy_iso_to_ram || true
+			#		db_go
+			#		db_get iso-scan/copy_iso_to_ram
 			 		log "Copying /hd-media/$iso_to_try to /installer.iso"
 			 		cp /hd-media/$iso_to_try /installer.iso
 			 		log "Mounting /installer.iso on /cdrom"
@@ -423,6 +423,7 @@ do
 _EOT_
         )
         sed -i ./wrk/${S}/var/lib/dpkg/info/iso-scan.postinst                                                                    \
+            -e '\''/^use_this_iso () {/,/^}/ s~^\([[:space:]]*cd /hd-media .*$\)~#\1~'\''                                        \
             -e '\''/^use_this_iso () {/,/^}/ s~^\([[:space:]]*mount -t iso9660 -o loop,ro,exec $iso_to_try /cdrom .*$\)~#\1~'\'' \
             -e '\"'${INS_ROW:-1}a \\${INS_STR}'\"'
         IFS=${OLD_IFS}
@@ -513,10 +514,14 @@ sed -e 's/bind9-utils/bind9utils/'                          \
 | sudo tee ./img/preseed/debian/preseed_old.cfg > /dev/null
 sed -e 's/bind9-utils/bind9utils/'                          \
     -e 's/bind9-dnsutils/dnsutils/'                         \
-    -e '/d-i partman\/unmount_active/ s/^#/ /g'             \
-    -e '/d-i partman\/early_command/,/exit 0/ s/^#/ /g'     \
            ./img/preseed/ubuntu/preseed.cfg                 \
 | sudo tee ./img/preseed/ubuntu/preseed_old.cfg > /dev/null
+#sed -e 's/bind9-utils/bind9utils/'                          \
+#    -e 's/bind9-dnsutils/dnsutils/'                         \
+#    -e '/d-i partman\/unmount_active/ s/^#/ /g'             \
+#    -e '/d-i partman\/early_command/,/exit 0/ s/^#/ /g'     \
+#           ./img/preseed/ubuntu/preseed.cfg                 \
+#| sudo tee ./img/preseed/ubuntu/preseed_old.cfg > /dev/null
 # === copy iso file ===========================================================
 echo "copy iso file"
 for F in \
