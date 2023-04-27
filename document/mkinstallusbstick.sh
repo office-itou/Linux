@@ -178,7 +178,6 @@ funcDownload () {
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso"
 }
-funcDownload
 # === download: deb file ======================================================
 funcDownload_deb () {
   sudo rm -rf ./opt/
@@ -239,6 +238,8 @@ funcDownload_deb () {
   curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/mount_2.31.1-0.4ubuntu3.7_amd64.deb"
   curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/libmount1_2.31.1-0.4ubuntu3.7_amd64.deb"
 }
+# === download ================================================================
+funcDownload
 funcDownload_deb
 # ### make initramfs and deb file #############################################
 # === copy initrd and vmlinuz =================================================
@@ -288,10 +289,12 @@ do
     libselinux1_* \
     libsmartcols1-udeb_* \
     libsmartcols1_* \
+    libtinfo5_* \
     libzstd1-udeb_* \
     mount_* \
     ntfs-3g-udeb_* \
     ntfs-3g_* \
+    util-linux_* \
   )
   case ${S} in
     stretch  ) M+=(fuse-udeb_* libfuse2-udeb_* );;
@@ -405,28 +408,69 @@ do
 			 	local ram=$(grep ^MemAvailable: /proc/meminfo | { read label size unit; echo ${size:-0}; })
 			 	local iso_size=$(ls -sk /hd-media/$iso_to_try | { read size filename; echo ${size:-0}; })
 			 	#
+			 	cd /
 			 	if [ $(( $iso_size + 100000 )) -lt $ram ]; then
-			#		db_input low iso-scan/copy_iso_to_ram || true
-			#		db_go
-			#		db_get iso-scan/copy_iso_to_ram
+			 		# We have enough RAM to be able to copy the ISO to RAM,
+			 		# let'\''s offer it to the user
+			 		db_input low iso-scan/copy_iso_to_ram || true
+			 		db_go
+			 		db_get iso-scan/copy_iso_to_ram
+			 		RET="true"
+			 	else
+			 		log "Skipping debconf question iso-scan/copy_iso_to_ram:" \
+			 		    "not enough memory available ($ram kB) to copy" \
+			 		    "/hd-media/$iso_to_try ($iso_size kB) into RAM and still" \
+			 		    "have 100 MB free."
+			 		RET="false"
+			 	fi
+			 
+			 	if [ "$RET" = false ]; then
+			 		# Direct mount
+			 		log "Mounting /hd-media/$iso_to_try on /cdrom"
+			 		mount -t iso9660 -o loop,ro,exec /hd-media/$iso_to_try /cdrom 2>/dev/null
+			 	else
+			 		# We copy the ISO to RAM before mounting it
 			 		log "Copying /hd-media/$iso_to_try to /installer.iso"
 			 		cp /hd-media/$iso_to_try /installer.iso
 			 		log "Mounting /installer.iso on /cdrom"
 			 		mount -t iso9660 -o loop,ro,exec /installer.iso /cdrom 2>/dev/null
-			 		log "Unmounting /hd-media"
-			 		umount /hd-media
-			 	else
-			 		RET="false"
-			 		log "Mounting /hd-media/$iso_to_try on /cdrom"
-			 		mount -t iso9660 -o loop,ro,exec /hd-media/$iso_to_try /cdrom 2>/dev/null
+			 		# So that we can free the original device
+			#		log "Unmounting /hd-media"
+			#		cd /
+			#		umount /hd-media
+			#		mount | sort
+			#		log "USB media freed"
 			 	fi
 _EOT_
         )
+        IFS=${OLD_IFS}
         sed -i ./wrk/${S}/var/lib/dpkg/info/iso-scan.postinst                                                                    \
-            -e '\''/^use_this_iso () {/,/^}/ s~^\([[:space:]]*cd /hd-media .*$\)~#\1~'\''                                        \
             -e '\''/^use_this_iso () {/,/^}/ s~^\([[:space:]]*mount -t iso9660 -o loop,ro,exec $iso_to_try /cdrom .*$\)~#\1~'\'' \
             -e '\"'${INS_ROW:-1}a \\${INS_STR}'\"'
-        IFS=${OLD_IFS}
+        cat <<- '\''_EOT_'\'' >> ./wrk/${S}/var/lib/dpkg/info/iso-scan.templates
+			
+			Template: iso-scan/copy_iso_to_ram
+			Type: boolean
+			Default: false
+			Description: Copy the ISO image into RAM before mounting it?
+			 There is enough available memory to be able to copy the ISO image into
+			 RAM.
+			 .
+			 Choosing this option allows reusing the disk hosting the ISO image. If you
+			 don'\''t do it, the disk will be actively used to access the ISO image and
+			 it can'\''t be partitioned by the installer.
+			 .
+			 Note however that if you overwrite the disk containing the ISO image, you
+			 should not reboot before the end of the installation as you will not be
+			 able to restart the installer since the ISO image will be gone from the
+			 hard disk and memory.
+			Description-ja.UTF-8: マウントする前に、ISO イメージを RAM にコピーしますか?
+			 ISO イメージを RAM にコピーするのに十分なメモリがあります。
+			 .
+			 「はい」を選ぶと、ISO イメージを提供したディスクを再利用できます。「いいえ」を選ぶと、ディスクは ISO イメージにアクセスするのに随時使われるので、インストーラでそのディスクをパーティショニングすることはできません。
+			 .
+			 ただし、ISO イメージを含むディスクを上書きすると、ISO イメージはディスクからもメモリからも消失するため、インストーラを再度開始できなくなるので、このインストールを完了するまで再起動してはならないことに注意してください。
+_EOT_
       fi
       ;;
     focal    ) ;;
@@ -435,12 +479,15 @@ _EOT_
     lunar    ) ;;
     *        ) ;;
   esac
+done'
   # COMPRESS: [ gzip | bzip2 | lz4 | lzma | lzop | xz | zstd ]
   # COMPRESSLEVEL: ...
   # Valid values are:
   # 1 -  9 for gzip|bzip2|lzma|lzop
   # 0 -  9 for  lz4|xz
   # 0 - 19 for zstd
+sudo bash -c 'for S in $(ls ./ram/)
+do
   O=$(pwd)
   pushd ./wrk/${S} > /dev/null
     printf "make initramfs : %-8.8s : %s\n" ${S} ${O}/ird/initrd-${S}.img
@@ -463,8 +510,8 @@ do
     bullseye | \
     bookworm )
       mkdir -p ./img/install.amd/debian/${S}
-      cp -a -L -u          ./bld/${S}/. ./img/install.amd/debian/${S}/
-      cp -a -L -u --backup ./ird/${F}   ./img/install.amd/debian/${S}/initrd.img
+      cp -a -L -u ./bld/${S}/. ./img/install.amd/debian/${S}/
+      cp -a -L -u ./ird/${F}   ./img/install.amd/debian/${S}/initrd.img
       ;;
     bionic   | \
     focal    | \
@@ -472,8 +519,8 @@ do
     kinetic  | \
     lunar    )
       mkdir -p ./img/install.amd/ubuntu/${S}
-      cp -a -L -u          ./bld/${S}/. ./img/install.amd/ubuntu/${S}/
-      cp -a -L -u --backup ./ird/${F}   ./img/install.amd/ubuntu/${S}/initrd.img
+      cp -a -L -u ./bld/${S}/. ./img/install.amd/ubuntu/${S}/
+      cp -a -L -u ./ird/${F}   ./img/install.amd/ubuntu/${S}/initrd.img
       ;;
     *        )
       ;;
@@ -514,14 +561,10 @@ sed -e 's/bind9-utils/bind9utils/'                          \
 | sudo tee ./img/preseed/debian/preseed_old.cfg > /dev/null
 sed -e 's/bind9-utils/bind9utils/'                          \
     -e 's/bind9-dnsutils/dnsutils/'                         \
+    -e '/d-i partman\/unmount_active/ s/^#/ /g'             \
+    -e '/d-i partman\/early_command/,/exit 0/ s/^#/ /g'     \
            ./img/preseed/ubuntu/preseed.cfg                 \
 | sudo tee ./img/preseed/ubuntu/preseed_old.cfg > /dev/null
-#sed -e 's/bind9-utils/bind9utils/'                          \
-#    -e 's/bind9-dnsutils/dnsutils/'                         \
-#    -e '/d-i partman\/unmount_active/ s/^#/ /g'             \
-#    -e '/d-i partman\/early_command/,/exit 0/ s/^#/ /g'     \
-#           ./img/preseed/ubuntu/preseed.cfg                 \
-#| sudo tee ./img/preseed/ubuntu/preseed_old.cfg > /dev/null
 # === copy iso file ===========================================================
 echo "copy iso file"
 for F in \
