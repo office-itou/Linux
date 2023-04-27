@@ -399,7 +399,7 @@ do
       if [ -f  ./wrk/${S}/var/lib/dpkg/info/iso-scan.postinst ]; then
         OLD_IFS=${IFS}
         INS_ROW=$(
-          sed -n -e '\''/^[[:space:]]*use_this_iso () {/,/^[[:space:]]*}/ {/[[:space:]]*mount -t iso9660 -o loop,ro,exec $iso_to_try \/cdrom/=}'\'' \
+          sed -n -e '\''/^[[:space:]]*use_this_iso () {/,/^[[:space:]]*}$/ {/[[:space:]]*mount -t iso9660 -o loop,ro,exec $iso_to_try \/cdrom/=}'\'' \
             ./wrk/${S}/var/lib/dpkg/info/iso-scan.postinst
         )
         IFS= INS_STR=$(
@@ -444,8 +444,8 @@ do
 _EOT_
         )
         IFS=${OLD_IFS}
-        sed -i ./wrk/${S}/var/lib/dpkg/info/iso-scan.postinst                                                                    \
-            -e '\''/^use_this_iso () {/,/^}/ s~^\([[:space:]]*mount -t iso9660 -o loop,ro,exec $iso_to_try /cdrom .*$\)~#\1~'\'' \
+        sed -i ./wrk/${S}/var/lib/dpkg/info/iso-scan.postinst                                                                     \
+            -e '\''/^use_this_iso () {/,/^}$/ s~^\([[:space:]]*mount -t iso9660 -o loop,ro,exec $iso_to_try /cdrom .*$\)~#\1~'\'' \
             -e '\"'${INS_ROW:-1}a \\${INS_STR}'\"'
         cat <<- '\''_EOT_'\'' >> ./wrk/${S}/var/lib/dpkg/info/iso-scan.templates
 			
@@ -473,10 +473,36 @@ _EOT_
 _EOT_
       fi
       ;;
-    focal    ) ;;
-    jammy    ) ;;
-    kinetic  ) ;;
-    lunar    ) ;;
+    focal    | \
+    jammy    | \
+    kinetic  | \
+    lunar    )
+#     mkdir -p ./wrk/${S}/dev/.initramfs
+      if [ -f  ./wrk/${S}/scripts/casper-helpers ]; then
+        OLD_IFS=${IFS}
+        INS_ROW=$(
+          sed -n -e '\''/^[[:space:]]*find_files()/,/^[[:space:]]*}$/ {/[[:space:]]*vfat|ext2)/,/.*;;$/=}'\'' \
+            ./wrk/${S}/scripts/casper-helpers                                                                 \
+            | awk '\''END {print}'\''
+        )
+        IFS= INS_STR=$(
+          cat <<- '\''_EOT_'\'' | sed -e '\''s/^ //g'\'' | sed -z -e '\''s/\n/\\n/g'\''
+			                 exfat|ntfs)
+			                     :;;
+_EOT_
+        )
+        IFS=${OLD_IFS}
+        sed -i ./wrk/${S}/scripts/casper-helpers                                                                                                    \
+            -e '\''/[[:space:]]*is_supported_fs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ s/\(vfat.*\))/\1|exfat)/'\''                            \
+            -e '\''/[[:space:]]*wait_for_devs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ {/touch/i \\    mkdir -p /dev/.initramfs'\'' -e '\''}'\'' \
+            -e '\"'${INS_ROW:-1}a \\${INS_STR}'\"'
+      fi
+      if [ -f  ./wrk/${S}/scripts/lupin-helpers ]; then
+        sed -i ./wrk/${S}/scripts/lupin-helpers                                                                                                     \
+            -e '\''/[[:space:]]*is_supported_fs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ s/\(vfat.*\))/\1|exfat)/'\''                            \
+            -e '\''/[[:space:]]*wait_for_devs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ {/touch/i \\    mkdir -p /dev/.initramfs'\'' -e '\''}'\''
+      fi
+      ;;
     *        ) ;;
   esac
 done'
