@@ -1,6 +1,6 @@
 #!/bin/bash
 # *****************************************************************************
-# Unattended installation USB stick for multiple ISO files. (GPT NTFS Ver.)
+# Unattended installation USB stick for multiple ISO files. (GPT exFAT Ver.)
 # -----------------------------------------------------------------------------
 #   Debian 12    : testing      (bookworm) : debian-testing-amd64-netinst.iso        : 6.1.0-7-amd64
 #   Debian 11    : stable       (bullseye) : debian-11.6.0-amd64-netinst.iso         : 5.10.0-20-amd64
@@ -239,8 +239,8 @@ funcDownload_deb () {
   curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/libmount1_2.31.1-0.4ubuntu3.7_amd64.deb"
 }
 # === download ================================================================
-funcDownload
-funcDownload_deb
+#funcDownload
+#funcDownload_deb
 # ### make initramfs and deb file #############################################
 # === copy initrd and vmlinuz =================================================
 # apt-cache depends package
@@ -452,24 +452,8 @@ _EOT_
 			Template: iso-scan/copy_iso_to_ram
 			Type: boolean
 			Default: false
-			Description: Copy the ISO image into RAM before mounting it?
-			 There is enough available memory to be able to copy the ISO image into
-			 RAM.
-			 .
-			 Choosing this option allows reusing the disk hosting the ISO image. If you
-			 don'\''t do it, the disk will be actively used to access the ISO image and
-			 it can'\''t be partitioned by the installer.
-			 .
-			 Note however that if you overwrite the disk containing the ISO image, you
-			 should not reboot before the end of the installation as you will not be
-			 able to restart the installer since the ISO image will be gone from the
-			 hard disk and memory.
-			Description-ja.UTF-8: マウントする前に、ISO イメージを RAM にコピーしますか?
-			 ISO イメージを RAM にコピーするのに十分なメモリがあります。
-			 .
-			 「はい」を選ぶと、ISO イメージを提供したディスクを再利用できます。「いいえ」を選ぶと、ディスクは ISO イメージにアクセスするのに随時使われるので、インストーラでそのディスクをパーティショニングすることはできません。
-			 .
-			 ただし、ISO イメージを含むディスクを上書きすると、ISO イメージはディスクからもメモリからも消失するため、インストーラを再度開始できなくなるので、このインストールを完了するまで再起動してはならないことに注意してください。
+			Description: Copy the ISO image to a ramdisk with enough space?
+			Description-ja.UTF-8: ISO イメージを十分な容量のある RAM ディスクにコピーしますか?
 _EOT_
       fi
       ;;
@@ -647,8 +631,8 @@ _EOT_
 echo "format"
 sudo mkfs.vfat -F 32              /dev/sdb2
 sudo mkfs.vfat -F 32 -n "CIDATA"  /dev/sdb3
-#sudo mkfs.exfat      -n "ISOFILE" /dev/sdb4
-sudo mkfs.ntfs -Q    -L "ISOFILE" /dev/sdb4
+sudo mkfs.exfat      -n "ISOFILE" /dev/sdb4
+#sudo mkfs.ntfs -Q    -L "ISOFILE" /dev/sdb4
 sleep 1
 sudo sync
 lsblk -f /dev/sdb
