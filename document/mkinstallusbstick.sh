@@ -3,7 +3,7 @@
 # Unattended installation USB stick for multiple ISO files. (GPT exFAT Ver.)
 # -----------------------------------------------------------------------------
 #   Debian 12    : testing      (bookworm) : debian-testing-amd64-netinst.iso        : 6.1.0-7-amd64
-#   Debian 11    : stable       (bullseye) : debian-11.6.0-amd64-netinst.iso         : 5.10.0-20-amd64
+#   Debian 11    : stable       (bullseye) : debian-11.7.0-amd64-netinst.iso         : 5.10.0-22-amd64
 #   Debian 10    : oldstable    (buster)   : debian-10.13.0-amd64-netinst.iso        : 4.19.0-21-amd64
 #   Debian  9    : oldoldstable (stretch)  : debian-9.13.0-amd64-netinst.iso         : 4.9.0-13-amd64
 #   Ubuntu 23.04 : Lunar Lobster           : ubuntu-23.04-live-server-amd64.iso      : 6.2.0-18-generic
@@ -108,12 +108,12 @@ funcDownload () {
   # ---------------------------------------------------------------------------
 # ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-DVD-1.iso          ./iso/debian-10.13.0-amd64-DVD-1.iso
   ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-netinst.iso        ./iso/debian-10.13.0-amd64-netinst.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-11.6.0-amd64-DVD-1.iso           ./iso/debian-11.6.0-amd64-DVD-1.iso
-  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-11.6.0-amd64-netinst.iso         ./iso/debian-11.6.0-amd64-netinst.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-11.7.0-amd64-DVD-1.iso           ./iso/debian-11.7.0-amd64-DVD-1.iso
+  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-11.7.0-amd64-netinst.iso         ./iso/debian-11.7.0-amd64-netinst.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-9.13.0-amd64-DVD-1.iso           ./iso/debian-9.13.0-amd64-DVD-1.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-9.13.0-amd64-netinst.iso         ./iso/debian-9.13.0-amd64-netinst.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-10.13.0-amd64-lxde.iso      ./iso/debian-live-10.13.0-amd64-lxde.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-11.6.0-amd64-lxde.iso       ./iso/debian-live-11.6.0-amd64-lxde.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-11.7.0-amd64-lxde.iso       ./iso/debian-live-11.7.0-amd64-lxde.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-9.13.0-amd64-lxde.iso       ./iso/debian-live-9.13.0-amd64-lxde.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso      ./iso/debian-live-testing-amd64-lxde.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso          ./iso/debian-testing-amd64-DVD-1.iso
@@ -148,19 +148,19 @@ funcDownload () {
 # echo "debian netinst"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-10.13.0-amd64-netinst.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-11.6.0-amd64-netinst.iso"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-11.7.0-amd64-netinst.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
   # ::: debian DVD ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "debian DVD"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-10.13.0-amd64-DVD-1.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-11.6.0-amd64-DVD-1.iso"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-11.7.0-amd64-DVD-1.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso"
   # ::: debian live DVD :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "debian live DVD"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-10.13.0-amd64-lxde.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.6.0-amd64-lxde.iso"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.7.0-amd64-lxde.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
   # ::: ubuntu mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "ubuntu mini.iso"
@@ -604,7 +604,7 @@ funcMake_copy_image () {
   echo "copy iso file"
   for F in \
     debian-testing-amd64-netinst.iso        \
-    debian-11.6.0-amd64-netinst.iso         \
+    debian-11.7.0-amd64-netinst.iso         \
     debian-10.13.0-amd64-netinst.iso        \
     ubuntu-23.04-live-server-amd64.iso      \
     ubuntu-22.10-live-server-amd64.iso      \
@@ -629,13 +629,14 @@ funcUSB_Device_partition_and_format () {
   # *** [ USB device: /dev/sdb ] ***
   # === device and mount check ================================================
   echo "device and mount check"
+  lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
   while :
   do
     if [ -b /dev/sdb ]; then
       break
     fi
     echo "device not found"
-    lsblk -f /dev/sd[a-z]
+    lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sd[a-z]
     echo "enter Ctrl+C"
     read DUMMY
   done
@@ -647,7 +648,7 @@ funcUSB_Device_partition_and_format () {
       break
     fi
   done
-  lsblk -f /dev/sdb
+  lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
   mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
   # === partition =============================================================
   echo "partition"
@@ -669,7 +670,7 @@ _EOT_
 # mkfs.ntfs -Q    -L "ISOFILE" /dev/sdb4
   sleep 3
   sync
-  lsblk -f /dev/sdb
+  lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
 }
 
 # ### USB Device: [ /dev/sdX1, /dev/sdX2 ] Boot and EFI partition #############
@@ -720,7 +721,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set isoscan="${isofile} (testing)"
 	    set isodist="debian/bookworm"
 	    set preseed="/hd-media/preseed/debian/preseed.cfg"
-	    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
@@ -728,11 +729,11 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	}
 	menuentry 'Unattended installation (Debian 11:stable [bullseye])' {
 	    set gfxpayload=keep
-	    set isofile="/images/debian-11.6.0-amd64-netinst.iso"
+	    set isofile="/images/debian-11.7.0-amd64-netinst.iso"
 	    set isoscan="${isofile} (stable - 11.6)"
 	    set isodist="debian/bullseye"
 	    set preseed="/hd-media/preseed/debian/preseed.cfg"
-	    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
@@ -744,7 +745,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set isoscan="${isofile} (oldstable - 10.13)"
 	    set isodist="debian/buster"
 	    set preseed="/hd-media/preseed/debian/preseed_old.cfg"
-	    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
@@ -756,7 +757,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	#    set isoscan="${isofile} (oldstable - 9.13)"
 	#    set isodist="debian/stretch"
 	#    set preseed="/hd-media/preseed/debian/preseed_oldold.cfg"
-	#    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	#    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	#    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	#    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
 	#    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
@@ -767,12 +768,12 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set isofile="/images/ubuntu-23.04-live-server-amd64.iso"
 	    set isoscan="iso-scan/filename=${isofile}"
 	    set isodist="ubuntu/lunar"
-	    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	#   loopback loop (${isopart})${isofile}
-	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	#   initrd  (loop)/casper/initrd
 	#   loopback --delete loop
 	}
@@ -781,12 +782,12 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set isofile="/images/ubuntu-22.10-live-server-amd64.iso"
 	    set isoscan="iso-scan/filename=${isofile}"
 	    set isodist="ubuntu/kinetic"
-	    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	#   loopback loop (${isopart})${isofile}
-	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	#   initrd  (loop)/casper/initrd
 	#   loopback --delete loop
 	}
@@ -795,12 +796,12 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set isofile="/images/ubuntu-22.04.2-live-server-amd64.iso"
 	    set isoscan="iso-scan/filename=${isofile}"
 	    set isodist="ubuntu/jammy"
-	    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	#   loopback loop (${isopart})${isofile}
-	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	#   initrd  (loop)/casper/initrd
 	#   loopback --delete loop
 	}
@@ -809,12 +810,12 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set isofile="/images/ubuntu-20.04.6-live-server-amd64.iso"
 	    set isoscan="iso-scan/filename=${isofile}"
 	    set isodist="ubuntu/focal"
-	    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	#   loopback loop (${isopart})${isofile}
-	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=1 ---
+	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	#   initrd  (loop)/casper/initrd
 	#   loopback --delete loop
 	}
@@ -824,7 +825,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set isoscan="${isofile} (bionic - 18.04)"
 	    set isodist="ubuntu/bionic"
 	    set preseed="/hd-media/preseed/ubuntu/preseed_old.cfg"
-	    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
@@ -881,7 +882,7 @@ funcUSB_Device_Data_File_partition () {
   # === unmount ===============================================================
   umount ./usb
   echo "unmount"
-  lsblk -f /dev/sdb
+  lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
 }
 
 # ### main ####################################################################
@@ -891,15 +892,15 @@ main () {
     exit 1
   fi
   echo "$(date +"%Y/%m/%d %H:%M:%S") processing start"
-#  funcDownload
-#  funcDownload_deb
-#  funcCopy_initrd_and_vmlinuz
-#  funcUnpack_deb_file
-#  funcUnpack_initramfs
-#  funcCopy_and_make_kernel_module
-#  funcMake_initramfs
-#  funcCopy_initramfs
-#  funcMake_copy_image
+  funcDownload
+  funcDownload_deb
+  funcCopy_initrd_and_vmlinuz
+  funcUnpack_deb_file
+  funcUnpack_initramfs
+  funcCopy_and_make_kernel_module
+  funcMake_initramfs
+  funcCopy_initramfs
+  funcMake_copy_image
   funcUSB_Device_partition_and_format
   funcUSB_Device_Boot_and_EFI_partition
   funcUSB_Device_Inst_File_partition
