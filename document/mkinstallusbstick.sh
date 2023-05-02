@@ -2,15 +2,16 @@
 # *****************************************************************************
 # Unattended installation USB stick for multiple ISO files. (GPT exFAT Ver.)
 # -----------------------------------------------------------------------------
-#   Debian 12    : testing      (bookworm) : debian-testing-amd64-netinst.iso        : 6.1.0-7-amd64
-#   Debian 11    : stable       (bullseye) : debian-11.7.0-amd64-netinst.iso         : 5.10.0-22-amd64
-#   Debian 10    : oldstable    (buster)   : debian-10.13.0-amd64-netinst.iso        : 4.19.0-21-amd64
-#   Debian  9    : oldoldstable (stretch)  : debian-9.13.0-amd64-netinst.iso         : 4.9.0-13-amd64
-#   Ubuntu 23.04 : Lunar Lobster           : ubuntu-23.04-live-server-amd64.iso      : 6.2.0-18-generic
-#   Ubuntu 22.10 : Kinetic Kudu            : ubuntu-22.10-live-server-amd64.iso      : 5.19.0-21-generic
-#   Ubuntu 22.04 : Jammy Jellyfish         : ubuntu-22.04.2-live-server-amd64.iso    : 5.15.0-60-generic
-#   Ubuntu 20.04 : Focal Fossa             : ubuntu-20.04.6-live-server-amd64.iso    : 5.4.0-42-generic
-#   Ubuntu 18.04 : Bionic Beaver           : ubuntu-18.04.6-server-amd64.iso         : 4.15.0-156-generic
+#   Debian xx    : -------- (testing)      : debian-testing-amd64-netinst.iso         : 6.1.0-7-amd64
+#   Debian 12    : bookworm (testing)      : debian-bookworm-DI-rc2-amd64-netinst.iso : 6.1.0-7-amd64
+#   Debian 11    : bullseye (stable)       : debian-11.7.0-amd64-netinst.iso          : 5.10.0-22-amd64
+#   Debian 10    : buster   (oldstable)    : debian-10.13.0-amd64-netinst.iso         : 4.19.0-21-amd64
+#   Debian  9    : stretch  (oldoldstable) : debian-9.13.0-amd64-netinst.iso          : 4.9.0-13-amd64
+#   Ubuntu 23.04 : Lunar Lobster           : ubuntu-23.04-live-server-amd64.iso       : 6.2.0-18-generic
+#   Ubuntu 22.10 : Kinetic Kudu            : ubuntu-22.10-live-server-amd64.iso       : 5.19.0-21-generic
+#   Ubuntu 22.04 : Jammy Jellyfish         : ubuntu-22.04.2-live-server-amd64.iso     : 5.15.0-60-generic
+#   Ubuntu 20.04 : Focal Fossa             : ubuntu-20.04.6-live-server-amd64.iso     : 5.4.0-42-generic
+#   Ubuntu 18.04 : Bionic Beaver           : ubuntu-18.04.6-server-amd64.iso          : 4.15.0-156-generic
 # *****************************************************************************
 #   ./bld : boot loader files
 #   ./cfg : setting files (preseed.cfg/cloud-init/initrd/vmlinuz/...)
@@ -41,8 +42,8 @@
 # apt-get install fdisk curl dosfstools grub2-common initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd
 
 # ### download ################################################################
-# === download: iso file ======================================================
-funcDownload_iso () {
+# === download: cfg file ======================================================
+funcDownload_cfg () {
   # ### download: setting file ################################################
   rm -rf ./cfg/
   mkdir -p ./cfg
@@ -54,39 +55,41 @@ funcDownload_iso () {
   curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                      "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_late_command.sh"
   curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                      "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_success_command.sh"
   curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.server"                       "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.server/user-data"
-  # === oldoldstable ==========================================================
-# echo "oldoldstable"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable"     "http://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/boot.img.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable"     "http://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/initrd.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable"     "http://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/vmlinuz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable/gtk" "http://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldoldstable/gtk" "http://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
-  # === oldstable =============================================================
-  echo "oldstable"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable"        "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/boot.img.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable"        "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable"        "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/vmlinuz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable/gtk"    "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/oldstable/gtk"    "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
-  # === stable ================================================================
-  echo "stable"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable"           "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/boot.img.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable"           "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable"           "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/vmlinuz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable/gtk"       "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stable/gtk"       "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+  # === stretch ===============================================================
+# echo "stretch"
+# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/boot.img.gz"
+# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/initrd.gz"
+# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/vmlinuz"
+# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stretch/gtk"      "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stretch/gtk"      "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+  # === buster ================================================================
+  echo "buster"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/boot.img.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/initrd.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/vmlinuz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/buster/gtk"       "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/buster/gtk"       "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+  # === bullseye ==============================================================
+  echo "bullseye"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/boot.img.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/initrd.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/vmlinuz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bullseye/gtk"     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bullseye/gtk"     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+  # === bookworm ==============================================================
+  echo "bookworm"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/boot.img.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/initrd.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/vmlinuz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bookworm/gtk"     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bookworm/gtk"     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
   # === testing ===============================================================
   echo "testing"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "http://deb.debian.org/debian/dists/testing/main/installer-amd64/current/images/hd-media/boot.img.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "http://deb.debian.org/debian/dists/testing/main/installer-amd64/current/images/hd-media/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "http://deb.debian.org/debian/dists/testing/main/installer-amd64/current/images/hd-media/vmlinuz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "http://deb.debian.org/debian/dists/testing/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "http://deb.debian.org/debian/dists/testing/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/boot.img.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/initrd.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/vmlinuz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/initrd.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/vmlinuz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/boot.img.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/initrd.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/vmlinuz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/initrd.gz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/vmlinuz"
   # === bionic ================================================================
   echo "bionic"
 # curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/boot.img.gz"
@@ -103,91 +106,109 @@ funcDownload_iso () {
   curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
   curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
   curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
-  # ### download: iso file ####################################################
+}
+
+# === download: iso link ======================================================
+funcDownload_lnk () {
+  # ### download: iso link ####################################################
   rm -rf ./iso/
   mkdir -p ./iso
-  # ---------------------------------------------------------------------------
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-DVD-1.iso                       ./iso/debian-10.13.0-amd64-DVD-1.iso
-  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-netinst.iso                     ./iso/debian-10.13.0-amd64-netinst.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-11.7.0-amd64-DVD-1.iso                        ./iso/debian-11.7.0-amd64-DVD-1.iso
-  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-11.7.0-amd64-netinst.iso                      ./iso/debian-11.7.0-amd64-netinst.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-9.13.0-amd64-DVD-1.iso                        ./iso/debian-9.13.0-amd64-DVD-1.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-9.13.0-amd64-netinst.iso                      ./iso/debian-9.13.0-amd64-netinst.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-10.13.0-amd64-lxde.iso                   ./iso/debian-live-10.13.0-amd64-lxde.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-11.7.0-amd64-lxde.iso                    ./iso/debian-live-11.7.0-amd64-lxde.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-9.13.0-amd64-lxde.iso                    ./iso/debian-live-9.13.0-amd64-lxde.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso                   ./iso/debian-live-testing-amd64-lxde.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-bkworm-DI-rc2-amd64-lxde.iso             ./iso/debian-live-bkworm-DI-rc2-amd64-lxde.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso                       ./iso/debian-testing-amd64-DVD-1.iso
-  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-netinst.iso                     ./iso/debian-testing-amd64-netinst.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc2-amd64-DVD-1.iso               ./iso/debian-bookworm-DI-rc2-amd64-DVD-1.iso
-  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc2-amd64-netinst.iso             ./iso/debian-bookworm-DI-rc2-amd64-netinst.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-oldoldstable-amd64.iso                          ./iso/mini-stretch-amd64.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-oldstable-amd64.iso                             ./iso/mini-buster-amd64.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-stable-amd64.iso                                ./iso/mini-bullseye-amd64.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-testing-amd64.iso                               ./iso/mini-bookworm-amd64.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/lunar-desktop-amd64.iso                              ./iso/lunar-desktop-amd64.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/lunar-desktop-legacy-amd64.iso                       ./iso/lunar-desktop-legacy-amd64.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/lunar-live-server-amd64.iso                          ./iso/lunar-live-server-amd64.iso
+  # --- mini.iso --------------------------------------------------------------
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-stretch-amd64.iso                               ./iso/mini-stretch-amd64.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-buster-amd64.iso                                ./iso/mini-buster-amd64.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-bullseye-amd64.iso                              ./iso/mini-bullseye-amd64.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-bookworm-amd64.iso                              ./iso/mini-bookworm-amd64.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/mini-testing-amd64.iso                               ./iso/mini-testing-amd64.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/mini-bionic-amd64.iso                                ./iso/mini-bionic-amd64.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/mini-focal-amd64.iso                                 ./iso/mini-focal-amd64.iso
+  # --- debian netinst --------------------------------------------------------
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-9.13.0-amd64-netinst.iso                      ./iso/debian-9.13.0-amd64-netinst.iso
+  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-netinst.iso                     ./iso/debian-10.13.0-amd64-netinst.iso
+  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-11.7.0-amd64-netinst.iso                      ./iso/debian-11.7.0-amd64-netinst.iso
+  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc2-amd64-netinst.iso             ./iso/debian-bookworm-DI-rc2-amd64-netinst.iso
+  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-netinst.iso                     ./iso/debian-testing-amd64-netinst.iso
+  # --- debian DVD ------------------------------------------------------------
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-9.13.0-amd64-DVD-1.iso                        ./iso/debian-9.13.0-amd64-DVD-1.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-DVD-1.iso                       ./iso/debian-10.13.0-amd64-DVD-1.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-11.7.0-amd64-DVD-1.iso                        ./iso/debian-11.7.0-amd64-DVD-1.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc2-amd64-DVD-1.iso               ./iso/debian-bookworm-DI-rc2-amd64-DVD-1.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso                       ./iso/debian-testing-amd64-DVD-1.iso
+  # --- debian live -----------------------------------------------------------
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-9.13.0-amd64-lxde.iso                    ./iso/debian-live-9.13.0-amd64-lxde.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-10.13.0-amd64-lxde.iso                   ./iso/debian-live-10.13.0-amd64-lxde.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-11.7.0-amd64-lxde.iso                    ./iso/debian-live-11.7.0-amd64-lxde.iso
+  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-bkworm-DI-rc2-amd64-lxde.iso             ./iso/debian-live-bkworm-DI-rc2-amd64-lxde.iso
+# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso                   ./iso/debian-live-testing-amd64-lxde.iso
+  # --- ubuntu desktop --------------------------------------------------------
 # ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-desktop-amd64.iso                     ./iso/ubuntu-18.04.6-desktop-amd64.iso
-  ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-server-amd64.iso                      ./iso/ubuntu-18.04.6-server-amd64.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-live-server-amd64.iso                 ./iso/ubuntu-18.04.6-live-server-amd64.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-desktop-amd64.iso                     ./iso/ubuntu-20.04.6-desktop-amd64.iso
-  ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-live-server-amd64.iso                 ./iso/ubuntu-20.04.6-live-server-amd64.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.2-desktop-amd64.iso                     ./iso/ubuntu-22.04.2-desktop-amd64.iso
-  ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.2-live-server-amd64.iso                 ./iso/ubuntu-22.04.2-live-server-amd64.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-desktop-amd64.iso                       ./iso/ubuntu-22.10-desktop-amd64.iso
+  ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-amd64.iso                       ./iso/ubuntu-23.04-desktop-amd64.iso
+  # --- ubuntu server ---------------------------------------------------------
+  ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-server-amd64.iso                      ./iso/ubuntu-18.04.6-server-amd64.iso
+  # --- ubuntu live server ----------------------------------------------------
+# ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-live-server-amd64.iso                 ./iso/ubuntu-18.04.6-live-server-amd64.iso
+  ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-live-server-amd64.iso                 ./iso/ubuntu-20.04.6-live-server-amd64.iso
+  ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.2-live-server-amd64.iso                 ./iso/ubuntu-22.04.2-live-server-amd64.iso
   ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-live-server-amd64.iso                   ./iso/ubuntu-22.10-live-server-amd64.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-amd64.iso                       ./iso/ubuntu-23.04-desktop-amd64.iso
   ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-live-server-amd64.iso                   ./iso/ubuntu-23.04-live-server-amd64.iso
+}
+
+# === download: iso file ======================================================
+funcDownload_iso () {
+  # ### download: iso file ####################################################
+# rm -rf ./iso/
+# mkdir -p ./iso
   # ::: debian mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "debian mini.iso"
-# curl -L -# -R -S -f --create-dirs -o "./iso/mini-stretch-amd64.iso"                        "http://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/netboot/mini.iso"
-# curl -L -# -R -S -f --create-dirs -o "./iso/mini-buster-amd64.iso"                         "http://deb.debian.org/debian/dists/oldstable/main/installer-amd64/current/images/netboot/mini.iso"
-# curl -L -# -R -S -f --create-dirs -o "./iso/mini-bullseye-amd64.iso"                       "http://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/mini.iso"
-# curl -L -# -R -S -f --create-dirs -o "./iso/mini-bookworm-amd64.iso"                       "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso"
+# curl -L -# -R -S -f --create-dirs -o "./iso/mini-stretch-amd64.iso"                        "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/netboot/mini.iso"
+# curl -L -# -R -S -f --create-dirs -o "./iso/mini-buster-amd64.iso"                         "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/netboot/mini.iso"
+# curl -L -# -R -S -f --create-dirs -o "./iso/mini-bullseye-amd64.iso"                       "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso"
+# curl -L -# -R -S -f --create-dirs -o "./iso/mini-bookworm-amd64.iso"                       "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso"
+# curl -L -# -R -S -f --create-dirs -o "./iso/mini-testing-amd64.iso"                        "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso"
   # ::: debian netinst ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# echo "debian netinst"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-10.13.0-amd64-netinst.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-11.7.0-amd64-netinst.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
+  echo "debian netinst"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso"
+  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/10.13.0/amd64/iso-cd/debian-10.13.0-amd64-netinst.iso"
+  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-11.7.0-amd64-netinst.iso"
+  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/bookworm_di_rc2/amd64/iso-cd/debian-bookworm-DI-rc2-amd64-netinst.iso"
+  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/iso-cd/debian-testing-amd64-netinst.iso"
   # ::: debian DVD ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "debian DVD"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-10.13.0-amd64-DVD-1.iso"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/10.13.0/amd64/iso-dvd/debian-10.13.0-amd64-DVD-1.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-11.7.0-amd64-DVD-1.iso"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/bookworm_di_rc2/amd64/iso-dvd/debian-bookworm-DI-rc2-amd64-DVD-1.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso"
   # ::: debian live DVD :::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# echo "debian live DVD"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-10.13.0-amd64-lxde.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.7.0-amd64-lxde.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
+  echo "debian live DVD"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/9.13.0-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/10.13.0-live/amd64/iso-hybrid/debian-live-10.13.0-amd64-lxde.iso"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.7.0-amd64-lxde.iso"
+  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/bookworm_di_rc2-live/amd64/iso-hybrid/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
   # ::: ubuntu mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "ubuntu mini.iso"
 # curl -L -# -R -S -f --create-dirs -o "./iso/mini-bionic-amd64.iso"                         "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso"
 # curl -L -# -R -S -f --create-dirs -o "./iso/mini-focal-amd64.iso"                          "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso"
   # ::: ubuntu server :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# echo "ubuntu server"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.6-server-amd64.iso"
+  echo "ubuntu server"
+  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.6-server-amd64.iso"
+  # ::: ubuntu live server ::::::::::::::::::::::::::::::::::::::::::::::::::::
+  echo "ubuntu live server"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-live-server-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-live-server-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-live-server-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/kinetic/ubuntu-22.10-live-server-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/lunar/ubuntu-23.04-live-server-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/lunar-live-server-amd64.iso"
+  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-live-server-amd64.iso"
+  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-live-server-amd64.iso"
+  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/kinetic/ubuntu-22.10-live-server-amd64.iso"
+  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/lunar/ubuntu-23.04-live-server-amd64.iso"
   # ::: ubuntu desktop ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "ubuntu desktop"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-desktop-amd64.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-desktop-amd64.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-desktop-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/ubuntu-22.10-desktop-amd64.iso"
+# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/kinetic/ubuntu-22.10-desktop-amd64.iso"
 # curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/lunar/ubuntu-23.04-desktop-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/daily-legacy/current/lunar-desktop-legacy-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "http://cdimage.ubuntu.com/ubuntu/daily-live/current/lunar-desktop-amd64.iso"
 }
 
 # === download: deb file ======================================================
@@ -197,13 +218,13 @@ funcDownload_deb () {
   # ::: exfat :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "exfat"
   # --- stretch ---------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/stretch"                             "http://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.2.5-2_amd64.deb"
+# curl -L -# -O -R -S --create-dirs --output-dir "./opt/stretch"                             "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.2.5-2_amd64.deb"
   # --- buster ----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "http://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-1_amd64.deb"
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-1_amd64.deb"
   # --- bullseye --------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bullseye"                            "http://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-2_amd64.deb"
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bullseye"                            "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-2_amd64.deb"
   # --- bookworm --------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bookworm"                            "http://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
+  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bookworm"                            "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
   # --- bionic ----------------------------------------------------------------
   curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.2.8-1_amd64.deb"
   # --- focal -----------------------------------------------------------------
@@ -217,8 +238,8 @@ funcDownload_deb () {
   # ::: fuse ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "fuse"
   # --- buster ----------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "http://deb.debian.org/debian/pool/main/f/fuse/fuse_2.9.9-1+deb10u1_amd64.deb"
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "http://deb.debian.org/debian/pool/main/f/fuse/libfuse2_2.9.9-1+deb10u1_amd64.deb"
+# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "https://deb.debian.org/debian/pool/main/f/fuse/fuse_2.9.9-1+deb10u1_amd64.deb"
+# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "https://deb.debian.org/debian/pool/main/f/fuse/libfuse2_2.9.9-1+deb10u1_amd64.deb"
   # --- focal -----------------------------------------------------------------
 # curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/fuse_2.9.9-3_amd64.deb"
 # curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/libfuse2_2.9.9-3_amd64.deb"
@@ -253,14 +274,14 @@ funcDownload_deb () {
 # echo "iso-scan"
   # --- stretch ---------------------------------------------------------------
   # --- buster ----------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "http://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.75_all.udeb"
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "http://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.75_all.udeb"
+# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.75_all.udeb"
+# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.75_all.udeb"
   # --- bullseye --------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bullseye"                            "http://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.85_all.udeb"
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bullseye"                            "http://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.85_all.udeb"
+# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.85_all.udeb"
+# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.85_all.udeb"
   # --- bookworm --------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bookworm"                            "http://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.88_all.udeb"
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bookworm"                            "http://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.88_all.udeb"
+# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.88_all.udeb"
+# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.88_all.udeb"
   # --- bionic ----------------------------------------------------------------
 # curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu5_all.udeb"
 # curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/load-iso_1.55ubuntu5_all.udeb"
@@ -279,11 +300,11 @@ funcDownload_arc () {
   echo "iso-scan"
   # --- stretch ---------------------------------------------------------------
   # --- buster ----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./arc/buster"                              "http://ftp.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.75.tar.xz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./arc/buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.75.tar.xz"
   # --- bullseye --------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./arc/bullseye"                            "http://ftp.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.85.tar.xz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./arc/bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.85.tar.xz"
   # --- bookworm --------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./arc/bookworm"                            "http://ftp.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.88.tar.xz"
+  curl -L -# -O -R -S --create-dirs --output-dir "./arc/bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.88.tar.xz"
   # --- bionic ----------------------------------------------------------------
   curl -L -# -O -R -S --create-dirs --output-dir "./arc/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu5.tar.xz"
   # --- focal -----------------------------------------------------------------
@@ -296,6 +317,8 @@ funcDownload_arc () {
 # === download ================================================================
 funcDownload () {
   case "$1" in
+    cfg ) funcDownload_cfg;;
+    lnk ) funcDownload_lnk;;
     iso ) funcDownload_iso;;
     deb ) funcDownload_deb;;
     arc ) funcDownload_arc;;
@@ -331,6 +354,15 @@ funcCopy_initrd_and_vmlinuz () {
     mount -r -o loop ${P} ./mnt
     N=$(awk -F ' ' '{split($1,A,"-"); print tolower(A[1]);}' ./mnt/.disk/info)
     S=$(awk -F '"' '{split($2,A," "); print tolower(A[1]);}' ./mnt/.disk/info)
+    case "${N}" in
+      debian ) V=$(awk -F ' ' '{print tolower($3);}' ./mnt/.disk/info);;
+      ubuntu ) V=$(awk -F ' ' '{print tolower($2);}' ./mnt/.disk/info);;
+      *      ) V=""                                                               ;;
+    esac
+    case "${V}" in
+      testing ) S="${V}";;
+      *       )         ;;
+    esac
     printf "copy initrd and vmlinuz: %-6.6s : %-8.8s : %s\n" ${N} ${S} ${P}
     mkdir -p ./bld/${S}
     mkdir -p ./lnx/${S}
@@ -370,6 +402,7 @@ funcCopy_initrd_and_vmlinuz () {
       buster   ) M+=(fuse-udeb_* libfuse2-udeb_* );;
       bullseye ) M+=(fuse-udeb_* libfuse2-udeb_* fuse3-udeb_* libfuse3-3-udeb_* );;
       bookworm ) M+=(fuse-udeb_* libfuse2-udeb_* fuse3-udeb_* libfuse3-3-udeb_* );;
+      testing  ) M+=(fuse-udeb_* libfuse2-udeb_* fuse3-udeb_* libfuse3-3-udeb_* );;
       bionic   ) M+=(fuse-udeb_* libfuse2_* );;
       focal    ) ;;
       jammy    ) ;;
@@ -431,11 +464,12 @@ funcUnpack_initramfs () {
   for S in $(ls -1aA ./bld/)
   do
     case ${S} in
-      bookworm ) D="./cfg/installer-hd-media/testing"       ;;
-      bullseye ) D="./cfg/installer-hd-media/stable"        ;;
-      buster   ) D="./cfg/installer-hd-media/oldstable"     ;;
-      stretch  ) D="./cfg/installer-hd-media/oldoldstable"  ;;
-      bionic   ) D="./cfg/installer-hd-media/bionic-updates";;
+      testing  ) D="./cfg/installer-hd-media/${S}"        ;;
+      bookworm ) D="./cfg/installer-hd-media/${S}"        ;;
+      bullseye ) D="./cfg/installer-hd-media/${S}"        ;;
+      buster   ) D="./cfg/installer-hd-media/${S}"        ;;
+      stretch  ) D="./cfg/installer-hd-media/${S}"        ;;
+      bionic   ) D="./cfg/installer-hd-media/${S}-updates";;
       *        ) D="./bld/${S}";;
     esac
     find ${D}/ -maxdepth 1 -name 'initrd*' -type f -printf "unpack %p\n" -exec mkdir -p ./ram/${S} \; -exec unmkinitramfs '{}' ./ram/${S} \;
@@ -502,6 +536,7 @@ funcCopy_and_make_kernel_module () {
 #      done
 #    fi
     case ${S} in
+      testing  ) ;;
       bookworm ) ;;
       bullseye ) ;;
       buster   ) ;;
@@ -640,13 +675,24 @@ funcCopy_initramfs () {
     echo "copy ${F}"
     S=$(echo ${F} | sed -e "s/^.*-\(.*\)\..*$/\1/g")
     case ${S} in
+      testing  ) D="./cfg/installer-hd-media/${S}"        ;;
+      bookworm ) D="./cfg/installer-hd-media/${S}"        ;;
+      bullseye ) D="./cfg/installer-hd-media/${S}"        ;;
+      buster   ) D="./cfg/installer-hd-media/${S}"        ;;
+      stretch  ) D="./cfg/installer-hd-media/${S}"        ;;
+      bionic   ) D="./cfg/installer-hd-media/${S}-updates";;
+      *        ) D="./bld/${S}";;
+    esac
+    case ${S} in
       stretch  | \
       buster   | \
       bullseye | \
-      bookworm )
+      bookworm | \
+      testing  )
         mkdir -p ./img/install.amd/debian/${S}
-        cp -a -L -u ./bld/${S}/. ./img/install.amd/debian/${S}/
-        cp -a -L -u ./ird/${F}   ./img/install.amd/debian/${S}/initrd.img
+        cp -a -L -u ./bld/${S}/.  ./img/install.amd/debian/${S}/
+        cp -a -L -u ./ird/${F}    ./img/install.amd/debian/${S}/initrd.img
+        cp -a -L -u ${D}/vmlinuz* ./img/install.amd/debian/${S}/vmlinuz.img
         ;;
       bionic   | \
       focal    | \
@@ -654,8 +700,9 @@ funcCopy_initramfs () {
       kinetic  | \
       lunar    )
         mkdir -p ./img/install.amd/ubuntu/${S}
-        cp -a -L -u ./bld/${S}/. ./img/install.amd/ubuntu/${S}/
-        cp -a -L -u ./ird/${F}   ./img/install.amd/ubuntu/${S}/initrd.img
+        cp -a -L -u ./bld/${S}/.  ./img/install.amd/ubuntu/${S}/
+        cp -a -L -u ./ird/${F}    ./img/install.amd/ubuntu/${S}/initrd.img
+        cp -a -L -u ${D}/vmlinuz* ./img/install.amd/ubuntu/${S}/vmlinuz.img
         ;;
       *        )
         ;;
@@ -705,7 +752,8 @@ funcMake_copy_image () {
   | tee ./img/preseed/ubuntu/preseed_old.cfg > /dev/null
 # === copy iso file ===========================================================
   echo "copy iso file"
-  for F in \
+  M=( \
+    debian-testing-amd64-netinst.iso         \
     debian-bookworm-DI-rc2-amd64-netinst.iso \
     debian-11.7.0-amd64-netinst.iso          \
     debian-10.13.0-amd64-netinst.iso         \
@@ -713,15 +761,18 @@ funcMake_copy_image () {
     ubuntu-22.10-live-server-amd64.iso       \
     ubuntu-22.04.2-live-server-amd64.iso     \
     ubuntu-20.04.6-live-server-amd64.iso     \
-    ubuntu-18.04.6-server-amd64.iso
-#   debian-testing-amd64-netinst.iso         \
+    ubuntu-18.04.6-server-amd64.iso          \
+    debian-live-bkworm-DI-rc2-amd64-lxde.iso \
+    ubuntu-23.04-desktop-amd64.iso           \
 #   debian-9.13.0-amd64-netinst.iso          \
 #   ubuntu-18.04.6-live-server-amd64.iso     \
 #   ubuntu-23.04-desktop-amd64.iso           \
 #   ubuntu-22.10-desktop-amd64.iso           \
 #   ubuntu-22.04.2-desktop-amd64.iso         \
 #   ubuntu-20.04.6-desktop-amd64.iso         \
-#   ubuntu-18.04.6-desktop-amd64.iso
+#   ubuntu-18.04.6-desktop-amd64.iso         \
+  )
+  for F in ${M[@]}
   do
     echo "copy ${F}"
     cp -a -L -u ./iso/${F} ./img/images/
@@ -819,20 +870,19 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	insmod play
 	play 960 440 1 0 4 440 1
 
-	#menuentry 'Unattended installation (Debian 12:testing [bookworm])' {
-	#    set gfxpayload=keep
-	#    set isofile="/images/debian-testing-amd64-netinst.iso"
-	#    set isoscan="${isofile} (testing)"
-	#    set isodist="debian/bookworm"
-	#    set preseed="/hd-media/preseed/debian/preseed.cfg"
-	#    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	#    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	#    echo "Loading ${isofile} ..."
-	#    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
-	#    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	##   initrd  (${cfgpart})/install.amd/${isodist}/initrd.gz
-	#}
-	menuentry 'Unattended installation (Debian 12:testing [bookworm])' {
+	menuentry 'Unattended installation (Debian testing)' {
+	    set gfxpayload=keep
+	    set isofile="/images/debian-testing-amd64-netinst.iso"
+	    set isoscan="${isofile} (testing)"
+	    set isodist="debian/bookworm"
+	    set preseed="/hd-media/preseed/debian/preseed.cfg"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
+	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	}
+	menuentry 'Unattended installation (Debian 12:bookworm)' {
 	    set gfxpayload=keep
 	    set isofile="/images/debian-bookworm-DI-rc2-amd64-netinst.iso"
 	    set isoscan="${isofile} (testing)"
@@ -841,11 +891,10 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	#   initrd  (${cfgpart})/install.amd/${isodist}/initrd.gz
 	}
-	menuentry 'Unattended installation (Debian 11:stable [bullseye])' {
+	menuentry 'Unattended installation (Debian 11:bullseye)' {
 	    set gfxpayload=keep
 	    set isofile="/images/debian-11.7.0-amd64-netinst.iso"
 	    set isoscan="${isofile} (stable - 11.7)"
@@ -854,11 +903,10 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	#   initrd  (${cfgpart})/install.amd/${isodist}/initrd.gz
 	}
-	menuentry 'Unattended installation (Debian 10:oldstable [buster])' {
+	menuentry 'Unattended installation (Debian 10:buster)' {
 	    set gfxpayload=keep
 	    set isofile="/images/debian-10.13.0-amd64-netinst.iso"
 	    set isoscan="${isofile} (oldstable - 10.13)"
@@ -867,23 +915,9 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	#   initrd  (${cfgpart})/install.amd/${isodist}/initrd.gz
 	}
-	#menuentry 'Unattended installation (Debian 9:oldoldstable [stretch])' {
-	#    set gfxpayload=keep
-	#    set isofile="/images/debian-9.13.0-amd64-netinst.iso"
-	#    set isoscan="${isofile} (oldstable - 9.13)"
-	#    set isodist="debian/stretch"
-	#    set preseed="/hd-media/preseed/debian/preseed_oldold.cfg"
-	#    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	#    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	#    echo "Loading ${isofile} ..."
-	#    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
-	#    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	##   initrd  (${cfgpart})/install.amd/${isodist}/initrd.gz
-	#}
 	menuentry 'Unattended installation (Ubuntu 23.04:Lunar Lobster)' {
 	    set gfxpayload=keep
 	    set isofile="/images/ubuntu-23.04-live-server-amd64.iso"
@@ -892,12 +926,8 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	#   loopback loop (${isopart})${isofile}
-	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
-	#   initrd  (loop)/casper/initrd
-	#   loopback --delete loop
 	}
 	menuentry 'Unattended installation (Ubuntu 22.10:Kinetic Kudu)' {
 	    set gfxpayload=keep
@@ -907,12 +937,8 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	#   loopback loop (${isopart})${isofile}
-	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
-	#   initrd  (loop)/casper/initrd
-	#   loopback --delete loop
 	}
 	menuentry 'Unattended installation (Ubuntu 22.04:Jammy Jellyfish)' {
 	    set gfxpayload=keep
@@ -922,12 +948,8 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	#   loopback loop (${isopart})${isofile}
-	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
-	#   initrd  (loop)/casper/initrd
-	#   loopback --delete loop
 	}
 	menuentry 'Unattended installation (Ubuntu 20.04:Focal Fossa)' {
 	    set gfxpayload=keep
@@ -937,12 +959,8 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	#   loopback loop (${isopart})${isofile}
-	#   linux   (loop)/casper/vmlinuz root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
-	#   initrd  (loop)/casper/initrd
-	#   loopback --delete loop
 	}
 	menuentry 'Unattended installation (Ubuntu 18.04:Bionic Beaver)' {
 	    set gfxpayload=keep
@@ -953,11 +971,38 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	#   initrd  (${cfgpart})/install.amd/${isodist}/initrd.gz
 	}
-
+	submenu 'Live media ...' {
+	    search.fs_label "CIDATA"  cfgpart hd1,gpt3
+	    search.fs_label "ISOFILE" isopart hd1,gpt4
+	    set menu_color_normal=cyan/blue
+	    set menu_color_highlight=white/blue
+	#    menuentry 'Live system (Debian 12:testing [bookworm])' {
+	#        set gfxpayload=keep
+	#        set isofile="/images/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
+	#        set isoscan="${isofile} (testing)"
+	#        set isodist="debian/bookworm"
+	#        set preseed="/hd-media/preseed/debian/preseed.cfg"
+	#        set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	#        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	#        echo "Loading ${isofile} ..."
+	#        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip
+	#        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	#    }
+	#    menuentry 'Live system (Ubuntu 23.04:Lunar Lobster)' {
+	#        set gfxpayload=keep
+	#        set isofile="/images/ubuntu-23.04-desktop-amd64.iso"
+	#        set isoscan="iso-scan/filename=${isofile}"
+	#        set isodist="ubuntu/lunar"
+	#        set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	#        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	#        echo "Loading ${isofile} ..."
+	#        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip
+	#        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	#    }
+	}
 	menuentry "System shutdown" {
 	    echo "System shutting down ..."
 	    halt
@@ -1018,6 +1063,8 @@ main () {
     exit 1
   fi
   echo "$(date +"%Y/%m/%d %H:%M:%S") processing start"
+  funcDownload "cfg"
+  funcDownload "lnk"
   funcDownload "iso"
   funcDownload "deb"
   funcDownload "arc"
@@ -1040,7 +1087,7 @@ main () {
 # === main ====================================================================
 main
 # =============================================================================
-# http://deb.debian.org/debian/pool/main/n/ntfs-3g/ntfs-3g_2022.10.3-1+b1_amd64.deb
-# http://deb.debian.org/debian/pool/main/f/fuse3/fuse3_3.14.0-3_amd64.deb
-# http://deb.debian.org/debian/pool/main/f/fuse/fuse_2.9.9-6+b1_amd64.deb
+# https://deb.debian.org/debian/pool/main/n/ntfs-3g/ntfs-3g_2022.10.3-1+b1_amd64.deb
+# https://deb.debian.org/debian/pool/main/f/fuse3/fuse3_3.14.0-3_amd64.deb
+# https://deb.debian.org/debian/pool/main/f/fuse/fuse_2.9.9-6+b1_amd64.deb
 # ### eof #####################################################################
