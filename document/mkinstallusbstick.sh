@@ -58,8 +58,8 @@ funcCurl ()
     echo "${E}: ${U}"
     return ${R}
   fi
-  S=$(echo ${H[@]} | sed -n -e '/^content-length:/ s/^.*: //p' | sed -z 's/\n\|\r\|\l//g')
-  T=$(TZ=UTC date -d "$(echo ${H[@]} | sed -n -e '/^last-modified:/ s/^.*: //p')" "+%Y%m%d%H%M%S")
+  S=$(echo ${H[@]} | tr 'A-Z' 'a-z' | sed -n -e '/^content-length:/ s/^.*: //p' | sed -z 's/\n\|\r\|\l//g')
+  T=$(TZ=UTC date -d "$(echo ${H[@]} | tr 'A-Z' 'a-z' | sed -n -e '/^last-modified:/ s/^.*: //p')" "+%Y%m%d%H%M%S")
   IFS=${OLD_IFS}
   F="${O:-.}/$(basename ${U})"
   if [ -f ${F} ]; then
@@ -71,6 +71,7 @@ funcCurl ()
       return 0
     fi
   fi
+  echo "get  file: ${F}"
   curl ${P}
   return $?
 }
@@ -655,7 +656,6 @@ funcMake_initramfs () {
       find . -name '*~' -prune -o -print | cpio -R 0:0 -o -H newc --quie | gzip -c > ${O}/ird/${S}/initrd.img
     popd > /dev/null
   done
-  ls -lh ./ird/
   for S in $(ls -1aA ./ird/)
   do
     case "${S}" in
@@ -665,6 +665,8 @@ funcMake_initramfs () {
     esac
     find ${D}/ -maxdepth 1 -name 'vmlinuz*' -type f -printf "copy %p\n" -exec mkdir -p ./ird/${S} \; -exec cp -a '{}' ./ird/${S}/vmlinuz.img \;
   done
+  ls -lh $(find ./ird/ -name 'initrd*' -type f)
+  ls -lh $(find ./ird/ -name 'vmlinuz*' -type f)
 # rm -rf ./wrk/*
 }
 
