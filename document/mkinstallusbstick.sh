@@ -42,70 +42,103 @@
 # apt-get install fdisk curl dosfstools grub2-common initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd
 
 # ### download ################################################################
+funcCurl ()
+{
+  P="$@"
+  U=$(echo ${P} | sed -n -e 's~^.* \(\(http\|https\)://.*\)$~\1~p')
+  O=$(echo ${P} | sed -n -e 's~^.* --output-dir *\(.*\) .*$~\1~p' | sed -e 's~/$~~')
+  OLD_IFS=${IFS}
+  IFS=
+  set +e
+  H=($(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${U}" 2> /dev/null))
+  R=$?
+  set -e
+  if [ ${R} -eq 18 -o ${R} -eq 22 -o ${R} -eq 28  ]; then
+    E=$(echo ${H[@]} | sed -n '/^HTTP/p' | sed -z 's/\n\|\r\|\l//g')
+    echo "${E}: ${U}"
+    return ${R}
+  fi
+  S=$(echo ${H[@]} | sed -n -e '/^content-length:/ s/^.*: //p' | sed -z 's/\n\|\r\|\l//g')
+  T=$(TZ=UTC date -d "$(echo ${H[@]} | sed -n -e '/^last-modified:/ s/^.*: //p')" "+%Y%m%d%H%M%S")
+  IFS=${OLD_IFS}
+  F="${O:-.}/$(basename ${U})"
+  if [ -f ${F} ]; then
+    I=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${F}")
+    D=$(echo ${I} | awk '{print $6;}')
+    L=$(echo ${I} | awk '{print $5;}')
+    if [ ${T:-0} -eq ${D:-0} ] && [ ${S:-0} -eq ${L:-0} ]; then
+      echo "same file: ${F}"
+      return 0
+    fi
+  fi
+  curl ${P}
+  return $?
+}
+
 # === download: cfg file ======================================================
 funcDownload_cfg () {
   # ### download: setting file ################################################
-  rm -rf ./cfg/
+# rm -rf ./cfg/
   mkdir -p ./cfg
   # === setting file ==========================================================
   echo "setting file"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                              "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/preseed.cfg"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                              "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/sub_late_command.sh"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                      "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/preseed.cfg"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                      "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_late_command.sh"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                      "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_success_command.sh"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.server"                       "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.server/user-data"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/preseed.cfg"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/sub_late_command.sh"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                             "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/preseed.cfg"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                             "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_late_command.sh"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                             "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_success_command.sh"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.server"                              "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.server/user-data"
   # === stretch ===============================================================
 # echo "stretch"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/boot.img.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/initrd.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/vmlinuz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stretch/gtk"      "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/stretch/gtk"      "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/boot.img.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/initrd.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/vmlinuz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch/gtk"      "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch/gtk"      "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
   # === buster ================================================================
   echo "buster"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/boot.img.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/vmlinuz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/buster/gtk"       "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/buster/gtk"       "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster/gtk"       "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster/gtk"       "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
   # === bullseye ==============================================================
   echo "bullseye"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/boot.img.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/vmlinuz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bullseye/gtk"     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bullseye/gtk"     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye/gtk"     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye/gtk"     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
   # === bookworm ==============================================================
   echo "bookworm"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/boot.img.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/vmlinuz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bookworm/gtk"     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bookworm/gtk"     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm/gtk"     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm/gtk"     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
   # === testing ===============================================================
   echo "testing"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/boot.img.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/vmlinuz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/vmlinuz"
   # === bionic ================================================================
   echo "bionic"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/boot.img.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/initrd.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/vmlinuz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/boot.img.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/vmlinuz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/boot.img.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/initrd.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/vmlinuz"
   # === focal =================================================================
   echo "focal"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
-# curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
-  curl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
 }
 
 # === download: iso link ======================================================
@@ -159,159 +192,123 @@ funcDownload_lnk () {
 funcDownload_iso () {
   # ### download: iso file ####################################################
 # rm -rf ./iso/
-# mkdir -p ./iso
+  mkdir -p ./iso
   # ::: debian mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "debian mini.iso"
-# curl -L -# -R -S -f --create-dirs -o "./iso/mini-stretch-amd64.iso"                        "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/netboot/mini.iso"
-# curl -L -# -R -S -f --create-dirs -o "./iso/mini-buster-amd64.iso"                         "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/netboot/mini.iso"
-# curl -L -# -R -S -f --create-dirs -o "./iso/mini-bullseye-amd64.iso"                       "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso"
-# curl -L -# -R -S -f --create-dirs -o "./iso/mini-bookworm-amd64.iso"                       "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso"
-# curl -L -# -R -S -f --create-dirs -o "./iso/mini-testing-amd64.iso"                        "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso"
+# funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-stretch-amd64.iso"                               "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/netboot/mini.iso"
+# funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-buster-amd64.iso"                                "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/netboot/mini.iso"
+# funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-bullseye-amd64.iso"                              "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso"
+# funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-bookworm-amd64.iso"                              "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso"
+# funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-testing-amd64.iso"                               "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso"
   # ::: debian netinst ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "debian netinst"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso"
-  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/10.13.0/amd64/iso-cd/debian-10.13.0-amd64-netinst.iso"
-  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-11.7.0-amd64-netinst.iso"
-  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/bookworm_di_rc2/amd64/iso-cd/debian-bookworm-DI-rc2-amd64-netinst.iso"
-  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/iso-cd/debian-testing-amd64-netinst.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/10.13.0/amd64/iso-cd/debian-10.13.0-amd64-netinst.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-11.7.0-amd64-netinst.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/bookworm_di_rc2/amd64/iso-cd/debian-bookworm-DI-rc2-amd64-netinst.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/iso-cd/debian-testing-amd64-netinst.iso"
   # ::: debian DVD ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "debian DVD"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/10.13.0/amd64/iso-dvd/debian-10.13.0-amd64-DVD-1.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-11.7.0-amd64-DVD-1.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/bookworm_di_rc2/amd64/iso-dvd/debian-bookworm-DI-rc2-amd64-DVD-1.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/10.13.0/amd64/iso-dvd/debian-10.13.0-amd64-DVD-1.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-11.7.0-amd64-DVD-1.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/bookworm_di_rc2/amd64/iso-dvd/debian-bookworm-DI-rc2-amd64-DVD-1.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso"
   # ::: debian live DVD :::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "debian live DVD"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/9.13.0-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/archive/10.13.0-live/amd64/iso-hybrid/debian-live-10.13.0-amd64-lxde.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.7.0-amd64-lxde.iso"
-  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/bookworm_di_rc2-live/amd64/iso-hybrid/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/9.13.0-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/10.13.0-live/amd64/iso-hybrid/debian-live-10.13.0-amd64-lxde.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.7.0-amd64-lxde.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/bookworm_di_rc2-live/amd64/iso-hybrid/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
   # ::: ubuntu mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "ubuntu mini.iso"
-# curl -L -# -R -S -f --create-dirs -o "./iso/mini-bionic-amd64.iso"                         "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso"
-# curl -L -# -R -S -f --create-dirs -o "./iso/mini-focal-amd64.iso"                          "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso"
+# funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-bionic-amd64.iso"                                "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso"
+# funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-focal-amd64.iso"                                 "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso"
   # ::: ubuntu server :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "ubuntu server"
-  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.6-server-amd64.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.6-server-amd64.iso"
   # ::: ubuntu live server ::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "ubuntu live server"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-live-server-amd64.iso"
-  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-live-server-amd64.iso"
-  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-live-server-amd64.iso"
-  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/kinetic/ubuntu-22.10-live-server-amd64.iso"
-  curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/lunar/ubuntu-23.04-live-server-amd64.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-live-server-amd64.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/focal/ubuntu-20.04.6-live-server-amd64.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-live-server-amd64.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/kinetic/ubuntu-22.10-live-server-amd64.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/lunar/ubuntu-23.04-live-server-amd64.iso"
   # ::: ubuntu desktop ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "ubuntu desktop"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-desktop-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/focal/ubuntu-20.04.6-desktop-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-desktop-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/kinetic/ubuntu-22.10-desktop-amd64.iso"
-# curl -L -# -O -R -S --create-dirs --output-dir "./iso"                                     "https://releases.ubuntu.com/lunar/ubuntu-23.04-desktop-amd64.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-desktop-amd64.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/focal/ubuntu-20.04.6-desktop-amd64.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-desktop-amd64.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/kinetic/ubuntu-22.10-desktop-amd64.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/lunar/ubuntu-23.04-desktop-amd64.iso"
 }
 
 # === download: deb file ======================================================
 funcDownload_deb () {
-  rm -rf ./opt/
+# rm -rf ./opt/
   mkdir -p ./opt
   # ::: exfat :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "exfat"
-  # --- stretch ---------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/stretch"                             "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.2.5-2_amd64.deb"
-  # --- buster ----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-1_amd64.deb"
-  # --- bullseye --------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bullseye"                            "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-2_amd64.deb"
-  # --- bookworm --------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bookworm"                            "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
-  # --- bionic ----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.2.8-1_amd64.deb"
-  # --- focal -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0-1_amd64.deb"
-  # --- jammy -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/jammy"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
-  # --- kinetic ---------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
-  # --- lunar -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.4.0-1_amd64.deb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.stretch"                             "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.2.5-2_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.buster"                              "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-1_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bullseye"                            "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-2_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm"                            "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.testing"                             "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.2.8-1_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0-1_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.jammy"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.4.0-1_amd64.deb"
   # ::: fuse ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "fuse"
-  # --- buster ----------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "https://deb.debian.org/debian/pool/main/f/fuse/fuse_2.9.9-1+deb10u1_amd64.deb"
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "https://deb.debian.org/debian/pool/main/f/fuse/libfuse2_2.9.9-1+deb10u1_amd64.deb"
-  # --- focal -----------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/fuse_2.9.9-3_amd64.deb"
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/libfuse2_2.9.9-3_amd64.deb"
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/fuse-udeb_2.9.9-3_amd64.udeb"
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/libfuse2-udeb_2.9.9-3_amd64.udeb"
-  # --- jammy -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/jammy"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/fuse_2.9.9-5ubuntu3_amd64.deb"
-  # --- kinetic ---------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/fuse_2.9.9-5ubuntu3_amd64.deb"
-  # --- lunar -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/fuse_2.9.9-6_amd64.deb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.buster"                              "https://deb.debian.org/debian/pool/main/f/fuse/fuse_2.9.9-1+deb10u1_amd64.deb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.buster"                              "https://deb.debian.org/debian/pool/main/f/fuse/libfuse2_2.9.9-1+deb10u1_amd64.deb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/fuse_2.9.9-3_amd64.deb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/libfuse2_2.9.9-3_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/fuse-udeb_2.9.9-3_amd64.udeb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/libfuse2-udeb_2.9.9-3_amd64.udeb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.jammy"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/fuse_2.9.9-5ubuntu3_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/fuse_2.9.9-5ubuntu3_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/fuse_2.9.9-6_amd64.deb"
   echo "fuse3"
   # ::: fuse3 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  # --- focal -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse3/fuse3_3.9.0-2_amd64.deb"
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse3/libfuse3-3_3.9.0-2_amd64.deb"
-  # --- jammy -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/jammy"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/fuse3_3.10.5-1build1_amd64.deb"
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/jammy"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/libfuse3-3_3.10.5-1build1_amd64.deb"
-  # --- kinetic ---------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/fuse3_3.11.0-1_amd64.deb"
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/libfuse3-3_3.11.0-1_amd64.deb"
-  # --- lunar -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/lunar"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/fuse3_3.14.0-3_amd64.deb"
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/lunar"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/libfuse3-3_3.14.0-3_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse3/fuse3_3.9.0-2_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse3/libfuse3-3_3.9.0-2_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.jammy"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/fuse3_3.10.5-1build1_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.jammy"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/libfuse3-3_3.10.5-1build1_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/fuse3_3.11.0-1_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/libfuse3-3_3.11.0-1_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/fuse3_3.14.0-3_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/libfuse3-3_3.14.0-3_amd64.deb"
   # ::: mount :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "mount"
-  # --- bionic ----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/mount_2.31.1-0.4ubuntu3.7_amd64.deb"
-  curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/libmount1_2.31.1-0.4ubuntu3.7_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/mount_2.31.1-0.4ubuntu3.7_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/libmount1_2.31.1-0.4ubuntu3.7_amd64.deb"
   # ::: iso-scan ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # echo "iso-scan"
-  # --- stretch ---------------------------------------------------------------
-  # --- buster ----------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.75_all.udeb"
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.75_all.udeb"
-  # --- bullseye --------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.85_all.udeb"
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.85_all.udeb"
-  # --- bookworm --------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.88_all.udeb"
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.88_all.udeb"
-  # --- bionic ----------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu5_all.udeb"
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/load-iso_1.55ubuntu5_all.udeb"
-  # --- focal -----------------------------------------------------------------
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu9_all.udeb"
-# curl -L -# -O -R -S --create-dirs --output-dir "./opt/focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/load-iso_1.55ubuntu9_all.udeb"
-  # --- jammy -----------------------------------------------------------------
-  # --- kinetic ---------------------------------------------------------------
-  # --- lunar -----------------------------------------------------------------
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.75_all.udeb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.75_all.udeb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.85_all.udeb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.85_all.udeb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.88_all.udeb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.88_all.udeb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu5_all.udeb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/load-iso_1.55ubuntu5_all.udeb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu9_all.udeb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/load-iso_1.55ubuntu9_all.udeb"
 }
 
 # === download: arc file ======================================================
 funcDownload_arc () {
-  rm -rf ./arc/
+# rm -rf ./arc/
   mkdir -p ./arc
   echo "iso-scan"
-  # --- stretch ---------------------------------------------------------------
-  # --- buster ----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./arc/buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.75.tar.xz"
-  # --- bullseye --------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./arc/bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.85.tar.xz"
-  # --- bookworm --------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./arc/bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.88.tar.xz"
-  # --- bionic ----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./arc/bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu5.tar.xz"
-  # --- focal -----------------------------------------------------------------
-  curl -L -# -O -R -S --create-dirs --output-dir "./arc/focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu9.tar.xz"
-  # --- jammy -----------------------------------------------------------------
-  # --- kinetic ---------------------------------------------------------------
-  # --- lunar -----------------------------------------------------------------
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./arc/debian.buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.75.tar.xz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./arc/debian.bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.85.tar.xz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./arc/debian.bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.88.tar.xz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./arc/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu5.tar.xz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./arc/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu9.tar.xz"
 }
 
 # === download ================================================================
@@ -337,7 +334,7 @@ funcDownload () {
 # apt-cache rdepends package
 # -----------------------------------------------------------------------------
 funcCopy_initrd_and_vmlinuz () {
-  echo "copy initrd and vmlinuz"
+  echo "copy initrd"
   mountpoint -q ./mnt/ && (umount -q -f ./mnt || umount -q -lf ./mnt) || true
   mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
   rm -rf ./mnt/
@@ -346,33 +343,38 @@ funcCopy_initrd_and_vmlinuz () {
   mkdir -p ./mnt
   mkdir -p ./bld
   mkdir -p ./deb
-  for P in $(find ./iso/ \( -name 'debian-*-amd64-netinst.iso'        \
-                         -o -name 'ubuntu-2*-live-server-amd64.iso'   \
-                         -o -name 'ubuntu-1*[!live]-server-amd64.iso' \) \
+  for P in $(find ./iso/ \( -name 'debian-*-amd64-netinst.iso'           \
+                         -o -name 'ubuntu-2*-live-server-amd64.iso'      \
+                         -o -name 'ubuntu-1*[!live]-server-amd64.iso'    \
+                         -o -name 'debian-live-*-amd64-lxde.iso'         \
+                         -o -name 'ubuntu-*-desktop-amd64.iso'        \) \
                       \( -type f -o -type l \))
   do
     mount -r -o loop ${P} ./mnt
-    N=$(awk -F ' ' '{split($1,A,"-"); print tolower(A[1]);}' ./mnt/.disk/info)
-    S=$(awk -F '"' '{split($2,A," "); print tolower(A[1]);}' ./mnt/.disk/info)
+    R=$(cat ./mnt/.disk/info | sed -z 's/-n//g')
+    N=$(echo ${R} | awk -F ' ' '{split($1,A,"-"); print tolower(A[1]);}')
+    S=$(echo ${R} | awk -F '"' '{split($2,A," "); print tolower(A[1]);}')
+    I=$(echo ${R} | sed -n -e 's/^.*\(live\|dvd\|netinst\|netboot\|server\).*$/\1/pi' | tr 'A-Z' 'a-z')
     case "${N}" in
-      debian ) V=$(awk -F ' ' '{print tolower($3);}' ./mnt/.disk/info);;
-      ubuntu ) V=$(awk -F ' ' '{print tolower($2);}' ./mnt/.disk/info);;
-      *      ) V=""                                                               ;;
+      debian ) V=$(echo ${R} | awk -F ' ' '{print tolower($3);}');;
+      ubuntu ) V=$(echo ${R} | awk -F ' ' '{print tolower($2);}');;
+      *      ) V=""                                              ;;
     esac
     case "${V}" in
       testing ) S="${V}";;
       *       )         ;;
     esac
-    printf "copy initrd and vmlinuz: %-6.6s : %-8.8s : %s\n" ${N} ${S} ${P}
-    mkdir -p ./bld/${S}
-    mkdir -p ./lnx/${S}
-    mkdir -p ./deb/${S}
+    D="${N}.${S}.${I:-desktop}"
+    printf "copy initrd: %-24.24s : %s\n" "${D}" "${P}"
+    mkdir -p ./bld/${D}
+    mkdir -p ./lnx/${D}
+    mkdir -p ./deb/${D}
     if [ -d ./mnt/casper/. ]; then
-      cp -a ./mnt/casper/initrd* ./mnt/casper/vmlinuz   ./bld/${S}/
+      cp -a ./mnt/casper/initrd* ./mnt/casper/vmlinuz   ./bld/${D}/
     elif [ -d ./mnt/install.amd/. ]; then
-      cp -a ./mnt/install.amd/.                         ./bld/${S}/
+      cp -a ./mnt/install.amd/.                         ./bld/${D}/
     else
-      cp -a ./mnt/install/initrd* ./mnt/install/vmlinuz ./bld/${S}/
+      cp -a ./mnt/install/initrd* ./mnt/install/vmlinuz ./bld/${D}/
     fi
     # *** modules *************************************************************
     M=(                    \
@@ -397,7 +399,7 @@ funcCopy_initrd_and_vmlinuz () {
       libaio1-udeb_*       \
       lvm2-udeb_*          \
     )
-    case ${S} in
+    case "${S%\.*}" in
       stretch  ) M+=(fuse-udeb_* libfuse2-udeb_* );;
       buster   ) M+=(fuse-udeb_* libfuse2-udeb_* );;
       bullseye ) M+=(fuse-udeb_* libfuse2-udeb_* fuse3-udeb_* libfuse3-3-udeb_* );;
@@ -413,11 +415,11 @@ funcCopy_initrd_and_vmlinuz () {
     # *** copy module *********************************************************
     for F in ${M[@]}
     do
-      printf '  %-20.20s : %s\n' "${F}" "$(find ./mnt/pool/main/ -name "${F}" -type f -printf '%f' -exec cp -a -u '{}' ./deb/${S}/ \;)"
+      printf '  %-20.20s : %s\n' "${F}" "$(find ./mnt/pool/main/ -name "${F}" -type f -printf '%f' -exec cp -a -u '{}' ./deb/${D}/ \;)"
     done
     # *** linux image * *******************************************************
     find ./mnt/pool/ -regextype posix-basic -regex '.*/\(linux\|linux-signed\(-amd64\)*\)/linux-\(image\|modules\).*-[0-9]*-\(amd64\|generic\)*_.*' \
-       -type f -printf '  linux image file     : %f\n' -exec cp -a '{}' ./deb/${S}/ \;
+       -type f -printf '  linux image file     : %f\n' -exec cp -a '{}' ./deb/${D}/ \;
     umount ./mnt
   done
 }
@@ -433,11 +435,10 @@ funcUnpack_deb_file () {
   do
     find ./deb/${S}/ \(      -name 'linux-image-*_amd64.deb' -o      -name 'linux-modules-*_amd64.deb' \) -type f -printf "unpack %p\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./lnx/${S} \;
     find ./deb/${S}/ \( -not -name 'linux-image-*_amd64.deb' -a -not -name 'linux-modules-*_amd64.deb' \) -type f -printf "unpack %p\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./pac/${S} \;
-  done
-  for S in $(ls -1aA ./opt/)
-  do
-    find ./opt/${S}/ \(      -name 'linux-image-*_amd64.deb' -o      -name 'linux-modules-*_amd64.deb' \) -type f -printf "unpack %p\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./lnx/${S} \;
-    find ./opt/${S}/ \( -not -name 'linux-image-*_amd64.deb' -a -not -name 'linux-modules-*_amd64.deb' \) -type f -printf "unpack %p\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./pac/${S} \;
+    if [ -d ./opt/${S%\.*}/. ]; then
+      find ./opt/${S%\.*}/ \(      -name 'linux-image-*_amd64.deb' -o      -name 'linux-modules-*_amd64.deb' \) -type f -printf "unpack %p\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./lnx/${S} \;
+      find ./opt/${S%\.*}/ \( -not -name 'linux-image-*_amd64.deb' -a -not -name 'linux-modules-*_amd64.deb' \) -type f -printf "unpack %p\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./pac/${S} \;
+    fi
   done
 }
 
@@ -463,16 +464,12 @@ funcUnpack_initramfs () {
   mkdir -p ./ram
   for S in $(ls -1aA ./bld/)
   do
-    case ${S} in
-      testing  ) D="./cfg/installer-hd-media/${S}"        ;;
-      bookworm ) D="./cfg/installer-hd-media/${S}"        ;;
-      bullseye ) D="./cfg/installer-hd-media/${S}"        ;;
-      buster   ) D="./cfg/installer-hd-media/${S}"        ;;
-      stretch  ) D="./cfg/installer-hd-media/${S}"        ;;
-      bionic   ) D="./cfg/installer-hd-media/${S}-updates";;
-      *        ) D="./bld/${S}";;
+    case "${S}" in
+      debian.*             ) D="./cfg/installer-hd-media/${S%\.*}"        ;;
+      ubuntu.bionic.server ) D="./cfg/installer-hd-media/${S%\.*}-updates";;
+      *                    ) D="./bld/${S}"                               ;;
     esac
-    find ${D}/ -maxdepth 1 -name 'initrd*' -type f -printf "unpack %p\n" -exec mkdir -p ./ram/${S} \; -exec unmkinitramfs '{}' ./ram/${S} \;
+    find ${D}/ -maxdepth 1 -name 'initrd*'  -type f -printf "unpack %p\n" -exec mkdir -p ./ram/${S} \; -exec unmkinitramfs '{}' ./ram/${S} \;
   done
 }
 
@@ -488,7 +485,7 @@ funcCopy_and_make_kernel_module () {
     else
       D="./ram/${S}"
     fi
-    printf "copy initramfs : %-8.8s : %s\n" ${S} ${D}
+    printf "copy initramfs : %-24.24s : %s\n" ${S} ${D}
     mkdir -p ./wrk/${S}
     cp -a ${D}/. ./wrk/${S}/
     if [ -d ./pac/${S}/. ]; then
@@ -535,13 +532,9 @@ funcCopy_and_make_kernel_module () {
 #        mv ${P} ${P}~
 #      done
 #    fi
-    case ${S} in
-      testing  ) ;;
-      bookworm ) ;;
-      bullseye ) ;;
-      buster   ) ;;
-      stretch  ) ;;
-      bionic   )
+    case "${S%\.*}" in
+      debian.*        ) ;;
+      ubuntu.bionic   )
         if [ -f  ./wrk/${S}/var/lib/dpkg/info/iso-scan.postinst ]; then
           OLD_IFS=${IFS}
           INS_ROW=$(
@@ -598,15 +591,15 @@ _EOT_
 			Template: iso-scan/copy_iso_to_ram
 			Type: boolean
 			Default: false
-			Description: Copy the ISO image to a ramdisk with enough space?
+			Description: copy the ISO image to a ramdisk with enough space?
 			Description-ja.UTF-8: ISO イメージを十分な容量のある RAM ディスクにコピーしますか?
 _EOT_
         fi
         ;;
-      focal    | \
-      jammy    | \
-      kinetic  | \
-      lunar    )
+      ubuntu.focal    | \
+      ubuntu.jammy    | \
+      ubuntu.kinetic  | \
+      ubuntu.lunar    )
 #       mkdir -p ./wrk/${S}/dev/.initramfs
         if [ -f  ./wrk/${S}/scripts/casper-helpers ]; then
           OLD_IFS=${IFS}
@@ -633,7 +626,7 @@ _EOT_
               -e '/[[:space:]]*wait_for_devs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ {/touch/i \\    mkdir -p /dev/.initramfs' -e '}'
         fi
         ;;
-      *        ) ;;
+      *               ) ;;
     esac
     if [ -f ./wrk/${S}/etc/lsb-release ]; then
       sed -i ./wrk/${S}/etc/lsb-release                      \
@@ -657,65 +650,40 @@ funcMake_initramfs () {
   do
     O=$(pwd)
     pushd ./wrk/${S} > /dev/null
-      printf "make initramfs : %-8.8s : %s\n" ${S} ${O}/ird/initrd-${S}.img
-      find . -name '*~' -prune -o -print | cpio -R 0:0 -o -H newc --quie | gzip -c > ${O}/ird/initrd-${S}.img
+      printf "make initramfs : %-24.24s : %s\n" ${S} ${O}/ird/${S}/initrd.img
+      mkdir -p ${O}/ird/${S}
+      find . -name '*~' -prune -o -print | cpio -R 0:0 -o -H newc --quie | gzip -c > ${O}/ird/${S}/initrd.img
     popd > /dev/null
   done
   ls -lh ./ird/
+  for S in $(ls -1aA ./ird/)
+  do
+    case "${S}" in
+      debian.*             ) D="./cfg/installer-hd-media/${S%\.*}"        ;;
+      ubuntu.bionic.server ) D="./cfg/installer-hd-media/${S%\.*}-updates";;
+      *                    ) D="./bld/${S}"                               ;;
+    esac
+    find ${D}/ -maxdepth 1 -name 'vmlinuz*' -type f -printf "copy %p\n" -exec mkdir -p ./ird/${S} \; -exec cp -a '{}' ./ird/${S}/vmlinuz.img \;
+  done
 # rm -rf ./wrk/*
 }
 
+# ### file copy ###############################################################
 # === copy initramfs ==========================================================
 funcCopy_initramfs () {
   echo "copy initramfs"
-  rm -rf ./img/
-  mkdir -p ./img
-  for F in $(ls -1aA ./ird/)
-  do
-    echo "copy ${F}"
-    S=$(echo ${F} | sed -e "s/^.*-\(.*\)\..*$/\1/g")
-    case ${S} in
-      testing  ) D="./cfg/installer-hd-media/${S}"        ;;
-      bookworm ) D="./cfg/installer-hd-media/${S}"        ;;
-      bullseye ) D="./cfg/installer-hd-media/${S}"        ;;
-      buster   ) D="./cfg/installer-hd-media/${S}"        ;;
-      stretch  ) D="./cfg/installer-hd-media/${S}"        ;;
-      bionic   ) D="./cfg/installer-hd-media/${S}-updates";;
-      *        ) D="./bld/${S}";;
-    esac
-    case ${S} in
-      stretch  | \
-      buster   | \
-      bullseye | \
-      bookworm | \
-      testing  )
-        mkdir -p ./img/install.amd/debian/${S}
-        cp -a -L -u ./bld/${S}/.  ./img/install.amd/debian/${S}/
-        cp -a -L -u ./ird/${F}    ./img/install.amd/debian/${S}/initrd.img
-        cp -a -L -u ${D}/vmlinuz* ./img/install.amd/debian/${S}/vmlinuz.img
-        ;;
-      bionic   | \
-      focal    | \
-      jammy    | \
-      kinetic  | \
-      lunar    )
-        mkdir -p ./img/install.amd/ubuntu/${S}
-        cp -a -L -u ./bld/${S}/.  ./img/install.amd/ubuntu/${S}/
-        cp -a -L -u ./ird/${F}    ./img/install.amd/ubuntu/${S}/initrd.img
-        cp -a -L -u ${D}/vmlinuz* ./img/install.amd/ubuntu/${S}/vmlinuz.img
-        ;;
-      *        )
-        ;;
-    esac
-  done
+  rm -rf ./img/install.amd/
+  mkdir -p ./img/install.amd
+  cp -a ./ird/. ./img/install.amd
 }
 
-# ### make copy image #########################################################
-funcMake_copy_image () {
-  # === make directory ========================================================
+# === copy config file ========================================================
+funcCopy_cfg_file () {
   echo "make directory"
-  mkdir -p ./img/images         \
-           ./img/preseed/debian \
+  rm -rf ./img/preseed/debian \
+         ./img/preseed/ubuntu \
+         ./img/nocloud
+  mkdir -p ./img/preseed/debian \
            ./img/preseed/ubuntu \
            ./img/nocloud
   # === copy config file ======================================================
@@ -750,7 +718,14 @@ funcMake_copy_image () {
       -e '/d-i partman\/early_command/,/exit 0/ s/^#/ /g'     \
              ./img/preseed/ubuntu/preseed.cfg                 \
   | tee ./img/preseed/ubuntu/preseed_old.cfg > /dev/null
-# === copy iso file ===========================================================
+}
+
+# === copy iso image ==========================================================
+funcCopy_iso_image () {
+  echo "make directory"
+  rm -rf ./img/images
+  mkdir -p ./img/images
+  # === copy iso file =========================================================
   echo "copy iso file"
   M=( \
     debian-testing-amd64-netinst.iso         \
@@ -803,7 +778,7 @@ funcUSB_Device_partition_and_format () {
       break
     fi
   done
-  lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
+# lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
   mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
   # === partition =============================================================
   echo "partition"
@@ -829,7 +804,7 @@ _EOT_
 }
 
 # ### USB Device: [ /dev/sdX1, /dev/sdX2 ] Boot and EFI partition #############
-funcUSB_Device_Boot_and_EFI_partition () {
+funcUSB_Device_Inst_Bootloader () {
   # *** [ USB device: /dev/sdb1, /dev/sdb2 ] ***
   # === mount /dev/sdX2 =======================================================
   echo "mount /dev/sdX2"
@@ -844,6 +819,19 @@ funcUSB_Device_Boot_and_EFI_partition () {
   echo "make .disk directory"
   mkdir -p ./usb/.disk
   touch ./usb/.disk/info
+  # === unmount ===============================================================
+  echo "unmount"
+  umount ./usb/
+}
+
+# ### USB Device: [ /dev/sdX2 ] EFI partition #################################
+funcUSB_Device_Inst_GRUB () {
+  # *** [ USB device: /dev/sdb2 ] ***
+  # === mount /dev/sdX3 =======================================================
+  echo "mount /dev/sdX3"
+  rm -rf ./usb/
+  mkdir -p ./usb
+  mount /dev/sdb2 ./usb/
   # === grub.cfg ==============================================================
   echo "grub.cfg"
   cat <<- '_EOT_' | tee ./usb/boot/grub/grub.cfg > /dev/null
@@ -874,7 +862,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set gfxpayload=keep
 	    set isofile="/images/debian-testing-amd64-netinst.iso"
 	    set isoscan="${isofile} (testing)"
-	    set isodist="debian/bookworm"
+	    set isodist="debian.testing.netinst"
 	    set preseed="/hd-media/preseed/debian/preseed.cfg"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
@@ -886,7 +874,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set gfxpayload=keep
 	    set isofile="/images/debian-bookworm-DI-rc2-amd64-netinst.iso"
 	    set isoscan="${isofile} (testing)"
-	    set isodist="debian/bookworm"
+	    set isodist="debian.bookworm.netinst"
 	    set preseed="/hd-media/preseed/debian/preseed.cfg"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
@@ -898,7 +886,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set gfxpayload=keep
 	    set isofile="/images/debian-11.7.0-amd64-netinst.iso"
 	    set isoscan="${isofile} (stable - 11.7)"
-	    set isodist="debian/bullseye"
+	    set isodist="debian.bullseye.netinst"
 	    set preseed="/hd-media/preseed/debian/preseed.cfg"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
@@ -910,7 +898,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set gfxpayload=keep
 	    set isofile="/images/debian-10.13.0-amd64-netinst.iso"
 	    set isoscan="${isofile} (oldstable - 10.13)"
-	    set isodist="debian/buster"
+	    set isodist="debian.buster.netinst"
 	    set preseed="/hd-media/preseed/debian/preseed_old.cfg"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
@@ -922,7 +910,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set gfxpayload=keep
 	    set isofile="/images/ubuntu-23.04-live-server-amd64.iso"
 	    set isoscan="iso-scan/filename=${isofile}"
-	    set isodist="ubuntu/lunar"
+	    set isodist="ubuntu.lunar.server"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
@@ -933,7 +921,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set gfxpayload=keep
 	    set isofile="/images/ubuntu-22.10-live-server-amd64.iso"
 	    set isoscan="iso-scan/filename=${isofile}"
-	    set isodist="ubuntu/kinetic"
+	    set isodist="ubuntu.kinetic.server"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
@@ -944,7 +932,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set gfxpayload=keep
 	    set isofile="/images/ubuntu-22.04.2-live-server-amd64.iso"
 	    set isoscan="iso-scan/filename=${isofile}"
-	    set isodist="ubuntu/jammy"
+	    set isodist="ubuntu.jammy.server"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
@@ -955,7 +943,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set gfxpayload=keep
 	    set isofile="/images/ubuntu-20.04.6-live-server-amd64.iso"
 	    set isoscan="iso-scan/filename=${isofile}"
-	    set isodist="ubuntu/focal"
+	    set isodist="ubuntu.focal.server"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
@@ -966,7 +954,7 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    set gfxpayload=keep
 	    set isofile="/images/ubuntu-18.04.6-server-amd64.iso"
 	    set isoscan="${isofile} (bionic - 18.04)"
-	    set isodist="ubuntu/bionic"
+	    set isodist="ubuntu.bionic.server"
 	    set preseed="/hd-media/preseed/ubuntu/preseed_old.cfg"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
@@ -979,29 +967,29 @@ funcUSB_Device_Boot_and_EFI_partition () {
 	    search.fs_label "ISOFILE" isopart hd1,gpt4
 	    set menu_color_normal=cyan/blue
 	    set menu_color_highlight=white/blue
-	#    menuentry 'Live system (Debian 12:testing [bookworm])' {
-	#        set gfxpayload=keep
-	#        set isofile="/images/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
-	#        set isoscan="${isofile} (testing)"
-	#        set isodist="debian/bookworm"
-	#        set preseed="/hd-media/preseed/debian/preseed.cfg"
-	#        set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	#        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	#        echo "Loading ${isofile} ..."
-	#        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip
-	#        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	#    }
-	#    menuentry 'Live system (Ubuntu 23.04:Lunar Lobster)' {
-	#        set gfxpayload=keep
-	#        set isofile="/images/ubuntu-23.04-desktop-amd64.iso"
-	#        set isoscan="iso-scan/filename=${isofile}"
-	#        set isodist="ubuntu/lunar"
-	#        set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	#        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	#        echo "Loading ${isofile} ..."
-	#        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip
-	#        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	#    }
+	    menuentry 'Live system (Debian 12:testing [bookworm])' {
+	        set gfxpayload=keep
+	        set isofile="/images/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
+	        set isoscan="${isofile} (testing)"
+	        set isodist="debian.bookworm.live"
+	        set preseed="/hd-media/preseed/debian/preseed.cfg"
+	        set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	        echo "Loading ${isofile} ..."
+	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip
+	        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	    }
+	    menuentry 'Live system (Ubuntu 23.04:Lunar Lobster)' {
+	        set gfxpayload=keep
+	        set isofile="/images/ubuntu-23.04-desktop-amd64.iso"
+	        set isoscan="iso-scan/filename=${isofile}"
+	        set isodist="ubuntu.lunar.desktop"
+	        set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	        echo "Loading ${isofile} ..."
+	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip
+	        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	    }
 	}
 	menuentry "System shutdown" {
 	    echo "System shutting down ..."
@@ -1051,9 +1039,8 @@ funcUSB_Device_Data_File_partition () {
   cp --preserve=timestamps -u -r ./img/nocloud/ ./usb/
   cp --preserve=timestamps -u -r ./img/preseed/ ./usb/
   # === unmount ===============================================================
-  umount ./usb
   echo "unmount"
-  lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
+  umount ./usb
 }
 
 # ### main ####################################################################
@@ -1075,11 +1062,14 @@ main () {
   funcCopy_and_make_kernel_module
   funcMake_initramfs
   funcCopy_initramfs
-  funcMake_copy_image
-  funcUSB_Device_partition_and_format
-  funcUSB_Device_Boot_and_EFI_partition
-  funcUSB_Device_Inst_File_partition
-  funcUSB_Device_Data_File_partition
+  funcCopy_cfg_file
+#  funcCopy_iso_image
+#  funcUSB_Device_partition_and_format
+#  funcUSB_Device_Inst_Bootloader
+#  funcUSB_Device_Inst_GRUB
+#  funcUSB_Device_Inst_File_partition
+#  funcUSB_Device_Data_File_partition
+  lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
   echo "complete"
   echo "$(date +"%Y/%m/%d %H:%M:%S") processing end"
 }
