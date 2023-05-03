@@ -466,6 +466,7 @@ funcUnpack_initramfs () {
   for S in $(ls -1aA ./bld/)
   do
     case "${S}" in
+      debian.*.live        ) D="./bld/${S}"                               ;;
       debian.*             ) D="./cfg/installer-hd-media/${S%\.*}"        ;;
       ubuntu.bionic.server ) D="./cfg/installer-hd-media/${S%\.*}-updates";;
       *                    ) D="./bld/${S}"                               ;;
@@ -1065,12 +1066,12 @@ main () {
   funcMake_initramfs
   funcCopy_initramfs
   funcCopy_cfg_file
-#  funcCopy_iso_image
-#  funcUSB_Device_partition_and_format
-#  funcUSB_Device_Inst_Bootloader
-#  funcUSB_Device_Inst_GRUB
-#  funcUSB_Device_Inst_File_partition
-#  funcUSB_Device_Data_File_partition
+  funcCopy_iso_image
+  funcUSB_Device_partition_and_format
+  funcUSB_Device_Inst_Bootloader
+  funcUSB_Device_Inst_GRUB
+  funcUSB_Device_Inst_File_partition
+  funcUSB_Device_Data_File_partition
   lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
   echo "complete"
   echo "$(date +"%Y/%m/%d %H:%M:%S") processing end"
