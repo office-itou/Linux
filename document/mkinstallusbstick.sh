@@ -249,6 +249,9 @@ funcDownload_iso () {
 funcDownload_deb () {
 # rm -rf ./opt/
   mkdir -p ./opt
+  # ::: linux image :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  echo "linux image"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.testing"                             "https://deb.debian.org/debian/pool/main/l/linux-signed-amd64/linux-image-6.1.0-8-amd64_6.1.25-1_amd64.deb"
   # ::: exfat :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "exfat"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.stretch"                             "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.2.5-2_amd64.deb"
