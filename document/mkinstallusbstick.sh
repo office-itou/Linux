@@ -242,16 +242,13 @@ funcDownload_iso () {
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/focal/ubuntu-20.04.6-desktop-amd64.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-desktop-amd64.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/kinetic/ubuntu-22.10-desktop-amd64.iso"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/lunar/ubuntu-23.04-desktop-amd64.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/lunar/ubuntu-23.04-desktop-amd64.iso"
 }
 
 # === download: deb file ======================================================
 funcDownload_deb () {
 # rm -rf ./opt/
   mkdir -p ./opt
-  # ::: linux image :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  echo "linux image"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.testing"                             "https://deb.debian.org/debian/pool/main/l/linux-signed-amd64/linux-image-6.1.0-8-amd64_6.1.25-1_amd64.deb"
   # ::: exfat :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "exfat"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.stretch"                             "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.2.5-2_amd64.deb"
@@ -264,43 +261,18 @@ funcDownload_deb () {
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.jammy"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.4.0-1_amd64.deb"
-  # ::: fuse ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  echo "fuse"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.buster"                              "https://deb.debian.org/debian/pool/main/f/fuse/fuse_2.9.9-1+deb10u1_amd64.deb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.buster"                              "https://deb.debian.org/debian/pool/main/f/fuse/libfuse2_2.9.9-1+deb10u1_amd64.deb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/fuse_2.9.9-3_amd64.deb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/libfuse2_2.9.9-3_amd64.deb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/fuse-udeb_2.9.9-3_amd64.udeb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/libfuse2-udeb_2.9.9-3_amd64.udeb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.jammy"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/fuse_2.9.9-5ubuntu3_amd64.deb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/fuse_2.9.9-5ubuntu3_amd64.deb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/fuse_2.9.9-6_amd64.deb"
-  echo "fuse3"
-  # ::: fuse3 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse3/fuse3_3.9.0-2_amd64.deb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse3/libfuse3-3_3.9.0-2_amd64.deb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.jammy"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/fuse3_3.10.5-1build1_amd64.deb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.jammy"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/libfuse3-3_3.10.5-1build1_amd64.deb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/fuse3_3.11.0-1_amd64.deb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/libfuse3-3_3.11.0-1_amd64.deb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/fuse3_3.14.0-3_amd64.deb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/libfuse3-3_3.14.0-3_amd64.deb"
   # ::: mount :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "mount"
+  # --- debian.bookworm.live --------------------------------------------------
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm.live"                       "https://deb.debian.org/debian/pool/main/u/util-linux/mount_2.38.1-5+b1_amd64.deb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm.live"                       "https://deb.debian.org/debian/pool/main/u/util-linux/libmount1-udeb_2.38.1-5+b1_amd64.udeb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm.live"                       "https://deb.debian.org/debian/pool/main/u/util-linux/libmount1_2.38.1-5+b1_amd64.deb"
+  # --- ubuntu.bionic ---------------------------------------------------------
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/mount_2.31.1-0.4ubuntu3.7_amd64.deb"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/libmount1_2.31.1-0.4ubuntu3.7_amd64.deb"
-  # ::: iso-scan ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# echo "iso-scan"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.75_all.udeb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.75_all.udeb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.85_all.udeb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.85_all.udeb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.88_all.udeb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/load-iso_1.88_all.udeb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu5_all.udeb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/load-iso_1.55ubuntu5_all.udeb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/iso-scan_1.55ubuntu9_all.udeb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/i/iso-scan/load-iso_1.55ubuntu9_all.udeb"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/libmount1_2.31.1-0.4ubuntu3.7_amd64.deb"
+  # ::: cruft-ng ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  echo "cruft-ng"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/c/cruft-ng/cruft-ng_0.9.54_amd64.deb"
 }
 
 # === download: arc file ======================================================
@@ -327,26 +299,57 @@ funcDownload () {
   for D in cfg iso opt arc
   do
     if [ -d ./${D}/. ]; then
-      find ./${D}/ -type d -exec chmod +rx {} \;
+      find ./${D}/ -type d -exec chmod +rx '{}' \;
     fi
   done
 }
 
 # ### make initramfs and deb file #############################################
-# === copy initrd and vmlinuz =================================================
+# === copy module =============================================================
 # apt-cache depends package
 # apt-cache rdepends package
 # -----------------------------------------------------------------------------
-funcCopy_initrd_and_vmlinuz () {
-  echo "copy initrd"
+funcCopy_module () {
+  echo "copy module"
   mountpoint -q ./mnt/ && (umount -q -f ./mnt || umount -q -lf ./mnt) || true
   mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
   rm -rf ./mnt/
   rm -rf ./bld/
   rm -rf ./deb/
+  rm -rf ./tmp
   mkdir -p ./mnt
   mkdir -p ./bld
   mkdir -p ./deb
+  mkdir -p ./tmp
+  # *** modules ***************************************************************
+  U=(                              \
+    libc-l10n\\\(-udeb\\\)*_.*     \
+    libgnutls30\\\(-udeb\\\)*_.*   \
+    libmount1\\\(-udeb\\\)*_.*     \
+#    libntfs-3g\\\(-udeb\\\)*_.*    \
+    libpcre3\\\(-udeb\\\)*_.*      \
+    libselinux1\\\(-udeb\\\)*_.*   \
+    libtinfo5\\\(-udeb\\\)*_.*     \
+    mount\\\(-udeb\\\)*_.*         \
+#    ntfs-3g\\\(-udeb\\\)*_.*       \
+  )
+  U=(                              \
+    libaio1-udeb\\\(-udeb\\\)*_.*  \
+    libc-l10n\\\(-udeb\\\)*_.*     \ #
+    libgcrypt20\\\(-udeb\\\)*_.*   \
+    libgnutls30\\\(-udeb\\\)*_.*   \ #
+    libmount1\\\(-udeb\\\)*_.*     \ #
+#   libntfs-3g\\\(-udeb\\\)*_.*    \
+    libpcre3\\\(-udeb\\\)*_.*      \ #
+    libselinux1\\\(-udeb\\\)*_.*   \ #
+    libsmartcols1\\\(-udeb\\\)*_.* \
+    libtinfo5\\\(-udeb\\\)*_.*     \ #
+    libzstd1\\\(-udeb\\\)*_.*      \
+    lvm2\\\(-udeb\\\)*_.*          \
+    mount\\\(-udeb\\\)*_.*         \ #
+#   ntfs-3g\\\(-udeb\\\)*_.*       \
+    util-linux\\\(-udeb\\\)*_.*    \
+  )
   for P in $(find ./iso/ \( -name 'debian-*-amd64-netinst.iso'           \
                          -o -name 'ubuntu-2*-live-server-amd64.iso'      \
                          -o -name 'ubuntu-1*[!live]-server-amd64.iso'    \
@@ -354,7 +357,9 @@ funcCopy_initrd_and_vmlinuz () {
                          -o -name 'ubuntu-*-desktop-amd64.iso'        \) \
                       \( -type f -o -type l \))
   do
+    # --- mount ---------------------------------------------------------------
     mount -r -o loop ${P} ./mnt
+    # --- make directory ------------------------------------------------------
     R=$(cat ./mnt/.disk/info | sed -z 's/-n//g')
     N=$(echo ${R} | awk -F ' ' '{split($1,A,"-"); print tolower(A[1]);}')
     S=$(echo ${R} | awk -F '"' '{split($2,A," "); print tolower(A[1]);}')
@@ -373,6 +378,7 @@ funcCopy_initrd_and_vmlinuz () {
     mkdir -p ./bld/${D}
     mkdir -p ./lnx/${D}
     mkdir -p ./deb/${D}
+    # *** copy initrd and vmlinuz *********************************************
     if [ -d ./mnt/casper/. ]; then
       cp -a ./mnt/casper/initrd* ./mnt/casper/vmlinuz   ./bld/${D}/
     elif [ -d ./mnt/install.amd/. ]; then
@@ -380,94 +386,70 @@ funcCopy_initrd_and_vmlinuz () {
     else
       cp -a ./mnt/install/initrd* ./mnt/install/vmlinuz ./bld/${D}/
     fi
-    # *** modules *************************************************************
-    M=(                    \
-      libc-l10n_*          \
-      libgcrypt20-udeb_*   \
-      libgcrypt20_*        \
-      libgnutls30_*        \
-      libmount1-udeb_*     \
-      libmount1_*          \
-      libntfs-3g*          \
-      libpcre3_*           \
-      libselinux1-udeb_*   \
-      libselinux1_*        \
-      libsmartcols1-udeb_* \
-      libsmartcols1_*      \
-      libtinfo5_*          \
-      libzstd1-udeb_*      \
-      mount_*              \
-      ntfs-3g-udeb_*       \
-      ntfs-3g_*            \
-      util-linux_*         \
-      libaio1-udeb_*       \
-      lvm2-udeb_*          \
-    )
+    # *** copy deb file *******************************************************
+    T=($(find ./mnt/ -maxdepth 1 -name 'pool*' -type d))
+    M=(${U[@]})
     case "${S%\.*}" in
-      stretch  ) M+=(fuse-udeb_* libfuse2-udeb_* );;
-      buster   ) M+=(fuse-udeb_* libfuse2-udeb_* );;
-      bullseye ) M+=(fuse-udeb_* libfuse2-udeb_* fuse3-udeb_* libfuse3-3-udeb_* );;
-      bookworm ) M+=(fuse-udeb_* libfuse2-udeb_* fuse3-udeb_* libfuse3-3-udeb_* );;
-      testing  ) M+=(fuse-udeb_* libfuse2-udeb_* fuse3-udeb_* libfuse3-3-udeb_* );;
-      bionic   ) M+=(fuse-udeb_* libfuse2_* );;
-      focal    ) ;;
-      jammy    ) ;;
-      kinetic  ) ;;
-      lunar    ) ;;
+      stretch  ) M+=(fuse\\\(-udeb\\\)*_.* libfuse2\\\(-udeb\\\)*_.* ntfs-3g\\\(-udeb\\\)*_.* );;
+      buster   ) M+=(fuse\\\(-udeb\\\)*_.* libfuse2\\\(-udeb\\\)*_.* ntfs-3g\\\(-udeb\\\)*_.* );;
+      bullseye ) M+=(fuse\\\(-udeb\\\)*_.* libfuse2\\\(-udeb\\\)*_.* ntfs-3g\\\(-udeb\\\)*_.* );;
+      bookworm ) M+=(fuse\\\(-udeb\\\)*_.* libfuse2\\\(-udeb\\\)*_.* ntfs-3g\\\(-udeb\\\)*_.* );;
+      testing  ) M+=(fuse\\\(-udeb\\\)*_.* libfuse2\\\(-udeb\\\)*_.* ntfs-3g\\\(-udeb\\\)*_.* );;
+      bionic   ) M+=(fuse\\\(-udeb\\\)*_.* libfuse2\\\(-udeb\\\)*_.* );;
+      focal    ) M+=(fuse\\\(-udeb\\\)*_.* libfuse2\\\(-udeb\\\)*_.* ntfs-3g\\\(-udeb\\\)*_.* );;
+      jammy    ) M+=(fuse\\\(-udeb\\\)*_.* libfuse2\\\(-udeb\\\)*_.* ntfs-3g\\\(-udeb\\\)*_.* );;
+      kinetic  ) M+=(fuse3\\\(-udeb\\\)*_.* );;
+      lunar    ) M+=(fuse3\\\(-udeb\\\)*_.* );;
       *        ) ;;
     esac
     # *** copy module *********************************************************
     for F in ${M[@]}
     do
-      printf '  %-20.20s : %s\n' "${F}" "$(find ./mnt/pool/main/ -name "${F}" -type f -printf '%f' -exec cp -a -u '{}' ./deb/${D}/ \;)"
+      B=""
+      for P in $(find ${T[@]} -regextype posix-basic -regex ".*/${F}" -type f | sed -n '/\(all\|amd64\)/p' | sed -n "/\(${F%\\.*}_\|-udeb_\)/p")
+      do
+        B="$(basename ${P})"
+        printf '  %-20.20s : %s\n' "${F}" "${B}"
+        if [ -n "${P}" ]; then
+          cp -a -u ${P} ./deb/${D}/
+        fi
+      done
+      if [ -z "${B}" ]; then
+        printf '  %-20.20s : %s\n' "${F}" "${B}"
+      fi
     done
-    # *** linux image * *******************************************************
-    find ./mnt/pool/ -regextype posix-basic -regex '.*/\(linux\|linux-signed\(-amd64\)*\)/linux-\(image\|modules\).*-[0-9]*-\(amd64\|generic\)*_.*' \
+    # *** linux image *********************************************************
+    find ${T[@]} -regextype posix-basic -regex '.*/\(linux\|linux-signed\(-amd64\)*\)/linux-\(image\|modules\).*-[0-9]*-\(amd64\|generic\)*_.*' \
        -type f -printf '  linux image file     : %f\n' -exec cp -a '{}' ./deb/${D}/ \;
+    # *** packages file *******************************************************
+    cp -a ./mnt/dists ./deb/${D}/
+    # --- unmount -------------------------------------------------------------
     umount ./mnt
   done
 }
 
-# === unpack deb file =========================================================
-funcUnpack_deb_file () {
-  echo "unpack deb file"
-  rm -rf ./pac/
-  rm -rf ./lnx/
+# === unpack linux image ======================================================
+funcUnpack_lnximg () {
+  echo "unpack linux image"
+  rm -rf ./pac
   mkdir -p ./pac
-  mkdir -p ./lnx
   for S in $(ls -1aA ./deb/)
   do
-    find ./deb/${S}/ \(      -name 'linux-image-*_amd64.deb' -o      -name 'linux-modules-*_amd64.deb' \) -type f -printf "unpack %p\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./lnx/${S} \;
-    find ./deb/${S}/ \( -not -name 'linux-image-*_amd64.deb' -a -not -name 'linux-modules-*_amd64.deb' \) -type f -printf "unpack %p\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./pac/${S} \;
-    if [ -d ./opt/${S%\.*}/. ]; then
-      find ./opt/${S%\.*}/ \(      -name 'linux-image-*_amd64.deb' -o      -name 'linux-modules-*_amd64.deb' \) -type f -printf "unpack %p\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./lnx/${S} \;
-      find ./opt/${S%\.*}/ \( -not -name 'linux-image-*_amd64.deb' -a -not -name 'linux-modules-*_amd64.deb' \) -type f -printf "unpack %p\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./pac/${S} \;
-    fi
+    find ./deb/${S}/ \( -name 'linux-image-*_amd64.deb' -o -name 'linux-modules-*_amd64.deb' \) \
+       -type f -printf "unpack %f\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./pac/${S} \;
   done
 }
 
-# === unpack arc file =========================================================
-funcUnpack_arc_file () {
-  echo "unpack arc file"
-  rm -rf ./tmp/
-  mkdir -p ./tmp
-  for S in $(ls -1aA ./arc/)
-  do
-    mkdir -p ./tmp/${S}
-    find ./arc/${S}/ -type f -printf "unpack %p\n" -exec tar -C ./tmp/${S}/ -xf {} \;
-    # --- iso-scan and load-iso -----------------------------------------------
-#    find ./tmp/${S}/ \( -name 'iso-scan.*' -o -name 'load-iso.*' \) -type f -printf "copy %p\n" -exec mkdir -p ./pac/${S}/var/lib/dpkg/info \; -exec cp -a --backup '{}' ./pac/${S}/var/lib/dpkg/info/ \;
-  done
-  rm -rf ./tmp/
-}
-
-# === unpack initramfs ========================================================
-funcUnpack_initramfs () {
-  echo "unpack initramfs"
+# === unpack module ===========================================================
+funcUnpack_module () {
+  echo "unpack module"
   rm -rf ./ram/
+  rm -rf ./wrk/
   mkdir -p ./ram
+  mkdir -p ./wrk
   for S in $(ls -1aA ./bld/)
   do
+    # --- bld or cfg -> ram ---------------------------------------------------
     case "${S}" in
       debian.*.live        ) D="./bld/${S}"                               ;;
       debian.*             ) D="./cfg/installer-hd-media/${S%\.*}"        ;;
@@ -475,32 +457,39 @@ funcUnpack_initramfs () {
       *                    ) D="./bld/${S}"                               ;;
     esac
     find ${D}/ -maxdepth 1 -name 'initrd*'  -type f -printf "unpack %p\n" -exec mkdir -p ./ram/${S} \; -exec unmkinitramfs '{}' ./ram/${S} \;
-  done
-}
-
-# === copy and make kernel module =============================================
-funcCopy_and_make_kernel_module () {
-  echo "copy and make kernel module"
-  rm -rf ./wrk/
-  mkdir -p ./wrk
-  for S in $(ls -1aA ./ram/)
-  do
+    # --- ram -> wrk ----------------------------------------------------------
     if [ -d ./ram/${S}/main/. ]; then
       D="./ram/${S}/main"
     else
       D="./ram/${S}"
     fi
-    printf "copy initramfs : %-24.24s : %s\n" ${S} ${D}
+    echo "copy   ${D}"
     mkdir -p ./wrk/${S}
     cp -a ${D}/. ./wrk/${S}/
-    if [ -d ./pac/${S}/. ]; then
-      for O in $(ls -1aA ./pac/${S}/)
-      do
-        cp -a --backup ./pac/${S}/${O}/. ./wrk/${S}/${O}/
-      done
+    # --- remove module -------------------------------------------------------
+    echo "remove module"
+    M=( \
+      usr/lib/finish-install.d/15cdrom-detect \
+    )
+    for T in ${M[@]}
+    do
+      if [ -f ./wrk/${S}/${T} ]; then
+        echo "remove module: ${T}"
+        mv ./wrk/${S}/${T} ./wrk/${S}/${T}~
+      fi
+    done
+    # --- linux image -> wrk --------------------------------------------------
+    if [ -d ./wrk/${S}/lib/modules/*/kernel/. ]; then
+      V=$(find ./wrk/${S}/lib/modules/*/kernel/ -name 'fs' -type d | sed -e 's~^.*/modules/\(.*\)/kernel/.*$~\1~g')
+    else
+      V="$(find ./deb/${S}/ -name 'linux-image*' -type f | sed -n -e 's~^.*/linux-image-\(.*\)_.*_.*$~\1~p')"
+      if [ -z "${V}" ]; then
+        echo "failed to get kernel version, exiting process."
+        exit 1
+      fi
+      mkdir -p ./wrk/${S}/lib/modules/${V}/kernel
     fi
-    V=$(find ./wrk/${S}/lib/modules/*/kernel/ -name 'fs' -type d | sed -e 's~^.*/modules/\(.*\)/kernel/.*$~\1~g')
-    if [ -d ./lnx/${S}/. ]; then
+    if [ -d ./pac/${S}/. ]; then
       M=( \
         kernel/crypto        \
         kernel/drivers/block \
@@ -517,11 +506,157 @@ funcCopy_and_make_kernel_module () {
       )
       for T in ${M[@]}
       do
-        if [ -d ./lnx/${S}/lib/modules/${V}/${T}/. ]; then
-          cp -a --backup ./lnx/${S}/lib/modules/${V}/${T} ./wrk/${S}/lib/modules/${V}/$(dirname ${T})
+        if [ -d ./pac/${S}/lib/modules/${V}/${T}/. ]; then
+          echo "copy   module: ${T}"
+          cp -a --backup ./pac/${S}/lib/modules/${V}/${T} ./wrk/${S}/lib/modules/${V}/$(dirname ${T})
         fi
       done
     fi
+    # --- deb or opt -> wrk ---------------------------------------------------
+    D=""
+    if [ -d ./deb/${S}/.     ]; then D+="./deb/${S}/ ";     fi
+    if [ -d ./opt/${S%\.*}/. ]; then D+="./opt/${S%\.*}/ "; fi
+    if [ -d ./opt/${S}/.     ]; then D+="./opt/${S}/ ";     fi
+    # --- dpkg --update-avail -------------------------------------------------
+    echo "update package data base"
+    if [ ! -f ./wrk/${S}/var/lib/dpkg/status ]; then
+      mkdir -p ./wrk/${S}/var/lib/dpkg
+      touch ./wrk/${S}/var/lib/dpkg/status
+    fi
+    for P in $(find ./deb/${S}/dists/ -name '*Packages*' -type f)
+    do
+      mkdir -p ./tmp
+      cp -a ${P} ./tmp/
+      if [ -f ./tmp/Packages.gz ]; then
+        gzip -d ./tmp/Packages.gz
+      fi
+      LANG=C dpkg --root=./wrk/${S} --update-avail ./tmp/Packages 2>&1 | \
+        grep -v 'parsing file' | grep -v 'missing '\''Architecture'\'' field' | grep -v 'missing '\''Maintainer'\'' field' | \
+        grep -v 'field value' | grep -v 'warning: files list' | \
+        grep -v 'Reading database' | grep -v 'Preparing' | \
+        grep -v 'Updating' | grep -v 'Information'
+      rm -rf ./tmp
+    done
+    # --- add package ---------------------------------------------------------
+    echo "inst   package"
+    U=("")
+    C=("")
+    for P in $(find ${D} \
+         \( -not -name 'linux-image-*_amd64.deb' -a -not -name 'linux-modules-*_amd64.deb' \
+      -a \( -name '*.deb' -o -name '*.udeb' \) \) -type f | sed -n '/\(all\|amd64\)/p' | sort -u)
+    do
+      F="$(basename ${P})"
+      M="${F%%_*}"
+      W="${M}\\(-udeb\\)*"
+      for A in ${U[@]}
+      do
+        B="$(basename ${A})"
+        if [ "${F}"      = "${B}"     ] ||
+           [ "${M}"      = "${B%%_*}" ] ||
+           [ "${M}-udeb" = "${B%%_*}" ]; then
+          continue 2
+        fi
+      done
+      T=""
+      if [ -f ./ram/${S}/var/lib/dpkg/status ] && \
+         [ -n "$(sed -n "/^Package: ${W}.*$/p" ./ram/${S}/var/lib/dpkg/status)" ]; then
+        C+=("${P} ")
+      else
+        if [ -n "$(echo ${P} | sed -n '/\/deb\//p')" ]; then
+          T=$(echo ${P} | sed -n "/\/${M}-udeb_/p")
+          if [ -z "${T}" ]; then
+            T=$(echo ${P} | sed -n "/\/${M}_/p")
+          fi
+        else
+          T=$(echo ${P} | sed -n "/\/${M}-udeb_/p")
+          if [ -z "${T}" ]; then
+            T=$(echo ${P} | sed -n "/\/${M}_/p")
+          fi
+        fi
+      fi
+      if [ -n "${T}" ]; then
+        echo "inst   package: ${F}"
+        U+=("${T} ")
+        C+=("${T} ")
+      fi
+    done
+    # --- copy package --------------------------------------------------------
+    echo "copy   package"
+    for P in ${C[@]}
+    do
+      F="$(basename ${P})"
+      M="${F%%_*}"
+      case "${M}" in
+        mount*     | \
+        libmount1* )
+          echo "copy   package: ${F}"
+          mkdir -p ./tmp
+          dpkg -x ${P} ./tmp
+          for T in $(ls ./tmp/)
+          do
+            cp -a --backup ./tmp/${T}/. ./wrk/${S}/${T}
+          done
+          rm -rf ./tmp
+          ;;
+        * )
+          ;;
+      esac
+    done
+    # --- unpack package ------------------------------------------------------
+    echo "unpack package"
+#set +e
+    sed -i ./wrk/${S}/var/lib/dpkg/status                                             \
+        -e '/^Package: debian-installer$/,/^Package:/ s/\(Version:\) \(.*\)/\1 1:\2/'
+    LANG=C dpkg --root=./wrk/${S} --unpack ${U[@]} 2>&1 | \
+      grep -v 'parsing file' | grep -v 'missing '\''Architecture'\'' field' | grep -v 'missing '\''Maintainer'\'' field' | \
+      grep -v 'field value' | grep -v 'warning: files list' | \
+      grep -v 'Reading database' | grep -v 'Preparing' | \
+      grep -v 'Selecting'
+#set -e
+    # --- unpack arc file -----------------------------------------------------
+    case "${S}" in
+      debian.*.live        )
+        echo "unpack arc file"
+        if [ ! -d ./wrk/${S}/var/lib/dpkg/info/. ]; then
+          mkdir -p ./wrk/${S}/var/lib/dpkg/info
+        fi
+        for F in $(find ./arc/${S%\.*}/ -type f)
+        do
+          echo "unpack ${F}"
+          mkdir -p ./tmp
+          tar -C ./tmp/ -xf ${F}
+          # --- iso-scan and load-iso -----------------------------------------
+          if [ -z $(sed -n '/^Package: iso-scan$/p' ./wrk/${S}/var/lib/dpkg/status) ]; then
+            find ./tmp/ \( -name 'iso-scan.*' -o -name 'load-iso.*' \) -type f -printf "copy %p\n" -exec cp -a --backup '{}' ./wrk/${S}/var/lib/dpkg/info/ \;
+            V="$(echo ${F} | sed -e 's/^.*_\(.*\)\.tar.*$/\1/')"
+            cat <<- '_EOT_' | sed -e "s/_VER_/${V}/g" | tee -a ./wrk/${S}/var/lib/dpkg/status > /dev/null
+				
+				Package: iso-scan
+				Status: install ok unpacked
+				Version: _VER_
+				Depends: cdebconf-udeb, hw-detect, loop-modules, di-utils
+				Description: Scan hard drives for an installer ISO image
+_EOT_
+          fi
+          if [ -z "$(sed -n '/^Package: load-iso$/p' ./wrk/${S}/var/lib/dpkg/status)" ]; then
+            cat <<- '_EOT_' | sed -e "s/_VER_/${V}/g" | tee -a ./wrk/${S}/var/lib/dpkg/status > /dev/null
+				
+				Package: load-iso
+				Status: install ok unpacked
+				Version: _VER_
+				Depends: cdebconf-udeb, iso-scan, cdrom-retriever, anna
+				Description: Load installer components from an installer ISO
+_EOT_
+          fi
+          rm -rf ./tmp/
+        done
+        ;;
+      *                    )
+        ;;
+    esac
+    # --- config --------------------------------------------------------------
+    echo "config"
+    V=$(find ./wrk/${S}/lib/modules/*/kernel/ -name 'fs' -type d | sed -e 's~^.*/modules/\(.*\)/kernel/.*$~\1~g')
     if [ -d ./wrk/${S}/lib/modules/${V}/. ]; then
       touch ./wrk/${S}/lib/modules/${V}/modules.builtin.modinfo
       depmod -a -b wrk/${S} ${V}
@@ -530,13 +665,6 @@ funcCopy_and_make_kernel_module () {
       sed -i ./wrk/${S}/var/lib/dpkg/info/iso-scan.postinst    \
           -e 's/^\([[:space:]]*FS\)="\(.*\)".*$/\1="\2 fuse fuse3 exfat ntfs3"/'
     fi
-#    if [ -d ./wrk/${S}/var/lib/dpkg/info/. ]; then
-#      for P in $(find ./wrk/${S}/var/lib/dpkg/info/ \( -name 'cdrom-checker.*' -o -name 'cdrom-detect.*' -o -name 'load-cdrom.*' \) -type f)
-#      do
-#        echo "rename ${P}"
-#        mv ${P} ${P}~
-#      done
-#    fi
     case "${S%\.*}" in
       debian.*        ) ;;
       ubuntu.bionic   )
@@ -651,23 +779,24 @@ funcMake_initramfs () {
   # 1 -  9 for gzip|bzip2|lzma|lzop
   # 0 -  9 for  lz4|xz
   # 0 - 19 for zstd
-  for S in $(ls -1aA ./ram/)
+  for S in $(ls -1aA ./wrk/)
   do
     O=$(pwd)
     pushd ./wrk/${S} > /dev/null
-      printf "make initramfs : %-24.24s : %s\n" ${S} ${O}/ird/${S}/initrd.img
+      echo "make   ./ird/${S}/initrd.img"
       mkdir -p ${O}/ird/${S}
       find . -name '*~' -prune -o -print | cpio -R 0:0 -o -H newc --quie | gzip -c > ${O}/ird/${S}/initrd.img
     popd > /dev/null
   done
-  for S in $(ls -1aA ./ird/)
+  for S in $(ls -1aA ./bld/)
   do
     case "${S}" in
+      debian.*.live        ) D="./bld/${S}"                               ;;
       debian.*             ) D="./cfg/installer-hd-media/${S%\.*}"        ;;
       ubuntu.bionic.server ) D="./cfg/installer-hd-media/${S%\.*}-updates";;
       *                    ) D="./bld/${S}"                               ;;
     esac
-    find ${D}/ -maxdepth 1 -name 'vmlinuz*' -type f -printf "copy %p\n" -exec mkdir -p ./ird/${S} \; -exec cp -a '{}' ./ird/${S}/vmlinuz.img \;
+    find ${D} -maxdepth 1 -name 'vmlinuz*' -type f -printf "copy   %p\n" -exec mkdir -p ./ird/${S} \; -exec cp -a '{}' ./ird/${S}/vmlinuz.img \;
   done
   ls -lh $(find ./ird/ -name 'initrd*' -type f)
   ls -lh $(find ./ird/ -name 'vmlinuz*' -type f)
@@ -755,7 +884,7 @@ funcCopy_iso_image () {
   )
   for F in ${M[@]}
   do
-    echo "copy ${F}"
+    echo "copy   ${F}"
     cp -a -L -u ./iso/${F} ./img/images/
   done
 }
@@ -982,8 +1111,10 @@ funcUSB_Device_Inst_GRUB () {
 	        set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	        echo "Loading ${isofile} ..."
-	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip
+	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip auto=true file=${preseed} netcfg/disable_autoconfig=true ---
 	        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	#       linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip
+	#       initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	    }
 	    menuentry 'Live system (Ubuntu 23.04:Lunar Lobster)' {
 	        set gfxpayload=keep
@@ -993,8 +1124,10 @@ funcUSB_Device_Inst_GRUB () {
 	        set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	        echo "Loading ${isofile} ..."
-	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip
+	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
 	        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	#       linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip
+	#       initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	    }
 	}
 	menuentry "System shutdown" {
@@ -1056,25 +1189,23 @@ main () {
     exit 1
   fi
   echo "$(date +"%Y/%m/%d %H:%M:%S") processing start"
-  funcDownload "cfg"
+#  funcDownload "cfg"
   funcDownload "lnk"
   funcDownload "iso"
   funcDownload "deb"
   funcDownload "arc"
-  funcCopy_initrd_and_vmlinuz
-  funcUnpack_deb_file
-  funcUnpack_arc_file
-  funcUnpack_initramfs
-  funcCopy_and_make_kernel_module
+  funcCopy_module
+  funcUnpack_lnximg
+  funcUnpack_module
   funcMake_initramfs
   funcCopy_initramfs
-  funcCopy_cfg_file
-  funcCopy_iso_image
-  funcUSB_Device_partition_and_format
-  funcUSB_Device_Inst_Bootloader
-  funcUSB_Device_Inst_GRUB
+#  funcCopy_cfg_file
+#  funcCopy_iso_image
+#  funcUSB_Device_partition_and_format
+#  funcUSB_Device_Inst_Bootloader
+#  funcUSB_Device_Inst_GRUB
   funcUSB_Device_Inst_File_partition
-  funcUSB_Device_Data_File_partition
+#  funcUSB_Device_Data_File_partition
   lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
   echo "complete"
   echo "$(date +"%Y/%m/%d %H:%M:%S") processing end"
