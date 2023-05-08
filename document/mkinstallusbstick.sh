@@ -58,8 +58,8 @@ funcCurl ()
     echo "${E}: ${U}"
     return ${R}
   fi
-  S=$(echo ${H[@]} | tr 'A-Z' 'a-z' | sed -n -e '/^content-length:/ s/^.*: //p' | sed -z 's/\n\|\r\|\l//g')
-  T=$(TZ=UTC date -d "$(echo ${H[@]} | tr 'A-Z' 'a-z' | sed -n -e '/^last-modified:/ s/^.*: //p')" "+%Y%m%d%H%M%S")
+  S=$(echo ${H[@],,} | sed -n -e '/^content-length:/ s/^.*: //p' | sed -z 's/\n\|\r\|\l//g')
+  T=$(TZ=UTC date -d "$(echo ${H[@],,} | sed -n -e '/^last-modified:/ s/^.*: //p')" "+%Y%m%d%H%M%S")
   IFS=${OLD_IFS}
   F="${O:-.}/$(basename ${U})"
   if [ -f ${F} ]; then
@@ -249,6 +249,9 @@ funcDownload_iso () {
 funcDownload_deb () {
 # rm -rf ./opt/
   mkdir -p ./opt
+  # ::: linux image :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  echo "linux image"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.testing"                             "https://deb.debian.org/debian/pool/main/l/linux-signed-amd64/linux-image-6.1.0-8-amd64_6.1.25-1_amd64.deb"
   # ::: exfat :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "exfat"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.stretch"                             "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.2.5-2_amd64.deb"
@@ -261,18 +264,27 @@ funcDownload_deb () {
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.jammy"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.3.0+git20220115-2_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.4.0-1_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.mantic"                              "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.4.0-1_amd64.deb"
+  # ::: libfuse2 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  echo "libfuse2"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/libfuse2-udeb_2.9.9-3_amd64.udeb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/libfuse2_2.9.9-3_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.jammy"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/libfuse2_2.9.9-5ubuntu3_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.kinetic"                             "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/libfuse2_2.9.9-5ubuntu3_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/libfuse2_2.9.9-6_amd64.deb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.mantic"                              "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/libfuse2_2.9.9-6_amd64.deb"
   # ::: mount :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   echo "mount"
   # --- debian.bookworm.live --------------------------------------------------
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm.live"                       "https://deb.debian.org/debian/pool/main/u/util-linux/mount_2.38.1-5+b1_amd64.deb"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm.live"                       "https://deb.debian.org/debian/pool/main/u/util-linux/libmount1-udeb_2.38.1-5+b1_amd64.udeb"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm.live"                       "https://deb.debian.org/debian/pool/main/u/util-linux/libmount1-udeb_2.38.1-5+b1_amd64.udeb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm.live"                       "https://deb.debian.org/debian/pool/main/u/util-linux/libmount1_2.38.1-5+b1_amd64.deb"
   # --- ubuntu.bionic ---------------------------------------------------------
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/mount_2.31.1-0.4ubuntu3.7_amd64.deb"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.bionic"                              "http://archive.ubuntu.com/ubuntu/pool/main/u/util-linux/libmount1_2.31.1-0.4ubuntu3.7_amd64.deb"
   # ::: cruft-ng ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  echo "cruft-ng"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/c/cruft-ng/cruft-ng_0.9.54_amd64.deb"
+# echo "cruft-ng"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/c/cruft-ng/cruft-ng_0.9.54_amd64.deb"
 }
 
 # === download: arc file ======================================================
@@ -323,32 +335,21 @@ funcCopy_module () {
   mkdir -p ./tmp
   # *** modules ***************************************************************
   U=(                              \
+    libaio1-udeb\\\(-udeb\\\)*_.*  \
     libc-l10n\\\(-udeb\\\)*_.*     \
+    libgcrypt20\\\(-udeb\\\)*_.*   \
     libgnutls30\\\(-udeb\\\)*_.*   \
     libmount1\\\(-udeb\\\)*_.*     \
-#    libntfs-3g\\\(-udeb\\\)*_.*    \
+#   libntfs-3g\\\(-udeb\\\)*_.*    \
     libpcre3\\\(-udeb\\\)*_.*      \
     libselinux1\\\(-udeb\\\)*_.*   \
-    libtinfo5\\\(-udeb\\\)*_.*     \
-    mount\\\(-udeb\\\)*_.*         \
-#    ntfs-3g\\\(-udeb\\\)*_.*       \
-  )
-  U=(                              \
-    libaio1-udeb\\\(-udeb\\\)*_.*  \
-    libc-l10n\\\(-udeb\\\)*_.*     \ #
-    libgcrypt20\\\(-udeb\\\)*_.*   \
-    libgnutls30\\\(-udeb\\\)*_.*   \ #
-    libmount1\\\(-udeb\\\)*_.*     \ #
-#   libntfs-3g\\\(-udeb\\\)*_.*    \
-    libpcre3\\\(-udeb\\\)*_.*      \ #
-    libselinux1\\\(-udeb\\\)*_.*   \ #
     libsmartcols1\\\(-udeb\\\)*_.* \
-    libtinfo5\\\(-udeb\\\)*_.*     \ #
+    libtinfo5\\\(-udeb\\\)*_.*     \
     libzstd1\\\(-udeb\\\)*_.*      \
-    lvm2\\\(-udeb\\\)*_.*          \
-    mount\\\(-udeb\\\)*_.*         \ #
+#   lvm2\\\(-udeb\\\)*_.*          \
+    mount\\\(-udeb\\\)*_.*         \
 #   ntfs-3g\\\(-udeb\\\)*_.*       \
-    util-linux\\\(-udeb\\\)*_.*    \
+#   util-linux\\\(-udeb\\\)*_.*    \
   )
   for P in $(find ./iso/ \( -name 'debian-*-amd64-netinst.iso'           \
                          -o -name 'ubuntu-2*-live-server-amd64.iso'      \
@@ -361,13 +362,13 @@ funcCopy_module () {
     mount -r -o loop ${P} ./mnt
     # --- make directory ------------------------------------------------------
     R=$(cat ./mnt/.disk/info | sed -z 's/-n//g')
-    N=$(echo ${R} | awk -F ' ' '{split($1,A,"-"); print tolower(A[1]);}')
-    S=$(echo ${R} | awk -F '"' '{split($2,A," "); print tolower(A[1]);}')
-    I=$(echo ${R} | sed -n -e 's/^.*\(live\|dvd\|netinst\|netboot\|server\).*$/\1/pi' | tr 'A-Z' 'a-z')
+    N=$(echo ${R,,} | awk -F ' ' '{split($1,A,"-"); print A[1];}')
+    S=$(echo ${R,,} | awk -F '"' '{split($2,A," "); print A[1];}')
+    I=$(echo ${R,,} | sed -n -e 's/^.*\(live\|dvd\|netinst\|netboot\|server\).*$/\1/p')
     case "${N}" in
-      debian ) V=$(echo ${R} | awk -F ' ' '{print tolower($3);}');;
-      ubuntu ) V=$(echo ${R} | awk -F ' ' '{print tolower($2);}');;
-      *      ) V=""                                              ;;
+      debian ) V=$(echo ${R,,} | awk -F ' ' '{print $3;}');;
+      ubuntu ) V=$(echo ${R,,} | awk -F ' ' '{print $2;}');;
+      *      ) V=""                                       ;;
     esac
     case "${V}" in
       testing ) S="${V}";;
@@ -435,8 +436,16 @@ funcUnpack_lnximg () {
   mkdir -p ./pac
   for S in $(ls -1aA ./deb/)
   do
-    find ./deb/${S}/ \( -name 'linux-image-*_amd64.deb' -o -name 'linux-modules-*_amd64.deb' \) \
-       -type f -printf "unpack %f\n" -exec mkdir -p ./pac/${S} \; -exec dpkg -x '{}' ./pac/${S} \;
+    D=""
+    if [ -d ./deb/${S}/.     ]; then D+="./deb/${S}/ ";     fi
+    if [ -d ./opt/${S%\.*}/. ]; then D+="./opt/${S%\.*}/ "; fi
+    if [ -d ./opt/${S}/.     ]; then D+="./opt/${S}/ ";     fi
+    for F in $(find ${D} \( -name 'linux-image-*_amd64.deb' -o -name 'linux-modules-*_amd64.deb' \) -type f)
+    do
+       printf "unpack %-24.24s : %s\n" "${S}" "$(basename ${F})"
+       mkdir -p ./pac/${S}
+       dpkg -x ${F} ./pac/${S}
+    done
   done
 }
 
@@ -770,7 +779,7 @@ _EOT_
 
 # === make initramfs ==========================================================
 funcMake_initramfs () {
-  echo "make initramfs"
+  echo "make   initramfs"
   rm -rf ./ird/
   mkdir -p ./ird
   # COMPRESS: [ gzip | bzip2 | lz4 | lzma | lzop | xz | zstd ]
@@ -806,7 +815,7 @@ funcMake_initramfs () {
 # ### file copy ###############################################################
 # === copy initramfs ==========================================================
 funcCopy_initramfs () {
-  echo "copy initramfs"
+  echo "copy   initramfs"
   rm -rf ./img/install.amd/
   mkdir -p ./img/install.amd
   cp -a ./ird/. ./img/install.amd
@@ -814,7 +823,7 @@ funcCopy_initramfs () {
 
 # === copy config file ========================================================
 funcCopy_cfg_file () {
-  echo "make directory"
+  echo "make   directory"
   rm -rf ./img/preseed/debian \
          ./img/preseed/ubuntu \
          ./img/nocloud
@@ -857,11 +866,11 @@ funcCopy_cfg_file () {
 
 # === copy iso image ==========================================================
 funcCopy_iso_image () {
-  echo "make directory"
+  echo "make   directory"
   rm -rf ./img/images
   mkdir -p ./img/images
   # === copy iso file =========================================================
-  echo "copy iso file"
+  echo "copy   iso file"
   M=( \
     debian-testing-amd64-netinst.iso         \
     debian-bookworm-DI-rc2-amd64-netinst.iso \
@@ -907,7 +916,7 @@ funcUSB_Device_partition_and_format () {
   done
   while :
   do
-    echo "erase /dev/sdb? (YES or Ctrl-C)"
+    echo "erase  /dev/sdb? (YES or Ctrl-C)"
     read DUMMY
     if [ "${DUMMY}" = "YES" ]; then
       break
@@ -942,7 +951,7 @@ _EOT_
 funcUSB_Device_Inst_Bootloader () {
   # *** [ USB device: /dev/sdb1, /dev/sdb2 ] ***
   # === mount /dev/sdX2 =======================================================
-  echo "mount /dev/sdX2"
+  echo "mount  /dev/sdX2"
   rm -rf ./usb/
   mkdir -p ./usb
   mount /dev/sdb2 ./usb/
@@ -951,7 +960,7 @@ funcUSB_Device_Inst_Bootloader () {
   grub-install --target=i386-pc    --recheck   --boot-directory=./usb/boot /dev/sdb
   grub-install --target=x86_64-efi --removable --boot-directory=./usb/boot --efi-directory=./usb
   # === make .disk directory ==================================================
-  echo "make .disk directory"
+  echo "make   .disk directory"
   mkdir -p ./usb/.disk
   touch ./usb/.disk/info
   # === unmount ===============================================================
@@ -963,12 +972,12 @@ funcUSB_Device_Inst_Bootloader () {
 funcUSB_Device_Inst_GRUB () {
   # *** [ USB device: /dev/sdb2 ] ***
   # === mount /dev/sdX3 =======================================================
-  echo "mount /dev/sdX3"
+  echo "mount  /dev/sdX3"
   rm -rf ./usb/
   mkdir -p ./usb
   mount /dev/sdb2 ./usb/
   # === grub.cfg ==============================================================
-  echo "grub.cfg"
+  echo "make   grub.cfg"
   cat <<- '_EOT_' | tee ./usb/boot/grub/grub.cfg > /dev/null
 	set default=0
 	set timeout=-1
@@ -1148,12 +1157,12 @@ _EOT_
 funcUSB_Device_Inst_File_partition () {
   # *** [ USB device: /dev/sdb3 ] ***
   # === mount /dev/sdX3 =======================================================
-  echo "mount /dev/sdX3"
+  echo "mount  /dev/sdX3"
   rm -rf ./usb/
   mkdir -p ./usb
   mount /dev/sdb3 ./usb/
   # === copy boot loader and setting files ====================================
-  echo "copy boot loader and setting files"
+  echo "copy   boot loader and setting files"
   cp --preserve=timestamps -u -r ./img/install.amd/ ./usb/
   cp --preserve=timestamps -u    ./cfg/ubuntu.server/user-data ./usb/
   touch ./usb/meta-data
@@ -1168,12 +1177,12 @@ funcUSB_Device_Inst_File_partition () {
 funcUSB_Device_Data_File_partition () {
   # *** [ USB device: /dev/sdb4 ] ***
   # === mount /dev/sdX4 =======================================================
-  echo "mount /dev/sdX4"
+  echo "mount  /dev/sdX4"
   rm -rf ./usb/
   mkdir -p ./usb
   mount /dev/sdb4 ./usb/
   # === copy iso files ========================================================
-  echo "copy iso files"
+  echo "copy   iso files"
   cp --preserve=timestamps -u -r ./img/images/  ./usb/
   cp --preserve=timestamps -u -r ./img/nocloud/ ./usb/
   cp --preserve=timestamps -u -r ./img/preseed/ ./usb/
@@ -1190,8 +1199,8 @@ main () {
   fi
   echo "$(date +"%Y/%m/%d %H:%M:%S") processing start"
 #  funcDownload "cfg"
-  funcDownload "lnk"
-  funcDownload "iso"
+#  funcDownload "lnk"
+#  funcDownload "iso"
   funcDownload "deb"
   funcDownload "arc"
   funcCopy_module
