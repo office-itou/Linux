@@ -511,60 +511,53 @@ funcUnpack_lnximg () {
   done
 }
 
-# === unpack module ===========================================================
-funcUnpack_module () {
-  fncPrintf "unpack module"
-  rm -rf ./ram/
-  rm -rf ./wrk/
-  mkdir -p ./ram
-  mkdir -p ./wrk
-  for S in $(ls -1aA ./bld/)
+# === remake module ===========================================================
+funcRemake_module () {
+  fncPrintf "remake module"
+  S=$1
+  fncPrintf "remake module: ${S}"
+  shift
+  for D in $@
   do
-    # --- bld or cfg -> ram ---------------------------------------------------
-    case "${S}" in
-      debian.*.live        ) D="./bld/${S}/live"                          ;;
-      debian.*             ) D="./cfg/installer-hd-media/${S%\.*}"        ;;
-      ubuntu.bionic.server ) D="./cfg/installer-hd-media/${S%\.*}-updates";;
-      ubuntu.*             ) D="./bld/${S}/casper"                        ;;
-      *                    ) 
-        if [ -d ./bld/${S}/install.amd/. ]; then
-          D="./bld/${S}/install.amd"
-        else
-          D="./bld/${S}/install"
-        fi
-      ;;
+    fncPrintf "remake module: ${D}"
+    B="$(basename ${D})"
+    fncPrintf "remake module: ${B}"
+    case "${B}" in
+      live   ) I="${S}/live"   ;;
+      casper ) I="${S}/casper" ;;
+      *      ) I="${S}/install";;
     esac
-    # --- unpack: inird -> ./ram/${S}/initrd ----------------------------------
+    # --- unpack: inird -> ./ram/${I}/initrd ----------------------------------
     for W in 'initrd*-*' 'initrd*.*' 'initrd'
     do
       for F in $(find ${D} -name "${W}" -type f)
       do
         fncPrintf "unpack file: ${F}"
-        mkdir -p ./ram/${S}/initrd
-        unmkinitramfs ${F} ./ram/${S}/initrd
+        mkdir -p ./ram/${I}/initrd
+        unmkinitramfs ${F} ./ram/${I}/initrd
         break 2
       done
     done
-    # --- copy: vmlinuz -> ./ram/${S}/vmlinuz ---------------------------------
+    # --- copy: vmlinuz -> ./ram/${I}/vmlinuz ---------------------------------
     for W in 'vmlinuz*-*' 'vmlinuz*.*' 'vmlinuz'
     do
       for F in $(find ${D} -name "${W}" -type f)
       do
         fncPrintf "copy   file: ${F}"
-        mkdir -p ./ram/${S}/vmlinuz
-        cp -a ${F} ./ram/${S}/vmlinuz
+        mkdir -p ./ram/${I}/vmlinuz
+        cp -a ${F} ./ram/${I}/vmlinuz
         break 2
       done
     done
     # --- ram -> wrk ----------------------------------------------------------
-    if [ -d ./ram/${S}/initrd/main/. ]; then
-      D="./ram/${S}/initrd/main"
+    if [ -d ./ram/${I}/initrd/main/. ]; then
+      D="./ram/${I}/initrd/main"
     else
-      D="./ram/${S}/initrd"
+      D="./ram/${I}/initrd"
     fi
     fncPrintf "copy     fs: ${D}"
-    mkdir -p ./wrk/${S}/initrd
-    cp -a ${D}/. ./wrk/${S}/initrd/
+    mkdir -p ./wrk/${I}/initrd
+    cp -a ${D}/. ./wrk/${I}/initrd/
     # --- remove module -------------------------------------------------------
     case "${S}" in
       debian.*.live        )
@@ -580,13 +573,13 @@ funcUnpack_module () {
         )
         for T in ${M[@]}
         do
-          if [ -f ./wrk/${S}/initrd/${T} ]; then
+          if [ -f ./wrk/${I}/initrd/${T} ]; then
             fncPrintf "remove pack: ${T}"
-            mv ./wrk/${S}/initrd/${T} ./wrk/${S}/initrd/${T}~
+            mv ./wrk/${I}/initrd/${T} ./wrk/${I}/initrd/${T}~
           fi
         done
-        if [ -f ./wrk/${S}/initrd/var/lib/dpkg/status ]; then
-          sed -i ./wrk/${S}/initrd/var/lib/dpkg/status   \
+        if [ -f ./wrk/${I}/initrd/var/lib/dpkg/status ]; then
+          sed -i ./wrk/${I}/initrd/var/lib/dpkg/status   \
               -e '/Package: cdrom-checker/,/^$/d' \
               -e '/Package: cdrom-detect/,/^$/d'  \
               -e '/Package: load-cdrom/,/^$/d'
@@ -596,15 +589,15 @@ funcUnpack_module () {
         ;;
     esac
     # --- linux image -> wrk --------------------------------------------------
-    if [ -d ./wrk/${S}/initrd/lib/modules/*/kernel/. ]; then
-      V=$(find ./wrk/${S}/initrd/lib/modules/*/kernel/ -name 'fs' -type d | sed -e 's~^.*/modules/\(.*\)/kernel/.*$~\1~g')
+    if [ -d ./wrk/${I}/initrd/lib/modules/*/kernel/. ]; then
+      V=$(find ./wrk/${I}/initrd/lib/modules/*/kernel/ -name 'fs' -type d | sed -e 's~^.*/modules/\(.*\)/kernel/.*$~\1~g')
     else
       V="$(find ./deb/${S}/ -name 'linux-image*' -type f | sed -n -e 's~^.*/linux-image-\(.*\)_.*_.*$~\1~p')"
       if [ -z "${V}" ]; then
         fncPrintf "failed to get kernel version, exiting process."
         exit 1
       fi
-      mkdir -p ./wrk/${S}/initrd/lib/modules/${V}/kernel
+      mkdir -p ./wrk/${I}/initrd/lib/modules/${V}/kernel
     fi
     if [ -d ./pac/${S}/. ]; then
       M=( \
@@ -625,7 +618,7 @@ funcUnpack_module () {
       do
         if [ -d ./pac/${S}/lib/modules/${V}/${T}/. ]; then
           fncPrintf "copy module: ${T}"
-          cp -a --backup ./pac/${S}/lib/modules/${V}/${T} ./wrk/${S}/initrd/lib/modules/${V}/$(dirname ${T})
+          cp -a --backup ./pac/${S}/lib/modules/${V}/${T} ./wrk/${I}/initrd/lib/modules/${V}/$(dirname ${T})
         fi
       done
     fi
@@ -636,9 +629,9 @@ funcUnpack_module () {
     if [ -d ./opt/${S}/.     ]; then D+="./opt/${S}/ ";     fi
     # --- dpkg --update-avail -------------------------------------------------
     fncPrintf "update package data base"
-    if [ ! -f ./wrk/${S}/initrd/var/lib/dpkg/status ]; then
-      mkdir -p ./wrk/${S}/initrd/var/lib/dpkg
-      touch ./wrk/${S}/initrd/var/lib/dpkg/status
+    if [ ! -f ./wrk/${I}/initrd/var/lib/dpkg/status ]; then
+      mkdir -p ./wrk/${I}/initrd/var/lib/dpkg
+      touch ./wrk/${I}/initrd/var/lib/dpkg/status
     fi
     for P in $(find ./deb/${S}/dists/ -name '*Packages*' -type f)
     do
@@ -647,7 +640,7 @@ funcUnpack_module () {
       if [ -f ./tmp/Packages.gz ]; then
         gzip -d ./tmp/Packages.gz
       fi
-      LANG=C dpkg --root=./wrk/${S}/initrd --update-avail ./tmp/Packages 2>&1 | \
+      LANG=C dpkg --root=./wrk/${I}/initrd --update-avail ./tmp/Packages 2>&1 | \
         grep -v 'parsing file' | grep -v 'missing '\''Architecture'\'' field' | grep -v 'missing '\''Maintainer'\'' field' | \
         grep -v 'field value' | grep -v 'warning: files list' | \
         grep -v 'Reading database' | grep -v 'Preparing' | \
@@ -674,8 +667,8 @@ funcUnpack_module () {
           continue 2
         fi
       done
-      if [ -f ./ram/${S}/initrd/var/lib/dpkg/status ] && \
-         [ -n "$(sed -n "/^Package: ${W}.*$/p" ./ram/${S}/initrd/var/lib/dpkg/status)" ]; then
+      if [ -f ./ram/${I}/initrd/var/lib/dpkg/status ] && \
+         [ -n "$(sed -n "/^Package: ${W}.*$/p" ./ram/${I}/initrd/var/lib/dpkg/status)" ]; then
         C+=("${P} ")
         continue
       fi
@@ -695,8 +688,8 @@ funcUnpack_module () {
       case "${M}" in
         mount*     | \
         libmount1* )
-          if [ -f ./wrk/${S}/initrd/bin/mount ]; then
-            if [ "$(readlink -q ./wrk/${S}/initrd/bin/mount)" != "busybox" ]; then
+          if [ -f ./wrk/${I}/initrd/bin/mount ]; then
+            if [ "$(readlink -q ./wrk/${I}/initrd/bin/mount)" != "busybox" ]; then
               Z=(${U[@]/${P}})
               U=(${Z[@]})
             else
@@ -705,7 +698,7 @@ funcUnpack_module () {
               dpkg -x ${P} ./tmp
               for T in $(ls ./tmp/)
               do
-                cp -a --backup ./tmp/${T}/. ./wrk/${S}/initrd/${T}
+                cp -a --backup ./tmp/${T}/. ./wrk/${I}/initrd/${T}
               done
               rm -rf ./tmp
             fi
@@ -718,9 +711,9 @@ funcUnpack_module () {
     # --- unpack package ------------------------------------------------------
     fncPrintf "unpack package"
 #set +e
-    sed -i ./wrk/${S}/initrd/var/lib/dpkg/status                                             \
+    sed -i ./wrk/${I}/initrd/var/lib/dpkg/status                                             \
         -e '/^Package: debian-installer$/,/^Package:/ s/\(Version:\) \(.*\)/\1 1:\2/'
-    LANG=C dpkg --root=./wrk/${S}/initrd --unpack ${U[@]} 2>&1 | \
+    LANG=C dpkg --root=./wrk/${I}/initrd --unpack ${U[@]} 2>&1 | \
       grep -v 'parsing file' | grep -v 'missing '\''Architecture'\'' field' | grep -v 'missing '\''Maintainer'\'' field' | \
       grep -v 'field value' | grep -v 'warning: files list' | \
       grep -v 'Reading database' | grep -v 'Preparing' | \
@@ -730,8 +723,8 @@ funcUnpack_module () {
     case "${S}" in
       debian.*.live        )
         fncPrintf "unpack arc file"
-        if [ ! -d ./wrk/${S}/initrd/var/lib/dpkg/info/. ]; then
-          mkdir -p ./wrk/${S}/initrd/var/lib/dpkg/info
+        if [ ! -d ./wrk/${I}/initrd/var/lib/dpkg/info/. ]; then
+          mkdir -p ./wrk/${I}/initrd/var/lib/dpkg/info
         fi
         for F in $(find ./arc/${S%\.*}/ -type f)
         do
@@ -739,10 +732,10 @@ funcUnpack_module () {
           mkdir -p ./tmp
           tar -C ./tmp/ -xf ${F}
           # --- iso-scan and load-iso -----------------------------------------
-          if [ -z "$(sed -n '/^Package: iso-scan$/p' ./wrk/${S}/initrd/var/lib/dpkg/status)" ]; then
-            fncPrintf "$(find ./tmp/ \( -name 'iso-scan.*' -o -name 'load-iso.*' \) -type f -printf 'copy   file: %p\n' -exec cp -a --backup '{}' ./wrk/${S}/initrd/var/lib/dpkg/info/ \;)"
+          if [ -z "$(sed -n '/^Package: iso-scan$/p' ./wrk/${I}/initrd/var/lib/dpkg/status)" ]; then
+            fncPrintf "$(find ./tmp/ \( -name 'iso-scan.*' -o -name 'load-iso.*' \) -type f -printf 'copy   file: %p\n' -exec cp -a --backup '{}' ./wrk/${I}/initrd/var/lib/dpkg/info/ \;)"
             V="$(echo ${F} | sed -e 's/^.*_\(.*\)\.tar.*$/\1/')"
-            cat <<- '_EOT_' | sed -e "s/_VER_/${V}/g" | tee -a ./wrk/${S}/initrd/var/lib/dpkg/status > /dev/null
+            cat <<- '_EOT_' | sed -e "s/_VER_/${V}/g" | tee -a ./wrk/${I}/initrd/var/lib/dpkg/status > /dev/null
 				
 				Package: iso-scan
 				Status: install ok unpacked
@@ -751,8 +744,8 @@ funcUnpack_module () {
 				Description: Scan hard drives for an installer ISO image
 _EOT_
           fi
-          if [ -z "$(sed -n '/^Package: load-iso$/p' ./wrk/${S}/initrd/var/lib/dpkg/status)" ]; then
-            cat <<- '_EOT_' | sed -e "s/_VER_/${V}/g" | tee -a ./wrk/${S}/initrd/var/lib/dpkg/status > /dev/null
+          if [ -z "$(sed -n '/^Package: load-iso$/p' ./wrk/${I}/initrd/var/lib/dpkg/status)" ]; then
+            cat <<- '_EOT_' | sed -e "s/_VER_/${V}/g" | tee -a ./wrk/${I}/initrd/var/lib/dpkg/status > /dev/null
 				
 				Package: load-iso
 				Status: install ok unpacked
@@ -769,23 +762,23 @@ _EOT_
     esac
     # --- config --------------------------------------------------------------
     fncPrintf "config"
-    V=$(find ./wrk/${S}/initrd/lib/modules/*/kernel/ -name 'fs' -type d | sed -e 's~^.*/modules/\(.*\)/kernel/.*$~\1~g')
-    if [ -d ./wrk/${S}/initrd/lib/modules/${V}/. ]; then
-      touch ./wrk/${S}/initrd/lib/modules/${V}/modules.builtin.modinfo
-      depmod -a -b ./wrk/${S}/initrd ${V}
+    V=$(find ./wrk/${I}/initrd/lib/modules/*/kernel/ -name 'fs' -type d | sed -e 's~^.*/modules/\(.*\)/kernel/.*$~\1~g')
+    if [ -d ./wrk/${I}/initrd/lib/modules/${V}/. ]; then
+      touch ./wrk/${I}/initrd/lib/modules/${V}/modules.builtin.modinfo
+      depmod -a -b ./wrk/${I}/initrd ${V}
     fi
-    if [ -f  ./wrk/${S}/initrd/var/lib/dpkg/info/iso-scan.postinst ]; then
-      sed -i ./wrk/${S}/initrd/var/lib/dpkg/info/iso-scan.postinst    \
+    if [ -f  ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.postinst ]; then
+      sed -i ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.postinst    \
           -e 's/^\([[:space:]]*FS\)="\(.*\)".*$/\1="\2 fuse fuse3 exfat ntfs3"/'
     fi
     case "${S%\.*}" in
       debian.*        ) ;;
       ubuntu.bionic   )
-        if [ -f  ./wrk/${S}/initrd/var/lib/dpkg/info/iso-scan.postinst ]; then
+        if [ -f  ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.postinst ]; then
           OLD_IFS=${IFS}
           INS_ROW=$(
             sed -n -e '/^[[:space:]]*use_this_iso[[:space:]]*([[:space:]]*)/,/^[[:space:]]*}$/ {/[[:space:]]*mount .* \/cdrom/=}' \
-              ./wrk/${S}/initrd/var/lib/dpkg/info/iso-scan.postinst
+              ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.postinst
           )
           IFS= INS_STR=$(
             cat <<- '_EOT_' | sed -e 's/^ //g' | sed -z -e 's/\n/\\n/g'
@@ -829,10 +822,10 @@ _EOT_
 _EOT_
           )
           IFS=${OLD_IFS}
-          sed -i ./wrk/${S}/initrd/var/lib/dpkg/info/iso-scan.postinst                                                    \
+          sed -i ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.postinst                                                    \
               -e '/^[[:space:]]*use_this_iso[[:space:]]*([[:space:]]*/,/^}$/ s~^\([[:space:]]*mount .* /cdrom .*$\)~#\1~' \
               -e "${INS_ROW:-1}a \\${INS_STR}"
-          cat <<- '_EOT_' >> ./wrk/${S}/initrd/var/lib/dpkg/info/iso-scan.templates
+          cat <<- '_EOT_' >> ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.templates
 			
 			Template: iso-scan/copy_iso_to_ram
 			Type: boolean
@@ -846,12 +839,12 @@ _EOT_
       ubuntu.jammy    | \
       ubuntu.kinetic  | \
       ubuntu.lunar    )
-#       mkdir -p ./wrk/${S}/initrd/dev/.initramfs
-        if [ -f  ./wrk/${S}/initrd/scripts/casper-helpers ]; then
+#       mkdir -p ./wrk/${I}/initrd/dev/.initramfs
+        if [ -f  ./wrk/${I}/initrd/scripts/casper-helpers ]; then
           OLD_IFS=${IFS}
           INS_ROW=$(
             sed -n -e '/^[[:space:]]*find_files[[:space:]]*([[:space:]]*)/,/^[[:space:]]*}$/ {/[[:space:]]*vfat|ext2)/,/.*;;$/=}' \
-              ./wrk/${S}/initrd/scripts/casper-helpers                                                                            \
+              ./wrk/${I}/initrd/scripts/casper-helpers                                                                            \
               | awk 'END {print}'
           )
           IFS= INS_STR=$(
@@ -861,23 +854,48 @@ _EOT_
 _EOT_
         )
           IFS=${OLD_IFS}
-          sed -i ./wrk/${S}/initrd/scripts/casper-helpers                                                                                  \
+          sed -i ./wrk/${I}/initrd/scripts/casper-helpers                                                                                  \
               -e '/[[:space:]]*is_supported_fs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ s/\(vfat.*\))/\1|exfat)/'                      \
               -e '/[[:space:]]*wait_for_devs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ {/touch/i \\    mkdir -p /dev/.initramfs' -e '}' \
               -e "${INS_ROW:-1}a \\${INS_STR}"
         fi
-        if [ -f  ./wrk/${S}/initrd/scripts/lupin-helpers ]; then
-          sed -i ./wrk/${S}/initrd/scripts/lupin-helpers                                                                                  \
+        if [ -f  ./wrk/${I}/initrd/scripts/lupin-helpers ]; then
+          sed -i ./wrk/${I}/initrd/scripts/lupin-helpers                                                                                  \
               -e '/[[:space:]]*is_supported_fs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ s/\(vfat.*\))/\1|exfat)/'                      \
               -e '/[[:space:]]*wait_for_devs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ {/touch/i \\    mkdir -p /dev/.initramfs' -e '}'
         fi
         ;;
       *               ) ;;
     esac
-    if [ -f ./wrk/${S}/initrd/etc/lsb-release ]; then
-      sed -i ./wrk/${S}/initrd/etc/lsb-release                      \
-          -e 's/^\(X_INSTALLATION_MEDIUM\)=.*$/\1=hd-media/'
-    fi
+  done
+}
+
+# === select module ===========================================================
+funcSelect_module () {
+  fncPrintf "select module"
+  rm -rf ./ram/
+  rm -rf ./wrk/
+  mkdir -p ./ram
+  mkdir -p ./wrk
+  for S in $(ls -1aA ./bld/)
+  do
+    # --- bld or cfg -> ram ---------------------------------------------------
+    D=("")
+    case "${S}" in
+      debian.*.live        ) D=("./bld/${S}/live"                          \
+                                "./cfg/installer-hd-media/${S%\.*}"        );;
+      debian.*             ) D=("./cfg/installer-hd-media/${S%\.*}"        );;
+      ubuntu.bionic.server ) D=("./cfg/installer-hd-media/${S%\.*}-updates");;
+      ubuntu.*             ) D=("./bld/${S}/casper"                        );;
+      *                    ) 
+        if [ -d ./bld/${S}/install.amd/. ]; then
+          D=("./bld/${S}/install.amd")
+        else
+          D=("./bld/${S}/install")
+        fi
+      ;;
+    esac
+    funcRemake_module ${S} ${D[@]}
   done
 }
 
@@ -895,12 +913,21 @@ funcMake_initramfs () {
   for S in $(ls -1aA ./wrk/)
   do
     O=$(pwd)
-    pushd ./wrk/${S}/initrd > /dev/null
-      fncPrintf "make       : ./ird/${S}/initrd.img"
-      mkdir -p ${O}/ird/${S}
-      find . -name '*~' -prune -o -print | cpio -R 0:0 -o -H newc --quie | gzip -c > ${O}/ird/${S}/initrd.img
-    popd > /dev/null
-    cp -a ./ram/${S}/vmlinuz/vmlinuz* ./ird/${S}/vmlinuz.img
+    for B in $(ls -1aA ./wrk/${S}/)
+    do
+#      fncPrintf "make       : ${B}"
+      case "${B}" in
+        live   ) I="${S}/live"   ;;
+        casper ) I="${S}/casper" ;;
+        *      ) I="${S}/install";;
+      esac
+      pushd ./wrk/${I}/initrd > /dev/null
+        fncPrintf "make       : ./ird/${I}/initrd.img"
+        mkdir -p ${O}/ird/${I}
+        find . -name '*~' -prune -o -print | cpio -R 0:0 -o -H newc --quie | gzip -c > ${O}/ird/${I}/initrd.img
+      popd > /dev/null
+      cp -a ./ram/${I}/vmlinuz/vmlinuz* ./ird/${I}/vmlinuz.img
+    done
   done
   OLD_IFS=${IFS}
   IFS=$'\n'
@@ -916,9 +943,33 @@ funcMake_initramfs () {
 # === copy initramfs ==========================================================
 funcCopy_initramfs () {
   fncPrintf "copy initramfs"
-  rm -rf ./img/install.amd/
-  mkdir -p ./img/install.amd
-  cp -a ./ird/. ./img/install.amd
+  rm -rf ./img/install.amd/ \
+         ./img/live/        \
+         ./img/casper/
+  mkdir -p ./img/install.amd \
+           ./img/live        \
+           ./img/casper
+  for S in $(ls -1aA ./ird/)
+  do
+    for B in $(ls -1aA ./ird/${S}/)
+    do
+      fncPrintf "copy       : initramfs ${B}"
+      case "${B}" in
+        live   )
+          mkdir -p ./img/live/${S}
+          cp -a ./ird/${S}/live/. ./img/live/${S}/
+          ;;
+        casper )
+          mkdir -p ./img/casper/${S}
+          cp -a ./ird/${S}/casper/. ./img/casper/${S}/
+          ;;
+        *      )
+          mkdir -p ./img/install.amd/${S}
+          cp -a ./ird/${S}/install/. ./img/install.amd/${S}/
+          ;;
+      esac
+    done
+  done
 }
 
 # === copy config file ========================================================
@@ -1158,8 +1209,8 @@ funcUSB_Device_Inst_GRUB () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
-	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
+	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
 	}
 	menuentry 'Unattended installation (Ubuntu 22.10:Kinetic Kudu)' {
 	    set gfxpayload=keep
@@ -1169,8 +1220,8 @@ funcUSB_Device_Inst_GRUB () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
-	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
+	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
 	}
 	menuentry 'Unattended installation (Ubuntu 22.04:Jammy Jellyfish)' {
 	    set gfxpayload=keep
@@ -1180,8 +1231,8 @@ funcUSB_Device_Inst_GRUB () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
-	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
+	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
 	}
 	menuentry 'Unattended installation (Ubuntu 20.04:Focal Fossa)' {
 	    set gfxpayload=keep
@@ -1191,8 +1242,8 @@ funcUSB_Device_Inst_GRUB () {
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
-	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0 ---
+	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
 	}
 	menuentry 'Unattended installation (Ubuntu 18.04:Bionic Beaver)' {
 	    set gfxpayload=keep
@@ -1220,8 +1271,8 @@ funcUSB_Device_Inst_GRUB () {
 	        set locales="locale=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	        echo "Loading ${isofile} ..."
-	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip
-	        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	        linux   (${cfgpart})/live/${isodist}/vmlinuz.img root=${cfgpart} boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip
+	        initrd  (${cfgpart})/live/${isodist}/initrd.img
 	    }
 	    menuentry 'Unattended installation (Debian 12:testing [bookworm])' {
 	        set gfxpayload=keep
@@ -1243,8 +1294,8 @@ funcUSB_Device_Inst_GRUB () {
 	        set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	        echo "Loading ${isofile} ..."
-	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip
-	        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	        linux   (${cfgpart})/casper/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip
+	        initrd  (${cfgpart})/casper/${isodist}/initrd.img
 	    }
 	    menuentry 'Unattended installation (Ubuntu 23.04:Lunar Lobster)' {
 	        set gfxpayload=keep
@@ -1254,8 +1305,8 @@ funcUSB_Device_Inst_GRUB () {
 	        set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	        echo "Loading ${isofile} ..."
-	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0
-	        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	        linux   (${cfgpart})/casper/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip autoinstall ip=dhcp ipv6.disable=0
+	        initrd  (${cfgpart})/casper/${isodist}/initrd.img
 	    }
 	}
 	menuentry "System shutdown" {
@@ -1291,6 +1342,8 @@ funcUSB_Device_Inst_File_partition () {
   # === copy boot loader and setting files ====================================
   fncPrintf "copy boot loader and setting files"
   cp --preserve=timestamps -u -r ./img/install.amd/ ./usb/
+  cp --preserve=timestamps -u -r ./img/live/        ./usb/
+  cp --preserve=timestamps -u -r ./img/casper/      ./usb/
   cp --preserve=timestamps -u    ./cfg/ubuntu.server/user-data ./usb/
   touch ./usb/meta-data
   touch ./usb/vendor-data
@@ -1337,24 +1390,24 @@ main () {
   fi
   # --- main ------------------------------------------------------------------
   fncPrintf "$(date +"%Y/%m/%d %H:%M:%S") processing start"
-  funcDownload "cfg"
-  funcDownload "bld"
-  funcDownload "lnk"
-  funcDownload "iso"
-  funcDownload "deb"
-  funcDownload "arc"
-  funcCopy_module
-  funcUnpack_lnximg
-  funcUnpack_module
-  funcMake_initramfs
-  funcCopy_initramfs
-  funcCopy_cfg_file
-  funcCopy_iso_image
-  funcUSB_Device_partition_and_format
-  funcUSB_Device_Inst_Bootloader
+#  funcDownload "cfg"
+#  funcDownload "bld"
+#  funcDownload "lnk"
+#  funcDownload "iso"
+#  funcDownload "deb"
+#  funcDownload "arc"
+#  funcCopy_module
+#  funcUnpack_lnximg
+#  funcSelect_module
+#  funcMake_initramfs
+#  funcCopy_initramfs
+#  funcCopy_cfg_file
+#  funcCopy_iso_image
+#  funcUSB_Device_partition_and_format
+#  funcUSB_Device_Inst_Bootloader
   funcUSB_Device_Inst_GRUB
   funcUSB_Device_Inst_File_partition
-  funcUSB_Device_Data_File_partition
+#  funcUSB_Device_Data_File_partition
   lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
   fncPrintf "complete"
   fncPrintf "$(date +"%Y/%m/%d %H:%M:%S") processing end"
