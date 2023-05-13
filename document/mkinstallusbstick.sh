@@ -560,7 +560,7 @@ funcCopy_module () {
       fncPrintf "copy initrd: %-24.24s : %s\n" "${D}" "${F}"
       T="$(dirname ${F#\./mnt/})"
       mkdir -p ./bld/${D}/${T}
-      cp -a -L -u ${F} ./bld/${D}/${T}/
+      cp -a -u ${F} ./bld/${D}/${T}/
     done
     # *** copy deb file *******************************************************
     T=($(find ./mnt/ -maxdepth 1 -name 'pool*' -type d))
@@ -587,7 +587,7 @@ funcCopy_module () {
         B="$(basename ${P})"
         fncPrintf "copy module: %-24.24s : %s\n" "${F}" "${B}"
         if [ -n "${P}" ]; then
-          cp -a -L -u ${P} ./deb/${D}/
+          cp -a -u ${P} ./deb/${D}/
         fi
       done
       if [ -z "${B}" ]; then
@@ -596,9 +596,8 @@ funcCopy_module () {
     done
     # *** linux image *********************************************************
     fncPrintf "$(find ${T[@]} -regextype posix-basic -regex '.*/\(linux\|linux-signed\(-amd64\)*\)/linux-\(image\|modules\).*-[0-9]*-\(amd64\|generic\)*_.*' \
-                  \( -type f -o -type l \) -printf 'copy   limg: %f\n' -exec cp -a -L -u '{}' ./deb/${D}/ \;)"
     # *** packages file *******************************************************
-    cp -a -L -u ./mnt/dists ./deb/${D}/
+    cp -a -u ./mnt/dists ./deb/${D}/
     # --- unmount -------------------------------------------------------------
     umount ./mnt
   done
@@ -727,7 +726,7 @@ funcRemake_module () {
     for P in $(find ./deb/${S}/dists/ -name '*Packages*' \( -type f -o -type l \))
     do
       mkdir -p ./tmp
-      cp -a -L -u ${P} ./tmp/
+      cp -a -u ${P} ./tmp/
       if [ -f ./tmp/Packages.gz ]; then
         gzip -d ./tmp/Packages.gz
       fi
