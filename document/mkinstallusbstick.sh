@@ -560,7 +560,7 @@ funcCopy_module () {
       fncPrintf "copy initrd: %-24.24s : %s\n" "${D}" "${F}"
       T="$(dirname ${F#\./mnt/})"
       mkdir -p ./bld/${D}/${T}
-      cp -a ${F} ./bld/${D}/${T}/
+      cp -a -L -u ${F} ./bld/${D}/${T}/
     done
     # *** copy deb file *******************************************************
     T=($(find ./mnt/ -maxdepth 1 -name 'pool*' -type d))
@@ -587,7 +587,7 @@ funcCopy_module () {
         B="$(basename ${P})"
         fncPrintf "copy module: %-24.24s : %s\n" "${F}" "${B}"
         if [ -n "${P}" ]; then
-          cp -a -u ${P} ./deb/${D}/
+          cp -a -L -u ${P} ./deb/${D}/
         fi
       done
       if [ -z "${B}" ]; then
@@ -596,9 +596,9 @@ funcCopy_module () {
     done
     # *** linux image *********************************************************
     fncPrintf "$(find ${T[@]} -regextype posix-basic -regex '.*/\(linux\|linux-signed\(-amd64\)*\)/linux-\(image\|modules\).*-[0-9]*-\(amd64\|generic\)*_.*' \
-                  \( -type f -o -type l \) -printf 'copy   limg: %f\n' -exec cp -a '{}' ./deb/${D}/ \;)"
+                  \( -type f -o -type l \) -printf 'copy   limg: %f\n' -exec cp -a -L -u '{}' ./deb/${D}/ \;)"
     # *** packages file *******************************************************
-    cp -a ./mnt/dists ./deb/${D}/
+    cp -a -L -u ./mnt/dists ./deb/${D}/
     # --- unmount -------------------------------------------------------------
     umount ./mnt
   done
@@ -658,7 +658,7 @@ funcRemake_module () {
       do
         fncPrintf "copy   file: ${F}"
         mkdir -p ./ram/${I}/vmlinuz
-        cp -a ${F} ./ram/${I}/vmlinuz
+        cp -a -u ${F} ./ram/${I}/vmlinuz
         break 2
       done
     done
@@ -670,7 +670,7 @@ funcRemake_module () {
     fi
     fncPrintf "copy     fs: ${D}"
     mkdir -p ./wrk/${I}/initrd
-    cp -a ${D}/. ./wrk/${I}/initrd/
+    cp -a -u ${D}/. ./wrk/${I}/initrd/
     # --- linux image -> wrk --------------------------------------------------
     if [ -d ./wrk/${I}/initrd/lib/modules/*/kernel/. ]; then
       V=$(find ./wrk/${I}/initrd/lib/modules/*/kernel/ -name 'fs' -type d | sed -e 's~^.*/modules/\(.*\)/kernel/.*$~\1~g')
@@ -702,7 +702,7 @@ funcRemake_module () {
       do
         if [ -d ./pac/${S}/lib/modules/${V}/${T}/. ]; then
           fncPrintf "copy module: ${T}"
-          cp -a --backup ./pac/${S}/lib/modules/${V}/${T} ./wrk/${I}/initrd/lib/modules/${V}/$(dirname ${T})
+          cp -a -u --backup ./pac/${S}/lib/modules/${V}/${T} ./wrk/${I}/initrd/lib/modules/${V}/$(dirname ${T})
 #          R=true
         fi
       done
@@ -727,7 +727,7 @@ funcRemake_module () {
     for P in $(find ./deb/${S}/dists/ -name '*Packages*' \( -type f -o -type l \))
     do
       mkdir -p ./tmp
-      cp -a ${P} ./tmp/
+      cp -a -L -u ${P} ./tmp/
       if [ -f ./tmp/Packages.gz ]; then
         gzip -d ./tmp/Packages.gz
       fi
@@ -782,7 +782,7 @@ funcRemake_module () {
             dpkg -x ${P} ./tmp
             for T in $(ls ./tmp/)
             do
-              cp -a --backup ./tmp/${T}/. ./wrk/${I}/initrd/${T}
+              cp -a -u --backup ./tmp/${T}/. ./wrk/${I}/initrd/${T}
             done
             rm -rf ./tmp
             continue
@@ -1024,7 +1024,7 @@ funcMake_initramfs () {
         mkdir -p ${O}/ird/${I}
         find . -name '*~' -prune -o -print | cpio -R 0:0 -o -H newc --quie | gzip -c > ${O}/ird/${I}/initrd.img
       popd > /dev/null
-      cp -a ./ram/${I}/vmlinuz/vmlinuz* ./ird/${I}/vmlinuz.img
+      cp -a -u ./ram/${I}/vmlinuz/vmlinuz* ./ird/${I}/vmlinuz.img
     done
   done
   OLD_IFS=${IFS}
@@ -1055,15 +1055,15 @@ funcCopy_initramfs () {
       case "${B}" in
         live   )
           mkdir -p ./img/live/${S}
-          cp -a ./ird/${S}/live/. ./img/live/${S}/
+          cp -a -u ./ird/${S}/live/. ./img/live/${S}/
           ;;
         casper )
           mkdir -p ./img/casper/${S}
-          cp -a ./ird/${S}/casper/. ./img/casper/${S}/
+          cp -a -u ./ird/${S}/casper/. ./img/casper/${S}/
           ;;
         *      )
           mkdir -p ./img/install.amd/${S}
-          cp -a ./ird/${S}/install/. ./img/install.amd/${S}/
+          cp -a -u ./ird/${S}/install/. ./img/install.amd/${S}/
           ;;
       esac
     done
@@ -1079,15 +1079,15 @@ funcCopy_cfg_file () {
            ./img/preseed/ubuntu \
            ./img/nocloud/
   # === copy config file ======================================================
-# cp -a -L -u ./cfg/debian/preseed.cfg                    ./img/preseed/debian/
-  cp -a -L -u ./cfg/debian/sub_late_command.sh            ./img/preseed/debian/
-# cp -a -L -u ./cfg/ubuntu.desktop/preseed.cfg            ./img/preseed/ubuntu/
-  cp -a -L -u ./cfg/ubuntu.desktop/sub_late_command.sh    ./img/preseed/ubuntu/
-  cp -a -L -u ./cfg/ubuntu.desktop/sub_success_command.sh ./img/preseed/ubuntu/
+# cp -a -u ./cfg/debian/preseed.cfg                    ./img/preseed/debian/
+  cp -a -u ./cfg/debian/sub_late_command.sh            ./img/preseed/debian/
+# cp -a -u ./cfg/ubuntu.desktop/preseed.cfg            ./img/preseed/ubuntu/
+  cp -a -u ./cfg/ubuntu.desktop/sub_late_command.sh    ./img/preseed/ubuntu/
+  cp -a -u ./cfg/ubuntu.desktop/sub_success_command.sh ./img/preseed/ubuntu/
   for D in desktop server
   do
     mkdir -p ./img/nocloud/ubuntu.${D}
-    cp -a -L -u ./cfg/ubuntu.server/user-data ./img/nocloud/ubuntu.${D}
+    cp -a -u ./cfg/ubuntu.server/user-data ./img/nocloud/ubuntu.${D}
     touch ./img/nocloud/ubuntu.${D}/meta-data
     touch ./img/nocloud/ubuntu.${D}/vendor-data
     touch ./img/nocloud/ubuntu.${D}/network-config
@@ -1164,7 +1164,7 @@ funcCopy_iso_image () {
   for F in ${M[@]}
   do
     fncPrintf "copy   file: ${F}"
-    nice -n 10 cp -a -L -u ./iso/${F} ./img/images/
+    nice -n 10 cp -a -u ./iso/${F} ./img/images/
   done
 }
 
@@ -1481,10 +1481,10 @@ funcUSB_Device_Inst_File_partition () {
   mount /dev/sdb3 ./usb/
   # === copy boot loader and setting files ====================================
   fncPrintf "copy boot loader and setting files"
-  nice -n 10 cp --preserve=timestamps -u -r ./img/install.amd/ ./usb/
-  nice -n 10 cp --preserve=timestamps -u -r ./img/live/        ./usb/
-  nice -n 10 cp --preserve=timestamps -u -r ./img/casper/      ./usb/
-# cp --preserve=timestamps -u    ./cfg/ubuntu.server/user-data ./usb/
+  nice -n 10 cp --preserve=timestamps -L -u -r ./img/install.amd/ ./usb/
+  nice -n 10 cp --preserve=timestamps -L -u -r ./img/live/        ./usb/
+  nice -n 10 cp --preserve=timestamps -L -u -r ./img/casper/      ./usb/
+# cp --preserve=timestamps -L -u    ./cfg/ubuntu.server/user-data ./usb/
 # touch ./usb/meta-data
 # touch ./usb/vendor-data
 # touch ./usb/network-config
@@ -1508,10 +1508,10 @@ funcUSB_Device_Data_File_partition () {
   for F in $(ls ./img/images)
   do
     fncPrintf "copy   file: ${F}"
-    nice -n 10 cp --preserve=timestamps -u -r ./img/images/${F} ./usb/images/
+    nice -n 10 cp --preserve=timestamps -L -u -r ./img/images/${F} ./usb/images/
   done
-  cp --preserve=timestamps -u -r ./img/nocloud/ ./usb/
-  cp --preserve=timestamps -u -r ./img/preseed/ ./usb/
+  cp --preserve=timestamps -L -u -r ./img/nocloud/ ./usb/
+  cp --preserve=timestamps -L -u -r ./img/preseed/ ./usb/
   # === unmount ===============================================================
   fncPrintf "unmount"
   umount ./usb
