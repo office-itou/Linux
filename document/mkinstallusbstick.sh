@@ -596,6 +596,7 @@ funcCopy_module () {
     done
     # *** linux image *********************************************************
     fncPrintf "$(find ${T[@]} -regextype posix-basic -regex '.*/\(linux\|linux-signed\(-amd64\)*\)/linux-\(image\|modules\).*-[0-9]*-\(amd64\|generic\)*_.*' \
+                  \( -type f -o -type l \) -printf 'copy   limg: %f\n' -exec cp -a -u '{}' ./deb/${D}/ \;)"
     # *** packages file *******************************************************
     cp -a -u ./mnt/dists ./deb/${D}/
     # --- unmount -------------------------------------------------------------
