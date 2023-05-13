@@ -43,7 +43,7 @@
   trap 'exit 1' 1 2 3 15
 
 # -----------------------------------------------------------------------------
-  dpkg -l fdisk coreutils curl dosfstools grub2-common initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd
+# dpkg -l fdisk coreutils curl dosfstools grub2-common initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd
 # apt-get install fdisk coreutils curl dosfstools grub2-common initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd
 
 # -----------------------------------------------------------------------------
@@ -51,29 +51,54 @@
   COL_SIZE=80
 
 # -----------------------------------------------------------------------------
-  readonly TXT_RESET="\033[m"           # reset all attributes
-  readonly TXT_ULINE="\033[4m"          # set underline
-  readonly TXT_ULINERST="\033[24m"      # reset underline
-  readonly TXT_REV="\033[7m"            # set reverse display
-  readonly TXT_REVRST="\033[27m"        # reset reverse display
-  readonly TXT_BLACK="\033[30m"         # text  black
-  readonly TXT_RED="\033[31m"           # text red
-  readonly TXT_GREEN="\033[32m"         # text green
-  readonly TXT_YELLOW="\033[33m"        # text yellow
-  readonly TXT_BLUE="\033[34m"          # text blue
-  readonly TXT_MAGENTA="\033[35m"       # text purple
-  readonly TXT_CYAN="\033[36m"          # text light blue
-  readonly TXT_WHITE="\033[37m"         # text white
-  readonly TXT_BBLACK="\033[40m"        # text reverse black
-  readonly TXT_BRED="\033[41m"          # text reverse red
-  readonly TXT_BGREEN="\033[42m"        # text reverse green
-  readonly TXT_BYELLOW="\033[43m"       # text reverse yellow
-  readonly TXT_BBLUE="\033[44m"         # text reverse blue
-  readonly TXT_BMAGENTA="\033[45m"      # text reverse purple
-  readonly TXT_BCYAN="\033[46m"         # text reverse light blue
-  readonly TXT_BWHITE="\033[47m"        # text reverse white
+  readonly TXT_RESET='\033[m'           # reset all attributes
+  readonly TXT_ULINE='\033[4m'          # set underline
+  readonly TXT_ULINERST='\033[24m'      # reset underline
+  readonly TXT_REV='\033[7m'            # set reverse display
+  readonly TXT_REVRST='\033[27m'        # reset reverse display
+  readonly TXT_BLACK='\033[30m'         # text black
+  readonly TXT_RED='\033[31m'           # text red
+  readonly TXT_GREEN='\033[32m'         # text green
+  readonly TXT_YELLOW='\033[33m'        # text yellow
+  readonly TXT_BLUE='\033[34m'          # text blue
+  readonly TXT_MAGENTA='\033[35m'       # text purple
+  readonly TXT_CYAN='\033[36m'          # text light blue
+  readonly TXT_WHITE='\033[37m'         # text white
+  readonly TXT_BBLACK='\033[40m'        # text reverse black
+  readonly TXT_BRED='\033[41m'          # text reverse red
+  readonly TXT_BGREEN='\033[42m'        # text reverse green
+  readonly TXT_BYELLOW='\033[43m'       # text reverse yellow
+  readonly TXT_BBLUE='\033[44m'         # text reverse blue
+  readonly TXT_BMAGENTA='\033[45m'      # text reverse purple
+  readonly TXT_BCYAN='\033[46m'         # text reverse light blue
+  readonly TXT_BWHITE='\033[47m'        # text reverse white
 
 # ### common function #########################################################
+# --- text color test ---------------------------------------------------------
+funcColorTest () {
+  echo -e "${TXT_RESET} : TXT_RESET    : ${TXT_RESET}"
+  echo -e "${TXT_ULINE} : TXT_ULINE    : ${TXT_RESET}"
+  echo -e "${TXT_ULINERST} : TXT_ULINERST : ${TXT_RESET}"
+  echo -e "${TXT_REV} : TXT_REV      : ${TXT_RESET}"
+  echo -e "${TXT_REVRST} : TXT_REVRST   : ${TXT_RESET}"
+  echo -e "${TXT_BLACK} : TXT_BLACK    : ${TXT_RESET}"
+  echo -e "${TXT_RED} : TXT_RED      : ${TXT_RESET}"
+  echo -e "${TXT_GREEN} : TXT_GREEN    : ${TXT_RESET}"
+  echo -e "${TXT_YELLOW} : TXT_YELLOW   : ${TXT_RESET}"
+  echo -e "${TXT_BLUE} : TXT_BLUE     : ${TXT_RESET}"
+  echo -e "${TXT_MAGENTA} : TXT_MAGENTA  : ${TXT_RESET}"
+  echo -e "${TXT_CYAN} : TXT_CYAN     : ${TXT_RESET}"
+  echo -e "${TXT_WHITE} : TXT_WHITE    : ${TXT_RESET}"
+  echo -e "${TXT_BBLACK} : TXT_BBLACK   : ${TXT_RESET}"
+  echo -e "${TXT_BRED} : TXT_BRED     : ${TXT_RESET}"
+  echo -e "${TXT_BGREEN} : TXT_BGREEN   : ${TXT_RESET}"
+  echo -e "${TXT_BYELLOW} : TXT_BYELLOW  : ${TXT_RESET}"
+  echo -e "${TXT_BBLUE} : TXT_BBLUE    : ${TXT_RESET}"
+  echo -e "${TXT_BMAGENTA} : TXT_BMAGENTA : ${TXT_RESET}"
+  echo -e "${TXT_BCYAN} : TXT_BCYAN    : ${TXT_RESET}"
+  echo -e "${TXT_BWHITE} : TXT_BWHITE   : ${TXT_RESET}"
+}
+
 # --- is integer --------------------------------------------------------------
 fncIsInt () {
   set +e
@@ -148,83 +173,64 @@ funcCurl ()
   return $?
 }
 
-# === download: cfg file ======================================================
-funcDownload_cfg () {
-  fncPrintf "${TXT_BYELLOW}download: cfg file${TXT_RESET}"
-  # ### download: setting file ################################################
-# rm -rf ./cfg/
-  mkdir -p ./cfg
-  # === setting file ==========================================================
-  fncPrintf "${TXT_BGREEN}download : setting file${TXT_RESET}"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/preseed.cfg"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/sub_late_command.sh"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                             "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/preseed.cfg"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                             "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_late_command.sh"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                             "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_success_command.sh"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.server"                              "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.server/user-data"
-}
-
-# === download: debian installer ==============================================
-funcDownload_bld () {
-  fncPrintf "${TXT_BYELLOW}download : debian installer${TXT_RESET}"
-  # ### download: debian installer ############################################
-  # === stretch ===============================================================
-# fncPrintf "${TXT_BGREEN}download : stretch${TXT_RESET}"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/boot.img.gz"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/initrd.gz"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/vmlinuz"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch/gtk"      "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch/gtk"      "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
-  # === buster ================================================================
-  fncPrintf "${TXT_BGREEN}download : buster${TXT_RESET}"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/boot.img.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/initrd.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/vmlinuz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster/gtk"       "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster/gtk"       "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
-  # === bullseye ==============================================================
-  fncPrintf "${TXT_BGREEN}download : bullseye${TXT_RESET}"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/boot.img.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/initrd.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/vmlinuz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye/gtk"     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye/gtk"     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
-  # === bookworm ==============================================================
-  fncPrintf "${TXT_BGREEN}download : bookworm${TXT_RESET}"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/boot.img.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/initrd.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/vmlinuz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm/gtk"     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm/gtk"     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
-  # === testing ===============================================================
-  fncPrintf "${TXT_BGREEN}download : testing${TXT_RESET}"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/boot.img.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/initrd.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/vmlinuz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/initrd.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/vmlinuz"
-  # === bionic ================================================================
-  fncPrintf "${TXT_BGREEN}download : bionic${TXT_RESET}"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/boot.img.gz"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/initrd.gz"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/vmlinuz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/boot.img.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/initrd.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/vmlinuz"
-  # === focal =================================================================
-  fncPrintf "${TXT_BGREEN}download : focal${TXT_RESET}"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
-}
-
-# === download: iso link ======================================================
+# === download: link ==========================================================
 funcDownload_lnk () {
-  fncPrintf "${TXT_BYELLOW}download : iso link${TXT_RESET}"
+  # ### download: cfg link ####################################################
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}download : cfg link${TXT_RESET}"
+  rm -rf ./cfg/
+  mkdir -p ./cfg                                          \
+           ./cfg/debian                                   \
+           ./cfg/ubuntu.desktop                           \
+           ./cfg/ubuntu.server                            \
+           ./cfg/installer-hd-media/debian.buster/gtk     \
+           ./cfg/installer-hd-media/debian.bullseye/gtk   \
+           ./cfg/installer-hd-media/debian.bookworm/gtk   \
+           ./cfg/installer-hd-media/debian.testing/gtk    \
+           ./cfg/installer-hd-media/ubuntu.bionic-updates \
+           ./cfg/installer-hd-media/ubuntu.focal-updates
+  # === setting file ==========================================================
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/debian/preseed.cfg                                      ./cfg/debian/preseed.cfg
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/debian/sub_late_command.sh                              ./cfg/debian/sub_late_command.sh
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/ubuntu.desktop/preseed.cfg                              ./cfg/ubuntu.desktop/preseed.cfg
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/ubuntu.desktop/sub_late_command.sh                      ./cfg/ubuntu.desktop/sub_late_command.sh
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/ubuntu.desktop/sub_success_command.sh                   ./cfg/ubuntu.desktop/sub_success_command.sh
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/ubuntu.server/user-data                                 ./cfg/ubuntu.server/user-data
+  # === debian installer ======================================================
+  # --- stretch ---------------------------------------------------------------
+  # --- buster ----------------------------------------------------------------
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.buster/boot.img.gz            ./cfg/installer-hd-media/debian.buster/boot.img.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.buster/initrd.gz              ./cfg/installer-hd-media/debian.buster/initrd.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.buster/vmlinuz                ./cfg/installer-hd-media/debian.buster/vmlinuz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.buster/gtk/initrd.gz          ./cfg/installer-hd-media/debian.buster/gtk/initrd.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.buster/gtk/vmlinuz            ./cfg/installer-hd-media/debian.buster/gtk/vmlinuz
+  # --- bullseye --------------------------------------------------------------
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.bullseye/boot.img.gz          ./cfg/installer-hd-media/debian.bullseye/boot.img.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.bullseye/initrd.gz            ./cfg/installer-hd-media/debian.bullseye/initrd.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.bullseye/vmlinuz              ./cfg/installer-hd-media/debian.bullseye/vmlinuz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.bullseye/gtk/initrd.gz        ./cfg/installer-hd-media/debian.bullseye/gtk/initrd.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.bullseye/gtk/vmlinuz          ./cfg/installer-hd-media/debian.bullseye/gtk/vmlinuz
+  # --- bookworm --------------------------------------------------------------
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.bookworm/boot.img.gz          ./cfg/installer-hd-media/debian.bookworm/boot.img.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.bookworm/initrd.gz            ./cfg/installer-hd-media/debian.bookworm/initrd.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.bookworm/vmlinuz              ./cfg/installer-hd-media/debian.bookworm/vmlinuz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.bookworm/gtk/initrd.gz        ./cfg/installer-hd-media/debian.bookworm/gtk/initrd.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.bookworm/gtk/vmlinuz          ./cfg/installer-hd-media/debian.bookworm/gtk/vmlinuz
+  # --- testing ---------------------------------------------------------------
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.testing/boot.img.gz           ./cfg/installer-hd-media/debian.testing/boot.img.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.testing/initrd.gz             ./cfg/installer-hd-media/debian.testing/initrd.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.testing/vmlinuz               ./cfg/installer-hd-media/debian.testing/vmlinuz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.testing/gtk/initrd.gz         ./cfg/installer-hd-media/debian.testing/gtk/initrd.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/debian.testing/gtk/vmlinuz           ./cfg/installer-hd-media/debian.testing/gtk/vmlinuz
+  # --- bionic ----------------------------------------------------------------
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/ubuntu.bionic-updates/boot.img.gz    ./cfg/installer-hd-media/ubuntu.bionic-updates/boot.img.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/ubuntu.bionic-updates/initrd.gz      ./cfg/installer-hd-media/ubuntu.bionic-updates/initrd.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/ubuntu.bionic-updates/vmlinuz        ./cfg/installer-hd-media/ubuntu.bionic-updates/vmlinuz
+  # --- focal -----------------------------------------------------------------
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/ubuntu.focal-updates/boot.img.gz     ./cfg/installer-hd-media/ubuntu.focal-updates/boot.img.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/ubuntu.focal-updates/initrd.gz       ./cfg/installer-hd-media/ubuntu.focal-updates/initrd.gz
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/installer-hd-media/ubuntu.focal-updates/vmlinuz         ./cfg/installer-hd-media/ubuntu.focal-updates/vmlinuz
   # ### download: iso link ####################################################
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}download : iso link${TXT_RESET}"
   rm -rf ./iso/
   mkdir -p ./iso
   # --- mini.iso --------------------------------------------------------------
@@ -269,56 +275,129 @@ funcDownload_lnk () {
   ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-live-server-amd64.iso                   ./iso/ubuntu-23.04-live-server-amd64.iso
 }
 
+# === download: cfg file ======================================================
+funcDownload_cfg () {
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}download: cfg file${TXT_RESET}"
+  # ### download: setting file ################################################
+# rm -rf ./cfg/
+  mkdir -p ./cfg
+  # === setting file ==========================================================
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : setting file${TXT_RESET}"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/preseed.cfg"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/debian"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/debian/sub_late_command.sh"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                             "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/preseed.cfg"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                             "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_late_command.sh"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                             "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_success_command.sh"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.server"                              "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.server/user-data"
+}
+
+# === download: debian installer ==============================================
+funcDownload_bld () {
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}download : debian installer${TXT_RESET}"
+  # ### download: debian installer ############################################
+  # === stretch ===============================================================
+# fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : stretch${TXT_RESET}"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/boot.img.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/initrd.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch"          "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/vmlinuz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch/gtk"      "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.stretch/gtk"      "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+  # === buster ================================================================
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : buster${TXT_RESET}"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster"           "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster/gtk"       "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.buster/gtk"       "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+  # === bullseye ==============================================================
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : bullseye${TXT_RESET}"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye"         "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye/gtk"     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bullseye/gtk"     "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+  # === bookworm ==============================================================
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : bookworm${TXT_RESET}"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm"         "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm/gtk"     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/gtk/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.bookworm/gtk"     "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/hd-media/gtk/vmlinuz"
+  # === testing ===============================================================
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : testing${TXT_RESET}"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing"          "https://d-i.debian.org/daily-images/amd64/daily/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/debian.testing/gtk"      "https://d-i.debian.org/daily-images/amd64/daily/hd-media/gtk/vmlinuz"
+  # === bionic ================================================================
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : bionic${TXT_RESET}"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/boot.img.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/initrd.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic"           "http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-amd64/current/images/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.bionic-updates"   "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/hd-media/vmlinuz"
+  # === focal =================================================================
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : focal${TXT_RESET}"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal"            "http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/boot.img.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/initrd.gz"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/installer-hd-media/ubuntu.focal-updates"    "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/hd-media/vmlinuz"
+}
+
 # === download: iso file ======================================================
 funcDownload_iso () {
-  fncPrintf "${TXT_BYELLOW}download : iso file${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}download : iso file${TXT_RESET}"
   # ### download: iso file ####################################################
 # rm -rf ./iso/
   mkdir -p ./iso
   # ::: debian mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# fncPrintf "${TXT_BGREEN}download: debian mini.iso${TXT_RESET}"
+# fncPrintf "${TXT_BLACK}${TXT_BGREEN}download: debian mini.iso${TXT_RESET}"
 # funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-stretch-amd64.iso"                               "https://archive.debian.org/debian/dists/stretch/main/installer-amd64/current/images/netboot/mini.iso"
 # funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-buster-amd64.iso"                                "https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/netboot/mini.iso"
 # funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-bullseye-amd64.iso"                              "https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso"
 # funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-bookworm-amd64.iso"                              "https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso"
 # funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-testing-amd64.iso"                               "https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso"
   # ::: debian netinst ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  fncPrintf "${TXT_BGREEN}download : debian netinst${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : debian netinst${TXT_RESET}"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-cd/debian-9.13.0-amd64-netinst.iso"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/10.13.0/amd64/iso-cd/debian-10.13.0-amd64-netinst.iso"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-11.7.0-amd64-netinst.iso"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/bookworm_di_rc2/amd64/iso-cd/debian-bookworm-DI-rc2-amd64-netinst.iso"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/iso-cd/debian-testing-amd64-netinst.iso"
   # ::: debian DVD ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# fncPrintf "${TXT_BGREEN}download : debian DVD${TXT_RESET}"
+# fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : debian DVD${TXT_RESET}"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/9.13.0/amd64/iso-dvd/debian-9.13.0-amd64-DVD-1.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/10.13.0/amd64/iso-dvd/debian-10.13.0-amd64-DVD-1.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-11.7.0-amd64-DVD-1.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/bookworm_di_rc2/amd64/iso-dvd/debian-bookworm-DI-rc2-amd64-DVD-1.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso"
   # ::: debian live DVD :::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  fncPrintf "${TXT_BGREEN}download : debian Live DVD${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : debian Live DVD${TXT_RESET}"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/9.13.0-live/amd64/iso-hybrid/debian-live-9.13.0-amd64-lxde.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/10.13.0-live/amd64/iso-hybrid/debian-live-10.13.0-amd64-lxde.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.7.0-amd64-lxde.iso"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/bookworm_di_rc2-live/amd64/iso-hybrid/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
   # ::: ubuntu mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# fncPrintf "${TXT_BGREEN}download : ubuntu mini.iso${TXT_RESET}"
+# fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : ubuntu mini.iso${TXT_RESET}"
 # funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-bionic-amd64.iso"                                "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso"
 # funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-focal-amd64.iso"                                 "http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso"
   # ::: ubuntu server :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  fncPrintf "${TXT_BGREEN}download : ubuntu server${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : ubuntu server${TXT_RESET}"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04.6-server-amd64.iso"
   # ::: ubuntu live server ::::::::::::::::::::::::::::::::::::::::::::::::::::
-  fncPrintf "${TXT_BGREEN}download : ubuntu live server${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : ubuntu live server${TXT_RESET}"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-live-server-amd64.iso"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/focal/ubuntu-20.04.6-live-server-amd64.iso"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-live-server-amd64.iso"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/kinetic/ubuntu-22.10-live-server-amd64.iso"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/lunar/ubuntu-23.04-live-server-amd64.iso"
   # ::: ubuntu desktop ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  fncPrintf "${TXT_BGREEN}download : ubuntu desktop${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : ubuntu desktop${TXT_RESET}"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/bionic/ubuntu-18.04.6-desktop-amd64.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/focal/ubuntu-20.04.6-desktop-amd64.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://releases.ubuntu.com/jammy/ubuntu-22.04.2-desktop-amd64.iso"
@@ -328,15 +407,15 @@ funcDownload_iso () {
 
 # === download: deb file ======================================================
 funcDownload_deb () {
-  fncPrintf "${TXT_BYELLOW}download : deb file${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}download : deb file${TXT_RESET}"
 # rm -rf ./opt/
   mkdir -p ./opt
   # ::: linux image :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  fncPrintf "${TXT_BGREEN}download : linux image${TXT_RESET}"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.testing"                             "https://deb.debian.org/debian/pool/main/l/linux-signed-amd64/linux-image-6.1.0-9-amd64_6.1.27-1_amd64.deb"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : linux image${TXT_RESET}"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.testing"                             "https://deb.debian.org/debian/pool/main/l/linux-signed-amd64/linux-image-6.1.0-9-amd64_6.1.27-1_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar.desktop"                       "http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-extra-6.2.0-20-generic_6.2.0-20.20_amd64.deb"
   # ::: exfat :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  fncPrintf "${TXT_BGREEN}download : exfat${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : exfat${TXT_RESET}"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.stretch"                             "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.2.5-2_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.buster"                              "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-1_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bullseye"                            "https://deb.debian.org/debian/pool/main/f/fuse-exfat/exfat-fuse_1.3.0-2_amd64.deb"
@@ -349,7 +428,7 @@ funcDownload_deb () {
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.4.0-1_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.mantic"                              "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse-exfat/exfat-fuse_1.4.0-1_amd64.deb"
   # ::: libfuse2 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  fncPrintf "${TXT_BGREEN}download : libfuse2${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : libfuse2${TXT_RESET}"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/libfuse2-udeb_2.9.9-3_amd64.udeb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.focal"                               "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse/libfuse2_2.9.9-3_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.jammy"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/libfuse2_2.9.9-5ubuntu3_amd64.deb"
@@ -357,11 +436,11 @@ funcDownload_deb () {
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar"                               "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/libfuse2_2.9.9-6_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.mantic"                              "http://archive.ubuntu.com/ubuntu/pool/universe/f/fuse/libfuse2_2.9.9-6_amd64.deb"
   # ::: fuse3 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  fncPrintf "${TXT_BGREEN}download : fuse3${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : fuse3${TXT_RESET}"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar.desktop"                       "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/fuse3_3.14.0-3_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/ubuntu.lunar.desktop"                       "http://archive.ubuntu.com/ubuntu/pool/main/f/fuse3/libfuse3-3_3.14.0-3_amd64.deb"
   # ::: mount :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  fncPrintf "${TXT_BGREEN}download : mount${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : mount${TXT_RESET}"
   # --- debian.bookworm.live --------------------------------------------------
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm.live"                       "https://deb.debian.org/debian/pool/main/u/util-linux/mount_2.38.1-5+b1_amd64.deb"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./opt/debian.bookworm.live"                       "https://deb.debian.org/debian/pool/main/u/util-linux/libmount1-udeb_2.38.1-5+b1_amd64.udeb"
@@ -376,10 +455,10 @@ funcDownload_deb () {
 
 # === download: arc file ======================================================
 funcDownload_arc () {
-  fncPrintf "${TXT_BYELLOW}download : arc file${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}download : arc file${TXT_RESET}"
 # rm -rf ./arc/
   mkdir -p ./arc
-  fncPrintf "${TXT_BGREEN}download : iso-scan${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : iso-scan${TXT_RESET}"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./arc/debian.buster"                              "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.75.tar.xz"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./arc/debian.bullseye"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.85.tar.xz"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./arc/debian.bookworm"                            "https://deb.debian.org/debian/pool/main/i/iso-scan/iso-scan_1.88.tar.xz"
@@ -411,7 +490,7 @@ funcDownload () {
 # apt-cache rdepends package
 # -----------------------------------------------------------------------------
 funcCopy_module () {
-  fncPrintf "${TXT_BYELLOW}copy module${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}copy module${TXT_RESET}"
   mountpoint -q ./mnt/ && (umount -q -f ./mnt || umount -q -lf ./mnt) || true
   mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
   rm -rf ./mnt/
@@ -449,7 +528,7 @@ funcCopy_module () {
                       \( -type f -o -type l \))
   do
     # --- mount ---------------------------------------------------------------
-    fncPrintf "${TXT_BGREEN}mount   iso: %s${TXT_RESET}\n" "${P}"
+    fncPrintf "${TXT_BLACK}${TXT_BGREEN}mount   iso: %s${TXT_RESET}\n" "${P}"
     mount -r -o loop ${P} ./mnt
     # --- make directory ------------------------------------------------------
     R=$(cat ./mnt/.disk/info | sed -z 's/-n//g')
@@ -476,7 +555,7 @@ funcCopy_module () {
     if [ -d ./mnt/install.amd/. ]; then L+="./mnt/install.amd/ "; fi
     if [ -d ./mnt/live/.        ]; then L+="./mnt/live/" ;        fi
     if [ -d ./mnt/casper/.      ]; then L+="./mnt/casper/" ;      fi
-    for F in $(find ${L} \( -name 'initrd*' -o  -name 'vmlinuz*' \) -type f)
+    for F in $(find ${L} \( -name 'initrd*' -o  -name 'vmlinuz*' \) \( -type f -o -type l \))
     do
       fncPrintf "copy initrd: %-24.24s : %s\n" "${D}" "${F}"
       T="$(dirname ${F#\./mnt/})"
@@ -503,7 +582,7 @@ funcCopy_module () {
     for F in ${M[@]}
     do
       B=""
-      for P in $(find ${T[@]} -regextype posix-basic -regex ".*/${F}" -type f | sed -n '/\(all\|amd64\)/p' | sed -n "/\(${F%\\.*}_\|-udeb_\)/p")
+      for P in $(find ${T[@]} -regextype posix-basic -regex ".*/${F}" \( -type f -o -type l \) | sed -n '/\(all\|amd64\)/p' | sed -n "/\(${F%\\.*}_\|-udeb_\)/p")
       do
         B="$(basename ${P})"
         fncPrintf "copy module: %-24.24s : %s\n" "${F}" "${B}"
@@ -517,7 +596,7 @@ funcCopy_module () {
     done
     # *** linux image *********************************************************
     fncPrintf "$(find ${T[@]} -regextype posix-basic -regex '.*/\(linux\|linux-signed\(-amd64\)*\)/linux-\(image\|modules\).*-[0-9]*-\(amd64\|generic\)*_.*' \
-                  -type f -printf 'copy   limg: %f\n' -exec cp -a '{}' ./deb/${D}/ \;)"
+                  \( -type f -o -type l \) -printf 'copy   limg: %f\n' -exec cp -a '{}' ./deb/${D}/ \;)"
     # *** packages file *******************************************************
     cp -a ./mnt/dists ./deb/${D}/
     # --- unmount -------------------------------------------------------------
@@ -527,7 +606,7 @@ funcCopy_module () {
 
 # === unpack linux image ======================================================
 funcUnpack_lnximg () {
-  fncPrintf "${TXT_BYELLOW}unpack linux image${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}unpack linux image${TXT_RESET}"
   rm -rf ./pac
   mkdir -p ./pac
   for S in $(ls -1aA ./deb/)
@@ -536,7 +615,7 @@ funcUnpack_lnximg () {
     if [ -d ./deb/${S}/.     ]; then D+="./deb/${S}/ ";     fi
     if [ -d ./opt/${S%\.*}/. ]; then D+="./opt/${S%\.*}/ "; fi
     if [ -d ./opt/${S}/.     ]; then D+="./opt/${S}/ ";     fi
-    for F in $(find ${D} \( -name 'linux-image-*_amd64.deb' -o -name 'linux-modules-*_amd64.deb' \) -type f)
+    for F in $(find ${D} \( -name 'linux-image-*_amd64.deb' -o -name 'linux-modules-*_amd64.deb' \) \( -type f -o -type l \))
     do
       fncPrintf "unpack limg: %-24.24s : %s\n" "${S}" "$(basename ${F})"
       mkdir -p ./pac/${S}
@@ -547,15 +626,15 @@ funcUnpack_lnximg () {
 
 # === remake module ===========================================================
 funcRemake_module () {
-  fncPrintf "${TXT_BYELLOW}remake module${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}remake module${TXT_RESET}"
   S=$1
-  fncPrintf "${TXT_BGREEN}remk module: ${S}${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}remk module: ${S}${TXT_RESET}"
   shift
   for D in $@
   do
     fncPrintf "remk module: ${D}"
     B="$(basename ${D})"
-    fncPrintf "remk module: ${B}"
+#    fncPrintf "remk module: ${B}"
     case "${B}" in
       live   ) I="${S}/live"   ;;
       casper ) I="${S}/casper" ;;
@@ -564,7 +643,7 @@ funcRemake_module () {
     # --- unpack: inird -> ./ram/${I}/initrd ----------------------------------
     for W in 'initrd*-*' 'initrd*.*' 'initrd'
     do
-      for F in $(find ${D} -name "${W}" -type f)
+      for F in $(find ${D} -name "${W}" \( -type f -o -type l \))
       do
         fncPrintf "unpack file: ${F}"
         mkdir -p ./ram/${I}/initrd
@@ -575,7 +654,7 @@ funcRemake_module () {
     # --- copy: vmlinuz -> ./ram/${I}/vmlinuz ---------------------------------
     for W in 'vmlinuz*-*' 'vmlinuz*.*' 'vmlinuz'
     do
-      for F in $(find ${D} -name "${W}" -type f)
+      for F in $(find ${D} -name "${W}" \( -type f -o -type l \))
       do
         fncPrintf "copy   file: ${F}"
         mkdir -p ./ram/${I}/vmlinuz
@@ -596,14 +675,14 @@ funcRemake_module () {
     if [ -d ./wrk/${I}/initrd/lib/modules/*/kernel/. ]; then
       V=$(find ./wrk/${I}/initrd/lib/modules/*/kernel/ -name 'fs' -type d | sed -e 's~^.*/modules/\(.*\)/kernel/.*$~\1~g')
     else
-      V="$(find ./deb/${S}/ -name 'linux-image*' -type f | sed -n -e 's~^.*/linux-image-\(.*\)_.*_.*$~\1~p')"
+      V="$(find ./deb/${S}/ -name 'linux-image*' \( -type f -o -type l \) | sed -n -e 's~^.*/linux-image-\(.*\)_.*_.*$~\1~p')"
       if [ -z "${V}" ]; then
         fncPrintf "failed to get kernel version, exiting process."
         exit 1
       fi
       mkdir -p ./wrk/${I}/initrd/lib/modules/${V}/kernel
     fi
-    R=false
+#    R=false
     if [ -d ./pac/${S}/. ]; then
       M=( \
         kernel/crypto        \
@@ -624,7 +703,7 @@ funcRemake_module () {
         if [ -d ./pac/${S}/lib/modules/${V}/${T}/. ]; then
           fncPrintf "copy module: ${T}"
           cp -a --backup ./pac/${S}/lib/modules/${V}/${T} ./wrk/${I}/initrd/lib/modules/${V}/$(dirname ${T})
-          R=true
+#          R=true
         fi
       done
     fi
@@ -645,7 +724,7 @@ funcRemake_module () {
     fncPrintf "edit   ver.: debian-installer [$(sed -n -e '/^Package: debian-installer$/,/^Package:/ {/Version:/p}' ./wrk/${I}/initrd/var/lib/dpkg/status)]"
     # --- dpkg --update-avail -------------------------------------------------
     fncPrintf "update package data base"
-    for P in $(find ./deb/${S}/dists/ -name '*Packages*' -type f)
+    for P in $(find ./deb/${S}/dists/ -name '*Packages*' \( -type f -o -type l \))
     do
       mkdir -p ./tmp
       cp -a ${P} ./tmp/
@@ -666,7 +745,7 @@ funcRemake_module () {
     if [ -d ./opt/${S}/.     ]; then D+="./opt/${S}/ ";     fi
     for P in $(find ${D} \
              \( -not -name 'linux-image-*_amd64.deb' -a -not -name 'linux-modules-*_amd64.deb' \
-          -a \( -name '*.deb' -o -name '*.udeb' \) \) -type f | sed -n '/\(all\|amd64\)/p' | sort -u)
+          -a \( -name '*.deb' -o -name '*.udeb' \) \) \( -type f -o -type l \) | sed -n '/\(all\|amd64\)/p' | sort -u)
     do
       F="$(basename ${P})"
       M="${F%%_*}"
@@ -797,18 +876,17 @@ _EOT_
           OLD_IFS=${IFS}
           IFS= INS_STR=$(
             cat <<- '_EOT_' | sed -e 's/^ //g' | sed -z -e 's/\n/\\n/g'
-			/scripts/casper-bottom/99exfat "$@"
+			/scripts/casper-bottom/99cloud_init "$@"
 			[ -e /conf/param.conf ] && . /conf/param.conf
 _EOT_
           )
           IFS=${OLD_IFS}
           sed -i ./wrk/${I}/initrd/scripts/casper-bottom/ORDER -e "$ a \\${INS_STR}"
           sed -i ./wrk/${I}/initrd/scripts/casper-bottom/ORDER -e '/^$/d'
-          cat <<- '_EOT_' >> ./wrk/${I}/initrd/scripts/casper-bottom/99exfat
+          cat <<- '_EOT_' >> ./wrk/${I}/initrd/scripts/casper-bottom/99cloud_init
 			#!/bin/sh
 			
 			PREREQ=""
-			DESCRIPTION="Add exfat filesystem"
 			
 			prereqs()
 			{
@@ -825,27 +903,40 @@ _EOT_
 			
 			. /scripts/casper-functions
 			. /scripts/casper-helpers
-			
-			log_begin_msg "${DESCRIPTION}"
-			
-			FILESYSTEMS="/root/snap/subiquity/current/usr/lib/os-probes/init/10filesystems"
-			if [ -f ${FILESYSTEMS} ]; then
-			  echo "${FILESYSTEMS} exists and add exfat filesystem"
-			  sed -i ${FILESYSTEMS}                                                  \
-			      -e 's/^\(FILESYSTEMS\)='\''\(.*vfat.*\)'\''$/\1='\''\2 exfat'\''/'
-			else
-			  echo "${FILESYSTEMS} not exists"
-			  if [ -d /root/snap/subiquity/current/. ]; then
-			    find /root/snap/subiquity/current/ -type f
-			  fi
-			  if [ -d /snap/subiquity/current/. ]; then
-			    find /snap/subiquity/current/ -type f
-			  fi
+			if [ -f /scripts/lupin-helpers ]; then
+			  . /scripts/lupin-helpers
 			fi
 			
-			log_end_msg
+			nocloud_path=
+			for x in $(cat /proc/cmdline); do
+			  case ${x} in
+			    ds=nocloud\;*      | \
+			    ds=nocloud-net\;*  )
+			    case ${x} in
+			      *s=file:*        | \
+			      *seedfrom=file:* )
+			        nocloud_path=${x#*=file:///}
+			        break
+			        ;;
+			    esac
+			    ;;
+			  esac
+			done
+			
+			if [ "${nocloud_path}" ]; then
+			  if find_path "/${nocloud_path}" /isodevice rw; then
+			    echo "mkdir -p /root/${nocloud_path}"
+			    mkdir -p /root/${nocloud_path}
+			    echo "cp -dR ${FOUNDPATH}/. /root/${nocloud_path}"
+			    cp -dR ${FOUNDPATH}/. /root/${nocloud_path}
+			  else
+			    panic "
+			Could not find the nocloud /${nocloud_path}
+			"
+			  fi
+			fi
 _EOT_
-          chmod +x ./wrk/${I}/initrd/scripts/casper-bottom/99exfat
+          chmod +x ./wrk/${I}/initrd/scripts/casper-bottom/99cloud_init
         fi
         if [ -f  ./wrk/${I}/initrd/scripts/casper-helpers ]; then
           OLD_IFS=${IFS}
@@ -879,7 +970,7 @@ _EOT_
 
 # === select module ===========================================================
 funcSelect_module () {
-  fncPrintf "${TXT_BYELLOW}select module${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}select module${TXT_RESET}"
   rm -rf ./ram/
   rm -rf ./wrk/
   mkdir -p ./ram
@@ -908,7 +999,7 @@ funcSelect_module () {
 
 # === make initramfs ==========================================================
 funcMake_initramfs () {
-  fncPrintf "${TXT_BYELLOW}make initramfs${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}make initramfs${TXT_RESET}"
   rm -rf ./ird/
   mkdir -p ./ird
   # COMPRESS: [ gzip | bzip2 | lz4 | lzma | lzop | xz | zstd ]
@@ -938,7 +1029,7 @@ funcMake_initramfs () {
   done
   OLD_IFS=${IFS}
   IFS=$'\n'
-  for A in $(ls -lhX1 $(find ./ird/ \( -name 'initrd*' -o -name 'vmlinuz*' \) -type f))
+  for A in $(ls -lhX1 $(find ./ird/ \( -name 'initrd*' -o -name 'vmlinuz*' \) \( -type f -o -type l \)))
   do
     fncPrintf "%s\n" "${A}"
   done
@@ -949,7 +1040,7 @@ funcMake_initramfs () {
 # ### file copy ###############################################################
 # === copy initramfs ==========================================================
 funcCopy_initramfs () {
-  fncPrintf "${TXT_BYELLOW}copy initramfs${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}copy initramfs${TXT_RESET}"
   rm -rf ./img/install.amd/ \
          ./img/live/        \
          ./img/casper/
@@ -981,23 +1072,44 @@ funcCopy_initramfs () {
 
 # === copy config file ========================================================
 funcCopy_cfg_file () {
-  fncPrintf "${TXT_BYELLOW}copy config file${TXT_RESET}"
-  rm -rf ./img/preseed/debian \
-         ./img/preseed/ubuntu \
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}copy config file${TXT_RESET}"
+  rm -rf ./img/preseed \
          ./img/nocloud
   mkdir -p ./img/preseed/debian \
            ./img/preseed/ubuntu \
-           ./img/nocloud
+           ./img/nocloud/
   # === copy config file ======================================================
 # cp -a -L -u ./cfg/debian/preseed.cfg                    ./img/preseed/debian/
   cp -a -L -u ./cfg/debian/sub_late_command.sh            ./img/preseed/debian/
 # cp -a -L -u ./cfg/ubuntu.desktop/preseed.cfg            ./img/preseed/ubuntu/
   cp -a -L -u ./cfg/ubuntu.desktop/sub_late_command.sh    ./img/preseed/ubuntu/
   cp -a -L -u ./cfg/ubuntu.desktop/sub_success_command.sh ./img/preseed/ubuntu/
-  cp -a -L -u ./cfg/ubuntu.server/user-data               ./img/nocloud/
-  touch ./img/nocloud/meta-data
-  touch ./img/nocloud/vendor-data
-  touch ./img/nocloud/network-config
+  for D in desktop server
+  do
+    mkdir -p ./img/nocloud/ubuntu.${D}
+    cp -a -L -u ./cfg/ubuntu.server/user-data ./img/nocloud/ubuntu.${D}
+    touch ./img/nocloud/ubuntu.${D}/meta-data
+    touch ./img/nocloud/ubuntu.${D}/vendor-data
+    touch ./img/nocloud/ubuntu.${D}/network-config
+  done
+  if [ -f ./img/nocloud/ubuntu.server/user-data ]; then
+    sed -i ./img/nocloud/ubuntu.server/user-data                         \
+        -e 's/^[[:space:]]\([[:space:]]*- isc-dhcp-server\)/#\1/'        \
+        -e 's/^[[:space:]]\([[:space:]]*- minidlna\)/#\1/'               \
+        -e 's/^[[:space:]]\([[:space:]]*- apache2\)/#\1/'                \
+        -e 's/^[[:space:]]\([[:space:]]*- ubuntu-desktop\)/#\1/'         \
+        -e 's/^[[:space:]]\([[:space:]]*- ubuntu-gnome-desktop\)/#\1/'   \
+        -e 's/^[[:space:]]\([[:space:]]*- language-pack-ja\)/#\1/'       \
+        -e 's/^[[:space:]]\([[:space:]]*- language-pack-gnome-ja\)/#\1/' \
+        -e 's/^[[:space:]]\([[:space:]]*- fonts-noto\)/#\1/'             \
+        -e 's/^[[:space:]]\([[:space:]]*- ibus-mozc\)/#\1/'              \
+        -e 's/^[[:space:]]\([[:space:]]*- mozc-utils-gui\)/#\1/'         \
+        -e 's/^[[:space:]]\([[:space:]]*- libreoffice-l10n-ja\)/#\1/'    \
+        -e 's/^[[:space:]]\([[:space:]]*- libreoffice-help-ja\)/#\1/'    \
+        -e 's/^[[:space:]]\([[:space:]]*- firefox-locale-ja\)/#\1/'      \
+        -e 's/^[[:space:]]\([[:space:]]*- thunderbird\)/#\1/'            \
+        -e 's/^[[:space:]]\([[:space:]]*- thunderbird-locale-ja\)/#\1/'
+  fi
   # === change config file ====================================================
   fncPrintf "change config file"
   sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/debian/~g' ./cfg/debian/preseed.cfg         | tee ./img/preseed/debian/preseed.cfg > /dev/null
@@ -1024,7 +1136,7 @@ funcCopy_cfg_file () {
 
 # === copy iso image ==========================================================
 funcCopy_iso_image () {
-  fncPrintf "${TXT_BYELLOW}copy iso image${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}copy iso image${TXT_RESET}"
 #  rm -rf ./img/images
   mkdir -p ./img/images
   # === copy iso file =========================================================
@@ -1057,12 +1169,14 @@ funcCopy_iso_image () {
 }
 
 # ### USB Device: partition and format ########################################
-funcUSB_Device_partition_and_format () {
-  fncPrintf "${TXT_BYELLOW}USB Device: partition and format${TXT_RESET}"
+funcUSB_Device_check () {
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}USB Device: partition and format${TXT_RESET}"
   # *** [ USB device: /dev/sdb ] ***
   # === device and mount check ================================================
   fncPrintf "device and mount check"
-  lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
+  if [ -b /dev/sdb ]; then
+    lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
+  fi
   while :
   do
     if [ -b /dev/sdb ]; then
@@ -1081,8 +1195,14 @@ funcUSB_Device_partition_and_format () {
       break
     fi
   done
+  # === device and mount check ================================================
 # lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
   mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
+}
+
+funcUSB_Device_partition_and_format () {
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}USB Device: partition and format${TXT_RESET}"
+  # *** [ USB device: /dev/sdb ] ***
   # === partition =============================================================
   fncPrintf "partition"
   sfdisk --wipe always --wipe-partitions always /dev/sdb <<- _EOT_
@@ -1109,7 +1229,7 @@ _EOT_
 
 # ### USB Device: [ /dev/sdX1, /dev/sdX2 ] Boot and EFI partition #############
 funcUSB_Device_Inst_Bootloader () {
-  fncPrintf "${TXT_BYELLOW}USB Device: Boot and EFI partition${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}USB Device: Boot and EFI partition${TXT_RESET}"
   # *** [ USB device: /dev/sdb1, /dev/sdb2 ] ***
   # === mount /dev/sdX2 =======================================================
   fncPrintf "mount /dev/sdX2"
@@ -1131,7 +1251,7 @@ funcUSB_Device_Inst_Bootloader () {
 
 # ### USB Device: [ /dev/sdX2 ] EFI partition #################################
 funcUSB_Device_Inst_GRUB () {
-  fncPrintf "${TXT_BYELLOW}USB Device: EFI partition${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}USB Device: EFI partition${TXT_RESET}"
   # *** [ USB device: /dev/sdb2 ] ***
   # === mount /dev/sdX3 =======================================================
   fncPrintf "mount /dev/sdX2"
@@ -1219,7 +1339,7 @@ funcUSB_Device_Inst_GRUB () {
 	    set isoscan="iso-scan/filename=${isofile}"
 	    set isodist="ubuntu.lunar.server"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    set nocloud='autoinstall "ds=nocloud-net;s=file:/nocloud"'
+	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
 	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
@@ -1231,7 +1351,7 @@ funcUSB_Device_Inst_GRUB () {
 	    set isoscan="iso-scan/filename=${isofile}"
 	    set isodist="ubuntu.kinetic.server"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    set nocloud='autoinstall "ds=nocloud-net;s=file:/nocloud"'
+	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
 	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
@@ -1243,7 +1363,7 @@ funcUSB_Device_Inst_GRUB () {
 	    set isoscan="iso-scan/filename=${isofile}"
 	    set isodist="ubuntu.jammy.server"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    set nocloud='autoinstall "ds=nocloud-net;s=file:/nocloud"'
+	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
 	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
@@ -1255,7 +1375,7 @@ funcUSB_Device_Inst_GRUB () {
 	    set isoscan="iso-scan/filename=${isofile}"
 	    set isodist="ubuntu.focal.server"
 	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    set nocloud='autoinstall "ds=nocloud-net;s=file:/nocloud"'
+	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
 	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
@@ -1309,7 +1429,7 @@ funcUSB_Device_Inst_GRUB () {
 	        set isoscan="iso-scan/filename=${isofile}"
 	        set isodist="ubuntu.lunar.desktop"
 	        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	        set nocloud='autoinstall "ds=nocloud-net;s=file:/nocloud"'
+	        set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.desktop/'
 	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	        echo "Loading ${isofile} ..."
 	        linux   (${cfgpart})/casper/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip
@@ -1321,7 +1441,7 @@ funcUSB_Device_Inst_GRUB () {
 	        set isoscan="iso-scan/filename=${isofile}"
 	        set isodist="ubuntu.lunar.desktop"
 	        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	        set nocloud='autoinstall "ds=nocloud-net;s=file:/nocloud"'
+	        set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.desktop/'
 	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	        echo "Loading ${isofile} ..."
 	        linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
@@ -1352,7 +1472,7 @@ _EOT_
 
 # ### USB Device: [ /dev/sdX3 ] Data partition ################################
 funcUSB_Device_Inst_File_partition () {
-  fncPrintf "${TXT_BYELLOW}USB Device: Data partition [initramfs]${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}USB Device: Data partition [initramfs]${TXT_RESET}"
   # *** [ USB device: /dev/sdb3 ] ***
   # === mount /dev/sdX3 =======================================================
   fncPrintf "mount /dev/sdX3"
@@ -1375,7 +1495,7 @@ funcUSB_Device_Inst_File_partition () {
 
 # ### USB Device: [ /dev/sdX4 ] Data partition ################################
 funcUSB_Device_Data_File_partition () {
-  fncPrintf "${TXT_BYELLOW}USB Device: Data partition [iso file]${TXT_RESET}"
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}USB Device: Data partition [iso file]${TXT_RESET}"
   # *** [ USB device: /dev/sdb4 ] ***
   # === mount /dev/sdX4 =======================================================
   fncPrintf "mount /dev/sdX4"
@@ -1415,10 +1535,11 @@ main () {
     COL_SIZE=100
   fi
   # --- main ------------------------------------------------------------------
-  fncPrintf "$(date +"%Y/%m/%d %H:%M:%S") processing start"
+  fncPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing start${TXT_RESET}"
+#  funcColorTest
+  funcDownload "lnk"
   funcDownload "cfg"
   funcDownload "bld"
-  funcDownload "lnk"
   funcDownload "iso"
   funcDownload "deb"
   funcDownload "arc"
@@ -1429,14 +1550,16 @@ main () {
   funcCopy_initramfs
   funcCopy_cfg_file
   funcCopy_iso_image
-#  funcUSB_Device_partition_and_format
-#  funcUSB_Device_Inst_Bootloader
+  funcUSB_Device_check
+  funcUSB_Device_partition_and_format
+  funcUSB_Device_Inst_Bootloader
   funcUSB_Device_Inst_GRUB
   funcUSB_Device_Inst_File_partition
   funcUSB_Device_Data_File_partition
-  lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
-  fncPrintf "complete"
-  fncPrintf "$(date +"%Y/%m/%d %H:%M:%S") processing end"
+  if [ -b /dev/sdb ]; then
+    lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
+  fi
+  fncPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 }
 
 # === main ====================================================================
