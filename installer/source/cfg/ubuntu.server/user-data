@@ -42,6 +42,9 @@ autoinstall:
         ssd: yes
     swap:
       size: 0
+    grub:
+      update_nvram: False
+#     reorder_uefi: False
 # -----------------------------------------------------------------------------
 # /dev/nvme0n1p1: 512MB: /boot/efi
 #      nvme0n1p2: 512MB: /boot
