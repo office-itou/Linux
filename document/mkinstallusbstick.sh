@@ -1513,7 +1513,7 @@ funcUSB_Device_Inst_GRUB () {
 	        set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.desktop/'
 	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	        echo "Loading ${isofile} ..."
-	        linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
+	        linux   (${cfgpart})/casper/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
 	        initrd  (${cfgpart})/casper/${isodist}/initrd.img
 	    }
 	}
