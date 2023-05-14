@@ -1608,25 +1608,25 @@ main () {
 #  funcColorTest
   # --- main ------------------------------------------------------------------
   fncPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing start${TXT_RESET}"
-#  funcDownload "lnk"
-#  funcDownload "cfg"
-#  funcDownload "bld"
-#  funcDownload "iso"
-#  funcDownload "deb"
-#  funcDownload "arc"
-#  funcCopy_module
-#  funcUnpack_lnximg
-#  funcSelect_module
-#  funcMake_initramfs
-#  funcCopy_initramfs
-#  funcCopy_cfg_file
-#  funcCopy_iso_image
-#  funcUSB_Device_check
-#  funcUSB_Device_partition_and_format
-#  funcUSB_Device_Inst_Bootloader
+  funcDownload "lnk"
+  funcDownload "cfg"
+  funcDownload "bld"
+  funcDownload "iso"
+  funcDownload "deb"
+  funcDownload "arc"
+  funcCopy_module
+  funcUnpack_lnximg
+  funcSelect_module
+  funcMake_initramfs
+  funcCopy_initramfs
+  funcCopy_cfg_file
+  funcCopy_iso_image
+  funcUSB_Device_check
+  funcUSB_Device_partition_and_format
+  funcUSB_Device_Inst_Bootloader
   funcUSB_Device_Inst_GRUB
-#  funcUSB_Device_Inst_File_partition
-#  funcUSB_Device_Data_File_partition
+  funcUSB_Device_Inst_File_partition
+  funcUSB_Device_Data_File_partition
   if [ -b /dev/sdb ]; then
     lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
   fi
