@@ -1462,8 +1462,10 @@ funcUSB_Device_Inst_GRUB () {
 	}
 	submenu 'Live media ...' {
 	#   search.fs_label "CIDATA"  cfgpart hd1,gpt3
-	    search.fs_label "CFGFILE" cfgpart hd1,gpt3
-	    search.fs_label "ISOFILE" isopart hd1,gpt4
+	#   search.fs_label "CFGFILE" cfgpart hd1,gpt3
+	    search.fs_label "ISOFILE" cfgpart hd1,gpt3
+	    search.fs_label "ISOFILE" isopart hd1,gpt3
+	#   search.fs_label "ISOFILE" isopart hd1,gpt4
 	    set menu_color_normal=cyan/blue
 	    set menu_color_highlight=white/blue
 	    menuentry 'Live system (Debian 12:testing [bookworm])' {
