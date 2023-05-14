@@ -591,6 +591,17 @@ funcCopy_module () {
         fi
       done
       if [ -z "${B}" ]; then
+        O=("./opt/${N}.${S}")
+        if [ -d "./opt/${D}/." ]; then
+          O+=(./opt/${D})
+        fi
+        for P in $(find ${O[@]} -regextype posix-basic -regex ".*/${F}" \( -type f -o -type l \) | sed -n '/\(all\|amd64\)/p' | sed -n "/\(${F%\\.*}_\|-udeb_\)/p")
+        do
+          B="$(basename ${P})"
+          fncPrintf "copy module: %-24.24s : ${TXT_GREEN}%s${TXT_RESET}\n" "${F}" "${B}"
+        done
+      fi
+      if [ -z "${B}" ]; then
         fncPrintf "copy module: %-24.24s : %s\n" "${F}" "${B}"
       fi
     done
@@ -777,12 +788,12 @@ funcRemake_module () {
             if [ "$(readlink -q ./wrk/${I}/initrd/bin/mount)" != "busybox" ]; then
               continue
             fi
-            fncPrintf "owrite pack: ${F}"
+            fncPrintf "overwr pack: ${F}"
             mkdir -p ./tmp
             dpkg -x ${P} ./tmp
             for T in $(ls ./tmp/)
             do
-              cp -a -u --backup ./tmp/${T}/. ./wrk/${I}/initrd/${T}
+              cp -a --backup ./tmp/${T}/. ./wrk/${I}/initrd/${T}
             done
             rm -rf ./tmp
             continue
@@ -1092,24 +1103,6 @@ funcCopy_cfg_file () {
     touch ./img/nocloud/ubuntu.${D}/vendor-data
     touch ./img/nocloud/ubuntu.${D}/network-config
   done
-  if [ -f ./img/nocloud/ubuntu.server/user-data ]; then
-    sed -i ./img/nocloud/ubuntu.server/user-data                         \
-        -e 's/^[[:space:]]\([[:space:]]*- isc-dhcp-server\)/#\1/'        \
-        -e 's/^[[:space:]]\([[:space:]]*- minidlna\)/#\1/'               \
-        -e 's/^[[:space:]]\([[:space:]]*- apache2\)/#\1/'                \
-        -e 's/^[[:space:]]\([[:space:]]*- ubuntu-desktop\)/#\1/'         \
-        -e 's/^[[:space:]]\([[:space:]]*- ubuntu-gnome-desktop\)/#\1/'   \
-        -e 's/^[[:space:]]\([[:space:]]*- language-pack-ja\)/#\1/'       \
-        -e 's/^[[:space:]]\([[:space:]]*- language-pack-gnome-ja\)/#\1/' \
-        -e 's/^[[:space:]]\([[:space:]]*- fonts-noto\)/#\1/'             \
-        -e 's/^[[:space:]]\([[:space:]]*- ibus-mozc\)/#\1/'              \
-        -e 's/^[[:space:]]\([[:space:]]*- mozc-utils-gui\)/#\1/'         \
-        -e 's/^[[:space:]]\([[:space:]]*- libreoffice-l10n-ja\)/#\1/'    \
-        -e 's/^[[:space:]]\([[:space:]]*- libreoffice-help-ja\)/#\1/'    \
-        -e 's/^[[:space:]]\([[:space:]]*- firefox-locale-ja\)/#\1/'      \
-        -e 's/^[[:space:]]\([[:space:]]*- thunderbird\)/#\1/'            \
-        -e 's/^[[:space:]]\([[:space:]]*- thunderbird-locale-ja\)/#\1/'
-  fi
   # === change config file ====================================================
   fncPrintf "change config file"
   sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/debian/~g' ./cfg/debian/preseed.cfg         | tee ./img/preseed/debian/preseed.cfg > /dev/null
@@ -1132,6 +1125,77 @@ funcCopy_cfg_file () {
       -e '/d-i partman\/early_command/,/exit 0/ s/^#/ /g'     \
              ./img/preseed/ubuntu/preseed.cfg                 \
   | tee ./img/preseed/ubuntu/preseed_old.cfg > /dev/null
+  # === make preseed.cfg for server ===========================================
+  fncPrintf "make preseed.cfg for server"
+  for F in debian/preseed.cfg debian/preseed_old.cfg ubuntu/preseed.cfg ubuntu/preseed_old.cfg
+  do
+    D="$(dirname  ${F})"
+    B="$(basename ${F})"
+    T="${F/\./_server\.}"
+    case "${D}" in
+      debian )
+        cp -a ./img/preseed/${F} ./img/preseed/${T}
+        sed -i ./img/preseed/${T}                                                      \
+            -e '/^[[:space:]].*[[:space:]]isc-dhcp-server[[:space:]]*/        s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]minidlna[[:space:]]*/               s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]apache2[[:space:]]*/                s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]task-desktop[[:space:]]*/           s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]task-lxde-desktop[[:space:]]*/      s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]task-laptop[[:space:]]*/            s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]task-japanese[[:space:]]*/          s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]task-japanese-desktop[[:space:]]*/  s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]fonts-noto[[:space:]]*/             s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]ibus-mozc[[:space:]]*/              s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]mozc-utils-gui[[:space:]]*/         s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]libreoffice-l10n-ja[[:space:]]*/    s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]libreoffice-help-ja[[:space:]]*/    s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]firefox-esr-l10n-ja[[:space:]]*/    s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]thunderbird[[:space:]]*/            s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]thunderbird-l10n-ja[[:space:]]*/    s/^ /#/'
+        ;;
+      ubuntu )
+        cp -a ./img/preseed/${F} ./img/preseed/${T}
+        sed -i ./img/preseed/${T}                                                      \
+            -e '/^[[:space:]].*[[:space:]]isc-dhcp-server[[:space:]]*/        s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]minidlna[[:space:]]*/               s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]apache2[[:space:]]*/                s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]ubuntu-desktop[[:space:]]*/         s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]ubuntu-gnome-desktop[[:space:]]*/   s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]language-pack-ja[[:space:]]*/       s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]language-pack-gnome-ja[[:space:]]*/ s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]fonts-noto[[:space:]]*/             s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]ibus-mozc[[:space:]]*/              s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]mozc-utils-gui[[:space:]]*/         s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]libreoffice-l10n-ja[[:space:]]*/    s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]libreoffice-help-ja[[:space:]]*/    s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]firefox-locale-ja[[:space:]]*/      s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]thunderbird[[:space:]]*/            s/^ /#/' \
+            -e '/^[[:space:]].*[[:space:]]thunderbird-locale-ja[[:space:]]*/  s/^ /#/'
+        ;;
+      *      )
+        ;;
+    esac
+  done
+  # === make cloud-init file for server =======================================
+  fncPrintf "make cloud-init file for server"
+  if [ -f ./img/nocloud/ubuntu.server/user-data ]; then
+    sed -i ./img/nocloud/ubuntu.server/user-data                         \
+        -e 's/^[[:space:]]\([[:space:]]*- isc-dhcp-server\)/#\1/'        \
+        -e 's/^[[:space:]]\([[:space:]]*- minidlna\)/#\1/'               \
+        -e 's/^[[:space:]]\([[:space:]]*- apache2\)/#\1/'                \
+        -e 's/^[[:space:]]\([[:space:]]*- ubuntu-desktop\)/#\1/'         \
+        -e 's/^[[:space:]]\([[:space:]]*- ubuntu-gnome-desktop\)/#\1/'   \
+        -e 's/^[[:space:]]\([[:space:]]*- language-pack-ja\)/#\1/'       \
+        -e 's/^[[:space:]]\([[:space:]]*- language-pack-gnome-ja\)/#\1/' \
+        -e 's/^[[:space:]]\([[:space:]]*- fonts-noto\)/#\1/'             \
+        -e 's/^[[:space:]]\([[:space:]]*- ibus-mozc\)/#\1/'              \
+        -e 's/^[[:space:]]\([[:space:]]*- mozc-utils-gui\)/#\1/'         \
+        -e 's/^[[:space:]]\([[:space:]]*- libreoffice-l10n-ja\)/#\1/'    \
+        -e 's/^[[:space:]]\([[:space:]]*- libreoffice-help-ja\)/#\1/'    \
+        -e 's/^[[:space:]]\([[:space:]]*- firefox-locale-ja\)/#\1/'      \
+        -e 's/^[[:space:]]\([[:space:]]*- thunderbird\)/#\1/'            \
+        -e 's/^[[:space:]]\([[:space:]]*- thunderbird-locale-ja\)/#\1/'
+  fi
 }
 
 # === copy iso image ==========================================================
@@ -1210,17 +1274,18 @@ funcUSB_Device_partition_and_format () {
 	first-lba: 34
 	start=34, size=  2014, type=21686148-6449-6E6F-744E-656564454649, attrs="GUID:62,63"
 	start=  , size=256MiB, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
-	start=  , size=  4GiB, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
 	start=  , size=      , type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
 _EOT_
+#	start=  , size=  4GiB, type=EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
   sleep 3
   sync
   # === format ================================================================
   fncPrintf "format"
   mkfs.vfat -F 32              /dev/sdb2
 # mkfs.vfat -F 32 -n "CIDATA"  /dev/sdb3
-  mkfs.vfat -F 32 -n "CFGFILE" /dev/sdb3
-  mkfs.exfat      -n "ISOFILE" /dev/sdb4
+#  mkfs.vfat -F 32 -n "CFGFILE" /dev/sdb3
+  mkfs.exfat      -n "ISOFILE" /dev/sdb3
+#  mkfs.exfat      -n "ISOFILE" /dev/sdb4
 # mkfs.ntfs -Q    -L "ISOFILE" /dev/sdb4
   sleep 3
   sync
@@ -1265,8 +1330,10 @@ funcUSB_Device_Inst_GRUB () {
 	set timeout=-1
 
 	#search.fs_label "CIDATA"  cfgpart hd1,gpt3
-	search.fs_label "CFGFILE" cfgpart hd1,gpt3
-	search.fs_label "ISOFILE" isopart hd1,gpt4
+	#search.fs_label "CFGFILE" cfgpart hd1,gpt3
+	search.fs_label "ISOFILE" cfgpart hd1,gpt3
+	search.fs_label "ISOFILE" isopart hd1,gpt3
+	#search.fs_label "ISOFILE" isopart hd1,gpt4
 
 	loadfont ${prefix}/fonts/unicode.pf2
 
@@ -1294,7 +1361,7 @@ funcUSB_Device_Inst_GRUB () {
 	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	}
 	menuentry 'Unattended installation (Debian 12:bookworm)' {
@@ -1306,7 +1373,7 @@ funcUSB_Device_Inst_GRUB () {
 	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	}
 	menuentry 'Unattended installation (Debian 11:bullseye)' {
@@ -1318,7 +1385,7 @@ funcUSB_Device_Inst_GRUB () {
 	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	}
 	menuentry 'Unattended installation (Debian 10:buster)' {
@@ -1330,7 +1397,7 @@ funcUSB_Device_Inst_GRUB () {
 	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	}
 	menuentry 'Unattended installation (Ubuntu 23.04:Lunar Lobster)' {
@@ -1390,7 +1457,7 @@ funcUSB_Device_Inst_GRUB () {
 	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	}
 	submenu 'Live media ...' {
@@ -1420,7 +1487,7 @@ funcUSB_Device_Inst_GRUB () {
 	        set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
 	        echo "Loading ${isofile} ..."
-	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb4] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
 	        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	    }
 	    menuentry 'Live system (Ubuntu 23.04:Lunar Lobster)' {
@@ -1481,10 +1548,13 @@ funcUSB_Device_Inst_File_partition () {
   mount /dev/sdb3 ./usb/
   # === copy boot loader and setting files ====================================
   fncPrintf "copy boot loader and setting files"
-  nice -n 10 cp --preserve=timestamps -L -u -r ./img/install.amd/ ./usb/
-  nice -n 10 cp --preserve=timestamps -L -u -r ./img/live/        ./usb/
-  nice -n 10 cp --preserve=timestamps -L -u -r ./img/casper/      ./usb/
-# cp --preserve=timestamps -L -u    ./cfg/ubuntu.server/user-data ./usb/
+  mkdir -p ./usb/install.amd \
+           ./usb/live        \
+           ./usb/casper
+  nice -n 10 cp --preserve=timestamps -L -u -r ./img/install.amd/. ./usb/install.amd/
+  nice -n 10 cp --preserve=timestamps -L -u -r ./img/live/.        ./usb/live/
+  nice -n 10 cp --preserve=timestamps -L -u -r ./img/casper/.      ./usb/casper/
+# cp --preserve=timestamps -L -u    ./cfg/ubuntu.server/user-data  ./usb/
 # touch ./usb/meta-data
 # touch ./usb/vendor-data
 # touch ./usb/network-config
@@ -1496,19 +1566,19 @@ funcUSB_Device_Inst_File_partition () {
 # ### USB Device: [ /dev/sdX4 ] Data partition ################################
 funcUSB_Device_Data_File_partition () {
   fncPrintf "${TXT_BLACK}${TXT_BYELLOW}USB Device: Data partition [iso file]${TXT_RESET}"
-  # *** [ USB device: /dev/sdb4 ] ***
+  # *** [ USB device: /dev/sdb3 ] ***
   # === mount /dev/sdX4 =======================================================
   fncPrintf "mount /dev/sdX4"
   rm -rf ./usb/
   mkdir -p ./usb
-  mount /dev/sdb4 ./usb/
+  mount /dev/sdb3 ./usb/
   # === copy iso files ========================================================
   fncPrintf "copy iso files"
   mkdir -p ./usb/images/
   for F in $(ls ./img/images)
   do
     fncPrintf "copy   file: ${F}"
-    nice -n 10 cp --preserve=timestamps -L -u -r ./img/images/${F} ./usb/images/
+    nice -n 10 cp --preserve=timestamps -L -u ./img/images/${F} ./usb/images/
   done
   cp --preserve=timestamps -L -u -r ./img/nocloud/ ./usb/
   cp --preserve=timestamps -L -u -r ./img/preseed/ ./usb/
@@ -1534,28 +1604,29 @@ main () {
   if [ ${COL_SIZE} -gt 100 ]; then
     COL_SIZE=100
   fi
+  # --- test ------------------------------------------------------------------
+#  funcColorTest
   # --- main ------------------------------------------------------------------
   fncPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing start${TXT_RESET}"
-#  funcColorTest
-  funcDownload "lnk"
-  funcDownload "cfg"
-  funcDownload "bld"
-  funcDownload "iso"
-  funcDownload "deb"
-  funcDownload "arc"
-  funcCopy_module
-  funcUnpack_lnximg
-  funcSelect_module
-  funcMake_initramfs
-  funcCopy_initramfs
-  funcCopy_cfg_file
-  funcCopy_iso_image
-  funcUSB_Device_check
-  funcUSB_Device_partition_and_format
-  funcUSB_Device_Inst_Bootloader
+#  funcDownload "lnk"
+#  funcDownload "cfg"
+#  funcDownload "bld"
+#  funcDownload "iso"
+#  funcDownload "deb"
+#  funcDownload "arc"
+#  funcCopy_module
+#  funcUnpack_lnximg
+#  funcSelect_module
+#  funcMake_initramfs
+#  funcCopy_initramfs
+#  funcCopy_cfg_file
+#  funcCopy_iso_image
+#  funcUSB_Device_check
+#  funcUSB_Device_partition_and_format
+#  funcUSB_Device_Inst_Bootloader
   funcUSB_Device_Inst_GRUB
-  funcUSB_Device_Inst_File_partition
-  funcUSB_Device_Data_File_partition
+#  funcUSB_Device_Inst_File_partition
+#  funcUSB_Device_Data_File_partition
   if [ -b /dev/sdb ]; then
     lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
   fi
