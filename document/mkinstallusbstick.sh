@@ -1152,6 +1152,7 @@ funcCopy_cfg_file () {
             -e '/^[[:space:]].*[[:space:]]firefox-esr-l10n-ja[[:space:]]*/    s/^ /#/' \
             -e '/^[[:space:]].*[[:space:]]thunderbird[[:space:]]*/            s/^ /#/' \
             -e '/^[[:space:]].*[[:space:]]thunderbird-l10n-ja[[:space:]]*/    s/^ /#/'
+        sed -z 's/\\\n#/\n#/g' -i ./img/preseed/${T}
         ;;
       ubuntu )
         cp -a ./img/preseed/${F} ./img/preseed/${T}
@@ -1171,6 +1172,7 @@ funcCopy_cfg_file () {
             -e '/^[[:space:]].*[[:space:]]firefox-locale-ja[[:space:]]*/      s/^ /#/' \
             -e '/^[[:space:]].*[[:space:]]thunderbird[[:space:]]*/            s/^ /#/' \
             -e '/^[[:space:]].*[[:space:]]thunderbird-locale-ja[[:space:]]*/  s/^ /#/'
+        sed -z 's/\\\n#/\n#/g' -i ./img/preseed/${T}
         ;;
       *      )
         ;;
