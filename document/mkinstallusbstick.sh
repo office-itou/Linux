@@ -1649,12 +1649,12 @@ funcUSB_Device_Inst_File_partition () {
   umount ./usb/
 }
 
-# ### USB Device: [ /dev/sdX4 ] Data partition ################################
+# ### USB Device: [ /dev/sdX3 ] Data partition ################################
 funcUSB_Device_Data_File_partition () {
   fncPrintf "${TXT_BLACK}${TXT_BYELLOW}USB Device: Data partition [iso file]${TXT_RESET}"
   # *** [ USB device: /dev/sdb3 ] ***
-  # === mount /dev/sdX4 =======================================================
-  fncPrintf "mount /dev/sdX4"
+  # === mount /dev/sdX3 =======================================================
+  fncPrintf "mount /dev/sdX3"
   rm -rf ./usb/
   mkdir -p ./usb
   mount /dev/sdb3 ./usb/
