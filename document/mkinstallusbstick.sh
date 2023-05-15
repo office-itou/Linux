@@ -147,7 +147,7 @@ funcCurl ()
   OLD_IFS=${IFS}
   IFS=
   set +e
-  H=($(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${U}" 2> /dev/null))
+  H=($(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${U}" 2> /dev/null | sed -n '/HTTP\/.* 200/,/^$/p'))
   R=$?
   set -e
   if [ ${R} -eq 18 -o ${R} -eq 22 -o ${R} -eq 28  ]; then
