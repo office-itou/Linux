@@ -182,7 +182,7 @@ funcDownload_lnk () {
            ./cfg/debian                                   \
            ./cfg/ubuntu.desktop                           \
            ./cfg/ubuntu.server                            \
-           ./cfg/fedora                                   \
+           ./cfg/kickstart                                \
            ./cfg/installer-hd-media/debian.buster/gtk     \
            ./cfg/installer-hd-media/debian.bullseye/gtk   \
            ./cfg/installer-hd-media/debian.bookworm/gtk   \
@@ -196,10 +196,15 @@ funcDownload_lnk () {
   ln -s /mnt/hgfs/workspace/Image/linux/cfg/ubuntu.desktop/sub_late_command.sh                      ./cfg/ubuntu.desktop/sub_late_command.sh
   ln -s /mnt/hgfs/workspace/Image/linux/cfg/ubuntu.desktop/sub_success_command.sh                   ./cfg/ubuntu.desktop/sub_success_command.sh
   ln -s /mnt/hgfs/workspace/Image/linux/cfg/ubuntu.server/user-data                                 ./cfg/ubuntu.server/user-data
-  ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_fedora.cfg                                    ./cfg/fedora/ks_fedora.cfg
-  ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_alma.cfg                                      ./cfg/fedora/ks_alma.cfg
-  ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_rocky.cfg                                     ./cfg/fedora/ks_rocky.cfg
-  ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_miracle.cfg                                   ./cfg/fedora/ks_miracle.cfg
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/kickstart/ks_almalinux.cfg                              ./cfg/kickstart/ks_almalinux.cfg
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/kickstart/ks_centos.cfg                                 ./cfg/kickstart/ks_centos.cfg
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/kickstart/ks_fedora.cfg                                 ./cfg/kickstart/ks_fedora.cfg
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/kickstart/ks_miraclelinux.cfg                           ./cfg/kickstart/ks_miraclelinux.cfg
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/kickstart/ks_rocky.cfg                                  ./cfg/kickstart/ks_rocky.cfg
+# ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_fedora.cfg                                    ./cfg/fedora/ks_fedora.cfg
+# ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_alma.cfg                                      ./cfg/fedora/ks_alma.cfg
+# ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_rocky.cfg                                     ./cfg/fedora/ks_rocky.cfg
+# ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_miracle.cfg                                   ./cfg/fedora/ks_miracle.cfg
   # === debian installer ======================================================
   # --- stretch ---------------------------------------------------------------
   # --- buster ----------------------------------------------------------------
@@ -263,7 +268,7 @@ funcDownload_lnk () {
 # ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-10.13.0-amd64-lxde.iso                   ./iso/debian-live-10.13.0-amd64-lxde.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-11.7.0-amd64-lxde.iso                    ./iso/debian-live-11.7.0-amd64-lxde.iso
   ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-bkworm-DI-rc2-amd64-lxde.iso             ./iso/debian-live-bkworm-DI-rc2-amd64-lxde.iso
-# ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso                   ./iso/debian-live-testing-amd64-lxde.iso
+  ln -s /mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso                   ./iso/debian-live-testing-amd64-lxde.iso
   # --- ubuntu desktop --------------------------------------------------------
 # ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-desktop-amd64.iso                     ./iso/ubuntu-18.04.6-desktop-amd64.iso
 # ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-desktop-amd64.iso                     ./iso/ubuntu-20.04.6-desktop-amd64.iso
@@ -280,12 +285,17 @@ funcDownload_lnk () {
   ln -s /mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-live-server-amd64.iso                   ./iso/ubuntu-23.04-live-server-amd64.iso
   # --- fedora server ---------------------------------------------------------
   ln -s /mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-netinst-x86_64-38-1.6.iso              ./iso/Fedora-Server-netinst-x86_64-38-1.6.iso
+  # --- centos ----------------------------------------------------------------
+  ln -s /mnt/hgfs/workspace/Image/linux/centos/CentOS-Stream-9-latest-x86_64-boot.iso               ./iso/CentOS-Stream-9-latest-x86_64-boot.iso
   # --- almalinux -------------------------------------------------------------
   ln -s /mnt/hgfs/workspace/Image/linux/almalinux/AlmaLinux-9-latest-x86_64-boot.iso                ./iso/AlmaLinux-9-latest-x86_64-boot.iso
-  # --- rocky -----------------------------------------------------------------
-  ln -s /mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9.1-x86_64-boot.iso                             ./iso/Rocky-9.1-x86_64-boot.iso
   # --- miraclelinux ----------------------------------------------------------
   ln -s /mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso        ./iso/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso
+  # --- rocky -----------------------------------------------------------------
+  ln -s /mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9.1-x86_64-boot.iso                             ./iso/Rocky-9.1-x86_64-boot.iso
+  # --- opensuse --------------------------------------------------------------
+  ln -s //mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.4-NET-x86_64-Media.iso           ./iso/openSUSE-Leap-15.4-NET-x86_64-Media.iso
+# ln -s //mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-NET-x86_64-Current.iso        ./iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso
 }
 
 # === download: cfg file ======================================================
@@ -302,10 +312,15 @@ funcDownload_cfg () {
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                             "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_late_command.sh"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.desktop"                             "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.desktop/sub_success_command.sh"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/ubuntu.server"                              "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/ubuntu.server/user-data"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_fedora.cfg"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_alma.cfg"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_rocky.cfg"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_miracle.cfg"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/kickstart"                                  "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/kickstart/ks_almalinux.cfg"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/kickstart"                                  "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/kickstart/ks_centos.cfg"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/kickstart"                                  "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/kickstart/ks_fedora.cfg"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/kickstart"                                  "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/kickstart/ks_miraclelinux.cfg"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/kickstart"                                  "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/kickstart/ks_rocky.cfg"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_fedora.cfg"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_alma.cfg"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_rocky.cfg"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_miracle.cfg"
 }
 
 # === download: debian installer ==============================================
@@ -398,7 +413,7 @@ funcDownload_iso () {
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/archive/10.13.0-live/amd64/iso-hybrid/debian-live-10.13.0-amd64-lxde.iso"
 # funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-11.7.0-amd64-lxde.iso"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/bookworm_di_rc2-live/amd64/iso-hybrid/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso"
   # ::: ubuntu mini.iso :::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : ubuntu mini.iso${TXT_RESET}"
 # funcCurl -L -# -R -S -f --create-dirs -o "./iso/mini-bionic-amd64.iso"                                "http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso"
@@ -423,15 +438,22 @@ funcDownload_iso () {
   # ::: fedora server :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : fedora server${TXT_RESET}"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-1.6.iso"
+  # ::: centos ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : centos${TXT_RESET}"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso"
   # ::: almalinux :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : almalinux${TXT_RESET}"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9-latest-x86_64-boot.iso"
-  # ::: rocky :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : rocky${TXT_RESET}"
-  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.1-x86_64-boot.iso"
   # ::: miraclelinux ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
   fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : miraclelinux${TXT_RESET}"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://repo.dist.miraclelinux.net/miraclelinux/isos/9.0-released/x86_64/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso"
+  # ::: rocky :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : rocky${TXT_RESET}"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.1-x86_64-boot.iso"
+  # ::: opensuse ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::^
+  fncPrintf "${TXT_BLACK}${TXT_BGREEN}download : opensuse${TXT_RESET}"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-15.4-NET-x86_64-Media.iso"
+# funcCurl -L -# -O -R -S --create-dirs --output-dir "./iso"                                            "https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso"
 }
 
 # === download: deb file ======================================================
@@ -558,22 +580,48 @@ funcCopy_module () {
   do
     # --- mount ---------------------------------------------------------------
     fncPrintf "${TXT_BLACK}${TXT_BGREEN}mount   iso: %s${TXT_RESET}\n" "${P}"
+    # --- get media info ------------------------------------------------------
+    F="$(basename ${P})"
+    L="$(LANG=C blkid -s LABEL ${P} | awk -F '\"' '{print $2;}')"
+    V="$(echo ${F} | sed -n -e 's/^.*-\([0-9\.]*\)-.*$/\1/p')"
+    N="$(echo ${F,,} | sed -n -e 's/^\([A-Za-z0-9]*\)-.*$/\1/p')"
+    I="$(echo ${F,,} | sed -n -e 's/^.*\(live\|dvd\|netinst\|netboot\|server\|boot\|minimal\|net\|rtm\).*$/\1/p')"
+    C=""
+    S=""
+    T=""
+    A=("")
+    # --- get code name -------------------------------------------------------
+    case "${F}" in
+      debian-*.iso | \
+      ubuntu-*.iso )
+        mount -r -o loop ${P} ./mnt
+        A=("$(ls ./mnt/dists/)")
+        umount ./mnt
+                               C="$(echo "${A[@],,}" | sed -n '/^\(testing\|stable\|oldstable\|oldoldstable\|unstable\)$/!p')"
+                               S="$(echo "${A[@],,}" | sed -n '/^testing$/p')"
+        if [ -z "${S}" ]; then S="$(echo "${A[@],,}" | sed -n '/^stable$/p')"; fi
+        if [ -z "${S}" ]; then S="$(echo "${A[@],,}" | sed -n '/^oldstable$/p')"; fi
+        if [ -z "${S}" ]; then S="$(echo "${A[@],,}" | sed -n '/^oldoldstable$/p')"; fi
+        if [ -z "${I}" ]; then I="desktop"; fi
+        case "${F}" in
+          debian-*testing-*.iso ) C="testing"; V="${C}";;
+          debian-*-DI-*.iso     ) V="${C}";;
+          debian-*.iso          ) if [ -z "${S}" ];then S="${C}"; fi;;
+          ubuntu-*.iso          ) S="${C}";;
+          *                     ) V="unknown";;
+        esac
+        if [ -n "$(echo ${V} | sed -n '/^[0-9]/p')" ]; then
+          T="${S} - $(echo ${V} | sed -n -e 's/^\([0-9]*\.[0-9]*\).*$/\1/p')"
+        else
+          T="testing"
+        fi
+        ;;
+      *            )
+        ;;
+    esac
     mount -r -o loop ${P} ./mnt
     # --- make directory ------------------------------------------------------
-    R=$(cat ./mnt/.disk/info | sed -z 's/-n//g')
-    N=$(echo ${R,,} | awk -F ' ' '{split($1,A,"-"); print A[1];}')
-    S=$(echo ${R,,} | awk -F '"' '{split($2,A," "); print A[1];}')
-    I=$(echo ${R,,} | sed -n -e 's/^.*\(live\|dvd\|netinst\|netboot\|server\).*$/\1/p')
-    case "${N}" in
-      debian ) V=$(echo ${R,,} | awk -F ' ' '{print $3;}');;
-      ubuntu ) V=$(echo ${R,,} | awk -F ' ' '{print $2;}');;
-      *      ) V=""                                       ;;
-    esac
-    case "${V}" in
-      testing ) S="${V}";;
-      *       )         ;;
-    esac
-    D="${N}.${S}.${I:-desktop}"
+    D="${N}.${C}.${I:-desktop}"
     fncPrintf "copy initrd: %-24.24s : %s\n" "${D}" "${P}"
     mkdir -p ./bld/${D}
     mkdir -p ./lnx/${D}
@@ -594,7 +642,7 @@ funcCopy_module () {
     # *** copy deb file *******************************************************
     T=($(find ./mnt/ -maxdepth 1 -name 'pool*' -type d))
     M=(${U[@]})
-    case "${S%\.*}" in
+    case "${C%\.*}" in
       stretch  ) M+=(fuse\\\(-udeb\\\)*_.* libfuse2\\\(-udeb\\\)*_.* ntfs-3g\\\(-udeb\\\)*_.* );;
       buster   ) M+=(fuse\\\(-udeb\\\)*_.* libfuse2\\\(-udeb\\\)*_.* ntfs-3g\\\(-udeb\\\)*_.* );;
       bullseye ) M+=(fuse\\\(-udeb\\\)*_.* libfuse2\\\(-udeb\\\)*_.* ntfs-3g\\\(-udeb\\\)*_.* );;
@@ -1095,15 +1143,15 @@ funcCopy_initramfs () {
       case "${B}" in
         live   )
           mkdir -p ./img/live/${S}
-          cp -a -u ./ird/${S}/live/. ./img/live/${S}/
+          cp -a -L -u ./ird/${S}/live/. ./img/live/${S}/
           ;;
         casper )
           mkdir -p ./img/casper/${S}
-          cp -a -u ./ird/${S}/casper/. ./img/casper/${S}/
+          cp -a -L -u ./ird/${S}/casper/. ./img/casper/${S}/
           ;;
         *      )
           mkdir -p ./img/install.amd/${S}
-          cp -a -u ./ird/${S}/install/. ./img/install.amd/${S}/
+          cp -a -L -u ./ird/${S}/install/. ./img/install.amd/${S}/
           ;;
       esac
     done
@@ -1134,10 +1182,11 @@ funcCopy_cfg_file () {
     touch ./img/nocloud/ubuntu.${D}/vendor-data
     touch ./img/nocloud/ubuntu.${D}/network-config
   done
-  cp -a -u ./cfg/fedora/ks_fedora.cfg                  ./img/kickstart/
-  cp -a -u ./cfg/fedora/ks_alma.cfg                    ./img/kickstart/
-  cp -a -u ./cfg/fedora/ks_rocky.cfg                   ./img/kickstart/
-  cp -a -u ./cfg/fedora/ks_miracle.cfg                 ./img/kickstart/
+  cp -a -u ./cfg/kickstart/.                           ./img/kickstart/
+#  cp -a -u ./cfg/fedora/ks_fedora.cfg                  ./img/kickstart/
+#  cp -a -u ./cfg/fedora/ks_alma.cfg                    ./img/kickstart/
+#  cp -a -u ./cfg/fedora/ks_rocky.cfg                   ./img/kickstart/
+#  cp -a -u ./cfg/fedora/ks_miracle.cfg                 ./img/kickstart/
   # === change config file ====================================================
   fncPrintf "change config file"
   sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/debian/~g' ./cfg/debian/preseed.cfg         | tee ./img/preseed/debian/preseed.cfg > /dev/null
@@ -1242,35 +1291,343 @@ funcCopy_iso_image () {
   mkdir -p ./img/images
   # === copy iso file =========================================================
   fncPrintf "copy iso file"
-  M=( \
-    debian-testing-amd64-netinst.iso         \
-    debian-bookworm-DI-rc2-amd64-netinst.iso \
-    debian-11.7.0-amd64-netinst.iso          \
-    debian-10.13.0-amd64-netinst.iso         \
-    ubuntu-23.04-live-server-amd64.iso       \
-    ubuntu-22.10-live-server-amd64.iso       \
-    ubuntu-22.04.2-live-server-amd64.iso     \
-    ubuntu-20.04.6-live-server-amd64.iso     \
-    ubuntu-18.04.6-server-amd64.iso          \
-    debian-live-bkworm-DI-rc2-amd64-lxde.iso \
-    ubuntu-23.04-desktop-amd64.iso           \
-    Fedora-Server-netinst-x86_64-38-1.6.iso  \
-    AlmaLinux-9-latest-x86_64-boot.iso       \
-    Rocky-9.1-x86_64-boot.iso                \
-    MIRACLELINUX-9.0-rtm-minimal-x86_64.iso  \
-#   debian-9.13.0-amd64-netinst.iso          \
-#   ubuntu-18.04.6-live-server-amd64.iso     \
-#   ubuntu-23.04-desktop-amd64.iso           \
-#   ubuntu-22.10-desktop-amd64.iso           \
-#   ubuntu-22.04.2-desktop-amd64.iso         \
-#   ubuntu-20.04.6-desktop-amd64.iso         \
-#   ubuntu-18.04.6-desktop-amd64.iso         \
-  )
-  for F in ${M[@]}
+#  M=( \
+#    debian-testing-amd64-netinst.iso           \
+#    debian-bookworm-DI-rc2-amd64-netinst.iso   \
+#    debian-11.7.0-amd64-netinst.iso            \
+#    debian-10.13.0-amd64-netinst.iso           \
+#    ubuntu-23.04-live-server-amd64.iso         \
+#    ubuntu-22.10-live-server-amd64.iso         \
+#    ubuntu-22.04.2-live-server-amd64.iso       \
+#    ubuntu-20.04.6-live-server-amd64.iso       \
+#    ubuntu-18.04.6-server-amd64.iso            \
+#    Fedora-Server-netinst-x86_64-38-1.6.iso    \
+#    CentOS-Stream-9-latest-x86_64-boot.iso     \
+#    AlmaLinux-9-latest-x86_64-boot.iso         \
+#    MIRACLELINUX-9.0-rtm-minimal-x86_64.iso    \
+#    Rocky-9.1-x86_64-boot.iso                  \
+#    openSUSE-Leap-15.4-NET-x86_64-Media.iso    \
+#    openSUSE-Tumbleweed-NET-x86_64-Current.iso \
+#    debian-live-bkworm-DI-rc2-amd64-lxde.iso   \
+#    debian-live-testing-amd64-lxde.iso         \
+#    ubuntu-23.04-desktop-amd64.iso             \
+#  )
+#  for F in ${M[@]}
+  for F in $(ls ./iso/)
   do
     fncPrintf "copy   file: ${F}"
     nice -n 10 cp -a -u ./iso/${F} ./img/images/
   done
+}
+
+# === make grub.cfg ===========================================================
+funcMake_GRUB () {
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}make grub.cfg${TXT_RESET}"
+  # --- make grub.cfg ---------------------------------------------------------
+  cat <<- '_EOT_' | tee ./img/grub.cfg > /dev/null
+	set default=0
+	set timeout=-1
+
+	search.fs_label "ISOFILE" cfgpart hd1,gpt3
+	search.fs_label "ISOFILE" isopart hd1,gpt3
+
+	source (${cfgpart})/menu.cfg
+_EOT_
+  # --- make menu.cfg ---------------------------------------------------------
+  cat <<- '_EOT_' | tee ./img/menu.cfg > /dev/null
+	set default=0
+	set timeout=-1
+
+	search.fs_label "ISOFILE" cfgpart hd1,gpt3
+	search.fs_label "ISOFILE" isopart hd1,gpt3
+
+	loadfont ${prefix}/fonts/unicode.pf2
+
+	set lang=ja_JP
+
+	set gfxmode=1280x720
+	set gfxpayload=keep
+	insmod efi_gop
+	insmod efi_uga
+	insmod video_bochs
+	insmod video_cirrus
+	insmod gfxterm
+	insmod png
+	terminal_output gfxterm
+
+	set menu_color_normal=cyan/blue
+	set menu_color_highlight=white/blue
+
+	grub_platform
+
+	insmod play
+	play 960 440 1 0 4 440 1
+
+	menuentry '[ Unattended installation ]' {
+	    true
+	}
+	menuentry 'debian-testing-amd64-netinst.iso' {
+	    set isofile="/images/debian-testing-amd64-netinst.iso"
+	    set isoscan="${isofile} (testing)"
+	    set isodist="debian.bookworm.netinst"
+	    set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
+	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	}
+	menuentry 'debian-bookworm-DI-rc2-amd64-netinst.iso' {
+	    set isofile="/images/debian-bookworm-DI-rc2-amd64-netinst.iso"
+	    set isoscan="${isofile} (testing)"
+	    set isodist="debian.bookworm.netinst"
+	    set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
+	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	}
+	menuentry 'debian-11.7.0-amd64-netinst.iso' {
+	    set isofile="/images/debian-11.7.0-amd64-netinst.iso"
+	    set isoscan="${isofile} (stable - 11.7)"
+	    set isodist="debian.bullseye.netinst"
+	    set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
+	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	}
+	menuentry 'debian-10.13.0-amd64-netinst.iso' {
+	    set isofile="/images/debian-10.13.0-amd64-netinst.iso"
+	    set isoscan="${isofile} (oldstable - 10.13)"
+	    set isodist="debian.buster.netinst"
+	    set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
+	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	}
+	menuentry 'debian-9.13.0-amd64-netinst.iso' {
+	    set isofile="/images/debian-9.13.0-amd64-netinst.iso"
+	    set isoscan="${isofile} (oldstable - 9.13)"
+	    set isodist="debian.stretch.netinst"
+	    set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
+	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	}
+	menuentry 'ubuntu-23.04-live-server-amd64.iso' {
+	    set isofile="/images/ubuntu-23.04-live-server-amd64.iso"
+	    set isoscan="iso-scan/filename=${isofile}"
+	    set isodist="ubuntu.lunar.server"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
+	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
+	}
+	menuentry 'ubuntu-22.10-live-server-amd64.iso' {
+	    set isofile="/images/ubuntu-22.10-live-server-amd64.iso"
+	    set isoscan="iso-scan/filename=${isofile}"
+	    set isodist="ubuntu.kinetic.server"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
+	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
+	}
+	menuentry 'ubuntu-22.04.2-live-server-amd64.iso' {
+	    set isofile="/images/ubuntu-22.04.2-live-server-amd64.iso"
+	    set isoscan="iso-scan/filename=${isofile}"
+	    set isodist="ubuntu.jammy.server"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
+	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
+	}
+	menuentry 'ubuntu-20.04.6-live-server-amd64.iso' {
+	    set isofile="/images/ubuntu-20.04.6-live-server-amd64.iso"
+	    set isoscan="iso-scan/filename=${isofile}"
+	    set isodist="ubuntu.focal.server"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
+	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
+	}
+	menuentry 'ubuntu-18.04.6-server-amd64.iso' {
+	    set isofile="/images/ubuntu-18.04.6-server-amd64.iso"
+	    set isoscan="${isofile} (bionic - 18.04)"
+	    set isodist="ubuntu.bionic.server"
+	    set preseed="auto=true file=/hd-media/preseed/ubuntu/preseed.cfg netcfg/disable_autoconfig=true"
+	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
+	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
+	}
+	menuentry 'Fedora-Server-netinst-x86_64-38-1.6.iso' {
+	    set isofile="/images/Fedora-Server-netinst-x86_64-38-1.6.iso"
+	    set hdlabel="Fedora-S-dvd-x86_64-38"
+	    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_fedora.cfg"
+	    set isoscan="iso-scan/filename=${isofile}"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    loopback loop ($isopart)$isofile
+	    linux  (loop)/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${hdlabel} quiet ${isoscan} ${ksstart}
+	    initrd (loop)/images/pxeboot/initrd.img
+	    loopback --delete loop
+	}
+	menuentry 'CentOS-Stream-9-latest-x86_64-boot.iso' {
+	    set isofile="/images/CentOS-Stream-9-latest-x86_64-boot.iso"
+	    set hdlabel="CentOS-Stream-9-BaseOS-x86_64"
+	    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_centos.cfg"
+	    set isoscan="iso-scan/filename=${isofile}"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    loopback loop ($isopart)$isofile
+	    linux  (loop)/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${hdlabel} quiet ${isoscan} ${ksstart}
+	    initrd (loop)/images/pxeboot/initrd.img
+	    loopback --delete loop
+	}
+	menuentry 'AlmaLinux-9-latest-x86_64-boot.iso' {
+	    set isofile="/images/AlmaLinux-9-latest-x86_64-boot.iso"
+	    set hdlabel="AlmaLinux-9-2-x86_64-dvd"
+	    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_almalinux.cfg"
+	    set isoscan="iso-scan/filename=${isofile}"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    loopback loop ($isopart)$isofile
+	    linux  (loop)/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${hdlabel} quiet ${isoscan} ${ksstart}
+	    initrd (loop)/images/pxeboot/initrd.img
+	    loopback --delete loop
+	}
+	menuentry 'MIRACLELINUX-9.0-rtm-minimal-x86_64.iso' {
+	    set isofile="/images/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso"
+	    set hdlabel="MIRACLE-LINUX-9-0-x86_64"
+	    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_miraclelinux.cfg"
+	    set isoscan="iso-scan/filename=${isofile}"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    loopback loop ($isopart)$isofile
+	    linux  (loop)/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${hdlabel} quiet ${isoscan} ${ksstart}
+	    initrd (loop)/images/pxeboot/initrd.img
+	    loopback --delete loop
+	}
+	menuentry 'Rocky-9.1-x86_64-boot.iso' {
+	    set isofile="/images/Rocky-9.1-x86_64-boot.iso"
+	    set hdlabel="Rocky-9-1-x86_64-dvd"
+	    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_rocky.cfg"
+	    set isoscan="iso-scan/filename=${isofile}"
+	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	    echo "Loading ${isofile} ..."
+	    loopback loop ($isopart)$isofile
+	    linux  (loop)/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${hdlabel} quiet ${isoscan} ${ksstart}
+	    initrd (loop)/images/pxeboot/initrd.img
+	    loopback --delete loop
+	}
+	submenu '[ Live media ... ]' {
+	    search.fs_label "ISOFILE" cfgpart hd1,gpt3
+	    search.fs_label "ISOFILE" isopart hd1,gpt3
+	    set menu_color_normal=cyan/blue
+	    set menu_color_highlight=white/blue
+	    set gfxpayload=keep
+	    menuentry '[ Live system ]' {
+	        true
+	    }
+	    menuentry 'debian-live-bkworm-DI-rc2-amd64-lxde.iso' {
+	        set isofile="/images/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
+	        set isodist="debian.bookworm.live"
+	        set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
+	        set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	        echo "Loading ${isofile} ..."
+	        linux   (${cfgpart})/live/${isodist}/vmlinuz.img root=${cfgpart} boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip
+	        initrd  (${cfgpart})/live/${isodist}/initrd.img
+	    }
+	    menuentry 'debian-live-testing-amd64-lxde.iso' {
+	        set isofile="/images/debian-live-testing-amd64-lxde.iso"
+	        set isodist="debian.testing.live"
+	        set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
+	        set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	        echo "Loading ${isofile} ..."
+	        linux   (${cfgpart})/live/${isodist}/vmlinuz.img root=${cfgpart} boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip
+	        initrd  (${cfgpart})/live/${isodist}/initrd.img
+	    }
+	    menuentry 'ubuntu-23.04-desktop-amd64.iso' {
+	        set isofile="/images/ubuntu-23.04-desktop-amd64.iso"
+	        set isoscan="iso-scan/filename=${isofile}"
+	        set isodist="ubuntu.lunar.desktop"
+	        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	        set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.desktop/'
+	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	        echo "Loading ${isofile} ..."
+	        linux   (${cfgpart})/casper/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip
+	        initrd  (${cfgpart})/casper/${isodist}/initrd.img
+	    }
+	    menuentry '[ Unattended installation ]' {
+	        true
+	    }
+	    menuentry 'debian-live-bkworm-DI-rc2-amd64-lxde.iso' {
+	        set isofile="/images/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
+	        set isodist="debian.bookworm.live"
+	        set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
+	        set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	        echo "Loading ${isofile} ..."
+	        linux   (${cfgpart})/live/${isodist}/vmlinuz.img root=${cfgpart} boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip ${preseed} ---
+	        initrd  (${cfgpart})/live/${isodist}/initrd.img
+	    }
+	    menuentry 'debian-live-testing-amd64-lxde.iso' {
+	        set isofile="/images/debian-live-testing-amd64-lxde.iso"
+	        set isodist="debian.testing.live"
+	        set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
+	        set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	        echo "Loading ${isofile} ..."
+	        linux   (${cfgpart})/live/${isodist}/vmlinuz.img root=${cfgpart} boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip ${preseed} ---
+	        initrd  (${cfgpart})/live/${isodist}/initrd.img
+	    }
+	    menuentry 'ubuntu-23.04-desktop-amd64.iso' {
+	        set isofile="/images/ubuntu-23.04-desktop-amd64.iso"
+	        set isoscan="iso-scan/filename=${isofile}"
+	        set isodist="ubuntu.lunar.desktop"
+	        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	        set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.desktop/'
+	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	        echo "Loading ${isofile} ..."
+	        linux   (${cfgpart})/casper/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
+	        initrd  (${cfgpart})/casper/${isodist}/initrd.img
+	    }
+	}
+	menuentry '[ System command ]' {
+	    true
+	}
+	menuentry "System shutdown" {
+	    echo "System shutting down ..."
+	    halt
+	}
+	menuentry "System restart" {
+	    echo "System rebooting ..."
+	    reboot
+	}
+_EOT_
 }
 
 # ### USB Device: partition and format ########################################
@@ -1310,6 +1667,7 @@ funcUSB_Device_partition_and_format () {
   # *** [ USB device: /dev/sdb ] ***
   # === partition =============================================================
   fncPrintf "partition"
+  mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
   sfdisk --wipe always --wipe-partitions always /dev/sdb <<- _EOT_
 	label: gpt
 	first-lba: 34
@@ -1339,6 +1697,7 @@ funcUSB_Device_Inst_Bootloader () {
   # *** [ USB device: /dev/sdb1, /dev/sdb2 ] ***
   # === mount /dev/sdX2 =======================================================
   fncPrintf "mount /dev/sdX2"
+  mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
   rm -rf ./usb/
   mkdir -p ./usb
   mount /dev/sdb2 ./usb/
@@ -1361,263 +1720,31 @@ funcUSB_Device_Inst_GRUB () {
   # *** [ USB device: /dev/sdb2 ] ***
   # === mount /dev/sdX3 =======================================================
   fncPrintf "mount /dev/sdX2"
+  mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
   rm -rf ./usb/
   mkdir -p ./usb
   mount /dev/sdb2 ./usb/
   # === grub.cfg ==============================================================
-  fncPrintf "make grub.cfg"
-  cat <<- '_EOT_' | tee ./usb/boot/grub/grub.cfg > /dev/null
-	set default=0
-	set timeout=-1
+  fncPrintf "copy grub.cfg"
+  cp --preserve=timestamps -L -u -R ./img/grub.cfg   ./usb/boot/grub/
+  # === unmount ===============================================================
+  fncPrintf "unmount"
+  umount ./usb/
+}
 
-	search.fs_label "ISOFILE" cfgpart hd1,gpt3
-	search.fs_label "ISOFILE" isopart hd1,gpt3
-
-	loadfont ${prefix}/fonts/unicode.pf2
-
-	set lang=ja_JP
-
-	set gfxmode=1280x720
-	set gfxpayload=keep
-	insmod efi_gop
-	insmod efi_uga
-	insmod video_bochs
-	insmod video_cirrus
-	insmod gfxterm
-	insmod png
-	terminal_output gfxterm
-
-	set menu_color_normal=cyan/blue
-	set menu_color_highlight=white/blue
-
-	grub_platform
-
-	insmod play
-	play 960 440 1 0 4 440 1
-
-	menuentry '[ Unattended installation ]' {
-	    true
-	}
-	menuentry 'Debian testing' {
-	    set isofile="/images/debian-testing-amd64-netinst.iso"
-	    set isoscan="${isofile} (testing)"
-	    set isodist="debian.testing.netinst"
-	    set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
-	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
-	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	}
-	menuentry 'Debian 12:bookworm' {
-	    set isofile="/images/debian-bookworm-DI-rc2-amd64-netinst.iso"
-	    set isoscan="${isofile} (testing)"
-	    set isodist="debian.bookworm.netinst"
-	    set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
-	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
-	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	}
-	menuentry 'Debian 11:bullseye' {
-	    set isofile="/images/debian-11.7.0-amd64-netinst.iso"
-	    set isoscan="${isofile} (stable - 11.7)"
-	    set isodist="debian.bullseye.netinst"
-	    set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
-	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
-	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	}
-	menuentry 'Debian 10:buster' {
-	    set isofile="/images/debian-10.13.0-amd64-netinst.iso"
-	    set isoscan="${isofile} (oldstable - 10.13)"
-	    set isodist="debian.buster.netinst"
-	    set preseed="auto=true file=/hd-media/preseed/debian/preseed_old.cfg netcfg/disable_autoconfig=true"
-	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
-	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	}
-	menuentry 'Ubuntu 23.04:Lunar Lobster' {
-	    set isofile="/images/ubuntu-23.04-live-server-amd64.iso"
-	    set isoscan="iso-scan/filename=${isofile}"
-	    set isodist="ubuntu.lunar.server"
-	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
-	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
-	}
-	menuentry 'Ubuntu 22.10:Kinetic Kudu' {
-	    set isofile="/images/ubuntu-22.10-live-server-amd64.iso"
-	    set isoscan="iso-scan/filename=${isofile}"
-	    set isodist="ubuntu.kinetic.server"
-	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
-	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
-	}
-	menuentry 'Ubuntu 22.04:Jammy Jellyfish' {
-	    set isofile="/images/ubuntu-22.04.2-live-server-amd64.iso"
-	    set isoscan="iso-scan/filename=${isofile}"
-	    set isodist="ubuntu.jammy.server"
-	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
-	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
-	}
-	menuentry 'Ubuntu 20.04:Focal Fossa' {
-	    set isofile="/images/ubuntu-20.04.6-live-server-amd64.iso"
-	    set isoscan="iso-scan/filename=${isofile}"
-	    set isodist="ubuntu.focal.server"
-	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.server/'
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/casper/${isodist}/vmlinuz.img root=${cfgpart} ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
-	    initrd  (${cfgpart})/casper/${isodist}/initrd.img
-	}
-	menuentry 'Ubuntu 18.04:Bionic Beaver' {
-	    set isofile="/images/ubuntu-18.04.6-server-amd64.iso"
-	    set isoscan="${isofile} (bionic - 18.04)"
-	    set isodist="ubuntu.bionic.server"
-	    set preseed="auto=true file=/hd-media/preseed/ubuntu/preseed_old.cfg netcfg/disable_autoconfig=true"
-	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
-	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	}
-	menuentry 'Fedora 38' {
-	    set isofile="/images/Fedora-Server-netinst-x86_64-38-1.6.iso"
-	    set hdlabel="Fedora-S-dvd-x86_64-38"
-	    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_fedora.cfg"
-	    set isoscan="iso-scan/filename=${isofile}"
-	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    loopback loop ($isopart)$isofile
-	    linux  (loop)/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${hdlabel} quiet ${isoscan} ${ksstart}
-	    initrd (loop)/images/pxeboot/initrd.img
-	    loopback --delete loop
-	}
-	menuentry 'AlmaLinux 9' {
-	    set isofile="/images/AlmaLinux-9-latest-x86_64-boot.iso"
-	    set hdlabel="AlmaLinux-9-2-x86_64-dvd"
-	    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_alma.cfg"
-	    set isoscan="iso-scan/filename=${isofile}"
-	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    loopback loop ($isopart)$isofile
-	    linux  (loop)/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${hdlabel} quiet ${isoscan} ${ksstart}
-	    initrd (loop)/images/pxeboot/initrd.img
-	    loopback --delete loop
-	}
-	menuentry 'Rocky 9' {
-	    set isofile="/images/Rocky-9.1-x86_64-boot.iso"
-	    set hdlabel="Rocky-9-1-x86_64-dvd"
-	    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_rocky.cfg"
-	    set isoscan="iso-scan/filename=${isofile}"
-	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    loopback loop ($isopart)$isofile
-	    linux  (loop)/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${hdlabel} quiet ${isoscan} ${ksstart}
-	    initrd (loop)/images/pxeboot/initrd.img
-	    loopback --delete loop
-	}
-	menuentry 'MIRACLELINUX 9' {
-	    set isofile="/images/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso"
-	    set hdlabel="MIRACLE-LINUX-9-0-x86_64"
-	    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_miracle.cfg"
-	    set isoscan="iso-scan/filename=${isofile}"
-	    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    loopback loop ($isopart)$isofile
-	    linux  (loop)/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=${hdlabel} quiet ${isoscan} ${ksstart}
-	    initrd (loop)/images/pxeboot/initrd.img
-	    loopback --delete loop
-	}
-	submenu '[ Live media ... ]' {
-	    search.fs_label "ISOFILE" cfgpart hd1,gpt3
-	    search.fs_label "ISOFILE" isopart hd1,gpt3
-	    set menu_color_normal=cyan/blue
-	    set menu_color_highlight=white/blue
-	    set gfxpayload=keep
-	    menuentry '[ Live system ]' {
-	        true
-	    }
-	    menuentry 'Debian 12:bookworm' {
-	        set isofile="/images/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
-	        set isoscan="${isofile} (bookworm - 12)"
-	        set isodist="debian.bookworm.live"
-	        set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
-	        set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	        echo "Loading ${isofile} ..."
-	        linux   (${cfgpart})/live/${isodist}/vmlinuz.img root=${cfgpart} boot=live components quiet splash findiso=${isofile} ${locales} fsck.mode=skip
-	        initrd  (${cfgpart})/live/${isodist}/initrd.img
-	    }
-	    menuentry 'Ubuntu 23.04:Lunar Lobster' {
-	        set isofile="/images/ubuntu-23.04-desktop-amd64.iso"
-	        set isoscan="iso-scan/filename=${isofile}"
-	        set isodist="ubuntu.lunar.desktop"
-	        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	        set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.desktop/'
-	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	        echo "Loading ${isofile} ..."
-	        linux   (${cfgpart})/casper/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip
-	        initrd  (${cfgpart})/casper/${isodist}/initrd.img
-	    }
-	    menuentry '[ Unattended installation ]' {
-	        true
-	    }
-	    menuentry 'Debian 12:bookworm' {
-	        set isofile="/images/debian-live-bkworm-DI-rc2-amd64-lxde.iso"
-	        set isoscan="${isofile} (bookworm - 12)"
-	        set isodist="debian.bookworm.live"
-	        set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
-	        set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	        echo "Loading ${isofile} ..."
-	        linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
-	        initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	    }
-	    menuentry 'Ubuntu 23.04:Lunar Lobster' {
-	        set isofile="/images/ubuntu-23.04-desktop-amd64.iso"
-	        set isoscan="iso-scan/filename=${isofile}"
-	        set isodist="ubuntu.lunar.desktop"
-	        set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	        set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/ubuntu.desktop/'
-	        if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	        echo "Loading ${isofile} ..."
-	        linux   (${cfgpart})/casper/${isodist}/vmlinuz.img layerfs-path=minimal.standard.live.squashfs --- quiet splash ${isoscan} ${locales} fsck.mode=skip ${nocloud} ip=dhcp ipv6.disable=0 ---
-	        initrd  (${cfgpart})/casper/${isodist}/initrd.img
-	    }
-	}
-	menuentry '[ System command ]' {
-	    true
-	}
-	menuentry "System shutdown" {
-	    echo "System shutting down ..."
-	    halt
-	}
-	menuentry "System restart" {
-	    echo "System rebooting ..."
-	    reboot
-	}
-_EOT_
+# ### USB Device: [ /dev/sdX3 ] Data partition ################################
+funcUSB_Device_Inst_MENU () {
+  fncPrintf "${TXT_BLACK}${TXT_BYELLOW}USB Device: Data partition${TXT_RESET}"
+  # *** [ USB device: /dev/sdb3 ] ***
+  # === mount /dev/sdX3 =======================================================
+  fncPrintf "mount /dev/sdX3"
+  mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
+  rm -rf ./usb/
+  mkdir -p ./usb
+  mount /dev/sdb3 ./usb/
+  # === grub.cfg ==============================================================
+  fncPrintf "copy menu.cfg"
+  cp --preserve=timestamps -L -u -R ./img/menu.cfg   ./usb/
   # === unmount ===============================================================
   fncPrintf "unmount"
   umount ./usb/
@@ -1629,17 +1756,18 @@ funcUSB_Device_Inst_File_partition () {
   # *** [ USB device: /dev/sdb3 ] ***
   # === mount /dev/sdX3 =======================================================
   fncPrintf "mount /dev/sdX3"
+  mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
   rm -rf ./usb/
   mkdir -p ./usb
   mount /dev/sdb3 ./usb/
   # === copy boot loader and setting files ====================================
   fncPrintf "copy boot loader and setting files"
-  mkdir -p ./usb/install.amd \
-           ./usb/live        \
-           ./usb/casper
-  nice -n 10 cp --preserve=timestamps -L -u -r ./img/install.amd/. ./usb/install.amd/
-  nice -n 10 cp --preserve=timestamps -L -u -r ./img/live/.        ./usb/live/
-  nice -n 10 cp --preserve=timestamps -L -u -r ./img/casper/.      ./usb/casper/
+#  mkdir -p ./usb/install.amd \
+#           ./usb/live        \
+#           ./usb/casper
+  cp --preserve=timestamps -L -u -R ./img/install.amd/ ./usb/
+  cp --preserve=timestamps -L -u -R ./img/live/        ./usb/
+  cp --preserve=timestamps -L -u -R ./img/casper/      ./usb/
 # cp --preserve=timestamps -L -u    ./cfg/ubuntu.server/user-data  ./usb/
 # touch ./usb/meta-data
 # touch ./usb/vendor-data
@@ -1655,6 +1783,7 @@ funcUSB_Device_Data_File_partition () {
   # *** [ USB device: /dev/sdb3 ] ***
   # === mount /dev/sdX3 =======================================================
   fncPrintf "mount /dev/sdX3"
+  mountpoint -q ./usb/ && (umount -q -f ./usb || umount -q -lf ./usb) || true
   rm -rf ./usb/
   mkdir -p ./usb
   mount /dev/sdb3 ./usb/
@@ -1666,9 +1795,9 @@ funcUSB_Device_Data_File_partition () {
     fncPrintf "copy   file: ${F}"
     nice -n 10 cp --preserve=timestamps -L -u ./img/images/${F} ./usb/images/
   done
-  cp --preserve=timestamps -L -u -r ./img/preseed/   ./usb/
-  cp --preserve=timestamps -L -u -r ./img/nocloud/   ./usb/
-  cp --preserve=timestamps -L -u -r ./img/kickstart/ ./usb/
+  cp --preserve=timestamps -L -u -R ./img/preseed/   ./usb/
+  cp --preserve=timestamps -L -u -R ./img/nocloud/   ./usb/
+  cp --preserve=timestamps -L -u -R ./img/kickstart/ ./usb/
   # === unmount ===============================================================
   fncPrintf "unmount"
   umount ./usb
@@ -1708,10 +1837,12 @@ main () {
   funcCopy_initramfs
   funcCopy_cfg_file
   funcCopy_iso_image
+  funcMake_GRUB
   funcUSB_Device_check
   funcUSB_Device_partition_and_format
   funcUSB_Device_Inst_Bootloader
   funcUSB_Device_Inst_GRUB
+  funcUSB_Device_Inst_MENU
   funcUSB_Device_Inst_File_partition
   funcUSB_Device_Data_File_partition
   if [ -b /dev/sdb ]; then
