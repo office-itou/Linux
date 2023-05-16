@@ -1369,7 +1369,7 @@ _EOT_
 	menuentry 'debian-testing-amd64-netinst.iso' {
 	    set isofile="/images/debian-testing-amd64-netinst.iso"
 	    set isoscan="${isofile} (testing)"
-	    set isodist="debian.bookworm.netinst"
+	    set isodist="debian.testing.netinst"
 	    set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
 	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
