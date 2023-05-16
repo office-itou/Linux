@@ -1410,17 +1410,6 @@ _EOT_
 	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
 	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
 	}
-	menuentry 'debian-9.13.0-amd64-netinst.iso' {
-	    set isofile="/images/debian-9.13.0-amd64-netinst.iso"
-	    set isoscan="${isofile} (oldstable - 9.13)"
-	    set isodist="debian.stretch.netinst"
-	    set preseed="auto=true file=/hd-media/preseed/debian/preseed.cfg netcfg/disable_autoconfig=true"
-	    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	    if [ "${grub_platform}" = "efi" ]; then rmmod tpm; fi
-	    echo "Loading ${isofile} ..."
-	    linux   (${cfgpart})/install.amd/${isodist}/vmlinuz.img root=${cfgpart} iso-scan/ask_which_iso="[sdb3] ${isoscan}" ${locales} fsck.mode=skip ${preseed} ---
-	    initrd  (${cfgpart})/install.amd/${isodist}/initrd.img
-	}
 	menuentry 'ubuntu-23.04-live-server-amd64.iso' {
 	    set isofile="/images/ubuntu-23.04-live-server-amd64.iso"
 	    set isoscan="iso-scan/filename=${isofile}"
