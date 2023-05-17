@@ -1527,8 +1527,8 @@ funcMake_Menu () {
     CentOS-Stream-9-latest-*-boot.iso     \
     AlmaLinux-9-latest-*-boot.iso         \
     MIRACLELINUX-9.0-rtm-minimal-*.iso    \
-    Rocky-9.*-*-boot.iso                  \
-    openSUSE-Leap-15.4-NET-*-Media.iso    \
+    Rocky-9*-boot.iso                     \
+    openSUSE-Leap-*-NET-*-Media.iso       \
     openSUSE-Tumbleweed-NET-*-Current.iso \
     '[ Live media ... ]'                  \
     '[ Live system ]'                     \
@@ -1834,28 +1834,28 @@ main () {
 #  funcColorTest
   # --- main ------------------------------------------------------------------
   fncPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing start${TXT_RESET}"
-#  funcDownload "lnk"
-#  funcDownload "cfg"
-#  funcDownload "bld"
-#  funcDownload "iso"
-#  funcDownload "deb"
-#  funcDownload "arc"
-#  funcCopy_module
-#  funcUnpack_lnximg
-#  funcSelect_module
-#  funcMake_initramfs
-#  funcCopy_initramfs
-#  funcCopy_cfg_file
-#  funcCopy_iso_image
+  funcDownload "lnk"
+  funcDownload "cfg"
+  funcDownload "bld"
+  funcDownload "iso"
+  funcDownload "deb"
+  funcDownload "arc"
+  funcCopy_module
+  funcUnpack_lnximg
+  funcSelect_module
+  funcMake_initramfs
+  funcCopy_initramfs
+  funcCopy_cfg_file
+  funcCopy_iso_image
   funcMake_Menu
-#  funcMake_GRUB
-#  funcUSB_Device_check
-#  funcUSB_Device_partition_and_format
-#  funcUSB_Device_Inst_Bootloader
-#  funcUSB_Device_Inst_GRUB
+  funcMake_GRUB
+  funcUSB_Device_check
+  funcUSB_Device_partition_and_format
+  funcUSB_Device_Inst_Bootloader
+  funcUSB_Device_Inst_GRUB
   funcUSB_Device_Inst_MENU
-#  funcUSB_Device_Inst_File_partition
-#  funcUSB_Device_Data_File_partition
+  funcUSB_Device_Inst_File_partition
+  funcUSB_Device_Data_File_partition
   if [ -b /dev/sdb ]; then
     lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
   fi
