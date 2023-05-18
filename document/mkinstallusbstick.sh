@@ -193,6 +193,7 @@ funcDownload_lnk () {
            ./cfg/ubuntu.desktop                           \
            ./cfg/ubuntu.server                            \
            ./cfg/kickstart                                \
+           ./cfg/autoyast                                 \
            ./cfg/installer-hd-media/debian.buster/gtk     \
            ./cfg/installer-hd-media/debian.bullseye/gtk   \
            ./cfg/installer-hd-media/debian.bookworm/gtk   \
@@ -211,10 +212,7 @@ funcDownload_lnk () {
   ln -s /mnt/hgfs/workspace/Image/linux/cfg/kickstart/ks_fedora.cfg                                 ./cfg/kickstart/ks_fedora.cfg
   ln -s /mnt/hgfs/workspace/Image/linux/cfg/kickstart/ks_miraclelinux.cfg                           ./cfg/kickstart/ks_miraclelinux.cfg
   ln -s /mnt/hgfs/workspace/Image/linux/cfg/kickstart/ks_rocky.cfg                                  ./cfg/kickstart/ks_rocky.cfg
-# ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_fedora.cfg                                    ./cfg/fedora/ks_fedora.cfg
-# ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_alma.cfg                                      ./cfg/fedora/ks_alma.cfg
-# ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_rocky.cfg                                     ./cfg/fedora/ks_rocky.cfg
-# ln -s /mnt/hgfs/workspace/Image/linux/cfg/fedora/ks_miracle.cfg                                   ./cfg/fedora/ks_miracle.cfg
+  ln -s /mnt/hgfs/workspace/Image/linux/cfg/autoyast/autoinst.xml                                   ./cfg/autoyast/autoinst.xml
   # === debian installer ======================================================
   # --- stretch ---------------------------------------------------------------
   # --- buster ----------------------------------------------------------------
@@ -327,10 +325,7 @@ funcDownload_cfg () {
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/kickstart"                                  "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/kickstart/ks_fedora.cfg"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/kickstart"                                  "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/kickstart/ks_miraclelinux.cfg"
   funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/kickstart"                                  "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/kickstart/ks_rocky.cfg"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_fedora.cfg"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_alma.cfg"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_rocky.cfg"
-# funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/fedora"                                     "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/fedora/ks_miracle.cfg"
+  funcCurl -L -# -O -R -S --create-dirs --output-dir "./cfg/autoyast"                                   "https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/cfg/autoyast/autoinst.xml"
 }
 
 # === download: debian installer ==============================================
@@ -1509,6 +1504,20 @@ _EOT_
 _EOT_
       ;;
    openSUSE-*.iso               )
+      cat <<- _EOT_ | sed -e "s/^/${TABSP}/g"
+		menuentry '${FNAME}' {
+		    set isofile="/images/${FNAME}"
+		    set autoxml="autoyast=hd:/dev/sdb3/autoyast/autoinst.xml"
+		    set isoscan="iso-scan/filename=\${isofile}"
+		    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+		    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+		    echo "Loading \${isofile} ..."
+		    loopback loop (\$isopart)\$isofile
+		    linux  (loop)/boot/x86_64/loader/linux splash=silent \${autoxml} ifcfg=e*=dhcp
+		    initrd (loop)/boot/x86_64/loader/initrd
+		    loopback --delete loop
+		}
+_EOT_
       ;;
     *                            )
       ;;
@@ -1538,8 +1547,8 @@ funcMake_Menu () {
     AlmaLinux-9-latest-*-boot.iso         \
     MIRACLELINUX-9.0-rtm-minimal-*.iso    \
     Rocky-9*-boot.iso                     \
-    openSUSE-Leap-*-NET-*-Media.iso       \
-    openSUSE-Tumbleweed-NET-*-Current.iso \
+    openSUSE-Leap-*-NET-*.iso             \
+    openSUSE-Tumbleweed-NET-*.iso         \
     '[ Live media ... ]'                  \
     '[ Live system ]'                     \
     debian-live-bkworm-*.iso              \
