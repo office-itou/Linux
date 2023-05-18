@@ -43,8 +43,8 @@
   trap 'exit 1' 1 2 3 15
 
 # -----------------------------------------------------------------------------
-# dpkg -l fdisk coreutils curl dosfstools grub2-common initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd
-# apt-get install fdisk coreutils curl dosfstools grub2-common initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd
+# dpkg -l fdisk gdisk coreutils curl dosfstools grub2-common initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd
+# apt-get install fdisk gdisk coreutils curl dosfstools grub2-common initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd
 
 # -----------------------------------------------------------------------------
   ROW_SIZE=25
@@ -167,6 +167,16 @@ funcCurl ()
       fncPrintf "same file: ${F}"
       return 0
     fi
+#    if [ ${T:-0} -ne ${D:-0} ]; then
+#      fncPrintf "diff file: ${F}"
+#      fncPrintf "T: ${T:-0}"
+#      fncPrintf "D: ${D:-0}"
+#    fi
+#    if [ ${S:-0} -ne ${L:-0} ]; then
+#      fncPrintf "diff file: ${F}"
+#      fncPrintf "S: ${S:-0}"
+#      fncPrintf "L: ${L:-0}"
+#    fi
   fi
   fncPrintf "get  file: ${F}"
   curl ${INP_STR}
@@ -1386,7 +1396,7 @@ fncMake_MenuSub () {
 			    set isofile="/images/${FNAME}"
 			    set isoscan="\${isofile} (${ISCAN})"
 			    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
-			    set preseed="auto=true file=/hd-media/preseed/${DISTR}/preseed.cfg netcfg/disable_autoconfig=true"
+			    set preseed="auto=true file=/hd-media/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true"
 			    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 			    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 			    echo "Loading \${isofile} ..."
@@ -1400,7 +1410,7 @@ _EOT_
 			menuentry '${FNAME}' {
 			    set isofile="/images/${FNAME}"
 			    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
-			    set preseed="auto=true file=/hd-media/preseed/${DISTR}/preseed.cfg netcfg/disable_autoconfig=true"
+			    set preseed="auto=true file=/hd-media/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true"
 			    set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 			    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 			    echo "Loading \${isofile} ..."
@@ -1419,7 +1429,7 @@ _EOT_
 		    set isofile="/images/${FNAME}"
 		    set isoscan="\${isofile} (${ISCAN})"
 		    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
-		    set preseed="auto=true file=/hd-media/preseed/${DISTR}/preseed.cfg netcfg/disable_autoconfig=true"
+		    set preseed="auto=true file=/hd-media/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true"
 		    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 		    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		    echo "Loading \${isofile} ..."
