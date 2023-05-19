@@ -736,7 +736,7 @@ funcRemake_module () {
     # --- unpack: inird -> ./ram/${I}/initrd ----------------------------------
     for W in 'initrd*-*' 'initrd*.*' 'initrd'
     do
-      for F in $(find ${D} -name "${W}" \( -type f -o -type l \))
+      for F in $(find ${D} -maxdepth 1 -name "${W}" \( -type f -o -type l \))
       do
         fncPrintf "unpack file: ${F}"
         mkdir -p ./ram/${I}/initrd
@@ -747,7 +747,7 @@ funcRemake_module () {
     # --- copy: vmlinuz -> ./ram/${I}/vmlinuz ---------------------------------
     for W in 'vmlinuz*-*' 'vmlinuz*.*' 'vmlinuz'
     do
-      for F in $(find ${D} -name "${W}" \( -type f -o -type l \))
+      for F in $(find ${D} -maxdepth 1 -name "${W}" \( -type f -o -type l \))
       do
         fncPrintf "copy   file: ${F}"
         mkdir -p ./ram/${I}/vmlinuz
