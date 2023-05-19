@@ -813,7 +813,7 @@ funcRemake_module () {
     # --- Fix out-of-spec version ---------------------------------------------
     fncPrintf "edit   ver.: debian-installer [$(sed -n -e '/^Package: debian-installer$/,/^Package:/ {/Version:/p}' ./wrk/${I}/initrd/var/lib/dpkg/status)]"
     sed -i ./wrk/${I}/initrd/var/lib/dpkg/status                                      \
-        -e '/^Package: debian-installer$/,/^Package:/ s/\(Version:\)[[:space:]]*hd-media-\([0-9]*\).*$/\1 \2/'
+        -e '/^Package: debian-installer$/,/^Package:/ s/\(Version:\)[[:blank:]]*hd-media\(-gtk\)*-\([0-9]*\).*$/\1 \3/'
     fncPrintf "edit   ver.: debian-installer [$(sed -n -e '/^Package: debian-installer$/,/^Package:/ {/Version:/p}' ./wrk/${I}/initrd/var/lib/dpkg/status)]"
     # --- dpkg --update-avail -------------------------------------------------
     fncPrintf "update package data base"
@@ -898,7 +898,7 @@ funcRemake_module () {
     fncPrintf "config"
     if [ -f  ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.postinst ]; then
       sed -i ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.postinst    \
-          -e 's/^\([[:space:]]*FS\)="\(.*\)".*$/\1="\2 fuse fuse3 exfat ntfs3"/'
+          -e 's/^\([[:blank:]]*FS\)="\(.*\)".*$/\1="\2 fuse fuse3 exfat ntfs3"/'
     fi
     case "${S}" in
       debian.*        ) ;;
@@ -906,7 +906,7 @@ funcRemake_module () {
         if [ -f  ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.postinst ]; then
           OLD_IFS=${IFS}
           INS_ROW=$(
-            sed -n -e '/^[[:space:]]*use_this_iso[[:space:]]*([[:space:]]*)/,/^[[:space:]]*}$/ {/[[:space:]]*mount .* \/cdrom/=}' \
+            sed -n -e '/^[[:blank:]]*use_this_iso[[:blank:]]*([[:blank:]]*)/,/^[[:blank:]]*}$/ {/[[:blank:]]*mount .* \/cdrom/=}' \
               ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.postinst
           )
           IFS= INS_STR=$(
@@ -952,7 +952,7 @@ _EOT_
           )
           IFS=${OLD_IFS}
           sed -i ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.postinst                                                    \
-              -e '/^[[:space:]]*use_this_iso[[:space:]]*([[:space:]]*/,/^}$/ s~^\([[:space:]]*mount .* /cdrom .*$\)~#\1~' \
+              -e '/^[[:blank:]]*use_this_iso[[:blank:]]*([[:blank:]]*/,/^}$/ s~^\([[:blank:]]*mount .* /cdrom .*$\)~#\1~' \
               -e "${INS_ROW:-1}a \\${INS_STR}"
           cat <<- '_EOT_' >> ./wrk/${I}/initrd/var/lib/dpkg/info/iso-scan.templates
 			
@@ -1034,7 +1034,7 @@ _EOT_
         if [ -f  ./wrk/${I}/initrd/scripts/casper-helpers ]; then
           OLD_IFS=${IFS}
           INS_ROW=$(
-            sed -n -e '/^[[:space:]]*find_files[[:space:]]*([[:space:]]*)/,/^[[:space:]]*}$/ {/[[:space:]]*vfat|ext2)/,/.*;;$/=}' \
+            sed -n -e '/^[[:blank:]]*find_files[[:blank:]]*([[:blank:]]*)/,/^[[:blank:]]*}$/ {/[[:blank:]]*vfat|ext2)/,/.*;;$/=}' \
               ./wrk/${I}/initrd/scripts/casper-helpers                                                                            \
               | awk 'END {print}'
           )
@@ -1046,14 +1046,14 @@ _EOT_
         )
           IFS=${OLD_IFS}
           sed -i ./wrk/${I}/initrd/scripts/casper-helpers                                                                                 \
-              -e '/[[:space:]]*is_supported_fs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ s/\(vfat.*\))/\1|exfat)/'                      \
-              -e '/[[:space:]]*wait_for_devs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ {/touch/i \\    mkdir -p /dev/.initramfs' -e '}' \
+              -e '/[[:blank:]]*is_supported_fs[[:blank:]]*([[:blank:]]*)/,/[[:blank:]]*}$/ s/\(vfat.*\))/\1|exfat)/'                      \
+              -e '/[[:blank:]]*wait_for_devs[[:blank:]]*([[:blank:]]*)/,/[[:blank:]]*}$/ {/touch/i \\    mkdir -p /dev/.initramfs' -e '}' \
               -e "${INS_ROW:-1}a \\${INS_STR}"
         fi
         if [ -f  ./wrk/${I}/initrd/scripts/lupin-helpers ]; then
           sed -i ./wrk/${I}/initrd/scripts/lupin-helpers                                                                                  \
-              -e '/[[:space:]]*is_supported_fs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ s/\(vfat.*\))/\1|exfat)/'                      \
-              -e '/[[:space:]]*wait_for_devs[[:space:]]*([[:space:]]*)/,/[[:space:]]*}$/ {/touch/i \\    mkdir -p /dev/.initramfs' -e '}'
+              -e '/[[:blank:]]*is_supported_fs[[:blank:]]*([[:blank:]]*)/,/[[:blank:]]*}$/ s/\(vfat.*\))/\1|exfat)/'                      \
+              -e '/[[:blank:]]*wait_for_devs[[:blank:]]*([[:blank:]]*)/,/[[:blank:]]*}$/ {/touch/i \\    mkdir -p /dev/.initramfs' -e '}'
         fi
         ;;
       *               ) ;;
@@ -1188,80 +1188,59 @@ funcCopy_cfg_file () {
     touch ./img/nocloud/ubuntu.${D}/network-config
   done
   cp -a -u ./cfg/kickstart/.                           ./img/kickstart/
-#  cp -a -u ./cfg/fedora/ks_fedora.cfg                  ./img/kickstart/
-#  cp -a -u ./cfg/fedora/ks_alma.cfg                    ./img/kickstart/
-#  cp -a -u ./cfg/fedora/ks_rocky.cfg                   ./img/kickstart/
-#  cp -a -u ./cfg/fedora/ks_miracle.cfg                 ./img/kickstart/
-  # === change config file ====================================================
-  fncPrintf "change config file"
-  sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/debian/~g' ./cfg/debian/preseed.cfg         | tee ./img/preseed/debian/preseed.cfg > /dev/null
-  sed -e 's~ /cdrom/preseed/~ /hd-media/preseed/ubuntu/~g' ./cfg/ubuntu.desktop/preseed.cfg | tee ./img/preseed/ubuntu/preseed.cfg > /dev/null
-# sed -e 's/bind9-utils/bind9utils/'                                                                    \
-#     -e 's/bind9-dnsutils/dnsutils/'                                                                   \
-#     -e 's~\(^[[:space:]]*d-i[[:space:]]*mirror/http/hostname\).*$~\1 string archive.debian.org~'      \
-#     -e 's~\(^[[:space:]]*d-i[[:space:]]*mirror/http/mirror select\).*$~\1 select archive.debian.org~' \
-#     -e 's~\(^[[:space:]]*d-i[[:space:]]*apt-setup/services-select\).*$~\1 multiselect updates~'       \
-#     -e 's~\(^[[:space:]]*d-i[[:space:]]*apt-setup/security_host\).*$~\1 string archive.debian.org~'   \
-#            ./img/preseed/debian/preseed.cfg                                                           \
-# | tee ./img/preseed/debian/preseed_oldold.cfg > /dev/null
-  sed -e 's/bind9-utils/bind9utils/'                          \
-      -e 's/bind9-dnsutils/dnsutils/'                         \
-             ./img/preseed/debian/preseed.cfg                 \
-  | tee ./img/preseed/debian/preseed_old.cfg > /dev/null
-  sed -e 's/bind9-utils/bind9utils/'                          \
-      -e 's/bind9-dnsutils/dnsutils/'                         \
-      -e '/d-i partman\/unmount_active/ s/^#/ /g'             \
-      -e '/d-i partman\/early_command/,/exit 0/ s/^#/ /g'     \
-             ./img/preseed/ubuntu/preseed.cfg                 \
-  | tee ./img/preseed/ubuntu/preseed_old.cfg > /dev/null
-  # === make preseed.cfg for server ===========================================
-  fncPrintf "make preseed.cfg for server"
-  for F in debian/preseed.cfg debian/preseed_old.cfg ubuntu/preseed.cfg ubuntu/preseed_old.cfg
+  # === change config file and make preseed.cfg for server ====================
+  for P in debian/preseed.cfg         \
+           ubuntu.desktop/preseed.cfg
   do
-    D="$(dirname  ${F})"
-    B="$(basename ${F})"
-    T="${F/\./_server\.}"
-    case "${D}" in
-      debian )
-        cp -a ./img/preseed/${F} ./img/preseed/${T}
-        sed -i ./img/preseed/${T}                                                      \
-            -e '/^[[:space:]].*[[:space:]]isc-dhcp-server[[:space:]]*/        s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]minidlna[[:space:]]*/               s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]apache2[[:space:]]*/                s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]task-desktop[[:space:]]*/           s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]task-lxde-desktop[[:space:]]*/      s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]task-laptop[[:space:]]*/            s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]task-japanese[[:space:]]*/          s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]task-japanese-desktop[[:space:]]*/  s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]fonts-noto[[:space:]]*/             s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]ibus-mozc[[:space:]]*/              s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]mozc-utils-gui[[:space:]]*/         s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]libreoffice-l10n-ja[[:space:]]*/    s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]libreoffice-help-ja[[:space:]]*/    s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]firefox-esr-l10n-ja[[:space:]]*/    s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]thunderbird[[:space:]]*/            s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]thunderbird-l10n-ja[[:space:]]*/    s/^ /#/'
-        sed -z 's/\\\n#/\n#/g' -i ./img/preseed/${T}
-        ;;
+    D="$(dirname  ${P})"
+    F="$(basename ${P})"
+    case "${D%%\.*}" in
+      debian | \
       ubuntu )
-        cp -a ./img/preseed/${F} ./img/preseed/${T}
-        sed -i ./img/preseed/${T}                                                      \
-            -e '/^[[:space:]].*[[:space:]]isc-dhcp-server[[:space:]]*/        s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]minidlna[[:space:]]*/               s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]apache2[[:space:]]*/                s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]ubuntu-desktop[[:space:]]*/         s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]ubuntu-gnome-desktop[[:space:]]*/   s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]language-pack-ja[[:space:]]*/       s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]language-pack-gnome-ja[[:space:]]*/ s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]fonts-noto[[:space:]]*/             s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]ibus-mozc[[:space:]]*/              s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]mozc-utils-gui[[:space:]]*/         s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]libreoffice-l10n-ja[[:space:]]*/    s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]libreoffice-help-ja[[:space:]]*/    s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]firefox-locale-ja[[:space:]]*/      s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]thunderbird[[:space:]]*/            s/^ /#/' \
-            -e '/^[[:space:]].*[[:space:]]thunderbird-locale-ja[[:space:]]*/  s/^ /#/'
-        sed -z 's/\\\n#/\n#/g' -i ./img/preseed/${T}
+        fncPrintf "make preseed.cfg for desktop"
+        fncPrintf "make prseed: %s" "${D%%\.*}/${F}"
+        sed ./cfg/${P}                                                                             \
+            -e "s~ /cdrom/preseed/~ /hd-media/preseed/${D%%\.*}/~g"                                \
+        > ./img/preseed/${D%%\.*}/${F}
+        fncPrintf "make prseed: %s" "${D%%\.*}/${F/\./_old\.}"
+        sed ./img/preseed/${D%%\.*}/${F}                                                           \
+            -e 's/bind9-utils/bind9utils/'                                                         \
+            -e 's/bind9-dnsutils/dnsutils/'                                                        \
+            -e '/d-i partman\/unmount_active/ s/^#/ /g'                                            \
+            -e '/d-i partman\/early_command/,/exit 0/ s/^#/ /g'                                    \
+        > ./img/preseed/${D%%\.*}/${F/\./_old\.}
+        fncPrintf "make preseed.cfg for server"
+        for S in ${F}           \
+                 ${F/\./_old\.}
+        do
+          fncPrintf "make prseed: %s" "${D%%\.*}/${S/\./_server\.}"
+          sed ./img/preseed/${D%%\.*}/${S}                                                             \
+              -e '/^[[:blank:]]*d-i pkgsel\/include /,/^\(#\|[[:blank:]]*d-i \)/ {'                    \
+              -e '/^[[:blank:]]*isc-dhcp-server[[:blank:]]*/                             s/^ /#/'      \
+              -e '/^[[:blank:]]*minidlna[[:blank:]]*/                                    s/^ /#/'      \
+              -e '/^[[:blank:]]*apache2[[:blank:]]*/                                     s/^ /#/'      \
+              -e '/^[[:blank:]]*task-desktop[[:blank:]]*/                                s/^ /#/'      \
+              -e '/^[[:blank:]]*task-lxde-desktop[[:blank:]]*/                           s/^ /#/'      \
+              -e '/^[[:blank:]]*task-laptop[[:blank:]]*/                                 s/^ /#/'      \
+              -e '/^[[:blank:]]*task-japanese[[:blank:]]*/                               s/^ /#/'      \
+              -e '/^[[:blank:]]*task-japanese-desktop[[:blank:]]*/                       s/^ /#/'      \
+              -e '/^[[:blank:]]*ubuntu-desktop[[:blank:]]*/                              s/^ /#/'      \
+              -e '/^[[:blank:]]*ubuntu-gnome-desktop[[:blank:]]*/                        s/^ /#/'      \
+              -e '/^[[:blank:]]*language-pack-ja[[:blank:]]*/                            s/^ /#/'      \
+              -e '/^[[:blank:]]*language-pack-gnome-ja[[:blank:]]*/                      s/^ /#/'      \
+              -e '/^[[:blank:]]*fonts-noto[[:blank:]]*/                                  s/^ /#/'      \
+              -e '/^[[:blank:]]*ibus-mozc[[:blank:]]*/                                   s/^ /#/'      \
+              -e '/^[[:blank:]]*mozc-utils-gui[[:blank:]]*/                              s/^ /#/'      \
+              -e '/^[[:blank:]]*libreoffice-l10n-ja[[:blank:]]*/                         s/^ /#/'      \
+              -e '/^[[:blank:]]*libreoffice-help-ja[[:blank:]]*/                         s/^ /#/'      \
+              -e '/^[[:blank:]]*firefox-esr-l10n-ja[[:blank:]]*/                         s/^ /#/'      \
+              -e '/^[[:blank:]]*firefox-locale-ja[[:blank:]]*/                           s/^ /#/'      \
+              -e '/^[[:blank:]]*thunderbird[[:blank:]]*/                                 s/^ /#/'      \
+              -e '/^[[:blank:]]*thunderbird-l10n-ja[[:blank:]]*/                         s/^ /#/}' |   \
+          sed -e '/^[[:blank:]]*d-i pkgsel\/include /,/^\(#\|[[:blank:]]*d-i \)/ {'                    \
+              -e '/^#/! {:l; s/\n\([[:blank:]]*[[:alnum:]].*\)[[:blank:]]\\\n#/\n\1\n#/; t; N; b l;}}' \
+          > ./img/preseed/${D%%\.*}/${S/\./_server\.}
+        done
         ;;
       *      )
         ;;
@@ -1271,21 +1250,21 @@ funcCopy_cfg_file () {
   fncPrintf "make cloud-init file for server"
   if [ -f ./img/nocloud/ubuntu.server/user-data ]; then
     sed -i ./img/nocloud/ubuntu.server/user-data                         \
-        -e 's/^[[:space:]]\([[:space:]]*- isc-dhcp-server\)/#\1/'        \
-        -e 's/^[[:space:]]\([[:space:]]*- minidlna\)/#\1/'               \
-        -e 's/^[[:space:]]\([[:space:]]*- apache2\)/#\1/'                \
-        -e 's/^[[:space:]]\([[:space:]]*- ubuntu-desktop\)/#\1/'         \
-        -e 's/^[[:space:]]\([[:space:]]*- ubuntu-gnome-desktop\)/#\1/'   \
-        -e 's/^[[:space:]]\([[:space:]]*- language-pack-ja\)/#\1/'       \
-        -e 's/^[[:space:]]\([[:space:]]*- language-pack-gnome-ja\)/#\1/' \
-        -e 's/^[[:space:]]\([[:space:]]*- fonts-noto\)/#\1/'             \
-        -e 's/^[[:space:]]\([[:space:]]*- ibus-mozc\)/#\1/'              \
-        -e 's/^[[:space:]]\([[:space:]]*- mozc-utils-gui\)/#\1/'         \
-        -e 's/^[[:space:]]\([[:space:]]*- libreoffice-l10n-ja\)/#\1/'    \
-        -e 's/^[[:space:]]\([[:space:]]*- libreoffice-help-ja\)/#\1/'    \
-        -e 's/^[[:space:]]\([[:space:]]*- firefox-locale-ja\)/#\1/'      \
-        -e 's/^[[:space:]]\([[:space:]]*- thunderbird\)/#\1/'            \
-        -e 's/^[[:space:]]\([[:space:]]*- thunderbird-locale-ja\)/#\1/'
+        -e '/^[[:blank:]]*- isc-dhcp-server[[:blank:]]*/        s/^ /#/' \
+        -e '/^[[:blank:]]*- minidlna[[:blank:]]*/               s/^ /#/' \
+        -e '/^[[:blank:]]*- apache2[[:blank:]]*/                s/^ /#/' \
+        -e '/^[[:blank:]]*- ubuntu-desktop[[:blank:]]*/         s/^ /#/' \
+        -e '/^[[:blank:]]*- ubuntu-gnome-desktop[[:blank:]]*/   s/^ /#/' \
+        -e '/^[[:blank:]]*- language-pack-ja[[:blank:]]*/       s/^ /#/' \
+        -e '/^[[:blank:]]*- language-pack-gnome-ja[[:blank:]]*/ s/^ /#/' \
+        -e '/^[[:blank:]]*- fonts-noto[[:blank:]]*/             s/^ /#/' \
+        -e '/^[[:blank:]]*- ibus-mozc[[:blank:]]*/              s/^ /#/' \
+        -e '/^[[:blank:]]*- mozc-utils-gui[[:blank:]]*/         s/^ /#/' \
+        -e '/^[[:blank:]]*- libreoffice-l10n-ja[[:blank:]]*/    s/^ /#/' \
+        -e '/^[[:blank:]]*- libreoffice-help-ja[[:blank:]]*/    s/^ /#/' \
+        -e '/^[[:blank:]]*- firefox-locale-ja[[:blank:]]*/      s/^ /#/' \
+        -e '/^[[:blank:]]*- thunderbird[[:blank:]]*/            s/^ /#/' \
+        -e '/^[[:blank:]]*- thunderbird-locale-ja[[:blank:]]*/  s/^ /#/'
   fi
 }
 
