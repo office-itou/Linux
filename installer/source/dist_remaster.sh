@@ -2273,6 +2273,12 @@ fncRemaster () {
 							    -e "/^repo / s/\$releasever/${VER_NUM}/g" \
 							    -e "/^repo / s/\$basearch/${ARC_NUM}/g"
 							;;
+						AlmaLinux-9*     )
+							sed -i kickstart/ks.cfg                      \
+							    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"  \
+							    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"  \
+							    -e '/%anaconda/,/%end/{/^#/!   s/^/#/g}'
+							;;
 						* )
 							sed -i kickstart/ks.cfg             \
 							    -e '/--name=epel/      s/^#//'  \
@@ -2292,12 +2298,12 @@ fncRemaster () {
 									    -e '/%anaconda/,/%end/ {/^#/! s/^/#/g}'                 \
 									    -e '/%packages/,/%end/ {/^ibus-mozc/ s/^/#/}'
 									;;
-								AlmaLinux-9*     )
-									sed -i kickstart/ks.cfg                      \
-									    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"  \
-									    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"  \
-									    -e '/%anaconda/,/%end/{/^#/!   s/^/#/g}'
-									;;
+#								AlmaLinux-9*     )
+#									sed -i kickstart/ks.cfg                      \
+#									    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"  \
+#									    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"  \
+#									    -e '/%anaconda/,/%end/{/^#/!   s/^/#/g}'
+#									;;
 #								Rocky-9*         )
 #									VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $2;}')
 #									ARC_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $4;}')
