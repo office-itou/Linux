@@ -101,86 +101,96 @@ funcColorTest () {
 
 # --- is integer --------------------------------------------------------------
 fncIsInt () {
-  set +e
-  expr ${1:-""} + 1 > /dev/null 2>&1
-  if [ $? -ge 2 ]; then echo 1; else echo 0; fi
-  set -e
+	set +e
+	expr ${1:-""} + 1 > /dev/null 2>&1
+	if [ $? -ge 2 ]; then echo 1; else echo 0; fi
+	set -e
 }
 
 # --- string output -----------------------------------------------------------
 fncString () {
-  local OLD_IFS=${IFS}
-  IFS=$'\n'
-  if [ "$2" = " " ]; then
-    echo $1      | awk '{s=sprintf("%"$1"."$1"s"," "); print s;}'
-  else
-    echo $1 "$2" | awk '{s=sprintf("%"$1"."$1"s"," "); gsub(" ",$2,s); print s;}'
-  fi
-  IFS=${OLD_IFS}
+	local OLD_IFS=${IFS}
+	IFS=$'\n'
+	if [ "$2" = " " ]; then
+		echo "" | awk '{s=sprintf("%'$1'.'$1's"," "); print s;}'
+	else
+		echo "" | awk '{s=sprintf("%'$1'.'$1's"," "); gsub(" ","'$2'",s); print s;}'
+	fi
+	IFS=${OLD_IFS}
 }
 
 # --- print with screen control -----------------------------------------------
 fncPrintf () {
-  local RET_STR=""
-  local INP_STR=""
-  local OUT_STR=""
-  local MAX_COLS=$((COL_SIZE-1))
-  local OLD_IFS=${IFS}
-  INP_STR="$@"
-  IFS=$'\n'
-  OUT_STR="$(printf $@)"
-  RET_STR="$(echo -n "${OUT_STR}" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null)"
-  if [ $? -ne 0 ]; then
-    MAX_COLS=$((COL_SIZE-2))
-    RET_STR="$(echo -n "${OUT_STR}" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null)"
-  fi
-  echo "${RET_STR}"
-  IFS=${OLD_IFS}
+	local RET_STR=""
+	local INP_STR=""
+	local OUT_STR=""
+	local MAX_COLS=${COL_SIZE:-80}
+	local OLD_IFS=${IFS}
+	INP_STR="$@"
+	IFS=$'\n'
+	OUT_STR="$(printf $@)"
+	RET_STR="$(echo -n "${OUT_STR}" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null)"
+	if [ $? -ne 0 ]; then
+		MAX_COLS=$((COL_SIZE-2))
+		RET_STR="$(echo -n "${OUT_STR}" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null)"
+	fi
+	echo "${RET_STR}"
+	IFS=${OLD_IFS}
 }
 
 # --- download ----------------------------------------------------------------
-funcCurl ()
-{
-  local INP_STR="$@"
-  local INP_URL=$(echo ${INP_STR} | sed -n -e 's~^.* \(\(http\|https\)://.*\)$~\1~p')
-  local OUT_DIR=$(echo ${INP_STR} | sed -n -e 's~^.* --output-dir *\(.*\) .*$~\1~p' | sed -e 's~/$~~')
-  OLD_IFS=${IFS}
-  IFS=
-  set +e
-  H=($(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${INP_URL}" 2> /dev/null | sed -n '/HTTP\/.* 200/,/^$/p'))
-  R=$?
-  set -e
-  if [ ${R} -eq 18 -o ${R} -eq 22 -o ${R} -eq 28  ]; then
-    E=$(echo ${H[@]} | sed -n '/^HTTP/p' | sed -z 's/\n\|\r\|\l//g')
-    fncPrintf "${E}: ${INP_URL}"
-    return ${R}
-  fi
-  S=$(echo ${H[@],,} | sed -n -e '/^content-length:/ s/^.*: //p' | sed -z 's/\n\|\r\|\l//g')
-  T=$(TZ=UTC date -d "$(echo ${H[@],,} | sed -n -e '/^last-modified:/ s/^.*: //p')" "+%Y%m%d%H%M%S")
-  IFS=${OLD_IFS}
-  F="${OUT_DIR:-.}/$(basename ${INP_URL})"
-  if [ -f ${F} ]; then
-    I=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${F}")
-    D=$(echo ${I} | awk '{print $6;}')
-    L=$(echo ${I} | awk '{print $5;}')
-    if [ ${T:-0} -eq ${D:-0} ] && [ ${S:-0} -eq ${L:-0} ]; then
-      fncPrintf "same file: ${F}"
-      return 0
-    fi
-#    if [ ${T:-0} -ne ${D:-0} ]; then
-#      fncPrintf "diff file: ${F}"
-#      fncPrintf "T: ${T:-0}"
-#      fncPrintf "D: ${D:-0}"
-#    fi
-#    if [ ${S:-0} -ne ${L:-0} ]; then
-#      fncPrintf "diff file: ${F}"
-#      fncPrintf "S: ${S:-0}"
-#      fncPrintf "L: ${L:-0}"
-#    fi
-  fi
-  fncPrintf "get  file: ${F}"
-  curl ${INP_STR}
-  return $?
+funcCurl () {
+	local RET_CD
+	local INP_STR="$@"
+	local INP_URL=$(echo ${INP_STR} | sed -n -e 's~^.* \(\(http\|https\)://.*\)$~\1~p')
+	local OUT_DIR=$(echo ${INP_STR} | sed -n -e 's~^.* --output-dir *\(.*\) .*$~\1~p' | sed -e 's~/$~~')
+	local OLD_IFS=${IFS}
+	local ARY_HED=("")
+	local ERR_MSG=""
+	local WEB_SIZ=""
+	local WEB_TIM=""
+	local WEB_FIL=""
+	local LOC_INF=""
+	local LOC_SIZ=""
+	local LOC_TIM=""
+	IFS=
+	set +e
+	ARY_HED=($(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${INP_URL}" 2> /dev/null | sed -n '/HTTP\/.* 200/,/^$/p'))
+	RET_CD=$?
+	set -e
+	IFS=${OLD_IFS}
+	if [ ${RET_CD} -eq 18 -o ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then
+		ERR_MSG=$(echo ${ARY_HED[@]} | sed -n '/^HTTP/p' | sed -z 's/\n\|\r\|\l//g')
+		fncPrintf "${ERR_MSG}: ${INP_URL}"
+		return ${RET_CD}
+	fi
+	IFS=
+	WEB_SIZ=$(echo ${ARY_HED[@],,} | sed -n -e '/^content-length:/ s/^.*: //p' | sed -z 's/\n\|\r\|\l//g')
+	WEB_TIM=$(TZ=UTC date -d "$(echo ${ARY_HED[@],,} | sed -n -e '/^last-modified:/ s/^.*: //p')" "+%Y%m%d%H%M%S")
+	WEB_FIL="${OUT_DIR:-.}/$(basename ${INP_URL})"
+	IFS=${OLD_IFS}
+	if [ -f ${WEB_FIL} ]; then
+		LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${WEB_FIL}")
+		LOC_TIM=$(echo ${LOC_INF} | awk '{print $6;}')
+		LOC_SIZ=$(echo ${LOC_INF} | awk '{print $5;}')
+		if [ ${WEB_TIM:-0} -eq ${LOC_TIM:-0} ] && [ ${WEB_SIZ:-0} -eq ${LOC_SIZ:-0} ]; then
+			fncPrintf "same file: ${WEB_FIL}"
+			return
+		fi
+#		if [ ${WEB_TIM:-0} -ne ${LOC_TIM:-0} ]; then
+#			fncPrintf "diff file: ${WEB_FIL}"
+#			fncPrintf "WEB_TIM: ${WEB_TIM:-0}"
+#			fncPrintf "LOC_TIM: ${LOC_TIM:-0}"
+#		fi
+#		if [ ${WEB_SIZ:-0} -ne ${LOC_SIZ:-0} ]; then
+#			fncPrintf "diff file: ${WEB_FIL}"
+#			fncPrintf "WEB_SIZ: ${WEB_SIZ:-0}"
+#			fncPrintf "LOC_SIZ: ${LOC_SIZ:-0}"
+#		fi
+	fi
+	fncPrintf "get  file: ${WEB_FIL}"
+	curl ${INP_STR}
+	return $?
 }
 
 # === download: link ==========================================================
