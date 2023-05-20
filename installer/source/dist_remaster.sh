@@ -26,6 +26,7 @@
 ##	2023/05/01 000.0000 J.Itou         リスト更新: Debian bookworm_di_rc2 追加
 ##	2023/05/01 000.0000 J.Itou         リスト整理
 ##	2023/05/17 000.0000 J.Itou         リスト更新: Debian bookworm_di_rc3 追加 / Rocky9 URL変更
+##	2023/05/20 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -2267,8 +2268,8 @@ fncRemaster () {
 							    -e '/%packages/,/%end/ s/^#//g'
 							case "${CODE_NAME[1]}" in
 								CentOS-Stream-8* )
-									sed -i kickstart/ks.cfg                                   \
-									    -e "/url .*mirrorlist\./  {/${CODE_NAME[0]}/ s/^#//}" \
+									sed -i kickstart/ks.cfg                                     \
+									    -e "/url .*mirrorlist\./  {/${CODE_NAME[0]}/ s/^#//}"   \
 									    -e "/repo .*mirrorlist\./ {/${CODE_NAME[0]}/ s/^#//}"
 									;;
 								CentOS-Stream-9* )
