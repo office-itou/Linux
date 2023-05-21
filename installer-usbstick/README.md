@@ -53,9 +53,9 @@ curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
 master@sv-server:~/mkusb$ lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
 NAME   FSTYPE FSVER LABEL     SIZE MOUNTPOINTS VENDOR   MODEL
 sdb                         112.6G             JetFlash Transcend 128GB
-tqsdb1                       1007K
-tqsdb2 vfat   FAT32           256M
-mqsdb3 exfat  1.0   ISOFILE 112.4G
++-sdb1                       1007K
++-sdb2 vfat   FAT32           256M
++-sdb3 exfat  1.0   ISOFILE 112.4G
 ```
 
 | /dev/ | 用途 | フォーマット | 設定容量 | 使用容量 |
