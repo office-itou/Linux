@@ -44,6 +44,7 @@
 ##	2023/03/16 000.0000 J.Itou         不具合修正
 ##	2023/03/19 000.0000 J.Itou         不具合修正
 ##	2023/04/08 000.0000 J.Itou         処理見直し
+##	2023/05/21 000.0000 J.Itou         不具合修正
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	set -n								# 構文エラーのチェック
@@ -644,38 +645,40 @@ fncInitialize () {
 		DNS_GRUP=""
 	fi
 	FUL_BIND=`echo ${INF_BIND} | awk '{print $9;}'`
-	DIR_BIND=`dirname ${FUL_BIND}`
-	FIL_BIND=`basename ${FUL_BIND}`
-	FIL_BOPT=${FIL_BIND}.options
-	FIL_BLOC=${FIL_BIND}.local
-	DIR_ZONE=`sed -n '/^options {/,/^};/p' ${DIR_BIND}/${FIL_BIND} | awk '$1=="directory" {gsub("[\";]", ""); print $2;}'`
-	case "${SYS_NAME}" in
-		"debian"              | \
-		"ubuntu"              )
-			;;
-		"centos"              | \
-		"fedora"              | \
-		"rocky"               | \
-		"miraclelinux"        |  \
-		"almalinux"           )
-			FIL_BOPT=${FIL_BIND}
-			;;
-		"opensuse-leap"       | \
-		"opensuse-tumbleweed" )
-			FIL_BOPT=${FIL_BIND}
-			;;
-		* )
-			;;
-	esac
-	for FIL_NAME in ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BOPT} ${DIR_BIND}/${FIL_BIND}
-	do
-		if [ "${FIL_NAME}" != "" ] && [ -f ${FIL_NAME} ]; then
-			DIR_ZONE=`sed -n '/^options {/,/^};/p' ${FIL_NAME} | awk '$1=="directory" {gsub("[\";]", ""); print $2;}'`
-			if [ "${DIR_ZONE}" != "" ]; then
-				break
+	if [ -n "${FUL_BIND}" ]; then
+		DIR_BIND=`dirname ${FUL_BIND}`
+		FIL_BIND=`basename ${FUL_BIND}`
+		FIL_BOPT=${FIL_BIND}.options
+		FIL_BLOC=${FIL_BIND}.local
+		DIR_ZONE=`sed -n '/^options {/,/^};/p' ${DIR_BIND}/${FIL_BIND} | awk '$1=="directory" {gsub("[\";]", ""); print $2;}'`
+		case "${SYS_NAME}" in
+			"debian"              | \
+			"ubuntu"              )
+				;;
+			"centos"              | \
+			"fedora"              | \
+			"rocky"               | \
+			"miraclelinux"        |  \
+			"almalinux"           )
+				FIL_BOPT=${FIL_BIND}
+				;;
+			"opensuse-leap"       | \
+			"opensuse-tumbleweed" )
+				FIL_BOPT=${FIL_BIND}
+				;;
+			* )
+				;;
+		esac
+		for FIL_NAME in ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BOPT} ${DIR_BIND}/${FIL_BIND}
+		do
+			if [ "${FIL_NAME}" != "" ] && [ -f ${FIL_NAME} ]; then
+				DIR_ZONE=`sed -n '/^options {/,/^};/p' ${FIL_NAME} | awk '$1=="directory" {gsub("[\";]", ""); print $2;}'`
+				if [ "${DIR_ZONE}" != "" ]; then
+					break
+				fi
 			fi
-		fi
-	done
+		done
+	fi
 
 	# dhcpd -------------------------------------------------------------------
 	INF_DHCP=`LANG=C find /etc/ -name "dhcpd.conf" -type f -exec ls -l '{}' \;`
@@ -690,11 +693,13 @@ fncInitialize () {
 	fi
 
 	# --- samba ---------------------------------------------------------------
-	pdbedit -L > /dev/null
-	fncPause $?
-	SMB_PWDB=`find /var/lib/samba/ -name passdb.tdb -type f -print`
-	SMB_CONF=`find /etc/ -name "smb.conf" -type f -print`
-	SMB_BACK=${SMB_CONF}.orig
+	if [ "`${CMD_WICH} pdbedit 2> /dev/null`" != "" ]; then
+		pdbedit -L > /dev/null
+		fncPause $?
+		SMB_PWDB=`find /var/lib/samba/ -name passdb.tdb -type f -print`
+		SMB_CONF=`find /etc/ -name "smb.conf" -type f -print`
+		SMB_BACK=${SMB_CONF}.orig
+	fi
 }
 
 # Main処理 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1453,211 +1458,213 @@ _EOT_
 	# *************************************************************************
 	# Install bind9
 	# *************************************************************************
-	fncPrint "- Set Up bind9 $(fncString ${COL_SIZE} '-')"
-	# -------------------------------------------------------------------------
-	DNS_SCNT="`date +"%Y%m%d"`01"
-	#--------------------------------------------------------------------------
-	if [ ! -d ${DIR_ZONE}/master ]; then
-		fncPrint "--- mkdir master $(fncString ${COL_SIZE} '-')"
-		mkdir -p ${DIR_ZONE}/master
-		chown ${DNS_USER}:${DNS_GRUP} ${DIR_ZONE}/master
-	fi
-	if [ ! -d ${DIR_ZONE}/slaves ]; then
-		fncPrint "--- mkdir slaves $(fncString ${COL_SIZE} '-')"
-		mkdir -p ${DIR_ZONE}/slaves
-		chown ${DNS_USER}:${DNS_GRUP} ${DIR_ZONE}/slaves
-	fi
-	fncPrint "--- db.xxx $(fncString ${COL_SIZE} '-')"
-	for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa ${IP6_RADU[0]}.ip6.arpa
-	do
-		cat <<- _EOT_ | sed -e 's/^ //g' > ${DIR_ZONE}/master/db.${FIL_NAME}
-			\$TTL 1H																; 1 hour
-			@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
-			 														${DNS_SCNT}	; serial
-			 														30M			; refresh (30 minutes)
-			 														15M			; retry (15 minutes)
-			 														1D			; expire (1 day)
-			 														20M			; minimum (20 minutes)
-			 												)
-			 										IN		NS		${SVR_NAME}.${WGP_NAME}.
-_EOT_
-#		chmod 640 ${DIR_ZONE}/master/db.${FIL_NAME}
-		chown ${DNS_USER}:${DNS_GRUP} ${DIR_ZONE}/master/db.${FIL_NAME}
-	done
-	#--------------------------------------------------------------------------
-	cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${WGP_NAME}
-		${SVR_NAME}								IN		A		${IP4_ADDR[0]}
-		 										IN		AAAA	${LNK_ADDR[0]}
-		 										IN		AAAA	${IP6_ADDR[0]}
-_EOT_
-	#--------------------------------------------------------------------------
-	cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa
-		 										IN		PTR		${WGP_NAME}.
-		 										IN		A		${IP4_MASK}
-		${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
-_EOT_
-	#--------------------------------------------------------------------------
-	cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
-		 										IN		PTR		${WGP_NAME}.
-		${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
-_EOT_
-	#--------------------------------------------------------------------------
-	cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa
-		 										IN		PTR		${WGP_NAME}.
-		${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
-_EOT_
-	#--------------------------------------------------------------------------
-	if [ "${IP4_DHCP[0]}" = "auto" ]; then
-		fncPrint "--- dhcp対応 $(fncString ${COL_SIZE} '-')"
-		sed -i.orig ${DIR_ZONE}/master/db.${WGP_NAME}                 -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
-		sed -i.orig ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
-	fi
-	# --- named.conf ----------------------------------------------------------
-	if [ "${DIR_BIND}" != "" ] && [ "${FIL_BIND}" != "" ] && [ -f ${DIR_BIND}/${FIL_BIND} ]; then
-		fncPrint "--- ${FIL_BIND} $(fncString ${COL_SIZE} '-')"
-		if [ ! -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
-			cp -p ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BIND}.orig
+	if [ -n "${DIR_ZONE:-}" ]; then
+		fncPrint "- Set Up bind9 $(fncString ${COL_SIZE} '-')"
+		# ---------------------------------------------------------------------
+		DNS_SCNT="`date +"%Y%m%d"`01"
+		#----------------------------------------------------------------------
+		if [ ! -d ${DIR_ZONE}/master ]; then
+			fncPrint "--- mkdir master $(fncString ${COL_SIZE} '-')"
+			mkdir -p ${DIR_ZONE}/master
+			chown ${DNS_USER}:${DNS_GRUP} ${DIR_ZONE}/master
 		fi
-		cp -p ${DIR_BIND}/${FIL_BIND}.orig ${DIR_BIND}/${FIL_BIND}
-		# ---------------------------------------------------------------------
-		if [ "${FIL_BOPT}" != "${FIL_BIND}" ] && [ "`sed -n "/include.*${FIL_BOPT}/p" ${DIR_BIND}/${FIL_BIND}`" = "" ]; then
-			INS_ROW=`sed -n '/^include/ =' ${DIR_BIND}/${FIL_BIND} | tail -n 1`
-			if [ "${INS_ROW:+UNSET}" = "" ]; then INS_ROW='$ '; fi
-			sed -i ${DIR_BIND}/${FIL_BIND}                            \
-			    -e "${INS_ROW}a include \"${DIR_BIND}/${FIL_BOPT}\";"
+		if [ ! -d ${DIR_ZONE}/slaves ]; then
+			fncPrint "--- mkdir slaves $(fncString ${COL_SIZE} '-')"
+			mkdir -p ${DIR_ZONE}/slaves
+			chown ${DNS_USER}:${DNS_GRUP} ${DIR_ZONE}/slaves
 		fi
-		if [ "${FIL_BLOC}" != "${FIL_BIND}" ] && [ "`sed -n "/include.*${FIL_BLOC}/p" ${DIR_BIND}/${FIL_BIND}`" = "" ]; then
-			INS_ROW=`sed -n '/^include/ =' ${DIR_BIND}/${FIL_BIND} | tail -n 1`
-			if [ "${INS_ROW:+UNSET}" = "" ]; then INS_ROW='$ '; fi
-			sed -i ${DIR_BIND}/${FIL_BIND}                            \
-			    -e "${INS_ROW}a include \"${DIR_BIND}/${FIL_BLOC}\";"
-		fi
-	fi
-	# -------------------------------------------------------------------------
-	for FIL_NAME in `sed -n 's/^include "\(.*\)";$/\1/gp' ${DIR_BIND}/${FIL_BIND}`
-	do
-		if [ "${FIL_NAME}" != "" ] && [ ! -f ${FIL_NAME} ]; then
-			fncPrint "---- make ${FIL_NAME} $(fncString ${COL_SIZE} '-')"
-			cp -p ${DIR_BIND}/named.conf ${FIL_NAME}
-			: > ${FIL_NAME}
-		fi
-	done
-	# --- named.conf.options --------------------------------------------------
-	if [ "${DIR_BIND}" != "" ] && [ "${FIL_BOPT}" != "" ] && [ -f ${DIR_BIND}/${FIL_BOPT} ]; then
-		fncPrint "--- ${FIL_BOPT} $(fncString ${COL_SIZE} '-')"
-		if [ "${FIL_BOPT}" != "${FIL_BIND}" ]; then
-			if [ ! -f ${DIR_BIND}/${FIL_BOPT}.orig ]; then
-				cp -p ${DIR_BIND}/${FIL_BOPT} ${DIR_BIND}/${FIL_BOPT}.orig
-			fi
-			cp -p ${DIR_BIND}/${FIL_BOPT}.orig ${DIR_BIND}/${FIL_BOPT}
-		fi
-		# ---------------------------------------------------------------------
-		sed -i ${DIR_BIND}/${FIL_BOPT}    \
-		    -e '/version/         s%^%//%' \
-		    -e '/listen-on-v6/    s%^%//%' \
-		    -e '/allow-update/    s%^%//%' \
-		    -e '/allow-query/     s%^%//%' \
-		    -e '/allow-transfer/  s%^%//%' \
-		    -e '/allow-recursion/ s%^%//%' \
-		    -e '/also-notify/     s%^%//%' \
-		    -e '/notify/          s%^%//%' \
-		    -e '/recursion/       s%^%//%'
-		# ---------------------------------------------------------------------
-		OLD_IFS=${IFS}
-		# ---------------------------------------------------------------------
-		INS_ROW=$((`sed -n '/^options/,/^};/ =' ${DIR_BIND}/${FIL_BOPT} | tail -n 1`-1))
-		IFS= INS_STR=$(
-			cat <<- _EOT_ | sed -e 's/^ //g'
-				 	version "unknown";
-				 	listen-on-v6    { any; };
-				 	allow-update    { none; };
-				 	allow-query     { localhost; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
-				 	allow-transfer  { localhost; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
-				 	allow-recursion { localhost; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
-				//	also-notify     { ; };
-				//	notify yes;
-				//	recursion no;
-_EOT_
-	)
-		if [ ${INS_ROW} -ge 1 ]; then
-			IFS= INS_CFG=$(echo -e ${INS_STR} | sed "${INS_ROW}r /dev/stdin" ${DIR_BIND}/${FIL_BOPT})
-		else
-			IFS= INS_CFG=$(echo -e ${INS_STR} | cat ${DIR_BIND}/${FIL_BOPT}) /dev/stdin
-		fi
-		# ---------------------------------------------------------------------
-		echo ${INS_CFG} > ${DIR_BIND}/${FIL_BOPT}
-		# ---------------------------------------------------------------------
-#		echo ${INS_CFG} | \
-#		sed -e 's/\/.*\(listen-on-v6\)/\1/g' \
-#		> ${DIR_BIND}/${FIL_BOPT}
-		# ---------------------------------------------------------------------
-		IFS=${OLD_IFS}
-		# ---------------------------------------------------------------------
-#		if [ "${SYS_NAME}" = "ubuntu" ]; then
-			sed -i ${DIR_BIND}/${FIL_BOPT}    \
-			    -e 's/\(dnssec-validation\) auto;/\1 no;/'
-#		fi
-	fi
-	# --- named.conf.local -----------------------------------------------------
-	if [ "${DIR_BIND}" != "" ] && [ "${FIL_BLOC}" != "" ] && [ -f ${DIR_BIND}/${FIL_BLOC} ]; then
-		fncPrint "--- ${FIL_BLOC} $(fncString ${COL_SIZE} '-')"
-		if [ ! -f ${DIR_BIND}/${FIL_BLOC}.orig ]; then
-			cp -p ${DIR_BIND}/${FIL_BLOC} ${DIR_BIND}/${FIL_BLOC}.orig
-		fi
-		cp -p ${DIR_BIND}/${FIL_BLOC}.orig ${DIR_BIND}/${FIL_BLOC}
-		# ---------------------------------------------------------------------
-		cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
-			# -----------------------------------------------------------------------------
-			# ${WGP_NAME}
-			# -----------------------------------------------------------------------------
-_EOT_
-		# ---------------------------------------------------------------------
+		fncPrint "--- db.xxx $(fncString ${COL_SIZE} '-')"
 		for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa ${IP6_RADU[0]}.ip6.arpa
 		do
-			cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_BIND}/${FIL_BLOC}
-				zone "${FIL_NAME}" {
-				 	type master;
-				 	file "master/db.${FIL_NAME}";
-				};
-
+			cat <<- _EOT_ | sed -e 's/^ //g' > ${DIR_ZONE}/master/db.${FIL_NAME}
+				\$TTL 1H																; 1 hour
+				@										IN		SOA		${SVR_NAME}.${WGP_NAME}. root.${WGP_NAME}. (
+				 														${DNS_SCNT}	; serial
+				 														30M			; refresh (30 minutes)
+				 														15M			; retry (15 minutes)
+				 														1D			; expire (1 day)
+				 														20M			; minimum (20 minutes)
+				 												)
+				 										IN		NS		${SVR_NAME}.${WGP_NAME}.
 _EOT_
+#			chmod 640 ${DIR_ZONE}/master/db.${FIL_NAME}
+			chown ${DNS_USER}:${DNS_GRUP} ${DIR_ZONE}/master/db.${FIL_NAME}
 		done
-		# ---------------------------------------------------------------------
-		if [ "${EXT_ADDR}" != "" ]; then
-			fncPrint "--- Set Up slaves $(fncString ${COL_SIZE} '-')"
-			sed -i.master ${DIR_BIND}/${FIL_BOPT}                         \
-			    -e 's/^\([ |\t]*allow-query[ |\t]*\).*$/\1{ any; };/'     \
-			    -e 's/^\([ |\t]*allow-transfer[ |\t]*\).*$/\1{ none; };/'
-			sed -i.master ${DIR_BIND}/${FIL_BLOC}                  \
-			    -e 's/^\([ |\t]*type\).*$/\1 slave;/g'             \
-			    -e '/^[ |\t]*file[ |\t]*/ s/master/slaves/g'       \
-			    -e "/^[ |\t]*type/a \\\tmasterfile-format text;"   \
-			    -e "/^[ |\t]*type/a \\\tmasters { ${EXT_ADDR}; };"
+		#----------------------------------------------------------------------
+		cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${WGP_NAME}
+			${SVR_NAME}								IN		A		${IP4_ADDR[0]}
+			 										IN		AAAA	${LNK_ADDR[0]}
+			 										IN		AAAA	${IP6_ADDR[0]}
+_EOT_
+		#----------------------------------------------------------------------
+		cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa
+			 										IN		PTR		${WGP_NAME}.
+			 										IN		A		${IP4_MASK}
+			${IP4_LADR[0]}										IN		PTR		${SVR_NAME}.${WGP_NAME}.
+_EOT_
+		#----------------------------------------------------------------------
+		cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
+			 										IN		PTR		${WGP_NAME}.
+			${LNK_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
+_EOT_
+		#----------------------------------------------------------------------
+		cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_ZONE}/master/db.${IP6_RADU[0]}.ip6.arpa
+			 										IN		PTR		${WGP_NAME}.
+			${IP6_RADL[0]}			IN		PTR		${SVR_NAME}.${WGP_NAME}.
+_EOT_
+		#----------------------------------------------------------------------
+		if [ "${IP4_DHCP[0]}" = "auto" ]; then
+			fncPrint "--- dhcp対応 $(fncString ${COL_SIZE} '-')"
+			sed -i.orig ${DIR_ZONE}/master/db.${WGP_NAME}                 -e "/^${SVR_NAME}.*${IP4_ADDR[0]}$/d"
+			sed -i.orig ${DIR_ZONE}/master/db.${IP4_RADR[0]}.in-addr.arpa -e "/^${IP4_LADR[0]}.*${SVR_NAME}\.${WGP_NAME}\.$/d"
+		fi
+		# --- named.conf ------------------------------------------------------
+		if [ "${DIR_BIND}" != "" ] && [ "${FIL_BIND}" != "" ] && [ -f ${DIR_BIND}/${FIL_BIND} ]; then
+			fncPrint "--- ${FIL_BIND} $(fncString ${COL_SIZE} '-')"
+			if [ ! -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
+				cp -p ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BIND}.orig
+			fi
+			cp -p ${DIR_BIND}/${FIL_BIND}.orig ${DIR_BIND}/${FIL_BIND}
+			# -----------------------------------------------------------------
+			if [ "${FIL_BOPT}" != "${FIL_BIND}" ] && [ "`sed -n "/include.*${FIL_BOPT}/p" ${DIR_BIND}/${FIL_BIND}`" = "" ]; then
+				INS_ROW=`sed -n '/^include/ =' ${DIR_BIND}/${FIL_BIND} | tail -n 1`
+				if [ "${INS_ROW:+UNSET}" = "" ]; then INS_ROW='$ '; fi
+				sed -i ${DIR_BIND}/${FIL_BIND}                            \
+				    -e "${INS_ROW}a include \"${DIR_BIND}/${FIL_BOPT}\";"
+			fi
+			if [ "${FIL_BLOC}" != "${FIL_BIND}" ] && [ "`sed -n "/include.*${FIL_BLOC}/p" ${DIR_BIND}/${FIL_BIND}`" = "" ]; then
+				INS_ROW=`sed -n '/^include/ =' ${DIR_BIND}/${FIL_BIND} | tail -n 1`
+				if [ "${INS_ROW:+UNSET}" = "" ]; then INS_ROW='$ '; fi
+				sed -i ${DIR_BIND}/${FIL_BIND}                            \
+				    -e "${INS_ROW}a include \"${DIR_BIND}/${FIL_BLOC}\";"
+			fi
 		fi
 		# ---------------------------------------------------------------------
-		cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
-			# -----------------------------------------------------------------------------
+		for FIL_NAME in `sed -n 's/^include "\(.*\)";$/\1/gp' ${DIR_BIND}/${FIL_BIND}`
+		do
+			if [ "${FIL_NAME}" != "" ] && [ ! -f ${FIL_NAME} ]; then
+				fncPrint "---- make ${FIL_NAME} $(fncString ${COL_SIZE} '-')"
+				cp -p ${DIR_BIND}/named.conf ${FIL_NAME}
+				: > ${FIL_NAME}
+			fi
+		done
+		# --- named.conf.options ----------------------------------------------
+		if [ "${DIR_BIND}" != "" ] && [ "${FIL_BOPT}" != "" ] && [ -f ${DIR_BIND}/${FIL_BOPT} ]; then
+			fncPrint "--- ${FIL_BOPT} $(fncString ${COL_SIZE} '-')"
+			if [ "${FIL_BOPT}" != "${FIL_BIND}" ]; then
+				if [ ! -f ${DIR_BIND}/${FIL_BOPT}.orig ]; then
+					cp -p ${DIR_BIND}/${FIL_BOPT} ${DIR_BIND}/${FIL_BOPT}.orig
+				fi
+				cp -p ${DIR_BIND}/${FIL_BOPT}.orig ${DIR_BIND}/${FIL_BOPT}
+			fi
+			# -----------------------------------------------------------------
+			sed -i ${DIR_BIND}/${FIL_BOPT}    \
+			    -e '/version/         s%^%//%' \
+			    -e '/listen-on-v6/    s%^%//%' \
+			    -e '/allow-update/    s%^%//%' \
+			    -e '/allow-query/     s%^%//%' \
+			    -e '/allow-transfer/  s%^%//%' \
+			    -e '/allow-recursion/ s%^%//%' \
+			    -e '/also-notify/     s%^%//%' \
+			    -e '/notify/          s%^%//%' \
+			    -e '/recursion/       s%^%//%'
+			# -----------------------------------------------------------------
+			OLD_IFS=${IFS}
+			# -----------------------------------------------------------------
+			INS_ROW=$((`sed -n '/^options/,/^};/ =' ${DIR_BIND}/${FIL_BOPT} | tail -n 1`-1))
+			IFS= INS_STR=$(
+				cat <<- _EOT_ | sed -e 's/^ //g'
+					 	version "unknown";
+					 	listen-on-v6    { any; };
+					 	allow-update    { none; };
+					 	allow-query     { localhost; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
+					 	allow-transfer  { localhost; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
+					 	allow-recursion { localhost; ${IP4_UADR[0]}.0/${IP4_BITS[0]}; };
+					//	also-notify     { ; };
+					//	notify yes;
+					//	recursion no;
 _EOT_
-	fi
-	# -------------------------------------------------------------------------
-	named-checkconf
-	fncPause $?
-	# -------------------------------------------------------------------------
-	if [ "`fncProcFind \"named\"`" = "1" ]; then
-		fncProc named "${RUN_BIND[0]}"
-		fncProc named "${RUN_BIND[1]}"
-	fi
-	if [ "`fncProcFind \"bind9\"`" = "1" ]; then
-		fncProc bind9 "${RUN_BIND[0]}"
-		fncProc bind9 "${RUN_BIND[1]}"
-	fi
+		)
+			if [ ${INS_ROW} -ge 1 ]; then
+				IFS= INS_CFG=$(echo -e ${INS_STR} | sed "${INS_ROW}r /dev/stdin" ${DIR_BIND}/${FIL_BOPT})
+			else
+				IFS= INS_CFG=$(echo -e ${INS_STR} | cat ${DIR_BIND}/${FIL_BOPT}) /dev/stdin
+			fi
+			# -----------------------------------------------------------------
+			echo ${INS_CFG} > ${DIR_BIND}/${FIL_BOPT}
+			# -----------------------------------------------------------------
+#			echo ${INS_CFG} | \
+#			sed -e 's/\/.*\(listen-on-v6\)/\1/g' \
+#			> ${DIR_BIND}/${FIL_BOPT}
+			# -----------------------------------------------------------------
+			IFS=${OLD_IFS}
+			# -----------------------------------------------------------------
+#			if [ "${SYS_NAME}" = "ubuntu" ]; then
+				sed -i ${DIR_BIND}/${FIL_BOPT}    \
+				    -e 's/\(dnssec-validation\) auto;/\1 no;/'
+#			fi
+		fi
+		# --- named.conf.local -------------------------------------------------
+		if [ "${DIR_BIND}" != "" ] && [ "${FIL_BLOC}" != "" ] && [ -f ${DIR_BIND}/${FIL_BLOC} ]; then
+			fncPrint "--- ${FIL_BLOC} $(fncString ${COL_SIZE} '-')"
+			if [ ! -f ${DIR_BIND}/${FIL_BLOC}.orig ]; then
+				cp -p ${DIR_BIND}/${FIL_BLOC} ${DIR_BIND}/${FIL_BLOC}.orig
+			fi
+			cp -p ${DIR_BIND}/${FIL_BLOC}.orig ${DIR_BIND}/${FIL_BLOC}
+			# -----------------------------------------------------------------
+			cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
+				# -----------------------------------------------------------------------------
+				# ${WGP_NAME}
+				# -----------------------------------------------------------------------------
+_EOT_
+			# -----------------------------------------------------------------
+			for FIL_NAME in ${WGP_NAME} ${IP4_RADR[0]}.in-addr.arpa ${LNK_RADU[0]}.ip6.arpa ${IP6_RADU[0]}.ip6.arpa
+			do
+				cat <<- _EOT_ | sed -e 's/^ //g' >> ${DIR_BIND}/${FIL_BLOC}
+					zone "${FIL_NAME}" {
+					 	type master;
+					 	file "master/db.${FIL_NAME}";
+					};
 
-#	fncPrint "--- dns check $(fncString ${COL_SIZE} '-')"
-#	dig ${SVR_NAME}.${WGP_NAME} A
-#	dig ${SVR_NAME}.${WGP_NAME} AAAA
-#	dig -x ${IP4_ADDR[0]}
-#	dig -x ${IP6_ADDR[0]}
-#	fncPrint "--- dns check $(fncString ${COL_SIZE} '-')"
+_EOT_
+			done
+			# -----------------------------------------------------------------
+			if [ "${EXT_ADDR}" != "" ]; then
+				fncPrint "--- Set Up slaves $(fncString ${COL_SIZE} '-')"
+				sed -i.master ${DIR_BIND}/${FIL_BOPT}                         \
+				    -e 's/^\([ |\t]*allow-query[ |\t]*\).*$/\1{ any; };/'     \
+				    -e 's/^\([ |\t]*allow-transfer[ |\t]*\).*$/\1{ none; };/'
+				sed -i.master ${DIR_BIND}/${FIL_BLOC}                  \
+				    -e 's/^\([ |\t]*type\).*$/\1 slave;/g'             \
+				    -e '/^[ |\t]*file[ |\t]*/ s/master/slaves/g'       \
+				    -e "/^[ |\t]*type/a \\\tmasterfile-format text;"   \
+				    -e "/^[ |\t]*type/a \\\tmasters { ${EXT_ADDR}; };"
+			fi
+			# -----------------------------------------------------------------
+			cat <<- _EOT_ >> ${DIR_BIND}/${FIL_BLOC}
+				# -----------------------------------------------------------------------------
+_EOT_
+		fi
+		# ---------------------------------------------------------------------
+		named-checkconf
+		fncPause $?
+		# ---------------------------------------------------------------------
+		if [ "`fncProcFind \"named\"`" = "1" ]; then
+			fncProc named "${RUN_BIND[0]}"
+			fncProc named "${RUN_BIND[1]}"
+		fi
+		if [ "`fncProcFind \"bind9\"`" = "1" ]; then
+			fncProc bind9 "${RUN_BIND[0]}"
+			fncProc bind9 "${RUN_BIND[1]}"
+		fi
+
+#		fncPrint "--- dns check $(fncString ${COL_SIZE} '-')"
+#		dig ${SVR_NAME}.${WGP_NAME} A
+#		dig ${SVR_NAME}.${WGP_NAME} AAAA
+#		dig -x ${IP4_ADDR[0]}
+#		dig -x ${IP6_ADDR[0]}
+#		fncPrint "--- dns check $(fncString ${COL_SIZE} '-')"
+	fi
 
 	# *************************************************************************
 	# Install dhcp
@@ -1722,7 +1729,7 @@ _EOT_
 	# Add smb.conf
 	# *************************************************************************
 	# -------------------------------------------------------------------------
-	if [ "${SMB_CONF}" != "" ] && [ -f ${SMB_CONF} ]; then
+	if [ "${SMB_CONF:-}" != "" ] && [ -f ${SMB_CONF} ]; then
 		fncPrint "- Set Up samba $(fncString ${COL_SIZE} '-')"
 		if [ "${SMB_BACK}" != "" ] && [ ! -f ${SMB_BACK} ]; then
 			cp -p ${SMB_CONF} ${SMB_BACK}
@@ -2072,8 +2079,10 @@ _EOT_
 	# *************************************************************************
 	fncPrint "- Set Up Samba User $(fncString ${COL_SIZE} '-')"
 	# -------------------------------------------------------------------------
-	pdbedit -i smbpasswd:${SMB_FILE} -e tdbsam:${SMB_PWDB}
-	fncPause $?
+	if [ "`${CMD_WICH} pdbedit 2> /dev/null`" != "" ]; then
+		pdbedit -i smbpasswd:${SMB_FILE} -e tdbsam:${SMB_PWDB}
+		fncPause $?
+	fi
 
 	# *************************************************************************
 	# Cron shell (cd /usr/sh 後に tar -cz CMD*sh | xxd -ps にて出力されたもの)
@@ -2488,18 +2497,24 @@ _EOT_
 		case "${SYS_NAME}" in
 			"debian" | \
 			"ubuntu" )
-				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude="bk_*.tgz" var/cache/bind/ || [[ $? == 1 ]]
+				if [ -d var/cache/bind/. ]; then
+					tar -czf ${DIR_WK}/bk_bind.tgz   --exclude="bk_*.tgz" var/cache/bind/ || [[ $? == 1 ]]
+				fi
 				;;
 			"centos"       | \
 			"fedora"       | \
 			"rocky"        | \
 			"miraclelinux" | \
 			"almalinux"    )
-				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude="bk_*.tgz" var/named/ || [[ $? == 1 ]]
+				if [ -d var/named/. ]; then
+					tar -czf ${DIR_WK}/bk_bind.tgz   --exclude="bk_*.tgz" var/named/ || [[ $? == 1 ]]
+				fi
 				;;
 			"opensuse-leap"       | \
 			"opensuse-tumbleweed" )
-				tar -czf ${DIR_WK}/bk_bind.tgz   --exclude="bk_*.tgz" --exclude var/lib/named/dev/log var/lib/named/ || [[ $? == 1 ]]
+				if [ -d var/lib/named/. ]; then
+					tar -czf ${DIR_WK}/bk_bind.tgz   --exclude="bk_*.tgz" --exclude var/lib/named/dev/log var/lib/named/ || [[ $? == 1 ]]
+				fi
 				;;
 			* )
 				;;
@@ -2525,137 +2540,137 @@ _EOT_
 fncDebug () {
 	fncInitialize
 	fncPrint "- Debug mode start $(fncString ${COL_SIZE} '-')"
-	echo "NOW_DATE=${NOW_DATE}"													# yyyy/mm/dd
-	echo "NOW_TIME=${NOW_TIME}"													# yyyymmddhhmmss
-	echo "PGM_NAME=${PGM_NAME}"													# プログラム名
-	echo "WHO_AMI =${WHO_AMI}"													# 実行ユーザー名
-	echo "WHO_USER=${WHO_USER[@]}"												# ログイン中ユーザ一覧
-	echo "VGA_RESO=${VGA_RESO[@]}"												# コンソールの解像度：縦×横×色
-	echo "DIR_SHAR=${DIR_SHAR}"													# 共有ディレクトリーのルート
-#	echo "RUN_CLAM=${RUN_CLAM[@]}"												# 起動停止設定：clamav-freshclam
-	echo "RUN_SSHD=${RUN_SSHD[@]}"												#   〃        ：ssh / sshd
-	echo "RUN_HTTP=${RUN_HTTP[@]}"												#   〃        ：apache2 / httpd
-#	echo "RUN_FTPD=${RUN_FTPD[@]}"												#   〃        ：vsftpd
-	echo "RUN_BIND=${RUN_BIND[@]}"												#   〃        ：bind9 / named
-	echo "RUN_DHCP=${RUN_DHCP[@]}"												#   〃        ：isc-dhcp-server / dhcpd
-	echo "RUN_SMBD=${RUN_SMBD[@]}"												#   〃        ：samba / smbd,nmbd / smb,nmb
-#	echo "RUN_WMIN=${RUN_WMIN[@]}"												#   〃        ：webmin
-	echo "RUN_DLNA=${RUN_DLNA[@]}"												#   〃        ：minidlna
-	echo "EXT_ZONE=${EXT_ZONE}"													# マスターDNSのドメイン名
-	echo "EXT_ADDR=${EXT_ADDR}"													#   〃         IPアドレス
-#	echo "FLG_RHAT=${FLG_RHAT}"													# CentOS時=1,その他=0
-	echo "FLG_SVER=${FLG_SVER}"													# 0以外でサーバー仕様でセッティング
-	echo "DEF_USER=${DEF_USER}"													# インストール時に作成したユーザー名
-	echo "SYS_NAME=${SYS_NAME}"													# ディストリビューション名
-	echo "SYS_CODE=${SYS_CODE}"													# コード名
-	echo "SYS_VERS=${SYS_VERS}"													# バージョン名
-	echo "SYS_VRID=${SYS_VRID}"													# バージョン番号
-	echo "SYS_VNUM=${SYS_VNUM}"													#   〃          (取得できない場合は-1)
-	echo "SYS_NOOP=${SYS_NOOP}"													# 対象OS=1,それ以外=0
-	echo "SMB_USER=${SMB_USER}"													# smb.confのforce user
-	echo "SMB_GRUP=${SMB_GRUP}"													# smb.confのforce group
-	echo "SMB_GADM=${SMB_GADM}"													# smb.confのadmin group
-#	echo "WWW_DATA=${WWW_DATA}"													# apache2 / httpdのユーザ名
-	echo "CPU_TYPE=${CPU_TYPE}"													# CPU TYPE (x86_64/armv5tel/...)
-	echo "SVR_FQDN=${SVR_FQDN}"													# 本機のFQDN
-	echo "SVR_NAME=${SVR_NAME}"													# 本機のホスト名
-	echo "WGP_NAME=${WGP_NAME}"													# ワークグループ名(ドメイン名)
-	echo "ACT_NMAN=${ACT_NMAN}"													# NetworkManager起動状態
-	echo "CON_NAME=${CON_NAME}"													# 接続名
-	echo "CON_UUID=${CON_UUID}"													# 接続UUID
-	echo "DEV_NICS=${DEV_NICS[@]}"												# NICデバイス名
-	echo "NIC_ARRY=${NIC_ARRY[@]}"												# NICデバイス名
-	echo "IP4_ARRY=${IP4_ARRY[@]}"												# IPv4:IPアドレス/サブネットマスク(bit)
-	echo "IP6_ARRY=${IP6_ARRY[@]}"												# IPv6:IPアドレス/サブネットマスク(bit)
-	echo "LNK_ARRY=${LNK_ARRY[@]}"												# Link:IPアドレス/サブネットマスク(bit)
-	echo "IP4_DHCP=${IP4_DHCP[@]}"												# IPv4:DHCPフラグ(1:dhcp/0:static)
-	echo "IP6_DHCP=${IP6_DHCP[@]}"												# IPv6:DHCPフラグ(1:dhcp/0:static)
-	echo "IP4_DNSA=${IP4_DNSA[@]}"												# IPv4:DNSアドレス
-	echo "IP6_DNSA=${IP6_DNSA[@]}"												# IPv6:DNSアドレス
-	echo "IP4_GATE=${IP4_GATE}"													# IPv4:デフォルトゲートウェイ
-	echo "IP4_ADDR=${IP4_ADDR[@]}"												# IPv4:IPアドレス
-	echo "IP4_BITS=${IP4_BITS[@]}"												# IPv4:サブネットマスク(bit)
-	echo "IP4_UADR=${IP4_UADR[@]}"												# IPv4:本機のIPアドレスの上位値(/24決め打ち)
-	echo "IP4_LADR=${IP4_LADR[@]}"												# IPv4:本機のIPアドレスの下位値
-	echo "IP4_LGAT=${IP4_LGAT[@]}"												# IPv4:デフォルトゲートウェイの下位値
-	echo "IP4_RADR=${IP4_RADR[@]}"												# IPv4:BIND逆引き用
-	echo "IP4_NTWK=${IP4_NTWK[@]}"												# IPv4:ネットワークアドレス
-	echo "IP4_BCST=${IP4_BCST[@]}"												# IPv4:ブロードキャストアドレス
-	echo "IP4_MASK=${IP4_MASK[@]}"												# IPv4:サブネットマスク
-	echo "IP6_ADDR=${IP6_ADDR[@]}"												# IPv6:IPアドレス
-	echo "IP6_BITS=${IP6_BITS[@]}"												# IPv6:サブネットマスク(bit)
-	echo "IP6_CONV=${IP6_CONV[@]}"												# IPv6:補間済みアドレス
-	echo "IP6_UADR=${IP6_UADR[@]}"												# IPv6:本機のIPアドレスの上位値(/64決め打ち)
-	echo "IP6_LADR=${IP6_LADR[@]}"												# IPv6:本機のIPアドレスの下位値
-	echo "IP6_RADU=${IP6_RADU[@]}"												# IPv6:BIND逆引き用上位値
-	echo "IP6_RADL=${IP6_RADL[@]}"												# IPv6:BIND逆引き用下位値
-	echo "LNK_ADDR=${LNK_ADDR[@]}"												# Link:IPアドレス
-	echo "LNK_BITS=${LNK_BITS[@]}"												# Link:サブネットマスク(bit)
-	echo "LNK_CONV=${LNK_CONV[@]}"												# Link:補間済みアドレス
-	echo "LNK_UADR=${LNK_UADR[@]}"												# Link:本機のIPアドレスの上位値(/64決め打ち)
-	echo "LNK_LADR=${LNK_LADR[@]}"												# Link:本機のIPアドレスの下位値
-	echo "LNK_RADU=${LNK_RADU[@]}"												# Link:BIND逆引き用上位値
-	echo "LNK_RADL=${LNK_RADL[@]}"												# Link:BIND逆引き用下位値
-	echo "IP6_CDNS=${IP6_CDNS[@]}"												# IPv6:補間済みアドレス[DNS]
-	echo "IP6_UDNS=${IP6_UDNS[@]}"												# IPv6:本機のIPアドレスの上位値(/64決め打ち)[DNS]
-	echo "IP6_LDNS=${IP6_LDNS[@]}"												# IPv6:本機のIPアドレスの下位値[DNS]
-	echo "IP6_RDNU=${IP6_RDNU[@]}"												# IPv6:BIND逆引き用上位値[DNS]
-	echo "IP6_RDNL=${IP6_RDNL[@]}"												# IPv6:BIND逆引き用下位値[DNS]
-	echo "RNG_DHCP=${RNG_DHCP}"													# IPv4:DHCPの提供アドレス範囲
-#	echo "URL_SYS =${URL_SYS}"													# ungoogled-chromium:OS別URL
-#	echo "URL_DEB =${URL_DEB}"													# ungoogled-chromium:/etc/apt/sources.list.d/home:ungoogled_chromium.list
-#	echo "URL_KEY =${URL_KEY}"													# ungoogled-chromium:/etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg
-#	echo "DST_NAME=${DST_NAME}"													# ワーク：
-#	echo "MNT_FD  =${MNT_FD}"													#  〃   ：
-#	echo "MNT_CD  =${MNT_CD}"													#  〃   ：
-	echo "DEV_CD  =${DEV_CD}"													#  〃   ：
-	echo "DIR_WK  =${DIR_WK}"													#  〃   ：
-	echo "LST_USER=${LST_USER}"													#  〃   ：
-#	echo "LOG_FILE=${LOG_FILE}"													#  〃   ：
-	echo "TGZ_WORK=${TGZ_WORK}"													#  〃   ：
-	echo "CRN_FILE=${CRN_FILE}"													#  〃   ：
-	echo "USR_FILE=${USR_FILE}"													#  〃   ：
-	echo "SMB_FILE=${SMB_FILE}"													#  〃   ：
-	echo "SMB_WORK=${SMB_WORK}"													#  〃   ：
-#	echo "SVR_NAME=${SVR_NAME}"													#  〃   ：
-	echo "FLG_VMTL=${FLG_VMTL}"													#  〃   ：0以外でVMware Toolsをインストール
-	echo "NUM_HDDS=${NUM_HDDS}"													#  〃   ：インストール先のHDD台数
-	echo "DEV_HDDS=${DEV_HDDS[@]}"												#  〃   ：
-	echo "HDD_ARRY=${HDD_ARRY[@]}"												#  〃   ：
-	echo "USB_ARRY=${USB_ARRY[@]}"												#  〃   ：
-#	echo "DEV_RATE=${DEV_RATE[@]}"												#  〃   ：
-#	echo "DEV_TEMP=${DEV_TEMP[@]}"												#  〃   ：
-	echo "CMD_AGET=${CMD_AGET}"													#  〃   ：
-	echo "LIN_CHSH=${LIN_CHSH}"													#  〃   ：
-	echo "CMD_CHSH=${CMD_CHSH}"													#  〃   ：
-#	echo "FILE_USERDIRCONF=${FILE_USERDIRCONF}"									#  〃   ：
-#	echo "FILE_VSFTPDCONF=${FILE_VSFTPDCONF}"									#  〃   ：
-#	echo "DIR_VSFTPD=${DIR_VSFTPD}"												#  〃   ：
-	echo "INF_CHRO=${INF_CHRO}"													#  〃   ：chrony
-	echo "FUL_CHRO=${FUL_CHRO}"													#  〃   ：
-	echo "INF_BIND=${INF_BIND}"													#  〃   ：bind
-	echo "DNS_USER=${DNS_USER}"													#  〃   ：
-	echo "DNS_GRUP=${DNS_GRUP}"													#  〃   ：
-	echo "FUL_BIND=${FUL_BIND}"													#  〃   ：
-	echo "DIR_BIND=${DIR_BIND}"													#  〃   ：
-	echo "FIL_BIND=${FIL_BIND}"													#  〃   ：
-	echo "FIL_BOPT=${FIL_BOPT}"													#  〃   ：
-	echo "FIL_BLOC=${FIL_BLOC}"													#  〃   ：
-	echo "DIR_ZONE=${DIR_ZONE}"													#  〃   ：
-	echo "INF_DHCP=${INF_DHCP}"													#  〃   ：dhcpd
-	echo "FUL_DHCP=${FUL_DHCP}"													#  〃   ：
-	echo "DIR_DHCP=${DIR_DHCP}"													#  〃   ：
-	echo "FIL_DHCP=${FIL_DHCP}"													#  〃   ：
-	echo "SMB_PWDB=${SMB_PWDB}"													#  〃   ：samba
-	echo "SMB_CONF=${SMB_CONF}"													#  〃   ：
-	echo "SMB_BACK=${SMB_BACK}"													#  〃   ：
-#	echo "SEL_WMIN=${SEL_WMIN}"													#  〃   ：webmin
-#	echo "HTM_WMIN=${HTM_WMIN}"													#  〃   ：
-#	echo "WEB_WMIN=${WEB_WMIN}"													#  〃   ：
-#	echo "WRK_WMIN=${WRK_WMIN}"													#  〃   ：
-#	echo "URL_WMIN=${URL_WMIN}"													#  〃   ：
-#	echo "SET_WMIN=${SET_WMIN}"													#  〃   ：
-#	echo "PKG_WMIN=${PKG_WMIN}"													#  〃   ：
+	echo "NOW_DATE=${NOW_DATE:-}"												# yyyy/mm/dd
+	echo "NOW_TIME=${NOW_TIME:-}"												# yyyymmddhhmmss
+	echo "PGM_NAME=${PGM_NAME:-}"												# プログラム名
+	echo "WHO_AMI =${WHO_AMI:-}"												# 実行ユーザー名
+	echo "WHO_USER=${WHO_USER[@]:-}"											# ログイン中ユーザ一覧
+	echo "VGA_RESO=${VGA_RESO[@]:-}"											# コンソールの解像度：縦×横×色
+	echo "DIR_SHAR=${DIR_SHAR:-}"												# 共有ディレクトリーのルート
+#	echo "RUN_CLAM=${RUN_CLAM[@]:-}"											# 起動停止設定：clamav-freshclam
+	echo "RUN_SSHD=${RUN_SSHD[@]:-}"											#   〃        ：ssh / sshd
+	echo "RUN_HTTP=${RUN_HTTP[@]:-}"											#   〃        ：apache2 / httpd
+#	echo "RUN_FTPD=${RUN_FTPD[@]:-}"											#   〃        ：vsftpd
+	echo "RUN_BIND=${RUN_BIND[@]:-}"											#   〃        ：bind9 / named
+	echo "RUN_DHCP=${RUN_DHCP[@]:-}"											#   〃        ：isc-dhcp-server / dhcpd
+	echo "RUN_SMBD=${RUN_SMBD[@]:-}"											#   〃        ：samba / smbd,nmbd / smb,nmb
+#	echo "RUN_WMIN=${RUN_WMIN[@]:-}"											#   〃        ：webmin
+	echo "RUN_DLNA=${RUN_DLNA[@]:-}"											#   〃        ：minidlna
+	echo "EXT_ZONE=${EXT_ZONE:-}"												# マスターDNSのドメイン名
+	echo "EXT_ADDR=${EXT_ADDR:-}"												#   〃         IPアドレス
+#	echo "FLG_RHAT=${FLG_RHAT:-}"												# CentOS時=1,その他=0
+	echo "FLG_SVER=${FLG_SVER:-}"												# 0以外でサーバー仕様でセッティング
+	echo "DEF_USER=${DEF_USER:-}"												# インストール時に作成したユーザー名
+	echo "SYS_NAME=${SYS_NAME:-}"												# ディストリビューション名
+	echo "SYS_CODE=${SYS_CODE:-}"												# コード名
+	echo "SYS_VERS=${SYS_VERS:-}"												# バージョン名
+	echo "SYS_VRID=${SYS_VRID:-}"												# バージョン番号
+	echo "SYS_VNUM=${SYS_VNUM:-}"												#   〃          (取得できない場合は-1)
+	echo "SYS_NOOP=${SYS_NOOP:-}"												# 対象OS=1,それ以外=0
+	echo "SMB_USER=${SMB_USER:-}"												# smb.confのforce user
+	echo "SMB_GRUP=${SMB_GRUP:-}"												# smb.confのforce group
+	echo "SMB_GADM=${SMB_GADM:-}"												# smb.confのadmin group
+#	echo "WWW_DATA=${WWW_DATA:-}"												# apache2 / httpdのユーザ名
+	echo "CPU_TYPE=${CPU_TYPE:-}"												# CPU TYPE (x86_64/armv5tel/...)
+	echo "SVR_FQDN=${SVR_FQDN:-}"												# 本機のFQDN
+	echo "SVR_NAME=${SVR_NAME:-}"												# 本機のホスト名
+	echo "WGP_NAME=${WGP_NAME:-}"												# ワークグループ名(ドメイン名)
+	echo "ACT_NMAN=${ACT_NMAN:-}"												# NetworkManager起動状態
+	echo "CON_NAME=${CON_NAME:-}"												# 接続名
+	echo "CON_UUID=${CON_UUID:-}"												# 接続UUID
+	echo "DEV_NICS=${DEV_NICS[@]:-}"											# NICデバイス名
+	echo "NIC_ARRY=${NIC_ARRY[@]:-}"											# NICデバイス名
+	echo "IP4_ARRY=${IP4_ARRY[@]:-}"											# IPv4:IPアドレス/サブネットマスク(bit)
+	echo "IP6_ARRY=${IP6_ARRY[@]:-}"											# IPv6:IPアドレス/サブネットマスク(bit)
+	echo "LNK_ARRY=${LNK_ARRY[@]:-}"											# Link:IPアドレス/サブネットマスク(bit)
+	echo "IP4_DHCP=${IP4_DHCP[@]:-}"											# IPv4:DHCPフラグ(1:dhcp/0:static)
+	echo "IP6_DHCP=${IP6_DHCP[@]:-}"											# IPv6:DHCPフラグ(1:dhcp/0:static)
+	echo "IP4_DNSA=${IP4_DNSA[@]:-}"											# IPv4:DNSアドレス
+	echo "IP6_DNSA=${IP6_DNSA[@]:-}"											# IPv6:DNSアドレス
+	echo "IP4_GATE=${IP4_GATE:-}"												# IPv4:デフォルトゲートウェイ
+	echo "IP4_ADDR=${IP4_ADDR[@]:-}"											# IPv4:IPアドレス
+	echo "IP4_BITS=${IP4_BITS[@]:-}"											# IPv4:サブネットマスク(bit)
+	echo "IP4_UADR=${IP4_UADR[@]:-}"											# IPv4:本機のIPアドレスの上位値(/24決め打ち)
+	echo "IP4_LADR=${IP4_LADR[@]:-}"											# IPv4:本機のIPアドレスの下位値
+	echo "IP4_LGAT=${IP4_LGAT[@]:-}"											# IPv4:デフォルトゲートウェイの下位値
+	echo "IP4_RADR=${IP4_RADR[@]:-}"											# IPv4:BIND逆引き用
+	echo "IP4_NTWK=${IP4_NTWK[@]:-}"											# IPv4:ネットワークアドレス
+	echo "IP4_BCST=${IP4_BCST[@]:-}"											# IPv4:ブロードキャストアドレス
+	echo "IP4_MASK=${IP4_MASK[@]:-}"											# IPv4:サブネットマスク
+	echo "IP6_ADDR=${IP6_ADDR[@]:-}"											# IPv6:IPアドレス
+	echo "IP6_BITS=${IP6_BITS[@]:-}"											# IPv6:サブネットマスク(bit)
+	echo "IP6_CONV=${IP6_CONV[@]:-}"											# IPv6:補間済みアドレス
+	echo "IP6_UADR=${IP6_UADR[@]:-}"											# IPv6:本機のIPアドレスの上位値(/64決め打ち)
+	echo "IP6_LADR=${IP6_LADR[@]:-}"											# IPv6:本機のIPアドレスの下位値
+	echo "IP6_RADU=${IP6_RADU[@]:-}"											# IPv6:BIND逆引き用上位値
+	echo "IP6_RADL=${IP6_RADL[@]:-}"											# IPv6:BIND逆引き用下位値
+	echo "LNK_ADDR=${LNK_ADDR[@]:-}"											# Link:IPアドレス
+	echo "LNK_BITS=${LNK_BITS[@]:-}"											# Link:サブネットマスク(bit)
+	echo "LNK_CONV=${LNK_CONV[@]:-}"											# Link:補間済みアドレス
+	echo "LNK_UADR=${LNK_UADR[@]:-}"											# Link:本機のIPアドレスの上位値(/64決め打ち)
+	echo "LNK_LADR=${LNK_LADR[@]:-}"											# Link:本機のIPアドレスの下位値
+	echo "LNK_RADU=${LNK_RADU[@]:-}"											# Link:BIND逆引き用上位値
+	echo "LNK_RADL=${LNK_RADL[@]:-}"											# Link:BIND逆引き用下位値
+	echo "IP6_CDNS=${IP6_CDNS[@]:-}"											# IPv6:補間済みアドレス[DNS]
+	echo "IP6_UDNS=${IP6_UDNS[@]:-}"											# IPv6:本機のIPアドレスの上位値(/64決め打ち)[DNS]
+	echo "IP6_LDNS=${IP6_LDNS[@]:-}"											# IPv6:本機のIPアドレスの下位値[DNS]
+	echo "IP6_RDNU=${IP6_RDNU[@]:-}"											# IPv6:BIND逆引き用上位値[DNS]
+	echo "IP6_RDNL=${IP6_RDNL[@]:-}"											# IPv6:BIND逆引き用下位値[DNS]
+	echo "RNG_DHCP=${RNG_DHCP:-}"												# IPv4:DHCPの提供アドレス範囲
+#	echo "URL_SYS =${URL_SYS:-}"												# ungoogled-chromium:OS別URL
+#	echo "URL_DEB =${URL_DEB:-}"												# ungoogled-chromium:/etc/apt/sources.list.d/home:ungoogled_chromium.list
+#	echo "URL_KEY =${URL_KEY:-}"												# ungoogled-chromium:/etc/apt/trusted.gpg.d/home_ungoogled_chromium.gpg
+#	echo "DST_NAME=${DST_NAME:-}"												# ワーク：
+#	echo "MNT_FD  =${MNT_FD:-}"													#  〃   ：
+#	echo "MNT_CD  =${MNT_CD:-}"													#  〃   ：
+	echo "DEV_CD  =${DEV_CD:-}"													#  〃   ：
+	echo "DIR_WK  =${DIR_WK:-}"													#  〃   ：
+	echo "LST_USER=${LST_USER:-}"												#  〃   ：
+#	echo "LOG_FILE=${LOG_FILE:-}"												#  〃   ：
+	echo "TGZ_WORK=${TGZ_WORK:-}"												#  〃   ：
+	echo "CRN_FILE=${CRN_FILE:-}"												#  〃   ：
+	echo "USR_FILE=${USR_FILE:-}"												#  〃   ：
+	echo "SMB_FILE=${SMB_FILE:-}"												#  〃   ：
+	echo "SMB_WORK=${SMB_WORK:-}"												#  〃   ：
+#	echo "SVR_NAME=${SVR_NAME:-}"												#  〃   ：
+	echo "FLG_VMTL=${FLG_VMTL:-}"												#  〃   ：0以外でVMware Toolsをインストール
+	echo "NUM_HDDS=${NUM_HDDS:-}"												#  〃   ：インストール先のHDD台数
+	echo "DEV_HDDS=${DEV_HDDS[@]:-}"											#  〃   ：
+	echo "HDD_ARRY=${HDD_ARRY[@]:-}"											#  〃   ：
+	echo "USB_ARRY=${USB_ARRY[@]:-}"											#  〃   ：
+#	echo "DEV_RATE=${DEV_RATE[@]:-}"											#  〃   ：
+#	echo "DEV_TEMP=${DEV_TEMP[@]:-}"											#  〃   ：
+	echo "CMD_AGET=${CMD_AGET:-}"												#  〃   ：
+	echo "LIN_CHSH=${LIN_CHSH:-}"												#  〃   ：
+	echo "CMD_CHSH=${CMD_CHSH:-}"												#  〃   ：
+#	echo "FILE_USERDIRCONF=${FILE_USERDIRCONF:-}"								#  〃   ：
+#	echo "FILE_VSFTPDCONF=${FILE_VSFTPDCONF:-}"									#  〃   ：
+#	echo "DIR_VSFTPD=${DIR_VSFTPD:-}"											#  〃   ：
+	echo "INF_CHRO=${INF_CHRO:-}"												#  〃   ：chrony
+	echo "FUL_CHRO=${FUL_CHRO:-}"												#  〃   ：
+	echo "INF_BIND=${INF_BIND:-}"												#  〃   ：bind
+	echo "DNS_USER=${DNS_USER:-}"												#  〃   ：
+	echo "DNS_GRUP=${DNS_GRUP:-}"												#  〃   ：
+	echo "FUL_BIND=${FUL_BIND:-}"												#  〃   ：
+	echo "DIR_BIND=${DIR_BIND:-}"												#  〃   ：
+	echo "FIL_BIND=${FIL_BIND:-}"												#  〃   ：
+	echo "FIL_BOPT=${FIL_BOPT:-}"												#  〃   ：
+	echo "FIL_BLOC=${FIL_BLOC:-}"												#  〃   ：
+	echo "DIR_ZONE=${DIR_ZONE:-}"												#  〃   ：
+	echo "INF_DHCP=${INF_DHCP:-}"												#  〃   ：dhcpd
+	echo "FUL_DHCP=${FUL_DHCP:-}"												#  〃   ：
+	echo "DIR_DHCP=${DIR_DHCP:-}"												#  〃   ：
+	echo "FIL_DHCP=${FIL_DHCP:-}"												#  〃   ：
+	echo "SMB_PWDB=${SMB_PWDB:-}"												#  〃   ：samba
+	echo "SMB_CONF=${SMB_CONF:-}"												#  〃   ：
+	echo "SMB_BACK=${SMB_BACK:-}"												#  〃   ：
+#	echo "SEL_WMIN=${SEL_WMIN:-}"												#  〃   ：webmin
+#	echo "HTM_WMIN=${HTM_WMIN:-}"												#  〃   ：
+#	echo "WEB_WMIN=${WEB_WMIN:-}"												#  〃   ：
+#	echo "WRK_WMIN=${WRK_WMIN:-}"												#  〃   ：
+#	echo "URL_WMIN=${URL_WMIN:-}"												#  〃   ：
+#	echo "SET_WMIN=${SET_WMIN:-}"												#  〃   ：
+#	echo "PKG_WMIN=${PKG_WMIN:-}"												#  〃   ：
 	# Network Setup ***********************************************************
 	if [ -f /etc/network/interfaces ]; then
 		fncPrint "--- cat /etc/network/interfaces $(fncString ${COL_SIZE} '-')"
@@ -2796,43 +2811,47 @@ fncDebug () {
 #		fncPrint "--- cat ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa $(fncString ${COL_SIZE} '-')"
 #		expand -t 4 ${DIR_ZONE}/master/db.${LNK_RADU[0]}.ip6.arpa
 #	fi
-	if [ -d ${DIR_ZONE}/master ]; then
-		for FILE in `find ${DIR_ZONE}/master ${DIR_ZONE}/slaves -type f -print`
-		do
-			if [ "file ${FILE} | grep text" = "" ]; then
-				fncPrint "--- cat ${FILE} is binary $(fncString ${COL_SIZE} '-')"
-			else
-				fncPrint "--- cat ${FILE} $(fncString ${COL_SIZE} '-')"
-				expand -t 4 ${FILE}
-			fi
-		done
+	if [ -n "${DIR_ZONE:-}" ]; then
+		if [ -d ${DIR_ZONE}/master ]; then
+			for FILE in `find ${DIR_ZONE}/master ${DIR_ZONE}/slaves -type f -print`
+			do
+				if [ "file ${FILE} | grep text" = "" ]; then
+					fncPrint "--- cat ${FILE} is binary $(fncString ${COL_SIZE} '-')"
+				else
+					fncPrint "--- cat ${FILE} $(fncString ${COL_SIZE} '-')"
+					expand -t 4 ${FILE}
+				fi
+			done
+		fi
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
-	if [ -f ${DIR_BIND}/${FIL_BIND} ]; then
-		fncPrint "--- cat ${DIR_BIND}/${FIL_BIND} $(fncString ${COL_SIZE} '-')"
-		expand -t 4 ${DIR_BIND}/${FIL_BIND}
-	fi
-	if [ -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
-		fncPrint "--- diff ${DIR_BIND}/${FIL_BIND} $(fncString ${COL_SIZE} '-')"
-		fncDiff ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BIND}.orig
-	fi
-	# ･････････････････････････････････････････････････････････････････････････
-	if [ -f ${DIR_BIND}/${FIL_BIND}.local ]; then
-		fncPrint "--- cat ${DIR_BIND}/${FIL_BIND}.local $(fncString ${COL_SIZE} '-')"
-		expand -t 4 ${DIR_BIND}/${FIL_BIND}.local
-	fi
-	if [ -f ${DIR_BIND}/${FIL_BIND}.local.orig ]; then
-		fncPrint "--- diff ${DIR_BIND}/${FIL_BIND}.local $(fncString ${COL_SIZE} '-')"
-		fncDiff ${DIR_BIND}/${FIL_BIND}.local ${DIR_BIND}/${FIL_BIND}.local.orig
-	fi
-	# ･････････････････････････････････････････････････････････････････････････
-	if [ -f ${DIR_BIND}/${FIL_BIND}.options ]; then
-		fncPrint "--- cat ${DIR_BIND}/${FIL_BIND}.options $(fncString ${COL_SIZE} '-')"
-		expand -t 4 ${DIR_BIND}/${FIL_BIND}.options
-	fi
-	if [ -f ${DIR_BIND}/${FIL_BIND}.options.orig ]; then
-		fncPrint "--- diff ${DIR_BIND}/${FIL_BIND}.options $(fncString ${COL_SIZE} '-')"
-		fncDiff ${DIR_BIND}/${FIL_BIND}.options ${DIR_BIND}/${FIL_BIND}.options.orig
+	if [ -n "${DIR_BIND:-}" ]; then
+		if [ -f ${DIR_BIND}/${FIL_BIND} ]; then
+			fncPrint "--- cat ${DIR_BIND}/${FIL_BIND} $(fncString ${COL_SIZE} '-')"
+			expand -t 4 ${DIR_BIND}/${FIL_BIND}
+		fi
+		if [ -f ${DIR_BIND}/${FIL_BIND}.orig ]; then
+			fncPrint "--- diff ${DIR_BIND}/${FIL_BIND} $(fncString ${COL_SIZE} '-')"
+			fncDiff ${DIR_BIND}/${FIL_BIND} ${DIR_BIND}/${FIL_BIND}.orig
+		fi
+		# ･････････････････････････････････････････････････････････････････････
+		if [ -f ${DIR_BIND}/${FIL_BIND}.local ]; then
+			fncPrint "--- cat ${DIR_BIND}/${FIL_BIND}.local $(fncString ${COL_SIZE} '-')"
+			expand -t 4 ${DIR_BIND}/${FIL_BIND}.local
+		fi
+		if [ -f ${DIR_BIND}/${FIL_BIND}.local.orig ]; then
+			fncPrint "--- diff ${DIR_BIND}/${FIL_BIND}.local $(fncString ${COL_SIZE} '-')"
+			fncDiff ${DIR_BIND}/${FIL_BIND}.local ${DIR_BIND}/${FIL_BIND}.local.orig
+		fi
+		# ･････････････････････････････････････････････････････････････････････
+		if [ -f ${DIR_BIND}/${FIL_BIND}.options ]; then
+			fncPrint "--- cat ${DIR_BIND}/${FIL_BIND}.options $(fncString ${COL_SIZE} '-')"
+			expand -t 4 ${DIR_BIND}/${FIL_BIND}.options
+		fi
+		if [ -f ${DIR_BIND}/${FIL_BIND}.options.orig ]; then
+			fncPrint "--- diff ${DIR_BIND}/${FIL_BIND}.options $(fncString ${COL_SIZE} '-')"
+			fncDiff ${DIR_BIND}/${FIL_BIND}.options ${DIR_BIND}/${FIL_BIND}.options.orig
+		fi
 	fi
 	# ･････････････････････････････････････････････････････････････････････････
 	set +e
@@ -2903,14 +2922,18 @@ fncDebug () {
 		fncDiff /etc/webmin/time/config /etc/webmin/time/config.orig
 	fi
 	# Add smb.conf ************************************************************
-	fncPrint "--- cat ${SMB_CONF} $(fncString ${COL_SIZE} '-')"
-	expand -t 4 ${SMB_CONF}
+	if [ -n "${SMB_CONF:-}" ]; then
+		fncPrint "--- cat ${SMB_CONF} $(fncString ${COL_SIZE} '-')"
+		expand -t 4 ${SMB_CONF}
+	fi
 	# Setup Samba User ********************************************************
-	fncPrint "--- pdbedit -L $(fncString ${COL_SIZE} '-')"
-	pdbedit -L
-	if [ "`${CMD_WICH} smbclient 2> /dev/null`" != "" ]; then
-		fncPrint "--- smbclient -N -L ${SVR_NAME} $(fncString ${COL_SIZE} '-')"
-		smbclient -N -L ${SVR_NAME}
+	if [ "`${CMD_WICH} pdbedit 2> /dev/null`" != "" ]; then
+		fncPrint "--- pdbedit -L $(fncString ${COL_SIZE} '-')"
+		pdbedit -L
+		if [ "`${CMD_WICH} smbclient 2> /dev/null`" != "" ]; then
+			fncPrint "--- smbclient -N -L ${SVR_NAME} $(fncString ${COL_SIZE} '-')"
+			smbclient -N -L ${SVR_NAME}
+		fi
 	fi
 #	fncPrint "--- smbclient -N -L ${SVR_FQDN} $(fncString ${COL_SIZE} '-')"
 #	smbclient -N -L ${SVR_FQDN}
@@ -3031,6 +3054,12 @@ fncRecovery () {
 		CMD_WICH="command -v"
 	else
 		CMD_WICH="which"
+	fi
+
+	# install package check ---------------------------------------------------
+	if [ -z "`${CMD_WICH} bc 2> /dev/null`" ]; then
+		echo "bcをインストールして下さい。"
+		exit 1
 	fi
 
 	# terminal size -----------------------------------------------------------
