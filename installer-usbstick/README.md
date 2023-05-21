@@ -1,4 +1,3 @@
-
 # mkinstallusbstick.sh (make installer USB stick)
 
 複数のインストールメディアに対応したUSBメモリーの作成 (exFAT対応)
@@ -8,6 +7,9 @@
 sudo ./mkinstallusbstick.sh
 
 ## 準備
+
+| :---; | : --- |
+| OS | Debian 12 (bookworm) |
 
 ### 必須パッケージ
 
@@ -21,7 +23,7 @@ curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
 
 ### ディレクトリー構成
 
-・カレントディレクトリーに作成されるディレクトリー
+・ カレントディレクトリーに作成されるディレクトリー
 
 | ディレクトリー名 | 用途 | 使用容量 |
 | :---: | --- | ---: |
@@ -44,6 +46,17 @@ curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
 
 ### パーティション構成
 
+・ 128GiBのUSBメモリーの例
+
+``` bash: lsblk
+master@sv-server:~/mkusb$ lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
+NAME   FSTYPE FSVER LABEL     SIZE MOUNTPOINTS VENDOR   MODEL
+sdb                         112.6G             JetFlash Transcend 128GB
+tqsdb1                       1007K
+tqsdb2 vfat   FAT32           256M
+mqsdb3 exfat  1.0   ISOFILE 112.4G
+```
+
 | /dev/ | 用途 | フォーマット | 設定容量 | 使用容量 |
 | :---: | :---: | :---: | ---: | ---: |
 | sdX1 | MBR | 無し | 1GiB | 1GiB |
@@ -63,10 +76,23 @@ curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
 |   |       info
 |   +---EFI
 |   |   +---BOOT
-|   |   |       …
+|   |           BOOTX64.CSV
+|   |           BOOTX64.EFI
+|   |           grub.cfg
+|   |           grubx64.efi
+|   |           mmx64.efi
 |   +---boot
 |       +---grub
-|               grub.cfg
+|           |   grub.cfg
+|           |   grubenv
+|           +---fonts
+|           |       unicode.pf2
+|           +---i386-pc
+|           |       …
+|           +---locale
+|           |       …
+|           +---x86_64-efi
+|                   …
 +---sdX3
     |   menu.cfg
     +---casper
