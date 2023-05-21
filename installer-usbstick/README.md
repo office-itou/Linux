@@ -197,7 +197,9 @@ sdb                         112.6G             JetFlash Transcend 128GB
 
 ## 設定ファイル
 
-``` bash: 設定ファイル
+### 無人インストール関連ファイル
+
+``` bash: unattended installation configuration file
 https://github.com/office-itou/Linux/tree/master/installer/source/cfg
 +---autoyast
 |       autoinst.xml
@@ -224,4 +226,9 @@ https://github.com/office-itou/Linux/tree/master/installer/source/cfg
         user-data
         vendor-data
 ```
+
+### grub.cfg関連ファイル
+
+・ [grub.cfg](https://github.com/office-itou/Linux/tree/master/installer-usbstick/exsample/grub.cfg)
+・ [menu.cfg](https://github.com/office-itou/Linux/tree/master/installer-usbstick/exsample/menu.cfg)
 
