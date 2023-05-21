@@ -16,7 +16,23 @@ Debian 12 (bookworm)
 
 curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
 
-## 作業領域
+## 作業環境
+
+### 作業用ストレージ構成
+
+``` bash: lsblk
+master@sv-server:~/mkusb$ lsblk -f -o NAME,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL
+NAME          FSTYPE      FSVER    LABEL  SIZE MOUNTPOINTS VENDOR   MODEL
+sda                                       240G             VMware,  VMware Virtual S
++-sda1        LVM2_member LVM2 001        240G
+  +-vg01-home ext4        1.0             240G /home
+sr0                                      1024M             NECVMWar VMware Virtual IDE CDROM Drive
+nvme0n1                                    20G                      VMware Virtual NVMe Disk
++-nvme0n1p1   vfat        FAT32           487M /boot/efi
++-nvme0n1p2   ext3        1.0             488M /boot
++-nvme0n1p3   LVM2_member LVM2 001         19G
+  +-vg00-root ext4        1.0              19G /
+```
 
 ### 使用容量
 
