@@ -1,0 +1,1159 @@
+[m[45m2023/05/21 13:31:23 processing start[m
+[30m[43mdownload : cfg link[m
+[30m[43mdownload : iso link[m
+[30m[43mdownload: cfg file[m
+[30m[42mdownload : setting file[m
+get  file: ./cfg/debian/preseed.cfg
+get  file: ./cfg/debian/sub_late_command.sh
+get  file: ./cfg/ubuntu.desktop/preseed.cfg
+get  file: ./cfg/ubuntu.desktop/sub_late_command.sh
+get  file: ./cfg/ubuntu.desktop/sub_success_command.sh
+get  file: ./cfg/ubuntu.server/user-data
+get  file: ./cfg/kickstart/ks_almalinux.cfg
+get  file: ./cfg/kickstart/ks_centos.cfg
+get  file: ./cfg/kickstart/ks_fedora.cfg
+get  file: ./cfg/kickstart/ks_miraclelinux.cfg
+get  file: ./cfg/kickstart/ks_rocky.cfg
+get  file: ./cfg/autoyast/autoinst.xml
+[30m[43mdownload : debian installer[m
+[30m[42mdownload : buster[m
+same file: ./cfg/installer-hd-media/debian.buster/boot.img.gz
+same file: ./cfg/installer-hd-media/debian.buster/initrd.gz
+same file: ./cfg/installer-hd-media/debian.buster/vmlinuz
+same file: ./cfg/installer-hd-media/debian.buster/gtk/initrd.gz
+same file: ./cfg/installer-hd-media/debian.buster/gtk/vmlinuz
+[30m[42mdownload : bullseye[m
+same file: ./cfg/installer-hd-media/debian.bullseye/boot.img.gz
+same file: ./cfg/installer-hd-media/debian.bullseye/initrd.gz
+same file: ./cfg/installer-hd-media/debian.bullseye/vmlinuz
+same file: ./cfg/installer-hd-media/debian.bullseye/gtk/initrd.gz
+same file: ./cfg/installer-hd-media/debian.bullseye/gtk/vmlinuz
+[30m[42mdownload : bookworm[m
+same file: ./cfg/installer-hd-media/debian.bookworm/boot.img.gz
+same file: ./cfg/installer-hd-media/debian.bookworm/initrd.gz
+same file: ./cfg/installer-hd-media/debian.bookworm/vmlinuz
+same file: ./cfg/installer-hd-media/debian.bookworm/gtk/initrd.gz
+same file: ./cfg/installer-hd-media/debian.bookworm/gtk/vmlinuz
+[30m[42mdownload : testing[m
+same file: ./cfg/installer-hd-media/debian.testing/boot.img.gz
+same file: ./cfg/installer-hd-media/debian.testing/initrd.gz
+same file: ./cfg/installer-hd-media/debian.testing/vmlinuz
+same file: ./cfg/installer-hd-media/debian.testing/gtk/initrd.gz
+same file: ./cfg/installer-hd-media/debian.testing/gtk/vmlinuz
+[30m[42mdownload : bionic[m
+same file: ./cfg/installer-hd-media/ubuntu.bionic-updates/boot.img.gz
+same file: ./cfg/installer-hd-media/ubuntu.bionic-updates/initrd.gz
+same file: ./cfg/installer-hd-media/ubuntu.bionic-updates/vmlinuz
+[30m[42mdownload : focal[m
+same file: ./cfg/installer-hd-media/ubuntu.focal-updates/boot.img.gz
+same file: ./cfg/installer-hd-media/ubuntu.focal-updates/initrd.gz
+same file: ./cfg/installer-hd-media/ubuntu.focal-updates/vmlinuz
+[30m[43mdownload : iso file[m
+[30m[42mdownload : debian netinst[m
+same file: ./iso/debian-10.13.0-amd64-netinst.iso
+same file: ./iso/debian-11.7.0-amd64-netinst.iso
+same file: ./iso/debian-bookworm-DI-rc3-amd64-netinst.iso
+same file: ./iso/debian-testing-amd64-netinst.iso
+[30m[42mdownload : debian Live DVD[m
+same file: ./iso/debian-live-bkworm-DI-rc3-amd64-lxde.iso
+same file: ./iso/debian-live-testing-amd64-lxde.iso
+[30m[42mdownload : ubuntu server[m
+same file: ./iso/ubuntu-18.04.6-server-amd64.iso
+[30m[42mdownload : ubuntu live server[m
+same file: ./iso/ubuntu-20.04.6-live-server-amd64.iso
+same file: ./iso/ubuntu-22.04.2-live-server-amd64.iso
+same file: ./iso/ubuntu-22.10-live-server-amd64.iso
+same file: ./iso/ubuntu-23.04-live-server-amd64.iso
+[30m[42mdownload : ubuntu desktop[m
+same file: ./iso/ubuntu-23.04-desktop-amd64.iso
+[30m[42mdownload : fedora server[m
+same file: ./iso/Fedora-Server-netinst-x86_64-38-1.6.iso
+[30m[42mdownload : centos[m
+same file: ./iso/CentOS-Stream-9-latest-x86_64-boot.iso
+[30m[42mdownload : almalinux[m
+same file: ./iso/AlmaLinux-9-latest-x86_64-boot.iso
+[30m[42mdownload : miraclelinux[m
+same file: ./iso/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso
+[30m[42mdownload : rocky[m
+same file: ./iso/Rocky-9-latest-x86_64-boot.iso
+[30m[42mdownload : opensuse[m
+same file: ./iso/openSUSE-Leap-15.4-NET-x86_64-Media.iso
+[30m[43mdownload : deb file[m
+[30m[42mdownload : linux image[m
+get  file: ./opt/ubuntu.lunar.desktop/linux-modules-extra-6.2.0-20-generic_6.2.0-20.20_amd64.deb
+[30m[42mdownload : exfat[m
+get  file: ./opt/debian.buster/exfat-fuse_1.3.0-1_amd64.deb
+get  file: ./opt/debian.bullseye/exfat-fuse_1.3.0-2_amd64.deb
+get  file: ./opt/debian.bookworm/exfat-fuse_1.3.0+git20220115-2_amd64.deb
+get  file: ./opt/debian.testing/exfat-fuse_1.3.0+git20220115-2_amd64.deb
+get  file: ./opt/ubuntu.bionic/exfat-fuse_1.2.8-1_amd64.deb
+get  file: ./opt/ubuntu.focal/exfat-fuse_1.3.0-1_amd64.deb
+get  file: ./opt/ubuntu.jammy/exfat-fuse_1.3.0+git20220115-2_amd64.deb
+get  file: ./opt/ubuntu.kinetic/exfat-fuse_1.3.0+git20220115-2_amd64.deb
+get  file: ./opt/ubuntu.lunar/exfat-fuse_1.4.0-1_amd64.deb
+get  file: ./opt/ubuntu.mantic/exfat-fuse_1.4.0-1_amd64.deb
+[30m[42mdownload : libfuse2[m
+get  file: ./opt/ubuntu.focal/libfuse2-udeb_2.9.9-3_amd64.udeb
+get  file: ./opt/ubuntu.focal/libfuse2_2.9.9-3_amd64.deb
+get  file: ./opt/ubuntu.jammy/libfuse2_2.9.9-5ubuntu3_amd64.deb
+get  file: ./opt/ubuntu.kinetic/libfuse2_2.9.9-5ubuntu3_amd64.deb
+get  file: ./opt/ubuntu.lunar/libfuse2_2.9.9-6_amd64.deb
+get  file: ./opt/ubuntu.mantic/libfuse2_2.9.9-6_amd64.deb
+[30m[42mdownload : fuse3[m
+get  file: ./opt/ubuntu.lunar.desktop/fuse3_3.14.0-3_amd64.deb
+get  file: ./opt/ubuntu.lunar.desktop/libfuse3-3_3.14.0-3_amd64.deb
+[30m[42mdownload : mount[m
+get  file: ./opt/debian.bookworm.live/mount_2.38.1-5+b1_amd64.deb
+get  file: ./opt/debian.bookworm.live/libmount1-udeb_2.38.1-5+b1_amd64.udeb
+get  file: ./opt/debian.bookworm.live/libmount1_2.38.1-5+b1_amd64.deb
+get  file: ./opt/ubuntu.bionic/mount_2.31.1-0.4ubuntu3.7_amd64.deb
+[30m[43mdownload : arc file[m
+[30m[42mdownload : iso-scan[m
+get  file: ./arc/debian.buster/iso-scan_1.75.tar.xz
+get  file: ./arc/debian.bullseye/iso-scan_1.85.tar.xz
+get  file: ./arc/debian.bookworm/iso-scan_1.88.tar.xz
+get  file: ./arc/ubuntu.bionic/iso-scan_1.55ubuntu5.tar.xz
+get  file: ./arc/ubuntu.focal/iso-scan_1.55ubuntu9.tar.xz
+[30m[43mcopy module[m
+[30m[42mmount   iso: ./iso/ubuntu-20.04.6-live-server-amd64.iso[m
+copy initrd: ubuntu.focal.server      : ./iso/ubuntu-20.04.6-live-server-amd64.iso
+copy initrd: ubuntu.focal.server      : ./mnt/casper/initrd
+copy initrd: ubuntu.focal.server      : ./mnt/casper/vmlinuz
+copy module: libaio1-udeb¥(-udeb¥)*_. : 
+copy module: libblkid1¥(-udeb¥)*_.*   : 
+copy module: libc-l10n¥(-udeb¥)*_.*   : 
+copy module: libgcrypt20¥(-udeb¥)*_.* : 
+copy module: libgnutls30¥(-udeb¥)*_.* : 
+copy module: libmount1¥(-udeb¥)*_.*   : 
+copy module: libpcre3¥(-udeb¥)*_.*    : 
+copy module: libselinux1¥(-udeb¥)*_.* : 
+copy module: libsmartcols1¥(-udeb¥)*_ : 
+copy module: libtinfo5¥(-udeb¥)*_.*   : 
+copy module: libzstd1¥(-udeb¥)*_.*    : 
+copy module: mount¥(-udeb¥)*_.*       : 
+copy module: fuse¥(-udeb¥)*_.*        : 
+copy module: libfuse2¥(-udeb¥)*_.*    : [32mlibfuse2_2.9.9-3_amd64.deb[m
+copy module: libfuse2¥(-udeb¥)*_.*    : [32mlibfuse2-udeb_2.9.9-3_amd64.udeb[m
+copy module: ntfs-3g¥(-udeb¥)*_.*     : 
+copy   limg: linux-modules-5.4.0-144-generic_5.4.0-144.161_amd64.deb
+[30m[42mmount   iso: ./iso/debian-testing-amd64-netinst.iso[m
+copy initrd: debian.testing.netinst   : ./iso/debian-testing-amd64-netinst.iso
+copy initrd: debian.testing.netinst   : ./mnt/install.amd/gtk/initrd.gz
+copy initrd: debian.testing.netinst   : ./mnt/install.amd/gtk/vmlinuz
+copy initrd: debian.testing.netinst   : ./mnt/install.amd/initrd.gz
+copy initrd: debian.testing.netinst   : ./mnt/install.amd/vmlinuz
+copy initrd: debian.testing.netinst   : ./mnt/install.amd/xen/initrd.gz
+copy initrd: debian.testing.netinst   : ./mnt/install.amd/xen/vmlinuz
+copy module: libaio1-udeb¥(-udeb¥)*_. : libaio1-udeb_0.3.113-4_amd64.udeb
+copy module: libblkid1¥(-udeb¥)*_.*   : libblkid1_2.38.1-5+b1_amd64.deb
+copy module: libblkid1¥(-udeb¥)*_.*   : libblkid1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libc-l10n¥(-udeb¥)*_.*   : libc-l10n_2.36-9_all.deb
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20_1.10.1-3_amd64.deb
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20-udeb_1.10.1-3_amd64.udeb
+copy module: libgnutls30¥(-udeb¥)*_.* : libgnutls30_3.7.9-2_amd64.deb
+copy module: libmount1¥(-udeb¥)*_.*   : libmount1_2.38.1-5+b1_amd64.deb
+copy module: libmount1¥(-udeb¥)*_.*   : libmount1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libpcre3¥(-udeb¥)*_.*    : 
+copy module: libselinux1¥(-udeb¥)*_.* : libselinux1_3.4-1+b5_amd64.deb
+copy module: libselinux1¥(-udeb¥)*_.* : libselinux1-udeb_3.4-1+b5_amd64.udeb
+copy module: libsmartcols1¥(-udeb¥)*_ : libsmartcols1_2.38.1-5+b1_amd64.deb
+copy module: libsmartcols1¥(-udeb¥)*_ : libsmartcols1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libtinfo5¥(-udeb¥)*_.*   : 
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1_1.5.4+dfsg2-5_amd64.deb
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1-udeb_1.5.4+dfsg2-5_amd64.udeb
+copy module: mount¥(-udeb¥)*_.*       : mount_2.38.1-5+b1_amd64.deb
+copy module: fuse¥(-udeb¥)*_.*        : fuse-udeb_2.9.9-6+b1_amd64.udeb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2_2.9.9-6+b1_amd64.deb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2-udeb_2.9.9-6+b1_amd64.udeb
+copy module: ntfs-3g¥(-udeb¥)*_.*     : ntfs-3g-udeb_2022.10.3-1+b1_amd64.udeb
+copy   limg: linux-image-6.1.0-9-amd64_6.1.27-1_amd64.deb
+[30m[42mmount   iso: ./iso/debian-bookworm-DI-rc3-amd64-netinst.iso[m
+copy initrd: debian.bookworm.netinst  : ./iso/debian-bookworm-DI-rc3-amd64-netinst.iso
+copy initrd: debian.bookworm.netinst  : ./mnt/install.amd/gtk/initrd.gz
+copy initrd: debian.bookworm.netinst  : ./mnt/install.amd/gtk/vmlinuz
+copy initrd: debian.bookworm.netinst  : ./mnt/install.amd/initrd.gz
+copy initrd: debian.bookworm.netinst  : ./mnt/install.amd/vmlinuz
+copy initrd: debian.bookworm.netinst  : ./mnt/install.amd/xen/initrd.gz
+copy initrd: debian.bookworm.netinst  : ./mnt/install.amd/xen/vmlinuz
+copy module: libaio1-udeb¥(-udeb¥)*_. : libaio1-udeb_0.3.113-4_amd64.udeb
+copy module: libblkid1¥(-udeb¥)*_.*   : libblkid1_2.38.1-5+b1_amd64.deb
+copy module: libblkid1¥(-udeb¥)*_.*   : libblkid1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libc-l10n¥(-udeb¥)*_.*   : libc-l10n_2.36-9_all.deb
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20_1.10.1-3_amd64.deb
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20-udeb_1.10.1-3_amd64.udeb
+copy module: libgnutls30¥(-udeb¥)*_.* : libgnutls30_3.7.9-2_amd64.deb
+copy module: libmount1¥(-udeb¥)*_.*   : libmount1_2.38.1-5+b1_amd64.deb
+copy module: libmount1¥(-udeb¥)*_.*   : libmount1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libpcre3¥(-udeb¥)*_.*    : 
+copy module: libselinux1¥(-udeb¥)*_.* : libselinux1_3.4-1+b5_amd64.deb
+copy module: libselinux1¥(-udeb¥)*_.* : libselinux1-udeb_3.4-1+b5_amd64.udeb
+copy module: libsmartcols1¥(-udeb¥)*_ : libsmartcols1_2.38.1-5+b1_amd64.deb
+copy module: libsmartcols1¥(-udeb¥)*_ : libsmartcols1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libtinfo5¥(-udeb¥)*_.*   : 
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1_1.5.4+dfsg2-5_amd64.deb
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1-udeb_1.5.4+dfsg2-5_amd64.udeb
+copy module: mount¥(-udeb¥)*_.*       : mount_2.38.1-5+b1_amd64.deb
+copy module: fuse¥(-udeb¥)*_.*        : fuse-udeb_2.9.9-6+b1_amd64.udeb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2_2.9.9-6+b1_amd64.deb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2-udeb_2.9.9-6+b1_amd64.udeb
+copy module: ntfs-3g¥(-udeb¥)*_.*     : ntfs-3g-udeb_2022.10.3-1+b1_amd64.udeb
+copy   limg: linux-image-6.1.0-9-amd64_6.1.27-1_amd64.deb
+[30m[42mmount   iso: ./iso/debian-live-bkworm-DI-rc3-amd64-lxde.iso[m
+copy initrd: debian.bookworm.live     : ./iso/debian-live-bkworm-DI-rc3-amd64-lxde.iso
+copy initrd: debian.bookworm.live     : ./mnt/install/gtk/initrd.gz
+copy initrd: debian.bookworm.live     : ./mnt/install/gtk/vmlinuz
+copy initrd: debian.bookworm.live     : ./mnt/install/initrd.gz
+copy initrd: debian.bookworm.live     : ./mnt/install/vmlinuz
+copy initrd: debian.bookworm.live     : ./mnt/live/initrd.img
+copy initrd: debian.bookworm.live     : ./mnt/live/initrd.img-6.1.0-9-amd64
+copy initrd: debian.bookworm.live     : ./mnt/live/vmlinuz
+copy initrd: debian.bookworm.live     : ./mnt/live/vmlinuz-6.1.0-9-amd64
+copy module: libaio1-udeb¥(-udeb¥)*_. : libaio1-udeb_0.3.113-4_amd64.udeb
+copy module: libblkid1¥(-udeb¥)*_.*   : libblkid1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libc-l10n¥(-udeb¥)*_.*   : 
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20-udeb_1.10.1-3_amd64.udeb
+copy module: libgnutls30¥(-udeb¥)*_.* : 
+copy module: libmount1¥(-udeb¥)*_.*   : libmount1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libpcre3¥(-udeb¥)*_.*    : 
+copy module: libselinux1¥(-udeb¥)*_.* : libselinux1-udeb_3.4-1+b5_amd64.udeb
+copy module: libsmartcols1¥(-udeb¥)*_ : libsmartcols1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libtinfo5¥(-udeb¥)*_.*   : 
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1-udeb_1.5.4+dfsg2-5_amd64.udeb
+copy module: mount¥(-udeb¥)*_.*       : [32mmount_2.38.1-5+b1_amd64.deb[m
+copy module: fuse¥(-udeb¥)*_.*        : fuse-udeb_2.9.9-6+b1_amd64.udeb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2_2.9.9-6+b1_amd64.deb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2-udeb_2.9.9-6+b1_amd64.udeb
+copy module: ntfs-3g¥(-udeb¥)*_.*     : ntfs-3g-udeb_2022.10.3-1+b1_amd64.udeb
+copy   limg: linux-image-6.1.0-9-amd64_6.1.27-1_amd64.deb
+[30m[42mmount   iso: ./iso/debian-10.13.0-amd64-netinst.iso[m
+copy initrd: debian.buster.netinst    : ./iso/debian-10.13.0-amd64-netinst.iso
+copy initrd: debian.buster.netinst    : ./mnt/install.amd/gtk/initrd.gz
+copy initrd: debian.buster.netinst    : ./mnt/install.amd/gtk/vmlinuz
+copy initrd: debian.buster.netinst    : ./mnt/install.amd/initrd.gz
+copy initrd: debian.buster.netinst    : ./mnt/install.amd/vmlinuz
+copy initrd: debian.buster.netinst    : ./mnt/install.amd/xen/initrd.gz
+copy initrd: debian.buster.netinst    : ./mnt/install.amd/xen/vmlinuz
+copy module: libaio1-udeb¥(-udeb¥)*_. : libaio1-udeb_0.3.112-3_amd64.udeb
+copy module: libblkid1¥(-udeb¥)*_.*   : libblkid1_2.33.1-0.1_amd64.deb
+copy module: libblkid1¥(-udeb¥)*_.*   : libblkid1-udeb_2.33.1-0.1_amd64.udeb
+copy module: libc-l10n¥(-udeb¥)*_.*   : libc-l10n_2.28-10+deb10u1_all.deb
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20_1.8.4-5+deb10u1_amd64.deb
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20-udeb_1.8.4-5+deb10u1_amd64.udeb
+copy module: libgnutls30¥(-udeb¥)*_.* : libgnutls30_3.6.7-4+deb10u8_amd64.deb
+copy module: libmount1¥(-udeb¥)*_.*   : libmount1_2.33.1-0.1_amd64.deb
+copy module: libmount1¥(-udeb¥)*_.*   : libmount1-udeb_2.33.1-0.1_amd64.udeb
+copy module: libpcre3¥(-udeb¥)*_.*    : libpcre3_8.39-12_amd64.deb
+copy module: libselinux1¥(-udeb¥)*_.* : libselinux1_2.8-1+b1_amd64.deb
+copy module: libselinux1¥(-udeb¥)*_.* : libselinux1-udeb_2.8-1+b1_amd64.udeb
+copy module: libsmartcols1¥(-udeb¥)*_ : libsmartcols1_2.33.1-0.1_amd64.deb
+copy module: libsmartcols1¥(-udeb¥)*_ : libsmartcols1-udeb_2.33.1-0.1_amd64.udeb
+copy module: libtinfo5¥(-udeb¥)*_.*   : 
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1_1.3.8+dfsg-3+deb10u2_amd64.deb
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1-udeb_1.3.8+dfsg-3+deb10u2_amd64.udeb
+copy module: mount¥(-udeb¥)*_.*       : mount_2.33.1-0.1_amd64.deb
+copy module: fuse¥(-udeb¥)*_.*        : fuse-udeb_2.9.9-1+deb10u1_amd64.udeb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2_2.9.9-1+deb10u1_amd64.deb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2-udeb_2.9.9-1+deb10u1_amd64.udeb
+copy module: ntfs-3g¥(-udeb¥)*_.*     : ntfs-3g-udeb_2017.3.23AR.3-3+deb10u2_amd64.udeb
+copy   limg: linux-image-4.19.0-21-amd64_4.19.249-2_amd64.deb
+[30m[42mmount   iso: ./iso/ubuntu-23.04-desktop-amd64.iso[m
+copy initrd: ubuntu.lunar.desktop     : ./iso/ubuntu-23.04-desktop-amd64.iso
+copy initrd: ubuntu.lunar.desktop     : ./mnt/casper/initrd
+copy initrd: ubuntu.lunar.desktop     : ./mnt/casper/vmlinuz
+copy module: libaio1-udeb¥(-udeb¥)*_. : 
+copy module: libblkid1¥(-udeb¥)*_.*   : 
+copy module: libc-l10n¥(-udeb¥)*_.*   : 
+copy module: libgcrypt20¥(-udeb¥)*_.* : 
+copy module: libgnutls30¥(-udeb¥)*_.* : 
+copy module: libmount1¥(-udeb¥)*_.*   : 
+copy module: libpcre3¥(-udeb¥)*_.*    : 
+copy module: libselinux1¥(-udeb¥)*_.* : 
+copy module: libsmartcols1¥(-udeb¥)*_ : 
+copy module: libtinfo5¥(-udeb¥)*_.*   : 
+copy module: libzstd1¥(-udeb¥)*_.*    : 
+copy module: mount¥(-udeb¥)*_.*       : 
+copy module: fuse3¥(-udeb¥)*_.*       : [32mfuse3_3.14.0-3_amd64.deb[m
+copy   limg: linux-modules-6.2.0-20-generic_6.2.0-20.20_amd64.deb
+[30m[42mmount   iso: ./iso/ubuntu-22.10-live-server-amd64.iso[m
+copy initrd: ubuntu.kinetic.server    : ./iso/ubuntu-22.10-live-server-amd64.iso
+copy initrd: ubuntu.kinetic.server    : ./mnt/casper/initrd
+copy initrd: ubuntu.kinetic.server    : ./mnt/casper/vmlinuz
+copy module: libaio1-udeb¥(-udeb¥)*_. : 
+copy module: libblkid1¥(-udeb¥)*_.*   : 
+copy module: libc-l10n¥(-udeb¥)*_.*   : 
+copy module: libgcrypt20¥(-udeb¥)*_.* : 
+copy module: libgnutls30¥(-udeb¥)*_.* : 
+copy module: libmount1¥(-udeb¥)*_.*   : 
+copy module: libpcre3¥(-udeb¥)*_.*    : 
+copy module: libselinux1¥(-udeb¥)*_.* : 
+copy module: libsmartcols1¥(-udeb¥)*_ : 
+copy module: libtinfo5¥(-udeb¥)*_.*   : 
+copy module: libzstd1¥(-udeb¥)*_.*    : 
+copy module: mount¥(-udeb¥)*_.*       : 
+copy module: fuse3¥(-udeb¥)*_.*       : fuse3_3.11.0-1_amd64.deb
+copy   limg: linux-modules-5.19.0-21-generic_5.19.0-21.21_amd64.deb
+[30m[42mmount   iso: ./iso/debian-live-testing-amd64-lxde.iso[m
+copy initrd: debian.testing.live      : ./iso/debian-live-testing-amd64-lxde.iso
+copy initrd: debian.testing.live      : ./mnt/install/gtk/initrd.gz
+copy initrd: debian.testing.live      : ./mnt/install/gtk/vmlinuz
+copy initrd: debian.testing.live      : ./mnt/install/initrd.gz
+copy initrd: debian.testing.live      : ./mnt/install/vmlinuz
+copy initrd: debian.testing.live      : ./mnt/live/initrd.img
+copy initrd: debian.testing.live      : ./mnt/live/initrd.img-6.1.0-9-amd64
+copy initrd: debian.testing.live      : ./mnt/live/vmlinuz
+copy initrd: debian.testing.live      : ./mnt/live/vmlinuz-6.1.0-9-amd64
+copy module: libaio1-udeb¥(-udeb¥)*_. : libaio1-udeb_0.3.113-4_amd64.udeb
+copy module: libblkid1¥(-udeb¥)*_.*   : libblkid1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libc-l10n¥(-udeb¥)*_.*   : 
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20-udeb_1.10.1-3_amd64.udeb
+copy module: libgnutls30¥(-udeb¥)*_.* : 
+copy module: libmount1¥(-udeb¥)*_.*   : libmount1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libpcre3¥(-udeb¥)*_.*    : 
+copy module: libselinux1¥(-udeb¥)*_.* : libselinux1-udeb_3.4-1+b5_amd64.udeb
+copy module: libsmartcols1¥(-udeb¥)*_ : libsmartcols1-udeb_2.38.1-5+b1_amd64.udeb
+copy module: libtinfo5¥(-udeb¥)*_.*   : 
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1-udeb_1.5.4+dfsg2-5_amd64.udeb
+copy module: mount¥(-udeb¥)*_.*       : 
+copy module: fuse¥(-udeb¥)*_.*        : fuse-udeb_2.9.9-6+b1_amd64.udeb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2_2.9.9-6+b1_amd64.deb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2-udeb_2.9.9-6+b1_amd64.udeb
+copy module: ntfs-3g¥(-udeb¥)*_.*     : ntfs-3g-udeb_2022.10.3-1+b1_amd64.udeb
+copy   limg: linux-image-6.1.0-9-amd64_6.1.27-1_amd64.deb
+[30m[42mmount   iso: ./iso/ubuntu-18.04.6-server-amd64.iso[m
+copy initrd: ubuntu.bionic.server     : ./iso/ubuntu-18.04.6-server-amd64.iso
+copy initrd: ubuntu.bionic.server     : ./mnt/install/hwe-netboot/ubuntu-installer/amd64/initrd.gz
+copy initrd: ubuntu.bionic.server     : ./mnt/install/initrd.gz
+copy initrd: ubuntu.bionic.server     : ./mnt/install/netboot/ubuntu-installer/amd64/initrd.gz
+copy initrd: ubuntu.bionic.server     : ./mnt/install/vmlinuz
+copy module: libaio1-udeb¥(-udeb¥)*_. : libaio1-udeb_0.3.110-5ubuntu0.1_amd64.udeb
+copy module: libblkid1¥(-udeb¥)*_.*   : libblkid1_2.31.1-0.4ubuntu3.7_amd64.deb
+copy module: libc-l10n¥(-udeb¥)*_.*   : 
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20_1.8.1-4ubuntu1.2_amd64.deb
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20-udeb_1.8.1-4ubuntu1.2_amd64.udeb
+copy module: libgnutls30¥(-udeb¥)*_.* : libgnutls30_3.5.18-1ubuntu1.5_amd64.deb
+copy module: libmount1¥(-udeb¥)*_.*   : libmount1_2.31.1-0.4ubuntu3.7_amd64.deb
+copy module: libpcre3¥(-udeb¥)*_.*    : libpcre3_8.39-9_amd64.deb
+copy module: libselinux1¥(-udeb¥)*_.* : libselinux1_2.7-2build2_amd64.deb
+copy module: libsmartcols1¥(-udeb¥)*_ : libsmartcols1_2.31.1-0.4ubuntu3.7_amd64.deb
+copy module: libtinfo5¥(-udeb¥)*_.*   : libtinfo5_6.1-1ubuntu1.18.04_amd64.deb
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1_1.3.3+dfsg-2ubuntu1.2_amd64.deb
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1-udeb_1.3.3+dfsg-2ubuntu1.2_amd64.udeb
+copy module: mount¥(-udeb¥)*_.*       : [32mmount_2.31.1-0.4ubuntu3.7_amd64.deb[m
+copy module: fuse¥(-udeb¥)*_.*        : fuse_2.9.7-1ubuntu1_amd64.deb
+copy module: fuse¥(-udeb¥)*_.*        : fuse-udeb_2.9.7-1ubuntu1_amd64.udeb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2_2.9.7-1ubuntu1_amd64.deb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2-udeb_2.9.7-1ubuntu1_amd64.udeb
+copy   limg: linux-modules-4.15.0-156-generic_4.15.0-156.163_amd64.deb
+[30m[42mmount   iso: ./iso/ubuntu-23.04-live-server-amd64.iso[m
+copy initrd: ubuntu.lunar.server      : ./iso/ubuntu-23.04-live-server-amd64.iso
+copy initrd: ubuntu.lunar.server      : ./mnt/casper/initrd
+copy initrd: ubuntu.lunar.server      : ./mnt/casper/vmlinuz
+copy module: libaio1-udeb¥(-udeb¥)*_. : 
+copy module: libblkid1¥(-udeb¥)*_.*   : 
+copy module: libc-l10n¥(-udeb¥)*_.*   : 
+copy module: libgcrypt20¥(-udeb¥)*_.* : 
+copy module: libgnutls30¥(-udeb¥)*_.* : 
+copy module: libmount1¥(-udeb¥)*_.*   : 
+copy module: libpcre3¥(-udeb¥)*_.*    : 
+copy module: libselinux1¥(-udeb¥)*_.* : 
+copy module: libsmartcols1¥(-udeb¥)*_ : 
+copy module: libtinfo5¥(-udeb¥)*_.*   : 
+copy module: libzstd1¥(-udeb¥)*_.*    : 
+copy module: mount¥(-udeb¥)*_.*       : 
+copy module: fuse3¥(-udeb¥)*_.*       : fuse3_3.14.0-3_amd64.deb
+copy   limg: linux-modules-6.2.0-20-generic_6.2.0-20.20_amd64.deb
+[30m[42mmount   iso: ./iso/ubuntu-22.04.2-live-server-amd64.iso[m
+copy initrd: ubuntu.jammy.server      : ./iso/ubuntu-22.04.2-live-server-amd64.iso
+copy initrd: ubuntu.jammy.server      : ./mnt/casper/initrd
+copy initrd: ubuntu.jammy.server      : ./mnt/casper/vmlinuz
+copy module: libaio1-udeb¥(-udeb¥)*_. : 
+copy module: libblkid1¥(-udeb¥)*_.*   : 
+copy module: libc-l10n¥(-udeb¥)*_.*   : 
+copy module: libgcrypt20¥(-udeb¥)*_.* : 
+copy module: libgnutls30¥(-udeb¥)*_.* : 
+copy module: libmount1¥(-udeb¥)*_.*   : 
+copy module: libpcre3¥(-udeb¥)*_.*    : 
+copy module: libselinux1¥(-udeb¥)*_.* : 
+copy module: libsmartcols1¥(-udeb¥)*_ : 
+copy module: libtinfo5¥(-udeb¥)*_.*   : 
+copy module: libzstd1¥(-udeb¥)*_.*    : 
+copy module: mount¥(-udeb¥)*_.*       : 
+copy module: fuse¥(-udeb¥)*_.*        : 
+copy module: libfuse2¥(-udeb¥)*_.*    : [32mlibfuse2_2.9.9-5ubuntu3_amd64.deb[m
+copy module: ntfs-3g¥(-udeb¥)*_.*     : 
+copy   limg: linux-modules-5.15.0-60-generic_5.15.0-60.66_amd64.deb
+[30m[42mmount   iso: ./iso/debian-11.7.0-amd64-netinst.iso[m
+copy initrd: debian.bullseye.netinst  : ./iso/debian-11.7.0-amd64-netinst.iso
+copy initrd: debian.bullseye.netinst  : ./mnt/install.amd/gtk/initrd.gz
+copy initrd: debian.bullseye.netinst  : ./mnt/install.amd/gtk/vmlinuz
+copy initrd: debian.bullseye.netinst  : ./mnt/install.amd/initrd.gz
+copy initrd: debian.bullseye.netinst  : ./mnt/install.amd/vmlinuz
+copy initrd: debian.bullseye.netinst  : ./mnt/install.amd/xen/initrd.gz
+copy initrd: debian.bullseye.netinst  : ./mnt/install.amd/xen/vmlinuz
+copy module: libaio1-udeb¥(-udeb¥)*_. : libaio1-udeb_0.3.112-9_amd64.udeb
+copy module: libblkid1¥(-udeb¥)*_.*   : libblkid1_2.36.1-8+deb11u1_amd64.deb
+copy module: libblkid1¥(-udeb¥)*_.*   : libblkid1-udeb_2.36.1-8+deb11u1_amd64.udeb
+copy module: libc-l10n¥(-udeb¥)*_.*   : libc-l10n_2.31-13+deb11u6_all.deb
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20_1.8.7-6_amd64.deb
+copy module: libgcrypt20¥(-udeb¥)*_.* : libgcrypt20-udeb_1.8.7-6_amd64.udeb
+copy module: libgnutls30¥(-udeb¥)*_.* : libgnutls30_3.7.1-5+deb11u3_amd64.deb
+copy module: libmount1¥(-udeb¥)*_.*   : libmount1_2.36.1-8+deb11u1_amd64.deb
+copy module: libmount1¥(-udeb¥)*_.*   : libmount1-udeb_2.36.1-8+deb11u1_amd64.udeb
+copy module: libpcre3¥(-udeb¥)*_.*    : libpcre3_8.39-13_amd64.deb
+copy module: libselinux1¥(-udeb¥)*_.* : libselinux1_3.1-3_amd64.deb
+copy module: libselinux1¥(-udeb¥)*_.* : libselinux1-udeb_3.1-3_amd64.udeb
+copy module: libsmartcols1¥(-udeb¥)*_ : libsmartcols1_2.36.1-8+deb11u1_amd64.deb
+copy module: libsmartcols1¥(-udeb¥)*_ : libsmartcols1-udeb_2.36.1-8+deb11u1_amd64.udeb
+copy module: libtinfo5¥(-udeb¥)*_.*   : 
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1_1.4.8+dfsg-2.1_amd64.deb
+copy module: libzstd1¥(-udeb¥)*_.*    : libzstd1-udeb_1.4.8+dfsg-2.1_amd64.udeb
+copy module: mount¥(-udeb¥)*_.*       : mount_2.36.1-8+deb11u1_amd64.deb
+copy module: fuse¥(-udeb¥)*_.*        : fuse-udeb_2.9.9-5_amd64.udeb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2_2.9.9-5_amd64.deb
+copy module: libfuse2¥(-udeb¥)*_.*    : libfuse2-udeb_2.9.9-5_amd64.udeb
+copy module: ntfs-3g¥(-udeb¥)*_.*     : ntfs-3g-udeb_2017.3.23AR.3-4+deb11u3_amd64.udeb
+copy   limg: linux-image-5.10.0-22-amd64_5.10.178-3_amd64.deb
+[30m[43munpack linux image[m
+unpack limg: debian.bookworm.live     : linux-image-6.1.0-9-amd64_6.1.27-1_amd64.deb
+unpack limg: debian.bookworm.netinst  : linux-image-6.1.0-9-amd64_6.1.27-1_amd64.deb
+unpack limg: debian.bullseye.netinst  : linux-image-5.10.0-22-amd64_5.10.178-3_amd64.deb
+unpack limg: debian.buster.netinst    : linux-image-4.19.0-21-amd64_4.19.249-2_amd64.deb
+unpack limg: debian.testing.live      : linux-image-6.1.0-9-amd64_6.1.27-1_amd64.deb
+unpack limg: debian.testing.netinst   : linux-image-6.1.0-9-amd64_6.1.27-1_amd64.deb
+unpack limg: ubuntu.bionic.server     : linux-modules-4.15.0-156-generic_4.15.0-156.163_amd64.deb
+unpack limg: ubuntu.bionic.server     : linux-image-4.15.0-156-generic_4.15.0-156.163_amd64.deb
+unpack limg: ubuntu.bionic.server     : linux-modules-extra-4.15.0-156-generic_4.15.0-156.163_amd64.
+unpack limg: ubuntu.focal.server      : linux-modules-extra-5.4.0-144-generic_5.4.0-144.161_amd64.de
+unpack limg: ubuntu.focal.server      : linux-modules-5.4.0-144-generic_5.4.0-144.161_amd64.deb
+unpack limg: ubuntu.focal.server      : linux-image-5.4.0-144-generic_5.4.0-144.161_amd64.deb
+unpack limg: ubuntu.jammy.server      : linux-image-5.15.0-60-generic_5.15.0-60.66_amd64.deb
+unpack limg: ubuntu.jammy.server      : linux-modules-extra-5.15.0-60-generic_5.15.0-60.66_amd64.deb
+unpack limg: ubuntu.jammy.server      : linux-modules-5.15.0-60-generic_5.15.0-60.66_amd64.deb
+unpack limg: ubuntu.kinetic.server    : linux-image-5.19.0-21-generic_5.19.0-21.21_amd64.deb
+unpack limg: ubuntu.kinetic.server    : linux-modules-5.19.0-21-generic_5.19.0-21.21_amd64.deb
+unpack limg: ubuntu.kinetic.server    : linux-modules-extra-5.19.0-21-generic_5.19.0-21.21_amd64.deb
+unpack limg: ubuntu.lunar.desktop     : linux-modules-6.2.0-20-generic_6.2.0-20.20_amd64.deb
+unpack limg: ubuntu.lunar.desktop     : linux-image-6.2.0-20-generic_6.2.0-20.20_amd64.deb
+unpack limg: ubuntu.lunar.desktop     : linux-modules-extra-6.2.0-20-generic_6.2.0-20.20_amd64.deb
+unpack limg: ubuntu.lunar.server      : linux-modules-6.2.0-20-generic_6.2.0-20.20_amd64.deb
+unpack limg: ubuntu.lunar.server      : linux-image-6.2.0-20-generic_6.2.0-20.20_amd64.deb
+unpack limg: ubuntu.lunar.server      : linux-modules-extra-6.2.0-20-generic_6.2.0-20.20_amd64.deb
+[30m[43mselect module[m
+[30m[43mremake module[m
+[30m[42mremk module: debian.bookworm.live[m
+remk module: ./bld/debian.bookworm.live/live
+unpack file: ./bld/debian.bookworm.live/live/initrd.img-6.1.0-9-amd64
+copy   file: ./bld/debian.bookworm.live/live/vmlinuz-6.1.0-9-amd64
+copy     fs: ./ram/debian.bookworm.live/live/initrd/main
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/exfat
+copy module: kernel/fs/ext4
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/jbd2
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer []
+edit   ver.: debian-installer []
+update package data base
+inst package
+inst   pack: fuse-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libaio1-udeb_0.3.113-4_amd64.udeb
+inst   pack: libblkid1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libfuse2-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libgcrypt20-udeb_1.10.1-3_amd64.udeb
+inst   pack: libselinux1-udeb_3.4-1+b5_amd64.udeb
+inst   pack: libsmartcols1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libzstd1-udeb_1.5.4+dfsg2-5_amd64.udeb
+inst   pack: ntfs-3g-udeb_2022.10.3-1+b1_amd64.udeb
+inst   pack: exfat-fuse_1.3.0+git20220115-2_amd64.deb
+unpack package
+unpack pack: fuse-udeb (2.9.9-6+b1) ...
+unpack pack: libaio1-udeb (0.3.113-4) ...
+unpack pack: libblkid1-udeb (2.38.1-5+b1) ...
+unpack pack: libfuse2-udeb (2.9.9-6+b1) ...
+unpack pack: libgcrypt20-udeb (1.10.1-3) ...
+unpack pack: libselinux1-udeb (3.4-1+b5) ...
+unpack pack: libsmartcols1-udeb (2.38.1-5+b1) ...
+unpack pack: libzstd1-udeb (1.5.4+dfsg2-5) ...
+unpack pack: ntfs-3g-udeb (1:2022.10.3-1+b1) ...
+unpack pack: exfat-fuse (1.3.0+git20220115-2) ...
+config
+remk module: ./cfg/installer-hd-media/debian.bookworm
+unpack file: ./cfg/installer-hd-media/debian.bookworm/initrd.gz
+copy   file: ./cfg/installer-hd-media/debian.bookworm/vmlinuz
+copy     fs: ./ram/debian.bookworm.live/install/initrd
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/exfat
+copy module: kernel/fs/ext4
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/jbd2
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer [Version: hd-media-20230515]
+edit   ver.: debian-installer [Version: 20230515]
+update package data base
+inst package
+inst   pack: fuse-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libfuse2-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libgcrypt20-udeb_1.10.1-3_amd64.udeb
+overwr pack: libmount1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libsmartcols1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libzstd1-udeb_1.5.4+dfsg2-5_amd64.udeb
+inst   pack: ntfs-3g-udeb_2022.10.3-1+b1_amd64.udeb
+overwr pack: mount_2.38.1-5+b1_amd64.deb
+inst   pack: exfat-fuse_1.3.0+git20220115-2_amd64.deb
+unpack package
+unpack pack: fuse-udeb (2.9.9-6+b1) ...
+unpack pack: libfuse2-udeb (2.9.9-6+b1) ...
+unpack pack: libgcrypt20-udeb (1.10.1-3) ...
+unpack pack: libsmartcols1-udeb (2.38.1-5+b1) ...
+unpack pack: libzstd1-udeb (1.5.4+dfsg2-5) ...
+unpack pack: ntfs-3g-udeb (1:2022.10.3-1+b1) ...
+unpack pack: exfat-fuse (1.3.0+git20220115-2) ...
+config
+[30m[43mremake module[m
+[30m[42mremk module: debian.bookworm.netinst[m
+remk module: ./cfg/installer-hd-media/debian.bookworm
+unpack file: ./cfg/installer-hd-media/debian.bookworm/initrd.gz
+copy   file: ./cfg/installer-hd-media/debian.bookworm/vmlinuz
+copy     fs: ./ram/debian.bookworm.netinst/install/initrd
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/exfat
+copy module: kernel/fs/ext4
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/jbd2
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer [Version: hd-media-20230515]
+edit   ver.: debian-installer [Version: 20230515]
+update package data base
+inst package
+inst   pack: fuse-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libc-l10n_2.36-9_all.deb
+inst   pack: libfuse2-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libgcrypt20-udeb_1.10.1-3_amd64.udeb
+inst   pack: libgnutls30_3.7.9-2_amd64.deb
+overwr pack: libmount1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libsmartcols1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libzstd1-udeb_1.5.4+dfsg2-5_amd64.udeb
+overwr pack: mount_2.38.1-5+b1_amd64.deb
+inst   pack: ntfs-3g-udeb_2022.10.3-1+b1_amd64.udeb
+inst   pack: exfat-fuse_1.3.0+git20220115-2_amd64.deb
+unpack package
+unpack pack: fuse-udeb (2.9.9-6+b1) ...
+unpack pack: libc-l10n (2.36-9) ...
+unpack pack: libfuse2-udeb (2.9.9-6+b1) ...
+unpack pack: libgcrypt20-udeb (1.10.1-3) ...
+unpack pack: libgnutls30:amd64 (3.7.9-2) ...
+unpack pack: libsmartcols1-udeb (2.38.1-5+b1) ...
+unpack pack: libzstd1-udeb (1.5.4+dfsg2-5) ...
+unpack pack: ntfs-3g-udeb (1:2022.10.3-1+b1) ...
+unpack pack: exfat-fuse (1.3.0+git20220115-2) ...
+config
+[30m[43mremake module[m
+[30m[42mremk module: debian.bullseye.netinst[m
+remk module: ./cfg/installer-hd-media/debian.bullseye
+unpack file: ./cfg/installer-hd-media/debian.bullseye/initrd.gz
+copy   file: ./cfg/installer-hd-media/debian.bullseye/vmlinuz
+copy     fs: ./ram/debian.bullseye.netinst/install/initrd
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/exfat
+copy module: kernel/fs/ext4
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/jbd2
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer [Version: hd-media-20210731+deb11u8]
+edit   ver.: debian-installer [Version: 20210731]
+update package data base
+inst package
+inst   pack: fuse-udeb_2.9.9-5_amd64.udeb
+inst   pack: libc-l10n_2.31-13+deb11u6_all.deb
+inst   pack: libfuse2-udeb_2.9.9-5_amd64.udeb
+inst   pack: libgcrypt20-udeb_1.8.7-6_amd64.udeb
+inst   pack: libgnutls30_3.7.1-5+deb11u3_amd64.deb
+overwr pack: libmount1-udeb_2.36.1-8+deb11u1_amd64.udeb
+inst   pack: libpcre3_8.39-13_amd64.deb
+inst   pack: libselinux1-udeb_3.1-3_amd64.udeb
+inst   pack: libsmartcols1-udeb_2.36.1-8+deb11u1_amd64.udeb
+inst   pack: libzstd1-udeb_1.4.8+dfsg-2.1_amd64.udeb
+overwr pack: mount_2.36.1-8+deb11u1_amd64.deb
+inst   pack: ntfs-3g-udeb_2017.3.23AR.3-4+deb11u3_amd64.udeb
+inst   pack: exfat-fuse_1.3.0-2_amd64.deb
+unpack package
+unpack pack: fuse-udeb (2.9.9-5) ...
+unpack pack: libc-l10n (2.31-13+deb11u6) ...
+unpack pack: libfuse2-udeb (2.9.9-5) ...
+unpack pack: libgcrypt20-udeb (1.8.7-6) ...
+unpack pack: libgnutls30:amd64 (3.7.1-5+deb11u3) ...
+unpack pack: libpcre3:amd64 (2:8.39-13) ...
+unpack pack: libselinux1-udeb (3.1-3) ...
+unpack pack: libsmartcols1-udeb (2.36.1-8+deb11u1) ...
+unpack pack: libzstd1-udeb (1.4.8+dfsg-2.1) ...
+unpack pack: ntfs-3g-udeb (1:2017.3.23AR.3-4+deb11u3) ...
+unpack pack: exfat-fuse (1.3.0-2) ...
+config
+[30m[43mremake module[m
+[30m[42mremk module: debian.buster.netinst[m
+remk module: ./cfg/installer-hd-media/debian.buster
+unpack file: ./cfg/installer-hd-media/debian.buster/initrd.gz
+copy   file: ./cfg/installer-hd-media/debian.buster/vmlinuz
+copy     fs: ./ram/debian.buster.netinst/install/initrd
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/ext4
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/jbd2
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer [Version: hd-media-20190702+deb10u13]
+edit   ver.: debian-installer [Version: 20190702]
+update package data base
+inst package
+inst   pack: fuse-udeb_2.9.9-1+deb10u1_amd64.udeb
+inst   pack: libc-l10n_2.28-10+deb10u1_all.deb
+inst   pack: libfuse2-udeb_2.9.9-1+deb10u1_amd64.udeb
+inst   pack: libgcrypt20-udeb_1.8.4-5+deb10u1_amd64.udeb
+inst   pack: libgnutls30_3.6.7-4+deb10u8_amd64.deb
+overwr pack: libmount1-udeb_2.33.1-0.1_amd64.udeb
+inst   pack: libpcre3_8.39-12_amd64.deb
+inst   pack: libselinux1-udeb_2.8-1+b1_amd64.udeb
+inst   pack: libsmartcols1-udeb_2.33.1-0.1_amd64.udeb
+inst   pack: libzstd1-udeb_1.3.8+dfsg-3+deb10u2_amd64.udeb
+overwr pack: mount_2.33.1-0.1_amd64.deb
+inst   pack: ntfs-3g-udeb_2017.3.23AR.3-3+deb10u2_amd64.udeb
+inst   pack: exfat-fuse_1.3.0-1_amd64.deb
+unpack package
+unpack pack: fuse-udeb (2.9.9-1+deb10u1) ...
+unpack pack: libc-l10n (2.28-10+deb10u1) ...
+unpack pack: libfuse2-udeb (2.9.9-1+deb10u1) ...
+unpack pack: libgcrypt20-udeb (1.8.4-5+deb10u1) ...
+unpack pack: libgnutls30:amd64 (3.6.7-4+deb10u8) ...
+unpack pack: libpcre3:amd64 (2:8.39-12) ...
+unpack pack: libselinux1-udeb (2.8-1+b1) ...
+unpack pack: libsmartcols1-udeb (2.33.1-0.1) ...
+unpack pack: libzstd1-udeb (1.3.8+dfsg-3+deb10u2) ...
+unpack pack: ntfs-3g-udeb (1:2017.3.23AR.3-3+deb10u2) ...
+unpack pack: exfat-fuse (1.3.0-1) ...
+config
+[30m[43mremake module[m
+[30m[42mremk module: debian.testing.live[m
+remk module: ./bld/debian.testing.live/live
+unpack file: ./bld/debian.testing.live/live/initrd.img-6.1.0-9-amd64
+copy   file: ./bld/debian.testing.live/live/vmlinuz-6.1.0-9-amd64
+copy     fs: ./ram/debian.testing.live/live/initrd/main
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/exfat
+copy module: kernel/fs/ext4
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/jbd2
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer []
+edit   ver.: debian-installer []
+update package data base
+inst package
+inst   pack: fuse-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libaio1-udeb_0.3.113-4_amd64.udeb
+inst   pack: libblkid1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libfuse2-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libgcrypt20-udeb_1.10.1-3_amd64.udeb
+inst   pack: libselinux1-udeb_3.4-1+b5_amd64.udeb
+inst   pack: libsmartcols1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libzstd1-udeb_1.5.4+dfsg2-5_amd64.udeb
+inst   pack: ntfs-3g-udeb_2022.10.3-1+b1_amd64.udeb
+inst   pack: exfat-fuse_1.3.0+git20220115-2_amd64.deb
+unpack package
+unpack pack: fuse-udeb (2.9.9-6+b1) ...
+unpack pack: libaio1-udeb (0.3.113-4) ...
+unpack pack: libblkid1-udeb (2.38.1-5+b1) ...
+unpack pack: libfuse2-udeb (2.9.9-6+b1) ...
+unpack pack: libgcrypt20-udeb (1.10.1-3) ...
+unpack pack: libselinux1-udeb (3.4-1+b5) ...
+unpack pack: libsmartcols1-udeb (2.38.1-5+b1) ...
+unpack pack: libzstd1-udeb (1.5.4+dfsg2-5) ...
+unpack pack: ntfs-3g-udeb (1:2022.10.3-1+b1) ...
+unpack pack: exfat-fuse (1.3.0+git20220115-2) ...
+config
+remk module: ./cfg/installer-hd-media/debian.testing
+unpack file: ./cfg/installer-hd-media/debian.testing/initrd.gz
+copy   file: ./cfg/installer-hd-media/debian.testing/vmlinuz
+copy     fs: ./ram/debian.testing.live/install/initrd
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/exfat
+copy module: kernel/fs/ext4
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/jbd2
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer [Version: hd-media-20230521-00:02:06]
+edit   ver.: debian-installer [Version: 20230521]
+update package data base
+inst package
+inst   pack: fuse-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libfuse2-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libgcrypt20-udeb_1.10.1-3_amd64.udeb
+overwr pack: libmount1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libsmartcols1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libzstd1-udeb_1.5.4+dfsg2-5_amd64.udeb
+inst   pack: ntfs-3g-udeb_2022.10.3-1+b1_amd64.udeb
+inst   pack: exfat-fuse_1.3.0+git20220115-2_amd64.deb
+unpack package
+unpack pack: fuse-udeb (2.9.9-6+b1) ...
+unpack pack: libfuse2-udeb (2.9.9-6+b1) ...
+unpack pack: libgcrypt20-udeb (1.10.1-3) ...
+unpack pack: libsmartcols1-udeb (2.38.1-5+b1) ...
+unpack pack: libzstd1-udeb (1.5.4+dfsg2-5) ...
+unpack pack: ntfs-3g-udeb (1:2022.10.3-1+b1) ...
+unpack pack: exfat-fuse (1.3.0+git20220115-2) ...
+config
+[30m[43mremake module[m
+[30m[42mremk module: debian.testing.netinst[m
+remk module: ./cfg/installer-hd-media/debian.testing
+unpack file: ./cfg/installer-hd-media/debian.testing/initrd.gz
+copy   file: ./cfg/installer-hd-media/debian.testing/vmlinuz
+copy     fs: ./ram/debian.testing.netinst/install/initrd
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/exfat
+copy module: kernel/fs/ext4
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/jbd2
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer [Version: hd-media-20230521-00:02:06]
+edit   ver.: debian-installer [Version: 20230521]
+update package data base
+inst package
+inst   pack: fuse-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libc-l10n_2.36-9_all.deb
+inst   pack: libfuse2-udeb_2.9.9-6+b1_amd64.udeb
+inst   pack: libgcrypt20-udeb_1.10.1-3_amd64.udeb
+inst   pack: libgnutls30_3.7.9-2_amd64.deb
+overwr pack: libmount1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libsmartcols1-udeb_2.38.1-5+b1_amd64.udeb
+inst   pack: libzstd1-udeb_1.5.4+dfsg2-5_amd64.udeb
+overwr pack: mount_2.38.1-5+b1_amd64.deb
+inst   pack: ntfs-3g-udeb_2022.10.3-1+b1_amd64.udeb
+inst   pack: exfat-fuse_1.3.0+git20220115-2_amd64.deb
+unpack package
+unpack pack: fuse-udeb (2.9.9-6+b1) ...
+unpack pack: libc-l10n (2.36-9) ...
+unpack pack: libfuse2-udeb (2.9.9-6+b1) ...
+unpack pack: libgcrypt20-udeb (1.10.1-3) ...
+unpack pack: libgnutls30:amd64 (3.7.9-2) ...
+unpack pack: libsmartcols1-udeb (2.38.1-5+b1) ...
+unpack pack: libzstd1-udeb (1.5.4+dfsg2-5) ...
+unpack pack: ntfs-3g-udeb (1:2022.10.3-1+b1) ...
+unpack pack: exfat-fuse (1.3.0+git20220115-2) ...
+config
+[30m[43mremake module[m
+[30m[42mremk module: ubuntu.bionic.server[m
+remk module: ./cfg/installer-hd-media/ubuntu.bionic-updates
+unpack file: ./cfg/installer-hd-media/ubuntu.bionic-updates/initrd.gz
+copy   file: ./cfg/installer-hd-media/ubuntu.bionic-updates/vmlinuz
+copy     fs: ./ram/ubuntu.bionic.server/install/initrd
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/ntfs
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer [Version: hd-media-20101020ubuntu543.19]
+edit   ver.: debian-installer [Version: 20101020]
+update package data base
+inst package
+inst   pack: fuse-udeb_2.9.7-1ubuntu1_amd64.udeb
+inst   pack: libaio1-udeb_0.3.110-5ubuntu0.1_amd64.udeb
+inst   pack: libfuse2-udeb_2.9.7-1ubuntu1_amd64.udeb
+inst   pack: libgcrypt20-udeb_1.8.1-4ubuntu1.2_amd64.udeb
+inst   pack: libgnutls30_3.5.18-1ubuntu1.5_amd64.deb
+overwr pack: libmount1_2.31.1-0.4ubuntu3.7_amd64.deb
+inst   pack: libselinux1_2.7-2build2_amd64.deb
+inst   pack: libsmartcols1_2.31.1-0.4ubuntu3.7_amd64.deb
+inst   pack: libtinfo5_6.1-1ubuntu1.18.04_amd64.deb
+inst   pack: libzstd1-udeb_1.3.3+dfsg-2ubuntu1.2_amd64.udeb
+inst   pack: exfat-fuse_1.2.8-1_amd64.deb
+overwr pack: mount_2.31.1-0.4ubuntu3.7_amd64.deb
+unpack package
+unpack pack: fuse-udeb (2.9.7-1ubuntu1) ...
+unpack pack: libaio1-udeb (0.3.110-5ubuntu0.1) ...
+unpack pack: libfuse2-udeb (2.9.7-1ubuntu1) ...
+unpack pack: libgcrypt20-udeb (1.8.1-4ubuntu1.2) ...
+unpack pack: libgnutls30:amd64 (3.5.18-1ubuntu1.5) ...
+unpack pack: libselinux1:amd64 (2.7-2build2) ...
+unpack pack: libsmartcols1:amd64 (2.31.1-0.4ubuntu3.7) ...
+unpack pack: libtinfo5:amd64 (6.1-1ubuntu1.18.04) ...
+unpack pack: libzstd1-udeb:amd64 (1.3.3+dfsg-2ubuntu1.2) ...
+unpack pack: exfat-fuse (1.2.8-1) ...
+config
+[30m[43mremake module[m
+[30m[42mremk module: ubuntu.focal.server[m
+remk module: ./bld/ubuntu.focal.server/casper
+unpack file: ./bld/ubuntu.focal.server/casper/initrd
+copy   file: ./bld/ubuntu.focal.server/casper/vmlinuz
+copy     fs: ./ram/ubuntu.focal.server/casper/initrd/main
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/ntfs
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer []
+edit   ver.: debian-installer []
+update package data base
+inst package
+inst   pack: exfat-fuse_1.3.0-1_amd64.deb
+inst   pack: libfuse2-udeb_2.9.9-3_amd64.udeb
+unpack package
+unpack pack: exfat-fuse (1.3.0-1) ...
+unpack pack: libfuse2-udeb (2.9.9-3) ...
+config
+[30m[43mremake module[m
+[30m[42mremk module: ubuntu.jammy.server[m
+remk module: ./bld/ubuntu.jammy.server/casper
+unpack file: ./bld/ubuntu.jammy.server/casper/initrd
+copy   file: ./bld/ubuntu.jammy.server/casper/vmlinuz
+copy     fs: ./ram/ubuntu.jammy.server/casper/initrd/main
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/exfat
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/ntfs
+copy module: kernel/fs/ntfs3
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer []
+edit   ver.: debian-installer []
+update package data base
+inst package
+inst   pack: exfat-fuse_1.3.0+git20220115-2_amd64.deb
+inst   pack: libfuse2_2.9.9-5ubuntu3_amd64.deb
+unpack package
+unpack pack: exfat-fuse (1.3.0+git20220115-2) ...
+unpack pack: libfuse2:amd64 (2.9.9-5ubuntu3) ...
+config
+[30m[43mremake module[m
+[30m[42mremk module: ubuntu.kinetic.server[m
+remk module: ./bld/ubuntu.kinetic.server/casper
+unpack file: ./bld/ubuntu.kinetic.server/casper/initrd
+copy   file: ./bld/ubuntu.kinetic.server/casper/vmlinuz
+copy     fs: ./ram/ubuntu.kinetic.server/casper/initrd/main
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/exfat
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/ntfs
+copy module: kernel/fs/ntfs3
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer []
+edit   ver.: debian-installer []
+update package data base
+inst package
+inst   pack: fuse3_3.11.0-1_amd64.deb
+inst   pack: exfat-fuse_1.3.0+git20220115-2_amd64.deb
+inst   pack: libfuse2_2.9.9-5ubuntu3_amd64.deb
+unpack package
+unpack pack: fuse3 (3.11.0-1) ...
+unpack pack: exfat-fuse (1.3.0+git20220115-2) ...
+unpack pack: libfuse2:amd64 (2.9.9-5ubuntu3) ...
+config
+[30m[43mremake module[m
+[30m[42mremk module: ubuntu.lunar.desktop[m
+remk module: ./bld/ubuntu.lunar.desktop/casper
+unpack file: ./bld/ubuntu.lunar.desktop/casper/initrd
+copy   file: ./bld/ubuntu.lunar.desktop/casper/vmlinuz
+copy     fs: ./ram/ubuntu.lunar.desktop/casper/initrd/main
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/exfat
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/ntfs
+copy module: kernel/fs/ntfs3
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer []
+edit   ver.: debian-installer []
+update package data base
+inst package
+inst   pack: fuse3_3.14.0-3_amd64.deb
+inst   pack: libfuse3-3_3.14.0-3_amd64.deb
+inst   pack: exfat-fuse_1.4.0-1_amd64.deb
+inst   pack: libfuse2_2.9.9-6_amd64.deb
+unpack package
+unpack pack: fuse3 (3.14.0-3) ...
+unpack pack: libfuse3-3:amd64 (3.14.0-3) ...
+unpack pack: exfat-fuse (1.4.0-1) ...
+unpack pack: libfuse2:amd64 (2.9.9-6) ...
+config
+[30m[43mremake module[m
+[30m[42mremk module: ubuntu.lunar.server[m
+remk module: ./bld/ubuntu.lunar.server/casper
+unpack file: ./bld/ubuntu.lunar.server/casper/initrd
+copy   file: ./bld/ubuntu.lunar.server/casper/vmlinuz
+copy     fs: ./ram/ubuntu.lunar.server/casper/initrd/main
+copy module: kernel/crypto
+copy module: kernel/drivers/block
+copy module: kernel/drivers/md
+copy module: kernel/fs/exfat
+copy module: kernel/fs/fat
+copy module: kernel/fs/fuse
+copy module: kernel/fs/ntfs
+copy module: kernel/fs/ntfs3
+copy module: kernel/lib
+create var/lib/dpkg/status
+edit   ver.: debian-installer []
+edit   ver.: debian-installer []
+update package data base
+inst package
+inst   pack: fuse3_3.14.0-3_amd64.deb
+inst   pack: exfat-fuse_1.4.0-1_amd64.deb
+inst   pack: libfuse2_2.9.9-6_amd64.deb
+unpack package
+unpack pack: fuse3 (3.14.0-3) ...
+unpack pack: exfat-fuse (1.4.0-1) ...
+unpack pack: libfuse2:amd64 (2.9.9-6) ...
+config
+[30m[43mmake initramfs[m
+make initrd: ./ird/debian.bookworm.live/install/initrd.img
+make initrd: ./ird/debian.bookworm.live/live/initrd.img
+make initrd: ./ird/debian.bookworm.netinst/install/initrd.img
+make initrd: ./ird/debian.bullseye.netinst/install/initrd.img
+make initrd: ./ird/debian.buster.netinst/install/initrd.img
+make initrd: ./ird/debian.testing.live/install/initrd.img
+make initrd: ./ird/debian.testing.live/live/initrd.img
+make initrd: ./ird/debian.testing.netinst/install/initrd.img
+make initrd: ./ird/ubuntu.bionic.server/install/initrd.img
+make initrd: ./ird/ubuntu.focal.server/casper/initrd.img
+make initrd: ./ird/ubuntu.jammy.server/casper/initrd.img
+make initrd: ./ird/ubuntu.kinetic.server/casper/initrd.img
+make initrd: ./ird/ubuntu.lunar.desktop/casper/initrd.img
+make initrd: ./ird/ubuntu.lunar.server/casper/initrd.img
+-rw-r--r-- 1 root root  28M  5月 21 13:36 ./ird/debian.bookworm.live/install/initrd.img
+lrwxrwxrwx 1 root root   78  5月 21 13:31 ./ird/debian.bookworm.live/install/vmlinuz.img -> /mnt/hgf
+-rw-r--r-- 1 root root 104M  5月 21 13:36 ./ird/debian.bookworm.live/live/initrd.img
+-r--r--r-- 1 root root 7.6M  5月  9 05:16 ./ird/debian.bookworm.live/live/vmlinuz.img
+-rw-r--r-- 1 root root  31M  5月 21 13:36 ./ird/debian.bookworm.netinst/install/initrd.img
+lrwxrwxrwx 1 root root   78  5月 21 13:31 ./ird/debian.bookworm.netinst/install/vmlinuz.img -> /mnt/
+-rw-r--r-- 1 root root  27M  5月 21 13:36 ./ird/debian.bullseye.netinst/install/initrd.img
+lrwxrwxrwx 1 root root   78  5月 21 13:31 ./ird/debian.bullseye.netinst/install/vmlinuz.img -> /mnt/
+-rw-r--r-- 1 root root  28M  5月 21 13:37 ./ird/debian.buster.netinst/install/initrd.img
+lrwxrwxrwx 1 root root   76  5月 21 13:31 ./ird/debian.buster.netinst/install/vmlinuz.img -> /mnt/hg
+-rw-r--r-- 1 root root  28M  5月 21 13:37 ./ird/debian.testing.live/install/initrd.img
+lrwxrwxrwx 1 root root   77  5月 21 13:31 ./ird/debian.testing.live/install/vmlinuz.img -> /mnt/hgfs
+-rw-r--r-- 1 root root 104M  5月 21 13:37 ./ird/debian.testing.live/live/initrd.img
+-r--r--r-- 1 root root 7.6M  5月  9 05:16 ./ird/debian.testing.live/live/vmlinuz.img
+-rw-r--r-- 1 root root  31M  5月 21 13:37 ./ird/debian.testing.netinst/install/initrd.img
+lrwxrwxrwx 1 root root   77  5月 21 13:31 ./ird/debian.testing.netinst/install/vmlinuz.img -> /mnt/h
+-rw-r--r-- 1 root root  23M  5月 21 13:37 ./ird/ubuntu.bionic.server/install/initrd.img
+lrwxrwxrwx 1 root root   84  5月 21 13:31 ./ird/ubuntu.bionic.server/install/vmlinuz.img -> /mnt/hgf
+-rw-r--r-- 1 root root  69M  5月 21 13:37 ./ird/ubuntu.focal.server/casper/initrd.img
+-r--r--r-- 1 root root  14M  3月 15 07:57 ./ird/ubuntu.focal.server/casper/vmlinuz.img
+-rw-r--r-- 1 root root 100M  5月 21 13:38 ./ird/ubuntu.jammy.server/casper/initrd.img
+-r--r--r-- 1 root root  12M  2月 18 02:32 ./ird/ubuntu.jammy.server/casper/vmlinuz.img
+-rw-r--r-- 1 root root 116M  5月 21 13:38 ./ird/ubuntu.kinetic.server/casper/initrd.img
+-r--r--r-- 1 root root  12M 10月 19  2022 ./ird/ubuntu.kinetic.server/casper/vmlinuz.img
+-rw-r--r-- 1 root root 145M  5月 21 13:38 ./ird/ubuntu.lunar.desktop/casper/initrd.img
+-r--r--r-- 1 root root  14M  4月 19 06:00 ./ird/ubuntu.lunar.desktop/casper/vmlinuz.img
+-rw-r--r-- 1 root root 131M  5月 21 13:39 ./ird/ubuntu.lunar.server/casper/initrd.img
+-r--r--r-- 1 root root  14M  4月 16 00:08 ./ird/ubuntu.lunar.server/casper/vmlinuz.img
+[30m[43mcopy initramfs[m
+copy initrd: install : debian.bookworm.live
+copy initrd: live    : debian.bookworm.live
+copy initrd: install : debian.bookworm.netinst
+copy initrd: install : debian.bullseye.netinst
+copy initrd: install : debian.buster.netinst
+copy initrd: install : debian.testing.live
+copy initrd: live    : debian.testing.live
+copy initrd: install : debian.testing.netinst
+copy initrd: install : ubuntu.bionic.server
+copy initrd: casper  : ubuntu.focal.server
+copy initrd: casper  : ubuntu.jammy.server
+copy initrd: casper  : ubuntu.kinetic.server
+copy initrd: casper  : ubuntu.lunar.desktop
+copy initrd: casper  : ubuntu.lunar.server
+[30m[43mcopy config file[m
+make preseed.cfg for desktop
+make prseed: debian/preseed.cfg
+make prseed: debian/preseed_old.cfg
+make preseed.cfg for server
+make prseed: debian/preseed_server.cfg
+make prseed: debian/preseed_old_server.cfg
+make preseed.cfg for desktop
+make prseed: ubuntu/preseed.cfg
+make prseed: ubuntu/preseed_old.cfg
+make preseed.cfg for server
+make prseed: ubuntu/preseed_server.cfg
+make prseed: ubuntu/preseed_old_server.cfg
+make cloud-init file for server
+[30m[43mcopy iso image[m
+copy iso file
+copy   file: AlmaLinux-9-latest-x86_64-boot.iso
+copy   file: CentOS-Stream-9-latest-x86_64-boot.iso
+copy   file: Fedora-Server-netinst-x86_64-38-1.6.iso
+copy   file: MIRACLELINUX-9.0-rtm-minimal-x86_64.iso
+copy   file: Rocky-9-latest-x86_64-boot.iso
+copy   file: debian-10.13.0-amd64-netinst.iso
+copy   file: debian-11.7.0-amd64-netinst.iso
+copy   file: debian-bookworm-DI-rc3-amd64-netinst.iso
+copy   file: debian-live-bkworm-DI-rc3-amd64-lxde.iso
+copy   file: debian-live-testing-amd64-lxde.iso
+copy   file: debian-testing-amd64-netinst.iso
+copy   file: openSUSE-Leap-15.4-NET-x86_64-Media.iso
+copy   file: ubuntu-18.04.6-server-amd64.iso
+copy   file: ubuntu-20.04.6-live-server-amd64.iso
+copy   file: ubuntu-22.04.2-live-server-amd64.iso
+copy   file: ubuntu-22.10-live-server-amd64.iso
+copy   file: ubuntu-23.04-desktop-amd64.iso
+copy   file: ubuntu-23.04-live-server-amd64.iso
+[30m[43mmake menu.cfg[m
+[30m[43mmake grub.cfg[m
+[30m[43mUSB Device: partition and format[m
+device and mount check
+NAME   FSTYPE FSVER LABEL     SIZE MOUNTPOINTS VENDOR   MODEL
+sdb                         112.6G             JetFlash Transcend 128GB
+├─sdb1                       1007K                      
+├─sdb2 vfat   FAT32           256M                      
+└─sdb3 exfat  1.0   ISOFILE 112.4G                      
+erase /dev/sdb? (YES or Ctrl-C)
+[30m[43mUSB Device: partition and format[m
+partition
+Checking that no-one is using this disk right now ... OK
+
+Disk /dev/sdb: 112.64 GiB, 120945901568 bytes, 236222464 sectors
+Disk model: Transcend 128GB 
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: gpt
+Disk identifier: FC45E129-5B37-DE4A-B91F-5BE7D7FB8D71
+
+Old situation:
+
+Device      Start       End   Sectors   Size Type
+/dev/sdb1      34      2047      2014  1007K BIOS boot
+/dev/sdb2    2048    526335    524288   256M EFI System
+/dev/sdb3  526336 236220415 235694080 112.4G Microsoft basic data
+
+>>> Script header accepted.
+>>> Script header accepted.
+>>> Created a new GPT disklabel (GUID: 876E11D9-D0C6-8246-BCCF-DDB9136843E0).
+/dev/sdb1: Created a new partition 1 of type 'BIOS boot' and of size 1007 KiB.
+/dev/sdb2: Created a new partition 2 of type 'EFI System' and of size 256 MiB.
+The signature will be removed by a write command.
+/dev/sdb3: Created a new partition 3 of type 'Microsoft basic data' and of size 112.4 GiB.
+The signature will be removed by a write command.
+/dev/sdb4: Done.
+
+New situation:
+Disklabel type: gpt
+Disk identifier: 876E11D9-D0C6-8246-BCCF-DDB9136843E0
+
+Device      Start       End   Sectors   Size Type
+/dev/sdb1      34      2047      2014  1007K BIOS boot
+/dev/sdb2    2048    526335    524288   256M EFI System
+/dev/sdb3  526336 236220415 235694080 112.4G Microsoft basic data
+
+Filesystem/RAID signature on partition 2 will be wiped.
+Filesystem/RAID signature on partition 3 will be wiped.
+
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+format
+mkfs.fat 4.2 (2021-01-31)
+exfatprogs version : 1.2.0
+Creating exFAT filesystem(/dev/sdb3, cluster size=131072)
+
+Writing volume boot record: done
+Writing backup volume boot record: done
+Fat table creation: done
+Allocation bitmap creation: done
+Upcase table creation: done
+Writing root directory entry: done
+Synchronizing...
+
+exFAT format complete!
+NAME   FSTYPE FSVER LABEL     SIZE MOUNTPOINTS VENDOR   MODEL
+sdb                         112.6G             JetFlash Transcend 128GB
+├─sdb1                       1007K                      
+├─sdb2 vfat   FAT32           256M                      
+└─sdb3 exfat  1.0   ISOFILE 112.4G                      
+[30m[43mUSB Device: Boot and EFI partition[m
+mount /dev/sdX2
+install boot loader
+make .disk directory
+unmount
+[30m[43mUSB Device: EFI partition[m
+mount /dev/sdX2
+copy grub.cfg
+unmount
+[30m[43mUSB Device: Data partition[m
+mount /dev/sdX3
+copy menu.cfg
+unmount
+[30m[43mUSB Device: Data partition [initramfs][m
+mount /dev/sdX3
+copy boot loader and setting files
+unmount
+[30m[43mUSB Device: Data partition [iso file][m
+mount /dev/sdX3
+copy iso files
+copy   file: AlmaLinux-9-latest-x86_64-boot.iso
+copy   file: CentOS-Stream-9-latest-x86_64-boot.iso
+copy   file: Fedora-Server-netinst-x86_64-38-1.6.iso
+copy   file: MIRACLELINUX-9.0-rtm-minimal-x86_64.iso
+copy   file: Rocky-9-latest-x86_64-boot.iso
+copy   file: debian-10.13.0-amd64-netinst.iso
+copy   file: debian-11.7.0-amd64-netinst.iso
+copy   file: debian-bookworm-DI-rc3-amd64-netinst.iso
+copy   file: debian-live-bkworm-DI-rc3-amd64-lxde.iso
+copy   file: debian-live-testing-amd64-lxde.iso
+copy   file: debian-testing-amd64-netinst.iso
+copy   file: openSUSE-Leap-15.4-NET-x86_64-Media.iso
+copy   file: ubuntu-18.04.6-server-amd64.iso
+copy   file: ubuntu-20.04.6-live-server-amd64.iso
+copy   file: ubuntu-22.04.2-live-server-amd64.iso
+copy   file: ubuntu-22.10-live-server-amd64.iso
+copy   file: ubuntu-23.04-desktop-amd64.iso
+copy   file: ubuntu-23.04-live-server-amd64.iso
+unmount
+NAME   FSTYPE FSVER LABEL     SIZE MOUNTPOINTS VENDOR   MODEL
+sdb                         112.6G             JetFlash Transcend 128GB
+├─sdb1                       1007K                      
+├─sdb2 vfat   FAT32           256M                      
+└─sdb3 exfat  1.0   ISOFILE 112.4G                      
+[m[45m2023/05/21 13:58:10 processing end[m
