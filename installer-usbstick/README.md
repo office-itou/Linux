@@ -55,6 +55,7 @@ curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
 
 ### ファイル構成
 
+``` bash: ファイル構成
 \
 +---sdX1
 +---sdX2
@@ -149,3 +150,5 @@ curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
                 preseed_server.cfg
                 sub_late_command.sh
                 sub_success_command.sh
+```
+
