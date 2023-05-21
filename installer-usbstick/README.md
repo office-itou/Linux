@@ -197,7 +197,7 @@ sdb                         112.6G             JetFlash Transcend 128GB
 
 ## 設定ファイル
 
-### 無人インストール関連ファイル
+### [無人インストール関連ファイル](https://github.com/office-itou/Linux/tree/master/installer/source/cfg)
 
 ``` bash: unattended installation configuration file
 https://github.com/office-itou/Linux/tree/master/installer/source/cfg
