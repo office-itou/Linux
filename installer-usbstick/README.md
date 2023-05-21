@@ -15,7 +15,7 @@ curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
 
 ## 作業領域
 
-### 使用要領
+### 使用容量
 
 約71GiB
 
@@ -50,8 +50,8 @@ curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
 | sdX2 | EFI | vFAT | 256MiB | 18MiB |
 | sdX3 | DATA | exFAT | 113GiB | 28GiB |
 
-・sdXは各自の環境に合わせて読み替えの事
-・当方の作業は **/dev/sdb** を前提
+・sdXは各自の環境に合わせて読み替えの事  
+・当方の作業は **/dev/sdb** を前提  
 
 ### ファイル構成
 
