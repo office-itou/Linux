@@ -229,6 +229,6 @@ https://github.com/office-itou/Linux/tree/master/installer/source/cfg
 
 ### grub.cfg関連ファイル
 
-・ [grub.cfg](https://github.com/office-itou/Linux/tree/master/installer-usbstick/exsample/grub.cfg)
-・ [menu.cfg](https://github.com/office-itou/Linux/tree/master/installer-usbstick/exsample/menu.cfg)
+・ [grub.cfg](https://github.com/office-itou/Linux/tree/master/installer-usbstick/exsample/grub.cfg)  
+・ [menu.cfg](https://github.com/office-itou/Linux/tree/master/installer-usbstick/exsample/menu.cfg)  
 
