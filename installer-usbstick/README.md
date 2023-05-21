@@ -195,3 +195,33 @@ sdb                         112.6G             JetFlash Transcend 128GB
                 sub_success_command.sh
 ```
 
+## 設定ファイル
+
+``` bash: 設定ファイル
+https://github.com/office-itou/Linux/tree/master/installer/source/cfg
++---[autoyast](https://github.com/office-itou/Linux/tree/master/installer/source/cfg/autoyast)
+|       autoinst.xml
+|       autoinst_Tumbleweed.xml
++---[debian](https://github.com/office-itou/Linux/tree/master/installer/source/cfg/debian)
+|       preseed.cfg
+|       sub_late_command.sh
++---[kickstart](https://github.com/office-itou/Linux/tree/master/installer/source/cfg/kickstart)
+|       ks_almalinux.cfg
+|       ks_centos.cfg
+|       ks_centos8.cfg
+|       ks_fedora.cfg
+|       ks_miraclelinux.cfg
+|       ks_miraclelinux8.cfg
+|       ks_rocky.cfg
+|       ks_rocky8.cfg
++---[ubuntu.desktop](https://github.com/office-itou/Linux/tree/master/installer/source/cfg/ubuntu.desktop)
+|       preseed.cfg
+|       sub_late_command.sh
+|       sub_success_command.sh
+\---[ubuntu.server](https://github.com/office-itou/Linux/tree/master/installer/source/cfg/ubuntu.server)
+        meta-data
+        network-config
+        user-data
+        vendor-data
+```
+
