@@ -1,9 +1,3 @@
----
-title: 複数のインストールメディアに対応したUSBメモリーの作成 (exFAT対応)
-tags:
-author: office-itou
-slide: false
----
 
 # mkinstallusbstick.sh (make installer USB stick)
 
