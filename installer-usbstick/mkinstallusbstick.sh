@@ -43,8 +43,15 @@
   trap 'exit 1' 1 2 3 15
 
 # -----------------------------------------------------------------------------
-# dpkg -l fdisk gdisk coreutils curl dosfstools grub2-common initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd
-# apt-get install fdisk gdisk coreutils curl dosfstools grub2-common initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd
+# dpkg -l curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
+# apt-get install curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
+  APP_LIST="fdisk coreutils curl exfatprogs dosfstools grub2-common grub-pc-bin initramfs-tools-core cpio gzip bzip2 lz4 lzma lzop xz-utils zstd"
+  APP_FIND="$(LANG=C apt list ${APP_LIST} 2> /dev/null | sed -n '/\(^ *$\|Listing\|installed\)/!p')"
+  if [ -n "${APP_FIND[@]}" ]; then
+    echo "please install these:"
+    echo "${APP_FIND[@]}"
+    exit 0
+  fi
 
 # -----------------------------------------------------------------------------
   ROW_SIZE=25
