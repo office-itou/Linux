@@ -8,8 +8,7 @@ sudo ./mkinstallusbstick.sh
 
 ## 準備
 
-| :---; | : --- |
-| OS | Debian 12 (bookworm) |
+・ OS: Debian 12 (bookworm)  
 
 ### 必須パッケージ
 
