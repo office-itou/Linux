@@ -36,7 +36,7 @@ nvme0n1                                    20G                      VMware Virtu
 
 ### 使用容量
 
-約71GiB
+約44GiB
 
 ### ディレクトリー構成
 
