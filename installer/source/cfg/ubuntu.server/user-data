@@ -42,9 +42,6 @@ autoinstall:
         ssd: yes
     swap:
       size: 0
-    grub:
-      reorder_uefi: False
-#     update_nvram: False
 # -----------------------------------------------------------------------------
 # /dev/nvme0n1p1: 512MB: /boot/efi
 #      nvme0n1p2: 512MB: /boot
@@ -189,5 +186,5 @@ autoinstall:
 #   https://cloudinit.readthedocs.io/
 #   https://curtin.readthedocs.io/
 # =============================================================================
-# Created at 2023/05/15 12:30:00
+# Created at 2023/04/08 04:41:48
 # === EOF =====================================================================
