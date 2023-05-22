@@ -29,6 +29,7 @@
 ##	2022/10/29 000.0000 J.Itou         処理見直し
 ##	2022/11/23 000.0000 J.Itou         リスト更新
 ##	2023/03/16 000.0000 J.Itou         不具合修正
+##	2023/05/22 000.0000 J.Itou         リスト更新
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get -y install mmdebstrap squashfs-tools xorriso
@@ -63,6 +64,7 @@
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
+	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
 	)   # 0:区分        1:arch     2:定義ファイル                              3:リリース日 4:サポ終了日 5:備考          6:備考2
 #	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 
