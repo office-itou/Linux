@@ -27,6 +27,7 @@
 ##	2023/05/01 000.0000 J.Itou         リスト整理
 ##	2023/05/17 000.0000 J.Itou         リスト更新: Debian bookworm_di_rc3 追加 / Rocky9 URL変更
 ##	2023/05/20 000.0000 J.Itou         処理見直し
+##	2023/05/22 000.0000 J.Itou         メモ更新 / リスト更新: Ubuntu_23.10(Mantic_Minotaur) 追加
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -113,6 +114,8 @@
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
 	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                   -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
 	    "ubuntu         https://releases.ubuntu.com/lunar/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
+	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-amd64.iso                                                                        -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
+	    "ubuntu         http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-amd64.iso                                                               -                                           preseed_ubuntu.cfg                          2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 
 	readonly ARRAY_NAME_LIVE=(                                                                                                                                                                                                                                                                                                            \
@@ -3255,6 +3258,7 @@ _EOT_
 # 22.04:Jammy Jellyfish  :2022-04-21:2027-04-21/2032-04-21:LTS
 # 22.10:Kinetic Kudu     :2022-10-20:2023-07-xx
 # 23.04:Lunar Lobster    :2023-04-20:2024-01-20
+# 23.10:Mantic Minotaur  :2023-10-12:
 # --- https://ja.wikipedia.org/wiki/CentOS ------------------------------------
 # [https://en.wikipedia.org/wiki/CentOS]
 # Ver.    :リリース日:RHEL      :メンテ期限:kernel
