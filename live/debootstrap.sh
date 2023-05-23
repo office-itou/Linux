@@ -1442,6 +1442,8 @@ fncMake_dvd_image () {
 	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/libmenu.c32"  "${DIR_WRK}/cdimg/isolinux/"
 	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/libutil.c32"  "${DIR_WRK}/cdimg/isolinux/"
 	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/vesamenu.c32" "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/poweroff.c32" "${DIR_WRK}/cdimg/isolinux/"
+	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/modules/bios/reboot.c32"   "${DIR_WRK}/cdimg/isolinux/"
 	cp -p  "${DIR_WRK}/fsimg/usr/lib/syslinux/memdisk"                   "${DIR_WRK}/cdimg/isolinux/"
 	cp -pr "${DIR_WRK}"/fsimg/boot/*                                     "${DIR_WRK}/cdimg/live/"
 	# --- メニューの背景 ------------------------------------------------------
@@ -1470,18 +1472,33 @@ fncMake_dvd_image () {
 	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${DIR_WRK}/cdimg/live/filesystem.squashfs" 2> /dev/null | awk '{gsub(/.*\//,"",$6); print $4,$5,$3,$6;}'
 	# --- ブートメニューの作成 ------------------------------------------------
 	fncPrint "--- edit grub.cfg file $(fncString ${COL_SIZE} '-')"
+	sed -i "${DIR_WRK}/cdimg/boot/grub/grub.cfg" \
+	    -e 's/\(set gfxmode\).*$/\1=1280x720/'
 	cat <<- _EOT_ >> "${DIR_WRK}/cdimg/boot/grub/grub.cfg"
+		
+		set timeout=5
+		set default=0
+		set lang=ja_JP
+		grub_platform
+		
 		if [ \${iso_path} ] ; then
-		set loopback="findiso=\${iso_path}"
-		export loopback
+		  set loopback="findiso=\${iso_path}"
+		  export loopback
 		fi
 		
 		menuentry "${MNU_LABEL}" {
+		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 		  linux  /live/vmlinuz-${OS_KERNEL} boot=live components splash quiet "\${loopback}"
 		  initrd /live/initrd.img-${OS_KERNEL}
 		}
-
-		set timeout=5
+		menuentry "System shutdown" {
+		  echo "System shutting down ..."
+		  halt
+		}
+		menuentry "System restart" {
+		  echo "System rebooting ..."
+		  reboot
+		}
 _EOT_
 	fncPrint "--- edit menu.cfg file $(fncString ${COL_SIZE} '-')"
 	cat <<- _EOT_ > "${DIR_WRK}/cdimg/isolinux/menu.cfg"
@@ -1489,9 +1506,13 @@ _EOT_
 		MENU title Main Menu
 		DEFAULT ${MNU_LABEL}
 		LABEL ${MNU_LABEL}
-		  SAY "Booting ${MNU_LABEL}..."
-		  linux /live/vmlinuz-${OS_KERNEL} noeject
-		  APPEND initrd=/live/initrd.img-${OS_KERNEL} boot=live components splash quiet
+		    SAY "Booting ${MNU_LABEL}..."
+		    linux /live/vmlinuz-${OS_KERNEL} noeject
+		    APPEND initrd=/live/initrd.img-${OS_KERNEL} boot=live components splash quiet
+		LABEL System shutdown
+		    COM32 poweroff.c32
+		LABEL System restart
+		    COM32 reboot.c32
 _EOT_
 	fncPrint "--- edit isolinux.cfg file $(fncString ${COL_SIZE} '-')"
 	sed -i "${DIR_WRK}/cdimg/isolinux/isolinux.cfg" \
