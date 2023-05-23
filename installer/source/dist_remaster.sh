@@ -67,7 +67,7 @@
 	readonly ARRAY_NAME_NET=(                                                                                                                                                                                                                                                                                                             \
 	    "debian         https://cdimage.debian.org/cdimage/archive/10.13.0/${ARC_TYPE}/iso-cd/debian-[0-9.]*-${ARC_TYPE}-netinst.iso                                 -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
 	    "debian         https://cdimage.debian.org/cdimage/release/current/${ARC_TYPE}/iso-cd/debian-[0-9.]*-${ARC_TYPE}-netinst.iso                                 -                                           preseed_debian.cfg                          2019-07-06   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc3/${ARC_TYPE}/iso-cd/debian-bookworm-DI-rc3-${ARC_TYPE}-netinst.iso                         -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
+	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc[0-9]/${ARC_TYPE}/iso-cd/debian-bookworm-DI-rc[0-9]-${ARC_TYPE}-netinst.iso                 -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/current/${ARC_TYPE}/iso-cd/debian-testing-${ARC_TYPE}-netinst.iso                      -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 	    "centos         https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                           -                                           kickstart_common.cfg                        20xx-xx-xx   2024-05-31   RHEL_8.x        -                                " \
 	    "centos         https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                              -                                           kickstart_common.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x        -                                " \
@@ -86,7 +86,7 @@
 	readonly ARRAY_NAME_DVD=(                                                                                                                                                                                                                                                                                                             \
 	    "debian         https://cdimage.debian.org/cdimage/archive/10.13.0/${ARC_TYPE}/iso-dvd/debian-[0-9.]*-${ARC_TYPE}-DVD-1.iso                                  -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
 	    "debian         https://cdimage.debian.org/cdimage/release/current/${ARC_TYPE}/iso-dvd/debian-[0-9.]*-${ARC_TYPE}-DVD-1.iso                                  -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc3/${ARC_TYPE}/iso-dvd/debian-bookworm-DI-rc3-${ARC_TYPE}-DVD-1.iso                          -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
+	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc[0-9]/${ARC_TYPE}/iso-dvd/debian-bookworm-DI-rc[0-9]-${ARC_TYPE}-DVD-1.iso                  -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 	    "debian         https://cdimage.debian.org/cdimage/weekly-builds/${ARC_TYPE}/iso-dvd/debian-testing-${ARC_TYPE}-DVD-1.iso                                    -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 	    "ubuntu         https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9.]*-server-${ARC_TYPE}.iso                                                     -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-live-server-${ARC_TYPE}.iso                                                                 -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
@@ -107,21 +107,23 @@
 	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
 	    "debian         https://cdimage.debian.org/cdimage/archive/10.13.0-live/${ARC_TYPE}/iso-hybrid/debian-live-[0-9.]*-${ARC_TYPE}-lxde.iso                      -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
 	    "debian         https://cdimage.debian.org/cdimage/release/current-live/${ARC_TYPE}/iso-hybrid/debian-live-[0-9.]*-${ARC_TYPE}-lxde.iso                      -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc3-live/${ARC_TYPE}/iso-hybrid/debian-live-bkworm-DI-rc3-${ARC_TYPE}-lxde.iso                -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
+	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc[0-9]-live/${ARC_TYPE}/iso-hybrid/debian-live-bkworm-DI-rc[0-9]-${ARC_TYPE}-lxde.iso        -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 	    "debian         https://cdimage.debian.org/cdimage/weekly-live-builds/${ARC_TYPE}/iso-hybrid/debian-live-testing-${ARC_TYPE}-lxde.iso                        -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                    -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
 	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                   -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
 	    "ubuntu         https://releases.ubuntu.com/lunar/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
-	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-amd64.iso                                                                        -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
-	    "ubuntu         http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-amd64.iso                                                               -                                           preseed_ubuntu.cfg                          2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
+	    "ubuntu         http://cdimage.ubuntu.com/releases/lunar/release/ubuntu-[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                               -                                           preseed_ubuntu.cfg                          2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
+	    "ubuntu         http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                                -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
+	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-${ARC_TYPE}.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
+	    "ubuntu         http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-${ARC_TYPE}.iso                                                         -                                           preseed_ubuntu.cfg                          2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
 	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
 
 	readonly ARRAY_NAME_LIVE=(                                                                                                                                                                                                                                                                                                            \
 	    "debian         https://cdimage.debian.org/cdimage/archive/10.13.0-live/${ARC_TYPE}/iso-hybrid/debian-live-[0-9.]*-${ARC_TYPE}-lxde.iso                      -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
 	    "debian         https://cdimage.debian.org/cdimage/release/current-live/${ARC_TYPE}/iso-hybrid/debian-live-[0-9.]*-${ARC_TYPE}-lxde.iso                      -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc3-live/${ARC_TYPE}/iso-hybrid/debian-live-bkworm-DI-rc3-${ARC_TYPE}-lxde.iso                -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
+	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc[0-9]-live/${ARC_TYPE}/iso-hybrid/debian-live-bkworm-DI-rc[0-9]-${ARC_TYPE}-lxde.iso        -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 	    "debian         https://cdimage.debian.org/cdimage/weekly-live-builds/${ARC_TYPE}/iso-hybrid/debian-live-testing-${ARC_TYPE}-lxde.iso                        -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                    -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
@@ -383,7 +385,8 @@ fncMenu () {
 	local DVD_INFO											# DVD情報
 	local DVD_SIZE											# DVDサイズ
 	local DVD_DATE											# DVD日付
-	local WEB_HEDR=()
+	local WEB_HEAD=()
+	local WEB_NEWR
 	local WEB_STAT
 	local WEB_SIZE
 	local WEB_LAST
@@ -420,26 +423,32 @@ fncMenu () {
 		TXT_COLOR=""
 		ARRY_NAME=(${ARRAY_NAME[$I-1]})
 		CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
-		CODE_NAME[1]=$(basename ${ARRY_NAME[1]} | sed -e 's/.iso//ig')	# DVDファイル名
+		CODE_NAME[1]=${ARRY_NAME[1]##*/}								# DVDファイル名
 		CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
 		CODE_NAME[3]=${ARRY_NAME[3]}									# 定義ファイル
 		CODE_NAME[4]=${ARRY_NAME[4]}									# リリース日
 		CODE_NAME[5]=${ARRY_NAME[5]}									# サポ終了日
 		CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
 		CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
-		DIR_NAME=$(dirname ${CODE_NAME[2]})
+		DIR_NAME=${CODE_NAME[2]%/*}
 		# ---------------------------------------------------------------------
-		OLD_IFS=${IFS}
-		IFS=
+		if [ -z "$(echo ${DIR_NAME} | sed -n '/\[.*\]/p')" ]; then
+			WEB_NEWR="${DIR_NAME}/"
+		else
+			set +e
+			WEB_HEAD="$(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${DIR_NAME}" 2> /dev/null)"
+			RET_CD=$?
+			set -e
+			WEB_NEWR="$(echo "${WEB_HEAD[@]}" | LANG=C sed -n 's/^Location: \(.*\)$/\1/ip' | sort -r | head -n 1)"
+		fi
 		set +e
-		WEB_INFO=($(curl --location --no-progress-bar --remote-time --show-error --silent --fail "${DIR_NAME}" 2> /dev/null))
+		WEB_INFO="$(curl --location --no-progress-bar --remote-time --show-error --silent --fail "${WEB_NEWR%/*}" 2> /dev/null)"
 		RET_CD=$?
 		set -e
-		IFS=${OLD_IFS}
 		if [ ${RET_CD} -eq 18 -o ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then	# WEB情報取得失敗
 			TXT_COLOR=${TXT_RED}
 		else												# WEB取得取得成功
-			FIL_INFO=($(echo "${WEB_INFO[@]}" | LANG=C sed -n "s/^.*<a href=.*> *\(${CODE_NAME[1]}\.iso\) *<\/a.*> *\([0-9a-zA-Z]*-[0-9a-zA-Z]*-[0-9a-zA-Z]*\) *\([0-9]*:[0-9]*\).*$/\1 \2 \3/p"))
+			FIL_INFO=($(echo "${WEB_INFO[@]}" | LANG=C sed -n -e "/${CODE_NAME[1]}/ s/^.*<a href=.*> *\(${CODE_NAME[1]}\) *<\/a.*> *\([0-9a-zA-Z]*-[0-9a-zA-Z]*-[0-9a-zA-Z]*\) *\([0-9]*:[0-9]*\).*$/\1 \2 \3/p" | sort -r | head -n 1))
 			if [ "${FIL_INFO[1]:+UNSET}" = "" ]; then
 				TXT_COLOR=${TXT_RED}
 			else
@@ -447,30 +456,30 @@ fncMenu () {
 					FIL_INFO[2]="00:00"
 				fi
 				FIL_DATE=$(TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M%S")
-				CODE_NAME[1]="${FIL_INFO[0]%.*}"
+				CODE_NAME[1]="${FIL_INFO[0]}"
 				CODE_NAME[2]="${DIR_NAME}/${FIL_INFO[0]}"
 				CODE_NAME[4]=$(TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d")
 			fi
 		fi
 		# ---------------------------------------------------------------------
-		if [ "${CODE_NAME[1]}" = "mini" ]; then
-			CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}"	# mini.iso
+		if [ "${CODE_NAME[1]%.*}" = "mini" ]; then
+			CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}.iso"					# mini.iso
 		fi
 		# ---------------------------------------------------------------------
 		if [ "${ARRY_NAME[2]}" != "-" ]; then				# DVDファイル別名
-			CODE_NAME[1]=$(basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig')
+			CODE_NAME[1]="${ARRY_NAME[2]##*/}"
 		fi
 		# ---------------------------------------------------------------------
-		if [ -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
-			CODE_NAME[4]=`TZ=UTC ls -lL --time-style="+%Y-%m-%d JST" "${WORK_DIRS}/${CODE_NAME[1]}.iso" | awk '{print $6;}'`
+		if [ -f "${WORK_DIRS}/${CODE_NAME[1]}" ]; then
+			CODE_NAME[4]=`TZ=UTC ls -lL --time-style="+%Y-%m-%d JST" "${WORK_DIRS}/${CODE_NAME[1]}" | awk '{print $6;}'`
 		fi
 		# ---------------------------------------------------------------------
 		if [ "${TXT_COLOR}" != "${TXT_RED}" ]; then
-			if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
+			if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}" ]; then
 				TXT_COLOR=${TXT_CYAN}
 				TXT_COLOR+=${TXT_REV}
 			else
-				DST_FILE="$(find "${WORK_DIRS}" -type f -regextype posix-basic -regex ".*/${CODE_NAME[1]}-*\(custom\)*-\(autoyast\|kickstart\|nocloud\|preseed\)\.iso" -print)"
+				DST_FILE="$(find "${WORK_DIRS}" -type f -regextype posix-basic -regex ".*/${CODE_NAME[1]%.*}-*\(custom\)*-\(autoyast\|kickstart\|nocloud\|preseed\)\.iso" -print)"
 				if [ "${DST_FILE}" = "" ]; then
 					DST_DATE=""
 					TXT_COLOR=${TXT_GREEN}
@@ -478,7 +487,7 @@ fncMenu () {
 					DST_DATE=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${DST_FILE}" | awk '{print $6;}')
 				fi
 				# -------------------------------------------------------------
-				DVD_INFO=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${WORK_DIRS}/${CODE_NAME[1]}.iso")
+				DVD_INFO=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${WORK_DIRS}/${CODE_NAME[1]}")
 				DVD_SIZE=$(echo "${DVD_INFO}" | awk '{print $5;}')
 				DVD_DATE=$(echo "${DVD_INFO}" | awk '{print $6;}')
 				if [ -n "${DST_DATE}" ] && [ ${DVD_DATE} -gt ${DST_DATE} ]; then
@@ -488,18 +497,18 @@ fncMenu () {
 					OLD_IFS=${IFS}
 					IFS=
 					set +e
-					WEB_HEDR=($(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${CODE_NAME[2]}" 2> /dev/null | sed -n '/HTTP\/.* 200/,/^$/p'))
+					WEB_HEAD=($(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${CODE_NAME[2]}" 2> /dev/null | sed -n '/HTTP\/.* 200/,/^$/p'))
 					RET_CD=$?
 					set -e
 					IFS=${OLD_IFS}
 					# -------------------------------------------------------------
-					if [ "${#WEB_HEDR[@]}" -eq 0 ] || [ ${RET_CD} -eq 18 -o ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then
+					if [ "${#WEB_HEAD[@]}" -eq 0 ] || [ ${RET_CD} -eq 18 -o ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then
 						TXT_COLOR=${TXT_RED}
 					else
 						OLD_IFS=${IFS}
 						IFS=
-						WEB_SIZE=$(echo ${WEB_HEDR[@],,} | sed -n -e '/^content-length:/ s/^.*: //p' | sed -z 's/\n\|\r\|\l//g')
-						WEB_LAST=$(echo ${WEB_HEDR[@],,} | sed -n -e '/^last-modified:/ s/^.*: //p')
+						WEB_SIZE=$(echo ${WEB_HEAD[@],,} | sed -n -e '/^content-length:/ s/^.*: //p' | sed -z 's/\n\|\r\|\l//g')
+						WEB_LAST=$(echo ${WEB_HEAD[@],,} | sed -n -e '/^last-modified:/ s/^.*: //p')
 						WEB_DATE=$(TZ=UTC date -d "${WEB_LAST}" "+%Y%m%d%H%M%S")
 						IFS=${OLD_IFS}
 						if [ "${WEB_SIZE}" -ne "${DVD_SIZE}" -o "${WEB_DATE}" -gt "${DVD_DATE}" ]; then
@@ -513,14 +522,14 @@ fncMenu () {
 				fi
 			fi
 		fi
-		if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}.iso" ]; then
+		if [ ! -f "${WORK_DIRS}/${CODE_NAME[1]}" ]; then
 			TXT_COLOR+=${TXT_REV}
 		fi
 		# ---------------------------------------------------------------------
-#		ARRAY_NAME[$I-1]=$(printf "%s %s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]}.iso ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]})
-		ARRAY_NAME[$I-1]="${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]}.iso ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]}"
+#		ARRAY_NAME[$I-1]=$(printf "%s %s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]})
+		ARRAY_NAME[$I-1]="${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]}"
 		# ---------------------------------------------------------------------
-		printf "#${TXT_COLOR}%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：%-10.10s：%-10.10s：%-16.16s${TXT_RESET}#\n" ${I} ${CODE_NAME[1]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+		printf "#${TXT_COLOR}%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：%-10.10s：%-10.10s：%-16.16s${TXT_RESET}#\n" ${I} ${CODE_NAME[1]%.*} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
 	done
 	fncPrintf "# $(fncString $((${COL_SIZE}-4)) '-') #"
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
