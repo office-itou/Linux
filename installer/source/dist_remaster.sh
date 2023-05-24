@@ -28,6 +28,7 @@
 ##	2023/05/17 000.0000 J.Itou         リスト更新: Debian bookworm_di_rc3 追加 / Rocky9 URL変更
 ##	2023/05/20 000.0000 J.Itou         処理見直し
 ##	2023/05/22 000.0000 J.Itou         メモ更新 / リスト更新: Ubuntu_23.10(Mantic_Minotaur) 追加
+##	2023/05/24 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -71,13 +72,13 @@
 	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/current/${ARC_TYPE}/iso-cd/debian-testing-${ARC_TYPE}-netinst.iso                      -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
 	    "centos         https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                           -                                           kickstart_common.cfg                        20xx-xx-xx   2024-05-31   RHEL_8.x        -                                " \
 	    "centos         https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                              -                                           kickstart_common.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-netinst-x86_64-36-1.5.iso                    -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-netinst-x86_64-37-1.7.iso                    -                                           kickstart_common.cfg                        2022-11-15   2023-11-14   kernel_6.0      -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-1.6.iso                    -                                           kickstart_common.cfg                        2023-04-18   2024-05-14   kernel_6.2      -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-netinst-x86_64-36-[0-9.]*.iso                -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-netinst-x86_64-37-[0-9.]*.iso                -                                           kickstart_common.cfg                        2022-11-15   2023-11-14   kernel_6.0      -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-[0-9.]*.iso                -                                           kickstart_common.cfg                        2023-04-18   2024-05-14   kernel_6.2      -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2022-11-14   20xx-xx-xx   RHEL_8.x        -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso                                                       -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.6-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-minimal-x86_64.iso                         -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.0-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-minimal-x86_64.iso                         -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-minimal-x86_64.iso                   -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-minimal-x86_64.iso                   -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
 	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9.]*-latest-x86_64-boot.iso                                                  -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                             -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
@@ -95,13 +96,13 @@
 	    "ubuntu         https://releases.ubuntu.com/lunar/ubuntu-[0-9.]*-live-server-${ARC_TYPE}.iso                                                                 -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 	    "centos         https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                           -                                           kickstart_common.cfg                        2019-xx-xx   2024-05-31   RHEL_8.x        -                                " \
 	    "centos         https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                              -                                           kickstart_common.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-dvd-x86_64-36-1.5.iso                        -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-dvd-x86_64-37-1.7.iso                        -                                           kickstart_common.cfg                        2022-11-15   2023-11-14   kernel_6.0      -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-1.6.iso                        -                                           kickstart_common.cfg                        2023-04-18   2024-05-14   kernel_6.2      -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-dvd-x86_64-36-[0-9.]*.iso                    -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-dvd-x86_64-37-[0-9.]*.iso                    -                                           kickstart_common.cfg                        2022-11-15   2023-11-14   kernel_6.0      -                                " \
+	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                    -                                           kickstart_common.cfg                        2023-04-18   2024-05-14   kernel_6.2      -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-dvd1.iso                                                        -                                           kickstart_common.cfg                        2022-11-14   20xx-xx-xx   RHEL_8.x        -                                " \
 	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-dvd.iso                                                        -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x       -                                 " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.6-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                                 -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.0-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                                 -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                           -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
+	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                           -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
 	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9.]*-latest-x86_64-dvd.iso                                                   -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                             -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
 	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
@@ -385,9 +386,11 @@ fncMenu () {
 	local DVD_INFO											# DVD情報
 	local DVD_SIZE											# DVDサイズ
 	local DVD_DATE											# DVD日付
+#	local WEB_NEWR
+	local WEB_DISP
+	local WEB_PAGE
+#	local WEB_STAT
 	local WEB_HEAD=()
-	local WEB_NEWR
-	local WEB_STAT
 	local WEB_SIZE
 	local WEB_LAST
 	local WEB_DATE
@@ -432,17 +435,16 @@ fncMenu () {
 		CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
 		DIR_NAME=${CODE_NAME[2]%/*}
 		# ---------------------------------------------------------------------
-		if [ -z "$(echo ${DIR_NAME} | sed -n '/\[.*\]/p')" ]; then
-			WEB_NEWR="${DIR_NAME}/"
-		else
+		if [ -n "$(echo ${DIR_NAME} | sed -n '/\[.*\]/p')" ]; then
 			set +e
-			WEB_HEAD="$(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${DIR_NAME}" 2> /dev/null)"
+			WEB_PAGE="$(curl --location --no-progress-bar --remote-time --show-error --silent --fail "${DIR_NAME%/*\[*}" 2> /dev/null)"
 			RET_CD=$?
 			set -e
-			WEB_NEWR="$(echo "${WEB_HEAD[@]}" | LANG=C sed -n 's/^Location: \(.*\)$/\1/ip' | sort -r | head -n 1)"
+			WEB_DISP="$(echo "${DIR_NAME}" | sed -e 's~^'${DIR_NAME%/*\[*}'/\(.*\)/'${DIR_NAME#*\]*/}'$~\1~')"
+			DIR_NAME="${DIR_NAME%/*\[*}/$(echo "${WEB_PAGE[@]}" | LANG=C sed -n -e '/'${WEB_DISP}'/ s~^.*<a href=.*> *\('${WEB_DISP}'\)/ *</a.*>.*$~\1~p' | sort -r | head -n 1)/${DIR_NAME#*\]*/}"
 		fi
 		set +e
-		WEB_INFO="$(curl --location --no-progress-bar --remote-time --show-error --silent --fail "${WEB_NEWR%/*}" 2> /dev/null)"
+		WEB_INFO="$(curl --location --no-progress-bar --remote-time --show-error --silent --fail "${DIR_NAME}" 2> /dev/null)"
 		RET_CD=$?
 		set -e
 		if [ ${RET_CD} -eq 18 -o ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then	# WEB情報取得失敗
@@ -493,7 +495,7 @@ fncMenu () {
 				if [ -n "${DST_DATE}" ] && [ ${DVD_DATE} -gt ${DST_DATE} ]; then
 					TXT_COLOR=${TXT_YELLOW}
 				fi
-				if [ ${FIL_DATE} -ne ${DVD_DATE} ]; then
+				if [ ${FIL_DATE::-2} -ne ${DVD_DATE::-2} ]; then
 					OLD_IFS=${IFS}
 					IFS=
 					set +e
