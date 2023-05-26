@@ -576,7 +576,7 @@ funcCopy_module () {
   mkdir -p ./tmp
   # *** modules ***************************************************************
   U=(                              \
-    libaio1-udeb\\\(-udeb\\\)*_.*  \
+    libaio1\\\(-udeb\\\)*_.*       \
     libblkid1\\\(-udeb\\\)*_.*     \
     libc-l10n\\\(-udeb\\\)*_.*     \
     libgcrypt20\\\(-udeb\\\)*_.*   \
