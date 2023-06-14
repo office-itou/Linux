@@ -29,6 +29,7 @@
 ##	2023/05/20 000.0000 J.Itou         処理見直し
 ##	2023/05/22 000.0000 J.Itou         メモ更新 / リスト更新: Ubuntu_23.10(Mantic_Minotaur) 追加
 ##	2023/05/24 000.0000 J.Itou         処理見直し
+##	2023/06/11 000.0000 J.Itou         リスト更新 / 処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -56,82 +57,104 @@
 # -----------------------------------------------------------------------------
 	ARRAY_NAME=()
 
-	readonly ARRAY_NAME_MINI=(                                                                                                                                                                                                                                                                                                            \
-	    "debian         https://deb.debian.org/debian/dists/buster/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                        mini-buster-${ARC_TYPE}.iso                 preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
-	    "debian         https://deb.debian.org/debian/dists/bullseye/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                      mini-bullseye-${ARC_TYPE}.iso               preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         https://deb.debian.org/debian/dists/bookworm/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                      mini-bookworm-${ARC_TYPE}.iso               preseed_debian.cfg                          202x-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "debian         https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/netboot/mini.iso                                                                       mini-testing-${ARC_TYPE}.iso                preseed_debian.cfg                          202x-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                             -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   bionic          Ubuntu_18.04(Bionic_Beaver):LTS  " \
-	    "ubuntu         http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso                       -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   focal           Ubuntu_20.04(Focal_Fossa):LTS    " \
-	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+	#idx:value
+	#  0:distribution
+	#  1:codename
+	#  2:download URL
+	#  3:directory
+	#  4:alias
+	#  5:iso file size
+	#  6:iso file date
+	#  7:definition file
+	#  8:release
+	#  9:support
+	# 10:status
+	# 11:memo1
+	# 12:memo2
 
-	readonly ARRAY_NAME_NET=(                                                                                                                                                                                                                                                                                                             \
-	    "debian         https://cdimage.debian.org/cdimage/archive/10.13.0/${ARC_TYPE}/iso-cd/debian-[0-9.]*-${ARC_TYPE}-netinst.iso                                 -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
-	    "debian         https://cdimage.debian.org/cdimage/release/current/${ARC_TYPE}/iso-cd/debian-[0-9.]*-${ARC_TYPE}-netinst.iso                                 -                                           preseed_debian.cfg                          2019-07-06   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc[0-9]/${ARC_TYPE}/iso-cd/debian-bookworm-DI-rc[0-9]-${ARC_TYPE}-netinst.iso                 -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "debian         https://cdimage.debian.org/cdimage/daily-builds/daily/current/${ARC_TYPE}/iso-cd/debian-testing-${ARC_TYPE}-netinst.iso                      -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "centos         https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                           -                                           kickstart_common.cfg                        20xx-xx-xx   2024-05-31   RHEL_8.x        -                                " \
-	    "centos         https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                              -                                           kickstart_common.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-netinst-x86_64-36-[0-9.]*.iso                -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-netinst-x86_64-37-[0-9.]*.iso                -                                           kickstart_common.cfg                        2022-11-15   2023-11-14   kernel_6.0      -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-[0-9.]*.iso                -                                           kickstart_common.cfg                        2023-04-18   2024-05-14   kernel_6.2      -                                " \
-	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-boot.iso                                                        -                                           kickstart_common.cfg                        2022-11-14   20xx-xx-xx   RHEL_8.x        -                                " \
-	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso                                                       -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-minimal-x86_64.iso                   -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-minimal-x86_64.iso                   -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
-	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9.]*-latest-x86_64-boot.iso                                                  -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "suse           https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                             -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
-	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           20xx-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
-	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+	readonly ARRAY_NAME_MINI=(                                                                                                                                                                                                                                                                                                                                                                                                                        \
+		"debian             buster              https://deb.debian.org/debian/dists/buster/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                       ./${WORK_DIRS}/iso/mini                     mini-buster-${ARC_TYPE}.iso     -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \
+		"debian             bullseye            https://deb.debian.org/debian/dists/bullseye/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                     ./${WORK_DIRS}/iso/mini                     mini-bullseye-${ARC_TYPE}.iso   -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \
+		"debian             bookworm            https://deb.debian.org/debian/dists/bookworm/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                     ./${WORK_DIRS}/iso/mini                     mini-bookworm-${ARC_TYPE}.iso   -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \
+		"debian             trixie              https://deb.debian.org/debian/dists/trixie/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                                       ./${WORK_DIRS}/iso/mini                     mini-trixie-${ARC_TYPE}.iso     -                   -           preseed_debian.cfg                              202x-xx-xx  20xx-xx-xx  -           testing             Debian_13.xx(trixie)                " \
+		"debian             testing             https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/netboot/mini.iso                                                                      ./${WORK_DIRS}/iso/mini                     mini-testing-${ARC_TYPE}.iso    -                   -           preseed_debian.cfg                              202x-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \
+		"ubuntu             bionic              http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-${ARC_TYPE}/current/images/netboot/mini.iso                            ./${WORK_DIRS}/iso/mini                     mini-bionic-${ARC_TYPE}.iso     -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           bionic              Ubuntu_18.04(Bionic_Beaver):LTS     " \
+		"ubuntu             focal               http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-${ARC_TYPE}/current/legacy-images/netboot/mini.iso                      ./${WORK_DIRS}/iso/mini                     mini-focal-${ARC_TYPE}.iso      -                   -           preseed_ubuntu.cfg                              2020-04-23  2030-04-23  -           focal               Ubuntu_20.04(Focal_Fossa):LTS       " \
+	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                         5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
 
-	readonly ARRAY_NAME_DVD=(                                                                                                                                                                                                                                                                                                             \
-	    "debian         https://cdimage.debian.org/cdimage/archive/10.13.0/${ARC_TYPE}/iso-dvd/debian-[0-9.]*-${ARC_TYPE}-DVD-1.iso                                  -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
-	    "debian         https://cdimage.debian.org/cdimage/release/current/${ARC_TYPE}/iso-dvd/debian-[0-9.]*-${ARC_TYPE}-DVD-1.iso                                  -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc[0-9]/${ARC_TYPE}/iso-dvd/debian-bookworm-DI-rc[0-9]-${ARC_TYPE}-DVD-1.iso                  -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "debian         https://cdimage.debian.org/cdimage/weekly-builds/${ARC_TYPE}/iso-dvd/debian-testing-${ARC_TYPE}-DVD-1.iso                                    -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "ubuntu         https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-[0-9.]*-server-${ARC_TYPE}.iso                                                     -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-live-server-${ARC_TYPE}.iso                                                                 -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
-	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-live-server-${ARC_TYPE}.iso                                                                 -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
-	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-live-server-${ARC_TYPE}.iso                                                               -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
-	    "ubuntu         https://releases.ubuntu.com/lunar/ubuntu-[0-9.]*-live-server-${ARC_TYPE}.iso                                                                 -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
-	    "centos         https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                           -                                           kickstart_common.cfg                        2019-xx-xx   2024-05-31   RHEL_8.x        -                                " \
-	    "centos         https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                              -                                           kickstart_common.cfg                        2021-xx-xx   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/36/Server/x86_64/iso/Fedora-Server-dvd-x86_64-36-[0-9.]*.iso                    -                                           kickstart_common.cfg                        2022-05-10   2023-05-16   kernel_5.17     -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-dvd-x86_64-37-[0-9.]*.iso                    -                                           kickstart_common.cfg                        2022-11-15   2023-11-14   kernel_6.0      -                                " \
-	    "fedora         https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                    -                                           kickstart_common.cfg                        2023-04-18   2024-05-14   kernel_6.2      -                                " \
-	    "rocky          https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-[0-9.]*-x86_64-dvd1.iso                                                        -                                           kickstart_common.cfg                        2022-11-14   20xx-xx-xx   RHEL_8.x        -                                " \
-	    "rocky          https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-dvd.iso                                                        -                                           kickstart_common.cfg                        2022-07-14   20xx-xx-xx   RHEL_9.x       -                                 " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                           -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
-	    "miraclelinux   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-[0-9.]*-rtm-x86_64.iso                           -                                           kickstart_common.cfg                        2021-10-04   20xx-xx-xx   RHEL_x.x        -                                " \
-	    "almalinux      https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-[0-9.]*-latest-x86_64-dvd.iso                                                   -                                           kickstart_common.cfg                        2022-05-26   20xx-xx-xx   RHEL_9.x        -                                " \
-	    "suse           https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                             -                                           yast_opensuse.xml                           2022-06-08   2023-xx-xx   kernel_5.14.21  -                                " \
-	    "suse           https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                -                                           yast_opensuse.xml                           2021-xx-xx   20xx-xx-xx   kernel_x.x      -                                " \
-	    "debian         https://cdimage.debian.org/cdimage/archive/10.13.0-live/${ARC_TYPE}/iso-hybrid/debian-live-[0-9.]*-${ARC_TYPE}-lxde.iso                      -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
-	    "debian         https://cdimage.debian.org/cdimage/release/current-live/${ARC_TYPE}/iso-hybrid/debian-live-[0-9.]*-${ARC_TYPE}-lxde.iso                      -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc[0-9]-live/${ARC_TYPE}/iso-hybrid/debian-live-bkworm-DI-rc[0-9]-${ARC_TYPE}-lxde.iso        -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "debian         https://cdimage.debian.org/cdimage/weekly-live-builds/${ARC_TYPE}/iso-hybrid/debian-live-testing-${ARC_TYPE}-lxde.iso                        -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                    -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
-	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
-	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                   -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
-	    "ubuntu         https://releases.ubuntu.com/lunar/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
-	    "ubuntu         http://cdimage.ubuntu.com/releases/lunar/release/ubuntu-[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                               -                                           preseed_ubuntu.cfg                          2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
-	    "ubuntu         http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                                -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
-	    "ubuntu         http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-${ARC_TYPE}.iso                                                                  -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
-	    "ubuntu         http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-${ARC_TYPE}.iso                                                         -                                           preseed_ubuntu.cfg                          2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
-	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+	readonly ARRAY_NAME_NET=(                                                                                                                                                                                                                                                                                                                                                                                                                         \
+		"debian             buster              https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/${ARC_TYPE}/iso-cd/debian-10.[0-9.]*-${ARC_TYPE}-netinst.iso                 ./${WORK_DIRS}/iso/net                      -                               -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \
+		"debian             bullseye            https://cdimage.debian.org/cdimage/archive/latest-oldstable/${ARC_TYPE}/iso-cd/debian-11.[0-9.]*-${ARC_TYPE}-netinst.iso                    ./${WORK_DIRS}/iso/net                      -                               -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \
+		"debian             bookworm            https://cdimage.debian.org/cdimage/release/current/${ARC_TYPE}/iso-cd/debian-12.[0-9.]*-${ARC_TYPE}-netinst.iso                             ./${WORK_DIRS}/iso/net                      -                               -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \
+#		"debian             trixie              -                                                                                                                                           ./${WORK_DIRS}/iso/net                      -                               -                   -           preseed_debian.cfg                              202x-xx-xx  20xx-xx-xx  -           testing             Debian_13.xx(trixie)                " \ #
+		"debian             testing             https://cdimage.debian.org/cdimage/daily-builds/daily/current/${ARC_TYPE}/iso-cd/debian-testing-${ARC_TYPE}-netinst.iso                     ./${WORK_DIRS}/iso/net                      -                               -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \
+		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-netinst-x86_64-37-[0-9.]*.iso               ./${WORK_DIRS}/iso/net                      -                               -                   -           kickstart_common.cfg                            2022-11-15  2023-11-14  -           kernel_6.0          -                                   " \
+		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-[0-9.]*.iso               ./${WORK_DIRS}/iso/net                      -                               -                   -           kickstart_common.cfg                            2023-04-18  2024-05-14  -           kernel_6.2          -                                   " \
+		"centos             -                   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                          ./${WORK_DIRS}/iso/net                      -                               -                   -           kickstart_common.cfg                            20xx-xx-xx  2024-05-31  -           RHEL_8.x            -                                   " \
+		"centos             -                   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                             ./${WORK_DIRS}/iso/net                      -                               -                   -           kickstart_common.cfg                            2021-xx-xx  20xx-xx-xx  -           RHEL_9.x            -                                   " \
+		"almalinux          -                   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-boot.iso                                                ./${WORK_DIRS}/iso/net                      -                               -                   -           kickstart_common.cfg                            2022-05-26  20xx-xx-xx  -           RHEL_9.x            -                                   " \
+		"rocky              -                   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-boot.iso                                                      ./${WORK_DIRS}/iso/net                      -                               -                   -           kickstart_common.cfg                            2022-11-14  20xx-xx-xx  -           RHEL_8.x            -                                   " \
+		"rocky              -                   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-boot.iso                                               ./${WORK_DIRS}/iso/net                      -                               -                   -           kickstart_common.cfg                            2022-07-14  20xx-xx-xx  -           RHEL_9.x            -                                   " \
+		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                ./${WORK_DIRS}/iso/net                      -                               -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
+		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso                ./${WORK_DIRS}/iso/net                      -                               -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
+		"opensuse           leap                https://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/leap/[0-9.]*/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                         ./${WORK_DIRS}/iso/net                      -                               -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
+		"opensuse           tumbleweed          https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                               ./${WORK_DIRS}/iso/net                      -                               -                   -           yast_opensuse.xml                               20xx-xx-xx  20xx-xx-xx  -           kernel_x.x          -                                   " \
+	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                         5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
 
-	readonly ARRAY_NAME_LIVE=(                                                                                                                                                                                                                                                                                                            \
-	    "debian         https://cdimage.debian.org/cdimage/archive/10.13.0-live/${ARC_TYPE}/iso-hybrid/debian-live-[0-9.]*-${ARC_TYPE}-lxde.iso                      -                                           preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
-	    "debian         https://cdimage.debian.org/cdimage/release/current-live/${ARC_TYPE}/iso-hybrid/debian-live-[0-9.]*-${ARC_TYPE}-lxde.iso                      -                                           preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         https://cdimage.debian.org/cdimage/bookworm_di_rc[0-9]-live/${ARC_TYPE}/iso-hybrid/debian-live-bkworm-DI-rc[0-9]-${ARC_TYPE}-lxde.iso        -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "debian         https://cdimage.debian.org/cdimage/weekly-live-builds/${ARC_TYPE}/iso-hybrid/debian-live-testing-${ARC_TYPE}-lxde.iso                        -                                           preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
-	    "ubuntu         https://releases.ubuntu.com/bionic/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                    -                                           preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
-	    "ubuntu         https://releases.ubuntu.com/focal/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg                          2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
-	    "ubuntu         https://releases.ubuntu.com/jammy/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg                          2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
-	    "ubuntu         https://releases.ubuntu.com/kinetic/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                   -                                           preseed_ubuntu.cfg                          2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
-	    "ubuntu         https://releases.ubuntu.com/lunar/ubuntu-[0-9.]*-desktop-${ARC_TYPE}.iso                                                                     -                                           preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
-	)   # 0:区分        1:ダウンロード先URL                                                                                                                          2:別名                                      3:定義ファイル                              4:リリース日 5:サポ終了日 6:備考          7:備考2
+	readonly ARRAY_NAME_DVD=(                                                                                                                                                                                                                                                                                                                                                                                                                         \
+		"debian             buster              https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/${ARC_TYPE}/iso-dvd/debian-10.[0-9.]*-${ARC_TYPE}-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \
+		"debian             bullseye            https://cdimage.debian.org/cdimage/archive/latest-oldstable/${ARC_TYPE}/iso-dvd/debian-11.[0-9.]*-${ARC_TYPE}-DVD-1.iso                     ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \
+		"debian             bookworm            https://cdimage.debian.org/cdimage/release/current/${ARC_TYPE}/iso-dvd/debian-12.[0-9.]*-${ARC_TYPE}-DVD-1.iso                              ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \
+#		"debian             trixie              -                                                                                                                                           ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              202x-xx-xx  20xx-xx-xx  -           testing             Debian_13.xx(trixie)                " \ #
+		"debian             testing             https://cdimage.debian.org/cdimage/weekly-builds/${ARC_TYPE}/iso-dvd/debian-testing-${ARC_TYPE}-DVD-1.iso                                   ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \
+		"ubuntu             bionic              https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04[0-9.]*-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           Bionic_Beaver       Ubuntu_18.04(Bionic_Beaver):LTS     " \
+		"ubuntu             focal.server        https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2020-04-23  2030-04-23  -           Focal_Fossa         Ubuntu_20.04(Focal_Fossa):LTS       " \
+		"ubuntu             jammy.server        https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-04-21  2032-04-21  -           Jammy_Jellyfish     Ubuntu_22.04(Jammy_Jellyfish):LTS   " \
+		"ubuntu             kinetic.server      https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-live-server-${ARC_TYPE}.iso                                                         ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-10-20  2023-07-xx  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \
+		"ubuntu             lunar.server        https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
+		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-dvd-x86_64-37-[0-9.]*.iso                   ./${WORK_DIRS}/iso/dvd                      -                               -                   -           kickstart_common.cfg                            2022-11-15  2023-11-14  -           kernel_6.0          -                                   " \
+		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                   ./${WORK_DIRS}/iso/dvd                      -                               -                   -           kickstart_common.cfg                            2023-04-18  2024-05-14  -           kernel_6.2          -                                   " \
+		"centos             -                   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                          ./${WORK_DIRS}/iso/dvd                      -                               -                   -           kickstart_common.cfg                            2019-xx-xx  2024-05-31  -           RHEL_8.x            -                                   " \
+		"centos             -                   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                             ./${WORK_DIRS}/iso/dvd                      -                               -                   -           kickstart_common.cfg                            2021-xx-xx  20xx-xx-xx  -           RHEL_9.x            -                                   " \
+		"almalinux          -                   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-dvd.iso                                                 ./${WORK_DIRS}/iso/dvd                      -                               -                   -           kickstart_common.cfg                            2022-05-26  20xx-xx-xx  -           RHEL_9.x            -                                   " \
+		"rocky              -                   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-dvd1.iso                                                      ./${WORK_DIRS}/iso/dvd                      -                               -                   -           kickstart_common.cfg                            2022-11-14  20xx-xx-xx  -           RHEL_8.x            -                                   " \
+		"rocky              -                   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-dvd.iso                                                ./${WORK_DIRS}/iso/dvd                      -                               -                   -           kickstart_common.cfg                            2022-07-14  20xx-xx-xx  -           RHEL_9.x            -                                   " \
+		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                        ./${WORK_DIRS}/iso/dvd                      -                               -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
+		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso                        ./${WORK_DIRS}/iso/dvd                      -                               -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
+		"opensuse           leap                https://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/leap/[0-9.]*/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                         ./${WORK_DIRS}/iso/dvd                      -                               -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
+		"opensuse           tumbleweed          https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                               ./${WORK_DIRS}/iso/dvd                      -                               -                   -           yast_opensuse.xml                               2021-xx-xx  20xx-xx-xx  -           kernel_x.x          -                                   " \
+		"debian             buster.live         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-10.[0-9.]*-${ARC_TYPE}-lxde.iso      ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \
+		"debian             bullseye.live       https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-11.[0-9.]*-${ARC_TYPE}-lxde.iso         ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \
+		"debian             bookworm.live       https://cdimage.debian.org/cdimage/release/current-live/${ARC_TYPE}/iso-hybrid/debian-live-12.[0-9.]*-${ARC_TYPE}-lxde.iso                  ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \
+#		"debian             trixie.live         -                                                                                                                                           ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              202x-xx-xx  20xx-xx-xx  -           testing             Debian_13.xx(trixie)                " \ #
+		"debian             testing.live        https://cdimage.debian.org/cdimage/weekly-live-builds/${ARC_TYPE}/iso-hybrid/debian-live-testing-${ARC_TYPE}-lxde.iso                       ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \
+		"ubuntu             bionic.desktop      https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           Bionic_Beaver       Ubuntu_18.04(Bionic_Beaver):LTS     " \
+		"ubuntu             focal.desktop       https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2020-04-23  2030-04-23  -           Focal_Fossa         Ubuntu_20.04(Focal_Fossa):LTS       " \
+		"ubuntu             jammy.desktop       https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2022-04-21  2032-04-21  -           Jammy_Jellyfish     Ubuntu_22.04(Jammy_Jellyfish):LTS   " \
+		"ubuntu             kinetic.desktop     https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                             ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2022-10-20  2023-07-xx  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \
+		"ubuntu             lunar.desktop       https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
+		"ubuntu             lunar.legacy        http://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                         ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
+		"ubuntu             mantic.server       http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+		"ubuntu             mantic.desktop      http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-${ARC_TYPE}.iso                                                                 ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+		"ubuntu             mantic.legacy       http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-${ARC_TYPE}.iso                                                        ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                         5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
+
+	readonly ARRAY_NAME_LIVE=(                                                                                                                                                                                                                                                                                                                                                                                                                        \
+		"debian             buster.live         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-10.[0-9.]*-${ARC_TYPE}-lxde.iso      ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \
+		"debian             bullseye.live       https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-11.[0-9.]*-${ARC_TYPE}-lxde.iso         ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \
+		"debian             bookworm.live       https://cdimage.debian.org/cdimage/release/current-live/${ARC_TYPE}/iso-hybrid/debian-live-12.[0-9.]*-${ARC_TYPE}-lxde.iso                  ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \
+#		"debian             trixie.live         -                                                                                                                                           ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              202x-xx-xx  20xx-xx-xx  -           testing             Debian_13.xx(trixie)                " \ #
+		"debian             testing.live        https://cdimage.debian.org/cdimage/weekly-live-builds/${ARC_TYPE}/iso-hybrid/debian-live-testing-${ARC_TYPE}-lxde.iso                       ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \
+		"ubuntu             bionic.desktop      https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           Bionic_Beaver       Ubuntu_18.04(Bionic_Beaver):LTS     " \
+		"ubuntu             focal.desktop       https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2020-04-23  2030-04-23  -           Focal_Fossa         Ubuntu_20.04(Focal_Fossa):LTS       " \
+		"ubuntu             jammy.desktop       https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2022-04-21  2032-04-21  -           Jammy_Jellyfish     Ubuntu_22.04(Jammy_Jellyfish):LTS   " \
+		"ubuntu             kinetic.desktop     https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                             ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2022-10-20  2023-07-xx  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \
+		"ubuntu             lunar.desktop       https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
+		"ubuntu             lunar.legacy        http://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                         ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
+#		"ubuntu             mantic.server       http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
+#		"ubuntu             mantic.desktop      http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-${ARC_TYPE}.iso                                                                 ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
+		"ubuntu             mantic.legacy       http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-${ARC_TYPE}.iso                                                        ./${WORK_DIRS}/iso/dvd                      -                               -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                         5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
 
 	case "${WORK_DIRS}" in
 		"dist_remaster_mini" )	ARRAY_NAME=("${ARRAY_NAME_MINI[@]}");;
@@ -187,44 +210,9 @@ funcColorTest () {
 	echo -e "${TXT_BCYAN} : TXT_BCYAN    : ${TXT_RESET}"
 	echo -e "${TXT_BWHITE} : TXT_BWHITE   : ${TXT_RESET}"
 }
-# --- is integer --------------------------------------------------------------
-fncIsInt () {
-	set +e
-	expr ${1:-""} + 1 > /dev/null 2>&1
-	if [ $? -ge 2 ]; then echo 1; else echo 0; fi
-	set -e
-}
-# --- string output -----------------------------------------------------------
-fncString () {
-	local OLD_IFS=${IFS}
-	IFS=$'\n'
-	if [ "$2" = " " ]; then
-		echo "" | awk '{s=sprintf("%'$1'.'$1's"," "); print s;}'
-	else
-		echo "" | awk '{s=sprintf("%'$1'.'$1's"," "); gsub(" ","'$2'",s); print s;}'
-	fi
-	IFS=${OLD_IFS}
-}
-# --- print with screen control -----------------------------------------------
-fncPrintf () {
-	local RET_STR=""
-	local INP_STR=""
-	local OUT_STR=""
-	local MAX_COLS=${COL_SIZE:-80}
-	local OLD_IFS=${IFS}
-	INP_STR="$@"
-	IFS=$'\n'
-	OUT_STR="$(printf $@)"
-	RET_STR="$(echo -n "${OUT_STR}" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null)"
-	if [ $? -ne 0 ]; then
-		MAX_COLS=$((COL_SIZE-2))
-		RET_STR="$(echo -n "${OUT_STR}" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null)"
-	fi
-	echo "${RET_STR}"
-	IFS=${OLD_IFS}
-}
+
 # IPv4 netmask変換処理 --------------------------------------------------------
-fncIPv4GetNetmaskBits () {
+funcIPv4GetNetmaskBits () {
 	local INP_ADDR
 	local -a OUT_ARRY=()
 
@@ -234,60 +222,119 @@ fncIPv4GetNetmaskBits () {
 	done
 	echo "${OUT_ARRY[@]}"
 }
+
+# --- is numeric --------------------------------------------------------------
+funcIsNumeric () {
+	if [[ "${1:-""}" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
+		echo 0
+	else
+		echo 1
+	fi
+}
+
+# --- string output -----------------------------------------------------------
+funcString () {
+	declare -r OLD_IFS=${IFS}
+	IFS=$'\n'
+	if [[ "$2" = " " ]]; then
+		echo "" | awk '{s=sprintf("%'"$1"'.'"$1"'s"," "); print s;}'
+	else
+		echo "" | awk '{s=sprintf("%'"$1"'.'"$1"'s"," "); gsub(" ","'"$2"'",s); print s;}'
+	fi
+	IFS=${OLD_IFS}
+}
+
+# --- print with screen control -----------------------------------------------
+funcPrintf () {
+	declare -r OLD_IFS=${IFS}
+	declare -i RET_CD
+	declare RET_STR=""
+	declare OUT_STR=""
+	declare -i MAX_COLS=${COL_SIZE:-80}
+	IFS=$'\n'
+	OUT_STR="$(printf "$@")"
+	RET_STR="$(echo -n "${OUT_STR}" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null)"
+	RET_CD=$?
+	if [[ ${RET_CD} -ne 0 ]]; then
+		MAX_COLS=$((COL_SIZE-2))
+		RET_STR="$(echo -n "${OUT_STR}" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null)"
+	fi
+	echo "${RET_STR}"
+	IFS=${OLD_IFS}
+}
+
 # --- download ----------------------------------------------------------------
 funcCurl () {
-	local RET_CD
-	local INP_STR="$@"
-	local INP_URL=$(echo ${INP_STR} | sed -n -e 's~^.* \(\(http\|https\)://.*\)$~\1~p')
-	local OUT_DIR=$(echo ${INP_STR} | sed -n -e 's~^.* --output-dir *\(.*\) .*$~\1~p' | sed -e 's~/$~~')
-	local OLD_IFS=${IFS}
-	local ARY_HED=("")
-	local ERR_MSG=""
-	local WEB_SIZ=""
-	local WEB_TIM=""
-	local WEB_FIL=""
-	local LOC_INF=""
-	local LOC_SIZ=""
-	local LOC_TIM=""
-	IFS=
+#	declare -r OLD_IFS=${IFS}
+	declare -i RET_CD
+	declare -i I
+	declare INP_URL="$(echo "$@" | sed -n -e 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
+	declare OUT_DIR="$(echo "$@" | sed -n -e 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+	declare OUT_FILE="$(echo "$@" | sed -n -e 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+	declare -a ARY_HED=("")
+	declare ERR_MSG=""
+	declare WEB_SIZ=""
+	declare WEB_TIM=""
+	declare WEB_FIL=""
+	declare LOC_INF=""
+	declare LOC_SIZ=""
+	declare LOC_TIM=""
+	declare TXT_SIZ=""
+	declare -i INT_SIZ
+	declare -a TXT_UNT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	set +e
-	ARY_HED=($(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${INP_URL}" 2> /dev/null | sed -n '/HTTP\/.* 200/,/^$/p'))
+	ARY_HED=("$(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null | sed -n -e '/HTTP\/.* 200/,/^$/ s/\'$'\r//gp')")
 	RET_CD=$?
 	set -e
-	IFS=${OLD_IFS}
-	if [ ${RET_CD} -eq 18 -o ${RET_CD} -eq 22 -o ${RET_CD} -eq 28  ]; then
-		ERR_MSG=$(echo ${ARY_HED[@]} | sed -n '/^HTTP/p' | sed -z 's/\n\|\r\|\l//g')
-		fncPrintf "${ERR_MSG}: ${INP_URL}"
+	if [[ ${RET_CD} -eq 18 ]] || [[ ${RET_CD} -eq 22 ]] || [[ ${RET_CD} -eq 28  ]]; then
+		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -n -e '/^HTTP/p' | sed -z 's/\n\|\r\|\l//g')
+		funcPrintf "${ERR_MSG}: ${INP_URL}"
 		return ${RET_CD}
 	fi
-	IFS=
-	WEB_SIZ=$(echo ${ARY_HED[@],,} | sed -n -e '/^content-length:/ s/^.*: //p' | sed -z 's/\n\|\r\|\l//g')
-	WEB_TIM=$(TZ=UTC date -d "$(echo ${ARY_HED[@],,} | sed -n -e '/^last-modified:/ s/^.*: //p')" "+%Y%m%d%H%M%S")
-	WEB_FIL="${OUT_DIR:-.}/$(basename ${INP_URL})"
-	IFS=${OLD_IFS}
-	if [ -f ${WEB_FIL} ]; then
-		LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "${WEB_FIL}")
-		LOC_TIM=$(echo ${LOC_INF} | awk '{print $6;}')
-		LOC_SIZ=$(echo ${LOC_INF} | awk '{print $5;}')
-		if [ ${WEB_TIM:-0} -eq ${LOC_TIM:-0} ] && [ ${WEB_SIZ:-0} -eq ${LOC_SIZ:-0} ]; then
-			fncPrintf "same file: ${WEB_FIL}"
+	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -n -e '/content-length:/ s/.*: //p')
+	WEB_TIM=$(TZ=UTC date -d "$(echo "${ARY_HED[@],,}" | sed -n -e '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
+	WEB_FIL="${OUT_DIR:-.}/$(basename "${INP_URL}")"
+	if [[ -n "${OUT_FILE}" ]] && [[ -f "${OUT_FILE}" ]]; then
+		WEB_FIL="${OUT_FILE}"
+	fi
+	if [[ -n "${WEB_FIL}" ]] && [[ -f "${WEB_FIL}" ]]; then
+		LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${WEB_FIL}")
+		LOC_TIM=$(echo "${LOC_INF}" | awk '{print $6;}')
+		LOC_SIZ=$(echo "${LOC_INF}" | awk '{print $5;}')
+		if [[ ${WEB_TIM:-0} -eq ${LOC_TIM:-0} ]] && [[ ${WEB_SIZ:-0} -eq ${LOC_SIZ:-0} ]]; then
+			funcPrintf "same    file: ${WEB_FIL}"
 			return
 		fi
-#		if [ ${WEB_TIM:-0} -ne ${LOC_TIM:-0} ]; then
-#			fncPrintf "diff file: ${WEB_FIL}"
-#			fncPrintf "WEB_TIM: ${WEB_TIM:-0}"
-#			fncPrintf "LOC_TIM: ${LOC_TIM:-0}"
+#		if [[ ${WEB_TIM:-0} -ne ${LOC_TIM:-0} ]]; then
+#			funcPrintf "diff file: ${WEB_FIL}"
+#			funcPrintf "WEB_TIM: ${WEB_TIM:-0}"
+#			funcPrintf "LOC_TIM: ${LOC_TIM:-0}"
 #		fi
-#		if [ ${WEB_SIZ:-0} -ne ${LOC_SIZ:-0} ]; then
-#			fncPrintf "diff file: ${WEB_FIL}"
-#			fncPrintf "WEB_SIZ: ${WEB_SIZ:-0}"
-#			fncPrintf "LOC_SIZ: ${LOC_SIZ:-0}"
+#		if [[ ${WEB_SIZ:-0} -ne ${LOC_SIZ:-0} ]]; then
+#			funcPrintf "diff file: ${WEB_FIL}"
+#			funcPrintf "WEB_SIZ: ${WEB_SIZ:-0}"
+#			funcPrintf "LOC_SIZ: ${LOC_SIZ:-0}"
 #		fi
 	fi
-	fncPrintf "get  file: ${WEB_FIL}"
-	curl ${INP_STR}
+
+	if [[ ${WEB_SIZ} -lt 1024 ]]; then
+		TXT_SIZ="$(printf "%'d Byte" "${WEB_SIZ}")"
+	else
+		for ((I=3; I>0; I--))
+		do
+			if [[ ${WEB_SIZ} -ge $((1024**I)) ]]; then
+				INT_SIZ="$(((WEB_SIZ*1000)/(1024**I)))"
+				TXT_SIZ="$(printf "%'.1f ${TXT_UNT[${I}]}" "${INT_SIZ::${#INT_SIZ}-3}.${INT_SIZ:${#INT_SIZ}-3}")"
+				break
+			fi
+		done
+	fi
+
+	funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
+	curl "$@"
 	return $?
 }
+
 # ### main function ###########################################################
 # -----------------------------------------------------------------------------
 funcHelp () {
@@ -373,7 +420,7 @@ funcOption () {
 	done
 }
 # -----------------------------------------------------------------------------
-fncMenu () {
+funcMenu () {
 	local OLD_IFS
 	local RET_CD											# 戻り値退避用
 	local ARRY_NAME=()										# 配列展開
@@ -408,8 +455,8 @@ fncMenu () {
 	#  水色：原本ファイル無し（ファイル作成対象）
 	#  反転：原本ダウンロード（ファイル作成対象）
 	# -------------------------------------------------------------------------
-	fncPrintf "# $(fncString $((${COL_SIZE}-4)) '-') #"
-	fncPrintf "#ID：Version$(fncString $((${COL_SIZE}-55)) ' ')：リリース日：サポ終了日：備考            #"
+	funcPrintf "# $(funcString $((${COL_SIZE}-4)) '-') #"
+	funcPrintf "#ID：Version$(funcString $((${COL_SIZE}-55)) ' ')：リリース日：サポ終了日：備考            #"
 	for ((I=1; I<=${#ARRAY_NAME[@]}; I++))
 	do
 		if [ "${INP_INDX}" != "" ]; then
@@ -424,16 +471,28 @@ fncMenu () {
 			fi
 		fi
 		TXT_COLOR=""
+#		ARRY_NAME=(${ARRAY_NAME[$I-1]})
+#		CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
+#		CODE_NAME[1]=${ARRY_NAME[1]##*/}								# DVDファイル名
+#		CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
+#		CODE_NAME[3]=${ARRY_NAME[3]}									# 定義ファイル
+#		CODE_NAME[4]=${ARRY_NAME[4]}									# リリース日
+#		CODE_NAME[5]=${ARRY_NAME[5]}									# サポ終了日
+#		CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
+#		CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
+#		DIR_NAME=${CODE_NAME[2]%/*}
 		ARRY_NAME=(${ARRAY_NAME[$I-1]})
-		CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
-		CODE_NAME[1]=${ARRY_NAME[1]##*/}								# DVDファイル名
-		CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
-		CODE_NAME[3]=${ARRY_NAME[3]}									# 定義ファイル
-		CODE_NAME[4]=${ARRY_NAME[4]}									# リリース日
-		CODE_NAME[5]=${ARRY_NAME[5]}									# サポ終了日
-		CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
-		CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
-		DIR_NAME=${CODE_NAME[2]%/*}
+		CODE_NAME[0]=${ARRY_NAME[0]}						# 区分
+		CODE_NAME[1]=${ARRY_NAME[2]##*/}					# DVDファイル名
+		CODE_NAME[2]=${ARRY_NAME[5]}						# DVDファイルサイズ
+		CODE_NAME[3]=${ARRY_NAME[6]}						# DVDファイル日付
+		CODE_NAME[4]=${ARRY_NAME[2]}						# ダウンロード先URL
+		CODE_NAME[5]=${ARRY_NAME[7]}						# 定義ファイル
+		CODE_NAME[6]=${ARRY_NAME[8]}						# リリース日
+		CODE_NAME[7]=${ARRY_NAME[9]}						# サポ終了日
+		CODE_NAME[8]=${ARRY_NAME[11]}						# 備考
+		CODE_NAME[9]=${ARRY_NAME[12]}						# 備考2
+		DIR_NAME=${CODE_NAME[4]%/*}
 		# ---------------------------------------------------------------------
 		if [ -n "$(echo ${DIR_NAME} | sed -n '/\[.*\]/p')" ]; then
 			set +e
@@ -459,21 +518,21 @@ fncMenu () {
 				fi
 				FIL_DATE=$(TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y%m%d%H%M%S")
 				CODE_NAME[1]="${FIL_INFO[0]}"
-				CODE_NAME[2]="${DIR_NAME}/${FIL_INFO[0]}"
-				CODE_NAME[4]=$(TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d")
+				CODE_NAME[4]="${DIR_NAME}/${FIL_INFO[0]}"
+				CODE_NAME[6]=$(TZ=UTC date -d "${FIL_INFO[1]} ${FIL_INFO[2]}" "+%Y-%m-%d")
 			fi
 		fi
 		# ---------------------------------------------------------------------
 		if [ "${CODE_NAME[1]%.*}" = "mini" ]; then
-			CODE_NAME[1]="mini-${ARRY_NAME[6]}-${ARC_TYPE}.iso"					# mini.iso
+			CODE_NAME[1]="mini-${ARRY_NAME[11]}-${ARC_TYPE}.iso"				# mini.iso
 		fi
 		# ---------------------------------------------------------------------
-		if [ "${ARRY_NAME[2]}" != "-" ]; then				# DVDファイル別名
-			CODE_NAME[1]="${ARRY_NAME[2]##*/}"
+		if [ "${ARRY_NAME[4]}" != "-" ]; then				# DVDファイル別名
+			CODE_NAME[1]="${ARRY_NAME[4]##*/}"
 		fi
 		# ---------------------------------------------------------------------
 		if [ -f "${WORK_DIRS}/${CODE_NAME[1]}" ]; then
-			CODE_NAME[4]=`TZ=UTC ls -lL --time-style="+%Y-%m-%d JST" "${WORK_DIRS}/${CODE_NAME[1]}" | awk '{print $6;}'`
+			CODE_NAME[6]=`TZ=UTC ls -lL --time-style="+%Y-%m-%d JST" "${WORK_DIRS}/${CODE_NAME[1]}" | awk '{print $6;}'`
 		fi
 		# ---------------------------------------------------------------------
 		if [ "${TXT_COLOR}" != "${TXT_RED}" ]; then
@@ -499,7 +558,7 @@ fncMenu () {
 					OLD_IFS=${IFS}
 					IFS=
 					set +e
-					WEB_HEAD=($(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${CODE_NAME[2]}" 2> /dev/null | sed -n '/HTTP\/.* 200/,/^$/p'))
+					WEB_HEAD=($(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail "${CODE_NAME[4]}" 2> /dev/null | sed -n '/HTTP\/.* 200/,/^$/p'))
 					RET_CD=$?
 					set -e
 					IFS=${OLD_IFS}
@@ -518,7 +577,7 @@ fncMenu () {
 								TXT_COLOR=${TXT_YELLOW}
 							fi
 							TXT_COLOR+=${TXT_REV}
-							CODE_NAME[4]=$(echo "${WEB_DATE:0:4}-${WEB_DATE:4:2}-${WEB_DATE:6:2}")
+							CODE_NAME[6]=$(echo "${WEB_DATE:0:4}-${WEB_DATE:4:2}-${WEB_DATE:6:2}")
 						fi
 					fi
 				fi
@@ -528,12 +587,12 @@ fncMenu () {
 			TXT_COLOR+=${TXT_REV}
 		fi
 		# ---------------------------------------------------------------------
-#		ARRAY_NAME[$I-1]=$(printf "%s %s %s %s %s %s %s %s" ${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]})
-		ARRAY_NAME[$I-1]="${CODE_NAME[0]} ${CODE_NAME[2]} ${CODE_NAME[1]} ${CODE_NAME[3]} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]} ${CODE_NAME[7]}"
+		ARRAY_NAME[$I-1]="${CODE_NAME[0]}  ${ARRY_NAME[1]}  ${CODE_NAME[4]}  ${ARRY_NAME[3]}  ${CODE_NAME[1]}  ${CODE_NAME[2]}  ${CODE_NAME[3]}  ${CODE_NAME[5]}  ${CODE_NAME[6]}  ${CODE_NAME[7]}  ${ARRY_NAME[10]} ${CODE_NAME[8]}  ${CODE_NAME[9]}"
+		#idx:value        0:distribution   1:codename       2:download URL   3:directory      4:alias          5:iso file size  6:iso file date  7:definition     8:release        9:support        10:status        11:memo1         12:memo2
 		# ---------------------------------------------------------------------
-		printf "#${TXT_COLOR}%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：%-10.10s：%-10.10s：%-16.16s${TXT_RESET}#\n" ${I} ${CODE_NAME[1]%.*} ${CODE_NAME[4]} ${CODE_NAME[5]} ${CODE_NAME[6]}
+		printf "#${TXT_COLOR}%2d：%-"$((${COL_SIZE}-48))"."$((${COL_SIZE}-48))"s：%-10.10s：%-10.10s：%-16.16s${TXT_RESET}#\n" ${I} ${CODE_NAME[1]%.*} ${CODE_NAME[6]} ${CODE_NAME[7]} ${CODE_NAME[8]}
 	done
-	fncPrintf "# $(fncString $((${COL_SIZE}-4)) '-') #"
+	funcPrintf "# $(funcString $((${COL_SIZE}-4)) '-') #"
 	if [ ${#INP_INDX} -le 0 ]; then							# 引数無しで入力スキップ
 		echo "ID番号+Enterを入力して下さい。"
 		read INP_INDX
@@ -547,8 +606,8 @@ fncMenu () {
 	fi
 }
 # -----------------------------------------------------------------------------
-fncCreate_late_command () {
-	fncPrintf "    create_late_command"
+funcCreate_late_command () {
+	funcPrintf "    create_late_command"
 	local DIR_PRESEED="$1"
 	local OLD_IFS
 	local INS_STR
@@ -567,7 +626,7 @@ fncCreate_late_command () {
 		 	trap 'exit 1' 1 2 3 15
 		
 		# --- IPv4 netmask conversion -------------------------------------------------
-		fncIPv4GetNetmask () {
+		funcIPv4GetNetmask () {
 		 	local INP_ADDR="$@"
 		 	local DEC_ADDR
 		
@@ -587,7 +646,7 @@ fncCreate_late_command () {
 		 	NIC_GATE="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"gateway\" {print $2;}'`"
 		 	NIC_DNS4="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"dns-nameservers\" {print $2;}'`"
 		 	NIC_WGRP="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"dns-search\" {print $2;}'`"
-		 	NIC_MASK="`fncIPv4GetNetmask "${NIC_BIT4}"`"
+		 	NIC_MASK="`funcIPv4GetNetmask "${NIC_BIT4}"`"
 		 	NIC_MADR="`LANG=C ip address show dev "${NIC_NAME}" | sed -n '/link\/ether/ s/^[ \t]*//gp' | awk '{gsub(":","",$2); print $2;}'`"
 		 	CON_NAME="ethernet_${NIC_MADR}_cable"
 		#	NIC_DNS4="`LANG=C ip -4 rule show dev "${NIC_NAME}" default | awk '{print $3;}'`"
@@ -665,8 +724,8 @@ _EOT_
 	IFS=${OLD_IFS}
 }
 # -----------------------------------------------------------------------------
-fncCreate_success_command () {
-	fncPrintf "    create_success_command"
+funcCreate_success_command () {
+	funcPrintf "    create_success_command"
 	local DIR_PRESEED="$1"
 	local OLD_IFS
 	local INS_STR
@@ -687,7 +746,7 @@ fncCreate_success_command () {
 		 	readonly LOG_NAME="/var/log/installer/${PGM_NAME}.log"
 		
 		# --- IPv4 netmask conversion -------------------------------------------------
-		fncIPv4GetNetmask () {
+		funcIPv4GetNetmask () {
 		 	local INP_ADDR="$@"
 		 	local DEC_ADDR
 		
@@ -700,7 +759,7 @@ fncCreate_success_command () {
 		}
 		
 		# --- IPv4 netmask bit conversion ---------------------------------------------
-		fncIPv4GetNetmaskBits () {
+		funcIPv4GetNetmaskBits () {
 		 	local INP_ADDR="$@"
 		
 		 	echo ${INP_ADDR} | \
@@ -714,8 +773,8 @@ fncCreate_success_command () {
 		}
 		
 		# --- packages ----------------------------------------------------------------
-		fncInstallPackages () {
-		 	echo "fncInstallPackages" 2>&1 | tee -a /target/${LOG_NAME}
+		funcInstallPackages () {
+		 	echo "funcInstallPackages" 2>&1 | tee -a /target/${LOG_NAME}
 		 	LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' /cdrom/preseed/preseed.cfg  | \
 		 	           sed -z 's/\n//g'                                                                 | \
 		 	           sed -e 's/.* multiselect *//'                                                      \
@@ -762,8 +821,8 @@ fncCreate_success_command () {
 		}
 		
 		# --- network -----------------------------------------------------------------
-		fncSetupNetwork () {
-		 	echo "fncSetupNetwork" 2>&1 | tee -a /target/${LOG_NAME}
+		funcSetupNetwork () {
+		 	echo "funcSetupNetwork" 2>&1 | tee -a /target/${LOG_NAME}
 		 	IPV4_DHCP=`awk 'BEGIN {result="true";}
 		 	                !/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {if ($4=="true") result="false";}
 		 	                END {print result;}' /cdrom/preseed/preseed.cfg`
@@ -774,7 +833,7 @@ fncCreate_success_command () {
 		 		NIC_GATE="`awk '!/#/&&/netcfg\/get_gateway/      {print $4;}' /cdrom/preseed/preseed.cfg`"
 		 		NIC_DNS4="`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' /cdrom/preseed/preseed.cfg`"
 		 		NIC_WGRP="`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' /cdrom/preseed/preseed.cfg`"
-		 		NIC_BIT4="`fncIPv4GetNetmaskBits "${NIC_MASK}"`"
+		 		NIC_BIT4="`funcIPv4GetNetmaskBits "${NIC_MASK}"`"
 		 		# --- connman ---------------------------------------------------------
 		 		if [ -d /target/etc/connman ]; then
 		 			set +e
@@ -832,8 +891,8 @@ fncCreate_success_command () {
 		}
 		
 		# --- gdm3 --------------------------------------------------------------------
-		fncChange_gdm3_configure () {
-		 	echo "fncChange_gdm3_configure" 2>&1 | tee -a /target/${LOG_NAME}
+		funcChange_gdm3_configure () {
+		 	echo "funcChange_gdm3_configure" 2>&1 | tee -a /target/${LOG_NAME}
 		 	if [ -f /target/etc/gdm3/custom.conf ]; then
 		 		sed -i.orig /target/etc/gdm3/custom.conf \
 		 		    -e '/WaylandEnable=false/ s/^#//'
@@ -841,9 +900,9 @@ fncCreate_success_command () {
 		}
 		
 		# --- Main --------------------------------------------------------------------
-		 	fncInstallPackages
-		 	fncSetupNetwork
-		#	fncChange_gdm3_configure
+		 	funcInstallPackages
+		 	funcSetupNetwork
+		#	funcChange_gdm3_configure
 		
 		# --- Termination -------------------------------------------------------------
 		 	cp -p /var/log/syslog /target/var/log/installer/syslog.source
@@ -867,13 +926,13 @@ _EOT_
 	IFS=${OLD_IFS}
 }
 # -----------------------------------------------------------------------------
-fncMake_setup_sh () {
+funcMake_setup_sh () {
 	local HOSTNAME=""
 	local WORKGROUP=""
 
-	fncPrintf "      make setup.sh"
+	funcPrintf "      make setup.sh"
 	# --- copy media -> fsimg -------------------------------------------------
-	fncPrintf "      copy media -> fsimg"
+	funcPrintf "      copy media -> fsimg"
 	if [ -f ./image/live/filesystem.squashfs ]; then
 		mount -r -o loop ./image/live/filesystem.squashfs    ./mnt
 	elif [ -f ./image/install/filesystem.squashfs ]; then
@@ -887,7 +946,7 @@ fncMake_setup_sh () {
 	umount ./mnt
 	# ---------------------------------------------------------
 	if [ -f ./image/live/config.conf.d/0000-user.conf ]; then
-		fncPrintf "      copy 0000-user.conf"
+		funcPrintf "      copy 0000-user.conf"
 		if [ ! -d ./decomp/etc/live/config.conf.d/ ]; then
 			mkdir -p ./decomp/etc/live/config.conf.d
 		fi
@@ -934,7 +993,7 @@ fncMake_setup_sh () {
 		 		COL_SIZE=100
 		 	fi
 		# -- string -------------------------------------------------------------------
-		fncString () {
+		funcString () {
 		 	local OLD_IFS=${IFS}
 		 	IFS=$'\n'
 		 	if [ "$2" = " " ]; then
@@ -945,7 +1004,7 @@ fncMake_setup_sh () {
 		 	IFS=${OLD_IFS}
 		}
 		# -- print --------------------------------------------------------------------
-		fncPrintf () {
+		funcPrintf () {
 		 	local RET_STR=""
 		 	MAX_COLS=${COL_SIZE:-80}
 		 	RET_STR=`echo -n "$1" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null`
@@ -956,7 +1015,7 @@ fncMake_setup_sh () {
 		 	echo "${RET_STR}"
 		}
 		# -- systemctl ----------------------------------------------------------------
-		fncSystemctl () {
+		funcSystemctl () {
 		 	echo "systemctl $@"
 		 	case "$1" in
 		 		"disable" | "mask" )
@@ -975,13 +1034,13 @@ fncMake_setup_sh () {
 		 	esac
 		}
 		# -- terminate ----------------------------------------------------------------
-		fncEnd() {
-		 	fncPrintf "--- termination $(fncString ${COL_SIZE} '-')"
+		funcEnd() {
+		 	funcPrintf "--- termination $(funcString ${COL_SIZE} '-')"
 		 	RET_STS=$1
 		 	history -c
-		 	fncString ${COL_SIZE} '='
-		 	fncPrintf "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]: ${OS_NAME} ${OS_VERS}"
-		 	fncString ${COL_SIZE} '='
+		 	funcString ${COL_SIZE} '='
+		 	funcPrintf "`date +"%Y/%m/%d %H:%M:%S"` : end [$0]: ${OS_NAME} ${OS_VERS}"
+		 	funcString ${COL_SIZE} '='
 		 	exit ${RET_STS}
 		}
 		# == main =====================================================================
@@ -994,14 +1053,14 @@ fncMake_setup_sh () {
 		 		OS_CODE=`echo ${OS_VERS} | awk -F ',' '{split($2,array," "); print tolower(array[1]);}'`
 		 	fi
 		# -----------------------------------------------------------------------------
-		 	fncString ${COL_SIZE} '='
-		 	fncPrintf "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]: ${OS_NAME} ${OS_VERS}"
-		 	fncString ${COL_SIZE} '='
-		 	fncPrintf "--- initialize $(fncString ${COL_SIZE} '-')"
-		 	fncPrintf "     os name  : ${OS_NAME}"
-		 	fncPrintf "     version  : ${OS_VERS}"
-		 	fncPrintf "     hostname : _HOSTNAME_"
-		 	fncPrintf "     workgroup: _WORKGROUP_"
+		 	funcString ${COL_SIZE} '='
+		 	funcPrintf "`date +"%Y/%m/%d %H:%M:%S"` : start [$0]: ${OS_NAME} ${OS_VERS}"
+		 	funcString ${COL_SIZE} '='
+		 	funcPrintf "--- initialize $(funcString ${COL_SIZE} '-')"
+		 	funcPrintf "     os name  : ${OS_NAME}"
+		 	funcPrintf "     version  : ${OS_VERS}"
+		 	funcPrintf "     hostname : _HOSTNAME_"
+		 	funcPrintf "     workgroup: _WORKGROUP_"
 		 	export PS1="(chroot) "
 		#	echo "_HOSTNAME_" > /etc/hostname
 		#	hostname -b -F /etc/hostname
@@ -1013,9 +1072,9 @@ fncMake_setup_sh () {
 		 		DIR_SYSD=""
 		 	fi
 		# -- module update, upgrade, tasksel, install ---------------------------------
-		 	fncPrintf "--- module update, install, clean $(fncString ${COL_SIZE} '-')"
+		 	funcPrintf "--- module update, install, clean $(funcString ${COL_SIZE} '-')"
 		 	# -- apt setup ---------------------------------------------------------- #
-		 	fncPrintf "     update sources.list"
+		 	funcPrintf "     update sources.list"
 		 	case "`echo ${OS_NAME} | awk '{print tolower($1);}'`" in
 		 		"debian" )
 		 			APT_HOST="http://deb.debian.org/debian/"
@@ -1059,7 +1118,7 @@ fncMake_setup_sh () {
 		 	esac
 		 	# -------------------------------------------------------------------------
 		 	if [ -d /var/lib/apt/lists ]; then
-		 		fncPrintf "     remove /var/lib/apt/lists"
+		 		funcPrintf "     remove /var/lib/apt/lists"
 		 		rm -rf /var/lib/apt/lists
 		 	fi
 		 	# -------------------------------------------------------------------------
@@ -1068,75 +1127,75 @@ fncMake_setup_sh () {
 		 	             -o Dpkg::Options::=--force-confnew    \
 		 	             -o Dpkg::Options::=--force-overwrite"
 		 	# ----------------------------------------------------------------------- #
-		 	fncPrintf "     module dpkg --audit / dpkg --configure -a"
-		 	dpkg --audit                                                           || fncEnd $?
-		 	dpkg --configure -a                                                    || fncEnd $?
+		 	funcPrintf "     module dpkg --audit / dpkg --configure -a"
+		 	dpkg --audit                                                           || funcEnd $?
+		 	dpkg --configure -a                                                    || funcEnd $?
 		 	# ----------------------------------------------------------------------- #
-		 	fncPrintf "     module apt-get update"
-		 	apt-get update       -qq                                   > /dev/null || fncEnd $?
-		 	fncPrintf "     module apt-get upgrade"
-		 	apt-get upgrade      -qq -y ${APT_OPTIONS}                 > /dev/null || fncEnd $?
-		 	fncPrintf "     module apt-get dist-upgrade"
-		 	apt-get dist-upgrade -qq -y ${APT_OPTIONS}                 > /dev/null || fncEnd $?
-		 	fncPrintf "     module apt-get install"
+		 	funcPrintf "     module apt-get update"
+		 	apt-get update       -qq                                   > /dev/null || funcEnd $?
+		 	funcPrintf "     module apt-get upgrade"
+		 	apt-get upgrade      -qq -y ${APT_OPTIONS}                 > /dev/null || funcEnd $?
+		 	funcPrintf "     module apt-get dist-upgrade"
+		 	apt-get dist-upgrade -qq -y ${APT_OPTIONS}                 > /dev/null || funcEnd $?
+		 	funcPrintf "     module apt-get install"
 		 	apt-get install      -qq -y ${APT_OPTIONS} --auto-remove                \
 		 	    __INST_PACK__                                                       \
 		 	    open-vm-tools open-vm-tools-desktop                                 \
-		 	                                                           > /dev/null || fncEnd $?
+		 	                                                           > /dev/null || funcEnd $?
 		 	if [ "`which tasksel 2> /dev/null`" != "" ]; then
-		 		fncPrintf "     tasksel"
+		 		funcPrintf "     tasksel"
 		 		tasksel install                                                     \
 		 		    _LST_TASK_                                                      \
-		 		                                                       > /dev/null || fncEnd $?
+		 		                                                       > /dev/null || funcEnd $?
 		 	fi
 		 	# ----------------------------------------------------------------------- #
 		 	if [ `getconf LONG_BIT` -eq 64 ]; then
-		 		fncPrintf "     google-chrome install"
+		 		funcPrintf "     google-chrome install"
 		 		APP_CHROME="google-chrome-stable_current_amd64.deb"
 		 		URL_CHROME="https://dl.google.com/linux/direct/${APP_CHROME}"
 		 		KEY_CHROME="https://dl-ssl.google.com/linux/linux_signing_key.pub"
 		 		pushd /tmp/ > /dev/null
 		 			if [ "`which curl 2> /dev/null`" != "" ]; then
-		 				curl -L -# -O -R -S "${URL_CHROME}" || fncEnd $?
+		 				curl -L -# -O -R -S "${URL_CHROME}" || funcEnd $?
 		 			elif [ "`which wget 2> /dev/null`" != "" ]; then
-		 				wget -q -N "${URL_CHROME}" || fncEnd $?
+		 				wget -q -N "${URL_CHROME}" || funcEnd $?
 		 			fi
 		 			apt-get install -qq -y ${APT_OPTIONS} --auto-remove             \
 		 			    ./${APP_CHROME}                                             \
-		 			                                                   > /dev/null || fncEnd $?
+		 			                                                   > /dev/null || funcEnd $?
 		 		popd > /dev/null
 		 	fi
 		 	# ----------------------------------------------------------------------- #
-		 	fncPrintf "     module autoremove, autoclean, clean"
-		 	apt-get autoremove   -qq -y                                > /dev/null || fncEnd $?
-		 	apt-get autoclean    -qq                                   > /dev/null || fncEnd $?
-		 	apt-get clean        -qq                                   > /dev/null || fncEnd $?
+		 	funcPrintf "     module autoremove, autoclean, clean"
+		 	apt-get autoremove   -qq -y                                > /dev/null || funcEnd $?
+		 	apt-get autoclean    -qq                                   > /dev/null || funcEnd $?
+		 	apt-get clean        -qq                                   > /dev/null || funcEnd $?
 		# -- Change system control ----------------------------------------------------
 		# 	Set disable to mask because systemd-sysv-generator will recreate the symbolic link.
-		 	fncPrintf "--- change system control $(fncString ${COL_SIZE} '-')"
-		 	fncSystemctl  enable clamav-freshclam
-		 	fncSystemctl  enable ssh
+		 	funcPrintf "--- change system control $(funcString ${COL_SIZE} '-')"
+		 	funcSystemctl  enable clamav-freshclam
+		 	funcSystemctl  enable ssh
 		 	if [ "`systemctl is-enabled named 2> /dev/null || :`" != "" ]; then
-		 		fncSystemctl enable named
+		 		funcSystemctl enable named
 		 	else
-		 		fncSystemctl enable bind9
+		 		funcSystemctl enable bind9
 		 	fi
-		 	fncSystemctl  enable smbd
-		 	fncSystemctl  enable nmbd
-		 	fncSystemctl disable isc-dhcp-server
+		 	funcSystemctl  enable smbd
+		 	funcSystemctl  enable nmbd
+		 	funcSystemctl disable isc-dhcp-server
 		 	if [ "`systemctl is-enabled isc-dhcp-server6 2> /dev/null || :`" != "" ]; then
-		 		fncSystemctl disable isc-dhcp-server6
+		 		funcSystemctl disable isc-dhcp-server6
 		 	fi
 		 	if [ "`systemctl is-enabled apache2 2> /dev/null || :`" != "" ]; then
-		 		fncSystemctl disable apache2
+		 		funcSystemctl disable apache2
 		 	fi
-		 	fncSystemctl disable minidlna
+		 	funcSystemctl disable minidlna
 		 	if [ "`systemctl is-enabled unattended-upgrades 2> /dev/null || :`" != "" ]; then
-		 		fncSystemctl disable unattended-upgrades
+		 		funcSystemctl disable unattended-upgrades
 		 	fi
 		 	if [ "`systemctl is-enabled brltty 2> /dev/null || :`" != "" ]; then
-		 		fncSystemctl disable brltty-udev
-		 		fncSystemctl disable brltty
+		 		funcSystemctl disable brltty-udev
+		 		funcSystemctl disable brltty
 		 	fi
 		 	case "`sed -n '/^UBUNTU_CODENAME=/ s/.*=\(.*\)/\1/p' /etc/os-release`" in
 		 		"focal"   | \
@@ -1145,7 +1204,7 @@ fncMake_setup_sh () {
 		 		"kinetic" | \
 		 		"lunar"   )
 		 			if [ "`systemctl is-enabled systemd-udev-settle 2> /dev/null || :`" != "" ]; then
-		 				fncSystemctl disable systemd-udev-settle
+		 				funcSystemctl disable systemd-udev-settle
 		 			fi
 		 			;;
 		 		* )
@@ -1153,7 +1212,7 @@ fncMake_setup_sh () {
 		 	esac
 		# -- Change service configure -------------------------------------------------
 		#	if [ -f /etc/systemd/system/multi-user.IMG_TGET.wants/cups-browsed.service ]; then
-		#		fncPrintf "--- change cups-browsed configure $(fncString ${COL_SIZE} '-')"
+		#		funcPrintf "--- change cups-browsed configure $(funcString ${COL_SIZE} '-')"
 		#		cat <<- _EOT_ > /etc/systemd/system/multi-user.IMG_TGET.wants/cups-browsed.service.override
 		#			[Service]
 		#			TimeoutStopSec=3
@@ -1161,13 +1220,13 @@ fncMake_setup_sh () {
 		#	fi
 		# -- Change resolv configure --------------------------------------------------
 		 	if [ -d /etc/NetworkManager/ ]; then
-		 		fncPrintf "--- change NetworkManager configure $(fncString ${COL_SIZE} '-')"
+		 		funcPrintf "--- change NetworkManager configure $(funcString ${COL_SIZE} '-')"
 		 		touch /etc/NetworkManager/conf.d/10-globally-managed-devices.conf
 		 		cat <<- _EOT_ > /etc/NetworkManager/conf.d/NetworkManager.conf.override
 		 			[main]
 		 			dns=default
 		 _EOT_
-		 		fncPrintf "--- change resolv.conf configure $(fncString ${COL_SIZE} '-')"
+		 		funcPrintf "--- change resolv.conf configure $(funcString ${COL_SIZE} '-')"
 		 		cat <<- _EOT_ > /etc/systemd/resolved.conf.override
 		 			[Resolve]
 		 			DNSStubListener=no
@@ -1176,7 +1235,7 @@ fncMake_setup_sh () {
 		 	fi
 		# -- Change avahi-daemon configure --------------------------------------------
 		 	if [ -f /etc/nsswitch.conf ]; then
-		 		fncPrintf "--- change avahi-daemon configure $(fncString ${COL_SIZE} '-')"
+		 		funcPrintf "--- change avahi-daemon configure $(funcString ${COL_SIZE} '-')"
 		 		OLD_IFS=${IFS}
 		 		IFS=$'\n'
 		 		INS_ROW=$((`sed -n '/^hosts:/ =' /etc/nsswitch.conf | awk 'NR==1 {print}'`))
@@ -1190,7 +1249,7 @@ fncMake_setup_sh () {
 		 	fi
 		# -- Change localize configure ------------------------------------------------
 		 	if [ -f /etc/locale.gen ]; then
-		 		fncPrintf "--- change localize configure $(fncString ${COL_SIZE} '-')"
+		 		funcPrintf "--- change localize configure $(funcString ${COL_SIZE} '-')"
 		 		sed -i /etc/locale.gen                   \
 		 		    -e 's/^[a-zA-Z]/# &/g'               \
 		 		    -e 's/# *\(ja_JP.UTF-8 UTF-8\)/\1/g' \
@@ -1201,26 +1260,26 @@ fncMake_setup_sh () {
 		 	fi
 		# -- Change mozc configure ----------------------------------------------------
 		 	if [ -f /usr/share/ibus/component/mozc.xml ]; then
-		 		fncPrintf "--- change mozc configure $(fncString ${COL_SIZE} '-')"
+		 		funcPrintf "--- change mozc configure $(funcString ${COL_SIZE} '-')"
 		 		sed -i /usr/share/ibus/component/mozc.xml                                     \
 		 		    -e '/<engine>/,/<\/engine>/ s/\(<layout>\)default\(<\/layout>\)/\1jp\2/g'
 		 	fi
 		# -- Change clamav configure --------------------------------------------------
 		 	if [ "`which freshclam 2> /dev/null`" != "" ]; then
-		 		fncPrintf "     change freshclam.conf"
+		 		funcPrintf "     change freshclam.conf"
 		 		sed -i /etc/clamav/freshclam.conf     \
 		 		    -e 's/^Example/#&/'               \
 		 		    -e 's/^CompressLocalDatabase/#&/' \
 		 		    -e 's/^SafeBrowsing/#&/'          \
 		 		    -e 's/^NotifyClamd/#&/'
-		 		fncPrintf "     run freshclam"
+		 		funcPrintf "     run freshclam"
 		 		set +e
 		 		freshclam --quiet
 		 		set -e
 		 	fi
 		# -- Change sshd configure ----------------------------------------------------
 		 	if [ -d /etc/ssh/ ]; then
-		 		fncPrintf "--- change sshd configure $(fncString ${COL_SIZE} '-')"
+		 		funcPrintf "--- change sshd configure $(funcString ${COL_SIZE} '-')"
 		 		if [ ! -d /etc/ssh/sshd_config.d/ ]; then
 		 			cat <<- _EOT_ >> /etc/ssh/sshd_config
 		 				
@@ -1251,7 +1310,7 @@ fncMake_setup_sh () {
 		 	fi
 		# -- Change samba configure ---------------------------------------------------
 			if [ -f /etc/samba/smb.conf ]; then
-		 		fncPrintf "--- change samba configure $(fncString ${COL_SIZE} '-')"
+		 		funcPrintf "--- change samba configure $(funcString ${COL_SIZE} '-')"
 		 		SVR_NAME="_HOSTNAME_"						# 本機のホスト名
 		 		WGP_NAME="_WORKGROUP_"						# 本機のワークグループ名
 		 		CMD_UADD=`which useradd`
@@ -1351,7 +1410,7 @@ fncMake_setup_sh () {
 		fi
 		# -- Change open vm tools configure -------------------------------------------
 		#	if [ "`dpkg -l open-vm-tools | awk '$1==\"ii\" && $2=\"open-vm-tools\" {print $2;}'`" = "open-vm-tools" ]; then
-		#		fncPrintf "--- change open vm tools configure $(fncString ${COL_SIZE} '-')"
+		#		funcPrintf "--- change open vm tools configure $(funcString ${COL_SIZE} '-')"
 		#		if [ ! -d /media/hgfs ]; then
 		#			mkdir -p /media/hgfs
 		#		fi
@@ -1361,21 +1420,21 @@ fncMake_setup_sh () {
 		#	fi
 		# -- Change gdm3 configure ----------------------------------------------------
 		#	if [ -f /etc/gdm3/custom.conf ] && [ ! -f /etc/gdm3/daemon.conf ]; then
-		#		fncPrintf "--- create gdm3 daemon.conf $(fncString ${COL_SIZE} '-')"
+		#		funcPrintf "--- create gdm3 daemon.conf $(funcString ${COL_SIZE} '-')"
 		#		cp -p /etc/gdm3/custom.conf /etc/gdm3/daemon.conf
 		#		: > /etc/gdm3/daemon.conf
 		#	fi
 		# -- Change xdg configure -----------------------------------------------------
 		 	if [  -f /etc/xdg/autostart/gnome-initial-setup-first-login.desktop ]; then
-		 		fncPrintf "--- change xdg configure $(fncString ${COL_SIZE} '-')"
+		 		funcPrintf "--- change xdg configure $(funcString ${COL_SIZE} '-')"
 		 		mkdir -p /etc/skel/.config
 		 		touch /etc/skel/.config/gnome-initial-setup-done
 		 	fi
 		# -- Change dconf configure ---------------------------------------------------
 		 	if [ "`which dconf 2> /dev/null`" != "" ]; then
-		 		fncPrintf "--- change dconf configure $(fncString ${COL_SIZE} '-')"
+		 		funcPrintf "--- change dconf configure $(funcString ${COL_SIZE} '-')"
 		 		# -- create dconf profile ---------------------------------------------
-		 		fncPrintf "--- create dconf profile $(fncString ${COL_SIZE} '-')"
+		 		funcPrintf "--- create dconf profile $(funcString ${COL_SIZE} '-')"
 		 		if [ ! -d /etc/dconf/db/local.d/ ]; then
 		 			mkdir -p /etc/dconf/db/local.d
 		 		fi
@@ -1387,14 +1446,14 @@ fncMake_setup_sh () {
 		 			system-db:local
 		_EOT_
 		 		# -- dconf org/gnome/desktop/screensaver ------------------------------
-		 		fncPrintf "     dconf org/gnome/desktop/screensaver"
+		 		funcPrintf "     dconf org/gnome/desktop/screensaver"
 		 		cat <<- _EOT_ > /etc/dconf/db/local.d/01-screensaver
 		 			[org/gnome/desktop/screensaver]
 		 			idle-activation-enabled=false
 		 			lock-enabled=false
 		_EOT_
 		 		# -- dconf org/gnome/shell/extensions/dash-to-dock --------------------
-		 		fncPrintf "     dconf org/gnome/shell/extensions/dash-to-dock"
+		 		funcPrintf "     dconf org/gnome/shell/extensions/dash-to-dock"
 		 		cat <<- _EOT_ > /etc/dconf/db/local.d/01-dash-to-dock
 		 			[org/gnome/shell/extensions/dash-to-dock]
 		 			hot-keys=false
@@ -1402,19 +1461,19 @@ fncMake_setup_sh () {
 		 			hotkeys-show-dock=false
 		_EOT_
 		 		# -- dconf org/gnome/shell/extensions/dash-to-dock --------------------
-		 		fncPrintf "     dconf apps/update-manager"
+		 		funcPrintf "     dconf apps/update-manager"
 		 		cat <<- _EOT_ > /etc/dconf/db/local.d/01-update-manager
 		 			[apps/update-manager]
 		 			check-dist-upgrades=false
 		 			first-run=false
 		_EOT_
 		 		# -- dconf update -----------------------------------------------------
-		 		fncPrintf "     dconf update"
+		 		funcPrintf "     dconf update"
 		 		dconf update
 		 	fi
 		# -- Change release-upgrades configure ----------------------------------------
 		#	if [ -f /etc/update-manager/release-upgrades ]; then
-		#		fncPrintf "--- change release-upgrades configure $(fncString ${COL_SIZE} '-')"
+		#		funcPrintf "--- change release-upgrades configure $(funcString ${COL_SIZE} '-')"
 		#		sed -i /etc/update-manager/release-upgrades \
 		#		    -e 's/^\(Prompt\)=.*$/\1=never/'
 		#	fi
@@ -1422,16 +1481,16 @@ fncMake_setup_sh () {
 		#	fi
 		# -- Copy pulse configure -----------------------------------------------------
 		 	if [ -f /usr/share/gdm/default.pa ]; then
-		 		fncPrintf "--- copy pulse configure $(fncString ${COL_SIZE} '-')"
+		 		funcPrintf "--- copy pulse configure $(funcString ${COL_SIZE} '-')"
 		 		mkdir -p /etc/skel/.config/pulse
 		 		cp -p /usr/share/gdm/default.pa /etc/skel/.config/pulse/
 		 	fi
 		# -- root and user's setting --------------------------------------------------
-		 	fncPrintf "--- root and user's setting $(fncString ${COL_SIZE} '-')"
+		 	funcPrintf "--- root and user's setting $(funcString ${COL_SIZE} '-')"
 		 	LST_SHELL="`sed -n '/^#/! s~/~\\\\/~gp' /etc/shells |  sed -z 's/\n/|/g' | sed -e 's/|$//'`"
 		 	for USER_NAME in "skel" `awk -F ':' '$7~/'"${LST_SHELL}"'/ {print $1;}' /etc/passwd`
 		 	do
-		 		fncPrintf "     ${USER_NAME}'s setting"
+		 		funcPrintf "     ${USER_NAME}'s setting"
 		 		if [ "${USER_NAME}" == "skel" ]; then
 		 			USER_HOME="/etc/skel"
 		 		else
@@ -1500,8 +1559,8 @@ fncMake_setup_sh () {
 		 		fi
 		 	done
 		# -----------------------------------------------------------------------------
-		 	fncPrintf "--- cleaning and exit $(fncString ${COL_SIZE} '-')"
-		 	fncEnd 0
+		 	funcPrintf "--- cleaning and exit $(funcString ${COL_SIZE} '-')"
+		 	funcEnd 0
 		# == EOF ======================================================================
 		# *****************************************************************************
 		# <memo>
@@ -1513,8 +1572,8 @@ _EOT_SH_
 	chmod +x ./decomp/setup.sh
 }
 # -----------------------------------------------------------------------------
-fncExec_setup_sh () {
-	fncPrintf "      exec setup.sh"
+funcExec_setup_sh () {
+	funcPrintf "      exec setup.sh"
 	# --- packages ------------------------------------------------------------
 	OLD_IFS=${IFS}
 	IFS=$'\n'
@@ -1610,7 +1669,7 @@ fncExec_setup_sh () {
 		* )	;;
 	esac
 	# --- copy fsimg -> media -------------------------------------------------
-	fncPrintf "    copy fsimg -> media"
+	funcPrintf "    copy fsimg -> media"
 	case "${CODE_NAME[0]}" in
 		"debian" )			# ･････････････････････････････････････････････････
 			rm -f ./image/live/filesystem.squashfs
@@ -1629,7 +1688,7 @@ fncExec_setup_sh () {
 	esac
 }
 # -----------------------------------------------------------------------------
-fncLive_custom () {
+funcLive_custom () {
 	local HOSTNAME="$1"
 
 	if [ ! -d ./image/live/ ]; then
@@ -1637,7 +1696,7 @@ fncLive_custom () {
 	fi
 	mkdir -p ./image/live/config.conf.d
 	# ---------------------------------------------------------
-	fncPrintf "      make 0000-user.conf"
+	funcPrintf "      make 0000-user.conf"
 	cat <<- '_EOT_SH_' | sed 's/^ //g' > ./image/live/config.conf.d/0000-user.conf
 		#!/bin/sh
 		
@@ -1661,7 +1720,7 @@ _EOT_SH_
 
 	chmod +x ./image/live/config.conf.d/0000-user.conf
 	# ---------------------------------------------------------
-	fncPrintf "      make 9999-user.conf"
+	funcPrintf "      make 9999-user.conf"
 	cat <<- '_EOT_SH_' | sed 's/^ //g' > ./image/live/config.conf.d/9999-user.conf
 		#!/bin/sh
 		
@@ -1763,7 +1822,7 @@ _EOT_SH_
 
 	chmod +x ./image/live/config.conf.d/9999-user.conf
 	# ---------------------------------------------------------
-	fncPrintf "      make 9999-user-setting"
+	funcPrintf "      make 9999-user-setting"
 	cat <<- '_EOT_SH_' | sed 's/^ //g' > ./image/live/config.conf.d/9999-user-setting
 		#!/bin/sh
 		
@@ -1962,25 +2021,36 @@ _EOT_SH_
 	    -e "s/^\(LIVE_PASSWORD\)=.*$/\1='${PASSWORD}'/"
 }
 # -----------------------------------------------------------------------------
-fncRemaster () {
+funcRemaster () {
 	# --- ARRAY_NAME ----------------------------------------------------------
 	local ARRY_NAME=($1)											# 配列展開
 	local CODE_NAME=()												# 配列宣言
-	CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
-	CODE_NAME[1]=`basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig'`	# DVDファイル名
-	CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
-	CODE_NAME[3]=${ARRY_NAME[3]}									# 定義ファイル
-	CODE_NAME[4]=${ARRY_NAME[4]}									# リリース日
-	CODE_NAME[5]=${ARRY_NAME[5]}									# サポ終了日
-	CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
-	CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
+#	CODE_NAME[0]=${ARRY_NAME[0]}									# 区分
+#	CODE_NAME[1]=`basename ${ARRY_NAME[2]} | sed -e 's/.iso//ig'`	# DVDファイル名
+#	CODE_NAME[2]=${ARRY_NAME[1]}									# ダウンロード先URL
+#	CODE_NAME[3]=${ARRY_NAME[3]}									# 定義ファイル
+#	CODE_NAME[4]=${ARRY_NAME[4]}									# リリース日
+#	CODE_NAME[5]=${ARRY_NAME[5]}									# サポ終了日
+#	CODE_NAME[6]=${ARRY_NAME[6]}									# 備考
+#	CODE_NAME[7]=${ARRY_NAME[7]}									# 備考2
+	CODE_NAME[0]=${ARRY_NAME[0]}							# 区分
+	CODE_NAME[1]=${ARRY_NAME[4]%.*}							# DVDファイル名
+	CODE_NAME[2]=${ARRY_NAME[5]}							# DVDファイルサイズ
+	CODE_NAME[3]=${ARRY_NAME[6]}							# DVDファイル日付
+	CODE_NAME[4]=${ARRY_NAME[2]}							# ダウンロード先URL
+	CODE_NAME[5]=${ARRY_NAME[7]}							# 定義ファイル
+	CODE_NAME[6]=${ARRY_NAME[8]}							# リリース日
+	CODE_NAME[7]=${ARRY_NAME[9]}							# サポ終了日
+	CODE_NAME[8]=${ARRY_NAME[11]}							# 備考
+	CODE_NAME[9]=${ARRY_NAME[12]}							# 備考2
+#	DIR_NAME=${CODE_NAME[4]%/*}
 	# -------------------------------------------------------------------------
-	fncPrintf "=== ↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '=')"
+	funcPrintf "=== ↓処理中：${CODE_NAME[0]}：${CODE_NAME[1]} $(funcString ${COL_SIZE} '=')"
 	# --- DVD -----------------------------------------------------------------
 	local DVD_NAME="${CODE_NAME[1]}"
-	local DVD_URL="${CODE_NAME[2]}"
+	local DVD_URL="${CODE_NAME[4]}"
 	# --- preseed.cfg ---------------------------------------------------------
-	local CFG_NAME="${CODE_NAME[3]}"
+	local CFG_NAME="${CODE_NAME[5]}"
 	local CFG_URL="https://raw.githubusercontent.com/office-itou/Linux/master/installer/source/${CFG_NAME}"
 	# -------------------------------------------------------------------------
 	for POINT in `mount | sed -n "/${WORK_DIRS}\/${CODE_NAME[1]}/ s/.*on[ \t]*\(.*\)[ \t]*type.*\$/\1/gp"`
@@ -2016,7 +2086,7 @@ fncRemaster () {
 		fi
 															# Download
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
-			fncPrintf "    get ${DVD_NAME}.iso (`printf \"%'d\n\" ${WEB_SIZE}` byte)"
+			funcPrintf "    get ${DVD_NAME}.iso (`printf \"%'d\n\" ${WEB_SIZE}` byte)"
 			set +e
 			curl -L -# -R -S -f --create-dirs --connect-timeout 60 --retry 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 			set -e
@@ -2025,7 +2095,7 @@ fncRemaster () {
 			local DVD_SIZE=`echo ${DVD_INFO} | awk '{print $5;}'`
 			local DVD_DATE=`echo ${DVD_INFO} | awk '{print $6;}'`
 			if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
-				fncPrintf "    get ${DVD_NAME}.iso (`printf \"%'d\n\" ${WEB_SIZE}` byte)"
+				funcPrintf "    get ${DVD_NAME}.iso (`printf \"%'d\n\" ${WEB_SIZE}` byte)"
 				set +e
 				curl -L -# -R -S -f --create-dirs --connect-timeout 60 --retry 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 				set -e
@@ -2050,7 +2120,7 @@ fncRemaster () {
 			local VOLID=`LANG=C blkid -s LABEL "../${DVD_NAME}.iso" | sed -e 's/.*="\(.*\)"/\1/g'`
 		fi
 		# --- mnt -> image ----------------------------------------------------
-		fncPrintf "    copy DVD -> work directory"
+		funcPrintf "    copy DVD -> work directory"
 		mount -r -o loop "../${DVD_NAME}.iso" mnt
 		nice -n 10 cp -a mnt/. image/
 #		pushd mnt > /dev/null								# 作業用マウント先
@@ -2067,7 +2137,7 @@ fncRemaster () {
 					WALL_FILE="ubuntu_splash.png"
 					if [ -f isolinux/txt.cfg ]; then
 						if [ ! -f "../../../${WALL_FILE}" ]; then
-							fncPrintf "    get ${WALL_FILE}"
+							funcPrintf "    get ${WALL_FILE}"
 							set +e
 							curl -L -# -R -S -f --connect-timeout 3 --retry 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 							set -e
@@ -2082,7 +2152,7 @@ fncRemaster () {
 							FILE_SIZE=`echo ${FILE_INFO} | awk '{print $5;}'`
 							FILE_DATE=`echo ${FILE_INFO} | awk '{print $6;}'`
 							if [ "${WEB_SIZE}" != "${FILE_SIZE}" ] || [ "${WEB_DATE}" != "${FILE_DATE}" ]; then
-								fncPrintf "    get ${WALL_FILE}"
+								funcPrintf "    get ${WALL_FILE}"
 								set +e
 								curl -L -# -R -S -f --connect-timeout 3 --retry 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 								set -e
@@ -2107,7 +2177,7 @@ fncRemaster () {
 					CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
 					# --- preseed.cfg -> image --------------------------------
 					if [ ! -f "../../../${CFG_FILE}" ]; then
-						fncPrintf "    get ${CFG_FILE}"
+						funcPrintf "    get ${CFG_FILE}"
 						set +e
 						curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 						set -e
@@ -2128,7 +2198,7 @@ fncRemaster () {
 							CFG_FILE=`echo ${CFG_NAME} | awk -F ',' '{print $2;}'`
 							CFG_ADDR=`echo ${CFG_URL} | sed -e "s~${CFG_NAME}~${CFG_FILE}~"`
 							if [ ! -f "../../../${CFG_FILE}" ]; then
-								fncPrintf "    get ${CFG_FILE}"
+								funcPrintf "    get ${CFG_FILE}"
 								set +e
 								curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 								set -e
@@ -2148,8 +2218,8 @@ fncRemaster () {
 					# Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS
 					# Kinetic_Kudu    Ubuntu_22.10(Kinetic Kudu)
 					# Lunar_Lobster   Ubuntu_23.04(Lunar Lobster)
-					fncCreate_late_command "./preseed"
-					case "`echo ${CODE_NAME[7]} | sed -e 's/^.*(\(.*\)).*$/\1/'`" in
+					funcCreate_late_command "./preseed"
+					case "`echo ${CODE_NAME[9]} | sed -e 's/^.*(\(.*\)).*$/\1/'`" in
 						wheezy         | \
 						jessie         | \
 						stretch        )
@@ -2169,6 +2239,7 @@ fncRemaster () {
 							;;
 						bullseye       | \
 						bookworm       | \
+						trixie         | \
 						testing        )
 							;;
 						Trusty_Tahr    | \
@@ -2193,7 +2264,7 @@ fncRemaster () {
 								    -e 's/bind9-utils/bind9utils/'  \
 								    -e 's/bind9-dnsutils/dnsutils/' 
 							fi
-							fncCreate_success_command "./preseed"
+							funcCreate_success_command "./preseed"
 							;;
 						Focal_Fossa     | \
 						Groovy_Gorilla  | \
@@ -2201,8 +2272,9 @@ fncRemaster () {
 						Impish_Indri    | \
 						Jammy_Jellyfish | \
 						Kinetic_Kudu    | \
-						Lunar_Lobster   )
-							fncCreate_success_command "./preseed"
+						Lunar_Lobster   | \
+						Mantic_Minotaur )
+							funcCreate_success_command "./preseed"
 							;;
 						* )	;;
 					esac
@@ -2216,13 +2288,13 @@ fncRemaster () {
 					case "${CODE_NAME[1]}" in
 						*mini* )
 							pushd ../decomp > /dev/null		# initrd.gz 展開先
-								fncPrintf "    unzip initrd.gz"
+								funcPrintf "    unzip initrd.gz"
 								gunzip < ../image/initrd.gz | cpio -i --quiet
 								cp --preserve=timestamps "../image/preseed/preseed.cfg" "./"
 								cp --preserve=timestamps "../image/preseed/sub_late_command.sh" "./"
 								sed -i ./preseed.cfg                                                \
 								    -e '/^[^#].*preseed\/late_command/,/[^\\]$/ s~/cdrom/preseed~~'
-								fncPrintf "    create initps.gz"
+								funcPrintf "    create initps.gz"
 								find . | cpio -H newc --create --quiet | gzip -9 > ../image/initps.gz
 							popd > /dev/null
 							;;
@@ -2238,7 +2310,7 @@ fncRemaster () {
 					ISO_NAME="${DVD_NAME}-kickstart"
 					mkdir -p "kickstart"
 					if [ ! -f "../../../${CFG_NAME}" ]; then
-						fncPrintf "    get ${CFG_NAME}"
+						funcPrintf "    get ${CFG_NAME}"
 						set +e
 						curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 						set -e
@@ -2364,12 +2436,12 @@ fncRemaster () {
 							;;
 					esac
 					;;
-				"suse")	# --- get autoinst.xml --------------------------------
+				"opensuse")	# --- get autoinst.xml ----------------------------
 					EFI_IMAG="EFI/BOOT/efiboot.img"
 					ISO_NAME="${DVD_NAME}-autoyast"
 					mkdir -p "autoyast"
 					if [ ! -f "../../../${CFG_NAME}" ]; then
-						fncPrintf "    get ${CFG_NAME}"
+						funcPrintf "    get ${CFG_NAME}"
 						set +e
 						curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 						set -e
@@ -2577,7 +2649,7 @@ _EOT_
 									               -e 's/^ *//'`
 									IFS=${OLD_IFS}
 									# --- firmware ----------------------------
-#									fncPrintf "    firmware download"
+#									funcPrintf "    firmware download"
 #									CODE_VER="`cat .disk/info | sed -e 's/.*"\(.*\)".*/\L\1/'`"
 #									FIRM_URL="https://cdimage.debian.org/cdimage/unofficial/non-free/firmware/${CODE_VER}/current/firmware.zip"
 #									set +e
@@ -2841,7 +2913,7 @@ _EOT_
 							# -------------------------------------------------
 							chmod 444 "kickstart/ks.cfg"
 							;;
-						"suse" )	# ･････････････････････････････････････････
+						"opensuse" )	# ･････････････････････････････････････
 							INS_CFG="autoyast=cd:\/autoyast\/autoinst\.xml ifcfg=e*=dhcp"
 							# --- isolinux.cfg --------------------------------
 							sed -n '/#[ \t][ \t]*install/,/append/p' boot/x86_64/loader/isolinux.cfg | \
@@ -2889,17 +2961,17 @@ _EOT_
 			case "${WORK_DIRS}" in
 				"live-custom" )
 					# --- customize live disc [chroot] ------------------------
-					fncPrintf "    customize live disc"
+					funcPrintf "    customize live disc"
 					ISO_NAME="${DVD_NAME}-custom-preseed"
 					case "${CODE_NAME[0]}" in
 						"debian"       | \
 						"ubuntu"       )					# ･････････････････
 							pushd ../ > /dev/null			# 作業用ディレクトリー
 								local HOSTNAME="live-${CODE_NAME[0]}"
-								fncLive_custom "${HOSTNAME}"
+								funcLive_custom "${HOSTNAME}"
 								if [ ${FLG_SKIP} -eq 0 ]; then
-									fncMake_setup_sh
-									fncExec_setup_sh
+									funcMake_setup_sh
+									funcExec_setup_sh
 								fi
 							popd > /dev/null
 							;;
@@ -2909,7 +2981,7 @@ _EOT_
 						"miraclelinux" | \
 						"almalinux"    )					# ･････････････････
 							;;
-						"suse"         )					# ･････････････････
+						"opensuse"     )					# ･････････････････
 							;;
 						*              ) ;;					# ･････････････････
 					esac
@@ -2917,7 +2989,7 @@ _EOT_
 				* ) ;;
 			esac
 			# --- create iso file ---------------------------------------------
-			fncPrintf "    create iso"
+			funcPrintf "    create iso"
 			case "${CODE_NAME[0]}" in
 				"debian"       | \
 				"ubuntu"       | \
@@ -2956,7 +3028,7 @@ _EOT_
 					    -output "../../${ISO_NAME}.iso" \
 					    . > /dev/null 2>&1
 					;;
-				"suse" )	# ･････････････････････････････････････････････････
+				"opensuse" )	# ･････････････････････････････････････････････
 #					find boot EFI docu media.1 -type f -exec sha256sum {} \; > CHECKSUMS
 					nice -n 10 xorriso -as mkisofs \
 					    -quiet \
@@ -2980,7 +3052,7 @@ _EOT_
 		popd > /dev/null
 	popd > /dev/null
 	rm -rf   ${WORK_DIRS}/${CODE_NAME[1]}
-	fncPrintf "=== ↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} $(fncString ${COL_SIZE} '=')"
+	funcPrintf "=== ↑処理済：${CODE_NAME[0]}：${CODE_NAME[1]} $(funcString ${COL_SIZE} '=')"
 	return 0
 }
 # which command ---------------------------------------------------------------
@@ -3015,9 +3087,9 @@ _EOT_
 		exec &> >(tee "./${WORK_DIRS}.log")
 	fi
 # -----------------------------------------------------------------------------
-	fncString ${COL_SIZE} '*'
-	fncPrintf "`date +"%Y/%m/%d %H:%M:%S"` 作成処理を開始します。"
-	fncString ${COL_SIZE} '*'
+	funcString ${COL_SIZE} '*'
+	funcPrintf "`date +"%Y/%m/%d %H:%M:%S"` 作成処理を開始します。"
+	funcString ${COL_SIZE} '*'
 # cpu type --------------------------------------------------------------------
 	CPU_TYPE=`LANG=C lscpu | awk '/Architecture:/ {print $2;}'`					# CPU TYPE (x86_64/armv5tel/...)
 # system info -----------------------------------------------------------------
@@ -3158,17 +3230,17 @@ _EOT_
 		${CMD_AGET} install ${LST_PACK}
 	fi
 # -----------------------------------------------------------------------------
-	fncMenu
+	funcMenu
 	# -------------------------------------------------------------------------
 	for I in `eval echo "${INP_INDX}"`						# 連番可
 	do
-		if [ `fncIsInt "$I"` -eq 0 ] && [ $I -ge 1 ] && [ $I -le ${#ARRAY_NAME[@]} ]; then
+		if [ `funcIsNumeric "$I"` -eq 0 ] && [ $I -ge 1 ] && [ $I -le ${#ARRAY_NAME[@]} ]; then
 			case "${WORK_DIRS}" in
-				"dist_remaster_mini" )	fncRemaster "${ARRAY_NAME[$I-1]}"; RET_CD=$?;;
-				"dist_remaster_net"  )	fncRemaster "${ARRAY_NAME[$I-1]}"; RET_CD=$?;;
-				"dist_remaster_dvd"  )	fncRemaster "${ARRAY_NAME[$I-1]}"; RET_CD=$?;;
-				"live-custom"        )	fncRemaster "${ARRAY_NAME[$I-1]}"; RET_CD=$?;;
-				*                    )	                                   RET_CD=0 ;;
+				"dist_remaster_mini" )	funcRemaster "${ARRAY_NAME[$I-1]}"; RET_CD=$?;;
+				"dist_remaster_net"  )	funcRemaster "${ARRAY_NAME[$I-1]}"; RET_CD=$?;;
+				"dist_remaster_dvd"  )	funcRemaster "${ARRAY_NAME[$I-1]}"; RET_CD=$?;;
+				"live-custom"        )	funcRemaster "${ARRAY_NAME[$I-1]}"; RET_CD=$?;;
+				*                    )	                                    RET_CD=0 ;;
 			esac
 			if [ ${RET_CD} != 0 ]; then
 				while true
@@ -3189,9 +3261,9 @@ _EOT_
 	    cut -c 13-
 	set -e
 # -----------------------------------------------------------------------------
-	fncString ${COL_SIZE} '*'
-	fncPrintf "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"
-	fncString ${COL_SIZE} '*'
+	funcString ${COL_SIZE} '*'
+	funcPrintf "`date +"%Y/%m/%d %H:%M:%S"` 作成処理が終了しました。"
+	funcString ${COL_SIZE} '*'
 # -----------------------------------------------------------------------------
 	exit 0
 # = eof =======================================================================
