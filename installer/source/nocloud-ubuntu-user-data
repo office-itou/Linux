@@ -93,7 +93,7 @@ autoinstall:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$rounds=4096$aSjHW5tdpKFMLN2/$Y0Cr9CFfgrCm.ghmaxDNhGqLZ9VIKHJakdeuGHvaZdCvS/jp301d1GMCLnr2nT7xjYvpLScoPzg9KAuJUZRYY0"
+    password: "$6$rounds=4096$Cfa1S6SZYnDnpset$kJYk5SIIT9s5SdtVRr0XqDVaxflECFdKIyLTCaZ9WHgG4MCcJQGePEltaWh7s88uldssyiKIS94AGelMcZWOU."
 #   plain_text_passwd: "master"
 # =============================================================================
   locale: ja_JP.UTF-8
@@ -151,6 +151,7 @@ autoinstall:
   - bind9
   - bind9-utils
   - bind9-dnsutils
+  - resolvconf
   - openssh-server
   - samba
   - smbclient
@@ -180,11 +181,17 @@ autoinstall:
   power_state:
     mode: reboot
 # =============================================================================
+# runcmd:
+# =============================================================================
+  late-commands:
+  - lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
+  - resize2fs /dev/ubuntu-vg/ubuntu-lv
+# =============================================================================
 # memo:
 #   https://ubuntu.com/server/docs/install/autoinstall-reference
 #   https://github.com/canonical/cloud-init/
 #   https://cloudinit.readthedocs.io/
 #   https://curtin.readthedocs.io/
 # =============================================================================
-# Created at 2023/04/08 04:41:48
+# Created at 2023/07/06 17:39:39
 # === EOF =====================================================================
