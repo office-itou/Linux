@@ -3499,9 +3499,9 @@ main () {
 	mountpoint -q "./${WORK_DIRS}/mnt/" && (umount -q -f "./${WORK_DIRS}/mnt" || umount -q -lf "./${WORK_DIRS}/mnt" || true)
 	mountpoint -q "./${WORK_DIRS}/usb/" && (umount -q -f "./${WORK_DIRS}/usb" || umount -q -lf "./${WORK_DIRS}/usb" || true)
 	# -------------------------------------------------------------------------
-	if [[ -f "${CACHE_FNAME}" ]]; then
-		touch "${CACHE_FNAME}"
-	fi
+#	if [[ -f "${CACHE_FNAME}" ]]; then
+#		touch "${CACHE_FNAME}"
+#	fi
 	# -------------------------------------------------------------------------
 	funcOption ${PROG_PRAM}
 	# -------------------------------------------------------------------------
@@ -3509,16 +3509,16 @@ main () {
 		funcUSB_Device_select
 	fi
 	# -------------------------------------------------------------------------
-#	funcMake_directory
-#	funcMake_link
+	funcMake_directory
+	funcMake_link
 	# -------------------------------------------------------------------------
 	funcRead_cache
-#	funcMenu_list
-#	funcDownload
-#	funcGet_module_in_dvd
+	funcMenu_list
+	funcDownload
+	funcGet_module_in_dvd
 	# -------------------------------------------------------------------------
 	funcMake_conf
-#	funcRemake_initrd
+	funcRemake_initrd
 	# -------------------------------------------------------------------------
 	funcMake_grub_cfg
 	funcMake_menu_cfg
@@ -3530,8 +3530,8 @@ main () {
 		exit 1
 	fi
 	# -------------------------------------------------------------------------
-#	funcUSB_Device_format
-#	funcUSB_Device_inst_bootloader
+	funcUSB_Device_format
+	funcUSB_Device_inst_bootloader
 	funcUSB_Device_inst_grub
 	funcUSB_Device_inst_menu
 	funcUSB_Device_inst_conf
