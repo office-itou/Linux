@@ -2997,17 +2997,19 @@ _EOT_
 		Fedora-*.iso                 | \
 		MIRACLELINUX-*.iso           | \
 		Rocky-*.iso                  )
+			# https://access.redhat.com/documentation/ja-jp/red_hat_enterprise_linux/8/html-single/performing_an_advanced_rhel_8_installation/index#kickstart-and-advanced-boot-options_installing-rhel-as-an-experienced-user
 			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
 				menuentry '${FNAME}' {
 				    set isofile="/images/${FNAME}"
-				    set hdlabel="${LABEL}"
 				    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_${DISTR}-${VERNO%%\.*}_${DTYPE}.cfg"
 				    set isoscan="iso-scan/filename=\${isofile}"
 				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+				    set options="inst.sshd rd.live.ram"
 				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				    echo "Loading \${isofile} ..."
-				    loopback loop (\$isopart)\$isofile
-				    linux  (loop)/images/pxeboot/vmlinuz inst.stage2=hd:LABEL=\${hdlabel} quiet \${isoscan} \${ksstart}
+				    loopback loop (\${isopart})\${isofile}
+				    probe --label --set=hdlabel (loop)
+				    linux  (loop)/images/pxeboot/vmlinuz inst.repo=hd:LABEL=\${hdlabel} quiet \${isoscan} \${ksstart}
 				    initrd (loop)/images/pxeboot/initrd.img
 				    loopback --delete loop
 				}
@@ -3022,7 +3024,7 @@ _EOT_
 				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				    echo "Loading \${isofile} ..."
-				    loopback loop (\$isopart)\$isofile
+				    loopback loop (\${isopart})\${isofile}
 				    linux  (loop)/boot/x86_64/loader/linux splash=silent \${autoxml} ifcfg=e*=dhcp
 				    initrd (loop)/boot/x86_64/loader/initrd
 				    loopback --delete loop
@@ -3038,7 +3040,7 @@ _EOT_
 				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				    echo "Loading \${isofile} ..."
-				    loopback loop (\$isopart)\$isofile
+				    loopback loop (\${isopart})\${isofile}
 				    linux  (loop)/boot/x86_64/loader/linux splash=silent \${autoxml} ifcfg=e*=dhcp
 				    initrd (loop)/boot/x86_64/loader/initrd
 				    loopback --delete loop
