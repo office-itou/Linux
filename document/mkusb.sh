@@ -305,7 +305,7 @@
 		"rockylinux         -                   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-boot.iso                                               ./${WORK_DIRS}/iso/net                      -                                           -                   -           kickstart_common.cfg                            2022-07-14  20xx-xx-xx  -           RHEL_9.x            -                                   " \
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                ./${WORK_DIRS}/iso/net                      -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso                ./${WORK_DIRS}/iso/net                      -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
-		"opensuse           leap                https://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/leap/[0-9.]*/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                         ./${WORK_DIRS}/iso/net                      -                                           -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
+		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                            ./${WORK_DIRS}                              -                               -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
 		"opensuse           tumbleweed          https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                               ./${WORK_DIRS}/iso/net                      -                                           -                   -           yast_opensuse.xml                               20xx-xx-xx  20xx-xx-xx  -           kernel_x.x          -                                   " \
 	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                                     5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
 
@@ -330,7 +330,7 @@
 		"rockylinux         -                   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-dvd.iso                                                ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2022-07-14  20xx-xx-xx  -           RHEL_9.x            -                                   " \
 #		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                        ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \ #
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso                        ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
-		"opensuse           leap                https://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/leap/[0-9.]*/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
+		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                            ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
 		"opensuse           tumbleweed          https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           yast_opensuse.xml                               2021-xx-xx  20xx-xx-xx  -           kernel_x.x          -                                   " \
 #		"debian             buster.live         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-10.[0-9.]*-${ARC_TYPE}-lxde.iso      ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \ #
 #		"debian             bullseye.live       https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-11.[0-9.]*-${ARC_TYPE}-lxde.iso         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \ #
@@ -610,9 +610,10 @@ function funcString () {
 
 # --- print with screen control -----------------------------------------------
 function funcPrintf () {
+	# https://www.tohoho-web.com/ex/dash-tilde.html
 	declare -r OLD_IFS="${IFS}"
 	declare -i RET_CD
-	declare -r CHR_ESC="$(printf "\033")"
+	declare -r CHR_ESC="$(echo -n -e "\033")"
 	declare -i MAX_COLS=${COL_SIZE:-80}
 	declare    RET_STR=""
 	declare    INP_STR=""
@@ -627,7 +628,7 @@ function funcPrintf () {
 	IFS=$'\n'
 	INP_STR="$(printf "$@")"
 	# --- convert sjis code ---------------------------------------------------
-	SJIS_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t SHIFT-JIS)"
+	SJIS_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932)"
 	SJIS_CNT="$(echo -n "${SJIS_STR}" | wc -c)"
 	# --- remove escape code --------------------------------------------------
 	TEMP_STR="$(echo -n "${SJIS_STR}" | sed -e "s/${CHR_ESC}\[[0-9]*m//g")"
@@ -644,17 +645,17 @@ function funcPrintf () {
 	MAX_COLS+=$((CTRL_CNT-(WORK_CNT-TEMP_CNT)))
 	# --- convert utf-8 code --------------------------------------------------
 	set +e
-	RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -${MAX_COLS} | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null)"
+	RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -${MAX_COLS} | iconv -f CP932 -t UTF-8 2> /dev/null)"
 	RET_CD=$?
 	set -e
 	if [[ ${RET_CD} -ne 0 ]]; then
 		set +e
-		RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t SHIFT-JIS | cut -b -$((MAX_COLS-1)) | iconv -f SHIFT-JIS -t UTF-8 2> /dev/null) "
+		RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -$((MAX_COLS-1)) | iconv -f CP932 -t UTF-8 2> /dev/null) "
 		set -e
 	fi
-	RET_STR+="$(printf ${TXT_RESET})"
+#	RET_STR+="$(echo -n -e ${TXT_RESET})"
 	# -------------------------------------------------------------------------
-	echo "${RET_STR}"
+	echo -e "${RET_STR}${TXT_RESET}"
 	IFS="${OLD_IFS}"
 }
 
@@ -836,14 +837,13 @@ function funcRead_cache () {
 	do
 		ARRAY_LIST+=("${ARRAY_LINE[@]}")
 	done < "${CACHE_FNAME}"
-
 	for I in "${!TARGET_LIST[@]}"
 	do
 		TARGET_LINE=(${TARGET_LIST[${I}]})
 		for J in "${!ARRAY_LIST[@]}"
 		do
 			ARRAY_LINE=(${ARRAY_LIST[${J}]})
-			if [[ "${ARRAY_LINE[2]}" =~ ${TARGET_LINE[2]} ]]; then
+			if [[ "${ARRAY_LINE[2]:-}" =~ ${TARGET_LINE[2]:-} ]]; then
 				TARGET_LIST[I]="${ARRAY_LINE[@]}"
 				break
 			fi
@@ -1337,9 +1337,9 @@ function funcDownload () {
 			continue
 		fi
 		if [[ "${ARRAY_LINE[4]}" = "-" ]]; then
-			funcCurl --location --progress-bar --remote-name --remote-time --show-error --fail --retry-max-time 3 --retry 3 --create-dirs --output-dir "${ARRAY_LINE[3]}" "${ARRAY_LINE[2]}"
+			funcCurl --location --progress-bar --remote-name --remote-time --show-error --fail --retry-max-time 3 --retry 3 --create-dirs --output-dir "${ARRAY_LINE[3]}" "${ARRAY_LINE[2]}" || true
 		else
-			funcCurl --location --progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --create-dirs --output "${ARRAY_LINE[3]}/${ARRAY_LINE[4]}" "${ARRAY_LINE[2]}"
+			funcCurl --location --progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --create-dirs --output "${ARRAY_LINE[3]}/${ARRAY_LINE[4]}" "${ARRAY_LINE[2]}" || true
 		fi
 	done
 }
@@ -1741,7 +1741,7 @@ function funcMake_conf_nocloud () {
 
 # --- make config file kickstart ----------------------------------------------
 function funcMake_conf_kickstart () {
-#	declare -r OLD_IFS="${IFS}"
+	declare -r OLD_IFS="${IFS}"
 #	declare -i RET_CD=0
 	declare -i I
 #	declare -i J
@@ -1806,7 +1806,8 @@ function funcMake_conf_kickstart () {
 				;;
 		esac
 		NET_DVD="${ARRAY_LINE[3]##*/}"
-		WRK_TEXT="$(echo "${BASE_NAME,,}" | sed -n -e 's/^\([A-Za-z0-9]*\)-.*$/\1/p')"
+#		WRK_TEXT="$(echo "${BASE_NAME,,}" | sed -n -e 's/^\([A-Za-z0-9]*\)-.*$/\1/p')"
+		WRK_TEXT="${ARRAY_LINE[0]}"
 		WRK_PATH="./${WORK_DIRS}/img/kickstart/ks_${WRK_TEXT}-${VER_NUM}_${NET_DVD}.cfg"
 #		if [[ -f "${WRK_PATH}" ]]; then
 #			continue
@@ -1826,11 +1827,41 @@ function funcMake_conf_kickstart () {
 		    -e "/repo[[:blank:]]\+/ s/^#//  } "
 		case "${ARRAY_LINE[3]##*/}" in
 			dvd )
-				sed -i "${WRK_PATH}"                      \
-				    -e '/^#cdrom/ s/^#//'
+#				sed -i "${WRK_PATH}"                      \
+#				    -e '/^#cdrom/ s/^#//'
 #				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
 #				    -e "/^url[[:blank:]]\+/  s/^/#/     " \
 #				    -e "/^repo[[:blank:]]\+/ s/^/#/   } "
+				sed -i "${WRK_PATH}"                      \
+				    -e '/^cdrom/ s/^/#/'                  \
+				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
+				    -e "/^url[[:blank:]]\+/  s/^/#/     " \
+				    -e "/^repo[[:blank:]]\+/ s/^/#/   } "
+				case "${ARRAY_LINE[0]}" in
+					fedora       )
+						IFS= INS_STR=$(
+							cat <<- '_EOT_' | sed -z -e 's/\n/\\n/g'
+								url         --url=file:///mnt/install/repo
+								repo    --baseurl=file:///mnt/install/repo --name=Local
+								repo --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-$releasever&arch=$basearch&country=JP --name=Everything
+_EOT_
+						)
+						IFS=${OLD_IFS}
+						;;
+					*            )
+						IFS= INS_STR=$(
+							cat <<- '_EOT_' | sed -z -e 's/\n/\\n/g'
+								url         --url=file:///mnt/install/repo/BaseOS
+								repo    --baseurl=file:///mnt/install/repo/AppStream --name=Local
+_EOT_
+						)
+						IFS=${OLD_IFS}
+						;;
+				esac
+				sed -i "${WRK_PATH}"                      \
+				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
+				    -e "/^$/i ${INS_STR}"                 \
+				    -e '/^$/d                         } '
 				;;
 			*   )
 				sed -i "${WRK_PATH}"                      \
@@ -3499,9 +3530,9 @@ main () {
 	mountpoint -q "./${WORK_DIRS}/mnt/" && (umount -q -f "./${WORK_DIRS}/mnt" || umount -q -lf "./${WORK_DIRS}/mnt" || true)
 	mountpoint -q "./${WORK_DIRS}/usb/" && (umount -q -f "./${WORK_DIRS}/usb" || umount -q -lf "./${WORK_DIRS}/usb" || true)
 	# -------------------------------------------------------------------------
-#	if [[ -f "${CACHE_FNAME}" ]]; then
-#		touch "${CACHE_FNAME}"
-#	fi
+	if [[ -f "${CACHE_FNAME}" ]]; then
+		touch "${CACHE_FNAME}"
+	fi
 	# -------------------------------------------------------------------------
 	funcOption ${PROG_PRAM}
 	# -------------------------------------------------------------------------
@@ -3530,8 +3561,8 @@ main () {
 		exit 1
 	fi
 	# -------------------------------------------------------------------------
-	funcUSB_Device_format
-	funcUSB_Device_inst_bootloader
+#	funcUSB_Device_format
+#	funcUSB_Device_inst_bootloader
 	funcUSB_Device_inst_grub
 	funcUSB_Device_inst_menu
 	funcUSB_Device_inst_conf
