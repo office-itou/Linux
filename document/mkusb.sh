@@ -13,7 +13,7 @@
 # --- check installation package ----------------------------------------------
 #	dpkg -l curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
 #	apt-get install curl lz4 lzma lzop dosfstools exfatprogs grub-pc-bin
-	declare -r -a APP_LIST=("fdisk" "coreutils" "curl" "exfatprogs" "ntfs-3g" "dosfstools" "grub2-common" "grub-pc-bin" "initramfs-tools-core" "cpio" "gzip" "bzip2" "lz4" "lzma" "lzop" "xz-utils" "zstd")
+	declare -r -a APP_LIST=("fdisk" "coreutils" "curl" "exfatprogs" "ntfs-3g" "dosfstools" "grub2-common" "grub-pc-bin" "initramfs-tools-core" "cpio" "gzip" "bzip2" "lz4" "lzma" "lzop" "xz-utils" "zstd" "po-debconf")
 	declare -r -a APP_FIND=($(LANG=C apt list "${APP_LIST[@]}" 2> /dev/null | sed -n -e '/\(^[[:blank:]]*$\|Listing\|installed\)/!p' | sed -n -e 's%^\([[:graph:]]*\)/.*$%\1%gp'))
 	declare       APP_LINE=""
 	for I in "${!APP_FIND[@]}"
@@ -106,7 +106,7 @@
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/mini-focal-amd64.iso                            ./${WORK_DIRS}/iso/mini/mini-focal-amd64.iso                        " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/debian-10.13.0-amd64-netinst.iso             " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.7.0-amd64-netinst.iso                 ./${WORK_DIRS}/iso/net/debian-11.7.0-amd64-netinst.iso              " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.0.0-amd64-netinst.iso                 ./${WORK_DIRS}/iso/net/debian-12.0.0-amd64-netinst.iso              " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.1.0-amd64-netinst.iso                 ./${WORK_DIRS}/iso/net/debian-12.1.0-amd64-netinst.iso              " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/debian-13.0.0-amd64-netinst.iso              " \ #
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/debian-testing-amd64-netinst.iso             " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc4-amd64-netinst.iso        ./${WORK_DIRS}/iso/net/debian-bookworm-DI-rc4-amd64-netinst.iso     " \ #
@@ -123,7 +123,7 @@
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-NET-x86_64-Current.iso    ./${WORK_DIRS}/iso/net/openSUSE-Tumbleweed-NET-x86_64-Current.iso   " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-10.13.0-amd64-DVD-1.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.7.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/debian-11.7.0-amd64-DVD-1.iso                " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.0.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/debian-12.0.0-amd64-DVD-1.iso                " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.1.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/debian-12.1.0-amd64-DVD-1.iso                " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-13.0.0-amd64-DVD-1.iso                " \ #
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-testing-amd64-DVD-1.iso               " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc4-amd64-DVD-1.iso          ./${WORK_DIRS}/iso/dvd/debian-bookworm-DI-rc4-amd64-DVD-1.iso       " \ #
@@ -146,7 +146,7 @@
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-dvd.iso                    ./${WORK_DIRS}/iso/dvd/Rocky-9-latest-x86_64-dvd.iso                " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-10.13.0-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/debian-live-10.13.0-amd64-lxde.iso           " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-11.7.0-amd64-lxde.iso               ./${WORK_DIRS}/iso/dvd/debian-live-11.7.0-amd64-lxde.iso            " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-12.0.0-amd64-lxde.iso               ./${WORK_DIRS}/iso/dvd/debian-live-12.0.0-amd64-lxde.iso            " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-12.1.0-amd64-lxde.iso               ./${WORK_DIRS}/iso/dvd/debian-live-12.1.0-amd64-lxde.iso            " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/debian-live-13.0.0-amd64-lxde.iso            " \ #
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/debian-live-testing-amd64-lxde.iso           " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-bkworm-DI-rc4-amd64-lxde.iso        ./${WORK_DIRS}/iso/dvd/debian-live-bkworm-DI-rc4-amd64-lxde.iso     " \ #
@@ -406,16 +406,16 @@
 		"debian             trixie              https://deb.debian.org/debian/dists/trixie/main/installer-${ARC_TYPE}/current/images/hd-media/gtk/initrd.gz                                 ./${WORK_DIRS}/cfg/debian.trixie/gtk                                                                                                                                                                                                                                " \
 		"debian             trixie              https://deb.debian.org/debian/dists/trixie/main/installer-${ARC_TYPE}/current/images/hd-media/gtk/vmlinuz                                   ./${WORK_DIRS}/cfg/debian.trixie/gtk                                                                                                                                                                                                                                " \
 		# --- testing ---------------------------------------------------------
-#		"debian             testing             https://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/hd-media/boot.img.gz                                  ./${WORK_DIRS}/cfg/debian.testing                                                                                                                                                                                                                                   " \ #
-#		"debian             testing             https://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/hd-media/initrd.gz                                    ./${WORK_DIRS}/cfg/debian.testing                                                                                                                                                                                                                                   " \ #
-#		"debian             testing             https://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/hd-media/vmlinuz                                      ./${WORK_DIRS}/cfg/debian.testing                                                                                                                                                                                                                                   " \ #
-#		"debian             testing             https://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/hd-media/gtk/initrd.gz                                ./${WORK_DIRS}/cfg/debian.testing/gtk                                                                                                                                                                                                                               " \ #
-#		"debian             testing             https://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/hd-media/gtk/vmlinuz                                  ./${WORK_DIRS}/cfg/debian.testing/gtk                                                                                                                                                                                                                               " \ #
-		"debian             testing             https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/hd-media/boot.img.gz                                                                  ./${WORK_DIRS}/cfg/debian.testing                                                                                                                                                                                                                                   " \
-		"debian             testing             https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/hd-media/initrd.gz                                                                    ./${WORK_DIRS}/cfg/debian.testing                                                                                                                                                                                                                                   " \
-		"debian             testing             https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/hd-media/vmlinuz                                                                      ./${WORK_DIRS}/cfg/debian.testing                                                                                                                                                                                                                                   " \
-		"debian             testing             https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/hd-media/gtk/initrd.gz                                                                ./${WORK_DIRS}/cfg/debian.testing/gtk                                                                                                                                                                                                                               " \
-		"debian             testing             https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/hd-media/gtk/vmlinuz                                                                  ./${WORK_DIRS}/cfg/debian.testing/gtk                                                                                                                                                                                                                               " \
+		"debian             testing             https://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/hd-media/boot.img.gz                                  ./${WORK_DIRS}/cfg/debian.testing                                                                                                                                                                                                                                   " \
+		"debian             testing             https://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/hd-media/initrd.gz                                    ./${WORK_DIRS}/cfg/debian.testing                                                                                                                                                                                                                                   " \
+		"debian             testing             https://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/hd-media/vmlinuz                                      ./${WORK_DIRS}/cfg/debian.testing                                                                                                                                                                                                                                   " \
+		"debian             testing             https://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/hd-media/gtk/initrd.gz                                ./${WORK_DIRS}/cfg/debian.testing/gtk                                                                                                                                                                                                                               " \
+		"debian             testing             https://deb.debian.org/debian/dists/testing/main/installer-${ARC_TYPE}/current/images/hd-media/gtk/vmlinuz                                  ./${WORK_DIRS}/cfg/debian.testing/gtk                                                                                                                                                                                                                               " \
+		"debian             testing             https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/hd-media/boot.img.gz                                                                  ./${WORK_DIRS}/cfg/debian.testing.daily                                                                                                                                                                                                                             " \
+		"debian             testing             https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/hd-media/initrd.gz                                                                    ./${WORK_DIRS}/cfg/debian.testing.daily                                                                                                                                                                                                                             " \
+		"debian             testing             https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/hd-media/vmlinuz                                                                      ./${WORK_DIRS}/cfg/debian.testing.daily                                                                                                                                                                                                                             " \
+		"debian             testing             https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/hd-media/gtk/initrd.gz                                                                ./${WORK_DIRS}/cfg/debian.testing.daily/gtk                                                                                                                                                                                                                         " \
+		"debian             testing             https://d-i.debian.org/daily-images/${ARC_TYPE}/daily/hd-media/gtk/vmlinuz                                                                  ./${WORK_DIRS}/cfg/debian.testing.daily/gtk                                                                                                                                                                                                                         " \
 		# --- bionic ----------------------------------------------------------
 #		"ubuntu             bionic              http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-${ARC_TYPE}/current/images/hd-media/boot.img.gz                                ./${WORK_DIRS}/cfg/ubuntu.bionic                                                                                                                                                                                                                                    " \ #
 #		"ubuntu             bionic              http://archive.ubuntu.com/ubuntu/dists/bionic/main/installer-${ARC_TYPE}/current/images/hd-media/initrd.gz                                  ./${WORK_DIRS}/cfg/ubuntu.bionic                                                                                                                                                                                                                                    " \ #
@@ -478,6 +478,7 @@
 # --- package file ------------------------------------------------------------
 	declare -r -a ADD_PACKAGE_LIST=(                \
 		"libaio1"                                   \
+		"libblkid"                                  \
 		"libblkid1"                                 \
 		"libc-l10n"                                 \
 		"libfuse2"                                  \
@@ -495,8 +496,9 @@
 		"fuse3"                                     \
 		"exfat-fuse"                                \
 		"ntfs-3g"                                   \
-#		"iso-scan"                                  \ #
-#		"load-iso"                                  \ #
+#		"lvm2"                                      \ #
+		"iso-scan"                                  \
+		"load-iso"                                  \
 #		"cdrom-checker"                             \ #
 #		"cdrom-detect"                              \ #
 #		"media-retriever"                           \ #
@@ -2043,7 +2045,7 @@ function funcCopy_initrd () {
 	if [[ -d "./${WORK_DIRS}/mnt/casper/."      ]]; then DIR_LIST+=("./${WORK_DIRS}/mnt/casper/")     ; fi
 	for DIR_PATH in $(find "${DIR_LIST[@]}" \( -name 'initrd*' -o  -name 'vmlinuz*' \) \( -type f -o -type l \))
 	do
-		funcPrintf "copy  initrd: %-24.24s : %s\n" "${DIR_DIST}" "${DIR_PATH}"
+		funcPrintf "copy  initrd: %-24.24s : %s\n" "${DIR_DIST}" "${DIR_PATH#*/mnt/}"
 		DIR_NAME="${DIR_PATH%/*}"
 		DIR_DEST="./${WORK_DIRS}/bld/${DIR_DIST}/${DIR_NAME#\./"${WORK_DIRS}"/mnt/}"
 		if [[ ! -d "${DIR_DEST}/." ]]; then
@@ -2075,42 +2077,74 @@ function funcUnzip_initrd () {
 	declare DIR_DIRS
 	declare DIR_PATH
 #	declare DIR_FILE
-#	declare DIR_WORK
+	declare DIR_WORK
 #	declare DIR_PACK
+	declare DIR_IRAM
+	declare DIR_VLNZ
 	declare DIR_KVER
 	declare DIR_MODU
 
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}unzip initrd: ${TXT_BGREEN}${DIR_DIST}${TXT_RESET}"
 	# --- unzip initrd [bld,cfg > ram] ----------------------------------------
-	for DIR_PATH in $(find "./${WORK_DIRS}/bld/${DIR_DIST}/" -name 'initrd*' \( -type f -o -type l \) | sort)
+	for DIR_IRAM in $(find "./${WORK_DIRS}/bld/${DIR_DIST}/" -name 'initrd*' \( -type f -o -type l \) | sort)
 	do
-		DIR_DEST="${DIR_PATH/bld/ram}"
+		case "${DIR_IRAM}" in
+			*/initrd*- ) DIR_VLNZ="${DIR_IRAM//initrd*-/vmlinuz-}";;
+			*          ) DIR_VLNZ="${DIR_IRAM//initrd*/vmlinuz}"  ;;
+		esac
+		DIR_KVER="$(file "${DIR_VLNZ}" | sed -n -e 's/^.*[[:blank:]]version[[:blank:]]\([[:graph:]]\+\)[[:blank:]].*$/\1/p')"
+		DIR_DEST="${DIR_IRAM/bld/ram}"
 		if [[ ! -d "${DIR_DEST}/." ]]; then
 			mkdir -p "${DIR_DEST}"
 		fi
-		if [[ "${DIR_DEST}" =~ .*/install.*/.* ]]; then
-			case "${DIR_CODE}" in
-				ubuntu.bionic ) DIR_PATH="./${WORK_DIRS}/cfg/${DIR_CODE}-updates/${DIR_PATH#*/install*/}";;
-				*             ) DIR_PATH="./${WORK_DIRS}/cfg/${DIR_CODE}/${DIR_PATH#*/install*/}";;
-			esac
-		fi
-		if [[ ! -f "${DIR_PATH}" ]]; then
-#			funcPrintf "skip  initrd: %-24.24s : %s\n" "skip   initramfs" "${DIR_PATH}"
+#		if [[ "${DIR_DEST}" =~ .*/install.*/.* ]]; then
+#			case "${DIR_CODE}" in
+#				ubuntu.bionic  ) DIR_IRAM="./${WORK_DIRS}/cfg/${DIR_CODE}-updates/${DIR_IRAM#*/install*/}";;
+#				*              ) DIR_IRAM="./${WORK_DIRS}/cfg/${DIR_CODE}/${DIR_IRAM#*/install*/}";;
+#			esac
+#			case "${DIR_IRAM}" in
+#				*/initrd*- ) DIR_VLNZ="${DIR_IRAM//initrd*-/vmlinuz-}";;
+#				*          ) DIR_VLNZ="${DIR_IRAM//initrd*/vmlinuz}"  ;;
+#			esac
+#			DIR_WORK="$(file "${DIR_VLNZ}" | sed -n -e 's/^.*[[:blank:]]version[[:blank:]]\([[:graph:]]\+\)[[:blank:]].*$/\1/p')"
+#			if [[ "${DIR_KVER}" != "${DIR_WORK}" ]]; then
+#				funcPrintf "unmatch kver: %-24.24s : %s\n" "unmatch kernel ver." "${DIR_IRAM#*/cfs/}"
+#				case "${DIR_CODE}" in
+#					debian.testing )
+#						DIR_IRAM="./${WORK_DIRS}/cfg/${DIR_CODE}.daily/${DIR_IRAM#*/${DIR_CODE}/}"
+#						case "${DIR_IRAM}" in
+#							*/initrd*- ) DIR_VLNZ="${DIR_IRAM//initrd*-/vmlinuz-}";;
+#							*          ) DIR_VLNZ="${DIR_IRAM//initrd*/vmlinuz}"  ;;
+#						esac
+#						DIR_WORK="$(file "${DIR_VLNZ}" | sed -n -e 's/^.*[[:blank:]]version[[:blank:]]\([[:graph:]]\+\)[[:blank:]].*$/\1/p')"
+#						;;
+#				esac
+#			fi
+#			if [[ -n "${DIR_WORK}" ]] && [[ "${DIR_KVER}" != "${DIR_WORK}" ]]; then
+#				funcPrintf "unmatch kver: %-24.24s : %s\n" "unmatch kernel ver." "${DIR_IRAM#*/cfg/}"
+#				funcPrintf "unmatch kver: %-24.24s : %s\n" "unmatch kernel ver." "${DIR_KVER} != ${DIR_WORK}"
+#			fi
+#		fi
+		if [[ ! -f "${DIR_IRAM}" ]]; then
+#			funcPrintf "skip  initrd: %-24.24s : %s\n" "skip   initramfs" "${DIR_IRAM#*/${DIR_DIST}/}"
 			continue
 		fi
-		funcPrintf "upac  initrd: %-24.24s : %s\n" "unzip initramfs" "${DIR_DEST}"
-		unmkinitramfs "${DIR_PATH}" "${DIR_DEST}/" 2>/dev/null
+		funcPrintf "upac  initrd: %-24.24s : %s\n" "unzip initramfs" "${DIR_DEST#*/${DIR_DIST}/}"
+		unmkinitramfs "${DIR_IRAM}" "${DIR_DEST}/" 2>/dev/null
 		DIR_DIRS="${DIR_DEST}"
 		if [[ -d "${DIR_DIRS}/main/." ]]; then
 			DIR_DIRS+="/main"
 		fi
-		DIR_KVER=""
+		DIR_WORK=""
 		DIR_MODU=""
 		if [[ -d "${DIR_DIRS}/lib/modules/." ]]; then
-			DIR_KVER="$(ls -r "${DIR_DIRS}/lib/modules/" | head -n 1)"
+			DIR_WORK="$(ls -r "${DIR_DIRS}/lib/modules/" | head -n 1)"
 			DIR_MODU="${DIR_DIRS}/lib/modules/${DIR_KVER}"
 		fi
 		funcPrintf "upac  initrd: %-24.24s : %s\n" "get kernel version" "${DIR_KVER}"
+		if [[ -n "${DIR_WORK}" ]] && [[ "${DIR_KVER}" != "${DIR_WORK}" ]]; then
+			funcPrintf "unmatch kver: %-24.24s : %s\n" "unmatch kernel ver." "${DIR_WORK}"
+		fi
 	done
 }
 
@@ -2187,7 +2221,12 @@ function funcAdd_module () {
 	declare -r -a KERNEL_LIST=(              \
 		"kernel/crypto"                      \
 		"kernel/drivers/block"               \
+		"kernel/drivers/message"             \
 		"kernel/drivers/md"                  \
+		"kernel/drivers/misc"                \
+		"kernel/drivers/mmc"                 \
+		"kernel/drivers/nvme"                \
+		"kernel/drivers/scsi"                \
 		"kernel/fs/exfat"                    \
 		"kernel/fs/ext4"                     \
 		"kernel/fs/fat"                      \
@@ -2197,6 +2236,19 @@ function funcAdd_module () {
 		"kernel/fs/ntfs"                     \
 		"kernel/fs/ntfs3"                    \
 		"kernel/lib"                         \
+	)
+
+	declare -r -a REMOVE_LIST=(                              \
+#		"bin/cdrom-checker"                                  \ #
+#		"usr/lib/debian-installer/retriever/media-retriever" \ #
+#		"usr/lib/finish-install.d/15cdrom-detect"            \ #
+#		"var/lib/dpkg/info/cdrom-checker.postinst"           \ #
+#		"var/lib/dpkg/info/cdrom-checker.templates"          \ #
+		"var/lib/dpkg/info/cdrom-detect.postinst"            \ 
+#		"var/lib/dpkg/info/cdrom-detect.templates"           \ #
+#		"var/lib/dpkg/info/load-cdrom.postinst"              \ #
+#		"var/lib/dpkg/info/load-cdrom.templates"             \ #
+#		"var/lib/dpkg/info/media-retriever.templates"        \ #
 	)
 
 	declare -r OLD_IFS="${IFS}"
@@ -2235,7 +2287,7 @@ function funcAdd_module () {
 			DIR_DEST+="/main"
 		fi
 		if [[ ! -d "${DIR_DEST}/lib/modules/." ]]; then
-			funcPrintf "skip kmodule: %-24.24s : %s\n" "not exist" "${DIR_DEST}/lib/modules/."
+			funcPrintf "skip kmodule: %-24.24s : %s\n" "not exist" "${DIR_DEST#*/${DIR_DIST}/}/lib/modules/."
 			continue
 		fi
 		DIR_WORK="${DIR_IRAM/\/ram\//\/bld\/}"
@@ -2245,15 +2297,15 @@ function funcAdd_module () {
 		esac
 #		DIR_VLNZ="$(find "${DIR_WORK%/*}" -maxdepth 1 -name 'vmlinuz*' \( -type f -o -type l \))"
 		if [[ -z "${DIR_VLNZ}" ]] || [[ ! -f "${DIR_VLNZ}" ]]; then
-			funcPrintf "skip kmodule: %-24.24s : %s\n" "not exist" "${DIR_VLNZ}"
+			funcPrintf "skip kmodule: %-24.24s : %s\n" "not exist" "${DIR_VLNZ#*/bld/}"
 			continue
 		fi
-		DIR_KVER="$(file "${DIR_VLNZ}" | sed -n -e 's/^.*[[:blank:]]version[[:blank:]]\([[:graph:]]\+\)[[:blank:]].*$/\1/p')"
-		if [[ -z "${DIR_KVER}" ]]; then
-			funcPrintf "skip kmodule: %-24.24s : %s\n" "not get kernel version" "${DIR_VLNZ}"
-			continue
-		fi
-#		DIR_KVER="$(ls -r "${DIR_DEST}/lib/modules/" | head -n 1)"
+#		DIR_KVER="$(file "${DIR_VLNZ}" | sed -n -e 's/^.*[[:blank:]]version[[:blank:]]\([[:graph:]]\+\)[[:blank:]].*$/\1/p')"
+#		if [[ -z "${DIR_KVER}" ]]; then
+#			funcPrintf "skip kmodule: %-24.24s : %s\n" "not get kernel version" "${DIR_VLNZ#*/bld/}"
+#			continue
+#		fi
+		DIR_KVER="$(ls -r "${DIR_DEST}/lib/modules/" | head -n 1)"
 		DIR_MODU="${DIR_DEST}/lib/modules/${DIR_KVER}"
 		funcPrintf "copy kmodule: %-24.24s : %s\n" "get kernel version" "${DIR_KVER}"
 		# --- linux image unzip [deb > pac] -----------------------------------
@@ -2297,7 +2349,7 @@ function funcAdd_module () {
 			cp --archive --backup "${DIR_PACK}/." "${DIR_MODU}/${MODULE_LINE}/"
 		done
 		# --- dpkg db update --------------------------------------------------
-		funcPrintf "dpkg  update: %-24.24s : %s\n" "Packages -> status" "${DIR_DEST}/var/lib/dpkg/status"
+		funcPrintf "dpkg  update: %-24.24s : %s\n" "Packages -> status" "${DIR_DEST#*/${DIR_DIST}/}/var/lib/dpkg/status"
 		DIR_DIRS="./${WORK_DIRS}/deb/${DIR_CODE}"
 		funcChangeStatusFile "${DIR_DEST}" "${DIR_DIRS}"
 		if [[ -f "${DIR_DEST}/var/lib/dpkg/status.work" ]]; then
@@ -2391,12 +2443,24 @@ function funcAdd_module () {
 				funcPrintf "upac    pack: %-24.24s : %s\n" "skip package" "${BASE_NAME}"
 			else
 				funcPrintf "upac    pack: %-24.24s : %s\n" "copy package" "${BASE_NAME}"
-				cp --archive --backup "${DIR_PATH}" "${DIR_DEST}/var/lib/dpkg/info/"
+				case "${DIR_PATH##*/}" in
+					*.templates ) po2debconf "${DIR_PATH}" > "${DIR_DEST}/var/lib/dpkg/info/${DIR_PATH##*/}";;
+					*           ) cp --archive --backup "${DIR_PATH}" "${DIR_DEST}/var/lib/dpkg/info/";;
+				esac
 			fi
 		done
 		rm -rf "./${WORK_DIRS}/tmp/"*
+		# --- remove file -----------------------------------------------------
+		for I in "${!REMOVE_LIST[@]}"
+		do
+			DIR_PATH="${DIR_DEST}/${REMOVE_LIST[${I}]}"
+			if [[ -f "${DIR_PATH}" ]]; then
+				funcPrintf "rename  file: %-24.24s : %s\n" "rename file" "${DIR_PATH##*/}"
+				mv "${DIR_PATH}" "${DIR_PATH}~"
+			fi
+		done
 		# --- probe all modules -----------------------------------------------
-		funcPrintf "updt pack db: %-24.24s : %s\n" "probe all modules" "${DIR_MODU}"
+		funcPrintf "updt pack db: %-24.24s : %s\n" "probe all modules" "${DIR_MODU#*/${DIR_DIST}/}"
 		touch "${DIR_MODU}/modules.builtin.modinfo"
 		touch "${DIR_MODU}/modules.order"
 		touch "${DIR_MODU}/modules.builtin"
@@ -2463,7 +2527,7 @@ function funcEdit_script () {
 							 	local iso_size=$(ls -sk /hd-media/$iso_to_try | { read size filename; echo ${size:-0}; })
 							 	#
 							 	cd /
-							 	if [[ $(( $iso_size + 100000 )) -lt $ram ]]; then
+							 	if [ $(( $iso_size + 100000 )) -lt $ram ]; then
 							 		# We have enough RAM to be able to copy the ISO to RAM,
 							 		# let's offer it to the user
 							 		db_input low iso-scan/copy_iso_to_ram || true
@@ -2471,14 +2535,14 @@ function funcEdit_script () {
 							 		db_get iso-scan/copy_iso_to_ram
 							 		RET="true"
 							 	else
-							 		log "Skipping debconf question iso-scan/copy_iso_to_ram:" \
-							 		    "not enough memory available ($ram kB) to copy" \
-							 		    "/hd-media/$iso_to_try ($iso_size kB) into RAM and still" \
+							 		log "Skipping debconf question iso-scan/copy_iso_to_ram:" \\
+							 		    "not enough memory available ($ram kB) to copy" \\
+							 		    "/hd-media/$iso_to_try ($iso_size kB) into RAM and still" \\
 							 		    "have 100 MB free."
 							 		RET="false"
 							 	fi
 							 
-							 	if [[ "$RET" = false ]]; then
+							 	if [ "$RET" = false ]; then
 							 		# Direct mount
 							 		log "Mounting /hd-media/$iso_to_try on /cdrom"
 							 		mount -t iso9660 -o loop,ro,exec /hd-media/$iso_to_try /cdrom 2>/dev/null
@@ -2501,7 +2565,85 @@ _EOT_
 					sed -i "${DIR_WORK}"                                                                                            \
 					    -e '/^[[:blank:]]*use_this_iso[[:blank:]]*([[:blank:]]*/,/^}$/ s~^\([[:blank:]]*mount .* /cdrom .*$\)~#\1~' \
 					    -e "${INS_ROW:-1}a \\${INS_STR}"
-					cat <<- '_EOT_' >> "${DIR_WORK/.postinst/.templates}"
+					# ---------------------------------------------------------
+#					INS_ROW=$(
+#						sed -n -e '/^[[:blank:]]*use_this_iso[[:blank:]]*([[:blank:]]*)/,/^[[:blank:]]*}$/ {/^[[:blank:]]*use_this_iso/=}' \
+#						    "${DIR_WORK}"
+#					)
+#					IFS= INS_STR=$(
+#						cat <<- '_EOT_' | sed -e 's/^ //g' | sed -z -e 's/\n/\\n/g' | sed -z -e 's/\\n$//'
+#							use_this_iso () {
+#							 	local iso_to_try=${1#/}
+#							 	local iso_device=$2
+#							 	local ram=$(grep ^MemAvailable: /proc/meminfo | { read label size unit; echo ${size:-0}; })
+#							 	local iso_size=0
+#							 	local RET
+#							 
+#							 	mount -t auto -o ro $iso_device /hd-media 2>/dev/null
+#							 
+#							 	# Get iso size in kB to compare with $ram in kB too
+#							 	iso_size=$(ls -sk /hd-media/$iso_to_try | { read size filename; echo ${size:-0}; })
+#							 
+#							 	if [ $(( $iso_size + 100000 )) -lt $ram ]; then
+#							 		# We have enough RAM to be able to copy the ISO to RAM,
+#							 		# let's offer it to the user
+#							 		db_input low iso-scan/copy_iso_to_ram || true
+#							 		db_go
+#							 		db_get iso-scan/copy_iso_to_ram
+#							 	else
+#							 		log "Skipping debconf question iso-scan/copy_iso_to_ram:" \\
+#							 		    "not enough memory available ($ram kB) to copy" \\
+#							 		    "/hd-media/$iso_to_try ($iso_size kB) into RAM and still" \\
+#							 		    "have 100 MB free."
+#							 		RET="false"
+#							 	fi
+#							 
+#							 	if [ "$RET" = false ]; then
+#							 		# Direct mount
+#							 		log "Mounting /hd-media/$iso_to_try on /cdrom"
+#							 		mount -t iso9660 -o loop,ro,exec /hd-media/$iso_to_try /cdrom 2>/dev/null
+#							 	else
+#							 		# We copy the ISO to RAM before mounting it
+#							 		log "Copying /hd-media/$iso_to_try to /installer.iso"
+#							 		cp /hd-media/$iso_to_try /installer.iso
+#							 		log "Mounting /installer.iso on /cdrom"
+#							 		mount -t iso9660 -o loop,ro,exec /installer.iso /cdrom 2>/dev/null
+#							 		# So that we can free the original device
+#							 		umount /hd-media
+#							 	fi
+#							 
+#							 	analyze_cd
+#							 
+#							 	db_subst iso-scan/success FILENAME $iso_to_try
+#							 	db_set iso-scan/filename $iso_to_try
+#							 	db_subst iso-scan/success DEVICE $iso_device
+#							 	# FIXME !!!
+#							 	db_subst iso-scan/success SUITE FIXME
+#							 	db_input medium iso-scan/success || true
+#							 	db_go || true
+#							 
+#							 	anna-install apt-mirror-setup || true
+#							 	if [ ! -e /cdrom/.disk/base_installable ]; then
+#							 		log "Base system not installable from CD image, requesting choose-mirror"
+#							 		anna-install choose-mirror || true
+#							 	else
+#							 		anna-install apt-cdrom-setup || true
+#							 
+#							 		# Install <codename>-support udeb (if available)
+#							 		db_get cdrom/codename
+#							 		anna-install $RET-support || true
+#							 	fi
+#							 	exit 0
+#							}
+#_EOT_
+#					)
+#					IFS="${OLD_IFS}"
+#					sed -i "${DIR_WORK}"                                                 \
+#					    -e '/^[[:blank:]]*use_this_iso[[:blank:]]*([[:blank:]]*/,/^}$/d'
+#					sed -i "${DIR_WORK}"                                                 \
+#					    -e "${INS_ROW:-1}i \\${INS_STR}"
+					cat <<- '_EOT_' | sed -e 's/^ //g' >> "${DIR_WORK/.postinst/.templates}"
+						 
 						Template: iso-scan/copy_iso_to_ram
 						Type: boolean
 						Default: false
@@ -2565,6 +2707,11 @@ _EOT_
 						      *s=file:*        | \
 						      *seedfrom=file:* )
 						        nocloud_path=${x#*=file:*/}
+						        break
+						        ;;
+						      *s=*        | \
+						      *seedfrom=* )
+						        nocloud_path=${x#*=*/}
 						        break
 						        ;;
 						    esac
@@ -2720,7 +2867,7 @@ function funcMake_initrdt () {
 			DIR_DEST+="/main"
 		fi
 		DIR_WORK="${DIR_DEST#*/ram/}"
-		funcPrintf "make  initrd: %-24.24s : %s\n" "make initramfs file" "${DIR_WORK}"
+		funcPrintf "make  initrd: %-24.24s : %s\n" "make initramfs file" "${DIR_WORK#*${DIR_DIST}/}"
 		DIR_LIST=($(echo "${DIR_WORK}" | sed -n -e 's%^.*/\(install.*\|live\|casper\)/\(initrd.*\|gtk\|xen\)/*.*$%\1 \2%p'))
 		DIR_WORK="${DIR_LIST[0]%/*}"
 		if [[ "${DIR_WORK}" = "install" ]]; then
@@ -2739,7 +2886,7 @@ function funcMake_initrdt () {
 				DIR_PATH+="/${DIR_LIST[0]#*/}"
 			fi
 			DIR_PATH+="/${DIR_FILE}"
-#			funcPrintf "make  initrd: %-24.24s : %s\n" "make initramfs file" "${DIR_PATH#*/bld/}"
+#			funcPrintf "make  initrd: %-24.24s : %s\n" "make initramfs file" "${DIR_PATH#*/${DIR_DIST}/}"
 			cp --preserve=timestamps --no-preserve=mode,ownership "${DIR_PATH}" "${DIR_DIRS}/"
 		else
 			if [[ "${DIR_FILE}" = "${DIR_FILE%.*}" ]]; then
@@ -2756,7 +2903,7 @@ function funcMake_initrdt () {
 			DIR_PATH+="/${DIR_LIST[0]#*/}"
 		fi
 		DIR_PATH+="/vmlinuz"
-		funcPrintf "make  initrd: %-24.24s : %s\n" "make initramfs file" "${DIR_PATH#*/bld/}"
+		funcPrintf "make  initrd: %-24.24s : %s\n" "make initramfs file" "${DIR_PATH#*/${DIR_DIST}/}"
 		cp --preserve=timestamps --no-preserve=mode,ownership "${DIR_PATH}"* "${DIR_DIRS}/"
 	done
 }
@@ -3101,11 +3248,17 @@ function funcMake_menu_cfg () {
 		set timeout=-1
 		
 		search.fs_label "ISOFILE" cfgpart hd1,gpt3
-		search.fs_label "ISOFILE" isopart hd1,gpt3
+		# search.fs_label "ISOFILE" isopart hd1,gpt3
+		set isopart=${cfgpart}
 		
 		loadfont ${prefix}/fonts/unicode.pf2
 		
 		set lang=ja_JP
+		
+		insmod keylayouts
+		insmod at_keyboard
+		terminal_input at_keyboard
+		keymap jp
 		
 		set gfxmode=1280x720
 		set gfxpayload=keep
@@ -3115,12 +3268,11 @@ function funcMake_menu_cfg () {
 		insmod video_cirrus
 		insmod gfxterm
 		insmod png
+		insmod terminal
 		terminal_output gfxterm
 		
 		set menu_color_normal=cyan/blue
 		set menu_color_highlight=white/blue
-		
-		grub_platform
 		
 		insmod play
 		play 960 440 1 0 4 440 1
@@ -3316,6 +3468,29 @@ function funcUSB_Device_inst_bootloader () {
 	funcPrintf "USB   device: %-24.24s : %s\n" "mkdir" "${USB_UEFI}"
 	mkdir -p "./${WORK_DIRS}/usb/.disk"
 	touch "./${WORK_DIRS}/usb/.disk/info"
+	# -------------------------------------------------------------------------
+	funcPrintf "USB   device: %-24.24s : %s\n" "umount" "${USB_UEFI}"
+	umount "./${WORK_DIRS}/usb"
+}
+
+# --- USB Device install keyboard layout [sdX2] -------------------------------
+function funcUSB_Device_inst_kbd () {
+	declare -r USB_DEVICE="/dev/${USB_NAME}"
+	declare -r USB_BOOT="/dev/${USB_NAME}1"
+	declare -r USB_UEFI="/dev/${USB_NAME}2"
+	declare -r USB_DATA="/dev/${USB_NAME}3"
+	declare -r DIR_KBRD="./${WORK_DIRS}/usb/boot/grub/layouts"
+
+	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}install USB device ${USB_UEFI}${TXT_RESET}"
+	# -------------------------------------------------------------------------
+	funcPrintf "USB   device: %-24.24s : %s\n" "mount" "${USB_UEFI}"
+	mount "${USB_UEFI}" "./${WORK_DIRS}/usb"
+	# -------------------------------------------------------------------------
+	funcPrintf "USB   device: %-24.24s : %s\n" "grub Keyboard" "${USB_UEFI}"
+	if [[ ! -d "${DIR_KBRD}/." ]]; then
+		mkdir -p "${DIR_KBRD}"
+	fi
+	ckbcomp jp | grub-mklayout -o "${DIR_KBRD}/jp.gkb" 2> /dev/null
 	# -------------------------------------------------------------------------
 	funcPrintf "USB   device: %-24.24s : %s\n" "umount" "${USB_UEFI}"
 	umount "./${WORK_DIRS}/usb"
@@ -3530,9 +3705,9 @@ main () {
 	mountpoint -q "./${WORK_DIRS}/mnt/" && (umount -q -f "./${WORK_DIRS}/mnt" || umount -q -lf "./${WORK_DIRS}/mnt" || true)
 	mountpoint -q "./${WORK_DIRS}/usb/" && (umount -q -f "./${WORK_DIRS}/usb" || umount -q -lf "./${WORK_DIRS}/usb" || true)
 	# -------------------------------------------------------------------------
-	if [[ -f "${CACHE_FNAME}" ]]; then
-		touch "${CACHE_FNAME}"
-	fi
+#	if [[ -f "${CACHE_FNAME}" ]]; then
+#		touch "${CACHE_FNAME}"
+#	fi
 	# -------------------------------------------------------------------------
 	funcOption ${PROG_PRAM}
 	# -------------------------------------------------------------------------
@@ -3561,8 +3736,9 @@ main () {
 		exit 1
 	fi
 	# -------------------------------------------------------------------------
-#	funcUSB_Device_format
-#	funcUSB_Device_inst_bootloader
+	funcUSB_Device_format
+	funcUSB_Device_inst_bootloader
+	funcUSB_Device_inst_kbd
 	funcUSB_Device_inst_grub
 	funcUSB_Device_inst_menu
 	funcUSB_Device_inst_conf
