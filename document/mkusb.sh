@@ -3046,7 +3046,7 @@ function funcMake_menu_sub () {
 						    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 						    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 						    echo "Loading \${isofile} ..."
-						    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} iso-scan/ask_which_iso="[${DEVNO}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
+						    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${DEVNO} iso-scan/ask_which_iso="[${DEVNO}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
 						    initrd  (\${cfgpart})/install.amd/\${isodist}/initrd.gz
 						}
 _EOT_
@@ -3078,7 +3078,7 @@ _EOT_
 				    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				    echo "Loading \${isofile} ..."
-				    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} iso-scan/ask_which_iso="[${DEVNO}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
+				    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${DEVNO} iso-scan/ask_which_iso="[${DEVNO}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
 				    initrd  (\${cfgpart})/install.amd/\${isodist}/initrd.gz
 				}
 _EOT_
@@ -3251,25 +3251,27 @@ function funcMake_menu_cfg () {
 		# search.fs_label "ISOFILE" isopart hd1,gpt3
 		set isopart=${cfgpart}
 		
-		loadfont ${prefix}/fonts/unicode.pf2
-		
-		set lang=ja_JP
-		
-		insmod keylayouts
-		insmod at_keyboard
-		terminal_input at_keyboard
-		keymap jp
-		
-		set gfxmode=1280x720
-		set gfxpayload=keep
-		insmod efi_gop
-		insmod efi_uga
-		insmod video_bochs
-		insmod video_cirrus
-		insmod gfxterm
-		insmod png
-		insmod terminal
-		terminal_output gfxterm
+		insmod font
+		if loadfont ${prefix}/fonts/unicode.pf2 ; then
+			set lang=ja_JP
+			set gfxmode=1280x720
+			set gfxpayload=auto
+			if [ "${grub_platform}" == "efi" ]; then
+				insmod efi_gop
+				insmod efi_uga
+			else
+				insmod vbe
+				insmod vga
+			fi
+			insmod gfxterm
+			insmod terminal
+			terminal_output gfxterm
+			
+			insmod keylayouts
+			insmod at_keyboard
+			terminal_input at_keyboard
+			keymap jp
+		fi
 		
 		set menu_color_normal=cyan/blue
 		set menu_color_highlight=white/blue
@@ -3705,9 +3707,9 @@ main () {
 	mountpoint -q "./${WORK_DIRS}/mnt/" && (umount -q -f "./${WORK_DIRS}/mnt" || umount -q -lf "./${WORK_DIRS}/mnt" || true)
 	mountpoint -q "./${WORK_DIRS}/usb/" && (umount -q -f "./${WORK_DIRS}/usb" || umount -q -lf "./${WORK_DIRS}/usb" || true)
 	# -------------------------------------------------------------------------
-#	if [[ -f "${CACHE_FNAME}" ]]; then
-#		touch "${CACHE_FNAME}"
-#	fi
+	if [[ -f "${CACHE_FNAME}" ]]; then
+: #		touch "${CACHE_FNAME}"
+	fi
 	# -------------------------------------------------------------------------
 	funcOption ${PROG_PRAM}
 	# -------------------------------------------------------------------------
