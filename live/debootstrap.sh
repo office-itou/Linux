@@ -30,6 +30,7 @@
 ##	2022/11/23 000.0000 J.Itou         リスト更新
 ##	2023/03/16 000.0000 J.Itou         不具合修正
 ##	2023/05/22 000.0000 J.Itou         リスト更新
+##	2023/07/29 000.0000 J.Itou         リスト更新
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get -y install mmdebstrap squashfs-tools xorriso
@@ -55,18 +56,17 @@
 	TARGET_MIRROR=""
 
 	ARRAY_LIST=(
-	    "debian         amd64,i386 preseed_debian.cfg                          2017-06-17   2022-06-30   oldoldstable    Debian__9.xx(stretch)            " \
-	    "debian         amd64,i386 preseed_debian.cfg                          2019-07-06   2024-06-xx   oldstable       Debian_10.xx(buster)             " \
-	    "debian         amd64,i386 preseed_debian.cfg                          2021-08-14   2026-xx-xx   stable          Debian_11.xx(bullseye)           " \
-	    "debian         amd64,i386 preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_12.xx(bookworm)           " \
+	    "debian         amd64,i386 preseed_debian.cfg                          2019-07-06   2024-06-xx   oldoldstable    Debian_10.xx(buster)             " \
+	    "debian         amd64,i386 preseed_debian.cfg                          2021-08-14   2026-xx-xx   oldstable       Debian_11.xx(bullseye)           " \
+	    "debian         amd64,i386 preseed_debian.cfg                          2023-06-10   20xx-xx-xx   stable          Debian_12.xx(bookworm)           " \
+	    "debian         amd64,i386 preseed_debian.cfg                          202x-xx-xx   20xx-xx-xx   trixie          Debian_13.xx(trixie)             " \
+	    "debian         amd64,i386 preseed_debian.cfg                          20xx-xx-xx   20xx-xx-xx   testing         Debian_xx.xx(testing)            " \
 	    "ubuntu         amd64,i386 preseed_ubuntu.cfg                          2018-04-26   2028-04-26   Bionic_Beaver   Ubuntu_18.04(Bionic_Beaver):LTS  " \
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
-	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-10-20   2023-07-xx   Kinetic_Kudu    Ubuntu_22.10(Kinetic_Kudu)       " \
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
 	)   # 0:区分        1:arch     2:定義ファイル                              3:リリース日 4:サポ終了日 5:備考          6:備考2
-#	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2021-10-24   2022-07-14   Impish_Indri    Ubuntu_21.10(Impish_Indri)       " \
 
 # === 共通関数: string ========================================================
 fncString () {
