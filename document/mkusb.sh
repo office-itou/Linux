@@ -129,7 +129,7 @@
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc4-amd64-DVD-1.iso          ./${WORK_DIRS}/iso/dvd/debian-bookworm-DI-rc4-amd64-DVD-1.iso       " \ #
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-server-amd64.iso                 ./${WORK_DIRS}/iso/dvd/ubuntu-18.04.6-server-amd64.iso              " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-live-server-amd64.iso            ./${WORK_DIRS}/iso/dvd/ubuntu-20.04.6-live-server-amd64.iso         " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.2-live-server-amd64.iso            ./${WORK_DIRS}/iso/dvd/ubuntu-22.04.2-live-server-amd64.iso         " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.3-live-server-amd64.iso            ./${WORK_DIRS}/iso/dvd/ubuntu-22.04.3-live-server-amd64.iso         " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-live-server-amd64.iso           " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-live-server-amd64.iso           " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-live-server-amd64.iso                    ./${WORK_DIRS}/iso/dvd/mantic-live-server-amd64.iso                 " \
@@ -152,7 +152,7 @@
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-bkworm-DI-rc4-amd64-lxde.iso        ./${WORK_DIRS}/iso/dvd/debian-live-bkworm-DI-rc4-amd64-lxde.iso     " \ #
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-18.04.6-desktop-amd64.iso             " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-20.04.6-desktop-amd64.iso             " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.2-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-22.04.2-desktop-amd64.iso             " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.3-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-22.04.3-desktop-amd64.iso             " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-desktop-amd64.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-amd64.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-legacy-amd64.iso        " \
@@ -319,7 +319,7 @@
 		"ubuntu             bionic.server       https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04[0-9.]*-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           Bionic_Beaver       Ubuntu_18.04(Bionic_Beaver):LTS     " \
 		"ubuntu             focal.server        https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2020-04-23  2030-04-23  -           Focal_Fossa         Ubuntu_20.04(Focal_Fossa):LTS       " \
 		"ubuntu             jammy.server        https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-04-21  2032-04-21  -           Jammy_Jellyfish     Ubuntu_22.04(Jammy_Jellyfish):LTS   " \
-		"ubuntu             kinetic.server      https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-live-server-${ARC_TYPE}.iso                                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-10-20  2023-07-xx  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \
+# x		"ubuntu             kinetic.server      https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-live-server-${ARC_TYPE}.iso                                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
 		"ubuntu             lunar.server        https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
 #		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-dvd-x86_64-37-[0-9.]*.iso                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2022-11-15  2023-11-14  -           kernel_6.0          -                                   " \ #
 		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2023-04-18  2024-05-14  -           kernel_6.2          -                                   " \
@@ -340,7 +340,7 @@
 		"ubuntu             bionic.desktop      https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           Bionic_Beaver       Ubuntu_18.04(Bionic_Beaver):LTS     " \
 #		"ubuntu             focal.desktop       https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2020-04-23  2030-04-23  -           Focal_Fossa         Ubuntu_20.04(Focal_Fossa):LTS       " \ #
 #		"ubuntu             jammy.desktop       https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2022-04-21  2032-04-21  -           Jammy_Jellyfish     Ubuntu_22.04(Jammy_Jellyfish):LTS   " \ #
-#		"ubuntu             kinetic.desktop     https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                             ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2022-10-20  2023-07-xx  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
+# x		"ubuntu             kinetic.desktop     https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                             ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
 		"ubuntu             lunar.desktop       https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
 		"ubuntu             lunar.legacy        http://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
 		"ubuntu             mantic.server       http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
@@ -444,8 +444,10 @@
 		"debian             bullseye            https://deb.debian.org/debian/pool/main/l/linux-signed-${ARC_TYPE}/linux-image-5.10.0-22-${ARC_TYPE}_5.10.178-3_${ARC_TYPE}.deb             ./${WORK_DIRS}/deb/debian.bullseye                                                                                                                                                                                                                                  " \
 		"debian             bookworm            https://deb.debian.org/debian/pool/main/l/linux-signed-${ARC_TYPE}/linux-image-6.1.0-9-${ARC_TYPE}_6.1.27-1_${ARC_TYPE}.deb                 ./${WORK_DIRS}/deb/debian.bookworm                                                                                                                                                                                                                                  " \
 		"debian             testing             https://deb.debian.org/debian/pool/main/l/linux-signed-${ARC_TYPE}/linux-image-6.1.0-9-${ARC_TYPE}_6.1.27-1_${ARC_TYPE}.deb                 ./${WORK_DIRS}/deb/debian.testing                                                                                                                                                                                                                                   " \
-		"debian             testing             https://deb.debian.org/debian/pool/main/l/linux-signed-${ARC_TYPE}/linux-image-6.3.0-1-${ARC_TYPE}_6.3.7-1_${ARC_TYPE}.deb                  ./${WORK_DIRS}/deb/debian.testing                                                                                                                                                                                                                                   " \
-		"debian             testing             https://deb.debian.org/debian/pool/main/l/linux-signed-${ARC_TYPE}/linux-image-6.3.0-2-${ARC_TYPE}_6.3.11-1_${ARC_TYPE}.deb                 ./${WORK_DIRS}/deb/debian.testing                                                                                                                                                                                                                                   " \
+#		"debian             testing             https://deb.debian.org/debian/pool/main/l/linux-signed-${ARC_TYPE}/linux-image-6.3.0-1-${ARC_TYPE}_6.3.7-1_${ARC_TYPE}.deb                  ./${WORK_DIRS}/deb/debian.testing                                                                                                                                                                                                                                   " \ #
+#		"debian             testing             https://deb.debian.org/debian/pool/main/l/linux-signed-${ARC_TYPE}/linux-image-6.3.0-2-${ARC_TYPE}_6.3.11-1_${ARC_TYPE}.deb                 ./${WORK_DIRS}/deb/debian.testing                                                                                                                                                                                                                                   " \ #
+#		"debian             testing             https://deb.debian.org/debian/pool/main/l/linux-signed-${ARC_TYPE}/linux-image-6.4.0-1-${ARC_TYPE}_6.4.4-1_${ARC_TYPE}.deb                  ./${WORK_DIRS}/deb/debian.testing                                                                                                                                                                                                                                   " \ #
+		"debian             testing             https://deb.debian.org/debian/pool/main/l/linux-signed-${ARC_TYPE}/linux-image-6.4.0-1-${ARC_TYPE}_6.4.4-2_${ARC_TYPE}.deb                  ./${WORK_DIRS}/deb/debian.testing                                                                                                                                                                                                                                   " \
 		"ubuntu             bionic.server       http://archive.ubuntu.com/ubuntu/pool/main/l/linux-signed/linux-image-4.15.0-156-generic_4.15.0-156.163_${ARC_TYPE}.deb                     ./${WORK_DIRS}/deb/ubuntu.bionic                                                                                                                                                                                                                                    " \
 		"ubuntu             bionic.server       http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-4.15.0-156-generic_4.15.0-156.163_${ARC_TYPE}.deb                          ./${WORK_DIRS}/deb/ubuntu.bionic                                                                                                                                                                                                                                    " \
 		"ubuntu             bionic.server       http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-extra-4.15.0-156-generic_4.15.0-156.163_${ARC_TYPE}.deb                    ./${WORK_DIRS}/deb/ubuntu.bionic                                                                                                                                                                                                                                    " \
@@ -470,7 +472,7 @@
 		"ubuntu             lunar               http://archive.ubuntu.com/ubuntu/pool/main/l/linux-signed/linux-image-6.2.0-20-generic_6.2.0-20.20_${ARC_TYPE}.deb                          ./${WORK_DIRS}/deb/ubuntu.lunar                                                                                                                                                                                                                                     " \
 		"ubuntu             lunar               http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-6.2.0-20-generic_6.2.0-20.20_${ARC_TYPE}.deb                               ./${WORK_DIRS}/deb/ubuntu.lunar                                                                                                                                                                                                                                     " \
 		"ubuntu             lunar               http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-extra-6.2.0-20-generic_6.2.0-20.20_${ARC_TYPE}.deb                         ./${WORK_DIRS}/deb/ubuntu.lunar                                                                                                                                                                                                                                     " \
-		"ubuntu             mantic              http://archive.ubuntu.com/ubuntu/pool/main/l/linux-signed/linux-image-6.3.0-7-generic_6.3.0-7.7_${ARC_TYPE}.deb                             ./${WORK_DIRS}/deb/ubuntu.mantic                                                                                                                                                                                                                                    " \
+		"ubuntu             mantic              http://archive.ubuntu.com/ubuntu/pool/main/l/linux-signed/linux-image-6.3.0-7-generic_6.3.0-7.7+1_${ARC_TYPE}.deb                           ./${WORK_DIRS}/deb/ubuntu.mantic                                                                                                                                                                                                                                    " \
 		"ubuntu             mantic              http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-6.3.0-7-generic_6.3.0-7.7_${ARC_TYPE}.deb                                  ./${WORK_DIRS}/deb/ubuntu.mantic                                                                                                                                                                                                                                    " \
 		"ubuntu             mantic              http://archive.ubuntu.com/ubuntu/pool/main/l/linux/linux-modules-extra-6.3.0-7-generic_6.3.0-7.7_${ARC_TYPE}.deb                            ./${WORK_DIRS}/deb/ubuntu.mantic                                                                                                                                                                                                                                    " \
 	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                                     5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
@@ -478,11 +480,10 @@
 # --- package file ------------------------------------------------------------
 	declare -r -a ADD_PACKAGE_LIST=(                \
 		"libaio1"                                   \
-		"libblkid"                                  \
-		"libblkid1"                                 \
+		"libblkid[0-9.\-]\+"                        \
 		"libc-l10n"                                 \
 		"libfuse2"                                  \
-		"libfuse3-3"                                \
+		"libfuse3-[0-9.\-]\+"                       \
 		"libgcrypt20"                               \
 		"libgnutls30"                               \
 		"libmount1"                                 \
@@ -490,7 +491,8 @@
 		"libpcre3"                                  \
 		"libselinux1"                               \
 		"libsmartcols1"                             \
-		"libtinfo5"                                 \
+		"libtinfo[0-9.\-]\+"                        \
+#		"libudev1"                                  \ #
 		"libzstd1"                                  \
 		"mount"                                     \
 		"fuse3"                                     \
@@ -679,6 +681,7 @@ function funcCurl () {
 	declare LOC_TIM=""
 	declare TXT_SIZ=""
 	declare -i INT_SIZ
+	declare -i INT_UNT
 	declare -a TXT_UNT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	set +e
 	ARY_HED=("$(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
@@ -686,8 +689,7 @@ function funcCurl () {
 	set -e
 	if [[ ${RET_CD} -eq 6 ]] || [[ ${RET_CD} -eq 18 ]] || [[ ${RET_CD} -eq 22 ]] || [[ ${RET_CD} -eq 28 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -n -e '/^HTTP/p' | sed -z 's/\n\|\r\|\l//g')
-		funcPrintf "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
-#		return
+		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 		return ${RET_CD}
 	fi
 	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -n -e '/http\/.* 200/,/^$/ s/\'$'\r//gp' | sed -n -e '/content-length:/ s/.*: //p')
@@ -724,9 +726,11 @@ function funcCurl () {
 	else
 		for ((I=3; I>0; I--))
 		do
-			if [[ ${WEB_SIZ} -ge $((1024**I)) ]]; then
-				INT_SIZ="$(((WEB_SIZ*1000)/(1024**I)))"
-				TXT_SIZ="$(printf "%'.1f ${TXT_UNT[${I}]}" "${INT_SIZ::${#INT_SIZ}-3}.${INT_SIZ:${#INT_SIZ}-3}")"
+			INT_UNT=$((1024**I))
+			if [[ ${WEB_SIZ} -ge ${INT_UNT} ]]; then
+				TXT_SIZ="$(echo "${WEB_SIZ}" "${INT_UNT}" | awk '{printf("%.1f", $1/$2)}') ${TXT_UNT[${I}]}"
+#				INT_SIZ="$(((WEB_SIZ*1000)/(1024**I)))"
+#				TXT_SIZ="$(printf "%'.1f ${TXT_UNT[${I}]}" "${INT_SIZ::${#INT_SIZ}-3}.${INT_SIZ:${#INT_SIZ}-3}")"
 				break
 			fi
 		done
@@ -2975,9 +2979,11 @@ function funcMake_menu_sub () {
 	declare -a ARRAY_LIST=("${TARGET_LIST[@]}")
 	declare -a ARRAY_LINE=()
 	# --- common parameter ----------------------------------------------------
+	declare    ENTRY=""
 	declare    LABEL=""
 	declare    DISTR=""
 	declare    VERNO=""
+	declare    STAMP=""
 	declare    MTYPE=""
 	# --- debian / ubuntu parameter -------------------------------------------
 	declare    CDNEM=""
@@ -2998,6 +3004,8 @@ function funcMake_menu_sub () {
 			LABEL="$(LANG=C blkid -s LABEL "${FPATH}" | awk -F '\"' '{print $2;}')"
 			DISTR="${ARRAY_LINE[0]}"
 			CDNEM="${ARRAY_LINE[1]%%.*}"
+			STAMP="${ARRAY_LINE[8]/./ }"
+			ENTRY="$(printf "%-60.60s%20.20s" "${FNAME}" "${STAMP}")"
 			VERNO="$(echo "${FNAME}"   | sed -n -e 's/^.*-\([0-9\.]*\)-.*$/\1/p')"
 			MTYPE="$(echo "${FNAME,,}" | sed -n -e 's/^.*\(live\|dvd\|netinst\|netboot\|server\|boot\|minimal\|net\|rtm\|legacy\|desktop\).*$/\1/p')"
 			break
@@ -3038,7 +3046,7 @@ function funcMake_menu_sub () {
 			case "${SUB_MENU}" in
 				'[ Unattended installation ]' )
 					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${FNAME}' {
+						menuentry '${ENTRY}' {
 						    set isofile="/images/${FNAME}"
 						    set isoscan="\${isofile} (${ISCAN})"
 						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
@@ -3053,7 +3061,7 @@ _EOT_
 					;;
 				*                             )
 					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${FNAME}' {
+						menuentry '${ENTRY}' {
 						    set isofile="/images/${FNAME}"
 						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
 						    set preseed="auto=true file=/hd-media/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true"
@@ -3070,7 +3078,7 @@ _EOT_
 		debian-*.iso                 | \
 		ubuntu-1*-server-*.iso       )
 			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-				menuentry '${FNAME}' {
+				menuentry '${ENTRY}' {
 				    set isofile="/images/${FNAME}"
 				    set isoscan="\${isofile} (${ISCAN})"
 				    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
@@ -3089,7 +3097,7 @@ _EOT_
 			case "${SUB_MENU}" in
 				'[ Unattended installation ]' )
 					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${FNAME}' {
+						menuentry '${ENTRY}' {
 						    set isofile="/images/${FNAME}"
 						    set isoscan="iso-scan/filename=\${isofile}"
 						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
@@ -3104,7 +3112,7 @@ _EOT_
 					;;
 				*                             )
 					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${FNAME}' {
+						menuentry '${ENTRY}' {
 						    set isofile="/images/${FNAME}"
 						    set isoscan="iso-scan/filename=\${isofile}"
 						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
@@ -3124,7 +3132,7 @@ _EOT_
 			case "${SUB_MENU}" in
 				'[ Unattended installation ]' )
 					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${FNAME}' {
+						menuentry '${ENTRY}' {
 						    set isofile="/images/${FNAME}"
 						    set isoscan="iso-scan/filename=\${isofile}"
 						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
@@ -3139,7 +3147,7 @@ _EOT_
 					;;
 				*                             )
 					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${FNAME}' {
+						menuentry '${ENTRY}' {
 						    set isofile="/images/${FNAME}"
 						    set isoscan="iso-scan/filename=\${isofile}"
 						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
@@ -3157,7 +3165,7 @@ _EOT_
 		ubuntu-*.iso                 | \
 		*-live-server-*.iso          )
 			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-				menuentry '${FNAME}' {
+				menuentry '${ENTRY}' {
 				    set isofile="/images/${FNAME}"
 				    set isoscan="iso-scan/filename=\${isofile}"
 				    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
@@ -3177,7 +3185,7 @@ _EOT_
 		Rocky-*.iso                  )
 			# https://access.redhat.com/documentation/ja-jp/red_hat_enterprise_linux/8/html-single/performing_an_advanced_rhel_8_installation/index#kickstart-and-advanced-boot-options_installing-rhel-as-an-experienced-user
 			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-				menuentry '${FNAME}' {
+				menuentry '${ENTRY}' {
 				    set isofile="/images/${FNAME}"
 				    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_${DISTR}-${VERNO%%\.*}_${DTYPE}.cfg"
 				    set isoscan="iso-scan/filename=\${isofile}"
@@ -3195,7 +3203,7 @@ _EOT_
 			;;
 		openSUSE-Leap-*.iso          )
 			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-				menuentry '${FNAME}' {
+				menuentry '${ENTRY}' {
 				    set isofile="/images/${FNAME}"
 				    set autoxml="autoyast=usb:/sdb3/autoyast/autoinst_leap.xml"
 				    set isoscan="iso-scan/filename=\${isofile}"
@@ -3211,7 +3219,7 @@ _EOT_
 			;;
 		openSUSE-Tumbleweed*.iso     )
 			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-				menuentry '${FNAME}' {
+				menuentry '${ENTRY}' {
 				    set isofile="/images/${FNAME}"
 				    set autoxml="autoyast=usb:/sdb3/autoyast/autoinst_tumbleweed.xml"
 				    set isoscan="iso-scan/filename=\${isofile}"
@@ -3243,38 +3251,9 @@ function funcMake_menu_cfg () {
 
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}make menu.cfg file${TXT_RESET}"
 	# --- header --------------------------------------------------------------
-	cat <<- '_EOT_' > "${FNAME_MENU}"
+	cat <<- '_EOT_' | sed -e 's/^ //g' > "${FNAME_MENU}"
 		set default=0
 		set timeout=-1
-		
-		search.fs_label "ISOFILE" cfgpart hd1,gpt3
-		# search.fs_label "ISOFILE" isopart hd1,gpt3
-		set isopart=${cfgpart}
-		
-		insmod font
-		if loadfont ${prefix}/fonts/unicode.pf2 ; then
-			set lang=ja_JP
-			set gfxmode=1280x720
-			set gfxpayload=auto
-			if [ "${grub_platform}" == "efi" ]; then
-				insmod efi_gop
-				insmod efi_uga
-			else
-				insmod vbe
-				insmod vga
-			fi
-			insmod gfxterm
-			insmod terminal
-			terminal_output gfxterm
-			
-			insmod keylayouts
-			insmod at_keyboard
-			terminal_input at_keyboard
-			keymap jp
-		fi
-		
-		set menu_color_normal=cyan/blue
-		set menu_color_highlight=white/blue
 		
 		insmod play
 		play 960 440 1 0 4 440 1
@@ -3290,11 +3269,6 @@ _EOT_
 				TAB_SPACE="$(funcString "$(("${TAB_COUNT}"*4))" " ")"
 				cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g" >> "${FNAME_MENU}"
 					submenu '${STR_MENU}' {
-					    search.fs_label "ISOFILE" cfgpart hd1,gpt3
-					    search.fs_label "ISOFILE" isopart hd1,gpt3
-					    set menu_color_normal=cyan/blue
-					    set menu_color_highlight=white/blue
-					    set gfxpayload=keep
 _EOT_
 #				SUB_MENU="${STR_MENU}"
 				((TAB_COUNT++)) || true
@@ -3326,7 +3300,7 @@ _EOT_
 		fi
 	done
 	# --- footer --------------------------------------------------------------
-	cat <<- '_EOT_' >> "${FNAME_MENU}"
+	cat <<- '_EOT_' | sed -e 's/^ //g' >> "${FNAME_MENU}"
 		menuentry '[ System command ]' {
 		    true
 		}
@@ -3345,12 +3319,48 @@ _EOT_
 function funcMake_grub_cfg () {
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}make grub.cfg file${TXT_RESET}"
 
-	cat <<- '_EOT_' > "${FNAME_GRUB}"
+	cat <<- '_EOT_' | sed -e 's/^ //g' > "${FNAME_GRUB}"
 		set default=0
 		set timeout=-1
 		
+		insmod font
+		if loadfont ${prefix}/fonts/unicode.pf2 ; then
+		 	set locale_dir=${prefix}/locale
+		 	set lang=ja_JP
+		 	set gfxmode=1280x720
+		 	set gfxpayload=keep
+		
+		 	if [ "${grub_platform}" == "efi" ]; then
+		 		insmod efi_gop
+		 		insmod efi_uga
+		 	else
+		 		insmod vbe
+		 		insmod vga
+		 	fi
+		
+		 	insmod gfxterm
+		 	insmod gettext
+		 	terminal_output gfxterm
+		 #	insmod terminal
+		 #	insmod keylayouts
+		 #	terminal_input at_keyboard
+		 #	keymap ${prefix}/layouts/jp.gkb
+		fi
+		
+		set menu_color_normal=cyan/blue
+		set menu_color_highlight=white/blue
+
 		search.fs_label "ISOFILE" cfgpart hd1,gpt3
-		search.fs_label "ISOFILE" isopart hd1,gpt3
+		# search.fs_label "ISOFILE" isopart hd1,gpt3
+		set isopart=${cfgpart}
+		
+		export cfgpart
+		export isopart
+		export lang
+		export gfxmode
+		export gfxpayload
+		export menu_color_normal
+		export menu_color_highlight
 		
 		source (${cfgpart})/menu.cfg
 _EOT_
@@ -3492,7 +3502,7 @@ function funcUSB_Device_inst_kbd () {
 	if [[ ! -d "${DIR_KBRD}/." ]]; then
 		mkdir -p "${DIR_KBRD}"
 	fi
-	ckbcomp jp | grub-mklayout -o "${DIR_KBRD}/jp.gkb" 2> /dev/null
+	grub-kbdcomp -o "${DIR_KBRD}/jp.gkb" jp 2> /dev/null
 	# -------------------------------------------------------------------------
 	funcPrintf "USB   device: %-24.24s : %s\n" "umount" "${USB_UEFI}"
 	umount "./${WORK_DIRS}/usb"
@@ -3707,10 +3717,6 @@ main () {
 	mountpoint -q "./${WORK_DIRS}/mnt/" && (umount -q -f "./${WORK_DIRS}/mnt" || umount -q -lf "./${WORK_DIRS}/mnt" || true)
 	mountpoint -q "./${WORK_DIRS}/usb/" && (umount -q -f "./${WORK_DIRS}/usb" || umount -q -lf "./${WORK_DIRS}/usb" || true)
 	# -------------------------------------------------------------------------
-	if [[ -f "${CACHE_FNAME}" ]]; then
-: #		touch "${CACHE_FNAME}"
-	fi
-	# -------------------------------------------------------------------------
 	funcOption ${PROG_PRAM}
 	# -------------------------------------------------------------------------
 	if [[ ! "${USB_NAME}" =~ ^sd[a-z]$ ]]; then
@@ -3720,7 +3726,8 @@ main () {
 	funcMake_directory
 	funcMake_link
 	# -------------------------------------------------------------------------
-	funcRead_cache
+#	touch "${CACHE_FNAME}"
+#	funcRead_cache
 	funcMenu_list
 	funcDownload
 	funcGet_module_in_dvd
@@ -3812,7 +3819,7 @@ main () {
 #   x   hirsute     ubuntu 21.04    Hirsute Hippo           end of support    #
 #   x   impish      ubuntu 21.10    Impish Indri            end of support    #
 #   .   jammy       ubuntu 22.04    Jammy Jellyfish LTS                       #
-#   .   kinetic     ubuntu 22.10    Kinetic Kudu                              #
+#   x   kinetic     ubuntu 22.10    Kinetic Kudu                              #
 #   .   lunar       ubuntu 23.04    Lunar Lobster                             #
 #   .   mantic      ubuntu 23.10    Mantic Minotaur         test version      #
 ### eof #######################################################################
