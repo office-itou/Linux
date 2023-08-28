@@ -119,7 +119,7 @@
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-boot.iso                   ./${WORK_DIRS}/iso/net/Rocky-9-latest-x86_64-boot.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.6-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-8.6-rtm-minimal-x86_64.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso      " \
-#		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.5-NET-x86_64-Media.iso      " \ #
+		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.5-NET-x86_64-Media.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.6-NET-x86_64-Media.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-NET-x86_64-Current.iso    ./${WORK_DIRS}/iso/net/openSUSE-Tumbleweed-NET-x86_64-Current.iso   " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-10.13.0-amd64-DVD-1.iso               " \
@@ -142,7 +142,7 @@
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-8.8-x86_64-dvd1.iso                        ./${WORK_DIRS}/iso/dvd/Rocky-8.8-x86_64-dvd1.iso                    " \
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.6-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-8.6-rtm-x86_64.iso              " \
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.0-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-9.0-rtm-x86_64.iso              " \
-#		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.5-DVD-x86_64-Media.iso      " \ #
+		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.5-DVD-x86_64-Media.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.6-DVD-x86_64-Media.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-DVD-x86_64-Current.iso    ./${WORK_DIRS}/iso/dvd/openSUSE-Tumbleweed-DVD-x86_64-Current.iso   " \
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-dvd.iso                    ./${WORK_DIRS}/iso/dvd/Rocky-9-latest-x86_64-dvd.iso                " \
