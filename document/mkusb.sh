@@ -119,7 +119,8 @@
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-boot.iso                   ./${WORK_DIRS}/iso/net/Rocky-9-latest-x86_64-boot.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.6-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-8.6-rtm-minimal-x86_64.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.5-NET-x86_64-Media.iso      " \
+#		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.5-NET-x86_64-Media.iso      " \ #
+		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.6-NET-x86_64-Media.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-NET-x86_64-Current.iso    ./${WORK_DIRS}/iso/net/openSUSE-Tumbleweed-NET-x86_64-Current.iso   " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-10.13.0-amd64-DVD-1.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.7.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/debian-11.7.0-amd64-DVD-1.iso                " \
@@ -141,7 +142,8 @@
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-8.8-x86_64-dvd1.iso                        ./${WORK_DIRS}/iso/dvd/Rocky-8.8-x86_64-dvd1.iso                    " \
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.6-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-8.6-rtm-x86_64.iso              " \
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.0-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-9.0-rtm-x86_64.iso              " \
-		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.5-DVD-x86_64-Media.iso      " \
+#		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.5-DVD-x86_64-Media.iso      " \ #
+		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.6-DVD-x86_64-Media.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-DVD-x86_64-Current.iso    ./${WORK_DIRS}/iso/dvd/openSUSE-Tumbleweed-DVD-x86_64-Current.iso   " \
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-dvd.iso                    ./${WORK_DIRS}/iso/dvd/Rocky-9-latest-x86_64-dvd.iso                " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-10.13.0-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/debian-live-10.13.0-amd64-lxde.iso           " \
@@ -523,6 +525,7 @@
 
 # --- USB device format -------------------------------------------------------
 	declare USB_FORMAT=""
+	declare USB_NOFORMAT=0
 
 # --- set minimum display size ------------------------------------------------
 	declare -i ROW_SIZE=25
@@ -684,7 +687,7 @@ function funcCurl () {
 	declare -i INT_UNT
 	declare -a TXT_UNT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	set +e
-	ARY_HED=("$(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
+	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
 	RET_CD=$?
 	set -e
 	if [[ ${RET_CD} -eq 6 ]] || [[ ${RET_CD} -eq 18 ]] || [[ ${RET_CD} -eq 22 ]] || [[ ${RET_CD} -eq 28 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
@@ -915,7 +918,7 @@ function funcMenu_list () {
 		if [[ "${DIR_NAME}" =~ \[.*\] ]]; then
 #			funcPrintf "\033[${ROW_SIZE};1H${TXT_BBLUE}Now download %-$((${COL_SIZE}-13)).$((${COL_SIZE}-13))s${TXT_RESET}" "${DIR_NAME%/*\[*}"
 			set +e
-			WEB_PAGE=("$(curl --location --no-progress-bar --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${DIR_NAME%/*\[*}" 2> /dev/null)")
+			WEB_PAGE=("$(curl --location --http1.1 --no-progress-bar --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${DIR_NAME%/*\[*}" 2> /dev/null)")
 			RET_CD=$?
 			set -e
 			if [[ ${RET_CD} -eq 6 ]] || [[ ${RET_CD} -eq 18 ]] || [[ ${RET_CD} -eq 22 ]] || [[ ${RET_CD} -eq 28 ]] || [[ ${#WEB_PAGE[@]} -le 0 ]]; then
@@ -931,7 +934,7 @@ function funcMenu_list () {
 		if [[ "${TXT_COLOR}" != "${TXT_RED}" ]] && [[ "${BASE_NAME}" =~ \[.*\] || "${ARRAY_LINE[10]}" = "-" ]]; then
 #			funcPrintf "\033[${ROW_SIZE};1H${TXT_BBLUE}Now download %-$((${COL_SIZE}-13)).$((${COL_SIZE}-13))s${TXT_RESET}" "${DIR_NAME}"
 			set +e
-			WEB_INFO=("$(curl --location --no-progress-bar --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${DIR_NAME}" 2> /dev/null)")
+			WEB_INFO=("$(curl --location --http1.1 --no-progress-bar --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${DIR_NAME}" 2> /dev/null)")
 			RET_CD=$?
 			set -e
 			if [[ ${RET_CD} -eq 6 ]] || [[ ${RET_CD} -eq 18 ]] || [[ ${RET_CD} -eq 22 ]] || [[ ${RET_CD} -eq 28 ]] || [[ ${#WEB_INFO[@]} -le 0 ]]; then
@@ -1006,7 +1009,7 @@ function funcMenu_list () {
 					# --- get web header info ---------------------------------
 #					funcPrintf "\033[${ROW_SIZE};1H${TXT_BBLUE}Now download %-$((${COL_SIZE}-13)).$((${COL_SIZE}-13))s${TXT_RESET}" "${ARRAY_LINE[2]}"
 					set +e
-					WEB_HEAD=("$(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${ARRAY_LINE[2]}" 2> /dev/null)")
+					WEB_HEAD=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${ARRAY_LINE[2]}" 2> /dev/null)")
 					RET_CD=$?
 					set -e
 					# --- check curl status -----------------------------------
@@ -1142,7 +1145,7 @@ function funcSet_download_module () {
 			funcPrintf "get  package: %-24.24s : %s\n" "${PACKAGE_LINE}" "${FILE_NAME##*/}"
 		done
 	done
-	PACKAGE_FILE+=("${LINUX_IMAGE[@]}")
+#	PACKAGE_FILE+=("${LINUX_IMAGE[@]}")
 }
 
 # --- move download module ----------------------------------------------------
@@ -1321,12 +1324,12 @@ function funcDownload () {
 		fi
 	done
 	# --- debian installer ----------------------------------------------------
-	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}get     file: ${TXT_BGREEN}get debian installer${TXT_RESET}"
-	for I in "${!DEBIAN_INSTALLER[@]}"
-	do
-		ARRAY_LINE=(${DEBIAN_INSTALLER[${I}]})
-		funcCurl --location --progress-bar --remote-name --remote-time --show-error --fail --retry-max-time 3 --retry 3 --create-dirs --output-dir "${ARRAY_LINE[3]}" "${ARRAY_LINE[2]}"
-	done
+#	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}get     file: ${TXT_BGREEN}get debian installer${TXT_RESET}"
+#	for I in "${!DEBIAN_INSTALLER[@]}"
+#	do
+#		ARRAY_LINE=(${DEBIAN_INSTALLER[${I}]})
+#		funcCurl --location --progress-bar --remote-name --remote-time --show-error --fail --retry-max-time 3 --retry 3 --create-dirs --output-dir "${ARRAY_LINE[3]}" "${ARRAY_LINE[2]}"
+#	done
 	# --- package file --------------------------------------------------------
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}get     file: ${TXT_BGREEN}get package file${TXT_RESET}"
 	for I in "${!PACKAGE_FILE[@]}"
@@ -2087,6 +2090,9 @@ function funcUnzip_initrd () {
 	declare DIR_VLNZ
 	declare DIR_KVER
 	declare DIR_MODU
+#	declare -a WEB_HEAD=()
+	declare -a WEB_PAGE=()
+	declare WEB_DISP
 
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}unzip initrd: ${TXT_BGREEN}${DIR_DIST}${TXT_RESET}"
 	# --- unzip initrd [bld,cfg > ram] ----------------------------------------
@@ -2096,6 +2102,9 @@ function funcUnzip_initrd () {
 			*/initrd*- ) DIR_VLNZ="${DIR_IRAM//initrd*-/vmlinuz-}";;
 			*          ) DIR_VLNZ="${DIR_IRAM//initrd*/vmlinuz}"  ;;
 		esac
+		if [[ ! -f "${DIR_VLNZ}" ]]; then
+			continue
+		fi
 		DIR_KVER="$(file "${DIR_VLNZ}" | sed -n -e 's/^.*[[:blank:]]version[[:blank:]]\([[:graph:]]\+\)[[:blank:]].*$/\1/p')"
 		DIR_DEST="${DIR_IRAM/bld/ram}"
 		if [[ ! -d "${DIR_DEST}/." ]]; then
@@ -2129,10 +2138,10 @@ function funcUnzip_initrd () {
 #				funcPrintf "unmatch kver: %-24.24s : %s\n" "unmatch kernel ver." "${DIR_KVER} != ${DIR_WORK}"
 #			fi
 #		fi
-		if [[ ! -f "${DIR_IRAM}" ]]; then
+#		if [[ ! -f "${DIR_IRAM}" ]]; then
 #			funcPrintf "skip  initrd: %-24.24s : %s\n" "skip   initramfs" "${DIR_IRAM#*/${DIR_DIST}/}"
-			continue
-		fi
+#			continue
+#		fi
 		funcPrintf "upac  initrd: %-24.24s : %s\n" "unzip initramfs" "${DIR_DEST#*/${DIR_DIST}/}"
 		unmkinitramfs "${DIR_IRAM}" "${DIR_DEST}/" 2>/dev/null
 		DIR_DIRS="${DIR_DEST}"
@@ -3680,8 +3689,9 @@ function funcOption () {
 	while [ -n "${1:-}" ]
 	do
 		case $1 in
-			-d | --device ) shift; funcUSB_Device_select "$1";;
-			-f | --format ) shift; USB_FORMAT="$1";;
+			-d | --device   ) shift; funcUSB_Device_select "$1";;
+			-f | --format   ) shift; USB_FORMAT="$1";;
+			-n | --noformat )        USB_NOFORMAT=1;;
 			* )
 		esac
 		shift
@@ -3745,8 +3755,10 @@ main () {
 		exit 1
 	fi
 	# -------------------------------------------------------------------------
-	funcUSB_Device_format
-	funcUSB_Device_inst_bootloader
+	if [[ USB_NOFORMAT -eq 0 ]]; then
+		funcUSB_Device_format
+		funcUSB_Device_inst_bootloader
+	fi
 	funcUSB_Device_inst_kbd
 	funcUSB_Device_inst_grub
 	funcUSB_Device_inst_menu
