@@ -31,6 +31,7 @@
 ##	2023/03/16 000.0000 J.Itou         不具合修正
 ##	2023/05/22 000.0000 J.Itou         リスト更新
 ##	2023/07/29 000.0000 J.Itou         リスト更新
+##	2023/08/27 000.0000 J.Itou         処理見直し(curl --http1.1)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get -y install mmdebstrap squashfs-tools xorriso
@@ -423,7 +424,7 @@ fncGet_debian_installer () {
 			TAR_INST=debian-cd_info-${TARGET_SUITE}-${TARGET_ARCH}.tar.gz
 			TAR_URL="https://cdimage.debian.org/debian/dists/${TARGET_SUITE}/main/installer-${TARGET_ARCH}/current/images/cdrom/debian-cd_info.tar.gz"
 			if [ ! -f "${DIR_TOP}/${TAR_INST}" ]; then
-				curl -L -# -R -S -f --connect-timeout 3 --retry 3 -o "${DIR_TOP}/${TAR_INST}" "${TAR_URL}" || \
+				curl -L --http1.1 -# -R -S -f --connect-timeout 3 --retry 3 -o "${DIR_TOP}/${TAR_INST}" "${TAR_URL}" || \
 				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
 					echo "URL: ${TAR_URL}"
 					exit 1;
@@ -438,14 +439,14 @@ fncGet_debian_installer () {
 			TAR_URL="https://cdimage.debian.org/debian/dists/stable/main/installer-${TARGET_ARCH}/current/images/cdrom/debian-cd_info.tar.gz"
 			PNG_URL="http://archive.ubuntu.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/boot-screens/splash.png"
 			if [ ! -f "${DIR_TOP}/${TAR_INST}" ]; then
-				curl -L -# -R -S -f --connect-timeout 3 --retry 3 -o "${DIR_TOP}/${TAR_INST}" "${TAR_URL}" || \
+				curl -L --http1.1 -# -R -S -f --connect-timeout 3 --retry 3 -o "${DIR_TOP}/${TAR_INST}" "${TAR_URL}" || \
 				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
 					echo "URL: ${TAR_URL}"
 					exit 1;
 				fi
 			fi
 			if [ ! -f "${DIR_TOP}/splash.png" ]; then
-				curl -L -# -R -S -f --connect-timeout 3 --retry 3 -o "${DIR_TOP}/splash.png"  "${PNG_URL}" || \
+				curl -L --http1.1 -# -R -S -f --connect-timeout 3 --retry 3 -o "${DIR_TOP}/splash.png"  "${PNG_URL}" || \
 				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
 					echo "URL: ${PNG_URL}"
 					exit 1;
@@ -570,7 +571,7 @@ fncMake_inst_net_sh () {
 		 		pushd /tmp/ > /dev/null
 		 			if [ ! -f ./linux_signing_key.pub ]; then
 		 				set +e
-		 				curl -L -s -R -S -f --connect-timeout 3 --retry 3 -O "${KEY_CHROME} " || \
+		 				curl -L --http1.1 -s -R -S -f --connect-timeout 3 --retry 3 -O "${KEY_CHROME} " || \
 		 				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
 		 					echo "URL: ${KEY_CHROME}"
 		 					fncEnd 1;
@@ -1350,7 +1351,7 @@ fncRun_mmdebstrap () {
 		"amd64" )
 			if [ ! -f "${DIR_TOP}/linux_signing_key.pub" ]; then
 				fncPrint "--- get google-chrome signing key $(fncString ${COL_SIZE} '-')"
-				curl -L -# -R -S -f --connect-timeout 3 --retry 3 -o "${DIR_TOP}/linux_signing_key.pub"  "${KEY_CHROME}" || \
+				curl -L --http1.1 -# -R -S -f --connect-timeout 3 --retry 3 -o "${DIR_TOP}/linux_signing_key.pub"  "${KEY_CHROME}" || \
 				if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then
 					echo "URL: ${KEY_CHROME}"
 					exit 1;
