@@ -32,6 +32,7 @@
 ##	2023/06/11 000.0000 J.Itou         リスト更新 / 処理見直し
 ##	2023/06/20 000.0000 J.Itou         リスト更新 / 処理見直し
 ##	2023/07/29 000.0000 J.Itou         リスト更新
+##	2023/08/27 000.0000 J.Itou         処理見直し(curl --http1.1)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -316,7 +317,7 @@ funcCurl () {
 	declare -i INT_SIZ
 	declare -a TXT_UNT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	set +e
-	ARY_HED=("$(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null | sed -n -e '/HTTP\/.* 200/,/^$/ s/\'$'\r//gp')")
+	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null | sed -n -e '/HTTP\/.* 200/,/^$/ s/\'$'\r//gp')")
 	RET_CD=$?
 	set -e
 	if [[ ${RET_CD} -eq 18 ]] || [[ ${RET_CD} -eq 22 ]] || [[ ${RET_CD} -eq 28  ]]; then
@@ -532,7 +533,7 @@ funcMenu () {
 		if [[ "${DIR_NAME}" =~ \[.*\] ]]; then
 #			printf "\033[${ROW_SIZE};1H${TXT_BBLUE}Now download %-$((${COL_SIZE}-13)).$((${COL_SIZE}-13))s${TXT_RESET}" "${DIR_NAME%/*\[*}"
 			set +e
-			WEB_PAGE=("$(curl --location --no-progress-bar --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${DIR_NAME%/*\[*}" 2> /dev/null)")
+			WEB_PAGE=("$(curl --location --http1.1 --no-progress-bar --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${DIR_NAME%/*\[*}" 2> /dev/null)")
 			RET_CD=$?
 			set -e
 			if [[ ${RET_CD} -eq 18 ]] || [[ ${RET_CD} -eq 22 ]] || [[ ${RET_CD} -eq 28 ]] || [[ ${#WEB_PAGE[@]} -le 0 ]]; then
@@ -548,7 +549,7 @@ funcMenu () {
 		if [[ "${TXT_COLOR}" != "${TXT_RED}" ]] && ([[ "${FIL_NAME}" =~ \[.*\] ]] || [[ "${ARRY_LINE[10]}" = "-" ]]); then
 #			printf "\033[${ROW_SIZE};1H${TXT_BBLUE}Now download %-$((${COL_SIZE}-13)).$((${COL_SIZE}-13))s${TXT_RESET}" "${DIR_NAME}"
 			set +e
-			WEB_INFO=("$(curl --location --no-progress-bar --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${DIR_NAME}" 2> /dev/null)")
+			WEB_INFO=("$(curl --location --http1.1 --no-progress-bar --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${DIR_NAME}" 2> /dev/null)")
 			RET_CD=$?
 			set -e
 			if [[ ${RET_CD} -eq 18 ]] || [[ ${RET_CD} -eq 22 ]] || [[ ${RET_CD} -eq 28 ]] || [[ ${#WEB_INFO[@]} -le 0 ]]; then
@@ -623,7 +624,7 @@ funcMenu () {
 					# --- get web header info ---------------------------------
 #					printf "\033[${ROW_SIZE};1H${TXT_BBLUE}Now download %-$((${COL_SIZE}-13)).$((${COL_SIZE}-13))s${TXT_RESET}" "${ARRY_LINE[2]}"
 					set +e
-					WEB_HEAD=("$(curl --location --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${ARRY_LINE[2]}" 2> /dev/null)")
+					WEB_HEAD=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${ARRY_LINE[2]}" 2> /dev/null)")
 					RET_CD=$?
 					set -e
 					# --- check curl status -----------------------------------
@@ -1227,7 +1228,7 @@ funcMake_setup_sh () {
 		 		KEY_CHROME="https://dl-ssl.google.com/linux/linux_signing_key.pub"
 		 		pushd /tmp/ > /dev/null
 		 			if [ "`which curl 2> /dev/null`" != "" ]; then
-		 				curl -L -# -O -R -S "${URL_CHROME}" || funcEnd $?
+		 				curl -L --http1.1 -# -O -R -S "${URL_CHROME}" || funcEnd $?
 		 			elif [ "`which wget 2> /dev/null`" != "" ]; then
 		 				wget -q -N "${URL_CHROME}" || funcEnd $?
 		 			fi
@@ -2147,7 +2148,7 @@ funcRemaster () {
 	pushd ${WORK_DIRS}/${CODE_NAME[1]} > /dev/null
 		# --- get iso file ----------------------------------------------------
 		set +e
-		curl -L -R -S -s -f --connect-timeout 60 --retry 3 -I --dump-header "./header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
+		curl -L --http1.1 -R -S -s -f --connect-timeout 60 --retry 3 -I --dump-header "./header.txt" "${DVD_URL}" > /dev/null || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 		set -e
 		local WEB_STAT=`cat ./header.txt | awk '/^HTTP\// {print $2;}' | tail -n 1`
 		local WEB_SIZE=`cat ./header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
@@ -2164,7 +2165,7 @@ funcRemaster () {
 		if [ ! -f "../${DVD_NAME}.iso" ]; then
 			funcPrintf "    get ${DVD_NAME}.iso (`printf \"%'d\n\" ${WEB_SIZE}` byte)"
 			set +e
-			curl -L -# -R -S -f --create-dirs --connect-timeout 60 --retry 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
+			curl -L --http1.1 -# -R -S -f --create-dirs --connect-timeout 60 --retry 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 			set -e
 		else
 			local DVD_INFO=`TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S JST" "../${DVD_NAME}.iso"`
@@ -2173,7 +2174,7 @@ funcRemaster () {
 			if [ "${WEB_SIZE}" != "${DVD_SIZE}" ] || [ "${WEB_DATE}" != "${DVD_DATE}" ]; then
 				funcPrintf "    get ${DVD_NAME}.iso (`printf \"%'d\n\" ${WEB_SIZE}` byte)"
 				set +e
-				curl -L -# -R -S -f --create-dirs --connect-timeout 60 --retry 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
+				curl -L --http1.1 -# -R -S -f --create-dirs --connect-timeout 60 --retry 3 -o "../${DVD_NAME}.iso" "${DVD_URL}" || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 				set -e
 			fi
 		fi
@@ -2215,11 +2216,11 @@ funcRemaster () {
 						if [ ! -f "../../../${WALL_FILE}" ]; then
 							funcPrintf "    get ${WALL_FILE}"
 							set +e
-							curl -L -# -R -S -f --connect-timeout 3 --retry 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
+							curl -L --http1.1 -# -R -S -f --connect-timeout 3 --retry 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 							set -e
 						else
 							set +e
-							curl -L -R -S -s -f --connect-timeout 3 --retry 3 -I --dump-header "./header.txt" "${WALL_URL}" > /dev/null
+							curl -L --http1.1 -R -S -s -f --connect-timeout 3 --retry 3 -I --dump-header "./header.txt" "${WALL_URL}" > /dev/null
 							set -e
 							WEB_SIZE=`cat ./header.txt | awk 'sub(/\r$/,"") tolower($1)~/content-length/ {print $2;}' | awk 'END{print;}'`
 							WEB_LAST=`cat ./header.txt | awk 'sub(/\r$/,"") tolower($1)~/last-modified/ {print substr($0,16);}' | awk 'END{print;}'`
@@ -2230,7 +2231,7 @@ funcRemaster () {
 							if [ "${WEB_SIZE}" != "${FILE_SIZE}" ] || [ "${WEB_DATE}" != "${FILE_DATE}" ]; then
 								funcPrintf "    get ${WALL_FILE}"
 								set +e
-								curl -L -# -R -S -f --connect-timeout 3 --retry 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
+								curl -L --http1.1 -# -R -S -f --connect-timeout 3 --retry 3 -o "../../../${WALL_FILE}" "${WALL_URL}" || { rm -f "../../../${WALL_FILE}"; exit 1; }
 								set -e
 							fi
 							if [ -f "./header.txt" ]; then
@@ -2255,7 +2256,7 @@ funcRemaster () {
 					if [ ! -f "../../../${CFG_FILE}" ]; then
 						funcPrintf "    get ${CFG_FILE}"
 						set +e
-						curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
+						curl -L --http1.1 -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 						set -e
 					fi
 					cp --preserve=timestamps "../../../${CFG_FILE}" "preseed/preseed.cfg"
@@ -2276,7 +2277,7 @@ funcRemaster () {
 							if [ ! -f "../../../${CFG_FILE}" ]; then
 								funcPrintf "    get ${CFG_FILE}"
 								set +e
-								curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
+								curl -L --http1.1 -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_ADDR}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 								set -e
 							fi
 							cp --preserve=timestamps "../../../${CFG_FILE}" "nocloud/user-data"
@@ -2389,7 +2390,7 @@ funcRemaster () {
 					if [ ! -f "../../../${CFG_NAME}" ]; then
 						funcPrintf "    get ${CFG_NAME}"
 						set +e
-						curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
+						curl -L --http1.1 -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 						set -e
 					fi
 					cp --preserve=timestamps "../../../${CFG_NAME}" "${WRK_PATH}"
@@ -2603,7 +2604,7 @@ funcRemaster () {
 					if [ ! -f "../../../${CFG_NAME}" ]; then
 						funcPrintf "    get ${CFG_NAME}"
 						set +e
-						curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
+						curl -L --http1.1 -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "../../../" -O "${CFG_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 						set -e
 					fi
 					cp --preserve=timestamps "../../../${CFG_NAME}" "autoyast/autoinst.xml"
@@ -2813,7 +2814,7 @@ _EOT_
 #									CODE_VER="`cat .disk/info | sed -e 's/.*"\(.*\)".*/\L\1/'`"
 #									FIRM_URL="https://cdimage.debian.org/cdimage/unofficial/non-free/firmware/${CODE_VER}/current/firmware.zip"
 #									set +e
-#									curl -L -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "firmware/" -O "${FIRM_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
+#									curl -L --http1.1 -# -R -S -f --connect-timeout 3 --retry 3 --output-dir "firmware/" -O "${FIRM_URL}"  || if [ $? -eq 18 -o $? -eq 22 -o $? -eq 28 -o $? -eq 56 ]; then return 1; fi
 #									set -e
 #									unzip -q -o firmware/firmware.zip -d firmware/
 									;;
