@@ -33,6 +33,7 @@
 ##	2023/06/20 000.0000 J.Itou         リスト更新 / 処理見直し
 ##	2023/07/29 000.0000 J.Itou         リスト更新
 ##	2023/08/27 000.0000 J.Itou         処理見直し(curl --http1.1)
+##	2023/09/29 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -2411,22 +2412,22 @@ funcRemaster () {
 					    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
 					    -e "/^#url[[:blank:]]\+/  s/^#//    " \
 					    -e "/^#repo[[:blank:]]\+/ s/^#//  } "
-					case "${WORK_DIRS}" in
-						*dvd* )
-							sed -i "${WRK_PATH}"                      \
-							    -e '/^#cdrom/ s/^#//'
+#					case "${WORK_DIRS}" in
+#						*dvd* )
+#							sed -i "${WRK_PATH}"                      \
+#							    -e '/^#cdrom/ s/^#//'
 #							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
 #							    -e "/^url[[:blank:]]\+/  s/^/#/     " \
 #							    -e "/^repo[[:blank:]]\+/ s/^/#/   } "
-							;;
-						*   )
-							sed -i "${WRK_PATH}"                      \
-							    -e '/^cdrom/  s/^/#/'
+#							;;
+#						*   )
+#							sed -i "${WRK_PATH}"                      \
+#							    -e '/^cdrom/  s/^/#/'
 #							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
 #							    -e "/^#url[[:blank:]]\+/  s/^#//    " \
 #							    -e "/^#repo[[:blank:]]\+/ s/^#//  } "
-							;;
-					esac
+#							;;
+#					esac
 					case "${CODE_NAME[0]}" in
 						fedora       )
 							sed -i "${WRK_PATH}"                       \
@@ -2462,6 +2463,24 @@ funcRemaster () {
 							    -e "/repo[[:blank:]]\+/ s/\$basearch/${ARC_NUM}/g    } "
 							;;
 						*            )
+							;;
+					esac
+					case "${WORK_DIRS}" in
+						*dvd* )
+							sed -i "${WRK_PATH}"                                         \
+							    -e '/^#cdrom/ s/^#//'                                    \
+							    -e "/^#.*${WRK_TEXT}.*$/,/^$/                        { " \
+							    -e "/--name=AppStream/ s/^/#/g                       } "
+#							    -e "/^#.*${WRK_TEXT}.*$/,/^$/                        { " \
+#							    -e "/^url[[:blank:]]\+/  s/^/#/                        " \
+#							    -e "/^repo[[:blank:]]\+/ s/^/#/                      } "
+							;;
+						*   )
+							sed -i "${WRK_PATH}"                                         \
+							    -e '/^cdrom/  s/^/#/'                                    
+#							    -e "/^#.*${WRK_TEXT}.*$/,/^$/                        { " \
+#							    -e "/^#url[[:blank:]]\+/  s/^#//                       " \
+#							    -e "/^#repo[[:blank:]]\+/ s/^#//                     } "
 							;;
 					esac
 					case "${CODE_NAME[1]}" in
