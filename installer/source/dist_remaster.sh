@@ -34,6 +34,7 @@
 ##	2023/07/29 000.0000 J.Itou         リスト更新
 ##	2023/08/27 000.0000 J.Itou         処理見直し(curl --http1.1)
 ##	2023/09/29 000.0000 J.Itou         処理見直し
+##	2023/10/03 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -2408,10 +2409,10 @@ funcRemaster () {
 #					    -e "/^#.*(${WRK_TEXT}).*$/,/^$/ { " \
 #					    -e "/url[[:blank:]]\+/  s/^#//    " \
 #					    -e "/repo[[:blank:]]\+/ s/^#//  } "
-					sed -i "${WRK_PATH}"                      \
-					    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
-					    -e "/^#url[[:blank:]]\+/  s/^#//    " \
-					    -e "/^#repo[[:blank:]]\+/ s/^#//  } "
+#					sed -i "${WRK_PATH}"                      \
+#					    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
+#					    -e "/^#url[[:blank:]]\+/  s/^#//    " \
+#					    -e "/^#repo[[:blank:]]\+/ s/^#//  } "
 #					case "${WORK_DIRS}" in
 #						*dvd* )
 #							sed -i "${WRK_PATH}"                      \
@@ -2435,10 +2436,12 @@ funcRemaster () {
 							;;
 						centos       )
 							sed -i "${WRK_PATH}"                       \
-							    -e '/--name=epel/      s/^#//'         \
-							    -e '/--name=epel_next/ s/^#//'         \
-							    -e '/--name=Remi/      s/^#//'         \
-							    -e '/%packages/,/%end/ s/^#//g'
+							    -e '/--name=Remi/      s/^#//'
+#							sed -i "${WRK_PATH}"                       \
+#							    -e '/--name=epel/      s/^#//'         \
+#							    -e '/--name=epel_next/ s/^#//'         \
+#							    -e '/--name=Remi/      s/^#//'         \
+#							    -e '/%packages/,/%end/ s/^#//g'
 							;;
 						almalinux    )
 							sed -i "${WRK_PATH}"                       \
@@ -2467,20 +2470,22 @@ funcRemaster () {
 					esac
 					case "${WORK_DIRS}" in
 						*dvd* )
+#							sed -i "${WRK_PATH}"                                         \
+#							    -e '/^#cdrom/ s/^#//'                                    \
+#							    -e "/^#.*${WRK_TEXT}.*$/,/^$/                        { " \
+#							    -e "/--name=AppStream/ s/^/#/g                       } "
 							sed -i "${WRK_PATH}"                                         \
 							    -e '/^#cdrom/ s/^#//'                                    \
 							    -e "/^#.*${WRK_TEXT}.*$/,/^$/                        { " \
-							    -e "/--name=AppStream/ s/^/#/g                       } "
-#							    -e "/^#.*${WRK_TEXT}.*$/,/^$/                        { " \
-#							    -e "/^url[[:blank:]]\+/  s/^/#/                        " \
-#							    -e "/^repo[[:blank:]]\+/ s/^/#/                      } "
+							    -e "/^url[[:blank:]]\+/  s/^/#/                        " \
+							    -e "/^repo[[:blank:]]\+/ s/^/#/                      } "
 							;;
 						*   )
 							sed -i "${WRK_PATH}"                                         \
-							    -e '/^cdrom/  s/^/#/'                                    
-#							    -e "/^#.*${WRK_TEXT}.*$/,/^$/                        { " \
-#							    -e "/^#url[[:blank:]]\+/  s/^#//                       " \
-#							    -e "/^#repo[[:blank:]]\+/ s/^#//                     } "
+							    -e '/^cdrom/  s/^/#/'                                    \
+							    -e "/^#.*${WRK_TEXT}.*$/,/^$/                        { " \
+							    -e "/^#url[[:blank:]]\+/  s/^#//                       " \
+							    -e "/^#repo[[:blank:]]\+/ s/^#//                     } "
 							;;
 					esac
 					case "${CODE_NAME[1]}" in
