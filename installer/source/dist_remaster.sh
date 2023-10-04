@@ -2405,30 +2405,6 @@ funcRemaster () {
 							           WRK_TEXT="${CODE_NAME[0]} .*${VER_NUM}";;
 						*            ) WRK_TEXT="${CODE_NAME[0]}";;
 					esac
-#					sed -i "${WRK_PATH}"                    \
-#					    -e "/^#.*(${WRK_TEXT}).*$/,/^$/ { " \
-#					    -e "/url[[:blank:]]\+/  s/^#//    " \
-#					    -e "/repo[[:blank:]]\+/ s/^#//  } "
-#					sed -i "${WRK_PATH}"                      \
-#					    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
-#					    -e "/^#url[[:blank:]]\+/  s/^#//    " \
-#					    -e "/^#repo[[:blank:]]\+/ s/^#//  } "
-#					case "${WORK_DIRS}" in
-#						*dvd* )
-#							sed -i "${WRK_PATH}"                      \
-#							    -e '/^#cdrom/ s/^#//'
-#							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
-#							    -e "/^url[[:blank:]]\+/  s/^/#/     " \
-#							    -e "/^repo[[:blank:]]\+/ s/^/#/   } "
-#							;;
-#						*   )
-#							sed -i "${WRK_PATH}"                      \
-#							    -e '/^cdrom/  s/^/#/'
-#							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
-#							    -e "/^#url[[:blank:]]\+/  s/^#//    " \
-#							    -e "/^#repo[[:blank:]]\+/ s/^#//  } "
-#							;;
-#					esac
 					case "${CODE_NAME[0]}" in
 						fedora       )
 							sed -i "${WRK_PATH}"                       \
@@ -2436,12 +2412,14 @@ funcRemaster () {
 							;;
 						centos       )
 							sed -i "${WRK_PATH}"                       \
-							    -e '/--name=Remi/      s/^#//'
-#							sed -i "${WRK_PATH}"                       \
-#							    -e '/--name=epel/      s/^#//'         \
-#							    -e '/--name=epel_next/ s/^#//'         \
-#							    -e '/--name=Remi/      s/^#//'         \
-#							    -e '/%packages/,/%end/ s/^#//g'
+							    -e '/^#.*Extra Packages.*$/,/^$/   { ' \
+							    -e '/--name=epel/        s/^#//      ' \
+							    -e '/--name=remi/        s/^#//    } ' \
+							    -e '/^%packages/,/^%end/ s/^#//g     ' \
+							    -e '/^%post/,/^%end/               { ' \
+							    -e '/#dnf -y install/    s/^#//      ' \
+							    -e '/#rpm --import/      s/^#//      ' \
+							    -e "s/\$releasever/${VER_NUM}/g    } "
 							;;
 						almalinux    )
 							sed -i "${WRK_PATH}"                       \
@@ -2470,20 +2448,16 @@ funcRemaster () {
 					esac
 					case "${WORK_DIRS}" in
 						*dvd* )
-#							sed -i "${WRK_PATH}"                                         \
-#							    -e '/^#cdrom/ s/^#//'                                    \
-#							    -e "/^#.*${WRK_TEXT}.*$/,/^$/                        { " \
-#							    -e "/--name=AppStream/ s/^/#/g                       } "
 							sed -i "${WRK_PATH}"                                         \
 							    -e '/^#cdrom/ s/^#//'                                    \
-							    -e "/^#.*${WRK_TEXT}.*$/,/^$/                        { " \
+							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/                      { " \
 							    -e "/^url[[:blank:]]\+/  s/^/#/                        " \
-							    -e "/^repo[[:blank:]]\+/ s/^/#/                      } "
+							    -e "/^#repo[[:blank:]]\+/ s/^#//                     } "
 							;;
 						*   )
 							sed -i "${WRK_PATH}"                                         \
 							    -e '/^cdrom/  s/^/#/'                                    \
-							    -e "/^#.*${WRK_TEXT}.*$/,/^$/                        { " \
+							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/                      { " \
 							    -e "/^#url[[:blank:]]\+/  s/^#//                       " \
 							    -e "/^#repo[[:blank:]]\+/ s/^#//                     } "
 							;;
@@ -2501,125 +2475,6 @@ funcRemaster () {
 						* )
 							;;
 					esac
-#					sed -i kickstart/ks.cfg                \
-#					    -e "s/_HOSTNAME_/${CODE_NAME[0]}/" \
-#					    -e '/^url /   s/^/#/g'             \
-#					    -e '/^repo /  s/^/#/g'
-#					case "${CODE_NAME[1]}" in
-#						Fedora-* )
-#							VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '-' '{print $5;}')
-#							sed -i kickstart/ks.cfg                          \
-#							    -e "/url /  {/repo=${CODE_NAME[0]}/ s/^#//}" \
-#							    -e "/repo / {/repo=${CODE_NAME[0]}/ s/^#//}"
-#							if [ ${VER_NUM} -ge 36 ]; then
-#								sed -i kickstart/ks.cfg                    \
-#								    -e '/%anaconda/,/%end/{/^#/! s/^/#/g}'
-#							fi
-#							;;
-#						MIRACLELINUX-8* | \
-#						MIRACLELINUX-9* )
-#							VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $2;}')
-#							ARC_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $5;}')
-#							if [ "${ARC_NUM}" = "minimal" ]; then
-#								ARC_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $6;}')
-#							fi
-#							sed -i kickstart/ks.cfg                       \
-#							    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"   \
-#							    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"   \
-#							    -e "/^url /  s/\$releasever/${VER_NUM}/g" \
-#							    -e "/^url /  s/\$basearch/${ARC_NUM}/g"   \
-#							    -e "/^repo / s/\$releasever/${VER_NUM}/g" \
-#							    -e "/^repo / s/\$basearch/${ARC_NUM}/g"
-#							;;
-#						Rocky-8*         | \
-#						Rocky-9*         )
-#							VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $2;}')
-#							ARC_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $4;}')
-#							sed -i kickstart/ks.cfg                       \
-#							    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"   \
-#							    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"   \
-#							    -e '/%anaconda/,/%end/{/^#/!   s/^/#/g}'  \
-#							    -e "/^url /  s/\$releasever/${VER_NUM}/g" \
-#							    -e "/^url /  s/\$basearch/${ARC_NUM}/g"   \
-#							    -e "/^repo / s/\$releasever/${VER_NUM}/g" \
-#							    -e "/^repo / s/\$basearch/${ARC_NUM}/g"
-#							;;
-#						AlmaLinux-9*     )
-#							sed -i kickstart/ks.cfg                      \
-#							    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"  \
-#							    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"  \
-#							    -e '/%anaconda/,/%end/{/^#/!   s/^/#/g}'
-#							;;
-#						* )
-#							sed -i kickstart/ks.cfg             \
-#							    -e '/--name=epel/      s/^#//'  \
-#							    -e '/--name=epel_next/ s/^#//'  \
-#							    -e '/--name=Remi/      s/^#//'  \
-#							    -e '/%packages/,/%end/ s/^#//g'
-#							case "${CODE_NAME[1]}" in
-#								CentOS-Stream-8* )
-#									sed -i kickstart/ks.cfg                                     \
-#									    -e "/url .*mirrorlist\./  {/${CODE_NAME[0]}/ s/^#//}"   \
-#									    -e "/repo .*mirrorlist\./ {/${CODE_NAME[0]}/ s/^#//}"
-#									;;
-#								CentOS-Stream-9* )
-#									sed -i kickstart/ks.cfg                                     \
-#									    -e "/url .*mirror\.stream/  {/${CODE_NAME[0]}/ s/^#//}" \
-#									    -e "/repo .*mirror\.stream/ {/${CODE_NAME[0]}/ s/^#//}" \
-#									    -e '/%anaconda/,/%end/ {/^#/! s/^/#/g}'                 \
-#									    -e '/%packages/,/%end/ {/^ibus-mozc/ s/^/#/}'
-#									;;
-#								AlmaLinux-9*     )
-#									sed -i kickstart/ks.cfg                      \
-#									    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"  \
-#									    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"  \
-#									    -e '/%anaconda/,/%end/{/^#/!   s/^/#/g}'
-#									;;
-#								Rocky-9*         )
-#									VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $2;}')
-#									ARC_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $4;}')
-#									sed -i kickstart/ks.cfg                       \
-#									    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}"   \
-#									    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"   \
-#									    -e '/%anaconda/,/%end/{/^#/!   s/^/#/g}'  \
-#									    -e "/^url /  s/\$releasever/${VER_NUM}/g" \
-#									    -e "/^url /  s/\$basearch/${ARC_NUM}/g"   \
-#									    -e "/^repo / s/\$releasever/${VER_NUM}/g" \
-#									    -e "/^repo / s/\$basearch/${ARC_NUM}/g"
-#									;;
-#								* )
-#									sed -i kickstart/ks.cfg                     \
-#									    -e "/url /  {/${CODE_NAME[0]}/ s/^#//}" \
-#									    -e "/repo / {/${CODE_NAME[0]}/ s/^#//}"
-#									;;
-#							esac
-#							;;
-#					esac
-#					case "${CODE_NAME[1]}" in
-#						CentOS-Stream-8* | \
-#						MIRACLELINUX-8*  | \
-#						Rocky-8*         )
-#							local TMZONE=`awk '$1=="timezone" {print $2;}' kickstart/ks.cfg`
-#							local NTPSVR=`awk -F '[ \t=]' '$1=="timesource" {print $3;}' kickstart/ks.cfg`
-#							sed -i kickstart/ks.cfg                                                   \
-#							    -e "s~^\(timezone\).*\$~\1 ${TMZONE} --isUtc --ntpservers=${NTPSVR}~" \
-#							    -e '/timesource/d'
-#							;;
-#						* )
-#							;;
-#					esac
-#					case "${WORK_DIRS}" in
-#						*dvd* )
-#							sed -i kickstart/ks.cfg                      \
-#							    -e '/^#cdrom/                   s/^#//'  \
-#							    -e '/^url /                     s/^/#/g' \
-#							    -e '/^repo .* --name=AppStream/ s/^/#/g'
-#							;;
-#						*     )
-#							sed -i kickstart/ks.cfg    \
-#							    -e '/^cdrom/  s/^/#/'
-#							;;
-#					esac
 					;;
 				"opensuse")	# --- get autoinst.xml ----------------------------
 					EFI_IMAG="EFI/BOOT/efiboot.img"
