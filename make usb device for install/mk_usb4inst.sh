@@ -133,6 +133,7 @@
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.3-live-server-amd64.iso            ./${WORK_DIRS}/iso/dvd/ubuntu-22.04.3-live-server-amd64.iso         " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-live-server-amd64.iso           " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-live-server-amd64.iso           " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-beta-live-server-amd64.iso         ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-beta-live-server-amd64.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-live-server-amd64.iso                    ./${WORK_DIRS}/iso/dvd/mantic-live-server-amd64.iso                 " \
 		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-37-1.7.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-37-1.7.iso          " \
 		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-38-1.6.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-38-1.6.iso          " \
@@ -158,6 +159,8 @@
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-desktop-amd64.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-amd64.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-legacy-amd64.iso        " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-beta-desktop-amd64.iso             ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-beta-desktop-amd64.iso          " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-beta-desktop-legacy-amd64.iso      ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-beta-desktop-legacy-amd64.iso   " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-amd64.iso                        ./${WORK_DIRS}/iso/dvd/mantic-desktop-amd64.iso                     " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-legacy-amd64.iso                 ./${WORK_DIRS}/iso/dvd/mantic-desktop-legacy-amd64.iso              " \
 	)
@@ -171,90 +174,95 @@
 	declare -r FNAME_MENU="./${WORK_DIRS}/img/menu.cfg"
 
 # --- menu.cfg list array -----------------------------------------------------
-	declare -r -a MENU_LIST=(                           \
-		"[ Unattended installation ]"                   \
-		"- [ mini.iso ... ]"                            \
-		"mini-testing-${ARC_TYPE}.iso"                  \
-		"mini-trixie-${ARC_TYPE}.iso"                   \
-		"mini-bookworm-${ARC_TYPE}.iso"                 \
-		"mini-bullseye-${ARC_TYPE}.iso"                 \
-		"mini-buster-${ARC_TYPE}.iso"                   \
-		"mini-focal-${ARC_TYPE}.iso"                    \
-		"mini-bionic-${ARC_TYPE}.iso"                   \
-		"[]"                                            \
-		"- [ net install ... ]"                         \
-		"debian-testing-${ARC_TYPE}-netinst.iso"        \
-		"debian-13.*-${ARC_TYPE}-netinst.iso"           \
-		"debian-12.*-${ARC_TYPE}-netinst.iso"           \
-		"debian-11.*-${ARC_TYPE}-netinst.iso"           \
-		"debian-10.*-${ARC_TYPE}-netinst.iso"           \
-		"Fedora-Server-netinst-x86_64-38-*.iso"         \
-		"Fedora-Server-netinst-x86_64-37-*.iso"         \
-		"CentOS-Stream-9-latest-x86_64-boot.iso"        \
-		"CentOS-Stream-8-x86_64-latest-boot.iso"        \
-		"AlmaLinux-9-latest-x86_64-boot.iso"            \
-		"MIRACLELINUX-9.*-rtm-minimal-x86_64.iso"       \
-		"MIRACLELINUX-8.*-rtm-minimal-x86_64.iso"       \
-		"Rocky-9-latest-x86_64-boot.iso"                \
-		"Rocky-8.*-x86_64-boot.iso"                     \
-		"openSUSE-Tumbleweed-NET-x86_64-Current.iso"    \
-		"openSUSE-Leap-15.*-NET-x86_64-Media.iso"       \
-		"[]"                                            \
-		"- [ dvd media: server install ... ]"           \
-		"debian-testing-${ARC_TYPE}-DVD-1.iso"          \
-		"debian-13.*-${ARC_TYPE}-DVD-1.iso"             \
-		"debian-12.*-${ARC_TYPE}-DVD-1.iso"             \
-		"debian-11.*-${ARC_TYPE}-DVD-1.iso"             \
-		"debian-10.*-${ARC_TYPE}-DVD-1.iso"             \
-		"mantic-live-server-${ARC_TYPE}.iso"            \
-		"ubuntu-23.04*-live-server-${ARC_TYPE}.iso"     \
-		"ubuntu-22.10*-live-server-${ARC_TYPE}.iso"     \
-		"ubuntu-22.04*-live-server-${ARC_TYPE}.iso"     \
-		"ubuntu-20.04*-live-server-${ARC_TYPE}.iso"     \
-		"ubuntu-18.04*-server-${ARC_TYPE}.iso"          \
-		"Fedora-Server-dvd-x86_64-38-*.iso"             \
-		"Fedora-Server-dvd-x86_64-37-*.iso"             \
-		"CentOS-Stream-9-latest-x86_64-dvd1.iso"        \
-		"CentOS-Stream-8-x86_64-latest-dvd1.iso"        \
-		"AlmaLinux-9-latest-x86_64-dvd.iso"             \
-		"MIRACLELINUX-9.*-rtm-x86_64.iso"               \
-		"MIRACLELINUX-8.*-rtm-x86_64.iso"               \
-		"Rocky-9-latest-x86_64-dvd.iso"                 \
-		"Rocky-8.*-x86_64-dvd1.iso"                     \
-		"openSUSE-Tumbleweed-DVD-x86_64-Current.iso"    \
-		"openSUSE-Leap-15.*-DVD-x86_64-Media.iso"       \
-		"[]"                                            \
-		"- [ dvd media: desktop install / live ... ]"   \
-		"debian-live-testing-${ARC_TYPE}-lxde.iso"      \
-		"debian-live-13.*-${ARC_TYPE}-lxde.iso"         \
-		"debian-live-12.*-${ARC_TYPE}-lxde.iso"         \
-		"debian-live-11.*-${ARC_TYPE}-lxde.iso"         \
-		"debian-live-10.*-${ARC_TYPE}-lxde.iso"         \
-		"mantic-desktop-${ARC_TYPE}.iso"                \
-		"ubuntu-23.04*-desktop-${ARC_TYPE}.iso"         \
-		"ubuntu-22.10*-desktop-${ARC_TYPE}.iso"         \
-		"ubuntu-22.04*-desktop-${ARC_TYPE}.iso"         \
-		"ubuntu-20.04*-desktop-${ARC_TYPE}.iso"         \
-		"ubuntu-18.04*-desktop-${ARC_TYPE}.iso"         \
-		"mantic-desktop-legacy-${ARC_TYPE}.iso"         \
-		"ubuntu-23.04*-desktop-legacy-${ARC_TYPE}.iso"  \
-		"[]"                                            \
-		"[ Live system ]"                               \
-		"- [ Live media ... ]"                          \
-		"debian-live-testing-${ARC_TYPE}-lxde.iso"      \
-		"debian-live-13.*-${ARC_TYPE}-lxde.iso"         \
-		"debian-live-12.*-${ARC_TYPE}-lxde.iso"         \
-		"debian-live-11.*-${ARC_TYPE}-lxde.iso"         \
-		"debian-live-10.*-${ARC_TYPE}-lxde.iso"         \
-		"mantic-desktop-${ARC_TYPE}.iso"                \
-		"ubuntu-23.04*-desktop-${ARC_TYPE}.iso"         \
-		"ubuntu-22.10*-desktop-${ARC_TYPE}.iso"         \
-		"ubuntu-22.04*-desktop-${ARC_TYPE}.iso"         \
-		"ubuntu-20.04*-desktop-${ARC_TYPE}.iso"         \
-		"ubuntu-18.04*-desktop-${ARC_TYPE}.iso"         \
-		"mantic-desktop-legacy-${ARC_TYPE}.iso"         \
-		"ubuntu-23.04*-desktop-legacy-${ARC_TYPE}.iso"  \
-		"[]"                                            \
+	declare -r -a MENU_LIST=(                               \
+		"[ Unattended installation ]"                       \
+		"- [ mini.iso ... ]"                                \
+		"mini-testing-${ARC_TYPE}.iso"                      \
+		"mini-trixie-${ARC_TYPE}.iso"                       \
+		"mini-bookworm-${ARC_TYPE}.iso"                     \
+		"mini-bullseye-${ARC_TYPE}.iso"                     \
+		"mini-buster-${ARC_TYPE}.iso"                       \
+		"mini-focal-${ARC_TYPE}.iso"                        \
+		"mini-bionic-${ARC_TYPE}.iso"                       \
+		"[]"                                                \
+		"- [ net install ... ]"                             \
+		"debian-testing-${ARC_TYPE}-netinst.iso"            \
+		"debian-13.*-${ARC_TYPE}-netinst.iso"               \
+		"debian-12.*-${ARC_TYPE}-netinst.iso"               \
+		"debian-11.*-${ARC_TYPE}-netinst.iso"               \
+		"debian-10.*-${ARC_TYPE}-netinst.iso"               \
+		"Fedora-Server-netinst-x86_64-38-*.iso"             \
+		"Fedora-Server-netinst-x86_64-37-*.iso"             \
+		"CentOS-Stream-9-latest-x86_64-boot.iso"            \
+		"CentOS-Stream-8-x86_64-latest-boot.iso"            \
+		"AlmaLinux-9-latest-x86_64-boot.iso"                \
+		"MIRACLELINUX-9.*-rtm-minimal-x86_64.iso"           \
+		"MIRACLELINUX-8.*-rtm-minimal-x86_64.iso"           \
+		"Rocky-9-latest-x86_64-boot.iso"                    \
+		"Rocky-8.*-x86_64-boot.iso"                         \
+		"openSUSE-Tumbleweed-NET-x86_64-Current.iso"        \
+		"openSUSE-Leap-15.*-NET-x86_64-Media.iso"           \
+		"[]"                                                \
+		"- [ dvd media: server install ... ]"               \
+		"debian-testing-${ARC_TYPE}-DVD-1.iso"              \
+		"debian-13.*-${ARC_TYPE}-DVD-1.iso"                 \
+		"debian-12.*-${ARC_TYPE}-DVD-1.iso"                 \
+		"debian-11.*-${ARC_TYPE}-DVD-1.iso"                 \
+		"debian-10.*-${ARC_TYPE}-DVD-1.iso"                 \
+#		"mantic-live-server-${ARC_TYPE}.iso"                \ #
+		"ubuntu-23.10*-beta-live-server-${ARC_TYPE}.iso"    \
+		"ubuntu-23.04*-live-server-${ARC_TYPE}.iso"         \
+		"ubuntu-22.10*-live-server-${ARC_TYPE}.iso"         \
+		"ubuntu-22.04*-live-server-${ARC_TYPE}.iso"         \
+		"ubuntu-20.04*-live-server-${ARC_TYPE}.iso"         \
+		"ubuntu-18.04*-server-${ARC_TYPE}.iso"              \
+		"Fedora-Server-dvd-x86_64-38-*.iso"                 \
+		"Fedora-Server-dvd-x86_64-37-*.iso"                 \
+		"CentOS-Stream-9-latest-x86_64-dvd1.iso"            \
+		"CentOS-Stream-8-x86_64-latest-dvd1.iso"            \
+		"AlmaLinux-9-latest-x86_64-dvd.iso"                 \
+		"MIRACLELINUX-9.*-rtm-x86_64.iso"                   \
+		"MIRACLELINUX-8.*-rtm-x86_64.iso"                   \
+		"Rocky-9-latest-x86_64-dvd.iso"                     \
+		"Rocky-8.*-x86_64-dvd1.iso"                         \
+		"openSUSE-Tumbleweed-DVD-x86_64-Current.iso"        \
+		"openSUSE-Leap-15.*-DVD-x86_64-Media.iso"           \
+		"[]"                                                \
+		"- [ dvd media: desktop install / live ... ]"       \
+		"debian-live-testing-${ARC_TYPE}-lxde.iso"          \
+		"debian-live-13.*-${ARC_TYPE}-lxde.iso"             \
+		"debian-live-12.*-${ARC_TYPE}-lxde.iso"             \
+		"debian-live-11.*-${ARC_TYPE}-lxde.iso"             \
+		"debian-live-10.*-${ARC_TYPE}-lxde.iso"             \
+#		"mantic-desktop-${ARC_TYPE}.iso"                    \ #
+		"ubuntu-23.10*-beta-desktop-${ARC_TYPE}.iso"        \
+		"ubuntu-23.04*-desktop-${ARC_TYPE}.iso"             \
+		"ubuntu-22.10*-desktop-${ARC_TYPE}.iso"             \
+		"ubuntu-22.04*-desktop-${ARC_TYPE}.iso"             \
+		"ubuntu-20.04*-desktop-${ARC_TYPE}.iso"             \
+		"ubuntu-18.04*-desktop-${ARC_TYPE}.iso"             \
+#		"mantic-desktop-legacy-${ARC_TYPE}.iso"             \ #
+		"ubuntu-23.10*-beta-desktop-legacy-${ARC_TYPE}.iso" \
+		"ubuntu-23.04*-desktop-legacy-${ARC_TYPE}.iso"      \
+		"[]"                                                \
+		"[ Live system ]"                                   \
+		"- [ Live media ... ]"                              \
+		"debian-live-testing-${ARC_TYPE}-lxde.iso"          \
+		"debian-live-13.*-${ARC_TYPE}-lxde.iso"             \
+		"debian-live-12.*-${ARC_TYPE}-lxde.iso"             \
+		"debian-live-11.*-${ARC_TYPE}-lxde.iso"             \
+		"debian-live-10.*-${ARC_TYPE}-lxde.iso"             \
+#		"mantic-desktop-${ARC_TYPE}.iso"                    \ #
+		"ubuntu-23.10*-beta-desktop-${ARC_TYPE}.iso"        \
+		"ubuntu-23.04*-desktop-${ARC_TYPE}.iso"             \
+		"ubuntu-22.10*-desktop-${ARC_TYPE}.iso"             \
+		"ubuntu-22.04*-desktop-${ARC_TYPE}.iso"             \
+		"ubuntu-20.04*-desktop-${ARC_TYPE}.iso"             \
+		"ubuntu-18.04*-desktop-${ARC_TYPE}.iso"             \
+#		"mantic-desktop-legacy-${ARC_TYPE}.iso"             \ #
+		"ubuntu-23.10*-beta-desktop-legacy-${ARC_TYPE}.iso" \
+		"ubuntu-23.04*-desktop-legacy-${ARC_TYPE}.iso"      \
+		"[]"                                                \
 	)
 
 # --- web address -------------------------------------------------------------
@@ -296,7 +304,6 @@
 		"debian             bullseye            https://cdimage.debian.org/cdimage/archive/latest-oldstable/${ARC_TYPE}/iso-cd/debian-11.[0-9.]*-${ARC_TYPE}-netinst.iso                    ./${WORK_DIRS}/iso/net                      -                                           -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \
 		"debian             bookworm            https://cdimage.debian.org/cdimage/release/current/${ARC_TYPE}/iso-cd/debian-12.[0-9.]*-${ARC_TYPE}-netinst.iso                             ./${WORK_DIRS}/iso/net                      -                                           -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \
 #		"debian             trixie              -                                                                                                                                           ./${WORK_DIRS}/iso/net                      -                                           -                   -           preseed_debian.cfg                              202x-xx-xx  20xx-xx-xx  -           testing             Debian_13.xx(trixie)                " \ #
-#		"debian             testing             https://cdimage.debian.org/cdimage/weekly-builds/${ARC_TYPE}/iso-cd/debian-testing-${ARC_TYPE}-netinst.iso                                  ./${WORK_DIRS}/iso/net                      -                                           -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \ #
 		"debian             testing             https://cdimage.debian.org/cdimage/daily-builds/daily/current/${ARC_TYPE}/iso-cd/debian-testing-${ARC_TYPE}-netinst.iso                     ./${WORK_DIRS}/iso/net                      -                                           -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \
 		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-netinst-x86_64-37-[0-9.]*.iso               ./${WORK_DIRS}/iso/net                      -                                           -                   -           kickstart_common.cfg                            2022-11-15  2023-11-14  -           kernel_6.0          -                                   " \
 		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-[0-9.]*.iso               ./${WORK_DIRS}/iso/net                      -                                           -                   -           kickstart_common.cfg                            2023-04-18  2024-05-14  -           kernel_6.2          -                                   " \
@@ -307,7 +314,7 @@
 		"rockylinux         -                   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-boot.iso                                               ./${WORK_DIRS}/iso/net                      -                                           -                   -           kickstart_common.cfg                            2022-07-14  20xx-xx-xx  -           RHEL_9.x            -                                   " \
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                ./${WORK_DIRS}/iso/net                      -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso                ./${WORK_DIRS}/iso/net                      -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
-		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                            ./${WORK_DIRS}                              -                               -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
+		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-stable/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                             ./${WORK_DIRS}/iso/net                      -                                           -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
 		"opensuse           tumbleweed          https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                               ./${WORK_DIRS}/iso/net                      -                                           -                   -           yast_opensuse.xml                               20xx-xx-xx  20xx-xx-xx  -           kernel_x.x          -                                   " \
 	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                                     5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
 
@@ -318,11 +325,12 @@
 		"debian             bookworm            https://cdimage.debian.org/cdimage/release/current/${ARC_TYPE}/iso-dvd/debian-12.[0-9.]*-${ARC_TYPE}-DVD-1.iso                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \
 #		"debian             trixie              -                                                                                                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              202x-xx-xx  20xx-xx-xx  -           testing             Debian_13.xx(trixie)                " \ #
 		"debian             testing             https://cdimage.debian.org/cdimage/weekly-builds/${ARC_TYPE}/iso-dvd/debian-testing-${ARC_TYPE}-DVD-1.iso                                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \
-		"ubuntu             bionic.server       https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04[0-9.]*-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           Bionic_Beaver       Ubuntu_18.04(Bionic_Beaver):LTS     " \
+		"ubuntu             bionic              https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04[0-9.]*-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           Bionic_Beaver       Ubuntu_18.04(Bionic_Beaver):LTS     " \
 		"ubuntu             focal.server        https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2020-04-23  2030-04-23  -           Focal_Fossa         Ubuntu_20.04(Focal_Fossa):LTS       " \
 		"ubuntu             jammy.server        https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-04-21  2032-04-21  -           Jammy_Jellyfish     Ubuntu_22.04(Jammy_Jellyfish):LTS   " \
 # x		"ubuntu             kinetic.server      https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-live-server-${ARC_TYPE}.iso                                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
 		"ubuntu             lunar.server        https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
+		"ubuntu             mantic.server       https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-beta-live-server-${ARC_TYPE}.iso                                                     ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
 #		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-dvd-x86_64-37-[0-9.]*.iso                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2022-11-15  2023-11-14  -           kernel_6.0          -                                   " \ #
 		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2023-04-18  2024-05-14  -           kernel_6.2          -                                   " \
 #		"centos             -                   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                          ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2019-xx-xx  2024-05-31  -           RHEL_8.x            -                                   " \ #
@@ -332,7 +340,7 @@
 		"rockylinux         -                   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-dvd.iso                                                ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2022-07-14  20xx-xx-xx  -           RHEL_9.x            -                                   " \
 #		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                        ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \ #
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso                        ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
-		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-current/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                            ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
+		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-stable/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                             ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
 		"opensuse           tumbleweed          https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           yast_opensuse.xml                               2021-xx-xx  20xx-xx-xx  -           kernel_x.x          -                                   " \
 #		"debian             buster.live         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-10.[0-9.]*-${ARC_TYPE}-lxde.iso      ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \ #
 #		"debian             bullseye.live       https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-11.[0-9.]*-${ARC_TYPE}-lxde.iso         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \ #
@@ -342,12 +350,14 @@
 		"ubuntu             bionic.desktop      https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           Bionic_Beaver       Ubuntu_18.04(Bionic_Beaver):LTS     " \
 #		"ubuntu             focal.desktop       https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2020-04-23  2030-04-23  -           Focal_Fossa         Ubuntu_20.04(Focal_Fossa):LTS       " \ #
 #		"ubuntu             jammy.desktop       https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2022-04-21  2032-04-21  -           Jammy_Jellyfish     Ubuntu_22.04(Jammy_Jellyfish):LTS   " \ #
-# x		"ubuntu             kinetic.desktop     https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                             ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
+#		"ubuntu             kinetic.desktop     https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                             ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
 		"ubuntu             lunar.desktop       https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
 		"ubuntu             lunar.legacy        http://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
-		"ubuntu             mantic.server       http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
-		"ubuntu             mantic.desktop      http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-${ARC_TYPE}.iso                                                                 ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
-		"ubuntu             mantic.legacy       http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-${ARC_TYPE}.iso                                                        ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+		"ubuntu             mantic.desktop      https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-beta-desktop-${ARC_TYPE}.iso                                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+		"ubuntu             mantic.legacy       http://cdimage.ubuntu.com/releases/mantic/beta/ubuntu-23.10[0-9.]*-beta-desktop-legacy-${ARC_TYPE}.iso                                      ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+#		"ubuntu             mantic.server       http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
+#		"ubuntu             mantic.desktop      http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-${ARC_TYPE}.iso                                                                 ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
+#		"ubuntu             mantic.legacy       http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-${ARC_TYPE}.iso                                                        ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
 	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                                     5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
 
 	TARGET_LIST+=("${TARGET_LIST_MINI[@]}")
