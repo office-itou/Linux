@@ -35,6 +35,7 @@
 ##	2023/08/27 000.0000 J.Itou         処理見直し(curl --http1.1)
 ##	2023/09/29 000.0000 J.Itou         処理見直し
 ##	2023/10/03 000.0000 J.Itou         処理見直し
+##	2023/10/05 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -102,7 +103,7 @@
 		"rockylinux         -                   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-boot.iso                                               ./${WORK_DIRS}                              -                               -                   -           kickstart_common.cfg                            2022-07-14  20xx-xx-xx  -           RHEL_9.x            -                                   " \
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                ./${WORK_DIRS}                              -                               -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso                ./${WORK_DIRS}                              -                               -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
-		"opensuse           leap                https://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/leap/[0-9.]*/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                         ./${WORK_DIRS}                              -                               -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
+		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-stable/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                             ./${WORK_DIRS}                              -                               -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
 		"opensuse           tumbleweed          https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                               ./${WORK_DIRS}                              -                               -                   -           yast_opensuse.xml                               20xx-xx-xx  20xx-xx-xx  -           kernel_x.x          -                                   " \
 	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                         5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
 
@@ -117,6 +118,7 @@
 		"ubuntu             jammy.server        https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-04-21  2032-04-21  -           Jammy_Jellyfish     Ubuntu_22.04(Jammy_Jellyfish):LTS   " \
 #		"ubuntu             kinetic.server      https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-live-server-${ARC_TYPE}.iso                                                         ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
 		"ubuntu             lunar.server        https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
+		"ubuntu             mantic.server       https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-beta-live-server-${ARC_TYPE}.iso                                                     ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
 		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-dvd-x86_64-37-[0-9.]*.iso                   ./${WORK_DIRS}                              -                               -                   -           kickstart_common.cfg                            2022-11-15  2023-11-14  -           kernel_6.0          -                                   " \
 		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                   ./${WORK_DIRS}                              -                               -                   -           kickstart_common.cfg                            2023-04-18  2024-05-14  -           kernel_6.2          -                                   " \
 		"centos             -                   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                          ./${WORK_DIRS}                              -                               -                   -           kickstart_common.cfg                            2019-xx-xx  2024-05-31  -           RHEL_8.x            -                                   " \
@@ -126,7 +128,7 @@
 		"rockylinux         -                   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-dvd.iso                                                ./${WORK_DIRS}                              -                               -                   -           kickstart_common.cfg                            2022-07-14  20xx-xx-xx  -           RHEL_9.x            -                                   " \
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                        ./${WORK_DIRS}                              -                               -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso                        ./${WORK_DIRS}                              -                               -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
-		"opensuse           leap                https://ftp.jaist.ac.jp/pub/Linux/openSUSE/distribution/leap/[0-9.]*/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                         ./${WORK_DIRS}                              -                               -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
+		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-stable/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                             ./${WORK_DIRS}                              -                               -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
 		"opensuse           tumbleweed          https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                               ./${WORK_DIRS}                              -                               -                   -           yast_opensuse.xml                               2021-xx-xx  20xx-xx-xx  -           kernel_x.x          -                                   " \
 		"debian             buster.live         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-10.[0-9.]*-${ARC_TYPE}-lxde.iso      ./${WORK_DIRS}                              -                               -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \
 		"debian             bullseye.live       https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-11.[0-9.]*-${ARC_TYPE}-lxde.iso         ./${WORK_DIRS}                              -                               -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \
@@ -139,9 +141,11 @@
 #		"ubuntu             kinetic.desktop     https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                             ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg                              2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
 		"ubuntu             lunar.desktop       https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
 		"ubuntu             lunar.legacy        http://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                         ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg                              2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
-		"ubuntu             mantic.server       http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
-		"ubuntu             mantic.desktop      http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-${ARC_TYPE}.iso                                                                 ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
-		"ubuntu             mantic.legacy       http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-${ARC_TYPE}.iso                                                        ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+		"ubuntu             mantic.desktop      https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-beta-desktop-${ARC_TYPE}.iso                                                         ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+		"ubuntu             mantic.legacy       http://cdimage.ubuntu.com/releases/mantic/beta/ubuntu-23.10[0-9.]*-beta-desktop-legacy-${ARC_TYPE}.iso                                      ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+#		"ubuntu             mantic.server       http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+#		"ubuntu             mantic.desktop      http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-${ARC_TYPE}.iso                                                                 ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+#		"ubuntu             mantic.legacy       http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-${ARC_TYPE}.iso                                                        ./${WORK_DIRS}                              -                               -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
 	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                         5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
 
 	readonly ARRAY_NAME_LIVE=(                                                                                                                                                                                                                                                                                                                                                                                                                        \
@@ -2396,70 +2400,68 @@ funcRemaster () {
 						set -e
 					fi
 					cp --preserve=timestamps "../../../${CFG_NAME}" "${WRK_PATH}"
-					sed -i "${WRK_PATH}"                    \
-					    -e "s/_HOSTNAME_/${CODE_NAME[0]}/"  \
-					    -e '/^url /   s/^/#/g'              \
-					    -e '/^repo /  s/^/#/g'
+					VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $2;}')
+					WRK_TEXT="${CODE_NAME[0]}"
+					ARC_NUM="x86_64"
 					case "${CODE_NAME[0]}" in
-						centos       ) VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $3;}')
-							           WRK_TEXT="${CODE_NAME[0]} .*${VER_NUM}";;
-						*            ) WRK_TEXT="${CODE_NAME[0]}";;
+						fedora       ) VER_NUM=$(($(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $5;}') - 29));;
+						centos       ) VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $3;}'); WRK_TEXT="${CODE_NAME[0]} .*${VER_NUM}";;
+						almalinux    ) ;;
+						rockylinux   ) ;;
+						miraclelinux ) ;;
+						*            ) ;;
+					esac
+					sed -i "${WRK_PATH}"                              \
+					    -e '/^%post/,/^%end/                      { ' \
+					    -e '/#dnf -y install/    s/^#//             ' \
+					    -e '/#rpm --import/      s/^#//             ' \
+					    -e "s/\$releasever/${VER_NUM}/g             " \
+					    -e "s/\$basearch/${ARC_NUM}/g             } "
+					case "${WORK_DIRS}" in
+						*dvd* )
+							sed -i "${WRK_PATH}"                              \
+							    -e "s/_HOSTNAME_/${CODE_NAME[0]}/"            \
+							    -e '/^#cdrom/ s/^#//'                         \
+							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/           { " \
+							    -e "/^url[[:blank:]]\+/  s/^/#/             " \
+							    -e "/^repo[[:blank:]]\+/ s/^/#/           } "
+							;;
+						*   )
+							sed -i "${WRK_PATH}"                              \
+							    -e "s/_HOSTNAME_/${CODE_NAME[0]}/"            \
+							    -e '/^cdrom/  s/^/#/'                         \
+							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/           { " \
+							    -e "/^#url[[:blank:]]\+/  s/^#//            " \
+							    -e "/^#repo[[:blank:]]\+/ s/^#//          } "
+							;;
 					esac
 					case "${CODE_NAME[0]}" in
 						fedora       )
-							sed -i "${WRK_PATH}"                       \
-							    -e '/%anaconda/,/%end/{/^#/! s/^/#/g}'
+							sed -i "${WRK_PATH}"                              \
+							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/           { " \
+							    -e "/^#repo[[:blank:]]\+/ s/^#//          } " \
+							    -e '/%anaconda/,/%end/ {/^#/! s/^/#/g}'
 							;;
 						centos       )
-							sed -i "${WRK_PATH}"                       \
-							    -e '/^#.*Extra Packages.*$/,/^$/   { ' \
-							    -e '/--name=epel/        s/^#//      ' \
-							    -e '/--name=remi/        s/^#//    } ' \
-							    -e '/^%packages/,/^%end/ s/^#//g     ' \
-							    -e '/^%post/,/^%end/               { ' \
-							    -e '/#dnf -y install/    s/^#//      ' \
-							    -e '/#rpm --import/      s/^#//      ' \
-							    -e "s/\$releasever/${VER_NUM}/g    } "
+							sed -i "${WRK_PATH}"                              \
+							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/           { " \
+							    -e "/^#repo[[:blank:]]\+/ s/^#//          } "
 							;;
 						almalinux    )
-							sed -i "${WRK_PATH}"                       \
-							    -e '/%anaconda/,/%end/{/^#/! s/^/#/g}'
+							sed -i "${WRK_PATH}"                              \
+							    -e '/%anaconda/,/%end/ {/^#/! s/^/#/g}'
 							;;
 						rockylinux   )
-							sed -i "${WRK_PATH}"                       \
-							    -e '/%anaconda/,/%end/{/^#/! s/^/#/g}'
+							sed -i "${WRK_PATH}"                              \
+							    -e '/%anaconda/,/%end/ {/^#/! s/^/#/g}'
 							;;
 						miraclelinux )
-							VER_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $2;}')
-							if [[ "${CODE_NAME[1]}" =~ .*minimal.* ]]; then
-								ARC_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $6;}')
-							else
-								ARC_NUM=$(echo "${CODE_NAME[1]}" | awk -F '[-.]' '{print $5;}')
-							fi
-							sed -i "${WRK_PATH}"                                         \
-							    -e "/^#.*${CODE_NAME[0]}.*$/,/^$/                    { " \
-							    -e "/url[[:blank:]]\+/  s/\$releasever/${VER_NUM}/g    " \
-							    -e "/url[[:blank:]]\+/  s/\$basearch/${ARC_NUM}/g      " \
-							    -e "/repo[[:blank:]]\+/ s/\$releasever/${VER_NUM}/g    " \
-							    -e "/repo[[:blank:]]\+/ s/\$basearch/${ARC_NUM}/g    } "
+							sed -i "${WRK_PATH}"                              \
+							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/           { " \
+							    -e "s/\$releasever/${VER_NUM}/g             " \
+							    -e "s/\$basearch/${ARC_NUM}/g             } "
 							;;
 						*            )
-							;;
-					esac
-					case "${WORK_DIRS}" in
-						*dvd* )
-							sed -i "${WRK_PATH}"                                         \
-							    -e '/^#cdrom/ s/^#//'                                    \
-							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/                      { " \
-							    -e "/^url[[:blank:]]\+/  s/^/#/                        " \
-							    -e "/^#repo[[:blank:]]\+/ s/^#//                     } "
-							;;
-						*   )
-							sed -i "${WRK_PATH}"                                         \
-							    -e '/^cdrom/  s/^/#/'                                    \
-							    -e "/^#.*(${WRK_TEXT}).*$/,/^$/                      { " \
-							    -e "/^#url[[:blank:]]\+/  s/^#//                       " \
-							    -e "/^#repo[[:blank:]]\+/ s/^#//                     } "
 							;;
 					esac
 					case "${CODE_NAME[1]}" in
