@@ -3728,39 +3728,39 @@ main () {
 		funcUSB_Device_select
 	fi
 	# -------------------------------------------------------------------------
-#	funcMake_directory
-#	funcMake_link
+	funcMake_directory
+	funcMake_link
 	# -------------------------------------------------------------------------
-	touch "${CACHE_FNAME}"
-	funcRead_cache
+#	touch "${CACHE_FNAME}"
+#	funcRead_cache
 	# -------------------------------------------------------------------------
-#	funcMenu_list
-#	funcDownload
-#	funcGet_module_in_dvd
+	funcMenu_list
+	funcDownload
+	funcGet_module_in_dvd
 	# -------------------------------------------------------------------------
 	funcMake_conf
-#	funcRemake_initrd
+	funcRemake_initrd
 	# -------------------------------------------------------------------------
-#	funcMake_grub_cfg
-#	funcMake_menu_cfg
+	funcMake_grub_cfg
+	funcMake_menu_cfg
 	# -------------------------------------------------------------------------
-#	funcCopy_iso_image
+	funcCopy_iso_image
 	# -------------------------------------------------------------------------
 	if [[ ! "${USB_NAME}" =~ ^sd[a-z]$ ]]; then
 		funcPrintf "${TXT_RED}error USB device name [/dev/${USB_DEV}]${TXT_RESET}"
 		exit 1
 	fi
 	# -------------------------------------------------------------------------
-#	if [[ USB_NOFORMAT -eq 0 ]]; then
-#		funcUSB_Device_format
-#		funcUSB_Device_inst_bootloader
-#	fi
-#	funcUSB_Device_inst_kbd
-#	funcUSB_Device_inst_grub
-#	funcUSB_Device_inst_menu
+	if [[ USB_NOFORMAT -eq 0 ]]; then
+		funcUSB_Device_format
+		funcUSB_Device_inst_bootloader
+	fi
+	funcUSB_Device_inst_kbd
+	funcUSB_Device_inst_grub
+	funcUSB_Device_inst_menu
 	funcUSB_Device_inst_conf
-#	funcUSB_Device_inst_initrd
-#	funcUSB_Device_inst_iso
+	funcUSB_Device_inst_initrd
+	funcUSB_Device_inst_iso
 	# -------------------------------------------------------------------------
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 	end_time=$(date +%s)
