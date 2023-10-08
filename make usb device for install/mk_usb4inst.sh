@@ -105,8 +105,8 @@
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/mini-bionic-amd64.iso                           ./${WORK_DIRS}/iso/mini/mini-bionic-amd64.iso                       " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/mini-focal-amd64.iso                            ./${WORK_DIRS}/iso/mini/mini-focal-amd64.iso                        " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/debian-10.13.0-amd64-netinst.iso             " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.7.0-amd64-netinst.iso                 ./${WORK_DIRS}/iso/net/debian-11.7.0-amd64-netinst.iso              " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.1.0-amd64-netinst.iso                 ./${WORK_DIRS}/iso/net/debian-12.1.0-amd64-netinst.iso              " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.8.0-amd64-netinst.iso                 ./${WORK_DIRS}/iso/net/debian-11.8.0-amd64-netinst.iso              " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.2.0-amd64-netinst.iso                 ./${WORK_DIRS}/iso/net/debian-12.2.0-amd64-netinst.iso              " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/debian-13.0.0-amd64-netinst.iso              " \ #
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/debian-testing-amd64-netinst.iso             " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc4-amd64-netinst.iso        ./${WORK_DIRS}/iso/net/debian-bookworm-DI-rc4-amd64-netinst.iso     " \ #
@@ -117,14 +117,14 @@
 		"/mnt/hgfs/workspace/Image/linux/almalinux/AlmaLinux-9-latest-x86_64-boot.iso           ./${WORK_DIRS}/iso/net/AlmaLinux-9-latest-x86_64-boot.iso           " \
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-8.8-x86_64-boot.iso                        ./${WORK_DIRS}/iso/net/Rocky-8.8-x86_64-boot.iso                    " \
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-boot.iso                   ./${WORK_DIRS}/iso/net/Rocky-9-latest-x86_64-boot.iso               " \
-		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.6-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-8.6-rtm-minimal-x86_64.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-9.0-rtm-minimal-x86_64.iso      " \
+		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.8-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-8.8-rtm-minimal-x86_64.iso      " \
+		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.2-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-9.2-rtm-minimal-x86_64.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.5-NET-x86_64-Media.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.6-NET-x86_64-Media.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-NET-x86_64-Current.iso    ./${WORK_DIRS}/iso/net/openSUSE-Tumbleweed-NET-x86_64-Current.iso   " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-10.13.0-amd64-DVD-1.iso               " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.7.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/debian-11.7.0-amd64-DVD-1.iso                " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.1.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/debian-12.1.0-amd64-DVD-1.iso                " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.8.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/debian-11.8.0-amd64-DVD-1.iso                " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.2.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/debian-12.2.0-amd64-DVD-1.iso                " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-13.0.0-amd64-DVD-1.iso                " \ #
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-testing-amd64-DVD-1.iso               " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc4-amd64-DVD-1.iso          ./${WORK_DIRS}/iso/dvd/debian-bookworm-DI-rc4-amd64-DVD-1.iso       " \ #
@@ -134,22 +134,22 @@
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-live-server-amd64.iso           " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-live-server-amd64.iso           " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-beta-live-server-amd64.iso         ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-beta-live-server-amd64.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-live-server-amd64.iso                    ./${WORK_DIRS}/iso/dvd/mantic-live-server-amd64.iso                 " \
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-live-server-amd64.iso                    ./${WORK_DIRS}/iso/dvd/mantic-live-server-amd64.iso                 " \ #
 		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-37-1.7.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-37-1.7.iso          " \
 		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-38-1.6.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-38-1.6.iso          " \
 		"/mnt/hgfs/workspace/Image/linux/centos/CentOS-Stream-8-x86_64-latest-dvd1.iso          ./${WORK_DIRS}/iso/dvd/CentOS-Stream-8-x86_64-latest-dvd1.iso       " \
 		"/mnt/hgfs/workspace/Image/linux/centos/CentOS-Stream-9-latest-x86_64-dvd1.iso          ./${WORK_DIRS}/iso/dvd/CentOS-Stream-9-latest-x86_64-dvd1.iso       " \
 		"/mnt/hgfs/workspace/Image/linux/almalinux/AlmaLinux-9-latest-x86_64-dvd.iso            ./${WORK_DIRS}/iso/dvd/AlmaLinux-9-latest-x86_64-dvd.iso            " \
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-8.8-x86_64-dvd1.iso                        ./${WORK_DIRS}/iso/dvd/Rocky-8.8-x86_64-dvd1.iso                    " \
-		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.6-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-8.6-rtm-x86_64.iso              " \
-		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.0-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-9.0-rtm-x86_64.iso              " \
+		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.8-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-8.8-rtm-x86_64.iso              " \
+		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.2-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-9.2-rtm-x86_64.iso              " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.5-DVD-x86_64-Media.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.6-DVD-x86_64-Media.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-DVD-x86_64-Current.iso    ./${WORK_DIRS}/iso/dvd/openSUSE-Tumbleweed-DVD-x86_64-Current.iso   " \
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-dvd.iso                    ./${WORK_DIRS}/iso/dvd/Rocky-9-latest-x86_64-dvd.iso                " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-10.13.0-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/debian-live-10.13.0-amd64-lxde.iso           " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-11.7.0-amd64-lxde.iso               ./${WORK_DIRS}/iso/dvd/debian-live-11.7.0-amd64-lxde.iso            " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-12.1.0-amd64-lxde.iso               ./${WORK_DIRS}/iso/dvd/debian-live-12.1.0-amd64-lxde.iso            " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-11.8.0-amd64-lxde.iso               ./${WORK_DIRS}/iso/dvd/debian-live-11.8.0-amd64-lxde.iso            " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-12.2.0-amd64-lxde.iso               ./${WORK_DIRS}/iso/dvd/debian-live-12.2.0-amd64-lxde.iso            " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/debian-live-13.0.0-amd64-lxde.iso            " \ #
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/debian-live-testing-amd64-lxde.iso           " \
 #		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-bkworm-DI-rc4-amd64-lxde.iso        ./${WORK_DIRS}/iso/dvd/debian-live-bkworm-DI-rc4-amd64-lxde.iso     " \ #
@@ -161,8 +161,8 @@
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-legacy-amd64.iso        " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-beta-desktop-amd64.iso             ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-beta-desktop-amd64.iso          " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-beta-desktop-legacy-amd64.iso      ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-beta-desktop-legacy-amd64.iso   " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-amd64.iso                        ./${WORK_DIRS}/iso/dvd/mantic-desktop-amd64.iso                     " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-legacy-amd64.iso                 ./${WORK_DIRS}/iso/dvd/mantic-desktop-legacy-amd64.iso              " \
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-amd64.iso                        ./${WORK_DIRS}/iso/dvd/mantic-desktop-amd64.iso                     " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-legacy-amd64.iso                 ./${WORK_DIRS}/iso/dvd/mantic-desktop-legacy-amd64.iso              " \ #
 	)
 
 # --- CPU architecture --------------------------------------------------------
@@ -1772,37 +1772,50 @@ function funcMake_conf_kickstart () {
 	declare CONF_NAME="$1"
 	declare WRK_PATH
 	declare WRK_TEXT
-	declare -i VER_NUM
+	declare -i VER_RHL=0
+	declare -i VER_NUM=0
 	declare ARC_NUM
 	declare NET_DVD
+	declare FLABEL
 
 	for I in "${!ARRAY_LIST[@]}"
 	do
 		ARRAY_LINE=(${ARRAY_LIST[${I}]})
 		DIR_NAME="${ARRAY_LINE[2]%/*}"
 		BASE_NAME="${ARRAY_LINE[2]##*/}"
+#		ARC_NUM="x86_64"
+#		VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $2;}')
+#		VER_RHL=${VER_NUM}
+#		WRK_TEXT="${ARRAY_LINE[0]}"
+		NET_DVD="${ARRAY_LINE[3]##*/}"
+		FLABEL="$(LANG=C blkid -s LABEL "${ARRAY_LINE[3]}/${ARRAY_LINE[4]}" | awk -F '\"' '{print $2;}')"
 		case "${ARRAY_LINE[0]}" in
 			fedora       )
-				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $5;}')
 				ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $4;}')
 #				NET_DVD=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $3;}')
+				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $5;}')
+				VER_RHL=$((${VER_NUM} - 29))
+				WRK_TEXT="${ARRAY_LINE[0]}"
 				;;
 			centos       )
-				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $3;}')
 				if [[ ${VER_NUM} -eq 8 ]]; then
 					ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $4;}')
 				else
 					ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $5;}')
 				fi
 #				NET_DVD=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $6;}')
+				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $3;}')
+				VER_RHL=${VER_NUM}
+				WRK_TEXT="${ARRAY_LINE[0]} .*${VER_NUM}"
 				;;
 			almalinux    )
-				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $2;}')
 				ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $4;}')
 #				NET_DVD=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $5;}')
+				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $2;}')
+				VER_RHL=${VER_NUM}
+				WRK_TEXT="${ARRAY_LINE[0]}"
 				;;
 			rockylinux   )
-				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $2;}')
 				if [[ ${VER_NUM} -eq 8 ]]; then
 					ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $3;}')
 #					NET_DVD=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $4;}')
@@ -1810,117 +1823,89 @@ function funcMake_conf_kickstart () {
 					ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $4;}')
 #					NET_DVD=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $5;}')
 				fi
+				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $2;}')
+				VER_RHL=${VER_NUM}
+				WRK_TEXT="${ARRAY_LINE[0]}"
 				;;
 			miraclelinux )
-				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $2;}')
 				if [[ "${BASE_NAME}" =~ .*minimal.* ]]; then
 					ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $6;}')
 				else
 					ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $5;}')
 				fi
 #				NET_DVD=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $4;}')
+				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-.]' '{print $2;}')
+				VER_RHL=${VER_NUM}
+				WRK_TEXT="${ARRAY_LINE[0]}"
 				;;
 			*            )
 				continue
 				;;
 		esac
-		NET_DVD="${ARRAY_LINE[3]##*/}"
-#		WRK_TEXT="$(echo "${BASE_NAME,,}" | sed -n -e 's/^\([A-Za-z0-9]*\)-.*$/\1/p')"
-		WRK_TEXT="${ARRAY_LINE[0]}"
-		WRK_PATH="./${WORK_DIRS}/img/kickstart/ks_${WRK_TEXT}-${VER_NUM}_${NET_DVD}.cfg"
-#		if [[ -f "${WRK_PATH}" ]]; then
-#			continue
-#		fi
+		WRK_PATH="./${WORK_DIRS}/img/kickstart/ks_${ARRAY_LINE[0]}-${VER_NUM}_${NET_DVD}.cfg"
 		cp --preserve=timestamps --no-preserve=mode,ownership --backup "${CONF_NAME}" "${WRK_PATH}"
-		sed -i "${WRK_PATH}"                    \
-		    -e "s/_HOSTNAME_/${ARRAY_LINE[0]}/" \
-		    -e '/^url /   s/^/#/g'              \
-		    -e '/^repo /  s/^/#/g'
-		case "${ARRAY_LINE[0]}" in
-			centos       ) WRK_TEXT="${ARRAY_LINE[0]} .*${VER_NUM}";;
-			*            ) WRK_TEXT="${ARRAY_LINE[0]}";;
-		esac
-		sed -i "${WRK_PATH}"                    \
-		    -e "/^#.*(${WRK_TEXT}).*$/,/^$/ { " \
-		    -e "/url[[:blank:]]\+/  s/^#//    " \
-		    -e "/repo[[:blank:]]\+/ s/^#//  } "
+		sed -i "${WRK_PATH}"                              \
+		    -e "s/_HOSTNAME_/${ARRAY_LINE[0]}/"           \
+		    -e '/^%post/,/^%end/                      { ' \
+		    -e '/#dnf -y install/    s/^#//             ' \
+		    -e '/#rpm --import/      s/^#//             ' \
+		    -e "s/\$releasever/${VER_RHL}/g             " \
+		    -e "s/\$basearch/${ARC_NUM}/g             } " \
+		    -e "/harddrive/ s/\$label/${FLABEL}/"
 		case "${ARRAY_LINE[3]##*/}" in
-			dvd )
-#				sed -i "${WRK_PATH}"                      \
-#				    -e '/^#cdrom/ s/^#//'
-#				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
-#				    -e "/^url[[:blank:]]\+/  s/^/#/     " \
-#				    -e "/^repo[[:blank:]]\+/ s/^/#/   } "
-				sed -i "${WRK_PATH}"                      \
-				    -e '/^cdrom/ s/^/#/'                  \
-				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
-				    -e "/^url[[:blank:]]\+/  s/^/#/     " \
-				    -e "/^repo[[:blank:]]\+/ s/^/#/   } "
-				case "${ARRAY_LINE[0]}" in
-					fedora       )
-						IFS= INS_STR=$(
-							cat <<- '_EOT_' | sed -z -e 's/\n/\\n/g'
-								url         --url=file:///mnt/install/repo
-								repo    --baseurl=file:///mnt/install/repo --name=Local
-								repo --mirrorlist=https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-$releasever&arch=$basearch&country=JP --name=Everything
-_EOT_
-						)
-						IFS=${OLD_IFS}
-						;;
-					*            )
-						IFS= INS_STR=$(
-							cat <<- '_EOT_' | sed -z -e 's/\n/\\n/g'
-								url         --url=file:///mnt/install/repo/BaseOS
-								repo    --baseurl=file:///mnt/install/repo/AppStream --name=Local
-_EOT_
-						)
-						IFS=${OLD_IFS}
-						;;
-				esac
-				sed -i "${WRK_PATH}"                      \
-				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
-				    -e "/^$/i ${INS_STR}"                 \
-				    -e '/^$/d                         } '
+			*dvd* )
+				sed -i "${WRK_PATH}"                              \
+				    -e '/^cdrom/      s/^/#/'                     \
+				    -e '/^#harddrive/ s/^#//'                     \
+				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/           { " \
+				    -e '/^url[[:blank:]]\+/  s/^/#/             ' \
+				    -e '/^repo[[:blank:]]\+/ s/^/#/           } '
 				;;
 			*   )
-				sed -i "${WRK_PATH}"                      \
-				    -e '/^cdrom/  s/^/#/'
-#				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/   { " \
-#				    -e "/^#url[[:blank:]]\+/  s/^#//    " \
-#				    -e "/^#repo[[:blank:]]\+/ s/^#//  } "
+				sed -i "${WRK_PATH}"                              \
+				    -e '/^cdrom/     s/^/#/'                      \
+				    -e '/^harddrive/ s/^/#/'                      \
+				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/           { " \
+				    -e '/^#url[[:blank:]]\+/  s/^#//            ' \
+				    -e '/^#repo[[:blank:]]\+/ s/^#//          } '
 				;;
 		esac
 		case "${ARRAY_LINE[0]}" in
 			fedora       )
-				sed -i "${WRK_PATH}"                       \
-				    -e '/%anaconda/,/%end/{/^#/! s/^/#/g}'
+				sed -i "${WRK_PATH}"                              \
+				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/           { " \
+				    -e '/^#repo[[:blank:]]\+/ s/^#//          } ' \
+				    -e '/%anaconda/,/%end/ {/^#/! s/^/#/g}'
 				;;
 			centos       )
-				sed -i "${WRK_PATH}"                       \
-				    -e '/--name=epel/      s/^#//'         \
-				    -e '/--name=epel_next/ s/^#//'         \
-				    -e '/--name=Remi/      s/^#//'         \
-				    -e '/%packages/,/%end/ s/^#//g'
+				sed -i "${WRK_PATH}"                              \
+				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/           { " \
+				    -e '/^#repo[[:blank:]]\+/ s/^#//          } '
 				;;
 			almalinux    )
-				sed -i "${WRK_PATH}"                       \
-				    -e '/%anaconda/,/%end/{/^#/! s/^/#/g}'
+				sed -i "${WRK_PATH}"                              \
+				    -e '/%anaconda/,/%end/ {/^#/! s/^/#/g}'
 				;;
 			rockylinux   )
-				sed -i "${WRK_PATH}"                       \
-				    -e '/%anaconda/,/%end/{/^#/! s/^/#/g}'
+				sed -i "${WRK_PATH}"                              \
+				    -e '/%anaconda/,/%end/ {/^#/! s/^/#/g}'
 				;;
 			miraclelinux )
-				sed -i "${WRK_PATH}"                                         \
-				    -e "/^#.*${ARRAY_LINE[0]}.*$/,/^$/                   { " \
-				    -e "/url[[:blank:]]\+/  s/\$releasever/${VER_NUM}/g    " \
-				    -e "/url[[:blank:]]\+/  s/\$basearch/${ARC_NUM}/g      " \
-				    -e "/repo[[:blank:]]\+/ s/\$releasever/${VER_NUM}/g    " \
-				    -e "/repo[[:blank:]]\+/ s/\$basearch/${ARC_NUM}/g    } "
+				sed -i "${WRK_PATH}"                              \
+				    -e "/^#.*(${WRK_TEXT}).*$/,/^$/           { " \
+				    -e "s/\$releasever/${VER_NUM}/g             " \
+				    -e "s/\$basearch/${ARC_NUM}/g             } "
 				;;
 			*            )
 				;;
 		esac
+		if [[ ${VER_RHL} -le 8 ]]; then
+			declare TMZONE=$(awk '$1=="timezone" {print $2;}' "${WRK_PATH}")
+			declare NTPSVR=$(awk -F '[ \t=]' '$1=="timesource" {print $3;}' "${WRK_PATH}")
+			sed -i "${WRK_PATH}"                                                      \
+			    -e "s~^\(timezone\).*\$~\1 ${TMZONE} --isUtc --ntpservers=${NTPSVR}~" \
+			    -e '/timesource/d'
+		fi
 	done
 }
 
@@ -3743,38 +3728,39 @@ main () {
 		funcUSB_Device_select
 	fi
 	# -------------------------------------------------------------------------
-	funcMake_directory
-	funcMake_link
+#	funcMake_directory
+#	funcMake_link
 	# -------------------------------------------------------------------------
-#	touch "${CACHE_FNAME}"
-#	funcRead_cache
-	funcMenu_list
-	funcDownload
-	funcGet_module_in_dvd
+	touch "${CACHE_FNAME}"
+	funcRead_cache
+	# -------------------------------------------------------------------------
+#	funcMenu_list
+#	funcDownload
+#	funcGet_module_in_dvd
 	# -------------------------------------------------------------------------
 	funcMake_conf
-	funcRemake_initrd
+#	funcRemake_initrd
 	# -------------------------------------------------------------------------
-	funcMake_grub_cfg
-	funcMake_menu_cfg
+#	funcMake_grub_cfg
+#	funcMake_menu_cfg
 	# -------------------------------------------------------------------------
-	funcCopy_iso_image
+#	funcCopy_iso_image
 	# -------------------------------------------------------------------------
 	if [[ ! "${USB_NAME}" =~ ^sd[a-z]$ ]]; then
 		funcPrintf "${TXT_RED}error USB device name [/dev/${USB_DEV}]${TXT_RESET}"
 		exit 1
 	fi
 	# -------------------------------------------------------------------------
-	if [[ USB_NOFORMAT -eq 0 ]]; then
-		funcUSB_Device_format
-		funcUSB_Device_inst_bootloader
-	fi
-	funcUSB_Device_inst_kbd
-	funcUSB_Device_inst_grub
-	funcUSB_Device_inst_menu
+#	if [[ USB_NOFORMAT -eq 0 ]]; then
+#		funcUSB_Device_format
+#		funcUSB_Device_inst_bootloader
+#	fi
+#	funcUSB_Device_inst_kbd
+#	funcUSB_Device_inst_grub
+#	funcUSB_Device_inst_menu
 	funcUSB_Device_inst_conf
-	funcUSB_Device_inst_initrd
-	funcUSB_Device_inst_iso
+#	funcUSB_Device_inst_initrd
+#	funcUSB_Device_inst_iso
 	# -------------------------------------------------------------------------
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 	end_time=$(date +%s)
