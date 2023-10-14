@@ -365,6 +365,7 @@
 	TARGET_LIST+=("${TARGET_LIST_DVD[@]}")
 
 #	TARGET_LIST=(
+#		"debian             testing             https://cdimage.debian.org/cdimage/weekly-builds/${ARC_TYPE}/iso-dvd/debian-testing-${ARC_TYPE}-DVD-1.iso                                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \
 #	)
 
 # --- config file -------------------------------------------------------------
@@ -3829,7 +3830,9 @@ main () {
 	fi
 	# -------------------------------------------------------------------------
 	funcMake_directory
-	funcMake_link
+	if [[ -d "/mnt/hgfs/." ]]; then
+		funcMake_link
+	fi
 	# -------------------------------------------------------------------------
 #	touch "${CACHE_FNAME}"
 #	funcRead_cache
