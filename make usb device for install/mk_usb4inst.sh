@@ -133,7 +133,7 @@
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.3-live-server-amd64.iso            ./${WORK_DIRS}/iso/dvd/ubuntu-22.04.3-live-server-amd64.iso         " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-live-server-amd64.iso           " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-live-server-amd64.iso           " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-beta-live-server-amd64.iso         ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-beta-live-server-amd64.iso      " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-live-server-amd64.iso      " \
 #		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-live-server-amd64.iso                    ./${WORK_DIRS}/iso/dvd/mantic-live-server-amd64.iso                 " \ #
 		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-37-1.7.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-37-1.7.iso          " \
 		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-38-1.6.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-38-1.6.iso          " \
@@ -159,8 +159,8 @@
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-desktop-amd64.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-amd64.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-legacy-amd64.iso        " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-beta-desktop-amd64.iso             ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-beta-desktop-amd64.iso          " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-beta-desktop-legacy-amd64.iso      ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-beta-desktop-legacy-amd64.iso   " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-desktop-amd64.iso          " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-desktop-legacy-amd64.iso   " \
 #		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-amd64.iso                        ./${WORK_DIRS}/iso/dvd/mantic-desktop-amd64.iso                     " \ #
 #		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-legacy-amd64.iso                 ./${WORK_DIRS}/iso/dvd/mantic-desktop-legacy-amd64.iso              " \ #
 	)
@@ -210,7 +210,7 @@
 		"debian-11.*-${ARC_TYPE}-DVD-1.iso"                 \
 		"debian-10.*-${ARC_TYPE}-DVD-1.iso"                 \
 #		"mantic-live-server-${ARC_TYPE}.iso"                \ #
-		"ubuntu-23.10*-beta-live-server-${ARC_TYPE}.iso"    \
+		"ubuntu-23.10*-live-server-${ARC_TYPE}.iso"         \
 		"ubuntu-23.04*-live-server-${ARC_TYPE}.iso"         \
 		"ubuntu-22.10*-live-server-${ARC_TYPE}.iso"         \
 		"ubuntu-22.04*-live-server-${ARC_TYPE}.iso"         \
@@ -235,14 +235,14 @@
 		"debian-live-11.*-${ARC_TYPE}-lxde.iso"             \
 		"debian-live-10.*-${ARC_TYPE}-lxde.iso"             \
 #		"mantic-desktop-${ARC_TYPE}.iso"                    \ #
-		"ubuntu-23.10*-beta-desktop-${ARC_TYPE}.iso"        \
+		"ubuntu-23.10*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-23.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-22.10*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-22.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-20.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-18.04*-desktop-${ARC_TYPE}.iso"             \
 #		"mantic-desktop-legacy-${ARC_TYPE}.iso"             \ #
-		"ubuntu-23.10*-beta-desktop-legacy-${ARC_TYPE}.iso" \
+		"ubuntu-23.10*-desktop-legacy-${ARC_TYPE}.iso"      \
 		"ubuntu-23.04*-desktop-legacy-${ARC_TYPE}.iso"      \
 		"[]"                                                \
 		"[ Live system ]"                                   \
@@ -253,14 +253,14 @@
 		"debian-live-11.*-${ARC_TYPE}-lxde.iso"             \
 		"debian-live-10.*-${ARC_TYPE}-lxde.iso"             \
 #		"mantic-desktop-${ARC_TYPE}.iso"                    \ #
-		"ubuntu-23.10*-beta-desktop-${ARC_TYPE}.iso"        \
+		"ubuntu-23.10*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-23.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-22.10*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-22.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-20.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-18.04*-desktop-${ARC_TYPE}.iso"             \
 #		"mantic-desktop-legacy-${ARC_TYPE}.iso"             \ #
-		"ubuntu-23.10*-beta-desktop-legacy-${ARC_TYPE}.iso" \
+		"ubuntu-23.10*-desktop-legacy-${ARC_TYPE}.iso"      \
 		"ubuntu-23.04*-desktop-legacy-${ARC_TYPE}.iso"      \
 		"[]"                                                \
 	)
@@ -330,7 +330,7 @@
 		"ubuntu             jammy.server        https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-04-21  2032-04-21  -           Jammy_Jellyfish     Ubuntu_22.04(Jammy_Jellyfish):LTS   " \
 # x		"ubuntu             kinetic.server      https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-live-server-${ARC_TYPE}.iso                                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
 		"ubuntu             lunar.server        https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
-		"ubuntu             mantic.server       https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-beta-live-server-${ARC_TYPE}.iso                                                     ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+		"ubuntu             mantic.server       https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-live-server-${ARC_TYPE}.iso                                                          ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
 #		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-dvd-x86_64-37-[0-9.]*.iso                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2022-11-15  2023-11-14  -           kernel_6.0          -                                   " \ #
 		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2023-04-18  2024-05-14  -           kernel_6.2          -                                   " \
 #		"centos             -                   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                          ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2019-xx-xx  2024-05-31  -           RHEL_8.x            -                                   " \ #
@@ -353,8 +353,8 @@
 #		"ubuntu             kinetic.desktop     https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                             ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
 		"ubuntu             lunar.desktop       https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
 		"ubuntu             lunar.legacy        http://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
-		"ubuntu             mantic.desktop      https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-beta-desktop-${ARC_TYPE}.iso                                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
-		"ubuntu             mantic.legacy       http://cdimage.ubuntu.com/releases/mantic/beta/ubuntu-23.10[0-9.]*-beta-desktop-legacy-${ARC_TYPE}.iso                                      ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+#		"ubuntu             mantic.desktop      https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
+		"ubuntu             mantic.legacy       https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                       ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
 #		"ubuntu             mantic.server       http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
 #		"ubuntu             mantic.desktop      http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-${ARC_TYPE}.iso                                                                 ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
 #		"ubuntu             mantic.legacy       http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-${ARC_TYPE}.iso                                                        ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
@@ -363,6 +363,9 @@
 	TARGET_LIST+=("${TARGET_LIST_MINI[@]}")
 	TARGET_LIST+=("${TARGET_LIST_NET[@]}")
 	TARGET_LIST+=("${TARGET_LIST_DVD[@]}")
+
+#	TARGET_LIST=(
+#	)
 
 # --- config file -------------------------------------------------------------
 	#idx: value
@@ -2226,23 +2229,120 @@ function funcChangeStatusFile () {
 
 # --- add module --------------------------------------------------------------
 function funcAdd_module () {
+#	declare -r -a KERNEL_LIST=(              \
+#		"kernel/crypto"                      \
+#		"kernel/drivers/ata"                 \
+#		"kernel/drivers/base"                \
+#		"kernel/drivers/block"               \
+#		"kernel/drivers/char"                \
+#		"kernel/drivers/md"                  \
+#		"kernel/drivers/message"             \
+#		"kernel/drivers/misc"                \
+#		"kernel/drivers/mmc"                 \
+#		"kernel/drivers/media"               \
+#		"kernel/drivers/nvme"                \
+#		"kernel/drivers/scsi"                \
+#		"kernel/drivers/usb"                 \
+#		"kernel/fs/exfat"                    \
+#		"kernel/fs/ext4"                     \
+#		"kernel/fs/fat"                      \
+#		"kernel/fs/fuse"                     \
+#		"kernel/fs/fuse3"                    \
+#		"kernel/fs/jbd2"                     \
+#		"kernel/fs/nls"                      \
+#		"kernel/fs/ntfs"                     \
+#		"kernel/fs/ntfs3"                    \
+#		"kernel/lib"                         \
+#	)
+
 	declare -r -a KERNEL_LIST=(              \
 		"kernel/crypto"                      \
+		"kernel/drivers/acpi"                \
+		"kernel/drivers/ata"                 \
+		"kernel/drivers/base"                \
+		"kernel/drivers/bcma"                \
 		"kernel/drivers/block"               \
-		"kernel/drivers/message"             \
+		"kernel/drivers/bus"                 \
+		"kernel/drivers/char"                \
+		"kernel/drivers/clk"                 \
+		"kernel/drivers/dax"                 \
+		"kernel/drivers/dca"                 \
+		"kernel/drivers/dma"                 \
+		"kernel/drivers/extcon"              \
+		"kernel/drivers/firewire"            \
+		"kernel/drivers/fpga"                \
+		"kernel/drivers/gpio"                \
+		"kernel/drivers/gpu"                 \
+		"kernel/drivers/hid"                 \
+		"kernel/drivers/hv"                  \
+		"kernel/drivers/i2c"                 \
+		"kernel/drivers/iio"                 \
+		"kernel/drivers/infiniband"          \
+		"kernel/drivers/input"               \
+		"kernel/drivers/iommu"               \
+		"kernel/drivers/leds"                \
+		"kernel/drivers/mcb"                 \
 		"kernel/drivers/md"                  \
+		"kernel/drivers/media"               \
+		"kernel/drivers/message"             \
+		"kernel/drivers/mfd"                 \
 		"kernel/drivers/misc"                \
 		"kernel/drivers/mmc"                 \
+		"kernel/drivers/mtd"                 \
+		"kernel/drivers/mux"                 \
+		"kernel/drivers/net"                 \
+		"kernel/drivers/ntb"                 \
+		"kernel/drivers/nvdimm"              \
 		"kernel/drivers/nvme"                \
+		"kernel/drivers/parport"             \
+		"kernel/drivers/pci"                 \
+		"kernel/drivers/pcmcia"              \
+		"kernel/drivers/phy"                 \
+		"kernel/drivers/pinctrl"             \
+		"kernel/drivers/platform"            \
+		"kernel/drivers/power"               \
+		"kernel/drivers/pwm"                 \
+		"kernel/drivers/regulator"           \
+		"kernel/drivers/reset"               \
+		"kernel/drivers/rpmsg"               \
+		"kernel/drivers/rtc"                 \
 		"kernel/drivers/scsi"                \
+		"kernel/drivers/siox"                \
+		"kernel/drivers/slimbus"             \
+		"kernel/drivers/spi"                 \
+		"kernel/drivers/spmi"                \
+		"kernel/drivers/ssb"                 \
+		"kernel/drivers/target"              \
+		"kernel/drivers/thunderbolt"         \
+		"kernel/drivers/ufs"                 \
+		"kernel/drivers/uio"                 \
+		"kernel/drivers/usb"                 \
+		"kernel/drivers/vfio"                \
+		"kernel/drivers/vhost"               \
+		"kernel/drivers/video"               \
+		"kernel/drivers/virtio"              \
+		"kernel/drivers/xen"                 \
+		"kernel/fs/btrfs"                    \
+		"kernel/fs/cifs"                     \
 		"kernel/fs/exfat"                    \
-		"kernel/fs/ext4"                     \
+		"kernel/fs/f2fs"                     \
 		"kernel/fs/fat"                      \
+		"kernel/fs/fscache"                  \
 		"kernel/fs/fuse"                     \
-		"kernel/fs/fuse3"                    \
-		"kernel/fs/jbd2"                     \
+		"kernel/fs/isofs"                    \
+		"kernel/fs/jfs"                      \
+		"kernel/fs/lockd"                    \
+		"kernel/fs/netfs"                    \
+		"kernel/fs/nfs"                      \
+		"kernel/fs/nfs_common"               \
+		"kernel/fs/nls"                      \
 		"kernel/fs/ntfs"                     \
 		"kernel/fs/ntfs3"                    \
+		"kernel/fs/overlayfs"                \
+		"kernel/fs/reiserfs"                 \
+		"kernel/fs/smbfs_common"             \
+		"kernel/fs/udf"                      \
+		"kernel/fs/xfs"                      \
 		"kernel/lib"                         \
 	)
 
