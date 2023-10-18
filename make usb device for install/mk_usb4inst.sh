@@ -120,7 +120,7 @@
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.8-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-8.8-rtm-minimal-x86_64.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.2-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-9.2-rtm-minimal-x86_64.iso      " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.5-NET-x86_64-Media.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.6-NET-x86_64-Media.iso      " \
+#		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.6-NET-x86_64-Media.iso      " \ #
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-NET-x86_64-Current.iso    ./${WORK_DIRS}/iso/net/openSUSE-Tumbleweed-NET-x86_64-Current.iso   " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-10.13.0-amd64-DVD-1.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.8.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/debian-11.8.0-amd64-DVD-1.iso                " \
@@ -131,9 +131,9 @@
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-server-amd64.iso                 ./${WORK_DIRS}/iso/dvd/ubuntu-18.04.6-server-amd64.iso              " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-live-server-amd64.iso            ./${WORK_DIRS}/iso/dvd/ubuntu-20.04.6-live-server-amd64.iso         " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.3-live-server-amd64.iso            ./${WORK_DIRS}/iso/dvd/ubuntu-22.04.3-live-server-amd64.iso         " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-live-server-amd64.iso           " \
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-live-server-amd64.iso           " \ #
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-live-server-amd64.iso           " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-live-server-amd64.iso      " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-live-server-amd64.iso           " \
 #		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-live-server-amd64.iso                    ./${WORK_DIRS}/iso/dvd/mantic-live-server-amd64.iso                 " \ #
 		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-37-1.7.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-37-1.7.iso          " \
 		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-38-1.6.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-38-1.6.iso          " \
@@ -144,7 +144,7 @@
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.8-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-8.8-rtm-x86_64.iso              " \
 		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.2-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-9.2-rtm-x86_64.iso              " \
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.5-DVD-x86_64-Media.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.6-DVD-x86_64-Media.iso      " \
+#		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.6-DVD-x86_64-Media.iso      " \ #
 		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-DVD-x86_64-Current.iso    ./${WORK_DIRS}/iso/dvd/openSUSE-Tumbleweed-DVD-x86_64-Current.iso   " \
 		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-dvd.iso                    ./${WORK_DIRS}/iso/dvd/Rocky-9-latest-x86_64-dvd.iso                " \
 		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-10.13.0-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/debian-live-10.13.0-amd64-lxde.iso           " \
@@ -156,11 +156,11 @@
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-18.04.6-desktop-amd64.iso             " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-20.04.6-desktop-amd64.iso             " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.3-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-22.04.3-desktop-amd64.iso             " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-desktop-amd64.iso               " \
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-desktop-amd64.iso               " \ #
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-amd64.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-legacy-amd64.iso        " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-desktop-amd64.iso          " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-desktop-legacy-amd64.iso   " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10.1-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-23.10.1-desktop-amd64.iso             " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-desktop-legacy-amd64.iso        " \
 #		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-amd64.iso                        ./${WORK_DIRS}/iso/dvd/mantic-desktop-amd64.iso                     " \ #
 #		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-legacy-amd64.iso                 ./${WORK_DIRS}/iso/dvd/mantic-desktop-legacy-amd64.iso              " \ #
 	)
@@ -350,10 +350,10 @@
 		"ubuntu             bionic.desktop      https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           Bionic_Beaver       Ubuntu_18.04(Bionic_Beaver):LTS     " \
 #		"ubuntu             focal.desktop       https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2020-04-23  2030-04-23  -           Focal_Fossa         Ubuntu_20.04(Focal_Fossa):LTS       " \ #
 #		"ubuntu             jammy.desktop       https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2022-04-21  2032-04-21  -           Jammy_Jellyfish     Ubuntu_22.04(Jammy_Jellyfish):LTS   " \ #
-#		"ubuntu             kinetic.desktop     https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                             ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
+# x		"ubuntu             kinetic.desktop     https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                             ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
 		"ubuntu             lunar.desktop       https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
 		"ubuntu             lunar.legacy        http://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
-#		"ubuntu             mantic.desktop      https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
+		"ubuntu             mantic.desktop      https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
 		"ubuntu             mantic.legacy       https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                       ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
 #		"ubuntu             mantic.server       http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
 #		"ubuntu             mantic.desktop      http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-${ARC_TYPE}.iso                                                                 ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
@@ -3930,7 +3930,7 @@ main () {
 #   x   hirsute     ubuntu 21.04    Hirsute Hippo           end of support    #
 #   x   impish      ubuntu 21.10    Impish Indri            end of support    #
 #   .   jammy       ubuntu 22.04    Jammy Jellyfish LTS                       #
-#   x   kinetic     ubuntu 22.10    Kinetic Kudu                              #
+#   x   kinetic     ubuntu 22.10    Kinetic Kudu            end of support    #
 #   .   lunar       ubuntu 23.04    Lunar Lobster                             #
 #   .   mantic      ubuntu 23.10    Mantic Minotaur         test version      #
 ### eof #######################################################################
