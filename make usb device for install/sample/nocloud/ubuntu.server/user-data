@@ -39,7 +39,8 @@ autoinstall:
     layout:
       name: lvm
       match:
-        ssd: yes
+        path: /dev/nvme0n1
+#       ssd: yes
     swap:
       size: 0
 # -----------------------------------------------------------------------------
