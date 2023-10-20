@@ -534,8 +534,11 @@
 
 	declare -a PACKAGE_FILE=()
 
+# --- USB device name for install's (sdX) -------------------------------------
+	declare USB_INST="sda3"
+
 # --- USB device name (sdX) ---------------------------------------------------
-	declare USB_NAME=""
+	declare USB_NAME="sda3"
 
 # --- USB device format -------------------------------------------------------
 	declare USB_FORMAT=""
@@ -3097,7 +3100,7 @@ function funcMake_menu_sub () {
 	declare    RDIRS=""
 	declare    RFILE=""
 	declare    PSEED=""
-	declare -r DEVNO="sdb3"
+#	declare -r DEVNO="sdb3"
 	# --- get media information -----------------------------------------------
 	if [[ -z "${FPATH}" ]]; then
 		return
@@ -3159,7 +3162,7 @@ function funcMake_menu_sub () {
 						    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 						    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 						    echo "Loading \${isofile} ..."
-						    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${DEVNO} iso-scan/ask_which_iso="[${DEVNO}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
+						    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${USB_INST} iso-scan/ask_which_iso="[${USB_INST}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
 						    initrd  (\${cfgpart})/install.amd/\${isodist}/initrd.gz
 						}
 _EOT_
@@ -3191,7 +3194,7 @@ _EOT_
 				    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				    echo "Loading \${isofile} ..."
-				    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${DEVNO} iso-scan/ask_which_iso="[${DEVNO}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
+				    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${USB_INST} iso-scan/ask_which_iso="[${USB_INST}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
 				    initrd  (\${cfgpart})/install.amd/\${isodist}/initrd.gz
 				}
 _EOT_
@@ -3283,8 +3286,26 @@ _EOT_
 				}
 _EOT_
 			;;
+		CentOS-*.iso                 )
+			# https://access.redhat.com/documentation/ja-jp/red_hat_enterprise_linux/8/html-single/performing_an_advanced_rhel_8_installation/index#kickstart-and-advanced-boot-options_installing-rhel-as-an-experienced-user
+			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+				menuentry '${ENTRY}' {
+				    set isofile="/images/${FNAME}"
+				    set ksstart="inst.ks=hd:/dev/${USB_INST}:/kickstart/ks_${DISTR}-${VERNO%%\.*}_${DTYPE}.cfg"
+				    set isoscan="iso-scan/filename=\${isofile}"
+				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+				    set options="inst.sshd rd.live.ram"
+				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				    echo "Loading \${isofile} ..."
+				    loopback loop (\${isopart})\${isofile}
+				    probe --label --set=hdlabel (loop)
+				    linux  (loop)/images/pxeboot/vmlinuz inst.repo=hd:/dev/${USB_INST}:\${isofile} quiet \${isoscan} \${ksstart}
+				    initrd (loop)/images/pxeboot/initrd.img
+				    loopback --delete loop
+				}
+_EOT_
+			;;
 		AlmaLinux-*.iso              | \
-		CentOS-*.iso                 | \
 		Fedora-*.iso                 | \
 		MIRACLELINUX-*.iso           | \
 		Rocky-*.iso                  )
@@ -3292,7 +3313,7 @@ _EOT_
 			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
 				menuentry '${ENTRY}' {
 				    set isofile="/images/${FNAME}"
-				    set ksstart="inst.ks=hd:/dev/sdb3:/kickstart/ks_${DISTR}-${VERNO%%\.*}_${DTYPE}.cfg"
+				    set ksstart="inst.ks=hd:/dev/${USB_INST}:/kickstart/ks_${DISTR}-${VERNO%%\.*}_${DTYPE}.cfg"
 				    set isoscan="iso-scan/filename=\${isofile}"
 				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				    set options="inst.sshd rd.live.ram"
@@ -3310,7 +3331,7 @@ _EOT_
 			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
 				menuentry '${ENTRY}' {
 				    set isofile="/images/${FNAME}"
-				    set autoxml="autoyast=usb:/sdb3/autoyast/autoinst_leap.xml"
+				    set autoxml="autoyast=usb:/${USB_INST}/autoyast/autoinst_leap.xml"
 				    set isoscan="iso-scan/filename=\${isofile}"
 				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
@@ -3326,7 +3347,7 @@ _EOT_
 			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
 				menuentry '${ENTRY}' {
 				    set isofile="/images/${FNAME}"
-				    set autoxml="autoyast=usb:/sdb3/autoyast/autoinst_tumbleweed.xml"
+				    set autoxml="autoyast=usb:/${USB_INST}/autoyast/autoinst_tumbleweed.xml"
 				    set isoscan="iso-scan/filename=\${isofile}"
 				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
@@ -3786,6 +3807,7 @@ function funcOption () {
 	do
 		case $1 in
 			-d | --device   ) shift; funcUSB_Device_select "$1";;
+			-s | --source   ) shift; USB_INST="$1";;
 			-f | --format   ) shift; USB_FORMAT="$1";;
 			-n | --noformat )        USB_NOFORMAT=1;;
 			* )
