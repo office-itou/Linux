@@ -2,23 +2,33 @@
 <!DOCTYPE profile>
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
   <add-on t="map">
-    <add_on_others t="list">
+    <add_on_products t="list">
       <listentry t="map">
-        <media_url>http://download.opensuse.org/update/leap/15.3/oss/</media_url>
-        <name>repo-update</name>
+        <media_url>http://download.opensuse.org/distribution/leap/15.5/repo/oss/</media_url>
+        <name>repo-oss</name>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>http://download.opensuse.org/distribution/leap/15.3/repo/non-oss/</media_url>
+        <media_url>http://download.opensuse.org/distribution/leap/15.5/repo/non-oss/</media_url>
         <name>repo-non-oss</name>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>http://download.opensuse.org/distribution/leap/15.3/repo/oss/</media_url>
-        <name>repo-oss</name>
+        <media_url>http://download.opensuse.org/update/leap/15.5/oss/</media_url>
+        <name>repo-update</name>
         <product_dir>/</product_dir>
       </listentry>
-    </add_on_others>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/leap/15.5/non-oss/</media_url>
+        <name>repo-update-non-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/leap/15.5/sle/</media_url>
+        <name>repo-sle-update</name>
+        <product_dir>/</product_dir>
+      </listentry>
+    </add_on_products>
   </add-on>
   <bootloader t="map">
     <global t="map">
@@ -27,10 +37,9 @@
     </global>
   </bootloader>
   <deploy_image t="map">
-    <image_installation t="boolean">false</image_installation>
+    <image_installation t="boolean">true</image_installation>
   </deploy_image>
   <general t="map">
-    <ask-list t="list"/>
     <mode t="map">
       <confirm t="boolean">false</confirm>
       <second_stage t="boolean">false</second_stage>
@@ -47,24 +56,24 @@
       <hosts_entry t="map">
         <host_address>192.168.1.1</host_address>
         <names t="list">
-          <name>sv-suse.workgroup sv-suse</name>
+          <name>sv-opensuse.workgroup sv-opensuse</name>
         </names>
       </hosts_entry>
     </hosts>
   </host>
-  <keyboard t="map">
-    <keymap>japanese</keymap>
-  </keyboard>
   <language t="map">
     <language>ja_JP</language>
     <languages>en_US,ja_JP</languages>
   </language>
   <networking t="map">
     <dns t="map">
-      <hostname>sv-suse.workgroup</hostname>
+      <hostname>sv-opensuse.workgroup</hostname>
       <nameservers t="list">
         <nameserver>192.168.1.254</nameserver>
       </nameservers>
+      <searchlist t="list">
+        <search>workgroup</search>
+      </searchlist>
     </dns>
     <interfaces t="list">
       <interface t="map">
@@ -87,14 +96,15 @@
         </route>
       </routes>
     </routing>
-    <start_immediately t="boolean">true</start_immediately>
   </networking>
   <ntp-client t="map">
+    <ntp_policy>auto</ntp_policy>
     <ntp_servers t="list">
       <ntp_server t="map">
         <address>ntp.nict.jp</address>
       </ntp_server>
     </ntp_servers>
+    <ntp_sync>systemd</ntp_sync>
   </ntp-client>
   <partitioning t="list">
     <drive t="map">
@@ -109,12 +119,21 @@
     </drive>
   </partitioning>
   <scripts t="map">
-    <init-scripts t="list">
+    <chroot-scripts t="list">
       <script t="map">
-        <debug t="boolean">true</debug>
-        <filename>zzz_sudoers.sh</filename>
+        <chrooted t="boolean">true</chrooted>
+        <filename>zzz_update.sh</filename>
+        <interpreter>shell</interpreter>
         <source>#!/bin/sh
-
+zypper --non-interactive --terse update
+zypper --non-interactive --terse dist-upgrade,
+exit 0</source>
+      </script>
+      <script t="map">
+        <chrooted t="boolean">true</chrooted>
+        <filename>zzz_sudoers.sh</filename>
+        <interpreter>shell</interpreter>
+        <source>#!/bin/sh
 chmod u+w /etc/sudoers
 sed -i.orig /etc/sudoers \
     -e 's/^\(Defaults.*targetpw\)/# \1/g' \
@@ -123,15 +142,25 @@ sed -i.orig /etc/sudoers \
 chmod u-w /etc/sudoers
 exit 0</source>
       </script>
-    </init-scripts>
+    </chroot-scripts>
   </scripts>
+  <services-manager t="map">
+    <default_target>graphical</default_target>
+    <services t="map">
+      <enable t="list">
+        <service>named</service>
+        <service>nmb</service>
+        <service>smb</service>
+        <service>sshd</service>
+      </enable>
+    </services>
+  </services-manager>
   <software t="map">
+    <do_online_update t="boolean">true</do_online_update>
     <install_recommended t="boolean">true</install_recommended>
+    <instsource/>
     <packages t="list">
       <package>bind</package>
-<!--
-      <package>chromium</package>
--->
       <package>clamav</package>
       <package>chrony</package>
       <package>dhcpd-pools</package>
@@ -181,12 +210,4 @@ exit 0</source>
       <username>root</username>
     </user>
   </users>
-  <services-manager t="map">
-    <default_target>graphical</default_target>
-    <services t="map">
-      <enable t="list">
-        <service>sshd</service>
-      </enable>
-    </services>
-  </services-manager>
 </profile>
