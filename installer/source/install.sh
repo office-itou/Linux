@@ -1679,17 +1679,31 @@ _EOT_
 			fi
 			cp -p ${DIR_DHCP}/${FIL_DHCP}.orig ${DIR_DHCP}/${FIL_DHCP}
 			cat <<- _EOT_ | sed -e 's/^ //g' > ${DIR_DHCP}/${FIL_DHCP}
+				option arch code 93 = unsigned integer 16;
+				
 				subnet ${IP4_NTWK[0]} netmask ${IP4_MASK[0]} {
-				 	option time-servers ${NTP_NAME};
+				 	range ${RNG_DHCP};
 				 	option domain-name-servers ${IP4_ADDR[0]};
 				 	option domain-name "${WGP_NAME}";
-				 	range ${RNG_DHCP};
 				 	option routers ${IP4_GATE};
-				 	option subnet-mask ${IP4_MASK[0]};
 				 	option broadcast-address ${IP4_BCST[0]};
-				 	option netbios-dd-server ${IP4_ADDR[0]};
 				 	default-lease-time 3600;
 				 	max-lease-time 86400;
+				
+				#	option time-servers ${NTP_NAME};
+				#	option subnet-mask ${IP4_MASK[0]};
+				#	option netbios-dd-server ${IP4_ADDR[0]};
+				
+				#	group {
+				#		next-server ${IP4_ADDR[0]};
+				#		if option arch = 00:07 or option arch = 00:09 {
+				#			filename "bootnetx64.efi";
+				#		} else {
+				#			filename "pxelinux.0";
+				#		}
+				
+				#		host PC-Client01 { hardware ethernet xx:xx:xx:xx:xx:xx; }
+				#	}
 				}
 
 _EOT_
@@ -1701,9 +1715,17 @@ _EOT_
 				cp -p /etc/default/isc-dhcp-server /etc/default/isc-dhcp-server.orig
 			fi
 			cp -p /etc/default/isc-dhcp-server.orig /etc/default/isc-dhcp-server
-			sed -i /etc/default/isc-dhcp-server                 \
-			    -e "s/^\(INTERFACESv4\)=.*$/\1=${NIC_ARRY[0]}/" \
-			    -e 's/^INTERFACESv6=/#&/'
+			sed -i /etc/default/isc-dhcp-server              \
+			    -e '/DHCPDv4_CONF/ s/^#//'                   \
+			    -e '/DHCPDv4_PID/  s/^#//'                   \
+			    -e '/INTERFACESv4/ s/".*"/"${NIC_ARRY[0]}"/'
+		fi
+		if [ -f /etc/default/tftpd-hpa ]; then
+			fncPrint "--- tftpd-hpa $(fncString ${COL_SIZE} '-')"
+			cp -p /etc/default/tftpd-hpa /etc/default/tftpd-hpa.orig
+			sed -i /etc/default/tftpd-hpa                     \
+			    -e '/TFTP_DIRECTORY/ s%".*"%"/var/lib/tftp"%'
+			mkdir -p /var/lib/tftp
 		fi
 		# -------------------------------------------------------------------------
 		if [ "${IP4_DHCP[0]}" = "auto" ]; then
