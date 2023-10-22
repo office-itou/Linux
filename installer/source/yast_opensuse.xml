@@ -3,6 +3,7 @@
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
   <add-on t="map">
     <add_on_products t="list">
+<!-- leap
       <listentry t="map">
         <media_url>http://download.opensuse.org/distribution/leap/15.5/repo/oss/</media_url>
         <name>repo-oss</name>
@@ -28,6 +29,29 @@
         <name>repo-sle-update</name>
         <product_dir>/</product_dir>
       </listentry>
+leap -->
+<!-- tumbleweed
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/tumbleweed/repo/oss/</media_url>
+        <name>repo-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/tumbleweed/repo/non-oss/</media_url>
+        <name>repo-non-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/tumbleweed/</media_url>
+        <name>repo-update</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/tumbleweed-non-oss/</media_url>
+        <name>repo-update-non-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+tumbleweed -->
     </add_on_products>
   </add-on>
   <bootloader t="map">
