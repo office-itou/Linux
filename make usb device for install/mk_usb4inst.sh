@@ -1939,41 +1939,56 @@ function funcMake_conf_yast () {
 		BASE_NAME="${ARRAY_LINE[2]##*/}"
 		case "${ARRAY_LINE[1]}" in
 			leap       )
-				WRK_PATH="./${WORK_DIRS}/img/autoyast/autoinst_leap.xml"
+#				WRK_PATH="./${WORK_DIRS}/img/autoyast/autoinst_leap.xml"
 #				if [[ -f "${WRK_PATH}" ]]; then
 #					continue
 #				fi
-				cp --preserve=timestamps --no-preserve=mode,ownership --backup "${CONF_NAME}" "${WRK_PATH}"
+#				cp --preserve=timestamps --no-preserve=mode,ownership --backup "${CONF_NAME}" "${WRK_PATH}"
 				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-]' '{print $3;}')
 				ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-]' '{print $5;}')
-				sed -i "${WRK_PATH}"                                                         \
-				    -e "/<media_url>/ s%\(update/leap\)/.*/\(oss\)%\1/${VER_NUM}/\2%"        \
-				    -e "/<media_url>/ s%\(distribution/leap\)/.*/\(repo\)%\1/${VER_NUM}/\2%" \
-				    -e 's%\(<product>\).*\(</product>\)%\1Leap\2%'
+				WRK_PATH="./${WORK_DIRS}/img/autoyast/autoinst_leap_${VER_NUM}.xml"
+				cp --preserve=timestamps --no-preserve=mode,ownership --backup "${CONF_NAME}" "${WRK_PATH}"
+				sed -i "${WRK_PATH}"                                          \
+				    -e "/<media_url>/ s~/\(leap\)/[0-9.]*/~/\1/${VER_NUM}/~g" \
+				    -e "/<media_url>/ s~/\(leap\)/[0-9.]*/~/\1/${VER_NUM}/~g" \
+				    -e 's~\(<product>\).*\(</product>\)~\1Leap\2~'            \
+				    -e '/<add_on_products .*>/,/<\/add_on_products>/      { ' \
+				    -e '/<!-- leap/d                                        ' \
+				    -e '/leap -->/d                                       } '
 				;;
 			tumbleweed )
-				WRK_PATH="./${WORK_DIRS}/img/autoyast/autoinst_tumbleweed.xml"
+#				WRK_PATH="./${WORK_DIRS}/img/autoyast/autoinst_tumbleweed.xml"
 #				if [[ -f "${WRK_PATH}" ]]; then
 #					continue
 #				fi
-				cp --preserve=timestamps --no-preserve=mode,ownership --backup "${CONF_NAME}" "${WRK_PATH}"
+#				cp --preserve=timestamps --no-preserve=mode,ownership --backup "${CONF_NAME}" "${WRK_PATH}"
 				VER_NUM=""
 				ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-]' '{print $4;}')
-				sed -i "${WRK_PATH}"                                                         \
-				    -e '/<media_url>/ s%update/leap/.*/oss%update/tumbleweed%'               \
-				    -e '/<media_url>/ s%distribution/leap/.*/repo%tumbleweed/repo%'          \
-				    -e 's%\(<product>\).*\(</product>\)%\1openSUSE\2%'                       \
-				    -e 's/eth0/ens160/g'
+				WRK_PATH="./${WORK_DIRS}/img/autoyast/autoinst_tumbleweed.xml"
+				cp --preserve=timestamps --no-preserve=mode,ownership --backup "${CONF_NAME}" "${WRK_PATH}"
+				sed -i "${WRK_PATH}"                                          \
+				    -e '/<media_url>/ s~/leap/[0-9.]*/~/tumbleweed/~g'        \
+				    -e '/<media_url>/ s~/leap/[0-9.]*/~/tumbleweed/~g'        \
+				    -e 's~\(<product>\).*\(</product>\)~\1openSUSE\2~'        \
+				    -e 's/eth0/ens160/g'                                      \
+				    -e '/<add_on_products .*>/,/<\/add_on_products>/      { ' \
+				    -e '/<!-- tumbleweed/d                                  ' \
+				    -e '/tumbleweed -->/d                                 } '
 				;;
 		esac
 		case "${ARRAY_LINE[1]}" in
-			*DVD* )
-				sed -i ${WRK_PATH}                                        \
-				    -e '/<image_installation t="boolean">/ s/false/true/'
-				;;
-			* )
-				sed -i ${WRK_PATH}                                        \
-				    -e '/<image_installation t="boolean">/ s/true/false/'
+			leap       | \
+			tumbleweed )
+				case "${ARRAY_LINE[1]}" in
+					*DVD* )
+						sed -i ${WRK_PATH}                                        \
+						    -e '/<image_installation t="boolean">/ s/false/true/'
+						;;
+					* )
+						sed -i ${WRK_PATH}                                        \
+						    -e '/<image_installation t="boolean">/ s/true/false/'
+						;;
+				esac
 				;;
 		esac
 	done
@@ -3343,7 +3358,7 @@ _EOT_
 			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
 				menuentry '${ENTRY}' {
 				    set isofile="/images/${FNAME}"
-				    set autoxml="autoyast=usb:/${USB_INST}/autoyast/autoinst_leap.xml"
+				    set autoxml="autoyast=usb:/${USB_INST}/autoyast/autoinst_leap_${VERNO}.xml"
 				    set isoscan="iso-scan/filename=\${isofile}"
 				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
