@@ -38,6 +38,7 @@
 ##	2023/10/05 000.0000 J.Itou         処理見直し
 ##	2023/10/06 000.0000 J.Itou         リスト更新
 ##	2023/10/13 000.0000 J.Itou         リスト更新: Ubuntu_23.10(Mantic_Minotaur) 更新
+##	2023/10/21 000.0000 J.Itou         リスト更新: openSUSE 15.6 追加 / 処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -106,6 +107,7 @@
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                ./${WORK_DIRS}                              -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso                ./${WORK_DIRS}                              -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
 		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-stable/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                             ./${WORK_DIRS}                              -                                           -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
+		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Media.iso                                      ./${WORK_DIRS}                              -                                           -                   -           yast_opensuse.xml                               2024-06-xx  2025-xx-xx  -           kernel_x.xx.xx      -                                   " \
 		"opensuse           tumbleweed          https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                               ./${WORK_DIRS}                              -                                           -                   -           yast_opensuse.xml                               20xx-xx-xx  20xx-xx-xx  -           kernel_x.x          -                                   " \
 	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                                     5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
 
@@ -131,6 +133,7 @@
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                        ./${WORK_DIRS}                              -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
 		"miraclelinux       -                   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso                        ./${WORK_DIRS}                              -                                           -                   -           kickstart_common.cfg                            2021-10-04  20xx-xx-xx  -           RHEL_x.x            -                                   " \
 		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-stable/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                             ./${WORK_DIRS}                              -                                           -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
+		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso                                      ./${WORK_DIRS}                              -                                           -                   -           yast_opensuse.xml                               2024-06-xx  2025-xx-xx  -           kernel_x.xx.xx      -                                   " \
 		"opensuse           tumbleweed          https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                               ./${WORK_DIRS}                              -                                           -                   -           yast_opensuse.xml                               2021-xx-xx  20xx-xx-xx  -           kernel_x.x          -                                   " \
 		"debian             buster.live         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-10.[0-9.]*-${ARC_TYPE}-lxde.iso      ./${WORK_DIRS}                              -                                           -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \
 		"debian             bullseye.live       https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-11.[0-9.]*-${ARC_TYPE}-lxde.iso         ./${WORK_DIRS}                              -                                           -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \
@@ -2507,6 +2510,16 @@ funcRemaster () {
 							    -e 's/eth0/ens160/g'
 							;;
 					esac
+					case "${CODE_NAME[1]}" in
+						*DVD* )
+							sed -i autoyast/autoinst.xml                              \
+							    -e '/<image_installation t="boolean">/ s/false/true/'
+							;;
+						* )
+							sed -i autoyast/autoinst.xml                              \
+							    -e '/<image_installation t="boolean">/ s/true/false/'
+							;;
+					esac
 					;;
 				* )	;;
 			esac
@@ -3445,7 +3458,8 @@ _EOT_
 # 15.2 :openSUSE Leap      :2020-07-02:2021-12-31: 5.3.18
 # 15.3 :openSUSE Leap      :2021-06-02:2022-11-30: 5.3.18
 # 15.4 :openSUSE Leap      :2022-06-02:2023-xx-xx: 5.14.21
-# 15.5 :openSUSE Leap      :2023-xx-xx:2024-xx-xx: x.xx.xx
+# 15.5 :openSUSE Leap      :2023-06-07:2024-12-31: 5.14.21
+# 15.6 :openSUSE Leap      :2024-06-xx:2025-xx-xx: x.xx.xx
 # xx.x :openSUSE Tumbleweed:20xx-xx-xx:20xx-xx-xx:
 # --- https://ja.wikipedia.org/wiki/MIRACLE_LINUX -----------------------------
 # [https://en.wikipedia.org/wiki/Miracle_Linux]
