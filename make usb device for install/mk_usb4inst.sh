@@ -1968,11 +1968,11 @@ function funcMake_conf_yast () {
 		esac
 		case "${ARRAY_LINE[1]}" in
 			*DVD* )
-				sed -i autoyast/autoinst.xml                              \
+				sed -i ${WRK_PATH}                                        \
 				    -e '/<image_installation t="boolean">/ s/false/true/'
 				;;
 			* )
-				sed -i autoyast/autoinst.xml                              \
+				sed -i ${WRK_PATH}                                        \
 				    -e '/<image_installation t="boolean">/ s/true/false/'
 				;;
 		esac
