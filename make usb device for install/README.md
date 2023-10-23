@@ -1,6 +1,7 @@
 # mk_usb4inst.sh (make usb device for install)
 
 複数のインストールISOファイルに対応したUSBデバイスの作成 (exFAT対応)  
+(当作業では128GBのUSBメモリーの利用を想定)
 
 ## 起動方法
 
@@ -8,7 +9,8 @@ sudo ./mk_usb4inst.sh -d sd[a-z] -n
 
 | オプション | 機能 |
 | --- | --- |
-| -d or --device   | USBデバイスの名前 [sda～sdz] |
+| -d or --device   | 本作業で作成するUSBデバイス名 [sda～sdz] |
+| -s or --source   | インストール作業時のUSBデバイス名 [sda～sdz] (未指定時 sda) |
 | -n or --noformat | フォーマット作業のスキップ (作成済みメディアに対する作業用) |
 
 ## 作業環境
