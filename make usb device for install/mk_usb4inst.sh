@@ -3105,10 +3105,14 @@ function funcMake_menu_sub () {
 	declare -r STR_MENU="$1"
 	declare -r TAB_SPACE="$2"
 	declare -r SUB_MENU="$3"
-	declare -r FPATH="$(find "./${WORK_DIRS}/iso/" -name "${STR_MENU}" \( -type f -o -type l \))"
-	declare -r DNAME="${FPATH%/*}"
-	declare -r FNAME="${FPATH##*/}"
-	declare -r DTYPE="${DNAME##*/}"
+#	declare -r FPATH="$(find "./${WORK_DIRS}/iso/" -name "${STR_MENU}" \( -type f -o -type l \))"
+#	declare -r DNAME="${FPATH%/*}"
+#	declare -r FNAME="${FPATH##*/}"
+#	declare -r DTYPE="${DNAME##*/}"
+	declare    FPATH="$(find "./${WORK_DIRS}/iso/" -name "${STR_MENU}" \( -type f -o -type l \))"
+	declare    DNAME=""
+	declare    FNAME=""
+	declare    DTYPE=""
 	declare -i I
 	declare -i J
 	declare -a ARRAY_LIST=("${TARGET_LIST[@]}")
@@ -3128,267 +3132,268 @@ function funcMake_menu_sub () {
 	declare    RFILE=""
 	declare    PSEED=""
 #	declare -r DEVNO="sdb3"
-	# --- get media information -----------------------------------------------
-	if [[ -z "${FPATH}" ]]; then
-		return
-	fi
-	for I in "${!ARRAY_LIST[@]}"
+	for FPATH in $(find "./${WORK_DIRS}/iso/" -name "${STR_MENU}" \( -type f -o -type l \) | sort -r)
 	do
-		ARRAY_LINE=(${ARRAY_LIST[${I}]})
-		if [[ "${FNAME}" = "${ARRAY_LINE[4]}" ]]; then
-			LABEL="$(LANG=C blkid -s LABEL "${FPATH}" | awk -F '\"' '{print $2;}')"
-			DISTR="${ARRAY_LINE[0]}"
-			CDNEM="${ARRAY_LINE[1]%%.*}"
-			STAMP="${ARRAY_LINE[8]/./ }"
-			ENTRY="$(printf "%-60.60s%20.20s" "${FNAME}" "${STAMP}")"
-			VERNO="$(echo "${FNAME}"   | sed -n -e 's/^.*-\([0-9\.]*\)-.*$/\1/p')"
-			MTYPE="$(echo "${FNAME,,}" | sed -n -e 's/^.*\(live\|dvd\|netinst\|netboot\|server\|boot\|minimal\|net\|rtm\|legacy\|desktop\).*$/\1/p')"
-			break
+		DNAME="${FPATH%/*}"
+		FNAME="${FPATH##*/}"
+		DTYPE="${DNAME##*/}"
+		# --- get media information -------------------------------------------
+		if [[ -z "${FPATH}" ]]; then
+			return
 		fi
-	done
-	if [[ -z "${DISTR}" ]]; then
-		return
-	fi
-#	case "${FNAME}" in
-#		debian-*.iso           | \
-#		ubuntu-*.iso           | \
-#		*-desktop-legacy-*.iso )
-#	case "$(echo "${LABEL,,}" | sed -e 's/^.*\(debian\|ubuntu\).*$/\1/p')" in
-	case "${DISTR}" in
-		debian | \
-		ubuntu )
-			RDIRS="./${WORK_DIRS}/deb/${DISTR}.${CDNEM}.${MTYPE:-desktop}"
-			RFILE="$(find "${RDIRS}" -maxdepth 2 -name 'Release' \( -type f -o -type l \) | sed -n '/\/\(testing\|stable\|oldstable\|oldoldstable\|unstable\)\//!p')"
-			SUITE="$(sed -n 's/^Suite: *//p'    "${RFILE}")"
-			VERNO="$(sed -n 's/^Version: *//p'  "${RFILE}")"
-#			CDNEM="$(sed -n 's/^Codename: *//p' "${RFILE}")"
-			ISCAN="${SUITE}${VERNO:+ - ${VERNO}}"
-			PSEED="preseed.cfg"
-			if [[ -n "${VERNO}" ]] \
-			&& [[ "${DISTR}" = "debian" && ${VERNO%%\.*} -lt 11    \
-			||    "${DISTR}" = "ubuntu" && ${VERNO%%\.*} -lt 20 ]]; then
-				PSEED="preseed_old.cfg"
+		for I in "${!ARRAY_LIST[@]}"
+		do
+			ARRAY_LINE=(${ARRAY_LIST[${I}]})
+			if [[ "${FNAME}" = "${ARRAY_LINE[4]}" ]]; then
+				LABEL="$(LANG=C blkid -s LABEL "${FPATH}" | awk -F '\"' '{print $2;}')"
+				DISTR="${ARRAY_LINE[0]}"
+				CDNEM="${ARRAY_LINE[1]%%.*}"
+				STAMP="${ARRAY_LINE[8]/./ }"
+				ENTRY="$(printf "%-60.60s%20.20s" "${FNAME}" "${STAMP}")"
+				VERNO="$(echo "${FNAME}"   | sed -n -e 's/^.*-\([0-9\.]*\)-.*$/\1/p')"
+				MTYPE="$(echo "${FNAME,,}" | sed -n -e 's/^.*\(live\|dvd\|netinst\|netboot\|server\|boot\|minimal\|net\|rtm\|legacy\|desktop\).*$/\1/p')"
+				break
 			fi
-			;;
-		*            )
-			;;
-	esac
-	# --- make menu block -----------------------------------------------------
-	case "${FNAME}" in
-		mini*.iso                    )
-			;;
-		debian-live-*.iso            )
-			case "${SUB_MENU}" in
-				'[ Unattended installation ]' )
-					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${ENTRY}' {
-						    set isofile="/images/${FNAME}"
-						    set isoscan="\${isofile} (${ISCAN})"
-						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
-						    set preseed="auto=true file=/hd-media/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true"
-						    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-						    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-						    echo "Loading \${isofile} ..."
-						    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${USB_INST} iso-scan/ask_which_iso="[${USB_INST}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
-						    initrd  (\${cfgpart})/install.amd/\${isodist}/initrd.gz
-						}
+		done
+		if [[ -z "${DISTR}" ]]; then
+			return
+		fi
+		case "${DISTR}" in
+			debian | \
+			ubuntu )
+				RDIRS="./${WORK_DIRS}/deb/${DISTR}.${CDNEM}.${MTYPE:-desktop}"
+				RFILE="$(find "${RDIRS}" -maxdepth 2 -name 'Release' \( -type f -o -type l \) | sed -n '/\/\(testing\|stable\|oldstable\|oldoldstable\|unstable\)\//!p')"
+				SUITE="$(sed -n 's/^Suite: *//p'    "${RFILE}")"
+				VERNO="$(sed -n 's/^Version: *//p'  "${RFILE}")"
+#				CDNEM="$(sed -n 's/^Codename: *//p' "${RFILE}")"
+				ISCAN="${SUITE}${VERNO:+ - ${VERNO}}"
+				PSEED="preseed.cfg"
+				if [[ -n "${VERNO}" ]] \
+				&& [[ "${DISTR}" = "debian" && ${VERNO%%\.*} -lt 11    \
+				||    "${DISTR}" = "ubuntu" && ${VERNO%%\.*} -lt 20 ]]; then
+					PSEED="preseed_old.cfg"
+				fi
+				;;
+			*            )
+				;;
+		esac
+		# --- make menu block -------------------------------------------------
+		case "${FNAME}" in
+			mini*.iso                    )
+				;;
+			debian-live-*.iso            )
+				case "${SUB_MENU}" in
+					'[ Unattended installation ]' )
+						cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+							menuentry '${ENTRY}' {
+							    set isofile="/images/${FNAME}"
+							    set isoscan="\${isofile} (${ISCAN})"
+							    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
+							    set preseed="auto=true file=/hd-media/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true"
+							    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+							    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							    echo "Loading \${isofile} ..."
+							    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${USB_INST} iso-scan/ask_which_iso="[${USB_INST}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
+							    initrd  (\${cfgpart})/install.amd/\${isodist}/initrd.gz
+							}
 _EOT_
-					;;
-				*                             )
-					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${ENTRY}' {
-						    set isofile="/images/${FNAME}"
-						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
-						    set preseed="auto=true file=/hd-media/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true"
-						    set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-						    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-						    echo "Loading \${isofile} ..."
-						    linux   (\${cfgpart})/live/\${isodist}/vmlinuz root=\${cfgpart} boot=live components quiet splash findiso=\${isofile} \${locales} fsck.mode=skip
-						    initrd  (\${cfgpart})/live/\${isodist}/initrd.gz
-						}
+						;;
+					*                             )
+						cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+							menuentry '${ENTRY}' {
+							    set isofile="/images/${FNAME}"
+							    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
+							    set preseed="auto=true file=/hd-media/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true"
+							    set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+							    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							    echo "Loading \${isofile} ..."
+							    linux   (\${cfgpart})/live/\${isodist}/vmlinuz root=\${cfgpart} boot=live components quiet splash findiso=\${isofile} \${locales} fsck.mode=skip
+							    initrd  (\${cfgpart})/live/\${isodist}/initrd.gz
+							}
 _EOT_
-					;;
-			esac
-			;;
-		debian-*.iso                 | \
-		ubuntu-1*-server-*.iso       )
-			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-				menuentry '${ENTRY}' {
-				    set isofile="/images/${FNAME}"
-				    set isoscan="\${isofile} (${ISCAN})"
-				    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
-				    set preseed="auto=true file=/hd-media/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true"
-				    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-				    echo "Loading \${isofile} ..."
-				    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${USB_INST} iso-scan/ask_which_iso="[${USB_INST}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
-				    initrd  (\${cfgpart})/install.amd/\${isodist}/initrd.gz
-				}
+						;;
+				esac
+				;;
+			debian-*.iso                 | \
+			ubuntu-1*-server-*.iso       )
+				cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+					menuentry '${ENTRY}' {
+					    set isofile="/images/${FNAME}"
+					    set isoscan="\${isofile} (${ISCAN})"
+					    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
+					    set preseed="auto=true file=/hd-media/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true"
+					    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+					    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+					    echo "Loading \${isofile} ..."
+					    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${USB_INST} iso-scan/ask_which_iso="[${USB_INST}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
+					    initrd  (\${cfgpart})/install.amd/\${isodist}/initrd.gz
+					}
 _EOT_
-			;;
-		ubuntu-1*-desktop-*.iso      | \
-		ubuntu-2[0-2]*-desktop-*.iso | \
-		*-desktop-legacy-*.iso       )
-			case "${SUB_MENU}" in
-				'[ Unattended installation ]' )
-					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${ENTRY}' {
-						    set isofile="/images/${FNAME}"
-						    set isoscan="iso-scan/filename=\${isofile}"
-						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
-						    set preseed="auto=true file=/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true automatic-ubiquity noprompt"
-						    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-						    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-						    echo "Loading \${isofile} ..."
-						    linux   (\${cfgpart})/casper/\${isodist}/vmlinuz boot=casper \${isoscan} \${locales} fsck.mode=skip \${preseed} ---
-						    initrd  (\${cfgpart})/casper/\${isodist}/initrd.gz
-						}
+				;;
+			ubuntu-1*-desktop-*.iso      | \
+			ubuntu-2[0-2]*-desktop-*.iso | \
+			*-desktop-legacy-*.iso       )
+				case "${SUB_MENU}" in
+					'[ Unattended installation ]' )
+						cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+							menuentry '${ENTRY}' {
+							    set isofile="/images/${FNAME}"
+							    set isoscan="iso-scan/filename=\${isofile}"
+							    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
+							    set preseed="auto=true file=/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true automatic-ubiquity noprompt"
+							    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+							    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							    echo "Loading \${isofile} ..."
+							    linux   (\${cfgpart})/casper/\${isodist}/vmlinuz boot=casper \${isoscan} \${locales} fsck.mode=skip \${preseed} ---
+							    initrd  (\${cfgpart})/casper/\${isodist}/initrd.gz
+							}
 _EOT_
-					;;
-				*                             )
-					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${ENTRY}' {
-						    set isofile="/images/${FNAME}"
-						    set isoscan="iso-scan/filename=\${isofile}"
-						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
-						    set preseed="auto=true file=/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true automatic-ubiquity noprompt"
-						    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-						    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-						    echo "Loading \${isofile} ..."
-						    linux   (\${cfgpart})/casper/\${isodist}/vmlinuz boot=casper \${isoscan} \${locales} fsck.mode=skip ---
-						    initrd  (\${cfgpart})/casper/\${isodist}/initrd.gz
-						}
+						;;
+					*                             )
+						cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+							menuentry '${ENTRY}' {
+							    set isofile="/images/${FNAME}"
+							    set isoscan="iso-scan/filename=\${isofile}"
+							    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
+							    set preseed="auto=true file=/preseed/${DISTR}/${PSEED} netcfg/disable_autoconfig=true automatic-ubiquity noprompt"
+							    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+							    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							    echo "Loading \${isofile} ..."
+							    linux   (\${cfgpart})/casper/\${isodist}/vmlinuz boot=casper \${isoscan} \${locales} fsck.mode=skip ---
+							    initrd  (\${cfgpart})/casper/\${isodist}/initrd.gz
+							}
 _EOT_
-					;;
-			esac
-			;;
-		ubuntu-*-desktop-*.iso       | \
-		*-desktop-*.iso              )
-			case "${SUB_MENU}" in
-				'[ Unattended installation ]' )
-					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${ENTRY}' {
-						    set isofile="/images/${FNAME}"
-						    set isoscan="iso-scan/filename=\${isofile}"
-						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
-						    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-						    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/${DISTR}.${MTYPE}/'
-						    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-						    echo "Loading \${isofile} ..."
-						    linux   (\${cfgpart})/casper/\${isodist}/vmlinuz layerfs-path=minimal.standard.live.squashfs --- quiet splash \${isoscan} \${locales} fsck.mode=skip \${nocloud} ip=dhcp ipv6.disable=0 ---
-						    initrd  (\${cfgpart})/casper/\${isodist}/initrd.gz
-						}
+						;;
+				esac
+				;;
+			ubuntu-*-desktop-*.iso       | \
+			*-desktop-*.iso              )
+				case "${SUB_MENU}" in
+					'[ Unattended installation ]' )
+						cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+							menuentry '${ENTRY}' {
+							    set isofile="/images/${FNAME}"
+							    set isoscan="iso-scan/filename=\${isofile}"
+							    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
+							    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+							    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/${DISTR}.${MTYPE}/'
+							    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							    echo "Loading \${isofile} ..."
+							    linux   (\${cfgpart})/casper/\${isodist}/vmlinuz layerfs-path=minimal.standard.live.squashfs --- quiet splash \${isoscan} \${locales} fsck.mode=skip \${nocloud} ip=dhcp ipv6.disable=0 ---
+							    initrd  (\${cfgpart})/casper/\${isodist}/initrd.gz
+							}
 _EOT_
-					;;
-				*                             )
-					cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-						menuentry '${ENTRY}' {
-						    set isofile="/images/${FNAME}"
-						    set isoscan="iso-scan/filename=\${isofile}"
-						    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
-						    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-						    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/${DISTR}.${MTYPE}/'
-						    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-						    echo "Loading \${isofile} ..."
-						    linux   (\${cfgpart})/casper/\${isodist}/vmlinuz layerfs-path=minimal.standard.live.squashfs --- quiet splash \${isoscan} \${locales} fsck.mode=skip
-						    initrd  (\${cfgpart})/casper/\${isodist}/initrd.gz
-						}
+						;;
+					*                             )
+						cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+							menuentry '${ENTRY}' {
+							    set isofile="/images/${FNAME}"
+							    set isoscan="iso-scan/filename=\${isofile}"
+							    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
+							    set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+							    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/${DISTR}.${MTYPE}/'
+							    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							    echo "Loading \${isofile} ..."
+							    linux   (\${cfgpart})/casper/\${isodist}/vmlinuz layerfs-path=minimal.standard.live.squashfs --- quiet splash \${isoscan} \${locales} fsck.mode=skip
+							    initrd  (\${cfgpart})/casper/\${isodist}/initrd.gz
+							}
 _EOT_
-					;;
-			esac
-			;;
-		ubuntu-*.iso                 | \
-		*-live-server-*.iso          )
-			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-				menuentry '${ENTRY}' {
-				    set isofile="/images/${FNAME}"
-				    set isoscan="iso-scan/filename=\${isofile}"
-				    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
-				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/${DISTR}.${MTYPE}/'
-				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-				    echo "Loading \${isofile} ..."
-				    linux   (\${cfgpart})/casper/\${isodist}/vmlinuz boot=casper \${isoscan} \${locales} fsck.mode=skip \${nocloud} ip=dhcp ipv6.disable=0 ---
-				    initrd  (\${cfgpart})/casper/\${isodist}/initrd.gz
-				}
+						;;
+				esac
+				;;
+			ubuntu-*.iso                 | \
+			*-live-server-*.iso          )
+				cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+					menuentry '${ENTRY}' {
+					    set isofile="/images/${FNAME}"
+					    set isoscan="iso-scan/filename=\${isofile}"
+					    set isodist="${DISTR}.${CDNEM}.${MTYPE}"
+					    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+					    set nocloud='autoinstall ds=nocloud-net;s=file:///nocloud/${DISTR}.${MTYPE}/'
+					    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+					    echo "Loading \${isofile} ..."
+					    linux   (\${cfgpart})/casper/\${isodist}/vmlinuz boot=casper \${isoscan} \${locales} fsck.mode=skip \${nocloud} ip=dhcp ipv6.disable=0 ---
+					    initrd  (\${cfgpart})/casper/\${isodist}/initrd.gz
+					}
 _EOT_
-			;;
-		CentOS-*.iso                 )
-			# https://access.redhat.com/documentation/ja-jp/red_hat_enterprise_linux/8/html-single/performing_an_advanced_rhel_8_installation/index#kickstart-and-advanced-boot-options_installing-rhel-as-an-experienced-user
-			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-				menuentry '${ENTRY}' {
-				    set isofile="/images/${FNAME}"
-				    set ksstart="inst.ks=hd:/dev/${USB_INST}:/kickstart/ks_${DISTR}-${VERNO%%\.*}_${DTYPE}.cfg"
-				    set isoscan="iso-scan/filename=\${isofile}"
-				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				    set options="inst.sshd rd.live.ram"
-				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-				    echo "Loading \${isofile} ..."
-				    loopback loop (\${isopart})\${isofile}
-				    probe --label --set=hdlabel (loop)
-				    linux  (loop)/images/pxeboot/vmlinuz inst.repo=hd:/dev/${USB_INST}:\${isofile} quiet \${isoscan} \${ksstart}
-				    initrd (loop)/images/pxeboot/initrd.img
-				    loopback --delete loop
-				}
+				;;
+			CentOS-*.iso                 )
+				# https://access.redhat.com/documentation/ja-jp/red_hat_enterprise_linux/8/html-single/performing_an_advanced_rhel_8_installation/index#kickstart-and-advanced-boot-options_installing-rhel-as-an-experienced-user
+				cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+					menuentry '${ENTRY}' {
+					    set isofile="/images/${FNAME}"
+					    set ksstart="inst.ks=hd:/dev/${USB_INST}:/kickstart/ks_${DISTR}-${VERNO%%\.*}_${DTYPE}.cfg"
+					    set isoscan="iso-scan/filename=\${isofile}"
+					    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+					    set options="inst.sshd rd.live.ram"
+					    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+					    echo "Loading \${isofile} ..."
+					    loopback loop (\${isopart})\${isofile}
+					    probe --label --set=hdlabel (loop)
+					    linux  (loop)/images/pxeboot/vmlinuz inst.repo=hd:/dev/${USB_INST}:\${isofile} quiet \${isoscan} \${ksstart}
+					    initrd (loop)/images/pxeboot/initrd.img
+					    loopback --delete loop
+					}
 _EOT_
-			;;
-		AlmaLinux-*.iso              | \
-		Fedora-*.iso                 | \
-		MIRACLELINUX-*.iso           | \
-		Rocky-*.iso                  )
-			# https://access.redhat.com/documentation/ja-jp/red_hat_enterprise_linux/8/html-single/performing_an_advanced_rhel_8_installation/index#kickstart-and-advanced-boot-options_installing-rhel-as-an-experienced-user
-			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-				menuentry '${ENTRY}' {
-				    set isofile="/images/${FNAME}"
-				    set ksstart="inst.ks=hd:/dev/${USB_INST}:/kickstart/ks_${DISTR}-${VERNO%%\.*}_${DTYPE}.cfg"
-				    set isoscan="iso-scan/filename=\${isofile}"
-				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				    set options="inst.sshd rd.live.ram"
-				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-				    echo "Loading \${isofile} ..."
-				    loopback loop (\${isopart})\${isofile}
-				    probe --label --set=hdlabel (loop)
-				    linux  (loop)/images/pxeboot/vmlinuz inst.repo=hd:LABEL=\${hdlabel} quiet \${isoscan} \${ksstart}
-				    initrd (loop)/images/pxeboot/initrd.img
-				    loopback --delete loop
-				}
+				;;
+			AlmaLinux-*.iso              | \
+			Fedora-*.iso                 | \
+			MIRACLELINUX-*.iso           | \
+			Rocky-*.iso                  )
+				# https://access.redhat.com/documentation/ja-jp/red_hat_enterprise_linux/8/html-single/performing_an_advanced_rhel_8_installation/index#kickstart-and-advanced-boot-options_installing-rhel-as-an-experienced-user
+				cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+					menuentry '${ENTRY}' {
+					    set isofile="/images/${FNAME}"
+					    set ksstart="inst.ks=hd:/dev/${USB_INST}:/kickstart/ks_${DISTR}-${VERNO%%\.*}_${DTYPE}.cfg"
+					    set isoscan="iso-scan/filename=\${isofile}"
+					    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+					    set options="inst.sshd rd.live.ram"
+					    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+					    echo "Loading \${isofile} ..."
+					    loopback loop (\${isopart})\${isofile}
+					    probe --label --set=hdlabel (loop)
+					    linux  (loop)/images/pxeboot/vmlinuz inst.repo=hd:LABEL=\${hdlabel} quiet \${isoscan} \${ksstart}
+					    initrd (loop)/images/pxeboot/initrd.img
+					    loopback --delete loop
+					}
 _EOT_
-			;;
-		openSUSE-Leap-*.iso          )
-			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-				menuentry '${ENTRY}' {
-				    set isofile="/images/${FNAME}"
-				    set autoxml="autoyast=usb:/${USB_INST}/autoyast/autoinst_leap_${VERNO}.xml"
-				    set isoscan="iso-scan/filename=\${isofile}"
-				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-				    echo "Loading \${isofile} ..."
-				    loopback loop (\${isopart})\${isofile}
-				    linux  (loop)/boot/x86_64/loader/linux splash=silent \${autoxml} ifcfg=e*=dhcp
-				    initrd (loop)/boot/x86_64/loader/initrd
-				    loopback --delete loop
-				}
+				;;
+			openSUSE-Leap-*.iso          )
+				cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+					menuentry '${ENTRY}' {
+					    set isofile="/images/${FNAME}"
+					    set autoxml="autoyast=usb:///${USB_INST}/autoyast/autoinst_leap_${VERNO}.xml"
+					    set isoscan="iso-scan/filename=\${isofile}"
+					    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+					    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+					    echo "Loading \${isofile} ..."
+					    loopback loop (\${isopart})\${isofile}
+					    linux  (loop)/boot/x86_64/loader/linux splash=silent \${autoxml} ifcfg=e*=dhcp
+					    initrd (loop)/boot/x86_64/loader/initrd
+					    loopback --delete loop
+					}
 _EOT_
-			;;
-		openSUSE-Tumbleweed*.iso     )
-			cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-				menuentry '${ENTRY}' {
-				    set isofile="/images/${FNAME}"
-				    set autoxml="autoyast=usb:/${USB_INST}/autoyast/autoinst_tumbleweed.xml"
-				    set isoscan="iso-scan/filename=\${isofile}"
-				    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-				    echo "Loading \${isofile} ..."
-				    loopback loop (\${isopart})\${isofile}
-				    linux  (loop)/boot/x86_64/loader/linux splash=silent \${autoxml} ifcfg=e*=dhcp
-				    initrd (loop)/boot/x86_64/loader/initrd
-				    loopback --delete loop
-				}
+				;;
+			openSUSE-Tumbleweed*.iso     )
+				cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
+					menuentry '${ENTRY}' {
+					    set isofile="/images/${FNAME}"
+					    set autoxml="autoyast=usb:///${USB_INST}/autoyast/autoinst_tumbleweed.xml"
+					    set isoscan="iso-scan/filename=\${isofile}"
+					    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+					    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+					    echo "Loading \${isofile} ..."
+					    loopback loop (\${isopart})\${isofile}
+					    linux  (loop)/boot/x86_64/loader/linux splash=silent \${autoxml} ifcfg=e*=dhcp
+					    initrd (loop)/boot/x86_64/loader/initrd
+					    loopback --delete loop
+					}
 _EOT_
-			;;
-		*                            )
-			;;
-	esac
+				;;
+			*                            )
+				;;
+		esac
+	done
 }
 
 # --- make menu.cfg file ------------------------------------------------------
@@ -3878,41 +3883,41 @@ main () {
 		funcUSB_Device_select
 	fi
 	# -------------------------------------------------------------------------
-	funcMake_directory
-	if [[ -d "/mnt/hgfs/." ]]; then
-		funcMake_link
-	fi
+#	funcMake_directory
+#	if [[ -d "/mnt/hgfs/." ]]; then
+#		funcMake_link
+#	fi
 	# -------------------------------------------------------------------------
-#	touch "${CACHE_FNAME}"
-#	funcRead_cache
+	touch "${CACHE_FNAME}"
+	funcRead_cache
 	# -------------------------------------------------------------------------
-	funcMenu_list
-	funcDownload
-	funcGet_module_in_dvd
+#	funcMenu_list
+#	funcDownload
+#	funcGet_module_in_dvd
 	# -------------------------------------------------------------------------
-	funcMake_conf
-	funcRemake_initrd
+#	funcMake_conf
+#	funcRemake_initrd
 	# -------------------------------------------------------------------------
-	funcMake_grub_cfg
+#	funcMake_grub_cfg
 	funcMake_menu_cfg
 	# -------------------------------------------------------------------------
-	funcCopy_iso_image
+#	funcCopy_iso_image
 	# -------------------------------------------------------------------------
 	if [[ ! "${USB_NAME}" =~ ^sd[a-z]$ ]]; then
 		funcPrintf "${TXT_RED}error USB device name [/dev/${USB_DEV}]${TXT_RESET}"
 		exit 1
 	fi
 	# -------------------------------------------------------------------------
-	if [[ USB_NOFORMAT -eq 0 ]]; then
-		funcUSB_Device_format
-		funcUSB_Device_inst_bootloader
-	fi
-	funcUSB_Device_inst_kbd
+#	if [[ USB_NOFORMAT -eq 0 ]]; then
+#		funcUSB_Device_format
+#		funcUSB_Device_inst_bootloader
+#	fi
+#	funcUSB_Device_inst_kbd
 	funcUSB_Device_inst_grub
 	funcUSB_Device_inst_menu
-	funcUSB_Device_inst_conf
-	funcUSB_Device_inst_initrd
-	funcUSB_Device_inst_iso
+#	funcUSB_Device_inst_conf
+#	funcUSB_Device_inst_initrd
+#	funcUSB_Device_inst_iso
 	# -------------------------------------------------------------------------
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 	end_time=$(date +%s)
