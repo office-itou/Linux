@@ -32,6 +32,7 @@
 ##	2023/05/22 000.0000 J.Itou         リスト更新
 ##	2023/07/29 000.0000 J.Itou         リスト更新
 ##	2023/08/27 000.0000 J.Itou         処理見直し(curl --http1.1)
+##	2023/10/23 000.0000 J.Itou         処理見直し(service有無)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get -y install mmdebstrap squashfs-tools xorriso
@@ -39,6 +40,15 @@
 # debootstrap for stable/testing cdrom
 #  debian: sudo apt-get install ubuntu-keyring (ubuntuから入手)
 #  ubuntu: sudo apt-get install debian-archive-keyring
+#  ----------------------------------------------------------------------------
+#  debian: https://deb.debian.org/debian/pool/main/d/debian-archive-keyring/
+#        : https://deb.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2023.3+deb12u1_all.deb
+#        : sudo dpkg -x debian-archive-keyring_2023.3+deb12u1_all.deb debian
+#        : ls -l debian/usr/share/keyrings/
+#  ubuntu: http://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/
+#        : http://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2021.03.26_all.deb
+#        : sudo dpkg -x ubuntu-keyring_2021.03.26_all.deb ubuntu
+#        : ls -l ubuntu/usr/share/keyrings/
 # *****************************************************************************
 #	set -n								# 構文エラーのチェック
 #	set -x								# コマンドと引数の展開を表示
@@ -159,7 +169,7 @@ fncInitialize () {
 #				"miraclelinux"        ) SYS_CODE=`awk                    '{gsub("\"",""); print $4;}' /etc/miraclelinux-release` ;;
 #				"almalinux"           ) SYS_CODE=`awk                    '{gsub("\"",""); print $3;}' /etc/redhat-release`       ;;
 #				"opensuse-leap"       ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`           ;;
-				"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`           ;;
+#				"opensuse-tumbleweed" ) SYS_CODE=`awk -F '[=-]' '$1=="ID" {gsub("\"",""); print $3;}' /etc/os-release`           ;;
 				*                     )                                                                                          ;;
 			esac
 		fi
@@ -177,7 +187,7 @@ fncInitialize () {
 #				"miraclelinux"        ) SYS_NOOP=`echo "${SYS_VNUM} >=  8"       | bc`;;
 #				"almalinux"           ) SYS_NOOP=`echo "${SYS_VNUM} >=  9"       | bc`;;
 #				"opensuse-leap"       ) SYS_NOOP=`echo "${SYS_VNUM} >= 15.2"     | bc`;;
-				"opensuse-tumbleweed" ) SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`;;
+#				"opensuse-tumbleweed" ) SYS_NOOP=`echo "${SYS_VNUM} >= 20201002" | bc`;;
 				*                     )                                               ;;
 			esac
 		fi
@@ -642,7 +652,7 @@ fncMake_inst_net_sh () {
 		 	fncPrint "--- change system control $(fncString ${COL_SIZE} '-')"
 		 	fncSystemctl  enable clamav-freshclam
 		 	fncSystemctl  enable ssh
-		 	if [ "`systemctl is-enabled named 2> /dev/null || :`" != "" ]; then
+		 	if [ "`systemctl list-unit-files -t service | grep -E '^named.service'`" != "" ]; then
 		 		fncSystemctl enable named
 		 	else
 		 		fncSystemctl enable bind9
@@ -650,14 +660,14 @@ fncMake_inst_net_sh () {
 		 	fncSystemctl  enable smbd
 		 	fncSystemctl  enable nmbd
 		 	fncSystemctl disable isc-dhcp-server
-		 	if [ "`systemctl is-enabled isc-dhcp-server6 2> /dev/null || :`" != "" ]; then
+		 	if [ "`systemctl list-unit-files -t service | grep -E '^isc-dhcp-server6.service'`" != "" ]; then
 		 		fncSystemctl disable isc-dhcp-server6
 		 	fi
 		 	fncSystemctl disable minidlna
-		 	if [ "`systemctl is-enabled unattended-upgrades 2> /dev/null || :`" != "" ]; then
+		 	if [ "`systemctl list-unit-files -t service | grep -E '^unattended-upgrades.service'`" != "" ]; then
 		 		fncSystemctl disable unattended-upgrades
 		 	fi
-		 	if [ "`systemctl is-enabled brltty 2> /dev/null || :`" != "" ]; then
+		 	if [ "`systemctl list-unit-files -t service | grep -E '^brltty.service'`" != "" ]; then
 		 		fncSystemctl disable brltty-udev
 		 		fncSystemctl disable brltty
 		 	fi
@@ -666,7 +676,7 @@ fncMake_inst_net_sh () {
 		 		"impish"  | \
 		 		"jammy"   | \
 		 		"kinetic" )
-		 			if [ "`systemctl is-enabled systemd-udev-settle 2> /dev/null || :`" != "" ]; then
+		 			if [ "`systemctl list-unit-files -t service | grep -E '^systemd-udev-settle.service'`" != "" ]; then
 		 				fncSystemctl disable systemd-udev-settle
 		 			fi
 		 			;;
@@ -1540,6 +1550,30 @@ _EOT_
 	ls -lthLgG --time-style="+%Y/%m/%d %H:%M:%S" "${PGM_DIR}/${PGM_NAME}/${DVD_NAME}" 2> /dev/null | awk '{gsub(/.*\//,"",$6); print $4,$5,$3,$6;}'
 }
 
+# === forced unmount ==========================================================
+fncForced_unmount () {
+	fncPrint "-- Forced unmount $(fncString ${COL_SIZE} '-')"
+	# --- マウント強制解除 ----------------------------------------------------
+	MONT_LIST="`mount | grep "${DIR_WRK#*/}" | awk '{print $3;}'`"
+	if [ "${MONT_LIST}" != "" ]; then
+		fncPrint "-- Unmount $(fncString ${COL_SIZE} '-')"
+		for POINT in ${MONT_LIST}
+		do
+			set +e
+			mountpoint -q "${POINT}"
+			if [ $? -eq 0 ]; then
+				if [ "`basename ${POINT}`" = "dev" ]; then
+					fncPrint "--- unmount ${POINT}/pts $(fncString ${COL_SIZE} '-')"
+					umount -q "${POINT}/pts" || umount -q -lf "${POINT}/pts"
+				fi
+				fncPrint "--- unmount ${POINT} $(fncString ${COL_SIZE} '-')"
+				umount -q "${POINT}" || umount -q -lf "${POINT}"
+			fi
+			set -e
+		done
+	fi
+}
+
 # === main ====================================================================
 	fncInitialize
 	fncOption $@
@@ -1570,24 +1604,7 @@ _EOT_
 	DIR_TOP="${PGM_DIR}/${PGM_NAME}/${TARGET_DIST}.${TARGET_SUITE}.${TARGET_ARCH}"
 	DIR_WRK="${WRK_DIR}/${PGM_NAME}/${TARGET_DIST}.${TARGET_SUITE}.${TARGET_ARCH}/work"
 	# --- マウント強制解除 ----------------------------------------------------
-	MONT_LIST="`mount | grep "${DIR_WRK#*/}" | awk '{print $3;}'`"
-	if [ "${MONT_LIST}" != "" ]; then
-		fncPrint "-- Unmount $(fncString ${COL_SIZE} '-')"
-		for POINT in ${MONT_LIST}
-		do
-			set +e
-			mountpoint -q "${POINT}"
-			if [ $? -eq 0 ]; then
-				if [ "`basename ${POINT}`" = "dev" ]; then
-					fncPrint "--- unmount ${POINT}/pts $(fncString ${COL_SIZE} '-')"
-					umount -q "${POINT}/pts" || umount -q -lf "${POINT}/pts"
-				fi
-				fncPrint "--- unmount ${POINT} $(fncString ${COL_SIZE} '-')"
-				umount -q "${POINT}" || umount -q -lf "${POINT}"
-			fi
-			set -e
-		done
-	fi
+	fncForced_unmount
 	# -------------------------------------------------------------------------
 	fncPrint "-- Initialize $(fncString ${COL_SIZE} '-')"
 	# --- ディレクトリー作成 --------------------------------------------------
@@ -1602,6 +1619,7 @@ _EOT_
 	fncMake_9999_user_conf
 	fncMake_9999_user_setting
 	fncRun_mmdebstrap
+	fncForced_unmount
 	fncMake_dvd_image
 	# -------------------------------------------------------------------------
 	fncPrint "-- Termination $(fncString ${COL_SIZE} '-')"
