@@ -14,10 +14,6 @@ sudo ./mk_usb4inst.sh -d sdX [ -s sdX ] [ -f ntfs ]
 | -f or --format ntfs | フォーマットの種類 [ntfs] (未指定時 exFAT) |  
 | -n or --noformat    | フォーマット作業のスキップ (作成済みメディアに対する作業用) |  
   
-> [!NOTE]  
-> **openSUSE** のDVD版は **NTFS** でのみ利用可能  
-> （ **exFAT** でメディア検索ができない）  
-  
 ## 作業環境  
   
 ### OS  
@@ -51,7 +47,7 @@ sudo ./mk_usb4inst.sh -d sdX [ -s sdX ] [ -f ntfs ]
   
 ## USBメモリーの構成  
   
-### パーティション構成
+### パーティション構成  
   
 | NAME | TYPE | TRAN | FSTYPE | FSVER | LABEL   | SIZE   | VENDOR   | MODEL           |  
 | ---  | ---  | ---  | ---    | ---   | ---     | ---:   | ---      | ---             |  
@@ -62,7 +58,7 @@ sudo ./mk_usb4inst.sh -d sdX [ -s sdX ] [ -f ntfs ]
   
 (lsblk -o NAME,TYPE,TRAN,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdX)  
   
-### ディレクトリー/ファイル構成
+### ディレクトリー/ファイル構成  
   
 ``` text:  
 sdX3: \  
@@ -287,3 +283,43 @@ sdX3: \
             preseed_server.cfg  
             preseed_sub_command.sh  
 ```  
+  
+## 参考  
+  
+### ディストリビューション一覧  
+  
+| ディストリビューション | カーネル | NTFS  fmt | exFAT fmt |  
+| ---                    | ---      | :---:     | :---:     |  
+| Debian 10              | 4.19.0   | ○        | ○        |  
+| Debian 11              | 5.10.0   | ○        | ○        |  
+| Debian 12              | 6.1.0    | ○        | ○        |  
+| Debian 13 (testing)    | 6.5.0    | △(DVD)   | ○        |  
+| Ubuntu 20.04           | 5.4.0    | ○        | ○        |  
+| Ubuntu 22.04           | 5.15.0   | ○        | ○        |  
+| Ubuntu 23.04           | 6.2.0    | ○        | ○        |  
+| Ubuntu 23.10           | 6.5.0    | ○        | ○        |  
+| Fedora 37              | 6.2      | ×        | ○        |  
+| Fedora 38              | 6.5      | ×        | ○        |  
+| CentOS-Stream 9        | 5.14.0   | ×        | ○        |  
+| AlmaLinux 9            | 5.14.0   | ×        | ○        |  
+| MIRACLELINUX 9         | 5.14.0   | ×        | ○        |  
+| Rocky 9                | 5.14.0   | ×        | ○        |  
+| openSUSE Leap 15.5     | 5.14.21  | △(DVD)   | △(NET)   |  
+| openSUSE Leap 15.6     | 5.14.21  | △(DVD)   | △(NET)   |  
+| openSUSE Tumbleweed    | 6.5.8    | △(DVD)   | △(NET)   |  
+  
+  ○：対応
+  △：DVD版またはNET版のみ対応
+  ×：非対応（当シェルの改修が必要）
+  
+> [!NOTE]  
+> USBメモリーのISOイメージが起動に失敗した時は以下を確認してみて下さい。  
+>  
+> ls /lib/modules/カーネルバージョン/kernel/fs/  
+>  
+> sdX3のフォーマットと同じ **exfat** または **ntfs** のディレクトリーが無い場合は失敗します。  
+> （カーネルに含まれているバージョンでは起動可）  
+>  
+> 現状でDebian/Ubuntuの未リリース版はメディアとダウンロードモジュールの間でカーネルバージョンの不一致が発生しエラーが発生する事があります。  
+> （当シェルの改修が必要）  
+  
