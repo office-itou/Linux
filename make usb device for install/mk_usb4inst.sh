@@ -1931,6 +1931,10 @@ function funcMake_conf_yast () {
 	declare BASE_NAME
 	declare CONF_NAME="$1"
 	declare LABEL
+	declare VER_NUM=""
+	declare ARC_NUM=""
+	declare MED_TYPE=""
+	declare WRK_PATH=""
 
 	for I in "${!ARRAY_LIST[@]}"
 	do
@@ -1946,7 +1950,8 @@ function funcMake_conf_yast () {
 #				cp --preserve=timestamps --no-preserve=mode,ownership --backup "${CONF_NAME}" "${WRK_PATH}"
 				VER_NUM=$(echo "${BASE_NAME}" | awk -F '[-]' '{print $3;}')
 				ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-]' '{print $5;}')
-				WRK_PATH="./${WORK_DIRS}/img/autoyast/autoinst_leap_${VER_NUM}.xml"
+				MED_TYPE="$(echo "${BASE_NAME,,}" | sed -n -e 's/^.*\(live\|dvd\|netinst\|netboot\|server\|boot\|minimal\|net\|rtm\|legacy\|desktop\).*$/\1/p')"
+				WRK_PATH="./${WORK_DIRS}/img/autoyast/autoinst_leap_${VER_NUM}_${MED_TYPE}.xml"
 				cp --preserve=timestamps --no-preserve=mode,ownership --backup "${CONF_NAME}" "${WRK_PATH}"
 				sed -i "${WRK_PATH}"                                          \
 				    -e "/<media_url>/ s~/\(leap\)/[0-9.]*/~/\1/${VER_NUM}/~g" \
@@ -1964,7 +1969,8 @@ function funcMake_conf_yast () {
 #				cp --preserve=timestamps --no-preserve=mode,ownership --backup "${CONF_NAME}" "${WRK_PATH}"
 				VER_NUM=""
 				ARC_NUM=$(echo "${BASE_NAME}" | awk -F '[-]' '{print $4;}')
-				WRK_PATH="./${WORK_DIRS}/img/autoyast/autoinst_tumbleweed.xml"
+				MED_TYPE="$(echo "${BASE_NAME,,}" | sed -n -e 's/^.*\(live\|dvd\|netinst\|netboot\|server\|boot\|minimal\|net\|rtm\|legacy\|desktop\).*$/\1/p')"
+				WRK_PATH="./${WORK_DIRS}/img/autoyast/autoinst_tumbleweed_${MED_TYPE}.xml"
 				cp --preserve=timestamps --no-preserve=mode,ownership --backup "${CONF_NAME}" "${WRK_PATH}"
 				sed -i "${WRK_PATH}"                                          \
 				    -e '/<media_url>/ s~/leap/[0-9.]*/~/tumbleweed/~g'        \
@@ -1979,7 +1985,7 @@ function funcMake_conf_yast () {
 		case "${ARRAY_LINE[1]}" in
 			leap       | \
 			tumbleweed )
-				case "${ARRAY_LINE[1]}" in
+				case "${ARRAY_LINE[2]}" in
 					*DVD* )
 						sed -i ${WRK_PATH}                                        \
 						    -e '/<image_installation t="boolean">/ s/false/true/'
@@ -3362,13 +3368,13 @@ _EOT_
 				cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
 					menuentry '${ENTRY}' {
 					    set isofile="/images/${FNAME}"
-					    set autoxml="autoyast=usb:///${USB_INST}/autoyast/autoinst_leap_${VERNO}.xml"
+					    set autoxml="autoyast=usb://${USB_INST}/autoyast/autoinst_leap_${VERNO}_${MTYPE}.xml"
 					    set isoscan="iso-scan/filename=\${isofile}"
 					    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 					    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 					    echo "Loading \${isofile} ..."
 					    loopback loop (\${isopart})\${isofile}
-					    linux  (loop)/boot/x86_64/loader/linux splash=silent \${autoxml} ifcfg=e*=dhcp
+					    linux  (loop)/boot/x86_64/loader/linux splash=silent root=(\${isopart}) install=hd:\${isofile} \${autoxml} ifcfg=e*=dhcp
 					    initrd (loop)/boot/x86_64/loader/initrd
 					    loopback --delete loop
 					}
@@ -3378,13 +3384,13 @@ _EOT_
 				cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
 					menuentry '${ENTRY}' {
 					    set isofile="/images/${FNAME}"
-					    set autoxml="autoyast=usb:///${USB_INST}/autoyast/autoinst_tumbleweed.xml"
+					    set autoxml="autoyast=usb://${USB_INST}/autoyast/autoinst_tumbleweed_${MTYPE}.xml"
 					    set isoscan="iso-scan/filename=\${isofile}"
 					    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 					    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 					    echo "Loading \${isofile} ..."
 					    loopback loop (\${isopart})\${isofile}
-					    linux  (loop)/boot/x86_64/loader/linux splash=silent \${autoxml} ifcfg=e*=dhcp
+					    linux  (loop)/boot/x86_64/loader/linux splash=silent root=(\${isopart}) install=hd:\${isofile} \${autoxml} ifcfg=e*=dhcp
 					    initrd (loop)/boot/x86_64/loader/initrd
 					    loopback --delete loop
 					}
@@ -3869,7 +3875,7 @@ main () {
 		COL_SIZE=80
 	fi
 	# --- test ----------------------------------------------------------------
-#	funcColorTest
+##	funcColorTest
 	# --- main ----------------------------------------------------------------
 	start_time=$(date +%s)
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing start${TXT_RESET}"
@@ -3883,41 +3889,41 @@ main () {
 		funcUSB_Device_select
 	fi
 	# -------------------------------------------------------------------------
-#	funcMake_directory
-#	if [[ -d "/mnt/hgfs/." ]]; then
-#		funcMake_link
-#	fi
+	funcMake_directory
+	if [[ -d "/mnt/hgfs/." ]]; then
+		funcMake_link
+	fi
 	# -------------------------------------------------------------------------
-	touch "${CACHE_FNAME}"
-	funcRead_cache
+##	touch "${CACHE_FNAME}"
+##	funcRead_cache
 	# -------------------------------------------------------------------------
-#	funcMenu_list
-#	funcDownload
-#	funcGet_module_in_dvd
+	funcMenu_list
+	funcDownload
+	funcGet_module_in_dvd
 	# -------------------------------------------------------------------------
-#	funcMake_conf
-#	funcRemake_initrd
+	funcMake_conf
+	funcRemake_initrd
 	# -------------------------------------------------------------------------
-#	funcMake_grub_cfg
+	funcMake_grub_cfg
 	funcMake_menu_cfg
 	# -------------------------------------------------------------------------
-#	funcCopy_iso_image
+	funcCopy_iso_image
 	# -------------------------------------------------------------------------
 	if [[ ! "${USB_NAME}" =~ ^sd[a-z]$ ]]; then
 		funcPrintf "${TXT_RED}error USB device name [/dev/${USB_DEV}]${TXT_RESET}"
 		exit 1
 	fi
 	# -------------------------------------------------------------------------
-#	if [[ USB_NOFORMAT -eq 0 ]]; then
-#		funcUSB_Device_format
-#		funcUSB_Device_inst_bootloader
-#	fi
-#	funcUSB_Device_inst_kbd
+	if [[ USB_NOFORMAT -eq 0 ]]; then
+		funcUSB_Device_format
+		funcUSB_Device_inst_bootloader
+	fi
+##	funcUSB_Device_inst_kbd
 	funcUSB_Device_inst_grub
 	funcUSB_Device_inst_menu
-#	funcUSB_Device_inst_conf
-#	funcUSB_Device_inst_initrd
-#	funcUSB_Device_inst_iso
+	funcUSB_Device_inst_conf
+	funcUSB_Device_inst_initrd
+	funcUSB_Device_inst_iso
 	# -------------------------------------------------------------------------
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 	end_time=$(date +%s)
