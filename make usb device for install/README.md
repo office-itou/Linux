@@ -49,3 +49,13 @@ sudo ./mk_usb4inst.sh -d sdX [ -s sdX ] [ -f ntfs ]
 | zstd |
 | po-debconf |
 
+## USBメモリーの構成
+
+master@sv-server:~/mkcd$ lsblk -o NAME,TYPE,TRAN,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb
+| NAME | TYPE | TRAN | FSTYPE | FSVER | LABEL   | SIZE   | MOUNTPOINTS | VENDOR   | MODEL           |
+| ---  | ---  | ---  | ---    | ---   | ---     | ---    | ---         |          | ---             |
+| sdb  | disk | usb  |        |       |         | 112.6G |             | JetFlash | Transcend 128GB |
+| sdb1 | part |      |        |       |         | 1007K  |             |          |                 |
+| sdb2 | part |      | vfat   | FAT32 |         | 256M   |             |          |                 |
+| sdb3 | part |      | ntfs   |       | ISOFILE | 112.4G |             |          |                 |
+
