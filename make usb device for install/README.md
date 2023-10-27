@@ -15,8 +15,8 @@ sudo ./mk_usb4inst.sh -d sdX [ -s sdX ] [ -f ntfs ]
 | -n or --noformat    | フォーマット作業のスキップ (作成済みメディアに対する作業用) |  
   
 > [!NOTE]  
-> openSUSEのDVD版は`NTFS`でのみ利用可能  
-> （`exFAT`でメディア検索ができない）  
+> **openSUSE** のDVD版は **NTFS** でのみ利用可能  
+> （ **exFAT** でメディア検索ができない）  
   
 ## 作業環境  
   
