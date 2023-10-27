@@ -14,10 +14,10 @@ sudo ./mk_usb4inst.sh -d sd[a-z] -n
 | -f or --format ntfs | フォーマットの種類 [ntfs] (未指定時 exFAT) |
 | -n or --noformat    | フォーマット作業のスキップ (作成済みメディアに対する作業用) |
 
-:::note warn
+:::note warn  
 openSUSEのDVD版はNTFSでのみ利用可能
 （exFATでメディア検索ができない）
-:::
+:::  
 
 ## 作業環境
 
