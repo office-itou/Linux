@@ -5,7 +5,7 @@
 
 ## 起動方法
 
-sudo ./mk_usb4inst.sh -d sd[a-z] -n  
+sudo ./mk_usb4inst.sh -d sdX [ -s sdX ] [ -f ntfs ]  
 
 | オプション | 機能 |
 | --- | --- |
