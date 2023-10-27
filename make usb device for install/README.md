@@ -55,17 +55,17 @@ sudo ./mk_usb4inst.sh -d sdX [ -s sdX ] [ -f ntfs ]
   
 | NAME | TYPE | TRAN | FSTYPE | FSVER | LABEL   | SIZE   | MOUNTPOINTS | VENDOR   | MODEL           |  
 | ---  | ---  | ---  | ---    | ---   | ---     | ---    | ---         | ---      | ---             |  
-| sdb  | disk | usb  |        |       |         | 112.6G |             | JetFlash | Transcend 128GB |  
-| sdb1 | part |      |        |       |         | 1007K  |             |          |                 |  
-| sdb2 | part |      | vfat   | FAT32 |         | 256M   |             |          |                 |  
-| sdb3 | part |      | ntfs   |       | ISOFILE | 112.4G |             |          |                 |  
+| sdX  | disk | usb  |        |       |         | 112.6G |             | JetFlash | Transcend 128GB |  
+| sdX1 | part |      |        |       |         | 1007K  |             |          |                 |  
+| sdX2 | part |      | vfat   | FAT32 |         | 256M   |             |          |                 |  
+| sdX3 | part |      | ntfs   |       | ISOFILE | 112.4G |             |          |                 |  
   
-(lsblk -o NAME,TYPE,TRAN,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdb)  
+(lsblk -o NAME,TYPE,TRAN,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdX)  
   
 ### ディレクトリー/ファイル構成
   
 ``` text:  
-\  
+sdX3: \  
 |   menu.cfg  
 |  
 +---autoyast  
