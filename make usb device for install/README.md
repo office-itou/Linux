@@ -64,6 +64,7 @@ sudo ./mk_usb4inst.sh -d sdX [ -s sdX ] [ -f ntfs ]
   
 ### ディレクトリー/ファイル構成
   
+``` text:  
 \  
 |   menu.cfg  
 |  
@@ -285,3 +286,4 @@ sudo ./mk_usb4inst.sh -d sdX [ -s sdX ] [ -f ntfs ]
             preseed_old_server.cfg  
             preseed_server.cfg  
             preseed_sub_command.sh  
+```  
