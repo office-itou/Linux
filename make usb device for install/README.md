@@ -9,9 +9,15 @@ sudo ./mk_usb4inst.sh -d sd[a-z] -n
 
 | オプション | 機能 |
 | --- | --- |
-| -d or --device   | 本作業で作成するUSBデバイス名 [sda～sdz] |
-| -s or --source   | インストール作業時のUSBデバイス名 [sda～sdz] (未指定時 sda) |
-| -n or --noformat | フォーマット作業のスキップ (作成済みメディアに対する作業用) |
+| -d or --device sdX  | 本作業で作成するUSBデバイス名 [sda～sdz] |
+| -s or --source sdX  | インストール作業時のUSBデバイス名 [sda～sdz] (未指定時 sda) |
+| -f or --format ntfs | フォーマットの種類 [ntfs] (未指定時 exFAT) |
+| -n or --noformat    | フォーマット作業のスキップ (作成済みメディアに対する作業用) |
+
+:::note warn
+openSUSEのDVD版はNTFSでのみ利用可能
+（exFATでメディア検索ができない）
+:::
 
 ## 作業環境
 
