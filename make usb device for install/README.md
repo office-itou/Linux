@@ -53,12 +53,12 @@ sudo ./mk_usb4inst.sh -d sdX [ -s sdX ] [ -f ntfs ]
   
 ### パーティション構成
   
-| NAME | TYPE | TRAN | FSTYPE | FSVER | LABEL   | SIZE   | MOUNTPOINTS | VENDOR   | MODEL           |  
-| ---  | ---  | ---  | ---    | ---   | ---     | ---    | ---         | ---      | ---             |  
-| sdX  | disk | usb  |        |       |         | 112.6G |             | JetFlash | Transcend 128GB |  
-| sdX1 | part |      |        |       |         | 1007K  |             |          |                 |  
-| sdX2 | part |      | vfat   | FAT32 |         | 256M   |             |          |                 |  
-| sdX3 | part |      | ntfs   |       | ISOFILE | 112.4G |             |          |                 |  
+| NAME | TYPE | TRAN | FSTYPE | FSVER | LABEL   | SIZE   | VENDOR   | MODEL           |  
+| ---  | ---  | ---  | ---    | ---   | ---     | ---    | ---      | ---             |  
+| sdX  | disk | usb  |        |       |         | 112.6G | JetFlash | Transcend 128GB |  
+| sdX1 | part |      |        |       |         | 1007K  |          |                 |  
+| sdX2 | part |      | vfat   | FAT32 |         | 256M   |          |                 |  
+| sdX3 | part |      | ntfs   |       | ISOFILE | 112.4G |          |                 |  
   
 (lsblk -o NAME,TYPE,TRAN,FSTYPE,FSVER,LABEL,SIZE,MOUNTPOINTS,VENDOR,MODEL /dev/sdX)  
   
