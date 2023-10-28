@@ -3138,6 +3138,9 @@ function funcMake_menu_sub () {
 	declare    RFILE=""
 	declare    PSEED=""
 #	declare -r DEVNO="sdb3"
+	# --- work ----------------------------------------------------------------
+#	declare    BOPTS=""
+	# -------------------------------------------------------------------------
 	for FPATH in $(find "./${WORK_DIRS}/iso/" -name "${STR_MENU}" \( -type f -o -type l \) | sort -r)
 	do
 		DNAME="${FPATH%/*}"
@@ -3329,14 +3332,13 @@ _EOT_
 					menuentry '${ENTRY}' {
 					    set isofile="/images/${FNAME}"
 					    set ksstart="inst.ks=hd:/dev/${USB_INST}:/kickstart/ks_${DISTR}-${VERNO%%\.*}_${DTYPE}.cfg"
-					    set isoscan="iso-scan/filename=\${isofile}"
 					    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 					    set options="inst.sshd rd.live.ram"
 					    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 					    echo "Loading \${isofile} ..."
 					    loopback loop (\${isopart})\${isofile}
 					    probe --label --set=hdlabel (loop)
-					    linux  (loop)/images/pxeboot/vmlinuz inst.repo=hd:/dev/${USB_INST}:\${isofile} quiet \${isoscan} \${ksstart}
+					    linux  (loop)/images/pxeboot/vmlinuz inst.repo=hd:/dev/${USB_INST}:\${isofile} quiet \${ksstart}
 					    initrd (loop)/images/pxeboot/initrd.img
 					    loopback --delete loop
 					}
@@ -3364,37 +3366,34 @@ _EOT_
 					}
 _EOT_
 				;;
-			openSUSE-Leap-*.iso          )
-				cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
-					menuentry '${ENTRY}' {
-					    set isofile="/images/${FNAME}"
-					    set autoxml="autoyast=usb://${USB_INST}/autoyast/autoinst_leap_${VERNO}_${MTYPE}.xml"
-					    set isoscan="iso-scan/filename=\${isofile}"
-					    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-					    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-					    echo "Loading \${isofile} ..."
-					    loopback loop (\${isopart})\${isofile}
-					    linux  (loop)/boot/x86_64/loader/linux splash=silent root=(\${isopart}) install=hd:\${isofile} \${autoxml} ifcfg=e*=dhcp
-					    initrd (loop)/boot/x86_64/loader/initrd
-					    loopback --delete loop
-					}
-_EOT_
-				;;
+			openSUSE-Leap-*.iso          | \
 			openSUSE-Tumbleweed*.iso     )
+				declare AUTOXML=""
+				declare INSTALL=""
+				if [[ -z "${VERNO}" ]]; then
+					AUTOXML="autoyast=usb://${USB_INST}/autoyast/autoinst_${CDNEM}_${MTYPE}.xml"
+				else
+					AUTOXML="autoyast=usb://${USB_INST}/autoyast/autoinst_${CDNEM}_${VERNO}_${MTYPE}.xml"
+				fi
+				if [[ "${MTYPE}" = "dvd" ]]; then
+					INSTALL="install=hd:\${isofile}"
+				fi
 				cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
 					menuentry '${ENTRY}' {
 					    set isofile="/images/${FNAME}"
-					    set autoxml="autoyast=usb://${USB_INST}/autoyast/autoinst_tumbleweed_${MTYPE}.xml"
-					    set isoscan="iso-scan/filename=\${isofile}"
+					    set install="${INSTALL}"
+					    set autoxml="${AUTOXML}"
 					    set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 					    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 					    echo "Loading \${isofile} ..."
 					    loopback loop (\${isopart})\${isofile}
-					    linux  (loop)/boot/x86_64/loader/linux splash=silent root=(\${isopart}) install=hd:\${isofile} \${autoxml} ifcfg=e*=dhcp
+					    linux  (loop)/boot/x86_64/loader/linux splash=silent root=(\${isopart}) \${install} \${autoxml} ifcfg=e*=dhcp
 					    initrd (loop)/boot/x86_64/loader/initrd
 					    loopback --delete loop
 					}
 _EOT_
+				unset AUTOXML
+				unset INSTALL
 				;;
 			*                            )
 				;;
@@ -3889,25 +3888,25 @@ main () {
 		funcUSB_Device_select
 	fi
 	# -------------------------------------------------------------------------
-	funcMake_directory
-	if [[ -d "/mnt/hgfs/." ]]; then
-		funcMake_link
-	fi
+#	funcMake_directory
+#	if [[ -d "/mnt/hgfs/." ]]; then
+#		funcMake_link
+#	fi
 	# -------------------------------------------------------------------------
-##	touch "${CACHE_FNAME}"
-##	funcRead_cache
+	touch "${CACHE_FNAME}"
+	funcRead_cache
 	# -------------------------------------------------------------------------
-	funcMenu_list
-	funcDownload
-	funcGet_module_in_dvd
+#	funcMenu_list
+#	funcDownload
+#	funcGet_module_in_dvd
 	# -------------------------------------------------------------------------
-	funcMake_conf
-	funcRemake_initrd
+#	funcMake_conf
+#	funcRemake_initrd
 	# -------------------------------------------------------------------------
-	funcMake_grub_cfg
+#	funcMake_grub_cfg
 	funcMake_menu_cfg
 	# -------------------------------------------------------------------------
-	funcCopy_iso_image
+#	funcCopy_iso_image
 	# -------------------------------------------------------------------------
 	if [[ ! "${USB_NAME}" =~ ^sd[a-z]$ ]]; then
 		funcPrintf "${TXT_RED}error USB device name [/dev/${USB_DEV}]${TXT_RESET}"
@@ -3919,11 +3918,11 @@ main () {
 		funcUSB_Device_inst_bootloader
 	fi
 ##	funcUSB_Device_inst_kbd
-	funcUSB_Device_inst_grub
+#	funcUSB_Device_inst_grub
 	funcUSB_Device_inst_menu
-	funcUSB_Device_inst_conf
-	funcUSB_Device_inst_initrd
-	funcUSB_Device_inst_iso
+#	funcUSB_Device_inst_conf
+#	funcUSB_Device_inst_initrd
+#	funcUSB_Device_inst_iso
 	# -------------------------------------------------------------------------
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 	end_time=$(date +%s)
