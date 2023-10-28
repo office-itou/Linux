@@ -304,9 +304,9 @@ sdX3: \
 | AlmaLinux 9            | 5.14.0   | ×        | ○        |  
 | MIRACLELINUX 9         | 5.14.0   | ×        | ○        |  
 | Rocky 9                | 5.14.0   | ×        | ○        |  
-| openSUSE Leap 15.5     | 5.14.21  | △(DVD)   | △(NET)   |  
-| openSUSE Leap 15.6     | 5.14.21  | △(DVD)   | △(NET)   |  
-| openSUSE Tumbleweed    | 6.5.8    | △(DVD)   | △(NET)   |  
+| openSUSE Leap 15.5     | 5.14.21  | ○        | △(NET)   |  
+| openSUSE Leap 15.6     | 5.14.21  | ○        | △(NET)   |  
+| openSUSE Tumbleweed    | 6.5.8    | ○        | △(NET)   |  
   
   ○：対応  
   △：DVD版またはNET版のみ対応  
