@@ -3888,25 +3888,25 @@ main () {
 		funcUSB_Device_select
 	fi
 	# -------------------------------------------------------------------------
-#	funcMake_directory
-#	if [[ -d "/mnt/hgfs/." ]]; then
-#		funcMake_link
-#	fi
+	funcMake_directory
+	if [[ -d "/mnt/hgfs/." ]]; then
+		funcMake_link
+	fi
 	# -------------------------------------------------------------------------
-	touch "${CACHE_FNAME}"
-	funcRead_cache
+##	touch "${CACHE_FNAME}"
+##	funcRead_cache
 	# -------------------------------------------------------------------------
-#	funcMenu_list
-#	funcDownload
-#	funcGet_module_in_dvd
+	funcMenu_list
+	funcDownload
+	funcGet_module_in_dvd
 	# -------------------------------------------------------------------------
-#	funcMake_conf
-#	funcRemake_initrd
+	funcMake_conf
+	funcRemake_initrd
 	# -------------------------------------------------------------------------
-#	funcMake_grub_cfg
+	funcMake_grub_cfg
 	funcMake_menu_cfg
 	# -------------------------------------------------------------------------
-#	funcCopy_iso_image
+	funcCopy_iso_image
 	# -------------------------------------------------------------------------
 	if [[ ! "${USB_NAME}" =~ ^sd[a-z]$ ]]; then
 		funcPrintf "${TXT_RED}error USB device name [/dev/${USB_DEV}]${TXT_RESET}"
@@ -3918,11 +3918,11 @@ main () {
 		funcUSB_Device_inst_bootloader
 	fi
 ##	funcUSB_Device_inst_kbd
-#	funcUSB_Device_inst_grub
+	funcUSB_Device_inst_grub
 	funcUSB_Device_inst_menu
-#	funcUSB_Device_inst_conf
-#	funcUSB_Device_inst_initrd
-#	funcUSB_Device_inst_iso
+	funcUSB_Device_inst_conf
+	funcUSB_Device_inst_initrd
+	funcUSB_Device_inst_iso
 	# -------------------------------------------------------------------------
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 	end_time=$(date +%s)
