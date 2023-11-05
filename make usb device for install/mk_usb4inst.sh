@@ -1496,7 +1496,7 @@ function funcMake_preseed_sub_command () {
 		 	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK}"
 		 	echo "${PROG_NAME}: LIST_PACK=${LIST_PACK}"
 		 	#--------------------------------------------------------------------------
-		 	LIST_DPKG="$(LANG=C dpkg --no-pager --list ${LIST_PACK} 2>&1 | grep -E -v '^ii|^\+|^\||^Desired')"
+		 	LIST_DPKG="$(LANG=C dpkg --list ${LIST_PACK} 2>&1 | grep -E -v '^ii|^\+|^\||^Desired')"
 		 	if [ -z "${LIST_DPKG}" ]; then
 		 		echo "${PROG_NAME}: Finish the installation"
 		 		exit 0
