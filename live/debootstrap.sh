@@ -33,6 +33,7 @@
 ##	2023/07/29 000.0000 J.Itou         リスト更新
 ##	2023/08/27 000.0000 J.Itou         処理見直し(curl --http1.1)
 ##	2023/10/23 000.0000 J.Itou         処理見直し(service有無)
+##	2023/11/05 000.0000 J.Itou         リスト更新(Ubuntu 24.04 追加)
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get -y install mmdebstrap squashfs-tools xorriso
@@ -76,7 +77,8 @@
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2020-04-23   2030-04-23   Focal_Fossa     Ubuntu_20.04(Focal_Fossa):LTS    " \
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2022-04-21   2032-04-21   Jammy_Jellyfish Ubuntu_22.04(Jammy_Jellyfish):LTS" \
 	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-04-20   2024-01-20   Lunar_Lobster   Ubuntu_23.04(Lunar_Lobster)      " \
-	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-10-12   20xx-xx-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
+	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2023-10-12   2024-07-xx   Mantic_Minotaur Ubuntu_23.10(Mantic_Minotaur)    " \
+	    "ubuntu         amd64      preseed_ubuntu.cfg,nocloud-ubuntu-user-data 2024-04-25   2029-05-31   Noble_Numbat    Ubuntu_24.04(Noble_Numbat)       " \
 	)   # 0:区分        1:arch     2:定義ファイル                              3:リリース日 4:サポ終了日 5:備考          6:備考2
 
 # === 共通関数: string ========================================================
