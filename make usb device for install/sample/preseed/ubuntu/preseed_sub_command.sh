@@ -100,10 +100,10 @@ funcInstallPackages () {
 	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK}"
 	echo "${PROG_NAME}: LIST_PACK=${LIST_PACK}"
 	#--------------------------------------------------------------------------
-	LIST_DPKG="$(LANG=C dpkg --no-pager --list ${LIST_PACK} 2>&1 | grep -E -v '^ii|^\+|^\||^Desired')"
+	LIST_DPKG="$(LANG=C dpkg-query --list ${LIST_PACK} 2>&1 | grep -E -v '^ii|^\+|^\||^Desired' || true)"
 	if [ -z "${LIST_DPKG}" ]; then
 		echo "${PROG_NAME}: Finish the installation"
-		exit 0
+		return
 	fi
 	echo "${PROG_NAME}: Run the installation"
 	echo "${PROG_NAME}: LIST_DPKG="
