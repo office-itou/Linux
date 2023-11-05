@@ -14,6 +14,7 @@
 	readonly PROG_NAME="${0##*/}"
 	readonly WORK_DIRS="${0%/*}"
 	readonly DIST_NAME="$(uname -v | tr '[A-Z]' '[a-z]' | sed -n -e 's/.*\(debian\|ubuntu\).*/\1/p')"
+	echo "${PROG_NAME}: === Start ==="
 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
 	echo "${PROG_NAME}: PROG_NAME=${PROG_NAME}"
 	echo "${PROG_NAME}: WORK_DIRS=${WORK_DIRS}"
@@ -50,7 +51,7 @@
 		echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
 		echo "${PROG_NAME}: CONF_FILE=${CONF_FILE}"
 		echo "${PROG_NAME}: TEMP_FILE=${TEMP_FILE}"
-		in-target --pass-stdout bash -c "/tmp/${PROG_NAME} ${TEMP_FILE}"
+		in-target --pass-stdout bash -c "LANG=C /tmp/${PROG_NAME} ${TEMP_FILE}"
 		exit 0
 	fi
 	ROOT_DIRS=""
@@ -86,7 +87,7 @@ funcIPv4GetNetmaskBits () {
 ### subroutine ################################################################
 # --- packages ----------------------------------------------------------------
 funcInstallPackages () {
-	echo "funcInstallPackages"
+	echo "${PROG_NAME}: funcInstallPackages"
 	#--------------------------------------------------------------------------
 	LIST_TASK="$(sed -n -e '/^[[:blank:]]*tasksel[[:blank:]]\+tasksel\/first[[:blank:]]\+/,/[^\\]$/p' "${TEMP_FILE}" | \
 	             sed -z -e 's/\\\n//g'                                                                               | \
@@ -98,6 +99,17 @@ funcInstallPackages () {
 	                 -e 's/[[:blank:]]\+/ /g')"
 	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK}"
 	echo "${PROG_NAME}: LIST_PACK=${LIST_PACK}"
+	#--------------------------------------------------------------------------
+	LIST_DPKG="$(LANG=C dpkg --no-pager --list ${LIST_PACK} 2>&1 | grep -E -v '^ii|^\+|^\||^Desired')"
+	if [ -z "${LIST_DPKG}" ]; then
+		echo "${PROG_NAME}: Finish the installation"
+		exit 0
+	fi
+	echo "${PROG_NAME}: Run the installation"
+	echo "${PROG_NAME}: LIST_DPKG="
+	echo "${PROG_NAME}: <<<"
+	echo "${LIST_DPKG}"
+	echo "${PROG_NAME}: >>>"
 	#--------------------------------------------------------------------------
 	sed -i "${ROOT_DIRS}/etc/apt/sources.list" \
 	    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
@@ -112,7 +124,7 @@ funcInstallPackages () {
 
 # --- network -----------------------------------------------------------------
 funcSetupNetwork () {
-	echo "funcSetupNetwork"
+	echo "${PROG_NAME}: funcSetupNetwork"
 	#--------------------------------------------------------------------------
 	FIX_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+\(netcfg\/disable_dhcp\|netcfg\/disable_autoconfig\)[[:blank:]]\+/ s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
 	NIC_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_ipaddress[[:blank:]]\+/   s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
@@ -141,7 +153,7 @@ funcSetupNetwork () {
 	fi
 	# --- connman -------------------------------------------------------------
 	if [ -d "${ROOT_DIRS}/etc/connman" ]; then
-		echo "funcSetupNetwork: connman"
+		echo "${PROG_NAME}: funcSetupNetwork: connman"
 		mkdir -p "${ROOT_DIRS}/var/lib/connman/${CON_NAME}"
 		cat <<- _EOT_ | sed 's/^ *//g' > "${ROOT_DIRS}/var/lib/connman/settings"
 			[global]
@@ -174,7 +186,7 @@ _EOT_
 	fi
 	# --- netplan -------------------------------------------------------------
 	if [ -d "${ROOT_DIRS}/etc/netplan" ]; then
-		echo "funcSetupNetwork: netplan"
+		echo "${PROG_NAME}: funcSetupNetwork: netplan"
 		cat <<- _EOT_ > "${ROOT_DIRS}/etc/netplan/99-network-manager-static.yaml"
 			network:
 			  version: 2
@@ -194,7 +206,7 @@ _EOT_
 
 # --- gdm3 --------------------------------------------------------------------
 funcChange_gdm3_configure () {
-	echo "funcChange_gdm3_configure"
+	echo "${PROG_NAME}: funcChange_gdm3_configure"
 	if [ -f "${ROOT_DIRS}/etc/gdm3/custom.conf" ]; then
 		sed -i.orig "${ROOT_DIRS}/etc/gdm3/custom.conf" \
 		    -e '/WaylandEnable=false/ s/^#//'
@@ -203,9 +215,10 @@ funcChange_gdm3_configure () {
 
 # --- Main --------------------------------------------------------------------
 funcMain () {
+	echo "${PROG_NAME}: funcMain"
 	case "${DIST_NAME}" in
 		debian )
-#			funcInstallPackages
+			funcInstallPackages
 			funcSetupNetwork
 #			funcChange_gdm3_configure
 			;;
@@ -219,5 +232,6 @@ funcMain () {
 
 	funcMain
 # --- Termination -------------------------------------------------------------
+	echo "${PROG_NAME}: === End ==="
 	exit 0
 # --- EOF ---------------------------------------------------------------------

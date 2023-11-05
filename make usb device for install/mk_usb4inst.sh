@@ -344,8 +344,8 @@
 		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-stable/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                             ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           yast_opensuse.xml                               2023-06-07  2024-12-31  -           kernel_5.14.21      -                                   " \
 		"opensuse           leap                https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso                                      ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           yast_opensuse.xml                               2024-06-xx  2025-xx-xx  -           kernel_x.xx.xx      -                                   " \
 		"opensuse           tumbleweed          https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           yast_opensuse.xml                               2021-xx-xx  20xx-xx-xx  -           kernel_x.x          -                                   " \
-#		"debian             buster.live         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-10.[0-9.]*-${ARC_TYPE}-lxde.iso      ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \ #
-#		"debian             bullseye.live       https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-11.[0-9.]*-${ARC_TYPE}-lxde.iso         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \ #
+# -		"debian             buster.live         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-10.[0-9.]*-${ARC_TYPE}-lxde.iso      ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \ #
+# -		"debian             bullseye.live       https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-11.[0-9.]*-${ARC_TYPE}-lxde.iso         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \ #
 		"debian             bookworm.live       https://cdimage.debian.org/cdimage/release/current-live/${ARC_TYPE}/iso-hybrid/debian-live-12.[0-9.]*-${ARC_TYPE}-lxde.iso                  ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \
 #		"debian             trixie.live         -                                                                                                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              202x-xx-xx  20xx-xx-xx  -           testing             Debian_13.xx(trixie)                " \ #
 		"debian             testing.live        https://cdimage.debian.org/cdimage/weekly-live-builds/${ARC_TYPE}/iso-hybrid/debian-live-testing-${ARC_TYPE}-lxde.iso                       ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \
@@ -366,12 +366,22 @@
 	TARGET_LIST+=("${TARGET_LIST_NET[@]}")
 	TARGET_LIST+=("${TARGET_LIST_DVD[@]}")
 
+# --- development list [ start ] ----------------------------------------------
 #	TARGET_LIST=(
+#		"debian             buster              https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/${ARC_TYPE}/iso-cd/debian-10.[0-9.]*-${ARC_TYPE}-netinst.iso                 ./${WORK_DIRS}/iso/net                      -                                           -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \ #
+#		"debian             bullseye            https://cdimage.debian.org/cdimage/archive/latest-oldstable/${ARC_TYPE}/iso-cd/debian-11.[0-9.]*-${ARC_TYPE}-netinst.iso                    ./${WORK_DIRS}/iso/net                      -                                           -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \ #
+#		"debian             bookworm            https://cdimage.debian.org/cdimage/release/current/${ARC_TYPE}/iso-cd/debian-12.[0-9.]*-${ARC_TYPE}-netinst.iso                             ./${WORK_DIRS}/iso/net                      -                                           -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \ #
 #		"debian             testing             https://cdimage.debian.org/cdimage/daily-builds/daily/current/${ARC_TYPE}/iso-cd/debian-testing-${ARC_TYPE}-netinst.iso                     ./${WORK_DIRS}/iso/net                      -                                           -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \ #
+#		"debian             buster              https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/${ARC_TYPE}/iso-dvd/debian-10.[0-9.]*-${ARC_TYPE}-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \ #
+#		"debian             bullseye            https://cdimage.debian.org/cdimage/archive/latest-oldstable/${ARC_TYPE}/iso-dvd/debian-11.[0-9.]*-${ARC_TYPE}-DVD-1.iso                     ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \ #
+#		"debian             bookworm            https://cdimage.debian.org/cdimage/release/current/${ARC_TYPE}/iso-dvd/debian-12.[0-9.]*-${ARC_TYPE}-DVD-1.iso                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \ #
 #		"debian             testing             https://cdimage.debian.org/cdimage/weekly-builds/${ARC_TYPE}/iso-dvd/debian-testing-${ARC_TYPE}-DVD-1.iso                                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \ #
+#		"debian             buster.live         https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-10.[0-9.]*-${ARC_TYPE}-lxde.iso      ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2019-07-06  2024-06-xx  -           oldoldstable        Debian_10.xx(buster)                " \ #
+#		"debian             bullseye.live       https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-11.[0-9.]*-${ARC_TYPE}-lxde.iso         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \ #
+#		"debian             bookworm.live       https://cdimage.debian.org/cdimage/release/current-live/${ARC_TYPE}/iso-hybrid/debian-live-12.[0-9.]*-${ARC_TYPE}-lxde.iso                  ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \ #
 #		"debian             testing.live        https://cdimage.debian.org/cdimage/weekly-live-builds/${ARC_TYPE}/iso-hybrid/debian-live-testing-${ARC_TYPE}-lxde.iso                       ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \ #
-#		"debian             testing             https://cdimage.debian.org/cdimage/weekly-builds/${ARC_TYPE}/iso-dvd/debian-testing-${ARC_TYPE}-DVD-1.iso                                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \ #
-#	)
+#	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                                     5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
+# --- development list [ end ] ------------------------------------------------
 
 # --- config file -------------------------------------------------------------
 	#idx: value
@@ -1400,6 +1410,7 @@ function funcMake_preseed_sub_command () {
 		 	readonly PROG_NAME="${0##*/}"
 		 	readonly WORK_DIRS="${0%/*}"
 		 	readonly DIST_NAME="$(uname -v | tr '[A-Z]' '[a-z]' | sed -n -e 's/.*\(debian\|ubuntu\).*/\1/p')"
+		 	echo "${PROG_NAME}: === Start ==="
 		 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
 		 	echo "${PROG_NAME}: PROG_NAME=${PROG_NAME}"
 		 	echo "${PROG_NAME}: WORK_DIRS=${WORK_DIRS}"
@@ -1436,7 +1447,7 @@ function funcMake_preseed_sub_command () {
 		 		echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
 		 		echo "${PROG_NAME}: CONF_FILE=${CONF_FILE}"
 		 		echo "${PROG_NAME}: TEMP_FILE=${TEMP_FILE}"
-		 		in-target --pass-stdout bash -c "/tmp/${PROG_NAME} ${TEMP_FILE}"
+		 		in-target --pass-stdout bash -c "LANG=C /tmp/${PROG_NAME} ${TEMP_FILE}"
 		 		exit 0
 		 	fi
 		 	ROOT_DIRS=""
@@ -1472,7 +1483,7 @@ function funcMake_preseed_sub_command () {
 		### subroutine ################################################################
 		# --- packages ----------------------------------------------------------------
 		funcInstallPackages () {
-		 	echo "funcInstallPackages"
+		 	echo "${PROG_NAME}: funcInstallPackages"
 		 	#--------------------------------------------------------------------------
 		 	LIST_TASK="$(sed -n -e '/^[[:blank:]]*tasksel[[:blank:]]\+tasksel\/first[[:blank:]]\+/,/[^\\]$/p' "${TEMP_FILE}" | \
 		 	             sed -z -e 's/\\\n//g'                                                                               | \
@@ -1484,6 +1495,17 @@ function funcMake_preseed_sub_command () {
 		 	                 -e 's/[[:blank:]]\+/ /g')"
 		 	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK}"
 		 	echo "${PROG_NAME}: LIST_PACK=${LIST_PACK}"
+		 	#--------------------------------------------------------------------------
+		 	LIST_DPKG="$(LANG=C dpkg --no-pager --list ${LIST_PACK} 2>&1 | grep -E -v '^ii|^\+|^\||^Desired')"
+		 	if [ -z "${LIST_DPKG}" ]; then
+		 		echo "${PROG_NAME}: Finish the installation"
+		 		exit 0
+		 	fi
+		 	echo "${PROG_NAME}: Run the installation"
+		 	echo "${PROG_NAME}: LIST_DPKG="
+		 	echo "${PROG_NAME}: <<<"
+		 	echo "${LIST_DPKG}"
+		 	echo "${PROG_NAME}: >>>"
 		 	#--------------------------------------------------------------------------
 		 	sed -i "${ROOT_DIRS}/etc/apt/sources.list" \
 		 	    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
@@ -1498,7 +1520,7 @@ function funcMake_preseed_sub_command () {
 		
 		# --- network -----------------------------------------------------------------
 		funcSetupNetwork () {
-		 	echo "funcSetupNetwork"
+		 	echo "${PROG_NAME}: funcSetupNetwork"
 		 	#--------------------------------------------------------------------------
 		 	FIX_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+\(netcfg\/disable_dhcp\|netcfg\/disable_autoconfig\)[[:blank:]]\+/ s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
 		 	NIC_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_ipaddress[[:blank:]]\+/   s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
@@ -1527,7 +1549,7 @@ function funcMake_preseed_sub_command () {
 		 	fi
 		 	# --- connman -------------------------------------------------------------
 		 	if [ -d "${ROOT_DIRS}/etc/connman" ]; then
-		 		echo "funcSetupNetwork: connman"
+		 		echo "${PROG_NAME}: funcSetupNetwork: connman"
 		 		mkdir -p "${ROOT_DIRS}/var/lib/connman/${CON_NAME}"
 		 		cat <<- _EOT_ | sed 's/^ *//g' > "${ROOT_DIRS}/var/lib/connman/settings"
 		 			[global]
@@ -1560,7 +1582,7 @@ function funcMake_preseed_sub_command () {
 		 	fi
 		 	# --- netplan -------------------------------------------------------------
 		 	if [ -d "${ROOT_DIRS}/etc/netplan" ]; then
-		 		echo "funcSetupNetwork: netplan"
+		 		echo "${PROG_NAME}: funcSetupNetwork: netplan"
 		 		cat <<- _EOT_ > "${ROOT_DIRS}/etc/netplan/99-network-manager-static.yaml"
 		 			network:
 		 			  version: 2
@@ -1580,7 +1602,7 @@ function funcMake_preseed_sub_command () {
 		
 		# --- gdm3 --------------------------------------------------------------------
 		funcChange_gdm3_configure () {
-		 	echo "funcChange_gdm3_configure"
+		 	echo "${PROG_NAME}: funcChange_gdm3_configure"
 		 	if [ -f "${ROOT_DIRS}/etc/gdm3/custom.conf" ]; then
 		 		sed -i.orig "${ROOT_DIRS}/etc/gdm3/custom.conf" \
 		 		    -e '/WaylandEnable=false/ s/^#//'
@@ -1589,9 +1611,10 @@ function funcMake_preseed_sub_command () {
 		
 		# --- Main --------------------------------------------------------------------
 		funcMain () {
+		 	echo "${PROG_NAME}: funcMain"
 		 	case "${DIST_NAME}" in
 		 		debian )
-		#			funcInstallPackages
+		 			funcInstallPackages
 		 			funcSetupNetwork
 		#			funcChange_gdm3_configure
 		 			;;
@@ -1605,6 +1628,7 @@ function funcMake_preseed_sub_command () {
 		
 		 	funcMain
 		# --- Termination -------------------------------------------------------------
+		 	echo "${PROG_NAME}: === End ==="
 		 	exit 0
 		# --- EOF ---------------------------------------------------------------------
 _EOT_SH_
@@ -2064,7 +2088,7 @@ function funcCopy_initrd () {
 #	declare -a ARRAY_LIST=("${TARGET_LIST[@]}")
 	declare -a ARRAY_LINE=("$@")
 	declare DIR_NAME
-#	declare BASE_NAME
+	declare BASE_NAME
 #	declare -a MODULE_LIST=("${ADD_PACKAGE_LIST[@]}")
 #	declare MODULE_LINE
 	declare -r DIR_SECT="$(echo "${ARRAY_LINE[4],,}" | sed -n -e 's/^.*\(live\|dvd\|netinst\|netboot\|server\|boot\|minimal\|net\|rtm\|legacy\|desktop\).*$/\1/p')"
@@ -2097,6 +2121,17 @@ function funcCopy_initrd () {
 			mkdir -p "${DIR_DEST}"
 		fi
 		cp --preserve=timestamps --no-preserve=mode,ownership "${DIR_PATH}" "${DIR_DEST}/"
+	done
+	for DIR_PATH in $(find "${DIR_DEST}/" \( -name 'initrd*-*' -o  -name 'vmlinuz*-*' \) \( -type f -o -type l \))
+	do
+		BASE_NAME="${DIR_PATH##*/}"
+		DIR_DEST="${DIR_PATH%/*}/${BASE_NAME%%-*}"
+		if [[ ! -f "${DIR_DEST}" ]]; then
+			funcPrintf "link  initrd: %-24.24s : %s\n" "${BASE_NAME}" "${DIR_DEST#*/${DIR_DIST}/}"
+			pushd "${DIR_PATH%/*}" > /dev/null
+				ln -s "${DIR_PATH##*/}" "${DIR_DEST##*/}"
+			popd > /dev/null
+		fi
 	done
 	# --- umount ----------------------------------------------------------
 #	funcPrintf "${TXT_BLACK}${TXT_BGREEN}umount   iso: %s${TXT_RESET}\n" "${${ARRAY_LINE[3]}/${ARRAY_LINE[4]}}"
@@ -3186,6 +3221,7 @@ function funcMake_menu_sub () {
 	declare    PSEED=""
 #	declare -r DEVNO="sdb3"
 	# --- work ----------------------------------------------------------------
+	declare    BLDIR=""
 #	declare    BOPTS=""
 	# -------------------------------------------------------------------------
 	for FPATH in $(find "./${WORK_DIRS}/iso/" -name "${STR_MENU}" \( -type f -o -type l \) | sort -r)
@@ -3240,6 +3276,11 @@ function funcMake_menu_sub () {
 			debian-live-*.iso            )
 				case "${SUB_MENU}" in
 					'[ Unattended installation ]' )
+						if [[ -d "./${WORK_DIRS}/img/install.amd/${DISTR}.${CDNEM}.${MTYPE:-desktop}/." ]]; then
+							BLDIR="install.amd"
+						else
+							BLDIR="live"
+						fi
 						cat <<- _EOT_ | sed -e "s/^/${TAB_SPACE}/g"
 							menuentry '${ENTRY}' {
 							    set isofile="/images/${FNAME}"
@@ -3249,8 +3290,8 @@ function funcMake_menu_sub () {
 							    set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 							    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 							    echo "Loading \${isofile} ..."
-							    linux   (\${cfgpart})/install.amd/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${USB_INST} iso-scan/ask_which_iso="[${USB_INST}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
-							    initrd  (\${cfgpart})/install.amd/\${isodist}/initrd.gz
+							    linux   (\${cfgpart})/${BLDIR}/\${isodist}/vmlinuz root=\${cfgpart} shared/ask_device=/dev/${USB_INST} iso-scan/ask_which_iso="[${USB_INST}] \${isoscan}" \${locales} fsck.mode=skip \${preseed} ---
+							    initrd  (\${cfgpart})/${BLDIR}/\${isodist}/initrd.gz
 							}
 _EOT_
 						;;
