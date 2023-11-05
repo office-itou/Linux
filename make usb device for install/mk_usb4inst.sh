@@ -134,6 +134,8 @@
 #		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-live-server-amd64.iso           " \ #
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-live-server-amd64.iso           " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-live-server-amd64.iso           " \
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-24.04-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-24.04-live-server-amd64.iso           " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/noble-live-server-amd64.iso                     ./${WORK_DIRS}/iso/dvd/noble-live-server-amd64.iso                  " \ #
 #		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-live-server-amd64.iso                    ./${WORK_DIRS}/iso/dvd/mantic-live-server-amd64.iso                 " \ #
 		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-37-1.7.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-37-1.7.iso          " \
 		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-38-1.6.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-38-1.6.iso          " \
@@ -159,8 +161,12 @@
 #		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-desktop-amd64.iso               " \ #
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-amd64.iso               " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-legacy-amd64.iso        " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10.1-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-23.10.1-desktop-amd64.iso             " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-23.10.1-desktop-amd64.iso             " \
 		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-desktop-legacy-amd64.iso        " \
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-24.04.1-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-24.04-desktop-amd64.iso               " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-24.04-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-24.04-desktop-legacy-amd64.iso        " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/noble-desktop-amd64.iso                         ./${WORK_DIRS}/iso/dvd/noble-desktop-amd64.iso                      " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/noble-desktop-legacy-amd64.iso                  ./${WORK_DIRS}/iso/dvd/noble-desktop-legacy-amd64.iso               " \ #
 #		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-amd64.iso                        ./${WORK_DIRS}/iso/dvd/mantic-desktop-amd64.iso                     " \ #
 #		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-legacy-amd64.iso                 ./${WORK_DIRS}/iso/dvd/mantic-desktop-legacy-amd64.iso              " \ #
 	)
@@ -210,6 +216,8 @@
 		"debian-11.*-${ARC_TYPE}-DVD-1.iso"                 \
 		"debian-10.*-${ARC_TYPE}-DVD-1.iso"                 \
 #		"mantic-live-server-${ARC_TYPE}.iso"                \ #
+		"noble-live-server-${ARC_TYPE}.iso"                 \
+		"ubuntu-24.04*-live-server-${ARC_TYPE}.iso"         \
 		"ubuntu-23.10*-live-server-${ARC_TYPE}.iso"         \
 		"ubuntu-23.04*-live-server-${ARC_TYPE}.iso"         \
 		"ubuntu-22.10*-live-server-${ARC_TYPE}.iso"         \
@@ -235,6 +243,8 @@
 		"debian-live-11.*-${ARC_TYPE}-lxde.iso"             \
 		"debian-live-10.*-${ARC_TYPE}-lxde.iso"             \
 #		"mantic-desktop-${ARC_TYPE}.iso"                    \ #
+		"noble-desktop-${ARC_TYPE}.iso"                     \
+		"ubuntu-24.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-23.10*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-23.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-22.10*-desktop-${ARC_TYPE}.iso"             \
@@ -242,6 +252,8 @@
 		"ubuntu-20.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-18.04*-desktop-${ARC_TYPE}.iso"             \
 #		"mantic-desktop-legacy-${ARC_TYPE}.iso"             \ #
+		"noble-desktop-legacy-${ARC_TYPE}.iso"              \
+		"ubuntu-24.04*-desktop-legacy-${ARC_TYPE}.iso"      \
 		"ubuntu-23.10*-desktop-legacy-${ARC_TYPE}.iso"      \
 		"ubuntu-23.04*-desktop-legacy-${ARC_TYPE}.iso"      \
 		"[]"                                                \
@@ -253,6 +265,8 @@
 		"debian-live-11.*-${ARC_TYPE}-lxde.iso"             \
 		"debian-live-10.*-${ARC_TYPE}-lxde.iso"             \
 #		"mantic-desktop-${ARC_TYPE}.iso"                    \ #
+		"noble-desktop-${ARC_TYPE}.iso"                     \
+		"ubuntu-24.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-23.10*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-23.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-22.10*-desktop-${ARC_TYPE}.iso"             \
@@ -260,6 +274,8 @@
 		"ubuntu-20.04*-desktop-${ARC_TYPE}.iso"             \
 		"ubuntu-18.04*-desktop-${ARC_TYPE}.iso"             \
 #		"mantic-desktop-legacy-${ARC_TYPE}.iso"             \ #
+		"noble-desktop-legacy-${ARC_TYPE}.iso"              \
+		"ubuntu-24.04*-desktop-legacy-${ARC_TYPE}.iso"      \
 		"ubuntu-23.10*-desktop-legacy-${ARC_TYPE}.iso"      \
 		"ubuntu-23.04*-desktop-legacy-${ARC_TYPE}.iso"      \
 		"[]"                                                \
@@ -331,7 +347,8 @@
 		"ubuntu             jammy.server        https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-04-21  2032-04-21  -           Jammy_Jellyfish     Ubuntu_22.04(Jammy_Jellyfish):LTS   " \
 # x		"ubuntu             kinetic.server      https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-live-server-${ARC_TYPE}.iso                                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
 		"ubuntu             lunar.server        https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
-		"ubuntu             mantic.server       https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-live-server-${ARC_TYPE}.iso                                                          ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+		"ubuntu             mantic.server       https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-live-server-${ARC_TYPE}.iso                                                          ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  2024-07-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+#		"ubuntu             noble.server        https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-live-server-${ARC_TYPE}.iso                                                           ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2024-04-25  2029-05-31  -           Noble_Numbat        Ubuntu_24.04(Noble_Numbat):LTS      " \ #
 #		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/37/Server/x86_64/iso/Fedora-Server-dvd-x86_64-37-[0-9.]*.iso                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2022-11-15  2023-11-14  -           kernel_6.0          -                                   " \ #
 		"fedora             -                   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                   ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2023-04-18  2024-05-14  -           kernel_6.2          -                                   " \
 #		"centos             -                   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                          ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           kickstart_common.cfg                            2019-xx-xx  2024-05-31  -           RHEL_8.x            -                                   " \ #
@@ -355,8 +372,13 @@
 # x		"ubuntu             kinetic.desktop     https://releases.ubuntu.com/kinetic/ubuntu-22.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                             ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2022-10-20  2023-07-20  -           Kinetic_Kudu        Ubuntu_22.10(Kinetic_Kudu)          " \ #
 		"ubuntu             lunar.desktop       https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
 		"ubuntu             lunar.legacy        http://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
-		"ubuntu             mantic.desktop      https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
-		"ubuntu             mantic.legacy       https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                       ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+		"ubuntu             mantic.desktop      https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  2024-07-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+		"ubuntu             mantic.legacy       https://cdimage.ubuntu.com/releases/noble/release/ubuntu-23.10[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                        ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  2024-07-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+#		"ubuntu             noble.desktop       https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2024-04-25  2029-05-31  -           Noble_Numbat        Ubuntu_24.04(Noble_Numbat):LTS      " \ #
+#		"ubuntu             noble.legacy        https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-24.04[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                       ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2024-04-25  2029-05-31  -           Noble_Numbat        Ubuntu_24.04(Noble_Numbat):LTS      " \ #
+#		"ubuntu             noble.server        http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/noble-live-server-${ARC_TYPE}.iso                                                ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2024-04-25  2029-05-31  -           Noble_Numbat        Ubuntu_24.04(Noble_Numbat):LTS      " \ #
+#		"ubuntu             noble.desktop       http://cdimage.ubuntu.com/daily-live/current/noble-desktop-${ARC_TYPE}.iso                                                                  ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2024-04-25  2029-05-31  -           Noble_Numbat        Ubuntu_24.04(Noble_Numbat):LTS      " \ #
+#		"ubuntu             noble.legacy        http://cdimage.ubuntu.com/daily-legacy/current/noble-desktop-legacy-${ARC_TYPE}.iso                                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2024-04-25  2029-05-31  -           Noble_Numbat        Ubuntu_24.04(Noble_Numbat):LTS      " \ #
 #		"ubuntu             mantic.server       http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/mantic-live-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
 #		"ubuntu             mantic.desktop      http://cdimage.ubuntu.com/daily-live/current/mantic-desktop-${ARC_TYPE}.iso                                                                 ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
 #		"ubuntu             mantic.legacy       http://cdimage.ubuntu.com/daily-legacy/current/mantic-desktop-legacy-${ARC_TYPE}.iso                                                        ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  20xx-xx-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \ #
@@ -4079,5 +4101,6 @@ main () {
 #   .   jammy       ubuntu 22.04    Jammy Jellyfish LTS                       #
 #   x   kinetic     ubuntu 22.10    Kinetic Kudu            end of support    #
 #   .   lunar       ubuntu 23.04    Lunar Lobster                             #
-#   .   mantic      ubuntu 23.10    Mantic Minotaur         test version      #
+#   .   mantic      ubuntu 23.10    Mantic Minotaur                           #
+#   -   noble       ubuntu 24.04    Noble Numbat            test version      #
 ### eof #######################################################################
