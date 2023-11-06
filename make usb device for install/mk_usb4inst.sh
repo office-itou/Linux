@@ -373,7 +373,7 @@
 		"ubuntu             lunar.desktop       https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
 		"ubuntu             lunar.legacy        http://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-04-20  2024-01-20  -           Lunar_Lobster       Ubuntu_23.04(Lunar_Lobster)         " \
 		"ubuntu             mantic.desktop      https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2023-10-12  2024-07-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
-		"ubuntu             mantic.legacy       https://cdimage.ubuntu.com/releases/noble/release/ubuntu-23.10[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                        ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  2024-07-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
+		"ubuntu             mantic.legacy       https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                       ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2023-10-12  2024-07-xx  -           Mantic_Minotaur     Ubuntu_23.10(Mantic_Minotaur)       " \
 #		"ubuntu             noble.desktop       https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2024-04-25  2029-05-31  -           Noble_Numbat        Ubuntu_24.04(Noble_Numbat):LTS      " \ #
 #		"ubuntu             noble.legacy        https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-24.04[0-9.]*-desktop-legacy-${ARC_TYPE}.iso                                       ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2024-04-25  2029-05-31  -           Noble_Numbat        Ubuntu_24.04(Noble_Numbat):LTS      " \ #
 #		"ubuntu             noble.server        http://cdimage.ubuntu.com/ubuntu-server/daily-live/current/noble-live-server-${ARC_TYPE}.iso                                                ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg,nocloud-ubuntu-user-data     2024-04-25  2029-05-31  -           Noble_Numbat        Ubuntu_24.04(Noble_Numbat):LTS      " \ #
@@ -1441,25 +1441,19 @@ function funcMake_preseed_sub_command () {
 		 	if [ -z "${PROG_PRAM}" ]; then
 		 		ROOT_DIRS="/target"
 		 		COMD_LINE=""
-		 		CONF_FILE=""
+		 		CONF_FILE="${WORK_DIRS}/preseed.cfg"
 		 		TEMP_FILE=""
-		 		if [ -d /preseed/. ]; then
-		 			PROG_PATH="/preseed/${PROG_NAME}"
-		 			CONF_FILE=/preseed/preseed.cfg
-		 		else
-		 			PROG_PATH="$0"
-		 			for COMD_LINE in $(cat /proc/cmdline)
-		 			do
-		 				case "${COMD_LINE}" in
-		 					preseed/file=* ) CONF_FILE="${COMD_LINE#preseed/file=}"; break;;
-		 					file=*         ) CONF_FILE="${COMD_LINE#file=}"        ; break;;
-		 				esac
-		 			done
-		 		fi
-		 		echo "${PROG_NAME}: PROG_PATH=${PROG_PATH}"
+		 		PROG_PATH="$0"
+		 		for COMD_LINE in $(cat /proc/cmdline)
+		 		do
+		 			case "${COMD_LINE}" in
+		 				preseed/file=* ) CONF_FILE="${COMD_LINE#preseed/file=}"; break;;
+		 				file=*         ) CONF_FILE="${COMD_LINE#file=}"        ; break;;
+		 			esac
+		 		done
 		 		if [ -z "${CONF_FILE}" ] || [ ! -f "${CONF_FILE}" ]; then
 		 			echo "${PROG_NAME}: not found preseed file [${CONF_FILE}]"
-		 			exit 0
+		 			exit 1
 		 		fi
 		 		echo "${PROG_NAME}: now found preseed file [${CONF_FILE}]"
 		 		cp -a "${PROG_PATH}" "${ROOT_DIRS}/tmp/"
@@ -1682,48 +1676,80 @@ function funcMake_conf_preseed () {
 		> "./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg"
 #	fi
 	if [[ -f "./${WORK_DIRS}/img/preseed/${DIR}/preseed_sub_command.sh" ]]; then
-		case "${DIR}" in
-			debian )
-				IFS= INS_STR=$(
-					cat <<- '_EOT_'
-						  d-i preseed/late_command string \\\
-						      LANG=C /hd-media/preseed/debian/preseed_sub_command.sh;
+#		OLD_IFS=${IFS}
+		WRK_PATH="./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg"
+		# --- debian / ubuntu -------------------------------------------------
+		IFS= INS_STR=$(
+			cat <<- '_EOT_'
+				  d-i preseed/late_command string \\\
+				      mkdir -p /target/var/log/installer; \\\
+				      LANG=C /cdrom/preseed/preseed_sub_command.sh 2>&1 > \\\
+				      /target/var/log/installer/preseed_sub_command.log;
 _EOT_
-				)
-				IFS=${OLD_IFS}
-				WRK_STR='d-i[[:blank:]]\+preseed\/late_command[[:blank:]]\+'
-				sed -i "./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg" \
-				    -e "s%^[[:blank:]]\*\(${WRK_STR}\)%# \1%"          \
-				    -e "/\(${WRK_STR}\)/i \\${INS_STR}"
-				;;
-			ubuntu )
-				IFS= INS_STR=$(
-					cat <<- '_EOT_'
-						  d-i preseed/late_command string \\\
-						      LANG=C /preseed/preseed_sub_command.sh;
+		)
+		IFS=${OLD_IFS}
+		WRK_STR='d-i[[:blank:]]\+preseed\/late_command[[:blank:]]\+'
+		sed -i "${WRK_PATH}"                                   \
+		    -e "s%^[[:blank:]]\*\(${WRK_STR}\)%# \1%"          \
+		    -e "/\(${WRK_STR}\)/i \\${INS_STR}"
+		# --- ubuntu ----------------------------------------------------------
+		IFS= INS_STR=$(
+			cat <<- '_EOT_'
+				  ubiquity ubiquity/success_command string \\\
+				      mkdir -p /target/var/log/installer; \\\
+				      LANG=C /cdrom/preseed/preseed_sub_command.sh 2>&1 > \\\
+				      /target/var/log/installer/preseed_sub_command.log;
 _EOT_
-				)
-				IFS=${OLD_IFS}
-				WRK_STR='d-i[[:blank:]]\+preseed\/late_command[[:blank:]]\+'
-				sed -i "./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg" \
-				    -e "s%^[[:blank:]]\*\(${WRK_STR}\)%# \1%"          \
-				    -e "/\(${WRK_STR}\)/i \\${INS_STR}"
-				# -------------------------------------------------------------
-				IFS= INS_STR=$(
-					cat <<- '_EOT_'
-						  ubiquity ubiquity/success_command string \\\
-						      LANG=C /preseed/ubuntu/preseed_sub_command.sh 2>&1 | \\\
-						      tee -a /target/var/log/installer_preseed_sub_command.log;
-_EOT_
-				)
-				IFS=${OLD_IFS}
-				WRK_STR='ubiquity[[:blank:]]\+ubiquity\/success_command[[:blank:]]\+'
-				sed -i "./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg" \
-				    -e "s%^[[:blank:]]\*\(${WRK_STR}\)%# \1%"          \
-				    -e "/\(${WRK_STR}\)/i \\${INS_STR}"
-				;;
-		esac
+		)
+		IFS=${OLD_IFS}
+		WRK_STR='ubiquity[[:blank:]]\+ubiquity\/success_command[[:blank:]]\+'
+		sed -i "${WRK_PATH}"                                   \
+		    -e "s%^[[:blank:]]\*\(${WRK_STR}\)%# \1%"          \
+		    -e "/\(${WRK_STR}\)/i \\${INS_STR}"
 	fi
+#	if [[ -f "./${WORK_DIRS}/img/preseed/${DIR}/preseed_sub_command.sh" ]]; then
+#		case "${DIR}" in
+#			debian )
+#				IFS= INS_STR=$(
+#					cat <<- '_EOT_'
+#						  d-i preseed/late_command string \\\
+#						      LANG=C /hd-media/preseed/debian/preseed_sub_command.sh;
+#_EOT_
+#				)
+#				IFS=${OLD_IFS}
+#				WRK_STR='d-i[[:blank:]]\+preseed\/late_command[[:blank:]]\+'
+#				sed -i "./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg" \
+#				    -e "s%^[[:blank:]]\*\(${WRK_STR}\)%# \1%"          \
+#				    -e "/\(${WRK_STR}\)/i \\${INS_STR}"
+#				;;
+#			ubuntu )
+#				IFS= INS_STR=$(
+#					cat <<- '_EOT_'
+#						  d-i preseed/late_command string \\\
+#						      LANG=C /preseed/preseed_sub_command.sh;
+#_EOT_
+#				)
+#				IFS=${OLD_IFS}
+#				WRK_STR='d-i[[:blank:]]\+preseed\/late_command[[:blank:]]\+'
+#				sed -i "./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg" \
+#				    -e "s%^[[:blank:]]\*\(${WRK_STR}\)%# \1%"          \
+#				    -e "/\(${WRK_STR}\)/i \\${INS_STR}"
+#				# -------------------------------------------------------------
+#				IFS= INS_STR=$(
+#					cat <<- '_EOT_'
+#						  ubiquity ubiquity/success_command string \\\
+#						      LANG=C /preseed/ubuntu/preseed_sub_command.sh 2>&1 | \\\
+#						      tee -a /target/var/log/installer_preseed_sub_command.log;
+#_EOT_
+#				)
+#				IFS=${OLD_IFS}
+#				WRK_STR='ubiquity[[:blank:]]\+ubiquity\/success_command[[:blank:]]\+'
+#				sed -i "./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg" \
+#				    -e "s%^[[:blank:]]\*\(${WRK_STR}\)%# \1%"          \
+#				    -e "/\(${WRK_STR}\)/i \\${INS_STR}"
+#				;;
+#		esac
+#	fi
 #	if [[ ! -f "./${WORK_DIRS}/img/preseed/${DIR}/preseed_old.cfg" ]]; then
 		cp --preserve=timestamps --no-preserve=mode,ownership --backup "./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg" "./${WORK_DIRS}/img/preseed/${DIR}/preseed_old.cfg"
 		sed "./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg"                   \
