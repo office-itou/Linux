@@ -402,6 +402,8 @@
 #		"debian             bullseye.live       https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/${ARC_TYPE}/iso-hybrid/debian-live-11.[0-9.]*-${ARC_TYPE}-lxde.iso         ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2021-08-14  2026-xx-xx  -           oldstable           Debian_11.xx(bullseye)              " \ #
 #		"debian             bookworm.live       https://cdimage.debian.org/cdimage/release/current-live/${ARC_TYPE}/iso-hybrid/debian-live-12.[0-9.]*-${ARC_TYPE}-lxde.iso                  ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              2023-06-10  20xx-xx-xx  -           stable              Debian_12.xx(bookworm)              " \ #
 #		"debian             testing.live        https://cdimage.debian.org/cdimage/weekly-live-builds/${ARC_TYPE}/iso-hybrid/debian-live-testing-${ARC_TYPE}-lxde.iso                       ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_debian.cfg                              20xx-xx-xx  20xx-xx-xx  -           testing             Debian_xx.xx(testing)               " \ #
+#		"ubuntu             bionic              https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04[0-9.]*-server-${ARC_TYPE}.iso                                               ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           Bionic_Beaver       Ubuntu_18.04(Bionic_Beaver):LTS     " \ #
+#		"ubuntu             bionic.desktop      https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-${ARC_TYPE}.iso                                                              ./${WORK_DIRS}/iso/dvd                      -                                           -                   -           preseed_ubuntu.cfg                              2018-04-26  2028-04-26  -           Bionic_Beaver       Ubuntu_18.04(Bionic_Beaver):LTS     " \ #
 #	)	#0:distribution     1:codename          2:download URL                                                                                                                              3:directory                                 4:alias                                     5:iso file size     6:file date 7:definition file                               8:release   9:support   10:status   11:memo1            12:memo2                            
 # --- development list [ end ] ------------------------------------------------
 
@@ -1441,7 +1443,7 @@ function funcMake_preseed_sub_command () {
 		 	if [ -z "${PROG_PRAM}" ]; then
 		 		ROOT_DIRS="/target"
 		 		COMD_LINE=""
-		 		CONF_FILE="${WORK_DIRS}/preseed.cfg"
+		 		CONF_FILE=""
 		 		TEMP_FILE=""
 		 		PROG_PATH="$0"
 		 		for COMD_LINE in $(cat /proc/cmdline)
@@ -1451,6 +1453,14 @@ function funcMake_preseed_sub_command () {
 		 				file=*         ) CONF_FILE="${COMD_LINE#file=}"        ; break;;
 		 			esac
 		 		done
+		 		if [ -z "${CONF_FILE}" ]; then
+		 			CONF_FILE="${WORK_DIRS}/preseed.cfg"
+		 		else
+		 			case "${DIST_NAME}" in
+		 				debian )                                 ;;
+		 				ubuntu ) CONF_FILE="/preseed/preseed.cfg";;
+		 			esac
+		 		fi
 		 		if [ -z "${CONF_FILE}" ] || [ ! -f "${CONF_FILE}" ]; then
 		 			echo "${PROG_NAME}: not found preseed file [${CONF_FILE}]"
 		 			exit 1
@@ -1663,6 +1673,7 @@ function funcMake_conf_preseed () {
 	declare CONF_NAME="$1"
 	declare DIR="$(echo "${CONF_NAME##*/}" | sed -n -e 's/^.*\(debian\|ubuntu\).*$/\1/p')"
 	declare WRK_PATH
+	declare WRK_CMD
 	declare WRK_STR
 	declare INS_STR
 
@@ -1680,14 +1691,14 @@ function funcMake_conf_preseed () {
 		WRK_PATH="./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg"
 		# --- debian / ubuntu -------------------------------------------------
 		case "${DIR}" in
-			debian ) WRK_STR="/hd-media/preseed/debian/preseed_sub_command.sh";;
-			ubuntu ) WRK_STR="/preseed/preseed_sub_command.sh";;
+			debian ) WRK_CMD="/hd-media/preseed/debian/preseed_sub_command.sh";;
+			ubuntu ) WRK_CMD="/preseed/preseed_sub_command.sh";;
 		esac
 		IFS= INS_STR=$(
 			cat <<- _EOT_
 				  d-i preseed/late_command string \\\\\\
 				      mkdir -p /target/var/log/installer; \\\\\\
-				      LANG=C ${WRK_STR} 2>&1 > \\\\\\
+				      LANG=C ${WRK_CMD} 2>&1 > \\\\\\
 				      /target/var/log/installer/preseed_sub_command.log;
 _EOT_
 		)
@@ -1701,7 +1712,7 @@ _EOT_
 			cat <<- _EOT_
 				  ubiquity ubiquity/success_command string \\\\\\
 				      mkdir -p /target/var/log/installer; \\\\\\
-				      LANG=C /preseed/ubuntu/preseed_sub_command.sh 2>&1 > \\\\\\
+				      LANG=C ${WRK_CMD} 2>&1 > \\\\\\
 				      /target/var/log/installer/preseed_sub_command.log;
 _EOT_
 		)

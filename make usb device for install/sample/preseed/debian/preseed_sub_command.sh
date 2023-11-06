@@ -25,23 +25,25 @@
 		COMD_LINE=""
 		CONF_FILE=""
 		TEMP_FILE=""
-		if [ -d /preseed/. ]; then
-			PROG_PATH="/preseed/${PROG_NAME}"
-			CONF_FILE=/preseed/preseed.cfg
+		PROG_PATH="$0"
+		for COMD_LINE in $(cat /proc/cmdline)
+		do
+			case "${COMD_LINE}" in
+				preseed/file=* ) CONF_FILE="${COMD_LINE#preseed/file=}"; break;;
+				file=*         ) CONF_FILE="${COMD_LINE#file=}"        ; break;;
+			esac
+		done
+		if [ -z "${CONF_FILE}" ]; then
+			CONF_FILE="${WORK_DIRS}/preseed.cfg"
 		else
-			PROG_PATH="$0"
-			for COMD_LINE in $(cat /proc/cmdline)
-			do
-				case "${COMD_LINE}" in
-					preseed/file=* ) CONF_FILE="${COMD_LINE#preseed/file=}"; break;;
-					file=*         ) CONF_FILE="${COMD_LINE#file=}"        ; break;;
-				esac
-			done
+			case "${DIST_NAME}" in
+				debian )                                 ;;
+				ubuntu ) CONF_FILE="/preseed/preseed.cfg";;
+			esac
 		fi
-		echo "${PROG_NAME}: PROG_PATH=${PROG_PATH}"
 		if [ -z "${CONF_FILE}" ] || [ ! -f "${CONF_FILE}" ]; then
 			echo "${PROG_NAME}: not found preseed file [${CONF_FILE}]"
-			exit 0
+			exit 1
 		fi
 		echo "${PROG_NAME}: now found preseed file [${CONF_FILE}]"
 		cp -a "${PROG_PATH}" "${ROOT_DIRS}/tmp/"
