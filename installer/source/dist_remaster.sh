@@ -40,6 +40,7 @@
 ##	2023/10/13 000.0000 J.Itou         リスト更新: Ubuntu_23.10(Mantic_Minotaur) 更新
 ##	2023/10/21 000.0000 J.Itou         リスト更新: openSUSE 15.6 追加 / 処理見直し
 ##	2023/11/05 000.0000 J.Itou         リスト更新: Ubuntu_24.04(Noble_Numbat) 追加
+##	2023/11/06 000.0000 J.Itou         処理見直し
 ##	YYYY/MM/DD 000.0000 xxxxxxxxxxxxxx 
 ###############################################################################
 #	sudo apt-get install curl xorriso isomd5sum isolinux
@@ -697,15 +698,13 @@ funcMenu () {
 }
 # -----------------------------------------------------------------------------
 funcCreate_late_command () {
+	declare -r COMD_FILE="$1/preseed_sub_command.sh"
 	funcPrintf "    create_late_command"
-	local DIR_PRESEED="$1"
-	local OLD_IFS
-	local INS_STR
-	local DIR_CDROM
-	cat <<- '_EOT_SH_' | sed 's/^ *//g' > ${DIR_PRESEED}/sub_late_command.sh
-		#!/bin/bash
+	# -------------------------------------------------------------------------
+	cat <<- '_EOT_SH_' | sed 's/^ *//g' > "${COMD_FILE}"
+		#!/bin/sh
 		
-		# --- Initialization ----------------------------------------------------------
+		### initialization ############################################################
 		#	set -n								# Check for syntax errors
 		#	set -x								# Show command and argument expansion
 		 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -715,144 +714,65 @@ funcCreate_late_command () {
 		
 		 	trap 'exit 1' 1 2 3 15
 		
+		 	readonly PROG_PRAM="$@"
+		 	readonly PROG_NAME="${0##*/}"
+		 	readonly WORK_DIRS="${0%/*}"
+		 	readonly DIST_NAME="$(uname -v | tr '[A-Z]' '[a-z]' | sed -n -e 's/.*\(debian\|ubuntu\).*/\1/p')"
+		 	echo "${PROG_NAME}: === Start ==="
+		 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
+		 	echo "${PROG_NAME}: PROG_NAME=${PROG_NAME}"
+		 	echo "${PROG_NAME}: WORK_DIRS=${WORK_DIRS}"
+		 	echo "${PROG_NAME}: DIST_NAME=${DIST_NAME}"
+		 	#--------------------------------------------------------------------------
+		 	if [ -z "${PROG_PRAM}" ]; then
+		 		ROOT_DIRS="/target"
+		 		COMD_LINE=""
+		 		CONF_FILE="${WORK_DIRS}/preseed.cfg"
+		 		TEMP_FILE=""
+		 		PROG_PATH="$0"
+		 		for COMD_LINE in $(cat /proc/cmdline)
+		 		do
+		 			case "${COMD_LINE}" in
+		 				preseed/file=* ) CONF_FILE="${COMD_LINE#preseed/file=}"; break;;
+		 				file=*         ) CONF_FILE="${COMD_LINE#file=}"        ; break;;
+		 			esac
+		 		done
+		 		if [ -z "${CONF_FILE}" ] || [ ! -f "${CONF_FILE}" ]; then
+		 			echo "${PROG_NAME}: not found preseed file [${CONF_FILE}]"
+		 			exit 1
+		 		fi
+		 		echo "${PROG_NAME}: now found preseed file [${CONF_FILE}]"
+		 		cp -a "${PROG_PATH}" "${ROOT_DIRS}/tmp/"
+		 		cp -a "${CONF_FILE}" "${ROOT_DIRS}/tmp/"
+		 		TEMP_FILE="/tmp/${CONF_FILE##*/}"
+		 		echo "${PROG_NAME}: ROOT_DIRS=${ROOT_DIRS}"
+		 		echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
+		 		echo "${PROG_NAME}: CONF_FILE=${CONF_FILE}"
+		 		echo "${PROG_NAME}: TEMP_FILE=${TEMP_FILE}"
+		 		in-target --pass-stdout bash -c "LANG=C /tmp/${PROG_NAME} ${TEMP_FILE}"
+		 		exit 0
+		 	fi
+		 	ROOT_DIRS=""
+		 	TEMP_FILE="${PROG_PRAM}"
+		 	echo "${PROG_NAME}: ROOT_DIRS=${ROOT_DIRS}"
+		 	echo "${PROG_NAME}: TEMP_FILE=${TEMP_FILE}"
+		
+		### common ###########################################################
 		# --- IPv4 netmask conversion -------------------------------------------------
 		funcIPv4GetNetmask () {
-		 	local INP_ADDR="$@"
-		 	local DEC_ADDR
-		
-		 	DEC_ADDR=$((0xFFFFFFFF ^ ((2 ** (32-$((${INP_ADDR}))))-1)))
+		 	readonly INP_ADDR="$1"
+		 	readonly DEC_ADDR="$((0xFFFFFFFF ^ (2**(32-INP_ADDR)-1)))"
 		 	printf '%d.%d.%d.%d' \
-		 	    $((${DEC_ADDR} >> 24)) \
-		 	    $(((${DEC_ADDR} >> 16) & 0xFF)) \
-		 	    $(((${DEC_ADDR} >> 8) & 0xFF)) \
-		 	    $((${DEC_ADDR} & 0xFF))
-		}
-		
-		# --- Get network interface information ---------------------------------------
-		 	NIC_INF4="`sed -n '/^iface.*static$/,/^iface/ s/^[ \t]*//gp' /etc/network/interfaces`"
-		 	NIC_NAME="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"iface\" {print $2;}'`"
-		 	NIC_IPV4="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"address\" {print $2;}'`"
-		 	NIC_BIT4="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"address\" {print $3;}'`"
-		 	NIC_GATE="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"gateway\" {print $2;}'`"
-		 	NIC_DNS4="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"dns-nameservers\" {print $2;}'`"
-		 	NIC_WGRP="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"dns-search\" {print $2;}'`"
-		 	NIC_MASK="`funcIPv4GetNetmask "${NIC_BIT4}"`"
-		 	NIC_MADR="`LANG=C ip address show dev "${NIC_NAME}" | sed -n '/link\/ether/ s/^[ \t]*//gp' | awk '{gsub(":","",$2); print $2;}'`"
-		 	CON_NAME="ethernet_${NIC_MADR}_cable"
-		#	NIC_DNS4="`LANG=C ip -4 rule show dev "${NIC_NAME}" default | awk '{print $3;}'`"
-		#	NIC_INF6="`LANG=C ip -6 address show dev "${NIC_NAME}" | sed -n '/scope global/p'`"
-		#	NIC_IPV6="`echo "${NIC_INF6[@]}" | sed -n '/scope global/p' | sed -n 's/^[ \t]*//gp' | awk -F '[ /]' '{print $2;}'`"
-		#	NIC_BIT6="`echo "${NIC_INF6[@]}" | sed -n '/scope global/p' | sed -n 's/^[ \t]*//gp' | awk -F '[ /]' '{print $3;}'`"
-		#	NIC_DNS6="`LANG=C ip -6 rule show dev "${NIC_NAME}" default | awk '{print $3;}'`"
-		
-		# --- Set up IPv4/IPv6 --------------------------------------------------------
-		 	if [ -d /etc/connman ]; then
-		 		mkdir -p /var/lib/connman/${CON_NAME}
-		 		cat <<- _EOT_ | sed 's/^ *//g' > /var/lib/connman/settings
-		 			[global]
-		 			OfflineMode=false
-		 			
-		 			[Wired]
-		 			Enable=true
-		 			Tethering=false
-		_EOT_
-		 		cat <<- _EOT_ | sed 's/^ *//g' > /var/lib/connman/${CON_NAME}/settings
-		 			[${CON_NAME}]
-		 			Name=Wired
-		 			AutoConnect=true
-		 			Modified=
-		 			IPv6.method=auto
-		 			IPv6.privacy=preferred
-		 			IPv6.DHCP.DUID=
-		 			IPv4.method=manual
-		 			IPv4.DHCP.LastAddress=
-		 			IPv4.netmask_prefixlen=${NIC_BIT4}
-		 			IPv4.local_address=${NIC_IPV4}
-		 			IPv4.gateway=${NIC_GATE}
-		 			Nameservers=${NIC_DNS4};127.0.0.1;::1;
-		 			Domains=${NIC_WGRP};
-		 			Timeservers=ntp.nict.jp;
-		 			mDNS=true
-		_EOT_
-		 	fi
-		 	if [ -d /etc/netplan ]; then
-		 		cat <<- _EOT_ > /etc/netplan/99-network-manager-static.yaml
-		 			network:
-		 			  version: 2
-		 			  ethernets:
-		 			    ${NIC_NAME}:
-		 			      dhcp4: false
-		 			      addresses: [ ${NIC_IPV4}/${NIC_BIT4} ]
-		 			      gateway4: ${NIC_GATE}
-		 			      nameservers:
-		 			          search: [ ${NIC_WGRP} ]
-		 			          addresses: [ ${NIC_DNS4} ]
-		 			      dhcp6: true
-		 			      ipv6-privacy: true
-		 _EOT_
-		 	fi
-		
-		# --- Termination -------------------------------------------------------------
-		 	exit 0
-		# --- EOF ---------------------------------------------------------------------
-_EOT_SH_
-	chmod 544 "${DIR_PRESEED}/sub_late_command.sh"
-	OLD_IFS=${IFS}
-	case "basename ${DIR_PRESEED}" in
-		"." )	DIR_CDROM="";;								# mini.iso
-		*   )	DIR_CDROM="/cdrom/preseed";;				# dvd/netinst
-	esac
-	IFS= INS_STR=$(
-		cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
-			      cp -p ${DIR_CDROM}/sub_late_command.sh /target/tmp/; \\\\\\n
-			      in-target --pass-stdout /tmp/sub_late_command.sh;
-_EOT_
-	)
-	sed -i "${DIR_PRESEED}/preseed.cfg"                              \
-	    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/' \
-	    -e "/preseed\/late_command/a \\${INS_STR}"
-	IFS=${OLD_IFS}
-}
-# -----------------------------------------------------------------------------
-funcCreate_success_command () {
-	funcPrintf "    create_success_command"
-	local DIR_PRESEED="$1"
-	local OLD_IFS
-	local INS_STR
-	cat <<- '_EOT_SH_' | sed 's/^ *//g' > ${DIR_PRESEED}/sub_success_command.sh
-		#!/bin/bash
-		
-		# --- Initialization ----------------------------------------------------------
-		#	set -n								# Check for syntax errors
-		#	set -x								# Show command and argument expansion
-		 	set -o ignoreeof					# Do not exit with Ctrl+D
-		 	set +m								# Disable job control
-		 	set -e								# Ends with status other than 0
-		 	set -u								# End with undefined variable reference
-		
-		 	trap 'exit 1' 1 2 3 15
-		
-		 	readonly PGM_NAME=`basename $0 | sed -e 's/\..*$//'`
-		 	readonly LOG_NAME="/var/log/installer/${PGM_NAME}.log"
-		
-		# --- IPv4 netmask conversion -------------------------------------------------
-		funcIPv4GetNetmask () {
-		 	local INP_ADDR="$@"
-		 	local DEC_ADDR
-		
-		 	DEC_ADDR=$((0xFFFFFFFF ^ ((2 ** (32-$((${INP_ADDR}))))-1)))
-		 	printf '%d.%d.%d.%d' \
-		 	    $((${DEC_ADDR} >> 24)) \
-		 	    $(((${DEC_ADDR} >> 16) & 0xFF)) \
-		 	    $(((${DEC_ADDR} >> 8) & 0xFF)) \
-		 	    $((${DEC_ADDR} & 0xFF))
-		}
+		 	    $(( DEC_ADDR >> 24        )) \
+		 	    $(((DEC_ADDR >> 16) & 0xFF)) \
+		 	    $(((DEC_ADDR >>  8) & 0xFF)) \
+		 	    $(( DEC_ADDR        & 0xFF))
+		 }
 		
 		# --- IPv4 netmask bit conversion ---------------------------------------------
 		funcIPv4GetNetmaskBits () {
-		 	local INP_ADDR="$@"
-		
-		 	echo ${INP_ADDR} | \
+		 	readonly INP_ADDR="$1"
+		 	echo "${INP_ADDR}" | \
 		 	    awk -F '.' '{
 		 	        split($0, octets);
 		 	        for (i in octets) {
@@ -862,159 +782,511 @@ funcCreate_success_command () {
 		 	    }'
 		}
 		
+		### subroutine ################################################################
 		# --- packages ----------------------------------------------------------------
 		funcInstallPackages () {
-		 	echo "funcInstallPackages" 2>&1 | tee -a /target/${LOG_NAME}
-		 	LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' /cdrom/preseed/preseed.cfg  | \
-		 	           sed -z 's/\n//g'                                                                 | \
-		 	           sed -e 's/.* multiselect *//'                                                      \
-		 	               -e 's/[,|\\\\]//g'                                                             \
-		 	               -e 's/\t/ /g'                                                                  \
-		 	               -e 's/  */ /g'                                                                 \
-		 	               -e 's/^ *//'`
-		 	LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' /cdrom/preseed/preseed.cfg | \
-		 	           sed -z 's/\n//g'                                                                 | \
-		 	           sed -e 's/.* string *//'                                                           \
-		 	               -e 's/[,|\\\\]//g'                                                             \
-		 	               -e 's/\t/ /g'                                                                  \
-		 	               -e 's/  */ /g'                                                                 \
-		 	               -e 's/^ *//'`
-		 	# -------------------------------------------------------------------------
-		 	sed -i /target/etc/apt/sources.list \
+		 	echo "${PROG_NAME}: funcInstallPackages"
+		 	#--------------------------------------------------------------------------
+		 	LIST_TASK="$(sed -n -e '/^[[:blank:]]*tasksel[[:blank:]]\+tasksel\/first[[:blank:]]\+/,/[^\\]$/p' "${TEMP_FILE}" | \
+		 	             sed -z -e 's/\\\n//g'                                                                               | \
+		 	             sed -e 's/^.*[[:blank:]]\+multiselect[[:blank:]]\+//'                                                 \
+		 	                 -e 's/[[:blank:]]\+/ /g')"
+		 	LIST_PACK="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+pkgsel\/include[[:blank:]]\+/,/[^\\]$/p'    "${TEMP_FILE}" | \
+		 	             sed -z -e 's/\\\n//g'                                                                               | \
+		 	             sed -e 's/^.*[[:blank:]]\+string[[:blank:]]\+//'                                                      \
+		 	                 -e 's/[[:blank:]]\+/ /g')"
+		 	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK}"
+		 	echo "${PROG_NAME}: LIST_PACK=${LIST_PACK}"
+		 	#--------------------------------------------------------------------------
+		 	LIST_DPKG="$(LANG=C dpkg-query --list ${LIST_PACK} 2>&1 | grep -E -v '^ii|^\+|^\||^Desired' || true)"
+		 	if [ -z "${LIST_DPKG}" ]; then
+		 		echo "${PROG_NAME}: Finish the installation"
+		 		return
+		 	fi
+		 	echo "${PROG_NAME}: Run the installation"
+		 	echo "${PROG_NAME}: LIST_DPKG="
+		 	echo "${PROG_NAME}: <<<"
+		 	echo "${LIST_DPKG}"
+		 	echo "${PROG_NAME}: >>>"
+		 	#--------------------------------------------------------------------------
+		 	sed -i "${ROOT_DIRS}/etc/apt/sources.list" \
 		 	    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
-		 	set +e
-		 	in-target --pass-stdout bash -c "
-		 		apt-get -qq    update               2>&1 | tee -a ${LOG_NAME}
-		 		apt-get -qq -y upgrade              2>&1 | tee -a ${LOG_NAME}
-		 		apt-get -qq -y dist-upgrade         2>&1 | tee -a ${LOG_NAME}
-		 		apt-get -qq -y install ${LIST_PACK} 2>&1 | tee -a ${LOG_NAME}
-		 		if [ \"`which tasksel 2> /dev/null`\" != \"\" ]; then
-		 			tasksel install ${LIST_TASK}    2>&1 | tee -a ${LOG_NAME}
-		 		fi
-		 	# -------------------------------------------------------------------------
-		#	if [ -f /etc/bind/named.conf.options ]; then
-		#		cp -p /etc/bind/named.conf.options /etc/bind/named.conf.options.original
-		#		sed -i /etc/bind/named.conf.options            \
-		#		    -e 's/\(dnssec-validation\) auto;/\1 no;/'
-		#	fi
-		 	# -------------------------------------------------------------------------
-		#		if [ -f /usr/lib/systemd/system/connman.service ]; then
-		#			systemctl disable connman.service 2>&1 | tee -a ${LOG_NAME}
-		#			systemctl stop connman.service    2>&1 | tee -a ${LOG_NAME}
-		#		fi
-		#		if [ -f /usr/lib/systemd/system/NetworkManager.service ]; then
-		#			systemctl enable NetworkManager.service  2>&1 | tee -a ${LOG_NAME}
-		#			systemctl restart NetworkManager.service 2>&1 | tee -a ${LOG_NAME}
-		#		fi
-		 	"
-		 	set -e
+		 	apt-get -qq    update
+		 	apt-get -qq -y upgrade
+		 	apt-get -qq -y dist-upgrade
+		 	apt-get -qq -y install ${LIST_PACK}
+		 	if [ -n "$(command -v tasksel 2> /dev/null)" ]; then
+		 		tasksel install ${LIST_TASK}
+		 	fi
 		}
 		
 		# --- network -----------------------------------------------------------------
 		funcSetupNetwork () {
-		 	echo "funcSetupNetwork" 2>&1 | tee -a /target/${LOG_NAME}
-		 	IPV4_DHCP=`awk 'BEGIN {result="true";}
-		 	                !/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {if ($4=="true") result="false";}
-		 	                END {print result;}' /cdrom/preseed/preseed.cfg`
-		 	if [ "${IPV4_DHCP}" != "true" ]; then
-		 		NIC_NAME="ens160"
-		 		NIC_IPV4="`awk '!/#/&&/netcfg\/get_ipaddress/    {print $4;}' /cdrom/preseed/preseed.cfg`"
-		 		NIC_MASK="`awk '!/#/&&/netcfg\/get_netmask/      {print $4;}' /cdrom/preseed/preseed.cfg`"
-		 		NIC_GATE="`awk '!/#/&&/netcfg\/get_gateway/      {print $4;}' /cdrom/preseed/preseed.cfg`"
-		 		NIC_DNS4="`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' /cdrom/preseed/preseed.cfg`"
-		 		NIC_WGRP="`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' /cdrom/preseed/preseed.cfg`"
-		 		NIC_BIT4="`funcIPv4GetNetmaskBits "${NIC_MASK}"`"
-		 		# --- connman ---------------------------------------------------------
-		 		if [ -d /target/etc/connman ]; then
-		 			set +e
-		 			NIC_MADR="`LANG=C ip address show dev "${NIC_NAME}" 2> /dev/null | sed -n '/link\/ether/ s/^[ \t]*//gp' | awk '{gsub(":","",$2); print $2;}'`"
-		 			CON_NAME="ethernet_${NIC_MADR}_cable"
-		 			set -e
-		 			mkdir -p /target/var/lib/connman/${CON_NAME}
-		 			cat <<- _EOT_ | sed 's/^ *//g' > /target/var/lib/connman/settings
-		 				[global]
-		 				OfflineMode=false
-		 				
-		 				[Wired]
-		 				Enable=true
-		 				Tethering=false
+		 	echo "${PROG_NAME}: funcSetupNetwork"
+		 	#--------------------------------------------------------------------------
+		 	FIX_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+\(netcfg\/disable_dhcp\|netcfg\/disable_autoconfig\)[[:blank:]]\+/ s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+		 	NIC_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_ipaddress[[:blank:]]\+/   s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+		 	NIC_MASK="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_netmask[[:blank:]]\+/     s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+		 	NIC_GATE="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_gateway[[:blank:]]\+/     s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+		 	NIC_DNS4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_nameservers[[:blank:]]\+/ s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+		 	NIC_WGRP="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_domain[[:blank:]]\+/      s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+		 	NIC_BIT4="$(funcIPv4GetNetmaskBits "${NIC_MASK}")"
+		 	NIC_NAME="ens160"
+		 	NIC_MADR="$(LANG=C ip address show dev "${NIC_NAME}" 2> /dev/null | sed -n -e '/link\/ether/ s%.*link/ether \([[:graph:]]\+\) .*$%\1%p')"
+		 	CON_NAME="ethernet_$(echo "${NIC_MADR}" | sed -n -e 's/://gp')_cable"
+		 	echo "${PROG_NAME}: FIX_IPV4=${FIX_IPV4}"
+		 	echo "${PROG_NAME}: NIC_IPV4=${NIC_IPV4}"
+		 	echo "${PROG_NAME}: NIC_MASK=${NIC_MASK}"
+		 	echo "${PROG_NAME}: NIC_GATE=${NIC_GATE}"
+		 	echo "${PROG_NAME}: NIC_DNS4=${NIC_DNS4}"
+		 	echo "${PROG_NAME}: NIC_WGRP=${NIC_WGRP}"
+		 	echo "${PROG_NAME}: NIC_BIT4=${NIC_BIT4}"
+		 	echo "${PROG_NAME}: NIC_NAME=${NIC_NAME}"
+		 	echo "${PROG_NAME}: NIC_MADR=${NIC_MADR}"
+		 	echo "${PROG_NAME}: CON_NAME=${CON_NAME}"
+		
+		 	#--------------------------------------------------------------------------
+		 	if [ "${FIX_IPV4}" != "true" ]; then
+		 		return
+		 	fi
+		 	# --- connman -------------------------------------------------------------
+		 	if [ -d "${ROOT_DIRS}/etc/connman" ]; then
+		 		echo "${PROG_NAME}: funcSetupNetwork: connman"
+		 		mkdir -p "${ROOT_DIRS}/var/lib/connman/${CON_NAME}"
+		 		cat <<- _EOT_ | sed 's/^ *//g' > "${ROOT_DIRS}/var/lib/connman/settings"
+		 			[global]
+		 			OfflineMode=false
+		 			
+		 			[Wired]
+		 			Enable=true
+		 			Tethering=false
 		_EOT_
-		 			if [ "${CON_NAME}" != ""]; then
-		 				cat <<- _EOT_ | sed 's/^ *//g' > /target/var/lib/connman/${CON_NAME}/settings
-		 					[${CON_NAME}]
-		 					Name=Wired
-		 					AutoConnect=true
-		 					Modified=
-		 					IPv6.method=auto
-		 					IPv6.privacy=preferred
-		 					IPv6.DHCP.DUID=
-		 					IPv4.method=manual
-		 					IPv4.DHCP.LastAddress=
-		 					IPv4.netmask_prefixlen=${NIC_BIT4}
-		 					IPv4.local_address=${NIC_IPV4}
-		 					IPv4.gateway=${NIC_GATE}
-		 					Nameservers=${NIC_DNS4};127.0.0.1;::1;
-		 					Domains=${NIC_WGRP};
-		 					Timeservers=ntp.nict.jp;
-		 					mDNS=true
+		 		if [ -n "${CON_NAME}" ]; then
+		 			cat <<- _EOT_ | sed 's/^ *//g' > "${ROOT_DIRS}/var/lib/connman/${CON_NAME}/settings"
+		 				[${CON_NAME}]
+		 				Name=Wired
+		 				AutoConnect=true
+		 				Modified=
+		 				IPv6.method=auto
+		 				IPv6.privacy=preferred
+		 				IPv6.DHCP.DUID=
+		 				IPv4.method=manual
+		 				IPv4.DHCP.LastAddress=
+		 				IPv4.netmask_prefixlen=${NIC_BIT4}
+		 				IPv4.local_address=${NIC_IPV4}
+		 				IPv4.gateway=${NIC_GATE}
+		 				Nameservers=${NIC_DNS4};127.0.0.1;::1;
+		 				Domains=${NIC_WGRP};
+		 				Timeservers=ntp.nict.jp;
+		 				mDNS=true
 		_EOT_
-		 			fi
 		 		fi
-		 		# --- netplan ---------------------------------------------------------
-		 		if [ -d /target/etc/netplan ]; then
-		 			cat <<- _EOT_ > /target/etc/netplan/99-network-manager-static.yaml
-		 				network:
-		 				  version: 2
-		 				  ethernets:
-		 				    ${NIC_NAME}:
-		 				      dhcp4: false
-		 				      addresses: [ ${NIC_IPV4}/${NIC_BIT4} ]
-		 				      gateway4: ${NIC_GATE}
-		 				      nameservers:
-		 				          search: [ ${NIC_WGRP} ]
-		 				          addresses: [ ${NIC_DNS4} ]
-		 				      dhcp6: true
-		 				      ipv6-privacy: true
+		 	fi
+		 	# --- netplan -------------------------------------------------------------
+		 	if [ -d "${ROOT_DIRS}/etc/netplan" ]; then
+		 		echo "${PROG_NAME}: funcSetupNetwork: netplan"
+		 		cat <<- _EOT_ > "${ROOT_DIRS}/etc/netplan/99-network-manager-static.yaml"
+		 			network:
+		 			  version: 2
+		 			  ethernets:
+		 			    "${NIC_NAME}":
+		 			      dhcp4: false
+		 			      addresses: [ "${NIC_IPV4}/${NIC_BIT4}" ]
+		 			      gateway4: "${NIC_GATE}"
+		 			      nameservers:
+		 			          search: [ "${NIC_WGRP}" ]
+		 			          addresses: [ "${NIC_DNS4}" ]
+		 			      dhcp6: true
+		 			      ipv6-privacy: true
 		 _EOT_
-		 		fi
 		 	fi
 		}
 		
 		# --- gdm3 --------------------------------------------------------------------
 		funcChange_gdm3_configure () {
-		 	echo "funcChange_gdm3_configure" 2>&1 | tee -a /target/${LOG_NAME}
-		 	if [ -f /target/etc/gdm3/custom.conf ]; then
-		 		sed -i.orig /target/etc/gdm3/custom.conf \
+		 	echo "${PROG_NAME}: funcChange_gdm3_configure"
+		 	if [ -f "${ROOT_DIRS}/etc/gdm3/custom.conf" ]; then
+		 		sed -i.orig "${ROOT_DIRS}/etc/gdm3/custom.conf" \
 		 		    -e '/WaylandEnable=false/ s/^#//'
 		 	fi
 		}
 		
 		# --- Main --------------------------------------------------------------------
-		 	funcInstallPackages
-		 	funcSetupNetwork
-		#	funcChange_gdm3_configure
+		funcMain () {
+		 	echo "${PROG_NAME}: funcMain"
+		 	case "${DIST_NAME}" in
+		 		debian )
+		 			funcInstallPackages
+		 			funcSetupNetwork
+		#			funcChange_gdm3_configure
+		 			;;
+		 		ubuntu )
+		 			funcInstallPackages
+		 			funcSetupNetwork
+		#			funcChange_gdm3_configure
+		 			;;
+		 	esac
+		}
 		
+		 	funcMain
 		# --- Termination -------------------------------------------------------------
-		 	cp -p /var/log/syslog /target/var/log/installer/syslog.source
+		 	echo "${PROG_NAME}: === End ==="
 		 	exit 0
 		# --- EOF ---------------------------------------------------------------------
 _EOT_SH_
-	chmod 544 "${DIR_PRESEED}/sub_success_command.sh"
 	# -------------------------------------------------------------------------
+	chmod 544 "${COMD_FILE}"
+	# --- debian / ubuntu -----------------------------------------------------
 	OLD_IFS=${IFS}
-	# -------------------------------------------------------------------------
 	IFS= INS_STR=$(
-		cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
-			  ubiquity ubiquity/success_command string \\\\\n
-			      /cdrom/preseed/sub_success_command.sh;
+		cat <<- '_EOT_'
+			  d-i preseed/late_command string \\\
+			      mkdir -p /target/var/log/installer; \\\
+			      LANG=C /cdrom/preseed/preseed_sub_command.sh 2>&1 > \\\
+			      /target/var/log/installer/preseed_sub_command.log;
 _EOT_
 	)
-	sed -i "${DIR_PRESEED}/preseed.cfg"                       \
-	    -e "/ubiquity\/success_command/i \\${INS_STR}"        \
-	    -e '/^[^#].*preseed\/late_command/,/[^\\]$/ s/^ /#/g'
-	# -------------------------------------------------------------------------
 	IFS=${OLD_IFS}
+	WRK_STR='d-i[[:blank:]]\+preseed\/late_command[[:blank:]]\+'
+	sed -i "$1/preseed.cfg"                                \
+	    -e "s%^[[:blank:]]\*\(${WRK_STR}\)%# \1%"          \
+	    -e "/\(${WRK_STR}\)/i \\${INS_STR}"
+	# --- ubuntu --------------------------------------------------------------
+	OLD_IFS=${IFS}
+	IFS= INS_STR=$(
+		cat <<- '_EOT_'
+			  ubiquity ubiquity/success_command string \\\
+			      mkdir -p /target/var/log/installer; \\\
+			      LANG=C /cdrom/preseed/preseed_sub_command.sh 2>&1 > \\\
+			      /target/var/log/installer/preseed_sub_command.log;
+_EOT_
+	)
+	IFS=${OLD_IFS}
+	WRK_STR='ubiquity[[:blank:]]\+ubiquity\/success_command[[:blank:]]\+'
+	sed -i "$1/preseed.cfg"                                \
+	    -e "s%^[[:blank:]]\*\(${WRK_STR}\)%# \1%"          \
+	    -e "/\(${WRK_STR}\)/i \\${INS_STR}"
 }
+# -----------------------------------------------------------------------------
+#funcCreate_late_command () {
+#	funcPrintf "    create_late_command"
+#	local DIR_PRESEED="$1"
+#	local OLD_IFS
+#	local INS_STR
+#	local DIR_CDROM
+#	cat <<- '_EOT_SH_' | sed 's/^ *//g' > ${DIR_PRESEED}/sub_late_command.sh
+#		#!/bin/bash
+#		
+#		# --- Initialization ----------------------------------------------------------
+#		#	set -n								# Check for syntax errors
+#		#	set -x								# Show command and argument expansion
+#		 	set -o ignoreeof					# Do not exit with Ctrl+D
+#		 	set +m								# Disable job control
+#		 	set -e								# Ends with status other than 0
+#		 	set -u								# End with undefined variable reference
+#		
+#		 	trap 'exit 1' 1 2 3 15
+#		
+#		# --- IPv4 netmask conversion -------------------------------------------------
+#		funcIPv4GetNetmask () {
+#		 	local INP_ADDR="$@"
+#		 	local DEC_ADDR
+#		
+#		 	DEC_ADDR=$((0xFFFFFFFF ^ ((2 ** (32-$((${INP_ADDR}))))-1)))
+#		 	printf '%d.%d.%d.%d' \
+#		 	    $((${DEC_ADDR} >> 24)) \
+#		 	    $(((${DEC_ADDR} >> 16) & 0xFF)) \
+#		 	    $(((${DEC_ADDR} >> 8) & 0xFF)) \
+#		 	    $((${DEC_ADDR} & 0xFF))
+#		}
+#		
+#		# --- Get network interface information ---------------------------------------
+#		 	NIC_INF4="`sed -n '/^iface.*static$/,/^iface/ s/^[ \t]*//gp' /etc/network/interfaces`"
+#		 	NIC_NAME="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"iface\" {print $2;}'`"
+#		 	NIC_IPV4="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"address\" {print $2;}'`"
+#		 	NIC_BIT4="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"address\" {print $3;}'`"
+#		 	NIC_GATE="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"gateway\" {print $2;}'`"
+#		 	NIC_DNS4="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"dns-nameservers\" {print $2;}'`"
+#		 	NIC_WGRP="`echo "${NIC_INF4[@]}" | awk -F '[ \t/]' '$1==\"dns-search\" {print $2;}'`"
+#		 	NIC_MASK="`funcIPv4GetNetmask "${NIC_BIT4}"`"
+#		 	NIC_MADR="`LANG=C ip address show dev "${NIC_NAME}" | sed -n '/link\/ether/ s/^[ \t]*//gp' | awk '{gsub(":","",$2); print $2;}'`"
+#		 	CON_NAME="ethernet_${NIC_MADR}_cable"
+#		#	NIC_DNS4="`LANG=C ip -4 rule show dev "${NIC_NAME}" default | awk '{print $3;}'`"
+#		#	NIC_INF6="`LANG=C ip -6 address show dev "${NIC_NAME}" | sed -n '/scope global/p'`"
+#		#	NIC_IPV6="`echo "${NIC_INF6[@]}" | sed -n '/scope global/p' | sed -n 's/^[ \t]*//gp' | awk -F '[ /]' '{print $2;}'`"
+#		#	NIC_BIT6="`echo "${NIC_INF6[@]}" | sed -n '/scope global/p' | sed -n 's/^[ \t]*//gp' | awk -F '[ /]' '{print $3;}'`"
+#		#	NIC_DNS6="`LANG=C ip -6 rule show dev "${NIC_NAME}" default | awk '{print $3;}'`"
+#		
+#		# --- Set up IPv4/IPv6 --------------------------------------------------------
+#		 	if [ -d /etc/connman ]; then
+#		 		mkdir -p /var/lib/connman/${CON_NAME}
+#		 		cat <<- _EOT_ | sed 's/^ *//g' > /var/lib/connman/settings
+#		 			[global]
+#		 			OfflineMode=false
+#		 			
+#		 			[Wired]
+#		 			Enable=true
+#		 			Tethering=false
+#		_EOT_
+#		 		cat <<- _EOT_ | sed 's/^ *//g' > /var/lib/connman/${CON_NAME}/settings
+#		 			[${CON_NAME}]
+#		 			Name=Wired
+#		 			AutoConnect=true
+#		 			Modified=
+#		 			IPv6.method=auto
+#		 			IPv6.privacy=preferred
+#		 			IPv6.DHCP.DUID=
+#		 			IPv4.method=manual
+#		 			IPv4.DHCP.LastAddress=
+#		 			IPv4.netmask_prefixlen=${NIC_BIT4}
+#		 			IPv4.local_address=${NIC_IPV4}
+#		 			IPv4.gateway=${NIC_GATE}
+#		 			Nameservers=${NIC_DNS4};127.0.0.1;::1;
+#		 			Domains=${NIC_WGRP};
+#		 			Timeservers=ntp.nict.jp;
+#		 			mDNS=true
+#		_EOT_
+#		 	fi
+#		 	if [ -d /etc/netplan ]; then
+#		 		cat <<- _EOT_ > /etc/netplan/99-network-manager-static.yaml
+#		 			network:
+#		 			  version: 2
+#		 			  ethernets:
+#		 			    ${NIC_NAME}:
+#		 			      dhcp4: false
+#		 			      addresses: [ ${NIC_IPV4}/${NIC_BIT4} ]
+#		 			      gateway4: ${NIC_GATE}
+#		 			      nameservers:
+#		 			          search: [ ${NIC_WGRP} ]
+#		 			          addresses: [ ${NIC_DNS4} ]
+#		 			      dhcp6: true
+#		 			      ipv6-privacy: true
+#		 _EOT_
+#		 	fi
+#		
+#		# --- Termination -------------------------------------------------------------
+#		 	exit 0
+#		# --- EOF ---------------------------------------------------------------------
+#_EOT_SH_
+#	chmod 544 "${DIR_PRESEED}/sub_late_command.sh"
+#	OLD_IFS=${IFS}
+#	case "basename ${DIR_PRESEED}" in
+#		"." )	DIR_CDROM="";;								# mini.iso
+#		*   )	DIR_CDROM="/cdrom/preseed";;				# dvd/netinst
+#	esac
+#	IFS= INS_STR=$(
+#		cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
+#			      cp -p ${DIR_CDROM}/sub_late_command.sh /target/tmp/; \\\\\\n
+#			      in-target --pass-stdout /tmp/sub_late_command.sh;
+#_EOT_
+#	)
+#	sed -i "${DIR_PRESEED}/preseed.cfg"                              \
+#	    -e 's/#[ \t]\(d-i[ \t]*preseed\/late_command string\)/  \1/' \
+#	    -e "/preseed\/late_command/a \\${INS_STR}"
+#	IFS=${OLD_IFS}
+#}
+## -----------------------------------------------------------------------------
+#funcCreate_success_command () {
+#	funcPrintf "    create_success_command"
+#	local DIR_PRESEED="$1"
+#	local OLD_IFS
+#	local INS_STR
+#	cat <<- '_EOT_SH_' | sed 's/^ *//g' > ${DIR_PRESEED}/sub_success_command.sh
+#		#!/bin/bash
+#		
+#		# --- Initialization ----------------------------------------------------------
+#		#	set -n								# Check for syntax errors
+#		#	set -x								# Show command and argument expansion
+#		 	set -o ignoreeof					# Do not exit with Ctrl+D
+#		 	set +m								# Disable job control
+#		 	set -e								# Ends with status other than 0
+#		 	set -u								# End with undefined variable reference
+#		
+#		 	trap 'exit 1' 1 2 3 15
+#		
+#		 	readonly PGM_NAME=`basename $0 | sed -e 's/\..*$//'`
+#		 	readonly LOG_NAME="/var/log/installer/${PGM_NAME}.log"
+#		
+#		# --- IPv4 netmask conversion -------------------------------------------------
+#		funcIPv4GetNetmask () {
+#		 	local INP_ADDR="$@"
+#		 	local DEC_ADDR
+#		
+#		 	DEC_ADDR=$((0xFFFFFFFF ^ ((2 ** (32-$((${INP_ADDR}))))-1)))
+#		 	printf '%d.%d.%d.%d' \
+#		 	    $((${DEC_ADDR} >> 24)) \
+#		 	    $(((${DEC_ADDR} >> 16) & 0xFF)) \
+#		 	    $(((${DEC_ADDR} >> 8) & 0xFF)) \
+#		 	    $((${DEC_ADDR} & 0xFF))
+#		}
+#		
+#		# --- IPv4 netmask bit conversion ---------------------------------------------
+#		funcIPv4GetNetmaskBits () {
+#		 	local INP_ADDR="$@"
+#		
+#		 	echo ${INP_ADDR} | \
+#		 	    awk -F '.' '{
+#		 	        split($0, octets);
+#		 	        for (i in octets) {
+#		 	            mask += 8 - log(2^8 - octets[i])/log(2);
+#		 	        }
+#		 	        print mask
+#		 	    }'
+#		}
+#		
+#		# --- packages ----------------------------------------------------------------
+#		funcInstallPackages () {
+#		 	echo "funcInstallPackages" 2>&1 | tee -a /target/${LOG_NAME}
+#		 	LIST_TASK=`awk '(!/#/&&/tasksel\/first/),(!/\\\\/) {print $0;}' /cdrom/preseed/preseed.cfg  | \
+#		 	           sed -z 's/\n//g'                                                                 | \
+#		 	           sed -e 's/.* multiselect *//'                                                      \
+#		 	               -e 's/[,|\\\\]//g'                                                             \
+#		 	               -e 's/\t/ /g'                                                                  \
+#		 	               -e 's/  */ /g'                                                                 \
+#		 	               -e 's/^ *//'`
+#		 	LIST_PACK=`awk '(!/#/&&/pkgsel\/include/),(!/\\\\/) {print $0;}' /cdrom/preseed/preseed.cfg | \
+#		 	           sed -z 's/\n//g'                                                                 | \
+#		 	           sed -e 's/.* string *//'                                                           \
+#		 	               -e 's/[,|\\\\]//g'                                                             \
+#		 	               -e 's/\t/ /g'                                                                  \
+#		 	               -e 's/  */ /g'                                                                 \
+#		 	               -e 's/^ *//'`
+#		 	# -------------------------------------------------------------------------
+#		 	sed -i /target/etc/apt/sources.list \
+#		 	    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
+#		 	set +e
+#		 	in-target --pass-stdout bash -c "
+#		 		apt-get -qq    update               2>&1 | tee -a ${LOG_NAME}
+#		 		apt-get -qq -y upgrade              2>&1 | tee -a ${LOG_NAME}
+#		 		apt-get -qq -y dist-upgrade         2>&1 | tee -a ${LOG_NAME}
+#		 		apt-get -qq -y install ${LIST_PACK} 2>&1 | tee -a ${LOG_NAME}
+#		 		if [ \"`which tasksel 2> /dev/null`\" != \"\" ]; then
+#		 			tasksel install ${LIST_TASK}    2>&1 | tee -a ${LOG_NAME}
+#		 		fi
+#		 	# -------------------------------------------------------------------------
+#		#	if [ -f /etc/bind/named.conf.options ]; then
+#		#		cp -p /etc/bind/named.conf.options /etc/bind/named.conf.options.original
+#		#		sed -i /etc/bind/named.conf.options            \
+#		#		    -e 's/\(dnssec-validation\) auto;/\1 no;/'
+#		#	fi
+#		 	# -------------------------------------------------------------------------
+#		#		if [ -f /usr/lib/systemd/system/connman.service ]; then
+#		#			systemctl disable connman.service 2>&1 | tee -a ${LOG_NAME}
+#		#			systemctl stop connman.service    2>&1 | tee -a ${LOG_NAME}
+#		#		fi
+#		#		if [ -f /usr/lib/systemd/system/NetworkManager.service ]; then
+#		#			systemctl enable NetworkManager.service  2>&1 | tee -a ${LOG_NAME}
+#		#			systemctl restart NetworkManager.service 2>&1 | tee -a ${LOG_NAME}
+#		#		fi
+#		 	"
+#		 	set -e
+#		}
+#		
+#		# --- network -----------------------------------------------------------------
+#		funcSetupNetwork () {
+#		 	echo "funcSetupNetwork" 2>&1 | tee -a /target/${LOG_NAME}
+#		 	IPV4_DHCP=`awk 'BEGIN {result="true";}
+#		 	                !/#/&&(/netcfg\/disable_dhcp/||/netcfg\/disable_autoconfig/)&&/true/&&!a[$4]++ {if ($4=="true") result="false";}
+#		 	                END {print result;}' /cdrom/preseed/preseed.cfg`
+#		 	if [ "${IPV4_DHCP}" != "true" ]; then
+#		 		NIC_NAME="ens160"
+#		 		NIC_IPV4="`awk '!/#/&&/netcfg\/get_ipaddress/    {print $4;}' /cdrom/preseed/preseed.cfg`"
+#		 		NIC_MASK="`awk '!/#/&&/netcfg\/get_netmask/      {print $4;}' /cdrom/preseed/preseed.cfg`"
+#		 		NIC_GATE="`awk '!/#/&&/netcfg\/get_gateway/      {print $4;}' /cdrom/preseed/preseed.cfg`"
+#		 		NIC_DNS4="`awk '!/#/&&/netcfg\/get_nameservers/  {print $4;}' /cdrom/preseed/preseed.cfg`"
+#		 		NIC_WGRP="`awk '!/#/&&/netcfg\/get_domain/       {print $4;}' /cdrom/preseed/preseed.cfg`"
+#		 		NIC_BIT4="`funcIPv4GetNetmaskBits "${NIC_MASK}"`"
+#		 		# --- connman ---------------------------------------------------------
+#		 		if [ -d /target/etc/connman ]; then
+#		 			set +e
+#		 			NIC_MADR="`LANG=C ip address show dev "${NIC_NAME}" 2> /dev/null | sed -n '/link\/ether/ s/^[ \t]*//gp' | awk '{gsub(":","",$2); print $2;}'`"
+#		 			CON_NAME="ethernet_${NIC_MADR}_cable"
+#		 			set -e
+#		 			mkdir -p /target/var/lib/connman/${CON_NAME}
+#		 			cat <<- _EOT_ | sed 's/^ *//g' > /target/var/lib/connman/settings
+#		 				[global]
+#		 				OfflineMode=false
+#		 				
+#		 				[Wired]
+#		 				Enable=true
+#		 				Tethering=false
+#		_EOT_
+#		 			if [ "${CON_NAME}" != ""]; then
+#		 				cat <<- _EOT_ | sed 's/^ *//g' > /target/var/lib/connman/${CON_NAME}/settings
+#		 					[${CON_NAME}]
+#		 					Name=Wired
+#		 					AutoConnect=true
+#		 					Modified=
+#		 					IPv6.method=auto
+#		 					IPv6.privacy=preferred
+#		 					IPv6.DHCP.DUID=
+#		 					IPv4.method=manual
+#		 					IPv4.DHCP.LastAddress=
+#		 					IPv4.netmask_prefixlen=${NIC_BIT4}
+#		 					IPv4.local_address=${NIC_IPV4}
+#		 					IPv4.gateway=${NIC_GATE}
+#		 					Nameservers=${NIC_DNS4};127.0.0.1;::1;
+#		 					Domains=${NIC_WGRP};
+#		 					Timeservers=ntp.nict.jp;
+#		 					mDNS=true
+#		_EOT_
+#		 			fi
+#		 		fi
+#		 		# --- netplan ---------------------------------------------------------
+#		 		if [ -d /target/etc/netplan ]; then
+#		 			cat <<- _EOT_ > /target/etc/netplan/99-network-manager-static.yaml
+#		 				network:
+#		 				  version: 2
+#		 				  ethernets:
+#		 				    ${NIC_NAME}:
+#		 				      dhcp4: false
+#		 				      addresses: [ ${NIC_IPV4}/${NIC_BIT4} ]
+#		 				      gateway4: ${NIC_GATE}
+#		 				      nameservers:
+#		 				          search: [ ${NIC_WGRP} ]
+#		 				          addresses: [ ${NIC_DNS4} ]
+#		 				      dhcp6: true
+#		 				      ipv6-privacy: true
+#		 _EOT_
+#		 		fi
+#		 	fi
+#		}
+#		
+#		# --- gdm3 --------------------------------------------------------------------
+#		funcChange_gdm3_configure () {
+#		 	echo "funcChange_gdm3_configure" 2>&1 | tee -a /target/${LOG_NAME}
+#		 	if [ -f /target/etc/gdm3/custom.conf ]; then
+#		 		sed -i.orig /target/etc/gdm3/custom.conf \
+#		 		    -e '/WaylandEnable=false/ s/^#//'
+#		 	fi
+#		}
+#		
+#		# --- Main --------------------------------------------------------------------
+#		 	funcInstallPackages
+#		 	funcSetupNetwork
+#		#	funcChange_gdm3_configure
+#		
+#		# --- Termination -------------------------------------------------------------
+#		 	cp -p /var/log/syslog /target/var/log/installer/syslog.source
+#		 	exit 0
+#		# --- EOF ---------------------------------------------------------------------
+#_EOT_SH_
+#	chmod 544 "${DIR_PRESEED}/sub_success_command.sh"
+#	# -------------------------------------------------------------------------
+#	OLD_IFS=${IFS}
+#	# -------------------------------------------------------------------------
+#	IFS= INS_STR=$(
+#		cat <<- _EOT_ | sed ':l; N; s/\n//; b l;'
+#			  ubiquity ubiquity/success_command string \\\\\n
+#			      /cdrom/preseed/sub_success_command.sh;
+#_EOT_
+#	)
+#	sed -i "${DIR_PRESEED}/preseed.cfg"                       \
+#	    -e "/ubiquity\/success_command/i \\${INS_STR}"        \
+#	    -e '/^[^#].*preseed\/late_command/,/[^\\]$/ s/^ /#/g'
+#	# -------------------------------------------------------------------------
+#	IFS=${OLD_IFS}
+#}
 # -----------------------------------------------------------------------------
 funcMake_setup_sh () {
 	local HOSTNAME=""
@@ -2359,7 +2631,7 @@ funcRemaster () {
 								    -e 's/bind9-utils/bind9utils/'  \
 								    -e 's/bind9-dnsutils/dnsutils/' 
 							fi
-							funcCreate_success_command "./preseed"
+#							funcCreate_success_command "./preseed"
 							;;
 						Focal_Fossa     | \
 						Groovy_Gorilla  | \
@@ -2369,7 +2641,7 @@ funcRemaster () {
 						Kinetic_Kudu    | \
 						Lunar_Lobster   | \
 						Mantic_Minotaur )
-							funcCreate_success_command "./preseed"
+#							funcCreate_success_command "./preseed"
 							;;
 						* )	;;
 					esac
@@ -2386,7 +2658,8 @@ funcRemaster () {
 								funcPrintf "    unzip initrd.gz"
 								gunzip < ../image/initrd.gz | cpio -i --quiet
 								cp --preserve=timestamps "../image/preseed/preseed.cfg" "./"
-								cp --preserve=timestamps "../image/preseed/sub_late_command.sh" "./"
+								cp --preserve=timestamps "../image/preseed/preseed_sub_command.sh" "./"
+#								cp --preserve=timestamps "../image/preseed/sub_late_command.sh" "./"
 								sed -i ./preseed.cfg                                                \
 								    -e '/^[^#].*preseed\/late_command/,/[^\\]$/ s~/cdrom/preseed~~'
 								funcPrintf "    create initps.gz"
