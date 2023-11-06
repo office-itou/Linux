@@ -1679,11 +1679,15 @@ function funcMake_conf_preseed () {
 #		OLD_IFS=${IFS}
 		WRK_PATH="./${WORK_DIRS}/img/preseed/${DIR}/preseed.cfg"
 		# --- debian / ubuntu -------------------------------------------------
+		case "${DIR}" in
+			debian ) WRK_STR="/hd-media/preseed/debian/preseed_sub_command.sh";;
+			ubuntu ) WRK_STR="/preseed/preseed_sub_command.sh";;
+		esac
 		IFS= INS_STR=$(
-			cat <<- '_EOT_'
-				  d-i preseed/late_command string \\\
-				      mkdir -p /target/var/log/installer; \\\
-				      LANG=C /cdrom/preseed/preseed_sub_command.sh 2>&1 > \\\
+			cat <<- _EOT_
+				  d-i preseed/late_command string \\\\\\
+				      mkdir -p /target/var/log/installer; \\\\\\
+				      LANG=C ${WRK_STR} 2>&1 > \\\\\\
 				      /target/var/log/installer/preseed_sub_command.log;
 _EOT_
 		)
@@ -1694,10 +1698,10 @@ _EOT_
 		    -e "/\(${WRK_STR}\)/i \\${INS_STR}"
 		# --- ubuntu ----------------------------------------------------------
 		IFS= INS_STR=$(
-			cat <<- '_EOT_'
-				  ubiquity ubiquity/success_command string \\\
-				      mkdir -p /target/var/log/installer; \\\
-				      LANG=C /cdrom/preseed/preseed_sub_command.sh 2>&1 > \\\
+			cat <<- _EOT_
+				  ubiquity ubiquity/success_command string \\\\\\
+				      mkdir -p /target/var/log/installer; \\\\\\
+				      LANG=C /preseed/ubuntu/preseed_sub_command.sh 2>&1 > \\\\\\
 				      /target/var/log/installer/preseed_sub_command.log;
 _EOT_
 		)
@@ -4029,8 +4033,10 @@ main () {
 		funcMake_link
 	fi
 	# -------------------------------------------------------------------------
-##	touch "${CACHE_FNAME}"
-##	funcRead_cache
+	if [[ 0 -eq 1 ]]; then
+		touch "${CACHE_FNAME}"
+		funcRead_cache
+	fi
 	# -------------------------------------------------------------------------
 	funcMenu_list
 	funcDownload
