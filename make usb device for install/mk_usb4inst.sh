@@ -91,84 +91,84 @@
 		"usb                        " \
 	)
 
-	declare -r -a LINK_LIST=(                                                                                                                                         \
-		"/mnt/hgfs/workspace/Image/linux/workspace/arc                                          ./${WORK_DIRS}/arc                                                  " \
-#		"/mnt/hgfs/workspace/Image/linux/workspace/bld                                          ./${WORK_DIRS}/bld                                                  " \ #
-		"/mnt/hgfs/workspace/Image/linux/workspace/cfg                                          ./${WORK_DIRS}/cfg                                                  " \
-#		"/mnt/hgfs/workspace/Image/linux/workspace/deb                                          ./${WORK_DIRS}/deb                                                  " \ #
-		"/mnt/hgfs/workspace/Image/linux/workspace/opt                                          ./${WORK_DIRS}/opt                                                  " \
-		"/mnt/hgfs/workspace/Image/linux/debian/mini-buster-amd64.iso                           ./${WORK_DIRS}/iso/mini/mini-buster-amd64.iso                       " \
-		"/mnt/hgfs/workspace/Image/linux/debian/mini-bullseye-amd64.iso                         ./${WORK_DIRS}/iso/mini/mini-bullseye-amd64.iso                     " \
-		"/mnt/hgfs/workspace/Image/linux/debian/mini-bookworm-amd64.iso                         ./${WORK_DIRS}/iso/mini/mini-bookworm-amd64.iso                     " \
-		"/mnt/hgfs/workspace/Image/linux/debian/mini-trixie-amd64.iso                           ./${WORK_DIRS}/iso/mini/mini-trixie-amd64.iso                       " \
-		"/mnt/hgfs/workspace/Image/linux/debian/mini-testing-amd64.iso                          ./${WORK_DIRS}/iso/mini/mini-testing-amd64.iso                      " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/mini-bionic-amd64.iso                           ./${WORK_DIRS}/iso/mini/mini-bionic-amd64.iso                       " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/mini-focal-amd64.iso                            ./${WORK_DIRS}/iso/mini/mini-focal-amd64.iso                        " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/debian-10.13.0-amd64-netinst.iso             " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.8.0-amd64-netinst.iso                 ./${WORK_DIRS}/iso/net/debian-11.8.0-amd64-netinst.iso              " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.2.0-amd64-netinst.iso                 ./${WORK_DIRS}/iso/net/debian-12.2.0-amd64-netinst.iso              " \
-#		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/debian-13.0.0-amd64-netinst.iso              " \ #
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/debian-testing-amd64-netinst.iso             " \
-#		"/mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc4-amd64-netinst.iso        ./${WORK_DIRS}/iso/net/debian-bookworm-DI-rc4-amd64-netinst.iso     " \ #
-		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-netinst-x86_64-37-1.7.iso         ./${WORK_DIRS}/iso/net/Fedora-Server-netinst-x86_64-37-1.7.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-netinst-x86_64-38-1.6.iso         ./${WORK_DIRS}/iso/net/Fedora-Server-netinst-x86_64-38-1.6.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/centos/CentOS-Stream-8-x86_64-latest-boot.iso          ./${WORK_DIRS}/iso/net/CentOS-Stream-8-x86_64-latest-boot.iso       " \
-		"/mnt/hgfs/workspace/Image/linux/centos/CentOS-Stream-9-latest-x86_64-boot.iso          ./${WORK_DIRS}/iso/net/CentOS-Stream-9-latest-x86_64-boot.iso       " \
-		"/mnt/hgfs/workspace/Image/linux/almalinux/AlmaLinux-9-latest-x86_64-boot.iso           ./${WORK_DIRS}/iso/net/AlmaLinux-9-latest-x86_64-boot.iso           " \
-		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-8.8-x86_64-boot.iso                        ./${WORK_DIRS}/iso/net/Rocky-8.8-x86_64-boot.iso                    " \
-		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-boot.iso                   ./${WORK_DIRS}/iso/net/Rocky-9-latest-x86_64-boot.iso               " \
-		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.8-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-8.8-rtm-minimal-x86_64.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.2-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/MIRACLELINUX-9.2-rtm-minimal-x86_64.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.5-NET-x86_64-Media.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/openSUSE-Leap-15.6-NET-x86_64-Media.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-NET-x86_64-Current.iso    ./${WORK_DIRS}/iso/net/openSUSE-Tumbleweed-NET-x86_64-Current.iso   " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-10.13.0-amd64-DVD-1.iso               " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.8.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/debian-11.8.0-amd64-DVD-1.iso                " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.2.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/debian-12.2.0-amd64-DVD-1.iso                " \
-#		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-13.0.0-amd64-DVD-1.iso                " \ #
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/debian-testing-amd64-DVD-1.iso               " \
-#		"/mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc4-amd64-DVD-1.iso          ./${WORK_DIRS}/iso/dvd/debian-bookworm-DI-rc4-amd64-DVD-1.iso       " \ #
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-server-amd64.iso                 ./${WORK_DIRS}/iso/dvd/ubuntu-18.04.6-server-amd64.iso              " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-live-server-amd64.iso            ./${WORK_DIRS}/iso/dvd/ubuntu-20.04.6-live-server-amd64.iso         " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.3-live-server-amd64.iso            ./${WORK_DIRS}/iso/dvd/ubuntu-22.04.3-live-server-amd64.iso         " \
-#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-live-server-amd64.iso           " \ #
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-live-server-amd64.iso           " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-live-server-amd64.iso           " \
-#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-24.04-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ubuntu-24.04-live-server-amd64.iso           " \ #
-#		"/mnt/hgfs/workspace/Image/linux/ubuntu/noble-live-server-amd64.iso                     ./${WORK_DIRS}/iso/dvd/noble-live-server-amd64.iso                  " \ #
-#		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-live-server-amd64.iso                    ./${WORK_DIRS}/iso/dvd/mantic-live-server-amd64.iso                 " \ #
-		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-37-1.7.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-37-1.7.iso          " \
-		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-38-1.6.iso             ./${WORK_DIRS}/iso/dvd/Fedora-Server-dvd-x86_64-38-1.6.iso          " \
-		"/mnt/hgfs/workspace/Image/linux/centos/CentOS-Stream-8-x86_64-latest-dvd1.iso          ./${WORK_DIRS}/iso/dvd/CentOS-Stream-8-x86_64-latest-dvd1.iso       " \
-		"/mnt/hgfs/workspace/Image/linux/centos/CentOS-Stream-9-latest-x86_64-dvd1.iso          ./${WORK_DIRS}/iso/dvd/CentOS-Stream-9-latest-x86_64-dvd1.iso       " \
-		"/mnt/hgfs/workspace/Image/linux/almalinux/AlmaLinux-9-latest-x86_64-dvd.iso            ./${WORK_DIRS}/iso/dvd/AlmaLinux-9-latest-x86_64-dvd.iso            " \
-		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-8.8-x86_64-dvd1.iso                        ./${WORK_DIRS}/iso/dvd/Rocky-8.8-x86_64-dvd1.iso                    " \
-		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.8-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-8.8-rtm-x86_64.iso              " \
-		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.2-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/MIRACLELINUX-9.2-rtm-x86_64.iso              " \
-		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.5-DVD-x86_64-Media.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/openSUSE-Leap-15.6-DVD-x86_64-Media.iso      " \
-		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-DVD-x86_64-Current.iso    ./${WORK_DIRS}/iso/dvd/openSUSE-Tumbleweed-DVD-x86_64-Current.iso   " \
-		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-dvd.iso                    ./${WORK_DIRS}/iso/dvd/Rocky-9-latest-x86_64-dvd.iso                " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-10.13.0-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/debian-live-10.13.0-amd64-lxde.iso           " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-11.8.0-amd64-lxde.iso               ./${WORK_DIRS}/iso/dvd/debian-live-11.8.0-amd64-lxde.iso            " \
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-12.2.0-amd64-lxde.iso               ./${WORK_DIRS}/iso/dvd/debian-live-12.2.0-amd64-lxde.iso            " \
-#		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/debian-live-13.0.0-amd64-lxde.iso            " \ #
-		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/debian-live-testing-amd64-lxde.iso           " \
-#		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-bkworm-DI-rc4-amd64-lxde.iso        ./${WORK_DIRS}/iso/dvd/debian-live-bkworm-DI-rc4-amd64-lxde.iso     " \ #
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-18.04.6-desktop-amd64.iso             " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-20.04.6-desktop-amd64.iso             " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.3-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-22.04.3-desktop-amd64.iso             " \
-#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-22.10-desktop-amd64.iso               " \ #
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-amd64.iso               " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.04-desktop-legacy-amd64.iso        " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ubuntu-23.10.1-desktop-amd64.iso             " \
-		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-23.10-desktop-legacy-amd64.iso        " \
-#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-24.04.1-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ubuntu-24.04-desktop-amd64.iso               " \ #
-#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-24.04-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ubuntu-24.04-desktop-legacy-amd64.iso        " \ #
-#		"/mnt/hgfs/workspace/Image/linux/ubuntu/noble-desktop-amd64.iso                         ./${WORK_DIRS}/iso/dvd/noble-desktop-amd64.iso                      " \ #
-#		"/mnt/hgfs/workspace/Image/linux/ubuntu/noble-desktop-legacy-amd64.iso                  ./${WORK_DIRS}/iso/dvd/noble-desktop-legacy-amd64.iso               " \ #
-#		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-amd64.iso                        ./${WORK_DIRS}/iso/dvd/mantic-desktop-amd64.iso                     " \ #
-#		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-legacy-amd64.iso                 ./${WORK_DIRS}/iso/dvd/mantic-desktop-legacy-amd64.iso              " \ #
+	declare -r -a LINK_LIST=(                                                                                             \
+#		"/mnt/hgfs/workspace/Image/linux/workspace/arc                                          ./${WORK_DIRS}/         " \ #
+#		"/mnt/hgfs/workspace/Image/linux/workspace/bld                                          ./${WORK_DIRS}/         " \ #
+		"/mnt/hgfs/workspace/Image/linux/workspace/cfg                                          ./${WORK_DIRS}/         " \
+#		"/mnt/hgfs/workspace/Image/linux/workspace/deb                                          ./${WORK_DIRS}/         " \ #
+#		"/mnt/hgfs/workspace/Image/linux/workspace/opt                                          ./${WORK_DIRS}/         " \ #
+		"/mnt/hgfs/workspace/Image/linux/debian/mini-buster-amd64.iso                           ./${WORK_DIRS}/iso/mini/" \
+		"/mnt/hgfs/workspace/Image/linux/debian/mini-bullseye-amd64.iso                         ./${WORK_DIRS}/iso/mini/" \
+		"/mnt/hgfs/workspace/Image/linux/debian/mini-bookworm-amd64.iso                         ./${WORK_DIRS}/iso/mini/" \
+		"/mnt/hgfs/workspace/Image/linux/debian/mini-trixie-amd64.iso                           ./${WORK_DIRS}/iso/mini/" \
+		"/mnt/hgfs/workspace/Image/linux/debian/mini-testing-amd64.iso                          ./${WORK_DIRS}/iso/mini/" \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/mini-bionic-amd64.iso                           ./${WORK_DIRS}/iso/mini/" \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/mini-focal-amd64.iso                            ./${WORK_DIRS}/iso/mini/" \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.8.0-amd64-netinst.iso                 ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.2.0-amd64-netinst.iso                 ./${WORK_DIRS}/iso/net/ " \
+#		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/ " \ #
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-netinst.iso                ./${WORK_DIRS}/iso/net/ " \
+#		"/mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc4-amd64-netinst.iso        ./${WORK_DIRS}/iso/net/ " \ #
+		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-netinst-x86_64-37-1.7.iso         ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-netinst-x86_64-38-1.6.iso         ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/centos/CentOS-Stream-8-x86_64-latest-boot.iso          ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/centos/CentOS-Stream-9-latest-x86_64-boot.iso          ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/almalinux/AlmaLinux-9-latest-x86_64-boot.iso           ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-8.8-x86_64-boot.iso                        ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-boot.iso                   ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.8-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.2-rtm-minimal-x86_64.iso   ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-NET-x86_64-Media.iso       ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-NET-x86_64-Current.iso    ./${WORK_DIRS}/iso/net/ " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-10.13.0-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-11.8.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-12.2.0-amd64-DVD-1.iso                   ./${WORK_DIRS}/iso/dvd/ " \
+#		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/ " \ #
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-testing-amd64-DVD-1.iso                  ./${WORK_DIRS}/iso/dvd/ " \
+#		"/mnt/hgfs/workspace/Image/linux/debian/debian-bookworm-DI-rc4-amd64-DVD-1.iso          ./${WORK_DIRS}/iso/dvd/ " \ #
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-server-amd64.iso                 ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-live-server-amd64.iso            ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.3-live-server-amd64.iso            ./${WORK_DIRS}/iso/dvd/ " \
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ " \ #
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ " \
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-24.04-live-server-amd64.iso              ./${WORK_DIRS}/iso/dvd/ " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/noble-live-server-amd64.iso                     ./${WORK_DIRS}/iso/dvd/ " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-live-server-amd64.iso                    ./${WORK_DIRS}/iso/dvd/ " \ #
+		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-37-1.7.iso             ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/fedora/Fedora-Server-dvd-x86_64-38-1.6.iso             ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/centos/CentOS-Stream-8-x86_64-latest-dvd1.iso          ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/centos/CentOS-Stream-9-latest-x86_64-dvd1.iso          ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/almalinux/AlmaLinux-9-latest-x86_64-dvd.iso            ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-8.8-x86_64-dvd1.iso                        ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-8.8-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/miraclelinux/MIRACLELINUX-9.2-rtm-x86_64.iso           ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.5-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Leap-15.6-DVD-x86_64-Media.iso       ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/openSUSE/openSUSE-Tumbleweed-DVD-x86_64-Current.iso    ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/Rocky/Rocky-9-latest-x86_64-dvd.iso                    ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-10.13.0-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-11.8.0-amd64-lxde.iso               ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-12.2.0-amd64-lxde.iso               ./${WORK_DIRS}/iso/dvd/ " \
+#		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/ " \ #
+		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-testing-amd64-lxde.iso              ./${WORK_DIRS}/iso/dvd/ " \
+#		"/mnt/hgfs/workspace/Image/linux/debian/debian-live-bkworm-DI-rc4-amd64-lxde.iso        ./${WORK_DIRS}/iso/dvd/ " \ #
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-18.04.6-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-20.04.6-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.04.3-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ " \
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-22.10-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ " \ #
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.04-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10.1-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ " \
+		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-23.10-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ " \
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-24.04.1-desktop-amd64.iso                ./${WORK_DIRS}/iso/dvd/ " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/ubuntu-24.04-desktop-legacy-amd64.iso           ./${WORK_DIRS}/iso/dvd/ " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/noble-desktop-amd64.iso                         ./${WORK_DIRS}/iso/dvd/ " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/noble-desktop-legacy-amd64.iso                  ./${WORK_DIRS}/iso/dvd/ " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-amd64.iso                        ./${WORK_DIRS}/iso/dvd/ " \ #
+#		"/mnt/hgfs/workspace/Image/linux/ubuntu/mantic-desktop-legacy-amd64.iso                 ./${WORK_DIRS}/iso/dvd/ " \ #
 	)
 
 # --- CPU architecture --------------------------------------------------------
@@ -839,8 +839,10 @@ function funcMake_directory () {
 
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}remove file${TXT_RESET}"
 #	rm -rf   "./${WORK_DIRS}"
+#	rm -rf ./"${WORK_DIRS}"/{arc,bld,cfg,deb,img,iso,mnt,opt,pac,ram,tmp,usb,mk_usb4inst.cache.txt}
 #	rm -rf ./"${WORK_DIRS}"/{bld,deb,img,mnt,pac,ram,tmp,usb}
-	rm -rf ./"${WORK_DIRS}"/{bld,img,mnt,pac,ram,tmp,usb}
+#	rm -rf ./"${WORK_DIRS}"/{bld,img,mnt,pac,ram,tmp,usb}
+	rm -rf ./"${WORK_DIRS}"/{arc,bld,cfg,img,iso,mnt,opt,pac,ram,tmp,usb,mk_usb4inst.cache.txt}
 	rm -rf "./${WORK_DIRS}/deb/"*~
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}make directory${TXT_RESET}"
 	for I in "${!ARRAY_LIST[@]}"
@@ -872,7 +874,8 @@ function funcMake_link () {
 		if [[ ! -d "${DIR_NAME}/." ]]; then
 			mkdir -p "${DIR_NAME}"
 		fi
-		if [[ ! -L "${ARRAY_LINE[1]}" ]]; then
+		if [[ ! -L "${ARRAY_LINE[1]}${ARRAY_LINE[0]##*/}" ]]; then
+			funcPrintf "make    link: %-24.24s : %s\n" "make symbolic link" "${ARRAY_LINE[1]}${ARRAY_LINE[0]##*/}"
 			ln -s "${ARRAY_LINE[0]}" "${ARRAY_LINE[1]}"
 		fi
 	done
