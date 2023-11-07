@@ -840,9 +840,7 @@ function funcMake_directory () {
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}remove file${TXT_RESET}"
 #	rm -rf   "./${WORK_DIRS}"
 #	rm -rf ./"${WORK_DIRS}"/{arc,bld,cfg,deb,img,iso,mnt,opt,pac,ram,tmp,usb,mk_usb4inst.cache.txt}
-#	rm -rf ./"${WORK_DIRS}"/{bld,deb,img,mnt,pac,ram,tmp,usb}
-#	rm -rf ./"${WORK_DIRS}"/{bld,img,mnt,pac,ram,tmp,usb}
-	rm -rf ./"${WORK_DIRS}"/{arc,bld,cfg,img,iso,mnt,opt,pac,ram,tmp,usb,mk_usb4inst.cache.txt}
+	rm -rf ./"${WORK_DIRS}"/{bld,img,mnt,pac,ram,tmp,usb}
 	rm -rf "./${WORK_DIRS}/deb/"*~
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}make directory${TXT_RESET}"
 	for I in "${!ARRAY_LIST[@]}"
