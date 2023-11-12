@@ -1,0 +1,235 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <add-on t="map">
+    <add_on_products t="list">
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/distribution/leap/15.5/repo/oss/</media_url>
+        <name>repo-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/distribution/leap/15.5/repo/non-oss/</media_url>
+        <name>repo-non-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/leap/15.5/oss/</media_url>
+        <name>repo-update</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/leap/15.5/non-oss/</media_url>
+        <name>repo-update-non-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/leap/15.5/sle/</media_url>
+        <name>repo-sle-update</name>
+        <product_dir>/</product_dir>
+      </listentry>
+<!-- tumbleweed
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/tumbleweed/repo/oss/</media_url>
+        <name>repo-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/tumbleweed/repo/non-oss/</media_url>
+        <name>repo-non-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/tumbleweed/</media_url>
+        <name>repo-update</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/tumbleweed-non-oss/</media_url>
+        <name>repo-update-non-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+tumbleweed -->
+    </add_on_products>
+  </add-on>
+  <bootloader t="map">
+    <global t="map">
+      <append>-B console=force-text</append>
+      <cpu_mitigations>auto</cpu_mitigations>
+    </global>
+  </bootloader>
+  <deploy_image t="map">
+    <image_installation t="boolean">false</image_installation>
+  </deploy_image>
+  <general t="map">
+    <mode t="map">
+      <confirm t="boolean">false</confirm>
+      <second_stage t="boolean">false</second_stage>
+    </mode>
+  </general>
+  <groups t="list">
+    <group t="map">
+      <groupname>wheel</groupname>
+      <userlist>master</userlist>
+    </group>
+  </groups>
+  <host t="map">
+    <hosts t="list">
+      <hosts_entry t="map">
+        <host_address>192.168.1.1</host_address>
+        <names t="list">
+          <name>sv-opensuse.workgroup sv-opensuse</name>
+        </names>
+      </hosts_entry>
+    </hosts>
+  </host>
+  <language t="map">
+    <language>ja_JP</language>
+    <languages>en_US,ja_JP</languages>
+  </language>
+  <networking t="map">
+    <dns t="map">
+      <hostname>sv-opensuse.workgroup</hostname>
+      <nameservers t="list">
+        <nameserver>192.168.1.254</nameserver>
+      </nameservers>
+      <searchlist t="list">
+        <search>workgroup</search>
+      </searchlist>
+    </dns>
+    <interfaces t="list">
+      <interface t="map">
+        <bootproto>static</bootproto>
+        <ipaddr>192.168.1.1</ipaddr>
+        <name>eth0</name>
+        <prefixlen>24</prefixlen>
+        <startmode>auto</startmode>
+        <zone>home</zone>
+      </interface>
+    </interfaces>
+    <keep_install_network t="boolean">true</keep_install_network>
+    <routing t="map">
+      <routes t="list">
+        <route t="map">
+          <destination>default</destination>
+          <device>eth0</device>
+          <gateway>192.168.1.254</gateway>
+          <netmask>-</netmask>
+        </route>
+      </routes>
+    </routing>
+  </networking>
+  <ntp-client t="map">
+    <ntp_policy>auto</ntp_policy>
+    <ntp_servers t="list">
+      <ntp_server t="map">
+        <address>ntp.nict.jp</address>
+      </ntp_server>
+    </ntp_servers>
+    <ntp_sync>systemd</ntp_sync>
+  </ntp-client>
+  <partitioning t="list">
+    <drive t="map">
+<!--
+      <device>/dev/sda</device>
+-->
+      <device>/dev/nvme0n1</device>
+      <initialize t="boolean">true</initialize>
+      <partitions t="list"/>
+      <type t="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  <scripts t="map">
+    <chroot-scripts t="list">
+      <script t="map">
+        <chrooted t="boolean">true</chrooted>
+        <filename>zzz_update.sh</filename>
+        <interpreter>shell</interpreter>
+        <source>#!/bin/sh
+zypper --non-interactive --terse update
+zypper --non-interactive --terse dist-upgrade,
+exit 0</source>
+      </script>
+      <script t="map">
+        <chrooted t="boolean">true</chrooted>
+        <filename>zzz_sudoers.sh</filename>
+        <interpreter>shell</interpreter>
+        <source>#!/bin/sh
+chmod u+w /etc/sudoers
+sed -i.orig /etc/sudoers \
+    -e 's/^\(Defaults.*targetpw\)/# \1/g' \
+    -e 's/^\(ALL.*ALL\)/# \1/g' \
+    -e '/NOPASSWD:/! s/^#.*\(%wheel.*ALL\)/\1/g'
+chmod u-w /etc/sudoers
+exit 0</source>
+      </script>
+    </chroot-scripts>
+  </scripts>
+  <services-manager t="map">
+    <default_target>graphical</default_target>
+    <services t="map">
+      <enable t="list">
+        <service>named</service>
+        <service>nmb</service>
+        <service>smb</service>
+        <service>sshd</service>
+      </enable>
+    </services>
+  </services-manager>
+  <software t="map">
+    <do_online_update t="boolean">true</do_online_update>
+    <install_recommended t="boolean">true</install_recommended>
+    <instsource/>
+    <packages t="list">
+      <package>bind</package>
+      <package>clamav</package>
+      <package>chrony</package>
+      <package>dhcpd-pools</package>
+    </packages>
+    <patterns t="list">
+      <pattern>apparmor</pattern>
+      <pattern>base</pattern>
+      <pattern>basesystem</pattern>
+      <pattern>console</pattern>
+      <pattern>enhanced_base</pattern>
+      <pattern>minimal_base</pattern>
+      <pattern>sw_management</pattern>
+      <pattern>x11</pattern>
+      <pattern>x11_enhanced</pattern>
+      <pattern>laptop</pattern>
+      <pattern>multimedia</pattern>
+      <pattern>devel_basis</pattern>
+      <pattern>fonts</pattern>
+      <pattern>fonts_opt</pattern>
+      <pattern>lxde</pattern>
+      <pattern>lxde_laptop</pattern>
+      <pattern>lxde_office</pattern>
+      <pattern>dhcp_dns_server</pattern>
+      <pattern>file_server</pattern>
+      <pattern>x11_yast</pattern>
+      <pattern>yast2_basis</pattern>
+    </patterns>
+    <products t="list">
+      <product>Leap</product>
+    </products>
+  </software>
+  <timezone t="map">
+    <hwclock>UTC</hwclock>
+    <timezone>Asia/Tokyo</timezone>
+  </timezone>
+  <users t="list">
+    <user t="map">
+      <encrypted t="boolean">false</encrypted>
+      <fullname>Master</fullname>
+      <user_password>master</user_password>
+      <username>master</username>
+    </user>
+    <user t="map">
+      <encrypted t="boolean">false</encrypted>
+      <fullname>root</fullname>
+      <user_password>r00t</user_password>
+      <username>root</username>
+    </user>
+  </users>
+</profile>
