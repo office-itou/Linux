@@ -3,14 +3,10 @@
 <profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
   <add-on t="map">
     <add_on_products t="list">
+<!-- leap -->
       <listentry t="map">
         <media_url>http://download.opensuse.org/distribution/leap/15.5/repo/oss/</media_url>
         <name>repo-oss</name>
-        <product_dir>/</product_dir>
-      </listentry>
-      <listentry t="map">
-        <media_url>http://download.opensuse.org/distribution/leap/15.5/repo/non-oss/</media_url>
-        <name>repo-non-oss</name>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
@@ -19,15 +15,16 @@
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>http://download.opensuse.org/update/leap/15.5/non-oss/</media_url>
-        <name>repo-update-non-oss</name>
-        <product_dir>/</product_dir>
-      </listentry>
-      <listentry t="map">
         <media_url>http://download.opensuse.org/update/leap/15.5/sle/</media_url>
         <name>repo-sle-update</name>
         <product_dir>/</product_dir>
       </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/leap/15.5/backports/</media_url>
+        <name>repo-sle-backports</name>
+        <product_dir>/</product_dir>
+      </listentry>
+<!-- leap -->
 <!-- tumbleweed
       <listentry t="map">
         <media_url>http://download.opensuse.org/tumbleweed/repo/oss/</media_url>
@@ -35,18 +32,8 @@
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>http://download.opensuse.org/tumbleweed/repo/non-oss/</media_url>
-        <name>repo-non-oss</name>
-        <product_dir>/</product_dir>
-      </listentry>
-      <listentry t="map">
         <media_url>http://download.opensuse.org/update/tumbleweed/</media_url>
         <name>repo-update</name>
-        <product_dir>/</product_dir>
-      </listentry>
-      <listentry t="map">
-        <media_url>http://download.opensuse.org/update/tumbleweed-non-oss/</media_url>
-        <name>repo-update-non-oss</name>
         <product_dir>/</product_dir>
       </listentry>
 tumbleweed -->
@@ -73,7 +60,7 @@ tumbleweed -->
       <userlist>master</userlist>
     </group>
   </groups>
-<!--
+<!-- fixed address
   <host t="map">
     <hosts t="list">
       <hosts_entry t="map">
@@ -84,13 +71,15 @@ tumbleweed -->
       </hosts_entry>
     </hosts>
   </host>
--->
+fixed address -->
   <language t="map">
     <language>ja_JP</language>
     <languages>en_US,ja_JP</languages>
   </language>
   <networking t="map">
-<!--
+    <!-- wicked network_manager none -->
+    <backend>wicked</backend>
+<!-- fixed address
     <dns t="map">
       <hostname>sv-opensuse.workgroup</hostname>
       <nameservers t="list">
@@ -110,10 +99,6 @@ tumbleweed -->
         <zone>home</zone>
       </interface>
     </interfaces>
--->
-    <!-- wicked network_manager none -->
-    <backend>wicked</backend>
-<!--
     <keep_install_network t="boolean">true</keep_install_network>
     <routing t="map">
       <routes t="list">
@@ -125,7 +110,7 @@ tumbleweed -->
         </route>
       </routes>
     </routing>
--->
+fixed address -->
   </networking>
   <ntp-client t="map">
     <ntp_policy>auto</ntp_policy>
@@ -138,9 +123,9 @@ tumbleweed -->
   </ntp-client>
   <partitioning t="list">
     <drive t="map">
-<!--
+<!-- device
       <device>/dev/sda</device>
--->
+device -->
       <device>/dev/nvme0n1</device>
       <initialize t="boolean">true</initialize>
       <partitions t="list"/>
@@ -187,8 +172,11 @@ if [ -f /mnt/etc/hosts ]; then
     cp -a /mnt/etc/hosts /mnt/etc/hosts.orig
 fi
 LANG=C echo "${HOSTNAME}" > /mnt/etc/hostname
-LANG=C sed -i.orig /mnt/etc/hosts                              \
-           -e "/127.0.0.1/a ${IPADDR}\t${HOSTNAME}\t${HOSTNM}"
+LANG=C sed -i.orig /mnt/etc/hosts                                                         \
+           -e "/^127\.0\.0\.1[[:blank:]]\+/ { "                                           \
+           -e "/[[:blank:]]\+localhost[^[:graph:]]*$/a ${IPADDR}\t${HOSTNAME}\t${HOSTNM}" \
+           -e "}"
+#          -e "/127\.0\.0\.1/a ${IPADDR}\t${HOSTNAME}\t${HOSTNM}"
 echo "--- /mnt/etc/hostname ---"
 cat /mnt/etc/hostname
 echo "--- end ---"
@@ -227,15 +215,6 @@ elif [ -n "$(command -v connmanctl)" ]; then
 fi
 exit 0</source>
       </script>
-      <script t="map">
-        <debug t="boolean">false</debug>
-        <filename>zzz_update.sh</filename>
-        <location/>
-        <source>#!/bin/sh
-#LANG=C zypper --non-interactive --terse update
-#LANG=C zypper --non-interactive --terse dist-upgrade
-exit 0</source>
-      </script>
     </init-scripts>
   </scripts>
   <services-manager t="map">
@@ -254,37 +233,36 @@ exit 0</source>
     <install_recommended t="boolean">true</install_recommended>
     <instsource/>
     <packages t="list">
+      <package>apache2</package>
+      <package>autoyast2</package>
+      <package>avahi</package>
+      <package>bash-completion</package>
+      <package>bc</package>
       <package>bind</package>
-      <package>clamav</package>
       <package>chrony</package>
-      <package>dhcpd-pools</package>
+      <package>clamav</package>
+      <package>curl</package>
+      <package>dhcp-server</package>
+      <package>firewalld</package>
+      <package>fuse</package>
+      <package>glibc-i18ndata</package>
+      <package>glibc-locale</package>
+      <package>ibus-mozc</package>
+      <package>less</package>
+      <package>minidlna</package>
+      <package>openssh-server</package>
+      <package>samba</package>
+      <package>sudo</package>
+      <package>tftp</package>
+      <package>vim</package>
+      <package>wget</package>
+      <package>zypper</package>
     </packages>
     <patterns t="list">
-      <pattern>apparmor</pattern>
       <pattern>base</pattern>
-      <pattern>basesystem</pattern>
-      <pattern>console</pattern>
-      <pattern>enhanced_base</pattern>
-      <pattern>minimal_base</pattern>
-      <pattern>sw_management</pattern>
-<!--
-      <pattern>x11</pattern>
-      <pattern>x11_enhanced</pattern>
-      <pattern>laptop</pattern>
-      <pattern>multimedia</pattern>
-      <pattern>devel_basis</pattern>
-      <pattern>fonts</pattern>
-      <pattern>fonts_opt</pattern>
+<!-- desktop lxde
       <pattern>lxde</pattern>
-      <pattern>lxde_laptop</pattern>
-      <pattern>lxde_office</pattern>
-      <pattern>dhcp_dns_server</pattern>
--->
-      <pattern>file_server</pattern>
-<!--
-      <pattern>x11_yast</pattern>
--->
-      <pattern>yast2_basis</pattern>
+desktop lxde -->
     </patterns>
     <products t="list">
       <product>Leap</product>
