@@ -256,6 +256,7 @@ exit 0</source>
       <package>tftp</package>
       <package>vim</package>
       <package>wget</package>
+      <package>which</package>
       <package>zypper</package>
     </packages>
     <patterns t="list">
