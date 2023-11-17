@@ -1,0 +1,225 @@
+# -----------------------------------------------------------------------------
+sudo bash -c '
+cat <<- '_EOT_' | sed '\''s/^ *//g'\'' > /var/lib/tftp/grub/grub.cfg
+	set default=0
+	set timeout=-1
+	
+	if [ x\${feature_default_font_path} = xy ] ; then
+	 	font=unicode
+	else
+	 	font=\${prefix}/font.pf2
+	fi
+	
+	if loadfont \$font ; then
+	#	set lang=ja_JP
+	 	set gfxmode=1280x720
+	 	set gfxpayload=keep
+	
+	 	if [ "\${grub_platform}" = "efi" ]; then
+	 		insmod efi_gop
+	 		insmod efi_uga
+	 	else
+	 		insmod vbe
+	 		insmod vga
+	 	fi
+	
+	 	insmod gfxterm
+	 	insmod gettext
+	 	terminal_output gfxterm
+	fi
+	
+	set menu_color_normal=cyan/blue
+	set menu_color_highlight=white/blue
+	
+	#export lang
+	export gfxmode
+	export gfxpayload
+	export menu_color_normal
+	export menu_color_highlight
+	
+	insmod play
+	play 960 440 1 0 4 440 1
+	
+	menuentry '\''[ Unattended installation ]'\'' {
+	 	true
+	}
+	
+	source /grub/menu.cfg
+	
+	menuentry '\''- Windows 10'\'' {
+	 	kernel wimboot
+	 	initrd boot/bcd BCD
+	 	initrd boot/boot.sdi boot.sdi
+	 	initrd sources/boot.wim boot.wim
+	}
+	
+	menuentry '\''- Windows 11'\'' {
+	 	kernel wimboot
+	 	initrd boot/bcd BCD
+	 	initrd boot/boot.sdi boot.sdi
+	 	initrd sources/boot.wim boot.wim
+	}
+	
+	menuentry '\''[ System command ]'\'' {
+	 	true
+	}
+	
+	menuentry '\''- System shutdown'\'' {
+	 	echo "System shutting down ..."
+	 	halt
+	}
+	
+	menuentry '\''- System restart'\'' {
+	 	echo "System rebooting ..."
+	 	reboot
+	}
+	
+	if [ "\${grub_platform}" = "efi" ]; then
+	 	menuentry '\''Boot from next volume'\'' {
+	 		exit 1
+	 	}
+	
+	 	menuentry '\''UEFI Firmware Settings'\'' {
+	 		fwsetup
+	 	}
+	fi
+_EOT_
+'
+# -----------------------------------------------------------------------------
+sudo bash -c '
+: > /var/lib/tftp/grub/menu.cfg
+for LINE in \
+	"o  debian-10               Debian%2010                         debian          debian-10.13.0-amd64-DVD-1.iso              install.amd         initrd.gz   vmlinuz    conf/preseed/debian/preseed_old_server.cfg   " \
+	"o  debian-11               Debian%2011                         debian          debian-11.8.0-amd64-DVD-1.iso               install.amd         initrd.gz   vmlinuz    conf/preseed/debian/preseed_server.cfg       " \
+	"o  debian-12               Debian%2012                         debian          debian-12.2.0-amd64-DVD-1.iso               install.amd         initrd.gz   vmlinuz    conf/preseed/debian/preseed_server.cfg       " \
+	"o  debian-13               Debian%2013                         debian          debian-13.0.0-amd64-DVD-1.iso               install.amd         initrd.gz   vmlinuz    conf/preseed/debian/preseed_server.cfg       " \
+	"o  debian-testing          Debian%20testing                    debian          debian-testing-amd64-DVD-1.iso              install.amd         initrd.gz   vmlinuz    conf/preseed/debian/preseed_server.cfg       " \
+	"-  debian-live-10          Debian%20Live%2010                  debian          debian-live-10.13.0-amd64-lxde.iso          install             initrd.gz   vmlinuz    conf/preseed/debian/preseed_old_server.cfg   " \
+	"-  debian-live-11          Debian%20Live%2011                  debian          debian-live-11.8.0-amd64-lxde.iso           install             initrd.gz   vmlinuz    conf/preseed/debian/preseed_server.cfg       " \
+	"-  debian-live-12          Debian%20Live%2012                  debian          debian-live-12.2.0-amd64-lxde.iso           install             initrd.gz   vmlinuz    conf/preseed/debian/preseed_server.cfg       " \
+	"-  debian-live-13          Debian%20Live%2013                  debian          debian-live-13.0.0-amd64-lxde.iso           install             initrd.gz   vmlinuz    conf/preseed/debian/preseed_server.cfg       " \
+	"-  debian-live-testing     Debian%20Live%20testing             debian          debian-live-testing-amd64-lxde.iso          install             initrd.gz   vmlinuz    conf/preseed/debian/preseed_server.cfg       " \
+	"o  ubuntu-18.04            Ubuntu%20Live%20Server%2018.04      ubuntu          ubuntu-18.04.6-live-server-amd64.iso        casper              initrd      vmlinuz    conf/nocloud/ubuntu.server                   " \
+	"o  ubuntu-20.04            Ubuntu%20Live%20Server%2020.04      ubuntu          ubuntu-20.04.6-live-server-amd64.iso        casper              initrd      vmlinuz    conf/nocloud/ubuntu.server                   " \
+	"o  ubuntu-22.04            Ubuntu%20Live%20Server%2022.04      ubuntu          ubuntu-22.04.3-live-server-amd64.iso        casper              initrd      vmlinuz    conf/nocloud/ubuntu.server                   " \
+	"o  ubuntu-23.04            Ubuntu%20Live%20Server%2023.04      ubuntu          ubuntu-23.04-live-server-amd64.iso          casper              initrd      vmlinuz    conf/nocloud/ubuntu.server                   " \
+	"o  ubuntu-23.10            Ubuntu%20Live%20Server%2023.10      ubuntu          ubuntu-23.10-live-server-amd64.iso          casper              initrd      vmlinuz    conf/nocloud/ubuntu.server                   " \
+	"o  ubuntu-24.04            Ubuntu%20Live%20Server%2024.04      ubuntu          ubuntu-24.04-live-server-amd64.iso          casper              initrd      vmlinuz    conf/nocloud/ubuntu.server                   " \
+	"o  ubuntu-noble            Ubuntu%20Live%20Server%20noble      ubuntu          noble-live-server-amd64.iso                 casper              initrd      vmlinuz    conf/nocloud/ubuntu.server                   " \
+	"-  ubuntu-server-18.04     Ubuntu%20Server%2018.04             ubuntu          ubuntu-18.04.6-server-amd64.iso             install             initrd.gz   vmlinuz    conf/preseed/ubuntu/preseed_old_server.cfg   " \
+	"-  ubuntu-desktop-18.04    Ubuntu%20Desktop%2018.04            ubuntu          ubuntu-18.04.6-desktop-amd64.iso            casper              initrd      vmlinuz    conf/preseed/ubuntu/preseed_server.cfg       " \
+	"-  ubuntu-desktop-20.04    Ubuntu%20Desktop%2020.04            ubuntu          ubuntu-20.04.6-desktop-amd64.iso            casper              initrd      vmlinuz    conf/preseed/ubuntu/preseed_server.cfg       " \
+	"-  ubuntu-desktop-22.04    Ubuntu%20Desktop%2022.04            ubuntu          ubuntu-22.04.3-desktop-amd64.iso            casper              initrd      vmlinuz    conf/preseed/ubuntu/preseed_server.cfg       " \
+	"-  ubuntu-desktop-23.04    Ubuntu%20Desktop%2023.04            ubuntu          ubuntu-23.04-desktop-amd64.iso              casper              initrd      vmlinuz    conf/preseed/ubuntu/preseed_server.cfg       " \
+	"-  ubuntu-desktop-23.10    Ubuntu%20Desktop%2023.10            ubuntu          ubuntu-23.10.1-desktop-amd64.iso            casper              initrd      vmlinuz    conf/nocloud/ubuntu.server                   " \
+	"-  ubuntu-desktop-24.04    Ubuntu%20Desktop%2024.04            ubuntu          ubuntu-24.04-desktop-amd64.iso              casper              initrd      vmlinuz    conf/nocloud/ubuntu.server                   " \
+	"-  ubuntu-desktop-noble    Ubuntu%20Desktop%20noble            ubuntu          noble-desktop-amd64.iso                     casper              initrd      vmlinuz    conf/nocloud/ubuntu.server                   " \
+	"-  ubuntu-legacy-23.04     Ubuntu%20Legacy%20Desktop%2023.04   ubuntu          ubuntu-23.04-desktop-legacy-amd64.iso       casper              initrd      vmlinuz    conf/preseed/ubuntu/preseed_server.cfg       " \
+	"-  ubuntu-legacy-23.10     Ubuntu%20Legacy%20Desktop%2023.10   ubuntu          ubuntu-23.10-desktop-legacy-amd64.iso       casper              initrd      vmlinuz    conf/preseed/ubuntu/preseed_server.cfg       " \
+	"-  ubuntu-legacy-24.04     Ubuntu%20Legacy%20Desktop%2024.04   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper              initrd      vmlinuz    conf/preseed/ubuntu/preseed_server.cfg       " \
+	"-  ubuntu-legacy-noble     Ubuntu%20Legacy%20Desktop%20noble   ubuntu          noble-desktop-legacy-amd64.iso              casper              initrd      vmlinuz    conf/preseed/ubuntu/preseed_server.cfg       " \
+	"-  fedora-37               Fedora%20Server%2037                fedora          Fedora-Server-dvd-x86_64-37-1.7.iso         images/pxeboot      initrd.img  vmlinuz    conf/kickstart/ks_fedora-37.cfg              " \
+	"o  fedora-38               Fedora%20Server%2038                fedora          Fedora-Server-dvd-x86_64-38-1.6.iso         images/pxeboot      initrd.img  vmlinuz    conf/kickstart/ks_fedora-38.cfg              " \
+	"o  fedora-39               Fedora%20Server%2039                fedora          Fedora-Server-dvd-x86_64-39-1.5.iso         images/pxeboot      initrd.img  vmlinuz    conf/kickstart/ks_fedora-39.cfg              " \
+	"o  centos-stream-8         CentOS%20Stream%208                 centos          CentOS-Stream-8-x86_64-latest-dvd1.iso      images/pxeboot      initrd.img  vmlinuz    conf/kickstart/ks_centos-8.cfg               " \
+	"o  centos-stream-9         CentOS%20Stream%209                 centos          CentOS-Stream-9-latest-x86_64-dvd1.iso      images/pxeboot      initrd.img  vmlinuz    conf/kickstart/ks_centos-9.cfg               " \
+	"o  almalinux-9             Alma%20Linux%209                    almalinux       AlmaLinux-9-latest-x86_64-dvd.iso           images/pxeboot      initrd.img  vmlinuz    conf/kickstart/ks_almalinux-9.cfg            " \
+	"o  rocky-8                 Rocky%20Linux%208                   Rocky           Rocky-8.8-x86_64-dvd1.iso                   images/pxeboot      initrd.img  vmlinuz    conf/kickstart/ks_rockylinux-8.cfg           " \
+	"o  rocky-9                 Rocky%20Linux%209                   Rocky           Rocky-9-latest-x86_64-dvd.iso               images/pxeboot      initrd.img  vmlinuz    conf/kickstart/ks_rockylinux-9.cfg           " \
+	"o  miraclelinux-8          Miracle%20Linux%208                 miraclelinux    MIRACLELINUX-8.8-rtm-x86_64.iso             images/pxeboot      initrd.img  vmlinuz    conf/kickstart/ks_miraclelinux-8.cfg         " \
+	"o  miraclelinux-9          Miracle%20Linux%209                 miraclelinux    MIRACLELINUX-9.2-rtm-x86_64.iso             images/pxeboot      initrd.img  vmlinuz    conf/kickstart/ks_miraclelinux-9.cfg         " \
+	"o  opensuse-leap-15.5      openSUSE%20Leap%2015.5              openSUSE        openSUSE-Leap-15.5-DVD-x86_64-Media.iso     boot/x86_64/loader  initrd      linux      conf/autoyast/autoinst_leap_15.5.xml         " \
+	"o  opensuse-leap-15.6      openSUSE%20Leap%2015.6              openSUSE        openSUSE-Leap-15.6-DVD-x86_64-Media.iso     boot/x86_64/loader  initrd      linux      conf/autoyast/autoinst_leap_15.6.xml         " \
+	"o  opensuse-tumbleweed     openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-DVD-x86_64-Current.iso  boot/x86_64/loader  initrd      linux      conf/autoyast/autoinst_tumbleweed.xml        "
+do
+	PARM=(${LINE})
+	if [[ "${PARM[0]}" != "o" ]] || [[ ! -f "/mnt/hgfs/workspace/Image/linux/${PARM[3]}/${PARM[4]}" ]]; then
+		continue
+	fi
+	echo "${PARM[4]}"
+	# -------------------------------------------------------------------------
+	mount -r -o loop /var/www/html/pxeboot/isos/${PARM[4]} /media
+	rsync --archive --human-readable --update --delete /media/${PARM[5]}/{${PARM[6]},${PARM[7]}} /var/lib/tftp/boot/${PARM[1]}/
+	rsync --archive --human-readable --update --delete /media/                                   /var/www/html/pxeboot/imgs/${PARM[1]}/
+	umount /media
+	# -------------------------------------------------------------------------
+	WEBADDR="http://192.168.1.10/pxeboot"
+	case "${PARM[1]%%-*}" in
+		debian       )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${PARM[2]//%20/ }'\'' {
+				 	set webaddr="${WEBADDR}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="url=\${webaddr}/isos/\${isofile}"
+				 	set preseed="auto=true url=\${webaddr}/${PARM[8]} ip=dhcp ipv6.disable=0"
+				 	set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	linux   \${boottop}/vmlinuz root=\${boottop} \${urlfile} \${preseed} ---
+				 	initrd  \${boottop}/initrd.gz
+				}
+				
+_EOT_
+				;;
+		ubuntu       )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${PARM[2]//%20/ }'\'' {
+				 	set webaddr="${WEBADDR}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="url=\${webaddr}/isos/\${isofile}"
+				 	set nocloud="autoinstall ds=nocloud-net;s=\${webaddr}/${PARM[8]} ip=dhcp ipv6.disable=0"
+				 	set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	linux   \${boottop}/vmlinuz \${isofile} \${nocloud} ---
+				 	initrd  \${boottop}/initrd
+				}
+				
+_EOT_
+				;;
+		fedora       | \
+		centos       | \
+		almalinux    | \
+		rocky        | \
+		miraclelinux )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${PARM[2]//%20/ }'\'' {
+				 	set webaddr="${WEBADDR}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="inst.repo=\${webaddr}/imgs/${PARM[1]}"
+				 	set ksstart="inst.ks=\${webaddr}/${PARM[8]} ip=dhcp ipv6.disable=0"
+				 	set netconf="ip=192.168.1.1::192.168.1.254:255.255.255.0:sv-${PARM[1]%%-*}.workgroup:ens160:none,auto6 nameserver=192.168.1.254"
+				 	set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	linux   \${boottop}/vmlinuz \${urlfile} \${ksstart} \${netconf} ---
+				 	initrd  \${boottop}/initrd.img
+				}
+				
+_EOT_
+				;;
+		opensuse     )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${PARM[2]//%20/ }'\'' {
+				 	set webaddr="${WEBADDR}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="install=\${webaddr}/imgs/${PARM[1]}"
+				 	set autoxml="autoyast=\${webaddr}/${PARM[8]} ip=dhcp ipv6.disable=0"
+				 	set netconf="hostname=sv-${PARM[1]%%-*}.workgroup ifcfg=e*=192.168.1.1/24,192.168.1.254,192.168.1.254,workgroup"
+				 	set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	linux   \${boottop}/linux \${urlfile} \${autoxml} \${netconf} ---
+				 	initrd  \${boottop}/initrd
+				}
+				
+_EOT_
+				;;
+	esac
+done
+'
+# -----------------------------------------------------------------------------
