@@ -1,0 +1,12 @@
+#cloud-config
+autoinstall:
+  version: 1
+  bootcmd: systemctl stop apparmor.service && systemctl disable apparmor.service
+#       echo "bootcmd"        >> /run/my.log
+  early-commands: 
+  -echo "early-commands" >> /run/my.log
+  late-commands:  
+  -echo "late-commands"  >> /run/my.log
+  runcmd:         echo "runcmd"         >> /run/my.log
+# user-data:
+# - echo "bootcmd" >> /run/my.log
