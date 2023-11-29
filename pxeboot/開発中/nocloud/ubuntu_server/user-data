@@ -206,13 +206,24 @@ autoinstall:
                 ;;
         esac;
     done;
-  - mkdir -p /target/var/log/installer;
-    cat /proc/cmdline                          >> /target/var/log/installer/network_info.tst;
-    cat /target/etc/hostname                   >> /target/var/log/installer/network_info.tst;
-    cat /target/etc/hosts                      >> /target/var/log/installer/network_info.tst;
-    cat /target/etc/resolv.conf                >> /target/var/log/installer/network_info.tst;
-    cat /target/etc/netplan/50-cloud-init.yaml >> /target/var/log/installer/network_info.tst;
-    ip a                                       >> /target/var/log/installer/network_info.tst;
+  - LOG_FILE="/target/var/log/installer/network_info.log";
+    mkdir -p "${LOG_FILE%/*}";
+    echo "--- cmdline ---"         >> "${LOG_FILE}";
+    cat /proc/cmdline              >> "${LOG_FILE}";
+    echo "--- hostname ---"        >> "${LOG_FILE}";
+    cat /target/etc/hostname       >> "${LOG_FILE}";
+    echo "--- hosts ---"           >> "${LOG_FILE}";
+    cat /target/etc/hosts          >> "${LOG_FILE}";
+    echo "--- resolv.conf ---"     >> "${LOG_FILE}";
+    cat /target/etc/resolv.conf    >> "${LOG_FILE}";
+    for FILE in $(ls /target/etc/netplan/*.*);
+    do
+        echo "--- ${FILE##*/} ---" >> "${LOG_FILE}";
+        cat "${FILE}"              >> "${LOG_FILE}";
+    done;
+    echo "--- ip a ---"            >> "${LOG_FILE}";
+    ip a                           >> "${LOG_FILE}";
+    echo "--- end ---"             >> "${LOG_FILE}";
 # =============================================================================
 # memo:
 #   https://ubuntu.com/server/docs/install/autoinstall-reference

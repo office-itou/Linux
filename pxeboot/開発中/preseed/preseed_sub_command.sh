@@ -10,29 +10,23 @@
 
 	trap 'exit 1' 1 2 3 15
 
-	readonly PROG_PRAM="$@"
+	readonly PROG_PRAM="$*"
 	readonly PROG_NAME="${0##*/}"
 	readonly WORK_DIRS="${0%/*}"
-	readonly DIST_NAME="$(uname -v | tr '[A-Z]' '[a-z]' | sed -n -e 's/.*\(debian\|ubuntu\).*/\1/p')"
+	readonly DIST_NAME="$(uname -v | tr [A-Z] [a-z] | sed -n -e 's/.*\(debian\|ubuntu\).*/\1/p')"
+	readonly COMD_LINE="$(cat /proc/cmdline)"
 	echo "${PROG_NAME}: === Start ==="
 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
 	echo "${PROG_NAME}: PROG_NAME=${PROG_NAME}"
 	echo "${PROG_NAME}: WORK_DIRS=${WORK_DIRS}"
 	echo "${PROG_NAME}: DIST_NAME=${DIST_NAME}"
+	echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
 	#--------------------------------------------------------------------------
 	if [ -z "${PROG_PRAM}" ]; then
 		ROOT_DIRS="/target"
-#		COMD_LINE=""
 		CONF_FILE="${WORK_DIRS}/preseed.cfg"
 		TEMP_FILE=""
 		PROG_PATH="$0"
-#		for COMD_LINE in $(cat /proc/cmdline)
-#		do
-#			case "${COMD_LINE}" in
-#				preseed/file=* ) CONF_FILE="${COMD_LINE#preseed/file=}"; break;;
-#				file=*         ) CONF_FILE="${COMD_LINE#file=}"        ; break;;
-#			esac
-#		done
 		if [ -z "${CONF_FILE}" ] || [ ! -f "${CONF_FILE}" ]; then
 			echo "${PROG_NAME}: not found preseed file [${CONF_FILE}]"
 			exit 1
@@ -42,7 +36,6 @@
 		cp -a "${CONF_FILE}" "${ROOT_DIRS}/tmp/"
 		TEMP_FILE="/tmp/${CONF_FILE##*/}"
 		echo "${PROG_NAME}: ROOT_DIRS=${ROOT_DIRS}"
-#		echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
 		echo "${PROG_NAME}: CONF_FILE=${CONF_FILE}"
 		echo "${PROG_NAME}: TEMP_FILE=${TEMP_FILE}"
 		in-target --pass-stdout sh -c "LANG=C /tmp/${PROG_NAME} ${TEMP_FILE}"
@@ -127,7 +120,7 @@ funcInstallPackages () {
 # --- network -----------------------------------------------------------------
 funcSetupNetwork () {
 	echo "${PROG_NAME}: funcSetupNetwork"
-	#--------------------------------------------------------------------------
+	#--- preseed.cfg parameter ------------------------------------------------
 	FIX_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/\(disable_dhcp\|disable_autoconfig\)[[:blank:]]\+/ s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
 	NIC_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_ipaddress[[:blank:]]\+/                        s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
 	NIC_MASK="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_netmask[[:blank:]]\+/                          s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
@@ -137,26 +130,47 @@ funcSetupNetwork () {
 	NIC_HOST="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_hostname[[:blank:]]\+/                         s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
 	NIC_WGRP="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_domain[[:blank:]]\+/                           s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
 	NIC_NAME="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/choose_interface[[:blank:]]\+/                     s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+	NIC_FQDN="${NIC_HOST}"
+	if [ -n "${NIC_WGRP}" ]; then
+		NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
+	fi
 	NIC_BIT4=""
 	NIC_MADR=""
 	CON_NAME=""
-	#--------------------------------------------------------------------------
-	COMD_LINE=""
-	for COMD_LINE in $(cat /proc/cmdline)
+	#--- /proc/cmdline parameter  ---------------------------------------------
+	for LINE in ${COMD_LINE}
 	do
-		case "${COMD_LINE}" in
-			netcfg/choose_interface=*   ) NIC_NAME="${COMD_LINE#netcfg/choose_interface=}"  ;;
-			netcfg/disable_dhcp=*       ) FIX_IPV4="${COMD_LINE#netcfg/disable_dhcp=}"      ;;
-			netcfg/disable_autoconfig=* ) FIX_IPV4="${COMD_LINE#netcfg/disable_autoconfig=}";;
-			netcfg/get_ipaddress=*      ) NIC_IPV4="${COMD_LINE#netcfg/get_ipaddress=}"     ;;
-			netcfg/get_netmask=*        ) NIC_MASK="${COMD_LINE#netcfg/get_netmask=}"       ;;
-			netcfg/get_gateway=*        ) NIC_GATE="${COMD_LINE#netcfg/get_gateway=}"       ;;
-			netcfg/get_nameservers=*    ) NIC_DNS4="${COMD_LINE#netcfg/get_nameservers=}"   ;;
-			netcfg/get_hostname=*       ) STR_WORK="${COMD_LINE#netcfg/get_hostname=}"      ; NIC_HOST="${STR_WORK%.*}"; NIC_WGRP="${STR_WORK#*.}";;
-			netcfg/get_domain=*         ) NIC_WGRP="${COMD_LINE#netcfg/get_domain=}"        ;;
+		case "${LINE}" in
+			netcfg/choose_interface=*   ) NIC_NAME="${LINE#netcfg/choose_interface=}"  ;;
+			netcfg/disable_dhcp=*       ) FIX_IPV4="${LINE#netcfg/disable_dhcp=}"      ;;
+			netcfg/disable_autoconfig=* ) FIX_IPV4="${LINE#netcfg/disable_autoconfig=}";;
+			netcfg/get_ipaddress=*      ) NIC_IPV4="${LINE#netcfg/get_ipaddress=}"     ;;
+			netcfg/get_netmask=*        ) NIC_MASK="${LINE#netcfg/get_netmask=}"       ;;
+			netcfg/get_gateway=*        ) NIC_GATE="${LINE#netcfg/get_gateway=}"       ;;
+			netcfg/get_nameservers=*    ) NIC_DNS4="${LINE#netcfg/get_nameservers=}"   ;;
+			netcfg/get_hostname=*       ) NIC_FQDN="${LINE#netcfg/get_hostname=}"      ;;;
+			netcfg/get_domain=*         ) NIC_WGRP="${LINE#netcfg/get_domain=}"        ;;
+			ip=dhcp                     ) FIX_IPV4="false"; break                           ;;
+			ip=*                        ) FIX_IPV4="true";
+			                              OLD_IFS=${IFS};
+			                              IFS=:;
+			                              set -f;
+			                              set -- ${LINE#ip=};
+			                              set +f;
+			                              NIC_IPV4="${1}";
+			                              NIC_GATE="${3}";
+			                              NIC_MASK="${4}";
+			                              NIC_FQDN="${5}";
+			                              NIC_NAME="${6}";
+			                              NIC_DNS4="${8}";
+			                              IFS=${OLD_IFS};
+			                              break;
+			                              ;;
 		esac
 	done
-	#--------------------------------------------------------------------------
+	#--- network parameter ----------------------------------------------------
+	NIC_HOST="${NIC_FQDN%.*}"
+	NIC_WGRP="${NIC_FQDN#*.}"
 	if [ -z "${NIC_WGRP}" ]; then
 		NIC_WGRP="$(awk '/[ \t]*search[ \t]+/ {print $2;}' /etc/resolv.conf)"
 	fi
@@ -169,7 +183,7 @@ funcSetupNetwork () {
 		NIC_IPV4="${NIC_IPV4%/*}"
 		NIC_MASK="$(funcIPv4GetNetmask "${NIC_BIT4}")"
 	fi
-	#--------------------------------------------------------------------------
+	#--- nic parameter --------------------------------------------------------
 	if [ -z "${NIC_NAME}" ] || [ "${NIC_NAME}" = "auto" ]; then
 		IP4_INFO="$(LANG=C ip -a address show 2> /dev/null | sed -n '/^2:/ { :l1; p; n; { /^[0-9]\+:/ Q; }; t; b l1; }')"
 		NIC_NAME="$(echo "${IP4_INFO}" | awk '/^2:/ {gsub(":","",$2); print $2;}')"
@@ -177,19 +191,30 @@ funcSetupNetwork () {
 	IP4_INFO="$(LANG=C ip -f link address show dev "${NIC_NAME}" 2> /dev/null | sed -n '/^2:/ { :l1; p; n; { /^[0-9]\+:/ Q; }; t; b l1; }')"
 	NIC_MADR="$(echo "${IP4_INFO}" | awk '/link\/ether/ {print$2;}')"
 	CON_NAME="ethernet_$(echo "${NIC_MADR}" | sed -n -e 's/://gp')_cable"
-	#--------------------------------------------------------------------------
+	#--- hostname / hosts -----------------------------------------------------
+	OLD_HOST="$(cat /etc/hostname)";
+	echo "${NIC_FQDN}" > /etc/hostname;
+	sed -i /etc/hosts -e s/${OLD_HOST}/${NIC_FQDN}/g
+	#--- debug print ----------------------------------------------------------
 	echo "${PROG_NAME}: FIX_IPV4=${FIX_IPV4}"
 	echo "${PROG_NAME}: NIC_IPV4=${NIC_IPV4}"
 	echo "${PROG_NAME}: NIC_MASK=${NIC_MASK}"
 	echo "${PROG_NAME}: NIC_GATE=${NIC_GATE}"
 	echo "${PROG_NAME}: NIC_DNS4=${NIC_DNS4}"
+	echo "${PROG_NAME}: NIC_FQDN=${NIC_FQDN}"
 	echo "${PROG_NAME}: NIC_HOST=${NIC_HOST}"
 	echo "${PROG_NAME}: NIC_WGRP=${NIC_WGRP}"
 	echo "${PROG_NAME}: NIC_BIT4=${NIC_BIT4}"
 	echo "${PROG_NAME}: NIC_NAME=${NIC_NAME}"
 	echo "${PROG_NAME}: NIC_MADR=${NIC_MADR}"
 	echo "${PROG_NAME}: CON_NAME=${CON_NAME}"
-	#--------------------------------------------------------------------------
+	echo "${PROG_NAME}: --- hostname ---"
+	cat /etc/hostname
+	echo "${PROG_NAME}: --- hosts ---"
+	cat /etc/hosts
+	echo "${PROG_NAME}: --- resolv.conf ---"
+	cat /etc/resolv.conf
+	#--- exit for DHCP --------------------------------------------------------
 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
 		return
 	fi
