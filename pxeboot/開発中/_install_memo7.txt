@@ -1,0 +1,1117 @@
+# --- initial setup -----------------------------------------------------------
+sudo bash -c '
+cd
+rm -rf /var/lib/tftp/
+cd /var/lib/tftp/
+curl -L -# -R -S -o "debian_stable_netboot.tar.gz" "https://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/netboot.tar.gz"
+tar -xzf debian_stable_netboot.tar.gz
+rm debian_stable_netboot.tar.gz
+ln -s /var/lib/tftp/debian-installer/amd64/grub /var/lib/tftp/
+ln -s /var/lib/tftp/debian-installer/amd64/bootnetx64.efi /var/lib/tftp/
+ln -s /var/lib/tftp/debian-installer/amd64/grubx64.efi /var/lib/tftp/
+cp -a /usr/lib/syslinux/modules/bios/{reboot.c32,poweroff.c32} /var/lib/tftp/debian-installer/amd64/boot-screens/
+'
+sudo systemctl restart tftpd-hpa.service isc-dhcp-server.service apache2.service
+sudo systemctl status  tftpd-hpa.service isc-dhcp-server.service apache2.service
+# --- make link ---------------------------------------------------------------
+sudo bash -c '
+rm -rf   /var/www/html/pxeboot/isos
+mkdir -p /var/www/html/pxeboot/isos
+for LINE in \
+	"o  linux/debian/debian-10.13.0-amd64-DVD-1.iso                 " \
+	"o  linux/debian/debian-11.8.0-amd64-DVD-1.iso                  " \
+	"o  linux/debian/debian-12.2.0-amd64-DVD-1.iso                  " \
+	"o  linux/debian/debian-13.0.0-amd64-DVD-1.iso                  " \
+	"o  linux/debian/debian-testing-amd64-DVD-1.iso                 " \
+	"o  linux/debian/debian-live-10.13.0-amd64-lxde.iso             " \
+	"o  linux/debian/debian-live-11.8.0-amd64-lxde.iso              " \
+	"o  linux/debian/debian-live-12.2.0-amd64-lxde.iso              " \
+	"o  linux/debian/debian-live-13.0.0-amd64-lxde.iso              " \
+	"o  linux/debian/debian-live-testing-amd64-lxde.iso             " \
+	"o  linux/ubuntu/ubuntu-18.04.6-live-server-amd64.iso           " \
+	"o  linux/ubuntu/ubuntu-20.04.6-live-server-amd64.iso           " \
+	"o  linux/ubuntu/ubuntu-22.04.3-live-server-amd64.iso           " \
+	"o  linux/ubuntu/ubuntu-23.04-live-server-amd64.iso             " \
+	"o  linux/ubuntu/ubuntu-23.10-live-server-amd64.iso             " \
+	"o  linux/ubuntu/ubuntu-24.04-live-server-amd64.iso             " \
+	"o  linux/ubuntu/noble-live-server-amd64.iso                    " \
+	"o  linux/ubuntu/ubuntu-18.04.6-server-amd64.iso                " \
+	"o  linux/ubuntu/ubuntu-18.04.6-desktop-amd64.iso               " \
+	"o  linux/ubuntu/ubuntu-20.04.6-desktop-amd64.iso               " \
+	"o  linux/ubuntu/ubuntu-22.04.3-desktop-amd64.iso               " \
+	"o  linux/ubuntu/ubuntu-23.04-desktop-amd64.iso                 " \
+	"o  linux/ubuntu/ubuntu-23.10.1-desktop-amd64.iso               " \
+	"o  linux/ubuntu/ubuntu-24.04-desktop-amd64.iso                 " \
+	"o  linux/ubuntu/noble-desktop-amd64.iso                        " \
+	"o  linux/ubuntu/ubuntu-23.04-desktop-legacy-amd64.iso          " \
+	"o  linux/ubuntu/ubuntu-23.10-desktop-legacy-amd64.iso          " \
+	"o  linux/ubuntu/ubuntu-24.04-desktop-legacy-amd64.iso          " \
+	"o  linux/ubuntu/noble-desktop-legacy-amd64.iso                 " \
+	"x  linux/fedora/Fedora-Server-dvd-x86_64-37-1.7.iso            " \
+	"o  linux/fedora/Fedora-Server-dvd-x86_64-38-1.6.iso            " \
+	"o  linux/fedora/Fedora-Server-dvd-x86_64-39-1.5.iso            " \
+	"o  linux/centos/CentOS-Stream-8-x86_64-latest-dvd1.iso         " \
+	"o  linux/centos/CentOS-Stream-9-latest-x86_64-dvd1.iso         " \
+	"o  linux/almalinux/AlmaLinux-9-latest-x86_64-dvd.iso           " \
+	"o  linux/Rocky/Rocky-8.8-x86_64-dvd1.iso                       " \
+	"o  linux/Rocky/Rocky-9-latest-x86_64-dvd.iso                   " \
+	"o  linux/miraclelinux/MIRACLELINUX-8.8-rtm-x86_64.iso          " \
+	"o  linux/miraclelinux/MIRACLELINUX-9.2-rtm-x86_64.iso          " \
+	"o  linux/openSUSE/openSUSE-Leap-15.5-DVD-x86_64-Media.iso      " \
+	"o  linux/openSUSE/openSUSE-Leap-15.6-DVD-x86_64-Media.iso      " \
+	"o  linux/openSUSE/openSUSE-Tumbleweed-DVD-x86_64-Current.iso   " \
+	"o  windows/Windows10/Win10_22H2_Japanese_x64.iso               " \
+	"o  windows/Windows11/Win11_23H2_Japanese_x64_custom.iso        "
+do
+	PARM=(${LINE})
+	FNAME="/mnt/hgfs/workspace/Image/${PARM[1]}"
+	if [[ "${PARM[0]}" != "o" ]] || [[ ! -f "${FNAME}" ]]; then
+		continue
+	fi
+	echo "${FNAME##*/}"
+	ln -s "${FNAME}" /var/www/html/pxeboot/isos
+done
+'
+# --- grub.cfg ----------------------------------------------------------------
+sudo bash -c '
+cat <<- '_EOT_' | sed '\''s/^ *//g'\'' > /var/lib/tftp/grub/grub.cfg
+	set default=0
+	set timeout=-1
+	
+	if [ x\${feature_default_font_path} = xy ] ; then
+	 	font=unicode
+	else
+	 	font=\${prefix}/font.pf2
+	fi
+	
+	if loadfont \$font ; then
+	#	set lang=ja_JP
+	 	set gfxmode=1280x720
+	 	set gfxpayload=keep
+	
+	 	if [ "\${grub_platform}" = "efi" ]; then
+	 		insmod efi_gop
+	 		insmod efi_uga
+	 	else
+	 		insmod vbe
+	 		insmod vga
+	 	fi
+	
+	 	insmod gfxterm
+	 	insmod gettext
+	 	terminal_output gfxterm
+	fi
+	
+	set menu_color_normal=cyan/blue
+	set menu_color_highlight=white/blue
+	
+	#export lang
+	export gfxmode
+	export gfxpayload
+	export menu_color_normal
+	export menu_color_highlight
+	
+	insmod play
+	play 960 440 1 0 4 440 1
+	
+	menuentry '\''[ Unattended installation ]'\'' {
+	 	true
+	}
+	
+	source /grub/menu.cfg
+	
+	menuentry '\''- Windows 10'\'' {
+	 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+	 	echo "Loading Windows 10 ..."
+	 	insmod chain
+	 	insmod fat
+	 	insmod part_gpt
+	 	chainloader boot/windows10/bootx64.efi
+	}
+	
+	menuentry '\''- Windows 11'\'' {
+	 	kernel wimboot
+	 	initrd boot/bcd BCD
+	 	initrd boot/boot.sdi boot.sdi
+	 	initrd sources/boot.wim boot.wim
+	}
+	
+	menuentry '\''[ System command ]'\'' {
+	 	true
+	}
+	
+	menuentry '\''- System shutdown'\'' {
+	 	echo "System shutting down ..."
+	 	halt
+	}
+	
+	menuentry '\''- System restart'\'' {
+	 	echo "System rebooting ..."
+	 	reboot
+	}
+	
+	if [ "\${grub_platform}" = "efi" ]; then
+	 	menuentry '\''Boot from next volume'\'' {
+	 		exit 1
+	 	}
+	
+	 	menuentry '\''UEFI Firmware Settings'\'' {
+	 		fwsetup
+	 	}
+	fi
+_EOT_
+'
+# --- menu.cfg ----------------------------------------------------------------
+sudo bash -c '
+rm -f /var/lib/tftp/grub/menu.cfg \
+      /var/lib/tftp/debian-installer/amd64/boot-screens/menu.cfg
+cat <<- '_EOT_' | sed '\''s/^ *//g'\'' > /var/lib/tftp/debian-installer/amd64/boot-screens/menu.cfg
+	menu resolution			1024 768
+	#menu background		splash.png
+
+	menu color screen		* #ffffffff #ee000080 *
+	menu color title		* #ffffffff #ee000080 *
+	menu color border		* #ffffffff #ee000080 *
+	menu color sel			* #ffffffff #76a1d0ff *
+	menu color hotsel		* #ffffffff #76a1d0ff *
+	menu color unsel		* #ffffffff #ee000080 *
+	menu color hotkey		* #ffffffff #ee000080 *
+	menu color tabmsg		* #ffffffff #ee000080 *
+	menu color timeout_msg	* #ffffffff #ee000080 *
+	menu color timeout		* #ffffffff #ee000080 *
+	menu color disabled		* #ffffffff #ee000080 *
+	menu color cmdmark		* #ffffffff #ee000080 *
+	menu color cmdline		* #ffffffff #ee000080 *
+	menu color scrollbar	* #ffffffff #ee000080 *
+	menu color help			* #ffffffff #ee000080 *
+	
+	menu margin 4
+	menu vshift 5
+	menu rows 25
+	menu tabmsgrow 31
+	menu cmdlinerow 33
+	menu timeoutrow 33
+	menu helpmsgrow 37
+	menu hekomsgendrow 39
+	
+	menu title - Boot Menu -
+	menu tabmsg Press ENTER to boot or TAB to edit a menu entry
+	
+_EOT_
+for LINE in \
+	"o  debian-10               Debian%2010                         debian          debian-10.13.0-amd64-DVD-1.iso              install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian-10_server.cfg         " \
+	"o  debian-11               Debian%2011                         debian          debian-11.8.0-amd64-DVD-1.iso               install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian-11_server.cfg         " \
+	"o  debian-12               Debian%2012                         debian          debian-12.2.0-amd64-DVD-1.iso               install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian-12_server.cfg         " \
+	"o  debian-13               Debian%2013                         debian          debian-13.0.0-amd64-DVD-1.iso               install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian-13_server.cfg         " \
+	"o  debian-testing          Debian%20testing                    debian          debian-testing-amd64-DVD-1.iso              install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian-testing_server.cfg    " \
+	"o  debian-live-10          Debian%20Live%2010                  debian          debian-live-10.13.0-amd64-lxde.iso          live                initrd.img-4.19.0-21-amd64  vmlinuz-4.19.0-21-amd64 conf/preseed/ps_debian-live-10.cfg           " \
+	"o  debian-live-11          Debian%20Live%2011                  debian          debian-live-11.8.0-amd64-lxde.iso           live                initrd.img-5.10.0-26-amd64  vmlinuz-5.10.0-26-amd64 conf/preseed/ps_debian-live-11.cfg           " \
+	"o  debian-live-12          Debian%20Live%2012                  debian          debian-live-12.2.0-amd64-lxde.iso           install             initrd.gz                   vmlinuz                 conf/preseed/ps_debian-live-12.cfg           " \
+	"o  debian-live-13          Debian%20Live%2013                  debian          debian-live-13.0.0-amd64-lxde.iso           install             initrd.gz                   vmlinuz                 conf/preseed/ps_debian-live-13.cfg           " \
+	"o  debian-live-testing     Debian%20Live%20testing             debian          debian-live-testing-amd64-lxde.iso          install             initrd.gz                   vmlinuz                 conf/preseed/ps_debian-live-testing.cfg      " \
+	"o  ubuntu-live-18.04       Ubuntu%20Live%20Server%2018.04      ubuntu          ubuntu-18.04.6-live-server-amd64.iso        casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_old_server               " \
+	"o  ubuntu-live-20.04       Ubuntu%20Live%20Server%2020.04      ubuntu          ubuntu-20.04.6-live-server-amd64.iso        casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-live-22.04       Ubuntu%20Live%20Server%2022.04      ubuntu          ubuntu-22.04.3-live-server-amd64.iso        casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-live-23.04       Ubuntu%20Live%20Server%2023.04      ubuntu          ubuntu-23.04-live-server-amd64.iso          casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-live-23.10       Ubuntu%20Live%20Server%2023.10      ubuntu          ubuntu-23.10-live-server-amd64.iso          casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-live-24.04       Ubuntu%20Live%20Server%2024.04      ubuntu          ubuntu-24.04-live-server-amd64.iso          casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-live-noble       Ubuntu%20Live%20Server%20noble      ubuntu          noble-live-server-amd64.iso                 casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-server-18.04     Ubuntu%20Server%2018.04             ubuntu          ubuntu-18.04.6-server-amd64.iso             install             initrd.gz                   vmlinuz                 conf/preseed/ps_ubuntu-server-18.04.cfg      " \
+	"o  ubuntu-desktop-18.04    Ubuntu%20Desktop%2018.04            ubuntu          ubuntu-18.04.6-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu-desktop-18.04.cfg     " \
+	"o  ubuntu-desktop-20.04    Ubuntu%20Desktop%2020.04            ubuntu          ubuntu-20.04.6-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu-desktop-20.04.cfg     " \
+	"o  ubuntu-desktop-22.04    Ubuntu%20Desktop%2022.04            ubuntu          ubuntu-22.04.3-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu-desktop-22.04.cfg     " \
+	"o  ubuntu-desktop-23.04    Ubuntu%20Desktop%2023.04            ubuntu          ubuntu-23.04-desktop-amd64.iso              casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu-desktop-23.04.cfg     " \
+	"o  ubuntu-desktop-23.10    Ubuntu%20Desktop%2023.10            ubuntu          ubuntu-23.10.1-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-desktop-24.04    Ubuntu%20Desktop%2024.04            ubuntu          ubuntu-24.04-desktop-amd64.iso              casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-desktop-noble    Ubuntu%20Desktop%20noble            ubuntu          noble-desktop-amd64.iso                     casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-legacy-23.04     Ubuntu%20Legacy%20Desktop%2023.04   ubuntu          ubuntu-23.04-desktop-legacy-amd64.iso       casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu-legacy-23.04.cfg      " \
+	"o  ubuntu-legacy-23.10     Ubuntu%20Legacy%20Desktop%2023.10   ubuntu          ubuntu-23.10-desktop-legacy-amd64.iso       casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu-legacy-23.10.cfg      " \
+	"o  ubuntu-legacy-24.04     Ubuntu%20Legacy%20Desktop%2024.04   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu-legacy-24.04.cfg      " \
+	"o  ubuntu-legacy-noble     Ubuntu%20Legacy%20Desktop%20noble   ubuntu          noble-desktop-legacy-amd64.iso              casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu-legacy-noble.cfg      " \
+	"x  fedora-37               Fedora%20Server%2037                fedora          Fedora-Server-dvd-x86_64-37-1.7.iso         images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_fedora-37.cfg              " \
+	"o  fedora-38               Fedora%20Server%2038                fedora          Fedora-Server-dvd-x86_64-38-1.6.iso         images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_fedora-38.cfg              " \
+	"o  fedora-39               Fedora%20Server%2039                fedora          Fedora-Server-dvd-x86_64-39-1.5.iso         images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_fedora-39.cfg              " \
+	"o  centos-stream-8         CentOS%20Stream%208                 centos          CentOS-Stream-8-x86_64-latest-dvd1.iso      images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_centos-stream-8.cfg        " \
+	"o  centos-stream-9         CentOS%20Stream%209                 centos          CentOS-Stream-9-latest-x86_64-dvd1.iso      images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_centos-stream-9.cfg        " \
+	"o  almalinux-9             Alma%20Linux%209                    almalinux       AlmaLinux-9-latest-x86_64-dvd.iso           images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_almalinux-9.cfg            " \
+	"o  rockylinux-8            Rocky%20Linux%208                   Rocky           Rocky-8.8-x86_64-dvd1.iso                   images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_rockylinux-8.cfg           " \
+	"o  rockylinux-9            Rocky%20Linux%209                   Rocky           Rocky-9-latest-x86_64-dvd.iso               images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_rockylinux-9.cfg           " \
+	"o  miraclelinux-8          Miracle%20Linux%208                 miraclelinux    MIRACLELINUX-8.8-rtm-x86_64.iso             images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_miraclelinux-8.cfg         " \
+	"o  miraclelinux-9          Miracle%20Linux%209                 miraclelinux    MIRACLELINUX-9.2-rtm-x86_64.iso             images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_miraclelinux-9.cfg         " \
+	"o  opensuse-leap-15.5      openSUSE%20Leap%2015.5              openSUSE        openSUSE-Leap-15.5-DVD-x86_64-Media.iso     boot/x86_64/loader  initrd                      linux                   conf/autoyast/autoinst_leap_15.5.xml         " \
+	"o  opensuse-leap-15.6      openSUSE%20Leap%2015.6              openSUSE        openSUSE-Leap-15.6-DVD-x86_64-Media.iso     boot/x86_64/loader  initrd                      linux                   conf/autoyast/autoinst_leap_15.6.xml         " \
+	"o  opensuse-tumbleweed     openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-DVD-x86_64-Current.iso  boot/x86_64/loader  initrd                      linux                   conf/autoyast/autoinst_tumbleweed.xml        "
+do
+	PARM=(${LINE})
+	FNAME="/var/www/html/pxeboot/isos/${PARM[4]}"
+	if [[ "${PARM[0]}" != "o" ]] || [[ ! -f "${FNAME}" ]]; then
+		continue
+	fi
+	echo "${FNAME##*/}"
+	# -------------------------------------------------------------------------
+#	mkdir -p "/var/lib/tftp/boot/${PARM[1]}/"
+#	mount -r -o loop "${FNAME}" /media
+#	rsync --archive --human-readable --update --delete "/media/${PARM[5]}/"{"${PARM[6]}","${PARM[7]}"} "/var/lib/tftp/boot/${PARM[1]}/"
+#	case "${PARM[1]}" in
+#		debian-*        | \
+#		ubuntu-*        )
+#			;;
+#		fedora-*        | \
+#		centos-*        | \
+#		almalinux-*     | \
+#		rockylinux-*    | \
+#		miraclelinux-*  | \
+#		opensuse-leap-* )
+#			rsync --archive --human-readable --update --delete  /media/                                        "/var/www/html/pxeboot/imgs/${PARM[1]}/"
+#			;;
+#	esac
+#	umount /media
+	STAMP="$(TZ=UTC ls -lL --time-style="+%Y-%m-%d %H:%M:%S" "${FNAME}" | awk '\''{print $6" "$7;}'\'')"
+	ENTRY="$(printf "%-60.60s%20.20s" "${PARM[2]//%20/ }" "${STAMP}")"
+	# -------------------------------------------------------------------------
+	WEBPROT="http"
+	WEBADDR="192.168.1.10"
+	WEBDIRS="/pxeboot"
+	WEBROOT="${WEBPROT}://${WEBADDR}${WEBDIRS}"
+	IP4ADDR="192.168.1.1/24"
+	IP4MASK="255.255.255.0"
+	IP4GWAY="192.168.1.254"
+	IP4NSVR="192.168.1.254"
+	case "${PARM[1]}" in
+		debian-live-10        )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${ENTRY}'\'' {
+				 	set webprot="${WEBPROT}"
+				 	set webaddr="${WEBADDR}"
+				 	set webdirs="${WEBDIRS}"
+				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="fetch=\${webroot}/isos/\${isofile}"
+				 	set dnsname="workgroup"
+				 	set hstname="sv-${PARM[1]%%-*}"
+				 	set hstfqdn="\${hstname}.\${dnsname}"
+				 	set ip4addr="${IP4ADDR%/*}"
+				 	set ip4mask="${IP4MASK}"
+				 	set ip4gway="${IP4GWAY}"
+				 	set ip4nsvr="${IP4NSVR}"
+				 	set netconf="hostname=\${hstname} dnsdomain=\${dnsname} ip=ens160:\${ip4addr}:\${ip4mask}:\${ip4gway}:\${ip4nsvr}"
+				 	set preseed="auto=true preseed/url=\${webroot}/${PARM[8]}"
+				 	set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				 	set root="\${webprot},\${webaddr}"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
+				 	linuxefi   (loop)/live/vmlinuz-4.19.0-21-amd64 \${urlfile} \${locales} \${preseed} \${netconf} ide=nodma fsck.mode=skip root=/boot boot=live toram=filesystem.squashfs ---
+				 	initrdefi  (loop)/live/initrd.img-4.19.0-21-amd64
+				#	loopback --delete loop
+				}
+				
+_EOT_
+				;;
+		debian-live-11        )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${ENTRY}'\'' {
+				 	set webprot="${WEBPROT}"
+				 	set webaddr="${WEBADDR}"
+				 	set webdirs="${WEBDIRS}"
+				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="fetch=\${webroot}/isos/\${isofile}"
+				 	set dnsname="workgroup"
+				 	set hstname="sv-${PARM[1]%%-*}"
+				 	set ip4addr="${IP4ADDR%/*}"
+				 	set ip4mask="${IP4MASK}"
+				 	set ip4gway="${IP4GWAY}"
+				 	set ip4nsvr="${IP4NSVR}"
+				 	set netconf="hostname=\${hstname} dnsdomain=\${dnsname} ip=ens160:\${ip4addr}:\${ip4mask}:\${ip4gway}:\${ip4nsvr}"
+				 	set preseed="auto=true preseed/url=\${webroot}/${PARM[8]}"
+				 	set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				 	set root="\${webprot},\${webaddr}"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
+				 	linuxefi   (loop)/live/vmlinuz-5.10.0-26-amd64 \${urlfile} \${locales} \${preseed} \${netconf} ide=nodma fsck.mode=skip root=/boot boot=live toram=filesystem.squashfs ---
+				 	initrdefi  (loop)/live/initrd.img-5.10.0-26-amd64
+				#	loopback --delete loop
+				}
+				
+_EOT_
+				;;
+		debian-live-*         )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${ENTRY}'\'' {
+				 	set webprot="${WEBPROT}"
+				 	set webaddr="${WEBADDR}"
+				 	set webdirs="${WEBDIRS}"
+				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="fetch=\${webroot}/isos/\${isofile}"
+				 	set dnsname="workgroup"
+				 	set hstname="sv-${PARM[1]%%-*}"
+				 	set ip4addr="${IP4ADDR%/*}"
+				 	set ip4mask="${IP4MASK}"
+				 	set ip4gway="${IP4GWAY}"
+				 	set ip4nsvr="${IP4NSVR}"
+				 	set netconf="hostname=\${hstname} dnsdomain=\${dnsname} ip=ens160:\${ip4addr}:\${ip4mask}:\${ip4gway}:\${ip4nsvr}"
+				 	set preseed="auto=true preseed/url=\${webroot}/${PARM[8]}"
+				 	set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				 	set root="\${webprot},\${webaddr}"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
+				 	linuxefi   (loop)/live/vmlinuz  \${urlfile} \${locales} \${preseed} \${netconf} ide=nodma fsck.mode=skip root=/boot boot=live toram=filesystem.squashfs ---
+				 	initrdefi  (loop)/live/initrd.img
+				#	loopback --delete loop
+				}
+				
+_EOT_
+				;;
+		debian-*              )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${ENTRY}'\'' {
+				 	set webprot="${WEBPROT}"
+				 	set webaddr="${WEBADDR}"
+				 	set webdirs="${WEBDIRS}"
+				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="url=\${webroot}/isos/\${isofile}"
+				 	set dnsname="workgroup"
+				 	set hstname="sv-${PARM[1]%%-*}"
+				 	set hstfqdn="\${hstname}.\${dnsname}"
+				 	set ip4addr="${IP4ADDR%/*}"
+				 	set ip4mask="${IP4MASK}"
+				 	set ip4gway="${IP4GWAY}"
+				 	set ip4nsvr="${IP4NSVR}"
+				 	set netconf="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
+				 	set netconf="hostname=\${hstname} dnsdomain=\${dnsname} ip=ens160:\${ip4addr}:\${ip4mask}:\${ip4gway}:\${ip4nsvr}"
+				 	set preseed="auto=true preseed/url=\${webroot}/${PARM[8]}"
+				 	set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				 	set root="\${webprot},\${webaddr}"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
+				 	linuxefi   (loop)/install.amd/vmlinuz \${urlfile} \${preseed} \${netconf} ide=nodma fsck.mode=skip root=/boot boot=live toram=filesystem.squashfs ---
+				 	initrdefi  (loop)/install.amd/initrd.gz
+				#	loopback --delete loop
+				}
+				
+_EOT_
+				;;
+		ubuntu-server-18*     )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${ENTRY}'\'' {
+				 	set webprot="${WEBPROT}"
+				 	set webaddr="${WEBADDR}"
+				 	set webdirs="${WEBDIRS}"
+				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="url=\${webroot}/isos/\${isofile}"
+				 	set dnsname="workgroup"
+				 	set hstname="sv-${PARM[1]%%-*}"
+				 	set hstfqdn="\${hstname}.\${dnsname}"
+				 	set ip4addr="${IP4ADDR}"
+				 	set ip4gway="${IP4GWAY}"
+				 	set ip4nsvr="${IP4NSVR}"
+				 	set netconf="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
+				 	set netconf="hostname=\${hstname} dnsdomain=\${dnsname} ip=ens160:\${ip4addr}:\${ip4mask}:\${ip4gway}:\${ip4nsvr}:"
+				 	set preseed="auto=true preseed/url=\${webroot}/${PARM[8]}"
+				 	set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				 	set root="\${webprot},\${webaddr}"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
+				 	linuxefi   (loop)/install.amd/vmlinuz \${urlfile} \${preseed} \${netconf} ide=nodma fsck.mode=skip root=/boot toram ---
+				 	initrdefi  (loop)/install.amd/initrd.gz
+				#	loopback --delete loop
+				}
+				
+_EOT_
+				;;
+		ubuntu-desktop-18.*   | \
+		ubuntu-desktop-20.*   | \
+		ubuntu-desktop-22.*   | \
+		ubuntu-server-*       | \
+		ubuntu-legacy-*       )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${ENTRY}'\'' {
+				 	set webprot="${WEBPROT}"
+				 	set webaddr="${WEBADDR}"
+				 	set webdirs="${WEBDIRS}"
+				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="url=\${webroot}/isos/\${isofile}"
+				 	set dnsname="workgroup"
+				 	set hstname="sv-${PARM[1]%%-*}"
+				 	set hstfqdn="\${hstname}.\${dnsname}"
+				 	set ip4addr="${IP4ADDR}"
+				 	set ip4gway="${IP4GWAY}"
+				 	set ip4nsvr="${IP4NSVR}"
+				 	set netconf="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:static:\${ip4nsvr}"
+				 	set preseed="automatic-ubiquity noprompt auto=true url=\${webroot}/${PARM[8]}"
+				 	set locales="locales=C timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				 	set root="\${webprot},\${webaddr}"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
+				 	linuxefi   (loop)/casper/vmlinuz \${urlfile} \${preseed} \${netconf} ide=nodma fsck.mode=skip root=/boot toram ---
+				 	initrdefi  (loop)/casper/initrd
+				#	loopback --delete loop
+				}
+				
+_EOT_
+				;;
+		ubuntu-*              )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${ENTRY}'\'' {
+				 	set webprot="${WEBPROT}"
+				 	set webaddr="${WEBADDR}"
+				 	set webdirs="${WEBDIRS}"
+				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="url=\${webroot}/isos/\${isofile}"
+				 	set dnsname="workgroup"
+				 	set hstname="sv-${PARM[1]%%-*}"
+				 	set hstfqdn="\${hstname}.\${dnsname}"
+				 	set ip4addr="${IP4ADDR%/*}"
+				 	set ip4mask="${IP4MASK}"
+				 	set ip4gway="${IP4GWAY}"
+				 	set ip4nsvr="${IP4NSVR}"
+				 	set nocloud="automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=\${webroot}/${PARM[8]}"
+				 	set netconf="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:static:\${ip4nsvr}"
+				 	set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+				 	set root="\${webprot},\${webaddr}"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
+				 	linuxefi   (loop)/casper/vmlinuz \${urlfile} \${nocloud} \${netconf} ide=nodma fsck.mode=skip root=/boot toram ---
+				 	initrdefi  (loop)/casper/initrd
+				#	loopback --delete loop
+				}
+				
+_EOT_
+				;;
+		fedora-*              | \
+		centos-*              | \
+		almalinux-*           | \
+		rockylinux-*          | \
+		miraclelinux-*        )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${ENTRY}'\'' {
+				 	set webprot="${WEBPROT}"
+				 	set webaddr="${WEBADDR}"
+				 	set webdirs="${WEBDIRS}"
+				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="inst.repo=\${webroot}/imgs/${PARM[1]}"
+				 	set dnsname="workgroup"
+				 	set hstname="sv-${PARM[1]%%-*}"
+				 	set hstfqdn="\${hstname}.\${dnsname}"
+				 	set ip4addr="${IP4ADDR%/*}"
+				 	set ip4mask="${IP4MASK}"
+				 	set ip4gway="${IP4GWAY}"
+				 	set ip4nsvr="${IP4NSVR}"
+				 	set ksstart="inst.ks=\${webroot}/${PARM[8]}"
+				 	set netconf="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:none,auto6 nameserver=\${ip4nsvr}"
+				 	set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+				 	set root="\${webprot},\${webaddr}"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
+				 	probe --label --set=hdlabel (loop)
+				 	linuxefi   (loop)/images/pxeboot/vmlinuz inst.repo=(\${root})\${webdirs}/isos/\${isofile} \${ksstart} \${netconf} fsck.mode=skip ---
+				 	initrdefi  (loop)/images/pxeboot/initrd.img
+				#	loopback --delete loop
+				}
+				
+_EOT_
+				;;
+		opensuse-*            )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/grub/menu.cfg"
+				menuentry '\''- ${ENTRY}'\'' {
+				 	set webprot="${WEBPROT}"
+				 	set webaddr="${WEBADDR}"
+				 	set webdirs="${WEBDIRS}"
+				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
+				 	set boottop="boot/${PARM[1]}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="install=\${webroot}/imgs/${PARM[1]}"
+				 	set dnsname="workgroup"
+				 	set hstname="sv-${PARM[1]%%-*}"
+				 	set hstfqdn="\${hstname}.\${dnsname}"
+				 	set wkgroup="workgroup"
+				 	set ip4addr="${IP4ADDR}"
+				 	set ip4gway="${IP4GWAY}"
+				 	set ip4nsvr="${IP4NSVR}"
+				 	set autoxml="autoyast=\${webroot}/${PARM[8]}"
+				 	set netconf="hostname=\${hstfqdn} ifcfg=e*=\${ip4addr},\${ip4gway},\${ip4nsvr},\${wkgroup}"
+				 	set locales="locale=C timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	linuxefi    \${boottop}/linux \${urlfile} \${autoxml} \${netconf} fsck.mode=skip ---
+				 	initrdefi   \${boottop}/initrd
+				}
+				
+_EOT_
+				;;
+	esac
+	case "${PARM[1]}" in
+		debian-* )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/debian-installer/amd64/boot-screens/menu.cfg"
+				label ${PARM[1]}
+				 	menu label ${ENTRY}
+				 	kernel boot/${PARM[1]}/vmlinuz
+				 	append initrd=/boot/${PARM[1]}/initrd.gz url=${WEBROOT}/isos/${PARM[4]} auto=true preseed/url=${WEBROOT}/${PARM[8]} netcfg/disable_autoconfig=true netcfg/get_hostname=sv-${PARM[1]%%-*}.workgroup netcfg/get_ipaddress=${IP4ADDR} netcfg/get_gateway=${IP4GWAY} netcfg/get_nameservers=${IP4NSVR} root=boot/${PARM[1]} fsck.mode=skip ---
+				
+_EOT_
+				;;
+		ubuntu-server-18*   )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/debian-installer/amd64/boot-screens/menu.cfg"
+				label ${PARM[1]}
+				 	menu label ${ENTRY}
+				 	kernel boot/${PARM[1]}/vmlinuz
+				 	append initrd=/boot/${PARM[1]}/initrd.gz url=${WEBROOT}/isos/${PARM[4]} auto=true preseed/url=${WEBROOT}/${PARM[8]} netcfg/disable_autoconfig=true netcfg/get_hostname=sv-${PARM[1]%%-*}.workgroup netcfg/get_ipaddress=${IP4ADDR} netcfg/get_gateway=${IP4GWAY} netcfg/get_nameservers=${IP4NSVR} root=boot/${PARM[1]} fsck.mode=skip ---
+				
+_EOT_
+				;;
+		ubuntu-desktop-18.* | \
+		ubuntu-desktop-20.* | \
+		ubuntu-desktop-22.* | \
+		ubuntu-server-*     | \
+		ubuntu-legacy-*     )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/debian-installer/amd64/boot-screens/menu.cfg"
+				label ${PARM[1]}
+				 	menu label ${ENTRY}
+				 	kernel boot/${PARM[1]}/vmlinuz
+				 	append initrd=boot/${PARM[1]}/initrd url=${WEBROOT}/isos/${PARM[4]} automatic-ubiquity noprompt auto=true url=${WEBROOT}/${PARM[8]} ip=${IP4ADDR}::${IP4GWAY}:${IP4MASK}:sv-${PARM[1]%%-*}.workgroup:ens160:static:${IP4NSVR}: root=/dev/ram0 ramdisk_size=1500000 ide=nodma fsck.mode=skip ---
+				
+_EOT_
+				;;
+		ubuntu-* )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/debian-installer/amd64/boot-screens/menu.cfg"
+				label ${PARM[1]}
+				 	menu label ${ENTRY}
+				 	kernel boot/${PARM[1]}/vmlinuz
+				 	append initrd=boot/${PARM[1]}/initrd url=${WEBROOT}/isos/${PARM[4]} automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${WEBROOT}/${PARM[8]} ip=${IP4ADDR}::${IP4GWAY}:${IP4MASK}:sv-${PARM[1]%%-*}.workgroup:ens160:static:${IP4NSVR}: root=/dev/ram0 ramdisk_size=1500000 ide=nodma fsck.mode=skip ---
+				
+_EOT_
+				;;
+	esac
+done
+cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "/var/lib/tftp/debian-installer/amd64/boot-screens/menu.cfg"
+	label Reboot
+	 	menu label Reboot
+	 	com32 reboot.c32
+	
+	label Power off
+	 	menu label Poweroff
+	 	com32 poweroff.c32
+	
+_EOT_
+'
+# --- preseed_sub_command.sh --------------------------------------------------
+sudo bash -c '
+for FNAME in /var/www/html/pxeboot/conf/preseed/preseed_sub_command.sh
+do
+	mkdir -p "${FNAME%/*}"
+	cat <<- '\''_EOT_SH_'\'' | sed '\''s/^ *//g'\'' > "${FNAME}"
+		#!/bin/sh
+		
+		### initialization ############################################################
+		#	set -n								# Check for syntax errors
+		#	set -x								# Show command and argument expansion
+		 	set -o ignoreeof					# Do not exit with Ctrl+D
+		 	set +m								# Disable job control
+		 	set -e								# Ends with status other than 0
+		 	set -u								# End with undefined variable reference
+		
+		 	trap '\''exit 1'\'' 1 2 3 15
+		
+		 	readonly PROG_PRAM="$*"
+		 	readonly PROG_NAME="${0##*/}"
+		 	readonly WORK_DIRS="${0%/*}"
+		 	readonly DIST_NAME="$(uname -v | tr [A-Z] [a-z] | sed -n -e '\''s/.*\(debian\|ubuntu\).*/\1/p'\'')"
+		 	readonly COMD_LINE="$(cat /proc/cmdline)"
+		 	echo "${PROG_NAME}: === Start ==="
+		 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
+		 	echo "${PROG_NAME}: PROG_NAME=${PROG_NAME}"
+		 	echo "${PROG_NAME}: WORK_DIRS=${WORK_DIRS}"
+		 	echo "${PROG_NAME}: DIST_NAME=${DIST_NAME}"
+		 	echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
+		 	#--------------------------------------------------------------------------
+		 	if [ -z "${PROG_PRAM}" ]; then
+		 		ROOT_DIRS="/target"
+		 		CONF_FILE="${WORK_DIRS}/preseed.cfg"
+		 		TEMP_FILE=""
+		 		PROG_PATH="$0"
+		 		if [ -z "${CONF_FILE}" ] || [ ! -f "${CONF_FILE}" ]; then
+		 			echo "${PROG_NAME}: not found preseed file [${CONF_FILE}]"
+		 			exit 1
+		 		fi
+		 		echo "${PROG_NAME}: now found preseed file [${CONF_FILE}]"
+		 		cp -a "${PROG_PATH}" "${ROOT_DIRS}/tmp/"
+		 		cp -a "${CONF_FILE}" "${ROOT_DIRS}/tmp/"
+		 		TEMP_FILE="/tmp/${CONF_FILE##*/}"
+		 		echo "${PROG_NAME}: ROOT_DIRS=${ROOT_DIRS}"
+		 		echo "${PROG_NAME}: CONF_FILE=${CONF_FILE}"
+		 		echo "${PROG_NAME}: TEMP_FILE=${TEMP_FILE}"
+		 		in-target --pass-stdout sh -c "LANG=C /tmp/${PROG_NAME} ${TEMP_FILE}"
+		 		exit 0
+		 	fi
+		 	ROOT_DIRS=""
+		 	TEMP_FILE="${PROG_PRAM}"
+		 	echo "${PROG_NAME}: ROOT_DIRS=${ROOT_DIRS}"
+		 	echo "${PROG_NAME}: TEMP_FILE=${TEMP_FILE}"
+		
+		### common ###########################################################
+		# --- IPv4 netmask conversion -------------------------------------------------
+		funcIPv4GetNetmask () {
+		 	INP_ADDR="$1"
+		#	DEC_ADDR="$((0xFFFFFFFF ^ (2**(32-INP_ADDR)-1)))"
+		 	WORK=1
+		 	LOOP=$((32-INP_ADDR))
+		 	while [ $LOOP -gt 0 ]
+		 	do
+		 		LOOP=$((LOOP-1))
+		 		WORK=$((WORK*2))
+		 	done
+		 	DEC_ADDR="$((0xFFFFFFFF ^ (WORK-1)))"
+		 	printf '\''%d.%d.%d.%d'\'' \
+		 	    $(( DEC_ADDR >> 24        )) \
+		 	    $(((DEC_ADDR >> 16) & 0xFF)) \
+		 	    $(((DEC_ADDR >>  8) & 0xFF)) \
+		 	    $(( DEC_ADDR        & 0xFF))
+		 }
+		
+		# --- IPv4 netmask bit conversion ---------------------------------------------
+		funcIPv4GetNetmaskBits () {
+		 	INP_ADDR="$1"
+		 	echo "${INP_ADDR}" | \
+		 	    awk -F '\''.'\'' '\''{
+		 	        split($0, OCTETS);
+		 	        for (I in OCTETS) {
+		 	            MASK += 8 - log(2^8 - OCTETS[I])/log(2);
+		 	        }
+		 	        print MASK
+		 	    }'\''
+		}
+		
+		### subroutine ################################################################
+		# --- packages ----------------------------------------------------------------
+		funcInstallPackages () {
+		 	echo "${PROG_NAME}: funcInstallPackages"
+		 	#--------------------------------------------------------------------------
+		 	LIST_TASK="$(sed -n -e '\''/^[[:blank:]]*tasksel[[:blank:]]\+tasksel\/first[[:blank:]]\+/,/[^\\]$/p'\'' "${TEMP_FILE}" | \
+		 	             sed -z -e '\''s/\\\n//g'\''                                                                               | \
+		 	             sed -e '\''s/^.*[[:blank:]]\+multiselect[[:blank:]]\+//'\''                                                 \
+		 	                 -e '\''s/[[:blank:]]\+/ /g'\'')"
+		 	LIST_PACK="$(sed -n -e '\''/^[[:blank:]]*d-i[[:blank:]]\+pkgsel\/include[[:blank:]]\+/,/[^\\]$/p'\''    "${TEMP_FILE}" | \
+		 	             sed -z -e '\''s/\\\n//g'\''                                                                               | \
+		 	             sed -e '\''s/^.*[[:blank:]]\+string[[:blank:]]\+//'\''                                                      \
+		 	                 -e '\''s/[[:blank:]]\+/ /g'\'')"
+		 	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK}"
+		 	echo "${PROG_NAME}: LIST_PACK=${LIST_PACK}"
+		 	#--------------------------------------------------------------------------
+		 	LIST_DPKG="$(LANG=C dpkg-query --list ${LIST_PACK} 2>&1 | grep -E -v '\''^ii|^\+|^\||^Desired'\'' || true)"
+		 	if [ -z "${LIST_DPKG}" ]; then
+		 		echo "${PROG_NAME}: Finish the installation"
+		 		return
+		 	fi
+		 	echo "${PROG_NAME}: Run the installation"
+		 	echo "${PROG_NAME}: LIST_DPKG="
+		 	echo "${PROG_NAME}: <<<"
+		 	echo "${LIST_DPKG}"
+		 	echo "${PROG_NAME}: >>>"
+		 	#--------------------------------------------------------------------------
+		 	sed -i "${ROOT_DIRS}/etc/apt/sources.list" \
+		 	    -e '\''/cdrom/ s/^ *\(deb\)/# \1/g'\''
+		 	apt-get -qq    update
+		 	apt-get -qq -y upgrade
+		 	apt-get -qq -y dist-upgrade
+		 	apt-get -qq -y install ${LIST_PACK}
+		 	if [ -n "$(command -v tasksel 2> /dev/null)" ]; then
+		 		tasksel install ${LIST_TASK}
+		 	fi
+		}
+		
+		# --- network -----------------------------------------------------------------
+		funcSetupNetwork () {
+		 	echo "${PROG_NAME}: funcSetupNetwork"
+		 	#--- preseed.cfg parameter ------------------------------------------------
+		 	FIX_IPV4="$(sed -n -e '\''/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/\(disable_dhcp\|disable_autoconfig\)[[:blank:]]\+/ s/^.*[[:blank:]]//p'\'' "${TEMP_FILE}")"
+		 	NIC_IPV4="$(sed -n -e '\''/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_ipaddress[[:blank:]]\+/                        s/^.*[[:blank:]]//p'\'' "${TEMP_FILE}")"
+		 	NIC_MASK="$(sed -n -e '\''/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_netmask[[:blank:]]\+/                          s/^.*[[:blank:]]//p'\'' "${TEMP_FILE}")"
+		 	NIC_GATE="$(sed -n -e '\''/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_gateway[[:blank:]]\+/                          s/^.*[[:blank:]]//p'\'' "${TEMP_FILE}")"
+		 	NIC_DNS4="$(sed -n -e '\''/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_nameservers[[:blank:]]\+/                      s/^.*[[:blank:]]//p'\'' "${TEMP_FILE}")"
+		 	NIC_WGRP="$(sed -n -e '\''/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_domain[[:blank:]]\+/                           s/^.*[[:blank:]]//p'\'' "${TEMP_FILE}")"
+		 	NIC_HOST="$(sed -n -e '\''/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_hostname[[:blank:]]\+/                         s/^.*[[:blank:]]//p'\'' "${TEMP_FILE}")"
+		 	NIC_WGRP="$(sed -n -e '\''/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_domain[[:blank:]]\+/                           s/^.*[[:blank:]]//p'\'' "${TEMP_FILE}")"
+		 	NIC_NAME="$(sed -n -e '\''/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/choose_interface[[:blank:]]\+/                     s/^.*[[:blank:]]//p'\'' "${TEMP_FILE}")"
+		 	NIC_FQDN="${NIC_HOST}"
+		 	if [ -n "${NIC_WGRP}" ]; then
+		 		NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
+		 	fi
+		 	NIC_BIT4=""
+		 	NIC_MADR=""
+		 	CON_NAME=""
+		 	#--- /proc/cmdline parameter  ---------------------------------------------
+		 	for LINE in ${COMD_LINE}
+		 	do
+		 		case "${LINE}" in
+		 			netcfg/choose_interface=*   ) NIC_NAME="${LINE#netcfg/choose_interface=}"  ;;
+		 			netcfg/disable_dhcp=*       ) FIX_IPV4="${LINE#netcfg/disable_dhcp=}"      ;;
+		 			netcfg/disable_autoconfig=* ) FIX_IPV4="${LINE#netcfg/disable_autoconfig=}";;
+		 			netcfg/get_ipaddress=*      ) NIC_IPV4="${LINE#netcfg/get_ipaddress=}"     ;;
+		 			netcfg/get_netmask=*        ) NIC_MASK="${LINE#netcfg/get_netmask=}"       ;;
+		 			netcfg/get_gateway=*        ) NIC_GATE="${LINE#netcfg/get_gateway=}"       ;;
+		 			netcfg/get_nameservers=*    ) NIC_DNS4="${LINE#netcfg/get_nameservers=}"   ;;
+		 			netcfg/get_hostname=*       ) NIC_FQDN="${LINE#netcfg/get_hostname=}"      ;;;
+		 			netcfg/get_domain=*         ) NIC_WGRP="${LINE#netcfg/get_domain=}"        ;;
+		 			ip=dhcp                     ) FIX_IPV4="false"; break                           ;;
+		 			ip=*                        ) FIX_IPV4="true";
+		 			                              OLD_IFS=${IFS};
+		 			                              IFS=':';
+		 			                              set -f;
+		 			                              set -- ${LINE#ip=};
+		 			                              set +f;
+		 			                              NIC_IPV4="${1}";
+		 			                              NIC_GATE="${3}";
+		 			                              NIC_MASK="${4}";
+		 			                              NIC_FQDN="${5}";
+		 			                              NIC_NAME="${6}";
+		 			                              NIC_DNS4="${8}";
+		 			                              IFS=${OLD_IFS};
+		 			                              break;
+		 			                              ;;
+		 		esac
+		 	done
+		 	#--- network parameter ----------------------------------------------------
+		 	NIC_HOST="${NIC_FQDN%.*}"
+		 	NIC_WGRP="${NIC_FQDN#*.}"
+		 	if [ -z "${NIC_WGRP}" ]; then
+		 		NIC_WGRP="$(awk '\''/[ \t]*search[ \t]+/ {print $2;}'\'' /etc/resolv.conf)"
+		 	fi
+		 	if [ -n "${NIC_MASK}" ]; then
+		 		NIC_BIT4="$(funcIPv4GetNetmaskBits "${NIC_MASK}")"
+		 	fi
+		 	if [ -n "${NIC_IPV4#*/}" ]; then
+		 		FIX_IPV4="true"
+		 		NIC_BIT4="${NIC_IPV4#*/}"
+		 		NIC_IPV4="${NIC_IPV4%/*}"
+		 		NIC_MASK="$(funcIPv4GetNetmask "${NIC_BIT4}")"
+		 	fi
+		 	#--- nic parameter --------------------------------------------------------
+		 	if [ -z "${NIC_NAME}" ] || [ "${NIC_NAME}" = "auto" ]; then
+		 		IP4_INFO="$(LANG=C ip -a address show 2> /dev/null | sed -n '\''/^2:/ { :l1; p; n; { /^[0-9]\+:/ Q; }; t; b l1; }'\'')"
+		 		NIC_NAME="$(echo "${IP4_INFO}" | awk '\''/^2:/ {gsub(":","",$2); print $2;}'\'')"
+		 	fi
+		 	IP4_INFO="$(LANG=C ip -f link address show dev "${NIC_NAME}" 2> /dev/null | sed -n '\''/^2:/ { :l1; p; n; { /^[0-9]\+:/ Q; }; t; b l1; }'\'')"
+		 	NIC_MADR="$(echo "${IP4_INFO}" | awk '\''/link\/ether/ {print$2;}'\'')"
+		 	CON_NAME="ethernet_$(echo "${NIC_MADR}" | sed -n -e '\''s/://gp'\'')_cable"
+		 	#--- hostname / hosts -----------------------------------------------------
+		 	OLD_HOST="$(cat /etc/hostname)";
+		 	echo "${NIC_FQDN}" > /etc/hostname;
+		 	sed -i /etc/hosts -e 's/'${OLD_HOST}'/'${NIC_FQDN}'/'g
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: FIX_IPV4=${FIX_IPV4}"
+		 	echo "${PROG_NAME}: NIC_IPV4=${NIC_IPV4}"
+		 	echo "${PROG_NAME}: NIC_MASK=${NIC_MASK}"
+		 	echo "${PROG_NAME}: NIC_GATE=${NIC_GATE}"
+		 	echo "${PROG_NAME}: NIC_DNS4=${NIC_DNS4}"
+		 	echo "${PROG_NAME}: NIC_FQDN=${NIC_FQDN}"
+		 	echo "${PROG_NAME}: NIC_HOST=${NIC_HOST}"
+		 	echo "${PROG_NAME}: NIC_WGRP=${NIC_WGRP}"
+		 	echo "${PROG_NAME}: NIC_BIT4=${NIC_BIT4}"
+		 	echo "${PROG_NAME}: NIC_NAME=${NIC_NAME}"
+		 	echo "${PROG_NAME}: NIC_MADR=${NIC_MADR}"
+		 	echo "${PROG_NAME}: CON_NAME=${CON_NAME}"
+		 	echo "${PROG_NAME}: --- hostname ---"
+		 	cat /etc/hostname
+		 	echo "${PROG_NAME}: --- hosts ---"
+		 	cat /etc/hosts
+		 	echo "${PROG_NAME}: --- resolv.conf ---"
+		 	cat /etc/resolv.conf
+		 	#--- exit for DHCP --------------------------------------------------------
+		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
+		 		return
+		 	fi
+		 	# --- connman -------------------------------------------------------------
+		 	if [ -d "${ROOT_DIRS}/etc/connman" ]; then
+		 		echo "${PROG_NAME}: funcSetupNetwork: connman"
+		 		mkdir -p "${ROOT_DIRS}/var/lib/connman/${CON_NAME}"
+		 		cat <<- _EOT_ | sed '\''s/^ *//g'\'' > "${ROOT_DIRS}/var/lib/connman/settings"
+		 			[global]
+		 			OfflineMode=false
+		 			
+		 			[Wired]
+		 			Enable=true
+		 			Tethering=false
+		_EOT_
+		 		if [ -n "${CON_NAME}" ]; then
+		 			cat <<- _EOT_ | sed '\''s/^ *//g'\'' > "${ROOT_DIRS}/var/lib/connman/${CON_NAME}/settings"
+		 				[${CON_NAME}]
+		 				Name=Wired
+		 				AutoConnect=true
+		 				Modified=
+		 				IPv6.method=auto
+		 				IPv6.privacy=preferred
+		 				IPv6.DHCP.DUID=
+		 				IPv4.method=manual
+		 				IPv4.DHCP.LastAddress=
+		 				IPv4.netmask_prefixlen=${NIC_BIT4}
+		 				IPv4.local_address=${NIC_IPV4}
+		 				IPv4.gateway=${NIC_GATE}
+		 				Nameservers=${NIC_DNS4};127.0.0.1;::1;
+		 				Domains=${NIC_WGRP};
+		 				Timeservers=ntp.nict.jp;
+		 				mDNS=true
+		_EOT_
+		 		fi
+		 	fi
+		 	# --- netplan -------------------------------------------------------------
+		 	if [ -d "${ROOT_DIRS}/etc/netplan" ]; then
+		 		echo "${PROG_NAME}: funcSetupNetwork: netplan"
+		 		cat <<- _EOT_ > "${ROOT_DIRS}/etc/netplan/99-network-manager-static.yaml"
+		 			network:
+		 			  version: 2
+		 			  ethernets:
+		 			    "${NIC_NAME}":
+		 			      dhcp4: false
+		 			      addresses: [ "${NIC_IPV4}/${NIC_BIT4}" ]
+		 			      gateway4: "${NIC_GATE}"
+		 			      nameservers:
+		 			          search: [ "${NIC_WGRP}" ]
+		 			          addresses: [ "${NIC_DNS4}" ]
+		 			      dhcp6: true
+		 			      ipv6-privacy: true
+		 _EOT_
+		 	fi
+		}
+		
+		# --- gdm3 --------------------------------------------------------------------
+		funcChange_gdm3_configure () {
+		 	echo "${PROG_NAME}: funcChange_gdm3_configure"
+		 	if [ -f "${ROOT_DIRS}/etc/gdm3/custom.conf" ]; then
+		 		sed -i.orig "${ROOT_DIRS}/etc/gdm3/custom.conf" \
+		 		    -e '\''/WaylandEnable=false/ s/^#//'\''
+		 	fi
+		}
+		
+		### Main ######################################################################
+		funcMain () {
+		 	echo "${PROG_NAME}: funcMain"
+		 	case "${DIST_NAME}" in
+		 		debian )
+		 			funcInstallPackages
+		 			funcSetupNetwork
+		#			funcChange_gdm3_configure
+		 			;;
+		 		ubuntu )
+		 			funcInstallPackages
+		 			funcSetupNetwork
+		#			funcChange_gdm3_configure
+		 			;;
+		 	esac
+		}
+		
+		 	funcMain
+		### Termination ###############################################################
+		 	echo "${PROG_NAME}: === End ==="
+		 	exit 0
+		### EOF #######################################################################
+_EOT_SH_
+done
+'
+# --- preseed_kill_dhcp.sh ----------------------------------------------------
+sudo bash -c '
+for FNAME in /var/www/html/pxeboot/conf/preseed/preseed_kill_dhcp.sh
+do
+	mkdir -p "${FNAME%/*}"
+	cat <<- '\''_EOT_SH_'\'' | sed '\''s/^ *//g'\'' > "${FNAME}"
+		#!/bin/sh
+		
+		### initialization ############################################################
+		#	set -n								# Check for syntax errors
+		#	set -x								# Show command and argument expansion
+		 	set -o ignoreeof					# Do not exit with Ctrl+D
+		 	set +m								# Disable job control
+		 	set -e								# Ends with status other than 0
+		 	set -u								# End with undefined variable reference
+		
+		 	trap '\''exit 1'\'' 1 2 3 15
+		
+		### Main ######################################################################
+		 	/bin/kill-all-dhcp
+		 	/bin/netcfg
+		### Termination ###############################################################
+		 	exit 0
+		### EOF #######################################################################
+_EOT_SH_
+done
+'
+# --- preseed -----------------------------------------------------------------
+sudo bash -c '
+for PNAME in $(echo \
+	"ps_debian-"{{10..13},testing}"_"{server,desktop}".cfg" \
+	"ps_debian-live-"{{10..13},testing}".cfg" \
+	"ps_ubuntu-desktop-18.04.cfg    " \
+	"ps_ubuntu-server-18.04.cfg     " \
+	"ps_ubuntu-desktop-20.04.cfg    " \
+	"ps_ubuntu-desktop-22.04.cfg    " \
+	"ps_ubuntu-desktop-23.04.cfg    " \
+	"ps_ubuntu-legacy-23.04.cfg     " \
+	"ps_ubuntu-legacy-23.10.cfg     " \
+	"ps_ubuntu-legacy-24.04.cfg     " \
+	"ps_ubuntu-legacy-noble.cfg     " )
+do
+	FNAME="/var/www/html/pxeboot/conf/preseed/${PNAME}"
+	DISTR="$(echo ${FNAME} | sed -e '\''s%^.*_\(debian\|ubuntu\)-.*$%\1%'\'')"
+	FTMPL="${PWD}/mkcd/preseed_${DISTR}.cfg"
+	echo "${FNAME}"
+	mkdir -p "${FNAME%/*}"
+	case "${FNAME##*/}" in
+		*-10_*     | \
+		*_18.04\.* )
+			sed -e '\''s/bind9-utils/bind9utils/'\''  \
+			    -e '\''s/bind9-dnsutils/dnsutils/'\'' \
+			    "${FTMPL}"                            \
+			>   "${FNAME}"
+			;;
+		*       )
+			cp --preserve=timestamps "${FTMPL}" "${FNAME}"
+			;;
+	esac
+	case "${FNAME##*/}" in
+		*_desktop* )
+			sed -i "${FNAME}"                                                                                                  \
+			    -e '\''/^[ \t]*packages:$/,/^[ \t]*-.*$/                                                                { '\'' \
+			    -e '\'':l; /\(^[# \t]*d-i[ \t]\+\|^#.*-$\)/! { /^#.*[^-]*$/! { /\\$/! s/$/ \\/ }; s/^# /  /; n; b l; }; } '\''
+			;;
+		*       )
+			;;
+	esac
+	case "${FNAME##*/}" in
+		*ubuntu* )
+			OLD_IFS=${IFS}
+			IFS= INS_STR=$(
+				sed -n '\''/^[^#].*preseed\/late_command/,/[^\\]$/p'\'' "${FNAME}" | \
+				sed -e '\''s/\\/\\\\/g'\''                                           \
+				    -e '\''s/d-i/ubiquity/'\''                                       \
+				    -e '\''s%preseed\/late_command%ubiquity\/success_command%'\''  | \
+				sed -e '\'':l; N; s/\n/\\n/; b l;'\''
+			)
+			IFS=${OLD_IFS}
+			if [ -n "${INS_STR}" ]; then
+				sed -i "${FNAME}"                                            \
+				    -e '\''/^[^#].*preseed\/late_command/,/[^\\]$/     { '\'' \
+				    -e '\''s/^/#/g'\''                                        \
+				    -e '\''s/#  /# /g                                  } '\'' \
+				    -e '\''/^[^#].*ubiquity\/success_command/,/[^\\]$/ { '\'' \
+				    -e '\''s/^/#/g'\''                                        \
+				    -e '\''s/#  /# /g                                  } '\''
+				sed -i "${FNAME}"                                             \
+				    -e "/ubiquity\/success_command/i \\${INS_STR}"
+			fi
+			;;
+		*       )
+			;;
+	esac
+done
+'
+# --- nocloud -----------------------------------------------------------------
+sudo bash -c '
+for DNAME in /var/www/html/pxeboot/conf/nocloud/ubuntu_{,old_}{server,desktop}
+do
+	echo "${DNAME}"
+	mkdir -p "${DNAME}"
+	touch "${DNAME}/meta-data"
+	touch "${DNAME}/network-config"
+	touch "${DNAME}/user-data"
+	touch "${DNAME}/vendor-data"
+	FTMPL="${PWD}/mkcd/nocloud-ubuntu-user-data"
+	case "${DNAME##*/}" in
+		*_old_* )
+			sed -e '\''s/bind9-utils/bind9utils/'\''  \
+			    -e '\''s/bind9-dnsutils/dnsutils/'\'' \
+			    "${FTMPL}"                            \
+			>   "${DNAME}/user-data"
+			;;
+		*       )
+			cp --preserve=timestamps "${FTMPL}" "${DNAME}/user-data"
+			;;
+	esac
+	case "${DNAME##*/}" in
+		*_desktop* )
+			sed -i "${DNAME}/user-data"                                                       \
+			    -e '\''/^[ \t]*packages:$/,/:$/ { :l; /^#[ \t]*-[ \t]/ s/^#/ /; n; b l; }'\''
+			;;
+		*       )
+			;;
+	esac
+done
+'
+# --- kickstart ---------------------------------------------------------------
+sudo bash -c '
+for PNAME in $(echo \
+	"ks_almalinux-9.cfg             " \
+	"ks_centos-stream-8.cfg         " \
+	"ks_centos-stream-9.cfg         " \
+	"ks_fedora-38.cfg               " \
+	"ks_fedora-39.cfg               " \
+	"ks_miraclelinux-8.cfg          " \
+	"ks_miraclelinux-9.cfg          " \
+	"ks_rockylinux-8.cfg            " \
+	"ks_rockylinux-9.cfg            " )
+do
+	FNAME="/var/www/html/pxeboot/conf/kickstart/${PNAME}"
+	DISTR="$(echo "${FNAME}" | sed -e '\''s%^.*_\(.*\)-[0-9]\+.*$%\1%'\'')"
+	VERNO="$(echo "${FNAME}" | sed -e '\''s%^.*-\([0-9]\+\).*$%\1%'\'')"
+	RHLNO="${VERNO}"
+	FTMPL="${PWD}/mkcd/kickstart_common.cfg"
+	BARCH="x86_64"
+	if [[ "${DISTR}" = "fedora" ]]; then
+		if [[ ${VERNO} -ge 38 ]] && [[ ${VERNO} -le 39 ]]; then
+			RHLNO="9"
+		fi
+	fi
+	echo "${FNAME##*/}"
+	mkdir -p "${FNAME%/*}"
+	sed -e "/^#cdrom/ s/^#//                 " \
+	    -e "s/_HOSTNAME_/${DISTR%%-*}/       " \
+	    -e "/^#.*(${DISTR/-/ }).*$/,/^$/   { " \
+	    -e "/_WEBADDR_/!                   { " \
+	    -e "/^url[ \t]\+/  s/^/#/g           " \
+	    -e "/^repo[ \t]\+/ s/^/#/g           " \
+	    -e "s/\$releasever/${VERNO}/g        " \
+	    -e "s/\$basearch/${BARCH}/g       }} " \
+	    -e "/%post/,/%end/                 { " \
+	    -e "s/\$releasever/${RHLNO}/g      } " \
+	    "${FTMPL}"                             \
+	>   "${FNAME}"
+	if [[ ${RHLNO} -le 8 ]]; then
+		sed -i "${FNAME}"                          \
+		    -e "/^timesource/             s/^/#/g" \
+		    -e "/^timezone/               s/^/#/g" \
+		    -e "/timezone.* --ntpservers/ s/^#//g"
+	fi
+	case "${DISTR}" in
+		fedora )
+			sed -i "${FNAME}"                          \
+			    -e "/^#.*(${DISTR/-/ /}).*$/,/^$/  { " \
+			    -e "/_WEBADDR_/!                   { " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       }} "
+			;;
+	esac
+	sed -e "/%packages/,/%end/ {" \
+	    -e "/desktop/ s/^-//g  }" \
+	    "${FNAME}"                \
+	>   "${FNAME/.cfg/_desktop.cfg}"
+done
+'
