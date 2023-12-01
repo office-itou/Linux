@@ -148,23 +148,26 @@ funcSetupNetwork () {
 			netcfg/get_netmask=*        ) NIC_MASK="${LINE#netcfg/get_netmask=}"       ;;
 			netcfg/get_gateway=*        ) NIC_GATE="${LINE#netcfg/get_gateway=}"       ;;
 			netcfg/get_nameservers=*    ) NIC_DNS4="${LINE#netcfg/get_nameservers=}"   ;;
-			netcfg/get_hostname=*       ) NIC_FQDN="${LINE#netcfg/get_hostname=}"      ;;;
+			netcfg/get_hostname=*       ) NIC_FQDN="${LINE#netcfg/get_hostname=}"      ;;
 			netcfg/get_domain=*         ) NIC_WGRP="${LINE#netcfg/get_domain=}"        ;;
-			ip=dhcp                     ) FIX_IPV4="false"; break                           ;;
-			ip=*                        ) FIX_IPV4="true";
-			                              OLD_IFS=${IFS};
-			                              IFS=:;
-			                              set -f;
-			                              set -- ${LINE#ip=};
-			                              set +f;
-			                              NIC_IPV4="${1}";
-			                              NIC_GATE="${3}";
-			                              NIC_MASK="${4}";
-			                              NIC_FQDN="${5}";
-			                              NIC_NAME="${6}";
-			                              NIC_DNS4="${8}";
-			                              IFS=${OLD_IFS};
-			                              break;
+			interface=*                 ) NIC_NAME="${LINE#interface=}"                ;;
+			hostname=*                  ) NIC_FQDN="${LINE#hostname=}"                 ;;
+			domain=*                    ) NIC_WGRP="${LINE#domain=}"                   ;;
+			ip=dhcp                     ) FIX_IPV4="false"; break                      ;;
+			ip=*                        ) FIX_IPV4="true"
+			                              OLD_IFS=${IFS}
+			                              IFS=:
+			                              set -f
+			                              set -- ${LINE#ip=}
+			                              set +f
+			                              NIC_IPV4="${1}"
+			                              NIC_GATE="${3}"
+			                              NIC_MASK="${4}"
+			                              NIC_FQDN="${5}"
+			                              NIC_NAME="${6}"
+			                              NIC_DNS4="${8}"
+			                              IFS=${OLD_IFS}
+			                              break
 			                              ;;
 		esac
 	done
@@ -177,7 +180,7 @@ funcSetupNetwork () {
 	if [ -n "${NIC_MASK}" ]; then
 		NIC_BIT4="$(funcIPv4GetNetmaskBits "${NIC_MASK}")"
 	fi
-	if [ -n "${NIC_IPV4#*/}" ]; then
+	if [ -n "${NIC_IPV4#*/}" ] && [ "${NIC_IPV4#*/}" != "${NIC_IPV4}" ]; then
 		FIX_IPV4="true"
 		NIC_BIT4="${NIC_IPV4#*/}"
 		NIC_IPV4="${NIC_IPV4%/*}"

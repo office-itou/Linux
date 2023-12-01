@@ -12,6 +12,7 @@ sudo ln -s /var/lib/tftp/grub/shim/shimx64.efi.signed                 /var/lib/t
 sudo ln -s /var/lib/tftp/grub/x86_64-efi-signed/grubnetx64.efi.signed /var/lib/tftp/grubx64.efi
 sudo ln -s /var/lib/tftp/grub/unicode.pf2                             /var/lib/tftp/grub/fonts/
 sudo grub-mkimage -d /usr/lib/grub/i386-pc/ -O i386-pc-pxe -o /var/lib/tftp/pxelinux.0 -p grub normal pxe tftp loopback iso9660 udf
+sudo cp -a /usr/lib/syslinux/memdisk                                  /var/lib/tftp/
 # https://manpages.ubuntu.com/manpages/lunar/ja/man1/grub-mkimage.1.html
 # --- make link ---------------------------------------------------------------
 sudo bash -c '
@@ -20,16 +21,23 @@ ln -s    /mnt/hgfs/workspace/Image/linux/workspace.pxe/conf /var/www/html/pxeboo
 rm -rf   /var/www/html/pxeboot/isos
 mkdir -p /var/www/html/pxeboot/isos
 for LINE in \
+	"o  linux/debian/mini-bookworm-amd64.iso                        " \
+	"o  linux/debian/mini-bullseye-amd64.iso                        " \
+	"o  linux/debian/mini-buster-amd64.iso                          " \
+	"o  linux/debian/mini-testing-amd64.iso                         " \
+	"o  linux/debian/mini-trixie-amd64.iso                          " \
+	"o  linux/ubuntu/mini-bionic-amd64.iso                          " \
+	"o  linux/ubuntu/mini-focal-amd64.iso                           " \
 	"o  linux/debian/debian-10.13.0-amd64-netinst.iso               " \
 	"o  linux/debian/debian-11.8.0-amd64-netinst.iso                " \
 	"o  linux/debian/debian-12.2.0-amd64-netinst.iso                " \
 	"o  linux/debian/debian-13.0.0-amd64-netinst.iso                " \
 	"o  linux/debian/debian-testing-amd64-netinst.iso               " \
-	"-  linux/debian/debian-10.13.0-amd64-DVD-1.iso                 " \
-	"-  linux/debian/debian-11.8.0-amd64-DVD-1.iso                  " \
-	"-  linux/debian/debian-12.2.0-amd64-DVD-1.iso                  " \
-	"-  linux/debian/debian-13.0.0-amd64-DVD-1.iso                  " \
-	"-  linux/debian/debian-testing-amd64-DVD-1.iso                 " \
+	"o  linux/debian/debian-10.13.0-amd64-DVD-1.iso                 " \
+	"o  linux/debian/debian-11.8.0-amd64-DVD-1.iso                  " \
+	"o  linux/debian/debian-12.2.0-amd64-DVD-1.iso                  " \
+	"o  linux/debian/debian-13.0.0-amd64-DVD-1.iso                  " \
+	"o  linux/debian/debian-testing-amd64-DVD-1.iso                 " \
 	"o  linux/debian/debian-live-10.13.0-amd64-lxde.iso             " \
 	"o  linux/debian/debian-live-11.8.0-amd64-lxde.iso              " \
 	"o  linux/debian/debian-live-12.2.0-amd64-lxde.iso              " \
@@ -138,11 +146,11 @@ cat <<- '_EOT_' | sed '\''s/^ *//g'\'' > /var/lib/tftp/grub/grub.cfg
 	}
 	
 	if [ "\${grub_platform}" = "efi" ]; then
-	 	menuentry '\''Boot from next volume'\'' {
+	 	menuentry '\''- Boot from next volume'\'' {
 	 		exit 1
 	 	}
 	
-	 	menuentry '\''UEFI Firmware Settings'\'' {
+	 	menuentry '\''- UEFI Firmware Settings'\'' {
 	 		fwsetup
 	 	}
 	fi
@@ -154,24 +162,31 @@ MENUEFI="/var/lib/tftp/grub/menu.cfg"
 rm -f "${MENUEFI}"
 for LINE in \
 	"m                          Unattended%20installation                                                                                                                                                                                            " \
-	"o  debian-netinst-10       Debian%2010%20Net-install           debian          debian-10.13.0-amd64-netinst.iso            install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server_old.cfg        " \
-	"o  debian-netinst-11       Debian%2011%20Net-install           debian          debian-11.8.0-amd64-netinst.iso             install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
-	"o  debian-netinst-12       Debian%2012%20Net-install           debian          debian-12.2.0-amd64-netinst.iso             install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
-	"o  debian-netinst-13       Debian%2013%20Net-install           debian          debian-13.0.0-amd64-netinst.iso             install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
-	"o  debian-netinst-testing  Debian%20testing%20Net-install      debian          debian-testing-amd64-netinst.iso            install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
-	"-  debian-10               Debian%2010                         debian          debian-10.13.0-amd64-DVD-1.iso              install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server_old.cfg        " \
-	"-  debian-11               Debian%2011                         debian          debian-11.8.0-amd64-DVD-1.iso               install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
-	"-  debian-12               Debian%2012                         debian          debian-12.2.0-amd64-DVD-1.iso               install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
-	"-  debian-13               Debian%2013                         debian          debian-13.0.0-amd64-DVD-1.iso               install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
-	"-  debian-testing          Debian%20testing                    debian          debian-testing-amd64-DVD-1.iso              install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
-	"o  ubuntu-server-18.04     Ubuntu%20Server%2018.04             ubuntu          ubuntu-18.04.6-server-amd64.iso             install             initrd.gz                   vmlinuz                 conf/preseed/ps_ubuntu_server_old.cfg        " \
-	"o  ubuntu-live-18.04       Ubuntu%20Live%20Server%2018.04      ubuntu          ubuntu-18.04.6-live-server-amd64.iso        casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server_old               " \
-	"o  ubuntu-live-20.04       Ubuntu%20Live%20Server%2020.04      ubuntu          ubuntu-20.04.6-live-server-amd64.iso        casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
-	"o  ubuntu-live-22.04       Ubuntu%20Live%20Server%2022.04      ubuntu          ubuntu-22.04.3-live-server-amd64.iso        casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
-	"o  ubuntu-live-23.04       Ubuntu%20Live%20Server%2023.04      ubuntu          ubuntu-23.04-live-server-amd64.iso          casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
-	"o  ubuntu-live-23.10       Ubuntu%20Live%20Server%2023.10      ubuntu          ubuntu-23.10-live-server-amd64.iso          casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
-	"o  ubuntu-live-24.04       Ubuntu%20Live%20Server%2024.04      ubuntu          ubuntu-24.04-live-server-amd64.iso          casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
-	"o  ubuntu-live-noble       Ubuntu%20Live%20Server%20noble      ubuntu          noble-live-server-amd64.iso                 casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  debian-mini-10          Debian%2010%20Mini.iso              debian          mini-buster-amd64.iso                       .                   initrd.gz                   linux                   conf/preseed/ps_debian_server_old.cfg        " \
+	"o  debian-mini-11          Debian%2011%20Mini.iso              debian          mini-bullseye-amd64.iso                     .                   initrd.gz                   linux                   conf/preseed/ps_debian_server.cfg            " \
+	"o  debian-mini-12          Debian%2012%20Mini.iso              debian          mini-bookworm-amd64.iso                     .                   initrd.gz                   linux                   conf/preseed/ps_debian_server.cfg            " \
+	"o  debian-mini-13          Debian%2013%20Mini.iso              debian          mini-trixie-amd64.iso                       .                   initrd.gz                   linux                   conf/preseed/ps_debian_server.cfg            " \
+	"o  debian-mini-testing     Debian%20testing%20Mini.iso         debian          mini-testing-amd64.iso                      .                   initrd.gz                   linux                   conf/preseed/ps_debian_server.cfg            " \
+	"o  ubuntu-mini-18.04       Ubuntu%2018.04%20Mini.iso           ubuntu          mini-bionic-amd64.iso                       .                   initrd.gz                   linux                   conf/preseed/ps_ubuntu_server_old.cfg        " \
+	"o  ubuntu-mini-20.04       Ubuntu%2020.04%20Mini.iso           ubuntu          mini-focal-amd64.iso                        .                   initrd.gz                   linux                   conf/preseed/ps_ubuntu_server_old.cfg        " \
+	"o  debian-netinst-10       Debian%2010%20Net%20install         debian          debian-10.13.0-amd64-netinst.iso            install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server_old.cfg        " \
+	"o  debian-netinst-11       Debian%2011%20Net%20install         debian          debian-11.8.0-amd64-netinst.iso             install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
+	"o  debian-netinst-12       Debian%2012%20Net%20install         debian          debian-12.2.0-amd64-netinst.iso             install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
+	"o  debian-netinst-13       Debian%2013%20Net%20install         debian          debian-13.0.0-amd64-netinst.iso             install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
+	"o  debian-netinst-testing  Debian%20testing%20Net%20install    debian          debian-testing-amd64-netinst.iso            install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
+	"o  debian-10               Debian%2010                         debian          debian-10.13.0-amd64-DVD-1.iso              install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server_old.cfg        " \
+	"o  debian-11               Debian%2011                         debian          debian-11.8.0-amd64-DVD-1.iso               install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
+	"o  debian-12               Debian%2012                         debian          debian-12.2.0-amd64-DVD-1.iso               install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
+	"o  debian-13               Debian%2013                         debian          debian-13.0.0-amd64-DVD-1.iso               install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
+	"o  debian-testing          Debian%20testing                    debian          debian-testing-amd64-DVD-1.iso              install.amd         initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg            " \
+	"o  ubuntu-server-18.04     Ubuntu%2018.04%20Server             ubuntu          ubuntu-18.04.6-server-amd64.iso             install             initrd.gz                   vmlinuz                 conf/preseed/ps_ubuntu_server_old.cfg        " \
+	"o  ubuntu-live-18.04       Ubuntu%2018.04%20Live%20Server      ubuntu          ubuntu-18.04.6-live-server-amd64.iso        casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server_old               " \
+	"o  ubuntu-live-20.04       Ubuntu%2020.04%20Live%20Server      ubuntu          ubuntu-20.04.6-live-server-amd64.iso        casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-live-22.04       Ubuntu%2022.04%20Live%20Server      ubuntu          ubuntu-22.04.3-live-server-amd64.iso        casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-live-23.04       Ubuntu%2023.04%20Live%20Server      ubuntu          ubuntu-23.04-live-server-amd64.iso          casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-live-23.10       Ubuntu%2023.10%20Live%20Server      ubuntu          ubuntu-23.10-live-server-amd64.iso          casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-live-24.04       Ubuntu%2024.04%20Live%20Server      ubuntu          ubuntu-24.04-live-server-amd64.iso          casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
+	"o  ubuntu-live-noble       Ubuntu%20noble%20Live%20Server      ubuntu          noble-live-server-amd64.iso                 casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_server                   " \
 	"x  fedora-37               Fedora%20Server%2037                fedora          Fedora-Server-dvd-x86_64-37-1.7.iso         images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_fedora-37.cfg              " \
 	"o  fedora-38               Fedora%20Server%2038                fedora          Fedora-Server-dvd-x86_64-38-1.6.iso         images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_fedora-38.cfg              " \
 	"o  fedora-39               Fedora%20Server%2039                fedora          Fedora-Server-dvd-x86_64-39-1.5.iso         images/pxeboot      initrd.img                  vmlinuz                 conf/kickstart/ks_fedora-39.cfg              " \
@@ -186,22 +201,22 @@ for LINE in \
 	"o  opensuse-leap-15.6      openSUSE%20Leap%2015.6              openSUSE        openSUSE-Leap-15.6-DVD-x86_64-Media.iso     boot/x86_64/loader  initrd                      linux                   conf/autoyast/autoinst_leap-15.6.xml         " \
 	"o  opensuse-tumbleweed     openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-DVD-x86_64-Current.iso  boot/x86_64/loader  initrd                      linux                   conf/autoyast/autoinst_tumbleweed.xml        " \
 	"m                          Live%20media                                                                                                                                                                                                         " \
-	"o  debian-live-10          Debian%20Live%2010                  debian          debian-live-10.13.0-amd64-lxde.iso          live                initrd.img-4.19.0-21-amd64  vmlinuz-4.19.0-21-amd64 conf/preseed/ps_debian_desktop_old.cfg       " \
-	"o  debian-live-11          Debian%20Live%2011                  debian          debian-live-11.8.0-amd64-lxde.iso           live                initrd.img-5.10.0-26-amd64  vmlinuz-5.10.0-26-amd64 conf/preseed/ps_debian_desktop.cfg           " \
-	"o  debian-live-12          Debian%20Live%2012                  debian          debian-live-12.2.0-amd64-lxde.iso           live                initrd.img                  vmlinuz                 conf/preseed/ps_debian_desktop.cfg           " \
-	"o  debian-live-13          Debian%20Live%2013                  debian          debian-live-13.0.0-amd64-lxde.iso           live                initrd.img                  vmlinuz                 conf/preseed/ps_debian_desktop.cfg           " \
-	"o  debian-live-testing     Debian%20Live%20testing             debian          debian-live-testing-amd64-lxde.iso          live                initrd.img                  vmlinuz                 conf/preseed/ps_debian_desktop.cfg           " \
-	"o  ubuntu-desktop-18.04    Ubuntu%20Desktop%2018.04            ubuntu          ubuntu-18.04.6-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu_desktop_old.cfg       " \
-	"o  ubuntu-desktop-20.04    Ubuntu%20Desktop%2020.04            ubuntu          ubuntu-20.04.6-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu_desktop.cfg           " \
-	"o  ubuntu-desktop-22.04    Ubuntu%20Desktop%2022.04            ubuntu          ubuntu-22.04.3-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu_desktop.cfg           " \
-	"o  ubuntu-desktop-23.04    Ubuntu%20Desktop%2023.04            ubuntu          ubuntu-23.04-desktop-amd64.iso              casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu_desktop.cfg           " \
-	"o  ubuntu-desktop-23.10    Ubuntu%20Desktop%2023.10            ubuntu          ubuntu-23.10.1-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_desktop                  " \
-	"o  ubuntu-desktop-24.04    Ubuntu%20Desktop%2024.04            ubuntu          ubuntu-24.04-desktop-amd64.iso              casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_desktop                  " \
-	"o  ubuntu-desktop-noble    Ubuntu%20Desktop%20noble            ubuntu          noble-desktop-amd64.iso                     casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_desktop                  " \
-	"o  ubuntu-legacy-23.04     Ubuntu%20Legacy%20Desktop%2023.04   ubuntu          ubuntu-23.04-desktop-legacy-amd64.iso       casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu_desktop_old.cfg       " \
-	"o  ubuntu-legacy-23.10     Ubuntu%20Legacy%20Desktop%2023.10   ubuntu          ubuntu-23.10-desktop-legacy-amd64.iso       casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu_desktop.cfg           " \
-	"o  ubuntu-legacy-24.04     Ubuntu%20Legacy%20Desktop%2024.04   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu_desktop.cfg           " \
-	"o  ubuntu-legacy-noble     Ubuntu%20Legacy%20Desktop%20noble   ubuntu          noble-desktop-legacy-amd64.iso              casper              initrd                      vmlinuz                 conf/preseed/ps_ubuntu_desktop.cfg           " 
+	"o  debian-live-10          Debian%2010%20Live                  debian          debian-live-10.13.0-amd64-lxde.iso          live                initrd.img-4.19.0-21-amd64  vmlinuz-4.19.0-21-amd64 conf/preseed/ps_debian_desktop_old.cfg       " \
+	"o  debian-live-11          Debian%2011%20Live                  debian          debian-live-11.8.0-amd64-lxde.iso           live                initrd.img-5.10.0-26-amd64  vmlinuz-5.10.0-26-amd64 conf/preseed/ps_debian_desktop.cfg           " \
+	"o  debian-live-12          Debian%2012%20Live                  debian          debian-live-12.2.0-amd64-lxde.iso           live                initrd.img                  vmlinuz                 conf/preseed/ps_debian_desktop.cfg           " \
+	"o  debian-live-13          Debian%2013%20Live                  debian          debian-live-13.0.0-amd64-lxde.iso           live                initrd.img                  vmlinuz                 conf/preseed/ps_debian_desktop.cfg           " \
+	"o  debian-live-testing     Debian%20testing%20Live             debian          debian-live-testing-amd64-lxde.iso          live                initrd.img                  vmlinuz                 conf/preseed/ps_debian_desktop.cfg           " \
+	"-  ubuntu-desktop-18.04    Ubuntu%2018.04%20Desktop            ubuntu          ubuntu-18.04.6-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/preseed/ps_ubiquity_desktop_old.cfg     " \
+	"o  ubuntu-desktop-20.04    Ubuntu%2020.04%20Desktop            ubuntu          ubuntu-20.04.6-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/preseed/ps_ubiquity_desktop.cfg         " \
+	"o  ubuntu-desktop-22.04    Ubuntu%2022.04%20Desktop            ubuntu          ubuntu-22.04.3-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/preseed/ps_ubiquity_desktop.cfg         " \
+	"o  ubuntu-desktop-23.04    Ubuntu%2023.04%20Desktop            ubuntu          ubuntu-23.04-desktop-amd64.iso              casper              initrd                      vmlinuz                 conf/preseed/ps_ubiquity_desktop.cfg         " \
+	"o  ubuntu-desktop-23.10    Ubuntu%2023.10%20Desktop            ubuntu          ubuntu-23.10.1-desktop-amd64.iso            casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_desktop                  " \
+	"o  ubuntu-desktop-24.04    Ubuntu%2024.04%20Desktop            ubuntu          ubuntu-24.04-desktop-amd64.iso              casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_desktop                  " \
+	"o  ubuntu-desktop-noble    Ubuntu%20noble%20Desktop            ubuntu          noble-desktop-amd64.iso                     casper              initrd                      vmlinuz                 conf/nocloud/ubuntu_desktop                  " \
+	"o  ubuntu-legacy-23.04     Ubuntu%2023.04%20Legacy%20Desktop   ubuntu          ubuntu-23.04-desktop-legacy-amd64.iso       casper              initrd                      vmlinuz                 conf/preseed/ps_ubiquity_desktop_old.cfg     " \
+	"o  ubuntu-legacy-23.10     Ubuntu%2023.10%20Legacy%20Desktop   ubuntu          ubuntu-23.10-desktop-legacy-amd64.iso       casper              initrd                      vmlinuz                 conf/preseed/ps_ubiquity_desktop.cfg         " \
+	"o  ubuntu-legacy-24.04     Ubuntu%2024.04%20Legacy%20Desktop   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper              initrd                      vmlinuz                 conf/preseed/ps_ubiquity_desktop.cfg         " \
+	"o  ubuntu-legacy-noble     Ubuntu%20noble%20Legacy%20Desktop   ubuntu          noble-desktop-legacy-amd64.iso              casper              initrd                      vmlinuz                 conf/preseed/ps_ubiquity_desktop.cfg         " 
 do
 	PARM=($(echo ${LINE}))
 	FNAME="/var/www/html/pxeboot/isos/${PARM[4]}"
@@ -247,6 +262,35 @@ _EOT_
 	IP4GWAY="192.168.1.254"
 	IP4NSVR="192.168.1.254"
 	case "${PARM[1]}" in
+		*-mini-*              )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "${MENUEFI}"
+				menuentry '\''- ${ENTRY}'\'' {
+				 	set webprot="${WEBPROT}"
+				 	set webaddr="${WEBADDR}"
+				 	set webdirs="${WEBDIRS}"
+				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="url=\${webroot}/isos/\${isofile}"
+				 	set dnsname="workgroup"
+				 	set hstname="sv-${PARM[1]%%-*}"
+				 	set hstfqdn="\${hstname}.\${dnsname}"
+				 	set ip4addr="${IP4ADDR%/*}"
+				 	set ip4mask="${IP4MASK}"
+				 	set ip4gway="${IP4GWAY}"
+				 	set ip4nsvr="${IP4NSVR}"
+				 	set netconf="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
+				 	set preseed="auto=true preseed/url=\${webroot}/${PARM[8]}"
+				 	set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	loopback loop (\${webprot},\${webaddr})\${webdirs}/isos/\${isofile}
+				 	linux   (loop)/${PARM[7]} \${locales} \${preseed} \${netconf} ide=nodma fsck.mode=skip lowmem ---
+				 	initrd  (loop)/${PARM[6]}
+				 	loopback --delete loop
+				}
+				
+_EOT_
+				;;
 		debian-live-*         )
 			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "${MENUEFI}"
 				menuentry '\''- ${ENTRY}'\'' {
@@ -257,13 +301,12 @@ _EOT_
 				 	set isofile="${PARM[4]}"
 				 	set urlfile="fetch=\${webroot}/isos/\${isofile}"
 				 	set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-				 	set root="\${webprot},\${webaddr}"
 				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				 	echo "Loading \${isofile} ..."
-				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
-				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} ip=dhcp ide=nodma fsck.mode=skip root=/boot boot=live toram=filesystem.squashfs ---
+				 	loopback loop (\${webprot},\${webaddr})\${webdirs}/isos/\${isofile}
+				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} ip=dhcp ide=nodma fsck.mode=skip boot=live toram=filesystem.squashfs ---
 				 	initrd  (loop)/${PARM[5]}/${PARM[6]}
-				#	loopback --delete loop
+				 	loopback --delete loop
 				}
 				
 _EOT_
@@ -276,38 +319,6 @@ _EOT_
 				 	set webdirs="${WEBDIRS}"
 				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
 				 	set isofile="${PARM[4]}"
-				 	set urlfile="fetch=\${webroot}/isos/\${isofile}"
-				 	set dnsname="workgroup"
-				 	set hstname="sv-${PARM[1]%%-*}"
-				 	set hstfqdn="\${hstname}.\${dnsname}"
-				 	set ip4addr="${IP4ADDR%/*}"
-				 	set ip4mask="${IP4MASK}"
-				 	set ip4gway="${IP4GWAY}"
-				 	set ip4nsvr="${IP4NSVR}"
-				 	set netconf="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
-				 	set netconf="hostname=\${hstname} dnsdomain=\${dnsname} ip=ens160:\${ip4addr}:\${ip4mask}:\${ip4gway}:\${ip4nsvr}"
-				 	set preseed="auto=true preseed/url=\${webroot}/${PARM[8]}"
-				 	set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-				 	set root="\${webprot},\${webaddr}"
-				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-				 	echo "Loading \${isofile} ..."
-				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
-				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} \${preseed} \${netconf} ide=nodma fsck.mode=skip root=/boot toram ---
-				 	initrd  (loop)/${PARM[5]}/${PARM[6]}
-				#	loopback --delete loop
-				}
-				
-_EOT_
-				;;
-		ubuntu-server-*       )
-			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "${MENUEFI}"
-				menuentry '\''- ${ENTRY}'\'' {
-				 	set webprot="${WEBPROT}"
-				 	set webaddr="${WEBADDR}"
-				 	set webdirs="${WEBDIRS}"
-				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
-				 	set boottop="boot/${PARM[1]}"
-				 	set isofile="${PARM[4]}"
 				 	set urlfile="url=\${webroot}/isos/\${isofile}"
 				 	set dnsname="workgroup"
 				 	set hstname="sv-${PARM[1]%%-*}"
@@ -317,21 +328,20 @@ _EOT_
 				 	set ip4gway="${IP4GWAY}"
 				 	set ip4nsvr="${IP4NSVR}"
 				 	set netconf="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
-				 	set netconf="hostname=\${hstname} dnsdomain=\${dnsname} ip=ens160:\${ip4addr}:\${ip4mask}:\${ip4gway}:\${ip4nsvr}"
 				 	set preseed="auto=true preseed/url=\${webroot}/${PARM[8]}"
 				 	set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-				 	set root="\${webprot},\${webaddr}"
 				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				 	echo "Loading \${isofile} ..."
-				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
-				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} \${preseed} \${netconf} ide=nodma fsck.mode=skip root=/boot toram ---
+				 	loopback loop (\${webprot},\${webaddr})\${webdirs}/isos/\${isofile}
+				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} \${preseed} \${netconf} ide=nodma fsck.mode=skip lowmem ---
 				 	initrd  (loop)/${PARM[5]}/${PARM[6]}
-				#	loopback --delete loop
+				 	loopback --delete loop
 				}
 				
 _EOT_
 				;;
-		ubuntu-desktop-18.*   | \
+		ubuntu-desktop-18.*   )         # This version does not support pxeboot
+				;;
 		ubuntu-desktop-20.*   | \
 		ubuntu-desktop-22.*   | \
 		ubuntu-legacy-*       )
@@ -344,13 +354,12 @@ _EOT_
 				 	set isofile="${PARM[4]}"
 				 	set urlfile="url=\${webroot}/isos/\${isofile}"
 				 	set locales="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				 	set root="\${webprot},\${webaddr}"
 				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				 	echo "Loading \${isofile} ..."
-				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
-				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} ip=dhcp ide=nodma fsck.mode=skip root=/boot boot=casper toram=filesystem.squashfs maybe-ubiquity ---
+				 	loopback loop (\${webprot},\${webaddr})\${webdirs}/isos/\${isofile}
+				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} ip=dhcp ide=nodma fsck.mode=skip boot=casper maybe-ubiquity ---
 				 	initrd  (loop)/${PARM[5]}/${PARM[6]}
-				#	loopback --delete loop
+				 	loopback --delete loop
 				}
 				
 _EOT_
@@ -365,13 +374,41 @@ _EOT_
 				 	set isofile="${PARM[4]}"
 				 	set urlfile="url=\${webroot}/isos/\${isofile}"
 				 	set locales="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				 	set root="\${webprot},\${webaddr}"
 				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				 	echo "Loading \${isofile} ..."
-				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
-				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} ip=dhcp ide=nodma fsck.mode=skip root=/boot boot=casper toram=minimal.standard.squashfs layerfs-path=minimal.standard.live.squashfs ---
+				 	loopback loop (\${webprot},\${webaddr})\${webdirs}/isos/\${isofile}
+				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} ip=dhcp ide=nodma fsck.mode=skip boot=casper layerfs-path=minimal.standard.live.squashfs ---
 				 	initrd  (loop)/${PARM[5]}/${PARM[6]}
-				#	loopback --delete loop
+				 	loopback --delete loop
+				}
+				
+_EOT_
+				;;
+		ubuntu-server-*       )
+			cat <<- _EOT_ | sed '\''s/^ *//g'\'' >> "${MENUEFI}"
+				menuentry '\''- ${ENTRY}'\'' {
+				 	set webprot="${WEBPROT}"
+				 	set webaddr="${WEBADDR}"
+				 	set webdirs="${WEBDIRS}"
+				 	set webroot="\${webprot}://\${webaddr}\${webdirs}"
+				 	set isofile="${PARM[4]}"
+				 	set urlfile="url=\${webroot}/isos/\${isofile}"
+				 	set dnsname="workgroup"
+				 	set hstname="sv-${PARM[1]%%-*}"
+				 	set hstfqdn="\${hstname}.\${dnsname}"
+				 	set ip4addr="${IP4ADDR%/*}"
+				 	set ip4mask="${IP4MASK}"
+				 	set ip4gway="${IP4GWAY}"
+				 	set ip4nsvr="${IP4NSVR}"
+				 	set netconf="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
+				 	set preseed="auto=true preseed/url=\${webroot}/${PARM[8]}"
+				 	set locales="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				 	echo "Loading \${isofile} ..."
+				 	loopback loop (\${webprot},\${webaddr})\${webdirs}/isos/\${isofile}
+				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} \${preseed} \${netconf} ide=nodma fsck.mode=skip lowmem ---
+				 	initrd  (loop)/${PARM[5]}/${PARM[6]}
+				 	loopback --delete loop
 				}
 				
 _EOT_
@@ -393,13 +430,12 @@ _EOT_
 				 	set netconf="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:static:\${ip4nsvr}"
 				 	set nocloud="automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=\${webroot}/${PARM[8]}"
 				 	set locales="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				 	set root="\${webprot},\${webaddr}"
 				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				 	echo "Loading \${isofile} ..."
-				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
-				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} \${nocloud} \${netconf} ide=nodma fsck.mode=skip root=/boot toram ---
+				 	loopback loop (\${webprot},\${webaddr})\${webdirs}/isos/\${isofile}
+				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} \${nocloud} \${netconf} ide=nodma fsck.mode=skip ---
 				 	initrd  (loop)/${PARM[5]}/${PARM[6]}
-				#	loopback --delete loop
+				 	loopback --delete loop
 				}
 				
 _EOT_
@@ -425,14 +461,13 @@ _EOT_
 				 	set netconf="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:none,auto6 nameserver=\${ip4nsvr}"
 				 	set ksstart="inst.ks=\${webroot}/${PARM[8]}"
 				 	set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				 	set root="\${webprot},\${webaddr}"
 				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				 	echo "Loading \${isofile} ..."
-				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
+				 	loopback loop (\${webprot},\${webaddr})\${webdirs}/isos/\${isofile}
 				 	probe --label --set=hdlabel (loop)
-				 	linux   (loop)/${PARM[5]}/${PARM[7]} inst.repo=(\${root})\${webdirs}/isos/\${isofile} \${locales} \${ksstart} \${netconf} ide=nodma fsck.mode=skip root=/boot toram ---
+				 	linux   (loop)/${PARM[5]}/${PARM[7]} inst.repo=(\${webprot},\${webaddr})\${webdirs}/isos/\${isofile} \${locales} \${ksstart} \${netconf} ide=nodma fsck.mode=skip ---
 				 	initrd  (loop)/${PARM[5]}/${PARM[6]}
-				#	loopback --delete loop
+				 	loopback --delete loop
 				}
 				
 _EOT_
@@ -454,14 +489,13 @@ _EOT_
 				 	set netconf="hostname=\${hstfqdn} ifcfg=e*=\${ip4addr},\${ip4gway},\${ip4nsvr},\${wkgroup}"
 				 	set autoxml="autoyast=\${webroot}/${PARM[8]}"
 				 	set locales="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				 	set root="\${webprot},\${webaddr}"
 				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				 	echo "Loading \${isofile} ..."
-				 	loopback loop (\${root})\${webdirs}/isos/\${isofile}
+				 	loopback loop (\${webprot},\${webaddr})\${webdirs}/isos/\${isofile}
 				 	probe --label --set=hdlabel (loop)
-				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} \${autoxml} \${netconf} ide=nodma fsck.mode=skip root=/boot toram ---
+				 	linux   (loop)/${PARM[5]}/${PARM[7]} \${urlfile} \${locales} \${autoxml} \${netconf} ide=nodma fsck.mode=skip ---
 				 	initrd  (loop)/${PARM[5]}/${PARM[6]}
-				#	loopback --delete loop
+				 	loopback --delete loop
 				}
 				
 _EOT_
@@ -625,23 +659,26 @@ do
 		 			netcfg/get_netmask=*        ) NIC_MASK="${LINE#netcfg/get_netmask=}"       ;;
 		 			netcfg/get_gateway=*        ) NIC_GATE="${LINE#netcfg/get_gateway=}"       ;;
 		 			netcfg/get_nameservers=*    ) NIC_DNS4="${LINE#netcfg/get_nameservers=}"   ;;
-		 			netcfg/get_hostname=*       ) NIC_FQDN="${LINE#netcfg/get_hostname=}"      ;;;
+		 			netcfg/get_hostname=*       ) NIC_FQDN="${LINE#netcfg/get_hostname=}"      ;;
 		 			netcfg/get_domain=*         ) NIC_WGRP="${LINE#netcfg/get_domain=}"        ;;
-		 			ip=dhcp                     ) FIX_IPV4="false"; break                           ;;
-		 			ip=*                        ) FIX_IPV4="true";
-		 			                              OLD_IFS=${IFS};
-		 			                              IFS=':';
-		 			                              set -f;
-		 			                              set -- ${LINE#ip=};
-		 			                              set +f;
-		 			                              NIC_IPV4="${1}";
-		 			                              NIC_GATE="${3}";
-		 			                              NIC_MASK="${4}";
-		 			                              NIC_FQDN="${5}";
-		 			                              NIC_NAME="${6}";
-		 			                              NIC_DNS4="${8}";
-		 			                              IFS=${OLD_IFS};
-		 			                              break;
+		 			interface=*                 ) NIC_NAME="${LINE#interface=}"                ;;
+		 			hostname=*                  ) NIC_FQDN="${LINE#hostname=}"                 ;;
+		 			domain=*                    ) NIC_WGRP="${LINE#domain=}"                   ;;
+		 			ip=dhcp                     ) FIX_IPV4="false"; break                      ;;
+		 			ip=*                        ) FIX_IPV4="true"
+		 			                              OLD_IFS=${IFS}
+		 			                              IFS=':'
+		 			                              set -f
+		 			                              set -- ${LINE#ip=}
+		 			                              set +f
+		 			                              NIC_IPV4="${1}"
+		 			                              NIC_GATE="${3}"
+		 			                              NIC_MASK="${4}"
+		 			                              NIC_FQDN="${5}"
+		 			                              NIC_NAME="${6}"
+		 			                              NIC_DNS4="${8}"
+		 			                              IFS=${OLD_IFS}
+		 			                              break
 		 			                              ;;
 		 		esac
 		 	done
@@ -654,7 +691,7 @@ do
 		 	if [ -n "${NIC_MASK}" ]; then
 		 		NIC_BIT4="$(funcIPv4GetNetmaskBits "${NIC_MASK}")"
 		 	fi
-		 	if [ -n "${NIC_IPV4#*/}" ]; then
+		 	if [ -n "${NIC_IPV4#*/}" ] && [ "${NIC_IPV4#*/}" != "${NIC_IPV4}" ]; then
 		 		FIX_IPV4="true"
 		 		NIC_BIT4="${NIC_IPV4#*/}"
 		 		NIC_IPV4="${NIC_IPV4%/*}"
@@ -815,15 +852,22 @@ for PNAME in $(echo \
 	"ps_debian_"{server,desktop}".cfg       " \
 	"ps_debian_"{server,desktop}"_old.cfg   " \
 	"ps_ubuntu_"{server,desktop}".cfg       " \
-	"ps_ubuntu_"{server,desktop}"_old.cfg   " )
+	"ps_ubuntu_"{server,desktop}"_old.cfg   " \
+	"ps_ubiquity_"{server,desktop}".cfg     " \
+	"ps_ubiquity_"{server,desktop}"_old.cfg " )
 do
 	FNAME="/var/www/html/pxeboot/conf/preseed/${PNAME}"
-	DISTR="$(echo "${PNAME}" | sed -e '\''s%^.*_\(debian\|ubuntu\).*$%\1%'\'')"
+	DISTR="$(echo "${PNAME}" | sed -e '\''s%^.*_\(debian\|ubuntu\|ubiquity\).*$%\1%'\'')"
 	FTMPL="${PWD}/mkcd/preseed_${DISTR}.cfg"
 	echo "${FNAME}"
 	mkdir -p "${FNAME%/*}"
 	case "${PNAME}" in
-		*_old\*    )
+		*ubiquity* )
+			FTMPL="${PWD}/mkcd/preseed_ubuntu.cfg"
+			;;
+	esac
+	case "${PNAME}" in
+		*_old*     )
 			sed -e '\''s/bind9-utils/bind9utils/'\''  \
 			    -e '\''s/bind9-dnsutils/dnsutils/'\'' \
 			    "${FTMPL}"                            \
@@ -843,7 +887,7 @@ do
 			;;
 	esac
 	case "${PNAME}" in
-		*ubuntu*   )
+		*ubiquity* )
 			OLD_IFS=${IFS}
 			IFS= INS_STR=$(
 				sed -n '\''/^[^#].*preseed\/late_command/,/[^\\]$/p'\'' "${FNAME}" | \
