@@ -156,7 +156,7 @@ funcSetupNetwork () {
 			ip=dhcp                     ) FIX_IPV4="false"; break                      ;;
 			ip=*                        ) FIX_IPV4="true"
 			                              OLD_IFS=${IFS}
-			                              IFS=:
+			                              IFS=':'
 			                              set -f
 			                              set -- ${LINE#ip=}
 			                              set +f
