@@ -36,8 +36,8 @@ autoinstall:
 # - dd if=/dev/zero of=/dev/nvme0n1 bs=512 count=34
 # =============================================================================
   storage:
-    grub:
-      reorder_uefi: false
+#   grub:
+#     reorder_uefi: false
     layout:
       name: lvm
       sizing-policy: all

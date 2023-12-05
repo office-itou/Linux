@@ -195,9 +195,13 @@ funcSetupNetwork () {
 	NIC_MADR="$(echo "${IP4_INFO}" | awk '/link\/ether/ {print$2;}')"
 	CON_NAME="ethernet_$(echo "${NIC_MADR}" | sed -n -e 's/://gp')_cable"
 	#--- hostname / hosts -----------------------------------------------------
-	OLD_HOST="$(cat /etc/hostname)";
+	OLD_FQDN="$(cat /etc/hostname)";
+	OLD_HOST="${OLD_FQDN%.*}"
+	OLD_WGRP="${OLD_FQDN#*.}"
 	echo "${NIC_FQDN}" > /etc/hostname;
-	sed -i /etc/hosts -e s/${OLD_HOST}/${NIC_FQDN}/g
+	sed -i /etc/hosts                                                          \
+	    -e 's/\([ \t]\+\)'${OLD_HOST}'\([ \t]*\)$/\1'${NIC_HOST}'\2/'          \
+	    -e 's/\([ \t]\+\)'${OLD_FQDN}'\([ \t]*$\|[ \t]\+\)/\1'${NIC_FQDN}'\2/'
 	#--- debug print ----------------------------------------------------------
 	echo "${PROG_NAME}: FIX_IPV4=${FIX_IPV4}"
 	echo "${PROG_NAME}: NIC_IPV4=${NIC_IPV4}"
