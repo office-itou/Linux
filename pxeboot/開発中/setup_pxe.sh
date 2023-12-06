@@ -158,6 +158,10 @@
 	declare -r    PROG_PRAM="$@"
 	declare -r    PROG_NAME="${PROG_PATH##*/}"
 	declare -r    WORK_DIRS="${PROG_NAME%.*}"
+	declare -a    COMD_LINE=("")
+	if [[ ${#@} -gt 0 ]]; then
+		COMD_LINE=($@)
+	fi
 
 # --- work variables ----------------------------------------------------------
 	declare -r    OLD_IFS="${IFS}"
@@ -1171,16 +1175,29 @@ _EOT_
 				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
 				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
 				LANG_CONF="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-				OPTN_PARM=""
+			 	HTTP_FILE="fetch=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${autocnf} \${netscnf} \${locales}"
 				ROOT_PARM=""
 				LOOP_BACK=""
+				;;
+			debian-live-10        | \
+			debian-live-11        )
+				IPV4_ADDR="${IPV4_ADDR%/*}"
+				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
+				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
+				LANG_CONF="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+			 	HTTP_FILE="fetch=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip root=/boot boot=live toram=filesystem.squashfs"
+				ROOT_PARM=""
+				LOOP_BACK="yes"
 				;;
 			debian-live-*         )
 				IPV4_ADDR="${IPV4_ADDR%/*}"
 				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
 				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
 				LANG_CONF="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-				OPTN_PARM="\${urlfile} ip=dhcp ide=nodma fsck.mode=skip root=/boot boot=live toram=filesystem.squashfs"
+			 	HTTP_FILE="fetch=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=live components"
 				ROOT_PARM=""
 				LOOP_BACK="yes"
 				;;
@@ -1189,7 +1206,8 @@ _EOT_
 				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
 				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
 				LANG_CONF="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-				OPTN_PARM=""
+			 	HTTP_FILE="fetch=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${autocnf} \${netscnf} \${locales}"
 				ROOT_PARM=""
 				LOOP_BACK=""
 				;;
@@ -1203,7 +1221,8 @@ _EOT_
 				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
 				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
 				LANG_CONF="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				OPTN_PARM="\${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper maybe-ubiquity"
+			 	HTTP_FILE="url=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper maybe-ubiquity"
 				ROOT_PARM=""
 				LOOP_BACK=""
 				;;
@@ -1212,7 +1231,8 @@ _EOT_
 				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
 				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
 				LANG_CONF="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				OPTN_PARM="\${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper layerfs-path=minimal.standard.live.squashfs"
+			 	HTTP_FILE="url=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper layerfs-path=minimal.standard.live.squashfs"
 				ROOT_PARM=""
 				LOOP_BACK=""
 				;;
@@ -1221,7 +1241,8 @@ _EOT_
 				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
 				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
 				LANG_CONF="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-				OPTN_PARM=""
+			 	HTTP_FILE="fetch=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${autocnf} \${netscnf} \${locales}"
 				ROOT_PARM=""
 				LOOP_BACK=""
 				;;
@@ -1230,7 +1251,8 @@ _EOT_
 				NETS_CONF="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:static:\${ip4nsvr}"
 				AUTO_CONF="automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=\${webroot}/${DATA_LINE[8]}"
 				LANG_CONF="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				OPTN_PARM=""
+			 	HTTP_FILE="url=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${autocnf} \${netscnf} \${locales}"
 				ROOT_PARM=""
 				LOOP_BACK=""
 				;;
@@ -1243,7 +1265,8 @@ _EOT_
 				NETS_CONF="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:none,auto6 nameserver=\${ip4nsvr}"
 				AUTO_CONF="inst.ks=\${webroot}/${DATA_LINE[8]}"
 				LANG_CONF="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				OPTN_PARM="inst.repo=\${webprot}://\${webaddr}\${webdirs}/imgs/${DATA_LINE[1]}"
+			 	HTTP_FILE="url=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${autocnf} \${netscnf} \${locales} inst.repo=\${webprot}://\${webaddr}\${webdirs}/imgs/${DATA_LINE[1]}"
 				ROOT_PARM=""
 				LOOP_BACK=""
 					;;
@@ -1252,7 +1275,8 @@ _EOT_
 				NETS_CONF="hostname=\${hstfqdn} ifcfg=e*=\${ip4addr},\${ip4gway},\${ip4nsvr},\${wkgroup}"
 				AUTO_CONF="autoyast=\${webroot}/${DATA_LINE[8]}"
 				LANG_CONF="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				OPTN_PARM="\${urlfile} root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096 init=linuxrc"
+			 	HTTP_FILE="url=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${autocnf} \${netscnf} \${locales} \${urlfile} root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096 init=linuxrc"
 				ROOT_PARM=""
 				LOOP_BACK=""
 					;;
@@ -1282,7 +1306,7 @@ _EOT_
 			 	set webdirs="${HTTP_DIRS}"
 			 	set webroot="\${webprot}://\${webaddr}/\${webdirs}"
 			 	set isofile="${DATA_LINE[4]}"
-			 	set urlfile="url=\${webprot}/isos/\${isofile}"
+			 	set urlfile="${HTTP_FILE}"
 			 	set dnsname="workgroup"
 			 	set hstname="sv-${DATA_LINE[1]%%-*}"
 			 	set hstfqdn="\${hstname}.\${dnsname}"
@@ -1293,7 +1317,7 @@ _EOT_
 			 	set netscnf="${NETS_CONF}"
 			 	set autocnf="${AUTO_CONF}"
 			 	set locales="${LANG_CONF}"
-			 	set options="\${autocnf} \${netscnf} \${locales} ${OPTN_PARM}"
+			 	set options="${OPTN_PARM}"
 			#	set root="${ROOT_PARM}"
 			 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 			 	echo "Loading \${isofile} ..."
@@ -1305,10 +1329,10 @@ _EOT_
 _EOT_
 		else
 			cat <<- _EOT_ | sed 's/^ *//g' >> "${FILE_PATH}"
-				 	loopback loop (\${webprot},\${webaddr})\${webdirs}/isos/\${isofile}
-				 	linux    (loop)/${DATA_LINE[1]}/${DATA_LINE[7]} \${options} ---
-				 	initrd   (loop)/${DATA_LINE[1]}/${DATA_LINE[6]}
-				#	loopback --delete loop
+				 	loopback loop (\${webprot},\${webaddr})/\${webdirs}/isos/\${isofile}
+				 	linux    (loop)/${DATA_LINE[5]}/${DATA_LINE[7]} \${options} ---
+				 	initrd   (loop)/${DATA_LINE[5]}/${DATA_LINE[6]}
+				 	loopback --delete loop
 _EOT_
 		fi
 		cat <<- _EOT_ | sed 's/^ *//g' >> "${FILE_PATH}"
@@ -1431,40 +1455,117 @@ function main() {
 	start_time=$(date +%s)
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing start${TXT_RESET}"
 
-	# --- make preseed directory files ----------------------------------------
-	funcMake_preseed_kill_dhcp_sh
-	funcMake_preseed_sub_command_sh
-	funcMake_preseed_cfg
+	case "${COMD_LINE[0]}" in
+		-a | --all)
+			COMD_LINE=( \
+				"--config=preseed,nocloud,kickstart,autoyast" \
+				"--menu=grub,menu" \
+				"--grub=i386,x64,font" \
+				"--service=restart,status" \
+			)
+			;;
+	esac
 
-	# --- make nocloud directory files ----------------------------------------
-	funcMake_nocloud
-
-	# --- make kickstart directory files --------------------------------------
-	funcMake_kickstart
-
-	# --- make autoyast directory files ---------------------------------------
-	funcMake_autoyast
-
-	# --- make grub.cfg file --------------------------------------------------
-	funcMake_grub_cfg
-
-	# --- make menu.cfg file --------------------------------------------------
-	funcMake_menu_cfg
-
-	# --- make grubi386.img ---------------------------------------------------
-	funcMake_grubi386_img
-
-	# --- make grubx64.efi ----------------------------------------------------
-	funcMake_grubx64_efi
-
-	# --- copy font -----------------------------------------------------------
-	funcCopy_font
-
-	# --- restart service -----------------------------------------------------
-	funcRestart_service
-
-	# --- status service ------------------------------------------------------
-	funcStatus_service
+	for ((I=0; I<${#COMD_LINE[@]}; I++))
+	do
+		case "${COMD_LINE[I]}" in
+			-c   | --config  )
+				COMD_LINE[I]="--config=preseed,nocloud,kickstart,autoyast"
+				;;
+			-m | --menu)
+				COMD_LINE[I]="--menu=grub,menu"
+				;;
+			-g | --grub)
+				COMD_LINE[I]="--grub=i386,x64,font"
+				;;
+			-s | --service)
+				COMD_LINE[I]="--service=restart,status"
+				;;
+		esac
+		IFS=','
+		set -f
+		set -- ${COMD_LINE[I]#*=}
+		set +f
+		IFS=${OLD_IFS}
+		case "${COMD_LINE[I]}" in
+			-c=* | --config=*)
+				while [ -n "${1:-}" ]
+				do
+					case "$1" in
+						preseed)	# --- make preseed directory files ----------------------------------------
+							funcMake_preseed_kill_dhcp_sh
+							funcMake_preseed_sub_command_sh
+							funcMake_preseed_cfg
+							;;
+						nocloud)	# --- make nocloud directory files ----------------------------------------
+							funcMake_nocloud
+							;;
+						kickstart)	# --- make kickstart directory files --------------------------------------
+							funcMake_kickstart
+							;;
+						autoyast)	# --- make autoyast directory files ---------------------------------------
+							funcMake_autoyast
+							;;
+					esac
+					shift
+				done
+				;;
+			-m=* | --menu=*)
+				while [ -n "${1:-}" ]
+				do
+					case "$1" in
+						grub)		# --- make grub.cfg file --------------------------------------------------
+							funcMake_grub_cfg
+							;;
+						menu)		# --- make menu.cfg file --------------------------------------------------
+							funcMake_menu_cfg
+							;;
+					esac
+					shift
+				done
+				;;
+			-g=* | --grub=*)
+				while [ -n "${1:-}" ]
+				do
+					case "$1" in
+						i386)		# --- make grubi386.img ---------------------------------------------------
+							funcMake_grubi386_img
+							;;
+						x64)		# --- make grubx64.efi ----------------------------------------------------
+							funcMake_grubx64_efi
+							;;
+						font)		# --- copy font -----------------------------------------------------------
+							funcCopy_font
+							;;
+					esac
+					shift
+				done
+				;;
+			-s=* | --service=*)
+				while [ -n "${1:-}" ]
+				do
+					case "$1" in
+						restart)	# --- restart service -----------------------------------------------------
+							funcRestart_service
+							;;
+						status)	# --- status service ------------------------------------------------------
+							funcStatus_service
+							;;
+					esac
+					shift
+				done
+				;;
+			*)
+				echo "$0"
+				echo "-c | --config  [={ preseed | nocloud | kickstart | autoyast }]"
+				echo "-m | --menu    [={ grub | menu }]"
+				echo "-g | --grub    [={ i386 | x64 | font }]"
+				echo "-s | --service [={ restart | status }]"
+				echo "ex: $0 --config=preseed,nocloud,kickstart,autoyast"
+				break
+				;;
+		esac
+	done
 
 	# -------------------------------------------------------------------------
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
@@ -1474,5 +1575,6 @@ function main() {
 
 	# === main ================================================================
 	main
+	exit 0
 
 ### eof #######################################################################
