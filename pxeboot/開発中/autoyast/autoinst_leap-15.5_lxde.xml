@@ -93,7 +93,7 @@ fixed address -->
       <interface t="map">
         <bootproto>static</bootproto>
         <ipaddr>192.168.1.1</ipaddr>
-        <name>ens160</name>
+        <name>eth0</name>
         <prefixlen>24</prefixlen>
         <startmode>auto</startmode>
         <zone>home</zone>
@@ -104,7 +104,7 @@ fixed address -->
       <routes t="list">
         <route t="map">
           <destination>default</destination>
-          <device>ens160</device>
+          <device>eth0</device>
           <gateway>192.168.1.254</gateway>
           <netmask>-</netmask>
         </route>
@@ -194,10 +194,10 @@ exit 0</source>
         <filename>zzz_network.sh</filename>
         <location/>
         <source>#!/bin/sh
-#LANG=C firewall-cmd --zone=home --change-interface=ens160 --permanent
+#LANG=C firewall-cmd --zone=home --change-interface=eth0 --permanent
 #LANG=C firewall-cmd --set-default-zone=home
 #LANG=C firewall-cmd --reload
-LANG=C sed -i.orig /etc/sysconfig/network/ifcfg-ens160 \
+LANG=C sed -i.orig /etc/sysconfig/network/ifcfg-eth0 \
            -e '/^ZONE=/ s/^/#/'                      \
            -e '$a ZONE=home'
 if [ -f /etc/hostname.work ]; then
