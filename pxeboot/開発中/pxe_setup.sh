@@ -165,10 +165,6 @@
 
 # --- work variables ----------------------------------------------------------
 	declare -r    OLD_IFS="${IFS}"
-	declare -i    RET_CD=0
-	declare -i    I=0
-	declare -i    J=0
-	declare       INS_STR=""
 
 # --- set minimum display size ------------------------------------------------
 	declare -i    ROW_SIZE=80
@@ -263,7 +259,7 @@ function funcString() {
 function funcPrintf() {
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 #	declare -r    OLD_IFS="${IFS}"
-#	declare -i    RET_CD
+	declare -i    RET_CD
 	declare -r    CHR_ESC="$(echo -n -e "\033")"
 	declare -i    MAX_COLS=${COL_SIZE:-80}
 	declare       RET_STR=""
@@ -313,8 +309,8 @@ function funcPrintf() {
 # --- download ----------------------------------------------------------------
 function funcCurl() {
 #	declare -r    OLD_IFS="${IFS}"
-#	declare -i    RET_CD
-#	declare -i    I
+	declare -i    RET_CD
+	declare -i    I
 	declare       INP_URL="$(echo "$@" | sed -n -e 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
 	declare       OUT_DIR="$(echo "$@" | sed -n -e 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
 	declare       OUT_FILE="$(echo "$@" | sed -n -e 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
@@ -761,6 +757,8 @@ function funcMake_preseed_cfg() {
 	declare       FILE_PATH=""
 	declare       FILE_NAME=""
 	declare       FILE_TMPL=""
+	declare       INS_STR=""
+	declare -i    I=0
 
 	# --- message display -----------------------------------------------------
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}funcMake_preseed_cfg${TXT_RESET}"
@@ -822,6 +820,7 @@ function funcMake_nocloud() {
 	declare -r -a DIRS_LIST=("${DIRS_HTTP}/conf/nocloud/ubuntu_"{server,desktop}{,_old})
 	declare       DIRS_NAME=""
 	declare -r    FILE_TMPL="${DIRS_TMPL}/nocloud-ubuntu-user-data"
+	declare -i    I=0
 
 	# --- message display -----------------------------------------------------
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}funcMake_nocloud${TXT_RESET}"
@@ -870,6 +869,7 @@ function funcMake_kickstart() {
 	declare       RLNX_NUMS=""
 	declare -r    BASE_ARCH="x86_64"
 	declare       DSTR_SECT=""
+	declare -i    I=0
 
 	# --- message display -----------------------------------------------------
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}funcMake_kickstart${TXT_RESET}"
@@ -945,6 +945,7 @@ function funcMake_autoyast() {
 	declare -r    FILE_TMPL="${DIRS_TMPL}/yast_opensuse.xml"
 	declare       DSTR_NUMS=""
 	declare -r    BASE_ARCH="x86_64"
+	declare -i    I=0
 
 	# --- message display -----------------------------------------------------
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}funcMake_autoyast${TXT_RESET}"
@@ -1091,12 +1092,13 @@ function funcMake_menu_cfg() {
 	declare       HTTP_ADDR="${ADDR_HTTP#*//}"
 	              HTTP_ADDR="${HTTP_ADDR%%/*}"
 	declare -r    HTTP_DIRS="${ADDR_HTTP##*/}"
-	declare -r    HTTP_ROOT="${HTTP_PROT}://${HTTP_ADDR}${HTTP_DIRS}"
+#	declare -r    HTTP_ROOT="${HTTP_PROT}://${HTTP_ADDR}${HTTP_DIRS}"
 	declare       NETS_CONF=""
 	declare       AUTO_CONF=""
 	declare       LANG_CONF=""
 	declare       OPTN_PARM=""
 	declare       LOOP_BACK=""
+	declare -i    I=0
 
 	# --- message display -----------------------------------------------------
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}funcMake_menu_cfg${TXT_RESET}"
@@ -1220,7 +1222,8 @@ _EOT_
 			ubuntu-desktop-22.*   | \
 			ubuntu-legacy-*       )                         # ubiquity
 				;;
-			ubuntu-*              )                         # cloud-init
+			ubuntu-live-18.*      | \
+			ubuntu-live-20.*      )                         # cloud-init
 				;;
 		esac
 		# --- make menu.cfg ---------------------------------------------------
@@ -1457,6 +1460,7 @@ function funcStatus_service() {
 function main() {
 	declare -i    start_time=0
 	declare -i    end_time=0
+	declare -i    I=0
 
 	# --- check the execution user --------------------------------------------
 	if [[ "$(whoami)" != "root" ]]; then
@@ -1490,7 +1494,6 @@ function main() {
 			)
 			;;
 	esac
-
 	for ((I=0; I<${#COMD_LINE[@]}; I++))
 	do
 		case "${COMD_LINE[I]}" in
@@ -1514,7 +1517,7 @@ function main() {
 		IFS=${OLD_IFS}
 		case "${COMD_LINE[I]}" in
 			-c=* | --config=*)
-				while [ -n "${1:-}" ]
+				while [[ -n "${1:-}" ]]
 				do
 					case "$1" in
 						preseed)	# --- make preseed directory files ----------------------------------------
@@ -1591,7 +1594,8 @@ function main() {
 				;;
 		esac
 	done
-
+echo "${I}"
+set +x
 	# -------------------------------------------------------------------------
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 	end_time=$(date +%s)
