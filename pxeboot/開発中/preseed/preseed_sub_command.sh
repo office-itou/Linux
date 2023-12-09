@@ -14,13 +14,13 @@
 	readonly PROG_NAME="${0##*/}"
 	readonly WORK_DIRS="${0%/*}"
 	readonly DIST_NAME="$(uname -v | tr [A-Z] [a-z] | sed -n -e 's/.*\(debian\|ubuntu\).*/\1/p')"
-	readonly COMD_LINE="$(cat /proc/cmdline)"
+	readonly PROG_PARM="$(cat /proc/cmdline)"
 	echo "${PROG_NAME}: === Start ==="
 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
 	echo "${PROG_NAME}: PROG_NAME=${PROG_NAME}"
 	echo "${PROG_NAME}: WORK_DIRS=${WORK_DIRS}"
 	echo "${PROG_NAME}: DIST_NAME=${DIST_NAME}"
-	echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
+	echo "${PROG_NAME}: PROG_PARM=${PROG_PARM}"
 	#--------------------------------------------------------------------------
 	if [ -z "${PROG_PRAM}" ]; then
 		ROOT_DIRS="/target"
@@ -138,7 +138,7 @@ funcSetupNetwork () {
 	NIC_MADR=""
 	CON_NAME=""
 	#--- /proc/cmdline parameter  ---------------------------------------------
-	for LINE in ${COMD_LINE}
+	for LINE in ${PROG_PARM}
 	do
 		case "${LINE}" in
 			netcfg/choose_interface=*   ) NIC_NAME="${LINE#netcfg/choose_interface=}"  ;;

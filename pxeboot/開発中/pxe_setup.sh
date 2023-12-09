@@ -20,14 +20,15 @@
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
 	set +m								# Disable job control
-	set -e								# Ends with status other than 0
+	set -e								# End with status other than 0
 	set -u								# End with undefined variable reference
+	set -o pipefail						# End with in pipe error
 
 	trap 'exit 1' 1 2 3 15
 
 # --- check installation package ----------------------------------------------
 #	dpkg --search filename
-	declare -r -a APP_LIST=("grub-common" "grub-efi-amd64-bin" "grub-pc-bin" "7zip")
+	declare -r -a APP_LIST=("grub-common" "grub-efi-amd64-bin" "grub-pc-bin" "isc-dhcp-server" "tftpd-hpa" "apache2" "7zip" "rsync")
 	declare -r -a APP_FIND=($(LANG=C apt list "${APP_LIST[@]}" 2> /dev/null | sed -n -e '/\(^[[:blank:]]*$\|Listing\|installed\)/!p' | sed -n -e 's%^\([[:graph:]]*\)/.*$%\1%gp'))
 	declare       APP_LINE=""
 	for I in "${!APP_FIND[@]}"
@@ -40,26 +41,54 @@
 	if [[ -n "${APP_LINE}" ]]; then
 		echo "please install these:"
 		echo "sudo apt-get install ${APP_LINE}"
-		exit 0
+		exit 1
 	fi
 
 # *** data section ************************************************************
 
-	if [[ -f "${0%.*}.cfg" ]]; then
-		source "${0%.*}.cfg"
+# --- working directory name --------------------------------------------------
+	declare -r    PROG_PATH="$0"
+	declare -r -a PROG_PARM=("${@:-}")
+	declare -r    PROG_DIRS="${PROG_PATH%/*}"
+	declare -r    PROG_NAME="${PROG_PATH##*/}"
+	declare -r    WORK_DIRS="${PROG_DIRS}/${PROG_NAME%.*}"
+	if [[ "${WORK_DIRS}" = "/" ]]; then
+		echo "terminate the process because the working directory is root"
+		exit 1
+	fi
+
+# --- work variables ----------------------------------------------------------
+	declare -r    OLD_IFS="${IFS}"
+
+# --- set minimum display size ------------------------------------------------
+	declare -i    ROW_SIZE=80
+	declare -i    COL_SIZE=25
+
+# --- set parameters ----------------------------------------------------------
+	if [[ -f "${PROG_DIRS}/${PROG_NAME%.*}.cfg" ]]; then
+		source "${PROG_DIRS}/${PROG_NAME%.*}.cfg"
 	else
-		# --- server parameters -----------------------------------------------
-		declare -r    DIRS_TFTP="/var/tftp"					# tftp directory
-		declare -r    DIRS_HTTP="/var/www/html/pxe"			# http directory
-		declare -r    DIRS_HGFS=""							# vmware shared directory
-		declare -r    DIRS_TMPL="${PWD}/mkcd"				# configuration file's directory
-		declare -r    ADDR_HTTP="http://192.168.1.254/pxe"	# http server address
-		# --- setup pc parameters ---------------------------------------------
-		declare -r    IPV4_ADDR="192.168.1.1"				# IPv4 address
-		declare -r    IPV4_CIDR="24"						# IPv4 cidr
-		declare -r    IPV4_MASK="255.255.255.0"				# IPv4 netmask
-		declare -r    IPV4_GWAY="192.168.1.254"				# IPv4 gateway
-		declare -r    IPV4_NSVR="192.168.1.254"				# IPv4 namesaver
+		# --- server parameters ------------------------------------------------
+		declare -r    DIRS_TFTP="/var/tftp"										# tftp directory
+		declare -r    DIRS_HTTP="/var/www/html/pxe"								# http directory
+		declare -r    DIRS_HGFS=""												# vmware shared directory
+		declare -r    DIRS_TMPL="${PWD}/tmpl"									# configuration file's directory
+		declare -r    DHCP_NAME="sv-server"										# dhcp server name
+		declare -r    DHCP_ADDR="192.168.1.254"									# dhcp server address
+		declare -r    DHCP_ROUT="192.168.1.254"									# dhcp router address
+		declare -r    DHCP_SNET="192.168.1.0"									# dhcp subnet address
+		declare -r    DHCP_MASK="255.255.255.0"									# dhcp netmask
+		declare -r    DHCP_BROD="192.168.1.255"									# dhcp broad cast
+		declare -r    DHCP_RANG="192.168.1.16 192.168.1.31"						# dhcp range address
+		declare -r    WEBS_ADDR="http://192.168.1.254/pxe"						# http server address
+		declare -r    TFTP_MAPS="/etc/tftpd-hpa.map"							# tftp map file
+		declare -r    TFTP_OPTN="--secure --verbose --map-file ${TFTP_MAPS}"	# tftp options
+		# --- setup pc parameters ----------------------------------------------
+		declare -r    IPV4_ADDR="192.168.1.1"									# IPv4 address
+		declare -r    IPV4_CIDR="24"											# IPv4 cidr
+		declare -r    IPV4_MASK="255.255.255.0"									# IPv4 netmask
+		declare -r    IPV4_GWAY="192.168.1.254"									# IPv4 gateway
+		declare -r    IPV4_NSVR="192.168.1.254"									# IPv4 namesaver
 	fi
 
 # --- data list ---------------------------------------------------------------
@@ -73,8 +102,8 @@
 #	 7: kernel
 #	 8: configuration file
 #	 9: iso image file copy source directory
-	if [[ -f "${0%.*}.lst" ]]; then
-		source "${0%.*}.lst"
+	if [[ -f "${PROG_DIRS}/${PROG_NAME%.*}.lst" ]]; then
+		source "${PROG_DIRS}/${PROG_NAME%.*}.lst"
 	else
 		declare -r -a DATA_LIST=(                                                                                                                                                                                                                                                                         \
 			"m  -                           Auto%20install%20mini.iso           -               -                                           -                                       -                           -                       -                                           -                   " \
@@ -152,23 +181,6 @@
 			"o  memtest86+                  Memtest86+                          memtest86+      mt86plus_6.20_64.grub.iso                   .                                       EFI/BOOT/memtest            boot/memtest            -                                           linux/memtest86+    " \
 		) # 0:  1:                          2:                                  3:              4:                                          5:                                      6:                          7:                      8:                                          9:
 	fi
-
-# --- working directory name --------------------------------------------------
-	declare -r    PROG_PATH="$0"
-	declare -r    PROG_PRAM="$@"
-	declare -r    PROG_NAME="${PROG_PATH##*/}"
-	declare -r    WORK_DIRS="${PROG_NAME%.*}"
-	declare -a    COMD_LINE=("")
-	if [[ ${#@} -gt 0 ]]; then
-		COMD_LINE=($@)
-	fi
-
-# --- work variables ----------------------------------------------------------
-	declare -r    OLD_IFS="${IFS}"
-
-# --- set minimum display size ------------------------------------------------
-	declare -i    ROW_SIZE=80
-	declare -i    COL_SIZE=25
 
 # --- set color ---------------------------------------------------------------
 	declare -r    TXT_RESET='\033[m'						# reset all attributes
@@ -386,6 +398,151 @@ function funcCurl() {
 
 # *** function section (sub functions) ****************************************
 
+# --- dhcpd.conf --------------------------------------------------------------
+function funcMake_dhcpd_conf() {
+	declare -r    FILE_NAME="$(find /etc/ -name 'dhcpd.conf' -type f)"
+	declare -r    READ_FILE="${PROG_DIRS}/${PROG_NAME%.*}.mac"
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare       LINE=""
+
+	# --- message display -----------------------------------------------------
+	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}funcMake_dhcpd_conf${TXT_RESET}"
+
+	# -------------------------------------------------------------------------
+	if [[ ! -f "${FILE_NAME}.orig" ]]; then
+		cp -a "${FILE_NAME}" "${FILE_NAME}.orig"
+	else
+		cp -a "${FILE_NAME}" "${FILE_NAME}.orig.${DATE_TIME}"
+	fi
+
+	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_NAME}"
+		option arch code 93 = unsigned integer 16;
+		
+		default-lease-time 600;
+		max-lease-time 7200;
+		
+		option domain-name "workgroup";
+		option domain-name-servers ${DHCP_ADDR};
+		option routers ${DHCP_ROUT};
+		
+		option time-servers ntp.nict.jp;
+		option netbios-dd-server ${DHCP_ADDR};
+		
+		class "pxe" {
+		 	match if substring (option vendor-class-identifier, 0, 9) = "PXEClient";
+		 	if option arch = 00:07 or option arch = 00:09 {
+		#		filename "bootnetx64.efi";
+		 		filename "grubx64.efi";
+		 	} else {
+		#		filename "pxelinux.0";
+		 		filename "grubi386.img";
+		 	}
+		}
+		
+		class "etherboot" {
+		 	match if substring (option vendor-class-identifier, 0, 9) = "Etherboot";
+		}
+		
+		subnet ${DHCP_SNET} netmask ${DHCP_MASK} {
+		 	option broadcast-address ${DHCP_BROD};
+		 	pool {
+		 		default-lease-time 60;
+		 		max-lease-time  300;
+		 		server-name "${DHCP_NAME}";
+		 		next-server ${DHCP_ADDR};
+		 		allow members of "pxe";
+		 		allow members of "etherboot";
+		 		range ${DHCP_RANG};
+		 	}
+		}
+_EOT_
+
+	# -------------------------------------------------------------------------
+	if [[ -f "${READ_FILE}" ]]; then
+		sed -i "${FILE_NAME}" \
+		    -e '/^[ \t]*pool[ \t]*{$/,/^[ \t]*}$/ {' \
+		    -e '/^[ \t]*}$/i \\' \
+		    -e '}'
+		while read LINE
+		do
+			sed -i "${FILE_NAME}" \
+			    -e '/^[ \t]*pool[ \t]*{$/,/^[ \t]*}$/ {' \
+			    -e '/^[ \t]*}$/i \\t\t'"${LINE}"'' \
+			    -e '}'
+		done < "${READ_FILE}"
+	fi
+}
+
+# --- isc-dhcp-server ---------------------------------------------------------
+function funcMake_isc_dhcp_server() {
+	declare -r    FILE_NAME="/etc/default/isc-dhcp-server"
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare -r    IPV4_INFO="$(LANG=C ip -a address show 2> /dev/null | sed -n '/^2:/ { :l1; p; n; { /^[0-9]\+:/ Q; }; t; b l1; }')"
+	declare -r    NICS_NAME="$(echo "${IPV4_INFO}" | awk '/^2:/ {gsub(":","",$2); print $2;}')"
+
+	# --- message display -----------------------------------------------------
+	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}funcMake_isc_dhcp_server${TXT_RESET}"
+
+	# -------------------------------------------------------------------------
+	if [[ -z "${FILE_NAME}" ]] || [[ ! -f "${FILE_NAME}" ]]; then
+		funcPrintf "${TXT_BLACK}${TXT_RED}file not exist: ${FILE_NAME}${TXT_RESET}"
+		exit 1
+	fi
+
+	if [[ ! -f "${FILE_NAME}.orig" ]]; then
+		cp -a "${FILE_NAME}" "${FILE_NAME}.orig"
+	else
+		cp -a "${FILE_NAME}" "${FILE_NAME}.orig.${DATE_TIME}"
+	fi
+
+	sed -i "${FILE_NAME}"                                \
+	    -e "/^INTERFACESv4=/ s/\".*\"/\"${NICS_NAME}\"/"
+}
+
+# --- tftpd-hpa ---------------------------------------------------------------
+function funcMake_tftpd_hpa() {
+	declare -r    FILE_NAME="/etc/default/tftpd-hpa"
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+
+	# --- message display -----------------------------------------------------
+	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}funcMake_tftpd_hpa${TXT_RESET}"
+
+	# -------------------------------------------------------------------------
+	if [[ -z "${FILE_NAME}" ]] || [[ ! -f "${FILE_NAME}" ]]; then
+		funcPrintf "${TXT_BLACK}${TXT_RED}file not exist: ${FILE_NAME}${TXT_RESET}"
+		exit 1
+	fi
+
+	if [[ ! -f "${FILE_NAME}.orig" ]]; then
+		cp -a "${FILE_NAME}" "${FILE_NAME}.orig"
+	else
+		cp -a "${FILE_NAME}" "${FILE_NAME}.orig.${DATE_TIME}"
+	fi
+
+	sed -i "${FILE_NAME}"                                   \
+	    -e "/^TFTP_DIRECTORY=/ s%\".*\"%\"${DIRS_TFTP}/\"%" \
+	    -e "/^TFTP_ADDRESS=/ s/\".*\"/\"0.0.0.0:69\"/"      \
+	    -e "/^TFTP_OPTIONS=/ s%\".*\"%\"${TFTP_OPTN}\"%"
+
+	if [[ -z "${TFTP_MAPS}" ]]; then
+		return
+	fi
+
+	# -------------------------------------------------------------------------
+	if [[ -f "${TFTP_MAPS}" ]]; then
+		if [[ ! -f "${TFTP_MAPS}.orig" ]]; then
+			cp -a "${TFTP_MAPS}" "${TFTP_MAPS}.orig"
+		else
+			cp -a "${TFTP_MAPS}" "${TFTP_MAPS}.orig.${DATE_TIME}"
+		fi
+	fi
+
+	cat <<- _EOT_ | sed 's/^ *//g' > "${TFTP_MAPS}"
+		r   ^               ${DIRS_TFTP}/
+		rg  //              /
+_EOT_
+}
+
 # --- preseed_kill_dhcp.sh ----------------------------------------------------
 function funcMake_preseed_kill_dhcp_sh() {
 	declare -r    FILE_NAME="${DIRS_HTTP}/conf/preseed/preseed_kill_dhcp.sh"
@@ -447,13 +604,13 @@ function funcMake_preseed_sub_command_sh() {
 		 	readonly PROG_NAME="${0##*/}"
 		 	readonly WORK_DIRS="${0%/*}"
 		 	readonly DIST_NAME="$(uname -v | tr [A-Z] [a-z] | sed -n -e 's/.*\(debian\|ubuntu\).*/\1/p')"
-		 	readonly COMD_LINE="$(cat /proc/cmdline)"
+		 	readonly PROG_PARM="$(cat /proc/cmdline)"
 		 	echo "${PROG_NAME}: === Start ==="
 		 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
 		 	echo "${PROG_NAME}: PROG_NAME=${PROG_NAME}"
 		 	echo "${PROG_NAME}: WORK_DIRS=${WORK_DIRS}"
 		 	echo "${PROG_NAME}: DIST_NAME=${DIST_NAME}"
-		 	echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
+		 	echo "${PROG_NAME}: PROG_PARM=${PROG_PARM}"
 		 	#--------------------------------------------------------------------------
 		 	if [ -z "${PROG_PRAM}" ]; then
 		 		ROOT_DIRS="/target"
@@ -571,7 +728,7 @@ function funcMake_preseed_sub_command_sh() {
 		 	NIC_MADR=""
 		 	CON_NAME=""
 		 	#--- /proc/cmdline parameter  ---------------------------------------------
-		 	for LINE in ${COMD_LINE}
+		 	for LINE in ${PROG_PARM}
 		 	do
 		 		case "${LINE}" in
 		 			netcfg/choose_interface=*   ) NIC_NAME="${LINE#netcfg/choose_interface=}"  ;;
@@ -926,7 +1083,7 @@ function funcMake_kickstart() {
 		fi
 		sed -i "${FILE_PATH}"                          \
 		    -e "/^#.*(${DSTR_SECT}).*$/,/^$/       { " \
-		    -e "s%_WEBADDR_%${ADDR_HTTP}/imgs%g    } "
+		    -e "s%_WEBADDR_%${WEBS_ADDR}/imgs%g    } "
 		sed -e "/%packages/,/%end/ {"                  \
 		    -e "/desktop/ s/^-//g  }"                  \
 		    "${FILE_PATH}"                             \
@@ -1088,10 +1245,10 @@ function funcMake_menu_cfg() {
 	declare       LINK_PATH=""
 	declare       MENU_ETRY=""
 	declare       FILE_TIME=""
-	declare -r    HTTP_PROT="${ADDR_HTTP%%:*}"
-	declare       HTTP_ADDR="${ADDR_HTTP#*//}"
+	declare -r    HTTP_PROT="${WEBS_ADDR%%:*}"
+	declare       HTTP_ADDR="${WEBS_ADDR#*//}"
 	              HTTP_ADDR="${HTTP_ADDR%%/*}"
-	declare -r    HTTP_DIRS="${ADDR_HTTP##*/}"
+	declare -r    HTTP_DIRS="${WEBS_ADDR##*/}"
 #	declare -r    HTTP_ROOT="${HTTP_PROT}://${HTTP_ADDR}${HTTP_DIRS}"
 	declare       NETS_CONF=""
 	declare       AUTO_CONF=""
@@ -1110,7 +1267,7 @@ function funcMake_menu_cfg() {
 	mkdir -p "${DIRS_NAME}"
 
 	# --- make menu.cfg -------------------------------------------------------
-	rm "${FILE_PATH}"
+	rm -f "${FILE_PATH}"
 	for I in "${!DATA_LIST[@]}"
 	do
 		DATA_LINE=(${DATA_LIST[I]})
@@ -1142,7 +1299,7 @@ _EOT_
 		fi
 		echo "${ISOS_PATH}"
 		# --- copy file -------------------------------------------------------
-		mount -r -o loop "${ISOS_PATH}" /media
+		mount -r -o loop "${ISOS_PATH}" "${WORK_DIRS}/mnt"
 		mkdir -p "${DIRS_BOOT}/${DATA_LINE[1]}"
 		case "${DATA_LINE[1]}" in
 			debian-live-*         | \
@@ -1150,10 +1307,10 @@ _EOT_
 			ubuntu-legacy-*       )     # loopback ----------------------------
 				;;
 			*-mini-*              )     # mini.iso ----------------------------
-				rsync --archive --human-readable --update --delete "/media/"{"${DATA_LINE[6]}","${DATA_LINE[7]}"}                 "${DIRS_BOOT}/${DATA_LINE[1]}/"
+				rsync --archive --human-readable --update --delete "${WORK_DIRS}/mnt/"{"${DATA_LINE[6]}","${DATA_LINE[7]}"}                 "${DIRS_BOOT}/${DATA_LINE[1]}/"
 				;;
 			debian-*              )     # DVD / netinst
-				rsync --archive --human-readable --update --delete "/media/${DATA_LINE[5]}/"{"${DATA_LINE[6]}","${DATA_LINE[7]}"} "${DIRS_BOOT}/${DATA_LINE[1]}/"
+				rsync --archive --human-readable --update --delete "${WORK_DIRS}/mnt/${DATA_LINE[5]}/"{"${DATA_LINE[6]}","${DATA_LINE[7]}"} "${DIRS_BOOT}/${DATA_LINE[1]}/"
 				;;
 			ubuntu-*              | \
 			fedora-*              | \
@@ -1162,17 +1319,17 @@ _EOT_
 			rockylinux-*          | \
 			miraclelinux-*        | \
 			opensuse-*            )     # DVD / netinst -----------------------
-				rsync --archive --human-readable --update --delete "/media/${DATA_LINE[5]}/"{"${DATA_LINE[6]}","${DATA_LINE[7]}"} "${DIRS_BOOT}/${DATA_LINE[1]}/"
+				rsync --archive --human-readable --update --delete "${WORK_DIRS}/mnt/${DATA_LINE[5]}/"{"${DATA_LINE[6]}","${DATA_LINE[7]}"} "${DIRS_BOOT}/${DATA_LINE[1]}/"
 				mkdir -p "${DIRS_IMGS}/${DATA_LINE[1]}"
-				rsync --archive --human-readable --update --delete  /media/                                                       "${DIRS_IMGS}/${DATA_LINE[1]}/"
+				rsync --archive --human-readable --update --delete "${WORK_DIRS}/mnt/"                                                      "${DIRS_IMGS}/${DATA_LINE[1]}/"
 				;;
 			memtest86\+           )     # memtest86+ --------------------------
 				mkdir -p "${DIRS_BOOT}/${DATA_LINE[1]}/"{"${DATA_LINE[6]%/*}","${DATA_LINE[7]%/*}"}
-				rsync --archive --human-readable --update --delete "/media/${DATA_LINE[6]}"                                       "${DIRS_BOOT}/${DATA_LINE[1]}/${DATA_LINE[6]%/*}/"
-				rsync --archive --human-readable --update --delete "/media/${DATA_LINE[7]}"                                       "${DIRS_BOOT}/${DATA_LINE[1]}/${DATA_LINE[7]%/*}/"
+				rsync --archive --human-readable --update --delete "${WORK_DIRS}/mnt/${DATA_LINE[6]}"                                       "${DIRS_BOOT}/${DATA_LINE[1]}/${DATA_LINE[6]%/*}/"
+				rsync --archive --human-readable --update --delete "${WORK_DIRS}/mnt/${DATA_LINE[7]}"                                       "${DIRS_BOOT}/${DATA_LINE[1]}/${DATA_LINE[7]%/*}/"
 				;;
 		esac
-		umount /media
+		umount "${WORK_DIRS}/mnt"
 		FILE_TIME="$(TZ=UTC ls -lL --time-style="+%Y-%m-%d %H:%M:%S" "${ISOS_PATH}" | awk '{print $6" "$7;}')"
 		MENU_ETRY="$(printf "%-60.60s%20.20s" "${DATA_LINE[2]//%20/ }" "${FILE_TIME}")"
 		# --- now thinking ----------------------------------------------------
@@ -1461,6 +1618,7 @@ function main() {
 	declare -i    start_time=0
 	declare -i    end_time=0
 	declare -i    I=0
+	declare -a    COMD_LINE=("${PROG_PARM[@]}")
 
 	# --- check the execution user --------------------------------------------
 	if [[ "$(whoami)" != "root" ]]; then
@@ -1484,29 +1642,34 @@ function main() {
 	start_time=$(date +%s)
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing start${TXT_RESET}"
 
+	mkdir -p "${WORK_DIRS}/"{mnt,tmp}
+
 	case "${COMD_LINE[0]}" in
-		-a | --all)
+		-a | --all)                     # --- all operations ------------------
 			COMD_LINE=( \
 				"--config=preseed,nocloud,kickstart,autoyast" \
 				"--menu=grub,menu" \
 				"--grub=i386,x64,font" \
-				"--service=restart,status" \
 			)
 			;;
 	esac
+
 	for ((I=0; I<${#COMD_LINE[@]}; I++))
 	do
 		case "${COMD_LINE[I]}" in
-			-c   | --config  )
+#			-i | --install)             # --- all server environment setup ----
+#				COMD_LINE[I]="--install=dhcp,tftp,http"
+#				;;
+			-c | --config)              # --- all configuration files ---------
 				COMD_LINE[I]="--config=preseed,nocloud,kickstart,autoyast"
 				;;
-			-m | --menu)
+			-m | --menu)                # --- all grub menu files -------------
 				COMD_LINE[I]="--menu=grub,menu"
 				;;
-			-g | --grub)
+			-g | --grub)                # --- all grub environment files ------
 				COMD_LINE[I]="--grub=i386,x64,font"
 				;;
-			-s | --service)
+			-s | --service)             # --- all services control ------------
 				COMD_LINE[I]="--service=restart,status"
 				;;
 		esac
@@ -1516,86 +1679,117 @@ function main() {
 		set +f
 		IFS=${OLD_IFS}
 		case "${COMD_LINE[I]}" in
-			-c=* | --config=*)
+			-i=* | --install=*)			# --- setup server environment --------
 				while [[ -n "${1:-}" ]]
 				do
 					case "$1" in
-						preseed)	# --- make preseed directory files ----------------------------------------
+						dhcp)			# --- make dhcpd.conf -----------------
+							funcMake_dhcpd_conf
+							;;
+						tftp)
+							;;
+						http)
+							;;
+						default.dhcp)	# --- change isc-dhcp-server ----------
+							funcMake_isc_dhcp_server
+							;;
+						default.tftp)	# --- change tftpd-hpa ----------------
+							funcMake_tftpd_hpa
+							;;
+					esac
+					shift
+				done
+				;;
+			-c=* | --config=*)          # --- make configuration file ---------
+				while [[ -n "${1:-}" ]]
+				do
+					case "$1" in
+						preseed)        # --- make preseed directory files ----
 							funcMake_preseed_kill_dhcp_sh
 							funcMake_preseed_sub_command_sh
 							funcMake_preseed_cfg
 							;;
-						nocloud)	# --- make nocloud directory files ----------------------------------------
+						nocloud)        # --- make nocloud directory files ----
 							funcMake_nocloud
 							;;
-						kickstart)	# --- make kickstart directory files --------------------------------------
+						kickstart)      # --- make kickstart directory files --
 							funcMake_kickstart
 							;;
-						autoyast)	# --- make autoyast directory files ---------------------------------------
+						autoyast)       # --- make autoyast directory files ---
 							funcMake_autoyast
 							;;
 					esac
 					shift
 				done
 				;;
-			-m=* | --menu=*)
-				while [ -n "${1:-}" ]
+			-m=* | --menu=*)            # --- make grub menu file -------------
+				while [[ -n "${1:-}" ]]
 				do
 					case "$1" in
-						grub)		# --- make grub.cfg file --------------------------------------------------
+						grub)           # --- make grub.cfg file --------------
 							funcMake_grub_cfg
 							;;
-						menu)		# --- make menu.cfg file --------------------------------------------------
+						menu)           # --- make menu.cfg file --------------
 							funcMake_menu_cfg
 							;;
 					esac
 					shift
 				done
 				;;
-			-g=* | --grub=*)
-				while [ -n "${1:-}" ]
+			-g=* | --grub=*)            # --- make grub environment -----------
+				while [[ -n "${1:-}" ]]
 				do
 					case "$1" in
-						i386)		# --- make grubi386.img ---------------------------------------------------
+						i386)           # --- make grubi386.img ---------------
 							funcMake_grubi386_img
 							;;
-						x64)		# --- make grubx64.efi ----------------------------------------------------
+						x64)            # --- make grubx64.efi ----------------
 							funcMake_grubx64_efi
 							;;
-						font)		# --- copy font -----------------------------------------------------------
+						font)           # --- copy font -----------------------
 							funcCopy_font
 							;;
 					esac
 					shift
 				done
 				;;
-			-s=* | --service=*)
-				while [ -n "${1:-}" ]
+			-s=* | --service=*)         # --- services control ----------------
+				while [[ -n "${1:-}" ]]
 				do
 					case "$1" in
-						restart)	# --- restart service -----------------------------------------------------
+						restart)        # --- restart service -----------------
 							funcRestart_service
 							;;
-						status)	# --- status service ------------------------------------------------------
+						status)         # --- status service ------------------
 							funcStatus_service
 							;;
 					esac
 					shift
 				done
 				;;
-			*)
-				echo "$0"
+			*)                          # --- help ----------------------------
+				echo "${PROG_PATH}"
+				echo "-a | --all     all operations"
 				echo "-c | --config  [={ preseed | nocloud | kickstart | autoyast }]"
 				echo "-m | --menu    [={ grub | menu }]"
 				echo "-g | --grub    [={ i386 | x64 | font }]"
 				echo "-s | --service [={ restart | status }]"
-				echo "ex: $0 --config=preseed,nocloud,kickstart,autoyast"
+				echo "ex: ${PROG_PATH} --config=preseed,nocloud,kickstart,autoyast"
+				echo "    ${PROG_PATH} --config : no parameters, set as all"
 				break
 				;;
 		esac
 	done
-echo "${I}"
-set +x
+
+	rm -rf "${WORK_DIRS}"
+
+	# common functions --------------------------------------------------------
+#	funcColorTest						# --- text color test -----------------
+#	funcIsNumeric ""					# --- is numeric ----------------------
+#	funcString 0 ""						# --- string output -------------------
+#	funcPrintf ""						# --- print with screen control -------
+#	funcCurl ""							# --- download ------------------------
+
 	# -------------------------------------------------------------------------
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 	end_time=$(date +%s)
