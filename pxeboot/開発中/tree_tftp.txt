@@ -1,0 +1,83 @@
+tftp
+|-- boot
+|   |-- almalinux-9
+|   |-- almalinux-netinst-9
+|   |-- centos-stream-8
+|   |-- centos-stream-9
+|   |-- centos-stream-netinst-8
+|   |-- centos-stream-netinst-9
+|   |-- debian-10
+|   |-- debian-11
+|   |-- debian-12
+|   |-- debian-live-10
+|   |-- debian-live-11
+|   |-- debian-live-12
+|   |-- debian-live-testing
+|   |-- debian-mini-10
+|   |-- debian-mini-11
+|   |-- debian-mini-12
+|   |-- debian-mini-13
+|   |-- debian-mini-testing
+|   |-- debian-netinst-10
+|   |-- debian-netinst-11
+|   |-- debian-netinst-12
+|   |-- debian-netinst-testing
+|   |-- debian-testing
+|   |-- fedora-38
+|   |-- fedora-39
+|   |-- fedora-netinst-38
+|   |-- fedora-netinst-39
+|   |-- memtest86+
+|   |-- miraclelinux-8
+|   |-- miraclelinux-9
+|   |-- miraclelinux-netinst-8
+|   |-- miraclelinux-netinst-9
+|   |-- opensuse-leap-15.5
+|   |-- opensuse-leap-15.6
+|   |-- opensuse-leap-netinst-15.5
+|   |-- opensuse-leap-netinst-15.6
+|   |-- opensuse-tumbleweed
+|   |-- opensuse-tumbleweednetinst
+|   |-- rockylinux-8
+|   |-- rockylinux-9
+|   |-- rockylinux-netinst-8
+|   |-- rockylinux-netinst-9
+|   |-- ubuntu-desktop-20.04
+|   |-- ubuntu-desktop-22.04
+|   |-- ubuntu-desktop-23.04
+|   |-- ubuntu-desktop-23.10
+|   |-- ubuntu-desktop-noble
+|   |-- ubuntu-legacy-23.04
+|   |-- ubuntu-legacy-23.10
+|   |-- ubuntu-live-18.04
+|   |-- ubuntu-live-20.04
+|   |-- ubuntu-live-22.04
+|   |-- ubuntu-live-23.04
+|   |-- ubuntu-live-23.10
+|   |-- ubuntu-live-noble
+|   |-- ubuntu-mini-18.04
+|   |-- ubuntu-mini-20.04
+|   |-- ubuntu-server-18.04
+|   |-- windows-10
+|   `-- windows-11
+|-- grub
+|   |-- grub.cfg
+|   `-- menu.cfg
+|-- menu-bios
+|   |-- menu.cfg
+|   |-- syslinux.cfg
+|   |-- boot -> /var/tftp/boot
+|   `-- pxelinux.cfg
+|       `-- default -> /var/tftp/menu-bios/syslinux.cfg
+|-- menu-efi32
+|   |-- menu.cfg
+|   |-- syslinux.cfg
+|   |-- boot -> /var/tftp/boot
+|   `-- pxelinux.cfg
+|       `-- default -> /var/tftp/menu-efi32/syslinux.cfg
+`-- menu-efi64
+    |-- menu.cfg
+    |-- syslinux.cfg
+    |-- boot -> /var/tftp/boot
+    `-- pxelinux.cfg
+        `-- default -> /var/tftp/menu-efi64/syslinux.cfg

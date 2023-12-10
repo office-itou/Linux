@@ -1,0 +1,292 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <add-on t="map">
+    <add_on_products t="list">
+<!-- leap -->
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/distribution/leap/15.6/repo/oss/</media_url>
+        <name>repo-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/leap/15.6/oss/</media_url>
+        <name>repo-update</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/leap/15.6/sle/</media_url>
+        <name>repo-sle-update</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/leap/15.6/backports/</media_url>
+        <name>repo-backports-update</name>
+        <product_dir>/</product_dir>
+      </listentry>
+<!-- leap -->
+<!-- tumbleweed
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/tumbleweed/repo/oss/</media_url>
+        <name>repo-oss</name>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <media_url>http://download.opensuse.org/update/tumbleweed/</media_url>
+        <name>repo-update</name>
+        <product_dir>/</product_dir>
+      </listentry>
+tumbleweed -->
+    </add_on_products>
+  </add-on>
+  <bootloader t="map">
+    <global t="map">
+      <append>-B console=force-text</append>
+      <cpu_mitigations>auto</cpu_mitigations>
+    </global>
+  </bootloader>
+  <deploy_image t="map">
+    <image_installation t="boolean">true</image_installation>
+  </deploy_image>
+  <general t="map">
+    <mode t="map">
+      <confirm t="boolean">false</confirm>
+      <second_stage t="boolean">false</second_stage>
+    </mode>
+  </general>
+  <groups t="list">
+    <group t="map">
+      <groupname>wheel</groupname>
+      <userlist>master</userlist>
+    </group>
+  </groups>
+<!-- fixed address
+  <host t="map">
+    <hosts t="list">
+      <hosts_entry t="map">
+        <host_address>192.168.1.1</host_address>
+        <names t="list">
+          <name>sv-opensuse.workgroup sv-opensuse</name>
+        </names>
+      </hosts_entry>
+    </hosts>
+  </host>
+fixed address -->
+  <language t="map">
+    <language>ja_JP</language>
+    <languages>en_US,ja_JP</languages>
+  </language>
+  <networking t="map">
+    <!-- wicked network_manager none -->
+    <backend>wicked</backend>
+<!-- fixed address
+    <dns t="map">
+      <hostname>sv-opensuse.workgroup</hostname>
+      <nameservers t="list">
+        <nameserver>192.168.1.254</nameserver>
+      </nameservers>
+      <searchlist t="list">
+        <search>workgroup</search>
+      </searchlist>
+    </dns>
+    <interfaces t="list">
+      <interface t="map">
+        <bootproto>static</bootproto>
+        <ipaddr>192.168.1.1</ipaddr>
+        <name>eth0</name>
+        <prefixlen>24</prefixlen>
+        <startmode>auto</startmode>
+        <zone>home</zone>
+      </interface>
+    </interfaces>
+    <keep_install_network t="boolean">true</keep_install_network>
+    <routing t="map">
+      <routes t="list">
+        <route t="map">
+          <destination>default</destination>
+          <device>eth0</device>
+          <gateway>192.168.1.254</gateway>
+          <netmask>-</netmask>
+        </route>
+      </routes>
+    </routing>
+fixed address -->
+  </networking>
+  <ntp-client t="map">
+    <ntp_policy>auto</ntp_policy>
+    <ntp_servers t="list">
+      <ntp_server t="map">
+        <address>ntp.nict.jp</address>
+      </ntp_server>
+    </ntp_servers>
+    <ntp_sync>systemd</ntp_sync>
+  </ntp-client>
+  <partitioning t="list">
+    <drive t="map">
+<!-- device
+      <device>/dev/sda</device>
+device -->
+      <device>/dev/nvme0n1</device>
+      <initialize t="boolean">true</initialize>
+      <partitions t="list"/>
+      <type t="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
+<!-- log's directory: /var/adm/autoinstall/logs/ -->
+  <scripts t="map">
+    <chroot-scripts t="list">
+      <script t="map">
+        <chrooted t="boolean">true</chrooted>
+        <debug t="boolean">false</debug>
+        <filename>zzz_sudoers.sh</filename>
+        <interpreter>shell</interpreter>
+        <location/>
+        <source>#!/bin/sh
+LANG=C chmod u+w /etc/sudoers
+LANG=C sed -i.orig /etc/sudoers                         \
+           -e 's/^\(Defaults.*targetpw\)/# \1/g'        \
+           -e 's/^\(ALL.*ALL\)/# \1/g'                  \
+           -e '/NOPASSWD:/! s/^#.*\(%wheel.*ALL\)/\1/g'
+LANG=C chmod u-w /etc/sudoers
+exit 0</source>
+      </script>
+      <script t="map">
+        <chrooted t="boolean">false</chrooted>
+        <debug t="boolean">false</debug>
+        <filename>zzz_hostname.sh</filename>
+        <interpreter>shell</interpreter>
+        <location/>
+        <source>#!/bin/sh
+HOSTNM="$(echo "${HOSTNAME}" | sed -e 's/\.[^.]*//')"
+DOMAIN="$(echo "${HOSTNAME}" | sed -e 's/[^.]*\.//')"
+IPADDR="$(hostname -I | awk '{print $1;}')"
+echo "HOSTNAME: ${HOSTNAME}"
+echo "HOSTNM  : ${HOSTNM}"
+echo "DOMAIN  : ${DOMAIN}"
+echo "IPADDR  : ${IPADDR}"
+if [ -f /mnt/etc/hostname ]; then
+    cp -a /mnt/etc/hostname /mnt/etc/hostname.orig
+fi
+if [ -f /mnt/etc/hosts ]; then
+    cp -a /mnt/etc/hosts /mnt/etc/hosts.orig
+fi
+LANG=C echo "${HOSTNAME}" > /mnt/etc/hostname
+LANG=C sed -i.orig /mnt/etc/hosts                                                         \
+           -e "/^127\.0\.0\.1[[:blank:]]\+/ { "                                           \
+           -e "/[[:blank:]]\+localhost[^[:graph:]]*$/a ${IPADDR}\t${HOSTNAME}\t${HOSTNM}" \
+           -e "}"
+#          -e "/127\.0\.0\.1/a ${IPADDR}\t${HOSTNAME}\t${HOSTNM}"
+echo "--- /mnt/etc/hostname ---"
+cat /mnt/etc/hostname
+echo "--- end ---"
+echo "--- /mnt/etc/hosts ---"
+cat /mnt/etc/hosts
+echo "--- end ---"
+cp -a /mnt/etc/hostname /mnt/etc/hostname.work
+cp -a /mnt/etc/hosts /mnt/etc/hosts.work
+exit 0</source>
+      </script>
+    </chroot-scripts>
+    <init-scripts t="list">
+      <script t="map">
+        <debug t="boolean">false</debug>
+        <filename>zzz_network.sh</filename>
+        <location/>
+        <source>#!/bin/sh
+#LANG=C firewall-cmd --zone=home --change-interface=eth0 --permanent
+#LANG=C firewall-cmd --set-default-zone=home
+#LANG=C firewall-cmd --reload
+LANG=C sed -i.orig /etc/sysconfig/network/ifcfg-eth0 \
+           -e '/^ZONE=/ s/^/#/'                      \
+           -e '$a ZONE=home'
+if [ -f /etc/hostname.work ]; then
+    cp -a /etc/hostname.work /etc/hostname
+fi
+if [ -f /etc/hosts.work ]; then
+    cp -a /etc/hosts.work /etc/hosts
+fi
+if [ -n "$(command -v wicked)" ]; then
+    LANG=C systemctl restart wicked.service
+elif [ -n "$(command -v nmcli)" ]; then
+    LANG=C systemctl restart NetworkManager.service
+elif [ -n "$(command -v connmanctl)" ]; then
+    LANG=C systemctl restart connman.service
+fi
+exit 0</source>
+      </script>
+    </init-scripts>
+  </scripts>
+  <services-manager t="map">
+    <default_target>graphical</default_target>
+    <services t="map">
+      <enable t="list">
+        <service>chronyd</service>
+        <service>named</service>
+        <service>nmb</service>
+        <service>smb</service>
+        <service>sshd</service>
+      </enable>
+    </services>
+  </services-manager>
+  <software t="map">
+    <do_online_update t="boolean">true</do_online_update>
+    <install_recommended t="boolean">true</install_recommended>
+    <instsource/>
+    <packages t="list">
+      <package>apache2</package>
+      <package>autoyast2</package>
+      <package>avahi</package>
+      <package>bash-completion</package>
+      <package>bc</package>
+      <package>bind</package>
+      <package>chrony</package>
+      <package>clamav</package>
+      <package>curl</package>
+      <package>dhcp-server</package>
+      <package>firewalld</package>
+      <package>fuse</package>
+      <package>glibc-i18ndata</package>
+      <package>glibc-locale</package>
+      <package>ibus-mozc</package>
+      <package>less</package>
+      <package>minidlna</package>
+      <package>openssh-server</package>
+      <package>samba</package>
+      <package>sudo</package>
+      <package>tftp</package>
+      <package>vim</package>
+      <package>wget</package>
+      <package>which</package>
+      <package>zypper</package>
+    </packages>
+    <patterns t="list">
+      <pattern>base</pattern>
+      <pattern>console</pattern>
+<!-- desktop lxde -->
+      <pattern>lxde</pattern>
+<!-- desktop lxde -->
+    </patterns>
+    <products t="list">
+      <product>Leap</product>
+    </products>
+  </software>
+  <timezone t="map">
+    <hwclock>UTC</hwclock>
+    <timezone>Asia/Tokyo</timezone>
+  </timezone>
+  <users t="list">
+    <user t="map">
+      <encrypted t="boolean">false</encrypted>
+      <fullname>Master</fullname>
+      <user_password>master</user_password>
+      <username>master</username>
+    </user>
+    <user t="map">
+      <encrypted t="boolean">false</encrypted>
+      <fullname>root</fullname>
+      <user_password>r00t</user_password>
+      <username>root</username>
+    </user>
+  </users>
+</profile>
