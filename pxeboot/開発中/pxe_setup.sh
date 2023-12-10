@@ -138,7 +138,7 @@
 			"o  miraclelinux-netinst-9      Miracle%20Linux%209                 miraclelinux    MIRACLELINUX-9.2-rtm-minimal-x86_64.iso     images/pxeboot                          initrd.img                  vmlinuz                 conf/kickstart/ks_miraclelinux-9.cfg        linux/miraclelinux  " \
 			"o  opensuse-leap-netinst-15.5  openSUSE%20Leap%2015.5              openSUSE        openSUSE-Leap-15.5-NET-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   conf/autoyast/autoinst_leap-15.5.xml        linux/openSUSE/     " \
 			"o  opensuse-leap-netinst-15.6  openSUSE%20Leap%2015.6              openSUSE        openSUSE-Leap-15.6-NET-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   conf/autoyast/autoinst_leap-15.6.xml        linux/openSUSE/     " \
-			"o  opensuse-tumbleweednetinst  openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-NET-x86_64-Current.iso  boot/x86_64/loader                      initrd                      linux                   conf/autoyast/autoinst_tumbleweed.xml       linux/openSUSE/     " \
+			"o  opensuse-tumbleweed-netinst openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-NET-x86_64-Current.iso  boot/x86_64/loader                      initrd                      linux                   conf/autoyast/autoinst_tumbleweed.xml       linux/openSUSE/     " \
 			"m  -                           Auto%20install%20DVD%20media        -               -                                           -                                       -                           -                       -                                           -                   " \
 			"o  debian-10                   Debian%2010                         debian          debian-10.13.0-amd64-DVD-1.iso              install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server_old.cfg       linux/debian        " \
 			"o  debian-11                   Debian%2011                         debian          debian-11.8.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg           linux/debian        " \
@@ -1638,10 +1638,11 @@ _EOT_
 				MENU_OPTN="autoyast=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
 				MENU_OPTN+=" hostname=sv-${DATA_LINE[1]%%-*}.workgroup ifcfg=e*=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},workgroup"
 				case "${DATA_LINE[1]}" in
+					opensuse-*-netinst    | \
 					opensuse-*-netinst-*  )
 						OPTN_PARM="\${autocnf} \${netscnf} \${locales} root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096"
 						;;
-					opensuse-*            )
+					*                     )
 						OPTN_PARM="\${autocnf} \${netscnf} \${locales} \${urlfile} root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096"
 						MENU_OPTN+=" install=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/imgs/${DATA_LINE[1]}"
 						;;
