@@ -28,7 +28,14 @@
 
 # --- check installation package ----------------------------------------------
 #	dpkg --search filename
-	declare -r -a APP_LIST=("grub-common" "grub-efi-amd64-bin" "grub-pc-bin" "isc-dhcp-server" "tftpd-hpa" "apache2" "7zip" "rsync")
+	case "${0##*/}" in
+		pxe_setup_dnsmasq.sh )
+			declare -r -a APP_LIST=( "syslinux-common" "syslinux-efi" "pxelinux" "dnsmasq" "apache2" "7zip" "rsync")
+			;;
+		* )
+			declare -r -a APP_LIST=("grub-common" "grub-efi-amd64-bin" "grub-pc-bin" "isc-dhcp-server" "tftpd-hpa" "apache2" "7zip" "rsync")
+			;;
+	esac
 	declare -r -a APP_FIND=($(LANG=C apt list "${APP_LIST[@]}" 2> /dev/null | sed -n -e '/\(^[[:blank:]]*$\|Listing\|installed\)/!p' | sed -n -e 's%^\([[:graph:]]*\)/.*$%\1%gp'))
 	declare       APP_LINE=""
 	for I in "${!APP_FIND[@]}"
@@ -1234,6 +1241,101 @@ function funcMake_grub_cfg() {
 _EOT_
 }
 
+# --- syslinux.cfg ------------------------------------------------------------
+function funcMake_syslinux_cfg() {
+	declare -r -a DIRS_LIST=("${DIRS_TFTP}/menu-"{bios,efi{32,64}})
+	declare -r    FILE_NAME="syslinux.cfg"
+	declare -r    MENU_NAME="menu.cfg"
+	declare       DIRS_NAME=""
+	declare       FILE_PATH=""
+	declare -i    I=0
+
+	# --- message display -----------------------------------------------------
+	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}funcMake_syslinux_cfg${TXT_RESET}"
+
+	# -------------------------------------------------------------------------
+	for I in "${!DIRS_LIST[@]}"
+	do
+		DIRS_NAME="${DIRS_LIST[I]}"
+		FILE_PATH="${DIRS_NAME}/${FILE_NAME}"
+		echo "${FILE_PATH}"
+		# --- make directory --------------------------------------------------
+		mkdir -p "${DIRS_NAME}/pxelinux.cfg" \
+		         "${DIRS_TFTP}/boot"
+		# --- make symbolic link ----------------------------------------------
+		ln -s -f "${FILE_PATH}" "${DIRS_NAME}/pxelinux.cfg/default"
+		ln -s -f "${DIRS_TFTP}/boot" "${DIRS_NAME}/"
+		# --- remove menu.cfg -------------------------------------------------
+		rm -f "${DIRS_NAME}/${MENU_NAME}"
+		# --- copy module -----------------------------------------------------
+		case "${DIRS_NAME}" in
+			*bios )
+				cp -a /usr/lib/syslinux/modules/bios/.  "${DIRS_NAME}/"
+				cp -a /usr/lib/PXELINUX/.               "${DIRS_NAME}/"
+				;;
+			*efi32)
+				cp -a /usr/lib/syslinux/modules/efi32/. "${DIRS_NAME}/"
+				cp -a /usr/lib/SYSLINUX.EFI/efi32/.     "${DIRS_NAME}/"
+				;;
+			*efi64)
+				cp -a /usr/lib/syslinux/modules/efi64/. "${DIRS_NAME}/"
+				cp -a /usr/lib/SYSLINUX.EFI/efi64/.     "${DIRS_NAME}/"
+				;;
+		esac
+		# --- make syslinux.cfg -----------------------------------------------
+		cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_PATH}"
+			path ./
+			prompt 0
+			timeout 0
+			default vesamenu.c32
+			
+			menu resolution			1024 768
+			#menu background		splash.png
+			
+			menu color screen		* #ffffffff #ee000080 *
+			menu color title		* #ffffffff #ee000080 *
+			menu color border		* #ffffffff #ee000080 *
+			menu color sel			* #ffffffff #76a1d0ff *
+			menu color hotsel		* #ffffffff #76a1d0ff *
+			menu color unsel		* #ffffffff #ee000080 *
+			menu color hotkey		* #ffffffff #ee000080 *
+			menu color tabmsg		* #ffffffff #ee000080 *
+			menu color timeout_msg	* #ffffffff #ee000080 *
+			menu color timeout		* #ffffffff #ee000080 *
+			menu color disabled		* #ffffffff #ee000080 *
+			menu color cmdmark		* #ffffffff #ee000080 *
+			menu color cmdline		* #ffffffff #ee000080 *
+			menu color scrollbar	* #ffffffff #ee000080 *
+			menu color help			* #ffffffff #ee000080 *
+			
+			menu margin				4
+			menu vshift				5
+			menu rows				25
+			menu tabmsgrow			31
+			menu cmdlinerow			33
+			menu timeoutrow			33
+			menu helpmsgrow			37
+			menu hekomsgendrow		39
+			
+			menu title - Boot Menu -
+			menu tabmsg Press ENTER to boot or TAB to edit a menu entry
+			
+			include ${MENU_NAME}
+			
+			label System-command
+			 	menu label [ System command ... ]
+			
+			label System-shutdown
+			 	menu label - System shutdown
+			 	com32 poweroff.c32
+			
+			label System-restart
+			 	menu label - System restart
+			 	com32 reboot.c32
+_EOT_
+	done
+}
+
 # --- menu.cfg ----------------------------------------------------------------
 function funcMake_menu_cfg() {
 	declare -r    DIRS_NAME="${DIRS_TFTP}/grub"
@@ -1244,6 +1346,7 @@ function funcMake_menu_cfg() {
 	declare       ISOS_PATH=""
 	declare       LINK_PATH=""
 	declare       MENU_ETRY=""
+	declare       MENU_OPTN=""
 	declare       FILE_TIME=""
 	declare -r    HTTP_PROT="${WEBS_ADDR%%:*}"
 	declare       HTTP_ADDR="${WEBS_ADDR#*//}"
@@ -1255,7 +1358,10 @@ function funcMake_menu_cfg() {
 	declare       LANG_CONF=""
 	declare       OPTN_PARM=""
 	declare       LOOP_BACK=""
+	declare -r -a DIRS_SLNX=("${DIRS_TFTP}/menu-"{bios,efi{32,64}})
+	declare -r    MENU_SLNX="menu.cfg"
 	declare -i    I=0
+	declare -i    J=0
 
 	# --- message display -----------------------------------------------------
 	funcPrintf "${TXT_BLACK}${TXT_BYELLOW}funcMake_menu_cfg${TXT_RESET}"
@@ -1283,6 +1389,14 @@ function funcMake_menu_cfg() {
 				}
 		
 _EOT_
+			for J in "${!DIRS_SLNX[@]}"
+			do
+				cat <<- _EOT_ | sed 's/^ *//g' >> "${DIRS_SLNX[J]}/${MENU_SLNX}"
+					label ${DATA_LINE[2]//%20/-}
+					 	menu label ${MENU_ETRY}
+					
+_EOT_
+			done
 			continue
 		fi
 		# --- make link -------------------------------------------------------
@@ -1393,6 +1507,14 @@ _EOT_
 				OPTN_PARM="\${autocnf} \${netscnf} \${locales}"
 				ROOT_PARM=""
 				LOOP_BACK=""
+				MENU_OPTN="auto=true preseed/url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
+				MENU_OPTN+=" netcfg/disable_autoconfig=true"
+				MENU_OPTN+=" netcfg/get_hostname=sv-${DATA_LINE[1]%%-*}.workgroup"
+				MENU_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
+				MENU_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
+				MENU_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
+				MENU_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
+				MENU_OPTN+=" ${LANG_CONF}"
 				;;
 			debian-*              )
 				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
@@ -1405,6 +1527,16 @@ _EOT_
 					debian-live-*         ) LOOP_BACK="yes"; OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=live components"                          ;;
 					debian-*              ) LOOP_BACK=""   ; OPTN_PARM="\${autocnf} \${netscnf} \${locales}"                                                                    ;;
 				esac
+				if [[ -z "${LOOP_BACK}" ]]; then
+					MENU_OPTN="auto=true preseed/url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
+					MENU_OPTN+=" netcfg/disable_autoconfig=true"
+					MENU_OPTN+=" netcfg/get_hostname=sv-${DATA_LINE[1]%%-*}.workgroup"
+					MENU_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
+					MENU_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
+					MENU_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
+					MENU_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
+					MENU_OPTN+=" ${LANG_CONF}"
+				fi
 				;;
 			ubuntu-server-*       )							# only ubuntu-18.04.6-server-amd64.iso
 				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
@@ -1414,6 +1546,14 @@ _EOT_
 				OPTN_PARM="\${autocnf} \${urlfile} \${netscnf} \${locales}"
 				ROOT_PARM=""
 				LOOP_BACK=""
+				MENU_OPTN="auto=true preseed/url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
+				MENU_OPTN+=" netcfg/disable_autoconfig=true"
+				MENU_OPTN+=" netcfg/get_hostname=sv-${DATA_LINE[1]%%-*}.workgroup"
+				MENU_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
+				MENU_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
+				MENU_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
+				MENU_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
+				MENU_OPTN+=" ${LANG_CONF}"
 				;;
 			ubuntu-desktop-*      )
 				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
@@ -1429,6 +1569,7 @@ _EOT_
 					ubuntu-legacy-*       ) OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper maybe-ubiquity"                             ;;
 					ubuntu-desktop-*      )	OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper layerfs-path=minimal.standard.live.squashfs";;
 				esac
+				MENU_OPTN=""
 				;;
 			ubuntu-live-*         )
 				NETS_CONF="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:static:\${ip4nsvr}"
@@ -1438,6 +1579,12 @@ _EOT_
 				OPTN_PARM="\${autocnf} \${urlfile} \${netscnf} \${locales} fsck.mode=skip boot=casper"
 				ROOT_PARM=""
 				LOOP_BACK=""
+				MENU_OPTN="${AUTO_CONF} ${HTTP_FILE} ${NETS_CONF} ${LANG_CONF} fsck.mode=skip boot=casper"
+				MENU_OPTN="automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
+				MENU_OPTN+=" url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/isos/${DATA_LINE[4]}"
+				MENU_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:sv-${DATA_LINE[1]%%-*}.workgroup:ens160:static:${IPV4_NSVR}"
+				MENU_OPTN+=" ${LANG_CONF}"
+				MENU_OPTN+=" fsck.mode=skip boot=casper"
 				;;
 			fedora-*              | \
 			centos-*              | \
@@ -1451,6 +1598,11 @@ _EOT_
 				OPTN_PARM="\${autocnf} \${netscnf} \${locales} inst.repo=\${webroot}/imgs/${DATA_LINE[1]}"
 				ROOT_PARM=""
 				LOOP_BACK=""
+				MENU_OPTN="inst.ks=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
+				MENU_OPTN+=" inst.repo=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/imgs/${DATA_LINE[1]}"
+				MENU_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:sv-${DATA_LINE[1]%%-*}.workgroup:ens160:none,auto6 nameserver=${IPV4_NSVR}"
+				MENU_OPTN+=" ${LANG_CONF}"
+				MENU_OPTN+=" inst.repo=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/imgs/${DATA_LINE[1]}"
 					;;
 			opensuse-*            )
 				NETS_CONF="hostname=\${hstfqdn} ifcfg=e*=\${ip4addr}/\${ip4cidr},\${ip4gway},\${ip4nsvr},\${wkgroup}"
@@ -1459,10 +1611,20 @@ _EOT_
 				HTTP_FILE="install=\${webroot}/imgs/${DATA_LINE[1]}"
 				ROOT_PARM=""
 				LOOP_BACK=""
+
+				MENU_OPTN="autoyast=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
+				MENU_OPTN+=" hostname=sv-${DATA_LINE[1]%%-*}.workgroup ifcfg=e*=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},workgroup"
+				MENU_OPTN+=" ${LANG_CONF}"
 				case "${DATA_LINE[1]}" in
-					opensuse-*-netinst-*  ) OPTN_PARM="\${autocnf} \${netscnf} \${locales} root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096"            ;;
-					opensuse-*            ) OPTN_PARM="\${autocnf} \${netscnf} \${locales} \${urlfile} root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096";;
+					opensuse-*-netinst-*  )
+						OPTN_PARM="\${autocnf} \${netscnf} \${locales} root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096"
+						;;
+					opensuse-*            )
+						OPTN_PARM="\${autocnf} \${netscnf} \${locales} \${urlfile} root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096"
+						MENU_OPTN+=" install=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/imgs/${DATA_LINE[1]}"
+						;;
 				esac
+				MENU_OPTN+=" root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096"
 				;;
 			windows-*             )
 					continue
@@ -1480,6 +1642,24 @@ _EOT_
 					}
 					
 _EOT_
+				for J in "${!DIRS_SLNX[@]}"
+				do
+					if [[ "${DIRS_SLNX[J]}" =~ efi ]]; then
+						cat <<- _EOT_ | sed 's/^ *//g' >> "${DIRS_SLNX[J]}/${MENU_SLNX}"
+							label ${DATA_LINE[1]}
+							 	menu label - ${MENU_ETRY}
+							 	kernel boot/${DATA_LINE[1]}/${DATA_LINE[6]}
+							
+_EOT_
+					else
+						cat <<- _EOT_ | sed 's/^ *//g' >> "${DIRS_SLNX[J]}/${MENU_SLNX}"
+							label ${DATA_LINE[1]}
+							 	menu label - ${MENU_ETRY}
+							 	kernel boot/${DATA_LINE[1]}/${DATA_LINE[7]}
+							
+_EOT_
+					fi
+				done
 				continue
 				;;
 		esac
@@ -1512,6 +1692,16 @@ _EOT_
 				 	linux     boot/${DATA_LINE[1]}/${DATA_LINE[7]} \${options} ---
 				 	initrd    boot/${DATA_LINE[1]}/${DATA_LINE[6]}
 _EOT_
+			for J in "${!DIRS_SLNX[@]}"
+			do
+				cat <<- _EOT_ | sed 's/^ *//g' >> "${DIRS_SLNX[J]}/${MENU_SLNX}"
+					label ${DATA_LINE[1]}
+					 	menu label - ${MENU_ETRY}
+					 	kernel boot/${DATA_LINE[1]}/${DATA_LINE[7]}
+					 	append initrd=boot/${DATA_LINE[1]}/${DATA_LINE[6]} vga=791 ${MENU_OPTN} ---
+					
+_EOT_
+			done
 		else
 			cat <<- _EOT_ | sed 's/^ *//g' >> "${FILE_PATH}"
 				 	loopback loop (\${webprot},\${webaddr})/\${webdirs}/isos/\${isofile}
@@ -1728,6 +1918,7 @@ function main() {
 					case "$1" in
 						grub)           # --- make grub.cfg file --------------
 							funcMake_grub_cfg
+							funcMake_syslinux_cfg
 							;;
 						menu)           # --- make menu.cfg file --------------
 							funcMake_menu_cfg
