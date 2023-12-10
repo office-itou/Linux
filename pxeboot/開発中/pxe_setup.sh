@@ -1419,6 +1419,7 @@ _EOT_
 			debian-live-*         | \
 			ubuntu-desktop-*      | \
 			ubuntu-legacy-*       )     # loopback ----------------------------
+				rsync --archive --human-readable --update --delete "${WORK_DIRS}/mnt/${DATA_LINE[5]}/"{"${DATA_LINE[6]}","${DATA_LINE[7]}"} "${DIRS_BOOT}/${DATA_LINE[1]}/"
 				;;
 			*-mini-*              )     # mini.iso ----------------------------
 				rsync --archive --human-readable --update --delete "${WORK_DIRS}/mnt/"{"${DATA_LINE[6]}","${DATA_LINE[7]}"}                 "${DIRS_BOOT}/${DATA_LINE[1]}/"
@@ -1523,20 +1524,33 @@ _EOT_
 				HTTP_FILE="fetch=\${webroot}/isos/\${isofile}"
 				ROOT_PARM=""
 				case "${DATA_LINE[1]}" in
-					debian-live-{10,11}   ) LOOP_BACK="yes"; OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=live root=/boot toram=filesystem.squashfs";;
-					debian-live-*         ) LOOP_BACK="yes"; OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=live components"                          ;;
-					debian-*              ) LOOP_BACK=""   ; OPTN_PARM="\${autocnf} \${netscnf} \${locales}"                                                                    ;;
+					debian-live-{10,11}   )
+						LOOP_BACK="yes"
+						OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=live root=/boot toram=filesystem.squashfs"
+						MENU_OPTN="fetch=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/isos/${DATA_LINE[4]}"
+						MENU_OPTN+=" ip=dhcp ide=nodma fsck.mode=skip boot=live root=/boot toram=filesystem.squashfs"
+						MENU_OPTN+=" ${LANG_CONF}"
+						;;
+					debian-live-*         )
+						LOOP_BACK="yes"
+						OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=live components"
+						MENU_OPTN="fetch=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/isos/${DATA_LINE[4]}"
+						MENU_OPTN+=" ip=dhcp ide=nodma fsck.mode=skip boot=live components"
+						MENU_OPTN+=" ${LANG_CONF}"
+						;;
+					*                     )
+						LOOP_BACK=""
+						OPTN_PARM="\${autocnf} \${netscnf} \${locales}"
+						MENU_OPTN="auto=true preseed/url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
+						MENU_OPTN+=" netcfg/disable_autoconfig=true"
+						MENU_OPTN+=" netcfg/get_hostname=sv-${DATA_LINE[1]%%-*}.workgroup"
+						MENU_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
+						MENU_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
+						MENU_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
+						MENU_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
+						MENU_OPTN+=" ${LANG_CONF}"
+						;;
 				esac
-				if [[ -z "${LOOP_BACK}" ]]; then
-					MENU_OPTN="auto=true preseed/url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
-					MENU_OPTN+=" netcfg/disable_autoconfig=true"
-					MENU_OPTN+=" netcfg/get_hostname=sv-${DATA_LINE[1]%%-*}.workgroup"
-					MENU_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
-					MENU_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
-					MENU_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
-					MENU_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
-					MENU_OPTN+=" ${LANG_CONF}"
-				fi
 				;;
 			ubuntu-server-*       )							# only ubuntu-18.04.6-server-amd64.iso
 				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
@@ -1555,6 +1569,7 @@ _EOT_
 				MENU_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
 				MENU_OPTN+=" ${LANG_CONF}"
 				;;
+			ubuntu-legacy-*       | \
 			ubuntu-desktop-*      )
 				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
 				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
@@ -1566,10 +1581,19 @@ _EOT_
 					ubuntu-desktop-18.*   ) continue;;      # This version does not support pxeboot
 					ubuntu-desktop-20.*   | \
 					ubuntu-desktop-22.*   | \
-					ubuntu-legacy-*       ) OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper maybe-ubiquity"                             ;;
-					ubuntu-desktop-*      )	OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper layerfs-path=minimal.standard.live.squashfs";;
+					ubuntu-legacy-*       )
+						OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper maybe-ubiquity"
+						MENU_OPTN="url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/isos/${DATA_LINE[4]}"
+						MENU_OPTN+=" ip=dhcp ide=nodma fsck.mode=skip boot=casper maybe-ubiquity"
+						MENU_OPTN+=" ${LANG_CONF}"
+						;;
+					*                     )
+						OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper layerfs-path=minimal.standard.live.squashfs"
+						MENU_OPTN="url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/isos/${DATA_LINE[4]}"
+						MENU_OPTN+=" ip=dhcp ide=nodma fsck.mode=skip boot=casper layerfs-path=minimal.standard.live.squashfs"
+						MENU_OPTN+=" ${LANG_CONF}"
+						;;
 				esac
-				MENU_OPTN=""
 				;;
 			ubuntu-live-*         )
 				NETS_CONF="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:static:\${ip4nsvr}"
@@ -1583,8 +1607,8 @@ _EOT_
 				MENU_OPTN="automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
 				MENU_OPTN+=" url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/isos/${DATA_LINE[4]}"
 				MENU_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:sv-${DATA_LINE[1]%%-*}.workgroup:ens160:static:${IPV4_NSVR}"
-				MENU_OPTN+=" ${LANG_CONF}"
 				MENU_OPTN+=" fsck.mode=skip boot=casper"
+				MENU_OPTN+=" ${LANG_CONF}"
 				;;
 			fedora-*              | \
 			centos-*              | \
@@ -1601,8 +1625,8 @@ _EOT_
 				MENU_OPTN="inst.ks=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
 				MENU_OPTN+=" inst.repo=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/imgs/${DATA_LINE[1]}"
 				MENU_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:sv-${DATA_LINE[1]%%-*}.workgroup:ens160:none,auto6 nameserver=${IPV4_NSVR}"
-				MENU_OPTN+=" ${LANG_CONF}"
 				MENU_OPTN+=" inst.repo=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/imgs/${DATA_LINE[1]}"
+				MENU_OPTN+=" ${LANG_CONF}"
 					;;
 			opensuse-*            )
 				NETS_CONF="hostname=\${hstfqdn} ifcfg=e*=\${ip4addr}/\${ip4cidr},\${ip4gway},\${ip4nsvr},\${wkgroup}"
@@ -1611,10 +1635,8 @@ _EOT_
 				HTTP_FILE="install=\${webroot}/imgs/${DATA_LINE[1]}"
 				ROOT_PARM=""
 				LOOP_BACK=""
-
 				MENU_OPTN="autoyast=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
 				MENU_OPTN+=" hostname=sv-${DATA_LINE[1]%%-*}.workgroup ifcfg=e*=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},workgroup"
-				MENU_OPTN+=" ${LANG_CONF}"
 				case "${DATA_LINE[1]}" in
 					opensuse-*-netinst-*  )
 						OPTN_PARM="\${autocnf} \${netscnf} \${locales} root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096"
@@ -1625,11 +1647,13 @@ _EOT_
 						;;
 				esac
 				MENU_OPTN+=" root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096"
+				MENU_OPTN+=" ${LANG_CONF}"
 				;;
 			windows-*             )
 					continue
 					;;
 			memtest86\+           )
+				# --- grub menu.cfg -------------------------------------------
 				cat <<- _EOT_ | sed 's/^ *//g' >> "${FILE_PATH}"
 					menuentry '- ${MENU_ETRY}' {
 					 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
@@ -1642,6 +1666,7 @@ _EOT_
 					}
 					
 _EOT_
+				# --- syslinux menu.cfg ---------------------------------------
 				for J in "${!DIRS_SLNX[@]}"
 				do
 					if [[ "${DIRS_SLNX[J]}" =~ efi ]]; then
@@ -1663,6 +1688,7 @@ _EOT_
 				continue
 				;;
 		esac
+		# --- grub menu.cfg ---------------------------------------------------
 		cat <<- _EOT_ | sed 's/^ *//g' >> "${FILE_PATH}"
 			menuentry '- ${MENU_ETRY}' {
 			 	set webprot="${HTTP_PROT}"
@@ -1687,22 +1713,12 @@ _EOT_
 			 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 			 	echo "Loading \${isofile} ..."
 _EOT_
-		if [[ -z "${LOOP_BACK}" ]]; then
+		if [[ -z "${LOOP_BACK}" ]]; then					# --- tftp dl -----
 			cat <<- _EOT_ | sed 's/^ *//g' >> "${FILE_PATH}"
 				 	linux     boot/${DATA_LINE[1]}/${DATA_LINE[7]} \${options} ---
 				 	initrd    boot/${DATA_LINE[1]}/${DATA_LINE[6]}
 _EOT_
-			for J in "${!DIRS_SLNX[@]}"
-			do
-				cat <<- _EOT_ | sed 's/^ *//g' >> "${DIRS_SLNX[J]}/${MENU_SLNX}"
-					label ${DATA_LINE[1]}
-					 	menu label - ${MENU_ETRY}
-					 	kernel boot/${DATA_LINE[1]}/${DATA_LINE[7]}
-					 	append initrd=boot/${DATA_LINE[1]}/${DATA_LINE[6]} vga=791 ${MENU_OPTN} ---
-					
-_EOT_
-			done
-		else
+		else												# --- loopback ----
 			cat <<- _EOT_ | sed 's/^ *//g' >> "${FILE_PATH}"
 				 	loopback loop (\${webprot},\${webaddr})/\${webdirs}/isos/\${isofile}
 				 	linux    (loop)/${DATA_LINE[5]}/${DATA_LINE[7]} \${options} ---
@@ -1714,6 +1730,17 @@ _EOT_
 			}
 			
 _EOT_
+		# --- syslinux menu.cfg -----------------------------------------------
+		for J in "${!DIRS_SLNX[@]}"
+		do
+			cat <<- _EOT_ | sed 's/^ *//g' >> "${DIRS_SLNX[J]}/${MENU_SLNX}"
+				label ${DATA_LINE[1]}
+				 	menu label - ${MENU_ETRY}
+				 	kernel boot/${DATA_LINE[1]}/${DATA_LINE[7]}
+				 	append initrd=boot/${DATA_LINE[1]}/${DATA_LINE[6]} vga=791 ${MENU_OPTN} ---
+				
+_EOT_
+		done
 	done
 }
 
