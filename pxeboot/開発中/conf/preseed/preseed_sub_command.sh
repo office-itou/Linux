@@ -5,15 +5,18 @@
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
 	set +m								# Disable job control
-	set -e								# Ends with status other than 0
+	set -e								# End with status other than 0
 	set -u								# End with undefined variable reference
+#	set -o pipefail						# End with in pipe error
 
 	trap 'exit 1' 1 2 3 15
 
 	readonly PROG_PRAM="$*"
 	readonly PROG_NAME="${0##*/}"
 	readonly WORK_DIRS="${0%/*}"
-	readonly DIST_NAME="$(uname -v | tr [A-Z] [a-z] | sed -n -e 's/.*\(debian\|ubuntu\).*/\1/p')"
+# shellcheck disable=SC2155
+	readonly DIST_NAME="$(uname -v | sed -n -e 's/.*\(debian\|ubuntu\).*/\L\1/ip')"
+# shellcheck disable=SC2155
 	readonly PROG_PARM="$(cat /proc/cmdline)"
 	echo "${PROG_NAME}: === Start ==="
 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
@@ -32,8 +35,8 @@
 			exit 1
 		fi
 		echo "${PROG_NAME}: now found preseed file [${CONF_FILE}]"
-		cp -a "${PROG_PATH}" "${ROOT_DIRS}/tmp/"
-		cp -a "${CONF_FILE}" "${ROOT_DIRS}/tmp/"
+		cp --archive --update "${PROG_PATH}" "${ROOT_DIRS}/tmp/"
+		cp --archive --update "${CONF_FILE}" "${ROOT_DIRS}/tmp/"
 		TEMP_FILE="/tmp/${CONF_FILE##*/}"
 		echo "${PROG_NAME}: ROOT_DIRS=${ROOT_DIRS}"
 		echo "${PROG_NAME}: CONF_FILE=${CONF_FILE}"
@@ -46,29 +49,34 @@
 	echo "${PROG_NAME}: ROOT_DIRS=${ROOT_DIRS}"
 	echo "${PROG_NAME}: TEMP_FILE=${TEMP_FILE}"
 
-### common ###########################################################
+### common ####################################################################
 # --- IPv4 netmask conversion -------------------------------------------------
-funcIPv4GetNetmask () {
+funcIPv4GetNetmask() {
 	INP_ADDR="$1"
 #	DEC_ADDR="$((0xFFFFFFFF ^ (2**(32-INP_ADDR)-1)))"
-	WORK=1
 	LOOP=$((32-INP_ADDR))
-	while [ $LOOP -gt 0 ]
+	WORK=1
+	DEC_ADDR=""
+	while [ "${LOOP}" -gt 0 ]
 	do
 		LOOP=$((LOOP-1))
 		WORK=$((WORK*2))
 	done
 	DEC_ADDR="$((0xFFFFFFFF ^ (WORK-1)))"
-	printf '%d.%d.%d.%d' \
+	printf '%d.%d.%d.%d'             \
 	    $(( DEC_ADDR >> 24        )) \
 	    $(((DEC_ADDR >> 16) & 0xFF)) \
 	    $(((DEC_ADDR >>  8) & 0xFF)) \
 	    $(( DEC_ADDR        & 0xFF))
 }
 
-# --- IPv4 netmask bit conversion ---------------------------------------------
-funcIPv4GetNetmaskBits () {
+# --- IPv4 cidr conversion ----------------------------------------------------
+funcIPv4GetNetCIDR() {
 	INP_ADDR="$1"
+# shellcheck disable=SC2034
+	OCTETS=""
+# shellcheck disable=SC2034
+	MASK=0
 	echo "${INP_ADDR}" | \
 	    awk -F '.' '{
 	        split($0, OCTETS);
@@ -81,7 +89,7 @@ funcIPv4GetNetmaskBits () {
 
 ### subroutine ################################################################
 # --- packages ----------------------------------------------------------------
-funcInstallPackages () {
+funcInstallPackages() {
 	echo "${PROG_NAME}: funcInstallPackages"
 	#--------------------------------------------------------------------------
 	LIST_TASK="$(sed -n -e '/^[[:blank:]]*tasksel[[:blank:]]\+tasksel\/first[[:blank:]]\+/,/[^\\]$/p' "${TEMP_FILE}" | \
@@ -92,33 +100,38 @@ funcInstallPackages () {
 	             sed -z -e 's/\\\n//g'                                                                               | \
 	             sed -e 's/^.*[[:blank:]]\+string[[:blank:]]\+//'                                                      \
 	                 -e 's/[[:blank:]]\+/ /g')"
-	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK}"
-	echo "${PROG_NAME}: LIST_PACK=${LIST_PACK}"
+	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK:-}"
+	echo "${PROG_NAME}: LIST_PACK=${LIST_PACK:-}"
 	#--------------------------------------------------------------------------
-	LIST_DPKG="$(LANG=C dpkg-query --list ${LIST_PACK} 2>&1 | grep -E -v '^ii|^\+|^\||^Desired' || true)"
-	if [ -z "${LIST_DPKG}" ]; then
+	sed -i "${ROOT_DIRS}/etc/apt/sources.list" \
+	    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
+	#--------------------------------------------------------------------------
+	LIST_DPKG=""
+	if [ -n "${LIST_PACK:-}" ]; then
+		LIST_DPKG="$(LANG=C dpkg-query --list "${LIST_PACK:-}" | grep -E -v '^ii|^\+|^\||^Desired' || true 2> /dev/null)"
+	fi
+	if [ -z "${LIST_DPKG:-}" ]; then
 		echo "${PROG_NAME}: Finish the installation"
 		return
 	fi
+	#--------------------------------------------------------------------------
 	echo "${PROG_NAME}: Run the installation"
 	echo "${PROG_NAME}: LIST_DPKG="
 	echo "${PROG_NAME}: <<<"
 	echo "${LIST_DPKG}"
 	echo "${PROG_NAME}: >>>"
 	#--------------------------------------------------------------------------
-	sed -i "${ROOT_DIRS}/etc/apt/sources.list" \
-	    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
 	apt-get -qq    update
 	apt-get -qq -y upgrade
 	apt-get -qq -y dist-upgrade
-	apt-get -qq -y install ${LIST_PACK}
+	apt-get -qq -y install "${LIST_PACK}"
 	if [ -n "$(command -v tasksel 2> /dev/null)" ]; then
-		tasksel install ${LIST_TASK}
+		tasksel install "${LIST_TASK}"
 	fi
 }
 
 # --- network -----------------------------------------------------------------
-funcSetupNetwork () {
+funcSetupNetwork() {
 	echo "${PROG_NAME}: funcSetupNetwork"
 	#--- preseed.cfg parameter ------------------------------------------------
 	FIX_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/\(disable_dhcp\|disable_autoconfig\)[[:blank:]]\+/ s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
@@ -158,6 +171,7 @@ funcSetupNetwork () {
 			                              OLD_IFS=${IFS}
 			                              IFS=':'
 			                              set -f
+			                              # shellcheck disable=SC2086
 			                              set -- ${LINE#ip=}
 			                              set +f
 			                              NIC_IPV4="${1}"
@@ -178,7 +192,7 @@ funcSetupNetwork () {
 		NIC_WGRP="$(awk '/[ \t]*search[ \t]+/ {print $2;}' /etc/resolv.conf)"
 	fi
 	if [ -n "${NIC_MASK}" ]; then
-		NIC_BIT4="$(funcIPv4GetNetmaskBits "${NIC_MASK}")"
+		NIC_BIT4="$(funcIPv4GetNetCIDR "${NIC_MASK}")"
 	fi
 	if [ -n "${NIC_IPV4#*/}" ] && [ "${NIC_IPV4#*/}" != "${NIC_IPV4}" ]; then
 		FIX_IPV4="true"
@@ -197,11 +211,19 @@ funcSetupNetwork () {
 	#--- hostname / hosts -----------------------------------------------------
 	OLD_FQDN="$(cat /etc/hostname)";
 	OLD_HOST="${OLD_FQDN%.*}"
-	OLD_WGRP="${OLD_FQDN#*.}"
+#	OLD_WGRP="${OLD_FQDN#*.}"
 	echo "${NIC_FQDN}" > /etc/hostname;
-	sed -i /etc/hosts                                                          \
-	    -e 's/\([ \t]\+\)'${OLD_HOST}'\([ \t]*\)$/\1'${NIC_HOST}'\2/'          \
-	    -e 's/\([ \t]\+\)'${OLD_FQDN}'\([ \t]*$\|[ \t]\+\)/\1'${NIC_FQDN}'\2/'
+	sed -i /etc/hosts                                              \
+	    -e '/^127\.0\.1\.1/d'                                      \
+	    -e "/^${NIC_IPV4}/d"                                       \
+	    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'                         \
+	    -e 's/^\([0-9a-zA-Z:]\+\)[ \t]\+/\1\t\t/g'                 \
+	    -e "/^127\.0\.0\.1/a ${NIC_IPV4}\t${NIC_FQDN} ${NIC_HOST}" \
+	    -e "s/${OLD_HOST}/${NIC_HOST}/g"                           \
+	    -e "s/${OLD_FQDN}/${NIC_FQDN}/g"
+#	sed -i /etc/hosts                                                          \
+#	    -e 's/\([ \t]\+\)'${OLD_HOST}'\([ \t]*\)$/\1'${NIC_HOST}'\2/'          \
+#	    -e 's/\([ \t]\+\)'${OLD_FQDN}'\([ \t]*$\|[ \t]\+\)/\1'${NIC_FQDN}'\2/'
 	#--- debug print ----------------------------------------------------------
 	echo "${PROG_NAME}: FIX_IPV4=${FIX_IPV4}"
 	echo "${PROG_NAME}: NIC_IPV4=${NIC_IPV4}"
@@ -261,34 +283,61 @@ _EOT_
 	# --- netplan -------------------------------------------------------------
 	if [ -d "${ROOT_DIRS}/etc/netplan" ]; then
 		echo "${PROG_NAME}: funcSetupNetwork: netplan"
+		for FILE_LINE in /etc/netplan/*
+		do
+			if [ -n "$(sed -n "/${NIC_IPV4}\/${NIC_BIT4}/p" "${FILE_LINE}")" ]; then
+				echo "${PROG_NAME}: funcSetupNetwork: file already exists [${FILE_LINE}]"
+				cat "${FILE_LINE}"
+				return
+			fi
+		done
+		echo "${PROG_NAME}: funcSetupNetwork: create file"
 		cat <<- _EOT_ > "${ROOT_DIRS}/etc/netplan/99-network-manager-static.yaml"
 			network:
 			  version: 2
 			  ethernets:
-			    "${NIC_NAME}":
+			    ${NIC_NAME}:
 			      dhcp4: false
-			      addresses: [ "${NIC_IPV4}/${NIC_BIT4}" ]
-			      gateway4: "${NIC_GATE}"
+			      addresses: [ ${NIC_IPV4}/${NIC_BIT4} ]
+			      gateway4: ${NIC_GATE}
 			      nameservers:
-			          search: [ "${NIC_WGRP}" ]
-			          addresses: [ "${NIC_DNS4}" ]
+			          search: [ ${NIC_WGRP} ]
+			          addresses: [ ${NIC_DNS4} ]
 			      dhcp6: true
 			      ipv6-privacy: true
 _EOT_
 	fi
-}
-
-# --- gdm3 --------------------------------------------------------------------
-funcChange_gdm3_configure () {
-	echo "${PROG_NAME}: funcChange_gdm3_configure"
-	if [ -f "${ROOT_DIRS}/etc/gdm3/custom.conf" ]; then
-		sed -i.orig "${ROOT_DIRS}/etc/gdm3/custom.conf" \
-		    -e '/WaylandEnable=false/ s/^#//'
+	# --- NetworkManager ------------------------------------------------------
+	if [ -d /etc/NetworkManager/. ]; then
+		echo "${PROG_NAME}: funcSetupNetwork: NetworkManager"
+		mkdir -p "${ROOT_DIRS}/etc/NetworkManager/conf.d"
+		if [ -f "${ROOT_DIRS}/etc/dnsmasq.conf" ]; then
+			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/dns.conf"
+				[main]
+				dns=dnsmasq
+_EOT_
+		else
+			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/none-dns.conf"
+				[main]
+				dns=none
+_EOT_
+		fi
+#		sed -i /etc/NetworkManager/NetworkManager.conf \
+#		-e '/[main]/a dns=none'
 	fi
 }
 
+# --- gdm3 --------------------------------------------------------------------
+#funcChange_gdm3_configure() {
+#	echo "${PROG_NAME}: funcChange_gdm3_configure"
+#	if [ -f "${ROOT_DIRS}/etc/gdm3/custom.conf" ]; then
+#		sed -i.orig "${ROOT_DIRS}/etc/gdm3/custom.conf" \
+#		    -e '/WaylandEnable=false/ s/^#//'
+#	fi
+#}
+
 ### Main ######################################################################
-funcMain () {
+funcMain() {
 	echo "${PROG_NAME}: funcMain"
 	case "${DIST_NAME}" in
 		debian )

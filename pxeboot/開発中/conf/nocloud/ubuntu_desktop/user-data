@@ -152,17 +152,12 @@ autoinstall:
   - vim
   - bc
   - clamav
-  - bind9
-  - bind9-utils
-  - bind9-dnsutils
-  - resolvconf
   - openssh-server
+  - dnsmasq
+  - apache2
   - samba
   - smbclient
   - cifs-utils
-  - isc-dhcp-server
-  - minidlna
-  - apache2
   - ubuntu-desktop
   - ubuntu-gnome-desktop
   - language-pack-ja
@@ -175,6 +170,13 @@ autoinstall:
   - firefox-locale-ja
   - thunderbird
   - thunderbird-locale-ja
+# -----------------------------------------------------------------------------
+  - bind9
+  - bind9-utils
+  - bind9-dnsutils
+  - resolvconf
+  - isc-dhcp-server
+  - minidlna
 # =============================================================================
   user-data:
     ntp:
@@ -199,13 +201,41 @@ autoinstall:
     do
         case "${LINE}" in
             ip=*)
-                OLD="$(cat /target/etc/hostname)";
-                NEW="$(echo "${LINE#ip=}" | awk -F ':' '{print $5;}')";
-                echo "${NEW}" > /target/etc/hostname;
-                sed -i /target/etc/hosts -e 's/'${OLD}'/'${NEW}'/'g
+                OLD_IFS=${IFS};
+                IFS=':';
+                set -f;
+                set -- ${LINE#ip=};
+                set +f;
+                NIC_IPV4="${1}";
+                NIC_GATE="${3}";
+                NIC_MASK="${4}";
+                NIC_FQDN="${5}";
+                NIC_NAME="${6}";
+                NIC_DNS4="${8}";
+                IFS=${OLD_IFS};
+                OLD_FQDN="$(cat /etc/hostname)";
+                OLD_HOST="${OLD_FQDN%.*}";
+                OLD_WGRP="${OLD_FQDN#*.}";
+                NIC_HOST="${NIC_FQDN%.*}";
+                NIC_WGRP="${NIC_FQDN#*.}";
+                echo "${NIC_FQDN}" > /target/etc/hostname;
+                sed -i /target/etc/hosts                                       \
+                    -e '/^127\.0\.1\.1/d'                                      \
+                    -e "/^${NIC_IPV4}/d"                                       \
+                    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'                         \
+                    -e 's/^\([0-9a-zA-Z:]\+\)[ \t]\+/\1\t\t/g'                 \
+                    -e "/^127\.0\.0\.1/a ${NIC_IPV4}\t${NIC_FQDN} ${NIC_HOST}" \
+                    -e "s/${OLD_HOST}/${NIC_HOST}/g"                           \
+                    -e "s/${OLD_FQDN}/${NIC_FQDN}/g";
                 ;;
         esac;
     done;
+  - if [ -f /etc/NetworkManager/NetworkManager.conf ]; then
+        cat <<- _EOT_ > /etc/NetworkManager/conf.d/90-dns-none.conf
+			[main]
+			dns=none
+_EOT_
+    fi;
   - LOG_FILE="/target/var/log/installer/network_info.log";
     mkdir -p "${LOG_FILE%/*}";
     echo "--- cmdline ---"         >> "${LOG_FILE}";

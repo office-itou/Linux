@@ -172,10 +172,16 @@ if [ -f /mnt/etc/hosts ]; then
     cp -a /mnt/etc/hosts /mnt/etc/hosts.orig
 fi
 LANG=C echo "${HOSTNAME}" > /mnt/etc/hostname
-LANG=C sed -i.orig /mnt/etc/hosts                                                         \
-           -e "/^127\.0\.0\.1[[:blank:]]\+/ { "                                           \
-           -e "/[[:blank:]]\+localhost[^[:graph:]]*$/a ${IPADDR}\t${HOSTNAME}\t${HOSTNM}" \
-           -e "}"
+LANG=C sed -i.orig /mnt/etc/hosts                                 \
+           -e '/^127\.0\.1\.1/d'                                  \
+           -e "/^${IPADDR}/d"                                     \
+           -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'                     \
+           -e 's/^\([0-9a-zA-Z:]\+\)[ \t]\+/\1\t\t/g'             \
+           -e "/^127\.0\.0\.1/a ${IPADDR}\t${HOSTNAME} ${HOSTNM}"
+#LANG=C sed -i.orig /mnt/etc/hosts                                                         \
+#           -e "/^127\.0\.0\.1[[:blank:]]\+/ { "                                           \
+#           -e "/[[:blank:]]\+localhost[^[:graph:]]*$/a ${IPADDR}\t${HOSTNAME}\t${HOSTNM}" \
+#           -e "}"
 #          -e "/127\.0\.0\.1/a ${IPADDR}\t${HOSTNAME}\t${HOSTNM}"
 echo "--- /mnt/etc/hostname ---"
 cat /mnt/etc/hostname
@@ -198,8 +204,10 @@ exit 0</source>
 #LANG=C firewall-cmd --set-default-zone=home
 #LANG=C firewall-cmd --reload
 LANG=C sed -i.orig /etc/sysconfig/network/ifcfg-ens160 \
-           -e '/^ZONE=/ s/^/#/'                      \
+           -e '/^ZONE=/ s/^/#/'                        \
            -e '$a ZONE=home'
+LANG=C sed -i.orig /etc/sysconfig/network/config                               \
+           -e '/^NETCONFIG_DNS_STATIC_SERVERS=/ s/"\(.*\)"/"::1 127.0.0.1 \1"/'
 if [ -f /etc/hostname.work ]; then
     cp -a /etc/hostname.work /etc/hostname
 fi
@@ -239,11 +247,10 @@ exit 0</source>
       <package>avahi</package>
       <package>bash-completion</package>
       <package>bc</package>
-      <package>bind</package>
       <package>chrony</package>
       <package>clamav</package>
       <package>curl</package>
-      <package>dhcp-server</package>
+      <package>dnsmasq</package>
       <package>firewalld</package>
       <package>fuse</package>
       <package>glibc-i18ndata</package>
