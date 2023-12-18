@@ -24,7 +24,7 @@
 	set -u								# End with undefined variable reference
 	set -o pipefail						# End with in pipe error
 
-	trap 'exit 1' 1 2 3 15
+	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
 # --- check installation package ----------------------------------------------
 #	dpkg --search filename
@@ -124,7 +124,7 @@
 			"m  -                           Auto%20install%20Net%20install      -               -                                           -                                       -                           -                       -                                           -                   " \
 			"o  debian-netinst-10           Debian%2010                         debian          debian-10.13.0-amd64-netinst.iso            install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server_old.cfg       linux/debian        " \
 			"o  debian-netinst-11           Debian%2011                         debian          debian-11.8.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg           linux/debian        " \
-			"o  debian-netinst-12           Debian%2012                         debian          debian-12.2.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg           linux/debian        " \
+			"o  debian-netinst-12           Debian%2012                         debian          debian-12.4.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg           linux/debian        " \
 			"o  debian-netinst-13           Debian%2013                         debian          debian-13.0.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg           linux/debian        " \
 			"o  debian-netinst-testing      Debian%20testing                    debian          debian-testing-amd64-netinst.iso            install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg           linux/debian        " \
 			"o  fedora-netinst-38           Fedora%20Server%2038                fedora          Fedora-Server-netinst-x86_64-38-1.6.iso     images/pxeboot                          initrd.img                  vmlinuz                 conf/kickstart/ks_fedora-38.cfg             linux/fedora        " \
@@ -142,7 +142,7 @@
 			"m  -                           Auto%20install%20DVD%20media        -               -                                           -                                       -                           -                       -                                           -                   " \
 			"o  debian-10                   Debian%2010                         debian          debian-10.13.0-amd64-DVD-1.iso              install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server_old.cfg       linux/debian        " \
 			"o  debian-11                   Debian%2011                         debian          debian-11.8.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg           linux/debian        " \
-			"o  debian-12                   Debian%2012                         debian          debian-12.2.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg           linux/debian        " \
+			"o  debian-12                   Debian%2012                         debian          debian-12.4.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg           linux/debian        " \
 			"o  debian-13                   Debian%2013                         debian          debian-13.0.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg           linux/debian        " \
 			"o  debian-testing              Debian%20testing                    debian          debian-testing-amd64-DVD-1.iso              install.amd                             initrd.gz                   vmlinuz                 conf/preseed/ps_debian_server.cfg           linux/debian        " \
 			"o  ubuntu-server-18.04         Ubuntu%2018.04%20Server             ubuntu          ubuntu-18.04.6-server-amd64.iso             install/netboot/ubuntu-installer/amd64  initrd.gz                   linux                   conf/preseed/ps_ubuntu_server_old.cfg       linux/ubuntu        " \
@@ -170,7 +170,7 @@
 			"m  -                           Live%20media                        -               -                                           -                                       -                           -                       -                                           -                   " \
 			"o  debian-live-10              Debian%2010%20Live                  debian          debian-live-10.13.0-amd64-lxde.iso          live                                    initrd.img-4.19.0-21-amd64  vmlinuz-4.19.0-21-amd64 conf/preseed/ps_debian_desktop_old.cfg      linux/debian        " \
 			"o  debian-live-11              Debian%2011%20Live                  debian          debian-live-11.8.0-amd64-lxde.iso           live                                    initrd.img-5.10.0-26-amd64  vmlinuz-5.10.0-26-amd64 conf/preseed/ps_debian_desktop.cfg          linux/debian        " \
-			"o  debian-live-12              Debian%2012%20Live                  debian          debian-live-12.2.0-amd64-lxde.iso           live                                    initrd.img                  vmlinuz                 conf/preseed/ps_debian_desktop.cfg          linux/debian        " \
+			"o  debian-live-12              Debian%2012%20Live                  debian          debian-live-12.4.0-amd64-lxde.iso           live                                    initrd.img                  vmlinuz                 conf/preseed/ps_debian_desktop.cfg          linux/debian        " \
 			"o  debian-live-13              Debian%2013%20Live                  debian          debian-live-13.0.0-amd64-lxde.iso           live                                    initrd.img                  vmlinuz                 conf/preseed/ps_debian_desktop.cfg          linux/debian        " \
 			"o  debian-live-testing         Debian%20testing%20Live             debian          debian-live-testing-amd64-lxde.iso          live                                    initrd.img                  vmlinuz                 conf/preseed/ps_debian_desktop.cfg          linux/debian        " \
 			"x  ubuntu-desktop-18.04        Ubuntu%2018.04%20Desktop            ubuntu          ubuntu-18.04.6-desktop-amd64.iso            casper                                  initrd                      vmlinuz                 conf/preseed/ps_ubiquity_desktop_old.cfg    linux/ubuntu        " \
@@ -212,7 +212,7 @@
 	declare -r    TXT_BCYAN='\033[46m'						# text reverse light blue
 	declare -r    TXT_BWHITE='\033[47m'						# text reverse white
 
-# *** function section (common functions) **************************************
+# *** function section (common functions) *************************************
 
 # --- text color test ---------------------------------------------------------
 function funcColorTest() {
@@ -239,14 +239,70 @@ function funcColorTest() {
 	echo -e "${TXT_BMAGENTA} : TXT_BMAGENTA : ${TXT_RESET}"
 	echo -e "${TXT_BCYAN} : TXT_BCYAN    : ${TXT_RESET}"
 	echo -e "${TXT_BWHITE} : TXT_BWHITE   : ${TXT_RESET}"
+}
 
-#	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}%s${TXT_RESET}\n" "         1         2         3         4         5         6         7         8         9         0         1         2"
-#	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}%s${TXT_RESET}\n" "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
-#	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}%s${TXT_RESET}\n" "　　　　　　　　　１　　　　　　　　　２　　　　　　　　　３　　　　　　　　　４　　　　　　　　　５　　　　　　　　　６　　　　　　　　　７　　　　　　　　　８　　　　　　　　　９　　　　　　　　　０　　　　　　　　　１　　　　　　　　　２"
-#	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}%s${TXT_RESET}\n" "１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０"
-#	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}%s${TXT_RESET}\n" "0　　　　　　　　　１　　　　　　　　　２　　　　　　　　　３　　　　　　　　　４　　　　　　　　　５　　　　　　　　　６　　　　　　　　　７　　　　　　　　　８　　　　　　　　　９　　　　　　　　　０　　　　　　　　　１　　　　　　　　　２"
-#	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}%s${TXT_RESET}\n" "0１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０"
-#	exit 0
+# --- IPv6 full address -------------------------------------------------------
+function funcIPv6GetFullAddr() {
+#	declare -r    OLD_IFS="${IFS}"
+	declare       INP_ADDR="$1"
+	declare -r    STR_FSEP="${INP_ADDR//[^:]}"
+	declare -r -i CNT_FSEP=$((7-${#STR_FSEP}))
+	declare -a    OUT_ARRY=()
+	declare       OUT_TEMP=""
+	if [[ ${CNT_FSEP} -gt 0 ]]; then
+		OUT_TEMP="$(eval printf ':%.s' "{1..$((CNT_FSEP+2))}")"
+		INP_ADDR="${INP_ADDR/::/${OUT_TEMP}}"
+	fi
+	IFS=:
+	# shellcheck disable=SC2206
+	OUT_ARRY=(${INP_ADDR/%:/::})
+	IFS=${OLD_IFS}
+	OUT_TEMP="$(printf ':%04x' "${OUT_ARRY[@]/#/0x0}")"
+	echo "${OUT_TEMP:1}"
+}
+
+# --- IPv6 reverse address ----------------------------------------------------
+function funcIPv6GetRevAddr() {
+	declare -r    INP_ADDR="$1"
+	echo "${INP_ADDR//:/}"                   | \
+	    awk '{for(i=length();i>1;i--)          \
+	        printf("%c.", substr($0,i,1));     \
+	        printf("%c" , substr($0,1,1));}'
+}
+
+# --- IPv4 netmask conversion -------------------------------------------------
+function funcIPv4GetNetmask() {
+	declare -r    INP_ADDR="$1"
+#	declare       DEC_ADDR="$((0xFFFFFFFF ^ (2**(32-INP_ADDR)-1)))"
+	declare -i    LOOP=$((32-INP_ADDR))
+	declare -i    WORK=1
+	declare       DEC_ADDR=""
+	while [[ "${LOOP}" -gt 0 ]]
+	do
+		LOOP=$((LOOP-1))
+		WORK=$((WORK*2))
+	done
+	DEC_ADDR="$((0xFFFFFFFF ^ (WORK-1)))"
+	printf '%d.%d.%d.%d'             \
+	    $(( DEC_ADDR >> 24        )) \
+	    $(((DEC_ADDR >> 16) & 0xFF)) \
+	    $(((DEC_ADDR >>  8) & 0xFF)) \
+	    $(( DEC_ADDR        & 0xFF))
+}
+
+# --- IPv4 cidr conversion ----------------------------------------------------
+function funcIPv4GetNetCIDR() {
+	declare -r    INP_ADDR="$1"
+	declare -a    OCTETS=()
+	declare -i    MASK=0
+	echo "${INP_ADDR}" | \
+	    awk -F '.' '{
+	        split($0, OCTETS);
+	        for (I in OCTETS) {
+	            MASK += 8 - log(2^8 - OCTETS[I])/log(2);
+	        }
+	        print MASK
+	    }'
 }
 
 # --- is numeric --------------------------------------------------------------
@@ -276,6 +332,9 @@ function funcString() {
 
 # --- print with screen control -----------------------------------------------
 function funcPrintf() {
+	declare -r -a SET_ENV_X=($(set -o | grep 'xtrace'))
+	declare -r -a SET_ENV_E=($(set -o | grep 'errexit'))
+	set +x
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 #	declare -r    OLD_IFS="${IFS}"
 	declare -i    RET_CD
@@ -292,7 +351,7 @@ function funcPrintf() {
 	declare -i    CTRL_CNT=0
 	# -------------------------------------------------------------------------
 	IFS=$'\n'
-	INP_STR="$(printf "$@")"
+	INP_STR="$(printf "%s" "$@")"
 	# --- convert sjis code ---------------------------------------------------
 	SJIS_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932)"
 	SJIS_CNT="$(echo -n "${SJIS_STR}" | wc -c)"
@@ -311,7 +370,7 @@ function funcPrintf() {
 	MAX_COLS+=$((CTRL_CNT-(WORK_CNT-TEMP_CNT)))
 	# --- convert utf-8 code --------------------------------------------------
 	set +e
-	RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -${MAX_COLS} | iconv -f CP932 -t UTF-8 2> /dev/null)"
+	RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -"${MAX_COLS}" | iconv -f CP932 -t UTF-8 2> /dev/null)"
 	RET_CD=$?
 	set -e
 	if [[ ${RET_CD} -ne 0 ]]; then
@@ -323,6 +382,17 @@ function funcPrintf() {
 	# -------------------------------------------------------------------------
 	echo -e "${RET_STR}${TXT_RESET}"
 	IFS="${OLD_IFS}"
+	# -------------------------------------------------------------------------
+	if [[ "${SET_ENV_E[1]}" = "on" ]]; then
+		set -e
+	else
+		set +e
+	fi
+	if [[ "${SET_ENV_X[1]}" = "on" ]]; then
+		set -x
+	else
+		set +x
+	fi
 }
 
 # --- download ----------------------------------------------------------------
@@ -352,10 +422,10 @@ function funcCurl() {
 	if [[ ${RET_CD} -eq 6 ]] || [[ ${RET_CD} -eq 18 ]] || [[ ${RET_CD} -eq 22 ]] || [[ ${RET_CD} -eq 28 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -n -e '/^HTTP/p' | sed -z 's/\n\|\r\|\l//g')
 		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
-		return ${RET_CD}
+		return "${RET_CD}"
 	fi
-	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -n -e '/http\/.* 200/,/^$/ s/\'$'\r//gp' | sed -n -e '/content-length:/ s/.*: //p')
-	WEB_TIM=$(TZ=UTC date -d "$(echo "${ARY_HED[@],,}" | sed -n -e '/http\/.* 200/,/^$/ s/\'$'\r//gp' | sed -n -e '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
+	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -n -e '/http\/.* 200/,/^$/ s/'''$'\r//gp' | sed -n -e '/content-length:/ s/.*: //p')
+	WEB_TIM=$(TZ=UTC date -d "$(echo "${ARY_HED[@],,}" | sed -n -e '/http\/.* 200/,/^$/ s/'''$'\r//gp' | sed -n -e '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
 	WEB_FIL="${OUT_DIR:-.}/${INP_URL##*/}"
 	if [[ -n "${OUT_DIR}" ]] && [[ ! -d "${OUT_DIR}/." ]]; then
 		mkdir -p "${OUT_DIR}"
@@ -371,16 +441,6 @@ function funcCurl() {
 			funcPrintf "same    file: ${WEB_FIL}"
 			return
 		fi
-#		if [[ ${WEB_TIM:-0} -ne ${LOC_TIM:-0} ]]; then
-#			funcPrintf "diff file: ${WEB_FIL}"
-#			funcPrintf "WEB_TIM: ${WEB_TIM:-0}"
-#			funcPrintf "LOC_TIM: ${LOC_TIM:-0}"
-#		fi
-#		if [[ ${WEB_SIZ:-0} -ne ${LOC_SIZ:-0} ]]; then
-#			funcPrintf "diff file: ${WEB_FIL}"
-#			funcPrintf "WEB_SIZ: ${WEB_SIZ:-0}"
-#			funcPrintf "LOC_SIZ: ${LOC_SIZ:-0}"
-#		fi
 	fi
 
 	if [[ ${WEB_SIZ} -lt 1024 ]]; then
@@ -417,9 +477,9 @@ function funcMake_dhcpd_conf() {
 
 	# -------------------------------------------------------------------------
 	if [[ ! -f "${FILE_NAME}.orig" ]]; then
-		cp -a "${FILE_NAME}" "${FILE_NAME}.orig"
+		cp --archive --update "${FILE_NAME}" "${FILE_NAME}.orig"
 	else
-		cp -a "${FILE_NAME}" "${FILE_NAME}.orig.${DATE_TIME}"
+		cp --archive --update "${FILE_NAME}" "${FILE_NAME}.orig.${DATE_TIME}"
 	fi
 
 	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_NAME}"
@@ -470,7 +530,7 @@ _EOT_
 		    -e '/^[ \t]*pool[ \t]*{$/,/^[ \t]*}$/ {' \
 		    -e '/^[ \t]*}$/i \\' \
 		    -e '}'
-		while read LINE
+		while read -r LINE
 		do
 			sed -i "${FILE_NAME}" \
 			    -e '/^[ \t]*pool[ \t]*{$/,/^[ \t]*}$/ {' \
@@ -497,9 +557,9 @@ function funcMake_isc_dhcp_server() {
 	fi
 
 	if [[ ! -f "${FILE_NAME}.orig" ]]; then
-		cp -a "${FILE_NAME}" "${FILE_NAME}.orig"
+		cp --archive --update "${FILE_NAME}" "${FILE_NAME}.orig"
 	else
-		cp -a "${FILE_NAME}" "${FILE_NAME}.orig.${DATE_TIME}"
+		cp --archive --update "${FILE_NAME}" "${FILE_NAME}.orig.${DATE_TIME}"
 	fi
 
 	sed -i "${FILE_NAME}"                                \
@@ -521,9 +581,9 @@ function funcMake_tftpd_hpa() {
 	fi
 
 	if [[ ! -f "${FILE_NAME}.orig" ]]; then
-		cp -a "${FILE_NAME}" "${FILE_NAME}.orig"
+		cp --archive --update "${FILE_NAME}" "${FILE_NAME}.orig"
 	else
-		cp -a "${FILE_NAME}" "${FILE_NAME}.orig.${DATE_TIME}"
+		cp --archive --update "${FILE_NAME}" "${FILE_NAME}.orig.${DATE_TIME}"
 	fi
 
 	sed -i "${FILE_NAME}"                                   \
@@ -538,9 +598,9 @@ function funcMake_tftpd_hpa() {
 	# -------------------------------------------------------------------------
 	if [[ -f "${TFTP_MAPS}" ]]; then
 		if [[ ! -f "${TFTP_MAPS}.orig" ]]; then
-			cp -a "${TFTP_MAPS}" "${TFTP_MAPS}.orig"
+			cp --archive --update "${TFTP_MAPS}" "${TFTP_MAPS}.orig"
 		else
-			cp -a "${TFTP_MAPS}" "${TFTP_MAPS}.orig.${DATE_TIME}"
+			cp --archive --update "${TFTP_MAPS}" "${TFTP_MAPS}.orig.${DATE_TIME}"
 		fi
 	fi
 
@@ -569,8 +629,9 @@ function funcMake_preseed_kill_dhcp_sh() {
 		#	set -x								# Show command and argument expansion
 		 	set -o ignoreeof					# Do not exit with Ctrl+D
 		 	set +m								# Disable job control
-		 	set -e								# Ends with status other than 0
+		 	set -e								# End with status other than 0
 		 	set -u								# End with undefined variable reference
+		#	set -o pipefail						# End with in pipe error
 		
 		 	trap 'exit 1' 1 2 3 15
 		
@@ -602,15 +663,18 @@ function funcMake_preseed_sub_command_sh() {
 		#	set -x								# Show command and argument expansion
 		 	set -o ignoreeof					# Do not exit with Ctrl+D
 		 	set +m								# Disable job control
-		 	set -e								# Ends with status other than 0
+		 	set -e								# End with status other than 0
 		 	set -u								# End with undefined variable reference
+		#	set -o pipefail						# End with in pipe error
 		
 		 	trap 'exit 1' 1 2 3 15
 		
 		 	readonly PROG_PRAM="$*"
 		 	readonly PROG_NAME="${0##*/}"
 		 	readonly WORK_DIRS="${0%/*}"
-		 	readonly DIST_NAME="$(uname -v | tr [A-Z] [a-z] | sed -n -e 's/.*\(debian\|ubuntu\).*/\1/p')"
+		# shellcheck disable=SC2155
+		 	readonly DIST_NAME="$(uname -v | sed -n -e 's/.*\(debian\|ubuntu\).*/\L\1/ip')"
+		# shellcheck disable=SC2155
 		 	readonly PROG_PARM="$(cat /proc/cmdline)"
 		 	echo "${PROG_NAME}: === Start ==="
 		 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
@@ -629,8 +693,8 @@ function funcMake_preseed_sub_command_sh() {
 		 			exit 1
 		 		fi
 		 		echo "${PROG_NAME}: now found preseed file [${CONF_FILE}]"
-		 		cp -a "${PROG_PATH}" "${ROOT_DIRS}/tmp/"
-		 		cp -a "${CONF_FILE}" "${ROOT_DIRS}/tmp/"
+		 		cp --archive --update "${PROG_PATH}" "${ROOT_DIRS}/tmp/"
+		 		cp --archive --update "${CONF_FILE}" "${ROOT_DIRS}/tmp/"
 		 		TEMP_FILE="/tmp/${CONF_FILE##*/}"
 		 		echo "${PROG_NAME}: ROOT_DIRS=${ROOT_DIRS}"
 		 		echo "${PROG_NAME}: CONF_FILE=${CONF_FILE}"
@@ -643,29 +707,34 @@ function funcMake_preseed_sub_command_sh() {
 		 	echo "${PROG_NAME}: ROOT_DIRS=${ROOT_DIRS}"
 		 	echo "${PROG_NAME}: TEMP_FILE=${TEMP_FILE}"
 		
-		### common ###########################################################
+		### common ####################################################################
 		# --- IPv4 netmask conversion -------------------------------------------------
-		funcIPv4GetNetmask () {
+		funcIPv4GetNetmask() {
 		 	INP_ADDR="$1"
 		#	DEC_ADDR="$((0xFFFFFFFF ^ (2**(32-INP_ADDR)-1)))"
-		 	WORK=1
 		 	LOOP=$((32-INP_ADDR))
-		 	while [ $LOOP -gt 0 ]
+		 	WORK=1
+		 	DEC_ADDR=""
+		 	while [ "${LOOP}" -gt 0 ]
 		 	do
 		 		LOOP=$((LOOP-1))
 		 		WORK=$((WORK*2))
 		 	done
 		 	DEC_ADDR="$((0xFFFFFFFF ^ (WORK-1)))"
-		 	printf '%d.%d.%d.%d' \
+		 	printf '%d.%d.%d.%d'             \
 		 	    $(( DEC_ADDR >> 24        )) \
 		 	    $(((DEC_ADDR >> 16) & 0xFF)) \
 		 	    $(((DEC_ADDR >>  8) & 0xFF)) \
 		 	    $(( DEC_ADDR        & 0xFF))
-		 }
+		}
 		
-		# --- IPv4 netmask bit conversion ---------------------------------------------
-		funcIPv4GetNetmaskBits () {
+		# --- IPv4 cidr conversion ----------------------------------------------------
+		funcIPv4GetNetCIDR() {
 		 	INP_ADDR="$1"
+		# shellcheck disable=SC2034
+		 	OCTETS=""
+		# shellcheck disable=SC2034
+		 	MASK=0
 		 	echo "${INP_ADDR}" | \
 		 	    awk -F '.' '{
 		 	        split($0, OCTETS);
@@ -678,7 +747,7 @@ function funcMake_preseed_sub_command_sh() {
 		
 		### subroutine ################################################################
 		# --- packages ----------------------------------------------------------------
-		funcInstallPackages () {
+		funcInstallPackages() {
 		 	echo "${PROG_NAME}: funcInstallPackages"
 		 	#--------------------------------------------------------------------------
 		 	LIST_TASK="$(sed -n -e '/^[[:blank:]]*tasksel[[:blank:]]\+tasksel\/first[[:blank:]]\+/,/[^\\]$/p' "${TEMP_FILE}" | \
@@ -689,33 +758,38 @@ function funcMake_preseed_sub_command_sh() {
 		 	             sed -z -e 's/\\\n//g'                                                                               | \
 		 	             sed -e 's/^.*[[:blank:]]\+string[[:blank:]]\+//'                                                      \
 		 	                 -e 's/[[:blank:]]\+/ /g')"
-		 	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK}"
-		 	echo "${PROG_NAME}: LIST_PACK=${LIST_PACK}"
+		 	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK:-}"
+		 	echo "${PROG_NAME}: LIST_PACK=${LIST_PACK:-}"
 		 	#--------------------------------------------------------------------------
-		 	LIST_DPKG="$(LANG=C dpkg-query --list ${LIST_PACK} 2>&1 | grep -E -v '^ii|^\+|^\||^Desired' || true)"
-		 	if [ -z "${LIST_DPKG}" ]; then
+		 	sed -i "${ROOT_DIRS}/etc/apt/sources.list" \
+		 	    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
+		 	#--------------------------------------------------------------------------
+		 	LIST_DPKG=""
+		 	if [ -n "${LIST_PACK:-}" ]; then
+		 		LIST_DPKG="$(LANG=C dpkg-query --list "${LIST_PACK:-}" | grep -E -v '^ii|^\+|^\||^Desired' || true 2> /dev/null)"
+		 	fi
+		 	if [ -z "${LIST_DPKG:-}" ]; then
 		 		echo "${PROG_NAME}: Finish the installation"
 		 		return
 		 	fi
+		 	#--------------------------------------------------------------------------
 		 	echo "${PROG_NAME}: Run the installation"
 		 	echo "${PROG_NAME}: LIST_DPKG="
 		 	echo "${PROG_NAME}: <<<"
 		 	echo "${LIST_DPKG}"
 		 	echo "${PROG_NAME}: >>>"
 		 	#--------------------------------------------------------------------------
-		 	sed -i "${ROOT_DIRS}/etc/apt/sources.list" \
-		 	    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
 		 	apt-get -qq    update
 		 	apt-get -qq -y upgrade
 		 	apt-get -qq -y dist-upgrade
-		 	apt-get -qq -y install ${LIST_PACK}
+		 	apt-get -qq -y install "${LIST_PACK}"
 		 	if [ -n "$(command -v tasksel 2> /dev/null)" ]; then
-		 		tasksel install ${LIST_TASK}
+		 		tasksel install "${LIST_TASK}"
 		 	fi
 		}
 		
 		# --- network -----------------------------------------------------------------
-		funcSetupNetwork () {
+		funcSetupNetwork() {
 		 	echo "${PROG_NAME}: funcSetupNetwork"
 		 	#--- preseed.cfg parameter ------------------------------------------------
 		 	FIX_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/\(disable_dhcp\|disable_autoconfig\)[[:blank:]]\+/ s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
@@ -755,6 +829,7 @@ function funcMake_preseed_sub_command_sh() {
 		 			                              OLD_IFS=${IFS}
 		 			                              IFS=':'
 		 			                              set -f
+		 			                              # shellcheck disable=SC2086
 		 			                              set -- ${LINE#ip=}
 		 			                              set +f
 		 			                              NIC_IPV4="${1}"
@@ -775,7 +850,7 @@ function funcMake_preseed_sub_command_sh() {
 		 		NIC_WGRP="$(awk '/[ \t]*search[ \t]+/ {print $2;}' /etc/resolv.conf)"
 		 	fi
 		 	if [ -n "${NIC_MASK}" ]; then
-		 		NIC_BIT4="$(funcIPv4GetNetmaskBits "${NIC_MASK}")"
+		 		NIC_BIT4="$(funcIPv4GetNetCIDR "${NIC_MASK}")"
 		 	fi
 		 	if [ -n "${NIC_IPV4#*/}" ] && [ "${NIC_IPV4#*/}" != "${NIC_IPV4}" ]; then
 		 		FIX_IPV4="true"
@@ -794,11 +869,19 @@ function funcMake_preseed_sub_command_sh() {
 		 	#--- hostname / hosts -----------------------------------------------------
 		 	OLD_FQDN="$(cat /etc/hostname)";
 		 	OLD_HOST="${OLD_FQDN%.*}"
-		 	OLD_WGRP="${OLD_FQDN#*.}"
+		#	OLD_WGRP="${OLD_FQDN#*.}"
 		 	echo "${NIC_FQDN}" > /etc/hostname;
-		 	sed -i /etc/hosts                                                          \
-		 	    -e 's/\([ \t]\+\)'${OLD_HOST}'\([ \t]*\)$/\1'${NIC_HOST}'\2/'          \
-		 	    -e 's/\([ \t]\+\)'${OLD_FQDN}'\([ \t]*$\|[ \t]\+\)/\1'${NIC_FQDN}'\2/'
+		 	sed -i /etc/hosts                                              \
+		 	    -e '/^127\.0\.1\.1/d'                                      \
+		 	    -e "/^${NIC_IPV4}/d"                                       \
+		 	    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'                         \
+		 	    -e 's/^\([0-9a-zA-Z:]\+\)[ \t]\+/\1\t\t/g'                 \
+		 	    -e "/^127\.0\.0\.1/a ${NIC_IPV4}\t${NIC_FQDN} ${NIC_HOST}" \
+		 	    -e "s/${OLD_HOST}/${NIC_HOST}/g"                           \
+		 	    -e "s/${OLD_FQDN}/${NIC_FQDN}/g"
+		#	sed -i /etc/hosts                                                          \
+		#	    -e 's/\([ \t]\+\)'${OLD_HOST}'\([ \t]*\)$/\1'${NIC_HOST}'\2/'          \
+		#	    -e 's/\([ \t]\+\)'${OLD_FQDN}'\([ \t]*$\|[ \t]\+\)/\1'${NIC_FQDN}'\2/'
 		 	#--- debug print ----------------------------------------------------------
 		 	echo "${PROG_NAME}: FIX_IPV4=${FIX_IPV4}"
 		 	echo "${PROG_NAME}: NIC_IPV4=${NIC_IPV4}"
@@ -858,34 +941,61 @@ function funcMake_preseed_sub_command_sh() {
 		 	# --- netplan -------------------------------------------------------------
 		 	if [ -d "${ROOT_DIRS}/etc/netplan" ]; then
 		 		echo "${PROG_NAME}: funcSetupNetwork: netplan"
+		 		for FILE_LINE in /etc/netplan/*
+		 		do
+		 			if [ -n "$(sed -n "/${NIC_IPV4}\/${NIC_BIT4}/p" "${FILE_LINE}")" ]; then
+		 				echo "${PROG_NAME}: funcSetupNetwork: file already exists [${FILE_LINE}]"
+		 				cat "${FILE_LINE}"
+		 				return
+		 			fi
+		 		done
+		 		echo "${PROG_NAME}: funcSetupNetwork: create file"
 		 		cat <<- _EOT_ > "${ROOT_DIRS}/etc/netplan/99-network-manager-static.yaml"
 		 			network:
 		 			  version: 2
 		 			  ethernets:
-		 			    "${NIC_NAME}":
+		 			    ${NIC_NAME}:
 		 			      dhcp4: false
-		 			      addresses: [ "${NIC_IPV4}/${NIC_BIT4}" ]
-		 			      gateway4: "${NIC_GATE}"
+		 			      addresses: [ ${NIC_IPV4}/${NIC_BIT4} ]
+		 			      gateway4: ${NIC_GATE}
 		 			      nameservers:
-		 			          search: [ "${NIC_WGRP}" ]
-		 			          addresses: [ "${NIC_DNS4}" ]
+		 			          search: [ ${NIC_WGRP} ]
+		 			          addresses: [ ${NIC_DNS4} ]
 		 			      dhcp6: true
 		 			      ipv6-privacy: true
-		 _EOT_
+		_EOT_
+		 	fi
+		 	# --- NetworkManager ------------------------------------------------------
+		 	if [ -d /etc/NetworkManager/. ]; then
+		 		echo "${PROG_NAME}: funcSetupNetwork: NetworkManager"
+		 		mkdir -p "${ROOT_DIRS}/etc/NetworkManager/conf.d"
+		 		if [ -f "${ROOT_DIRS}/etc/dnsmasq.conf" ]; then
+		 			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/dns.conf"
+		 				[main]
+		 				dns=dnsmasq
+		_EOT_
+		 		else
+		 			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/none-dns.conf"
+		 				[main]
+		 				dns=none
+		_EOT_
+		 		fi
+		#		sed -i /etc/NetworkManager/NetworkManager.conf \
+		#		-e '/[main]/a dns=none'
 		 	fi
 		}
 		
 		# --- gdm3 --------------------------------------------------------------------
-		funcChange_gdm3_configure () {
-		 	echo "${PROG_NAME}: funcChange_gdm3_configure"
-		 	if [ -f "${ROOT_DIRS}/etc/gdm3/custom.conf" ]; then
-		 		sed -i.orig "${ROOT_DIRS}/etc/gdm3/custom.conf" \
-		 		    -e '/WaylandEnable=false/ s/^#//'
-		 	fi
-		}
+		#funcChange_gdm3_configure() {
+		#	echo "${PROG_NAME}: funcChange_gdm3_configure"
+		#	if [ -f "${ROOT_DIRS}/etc/gdm3/custom.conf" ]; then
+		#		sed -i.orig "${ROOT_DIRS}/etc/gdm3/custom.conf" \
+		#		    -e '/WaylandEnable=false/ s/^#//'
+		#	fi
+		#}
 		
 		### Main ######################################################################
-		funcMain () {
+		funcMain() {
 		 	echo "${PROG_NAME}: funcMain"
 		 	case "${DIST_NAME}" in
 		 		debian )
@@ -944,7 +1054,7 @@ function funcMake_preseed_cfg() {
 		# ---------------------------------------------------------------------
 		echo "${FILE_PATH}"
 		# ---------------------------------------------------------------------
-		cp "${FILE_TMPL}" "${FILE_PATH}"
+		cp --update --backup "${FILE_TMPL}" "${FILE_PATH}"
 		if [[ "${FILE_PATH}" =~ _old ]]; then
 			sed -i "${FILE_PATH}"               \
 			    -e 's/bind9-utils/bind9utils/'  \
@@ -998,7 +1108,7 @@ function funcMake_nocloud() {
 		# --- make directory --------------------------------------------------
 		mkdir -p "${DIRS_NAME}"
 		# ---------------------------------------------------------------------
-		cp "${FILE_TMPL}" "${DIRS_NAME}/user-data"
+		cp --update --backup "${FILE_TMPL}" "${DIRS_NAME}/user-data"
 		if [[ "${DIRS_NAME}" =~ _old ]]; then
 			sed -i "${DIRS_NAME}/user-data"     \
 			    -e 's/bind9-utils/bind9utils/'  \
@@ -1057,7 +1167,7 @@ function funcMake_kickstart() {
 		# ---------------------------------------------------------------------
 		echo "${FILE_PATH}"
 		# ---------------------------------------------------------------------
-		cp "${FILE_TMPL}" "${FILE_PATH}"
+		cp --update --backup "${FILE_TMPL}" "${FILE_PATH}"
 		# ---------------------------------------------------------------------
 		DSTR_SECT="${DSTR_NAME/-/ }"
 		if [[ "${DSTR_NAME}" = "centos-stream" ]]; then
@@ -1127,7 +1237,7 @@ function funcMake_autoyast() {
 		# ---------------------------------------------------------------------
 		echo "${FILE_PATH}"
 		# ---------------------------------------------------------------------
-		cp "${FILE_TMPL}" "${FILE_PATH}"
+		cp --update --backup "${FILE_TMPL}" "${FILE_PATH}"
 		# ---------------------------------------------------------------------
 		if [[ "${DSTR_NUMS}" =~ leap ]]; then
 			sed -i "${FILE_PATH}"                                                 \
@@ -1270,16 +1380,16 @@ function funcMake_syslinux_cfg() {
 		# --- copy module -----------------------------------------------------
 		case "${DIRS_NAME}" in
 			*bios )
-				cp -a /usr/lib/syslinux/modules/bios/.  "${DIRS_NAME}/"
-				cp -a /usr/lib/PXELINUX/.               "${DIRS_NAME}/"
+				cp --archive --update /usr/lib/syslinux/modules/bios/.  "${DIRS_NAME}/"
+				cp --archive --update /usr/lib/PXELINUX/.               "${DIRS_NAME}/"
 				;;
 			*efi32)
-				cp -a /usr/lib/syslinux/modules/efi32/. "${DIRS_NAME}/"
-				cp -a /usr/lib/SYSLINUX.EFI/efi32/.     "${DIRS_NAME}/"
+				cp --archive --update /usr/lib/syslinux/modules/efi32/. "${DIRS_NAME}/"
+				cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${DIRS_NAME}/"
 				;;
 			*efi64)
-				cp -a /usr/lib/syslinux/modules/efi64/. "${DIRS_NAME}/"
-				cp -a /usr/lib/SYSLINUX.EFI/efi64/.     "${DIRS_NAME}/"
+				cp --archive --update /usr/lib/syslinux/modules/efi64/. "${DIRS_NAME}/"
+				cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${DIRS_NAME}/"
 				;;
 		esac
 		# --- make syslinux.cfg -----------------------------------------------
@@ -1453,17 +1563,17 @@ _EOT_
 		#   netinst: debian-installer -----------------------------------------
 		#     debian-netinst-10      debian-10.13.0-amd64-netinst.iso
 		#     debian-netinst-11      debian-11.8.0-amd64-netinst.iso
-		#     debian-netinst-12      debian-12.2.0-amd64-netinst.iso
+		#     debian-netinst-12      debian-12.4.0-amd64-netinst.iso
 		#     debian-netinst-testing debian-testing-amd64-netinst.iso
 		#   dvd: debian-installer ---------------------------------------------
 		#     debian-10              debian-10.13.0-amd64-DVD-1.iso
 		#     debian-11              debian-11.8.0-amd64-DVD-1.iso
-		#     debian-12              debian-12.2.0-amd64-DVD-1.iso
+		#     debian-12              debian-12.4.0-amd64-DVD-1.iso
 		#     debian-testing         debian-testing-amd64-DVD-1.iso
 		#   live: debian-installer --------------------------------------------
 		#     debian-live-10         debian-live-10.13.0-amd64-lxde.iso
 		#     debian-live-11         debian-live-11.8.0-amd64-lxde.iso
-		#     debian-live-12         debian-live-12.2.0-amd64-lxde.iso
+		#     debian-live-12         debian-live-12.4.0-amd64-lxde.iso
 		#     debian-live-testing    debian-live-testing-amd64-lxde.iso
 		# ubuntu:
 		#   legacy server: debian-installer -----------------------------------
@@ -1501,15 +1611,24 @@ _EOT_
 		# --- make menu.cfg ---------------------------------------------------
 		case "${DATA_LINE[1]}" in
 			*-mini-*              )     # mini.iso
-				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
-				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
-				LANG_CONF="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 				HTTP_FILE="fetch=\${webroot}/isos/\${isofile}"
 				OPTN_PARM="\${autocnf} \${netscnf} \${locales}"
 				ROOT_PARM=""
 				LOOP_BACK=""
+				# -------------------------------------------------------------
+				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
+				NETS_CONF="netcfg/disable_autoconfig=true"
+				NETS_CONF+=" netcfg/choose_interface=ens160"
+				NETS_CONF+=" netcfg/get_hostname=\${hstfqdn}"
+				NETS_CONF+=" netcfg/get_ipaddress=\${ip4addr}"
+				NETS_CONF+=" netcfg/get_netmask=\${ip4mask}"
+				NETS_CONF+=" netcfg/get_gateway=\${ip4gway}"
+				NETS_CONF+=" netcfg/get_nameservers=\${ip4nsvr}"
+				LANG_CONF="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				# -------------------------------------------------------------
 				MENU_OPTN="auto=true preseed/url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
 				MENU_OPTN+=" netcfg/disable_autoconfig=true"
+				MENU_OPTN+=" netcfg/choose_interface=ens160"
 				MENU_OPTN+=" netcfg/get_hostname=sv-${DATA_LINE[1]%%-*}.workgroup"
 				MENU_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
 				MENU_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
@@ -1518,11 +1637,31 @@ _EOT_
 				MENU_OPTN+=" ${LANG_CONF}"
 				;;
 			debian-*              )
-				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
-				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
-				LANG_CONF="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 				HTTP_FILE="fetch=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${autocnf} \${netscnf} \${locales}"
 				ROOT_PARM=""
+				LOOP_BACK=""
+				# -------------------------------------------------------------
+				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
+				NETS_CONF="netcfg/disable_autoconfig=true"
+				NETS_CONF+=" netcfg/choose_interface=ens160"
+				NETS_CONF+=" netcfg/get_hostname=\${hstfqdn}"
+				NETS_CONF+=" netcfg/get_ipaddress=\${ip4addr}"
+				NETS_CONF+=" netcfg/get_netmask=\${ip4mask}"
+				NETS_CONF+=" netcfg/get_gateway=\${ip4gway}"
+				NETS_CONF+=" netcfg/get_nameservers=\${ip4nsvr}"
+				LANG_CONF="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				# -------------------------------------------------------------
+				MENU_OPTN="auto=true preseed/url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
+				MENU_OPTN+=" netcfg/disable_autoconfig=true"
+				MENU_OPTN+=" netcfg/choose_interface=ens160"
+				MENU_OPTN+=" netcfg/get_hostname=sv-${DATA_LINE[1]%%-*}.workgroup"
+				MENU_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
+				MENU_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
+				MENU_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
+				MENU_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
+				MENU_OPTN+=" ${LANG_CONF}"
+				# -------------------------------------------------------------
 				case "${DATA_LINE[1]}" in
 					debian-live-{10,11}   )
 						LOOP_BACK="yes"
@@ -1539,29 +1678,28 @@ _EOT_
 						MENU_OPTN+=" ${LANG_CONF}"
 						;;
 					*                     )
-						LOOP_BACK=""
-						OPTN_PARM="\${autocnf} \${netscnf} \${locales}"
-						MENU_OPTN="auto=true preseed/url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
-						MENU_OPTN+=" netcfg/disable_autoconfig=true"
-						MENU_OPTN+=" netcfg/get_hostname=sv-${DATA_LINE[1]%%-*}.workgroup"
-						MENU_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
-						MENU_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
-						MENU_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
-						MENU_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
-						MENU_OPTN+=" ${LANG_CONF}"
 						;;
 				esac
 				;;
 			ubuntu-server-*       )							# only ubuntu-18.04.6-server-amd64.iso
-				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
-				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
-				LANG_CONF="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 				HTTP_FILE="live-installer/net-image=\${webroot}/imgs/${DATA_LINE[1]}/install/filesystem.squashfs"
 				OPTN_PARM="\${autocnf} \${urlfile} \${netscnf} \${locales}"
 				ROOT_PARM=""
 				LOOP_BACK=""
+				# -------------------------------------------------------------
+				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
+				NETS_CONF="netcfg/disable_autoconfig=true"
+				NETS_CONF+=" netcfg/choose_interface=ens160"
+				NETS_CONF+=" netcfg/get_hostname=\${hstfqdn}"
+				NETS_CONF+=" netcfg/get_ipaddress=\${ip4addr}"
+				NETS_CONF+=" netcfg/get_netmask=\${ip4mask}"
+				NETS_CONF+=" netcfg/get_gateway=\${ip4gway}"
+				NETS_CONF+=" netcfg/get_nameservers=\${ip4nsvr}"
+				LANG_CONF="locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				# -------------------------------------------------------------
 				MENU_OPTN="auto=true preseed/url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
 				MENU_OPTN+=" netcfg/disable_autoconfig=true"
+				MENU_OPTN+=" netcfg/choose_interface=ens160"
 				MENU_OPTN+=" netcfg/get_hostname=sv-${DATA_LINE[1]%%-*}.workgroup"
 				MENU_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
 				MENU_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
@@ -1571,12 +1709,11 @@ _EOT_
 				;;
 			ubuntu-legacy-*       | \
 			ubuntu-desktop-*      )
-				NETS_CONF="netcfg/disable_autoconfig=true netcfg/get_hostname=\${hstfqdn} netcfg/get_ipaddress=\${ip4addr} netcfg/get_netmask=\${ip4mask} netcfg/get_gateway=\${ip4gway} netcfg/get_nameservers=\${ip4nsvr}"
-				AUTO_CONF="auto=true preseed/url=\${webroot}/${DATA_LINE[8]}"
-				LANG_CONF="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				HTTP_FILE="url=\${webroot}/isos/\${isofile}"
+				OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper layerfs-path=minimal.standard.live.squashfs"
 				ROOT_PARM=""
 				LOOP_BACK=""
+				LANG_CONF="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				case "${DATA_LINE[1]}" in
 					ubuntu-desktop-18.*   ) continue;;      # This version does not support pxeboot
 					ubuntu-desktop-20.*   | \
@@ -1588,7 +1725,6 @@ _EOT_
 						MENU_OPTN+=" ${LANG_CONF}"
 						;;
 					*                     )
-						OPTN_PARM="\${locales} \${urlfile} ip=dhcp ide=nodma fsck.mode=skip boot=casper layerfs-path=minimal.standard.live.squashfs"
 						MENU_OPTN="url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/isos/${DATA_LINE[4]}"
 						MENU_OPTN+=" ip=dhcp ide=nodma fsck.mode=skip boot=casper layerfs-path=minimal.standard.live.squashfs"
 						MENU_OPTN+=" ${LANG_CONF}"
@@ -1596,14 +1732,14 @@ _EOT_
 				esac
 				;;
 			ubuntu-live-*         )
-				NETS_CONF="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:static:\${ip4nsvr}"
-				AUTO_CONF="automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=\${webroot}/${DATA_LINE[8]}"
-				LANG_CONF="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				HTTP_FILE="url=\${webroot}/isos/\${isofile}"
 				OPTN_PARM="\${autocnf} \${urlfile} \${netscnf} \${locales} fsck.mode=skip boot=casper"
 				ROOT_PARM=""
 				LOOP_BACK=""
-				MENU_OPTN="${AUTO_CONF} ${HTTP_FILE} ${NETS_CONF} ${LANG_CONF} fsck.mode=skip boot=casper"
+				AUTO_CONF="automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=\${webroot}/${DATA_LINE[8]}"
+				NETS_CONF="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:static:\${ip4nsvr}"
+				LANG_CONF="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+				OPTN_PARM="${AUTO_CONF} ${HTTP_FILE} ${NETS_CONF} ${LANG_CONF} fsck.mode=skip boot=casper"
 				MENU_OPTN="automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
 				MENU_OPTN+=" url=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/isos/${DATA_LINE[4]}"
 				MENU_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:sv-${DATA_LINE[1]%%-*}.workgroup:ens160:static:${IPV4_NSVR}"
@@ -1615,13 +1751,13 @@ _EOT_
 			almalinux-*           | \
 			rockylinux-*          | \
 			miraclelinux-*        )
-				NETS_CONF="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:none,auto6 nameserver=\${ip4nsvr}"
-				AUTO_CONF="inst.ks=\${webroot}/${DATA_LINE[8]}"
-				LANG_CONF="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				HTTP_FILE="url=\${webroot}/isos/\${isofile}"
 				OPTN_PARM="\${autocnf} \${netscnf} \${locales} inst.repo=\${webroot}/imgs/${DATA_LINE[1]}"
 				ROOT_PARM=""
 				LOOP_BACK=""
+				AUTO_CONF="inst.ks=\${webroot}/${DATA_LINE[8]}"
+				NETS_CONF="ip=\${ip4addr}::\${ip4gway}:\${ip4mask}:\${hstfqdn}:ens160:none,auto6 nameserver=\${ip4nsvr}"
+				LANG_CONF="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				MENU_OPTN="inst.ks=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
 				MENU_OPTN+=" inst.repo=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/imgs/${DATA_LINE[1]}"
 				MENU_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:sv-${DATA_LINE[1]%%-*}.workgroup:ens160:none,auto6 nameserver=${IPV4_NSVR}"
@@ -1629,12 +1765,12 @@ _EOT_
 				MENU_OPTN+=" ${LANG_CONF}"
 					;;
 			opensuse-*            )
-				NETS_CONF="hostname=\${hstfqdn} ifcfg=e*=\${ip4addr}/\${ip4cidr},\${ip4gway},\${ip4nsvr},\${wkgroup}"
-				AUTO_CONF="autoyast=\${webroot}/${DATA_LINE[8]}"
-				LANG_CONF="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				HTTP_FILE="install=\${webroot}/imgs/${DATA_LINE[1]}"
 				ROOT_PARM=""
 				LOOP_BACK=""
+				AUTO_CONF="autoyast=\${webroot}/${DATA_LINE[8]}"
+				NETS_CONF="hostname=\${hstfqdn} ifcfg=e*=\${ip4addr}/\${ip4cidr},\${ip4gway},\${ip4nsvr},\${wkgroup}"
+				LANG_CONF="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 				MENU_OPTN="autoyast=${HTTP_PROT}://${HTTP_ADDR}/${HTTP_DIRS}/${DATA_LINE[8]}"
 				MENU_OPTN+=" hostname=sv-${DATA_LINE[1]%%-*}.workgroup ifcfg=e*=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},workgroup"
 				case "${DATA_LINE[1]}" in
@@ -1803,7 +1939,7 @@ function funcCopy_font() {
 
 	# -------------------------------------------------------------------------
 	mkdir -p "${DIRS_TFTP}/grub/fonts"
-	cp -a /usr/share/grub/unicode.pf2 "${DIRS_TFTP}/grub/fonts/"
+	cp --archive --update /usr/share/grub/unicode.pf2 "${DIRS_TFTP}/grub/fonts/"
 }
 
 # --- restart service ---------------------------------------------------------
@@ -1831,8 +1967,8 @@ function funcStatus_service() {
 	    apache2.service
 }
 
-### main ######################################################################
-function main() {
+# --- main --------------------------------------------------------------------
+function funcMain() {
 	declare -i    start_time=0
 	declare -i    end_time=0
 	declare -i    I=0
@@ -1849,10 +1985,10 @@ function main() {
 		ROW_SIZE=$(tput lines)
 		COL_SIZE=$(tput cols)
 	fi
-	if [[ ${ROW_SIZE} -lt 25 ]]; then
+	if [[ "${ROW_SIZE}" -lt 25 ]]; then
 		ROW_SIZE=25
 	fi
-	if [[ ${COL_SIZE} -lt 80 ]]; then
+	if [[ "${COL_SIZE}" -lt 80 ]]; then
 		COL_SIZE=80
 	fi
 
@@ -1893,6 +2029,7 @@ function main() {
 		esac
 		IFS=','
 		set -f
+		# shellcheck disable=SC2086
 		set -- ${COMD_LINE[I]#*=}
 		set +f
 		IFS=${OLD_IFS}
@@ -2015,8 +2152,8 @@ function main() {
 	echo "elapsed time: $((end_time-start_time)) [sec]"
 }
 
-	# === main ================================================================
-	main
+# *** main processing section *************************************************
+	funcMain
 	exit 0
 
 ### eof #######################################################################
