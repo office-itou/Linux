@@ -1,0 +1,4 @@
+host VM-Knoppix { hardware ethernet 00:0C:29:43:F4:88; }
+host VM-Debian  { hardware ethernet 00:0C:29:E6:DD:BC; }
+host VM-CentOS  { hardware ethernet 00:0C:29:0C:82:73; }
+host P5Q-EM     { hardware ethernet 5A:FA:2A:B6:57:AA; }
