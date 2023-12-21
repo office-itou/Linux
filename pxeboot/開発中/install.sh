@@ -552,10 +552,18 @@ function funcSystem_control() {
 		if [[ -z "${SYSD_NAME[*]}" ]]; then
 			continue
 		fi
-		# shellcheck disable=SC2312
-		if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "static" ]]; then
-			continue
-		fi
+#		# shellcheck disable=SC2312
+#		if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "static" ]]; then
+#			continue
+#		fi
+		case "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" in
+			enabled  | \
+			disabled )
+				;;
+			* )
+				continue
+				;;
+		esac
 		if [[ "${SRVC_LINE[1]}" -eq 0 ]]; then
 			funcPrintf "      ${MSGS_TITL}: disable ${SYSD_NAME[*]}"
 			systemctl --quiet disable "${SYSD_NAME[@]}"
@@ -933,13 +941,19 @@ function funcNetwork_resolv_conf() {
 	declare -r    FILE_PATH="/etc/resolv.conf"
 	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+	declare -r    SYSD_NAME="systemd-resolved.service"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	# -------------------------------------------------------------------------
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
 	if [[ -h "${FILE_PATH}" ]]; then
 		funcPrintf "      ${MSGS_TITL}: link file already exists"
-		return
+		# shellcheck disable=SC2312
+		if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+			return
+		fi
+		funcPrintf "      ${MSGS_TITL}: rm -f ${FILE_PATH}"
+		rm -f "${FILE_PATH}"
 	fi
 	if [[ -f "${FILE_PATH}" ]]; then
 		if [[ ! -f "${FILE_ORIG}" ]]; then
@@ -993,7 +1007,7 @@ function funcNetwork_pxe_conf() {
 			funcPrintf "      ${MSGS_TITL}: ${WORK_DIRS}"
 			semanage fcontext --add --type "${WORK_TYPE}" "${WORK_DIRS}"
 		fi
-		restorecon -R -F -v "${TFTP_ROOT}"
+		restorecon -R -F "${TFTP_ROOT}"
 		# ---------------------------------------------------------------------
 		WORK_DIRS="${DIRS_PATH/\./\\.}(/.*)?"
 		WORK_TYPE="dnsmasq_etc_t"
@@ -1003,7 +1017,7 @@ function funcNetwork_pxe_conf() {
 			funcPrintf "      ${MSGS_TITL}: ${WORK_DIRS}"
 			semanage fcontext --add --type "${WORK_TYPE}" "${WORK_DIRS}"
 		fi
-		restorecon -R -F -v "${DIRS_PATH}"
+		restorecon -R -F "${DIRS_PATH}"
 	fi
 	for FILE_LINE in "${TFTP_ROOT}"/menu-{bios,efi{32,64}}
 	do
@@ -1098,18 +1112,18 @@ _EOT_
 	# -------------------------------------------------------------------------
 	SYSD_NAME="dnsmasq.service"
 	# shellcheck disable=SC2312
-	if [[ -z "$(command -v nmcli 2> /dev/null)" ]]; then
+#	if [[ -z "$(command -v nmcli 2> /dev/null)" ]]; then
 		# shellcheck disable=SC2312
 		if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
 			funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 			systemctl --quiet restart "${SYSD_NAME}"
 		fi
-	else
-		funcPrintf "      ${MSGS_TITL}: stop ${SYSD_NAME}"
-		systemctl --quiet stop    "${SYSD_NAME}"
-		funcPrintf "      ${MSGS_TITL}: disable ${SYSD_NAME}"
-		systemctl --quiet disable "${SYSD_NAME}"
-	fi
+#	else
+#		funcPrintf "      ${MSGS_TITL}: stop ${SYSD_NAME}"
+#		systemctl --quiet stop    "${SYSD_NAME}"
+#		funcPrintf "      ${MSGS_TITL}: disable ${SYSD_NAME}"
+#		systemctl --quiet disable "${SYSD_NAME}"
+#	fi
 }
 
 # ------ firewall -------------------------------------------------------------
@@ -1117,8 +1131,7 @@ function funcNetwork_firewall() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
 	declare -r    MSGS_TITL="firewall"
 	declare       FWAL_NAME=""
-	# shellcheck disable=SC2207
-	declare -r -a WORK_ARRY=($(firewall-cmd --list-services --zone="${FWAL_ZONE}"))
+	declare -a    WORK_ARRY=()
 	declare       WORK_NAME=""
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
@@ -1129,6 +1142,8 @@ function funcNetwork_firewall() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2207
+	WORK_ARRY=($(firewall-cmd --quiet --list-services --zone="${FWAL_ZONE}"))
 	for FWAL_NAME in "${FWAL_LIST[@]}"
 	do
 		for WORK_NAME in "${WORK_ARRY[@]}"
@@ -1138,11 +1153,11 @@ function funcNetwork_firewall() {
 			fi
 		done
 		funcPrintf "      ${MSGS_TITL}: add service ${FWAL_NAME}"
-		firewall-cmd --add-service="${FWAL_NAME}" --zone="${FWAL_ZONE}" --permanent
+		firewall-cmd --quiet --add-service="${FWAL_NAME}" --zone="${FWAL_ZONE}" --permanent
 	done
 	# -------------------------------------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: reload firewall"
-	firewall-cmd --reload
+	firewall-cmd --quiet --reload
 }
 
 # ==== application ============================================================
@@ -1264,7 +1279,7 @@ function funcApplication_system_shared_directory() {
 			funcPrintf "      ${MSGS_TITL}: ${WORK_DIRS}"
 			semanage fcontext --add --type "${WORK_TYPE}" "${WORK_DIRS}"
 		fi
-		restorecon -R -F -v "${DIRS_SHAR}"
+		restorecon -R -F "${DIRS_SHAR}"
 	fi
 	# --- create cifs directory -----------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: create cifs directory"
@@ -1734,8 +1749,9 @@ function funcApplication_dnsmasq() {
 function funcApplication_apache() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
 	declare -r    MSGS_TITL="apache2"
-	declare -r    DIRS_PATH="$(find /etc/ \( -name "apache2" -o -name "httpd" \) -type d)"
-	declare -r    FILE_PATH="$(find "${DIRS_PATH:-/etc}" \( -name "apache2.conf" -o -name "httpd.conf" \) \( -type f -o -type l \))"
+	# shellcheck disable=SC2207
+	declare -r -a DIRS_PATH=($(find /etc/ \( -name "apache2" -o -name "httpd" \) -type d))
+	declare -r    FILE_PATH="$(find "${DIRS_PATH[@]}" \( -name "apache2.conf" -o -name "httpd.conf" \) \( -type f -o -type l \))"
 	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	declare       SYSD_NAME=""
