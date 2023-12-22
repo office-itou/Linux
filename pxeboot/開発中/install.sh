@@ -12,7 +12,7 @@
 ##	---------- -------- -------------- ----------------------------------------
 ##	2023/12/19 000.0000 J.Itou         first release
 ##
-##	shellcheck -o all
+##	shellcheck -o all "filename"
 ##
 ###############################################################################
 
@@ -165,6 +165,20 @@
 	# --- dummy parameter -----------------------------------------------------
 #	declare -r    IPV4_DUMY="127.0.1.1"	# IPv4 dummy address
 
+	# --- hosts.allow ---------------------------------------------------------
+	declare -r -a HOST_ALLW=(                   \
+		"ALL : ${IPV4_LHST}"                    \
+		"ALL : [${IPV6_LHST}]"                  \
+		"ALL : _IPV4_UADR_0_.0/_IPV4_CIDR_0_"   \
+		"ALL : [_LINK_UADR_0_::]/_LINK_CIDR_0_" \
+		"ALL : [_IPV6_UADR_0_::]/_IPV6_CIDR_0_" \
+	)
+
+	# --- hosts.deny ----------------------------------------------------------
+	declare -r -a HOST_DENY=( \
+		"ALL : ALL" \
+	)
+
 	# --- variable parameter --------------------------------------------------
 	declare -a    ETHR_NAME=()			# network device name (ex. eth0/ens160)
 	declare -a    ETHR_MADR=()			# network mac address (ex. xx:xx:xx:xx:xx:xx)
@@ -195,8 +209,12 @@
 	declare -a    IPV4_LGWY=()			# IPv4 gateway low    (ex. 254)
 	declare -a    IPV4_RADR=()			# IPv4 reverse addr   (ex. 1.168.192)
 	declare -a    IPV6_FADR=()			# IPv6 full address   (ex. ...)
+	declare -a    IPV6_UADR=()			# IPv6 address up     (ex. ...)
+	declare -a    IPV6_LADR=()			# IPv6 address low    (ex. ...)
 	declare -a    IPV6_RADR=()			# IPv6 reverse addr   (ex. ...)
 	declare -a    LINK_FADR=()			# LINK full address   (ex. ...)
+	declare -a    LINK_UADR=()			# LINK address up     (ex. ...)
+	declare -a    LINK_LADR=()			# LINK address low    (ex. ...)
 	declare -a    LINK_RADR=()			# LINK reverse addr   (ex. ...)
 	# --- dhcp range ----------------------------------------------------------
 	declare -r    DHCP_SADR="64"		# IPv4 DHCP start address
@@ -262,6 +280,11 @@ function funcDiff() {
 	fi
 	funcPrintf "$3"
 	diff -y -W "${COLS_SIZE}" --suppress-common-lines "$1" "$2" || true
+}
+
+# --- substr ------------------------------------------------------------------
+function funcSubstr() {
+	echo "$1" | awk '{print substr($0,'"$2"','"$3"');}'
 }
 
 # --- IPv6 full address -------------------------------------------------------
@@ -507,6 +530,35 @@ function funcCurl() {
 	return "${RET_CD}"
 }
 
+# --- service status ----------------------------------------------------------
+function funcServiceStatus() {
+#	declare -r    OLD_IFS="${IFS}"
+	# shellcheck disable=SC2155
+	declare       SRVC_STAT="$(systemctl is-enabled "$1" 2> /dev/null || true)"
+	# -------------------------------------------------------------------------
+	if [[ -z "${SRVC_STAT}" ]]; then
+		SRVC_STAT="not-found"
+	fi
+	case "${SRVC_STAT}" in
+		disabled        ) SRVC_STAT="disabled";;
+		enabled         | \
+		enabled-runtime ) SRVC_STAT="enabled";;
+		linked          | \
+		linked-runtime  ) SRVC_STAT="linked";;
+		masked          | \
+		masked-runtime  ) SRVC_STAT="masked";;
+		alias           ) ;;
+		static          ) ;;
+		indirect        ) ;;
+		generated       ) ;;
+		transient       ) ;;
+		bad             ) ;;
+		not-found       ) ;;
+		*               ) SRVC_STAT="undefined";;
+	esac
+	echo "${SRVC_STAT}"
+}
+
 # *** function section (sub functions) ****************************************
 
 # ------ system control -------------------------------------------------------
@@ -552,11 +604,7 @@ function funcSystem_control() {
 		if [[ -z "${SYSD_NAME[*]}" ]]; then
 			continue
 		fi
-#		# shellcheck disable=SC2312
-#		if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "static" ]]; then
-#			continue
-#		fi
-		case "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" in
+		case "$(funcServiceStatus "${SYSD_NAME}")" in
 			enabled  | \
 			disabled )
 				;;
@@ -731,6 +779,68 @@ function funcNetwork_parameter() {
 		LINK_CIDR+=("${PARM_LINE##*/}")
 		LINK_FADR+=("$(funcIPv6GetFullAddr "${LINK_ADDR[I]:-}")")
 		LINK_RADR+=("$(funcIPv6GetRevAddr  "${LINK_FADR[I]:-}")")
+		# ---------------------------------------------------------------------
+		IPV6_UADR+=("$(funcSubstr "${IPV6_FADR[I]:-}"  1 19)")
+		IPV6_LADR+=("$(funcSubstr "${IPV6_FADR[I]:-}" 21 19)")
+		LINK_UADR+=("$(funcSubstr "${LINK_FADR[I]:-}"  1 19)")
+		LINK_LADR+=("$(funcSubstr "${LINK_FADR[I]:-}" 21 19)")
+	done
+}
+
+# ------ hosts.allow / hosts.deny ---------------------------------------------
+function funcNetwork_hosts_allow_deny() {
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare -r    MSGS_TITL="hosts.allow / hosts.deny"
+	declare       FILE_PATH=""
+	declare       FILE_ORIG=""
+	declare       FILE_BACK=""
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	# --- hosts.allow ---------------------------------------------------------
+	FILE_PATH="/etc/hosts.allow"
+	FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
+	FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+	if [[ -f "${FILE_PATH}" ]]; then
+		if [[ ! -f "${FILE_ORIG}" ]]; then
+			mkdir -p "${FILE_ORIG%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
+		else
+			mkdir -p "${FILE_BACK%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_BACK}"
+		fi
+	fi
+	: > "${FILE_PATH}"
+	for ((I=0; I<"${#HOST_ALLW[@]}"; I++))
+	do
+		echo "${HOST_ALLW[I]}" >> "${FILE_PATH}"
+	done
+	sed -i "${FILE_PATH}"                     \
+	    -e "s/_IPV4_UADR_0_/${IPV4_UADR[0]}/" \
+	    -e "s/_IPV4_CIDR_0_/${IPV4_CIDR[0]}/" \
+	    -e "s/_LINK_UADR_0_/${LINK_UADR[0]}/" \
+	    -e "s/_LINK_CIDR_0_/${LINK_CIDR[0]}/" \
+	    -e "s/_IPV6_UADR_0_/${IPV6_UADR[0]}/" \
+	    -e "s/_IPV6_CIDR_0_/${IPV6_CIDR[0]}/" \
+	    -e 's/0000//g'                        \
+	    -e 's/::\+/::/g'
+	# --- hosts.deny ----------------------------------------------------------
+	FILE_PATH="/etc/hosts.deny"
+	FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
+	FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+	if [[ -f "${FILE_PATH}" ]]; then
+		if [[ ! -f "${FILE_ORIG}" ]]; then
+			mkdir -p "${FILE_ORIG%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
+		else
+			mkdir -p "${FILE_BACK%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_BACK}"
+		fi
+	fi
+	: > "${FILE_PATH}"
+	for ((I=0; I<"${#HOST_DENY[@]}"; I++))
+	do
+		echo "${HOST_DENY[I]}" >> "${FILE_PATH}"
 	done
 }
 
@@ -808,13 +918,13 @@ _EOT_
 	systemctl --quiet daemon-reload
 	SYSD_NAME="connman.service"
 	# shellcheck disable=SC2312
-	if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
 	fi
 	SYSD_NAME="dnsmasq.service"
 	# shellcheck disable=SC2312
-	if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
 	fi
@@ -928,7 +1038,7 @@ _EOT_
 	# -------------------------------------------------------------------------
 	SYSD_NAME="NetworkManager.service"
 	# shellcheck disable=SC2312
-	if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
 	fi
@@ -949,7 +1059,7 @@ function funcNetwork_resolv_conf() {
 	if [[ -h "${FILE_PATH}" ]]; then
 		funcPrintf "      ${MSGS_TITL}: link file already exists"
 		# shellcheck disable=SC2312
-		if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+		if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 			return
 		fi
 		funcPrintf "      ${MSGS_TITL}: rm -f ${FILE_PATH}"
@@ -1114,7 +1224,7 @@ _EOT_
 	# shellcheck disable=SC2312
 #	if [[ -z "$(command -v nmcli 2> /dev/null)" ]]; then
 		# shellcheck disable=SC2312
-		if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+		if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 			funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 			systemctl --quiet restart "${SYSD_NAME}"
 		fi
@@ -1143,7 +1253,7 @@ function funcNetwork_firewall() {
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2207
-	WORK_ARRY=($(firewall-cmd --quiet --list-services --zone="${FWAL_ZONE}"))
+	WORK_ARRY=($(firewall-cmd --list-services --zone="${FWAL_ZONE}"))
 	for FWAL_NAME in "${FWAL_LIST[@]}"
 	do
 		for WORK_NAME in "${WORK_ARRY[@]}"
@@ -1179,7 +1289,7 @@ function funcApplication_package_manager() {
 		ubuntu       )
 			# --- stopping unattended-upgrades.service ------------------------
 			SYSD_NAME="unattended-upgrades.service"
-			if [[ -n "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" ]]; then
+			if [[ "$(funcServiceStatus "${SYSD_NAME}")" != "not-found" ]]; then
 				funcPrintf "      ${MSGS_TITL}: stopping ${SYSD_NAME}"
 				systemctl --quiet --no-reload stop "${SYSD_NAME}"
 			fi
@@ -1593,7 +1703,7 @@ function funcApplication_clamav() {
 	# -------------------------------------------------------------------------
 	SYSD_NAME="clamav-freshclam.service"
 	# shellcheck disable=SC2312
-	if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
 	fi
@@ -1664,7 +1774,7 @@ _EOT_
 	timedatectl set-ntp true
 	SYSD_NAME="systemd-timesyncd.service"
 	# shellcheck disable=SC2312
-	if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
 	fi
@@ -1707,7 +1817,7 @@ _EOT_
 	# -------------------------------------------------------------------------
 	SYSD_NAME="sshd.service"
 	# shellcheck disable=SC2312
-	if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
 	fi
@@ -1739,7 +1849,7 @@ function funcApplication_dnsmasq() {
 	# -------------------------------------------------------------------------
 	SYSD_NAME="dnsmasq.service"
 	# shellcheck disable=SC2312
-	if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
 	fi
@@ -1763,13 +1873,6 @@ function funcApplication_apache() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	if [[ -n "$(systemctl is-enabled apache2.service 2> /dev/null || true)" ]]; then
-		SYSD_NAME="apache2.service"
-	else
-		SYSD_NAME="httpd.service"
-	fi
-	# -------------------------------------------------------------------------
 	if [[ ! -f "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
 		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
@@ -1779,7 +1882,16 @@ function funcApplication_apache() {
 	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+	if [[ "$(funcServiceStatus "apache2.service")" != "not-found" ]]; then
+		SYSD_NAME="apache2.service"
+	elif [[ "$(funcServiceStatus "httpd.service")" != "not-found" ]]; then
+		SYSD_NAME="httpd.service"
+	else
+		return
+	fi
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
 	fi
@@ -1932,13 +2044,19 @@ _EOT_
 	testparm -s "${FILE_TEMP}" 2> /dev/null > "${FILE_PATH}"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	if [[ -n "$(systemctl is-enabled smbd.service 2> /dev/null || true)" ]]; then
+	if [[ "$(funcServiceStatus "smbd.service")" != "not-found" ]]; then
 		SYSD_ARRY=("smbd.service" "nmbd.service")
-	else
+	elif [[ "$(funcServiceStatus "smb.service")" != "not-found" ]]; then
 		SYSD_ARRY=("smb.service" "nmb.service")
+	else
+		return
 	fi
-	funcPrintf "      ${MSGS_TITL}: restart ${SYSD_ARRY[0]} ${SYSD_ARRY[1]}"
-	systemctl --quiet restart "${SYSD_ARRY[0]}" "${SYSD_ARRY[1]}"
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	if [[ "$(funcServiceStatus "${SYSD_ARRY[0]}")" = "enabled" ]]; then
+		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_ARRY[0]} ${SYSD_ARRY[1]}"
+		systemctl --quiet restart "${SYSD_ARRY[0]}" "${SYSD_ARRY[1]}"
+	fi
 	rm -f "${FILE_TEMP}"
 }
 
@@ -2071,7 +2189,7 @@ function funcRestore_settings() {
 	do
 		SYSD_NAME="${SYSD_LIST[I]}"
 		# shellcheck disable=SC2312
-		if [[ "$(systemctl is-enabled "${SYSD_NAME}" 2> /dev/null || true)" = "enabled" ]]; then
+		if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 			funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 			systemctl --quiet restart "${SYSD_NAME}"
 		fi
@@ -2393,6 +2511,24 @@ _EOT_
 	funcDiff "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" "function test"
 	echo ""
 
+	# --- substr --------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- substr $(funcString "${COLS_SIZE}" '-')"
+	TEST_PARM="0001:0002:0003:0004:0005:0006:0007:0008"
+	funcPrintf "--no-cutting" "funcSubstr \"${TEST_PARM}\" 1 19"
+	funcPrintf "--no-cutting" "         1         2         3         4"
+	funcPrintf "--no-cutting" "1234567890123456789012345678901234567890"
+	funcPrintf "--no-cutting" "${TEST_PARM}"
+	funcSubstr "${TEST_PARM}" 1 19
+	echo ""
+
+	# --- service status ------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- service status $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "--no-cutting" "funcServiceStatus \"sshd.service\""
+	funcServiceStatus "sshd.service"
+	echo ""
+
 	# --- IPv6 full address ---------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- IPv6 full address $(funcString "${COLS_SIZE}" '-')"
@@ -2567,7 +2703,7 @@ function funcCall_network() {
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-		COMD_LIST=("ctl" "nic" "resolv" "pxe" "fwall" "$@")
+		COMD_LIST=("aldy" "nic" "resolv" "pxe" "fwall" "$@")
 		IFS=' =,'
 		set -f
 		set -- "${COMD_LIST[@]:-}"
@@ -2578,8 +2714,8 @@ function funcCall_network() {
 	do
 		COMD_LIST=("${@:-}")
 		case "${1:-}" in
-			ctl )						# ===== system control ================
-				funcSystem_control
+			aldy )						# ===== hosts.allow / hosts.deny ======
+				funcNetwork_hosts_allow_deny
 				;;
 			nic )						# ===== nic ===========================
 				# ------ connman ----------------------------------
@@ -2630,7 +2766,7 @@ function funcCall_package() {
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-		COMD_LIST=("pmn" "sys" "usr" "av" "ntp" "ssh" "dns" "web" "smb" "vm" "$@")
+		COMD_LIST=("pmn" "ctl" "sys" "usr" "av" "ntp" "ssh" "dns" "web" "smb" "vm" "$@")
 		IFS=' =,'
 		set -f
 		set -- "${COMD_LIST[@]:-}"
@@ -2644,14 +2780,17 @@ function funcCall_package() {
 			pmn )						# ===== package manager ===============
 				funcApplication_package_manager
 				;;
+			ctl )						# ===== system control ================
+				funcSystem_control
+				;;
 			sys )						# ===== system ========================
 				funcApplication_system_shared_directory
 				funcApplication_system_user_environment
 				;;
-			sysenv )					# ===== system shared directory =======
+			sysenv )					# ===== system environment ============
 				funcApplication_system_user_environment
 				;;
-			sysdir )					# ===== system ========================
+			sysdir )					# ===== system shared directory =======
 				funcApplication_system_shared_directory
 				;;
 			usr )						# ===== user add ======================
@@ -2777,28 +2916,38 @@ function funcMain() {
 		funcPrintf "all install process (same as --network and --package)"
 		funcPrintf "  -a | -all"
 		funcPrintf ""
-		funcPrintf "network settings (empty is all options)"
-		funcPrintf "  -n | --network [ net | resolv | pxe ]"
-		funcPrintf "    net     nic (connman netplan networkmanager)"
+		funcPrintf "network settings (empty is [ options ])"
+		funcPrintf "  -n | --network [ aldy nic resolv pxe fwall ]"
+		funcPrintf "    aldy    hosts.allow / hosts.deny"
+		funcPrintf "    nic     connman netplan networkmanager"
 		funcPrintf "    resolv  resolv.conf"
 		funcPrintf "    pxe     pxe boot (dnsmasq)"
+		funcPrintf "    fwall   firewall"
 		funcPrintf ""
-		funcPrintf "package settings (empty is all options)"
-		funcPrintf "  -p | --package [ sys av ntp ssh dns web smb ]"
-		funcPrintf "    sys     system"
+		funcPrintf "package settings (empty is [ options ])"
+		funcPrintf "  -p | --package [ pmn ctl sys usr av ntp ssh dns web smb vm ]"
+		funcPrintf "    pmn     package manager"
+		funcPrintf "    ctl     system control"
+		funcPrintf "    sys     [ sysenv sysdir ]"
+		funcPrintf "    sysenv  system environment"
+		funcPrintf "    sysdir  system shared directory"
+		funcPrintf "    usr     user add"
 		funcPrintf "    av      clamav"
-		funcPrintf "    ntp     systemd-timesyncd.service"
-		funcPrintf "    ssh     openssh-server"
 		funcPrintf "    dns     dnsmasq"
 		funcPrintf "    web     apache2"
 		funcPrintf "    smb     samba"
+		funcPrintf "    smbex   samba user export"
+		funcPrintf "    vm      open-vm-tools"
 		funcPrintf ""
-		funcPrintf "debug print and test (empty is all options)"
-		funcPrintf "  -d | --debug [ sys net ntp smb ]"
+		funcPrintf "debug print and test (empty is [ options ])"
+		funcPrintf "  -d | --debug [ sys net ntp smb vm ]"
+		funcPrintf "    func    function test"
+		funcPrintf "    text    text color test"
 		funcPrintf "    sys     system"
 		funcPrintf "    net     network"
-		funcPrintf "    ntp     timedatectl"
-		funcPrintf "    smb     pdbedit,smbclient"
+		funcPrintf "    ntp     ntp"
+		funcPrintf "    smb     smb"
+		funcPrintf "    vm      open-vm-tools"
 		funcPrintf ""
 		funcPrintf "restoring original files"
 		funcPrintf "  -r | --restore"
