@@ -5,12 +5,12 @@
 ##	  developed for debian
 ##
 ##	developer   : J.Itou
-##	release     : 2023/12/19
+##	release     : 2023/12/24
 ##
 ##	history     :
 ##	   data    version    developer    point
 ##	---------- -------- -------------- ----------------------------------------
-##	2023/12/19 000.0000 J.Itou         first release
+##	2023/12/24 000.0000 J.Itou         first release
 ##
 ##	shellcheck -o all "filename"
 ##
@@ -66,6 +66,33 @@
 	declare       PKGS_MNGR=""			# package manager   (ex. apt-get | dnf | zypper)
 	declare -a    PKGS_OPTN=()			# package manager option
 
+	# --- screen size ---------------------------------------------------------
+#	declare -r    SCRN_SIZE="7680x4320"	# 8K UHD (16:9)
+#	declare -r    SCRN_SIZE="3840x2400"	#        (16:10)
+#	declare -r    SCRN_SIZE="3840x2160"	# 4K UHD (16:9)
+#	declare -r    SCRN_SIZE="2880x1800"	#        (16:10)
+#	declare -r    SCRN_SIZE="2560x1600"	#        (16:10)
+#	declare -r    SCRN_SIZE="2560x1440"	# WQHD   (16:9)
+#	declare -r    SCRN_SIZE="1920x1440"	#        (4:3)
+#	declare -r    SCRN_SIZE="1920x1200"	# WUXGA  (16:10)
+#	declare -r    SCRN_SIZE="1920x1080"	# FHD    (16:9)
+#	declare -r    SCRN_SIZE="1856x1392"	#        (4:3)
+#	declare -r    SCRN_SIZE="1792x1344"	#        (4:3)
+#	declare -r    SCRN_SIZE="1680x1050"	# WSXGA+ (16:10)
+#	declare -r    SCRN_SIZE="1600x1200"	# UXGA   (4:3)
+#	declare -r    SCRN_SIZE="1400x1050"	#        (4:3)
+#	declare -r    SCRN_SIZE="1440x900"	# WXGA+  (16:10)
+#	declare -r    SCRN_SIZE="1360x768"	# HD     (16:9)
+	declare -r    SCRN_SIZE="1280x1024"	# SXGA   (5:4)
+#	declare -r    SCRN_SIZE="1280x960"	#        (4:3)
+#	declare -r    SCRN_SIZE="1280x800"	#        (16:10)
+#	declare -r    SCRN_SIZE="1280x768"	#        (4:3)
+#	declare -r    SCRN_SIZE="1280x720"	# WXGA   (16:9)
+#	declare -r    SCRN_SIZE="1152x864"	#        (4:3)
+#	declare -r    SCRN_SIZE="1024x768"	# XGA    (4:3)
+#	declare -r    SCRN_SIZE="800x600"	# SVGA   (4:3)
+#	declare -r    SCRN_SIZE="640x480"	# VGA    (4:3)
+
 	# --- user information ----------------------------------------------------
 	# USER_LIST
 	#  0: status flag (a:add, s: skip, e: error, o: export)
@@ -78,10 +105,11 @@
 	#  7: nt password
 	#  8: account flags
 	#  9:last change time
-	declare -r    FILE_USER="${PROG_DIRS}/${PROG_NAME}.user.lst"
+	# sample: administrator's password="password"
 	declare -a    USER_LIST=( \
 		"a:1:Administrator:administrator:unused:1001:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:8846F7EAEE8FB117AD06BDD830B7586C:[U          ]:LCT-00000000:" \
 	)	#0:1:2            :3            :4     :5   :6                               :7                               :8            :9
+	declare -r    FILE_USER="${PROG_DIRS}/${PROG_NAME}.user.lst"
 
 	# --- samba ---------------------------------------------------------------
 	# funcApplication_system creates directory
@@ -113,6 +141,25 @@
 	declare -r    HGFS_DIRS="/mnt/hgfs"		# vmware shared directory
 
 	# --- tftp server ---------------------------------------------------------
+	# funcNetwork_pxe_conf creates directory
+	#
+	# tree diagram
+	#   /var/tftp/
+	#   |-- boot
+	#   |-- grub
+	#   |-- menu-bios
+	#   |   |-- boot -> /var/tftp/boot
+	#   |   `-- pxelinux.cfg
+	#   |-- menu-efi32
+	#   |   |-- boot -> /var/tftp/boot
+	#   |   `-- pxelinux.cfg
+	#   `-- menu-efi64
+	#       |-- boot -> /var/tftp/boot
+	#       `-- pxelinux.cfg
+	#   /var/www/
+	#   `-- html
+	#       `-- index.html
+
 	declare -r    TFTP_ROOT="/var/tftp"
 
 	# --- firewall ------------------------------------------------------------
@@ -917,13 +964,13 @@ _EOT_
 	funcPrintf "      ${MSGS_TITL}: daemon reload"
 	systemctl --quiet daemon-reload
 	SYSD_NAME="connman.service"
-	# shellcheck disable=SC2312
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
 	fi
 	SYSD_NAME="dnsmasq.service"
-	# shellcheck disable=SC2312
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
@@ -1037,7 +1084,7 @@ function funcNetwork_networkmanager() {
 _EOT_
 	# -------------------------------------------------------------------------
 	SYSD_NAME="NetworkManager.service"
-	# shellcheck disable=SC2312
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
@@ -1058,7 +1105,7 @@ function funcNetwork_resolv_conf() {
 	# -------------------------------------------------------------------------
 	if [[ -h "${FILE_PATH}" ]]; then
 		funcPrintf "      ${MSGS_TITL}: link file already exists"
-		# shellcheck disable=SC2312
+		# shellcheck disable=SC2312,SC2310
 		if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 			return
 		fi
@@ -1223,7 +1270,7 @@ _EOT_
 	SYSD_NAME="dnsmasq.service"
 	# shellcheck disable=SC2312
 #	if [[ -z "$(command -v nmcli 2> /dev/null)" ]]; then
-		# shellcheck disable=SC2312
+		# shellcheck disable=SC2312,SC2310
 		if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 			funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 			systemctl --quiet restart "${SYSD_NAME}"
@@ -1289,6 +1336,7 @@ function funcApplication_package_manager() {
 		ubuntu       )
 			# --- stopping unattended-upgrades.service ------------------------
 			SYSD_NAME="unattended-upgrades.service"
+			# shellcheck disable=SC2312,SC2310
 			if [[ "$(funcServiceStatus "${SYSD_NAME}")" != "not-found" ]]; then
 				funcPrintf "      ${MSGS_TITL}: stopping ${SYSD_NAME}"
 				systemctl --quiet --no-reload stop "${SYSD_NAME}"
@@ -1356,7 +1404,7 @@ function funcApplication_package_manager() {
 function funcApplication_system_shared_directory() {
 	declare -r    MSGS_TITL="shared directory"
 	# shellcheck disable=SC2155
-	declare -r    LOGS_SHEL="$(command -v nologin)"			# login shell (disallow system login to samba user)
+	declare -r    LGIN_SHEL="$(command -v nologin)"			# login shell (disallow system login to samba user)
 #	declare       WORK_DIRS=""
 #	declare       WORK_TYPE=""
 	# -------------------------------------------------------------------------
@@ -1372,7 +1420,7 @@ function funcApplication_system_shared_directory() {
 		fi
 		funcPrintf "      ${MSGS_TITL}: create samba user"
 		funcPrintf "      ${MSGS_TITL}: ${SAMB_USER}:${SAMB_GRUP}"
-		useradd --system --shell "${LOGS_SHEL}" --groups "${SAMB_GRUP}" "${SAMB_USER}"
+		useradd --system --shell "${LGIN_SHEL}" --groups "${SAMB_GRUP}" "${SAMB_USER}"
 		funcPrintf "      ${MSGS_TITL}: ${SAMB_GADM}"
 		groupadd --system "${SAMB_GADM}"
 	fi
@@ -1538,7 +1586,7 @@ function funcApplication_user_add() {
 #	declare       USER_HOME=""								# home directory
 	declare       DIRS_HOME="${DIRS_SHAR}/data/usr"			# root of home directory
 	# shellcheck disable=SC2155
-	declare -r    LOGS_SHEL="$(command -v nologin)"			# login shell (disallow system login to samba user)
+	declare -r    LGIN_SHEL="$(command -v nologin)"			# login shell (disallow system login to samba user)
 	pdbedit -L > /dev/null									# for creating passdb.tdb
 	declare -r    SAMB_PWDB="$(find /var/lib/samba/ -name 'passdb.tdb' \( -type f -o -type l \))"
 	declare -r    SAMB_TEMP="${DIRS_TEMP}/smbpasswd.list.${DATE_TIME}"
@@ -1583,7 +1631,7 @@ function funcApplication_user_add() {
 				continue
 			fi
 			funcPrintf "      ${MSGS_TITL}: create [${USER_NAME}]"
-			useradd --base-dir "${DIRS_HOME}" --create-home --comment "${FULL_NAME}" --groups "${SAMB_GRUP}" --uid "${USER_IDMO}" --shell "${LOGS_SHEL}" "${USER_NAME}"
+			useradd --base-dir "${DIRS_HOME}" --create-home --comment "${FULL_NAME}" --groups "${SAMB_GRUP}" --uid "${USER_IDMO}" --shell "${LGIN_SHEL}" "${USER_NAME}"
 			if [[ "${USER_ADMN}" = "1" ]]; then
 				usermod --groups "${SAMB_GADM}" --append "${USER_NAME}"
 			fi
@@ -1635,7 +1683,7 @@ function funcApplication_user_export() {
 #	declare       USER_HOME=""								# home directory
 	declare       DIRS_HOME="${DIRS_SHAR}/data/usr"			# root of home directory
 	# shellcheck disable=SC2155
-	declare -r    LOGS_SHEL="$(command -v nologin)"			# login shell (disallow system login to samba user)
+	declare -r    LGIN_SHEL="$(command -v nologin)"			# login shell (disallow system login to samba user)
 	declare -r    SAMB_PWDB="$(find /var/lib/samba/ -name 'passdb.tdb' \( -type f -o -type l \))"
 	declare -r    SAMB_TEMP="${DIRS_TEMP}/smbpasswd.list.${DATE_TIME}"
 	declare -r    PROG_PWDB="${DIRS_ARCH}/${FILE_USER##*/}.${DATE_TIME}"
@@ -1702,7 +1750,7 @@ function funcApplication_clamav() {
 	touch "${FILE_CONF}"
 	# -------------------------------------------------------------------------
 	SYSD_NAME="clamav-freshclam.service"
-	# shellcheck disable=SC2312
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
@@ -1773,7 +1821,7 @@ _EOT_
 	funcPrintf "      ${MSGS_TITL}: set-ntp"
 	timedatectl set-ntp true
 	SYSD_NAME="systemd-timesyncd.service"
-	# shellcheck disable=SC2312
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
@@ -1809,14 +1857,41 @@ function funcApplication_openssh() {
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_PATH}"
 		# --- user settings ---
+		
+		# port number to listen to ssh
+		#Port 22
+		
+		# ip address to accept connections
+		#ListenAddress 0.0.0.0
+		#ListenAddress ::
+		
+		# ssh protocol
+		Protocol 2
+		
+		# whether to allow root login
 		PermitRootLogin no
-		UseDNS no
-		#PubkeyAuthentication yes
+		
+		# configuring public key authentication
+		#PubkeyAuthentication no
+		
+		# public key file location
+		#AuthorizedKeysFile
+		
+		# setting password authentication
 		#PasswordAuthentication yes
+		
+		# configuring challenge-response authentication
+		#ChallengeResponseAuthentication no
+		
+		# sshd log is output to /var/log/secure
+		#SyslogFacility AUTHPRIV
+		
+		# specify log output level
+		#LogLevel INFO
 _EOT_
 	# -------------------------------------------------------------------------
 	SYSD_NAME="sshd.service"
-	# shellcheck disable=SC2312
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
@@ -1848,7 +1923,7 @@ function funcApplication_dnsmasq() {
 	fi
 	# -------------------------------------------------------------------------
 	SYSD_NAME="dnsmasq.service"
-	# shellcheck disable=SC2312
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
@@ -1881,7 +1956,7 @@ function funcApplication_apache() {
 		cp --archive "${FILE_PATH}" "${FILE_BACK}"
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "apache2.service")" != "not-found" ]]; then
 		SYSD_NAME="apache2.service"
 	elif [[ "$(funcServiceStatus "httpd.service")" != "not-found" ]]; then
@@ -1890,7 +1965,7 @@ function funcApplication_apache() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
@@ -2043,7 +2118,7 @@ function funcApplication_samba() {
 _EOT_
 	testparm -s "${FILE_TEMP}" 2> /dev/null > "${FILE_PATH}"
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "smbd.service")" != "not-found" ]]; then
 		SYSD_ARRY=("smbd.service" "nmbd.service")
 	elif [[ "$(funcServiceStatus "smb.service")" != "not-found" ]]; then
@@ -2052,7 +2127,7 @@ _EOT_
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_ARRY[0]}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_ARRY[0]} ${SYSD_ARRY[1]}"
 		systemctl --quiet restart "${SYSD_ARRY[0]}" "${SYSD_ARRY[1]}"
@@ -2129,6 +2204,140 @@ _EOT_
 #	LANG=C df -h "${HGFS_DIRS}"
 }
 
+# ----- grub ------------------------------------------------------------------
+function funcApplication_grub() {
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare -r    MSGS_TITL="grub"
+	declare -r    FILE_PATH="/etc/default/grub"
+	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
+	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+	declare -r    TITL_TEXT="### User Custom ###"
+	declare       GRUB_COMD=""
+	declare       GRUB_CONF=""
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	if [[ ! -f "${FILE_ORIG}" ]]; then
+		mkdir -p "${FILE_ORIG%/*}"
+		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
+	else
+		mkdir -p "${FILE_BACK%/*}"
+		cp --archive "${FILE_PATH}" "${FILE_BACK}"
+	fi
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	if [[ -z "$(sed -ne "/${TITL_TEXT}/p" "${FILE_PATH}")" ]]; then
+		funcPrintf "      ${MSGS_TITL}: add user parameters"
+		sed -i "${FILE_PATH}"                           \
+		    -e '/^GRUB_GFXMODE=/               s/^/#/g' \
+		    -e '/^GRUB_GFXPAYLOAD_LINUX=/      s/^/#/g' \
+		    -e '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/^/#/g' \
+		    -e '/^GRUB_RECORDFAIL_TIMEOUT=/    s/^/#/g' \
+		    -e '/^GRUB_TIMEOUT=/               s/^/#/g'
+		cat <<- _EOT_ | sed 's/^ *//g' >> "${FILE_PATH}"
+			
+			${TITL_TEXT}
+			GRUB_CMDLINE_LINUX_DEFAULT="quiet video=${SCRN_SIZE}"
+			GRUB_GFXMODE=${SCRN_SIZE}
+			GRUB_GFXPAYLOAD_LINUX=keep
+			GRUB_RECORDFAIL_TIMEOUT=5
+			GRUB_TIMEOUT=0
+			
+_EOT_
+	else
+		funcPrintf "      ${MSGS_TITL}: change screen size"
+		sed -i "${FILE_PATH}"                                                           \
+		    -e "/${TITL_TEXT}/,/^\$/                                                 {" \
+		    -e "/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/=.*$/=\"quiet video=${SCRN_SIZE}\"/  " \
+		    -e "/^GRUB_GFXMODE=/               s/=.*$/=${SCRN_SIZE}/                 }"
+	fi
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	if [[ -n "$(command -v grub-mkconfig 2> /dev/null)" ]]; then
+		GRUB_COMD="grub-mkconfig"
+	elif [[ -n "$(command -v grub2-mkconfig 2> /dev/null)" ]]; then
+		GRUB_COMD="grub2-mkconfig"
+	else
+		funcPrintf "not supported on ${DIST_NAME}"
+		exit 1
+	fi
+	GRUB_CONF="$(find /boot/efi/ -name 'grub.cfg')"
+	if [[ -z "${GRUB_CONF}" ]]; then
+		GRUB_CONF="$(find /boot/ -name 'grub.cfg')"
+	fi
+	funcPrintf "      ${MSGS_TITL}: generating grub configuration file"
+	funcPrintf "      ${MSGS_TITL}: ${GRUB_COMD} --output=${GRUB_CONF}"
+	"${GRUB_COMD}" --output="${GRUB_CONF}"
+}
+
+# ----- root user -------------------------------------------------------------
+function funcApplication_root_user() {
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare -r    MSGS_TITL="root user"
+	# shellcheck disable=SC2312
+	declare -r    GRUP_SUDO="$(awk -F ':' '$1=="sudo"||$1=="wheel" {print $1;}' /etc/group)"
+	# shellcheck disable=SC2312,SC2207
+	declare -r -a USER_SUDO=($(groupmems --list --group "${GRUP_SUDO}"))
+	# shellcheck disable=SC2312
+	declare -r    LGIN_SHEL="$(command -v nologin)"			# login shell (disallow system login to samba user)
+	# shellcheck disable=SC2312
+	declare -r    USER_SHEL="$(awk -F ':' '$1=="root" {print $7;}' /etc/passwd)"
+	declare       INPT_STRS=""
+	declare -i    RET_CD=0
+	declare -i    I=0
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	if [[ "${#USER_SUDO[@]}" -le 0 ]]; then
+		funcPrintf "      ${MSGS_TITL}: ${GRUP_SUDO} group has no users"
+		return
+	fi
+	# -------------------------------------------------------------------------
+	funcPrintf "      ${MSGS_TITL}: ${GRUP_SUDO} group user"
+	for ((I=0; I<"${#USER_SUDO[@]}"; I++))
+	do
+		funcPrintf "      ${MSGS_TITL}: ${USER_SUDO[I]}"
+	done
+	# -------------------------------------------------------------------------
+	funcPrintf "      ${MSGS_TITL}: after 10 seconds, select [YES] to continue"
+	while :
+	do
+		echo -n "disable root user login? (YES or no)"
+		set +e
+		read -r -t 10 INPT_STRS
+		RET_CD=$?
+		set -e
+		if [[ ${RET_CD} -ne 0 ]] && [[ -z "${INPT_STRS:-}" ]]; then
+			INPT_STRS="YES"
+			echo "${INPT_STRS}"
+		fi
+		case "${INPT_STRS:-}" in
+			YES)
+				funcPrintf "      ${MSGS_TITL}: how to restore root login"
+				funcPrintf "      ${MSGS_TITL}: sudo usermod -s \$(command -v bash) root"
+				funcPrintf "      ${MSGS_TITL}: change login shell"
+				funcPrintf "      ${MSGS_TITL}: before [${USER_SHEL}]"
+				funcPrintf "      ${MSGS_TITL}: after  [${LGIN_SHEL}]"
+				usermod -s "${LGIN_SHEL}" root
+				RET_CD=$?
+				if [[ "${RET_CD}" -eq 0 ]]; then
+					funcPrintf "      ${MSGS_TITL}: success"
+					break
+				fi
+				funcPrintf "      ${MSGS_TITL}: failed"
+				;;
+			no)
+				funcPrintf "      ${MSGS_TITL}: cancel"
+				break
+				;;
+			*)
+				;;
+		esac
+	done
+}
+
 # ==== restore ================================================================
 
 # ------ restore file ---------------------------------------------------------
@@ -2143,11 +2352,15 @@ function funcRestore_settings() {
 		"/etc/NetworkManager/conf.d/dns.conf"                          \
 		"/etc/NetworkManager/conf.d/none-dns.conf"                     \
 		"/etc/apache2/apache2.conf"                                    \
+		"/etc/apt/sources.list"                                        \
 		"/etc/clamav/freshclam.conf"                                   \
 		"/etc/connman/main.conf"                                       \
+		"/etc/default/grub"                                            \
 		"/etc/dnsmasq.conf"                                            \
 		"/etc/dnsmasq.d/pxe.conf"                                      \
 		"/etc/fstab"                                                   \
+		"/etc/hosts.allow"                                             \
+		"/etc/hosts.deny"                                              \
 		"/etc/netplan/99-network-manager-static.yaml"                  \
 		"/etc/resolv.conf"                                             \
 		"/etc/samba/smb.conf"                                          \
@@ -2155,6 +2368,12 @@ function funcRestore_settings() {
 		"/etc/systemd/system/connman.service.d/disable_dns_proxy.conf" \
 		"/etc/systemd/timesyncd.conf"                                  \
 		"/etc/systemd/timesyncd.conf.d/ntp.conf"                       \
+		"/home/master/.bashrc"                                         \
+		"/home/master/.curlrc"                                         \
+		"/home/master/.vimrc"                                          \
+		"/root/.bashrc"                                                \
+		"/root/.curlrc"                                                \
+		"/root/.vimrc"                                                 \
 	)
 	# -------------------------------------------------------------------------
 	declare       SYSD_NAME=""
@@ -2188,7 +2407,7 @@ function funcRestore_settings() {
 	for ((I=0; I<"${#SYSD_LIST[@]}"; I++))
 	do
 		SYSD_NAME="${SYSD_LIST[I]}"
-		# shellcheck disable=SC2312
+		# shellcheck disable=SC2312,SC2310
 		if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 			funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 			systemctl --quiet restart "${SYSD_NAME}"
@@ -2766,7 +2985,7 @@ function funcCall_package() {
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-		COMD_LIST=("pmn" "ctl" "sys" "usr" "av" "ntp" "ssh" "dns" "web" "smb" "vm" "$@")
+		COMD_LIST=("pmn" "ctl" "sys" "usr" "av" "ntp" "ssh" "dns" "web" "smb" "vm" "grub" "root" "$@")
 		IFS=' =,'
 		set -f
 		set -- "${COMD_LIST[@]:-}"
@@ -2820,6 +3039,12 @@ function funcCall_package() {
 				;;
 			vm )						# ===== open-vm-tools =================
 				funcApplication_open_vm_tools
+				;;
+			grub )						# ===== grub ==========================
+				funcApplication_grub
+				;;
+			root )						# ===== root user =====================
+				funcApplication_root_user
 				;;
 			-* )
 				break
@@ -2925,7 +3150,7 @@ function funcMain() {
 		funcPrintf "    fwall   firewall"
 		funcPrintf ""
 		funcPrintf "package settings (empty is [ options ])"
-		funcPrintf "  -p | --package [ pmn ctl sys usr av ntp ssh dns web smb vm ]"
+		funcPrintf "  -p | --package [ pmn ctl sys usr av ntp ssh dns web smb vm root ]"
 		funcPrintf "    pmn     package manager"
 		funcPrintf "    ctl     system control"
 		funcPrintf "    sys     [ sysenv sysdir ]"
@@ -2938,6 +3163,8 @@ function funcMain() {
 		funcPrintf "    smb     samba"
 		funcPrintf "    smbex   samba user export"
 		funcPrintf "    vm      open-vm-tools"
+		funcPrintf "    grub    grub"
+		funcPrintf "    root    disable root user login"
 		funcPrintf ""
 		funcPrintf "debug print and test (empty is [ options ])"
 		funcPrintf "  -d | --debug [ sys net ntp smb vm ]"
