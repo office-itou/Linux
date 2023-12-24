@@ -2277,8 +2277,8 @@ function funcApplication_root_user() {
 	declare -r    MSGS_TITL="root user"
 	# shellcheck disable=SC2312
 	declare -r    GRUP_SUDO="$(awk -F ':' '$1=="sudo"||$1=="wheel" {print $1;}' /etc/group)"
-	# shellcheck disable=SC2312,SC2207
-	declare -r -a USER_SUDO=($(groupmems --list --group "${GRUP_SUDO}"))
+	# shellcheck disable=SC2207
+	declare -r -a USER_SUDO=($(awk -F ':' '$1=="sudo"||$1=="wheel" {gsub(","," ",$4); print $4;}' /etc/group))
 	# shellcheck disable=SC2312
 	declare -r    LGIN_SHEL="$(command -v nologin)"			# login shell (disallow system login to samba user)
 	# shellcheck disable=SC2312
