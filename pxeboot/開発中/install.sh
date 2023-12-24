@@ -445,11 +445,13 @@ function funcPrintf() {
 	# -------------------------------------------------------------------------
 	if [[ "$1" = "--no-cutting" ]]; then
 		shift
-		printf "%s\n" "$@"
+#		printf "%s\n" "$@"
+		echo -e "$@"
 		return
 	fi
 	IFS=$'\n'
-	INP_STR="$(printf "%s" "$@")"
+	INP_STR="$(echo -e "$@")"
+#	INP_STR="$(printf "%s" "$@")"
 	# --- convert sjis code ---------------------------------------------------
 	SJIS_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932)"
 	SJIS_CNT="$(echo -n "${SJIS_STR}" | wc -c)"
