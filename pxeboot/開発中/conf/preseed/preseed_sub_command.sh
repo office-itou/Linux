@@ -53,7 +53,6 @@
 # --- IPv4 netmask conversion -------------------------------------------------
 funcIPv4GetNetmask() {
 	INP_ADDR="$1"
-#	DEC_ADDR="$((0xFFFFFFFF ^ (2**(32-INP_ADDR)-1)))"
 	LOOP=$((32-INP_ADDR))
 	WORK=1
 	DEC_ADDR=""
@@ -73,15 +72,11 @@ funcIPv4GetNetmask() {
 # --- IPv4 cidr conversion ----------------------------------------------------
 funcIPv4GetNetCIDR() {
 	INP_ADDR="$1"
-# shellcheck disable=SC2034
-	OCTETS=""
-# shellcheck disable=SC2034
-	MASK=0
 	echo "${INP_ADDR}" | \
 	    awk -F '.' '{
-	        split($0, OCTETS);
+	        split($0, OCTETS)
 	        for (I in OCTETS) {
-	            MASK += 8 - log(2^8 - OCTETS[I])/log(2);
+	            MASK += 8 - log(2^8 - OCTETS[I])/log(2)
 	        }
 	        print MASK
 	    }'
@@ -125,6 +120,7 @@ funcInstallPackages() {
 	apt-get -qq -y upgrade
 	apt-get -qq -y dist-upgrade
 	apt-get -qq -y install "${LIST_PACK}"
+	# shellcheck disable=SC2312
 	if [ -n "$(command -v tasksel 2> /dev/null)" ]; then
 		tasksel install "${LIST_TASK}"
 	fi
@@ -183,13 +179,14 @@ funcSetupNetwork() {
 			                              IFS=${OLD_IFS}
 			                              break
 			                              ;;
+			*) ;;
 		esac
 	done
 	#--- network parameter ----------------------------------------------------
 	NIC_HOST="${NIC_FQDN%.*}"
 	NIC_WGRP="${NIC_FQDN#*.}"
 	if [ -z "${NIC_WGRP}" ]; then
-		NIC_WGRP="$(awk '/[ \t]*search[ \t]+/ {print $2;}' /etc/resolv.conf)"
+		NIC_WGRP="$(awk '/[ \t]*search[ \t]+/ {print $2;}' "${ROOT_DIRS}/etc/resolv.conf")"
 	fi
 	if [ -n "${NIC_MASK}" ]; then
 		NIC_BIT4="$(funcIPv4GetNetCIDR "${NIC_MASK}")"
@@ -207,13 +204,13 @@ funcSetupNetwork() {
 	fi
 	IP4_INFO="$(LANG=C ip -f link address show dev "${NIC_NAME}" 2> /dev/null | sed -n '/^2:/ { :l1; p; n; { /^[0-9]\+:/ Q; }; t; b l1; }')"
 	NIC_MADR="$(echo "${IP4_INFO}" | awk '/link\/ether/ {print$2;}')"
-	CON_NAME="ethernet_$(echo "${NIC_MADR}" | sed -n -e 's/://gp')_cable"
+	CON_MADR="$(echo "${NIC_MADR}" | sed -n -e 's/://gp')"
 	#--- hostname / hosts -----------------------------------------------------
-	OLD_FQDN="$(cat /etc/hostname)";
+	OLD_FQDN="$(cat "${ROOT_DIRS}/etc/hostname")"
 	OLD_HOST="${OLD_FQDN%.*}"
 #	OLD_WGRP="${OLD_FQDN#*.}"
-	echo "${NIC_FQDN}" > /etc/hostname;
-	sed -i /etc/hosts                                              \
+	echo "${NIC_FQDN}" > "${ROOT_DIRS}/etc/hostname"
+	sed -i "${ROOT_DIRS}/etc/hosts"                                \
 	    -e '/^127\.0\.1\.1/d'                                      \
 	    -e "/^${NIC_IPV4}/d"                                       \
 	    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'                         \
@@ -221,7 +218,7 @@ funcSetupNetwork() {
 	    -e "/^127\.0\.0\.1/a ${NIC_IPV4}\t${NIC_FQDN} ${NIC_HOST}" \
 	    -e "s/${OLD_HOST}/${NIC_HOST}/g"                           \
 	    -e "s/${OLD_FQDN}/${NIC_FQDN}/g"
-#	sed -i /etc/hosts                                                          \
+#	sed -i "${ROOT_DIRS}/etc/hosts"                                            \
 #	    -e 's/\([ \t]\+\)'${OLD_HOST}'\([ \t]*\)$/\1'${NIC_HOST}'\2/'          \
 #	    -e 's/\([ \t]\+\)'${OLD_FQDN}'\([ \t]*$\|[ \t]\+\)/\1'${NIC_FQDN}'\2/'
 	#--- debug print ----------------------------------------------------------
@@ -236,13 +233,23 @@ funcSetupNetwork() {
 	echo "${PROG_NAME}: NIC_BIT4=${NIC_BIT4}"
 	echo "${PROG_NAME}: NIC_NAME=${NIC_NAME}"
 	echo "${PROG_NAME}: NIC_MADR=${NIC_MADR}"
-	echo "${PROG_NAME}: CON_NAME=${CON_NAME}"
+	echo "${PROG_NAME}: CON_MADR=${CON_MADR}"
 	echo "${PROG_NAME}: --- hostname ---"
-	cat /etc/hostname
+	cat "${ROOT_DIRS}/etc/hostname"
 	echo "${PROG_NAME}: --- hosts ---"
-	cat /etc/hosts
+	cat "${ROOT_DIRS}/etc/hosts"
 	echo "${PROG_NAME}: --- resolv.conf ---"
-	cat /etc/resolv.conf
+	cat "${ROOT_DIRS}/etc/resolv.conf"
+	# --- avahi ---------------------------------------------------------------
+	if [ -f "${ROOT_DIRS}/etc/avahi/avahi-daemon.conf" ]; then
+		echo "${PROG_NAME}: funcSetupNetwork: avahi"
+#		sed -i "${ROOT_DIRS}/etc/avahi/avahi-daemon.conf" \
+#			-e '/allow-interfaces=/ {'                    \
+#			-e 's/^#//'                                   \
+#			-e "s/=.*/=${NIC_NAME}/ }"
+		echo "${PROG_NAME}: --- avahi-daemon.conf ---"
+		cat "${ROOT_DIRS}/etc/avahi/avahi-daemon.conf"
+	fi
 	#--- exit for DHCP --------------------------------------------------------
 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
 		return
@@ -250,8 +257,17 @@ funcSetupNetwork() {
 	# --- connman -------------------------------------------------------------
 	if [ -d "${ROOT_DIRS}/etc/connman" ]; then
 		echo "${PROG_NAME}: funcSetupNetwork: connman"
-		mkdir -p "${ROOT_DIRS}/var/lib/connman/${CON_NAME}"
-		cat <<- _EOT_ | sed 's/^ *//g' > "${ROOT_DIRS}/var/lib/connman/settings"
+#		CNF_FILE="${ROOT_DIRS}/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
+#		mkdir -p "${CNF_FILE%/*}"
+#		# shellcheck disable=SC2312
+#		cat <<- _EOT_ | sed 's/^ *//g' > "${CNF_FILE}"
+#			[Service]
+#			ExecStart=
+#			ExecStart=$(command -v connmand 2> /dev/null) -n --nodnsproxy
+#_EOT_
+		SET_FILE="${ROOT_DIRS}/var/lib/connman/settings"
+		mkdir -p "${SET_FILE%/*}"
+		cat <<- _EOT_ | sed 's/^ *//g' > "${SET_FILE}"
 			[global]
 			OfflineMode=false
 			
@@ -259,32 +275,53 @@ funcSetupNetwork() {
 			Enable=true
 			Tethering=false
 _EOT_
-		if [ -n "${CON_NAME}" ]; then
-			cat <<- _EOT_ | sed 's/^ *//g' > "${ROOT_DIRS}/var/lib/connman/${CON_NAME}/settings"
-				[${CON_NAME}]
-				Name=Wired
-				AutoConnect=true
-				Modified=
-				IPv6.method=auto
-				IPv6.privacy=preferred
-				IPv6.DHCP.DUID=
-				IPv4.method=manual
-				IPv4.DHCP.LastAddress=
-				IPv4.netmask_prefixlen=${NIC_BIT4}
-				IPv4.local_address=${NIC_IPV4}
-				IPv4.gateway=${NIC_GATE}
-				Nameservers=${NIC_DNS4};127.0.0.1;::1;
-				Domains=${NIC_WGRP};
-				Timeservers=ntp.nict.jp;
-				mDNS=true
+		for MAC_ADDR in $(LANG=C ip -4 -oneline link show | awk '/^[0-9]+:/&&!/^1:/ {gsub(":","",$17); print $17;}')
+		do
+			CON_NAME="ethernet_${MAC_ADDR}_cable"
+			CON_DIRS="${ROOT_DIRS}/var/lib/connman/${CON_NAME}"
+			CON_FILE="${CON_DIRS}/settings"
+			mkdir -p "${CON_DIRS}"
+			chmod 700 "${CON_DIRS}"
+			if [ "${MAC_ADDR}" != "${CON_MADR}" ]; then
+				cat <<- _EOT_ | sed 's/^ *//g' > "${CON_FILE}"
+					[${CON_NAME}]
+					Name=Wired
+					AutoConnect=false
+					Modified=
+					IPv4.method=dhcp
+					IPv4.DHCP.LastAddress=
+					IPv6.method=auto
+					IPv6.privacy=disabled
 _EOT_
-		fi
+			else
+				cat <<- _EOT_ | sed 's/^ *//g' > "${CON_FILE}"
+					[${CON_NAME}]
+					Name=Wired
+					AutoConnect=true
+					Modified=
+					IPv4.method=manual
+					IPv4.netmask_prefixlen=${NIC_BIT4}
+					IPv4.local_address=${NIC_IPV4}
+					IPv4.gateway=${NIC_GATE}
+					IPv6.method=auto
+					IPv6.privacy=disabled
+					Nameservers=127.0.0.1;::1;${NIC_DNS4};
+					Timeservers=ntp.nict.jp;
+					Domains=${NIC_WGRP};
+					mDNS=true
+					IPv6.DHCP.DUID=
+_EOT_
+			fi
+			echo "${PROG_NAME}: --- ${CON_NAME}/settings ---"
+			cat "${CON_FILE}"
+		done
 	fi
 	# --- netplan -------------------------------------------------------------
 	if [ -d "${ROOT_DIRS}/etc/netplan" ]; then
 		echo "${PROG_NAME}: funcSetupNetwork: netplan"
-		for FILE_LINE in /etc/netplan/*
+		for FILE_LINE in "${ROOT_DIRS}"/etc/netplan/*
 		do
+			# shellcheck disable=SC2312
 			if [ -n "$(sed -n "/${NIC_IPV4}\/${NIC_BIT4}/p" "${FILE_LINE}")" ]; then
 				echo "${PROG_NAME}: funcSetupNetwork: file already exists [${FILE_LINE}]"
 				cat "${FILE_LINE}"
@@ -306,25 +343,35 @@ _EOT_
 			      dhcp6: true
 			      ipv6-privacy: true
 _EOT_
+		echo "${PROG_NAME}: --- 99-network-manager-static.yaml ---"
+		cat "${ROOT_DIRS}/etc/netplan/99-network-manager-static.yaml"
 	fi
 	# --- NetworkManager ------------------------------------------------------
-	if [ -d /etc/NetworkManager/. ]; then
+	if [ -d "${ROOT_DIRS}/etc/NetworkManager/." ]; then
 		echo "${PROG_NAME}: funcSetupNetwork: NetworkManager"
 		mkdir -p "${ROOT_DIRS}/etc/NetworkManager/conf.d"
-		if [ -f "${ROOT_DIRS}/etc/dnsmasq.conf" ]; then
-			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/dns.conf"
-				[main]
-				dns=dnsmasq
+		cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/none-dns.conf"
+			[main]
+			dns=none
 _EOT_
-		else
-			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/none-dns.conf"
-				[main]
-				dns=none
-_EOT_
-		fi
-#		sed -i /etc/NetworkManager/NetworkManager.conf \
-#		-e '/[main]/a dns=none'
 	fi
+#	if [ -d "${ROOT_DIRS}/etc/NetworkManager/." ]; then
+#		echo "${PROG_NAME}: funcSetupNetwork: NetworkManager"
+#		mkdir -p "${ROOT_DIRS}/etc/NetworkManager/conf.d"
+#		if [ -f "${ROOT_DIRS}/etc/dnsmasq.conf" ]; then
+#			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/dns.conf"
+#				[main]
+#				dns=dnsmasq
+#_EOT_
+#		else
+#			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/none-dns.conf"
+#				[main]
+#				dns=none
+#_EOT_
+#		fi
+#		sed -i "${ROOT_DIRS}/etc/NetworkManager/NetworkManager.conf" \
+#		-e '/[main]/a dns=none'
+#	fi
 }
 
 # --- gdm3 --------------------------------------------------------------------
@@ -349,6 +396,8 @@ funcMain() {
 			funcInstallPackages
 			funcSetupNetwork
 #			funcChange_gdm3_configure
+			;;
+		* )
 			;;
 	esac
 }
