@@ -495,6 +495,28 @@ function funcPrintf() {
 	fi
 }
 
+# ----- unit conversion -------------------------------------------------------
+function funcUnit_conversion() {
+#	declare -r    OLD_IFS="${IFS}"
+	declare -r -a TEXT_UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
+	declare -i    CALC_UNIT=0
+	declare -i    I=0
+
+	if [[ "$1" -lt 1024 ]]; then
+		printf "%'d Byte" "$1"
+		return
+	fi
+	for ((I=3; I>0; I--))
+	do
+		CALC_UNIT=$((1024**I))
+		if [[ "$1" -ge "${CALC_UNIT}" ]]; then
+			printf "%s %s" "$(echo "$1" "${CALC_UNIT}" | awk '{printf("%.1f", $1/$2)}')" "${TEXT_UNIT[${I}]}"
+			return
+		fi
+	done
+	echo -n "$1"
+}
+
 # --- download ----------------------------------------------------------------
 function funcCurl() {
 #	declare -r    OLD_IFS="${IFS}"
@@ -516,8 +538,8 @@ function funcCurl() {
 	declare       LOC_TIM=""
 	declare       TXT_SIZ=""
 #	declare -i    INT_SIZ
-	declare -i    INT_UNT
-	declare -a    TXT_UNT=("Byte" "KiB" "MiB" "GiB" "TiB")
+#	declare -i    INT_UNT
+#	declare -a    TXT_UNT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	set +e
 	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
 	RET_CD=$?
@@ -547,20 +569,21 @@ function funcCurl() {
 		fi
 	fi
 
-	if [[ "${WEB_SIZ}" -lt 1024 ]]; then
-		TXT_SIZ="$(printf "%'d Byte" "${WEB_SIZ}")"
-	else
-		for ((I=3; I>0; I--))
-		do
-			INT_UNT=$((1024**I))
-			if [[ "${WEB_SIZ}" -ge "${INT_UNT}" ]]; then
-				TXT_SIZ="$(echo "${WEB_SIZ}" "${INT_UNT}" | awk '{printf("%.1f", $1/$2)}') ${TXT_UNT[${I}]})"
-#				INT_SIZ="$(((WEB_SIZ*1000)/(1024**I)))"
-#				TXT_SIZ="$(printf "%'.1f ${TXT_UNT[${I}]}" "${INT_SIZ::${#INT_SIZ}-3}.${INT_SIZ:${#INT_SIZ}-3}")"
-				break
-			fi
-		done
-	fi
+	TXT_SIZ="$(funcUnit_conversion "${WEB_SIZ}")"
+#	if [[ "${WEB_SIZ}" -lt 1024 ]]; then
+#		TXT_SIZ="$(printf "%'d Byte" "${WEB_SIZ}")"
+#	else
+#		for ((I=3; I>0; I--))
+#		do
+#			INT_UNT=$((1024**I))
+#			if [[ "${WEB_SIZ}" -ge "${INT_UNT}" ]]; then
+#				TXT_SIZ="$(echo "${WEB_SIZ}" "${INT_UNT}" | awk '{printf("%.1f", $1/$2)}') ${TXT_UNT[${I}]})"
+##				INT_SIZ="$(((WEB_SIZ*1000)/(1024**I)))"
+##				TXT_SIZ="$(printf "%'.1f ${TXT_UNT[${I}]}" "${INT_SIZ::${#INT_SIZ}-3}.${INT_SIZ:${#INT_SIZ}-3}")"
+#				break
+#			fi
+#		done
+#	fi
 
 	funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
 	curl "$@"
@@ -646,7 +669,7 @@ function funcSystem_control() {
 			centos       | \
 			almalinux    | \
 			miraclelinux | \
-			rocky        ) read -r -a SYSD_NAME < <(echo "${SYSD_ARRY[1]}");;
+			rockylinux   ) read -r -a SYSD_NAME < <(echo "${SYSD_ARRY[1]}");;
 			opensuse-*   ) read -r -a SYSD_NAME < <(echo "${SYSD_ARRY[2]}");;
 			*            ) ;;
 		esac
@@ -704,7 +727,7 @@ function funcSystem_parameter() {
 		centos       | \
 		almalinux    | \
 		miraclelinux | \
-		rocky        )
+		rockylinux   )
 			PKGS_MNGR="dnf"
 			PKGS_OPTN=("--assumeyes" "--quiet")
 			;;
@@ -1377,7 +1400,7 @@ function funcApplication_package_manager() {
 		centos       | \
 		almalinux    | \
 		miraclelinux | \
-		rocky        )
+		rockylinux   )
 			# --- updating install pakages ------------------------------------
 			funcPrintf "      ${MSGS_TITL}: updating install pakages"
 			funcPrintf "      ${MSGS_TITL}: ${PKGS_MNGR} ${PKGS_OPTN[*]} check-update"

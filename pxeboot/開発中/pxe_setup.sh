@@ -241,6 +241,20 @@ function funcColorTest() {
 	echo -e "${TXT_BWHITE} : TXT_BWHITE   : ${TXT_RESET}"
 }
 
+# --- diff --------------------------------------------------------------------
+function funcDiff() {
+	if [[ ! -f "$1" ]] || [[ ! -f "$2" ]]; then
+		return
+	fi
+	funcPrintf "$3"
+	diff -y -W "${COLS_SIZE}" --suppress-common-lines "$1" "$2" || true
+}
+
+# --- substr ------------------------------------------------------------------
+function funcSubstr() {
+	echo "$1" | awk '{print substr($0,'"$2"','"$3"');}'
+}
+
 # --- IPv6 full address -------------------------------------------------------
 function funcIPv6GetFullAddr() {
 #	declare -r    OLD_IFS="${IFS}"
@@ -249,11 +263,11 @@ function funcIPv6GetFullAddr() {
 	declare -r -i CNT_FSEP=$((7-${#STR_FSEP}))
 	declare -a    OUT_ARRY=()
 	declare       OUT_TEMP=""
-	if [[ ${CNT_FSEP} -gt 0 ]]; then
+	if [[ "${CNT_FSEP}" -gt 0 ]]; then
 		OUT_TEMP="$(eval printf ':%.s' "{1..$((CNT_FSEP+2))}")"
 		INP_ADDR="${INP_ADDR/::/${OUT_TEMP}}"
 	fi
-	IFS=:
+	IFS=':'
 	# shellcheck disable=SC2206
 	OUT_ARRY=(${INP_ADDR/%:/::})
 	IFS=${OLD_IFS}
@@ -293,8 +307,8 @@ function funcIPv4GetNetmask() {
 # --- IPv4 cidr conversion ----------------------------------------------------
 function funcIPv4GetNetCIDR() {
 	declare -r    INP_ADDR="$1"
-	declare -a    OCTETS=()
-	declare -i    MASK=0
+	#declare -a    OCTETS=()
+	#declare -i    MASK=0
 	echo "${INP_ADDR}" | \
 	    awk -F '.' '{
 	        split($0, OCTETS);
@@ -307,7 +321,7 @@ function funcIPv4GetNetCIDR() {
 
 # --- is numeric --------------------------------------------------------------
 function funcIsNumeric() {
-	if [[ "${1:-""}" =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
+	if [[ ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
 		echo 0
 	else
 		echo 1
@@ -332,14 +346,14 @@ function funcString() {
 
 # --- print with screen control -----------------------------------------------
 function funcPrintf() {
-	declare -r -a SET_ENV_X=($(set -o | grep 'xtrace'))
-	declare -r -a SET_ENV_E=($(set -o | grep 'errexit'))
+	declare -r    SET_ENV_X="$(set -o | awk '$1=="xtrace"  {print $2;}')"
+#	declare -r    SET_ENV_E="$(set -o | awk '$1=="errexit" {print $2;}')"
 	set +x
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 #	declare -r    OLD_IFS="${IFS}"
-	declare -i    RET_CD
+	declare -i    RET_CD=0
 	declare -r    CHR_ESC="$(echo -n -e "\033")"
-	declare -i    MAX_COLS=${COL_SIZE:-80}
+	declare -i    MAX_COLS=${COLS_SIZE:-80}
 	declare       RET_STR=""
 	declare       INP_STR=""
 	declare       SJIS_STR=""
@@ -350,6 +364,11 @@ function funcPrintf() {
 	declare -i    TEMP_CNT=0
 	declare -i    CTRL_CNT=0
 	# -------------------------------------------------------------------------
+	if [[ "$1" = "--no-cutting" ]]; then
+		shift
+		printf "%s\n" "$@"
+		return
+	fi
 	IFS=$'\n'
 	INP_STR="$(printf "%s" "$@")"
 	# --- convert sjis code ---------------------------------------------------
@@ -373,22 +392,22 @@ function funcPrintf() {
 	RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -"${MAX_COLS}" | iconv -f CP932 -t UTF-8 2> /dev/null)"
 	RET_CD=$?
 	set -e
-	if [[ ${RET_CD} -ne 0 ]]; then
+	if [[ "${RET_CD}" -ne 0 ]]; then
 		set +e
 		RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -$((MAX_COLS-1)) | iconv -f CP932 -t UTF-8 2> /dev/null) "
 		set -e
 	fi
-#	RET_STR+="$(echo -n -e ${TXT_RESET})"
+#	RET_STR+="$(echo -n -e "${TXT_RESET}")"
 	# -------------------------------------------------------------------------
 	echo -e "${RET_STR}${TXT_RESET}"
 	IFS="${OLD_IFS}"
 	# -------------------------------------------------------------------------
-	if [[ "${SET_ENV_E[1]}" = "on" ]]; then
-		set -e
-	else
-		set +e
-	fi
-	if [[ "${SET_ENV_X[1]}" = "on" ]]; then
+#	if [[ "${SET_ENV_E}" = "on" ]]; then
+#		set -e
+#	else
+#		set +e
+#	fi
+	if [[ "${SET_ENV_X}" = "on" ]]; then
 		set -x
 	else
 		set +x
@@ -398,10 +417,13 @@ function funcPrintf() {
 # --- download ----------------------------------------------------------------
 function funcCurl() {
 #	declare -r    OLD_IFS="${IFS}"
-	declare -i    RET_CD
+	declare -i    RET_CD=0
 	declare -i    I
+	# shellcheck disable=SC2155
 	declare       INP_URL="$(echo "$@" | sed -n -e 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
+	# shellcheck disable=SC2155
 	declare       OUT_DIR="$(echo "$@" | sed -n -e 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+	# shellcheck disable=SC2155
 	declare       OUT_FILE="$(echo "$@" | sed -n -e 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
 	declare -a    ARY_HED=("")
 	declare       ERR_MSG=""
@@ -419,12 +441,13 @@ function funcCurl() {
 	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
 	RET_CD=$?
 	set -e
-	if [[ ${RET_CD} -eq 6 ]] || [[ ${RET_CD} -eq 18 ]] || [[ ${RET_CD} -eq 22 ]] || [[ ${RET_CD} -eq 28 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
+	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -n -e '/^HTTP/p' | sed -z 's/\n\|\r\|\l//g')
 		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 		return "${RET_CD}"
 	fi
 	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -n -e '/http\/.* 200/,/^$/ s/'''$'\r//gp' | sed -n -e '/content-length:/ s/.*: //p')
+	# shellcheck disable=SC2312
 	WEB_TIM=$(TZ=UTC date -d "$(echo "${ARY_HED[@],,}" | sed -n -e '/http\/.* 200/,/^$/ s/'''$'\r//gp' | sed -n -e '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
 	WEB_FIL="${OUT_DIR:-.}/${INP_URL##*/}"
 	if [[ -n "${OUT_DIR}" ]] && [[ ! -d "${OUT_DIR}/." ]]; then
@@ -437,20 +460,20 @@ function funcCurl() {
 		LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${WEB_FIL}")
 		LOC_TIM=$(echo "${LOC_INF}" | awk '{print $6;}')
 		LOC_SIZ=$(echo "${LOC_INF}" | awk '{print $5;}')
-		if [[ ${WEB_TIM:-0} -eq ${LOC_TIM:-0} ]] && [[ ${WEB_SIZ:-0} -eq ${LOC_SIZ:-0} ]]; then
+		if [[ "${WEB_TIM:-0}" -eq "${LOC_TIM:-0}" ]] && [[ "${WEB_SIZ:-0}" -eq "${LOC_SIZ:-0}" ]]; then
 			funcPrintf "same    file: ${WEB_FIL}"
 			return
 		fi
 	fi
 
-	if [[ ${WEB_SIZ} -lt 1024 ]]; then
+	if [[ "${WEB_SIZ}" -lt 1024 ]]; then
 		TXT_SIZ="$(printf "%'d Byte" "${WEB_SIZ}")"
 	else
 		for ((I=3; I>0; I--))
 		do
 			INT_UNT=$((1024**I))
-			if [[ ${WEB_SIZ} -ge ${INT_UNT} ]]; then
-				TXT_SIZ="$(echo "${WEB_SIZ}" "${INT_UNT}" | awk '{printf("%.1f", $1/$2)}') ${TXT_UNT[${I}]}"
+			if [[ "${WEB_SIZ}" -ge "${INT_UNT}" ]]; then
+				TXT_SIZ="$(echo "${WEB_SIZ}" "${INT_UNT}" | awk '{printf("%.1f", $1/$2)}') ${TXT_UNT[${I}]})"
 #				INT_SIZ="$(((WEB_SIZ*1000)/(1024**I)))"
 #				TXT_SIZ="$(printf "%'.1f ${TXT_UNT[${I}]}" "${INT_SIZ::${#INT_SIZ}-3}.${INT_SIZ:${#INT_SIZ}-3}")"
 				break
@@ -460,7 +483,48 @@ function funcCurl() {
 
 	funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
 	curl "$@"
-	return $?
+	RET_CD=$?
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		for ((I=0; I<3; I++))
+		do
+			funcPrintf "retry  count: ${I}"
+			curl --continue-at "$@"
+			RET_CD=$?
+			if [[ "${RET_CD}" -eq 0 ]]; then
+				break
+			fi
+		done
+	fi
+	return "${RET_CD}"
+}
+
+# --- service status ----------------------------------------------------------
+function funcServiceStatus() {
+#	declare -r    OLD_IFS="${IFS}"
+	# shellcheck disable=SC2155
+	declare       SRVC_STAT="$(systemctl is-enabled "$1" 2> /dev/null || true)"
+	# -------------------------------------------------------------------------
+	if [[ -z "${SRVC_STAT}" ]]; then
+		SRVC_STAT="not-found"
+	fi
+	case "${SRVC_STAT}" in
+		disabled        ) SRVC_STAT="disabled";;
+		enabled         | \
+		enabled-runtime ) SRVC_STAT="enabled";;
+		linked          | \
+		linked-runtime  ) SRVC_STAT="linked";;
+		masked          | \
+		masked-runtime  ) SRVC_STAT="masked";;
+		alias           ) ;;
+		static          ) ;;
+		indirect        ) ;;
+		generated       ) ;;
+		transient       ) ;;
+		bad             ) ;;
+		not-found       ) ;;
+		*               ) SRVC_STAT="undefined";;
+	esac
+	echo "${SRVC_STAT}"
 }
 
 # *** function section (sub functions) ****************************************
@@ -711,7 +775,6 @@ function funcMake_preseed_sub_command_sh() {
 		# --- IPv4 netmask conversion -------------------------------------------------
 		funcIPv4GetNetmask() {
 		 	INP_ADDR="$1"
-		#	DEC_ADDR="$((0xFFFFFFFF ^ (2**(32-INP_ADDR)-1)))"
 		 	LOOP=$((32-INP_ADDR))
 		 	WORK=1
 		 	DEC_ADDR=""
@@ -731,15 +794,11 @@ function funcMake_preseed_sub_command_sh() {
 		# --- IPv4 cidr conversion ----------------------------------------------------
 		funcIPv4GetNetCIDR() {
 		 	INP_ADDR="$1"
-		# shellcheck disable=SC2034
-		 	OCTETS=""
-		# shellcheck disable=SC2034
-		 	MASK=0
 		 	echo "${INP_ADDR}" | \
 		 	    awk -F '.' '{
-		 	        split($0, OCTETS);
+		 	        split($0, OCTETS)
 		 	        for (I in OCTETS) {
-		 	            MASK += 8 - log(2^8 - OCTETS[I])/log(2);
+		 	            MASK += 8 - log(2^8 - OCTETS[I])/log(2)
 		 	        }
 		 	        print MASK
 		 	    }'
@@ -783,6 +842,7 @@ function funcMake_preseed_sub_command_sh() {
 		 	apt-get -qq -y upgrade
 		 	apt-get -qq -y dist-upgrade
 		 	apt-get -qq -y install "${LIST_PACK}"
+		 	# shellcheck disable=SC2312
 		 	if [ -n "$(command -v tasksel 2> /dev/null)" ]; then
 		 		tasksel install "${LIST_TASK}"
 		 	fi
@@ -841,13 +901,14 @@ function funcMake_preseed_sub_command_sh() {
 		 			                              IFS=${OLD_IFS}
 		 			                              break
 		 			                              ;;
+		 			*) ;;
 		 		esac
 		 	done
 		 	#--- network parameter ----------------------------------------------------
 		 	NIC_HOST="${NIC_FQDN%.*}"
 		 	NIC_WGRP="${NIC_FQDN#*.}"
 		 	if [ -z "${NIC_WGRP}" ]; then
-		 		NIC_WGRP="$(awk '/[ \t]*search[ \t]+/ {print $2;}' /etc/resolv.conf)"
+		 		NIC_WGRP="$(awk '/[ \t]*search[ \t]+/ {print $2;}' "${ROOT_DIRS}/etc/resolv.conf")"
 		 	fi
 		 	if [ -n "${NIC_MASK}" ]; then
 		 		NIC_BIT4="$(funcIPv4GetNetCIDR "${NIC_MASK}")"
@@ -865,13 +926,13 @@ function funcMake_preseed_sub_command_sh() {
 		 	fi
 		 	IP4_INFO="$(LANG=C ip -f link address show dev "${NIC_NAME}" 2> /dev/null | sed -n '/^2:/ { :l1; p; n; { /^[0-9]\+:/ Q; }; t; b l1; }')"
 		 	NIC_MADR="$(echo "${IP4_INFO}" | awk '/link\/ether/ {print$2;}')"
-		 	CON_NAME="ethernet_$(echo "${NIC_MADR}" | sed -n -e 's/://gp')_cable"
+		#	CON_NAME="ethernet_$(echo "${NIC_MADR}" | sed -n -e 's/://gp')_cable"
 		 	#--- hostname / hosts -----------------------------------------------------
-		 	OLD_FQDN="$(cat /etc/hostname)";
+		 	OLD_FQDN="$(cat "${ROOT_DIRS}/etc/hostname")"
 		 	OLD_HOST="${OLD_FQDN%.*}"
 		#	OLD_WGRP="${OLD_FQDN#*.}"
-		 	echo "${NIC_FQDN}" > /etc/hostname;
-		 	sed -i /etc/hosts                                              \
+		 	echo "${NIC_FQDN}" > "${ROOT_DIRS}/etc/hostname"
+		 	sed -i "${ROOT_DIRS}/etc/hosts"                                \
 		 	    -e '/^127\.0\.1\.1/d'                                      \
 		 	    -e "/^${NIC_IPV4}/d"                                       \
 		 	    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'                         \
@@ -879,7 +940,7 @@ function funcMake_preseed_sub_command_sh() {
 		 	    -e "/^127\.0\.0\.1/a ${NIC_IPV4}\t${NIC_FQDN} ${NIC_HOST}" \
 		 	    -e "s/${OLD_HOST}/${NIC_HOST}/g"                           \
 		 	    -e "s/${OLD_FQDN}/${NIC_FQDN}/g"
-		#	sed -i /etc/hosts                                                          \
+		#	sed -i "${ROOT_DIRS}/etc/hosts"                                            \
 		#	    -e 's/\([ \t]\+\)'${OLD_HOST}'\([ \t]*\)$/\1'${NIC_HOST}'\2/'          \
 		#	    -e 's/\([ \t]\+\)'${OLD_FQDN}'\([ \t]*$\|[ \t]\+\)/\1'${NIC_FQDN}'\2/'
 		 	#--- debug print ----------------------------------------------------------
@@ -894,13 +955,23 @@ function funcMake_preseed_sub_command_sh() {
 		 	echo "${PROG_NAME}: NIC_BIT4=${NIC_BIT4}"
 		 	echo "${PROG_NAME}: NIC_NAME=${NIC_NAME}"
 		 	echo "${PROG_NAME}: NIC_MADR=${NIC_MADR}"
-		 	echo "${PROG_NAME}: CON_NAME=${CON_NAME}"
+		#	echo "${PROG_NAME}: CON_NAME=${CON_NAME}"
 		 	echo "${PROG_NAME}: --- hostname ---"
-		 	cat /etc/hostname
+		 	cat "${ROOT_DIRS}/etc/hostname"
 		 	echo "${PROG_NAME}: --- hosts ---"
-		 	cat /etc/hosts
+		 	cat "${ROOT_DIRS}/etc/hosts"
 		 	echo "${PROG_NAME}: --- resolv.conf ---"
-		 	cat /etc/resolv.conf
+		 	cat "${ROOT_DIRS}/etc/resolv.conf"
+		 	# --- avahi ---------------------------------------------------------------
+		 	if [ -f "${ROOT_DIRS}/etc/avahi/avahi-daemon.conf" ]; then
+		 		echo "${PROG_NAME}: funcSetupNetwork: avahi"
+		#		sed -i "${ROOT_DIRS}/etc/avahi/avahi-daemon.conf" \
+		#			-e '/allow-interfaces=/ {'                    \
+		#			-e 's/^#//'                                   \
+		#			-e "s/=.*/=${NIC_NAME}/ }"
+		 		echo "${PROG_NAME}: --- avahi-daemon.conf ---"
+		 		cat "${ROOT_DIRS}/etc/avahi/avahi-daemon.conf"
+		 	fi
 		 	#--- exit for DHCP --------------------------------------------------------
 		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
 		 		return
@@ -908,41 +979,57 @@ function funcMake_preseed_sub_command_sh() {
 		 	# --- connman -------------------------------------------------------------
 		 	if [ -d "${ROOT_DIRS}/etc/connman" ]; then
 		 		echo "${PROG_NAME}: funcSetupNetwork: connman"
-		 		mkdir -p "${ROOT_DIRS}/var/lib/connman/${CON_NAME}"
-		 		cat <<- _EOT_ | sed 's/^ *//g' > "${ROOT_DIRS}/var/lib/connman/settings"
-		 			[global]
-		 			OfflineMode=false
-		 			
-		 			[Wired]
-		 			Enable=true
-		 			Tethering=false
+		 		for MAC_ADDR in $(LANG=C ip -4 -oneline link show | awk '/^[0-9]+:/&&!/^1:/ {gsub(":","",$17); print $17;}')
+		 		do
+		 			CON_NAME="ethernet_${MAC_ADDR}_cable"
+		 			CON_DIRS="${ROOT_DIRS}/var/lib/connman/${CON_NAME}"
+		 			CON_FILE="${CON_FILE}/settings"
+		 			mkdir -p "${CON_DIRS}"
+		 			chmod 600 "${CON_DIRS}"
+		 			cat <<- _EOT_ | sed 's/^ *//g' > "${ROOT_DIRS}/var/lib/connman/settings"
+		 				[global]
+		 				OfflineMode=false
+		 				
+		 				[Wired]
+		 				Enable=true
+		 				Tethering=false
 		_EOT_
-		 		if [ -n "${CON_NAME}" ]; then
-		 			cat <<- _EOT_ | sed 's/^ *//g' > "${ROOT_DIRS}/var/lib/connman/${CON_NAME}/settings"
-		 				[${CON_NAME}]
-		 				Name=Wired
-		 				AutoConnect=true
-		 				Modified=
-		 				IPv6.method=auto
-		 				IPv6.privacy=preferred
-		 				IPv6.DHCP.DUID=
-		 				IPv4.method=manual
-		 				IPv4.DHCP.LastAddress=
-		 				IPv4.netmask_prefixlen=${NIC_BIT4}
-		 				IPv4.local_address=${NIC_IPV4}
-		 				IPv4.gateway=${NIC_GATE}
-		 				Nameservers=${NIC_DNS4};127.0.0.1;::1;
-		 				Domains=${NIC_WGRP};
-		 				Timeservers=ntp.nict.jp;
-		 				mDNS=true
+		 			if [ "${MAC_ADDR}" != "${NIC_MADR}" ]; then
+		 				cat <<- _EOT_ | sed 's/^ *//g' > "${CON_FILE}"
+		 					[${CON_NAME}]
+		 					Name=Wired
+		 					AutoConnect=false
 		_EOT_
-		 		fi
+		 			else
+		 				cat <<- _EOT_ | sed 's/^ *//g' > "${CON_FILE}"
+		 					[${CON_NAME}]
+		 					Name=Wired
+		 					AutoConnect=true
+		 					Modified=
+		 					IPv6.method=auto
+		 					IPv6.privacy=preferred
+		 					IPv6.DHCP.DUID=
+		 					IPv4.method=manual
+		 					IPv4.DHCP.LastAddress=
+		 					IPv4.netmask_prefixlen=${NIC_BIT4}
+		 					IPv4.local_address=${NIC_IPV4}
+		 					IPv4.gateway=${NIC_GATE}
+		 					Nameservers=127.0.0.1;::1;${NIC_DNS4};
+		 					Domains=${NIC_WGRP};
+		 					Timeservers=ntp.nict.jp;
+		 					mDNS=true
+		_EOT_
+		 			fi
+		 			echo "${PROG_NAME}: --- ${CON_NAME}/settings ---"
+		 			cat "${CON_FILE}"
+		 		done
 		 	fi
 		 	# --- netplan -------------------------------------------------------------
 		 	if [ -d "${ROOT_DIRS}/etc/netplan" ]; then
 		 		echo "${PROG_NAME}: funcSetupNetwork: netplan"
-		 		for FILE_LINE in /etc/netplan/*
+		 		for FILE_LINE in "${ROOT_DIRS}"/etc/netplan/*
 		 		do
+		 			# shellcheck disable=SC2312
 		 			if [ -n "$(sed -n "/${NIC_IPV4}\/${NIC_BIT4}/p" "${FILE_LINE}")" ]; then
 		 				echo "${PROG_NAME}: funcSetupNetwork: file already exists [${FILE_LINE}]"
 		 				cat "${FILE_LINE}"
@@ -964,25 +1051,35 @@ function funcMake_preseed_sub_command_sh() {
 		 			      dhcp6: true
 		 			      ipv6-privacy: true
 		_EOT_
+		 		echo "${PROG_NAME}: --- 99-network-manager-static.yaml ---"
+		 		cat "${ROOT_DIRS}/etc/netplan/99-network-manager-static.yaml"
 		 	fi
 		 	# --- NetworkManager ------------------------------------------------------
-		 	if [ -d /etc/NetworkManager/. ]; then
+		 	if [ -d "${ROOT_DIRS}/etc/NetworkManager/." ]; then
 		 		echo "${PROG_NAME}: funcSetupNetwork: NetworkManager"
 		 		mkdir -p "${ROOT_DIRS}/etc/NetworkManager/conf.d"
-		 		if [ -f "${ROOT_DIRS}/etc/dnsmasq.conf" ]; then
-		 			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/dns.conf"
-		 				[main]
-		 				dns=dnsmasq
+		 		cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/none-dns.conf"
+		 			[main]
+		 			dns=none
 		_EOT_
-		 		else
-		 			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/none-dns.conf"
-		 				[main]
-		 				dns=none
-		_EOT_
-		 		fi
-		#		sed -i /etc/NetworkManager/NetworkManager.conf \
-		#		-e '/[main]/a dns=none'
 		 	fi
+		#	if [ -d "${ROOT_DIRS}/etc/NetworkManager/." ]; then
+		#		echo "${PROG_NAME}: funcSetupNetwork: NetworkManager"
+		#		mkdir -p "${ROOT_DIRS}/etc/NetworkManager/conf.d"
+		#		if [ -f "${ROOT_DIRS}/etc/dnsmasq.conf" ]; then
+		#			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/dns.conf"
+		#				[main]
+		#				dns=dnsmasq
+		#_EOT_
+		#		else
+		#			cat <<- _EOT_ > "${ROOT_DIRS}/etc/NetworkManager/conf.d/none-dns.conf"
+		#				[main]
+		#				dns=none
+		#_EOT_
+		#		fi
+		#		sed -i "${ROOT_DIRS}/etc/NetworkManager/NetworkManager.conf" \
+		#		-e '/[main]/a dns=none'
+		#	fi
 		}
 		
 		# --- gdm3 --------------------------------------------------------------------
@@ -1007,6 +1104,8 @@ function funcMake_preseed_sub_command_sh() {
 		 			funcInstallPackages
 		 			funcSetupNetwork
 		#			funcChange_gdm3_configure
+		 			;;
+		 		* )
 		 			;;
 		 	esac
 		}
@@ -1295,7 +1394,33 @@ function funcMake_grub_cfg() {
 		
 		if loadfont $font ; then
 		#	set lang=ja_JP
-		 	set gfxmode=1280x720
+
+		#	set gfxmode=7680x4320	# 8K UHD (16:9)
+		#	set gfxmode=3840x2400	#        (16:10)
+		#	set gfxmode=3840x2160	# 4K UHD (16:9)
+		#	set gfxmode=2880x1800	#        (16:10)
+		#	set gfxmode=2560x1600	#        (16:10)
+		#	set gfxmode=2560x1440	# WQHD   (16:9)
+		#	set gfxmode=1920x1440	#        (4:3)
+		#	set gfxmode=1920x1200	# WUXGA  (16:10)
+		#	set gfxmode=1920x1080	# FHD    (16:9)
+		#	set gfxmode=1856x1392	#        (4:3)
+		#	set gfxmode=1792x1344	#        (4:3)
+		#	set gfxmode=1680x1050	# WSXGA+ (16:10)
+		#	set gfxmode=1600x1200	# UXGA   (4:3)
+		#	set gfxmode=1400x1050	#        (4:3)
+		#	set gfxmode=1440x900	# WXGA+  (16:10)
+		#	set gfxmode=1360x768	# HD     (16:9)
+		 	set gfxmode=1280x1024	# SXGA   (5:4)
+		#	set gfxmode=1280x960	#        (4:3)
+		#	set gfxmode=1280x800	#        (16:10)
+		#	set gfxmode=1280x768	#        (4:3)
+		#	set gfxmode=1280x720	# WXGA   (16:9)
+		#	set gfxmode=1152x864	#        (4:3)
+		#	set gfxmode=1024x768	# XGA    (4:3)
+		#	set gfxmode=800x600		# SVGA   (4:3)
+		#	set gfxmode=640x480		# VGA    (4:3)
+
 		 	set gfxpayload=keep
 		
 		 	if [ "${grub_platform}" = "efi" ]; then
@@ -1399,7 +1524,32 @@ function funcMake_syslinux_cfg() {
 			timeout 0
 			default vesamenu.c32
 			
-			menu resolution			1024 768
+			#menu resolution		7680 4320	# 8K UHD (16:9)
+			#menu resolution		3840 2400	#        (16:10)
+			#menu resolution		3840 2160	# 4K UHD (16:9)
+			#menu resolution		2880 1800	#        (16:10)
+			#menu resolution		2560 1600	#        (16:10)
+			#menu resolution		2560 1440	# WQHD   (16:9)
+			#menu resolution		1920 1440	#        (4:3)
+			#menu resolution		1920 1200	# WUXGA  (16:10)
+			#menu resolution		1920 1080	# FHD    (16:9)
+			#menu resolution		1856 1392	#        (4:3)
+			#menu resolution		1792 1344	#        (4:3)
+			#menu resolution		1680 1050	# WSXGA+ (16:10)
+			#menu resolution		1600 1200	# UXGA   (4:3)
+			#menu resolution		1400 1050	#        (4:3)
+			#menu resolution		1440 900	# WXGA+  (16:10)
+			#menu resolution		1360 768	# HD     (16:9)
+			menu resolution			1280 1024	# SXGA   (5:4)
+			#menu resolution		1280 960	#        (4:3)
+			#menu resolution		1280 800	#        (16:10)
+			#menu resolution		1280 768	#        (4:3)
+			#menu resolution		1280 720	# WXGA   (16:9)
+			#menu resolution		1152 864	#        (4:3)
+			#menu resolution		1024 768	# XGA    (4:3)
+			#menu resolution		800 600		# SVGA   (4:3)
+			#menu resolution		640 480		# VGA    (4:3)
+
 			#menu background		splash.png
 			
 			menu color screen		* #ffffffff #ee000080 *
@@ -1967,6 +2117,146 @@ function funcStatus_service() {
 	    apache2.service
 }
 
+# ---- function test ----------------------------------------------------------
+function funcCall_function() {
+#	declare -r    OLD_IFS="${IFS}"
+	declare -r    MSGS_TITL="call function test"
+	declare -r    FILE_WRK1="${DIRS_TEMP}/testfile1.txt"
+	declare -r    FILE_WRK2="${DIRS_TEMP}/testfile2.txt"
+	declare -r    HTTP_ADDR="https://raw.githubusercontent.com/office-itou/Linux/master/README.md"
+	declare -r -a CURL_OPTN=(         \
+		"--location"                  \
+		"--progress-bar"              \
+		"--remote-name"               \
+		"--remote-time"               \
+		"--show-error"                \
+		"--fail"                      \
+		"--retry-max-time" "3"        \
+		"--retry" "3"                 \
+		"--create-dirs"               \
+		"--output-dir" "${DIRS_TEMP}" \
+		"${HTTP_ADDR}"                \
+	)
+	declare       TEST_PARM=""
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_WRK1}"
+		line 1
+		line 2
+		line 3
+_EOT_
+	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_WRK2}"
+		line 1
+		Line 2
+		line 3
+_EOT_
+	# --- text color test -----------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- text color test $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "--no-cutting" "funcColorTest"
+	funcColorTest
+	echo ""
+
+	# --- diff ----------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- diff $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "--no-cutting" "funcDiff \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
+	funcDiff "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" "function test"
+	echo ""
+
+	# --- substr --------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- substr $(funcString "${COLS_SIZE}" '-')"
+	TEST_PARM="0001:0002:0003:0004:0005:0006:0007:0008"
+	funcPrintf "--no-cutting" "funcSubstr \"${TEST_PARM}\" 1 19"
+	funcPrintf "--no-cutting" "         1         2         3         4"
+	funcPrintf "--no-cutting" "1234567890123456789012345678901234567890"
+	funcPrintf "--no-cutting" "${TEST_PARM}"
+	funcSubstr "${TEST_PARM}" 1 19
+	echo ""
+
+	# --- service status ------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- service status $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "--no-cutting" "funcServiceStatus \"sshd.service\""
+	funcServiceStatus "sshd.service"
+	echo ""
+
+	# --- IPv6 full address ---------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- IPv6 full address $(funcString "${COLS_SIZE}" '-')"
+	TEST_PARM="fe80::1"
+	funcPrintf "--no-cutting" "funcIPv6GetFullAddr \"${TEST_PARM}\""
+	funcIPv6GetFullAddr "${TEST_PARM}"
+	echo ""
+
+	# --- IPv6 reverse address ------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- IPv6 reverse address $(funcString "${COLS_SIZE}" '-')"
+	TEST_PARM="0001:0002:0003:0004:0005:0006:0007:0008"
+	funcPrintf "--no-cutting" "funcIPv6GetRevAddr \"${TEST_PARM}\""
+	funcIPv6GetRevAddr "${TEST_PARM}"
+	echo ""
+	echo ""
+
+	# --- IPv4 netmask conversion ---------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- IPv4 netmask conversion $(funcString "${COLS_SIZE}" '-')"
+	TEST_PARM="24"
+	funcPrintf "--no-cutting" "funcIPv4GetNetmask \"${TEST_PARM}\""
+	funcIPv4GetNetmask "${TEST_PARM}"
+	echo ""
+	echo ""
+
+	# --- IPv4 cidr conversion ------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- IPv4 cidr conversion $(funcString "${COLS_SIZE}" '-')"
+	TEST_PARM="255.255.255.0"
+	funcPrintf "--no-cutting" "funcIPv4GetNetCIDR \"${TEST_PARM}\""
+	funcIPv4GetNetCIDR "${TEST_PARM}"
+	echo ""
+
+	# --- is numeric ----------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- is numeric $(funcString "${COLS_SIZE}" '-')"
+	TEST_PARM="123.456"
+	funcPrintf "--no-cutting" "funcIsNumeric \"${TEST_PARM}\""
+	funcIsNumeric "${TEST_PARM}"
+	echo ""
+	TEST_PARM="abc.def"
+	funcPrintf "--no-cutting" "funcIsNumeric \"${TEST_PARM}\""
+	funcIsNumeric "${TEST_PARM}"
+	echo ""
+
+	# --- string output -------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- string output $(funcString "${COLS_SIZE}" '-')"
+	TEST_PARM="50"
+	funcPrintf "--no-cutting" "funcString \"${TEST_PARM}\" \"#\""
+	funcString "${TEST_PARM}" "#"
+	echo ""
+
+	# --- print with screen control -------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- print with screen control $(funcString "${COLS_SIZE}" '-')"
+	TEST_PARM="test"
+	funcPrintf "--no-cutting" "funcPrintf \"${TEST_PARM}\""
+	funcPrintf "${TEST_PARM}"
+	echo ""
+
+	# --- download ------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- download $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "--no-cutting" "funcCurl ${CURL_OPTN[*]}"
+	funcCurl "${CURL_OPTN[@]}"
+	echo ""
+
+	# -------------------------------------------------------------------------
+	rm -f "${FILE_WRK1}" "${FILE_WRK2}"
+	ls -l "${DIRS_TEMP}"
+}
+
 # --- main --------------------------------------------------------------------
 function funcMain() {
 	declare -i    start_time=0
@@ -2122,6 +2412,9 @@ function funcMain() {
 					esac
 					shift
 				done
+				;;
+			-d)
+				funcCall_function
 				;;
 			*)                          # --- help ----------------------------
 				echo "${PROG_PATH}"
