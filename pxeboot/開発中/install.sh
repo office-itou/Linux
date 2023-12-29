@@ -1157,6 +1157,7 @@ function funcNetwork_resolv_conf() {
 		nameserver ${IPV4_NSVR[0]}
 _EOT_
 #	chattr -i "${FILE_PATH}"
+#	lsattr "${FILE_PATH}"
 }
 
 # ------ pxe.conf -------------------------------------------------------------
@@ -2287,13 +2288,15 @@ _EOT_
 		funcPrintf "not supported on ${DIST_NAME}"
 		exit 1
 	fi
-	GRUB_CONF="$(find /boot/efi/ -name 'grub.cfg')"
+	GRUB_CONF="$(find /boot/efi/ -name 'grub.cfg' 2> /dev/null || true)"
 	if [[ -z "${GRUB_CONF}" ]]; then
-		GRUB_CONF="$(find /boot/ -name 'grub.cfg')"
+		GRUB_CONF="$(find /boot/ -name 'grub.cfg' 2> /dev/null || true)"
 	fi
-	funcPrintf "      ${MSGS_TITL}: generating grub configuration file"
-	funcPrintf "      ${MSGS_TITL}: ${GRUB_COMD} --output=${GRUB_CONF}"
-	"${GRUB_COMD}" --output="${GRUB_CONF}"
+	if [[ -n "${GRUB_CONF}" ]]; then
+		funcPrintf "      ${MSGS_TITL}: generating grub configuration file"
+		funcPrintf "      ${MSGS_TITL}: ${GRUB_COMD} --output=${GRUB_CONF}"
+		"${GRUB_COMD}" --output="${GRUB_CONF}"
+	fi
 }
 
 # ----- root user -------------------------------------------------------------

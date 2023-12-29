@@ -15,7 +15,7 @@
 	readonly PROG_NAME="${0##*/}"
 	readonly WORK_DIRS="${0%/*}"
 # shellcheck disable=SC2155
-	readonly DIST_NAME="$(uname -v | sed -n -e 's/.*\(debian\|ubuntu\).*/\L\1/ip')"
+	readonly DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\L\1/ip')"
 # shellcheck disable=SC2155
 	readonly PROG_PARM="$(cat /proc/cmdline)"
 	echo "${PROG_NAME}: === Start ==="
@@ -87,13 +87,13 @@ funcIPv4GetNetCIDR() {
 funcInstallPackages() {
 	echo "${PROG_NAME}: funcInstallPackages"
 	#--------------------------------------------------------------------------
-	LIST_TASK="$(sed -n -e '/^[[:blank:]]*tasksel[[:blank:]]\+tasksel\/first[[:blank:]]\+/,/[^\\]$/p' "${TEMP_FILE}" | \
-	             sed -z -e 's/\\\n//g'                                                                               | \
-	             sed -e 's/^.*[[:blank:]]\+multiselect[[:blank:]]\+//'                                                 \
+	LIST_TASK="$(sed -ne '/^[[:blank:]]*tasksel[[:blank:]]\+tasksel\/first[[:blank:]]\+/,/[^\\]$/p' "${TEMP_FILE}" | \
+	             sed -z -e 's/\\\n//g'                                                                             | \
+	             sed -e 's/^.*[[:blank:]]\+multiselect[[:blank:]]\+//'                                               \
 	                 -e 's/[[:blank:]]\+/ /g')"
-	LIST_PACK="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+pkgsel\/include[[:blank:]]\+/,/[^\\]$/p'    "${TEMP_FILE}" | \
-	             sed -z -e 's/\\\n//g'                                                                               | \
-	             sed -e 's/^.*[[:blank:]]\+string[[:blank:]]\+//'                                                      \
+	LIST_PACK="$(sed -ne '/^[[:blank:]]*d-i[[:blank:]]\+pkgsel\/include[[:blank:]]\+/,/[^\\]$/p'    "${TEMP_FILE}" | \
+	             sed -z -e 's/\\\n//g'                                                                             | \
+	             sed -e 's/^.*[[:blank:]]\+string[[:blank:]]\+//'                                                    \
 	                 -e 's/[[:blank:]]\+/ /g')"
 	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK:-}"
 	echo "${PROG_NAME}: LIST_PACK=${LIST_PACK:-}"
@@ -130,15 +130,15 @@ funcInstallPackages() {
 funcSetupNetwork() {
 	echo "${PROG_NAME}: funcSetupNetwork"
 	#--- preseed.cfg parameter ------------------------------------------------
-	FIX_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/\(disable_dhcp\|disable_autoconfig\)[[:blank:]]\+/ s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
-	NIC_IPV4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_ipaddress[[:blank:]]\+/                        s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
-	NIC_MASK="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_netmask[[:blank:]]\+/                          s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
-	NIC_GATE="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_gateway[[:blank:]]\+/                          s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
-	NIC_DNS4="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_nameservers[[:blank:]]\+/                      s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
-	NIC_WGRP="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_domain[[:blank:]]\+/                           s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
-	NIC_HOST="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_hostname[[:blank:]]\+/                         s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
-	NIC_WGRP="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_domain[[:blank:]]\+/                           s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
-	NIC_NAME="$(sed -n -e '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/choose_interface[[:blank:]]\+/                     s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+	FIX_IPV4="$(sed -ne '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/\(disable_dhcp\|disable_autoconfig\)[[:blank:]]\+/ s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+	NIC_IPV4="$(sed -ne '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_ipaddress[[:blank:]]\+/                        s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+	NIC_MASK="$(sed -ne '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_netmask[[:blank:]]\+/                          s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+	NIC_GATE="$(sed -ne '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_gateway[[:blank:]]\+/                          s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+	NIC_DNS4="$(sed -ne '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_nameservers[[:blank:]]\+/                      s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+	NIC_WGRP="$(sed -ne '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_domain[[:blank:]]\+/                           s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+	NIC_HOST="$(sed -ne '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_hostname[[:blank:]]\+/                         s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+	NIC_WGRP="$(sed -ne '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/get_domain[[:blank:]]\+/                           s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
+	NIC_NAME="$(sed -ne '/^[[:blank:]]*d-i[[:blank:]]\+netcfg\/choose_interface[[:blank:]]\+/                     s/^.*[[:blank:]]//p' "${TEMP_FILE}")"
 	NIC_FQDN="${NIC_HOST}"
 	if [ -n "${NIC_WGRP}" ]; then
 		NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
@@ -204,7 +204,7 @@ funcSetupNetwork() {
 	fi
 	IP4_INFO="$(LANG=C ip -f link address show dev "${NIC_NAME}" 2> /dev/null | sed -n '/^2:/ { :l1; p; n; { /^[0-9]\+:/ Q; }; t; b l1; }')"
 	NIC_MADR="$(echo "${IP4_INFO}" | awk '/link\/ether/ {print$2;}')"
-	CON_MADR="$(echo "${NIC_MADR}" | sed -n -e 's/://gp')"
+	CON_MADR="$(echo "${NIC_MADR}" | sed -ne 's/://gp')"
 	#--- hostname / hosts -----------------------------------------------------
 	OLD_FQDN="$(cat "${ROOT_DIRS}/etc/hostname")"
 	OLD_HOST="${OLD_FQDN%.*}"
