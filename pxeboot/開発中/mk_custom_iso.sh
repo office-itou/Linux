@@ -61,7 +61,7 @@
 
 	declare       HOST_NAME=""								# hostname
 	declare -r    WGRP_NAME="workgroup"						# domain
-	declare -r    ETHR_NAME="ens160"						# network device name
+	declare       ETHR_NAME="ens160"						# network device name
 	declare -r    IPV4_ADDR="192.168.1.1"					# IPv4 address
 	declare -r    IPV4_CIDR="24"							# IPv4 cidr
 	declare -r    IPV4_MASK="255.255.255.0"					# IPv4 subnetmask
@@ -74,7 +74,8 @@
 	declare -r    HGFS_DIRS="/mnt/hgfs/workspace/Image"	# vmware shared directory
 
 	# --- configuration file template -----------------------------------------
-	declare -r    CONF_DIRS="${HGFS_DIRS}/linux/bin"
+	declare -r    CONF_LINK="${HGFS_DIRS}/linux/bin"
+	declare -r    CONF_DIRS="${DIRS_CONF}/_template"
 	declare -r    CONF_KICK="${CONF_DIRS}/kickstart_common.cfg"
 	declare -r    CONF_CLUD="${CONF_DIRS}/nocloud-ubuntu-user-data"
 	declare -r    CONF_SEDD="${CONF_DIRS}/preseed_debian.cfg"
@@ -597,7 +598,26 @@ function funcCreate_link() {
 	)
 	declare -a    DATA_LINE=()
 	declare       DIRS_NAME=""
+	declare       FILE_NAME=""
 	declare -i    I=0
+
+	if [[ -n "${CONF_LINK}" ]] && [[ -d "${CONF_LINK}" ]]; then
+		for FILE_NAME in \
+			"${CONF_KICK}" \
+			"${CONF_CLUD}" \
+			"${CONF_SEDD}" \
+			"${CONF_SEDU}" \
+			"${CONF_YAST}"
+		do
+			mkdir -p "${CONF_DIRS}"
+			if [[ -L "${FILE_NAME}" ]]; then
+				funcPrintf "symbolic link exist : ${FILE_NAME##*/}"
+			else
+				funcPrintf "symbolic link create: ${CONF_LINK}/${FILE_NAME##*/} -> ${CONF_DIRS}"
+				ln -s "${CONF_LINK}/${FILE_NAME##*/}" "${CONF_DIRS}"
+			fi
+		done
+	fi
 
 	for ((I=0; I<"${#DATA_LIST[@]}"; I++))
 	do
@@ -1076,6 +1096,7 @@ function funcCreate_preseed_cfg() {
 		"ps_ubuntu_"{server,desktop}{,_old}".cfg"   \
 		"ps_ubiquity_"{server,desktop}{,_old}".cfg" \
 	)
+	declare       FILE_TMPL=""
 	declare -i    I=0
 	# -------------------------------------------------------------------------
 	for ((I=0; I<"${#FILE_LIST[@]}"; I++))
@@ -1315,10 +1336,14 @@ function funcCreate_menu() {
 	declare       FILE_SIZE=""
 	declare       FILE_TIME=""
 	declare       FILE_VLID=""
+	declare       CONF_NAME=""
+	declare       CONF_TIME=""
 	declare -a    WEBS_PAGE=()			# web page data
 	declare       WEBS_DISP=""			# web display data
 	declare       WEBS_REXP=""			# regular expression part of url
 	declare       DIRS_SECT=""
+	declare       DATE_TIME=""
+	declare -i    RET_CD=0
 	declare -i    I=0
 	declare -i    J=0
 	# -------------------------------------------------------------------------
@@ -1394,17 +1419,28 @@ function funcCreate_menu() {
 		DIRS_SECT="${DATA_LINE[8]%%/*}"
 		FILE_ISOS="${DIRS_ISOS}/${DATA_LINE[4]}"										# original file
 		FILE_RMAK="${DIRS_RMAK}/${DATA_LINE[4]%.*}_${DIRS_SECT}.${DATA_LINE[4]##*.}"	# custom file
-		if [[ "${TEXT_COLR}" != "${TXT_RED}" ]]; then
-			if [[ ! -f "${FILE_ISOS}" ]]; then
+		if [[ ! -f "${FILE_ISOS}" ]]; then
+			if [[ "${TEXT_COLR}" != "${TXT_RED}" ]]; then
 				TEXT_COLR="${TXT_CYAN}"
-			else
-				# shellcheck disable=SC2312
-				read -r -a FILE_INFO < <(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${FILE_ISOS}")
-				FILE_SIZE="${FILE_INFO[4]}"
-				FILE_TIME="${FILE_INFO[5]}"
-				if [[ "${DATA_LINE[10]//-}${DATA_LINE[12]//:}" -gt "${FILE_TIME}" ]] || [[ "${DATA_LINE[13]}" -ne "${FILE_SIZE}" ]]; then
+			fi
+			DATA_LINE[10]="-"
+			DATA_LINE[12]="-"
+			DATA_LINE[13]="-"
+		else
+			# shellcheck disable=SC2312
+			read -r -a FILE_INFO < <(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${FILE_ISOS}")
+			FILE_SIZE="${FILE_INFO[4]}"
+			FILE_TIME="${FILE_INFO[5]}"
+			if [[ "${TEXT_COLR}" != "${TXT_RED}" ]]; then
+				DATE_TIME="${DATA_LINE[10]//-}${DATA_LINE[12]//:}"
+				RET_CD="$(funcIsNumeric "${DATE_TIME}")"
+				if [[ "${RET_CD}" -eq 0 ]] && [[ "${DATE_TIME}" -gt "${FILE_TIME}" ]] || [[ "${DATA_LINE[13]}" -ne "${FILE_SIZE}" ]]; then
 					TEXT_COLR="${TXT_GREEN}"
 				fi
+			else
+				DATA_LINE[10]="${FILE_TIME:0:4}-${FILE_TIME:4:2}-${FILE_TIME:6:2}"
+				DATA_LINE[12]="${FILE_TIME:8:2}:${FILE_TIME:10:2}:${FILE_TIME:12:2}"
+				DATA_LINE[13]="${FILE_SIZE}"
 			fi
 		fi
 		# --- local custom file information -----------------------------------
@@ -1418,11 +1454,39 @@ function funcCreate_menu() {
 			read -r -a FILE_INFO < <(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${FILE_RMAK}")
 			FILE_SIZE="${FILE_INFO[4]}"
 			FILE_TIME="${FILE_INFO[5]}"
-			if [[ "${DATA_LINE[10]//-}${DATA_LINE[12]//:}" -gt "${FILE_TIME}" ]]; then
+			DATE_TIME="${DATA_LINE[10]//-}${DATA_LINE[12]//:}"
+			RET_CD="$(funcIsNumeric "${DATE_TIME}")"
+			if [[ "${RET_CD}" -eq 0 ]] && [[ "${DATE_TIME}" -gt "${FILE_TIME}" ]]; then
 				if [[ -z "${TEXT_COLR}" ]]; then
 					TEXT_COLR="${TXT_YELLOW}"
 				fi
 				TEXT_COLR+="${TXT_REV}"
+			else
+				CONF_NAME="${DIRS_CONF}/${DATA_LINE[8]}"
+				if [[ -f "${CONF_NAME}" ]]; then
+					# shellcheck disable=SC2312
+					read -r -a FILE_INFO < <(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${CONF_NAME}")
+					CONF_TIME="${FILE_INFO[5]}"
+					if [[ "${CONF_TIME}" -gt "${FILE_TIME}" ]]; then
+						if [[ -z "${TEXT_COLR}" ]]; then
+							TEXT_COLR="${TXT_YELLOW}"
+						fi
+						TEXT_COLR+="${TXT_REV}"
+					fi
+				elif [[ "${DATA_LINE[8]%%/*}" = "nocloud" ]]; then
+					CONF_NAME="${DIRS_CONF}/${DATA_LINE[8]}/user-data"
+					if [[ -f "${CONF_NAME}" ]]; then
+						# shellcheck disable=SC2312
+						read -r -a FILE_INFO < <(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${CONF_NAME}")
+						CONF_TIME="${FILE_INFO[5]}"
+						if [[ "${CONF_TIME}" -gt "${FILE_TIME}" ]]; then
+							if [[ -z "${TEXT_COLR}" ]]; then
+								TEXT_COLR="${TXT_YELLOW}"
+							fi
+							TEXT_COLR+="${TXT_REV}"
+						fi
+					fi
+				fi
 			fi
 		fi
 		# --- data display ----------------------------------------------------
@@ -1580,61 +1644,62 @@ function funcCreate_autoinst_cfg_syslinux() {
 	declare -a    FILE_IRAM=()								# initrd path
 	declare -a    FILE_VLNZ=()								# kernel path
 	declare -a    WORK_ARRY=()								# work
-	funcPrintf "      create: ${AUTO_PATH##*/} for syslinux"
-	# --- standard installation mode ------------------------------------------
-	FILE_CONF="${DIRS_MENU}/txt.cfg"
-	if [[ ! -f "${FILE_CONF}" ]]; then
-		return
-	fi
-	# shellcheck disable=SC2312
-	mapfile WORK_ARRY < <(sed -ne '/^label[ \t]\+install\(gui\)*/,/\(^[ \t]*$\|^label[ \t]\+\)/p' "${FILE_CONF}") || true
-	if [[ -z "${WORK_ARRY[*]}" ]]; then
-		return
-	fi
-	# shellcheck disable=SC2312
-	read -r -a FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*kernel[ \t]\+/ s/^[ \t]*kernel[ \t]\+\([[:graph:]]\+\)[ \t]*.*$/\1/p')
-	# shellcheck disable=SC2312
-	read -r -a FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*append[ \t]\+/ s/^.*[ \t]*initrd=\([[:graph:]]\+\)[ \t]*.*$/\1/p')
-	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
-		FILE_IRAM="${FILE_IRAM%/*}/${MINI_IRAM}"
-	fi
-	# shellcheck disable=SC2128
-	cat <<- _EOT_ | sed 's/^ *//g' > "${AUTO_PATH}"
-		timeout 50
-		default auto_install
-		
-		label auto_install
-		 	menu label ^Automatic installation
-		 	menu default
-		 	kernel ${FILE_VLNZ}
-		 	append initrd=${FILE_IRAM} vga=791 ${BOOT_OPTN} ---
-		
+
+	rm -f "${AUTO_PATH}"
+	for FILE_CONF in "${DIRS_MENU}/"{txt.cfg,gtk.cfg,isolinux.cfg}
+	do
+		if [[ ! -f "${FILE_CONF}" ]]; then
+			continue
+		fi
+		case "${TGET_LINE[1]}" in
+			*-mini-*       | \
+			debian-*       | \
+			ubuntu-*       ) mapfile WORK_ARRY < <(sed -ne '/^label[ \t]\+install\(gui\)*/,/\(^[ \t]*$\|^label[ \t]\+\)/p' "${FILE_CONF}") || true;;
+			fedora-*       | \
+			centos-*       | \
+			almalinux-*    | \
+			rockylinux-*   | \
+			miraclelinux-* ) mapfile WORK_ARRY < <(sed -ne '/^label[ \t]\+linux/,/\(^[ \t]*$\|^label[ \t]\+\)/p' "${FILE_CONF}") || true;;
+			opensuse-*     ) mapfile WORK_ARRY < <(sed -ne '/^label[ \t]\+linux/,/\(^[ \t]*$\|^label[ \t]\+\)/p' "${FILE_CONF}") || true;;
+			*              ) WORK_ARRY=();;
+		esac
+		if [[ -z "${WORK_ARRY[*]}" ]]; then
+			continue
+		fi
+		# shellcheck disable=SC2312
+		read -r -a FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*kernel[ \t]\+/ s/^[ \t]*kernel[ \t]\+\([[:graph:]]\+\)[ \t]*.*$/\1/p')
+		# shellcheck disable=SC2312
+		read -r -a FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*append[ \t]\+/ s/^.*[ \t]*initrd=\([[:graph:]]\+\)[ \t]*.*$/\1/p')
+		if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
+			if [[ "${FILE_IRAM[0]}" =~ / ]]; then
+				FILE_IRAM[0]="${FILE_IRAM[0]%/*}/${MINI_IRAM}"
+			else
+				FILE_IRAM[0]="${MINI_IRAM}"
+			fi
+		fi
+		if [[ ! -f "${AUTO_PATH}" ]]; then
+			# --- standard installation mode ----------------------------------
+			cat <<- _EOT_ | sed 's/^ *//g' > "${AUTO_PATH}"
+				timeout 50
+				
+				label auto_install
+				 	menu label ^Automatic installation
+				 	menu default
+				 	kernel ${FILE_VLNZ[0]}
+				 	append initrd=${FILE_IRAM[0]} vga=791 ${BOOT_OPTN} ---
+				
 _EOT_
-	# --- graphical installation mode -----------------------------------------
-	FILE_CONF="${DIRS_MENU}/gtk.cfg"
-	if [[ ! -f "${FILE_CONF}" ]]; then
-		return
-	fi
-	# shellcheck disable=SC2312
-	mapfile WORK_ARRY < <(sed -ne '/^label[ \t]\+install\(gui\)*/,/\(^[ \t]*$\|^label[ \t]\+\)/p' "${FILE_CONF}") || true
-	if [[ -z "${WORK_ARRY[*]}" ]]; then
-		return
-	fi
-	# shellcheck disable=SC2312
-	read -r -a FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*kernel[ \t]\+/ s/^[ \t]*kernel[ \t]\+\([[:graph:]]\+\)[ \t]*.*$/\1/p')
-	# shellcheck disable=SC2312
-	read -r -a FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*append[ \t]\+/ s/^.*[ \t]*initrd=\([[:graph:]]\+\)[ \t]*.*$/\1/p')
-	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
-		FILE_IRAM="${FILE_IRAM%/*}/${MINI_IRAM}"
-	fi	# shellcheck disable=SC2128
-	cat <<- _EOT_ | sed 's/^ *//g' >> "${AUTO_PATH}"
-		label auto_installgui
-		 	menu label ^Automatic installation of gui
-		 	menu default
-		 	kernel ${FILE_VLNZ}
-		 	append initrd=${FILE_IRAM} vga=791 ${BOOT_OPTN} ---
-		
+		else
+			# --- graphical installation mode ---------------------------------
+			cat <<- _EOT_ | sed 's/^ *//g' > "${AUTO_PATH}"
+				label auto_installgui
+				 	menu label ^Automatic installation of gui
+				 	kernel ${FILE_VLNZ[0]}
+				 	append initrd=${FILE_IRAM[0]} vga=791 ${BOOT_OPTN} ---
+				
 _EOT_
+		fi
+	done
 }
 
 # ----- create autoinst.cfg for grub ------------------------------------------
@@ -1660,8 +1725,12 @@ function funcCreate_autoinst_cfg_grub() {
 	# shellcheck disable=SC2312
 	read -r -a FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*initrd\(\|efi\)[ \t]\+/ s/^[ \t]*//gp')
 	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
-		FILE_IRAM[1]="${FILE_IRAM[1]%/*}/${MINI_IRAM}"
-	fi	# shellcheck disable=SC2128
+		if [[ "${FILE_IRAM[1]}" =~ / ]]; then
+			FILE_IRAM[1]="${FILE_IRAM[1]%/*}/${MINI_IRAM}"
+		else
+			FILE_IRAM[1]="${MINI_IRAM}"
+		fi
+	fi
 	# shellcheck disable=SC2128
 	cat <<- _EOT_ | sed 's/^ *//g' > "${AUTO_PATH}"
 		set default=0
@@ -1688,8 +1757,12 @@ _EOT_
 	# shellcheck disable=SC2312
 	read -r -a FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*initrd\(\|efi\)[ \t]\+/ s/^[ \t]*//gp')
 	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
-		FILE_IRAM[1]="${FILE_IRAM[1]%/*}/${MINI_IRAM}"
-	fi	# shellcheck disable=SC2128
+		if [[ "${FILE_IRAM[1]}" =~ / ]]; then
+			FILE_IRAM[1]="${FILE_IRAM[1]%/*}/${MINI_IRAM}"
+		else
+			FILE_IRAM[1]="${MINI_IRAM}"
+		fi
+	fi
 	# shellcheck disable=SC2128
 	cat <<- _EOT_ | sed 's/^ *//g' >> "${AUTO_PATH}"
 		menuentry 'Automatic installation of gui' {
@@ -1731,9 +1804,9 @@ function funcCreate_syslinux_cfg() {
 		do
 			# --- comment out "timeout" and "menu default" --------------------
 			set +e
-			read -r -a WORK_ARRY < <(                                   \
-				sed -ne '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/p' \
-				    -ne '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/p'    \
+			read -r -a WORK_ARRY < <(                                         \
+				sed -ne '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/p'       \
+				    -ne '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/p'          \
 				    "${FILE_CONF}"
 			)
 			set -e
@@ -1754,6 +1827,12 @@ function funcCreate_syslinux_cfg() {
 				INSR_STRS="$(sed -ne '/^include[ \t]\+[^ \t]*stdmenu.cfg[^[:graph:]]*$/p' "${FILE_CONF}")"
 				sed -i "${FILE_CONF}"                                                                               \
 				    -e '/^\(include[ \t]\+\)[^ \t]*stdmenu.cfg[^[:graph:]]*$/ a '"${INSR_STRS/stdmenu.cfg/${AUTO_INST}}"''
+			elif [[ "${FILE_CONF##*/}" = "isolinux.cfg" ]]; then
+				AUTO_FLAG=1
+				sed -i "${FILE_CONF}"                        \
+				    -e '0,/label/ {'                         \
+				    -e '/label/i include '"${AUTO_INST}"'\n' \
+				    -e '}'
 			fi
 		done
 		if [[ "${AUTO_FLAG}" -ne 0 ]]; then
@@ -1791,9 +1870,9 @@ function funcCreate_grub_cfg() {
 		    -e '/^[ \t]*set[ \t]\+default=/ s/^/#/g' \
 		    -e '/^[ \t]*set[ \t]\+timeout=/ s/^/#/g'
 		# --- insert "autoinst.cfg" ---------------------------------------
-		sed -i "${FILE_MENU}"                                                  \
-		    -e '0,/^menuentry/ {'                                              \
-		    -e "/^menuentry/ i source ${DIRS_MENU/${WORK_IMGS}/}/${AUTO_INST}" \
+		sed -i "${FILE_MENU}"                                                       \
+		    -e '0,/^menuentry/ {'                                                   \
+		    -e '/^menuentry/i source '"${DIRS_MENU/${WORK_IMGS}/}/${AUTO_INST}"'\n' \
 		    -e '}'
 		funcCreate_autoinst_cfg_grub "${DIRS_MENU}/${AUTO_INST}" "${BOOT_OPTN}" "${TGET_LINE[@]}"
 	done < <(find "${WORK_IMGS}" -name 'grub.cfg' -type f)
@@ -1812,7 +1891,7 @@ function funcCreate_remaster_preseed() {
 	# --- boot option ---------------------------------------------------------
 	case "${TGET_LINE[1]}" in
 		*-mini-* ) BOOT_OPTN="auto=true";;
-		*        ) BOOT_OPTN="auto=true preseed/file=/${TGET_LINE[8]}";;
+		*        ) BOOT_OPTN="auto=true preseed/file=/cdrom/${TGET_LINE[8]}";;
 	esac
 	BOOT_OPTN+=" netcfg/disable_autoconfig=true"
 	BOOT_OPTN+=" netcfg/choose_interface=${ETHR_NAME}"
@@ -1907,6 +1986,10 @@ function funcCreate_remaster_autoyast() {
 	declare -r    WORK_IMGS="${WORK_DIRS}/img"
 	declare -r    WORK_CONF="${WORK_IMGS}/autoyast"
 	funcPrintf "      create: boot options for autoyast"
+	case "${TGET_LINE[1]}" in
+		opensuse-*-15* ) ETHR_NAME="eth0";;
+		*              ) ;;
+	esac
 	# --- boot option ---------------------------------------------------------
 	BOOT_OPTN="autoyast=cd:/${TGET_LINE[8]}"
 	BOOT_OPTN+=" hostname=${HOST_NAME}.${WGRP_NAME} ifcfg=${ETHR_NAME}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME}"
@@ -1937,6 +2020,8 @@ function funcCreate_remaster_iso_file() {
 	declare       FILE_HBRD=""
 	declare       FILE_BCAT=""
 	declare       FILE_IBIN=""
+	declare -a    DIRS_FIND=()
+	declare       DIRS_BOOT=""
 	declare       DIRS_UEFI=""
 	declare       FILE_UEFI=""
 	declare       ISOS_PATH=""
@@ -1961,12 +2046,25 @@ function funcCreate_remaster_iso_file() {
 	funcPrintf "      create: ${FILE_NAME}"
 	mkdir -p "${DIRS_RMAK}"
 	pushd "${WORK_IMGS}" > /dev/null
-		FILE_HBRD="$(find /usr/lib -name 'isohdpfx.bin'                            -type f              || true)"
-		FILE_BCAT="$(find .     \( -name 'boot.cat'     -o -name 'boot.catalog' \) -type f -printf "%P" || true)"
-		FILE_IBIN="$(find .     \( -name 'isolinux.bin' -o -name 'eltorito.img' \) -type f -printf "%P" || true)"
-		FILE_UEFI="$(find .        -name 'efi*.img'                                -type f -printf "%P" || true)"
+		FILE_HBRD="$(find /usr/lib       -name 'isohdpfx.bin'                             -type f              || true)"
+		FILE_BCAT="$(find .          \( -iname 'boot.cat'     -o -iname 'boot.catalog' \) -type f -printf "%P" || true)"
+		FILE_IBIN="$(find .          \( -iname 'isolinux.bin' -o -iname 'eltorito.img' \) -type f -printf "%P" || true)"
+		DIRS_BOOT="$(find . -maxdepth 1 -iname 'boot'                                     -type d -printf "%P" || true)"
+		DIRS_UEFI="$(find . -maxdepth 1 -iname 'efi'                                      -type d -printf "%P" || true)"
+		if [[ -n "${DIRS_UEFI}" ]]; then
+			DIRS_UEFI="$(find "${DIRS_UEFI}" -iname 'boot' -type d || true)"
+		fi
+		if [[ -n "${DIRS_BOOT}" ]] && [[ -n "${DIRS_UEFI}" ]]; then
+			DIRS_FIND=("${DIRS_BOOT}" "${DIRS_UEFI}")
+		elif [[ -n "${DIRS_BOOT}" ]]; then
+			DIRS_FIND=("${DIRS_BOOT}")
+		elif [[ -n "${DIRS_UEFI}" ]]; then
+			DIRS_FIND=("${DIRS_UEFI}")
+		else
+			DIRS_FIND=(".")
+		fi
+		FILE_UEFI="$(find "${DIRS_FIND[@]}" -iname 'efi*.img' -type f || true)"
 		if [[ -z "${FILE_UEFI}" ]]; then
-			DIRS_UEFI="$(find . -iname 'efi' -type d -exec find '{}' -iname 'boot' -type d \;)"
 			FILE_UEFI="${DIRS_UEFI/.\//}/efi.img"
 			ISOS_PATH="${DIRS_ISOS}/${TGET_LINE[4]}"
 			ISOS_INFO=("$(fdisk -l "${ISOS_PATH}")")
@@ -2262,7 +2360,7 @@ function funcCall_debug() {
 		shift
 	done
 	# shellcheck disable=SC2034
-	COMD_RETN="COMD_LIST[@]:-}"
+	COMD_RETN="${COMD_LIST[*]:-}"
 }
 
 # ---- config -----------------------------------------------------------------
@@ -2314,7 +2412,7 @@ function funcCall_config() {
 		shift
 	done
 	# shellcheck disable=SC2034
-	COMD_RETN="COMD_LIST[@]:-}"
+	COMD_RETN="${COMD_LIST[*]:-}"
 }
 
 # ---- create -----------------------------------------------------------------
@@ -2322,6 +2420,7 @@ function funcCall_create() {
 #	declare -r    OLD_IFS="${IFS}"
 	declare -r    MSGS_TITL="call create"
 	declare -n    COMD_RETN="$1"
+	declare -r -a COMD_ENUM=("mini" "net" "dvd" "live" "tool")
 	declare -a    COMD_LIST=()
 	declare -a    DATA_LIST=()
 	# -------------------------------------------------------------------------
@@ -2330,7 +2429,8 @@ function funcCall_create() {
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-		COMD_LIST=("mini" "net" "dvd" "live" "tool" "$@")
+#		COMD_LIST=("mini" "net" "dvd" "live" "tool" "$@")
+		COMD_LIST=("${COMD_ENUM[@]}" "$@")
 		IFS=' =,'
 		set -f
 		set -- "${COMD_LIST[@]:-}"
@@ -2357,15 +2457,24 @@ function funcCall_create() {
 		if [[ "${#DATA_LIST[@]}" -gt 0 ]]; then
 			funcCreate_menu "${DATA_LIST[@]}"
 			case "${2:-}" in
-				a | all ) shift; TGET_INDX="{1..${#TGET_LIST[@]}}";;
-				*       ) funcCreate_target_list;;
+				a | all )
+					shift
+					TGET_INDX="{1..${#TGET_LIST[@]}}"
+					;;
+				*       )
+					shift
+					TGET_INDX="${*%"${COMD_ENUM[*]// /\\\|}"*}"
+					if [[ -z "${TGET_INDX}" ]]; then
+						funcCreate_target_list
+					fi
+					;;
 			esac
 			funcCreate_remaster
 		fi
 		shift
 	done
 	# shellcheck disable=SC2034
-	COMD_RETN="COMD_LIST[@]:-}"
+	COMD_RETN="${COMD_LIST[*]:-}"
 }
 
 # === main ====================================================================
