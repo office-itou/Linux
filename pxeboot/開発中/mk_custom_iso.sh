@@ -55,6 +55,10 @@
 	declare -i    ROWS_SIZE=80
 	declare -i    COLS_SIZE=25
 
+# --- niceness values ---------------------------------------------------------
+	declare -r -i NICE_VALU=19								# -20: favorable to the process
+															#  19: least favorable to the process
+
 # --- set parameters ----------------------------------------------------------
 
 	# === network =============================================================
@@ -1615,7 +1619,7 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${WORK_DIRS}/"{mnt,img,ram}
 	# --- copy iso -> hdd -----------------------------------------------------
 	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
-	nice -n 10 cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
+	nice -n "${NICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
 	umount "${WORK_MNTP}"
 	# --- copy initrd -> hdd ----------------------------------------------
 	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
@@ -1644,7 +1648,7 @@ function funcCreate_autoinst_cfg_syslinux() {
 	declare -a    FILE_IRAM=()								# initrd path
 	declare -a    FILE_VLNZ=()								# kernel path
 	declare -a    WORK_ARRY=()								# work
-
+	funcPrintf "      create: ${AUTO_PATH##*/} for syslinux"
 	rm -f "${AUTO_PATH}"
 	for FILE_CONF in "${DIRS_MENU}/"{txt.cfg,gtk.cfg,isolinux.cfg}
 	do
@@ -1681,7 +1685,7 @@ function funcCreate_autoinst_cfg_syslinux() {
 			# --- standard installation mode ----------------------------------
 			cat <<- _EOT_ | sed 's/^ *//g' > "${AUTO_PATH}"
 				timeout 50
-				
+			
 				label auto_install
 				 	menu label ^Automatic installation
 				 	menu default
@@ -1691,7 +1695,7 @@ function funcCreate_autoinst_cfg_syslinux() {
 _EOT_
 		else
 			# --- graphical installation mode ---------------------------------
-			cat <<- _EOT_ | sed 's/^ *//g' > "${AUTO_PATH}"
+			cat <<- _EOT_ | sed 's/^ *//g' >> "${AUTO_PATH}"
 				label auto_installgui
 				 	menu label ^Automatic installation of gui
 				 	kernel ${FILE_VLNZ[0]}
@@ -1713,68 +1717,59 @@ function funcCreate_autoinst_cfg_grub() {
 	declare -a    FILE_IRAM=()								# initrd path
 	declare -a    FILE_VLNZ=()								# kernel path
 	declare -a    WORK_ARRY=()								# work
+	declare       MENU_ENTR=""
 	funcPrintf "      create: ${AUTO_PATH##*/} for grub.cfg"
-	# --- standard installation mode ------------------------------------------
-	# shellcheck disable=SC2312
-	mapfile WORK_ARRY < <(sed -ne '/^menuentry[ \t]\+.*['\''"]Install.*['\''"]/,/^[ \t]*}[ \t]*$/p' "${FILE_CONF}") || true
-	if [[ -z "${WORK_ARRY[*]}" ]]; then
-		return
-	fi
-	# shellcheck disable=SC2312
-	read -r -a FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*linux\(\|efi\)[ \t]\+/  s/^[ \t]*//gp')
-	# shellcheck disable=SC2312
-	read -r -a FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*initrd\(\|efi\)[ \t]\+/ s/^[ \t]*//gp')
-	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
-		if [[ "${FILE_IRAM[1]}" =~ / ]]; then
-			FILE_IRAM[1]="${FILE_IRAM[1]%/*}/${MINI_IRAM}"
-		else
-			FILE_IRAM[1]="${MINI_IRAM}"
+	rm -f "${AUTO_PATH}"
+	for MENU_ENTR in "Install" "Graphical"
+	do
+		mapfile WORK_ARRY < <(sed -ne '/^menuentry[ \t]\+.*['\''"]'\"${MENU_ENTR}\"'.*['\''"]/,/^[ \t]*}[ \t]*$/p' "${FILE_CONF}") || true
+		if [[ -z "${WORK_ARRY[*]}" ]]; then
+			continue
 		fi
-	fi
-	# shellcheck disable=SC2128
-	cat <<- _EOT_ | sed 's/^ *//g' > "${AUTO_PATH}"
-		set default=0
-		set timeout=5
-		
-		menuentry 'Automatic installation' {
-		 	set gfxpayload=keep
-		 	set background_color=black
-		 	echo 'Loading kernel ...'
-		 	${FILE_VLNZ[0]} ${FILE_VLNZ[1]} vga=791 ${BOOT_OPTN} ---
-		 	echo 'Loading initial ramdisk ...'
-		 	${FILE_IRAM[0]} ${FILE_IRAM[1]}
-		}
-		
-_EOT_
-	# --- graphical installation mode -----------------------------------------
-	# shellcheck disable=SC2312
-	mapfile WORK_ARRY < <(sed -ne '/^menuentry[ \t]\+.*['\''"]Graphical.*['\''"]/,/^[ \t]*}[ \t]*$/p' "${FILE_CONF}") || true
-	if [[ -z "${WORK_ARRY[*]}" ]]; then
-		return
-	fi
-	# shellcheck disable=SC2312
-	read -r -a FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*linux\(\|efi\)[ \t]\+/  s/^[ \t]*//gp')
-	# shellcheck disable=SC2312
-	read -r -a FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*initrd\(\|efi\)[ \t]\+/ s/^[ \t]*//gp')
-	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
-		if [[ "${FILE_IRAM[1]}" =~ / ]]; then
-			FILE_IRAM[1]="${FILE_IRAM[1]%/*}/${MINI_IRAM}"
-		else
-			FILE_IRAM[1]="${MINI_IRAM}"
+		# shellcheck disable=SC2312
+		read -r -a FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*linux\(\|efi\)[ \t]\+/  s/^[ \t]*//gp')
+		# shellcheck disable=SC2312
+		read -r -a FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*initrd\(\|efi\)[ \t]\+/ s/^[ \t]*//gp')
+		if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
+			if [[ "${FILE_IRAM[1]}" =~ / ]]; then
+				FILE_IRAM[1]="${FILE_IRAM[1]%/*}/${MINI_IRAM}"
+			else
+				FILE_IRAM[1]="${MINI_IRAM}"
+			fi
 		fi
-	fi
-	# shellcheck disable=SC2128
-	cat <<- _EOT_ | sed 's/^ *//g' >> "${AUTO_PATH}"
-		menuentry 'Automatic installation of gui' {
-		 	set gfxpayload=keep
-		 	set background_color=black
-		 	echo 'Loading kernel ...'
-		 	${FILE_VLNZ[0]} ${FILE_VLNZ[1]} vga=791 ${BOOT_OPTN} ---
-		 	echo 'Loading initial ramdisk ...'
-		 	${FILE_IRAM[0]} ${FILE_IRAM[1]}
-		}
-		
+		if [[ ! -f "${AUTO_PATH}" ]]; then
+			# --- standard installation mode ----------------------------------
+			# shellcheck disable=SC2128
+			cat <<- _EOT_ | sed 's/^ *//g' > "${AUTO_PATH}"
+				set default=0
+				set timeout=5
+				
+				menuentry 'Automatic installation' {
+				 	set gfxpayload=keep
+				 	set background_color=black
+				 	echo 'Loading kernel ...'
+				 	${FILE_VLNZ[0]} ${FILE_VLNZ[1]} vga=791 ${BOOT_OPTN} ---
+				 	echo 'Loading initial ramdisk ...'
+				 	${FILE_IRAM[0]} ${FILE_IRAM[1]}
+				}
+				
 _EOT_
+		else
+			# --- graphical installation mode ---------------------------------
+			# shellcheck disable=SC2128
+			cat <<- _EOT_ | sed 's/^ *//g' >> "${AUTO_PATH}"
+				menuentry 'Automatic installation of gui' {
+				 	set gfxpayload=keep
+				 	set background_color=black
+				 	echo 'Loading kernel ...'
+				 	${FILE_VLNZ[0]} ${FILE_VLNZ[1]} vga=791 ${BOOT_OPTN} ---
+				 	echo 'Loading initial ramdisk ...'
+				 	${FILE_IRAM[0]} ${FILE_IRAM[1]}
+				}
+				
+_EOT_
+		fi
+	done
 }
 
 # ----- create syslinux.cfg ---------------------------------------------------
@@ -1802,18 +1797,36 @@ function funcCreate_syslinux_cfg() {
 		# --- editing the configuration file ----------------------------------
 		for FILE_CONF in "${DIRS_MENU}/"*.cfg
 		do
-			# --- comment out "timeout" and "menu default" --------------------
+			# --- comment out "timeout","menu default","ontimeout","menu tabmsg" ---
 			set +e
-			read -r -a WORK_ARRY < <(                                         \
-				sed -ne '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/p'       \
-				    -ne '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/p'          \
+			read -r -a WORK_ARRY < <(                                                \
+				sed -ne '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/p'              \
+				    -ne '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/p'                 \
+				    -ne '/^[ \t]*ontimeout[ \t]\+.*[^[:graph:]]*$/p'                 \
+				    -ne '/^[ \t]*menu autoboot[ \t]\+.*[^[:graph:]]*$/p'             \
+				    -ne '/^[ \t]*menu tabmsg[ \t]\+.*[^[:graph:]]*$/p'               \
 				    "${FILE_CONF}"
 			)
 			set -e
 			if [[ -n "${WORK_ARRY[*]}" ]]; then
-				sed -i "${FILE_CONF}"                                         \
-				    -e '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/ s/^/#/g' \
-				    -e '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/    s/^/#/g'
+				sed -i "${FILE_CONF}"                                                \
+				    -e '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/        s/^/#/g' \
+				    -e '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/           s/^/#/g' \
+				    -e '/^[ \t]*ontimeout[ \t]\+.*[^[:graph:]]*$/           s/^/#/g' \
+				    -e '/^[ \t]*menu[ \t]\+autoboot[ \t]\+.*[^[:graph:]]*$/ s/^/#/g' \
+				    -e '/^[ \t]*menu[ \t]\+tabmsg[ \t]\+.*[^[:graph:]]*$/   s/^/#/g'
+			fi
+			# --- comment out "default" ---------------------------------------
+			set +e
+			read -r -a WORK_ARRY < <(                                                \
+				sed -ne '/^label[ \t]\+.*/,/\(^[ \t]*$\|^label[ \t]\+\)/p'           \
+				    "${FILE_CONF}"
+			)
+			set -e
+			if [[ -n "${WORK_ARRY[*]}" ]]; then
+				sed -i "${FILE_CONF}"                                                \
+				    -e '/^label[ \t]\+.*/,/\(^[ \t]*$\|^label[ \t]\+\)/ {'           \
+				    -e '/^[ \t]*default[ \t]\+[[:graph:]]\+/                s/^/#/g}'
 			fi
 			# --- insert "autoinst.cfg" ---------------------------------------
 			set +e
@@ -2076,7 +2089,7 @@ function funcCreate_remaster_iso_file() {
 		rm -f md5sum.txt
 		find . ! -name 'md5sum.txt' -type f -exec md5sum {} \; > md5sum.txt
 		chmod ugo-w md5sum.txt
-		nice -n 10 xorriso -as mkisofs \
+		nice -n "${NICE_VALU}" xorriso -as mkisofs \
 		    -quiet \
 		    -volid "${TGET_LINE[14]//%20/ }" \
 		    -eltorito-boot "${FILE_IBIN}" \
