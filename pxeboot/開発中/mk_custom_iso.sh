@@ -1722,7 +1722,7 @@ function funcCreate_autoinst_cfg_grub() {
 	rm -f "${AUTO_PATH}"
 	for MENU_ENTR in "Install" "Graphical"
 	do
-		mapfile WORK_ARRY < <(sed -ne '/^menuentry[ \t]\+.*['\''"]'\"${MENU_ENTR}\"'.*['\''"]/,/^[ \t]*}[ \t]*$/p' "${FILE_CONF}") || true
+		mapfile WORK_ARRY < <(sed -ne '/^menuentry[ \t]\+.*['\''"]'"${MENU_ENTR}"'.*['\''"]/,/^[ \t]*}[ \t]*$/p' "${FILE_CONF}") || true
 		if [[ -z "${WORK_ARRY[*]}" ]]; then
 			continue
 		fi
@@ -2436,6 +2436,8 @@ function funcCall_create() {
 	declare -r -a COMD_ENUM=("mini" "net" "dvd" "live" "tool")
 	declare -a    COMD_LIST=()
 	declare -a    DATA_LIST=()
+	declare       WORK_PARM=""
+	declare       WORK_ENUM=""
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
@@ -2468,20 +2470,25 @@ function funcCall_create() {
 				;;
 		esac
 		if [[ "${#DATA_LIST[@]}" -gt 0 ]]; then
+			TGET_INDX=""
+			TGET_LIST=()
 			funcCreate_menu "${DATA_LIST[@]}"
 			case "${2:-}" in
 				a | all )
-					shift
+					shift;
 					TGET_INDX="{1..${#TGET_LIST[@]}}"
 					;;
 				*       )
 					shift
-					TGET_INDX="${*%"${COMD_ENUM[*]// /\\\|}"*}"
-					if [[ -z "${TGET_INDX}" ]]; then
-						funcCreate_target_list
-					fi
+					WORK_PARM="$*"
+					WORK_ENUM="${COMD_ENUM[*]}"
+					# shellcheck disable=SC2001
+					TGET_INDX="$(echo "${WORK_PARM}" | sed -e 's/\('"${WORK_ENUM// /\\|}"'\).*//g')"
 					;;
 			esac
+			if [[ -z "${TGET_INDX}" ]]; then
+				funcCreate_target_list
+			fi
 			funcCreate_remaster
 		fi
 		shift
