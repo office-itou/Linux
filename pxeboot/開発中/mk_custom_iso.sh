@@ -2081,7 +2081,9 @@ _EOT_
 		do
 			IMGS_PATH="${WORK_IMGS}/${IMGS_FILE[I]#/}"
 			# shellcheck disable=SC2312
-			if [[ -f "${IMGS_PATH}" ]] && [[ "$(file "${IMGS_PATH}" | awk '{sub("-bit.*", "", $8); print $8;}')" -ge 8 ]]; then
+			if [[ -f "${IMGS_PATH}" ]] \
+			&& { { [[ "${IMGS_PATH##*.}" = "png" ]] && [[ "$(file "${IMGS_PATH}" | awk '{sub("-bit.*", "", $8 ); print  $8;}')" -ge 8 ]]; } \
+			||   { [[ "${IMGS_PATH##*.}" = "jpg" ]] && [[ "$(file "${IMGS_PATH}" | awk '{sub(",.*",    "", $17); print $17;}')" -ge 8 ]]; } }; then
 				# shellcheck disable=SC2128
 				cat <<- _EOT_ | sed -e 's/^ *//g' > "${CONF_FILE}"
 					desktop-image: "${IMGS_FILE[I]}"
