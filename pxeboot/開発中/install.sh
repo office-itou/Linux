@@ -443,15 +443,28 @@ function funcPrintf() {
 	declare -i    TEMP_CNT=0
 	declare -i    CTRL_CNT=0
 	# -------------------------------------------------------------------------
+	# %[-9.9][diouxXfeEgGcs]
 	if [[ "$1" = "--no-cutting" ]]; then
 		shift
-#		printf "%s\n" "$@"
-		echo -e "$@"
+		# shellcheck disable=SC2312
+		if [[ -n "$(echo "$1" | sed -ne '/%[0-9.-]*[diouxXfeEgGcs]\+/p')" ]]; then
+			# shellcheck disable=SC2059
+			INP_STR="$(printf "$@")"
+		else
+			INP_STR="$(echo -e "$@")"
+		fi
+		echo -e "${INP_STR}${TXT_RESET}"
 		return
 	fi
 	IFS=$'\n'
-	INP_STR="$(echo -e "$@")"
-#	INP_STR="$(printf "%s" "$@")"
+#	INP_STR="$(echo -e "$@")"
+	# shellcheck disable=SC2312
+	if [[ -n "$(echo "$1" | sed -ne '/%[0-9.-]*[diouxXfeEgGcs]\+/p')" ]]; then
+		# shellcheck disable=SC2059
+		INP_STR="$(printf "$@")"
+	else
+		INP_STR="$(echo -e "$@")"
+	fi
 	# --- convert sjis code ---------------------------------------------------
 	SJIS_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932)"
 	SJIS_CNT="$(echo -n "${SJIS_STR}" | wc -c)"
@@ -510,6 +523,7 @@ function funcUnit_conversion() {
 	do
 		CALC_UNIT=$((1024**I))
 		if [[ "$1" -ge "${CALC_UNIT}" ]]; then
+			# shellcheck disable=SC2312
 			printf "%s %s" "$(echo "$1" "${CALC_UNIT}" | awk '{printf("%.1f", $1/$2)}')" "${TEXT_UNIT[${I}]}"
 			return
 		fi
@@ -523,11 +537,11 @@ function funcCurl() {
 	declare -i    RET_CD=0
 	declare -i    I
 	# shellcheck disable=SC2155
-	declare       INP_URL="$(echo "$@" | sed -n -e 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
+	declare       INP_URL="$(echo "$@" | sed -ne 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
 	# shellcheck disable=SC2155
-	declare       OUT_DIR="$(echo "$@" | sed -n -e 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+	declare       OUT_DIR="$(echo "$@" | sed -ne 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
 	# shellcheck disable=SC2155
-	declare       OUT_FILE="$(echo "$@" | sed -n -e 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+	declare       OUT_FILE="$(echo "$@" | sed -ne 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
 	declare -a    ARY_HED=("")
 	declare       ERR_MSG=""
 	declare       WEB_SIZ=""
@@ -545,13 +559,13 @@ function funcCurl() {
 	RET_CD=$?
 	set -e
 	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
-		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -n -e '/^HTTP/p' | sed -z 's/\n\|\r\|\l//g')
+		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
 		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 		return "${RET_CD}"
 	fi
-	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -n -e '/http\/.* 200/,/^$/ s/'''$'\r//gp' | sed -n -e '/content-length:/ s/.*: //p')
+	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -ne '/http\/.* 200/,/^$/ s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p')
 	# shellcheck disable=SC2312
-	WEB_TIM=$(TZ=UTC date -d "$(echo "${ARY_HED[@],,}" | sed -n -e '/http\/.* 200/,/^$/ s/'''$'\r//gp' | sed -n -e '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
+	WEB_TIM=$(TZ=UTC date -d "$(echo "${ARY_HED[@],,}" | sed -ne '/http\/.* 200/,/^$/ s/'$'\r''//gp' | sed -ne '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
 	WEB_FIL="${OUT_DIR:-.}/${INP_URL##*/}"
 	if [[ -n "${OUT_DIR}" ]] && [[ ! -d "${OUT_DIR}/." ]]; then
 		mkdir -p "${OUT_DIR}"
@@ -960,7 +974,7 @@ function funcNetwork_connmanctl() {
 		else
 			funcPrintf "      ${MSGS_TITL}: create config file, because empty"
 			funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
-			cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_PATH}"
+			cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_PATH}"
 				AllowHostnameUpdates = false
 				PreferredTechnologies = ethernet,wifi
 				SingleConnectedTechnology = true
@@ -980,7 +994,7 @@ _EOT_
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 	mkdir -p "${FILE_PATH%/*}"
 	# shellcheck disable=SC2312
-	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_PATH}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_PATH}"
 		[Service]
 		ExecStart=
 		ExecStart=$(command -v connmand 2> /dev/null) -n --nodnsproxy
@@ -1042,7 +1056,7 @@ function funcNetwork_netplan() {
 	fi
 	funcPrintf "      ${MSGS_TITL}: create config file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
-	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_PATH}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_PATH}"
 		network:
 		  version: 2
 		  ethernets:
@@ -1104,7 +1118,7 @@ function funcNetwork_networkmanager() {
 	fi
 	funcPrintf "      ${MSGS_TITL}: create config file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
-	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_PATH}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_PATH}"
 		${CONF_PARM}
 _EOT_
 	# -------------------------------------------------------------------------
@@ -1149,7 +1163,7 @@ function funcNetwork_resolv_conf() {
 	funcPrintf "      ${MSGS_TITL}: create config file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 #	chattr +i "${FILE_PATH}"
-	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_PATH}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_PATH}"
 		# Generated by User script
 		search ${IPV4_WGRP[0]}
 		nameserver ::1
@@ -1221,7 +1235,7 @@ function funcNetwork_pxe_conf() {
 	fi
 	funcPrintf "      ${MSGS_TITL}: create config file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
-	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_PATH}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_PATH}"
 		# log
 		#log-facility=/var/log/dnsmasq/dnsmasq.log
 		#log-queries
@@ -1518,7 +1532,7 @@ function funcApplication_system_user_environment() {
 			fi
 			funcPrintf "      ${MSGS_TITL}: create config file"
 			funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
-			cat <<- '_EOT_' | sed 's/^ *//g' > "${FILE_PATH}"
+			cat <<- '_EOT_' | sed -e 's/^ *//g' > "${FILE_PATH}"
 				set number              " Print the line number in front of each line.
 				set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
 				set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
@@ -1549,7 +1563,7 @@ _EOT_
 			fi
 			funcPrintf "      ${MSGS_TITL}: create config file"
 			funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
-			cat <<- '_EOT_' | sed 's/^ *//g' > "${FILE_PATH}"
+			cat <<- '_EOT_' | sed -e 's/^ *//g' > "${FILE_PATH}"
 				location
 				progress-bar
 				remote-time
@@ -1581,7 +1595,7 @@ _EOT_
 			fi
 			funcPrintf "      ${MSGS_TITL}: setup config file"
 			funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
-			cat <<- '_EOT_' | sed 's/^ *//g' >> "${FILE_PATH}"
+			cat <<- '_EOT_' | sed -e 's/^ *//g' >> "${FILE_PATH}"
 				# --- measures against garbled characters ---
 				case "${TERM}" in
 				    linux ) export LANG=C;;
@@ -1836,7 +1850,7 @@ function funcApplication_ntp_timesyncd() {
 	fi
 	funcPrintf "      ${MSGS_TITL}: create config file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
-	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_PATH}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_PATH}"
 		# --- user settings ---
 		[Time]
 		NTP=${NTPS_NAME}
@@ -1881,7 +1895,7 @@ function funcApplication_openssh() {
 	fi
 	funcPrintf "      ${MSGS_TITL}: create config file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
-	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_PATH}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_PATH}"
 		# --- user settings ---
 		
 		# port number to listen to ssh
@@ -2057,7 +2071,7 @@ function funcApplication_samba() {
 	    -e '/^[ \t]*winbind separator[ \t]*=/d'                 \
 	    -e 's/^\([ \t]*dos charset[ \t]*=[ \t]*\).*$/\1=CP932/' \
 	>   "${FILE_TEMP}"
-	cat <<- _EOT_ | sed 's/^ *//g' >> "${FILE_TEMP}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' >> "${FILE_TEMP}"
 		[homes]
 		 	comment = Home Directories
 		 	valid users = %S
@@ -2212,7 +2226,7 @@ function funcApplication_open_vm_tools() {
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 	# shellcheck disable=SC2312
 	if [[ -f "${FILE_PATH}" ]] && [[ -z "$(sed -n "/${HGFS_FSYS}/p" "${FILE_PATH}")" ]]; then
-		cat <<- _EOT_ | sed 's/^ *//g' >> "${FILE_PATH}"
+		cat <<- _EOT_ | sed -e 's/^ *//g' >> "${FILE_PATH}"
 			.host:/         ${HGFS_DIRS}       ${HGFS_FSYS} allow_other,auto_unmount,defaults 0 0
 _EOT_
 	fi
@@ -2261,7 +2275,7 @@ function funcApplication_grub() {
 		    -e '/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/^/#/g' \
 		    -e '/^GRUB_RECORDFAIL_TIMEOUT=/    s/^/#/g' \
 		    -e '/^GRUB_TIMEOUT=/               s/^/#/g'
-		cat <<- _EOT_ | sed 's/^ *//g' >> "${FILE_PATH}"
+		cat <<- _EOT_ | sed -e 's/^ *//g' >> "${FILE_PATH}"
 			
 			${TITL_TEXT}
 			GRUB_CMDLINE_LINUX_DEFAULT="quiet video=${SCRN_SIZE}"
@@ -2734,12 +2748,12 @@ function funcCall_function() {
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
-	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_WRK1}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_WRK1}"
 		line 1
 		line 2
 		line 3
 _EOT_
-	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_WRK2}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_WRK2}"
 		line 1
 		Line 2
 		line 3
@@ -3219,8 +3233,36 @@ function funcMain() {
 		funcPrintf "---- parameter $(funcString "${COLS_SIZE}" '-')"
 		# ---------------------------------------------------------------------
 		funcSystem_parameter				# system parameter
+		# ---------------------------------------------------------------------
 		funcNetwork_parameter				# network parameter
-
+		# ---------------------------------------------------------------------
+		# shellcheck disable=SC2312
+		funcPrintf "---- system information $(funcString "${COLS_SIZE}" '-')"
+		funcPrintf "     distribution name  : ${DIST_NAME}"
+		funcPrintf "     code name          : ${DIST_CODE}"
+		funcPrintf "     version name       : ${DIST_VERS}"
+		funcPrintf "     version number     : ${DIST_VRID}"
+		# shellcheck disable=SC2312
+		funcPrintf "---- network information $(funcString "${COLS_SIZE}" '-')"
+		funcPrintf "     network device name: ${ETHR_NAME[0]}"
+		funcPrintf "     network mac address: ${ETHR_MADR[0]}"
+		funcPrintf "     IPv4 address       : ${IPV4_ADDR[0]}"
+		funcPrintf "     IPv4 cidr          : ${IPV4_CIDR[0]}"
+		funcPrintf "     IPv4 subnetmask    : ${IPV4_MASK[0]}"
+		funcPrintf "     IPv4 gateway       : ${IPV4_GWAY[0]}"
+		funcPrintf "     IPv4 nameserver    : ${IPV4_NSVR[0]}"
+		funcPrintf "     IPv4 domain        : ${IPV4_WGRP[0]}"
+		funcPrintf "     IPv4 dhcp mode     : ${IPV4_DHCP[0]}"
+		funcPrintf "     IPv6 address       : ${IPV6_ADDR[0]}"
+		funcPrintf "     IPv6 cidr          : ${IPV6_CIDR[0]}"
+		funcPrintf "     IPv6 subnetmask    : ${IPV6_MASK[0]}"
+		funcPrintf "     IPv6 gateway       : ${IPV6_GWAY[0]}"
+		funcPrintf "     IPv6 nameserver    : ${IPV6_NSVR[0]}"
+		funcPrintf "     IPv6 domain        : ${IPV6_WGRP[0]}"
+		funcPrintf "     IPv6 dhcp mode     : ${IPV6_DHCP[0]}"
+		funcPrintf "     LINK address       : ${LINK_ADDR[0]}"
+		funcPrintf "     LINK cidr          : ${LINK_CIDR[0]}"
+		# ---------------------------------------------------------------------
 		IFS=' =,'
 		set -f
 		set -- "${COMD_LINE[@]:-}"

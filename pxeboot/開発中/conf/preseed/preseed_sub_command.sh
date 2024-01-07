@@ -14,9 +14,9 @@
 	readonly PROG_PRAM="$*"
 	readonly PROG_NAME="${0##*/}"
 	readonly WORK_DIRS="${0%/*}"
-# shellcheck disable=SC2155
+	# shellcheck disable=SC2155
 	readonly DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\L\1/ip')"
-# shellcheck disable=SC2155
+	# shellcheck disable=SC2155
 	readonly PROG_PARM="$(cat /proc/cmdline)"
 	echo "${PROG_NAME}: === Start ==="
 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
@@ -103,7 +103,13 @@ funcInstallPackages() {
 	#--------------------------------------------------------------------------
 	LIST_DPKG=""
 	if [ -n "${LIST_PACK:-}" ]; then
-		LIST_DPKG="$(LANG=C dpkg-query --list "${LIST_PACK:-}" | grep -E -v '^ii|^\+|^\||^Desired' || true 2> /dev/null)"
+#		LIST_DPKG="$(LANG=C dpkg-query --list "${LIST_PACK:-}" 2>&1 | grep -E -v '^ii|^\+|^\||^Desired' || true 2> /dev/null)"
+		# shellcheck disable=SC2086
+		LIST_DPKG="$(LANG=C dpkg-query --list ${LIST_PACK:-} 2>&1 |                        \
+		                    sed -e '/\(^ii\|^\+\|^|\|^Desired\)/! {'                       \
+		                        -e 's/.*matching[ \t]\+\([[:graph:]]\+\)/\1/g'             \
+		                        -e 's/^[[:graph:]]\+[ \t]\+\([[:graph:]]\+\)[ \t].*$/\1/g' \
+		                        -ne 'p}')"
 	fi
 	if [ -z "${LIST_DPKG:-}" ]; then
 		echo "${PROG_NAME}: Finish the installation"
@@ -119,7 +125,8 @@ funcInstallPackages() {
 	apt-get -qq    update
 	apt-get -qq -y upgrade
 	apt-get -qq -y dist-upgrade
-	apt-get -qq -y install "${LIST_PACK}"
+#	apt-get -qq -y install "${LIST_PACK}"
+	apt-get -qq -y install "${LIST_DPKG}"
 	# shellcheck disable=SC2312
 	if [ -n "$(command -v tasksel 2> /dev/null)" ]; then
 		tasksel install "${LIST_TASK}"
@@ -260,14 +267,14 @@ funcSetupNetwork() {
 #		CNF_FILE="${ROOT_DIRS}/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
 #		mkdir -p "${CNF_FILE%/*}"
 #		# shellcheck disable=SC2312
-#		cat <<- _EOT_ | sed 's/^ *//g' > "${CNF_FILE}"
+#		cat <<- _EOT_ | sed -e 's/^ *//g' > "${CNF_FILE}"
 #			[Service]
 #			ExecStart=
 #			ExecStart=$(command -v connmand 2> /dev/null) -n --nodnsproxy
 #_EOT_
 		SET_FILE="${ROOT_DIRS}/var/lib/connman/settings"
 		mkdir -p "${SET_FILE%/*}"
-		cat <<- _EOT_ | sed 's/^ *//g' > "${SET_FILE}"
+		cat <<- _EOT_ | sed -e 's/^ *//g' > "${SET_FILE}"
 			[global]
 			OfflineMode=false
 			
@@ -283,7 +290,7 @@ _EOT_
 			mkdir -p "${CON_DIRS}"
 			chmod 700 "${CON_DIRS}"
 			if [ "${MAC_ADDR}" != "${CON_MADR}" ]; then
-				cat <<- _EOT_ | sed 's/^ *//g' > "${CON_FILE}"
+				cat <<- _EOT_ | sed -e 's/^ *//g' > "${CON_FILE}"
 					[${CON_NAME}]
 					Name=Wired
 					AutoConnect=false
@@ -294,7 +301,7 @@ _EOT_
 					IPv6.privacy=disabled
 _EOT_
 			else
-				cat <<- _EOT_ | sed 's/^ *//g' > "${CON_FILE}"
+				cat <<- _EOT_ | sed -e 's/^ *//g' > "${CON_FILE}"
 					[${CON_NAME}]
 					Name=Wired
 					AutoConnect=true

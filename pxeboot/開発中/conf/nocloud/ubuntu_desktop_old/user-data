@@ -231,10 +231,7 @@ autoinstall:
         esac;
     done;
   - if [ -f /etc/NetworkManager/NetworkManager.conf ]; then
-        cat <<- _EOT_ > /etc/NetworkManager/conf.d/90-dns-none.conf
-			[main]
-			dns=none
-_EOT_
+        echo -e "[main]\ndns=none" > /etc/NetworkManager/conf.d/90-dns-none.conf;
     fi;
   - LOG_FILE="/target/var/log/installer/network_info.log";
     mkdir -p "${LOG_FILE%/*}";

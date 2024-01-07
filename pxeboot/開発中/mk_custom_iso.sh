@@ -61,11 +61,95 @@
 
 # --- set parameters ----------------------------------------------------------
 
+	# === menu ================================================================
+
+	# --- menu timeout --------------------------------------------------------
+	declare -r    MENU_TOUT="50"							# timeout [m sec]
+
+	# --- menu resolution -----------------------------------------------------
+															# resolution
+#	declare -r    MENU_RESO="7680x4320"						# 8K UHD (16:9)
+#	declare -r    MENU_RESO="3840x2400"						#        (16:10)
+#	declare -r    MENU_RESO="3840x2160"						# 4K UHD (16:9)
+#	declare -r    MENU_RESO="2880x1800"						#        (16:10)
+#	declare -r    MENU_RESO="2560x1600"						#        (16:10)
+#	declare -r    MENU_RESO="2560x1440"						# WQHD   (16:9)
+#	declare -r    MENU_RESO="1920x1440"						#        (4:3)
+#	declare -r    MENU_RESO="1920x1200"						# WUXGA  (16:10)
+#	declare -r    MENU_RESO="1920x1080"						# FHD    (16:9)
+#	declare -r    MENU_RESO="1856x1392"						#        (4:3)
+#	declare -r    MENU_RESO="1792x1344"						#        (4:3)
+#	declare -r    MENU_RESO="1680x1050"						# WSXGA+ (16:10)
+#	declare -r    MENU_RESO="1600x1200"						# UXGA   (4:3)
+#	declare -r    MENU_RESO="1400x1050"						#        (4:3)
+#	declare -r    MENU_RESO="1440x900"						# WXGA+  (16:10)
+#	declare -r    MENU_RESO="1360x768"						# HD     (16:9)
+#	declare -r    MENU_RESO="1280x1024"						# SXGA   (5:4)
+#	declare -r    MENU_RESO="1280x960"						#        (4:3)
+#	declare -r    MENU_RESO="1280x800"						#        (16:10)
+#	declare -r    MENU_RESO="1280x768"						#        (4:3)
+#	declare -r    MENU_RESO="1280x720"						# WXGA   (16:9)
+#	declare -r    MENU_RESO="1152x864"						#        (4:3)
+	declare -r    MENU_RESO="1024x768"						# XGA    (4:3)
+#	declare -r    MENU_RESO="800x600"						# SVGA   (4:3)
+#	declare -r    MENU_RESO="640x480"						# VGA    (4:3)
+
+															# colors
+#	declare -r    MENU_DPTH="8"								# 256
+	declare -r    MENU_DPTH="16"							# 65536
+#	declare -r    MENU_DPTH="24"							# 16 million
+#	declare -r    MENU_DPTH="32"							# 4.2 billion
+
+	# === screen mode (vga=nnn) ===============================================
+#															# 7680x4320   : 8K UHD (16:9)
+#															# 3840x2400   :        (16:10)
+#															# 3840x2160   : 4K UHD (16:9)
+#															# 2880x1800   :        (16:10)
+#															# 2560x1600   :        (16:10)
+#															# 2560x1440   : WQHD   (16:9)
+#															# 1920x1440   :        (4:3)
+#	declare -r    SCRN_MODE="893"							# 1920x1200x 8: WUXGA  (16:10)
+#	declare -r    SCRN_MODE=""								#          x16
+#	declare -r    SCRN_MODE=""								#          x24
+#	declare -r    SCRN_MODE=""								#          x32
+#	declare -r    SCRN_MODE=""								# 1920x1080x 8: FHD    (16:9)
+#	declare -r    SCRN_MODE=""								#          x16
+#	declare -r    SCRN_MODE=""								#          x24
+#	declare -r    SCRN_MODE="980"							#          x32
+#															# 1856x1392   :        (4:3)
+#															# 1792x1344   :        (4:3)
+#															# 1680x1050   : WSXGA+ (16:10)
+#															# 1600x1200   : UXGA   (4:3)
+#															# 1400x1050   :        (4:3)
+#															# 1440x 900   : WXGA+  (16:10)
+#															# 1360x 768   : HD     (16:9)
+#	declare -r    SCRN_MODE="775"							# 1280x1024x 8: SXGA   (5:4)
+#	declare -r    SCRN_MODE="794"							#          x16
+#	declare -r    SCRN_MODE="795"							#          x24
+#	declare -r    SCRN_MODE="829"							#          x32
+#															# 1280x 960   :        (4:3)
+#															# 1280x 800   :        (16:10)
+#															# 1280x 768   :        (4:3)
+#															# 1280x 720   : WXGA   (16:9)
+#															# 1152x 864   :        (4:3)
+#	declare -r    SCRN_MODE="773"							# 1024x 768x 8: XGA    (4:3)
+	declare -r    SCRN_MODE="791"							#          x16
+#	declare -r    SCRN_MODE="792"							#          x24
+#	declare -r    SCRN_MODE="824"							#          x32
+#	declare -r    SCRN_MODE="771"							#  800x 600x 8: SVGA   (4:3)
+#	declare -r    SCRN_MODE="788"							#          x16
+#	declare -r    SCRN_MODE="789"							#          x24
+#	declare -r    SCRN_MODE="814"							#          x32
+#	declare -r    SCRN_MODE="769"							#  640x 480x 8: VGA    (4:3)
+#	declare -r    SCRN_MODE="785"							#          x16
+#	declare -r    SCRN_MODE="786"							#          x24
+#	declare -r    SCRN_MODE="809"							#          x32
+
 	# === network =============================================================
 
 	declare       HOST_NAME=""								# hostname
 	declare -r    WGRP_NAME="workgroup"						# domain
-	declare       ETHR_NAME="ens160"						# network device name
+	declare -r    ETHR_NAME="ens160"						# network device name
 	declare -r    IPV4_ADDR="192.168.1.1"					# IPv4 address
 	declare -r    IPV4_CIDR="24"							# IPv4 cidr
 	declare -r    IPV4_MASK="255.255.255.0"					# IPv4 subnetmask
@@ -132,7 +216,7 @@
 		"o  debian-netinst-11           Debian%2011                         debian          debian-11.8.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-11.[0-9.]*-amd64-netinst.iso                    " \
 		"o  debian-netinst-12           Debian%2012                         debian          debian-12.4.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso                             " \
 		"o  debian-netinst-13           Debian%2013                         debian          debian-13.0.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                               " \
-		"o  debian-netinst-testing      Debian%20testing                    debian          debian-testing-amd64-netinst.iso            install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/iso-cd/debian-testing-amd64-netinst.iso                     " \
+		"o  debian-netinst-testing      Debian%20testing                    debian          debian-testing-amd64-netinst.iso            install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                 " \
 		"o  fedora-netinst-38           Fedora%20Server%2038                fedora          Fedora-Server-netinst-x86_64-38-1.6.iso     images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_net.cfg          linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-[0-9.]*.iso   " \
 		"o  fedora-netinst-39           Fedora%20Server%2039                fedora          Fedora-Server-netinst-x86_64-39-1.5.iso     images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_net.cfg          linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-netinst-x86_64-39-[0-9.]*.iso   " \
 		"o  centos-stream-netinst-8     CentOS%20Stream%208                 centos          CentOS-Stream-8-x86_64-latest-boot.iso      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-8_net.cfg    linux/centos        20xx-xx-xx  2024-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                              " \
@@ -501,13 +585,13 @@ function funcCurl() {
 	RET_CD=$?
 	set -e
 	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
-		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -z 's/\n\|\r\|\l//g')
+		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
 		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 		return "${RET_CD}"
 	fi
-	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -ne '/http\/.* 200/,/^$/ s/'''$'\r//gp' | sed -ne '/content-length:/ s/.*: //p')
+	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -ne '/http\/.* 200/,/^$/ s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p')
 	# shellcheck disable=SC2312
-	WEB_TIM=$(TZ=UTC date -d "$(echo "${ARY_HED[@],,}" | sed -ne '/http\/.* 200/,/^$/ s/'''$'\r//gp' | sed -ne '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
+	WEB_TIM=$(TZ=UTC date -d "$(echo "${ARY_HED[@],,}" | sed -ne '/http\/.* 200/,/^$/ s/'$'\r''//gp' | sed -ne '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
 	WEB_FIL="${OUT_DIR:-.}/${INP_URL##*/}"
 	if [[ -n "${OUT_DIR}" ]] && [[ ! -d "${OUT_DIR}/." ]]; then
 		mkdir -p "${OUT_DIR}"
@@ -647,7 +731,7 @@ function funcCreate_preseed_kill_dhcp() {
 	funcPrintf "create filet: ${FILE_NAME/${PWD}\/}"
 	mkdir -p "${DIRS_NAME}"
 	# -------------------------------------------------------------------------
-	cat <<- '_EOT_SH_' | sed 's/^ *//g' > "${FILE_NAME}"
+	cat <<- '_EOT_SH_' | sed -e 's/^ *//g' > "${FILE_NAME}"
 		#!/bin/sh
 		
 		### initialization ############################################################
@@ -678,7 +762,7 @@ function funcCreate_preseed_sub_command() {
 	funcPrintf "create filet: ${FILE_NAME/${PWD}\/}"
 	mkdir -p "${DIRS_NAME}"
 	# -------------------------------------------------------------------------
-	cat <<- '_EOT_SH_' | sed 's/^ *//g' > "${FILE_NAME}"
+	cat <<- '_EOT_SH_' | sed -e 's/^ *//g' > "${FILE_NAME}"
 		#!/bin/sh
 		
 		### initialization ############################################################
@@ -695,9 +779,9 @@ function funcCreate_preseed_sub_command() {
 		 	readonly PROG_PRAM="$*"
 		 	readonly PROG_NAME="${0##*/}"
 		 	readonly WORK_DIRS="${0%/*}"
-		# shellcheck disable=SC2155
+		 	# shellcheck disable=SC2155
 		 	readonly DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\L\1/ip')"
-		# shellcheck disable=SC2155
+		 	# shellcheck disable=SC2155
 		 	readonly PROG_PARM="$(cat /proc/cmdline)"
 		 	echo "${PROG_NAME}: === Start ==="
 		 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
@@ -784,7 +868,13 @@ function funcCreate_preseed_sub_command() {
 		 	#--------------------------------------------------------------------------
 		 	LIST_DPKG=""
 		 	if [ -n "${LIST_PACK:-}" ]; then
-		 		LIST_DPKG="$(LANG=C dpkg-query --list "${LIST_PACK:-}" | grep -E -v '^ii|^\+|^\||^Desired' || true 2> /dev/null)"
+		#		LIST_DPKG="$(LANG=C dpkg-query --list "${LIST_PACK:-}" 2>&1 | grep -E -v '^ii|^\+|^\||^Desired' || true 2> /dev/null)"
+		 		# shellcheck disable=SC2086
+		 		LIST_DPKG="$(LANG=C dpkg-query --list ${LIST_PACK:-} 2>&1 |                        \
+		 		                    sed -e '/\(^ii\|^\+\|^|\|^Desired\)/! {'                       \
+		 		                        -e 's/.*matching[ \t]\+\([[:graph:]]\+\)/\1/g'             \
+		 		                        -e 's/^[[:graph:]]\+[ \t]\+\([[:graph:]]\+\)[ \t].*$/\1/g' \
+		 		                        -ne 'p}')"
 		 	fi
 		 	if [ -z "${LIST_DPKG:-}" ]; then
 		 		echo "${PROG_NAME}: Finish the installation"
@@ -800,7 +890,8 @@ function funcCreate_preseed_sub_command() {
 		 	apt-get -qq    update
 		 	apt-get -qq -y upgrade
 		 	apt-get -qq -y dist-upgrade
-		 	apt-get -qq -y install "${LIST_PACK}"
+		#	apt-get -qq -y install "${LIST_PACK}"
+		 	apt-get -qq -y install "${LIST_DPKG}"
 		 	# shellcheck disable=SC2312
 		 	if [ -n "$(command -v tasksel 2> /dev/null)" ]; then
 		 		tasksel install "${LIST_TASK}"
@@ -941,14 +1032,14 @@ function funcCreate_preseed_sub_command() {
 		#		CNF_FILE="${ROOT_DIRS}/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
 		#		mkdir -p "${CNF_FILE%/*}"
 		#		# shellcheck disable=SC2312
-		#		cat <<- _EOT_ | sed 's/^ *//g' > "${CNF_FILE}"
+		#		cat <<- _EOT_ | sed -e 's/^ *//g' > "${CNF_FILE}"
 		#			[Service]
 		#			ExecStart=
 		#			ExecStart=$(command -v connmand 2> /dev/null) -n --nodnsproxy
 		#_EOT_
 		 		SET_FILE="${ROOT_DIRS}/var/lib/connman/settings"
 		 		mkdir -p "${SET_FILE%/*}"
-		 		cat <<- _EOT_ | sed 's/^ *//g' > "${SET_FILE}"
+		 		cat <<- _EOT_ | sed -e 's/^ *//g' > "${SET_FILE}"
 		 			[global]
 		 			OfflineMode=false
 		 			
@@ -964,7 +1055,7 @@ function funcCreate_preseed_sub_command() {
 		 			mkdir -p "${CON_DIRS}"
 		 			chmod 700 "${CON_DIRS}"
 		 			if [ "${MAC_ADDR}" != "${CON_MADR}" ]; then
-		 				cat <<- _EOT_ | sed 's/^ *//g' > "${CON_FILE}"
+		 				cat <<- _EOT_ | sed -e 's/^ *//g' > "${CON_FILE}"
 		 					[${CON_NAME}]
 		 					Name=Wired
 		 					AutoConnect=false
@@ -975,7 +1066,7 @@ function funcCreate_preseed_sub_command() {
 		 					IPv6.privacy=disabled
 		_EOT_
 		 			else
-		 				cat <<- _EOT_ | sed 's/^ *//g' > "${CON_FILE}"
+		 				cat <<- _EOT_ | sed -e 's/^ *//g' > "${CON_FILE}"
 		 					[${CON_NAME}]
 		 					Name=Wired
 		 					AutoConnect=true
@@ -1101,6 +1192,7 @@ function funcCreate_preseed_cfg() {
 		"ps_ubiquity_"{server,desktop}{,_old}".cfg" \
 	)
 	declare       FILE_TMPL=""
+	declare       INSR_STRS=""			# string to insert
 	declare -i    I=0
 	# -------------------------------------------------------------------------
 	for ((I=0; I<"${#FILE_LIST[@]}"; I++))
@@ -1127,7 +1219,7 @@ function funcCreate_preseed_cfg() {
 			    -e ':l; /\(^[# \t]*d-i[ \t]\+\|^#.*-$\)/! { /^#.*[^-]*$/! { /\\$/! s/$/ \\/ }; s/^# /  /; n; b l; }; } '
 		fi
 		if [[ "${FILE_LIST[I]}" =~ _ubiquity_ ]]; then
-			IFS= INS_STR=$(
+			IFS= INSR_STRS=$(
 				sed -n '/^[^#].*preseed\/late_command/,/[^\\]$/p' "${FILE_PATH}" | \
 				sed -e 's/\\/\\\\/g'                                               \
 				    -e 's/d-i/ubiquity/'                                           \
@@ -1135,7 +1227,7 @@ function funcCreate_preseed_cfg() {
 				sed -e ':l; N; s/\n/\\n/; b l;'
 			)
 			IFS=${OLD_IFS}
-			if [[ -n "${INS_STR}" ]]; then
+			if [[ -n "${INSR_STRS}" ]]; then
 				sed -i "${FILE_PATH}"                                   \
 				    -e '/^[^#].*preseed\/late_command/,/[^\\]$/     { ' \
 				    -e 's/^/#/g'                                        \
@@ -1144,7 +1236,7 @@ function funcCreate_preseed_cfg() {
 				    -e 's/^/#/g'                                        \
 				    -e 's/#  /# /g                                  } '
 				sed -i "${FILE_PATH}"                                   \
-				    -e "/ubiquity\/success_command/i \\${INS_STR}"
+				    -e "/ubiquity\/success_command/i \\${INSR_STRS}"
 			fi
 		fi
 	done
@@ -1181,7 +1273,7 @@ function funcCreate_nocloud() {
 	done
 }
 
-# ----- create kickstart ------------------------------------------------------
+# ----- create kickstart.cfg --------------------------------------------------
 function funcCreate_kickstart() {
 	declare -r    DIRS_NAME="${DIRS_CONF}/kickstart"
 	declare       FILE_PATH=""
@@ -1276,7 +1368,7 @@ function funcCreate_kickstart() {
 	chmod ugo-x "${DIRS_NAME}/"*
 }
 
-# ----- create autoyast -------------------------------------------------------
+# ----- create autoyast.xml ---------------------------------------------------
 function funcCreate_autoyast() {
 	declare -r    DIRS_NAME="${DIRS_CONF}/autoyast"
 	declare       FILE_PATH=""
@@ -1347,6 +1439,8 @@ function funcCreate_menu() {
 	declare       WEBS_REXP=""			# regular expression part of url
 	declare       DIRS_SECT=""
 	declare       DATE_TIME=""
+	declare -a    INDX_ARRY=()
+	declare -a    WORK_ARRY=()
 	declare -i    RET_CD=0
 	declare -i    I=0
 	declare -i    J=0
@@ -1362,11 +1456,22 @@ function funcCreate_menu() {
 	TEXT_LINE="$(printf "%-2.2s:%-42.42s:%-10.10s:%-10.10s:%-$((COLS_SIZE-70)).$((COLS_SIZE-70))s" "ID" "Version" "ReleaseDay" "SupportEnd" "Memo")"
 	funcPrintf "${TXT_RESET}#${TEXT_COLR}${TEXT_LINE}${TXT_RESET}#"
 	TGET_LIST=()
+	read -r -a INDX_ARRY < <(echo "${TGET_INDX}")
 	for ((I=0, J=1; I<"${#DATA_LIST[@]}"; I++))
 	do
 		read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
 		if [[ "${DATA_LINE[0]}" != "o" ]] || { [[ ! "${DATA_LINE[16]}" =~ ^http://.*$ ]] && [[ ! "${DATA_LINE[16]}" =~ ^https://.*$ ]]; }; then
 			continue
+		fi
+		TGET_LIST+=("${DATA_LINE[*]}")
+		if [[ -n "${TGET_INDX}" ]]; then
+			if [[ "${INDX_ARRY[0]:-}" != "${J}" ]]; then
+				J+=1
+				continue
+			fi
+			WORK_ARRY=("${INDX_ARRY[@]}")
+			unset 'WORK_ARRY[0]'
+			INDX_ARRY=("${WORK_ARRY[@]}")
 		fi
 		TEXT_COLR=""
 		DIRS_NAME="${DATA_LINE[16]%/*}"
@@ -1515,8 +1620,8 @@ function funcCreate_menu() {
 			fi
 		fi
 		DATA_LINE[15]="${TEXT_COLR}"
-		TGET_LIST+=("${DATA_LINE[*]}")
-		((J++))
+		TGET_LIST[J-1]="${DATA_LINE[*]}"
+		J+=1
 	done
 	# shellcheck disable=SC2312
 	funcPrintf "# $(funcString $((COLS_SIZE-4)) '-') #"
@@ -1537,15 +1642,18 @@ function funcCreate_target_list() {
 	read -r TGET_INDX
 	RET_CD=$?
 	set -e
-	if [[ ${RET_CD} -ne 0 ]] && [[ -z "${TGET_INDX:-}" ]]; then
+	if [[ ${RET_CD} -eq 0 ]] && [[ -z "${TGET_INDX:-}" ]]; then
+		return
+	elif [[ ${RET_CD} -ne 0 ]] && [[ -z "${TGET_INDX:-}" ]]; then
 		echo "{1..${#TGET_LIST[@]}}"
 		TGET_INDX="{1..${#TGET_LIST[@]}}"
-		return
+#		return
 	fi
 	case "${TGET_INDX,,}" in
 		a | all ) TGET_INDX="{1..${#TGET_LIST[@]}}";;
 		*       ) ;;
 	esac
+	TGET_INDX="$(eval echo "${TGET_INDX}")"
 }
 
 # ----- create remaster download-----------------------------------------------
@@ -1639,137 +1747,404 @@ function funcCreate_copy_iso2hdd() {
 # ----- create autoinst.cfg for syslinux --------------------------------------
 function funcCreate_autoinst_cfg_syslinux() {
 	declare -r    AUTO_PATH="$1"							# autoinst.cfg path
-	declare -r    BOOT_OPTN="$2"							# boot option
+	declare       BOOT_OPTN="$2"							# boot option
 	shift 2
 	declare -r -a TGET_LINE=("$@")
-	declare -r    DIRS_MENU="${AUTO_PATH%/*}"				# configuration file path
-	declare       FILE_CONF=""								# configuration file path
-	declare       INSR_STRS=""								# string to insert
-	declare -a    FILE_IRAM=()								# initrd path
+	declare -r    MENU_DIRS="${AUTO_PATH%/*}"				# configuration file directory
+	declare       CONF_FILE=""								# configuration file path
+	declare -a    READ_ARRY=()								# read data of configuration files
+	declare       MENU_ENTR=""								# menu entry
+	declare -a    WORK_ARRY=()								# work array
 	declare -a    FILE_VLNZ=()								# kernel path
-	declare -a    WORK_ARRY=()								# work
+	declare -a    FILE_IRAM=()								# initrd path
+	declare -i    I=0
+
 	funcPrintf "      create: ${AUTO_PATH##*/} for syslinux"
 	rm -f "${AUTO_PATH}"
-	for FILE_CONF in "${DIRS_MENU}/"{txt.cfg,gtk.cfg,isolinux.cfg}
+	for CONF_FILE in "${MENU_DIRS}/"{txt.cfg,gtk.cfg,install.cfg,isolinux.cfg}
 	do
-		if [[ ! -f "${FILE_CONF}" ]]; then
+		if [[ ! -f "${CONF_FILE}" ]]; then
 			continue
 		fi
-		case "${TGET_LINE[1]}" in
-			*-mini-*       | \
-			debian-*       | \
-			ubuntu-*       ) mapfile WORK_ARRY < <(sed -ne '/^label[ \t]\+install\(gui\)*/,/\(^[ \t]*$\|^label[ \t]\+\)/p' "${FILE_CONF}") || true;;
-			fedora-*       | \
-			centos-*       | \
-			almalinux-*    | \
-			rockylinux-*   | \
-			miraclelinux-* ) mapfile WORK_ARRY < <(sed -ne '/^label[ \t]\+linux/,/\(^[ \t]*$\|^label[ \t]\+\)/p' "${FILE_CONF}") || true;;
-			opensuse-*     ) mapfile WORK_ARRY < <(sed -ne '/^label[ \t]\+linux/,/\(^[ \t]*$\|^label[ \t]\+\)/p' "${FILE_CONF}") || true;;
-			*              ) WORK_ARRY=();;
+		# shellcheck disable=SC2312
+		mapfile READ_ARRY < <(cat "${CONF_FILE}")
+		WORK_ARRY=()
+		FILE_VLNZ=()
+		FILE_IRAM=()
+		case "${CONF_FILE##*/}" in
+			txt.cfg | \
+			gtk.cfg | \
+			isolinux.cfg )
+				# shellcheck disable=SC2312
+				mapfile WORK_ARRY < <(echo "${READ_ARRY[@]}" | \
+				    sed -ne '/^[ \t]*label[ \t]\+\(install\(gui\)*\|linux\)[ \t]*.*$/,/^[ \t]*\(\|label[ \t]\+[[:graph:]]\+[ \t]*.*\)$/p')
+				if [[ -z "${WORK_ARRY[*]}" ]]; then
+					continue
+				fi
+				# shellcheck disable=SC2312
+				mapfile -t FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne 's/^.*[ \t]\+\(kernel\|linux\)[ \t]\+\([[:graph:]]\+\)[ \t]*.*$/\2/p')
+				# shellcheck disable=SC2312
+				mapfile -t FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne 's/^.*[ \t]\+initrd[ \t=]\+\([[:graph:]]\+\)[ \t]*.*$/\1/p')
+				;;
+			install.cfg )
+				I=0
+				for MENU_ENTR in "textinstall" "graphicalinstall"
+				do
+					# shellcheck disable=SC2312
+					mapfile WORK_ARRY < <(echo "${READ_ARRY[@]}" | \
+					    sed -e '/^[ \t]*menu[ \t]\+begin[ \t]\+'"${MENU_ENTR}"'[ \t]*.*$/,/^[ \t]*menu[ \t]\+end[ \t]*.*$/ {' \
+					        -ne '/^[ \t]*label[ \t]\+install\(gui\)*[ \t]*.*$/,/^[ \t]*\(\|label[ \t]\+[[:graph:]]\+[ \t]*.*\)$/p}')
+					if [[ -z "${WORK_ARRY[*]}" ]]; then
+						continue
+					fi
+					# shellcheck disable=SC2312
+					mapfile -t -O "${I}" FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne 's/^.*[ \t]\+\(kernel\|linux\)[ \t]\+\([[:graph:]]\+\)[ \t]*.*$/\2/p')
+					# shellcheck disable=SC2312
+					mapfile -t -O "${I}" FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne 's/^.*[ \t]\+initrd[ \t=]\+\([[:graph:]]\+\)[ \t]*.*$/\1/p')
+					I+=1
+				done
+				;;
+			* )
+				continue
+				;;
 		esac
-		if [[ -z "${WORK_ARRY[*]}" ]]; then
+		if [[ -z "${FILE_VLNZ[*]}" ]] || [[ -z "${FILE_IRAM[*]}" ]]; then
 			continue
 		fi
-		# shellcheck disable=SC2312
-		read -r -a FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*kernel[ \t]\+/ s/^[ \t]*kernel[ \t]\+\([[:graph:]]\+\)[ \t]*.*$/\1/p')
-		# shellcheck disable=SC2312
-		read -r -a FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*append[ \t]\+/ s/^.*[ \t]*initrd=\([[:graph:]]\+\)[ \t]*.*$/\1/p')
 		if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
-			if [[ "${FILE_IRAM[0]}" =~ / ]]; then
-				FILE_IRAM[0]="${FILE_IRAM[0]%/*}/${MINI_IRAM}"
-			else
-				FILE_IRAM[0]="${MINI_IRAM}"
+			for ((I=0; I<"${#FILE_IRAM[@]}"; I++))
+			do
+				if [[ "${FILE_IRAM[I]%/*}" = "${FILE_IRAM[I]}" ]]; then
+					FILE_IRAM[I]="${MINI_IRAM}"
+				else
+					FILE_IRAM[I]="${FILE_IRAM[0]%/*}/${MINI_IRAM}"
+				fi
+			done
+		fi
+		# --- create autoinst.cfg ---------------------------------------------
+		if [[ -n "${SCRN_MODE:-}" ]]; then
+			BOOT_OPTN="vga=${SCRN_MODE} ${BOOT_OPTN}"
+		fi
+		for ((I=0; I<"${#FILE_IRAM[@]}"; I++))
+		do
+			if [[ -z "${FILE_VLNZ[I]:-}" ]] || [[ -z "${FILE_IRAM[I]:-}" ]]; then
+				continue
 			fi
-		fi
-		if [[ ! -f "${AUTO_PATH}" ]]; then
-			# --- standard installation mode ----------------------------------
-			cat <<- _EOT_ | sed 's/^ *//g' > "${AUTO_PATH}"
-				timeout 50
-			
-				label auto_install
-				 	menu label ^Automatic installation
-				 	menu default
-				 	kernel ${FILE_VLNZ[0]}
-				 	append initrd=${FILE_IRAM[0]} vga=791 ${BOOT_OPTN} ---
-				
+			funcPrintf "      create: menu entry ${I}"
+			if [[ ! -f "${AUTO_PATH}" ]]; then
+				# --- standard installation mode ------------------------------
+				cat <<- _EOT_ | sed -e 's/^ *//g' > "${AUTO_PATH}"
+					menu resolution ${MENU_RESO/x/ }
+					timeout ${MENU_TOUT}
+					
+					label auto_install
+					 	menu label ^Automatic installation
+					 	menu default
+					 	linux  ${FILE_VLNZ[I]}
+					 	initrd ${FILE_IRAM[I]}
+					 	append ${BOOT_OPTN} ---
+					
 _EOT_
-		else
-			# --- graphical installation mode ---------------------------------
-			cat <<- _EOT_ | sed 's/^ *//g' >> "${AUTO_PATH}"
-				label auto_installgui
-				 	menu label ^Automatic installation of gui
-				 	kernel ${FILE_VLNZ[0]}
-				 	append initrd=${FILE_IRAM[0]} vga=791 ${BOOT_OPTN} ---
-				
+			else
+				# --- graphical installation mode -----------------------------
+				cat <<- _EOT_ | sed -e 's/^ *//g' >> "${AUTO_PATH}"
+					label auto_install_gui
+					 	menu label ^Automatic installation of gui
+					 	linux  ${FILE_VLNZ[I]}
+					 	initrd ${FILE_IRAM[I]}
+					 	append ${BOOT_OPTN} ---
+					
 _EOT_
-		fi
+			fi
+		done
 	done
 }
 
 # ----- create autoinst.cfg for grub ------------------------------------------
 function funcCreate_autoinst_cfg_grub() {
 	declare -r    AUTO_PATH="$1"							# autoinst.cfg path
-	declare -r    BOOT_OPTN="$2"							# boot option
+	declare       BOOT_OPTN="$2"							# boot option
 	shift 2
 	declare -r -a TGET_LINE=("$@")
-	declare -r    DIRS_MENU="${AUTO_PATH%/*}"				# configuration file path
-	declare       FILE_CONF="${DIRS_MENU}/grub.cfg"			# configuration file path
-	declare -a    FILE_IRAM=()								# initrd path
+	declare -r    WORK_DIRS="${DIRS_TEMP}/${TGET_LINE[1]}"
+	declare -r    WORK_IMGS="${WORK_DIRS}/img"
+	declare -r    MENU_DIRS="${AUTO_PATH%/*}"				# configuration file directory
+	declare       CONF_FILE=""								# configuration file path
+	declare -a    READ_ARRY=()								# read data of configuration files
+	declare       MENU_ENTR=""								# menu entry
+	declare -a    WORK_ARRY=()								# work array
 	declare -a    FILE_VLNZ=()								# kernel path
-	declare -a    WORK_ARRY=()								# work
-	declare       MENU_ENTR=""
+	declare -a    FILE_IRAM=()								# initrd path
+	declare -r    FILE_FONT="$(find "${WORK_IMGS}" \( -name 'font.pf2' -o -name 'unicode.pf2' \) -type f)"
+	declare -i    I=0
+
 	funcPrintf "      create: ${AUTO_PATH##*/} for grub.cfg"
 	rm -f "${AUTO_PATH}"
-	for MENU_ENTR in "Install" "Graphical"
+	for CONF_FILE in "${MENU_DIRS}/"{grub.cfg,install.cfg}
 	do
-		mapfile WORK_ARRY < <(sed -ne '/^menuentry[ \t]\+.*['\''"]'"${MENU_ENTR}"'.*['\''"]/,/^[ \t]*}[ \t]*$/p' "${FILE_CONF}") || true
-		if [[ -z "${WORK_ARRY[*]}" ]]; then
+		if [[ ! -f "${CONF_FILE}" ]]; then
 			continue
 		fi
 		# shellcheck disable=SC2312
-		read -r -a FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*linux\(\|efi\)[ \t]\+/  s/^[ \t]*//gp')
-		# shellcheck disable=SC2312
-		read -r -a FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne '/^[ \t]*initrd\(\|efi\)[ \t]\+/ s/^[ \t]*//gp')
+		mapfile READ_ARRY < <(cat "${CONF_FILE}")
+		WORK_ARRY=()
+		FILE_VLNZ=()
+		FILE_IRAM=()
+		case "${CONF_FILE##*/}" in
+			grub.cfg )
+				I=0
+				for MENU_ENTR in 'Install' 'Graphical install' 'Try or Install Ubuntu\( Server\)*' 'Install Ubuntu Server' 'Install[ \t]\+[[:graph:]]\+.*[ \t]\+[0-9.]\+' 'Installation'
+				do
+					# shellcheck disable=SC2312
+					mapfile WORK_ARRY < <(echo "${READ_ARRY[@]}" | \
+					    sed -ne '/^[ \t]*menuentry[ \t]\+.*'[\'\"]"${MENU_ENTR}"[\'\"]'[ \t]*.*{[ \t]*$/,/^[ \t]*}[ \t]*$/p')
+					if [[ -z "${WORK_ARRY[*]}" ]]; then
+						continue
+					fi
+					# shellcheck disable=SC2312
+					mapfile -t -O "${I}" FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne 's/^.*[ \t]\+\linux\(efi\)*[ \t]\+\([[:graph:]]\+\)[ \t]*.*$/\2/p')
+					# shellcheck disable=SC2312
+					mapfile -t -O "${I}" FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne 's/^.*[ \t]\+initrd\(efi\)*[ \t]\+\([[:graph:]]\+\)[ \t]*.*$/\2/p')
+					I+=1
+				done
+				;;
+			install.cfg )
+				I=0
+				for MENU_ENTR in {Text,Graphical}' installer ...'
+				do
+					# shellcheck disable=SC2312
+					mapfile WORK_ARRY < <(echo "${READ_ARRY[@]}" | \
+					    sed -e '/^[ \t]*submenu[ \]\+'[\'\"]"${MENU_ENTR}"[\'\"]'[ \t]*.*{[ \t]*$/,/^[ \t]*}[ \t]*$/ {' \
+					        -ne '/^[ \t]*menuentry[ \t]\+.*'[\'\"]'Install'[\'\"]'[ \t]*.*$/,/^[ \t]*}[ \t]*$/p}')
+					if [[ -z "${WORK_ARRY[*]}" ]]; then
+						continue
+					fi
+					# shellcheck disable=SC2312
+					mapfile -t -O "${I}" FILE_VLNZ < <(echo "${WORK_ARRY[@]}" | sed -ne 's/^.*[ \t]\+\linux\(efi\)*[ \t]\+\([[:graph:]]\+\)[ \t]*.*$/\2/p')
+					# shellcheck disable=SC2312
+					mapfile -t -O "${I}" FILE_IRAM < <(echo "${WORK_ARRY[@]}" | sed -ne 's/^.*[ \t]\+initrd\(efi\)*[ \t]\+\([[:graph:]]\+\)[ \t]*.*$/\2/p')
+					I+=1
+				done
+				;;
+			* )
+				continue
+				;;
+		esac
+		if [[ -z "${FILE_VLNZ[*]}" ]] || [[ -z "${FILE_IRAM[*]}" ]]; then
+			continue
+		fi
 		if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
-			if [[ "${FILE_IRAM[1]}" =~ / ]]; then
-				FILE_IRAM[1]="${FILE_IRAM[1]%/*}/${MINI_IRAM}"
-			else
-				FILE_IRAM[1]="${MINI_IRAM}"
+			for ((I=0; I<"${#FILE_IRAM[@]}"; I++))
+			do
+				if [[ "${FILE_IRAM[I]%/*}" = "${FILE_IRAM[I]}" ]]; then
+					FILE_IRAM[I]="${MINI_IRAM}"
+				else
+					FILE_IRAM[I]="${FILE_IRAM[0]%/*}/${MINI_IRAM}"
+				fi
+			done
+		fi
+		# --- create autoinst.cfg ---------------------------------------------
+		if [[ -n "${SCRN_MODE:-}" ]]; then
+			BOOT_OPTN="vga=${SCRN_MODE} ${BOOT_OPTN}"
+		fi
+		for ((I=0; I<"${#FILE_IRAM[@]}"; I++))
+		do
+			if [[ -z "${FILE_VLNZ[I]:-}" ]] || [[ -z "${FILE_IRAM[I]:-}" ]]; then
+				continue
 			fi
-		fi
-		if [[ ! -f "${AUTO_PATH}" ]]; then
-			# --- standard installation mode ----------------------------------
-			# shellcheck disable=SC2128
-			cat <<- _EOT_ | sed 's/^ *//g' > "${AUTO_PATH}"
-				set default=0
-				set timeout=5
-				
-				menuentry 'Automatic installation' {
-				 	set gfxpayload=keep
-				 	set background_color=black
-				 	echo 'Loading kernel ...'
-				 	${FILE_VLNZ[0]} ${FILE_VLNZ[1]} vga=791 ${BOOT_OPTN} ---
-				 	echo 'Loading initial ramdisk ...'
-				 	${FILE_IRAM[0]} ${FILE_IRAM[1]}
-				}
-				
+			funcPrintf "      create: menu entry ${I}"
+			if [[ ! -f "${AUTO_PATH}" ]]; then
+				# --- standard installation mode ------------------------------
+				# shellcheck disable=SC2128
+				cat <<- _EOT_ | sed -e 's/^ *//g' > "${AUTO_PATH}"
+					if [ -f ${FILE_FONT/${WORK_IMGS}/} ]; then
+					 	font=${FILE_FONT/${WORK_IMGS}/}
+					elif [ x\$feature_default_font_path = xy ]; then
+					 	font=unicode
+					fi
+					loadfont \$font
+					insmod gfxterm
+					insmod png
+					terminal_output gfxterm
+					
+					set gfxmode=${MENU_RESO}x${MENU_DPTH},auto
+					set default=0
+					set timeout=${MENU_TOUT::-1}
+					set timeout_style=menu
+					set theme=${DIRS_MENU/${WORK_IMGS}/}/theme.txt
+					
+					menuentry 'Automatic installation' {
+					 	set gfxpayload=keep
+					 	set background_color=black
+					 	echo 'Loading kernel ...'
+					 	linux  ${FILE_VLNZ[I]} ${BOOT_OPTN} ---
+					 	echo 'Loading initial ramdisk ...'
+					 	initrd ${FILE_IRAM[I]}
+					}
+					
 _EOT_
-		else
-			# --- graphical installation mode ---------------------------------
-			# shellcheck disable=SC2128
-			cat <<- _EOT_ | sed 's/^ *//g' >> "${AUTO_PATH}"
-				menuentry 'Automatic installation of gui' {
-				 	set gfxpayload=keep
-				 	set background_color=black
-				 	echo 'Loading kernel ...'
-				 	${FILE_VLNZ[0]} ${FILE_VLNZ[1]} vga=791 ${BOOT_OPTN} ---
-				 	echo 'Loading initial ramdisk ...'
-				 	${FILE_IRAM[0]} ${FILE_IRAM[1]}
-				}
-				
+			elif [[ "${FILE_IRAM[I]}" =~ /gtk/ ]]; then
+				# --- graphical installation mode -----------------------------
+				# shellcheck disable=SC2128
+				cat <<- _EOT_ | sed -e 's/^ *//g' >> "${AUTO_PATH}"
+					menuentry 'Automatic installation of gui' {
+					 	set gfxpayload=keep
+					 	set background_color=black
+					 	echo 'Loading kernel ...'
+					 	linux  ${FILE_VLNZ[I]} ${BOOT_OPTN} ---
+					 	echo 'Loading initial ramdisk ...'
+					 	initrd ${FILE_IRAM[I]}
+					}
+					
 _EOT_
-		fi
+			fi
+		done
 	done
+}
+
+# ----- create gfxboot.cfg ----------------------------------------------------
+#function funcCreate_gfxboot_cfg() {
+#	declare -r    WORK_IMGS="$1"							# cd-rom image working directory
+#	declare -r    IMGS_NAME="splash.png"					# desktop image file name
+#	declare -a    IMGS_FILE=()								# desktop image file path
+#	declare -r    DIRS_MENU="$2"							# configuration file directory
+#	declare -r    CONF_FILE="${DIRS_MENU}/gfxboot.cfg"		# configuration file path
+#	declare       INSR_STRS=""								# string to insert
+#	declare -i    I=0
+#
+#	funcPrintf "        edit: ${CONF_FILE##*/}"
+#	IFS= INSR_STRS="$(
+#		cat <<- _EOT_ | sed -e 's/^ *//g' -e 's/\r\n*/\n/g' -ze 's/\n/\\n/g'
+#			[${MENU_RESO}]
+#			; screen size
+#			screen.size=${MENU_RESO/x/,}
+#			; upper left corner, if x = -1, center horizontally
+#			mainmenu.pos=-1,170
+#			; boot option input field position
+#			bootopt.pos=263,480
+#_EOT_
+#	)"
+#	IFS=${OLD_IFS}
+#	sed -i "${CONF_FILE}"                      \
+#	    -e '/^layout=/ {'                      \
+#	    -e 's/^/#/'                            \
+#	    -e 'a layout='"${MENU_RESO}"',install' \
+#	    -e '}'                                 \
+#	    -e '/^\[800x600\]/i '"${INSR_STRS}"''  \
+#	    -e '/\[penguin\]/,/^$/ {'              \
+#	    -e '/^mainmenu.pos=/ s/=.*,/=-1,/}'
+#}
+
+# ----- create theme.txt ------------------------------------------------------
+# https://www.gnu.org/software/grub/manual/grub/html_node/Theme-file-format.html
+function funcCreate_theme_txt() {
+	declare -r    WORK_IMGS="$1"							# cd-rom image working directory
+	declare -r    IMGS_NAME="splash.png"					# desktop image file name
+	declare -a    IMGS_FILE=()								# desktop image file path
+	declare       IMGS_PATH=""
+	declare -r    DIRS_MENU="$2"							# configuration file directory
+	declare -r    CONF_FILE="${DIRS_MENU}/theme.txt"		# configuration file path
+	declare       CONF_WORK=""
+	declare -i    I=0
+
+	funcPrintf "      create: ${CONF_FILE##*/}"
+	rm -f "${CONF_FILE}"
+	# shellcheck disable=SC2312
+	while read -r CONF_WORK
+	do
+		# shellcheck disable=SC2312
+		mapfile -t IMGS_FILE < <(sed -ne '/'"${IMGS_NAME}"'/ s/^.*[ \t]\+\([[:graph:]]*\/*'"${IMGS_NAME}"'\).*$/\1/p' "${CONF_WORK}")
+		if [[ -z "${IMGS_FILE[*]}" ]]; then
+			# shellcheck disable=SC2312
+			mapfile -t IMGS_FILE < <(find "${WORK_IMGS}" \( -name "${IMGS_NAME}" -o -name 'back.jpg' \))
+			if [[ -z "${IMGS_FILE[*]}" ]]; then
+				IMGS_FILE=("${DIRS_MENU}/${IMGS_NAME}")
+				pushd "${DIRS_MENU}" > /dev/null
+					cat <<- _EOT_ | sed -e 's/^ *//g' | xxd -r -p | tar -xz
+						1f8b0800000000000003edcea16ec25014c6f103848490740a0caa0eb7b4
+						70dbea9112a881652161920ac2c420844282243882e4057802241e1e02b1
+						279899c64cec560d43a64843f6ff9973cf77aef8a2f17b18bd3d8e4703b9
+						194b73958aa7ed39d6e58c553c4b89ad1ce53a55d776756e5794aa8a69dd
+						aed2af59340d27a629c3309af627d7fffd75bf53abe756c3c897f2fa6904
+						4dff4524638aa45f73699d140bc5b248761df84f9df9c7d72165e8f0b83d
+						b7870fde36d1da00f0bf2cba99ef8da44efbe367bc06f596bfabf59649d7
+						020000000000000000000000c9fa0111c9f07200280000
+_EOT_
+				popd > /dev/null
+			fi
+			for ((I=0; I<"${#IMGS_FILE[@]}"; I++))
+			do
+				IMGS_FILE[I]="${IMGS_FILE[I]/${WORK_IMGS}/}"
+			done
+		fi
+		for ((I=0; I<"${#IMGS_FILE[@]}"; I++))
+		do
+			IMGS_PATH="${WORK_IMGS}/${IMGS_FILE[I]#/}"
+			# shellcheck disable=SC2312
+			if [[ -f "${IMGS_PATH}" ]] && [[ "$(file "${IMGS_PATH}" | awk '{sub("-bit.*", "", $8); print $8;}')" -ge 8 ]]; then
+				# shellcheck disable=SC2128
+				cat <<- _EOT_ | sed -e 's/^ *//g' > "${CONF_FILE}"
+					desktop-image: "${IMGS_FILE[I]}"
+_EOT_
+				break 2
+			fi
+		done
+	done < <(find "${DIRS_MENU}" -name '*.cfg' -type f)
+	# shellcheck disable=SC2128
+	cat <<- _EOT_ | sed -e 's/^ *//g' >> "${CONF_FILE}"
+		desktop-color: "#000000"
+		title-color: "#ffffff"
+		title-font: "Unifont Regular 16"
+		title-text: "Boot Menu with GRUB"
+		message-font: "Unifont Regular 16"
+		terminal-font: "Unifont Regular 16"
+		terminal-border: "0"
+		
+		#help bar at the bottom
+		+ label {
+		 	top = 100%-50
+		 	left = 0
+		 	width = 100%
+		 	height = 20
+		 	text = "@KEYMAP_SHORT@"
+		 	align = "center"
+		 	color = "#ffffff"
+		 	font = "Unifont Regular 16"
+		}
+		
+		#boot menu
+		+ boot_menu {
+		 	left = 10%
+		 	width = 80%
+		 	top = 52%
+		 	height = 48%-80
+		 	item_color = "#a8a8a8"
+		 	item_font = "Unifont Regular 16"
+		 	selected_item_color= "#ffffff"
+		 	selected_item_font = "Unifont Regular 16"
+		 	item_height = 16
+		 	item_padding = 0
+		 	item_spacing = 4
+		 	icon_width = 0
+		 	icon_heigh = 0
+		 	item_icon_space = 0
+		}
+		
+		#progress bar
+		+ progress_bar {
+		 	id = "__timeout__"
+		 	left = 15%
+		 	top = 100%-80
+		 	height = 16
+		 	width = 70%
+		 	font = "Unifont Regular 16"
+		 	text_color = "#000000"
+		 	fg_color = "#ffffff"
+		 	bg_color = "#a8a8a8"
+		 	border_color = "#ffffff"
+		 	text = "@TIMEOUT_NOTIFICATION_LONG@"
+		}
+_EOT_
 }
 
 # ----- create syslinux.cfg ---------------------------------------------------
@@ -1799,38 +2174,45 @@ function funcCreate_syslinux_cfg() {
 		do
 			# --- comment out "timeout","menu default","ontimeout","menu tabmsg" ---
 			set +e
-			read -r -a WORK_ARRY < <(                                                \
-				sed -ne '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/p'              \
-				    -ne '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/p'                 \
-				    -ne '/^[ \t]*ontimeout[ \t]\+.*[^[:graph:]]*$/p'                 \
-				    -ne '/^[ \t]*menu autoboot[ \t]\+.*[^[:graph:]]*$/p'             \
-				    -ne '/^[ \t]*menu tabmsg[ \t]\+.*[^[:graph:]]*$/p'               \
+			read -r -a WORK_ARRY < <(                                                   \
+				sed -ne '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/p'                 \
+				    -ne '/^[ \t]*prompt[ \t]\+[0-9]\+[^[:graph:]]*$/p'                  \
+				    -ne '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/p'                    \
+				    -ne '/^[ \t]*ontimeout[ \t]\+.*[^[:graph:]]*$/p'                    \
+				    -ne '/^[ \t]*menu[ \t]\+autoboot[ \t]\+.*[^[:graph:]]*$/p'          \
+				    -ne '/^[ \t]*menu[ \t]\+tabmsg[ \t]\+.*[^[:graph:]]*$/p'            \
+				    -ne '/^[ \t]*menu[ \t]\+resolution[ \t]\+.*[^[:graph:]]*$/p'        \
+				    -e  '/^[ \t]*default[ \t]\t/ {' -ne '/.*\.c32/!p}'                  \
 				    "${FILE_CONF}"
 			)
 			set -e
 			if [[ -n "${WORK_ARRY[*]}" ]]; then
-				sed -i "${FILE_CONF}"                                                \
-				    -e '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/        s/^/#/g' \
-				    -e '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/           s/^/#/g' \
-				    -e '/^[ \t]*ontimeout[ \t]\+.*[^[:graph:]]*$/           s/^/#/g' \
-				    -e '/^[ \t]*menu[ \t]\+autoboot[ \t]\+.*[^[:graph:]]*$/ s/^/#/g' \
-				    -e '/^[ \t]*menu[ \t]\+tabmsg[ \t]\+.*[^[:graph:]]*$/   s/^/#/g'
+				sed -i "${FILE_CONF}"                                                   \
+				    -e '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/          s/^/#/g'  \
+				    -e '/^[ \t]*prompt[ \t]\+[0-9]\+[^[:graph:]]*$/           s/^/#/g'  \
+				    -e '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/             s/^/#/g'  \
+				    -e '/^[ \t]*ontimeout[ \t]\+.*[^[:graph:]]*$/             s/^/#/g'  \
+				    -e '/^[ \t]*menu[ \t]\+autoboot[ \t]\+.*[^[:graph:]]*$/   s/^/#/g'  \
+				    -e '/^[ \t]*menu[ \t]\+tabmsg[ \t]\+.*[^[:graph:]]*$/     s/^/#/g'  \
+				    -e '/^[ \t]*menu[ \t]\+resolution[ \t]\+.*[^[:graph:]]*$/ s/^/#/g'  \
+				    -e '/^[ \t]*default[ \t]\t/ {' -e '/.*\.c32/!             s/^/#/g}'
 			fi
 			# --- comment out "default" ---------------------------------------
 			set +e
-			read -r -a WORK_ARRY < <(                                                \
-				sed -ne '/^label[ \t]\+.*/,/\(^[ \t]*$\|^label[ \t]\+\)/p'           \
+			read -r -a WORK_ARRY < <(                                                   \
+				sed -e  '/^label[ \t]\+.*/,/\(^[ \t]*$\|^label[ \t]\+\)/ {'             \
+				    -ne '/^[ \t]*default[ \t]\+[[:graph:]]\+/p}'                        \
 				    "${FILE_CONF}"
 			)
 			set -e
 			if [[ -n "${WORK_ARRY[*]}" ]]; then
-				sed -i "${FILE_CONF}"                                                \
-				    -e '/^label[ \t]\+.*/,/\(^[ \t]*$\|^label[ \t]\+\)/ {'           \
-				    -e '/^[ \t]*default[ \t]\+[[:graph:]]\+/                s/^/#/g}'
+				sed -i "${FILE_CONF}"                                                   \
+				    -e '/^label[ \t]\+.*/,/\(^[ \t]*$\|^label[ \t]\+\)/ {'              \
+				    -e '/^[ \t]*default[ \t]\+[[:graph:]]\+/                  s/^/#/g}'
 			fi
 			# --- insert "autoinst.cfg" ---------------------------------------
 			set +e
-			read -r -a WORK_ARRY < <(                            \
+			read -r -a WORK_ARRY < <(                                   \
 				sed -ne '/^include[ \t]\+.*stdmenu.cfg[^[:graph:]]*$/p' \
 				    "${FILE_CONF}"
 			)
@@ -1838,7 +2220,7 @@ function funcCreate_syslinux_cfg() {
 			if [[ -n "${WORK_ARRY[*]}" ]]; then
 				AUTO_FLAG=1
 				INSR_STRS="$(sed -ne '/^include[ \t]\+[^ \t]*stdmenu.cfg[^[:graph:]]*$/p' "${FILE_CONF}")"
-				sed -i "${FILE_CONF}"                                                                               \
+				sed -i "${FILE_CONF}"                                                                                      \
 				    -e '/^\(include[ \t]\+\)[^ \t]*stdmenu.cfg[^[:graph:]]*$/ a '"${INSR_STRS/stdmenu.cfg/${AUTO_INST}}"''
 			elif [[ "${FILE_CONF##*/}" = "isolinux.cfg" ]]; then
 				AUTO_FLAG=1
@@ -1852,6 +2234,12 @@ function funcCreate_syslinux_cfg() {
 			funcCreate_autoinst_cfg_syslinux "${DIRS_MENU}/${AUTO_INST}" "${BOOT_OPTN}" "${TGET_LINE[@]}"
 		fi
 	done < <(find "${WORK_IMGS}" \( -name 'syslinux.cfg' -o -name 'isolinux.cfg' \) -type f)
+	# -------------------------------------------------------------------------
+#	# shellcheck disable=SC2312
+#	while read -r CONF_WORK
+#	do
+#		funcCreate_gfxboot_cfg "${WORK_IMGS}" "${CONF_WORK%/*}"
+##	done < <(find "${WORK_IMGS}" -name 'gfxboot.c32' -type f)
 }
 
 # ----- create grub.cfg -------------------------------------------------------
@@ -1866,7 +2254,7 @@ function funcCreate_grub_cfg() {
 	declare       FILE_MENU=""			# syslinux or isolinux path
 	declare       DIRS_MENU=""			# configuration file directory
 	declare       FILE_CONF=""			# configuration file path
-	declare       INSR_STRS=""			# string to insert
+#	declare       INSR_STRS=""			# string to insert
 #	declare       FILE_IRAM=""			# initrd path
 #	declare       FILE_VLNZ=""			# kernel path
 	funcPrintf "        edit: add ${AUTO_INST} to grub.cfg"
@@ -1881,13 +2269,16 @@ function funcCreate_grub_cfg() {
 		# --- comment out "timeout" and "menu default" --------------------
 		sed -i "${FILE_MENU}"                        \
 		    -e '/^[ \t]*set[ \t]\+default=/ s/^/#/g' \
-		    -e '/^[ \t]*set[ \t]\+timeout=/ s/^/#/g'
+		    -e '/^[ \t]*set[ \t]\+timeout=/ s/^/#/g' \
+		    -e '/^[ \t]*set[ \t]\+gfxmode=/ s/^/#/g' \
+		    -e '/^[ \t]*set[ \t]\+theme=/   s/^/#/g'
 		# --- insert "autoinst.cfg" ---------------------------------------
 		sed -i "${FILE_MENU}"                                                       \
 		    -e '0,/^menuentry/ {'                                                   \
 		    -e '/^menuentry/i source '"${DIRS_MENU/${WORK_IMGS}/}/${AUTO_INST}"'\n' \
 		    -e '}'
 		funcCreate_autoinst_cfg_grub "${DIRS_MENU}/${AUTO_INST}" "${BOOT_OPTN}" "${TGET_LINE[@]}"
+		funcCreate_theme_txt "${WORK_IMGS}" "${DIRS_MENU}"
 	done < <(find "${WORK_IMGS}" -name 'grub.cfg' -type f)
 }
 
@@ -1953,20 +2344,21 @@ function funcCreate_remaster_nocloud() {
 	declare       BOOT_OPTN=""
 	declare -r    WORK_DIRS="${DIRS_TEMP}/${TGET_LINE[1]}"
 	declare -r    WORK_IMGS="${WORK_DIRS}/img"
-	declare -r    WORK_CONF="${WORK_IMGS}/nocloud"
+	declare -r    WORK_CONF="${WORK_IMGS}/${TGET_LINE[8]%/*}"
 	funcPrintf "      create: boot options for nocloud"
 	# --- boot option ---------------------------------------------------------
-	BOOT_OPTN="automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=/${TGET_LINE[8]}"
+	BOOT_OPTN="boot=casper automatic-ubiquity noprompt autoinstall ds=nocloud-net\\;s=file:///cdrom/${TGET_LINE[8]}"
 	BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
 	BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	BOOT_OPTN+=" fsck.mode=skip boot=casper"
+	BOOT_OPTN+=" fsck.mode=skip"
 	# --- syslinux.cfg --------------------------------------------------------
 	funcCreate_syslinux_cfg "${BOOT_OPTN}" "${TGET_LINE[@]}"
 	# --- grub.cfg ------------------------------------------------------------
 	funcCreate_grub_cfg "${BOOT_OPTN}" "${TGET_LINE[@]}"
 	# --- copy the configuration file -----------------------------------------
 	mkdir -p "${WORK_CONF}"
-	cp -a "${DIRS_CONF}/${TGET_LINE[8]%_*}"* "${WORK_CONF}"
+	cp -a "${DIRS_CONF}/${TGET_LINE[8]%%_*}_"{server,desktop}{,_old} "${WORK_CONF}"
+	chmod ugo-x "${WORK_CONF}"/*/*
 }
 
 # ----- create remaster kickstart ---------------------------------------------
@@ -1998,14 +2390,15 @@ function funcCreate_remaster_autoyast() {
 	declare -r    WORK_DIRS="${DIRS_TEMP}/${TGET_LINE[1]}"
 	declare -r    WORK_IMGS="${WORK_DIRS}/img"
 	declare -r    WORK_CONF="${WORK_IMGS}/autoyast"
+	declare       WORK_ETHR="${ETHR_NAME}"
 	funcPrintf "      create: boot options for autoyast"
 	case "${TGET_LINE[1]}" in
-		opensuse-*-15* ) ETHR_NAME="eth0";;
+		opensuse-*-15* ) WORK_ETHR="eth0";;
 		*              ) ;;
 	esac
 	# --- boot option ---------------------------------------------------------
 	BOOT_OPTN="autoyast=cd:/${TGET_LINE[8]}"
-	BOOT_OPTN+=" hostname=${HOST_NAME}.${WGRP_NAME} ifcfg=${ETHR_NAME}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME}"
+	BOOT_OPTN+=" hostname=${HOST_NAME}.${WGRP_NAME} ifcfg=${WORK_ETHR}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME}"
 	BOOT_OPTN+=" locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	BOOT_OPTN+=" fsck.mode=skip"
 	# --- syslinux.cfg --------------------------------------------------------
@@ -2115,9 +2508,9 @@ function funcCreate_remaster() {
 	declare -i    I=0
 #	declare -i    J=0
 	# -------------------------------------------------------------------------
-	for I in $(eval "echo ${TGET_INDX}")
+	for I in $(eval echo "${TGET_INDX}")
 	do
-		read -r -a TGET_LINE < <(echo "${TGET_LIST[--I]}")
+		read -r -a TGET_LINE < <(echo "${TGET_LIST[I-1]}")
 		# shellcheck disable=SC2312
 		funcPrintf "===    start: ${TGET_LINE[4]} $(funcString "${COLS_SIZE}" '=')"
 		# --- download --------------------------------------------------------
@@ -2189,12 +2582,12 @@ function funcCall_function() {
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
-	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_WRK1}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_WRK1}"
 		line 1
 		line 2
 		line 3
 _EOT_
-	cat <<- _EOT_ | sed 's/^ *//g' > "${FILE_WRK2}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_WRK2}"
 		line 1
 		Line 2
 		line 3
@@ -2410,10 +2803,10 @@ function funcCall_config() {
 			nocloud )					# ==== create nocloud =================
 				funcCreate_nocloud
 				;;
-			kickstart )					# ==== create kickstart ===============
+			kickstart )					# ==== create kickstart.cfg ===========
 				funcCreate_kickstart
 				;;
-			autoyast )					# ==== create autoyast ================
+			autoyast )					# ==== create autoyast.xml ============
 				funcCreate_autoyast
 				;;
 			-* )
@@ -2438,6 +2831,8 @@ function funcCall_create() {
 	declare -a    DATA_LIST=()
 	declare       WORK_PARM=""
 	declare       WORK_ENUM=""
+	declare -i    I=0
+	declare -i    J=0
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
@@ -2470,22 +2865,35 @@ function funcCall_create() {
 				;;
 		esac
 		if [[ "${#DATA_LIST[@]}" -gt 0 ]]; then
+			for ((I=0, J=0; I<"${#DATA_LIST[@]}"; I++))
+			do
+				read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
+				if [[ "${DATA_LINE[0]}" != "o" ]] || { [[ ! "${DATA_LINE[16]}" =~ ^http://.*$ ]] && [[ ! "${DATA_LINE[16]}" =~ ^https://.*$ ]]; }; then
+					continue
+				fi
+				J+=1
+			done
 			TGET_INDX=""
-			TGET_LIST=()
-			funcCreate_menu "${DATA_LIST[@]}"
 			case "${2:-}" in
 				a | all )
 					shift;
-					TGET_INDX="{1..${#TGET_LIST[@]}}"
+					TGET_INDX="{1..${J}}"
 					;;
 				*       )
-					shift
-					WORK_PARM="$*"
 					WORK_ENUM="${COMD_ENUM[*]}"
-					# shellcheck disable=SC2001
-					TGET_INDX="$(echo "${WORK_PARM}" | sed -e 's/\('"${WORK_ENUM// /\\|}"'\).*//g')"
+					WORK_ENUM="${WORK_ENUM// /\\|}"
+					# shellcheck disable=SC2312
+					if [[ -n "${2:-}" ]] && [[ -z "$(echo "${2:-}" | sed -ne '/\('"${WORK_ENUM}"'\)/p')" ]]; then
+						shift
+						WORK_PARM="$*"
+						# shellcheck disable=SC2001
+						TGET_INDX="$(echo "${WORK_PARM}" | sed -e 's/\('"${WORK_ENUM}"'\).*//g')"
+					fi
 					;;
 			esac
+			TGET_INDX="$(eval echo "${TGET_INDX}")"
+			TGET_LIST=()
+			funcCreate_menu "${DATA_LIST[@]}"
 			if [[ -z "${TGET_INDX}" ]]; then
 				funcCreate_target_list
 			fi
@@ -2539,6 +2947,28 @@ function funcMain() {
 	# -------------------------------------------------------------------------
 	if [[ -z "${PROG_PARM[*]}" ]]; then
 		funcPrintf "sudo ./${PROG_NAME} [ options ]"
+		funcPrintf "debug print and test (empty is [ options ])"
+		funcPrintf "  -d | --debug [ options ]"
+		funcPrintf "    func    function test"
+		funcPrintf "    text    text color test"
+		funcPrintf "create symbolic link"
+		funcPrintf "  -l | --link"
+		funcPrintf "create config files"
+		funcPrintf "  --conf [ options ]"
+		funcPrintf "    cmd         preseed kill dhcp / sub command"
+		funcPrintf "    preseed     preseed.cfg"
+		funcPrintf "    nocloud     nocloud"
+		funcPrintf "    kickstart   kickstart.cfg"
+		funcPrintf "    autoyast    autoyast.xml"
+		funcPrintf "  --create [ options ] [ empty | all | id number ]"
+		funcPrintf "    mini        mini.iso"
+		funcPrintf "    net         netint"
+		funcPrintf "    dvd         dvd image"
+		funcPrintf "    live        live image"
+#		funcPrintf "    tool        tool"
+		funcPrintf "    empty       waiting for input"
+		funcPrintf "    a | all     create all targets"
+		funcPrintf "    id number   create with selected target id"
 	else
 		IFS=' =,'
 		set -f
