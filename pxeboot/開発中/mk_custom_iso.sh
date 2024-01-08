@@ -870,32 +870,39 @@ function funcCreate_preseed_sub_command() {
 		 	if [ -n "${LIST_PACK:-}" ]; then
 		#		LIST_DPKG="$(LANG=C dpkg-query --list "${LIST_PACK:-}" 2>&1 | grep -E -v '^ii|^\+|^\||^Desired' || true 2> /dev/null)"
 		 		# shellcheck disable=SC2086
-		 		LIST_DPKG="$(LANG=C dpkg-query --list ${LIST_PACK:-} 2>&1 |                        \
-		 		                    sed -e '/\(^ii\|^\+\|^|\|^Desired\)/! {'                       \
-		 		                        -e 's/.*matching[ \t]\+\([[:graph:]]\+\)/\1/g'             \
-		 		                        -e 's/^[[:graph:]]\+[ \t]\+\([[:graph:]]\+\)[ \t].*$/\1/g' \
-		 		                        -ne 'p}')"
+		 		LIST_DPKG="$(LANG=C dpkg-query --list ${LIST_PACK:-} 2>&1                           | \
+		 		                    sed -e  '/\(^ii\|^\+\|^|\|^Desired\)/! {'                         \
+		 		                        -e  's/.*matching[ \t]\+\([[:graph:]]\+\)/\1/g'               \
+		 		                        -e  's/^[[:graph:]]\+[ \t]\+\([[:graph:]]\+\)[ \t].*$/\1/g'   \
+		 		                        -ne 'p}'                                                    | \
+		 		                    sed -e  's/\r\n*/\n/g'                                            \
+		 		                        -ze 's/\n/ /g')"
 		 	fi
-		 	if [ -z "${LIST_DPKG:-}" ]; then
-		 		echo "${PROG_NAME}: Finish the installation"
-		 		return
-		 	fi
+		#	if [ -z "${LIST_DPKG:-}" ]; then
+		#		echo "${PROG_NAME}: Finish the installation"
+		#		return
+		#	fi
 		 	#--------------------------------------------------------------------------
 		 	echo "${PROG_NAME}: Run the installation"
-		 	echo "${PROG_NAME}: LIST_DPKG="
-		 	echo "${PROG_NAME}: <<<"
-		 	echo "${LIST_DPKG}"
-		 	echo "${PROG_NAME}: >>>"
+		 	echo "${PROG_NAME}: LIST_DPKG=${LIST_DPKG:-}"
+		 	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK:-}"
+		#	echo "${PROG_NAME}: <<<"
+		#	echo "${LIST_DPKG}"
+		#	echo "${PROG_NAME}: >>>"
 		 	#--------------------------------------------------------------------------
 		 	apt-get -qq    update
 		 	apt-get -qq -y upgrade
 		 	apt-get -qq -y dist-upgrade
-		#	apt-get -qq -y install "${LIST_PACK}"
-		 	apt-get -qq -y install "${LIST_DPKG}"
-		 	# shellcheck disable=SC2312
-		 	if [ -n "$(command -v tasksel 2> /dev/null)" ]; then
-		 		tasksel install "${LIST_TASK}"
+		 	if [ -n "${LIST_DPKG:-}" ]; then
+		 		# shellcheck disable=SC2086
+		 		apt-get -qq -y install ${LIST_DPKG}
 		 	fi
+		 	# shellcheck disable=SC2312
+		 	if [ -n "${LIST_TASK:-}" ] && [ -n "$(command -v tasksel 2> /dev/null)" ]; then
+		 		# shellcheck disable=SC2086
+		 		tasksel install ${LIST_TASK}
+		 	fi
+		 	echo "${PROG_NAME}: Installation completed"
 		}
 		
 		# --- network -----------------------------------------------------------------
@@ -1158,20 +1165,9 @@ function funcCreate_preseed_sub_command() {
 		### Main ######################################################################
 		funcMain() {
 		 	echo "${PROG_NAME}: funcMain"
-		 	case "${DIST_NAME}" in
-		 		debian )
-		 			funcInstallPackages
-		 			funcSetupNetwork
-		#			funcChange_gdm3_configure
-		 			;;
-		 		ubuntu )
-		 			funcInstallPackages
-		 			funcSetupNetwork
-		#			funcChange_gdm3_configure
-		 			;;
-		 		* )
-		 			;;
-		 	esac
+		 	funcInstallPackages
+		 	funcSetupNetwork
+		#	funcChange_gdm3_configure
 		}
 		
 		 	funcMain
@@ -2296,8 +2292,13 @@ function funcCreate_remaster_preseed() {
 	funcPrintf "      create: boot options for preseed"
 	# --- boot option ---------------------------------------------------------
 	case "${TGET_LINE[1]}" in
-		*-mini-* ) BOOT_OPTN="auto=true";;
-		*        ) BOOT_OPTN="auto=true preseed/file=/cdrom/${TGET_LINE[8]}";;
+		*-mini-*         ) BOOT_OPTN="auto=true";;
+		*                ) BOOT_OPTN="auto=true preseed/file=/cdrom/${TGET_LINE[8]}";;
+	esac
+	case "${TGET_LINE[1]}" in
+		ubuntu-desktop-* | \
+		ubuntu-legacy-*  ) BOOT_OPTN="automatic-ubiquity noprompt ${BOOT_OPTN}";;
+		*                ) ;;
 	esac
 	BOOT_OPTN+=" netcfg/disable_autoconfig=true"
 	BOOT_OPTN+=" netcfg/choose_interface=${ETHR_NAME}"
@@ -2334,8 +2335,13 @@ function funcCreate_remaster_preseed() {
 			cp -a "${DIRS_CONF}/${TGET_LINE[8]%_*}"*.cfg                   "${WORK_CONF}"
 			;;
 		ubuntu-live-*    ) ;;
-		ubuntu-desktop-* ) ;;
-		ubuntu-legacy-*  ) ;;
+		ubuntu-desktop-* | \
+		ubuntu-legacy-*  )
+			mkdir -p "${WORK_CONF}"
+			cp -a "${DIRS_CONF}/${TGET_LINE[8]%/*}/preseed_kill_dhcp.sh"   "${WORK_CONF}"
+			cp -a "${DIRS_CONF}/${TGET_LINE[8]%/*}/preseed_sub_command.sh" "${WORK_CONF}"
+			cp -a "${DIRS_CONF}/${TGET_LINE[8]%_*}"*.cfg                   "${WORK_CONF}"
+			;;
 		*                ) ;;
 	esac
 }
