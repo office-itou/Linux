@@ -56,6 +56,9 @@
 
 	# === system ==============================================================
 
+	# --- base language -------------------------------------------------------
+	declare -r    LANG_BASE="ja_JP.UTF-8"
+
 	# --- os information ------------------------------------------------------
 	declare       DIST_NAME=""			# distribution name (ex. debian)
 	declare       DIST_CODE=""			# code name         (ex. bookworm)
@@ -1505,6 +1508,25 @@ function funcApplication_system_user_environment() {
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	FILE_PATH="/etc/locale.gen"
+	if [[ -f "${FILE_PATH}" ]]; then
+		funcPrintf "      ${MSGS_TITL}: language setup"
+		FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
+		FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+		if [[ ! -f "${FILE_ORIG}" ]]; then
+			mkdir -p "${FILE_ORIG%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
+		else
+			mkdir -p "${FILE_BACK%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_BACK}"
+		fi
+		sed -i "${FILE_PATH}"                    \
+		    -e '/'"${LANG_BASE}"'/ s/^#[ \t]*//' \
+		    -e '/en_US.UTF-8/      s/^#[ \t]*//'
+		locale-gen
+		update-locale LANG="${LANG_BASE}"
+	fi
 	# -------------------------------------------------------------------------
 	for USER_NAME in root "$(logname)"	# only root and login user
 	do
