@@ -30,23 +30,61 @@
 
 # *** data section ************************************************************
 
+	# tree diagram
+	#   ~/share/
+	#   |-- conf ---------------------- configuration file
+	#   |   |-- _template
+	#   |   |-- autoyast
+	#   |   |-- kickstart
+	#   |   |-- nocloud
+	#   |   `-- preseed
+	#   |-- html ---------------------- html contents
+	#   |   |-- conf -> ../conf
+	#   |   |-- imgs -> ../imgs
+	#   |   |-- isos -> ../isos
+	#   |   `-- rmak -> ../rmak
+	#   |-- imgs ---------------------- iso file extraction destination
+	#   |-- isos ---------------------- iso file
+	#   |-- rmak ---------------------- remake file
+	#   |-- temp ---------------------- temporary directory
+	#   `-- tftp ---------------------- tftp contents
+	#       |-- boot
+	#       |-- menu-bios
+	#       |   |-- boot -> ../boot
+	#       |   `-- pxelinux.cfg
+	#       |       `-- default -> ../syslinux.cfg
+	#       |-- menu-efi32
+	#       |   |-- boot -> ../boot
+	#       |   `-- pxelinux.cfg
+	#       |       `-- default -> ../syslinux.cfg
+	#       `-- menu-efi64
+	#           |-- boot -> ../boot
+	#           `-- pxelinux.cfg
+	#               `-- default -> ../syslinux.cfg
+	#   /var/tftp/ -> ~/share/tftp
+	#   /var/www/
+	#   `-- html -> ~/share/html
+
 # --- working directory name --------------------------------------------------
 	declare -r    PROG_PATH="$0"
 	declare -r -a PROG_PARM=("${@:-}")
 #	declare -r    PROG_DIRS="${PROG_PATH%/*}"
 	declare -r    PROG_NAME="${PROG_PATH##*/}"
-	declare -r    DIRS_WORK="${PWD}/${PROG_NAME%.*}"
+#	declare -r    DIRS_WORK="${PWD}/${PROG_NAME%.*}"
+	declare -r    DIRS_WORK="${PWD}/share"
 	if [[ "${DIRS_WORK}" = "/" ]]; then
 		echo "terminate the process because the working directory is root"
 		exit 1
 	fi
-#	declare -r    DIRS_BACK="${DIRS_WORK=}/back"			# backup
-	declare -r    DIRS_CONF="${DIRS_WORK=}/conf"			# configure file
-#	declare -r    DIRS_IMGS="${DIRS_WORK=}/imgs"			# image destination
-	declare -r    DIRS_ISOS="${DIRS_WORK=}/isos"			# iso file
-#	declare -r    DIRS_ORIG="${DIRS_WORK=}/orig"			# original file
-	declare -r    DIRS_RMAK="${DIRS_WORK=}/rmak"			# remake file
-	declare -r    DIRS_TEMP="${DIRS_WORK=}/temp"			# temporary
+	declare -r    DIRS_BACK="${DIRS_WORK}/back"				# backup
+	declare -r    DIRS_CONF="${DIRS_WORK}/conf"				# configuration file
+	declare -r    DIRS_HTML="${DIRS_WORK}/html"				# html contents
+	declare -r    DIRS_IMGS="${DIRS_WORK}/imgs"				# iso file extraction destination
+	declare -r    DIRS_ISOS="${DIRS_WORK}/isos"				# iso file
+	declare -r    DIRS_ORIG="${DIRS_WORK}/orig"				# original file
+	declare -r    DIRS_RMAK="${DIRS_WORK}/rmak"				# remake file
+	declare -r    DIRS_TEMP="${DIRS_WORK}/temp"				# temporary directory
+	declare -r    DIRS_TFTP="${DIRS_WORK}/tftp"				# tftp contents
 
 # --- work variables ----------------------------------------------------------
 	declare -r    OLD_IFS="${IFS}"
@@ -147,7 +185,7 @@
 
 	# === network =============================================================
 
-	declare       HOST_NAME=""								# hostname
+#	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"		# hostname
 	declare -r    WGRP_NAME="workgroup"						# domain
 	declare -r    ETHR_NAME="ens160"						# network device name
 	declare -r    IPV4_ADDR="192.168.1.1"					# IPv4 address
@@ -675,6 +713,56 @@ function funcServiceStatus() {
 
 # === create ==================================================================
 
+# ----- create directory ------------------------------------------------------
+function funcCreate_directory() {
+	declare -r -a DIRS_LIST=(                                                               \
+		"${DIRS_WORK}"                                                                      \
+		"${DIRS_BACK}"                                                                      \
+		"${DIRS_CONF}"/{_template,autoyast,kickstart,nocloud,preseed}                       \
+		"${DIRS_HTML}"                                                                      \
+		"${DIRS_IMGS}"                                                                      \
+		"${DIRS_ISOS}"                                                                      \
+		"${DIRS_ORIG}"                                                                      \
+		"${DIRS_RMAK}"                                                                      \
+		"${DIRS_TEMP}"                                                                      \
+		"${DIRS_TFTP}"/{boot,menu-{bios,efi{32,64}}/pxelinux.cfg}                           \
+	)
+	declare -r -a LINK_LIST=(                                                               \
+		"${DIRS_CONF}                         ${DIRS_HTML}/"                                \
+		"${DIRS_IMGS}                         ${DIRS_HTML}/"                                \
+		"${DIRS_ISOS}                         ${DIRS_HTML}/"                                \
+		"${DIRS_RMAK}                         ${DIRS_HTML}/"                                \
+		"${DIRS_TFTP}/boot                    ${DIRS_TFTP}/menu-bios/"                      \
+		"${DIRS_TFTP}/boot                    ${DIRS_TFTP}/menu-efi32/"                     \
+		"${DIRS_TFTP}/boot                    ${DIRS_TFTP}/menu-efi64/"                     \
+		"${DIRS_TFTP}/menu-bios/syslinux.cfg  ${DIRS_TFTP}/menu-bios/pxelinux.cfg/default"  \
+		"${DIRS_TFTP}/menu-efi32/syslinux.cfg ${DIRS_TFTP}/menu-efi32/pxelinux.cfg/default" \
+		"${DIRS_TFTP}/menu-efi64/syslinux.cfg ${DIRS_TFTP}/menu-efi64/pxelinux.cfg/default" \
+	)
+	declare -a    LINK_LINE=()
+	declare       LINK_NAME=""
+	declare -i    I=0
+
+	mkdir -p "${DIRS_LIST[@]}"
+
+	for ((I=0; I<"${#LINK_LIST[@]}"; I++))
+	do
+		read -r -a LINK_LINE < <(echo "${LINK_LIST[I]}")
+		mkdir -p "${LINK_LINE[1]%/*}"
+		if [[ -z "${LINK_LINE[1]##*/}" ]]; then
+			LINK_NAME="${LINK_LINE[1]%/}/${LINK_LINE[0]##*/}"
+		else
+			LINK_NAME="${LINK_LINE[1]}"
+		fi
+		if [[ -L "${LINK_NAME}" ]]; then
+			funcPrintf "symbolic link exist : ${LINK_NAME/${PWD}\//}"
+		else
+			funcPrintf "symbolic link create: ${LINK_LINE[0]/${PWD}\//} -> ${LINK_LINE[1]/${PWD}\//}"
+			ln -sr "${LINK_LINE[0]}" "${LINK_LINE[1]}"
+		fi
+	done
+}
+
 # ----- create link -----------------------------------------------------------
 function funcCreate_link() {
 	declare -r -a DATA_LIST=(  \
@@ -698,10 +786,12 @@ function funcCreate_link() {
 			"${CONF_YAST}"
 		do
 			mkdir -p "${CONF_DIRS}"
-			if [[ -L "${FILE_NAME}" ]]; then
+			if [[ -f "${FILE_NAME}" ]]; then
+				funcPrintf "         file exist : ${FILE_NAME##*/}"
+			elif [[ -L "${FILE_NAME}" ]]; then
 				funcPrintf "symbolic link exist : ${FILE_NAME##*/}"
 			else
-				funcPrintf "symbolic link create: ${CONF_LINK}/${FILE_NAME##*/} -> ${CONF_DIRS}"
+				funcPrintf "symbolic link create: ${CONF_LINK}/${FILE_NAME##*/} -> ${CONF_DIRS/${PWD}\//}"
 				ln -s "${CONF_LINK}/${FILE_NAME##*/}" "${CONF_DIRS}"
 			fi
 		done
@@ -715,9 +805,9 @@ function funcCreate_link() {
 		fi
 		mkdir -p "${DIRS_ISOS}"
 		if [[ -L "${DIRS_ISOS}/${DATA_LINE[4]}" ]]; then
-			funcPrintf "symbolic link exist : ${DIRS_ISOS}/${DATA_LINE[4]}"
+			funcPrintf "symbolic link exist : ${DIRS_ISOS/${PWD}\//}/${DATA_LINE[4]}"
 		else
-			funcPrintf "symbolic link create: ${HGFS_DIRS}/${DATA_LINE[9]}/${DATA_LINE[4]} -> ${DIRS_ISOS}"
+			funcPrintf "symbolic link create: ${HGFS_DIRS}/${DATA_LINE[9]}/${DATA_LINE[4]} -> ${DIRS_ISOS/${PWD}\//}"
 			ln -s "${HGFS_DIRS}/${DATA_LINE[9]}/${DATA_LINE[4]}" "${DIRS_ISOS}"
 		fi
 	done
@@ -1417,6 +1507,7 @@ function funcCreate_autoyast() {
 # ----- create menu -----------------------------------------------------------
 function funcCreate_menu() {
 	declare -r -a CURL_OPTN=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
+	declare -r -a DATA_LIST=("$@")
 	declare -a    DATA_LINE=()
 	declare       TEXT_COLR=""
 	declare       TEXT_LINE=""
@@ -1443,8 +1534,6 @@ function funcCreate_menu() {
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 #	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
-	# -------------------------------------------------------------------------
-	DATA_LIST=("$@")
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "# $(funcString $((COLS_SIZE-4)) '-') #"
@@ -1725,7 +1814,7 @@ function funcCreate_copy_iso2hdd() {
 	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
 	nice -n "${NICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
 	umount "${WORK_MNTP}"
-	# --- copy initrd -> hdd ----------------------------------------------
+	# --- copy initrd -> hdd --------------------------------------------------
 	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
 		funcPrintf "        copy: initrd"
 		# shellcheck disable=SC2312
@@ -2284,6 +2373,7 @@ function funcCreate_grub_cfg() {
 function funcCreate_remaster_preseed() {
 	declare -r -a TGET_LINE=("$@")
 	declare       BOOT_OPTN=""
+	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 	declare -r    WORK_DIRS="${DIRS_TEMP}/${TGET_LINE[1]}"
 	declare -r    WORK_IMGS="${WORK_DIRS}/img"
 	declare -r    WORK_RAMS="${WORK_DIRS}/ram"
@@ -2350,6 +2440,7 @@ function funcCreate_remaster_preseed() {
 function funcCreate_remaster_nocloud() {
 	declare -r -a TGET_LINE=("$@")
 	declare       BOOT_OPTN=""
+	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 	declare -r    WORK_DIRS="${DIRS_TEMP}/${TGET_LINE[1]}"
 	declare -r    WORK_IMGS="${WORK_DIRS}/img"
 	declare -r    WORK_CONF="${WORK_IMGS}/${TGET_LINE[8]%/*}"
@@ -2373,6 +2464,7 @@ function funcCreate_remaster_nocloud() {
 function funcCreate_remaster_kickstart() {
 	declare -r -a TGET_LINE=("$@")
 	declare       BOOT_OPTN=""
+	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 	declare -r    WORK_DIRS="${DIRS_TEMP}/${TGET_LINE[1]}"
 	declare -r    WORK_IMGS="${WORK_DIRS}/img"
 	declare -r    WORK_CONF="${WORK_IMGS}/kickstart"
@@ -2382,6 +2474,7 @@ function funcCreate_remaster_kickstart() {
 	BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:none,auto6 nameserver=${IPV4_NSVR}"
 	BOOT_OPTN+=" locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	BOOT_OPTN+=" fsck.mode=skip"
+	BOOT_OPTN+=" inst.stage2=hd:LABEL=${TGET_LINE[14]}"
 	# --- syslinux.cfg --------------------------------------------------------
 	funcCreate_syslinux_cfg "${BOOT_OPTN}" "${TGET_LINE[@]}"
 	# --- grub.cfg ------------------------------------------------------------
@@ -2395,6 +2488,7 @@ function funcCreate_remaster_kickstart() {
 function funcCreate_remaster_autoyast() {
 	declare -r -a TGET_LINE=("$@")
 	declare       BOOT_OPTN=""
+	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 	declare -r    WORK_DIRS="${DIRS_TEMP}/${TGET_LINE[1]}"
 	declare -r    WORK_IMGS="${WORK_DIRS}/img"
 	declare -r    WORK_CONF="${WORK_IMGS}/autoyast"
@@ -2532,7 +2626,6 @@ function funcCreate_remaster() {
 		# --- copy iso contents to hdd ----------------------------------------
 		funcCreate_copy_iso2hdd "${TGET_LINE[@]}"
 		# --- rewriting syslinux.cfg and grub.cfg -----------------------------
-		HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 		case "${TGET_LINE[1]%%-*}" in
 			debian       | \
 			ubuntu       ) 
@@ -2990,6 +3083,7 @@ function funcMain() {
 					funcCall_debug COMD_LINE "$@"
 					;;
 				-l | --link )				# ==== create symbolic link =======
+					funcCreate_directory
 					funcCreate_link
 					shift
 					COMD_LINE=("${@:-}")

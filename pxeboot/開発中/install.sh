@@ -686,7 +686,7 @@ function funcSystem_control() {
 			centos       | \
 			almalinux    | \
 			miraclelinux | \
-			rockylinux   ) read -r -a SYSD_NAME < <(echo "${SYSD_ARRY[1]}");;
+			rocky        ) read -r -a SYSD_NAME < <(echo "${SYSD_ARRY[1]}");;
 			opensuse-*   ) read -r -a SYSD_NAME < <(echo "${SYSD_ARRY[2]}");;
 			*            ) ;;
 		esac
@@ -744,7 +744,7 @@ function funcSystem_parameter() {
 		centos       | \
 		almalinux    | \
 		miraclelinux | \
-		rockylinux   )
+		rocky        )
 			PKGS_MNGR="dnf"
 			PKGS_OPTN=("--assumeyes" "--quiet")
 			;;
@@ -1103,10 +1103,13 @@ function funcNetwork_networkmanager() {
 		CONF_PARM="[main]"$'\n'"dns=none"
 #	fi
 	# -------------------------------------------------------------------------
-	funcPrintf "      ${MSGS_TITL}: stop ${SYSD_NAME}"
-	systemctl --quiet stop "${SYSD_NAME}"
-	funcPrintf "      ${MSGS_TITL}: disable ${SYSD_NAME}"
-	systemctl --quiet disable "${SYSD_NAME}"
+	# shellcheck disable=SC2312,SC2310
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
+		funcPrintf "      ${MSGS_TITL}: stop ${SYSD_NAME}"
+		systemctl --quiet stop "${SYSD_NAME}"
+		funcPrintf "      ${MSGS_TITL}: disable ${SYSD_NAME}"
+		systemctl --quiet disable "${SYSD_NAME}"
+	fi
 	# -------------------------------------------------------------------------
 	FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
@@ -1418,7 +1421,7 @@ function funcApplication_package_manager() {
 		centos       | \
 		almalinux    | \
 		miraclelinux | \
-		rockylinux   )
+		rocky        )
 			# --- updating install pakages ------------------------------------
 			funcPrintf "      ${MSGS_TITL}: updating install pakages"
 			funcPrintf "      ${MSGS_TITL}: ${PKGS_MNGR} ${PKGS_OPTN[*]} check-update"
@@ -1521,9 +1524,12 @@ function funcApplication_system_user_environment() {
 			mkdir -p "${FILE_BACK%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_BACK}"
 		fi
-		sed -i "${FILE_PATH}"                    \
-		    -e '/'"${LANG_BASE}"'/ s/^#[ \t]*//' \
-		    -e '/en_US.UTF-8/      s/^#[ \t]*//'
+		sed -i "${FILE_PATH}"                     \
+		    -e '/^[^#][[:graph:]]/ s/^/# /g'      \
+		    -e '0,/'"${LANG_BASE}"'/           {' \
+		    -e '/'"${LANG_BASE}"'/ s/^#[ \t]*//}' \
+		    -e '0,/en_US.UTF-8/                {' \
+		    -e '/en_US.UTF-8/      s/^#[ \t]*//}'
 		locale-gen
 		update-locale LANG="${LANG_BASE}"
 	fi
@@ -2417,6 +2423,7 @@ function funcRestore_settings() {
 		"/etc/NetworkManager/conf.d/none-dns.conf"                     \
 		"/etc/apache2/apache2.conf"                                    \
 		"/etc/apt/sources.list"                                        \
+		"/etc/chrony.conf"                                             \
 		"/etc/clamav/freshclam.conf"                                   \
 		"/etc/connman/main.conf"                                       \
 		"/etc/default/grub"                                            \
@@ -2425,6 +2432,8 @@ function funcRestore_settings() {
 		"/etc/fstab"                                                   \
 		"/etc/hosts.allow"                                             \
 		"/etc/hosts.deny"                                              \
+		"/etc/httpd/conf/httpd.conf"                                   \
+		"/etc/locale.gen"                                              \
 		"/etc/netplan/99-network-manager-static.yaml"                  \
 		"/etc/resolv.conf"                                             \
 		"/etc/samba/smb.conf"                                          \
@@ -2569,7 +2578,7 @@ function funcDebug_dns() {
 	# shellcheck disable=SC2312
 	if [[ -n "$(command -v ping6 2> /dev/null)" ]]; then
 		# shellcheck disable=SC2312
-		funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+		funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 		ping6 -c 4 www.google.com
 	fi
 	# shellcheck disable=SC2312
@@ -2584,15 +2593,15 @@ function funcDebug_dns() {
 	nslookup "${HOST_FQDN}"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 	nslookup "${IPV4_ADDR[0]}"
 	# -------------------------------------------------------------------------
 #	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 #	nslookup "${IPV6_ADDR[0]}"
 	# -------------------------------------------------------------------------
 #	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 #	nslookup "${LINK_ADDR[0]}"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
@@ -2600,39 +2609,39 @@ function funcDebug_dns() {
 #	dig @localhost "${IPV4_RADR[0]}.in-addr.arpa" DNSKEY +dnssec +multi
 	# -------------------------------------------------------------------------
 #	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 #	dig @localhost "${HOST_DMAN}" DNSKEY +dnssec +multi
 	# -------------------------------------------------------------------------
 #	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 #	dig @"${IPV4_ADDR[0]}" "${HOST_DMAN}" axfr
 	# -------------------------------------------------------------------------
 #	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 #	dig @"${IPV6_ADDR[0]}" "${HOST_DMAN}" axfr
 	# -------------------------------------------------------------------------
 #	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 #	dig @"${LINK_ADDR[0]}" "${HOST_DMAN}" axfr
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 	dig "${HOST_FQDN}" A +nostats +nocomments
 	# -------------------------------------------------------------------------
 #	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 #	dig "${HOST_FQDN}" AAAA +nostats +nocomments
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 	dig -x "${IPV4_ADDR[0]}" +nostats +nocomments
 	# -------------------------------------------------------------------------
 #	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 #	dig -x "${IPV6_ADDR[0]}" +nostats +nocomments
 	# -------------------------------------------------------------------------
 #	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 #	dig -x "${LINK_ADDR[0]}" +nostats +nocomments
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
@@ -2690,6 +2699,31 @@ function funcDebug_open_vm_tools() {
 	LANG=C df -h "${HGFS_DIRS}"
 }
 
+# ----- lvm -------------------------------------------------------------------
+function funcDebug_lvm() {
+	# shellcheck disable=SC2312
+	funcPrintf "----- lsblk --nodeps --output NAME,TYPE,TRAN,SIZE,VENDOR,MODEL $(funcString "${COLS_SIZE}" '-')"
+	lsblk --nodeps --output NAME,TYPE,TRAN,SIZE,VENDOR,MODEL
+	# shellcheck disable=SC2312
+	if [[ -n "$(command -v pvdisplay 2> /dev/null)" ]]; then
+		# shellcheck disable=SC2312
+		funcPrintf "----- pvdisplay $(funcString "${COLS_SIZE}" '-')"
+		pvdisplay
+	fi
+	# shellcheck disable=SC2312
+	if [[ -n "$(command -v vgdisplay 2> /dev/null)" ]]; then
+		# shellcheck disable=SC2312
+		funcPrintf "----- vgdisplay $(funcString "${COLS_SIZE}" '-')"
+		vgdisplay
+	fi
+	# shellcheck disable=SC2312
+	if [[ -n "$(command -v lvdisplay 2> /dev/null)" ]]; then
+		# shellcheck disable=SC2312
+		funcPrintf "----- lvdisplay $(funcString "${COLS_SIZE}" '-')"
+		lvdisplay
+	fi
+}
+
 # === cleaning ================================================================
 
 function funcCleaning() {
@@ -2708,10 +2742,10 @@ function funcCleaning() {
 	LIST_ORIG=($(find "${DIRS_ORIG/${PWD}\//}" | sort))
 	funcPrintf "     ${MSGS_TITL}: list of files to backup"
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 	printf '%s\n' "${LIST_ORIG[@]}"
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 	funcPrintf "     ${MSGS_TITL}: compress files"
 	funcPrintf "     ${MSGS_TITL}: ${FILE_ORIG/${PWD}\//}"
 	tar -czf "${FILE_ORIG/${PWD}\//}" "${LIST_ORIG[@]}"
@@ -2730,10 +2764,10 @@ function funcCleaning() {
 	fi
 	funcPrintf "     ${MSGS_TITL}: list of files to backup"
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 	printf '%s\n' "${LIST_BACK[@]}"
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${COLS_SIZE}" '･')"
+	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 	funcPrintf "     ${MSGS_TITL}: compress files"
 	funcPrintf "     ${MSGS_TITL}: ${FILE_BACK/${PWD}\//}"
 	tar -czf "${FILE_BACK/${PWD}\//}" "${LIST_BACK[@]}"
@@ -2914,7 +2948,7 @@ function funcCall_debug() {
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-		COMD_LIST=("sys" "net" "ntp" "smb" "vm" "$@")
+		COMD_LIST=("sys" "net" "ntp" "smb" "vm" "lvm" "$@")
 		IFS=' =,'
 		set -f
 		set -- "${COMD_LIST[@]:-}"
@@ -2946,6 +2980,9 @@ function funcCall_debug() {
 				;;
 			vm )						# ===== open-vm-tools =================
 				funcDebug_open_vm_tools
+				;;
+			lvm )						# ===== lvm ===========================
+				funcDebug_lvm
 				;;
 			-* )
 				break
