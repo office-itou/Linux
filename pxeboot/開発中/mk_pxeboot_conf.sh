@@ -28,6 +28,25 @@
 
 	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
+	# -------------------------------------------------------------------------
+	declare -r -a APP_LIST=("syslinux-common" "syslinux-efi" "pxelinux" "dnsmasq" "apache2" "7zip" "rsync")
+	declare -a    APP_FIND=()
+	declare       APP_LINE=""
+	# shellcheck disable=SC2312
+	mapfile APP_FIND < <(LANG=C apt list "${APP_LIST[@]}" 2> /dev/null | sed -e '/\(^[[:blank:]]*$\|WARNING\|Listing\|installed\)/! {' -e 's%\([[:graph:]]\)/.*%\1%g' -ne 'p}' | sed -z 's/[\r\n]\+/ /g')
+	for I in "${!APP_FIND[@]}"
+	do
+		if [[ -n "${APP_LINE}" ]]; then
+			APP_LINE+=" "
+		fi
+		APP_LINE+="${APP_FIND[${I}]}"
+	done
+	if [[ -n "${APP_LINE}" ]]; then
+		echo "please install these:"
+		echo "sudo apt-get install ${APP_LINE}"
+		exit 1
+	fi
+
 # *** data section ************************************************************
 
 	# tree diagram
@@ -70,21 +89,22 @@
 	declare -r -a PROG_PARM=("${@:-}")
 #	declare -r    PROG_DIRS="${PROG_PATH%/*}"
 	declare -r    PROG_NAME="${PROG_PATH##*/}"
+	declare -r    PROG_PROC="${PROG_NAME}.$$"
 #	declare -r    DIRS_WORK="${PWD}/${PROG_NAME%.*}"
 	declare -r    DIRS_WORK="${PWD}/share"
 	if [[ "${DIRS_WORK}" = "/" ]]; then
 		echo "terminate the process because the working directory is root"
 		exit 1
 	fi
-	declare -r    DIRS_BACK="${DIRS_WORK=}/back"			# backup
-	declare -r    DIRS_CONF="${DIRS_WORK=}/conf"			# configuration file
-	declare -r    DIRS_HTML="${DIRS_WORK=}/html"			# html contents
-	declare -r    DIRS_IMGS="${DIRS_WORK=}/imgs"			# iso file extraction destination
-	declare -r    DIRS_ISOS="${DIRS_WORK=}/isos"			# iso file
-	declare -r    DIRS_ORIG="${DIRS_WORK=}/orig"			# original file
-	declare -r    DIRS_RMAK="${DIRS_WORK=}/rmak"			# remake file
-	declare -r    DIRS_TEMP="${DIRS_WORK=}/temp"			# temporary directory
-	declare -r    DIRS_TFTP="${DIRS_WORK=}/tftp"			# tftp contents
+	declare -r    DIRS_BACK="${DIRS_WORK}/back"					# backup
+	declare -r    DIRS_CONF="${DIRS_WORK}/conf"					# configuration file
+	declare -r    DIRS_HTML="${DIRS_WORK}/html"					# html contents
+	declare -r    DIRS_IMGS="${DIRS_WORK}/imgs"					# iso file extraction destination
+	declare -r    DIRS_ISOS="${DIRS_WORK}/isos"					# iso file
+	declare -r    DIRS_ORIG="${DIRS_WORK}/orig"					# original file
+	declare -r    DIRS_RMAK="${DIRS_WORK}/rmak"					# remake file
+	declare -r    DIRS_TEMP="${DIRS_WORK}/temp/${PROG_PROC}"	# temporary directory
+	declare -r    DIRS_TFTP="${DIRS_WORK}/tftp"					# tftp contents
 
 # --- work variables ----------------------------------------------------------
 	declare -r    OLD_IFS="${IFS}"
@@ -751,6 +771,8 @@ function funcCreate_directory() {
 	)
 	declare -a    LINK_LINE=()
 	declare       LINK_NAME=""
+	declare       WORK_DIRS=""
+	declare       WORK_ATTR=""
 	declare -i    I=0
 
 	mkdir -p "${DIRS_LIST[@]}"
@@ -770,6 +792,29 @@ function funcCreate_directory() {
 			funcPrintf "symbolic link create: ${LINK_LINE[0]/${PWD}\//} -> ${LINK_LINE[1]/${PWD}\//}"
 			ln -sr "${LINK_LINE[0]}" "${LINK_LINE[1]}"
 		fi
+	done
+	# -------------------------------------------------------------------------
+	if [[ -d "/var/www/${DIRS_HTML##*/}/." ]] && [[ ! -L "/var/www/${DIRS_HTML##*/}" ]]; then
+		funcPrintf "symbolic link create: ${DIRS_HTML} -> /var/www"
+		mv "/var/www/${DIRS_HTML##*/}" "/var/www/${DIRS_HTML##*/}.back"
+		ln -s "${DIRS_HTML}" /var/www
+	fi
+	if [[ -d "/var/${DIRS_TFTP##*/}/." ]] && [[ ! -L "/var/${DIRS_TFTP##*/}" ]]; then
+		funcPrintf "symbolic link create: ${DIRS_TFTP} -> /var"
+		mv "/var/${DIRS_TFTP##*/}" "/var/${DIRS_TFTP##*/}.back"
+		ln -s "${DIRS_TFTP}" /var
+	fi
+	WORK_DIRS="${DIRS_TFTP}"
+	while [[ -n "${WORK_DIRS:-}" ]]
+	do
+		WORK_ATTR="$(stat --format=%a "${WORK_DIRS:-}")"
+		if [[ "${WORK_ATTR:-}" != "755" ]]; then
+			funcPrintf "the attribute of '${WORK_DIRS}' is '${WORK_ATTR}', so access via tftp is not possible"
+			funcPrintf "when running tftp, set the directory attribute to '755'"
+			funcPrintf "chmod go=rx ${WORK_DIRS}"
+			exit 1
+		fi
+		WORK_DIRS="${WORK_DIRS%/*}"
 	done
 }
 
@@ -1680,7 +1725,7 @@ function funcCreate_menu_cfg_syslinux() {
 	shift 2
 	declare -r -a TGET_LINE=("$@")
 	declare       MENU_ENTR=""								# meny entry
-	funcPrintf "      create: ${MENU_PATH##*/} for syslinux"
+	funcPrintf "      create: ${TGET_LINE[2]//%20/ }"
 	# --- create menu.cfg -----------------------------------------------------
 	if [[ ! -f "${MENU_PATH}" ]]; then
 		cat <<- _EOT_ | sed -e 's/^ *//g' > "${MENU_PATH}"
@@ -1731,11 +1776,17 @@ _EOT_
 _EOT_
 			;;
 		o )
-			MENU_ENTR="$(printf "%-60.60s%20.20s" "- ${TGET_LINE[2]//%20/ }" "${TGET_LINE[10]} ${TGET_LINE[12]}")"
+			MENU_ENTR="$(printf "%-60.60s" "- ${TGET_LINE[2]//%20/ }")"
 			case "${TGET_LINE[1]}" in
 				windows-* )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
+						return
+					fi
 					;;
 				memtest86\+ )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
+						return
+					fi
 					cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
 						label ${TGET_LINE[1]}
 						 	menu label ^${MENU_ENTR}
@@ -1753,6 +1804,10 @@ _EOT_
 _EOT_
 					;;
 				* )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
+						return
+					fi
+					MENU_ENTR="$(printf "%-60.60s%20.20s" "- ${TGET_LINE[2]//%20/ }" "${TGET_LINE[10]} ${TGET_LINE[12]}")"
 					cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
 						label ${TGET_LINE[1]}
 						 	menu label ^${MENU_ENTR}
@@ -2044,7 +2099,7 @@ function funcCall_create() {
 #	declare -r -a COMD_ENUM=("mini" "net" "dvd" "live" "tool")
 #	declare       WORK_PARM=""
 #	declare       WORK_ENUM=""
-	declare -r -a DATA_LIST=(  \
+	declare -a    DATA_LIST=(  \
 		"${DATA_LIST_MINI[@]}" \
 		"${DATA_LIST_NET[@]}"  \
 		"${DATA_LIST_DVD[@]}"  \
@@ -2056,6 +2111,10 @@ function funcCall_create() {
 	declare       MENU_DIRS=""								# menu.cfg directory
 	declare       MENU_PATH=""								# menu.cfg path
 	declare       BOOT_OPTN=""								# boot option
+	declare       FILE_PATH=""
+	declare -a    FILE_INFO=()
+	declare       FILE_SIZE=""
+	declare       FILE_TIME=""
 	declare -i    I=0
 #	declare -i    J=0
 	# -------------------------------------------------------------------------
@@ -2065,12 +2124,26 @@ function funcCall_create() {
 	for ((I=0; I<"${#DATA_LIST[@]}"; I++))
 	do
 		read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
-		# --- copy iso contents to hdd ------------------------------------
-#		funcCreate_copy_iso2hdd "${DATA_LINE[@]}"
+		FILE_PATH="${DIRS_ISOS}/${DATA_LINE[4]}"
+		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${FILE_PATH}" ]]; then
+			continue
+		fi
+		# --- copy iso contents to hdd ----------------------------------------
+		funcCreate_copy_iso2hdd "${DATA_LINE[@]}"
+		# --- file information ------------------------------------------------
+		# shellcheck disable=SC2312
+		read -r -a FILE_INFO < <(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${FILE_PATH}")
+		FILE_SIZE="${FILE_INFO[4]}"
+		FILE_TIME="${FILE_INFO[5]}"
+		DATA_LINE[10]="${FILE_TIME:0:4}-${FILE_TIME:4:2}-${FILE_TIME:6:2}"
+		DATA_LINE[12]="${FILE_TIME:8:2}:${FILE_TIME:10:2}:${FILE_TIME:12:2}"
+		DATA_LINE[13]="${FILE_SIZE}"
+		DATA_LIST[I]="${DATA_LINE[*]}"
 	done
 	for MENU_DIRS in "${DIRS_TFTP}/menu-"{bios,efi{32,64}}
 	do
 		MENU_PATH="${MENU_DIRS}/syslinux.cfg"
+		funcPrintf "        copy: ${MENU_DIRS##*/}"
 #		rm -rf "${MENU_DIRS}"
 #		mkdir -p "${MENU_DIRS}"
 		rm -rf "${MENU_PATH}"
@@ -2090,6 +2163,7 @@ function funcCall_create() {
 			* )
 				;;
 		esac
+		funcPrintf "      create: ${MENU_PATH##*/} for syslinux"
 		for ((I=0; I<"${#DATA_LIST[@]}"; I++))
 		do
 			read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
@@ -2131,6 +2205,8 @@ function funcCall_create() {
 			funcCreate_menu_cfg_syslinux "${MENU_PATH}" "${BOOT_OPTN}" "${DATA_LINE[@]}"
 		done
 	done
+	# -------------------------------------------------------------------------
+	rm -rf "${DIRS_TEMP}"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2034
 	COMD_RETN="${COMD_LIST[*]:-}"

@@ -28,6 +28,25 @@
 
 	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
+	# -------------------------------------------------------------------------
+	declare -r -a APP_LIST=("curl" "xorriso" "isomd5sum" "isolinux" "xxd")
+	declare -a    APP_FIND=()
+	declare       APP_LINE=""
+	# shellcheck disable=SC2312
+	mapfile APP_FIND < <(LANG=C apt list "${APP_LIST[@]}" 2> /dev/null | sed -e '/\(^[[:blank:]]*$\|WARNING\|Listing\|installed\)/! {' -e 's%\([[:graph:]]\)/.*%\1%g' -ne 'p}' | sed -z 's/[\r\n]\+/ /g')
+	for I in "${!APP_FIND[@]}"
+	do
+		if [[ -n "${APP_LINE}" ]]; then
+			APP_LINE+=" "
+		fi
+		APP_LINE+="${APP_FIND[${I}]}"
+	done
+	if [[ -n "${APP_LINE}" ]]; then
+		echo "please install these:"
+		echo "sudo apt-get install ${APP_LINE}"
+		exit 1
+	fi
+
 # *** data section ************************************************************
 
 	# tree diagram
@@ -70,21 +89,22 @@
 	declare -r -a PROG_PARM=("${@:-}")
 #	declare -r    PROG_DIRS="${PROG_PATH%/*}"
 	declare -r    PROG_NAME="${PROG_PATH##*/}"
+	declare -r    PROG_PROC="${PROG_NAME}.$$"
 #	declare -r    DIRS_WORK="${PWD}/${PROG_NAME%.*}"
 	declare -r    DIRS_WORK="${PWD}/share"
 	if [[ "${DIRS_WORK}" = "/" ]]; then
 		echo "terminate the process because the working directory is root"
 		exit 1
 	fi
-	declare -r    DIRS_BACK="${DIRS_WORK}/back"				# backup
-	declare -r    DIRS_CONF="${DIRS_WORK}/conf"				# configuration file
-	declare -r    DIRS_HTML="${DIRS_WORK}/html"				# html contents
-	declare -r    DIRS_IMGS="${DIRS_WORK}/imgs"				# iso file extraction destination
-	declare -r    DIRS_ISOS="${DIRS_WORK}/isos"				# iso file
-	declare -r    DIRS_ORIG="${DIRS_WORK}/orig"				# original file
-	declare -r    DIRS_RMAK="${DIRS_WORK}/rmak"				# remake file
-	declare -r    DIRS_TEMP="${DIRS_WORK}/temp"				# temporary directory
-	declare -r    DIRS_TFTP="${DIRS_WORK}/tftp"				# tftp contents
+	declare -r    DIRS_BACK="${DIRS_WORK}/back"					# backup
+	declare -r    DIRS_CONF="${DIRS_WORK}/conf"					# configuration file
+	declare -r    DIRS_HTML="${DIRS_WORK}/html"					# html contents
+	declare -r    DIRS_IMGS="${DIRS_WORK}/imgs"					# iso file extraction destination
+	declare -r    DIRS_ISOS="${DIRS_WORK}/isos"					# iso file
+	declare -r    DIRS_ORIG="${DIRS_WORK}/orig"					# original file
+	declare -r    DIRS_RMAK="${DIRS_WORK}/rmak"					# remake file
+	declare -r    DIRS_TEMP="${DIRS_WORK}/temp/${PROG_PROC}"	# temporary directory
+	declare -r    DIRS_TFTP="${DIRS_WORK}/tftp"					# tftp contents
 
 # --- work variables ----------------------------------------------------------
 	declare -r    OLD_IFS="${IFS}"
@@ -196,6 +216,9 @@
 
 	# === system ==============================================================
 
+	# --- tftp / web server address -------------------------------------------
+#	declare -r    HTTP_ADDR="http://192.168.1.10"
+
 	# --- open-vm-tools -------------------------------------------------------
 	declare -r    HGFS_DIRS="/mnt/hgfs/workspace/Image"	# vmware shared directory
 
@@ -235,9 +258,9 @@
 
 #	declare -a    DATA_LIST=()
 
-# --- mini.iso ------------------------------------------------------------
+# --- mini.iso ----------------------------------------------------------------
 	declare -r -a DATA_LIST_MINI=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
-		"m  -                           Auto%20install%20mini.iso           -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+		"m  menu-entry                  Auto%20install%20mini.iso           -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 		"o  debian-mini-10              Debian%2010                         debian          mini-buster-amd64.iso                       .                                       initrd.gz                   linux                   preseed/ps_debian_server_old.cfg        linux/debian        2019-07-06  2024-06-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/netboot/mini.iso                                 " \
 		"o  debian-mini-11              Debian%2011                         debian          mini-bullseye-amd64.iso                     .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso                               " \
 		"o  debian-mini-12              Debian%2012                         debian          mini-bookworm-amd64.iso                     .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso                               " \
@@ -247,9 +270,9 @@
 		"o  ubuntu-mini-20.04           Ubuntu%2020.04                      ubuntu          mini-focal-amd64.iso                        .                                       initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso                " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
-# --- netinst -------------------------------------------------------------
+# --- netinst -----------------------------------------------------------------
 	declare -r -a DATA_LIST_NET=(                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
-		"m  -                           Auto%20install%20Net%20install      -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+		"m  menu-entry                  Auto%20install%20Net%20install      -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 		"o  debian-netinst-10           Debian%2010                         debian          debian-10.13.0-amd64-netinst.iso            install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_old.cfg        linux/debian        2019-07-06  2024-06-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-10.[0-9.]*-amd64-netinst.iso                 " \
 		"o  debian-netinst-11           Debian%2011                         debian          debian-11.8.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-11.[0-9.]*-amd64-netinst.iso                    " \
 		"o  debian-netinst-12           Debian%2012                         debian          debian-12.4.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso                             " \
@@ -269,9 +292,9 @@
 		"o  opensuse-tumbleweed-netinst openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-NET-x86_64-Current.iso  boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_net.xml    linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                   " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
-# --- dvd image -----------------------------------------------------------
+# --- dvd image ---------------------------------------------------------------
 	declare -r -a DATA_LIST_DVD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
-		"m  -                           Auto%20install%20DVD%20media        -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+		"m  menu-entry                  Auto%20install%20DVD%20media        -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 		"o  debian-10                   Debian%2010                         debian          debian-10.13.0-amd64-DVD-1.iso              install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_old.cfg        linux/debian        2019-07-06  2024-06-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-10.[0-9.]*-amd64-DVD-1.iso                  " \
 		"o  debian-11                   Debian%2011                         debian          debian-11.8.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-11.[0-9.]*-amd64-DVD-1.iso                     " \
 		"o  debian-12                   Debian%2012                         debian          debian-12.4.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-12.[0-9.]*-amd64-DVD-1.iso                              " \
@@ -298,12 +321,12 @@
 		"o  opensuse-leap-15.6          openSUSE%20Leap%2015.6              openSUSE        openSUSE-Leap-15.6-DVD-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_dvd.xml     linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso                          " \
 		"o  opensuse-tumbleweed         openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-DVD-x86_64-Current.iso  boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_dvd.xml    linux/openSUSE      2021-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   " \
 		"o  windows-10                  Windows%2010                        windows         Win10_22H2_Japanese_x64.iso                 -                                       -                           -                       -                                       windows/Windows10   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
-		"o  windows-11                  Windows%2011                        windows         Win11_23H2_Japanese_x64_custom.iso          -                                       -                           -                       -                                       windows/Windows11   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"o  windows-11                  Windows%2011                        windows         Win11_23H2_Japanese_x64v2_custom.iso        -                                       -                           -                       -                                       windows/Windows11   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
-# --- live media ----------------------------------------------------------
+# --- live media --------------------------------------------------------------
 	declare -r -a DATA_LIST_LIVE=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
-		"m  -                           Live%20media                        -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+		"m  menu-entry                  Live%20media                        -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 		"o  debian-live-10              Debian%2010%20Live                  debian          debian-live-10.13.0-amd64-lxde.iso          live                                    initrd.img-4.19.0-21-amd64  vmlinuz-4.19.0-21-amd64 preseed/ps_debian_desktop_old.cfg       linux/debian        2019-07-06  2024-06-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso      " \
 		"o  debian-live-11              Debian%2011%20Live                  debian          debian-live-11.8.0-amd64-lxde.iso           live                                    initrd.img-5.10.0-26-amd64  vmlinuz-5.10.0-26-amd64 preseed/ps_debian_desktop.cfg           linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso         " \
 		"o  debian-live-12              Debian%2012%20Live                  debian          debian-live-12.4.0-amd64-lxde.iso           live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                  " \
@@ -322,10 +345,17 @@
 		"o  ubuntu-legacy-noble         Ubuntu%20noble%20Legacy%20Desktop   ubuntu          noble-desktop-legacy-amd64.iso              casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
-# --- tool ----------------------------------------------------------------
+# --- tool --------------------------------------------------------------------
 	declare -r -a DATA_LIST_TOOL=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
-		"m  -                           System%20tools                      -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+		"m  menu-entry                  System%20tools                      -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 		"o  memtest86+                  Memtest86+                          memtest86+      mt86plus_6.20_64.grub.iso                   .                                       EFI/BOOT/memtest            boot/memtest            -                                       linux/memtest86+    -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
+
+# --- system command ----------------------------------------------------------
+	declare -r -a DATA_LIST_SCMD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+		"m  menu-entry                  System%20command                    -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+		"o  shutdown                    System%20shutdown                   system          -                                           -                                       poweroff.c32                -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"o  restart                     System%20restart                    system          -                                           -                                       reboot.c32                  -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 	# --- target of creation --------------------------------------------------
@@ -741,6 +771,8 @@ function funcCreate_directory() {
 	)
 	declare -a    LINK_LINE=()
 	declare       LINK_NAME=""
+	declare       WORK_DIRS=""
+	declare       WORK_ATTR=""
 	declare -i    I=0
 
 	mkdir -p "${DIRS_LIST[@]}"
@@ -760,6 +792,29 @@ function funcCreate_directory() {
 			funcPrintf "symbolic link create: ${LINK_LINE[0]/${PWD}\//} -> ${LINK_LINE[1]/${PWD}\//}"
 			ln -sr "${LINK_LINE[0]}" "${LINK_LINE[1]}"
 		fi
+	done
+	# -------------------------------------------------------------------------
+	if [[ -d "/var/www/${DIRS_HTML##*/}/." ]] && [[ ! -L "/var/www/${DIRS_HTML##*/}" ]]; then
+		funcPrintf "symbolic link create: ${DIRS_HTML} -> /var/www"
+		mv "/var/www/${DIRS_HTML##*/}" "/var/www/${DIRS_HTML##*/}.back"
+		ln -s "${DIRS_HTML}" /var/www
+	fi
+	if [[ -d "/var/${DIRS_TFTP##*/}/." ]] && [[ ! -L "/var/${DIRS_TFTP##*/}" ]]; then
+		funcPrintf "symbolic link create: ${DIRS_TFTP} -> /var"
+		mv "/var/${DIRS_TFTP##*/}" "/var/${DIRS_TFTP##*/}.back"
+		ln -s "${DIRS_TFTP}" /var
+	fi
+	WORK_DIRS="${DIRS_TFTP}"
+	while [[ -n "${WORK_DIRS:-}" ]]
+	do
+		WORK_ATTR="$(stat --format=%a "${WORK_DIRS:-}")"
+		if [[ "${WORK_ATTR:-}" != "755" ]]; then
+			funcPrintf "the attribute of '${WORK_DIRS}' is '${WORK_ATTR}', so access via tftp is not possible"
+			funcPrintf "when running tftp, set the directory attribute to '755'"
+			funcPrintf "chmod go=rx ${WORK_DIRS}"
+			exit 1
+		fi
+		WORK_DIRS="${WORK_DIRS%/*}"
 	done
 }
 
@@ -2593,9 +2648,11 @@ function funcCreate_remaster_iso_file() {
 		    -isohybrid-mbr "${FILE_HBRD}" \
 		    -eltorito-alt-boot -e "${FILE_UEFI}" \
 		    -no-emul-boot -isohybrid-gpt-basdat \
-		    -output "${FILE_PATH}" \
+		    -output "${WORK_DIRS}/${FILE_PATH##*/}" \
 		    . > /dev/null 2>&1
 	popd > /dev/null
+	# --- copy iso image ------------------------------------------------------
+	cp -a "${WORK_DIRS}/${FILE_PATH##*/}" "${FILE_PATH%/*}"
 	# --- remove directory ----------------------------------------------------
 	rm -rf "${WORK_DIRS}"
 }
@@ -3002,6 +3059,9 @@ function funcCall_create() {
 		fi
 		shift
 	done
+	# -------------------------------------------------------------------------
+	rm -rf "${DIRS_TEMP}"
+	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2034
 	COMD_RETN="${COMD_LIST[*]:-}"
 }
