@@ -341,19 +341,20 @@
 		"o  ubuntu-desktop-noble        Ubuntu%20noble%20Desktop            ubuntu          noble-desktop-amd64.iso                     casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  linux/ubuntu        2024-04-25  2029-05-31  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/noble-desktop-amd64.iso                                                           " \
 		"o  ubuntu-legacy-23.04         Ubuntu%2023.04%20Legacy%20Desktop   ubuntu          ubuntu-23.04-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     linux/ubuntu        2023-04-20  2024-01-20  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-amd64.iso                                  " \
 		"o  ubuntu-legacy-23.10         Ubuntu%2023.10%20Legacy%20Desktop   ubuntu          ubuntu-23.10-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        2023-10-12  2024-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-amd64.iso                                 " \
-		"o  ubuntu-legacy-24.04         Ubuntu%2024.04%20Legacy%20Desktop   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
-		"o  ubuntu-legacy-noble         Ubuntu%20noble%20Legacy%20Desktop   ubuntu          noble-desktop-legacy-amd64.iso              casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"x  ubuntu-legacy-24.04         Ubuntu%2024.04%20Legacy%20Desktop   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"x  ubuntu-legacy-noble         Ubuntu%20noble%20Legacy%20Desktop   ubuntu          noble-desktop-legacy-amd64.iso              casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- tool --------------------------------------------------------------------
 	declare -r -a DATA_LIST_TOOL=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
 		"m  menu-entry                  System%20tools                      -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
-		"o  memtest86+                  Memtest86+                          memtest86+      mt86plus_6.20_64.grub.iso                   .                                       EFI/BOOT/memtest            boot/memtest            -                                       linux/memtest86+    -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"o  memtest86+                  Memtest86+                          memtest86+      mt86plus_7.00_64.grub.iso                   .                                       EFI/BOOT/memtest            boot/memtest            -                                       linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                            " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- system command ----------------------------------------------------------
 	declare -r -a DATA_LIST_SCMD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
 		"m  menu-entry                  System%20command                    -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+		"o  hdt                         Hardware%20info                     system          -                                           -                                       hdt.c32                     -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  shutdown                    System%20shutdown                   system          -                                           -                                       poweroff.c32                -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  restart                     System%20restart                    system          -                                           -                                       reboot.c32                  -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
@@ -768,6 +769,12 @@ function funcCreate_directory() {
 		"${DIRS_TFTP}/menu-bios/syslinux.cfg  ${DIRS_TFTP}/menu-bios/pxelinux.cfg/default"  \
 		"${DIRS_TFTP}/menu-efi32/syslinux.cfg ${DIRS_TFTP}/menu-efi32/pxelinux.cfg/default" \
 		"${DIRS_TFTP}/menu-efi64/syslinux.cfg ${DIRS_TFTP}/menu-efi64/pxelinux.cfg/default" \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-bios/"                      \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi32/"                     \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi64/"                     \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-bios/"                      \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi32/"                     \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi64/"                     \
 	)
 	declare -a    LINK_LINE=()
 	declare       LINK_NAME=""
@@ -826,6 +833,7 @@ function funcCreate_link() {
 		"${DATA_LIST_DVD[@]}"  \
 		"${DATA_LIST_LIVE[@]}" \
 		"${DATA_LIST_TOOL[@]}" \
+		"${DATA_LIST_SCMD[@]}" \
 	)
 	declare -a    DATA_LINE=()
 	declare       DIRS_NAME=""
@@ -855,7 +863,7 @@ function funcCreate_link() {
 	for ((I=0; I<"${#DATA_LIST[@]}"; I++))
 	do
 		read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
-		if [[ "${DATA_LINE[0]}" != "o" ]]; then
+		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${HGFS_DIRS}/${DATA_LINE[9]}/${DATA_LINE[4]}" ]]; then
 			continue
 		fi
 		mkdir -p "${DIRS_ISOS}"
@@ -1980,9 +1988,8 @@ function funcCreate_autoinst_cfg_syslinux() {
 					label auto_install
 					 	menu label ^Automatic installation
 					 	menu default
-					 	linux  ${FILE_VLNZ[I]}
-					 	initrd ${FILE_IRAM[I]}
-					 	append ${BOOT_OPTN} ---
+					 	kernel ${FILE_VLNZ[I]}
+					 	append initrd=${FILE_IRAM[I]} ${BOOT_OPTN} ---
 					
 _EOT_
 			else
@@ -1990,9 +1997,8 @@ _EOT_
 				cat <<- _EOT_ | sed -e 's/^ *//g' >> "${AUTO_PATH}"
 					label auto_install_gui
 					 	menu label ^Automatic installation of gui
-					 	linux  ${FILE_VLNZ[I]}
-					 	initrd ${FILE_IRAM[I]}
-					 	append ${BOOT_OPTN} ---
+					 	kernel ${FILE_VLNZ[I]}
+					 	append initrd=${FILE_IRAM[I]} ${BOOT_OPTN} ---
 					
 _EOT_
 			fi
@@ -3016,6 +3022,8 @@ function funcCall_create() {
 			dvd  ) DATA_LIST=("${DATA_LIST_DVD[@]}") ;;
 			live ) DATA_LIST=("${DATA_LIST_LIVE[@]}");;
 #			tool ) DATA_LIST=("${DATA_LIST_TOOL[@]}");;
+#			comd ) DATA_LIST=("${DATA_LIST_SCMD[@]}");;
+
 			-* )
 				break
 				;;

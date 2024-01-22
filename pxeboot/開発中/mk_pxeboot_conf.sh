@@ -341,19 +341,20 @@
 		"o  ubuntu-desktop-noble        Ubuntu%20noble%20Desktop            ubuntu          noble-desktop-amd64.iso                     casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  linux/ubuntu        2024-04-25  2029-05-31  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/noble-desktop-amd64.iso                                                           " \
 		"o  ubuntu-legacy-23.04         Ubuntu%2023.04%20Legacy%20Desktop   ubuntu          ubuntu-23.04-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     linux/ubuntu        2023-04-20  2024-01-20  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-amd64.iso                                  " \
 		"o  ubuntu-legacy-23.10         Ubuntu%2023.10%20Legacy%20Desktop   ubuntu          ubuntu-23.10-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        2023-10-12  2024-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-amd64.iso                                 " \
-		"o  ubuntu-legacy-24.04         Ubuntu%2024.04%20Legacy%20Desktop   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
-		"o  ubuntu-legacy-noble         Ubuntu%20noble%20Legacy%20Desktop   ubuntu          noble-desktop-legacy-amd64.iso              casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"x  ubuntu-legacy-24.04         Ubuntu%2024.04%20Legacy%20Desktop   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"x  ubuntu-legacy-noble         Ubuntu%20noble%20Legacy%20Desktop   ubuntu          noble-desktop-legacy-amd64.iso              casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- tool --------------------------------------------------------------------
 	declare -r -a DATA_LIST_TOOL=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
 		"m  menu-entry                  System%20tools                      -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
-		"o  memtest86+                  Memtest86+                          memtest86+      mt86plus_6.20_64.grub.iso                   .                                       EFI/BOOT/memtest            boot/memtest            -                                       linux/memtest86+    -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"o  memtest86+                  Memtest86+                          memtest86+      mt86plus_7.00_64.grub.iso                   .                                       EFI/BOOT/memtest            boot/memtest            -                                       linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                            " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- system command ----------------------------------------------------------
 	declare -r -a DATA_LIST_SCMD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
 		"m  menu-entry                  System%20command                    -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+		"o  hdt                         Hardware%20info                     system          -                                           -                                       hdt.c32                     -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  shutdown                    System%20shutdown                   system          -                                           -                                       poweroff.c32                -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  restart                     System%20restart                    system          -                                           -                                       reboot.c32                  -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
@@ -768,6 +769,12 @@ function funcCreate_directory() {
 		"${DIRS_TFTP}/menu-bios/syslinux.cfg  ${DIRS_TFTP}/menu-bios/pxelinux.cfg/default"  \
 		"${DIRS_TFTP}/menu-efi32/syslinux.cfg ${DIRS_TFTP}/menu-efi32/pxelinux.cfg/default" \
 		"${DIRS_TFTP}/menu-efi64/syslinux.cfg ${DIRS_TFTP}/menu-efi64/pxelinux.cfg/default" \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-bios/"                      \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi32/"                     \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi64/"                     \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-bios/"                      \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi32/"                     \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi64/"                     \
 	)
 	declare -a    LINK_LINE=()
 	declare       LINK_NAME=""
@@ -826,6 +833,7 @@ function funcCreate_link() {
 		"${DATA_LIST_DVD[@]}"  \
 		"${DATA_LIST_LIVE[@]}" \
 		"${DATA_LIST_TOOL[@]}" \
+		"${DATA_LIST_SCMD[@]}" \
 	)
 	declare -a    DATA_LINE=()
 	declare       DIRS_NAME=""
@@ -855,7 +863,7 @@ function funcCreate_link() {
 	for ((I=0; I<"${#DATA_LIST[@]}"; I++))
 	do
 		read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
-		if [[ "${DATA_LINE[0]}" != "o" ]]; then
+		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${HGFS_DIRS}/${DATA_LINE[9]}/${DATA_LINE[4]}" ]]; then
 			continue
 		fi
 		mkdir -p "${DIRS_ISOS}"
@@ -1569,7 +1577,8 @@ function funcCreate_copy_iso2hdd() {
 	declare -r    WORK_MNTP="${WORK_DIRS}/mnt"
 #	declare -r    WORK_IMGS="${WORK_DIRS}/img"
 #	declare -r    WORK_RAMS="${WORK_DIRS}/ram"
-#	declare       DIRS_IRAM=""
+	declare       DIRS_KRNL=""
+	declare       DIRS_IRAM=""
 #	declare       FILE_IRAM=""
 	declare -i    RET_CD=0
 	funcPrintf "        copy: ${TGET_LINE[4]}"
@@ -1602,7 +1611,17 @@ function funcCreate_copy_iso2hdd() {
 #	nice -n "${NICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
 	nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/"
 	if [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" ]] && [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" ]]; then
-		nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/"{"${TGET_LINE[6]}","${TGET_LINE[7]}"} "${BOOT_DIRS}/"
+		DIRS_IRAM="${BOOT_DIRS}"
+		DIRS_KRNL="${BOOT_DIRS}"
+		if [[ "${TGET_LINE[6]%/*}" != "${TGET_LINE[6]##*/}" ]]; then
+			DIRS_IRAM="${BOOT_DIRS}/${TGET_LINE[6]%/*}"
+		fi
+		if [[ "${TGET_LINE[7]%/*}" != "${TGET_LINE[7]##*/}" ]]; then
+			DIRS_KRNL="${BOOT_DIRS}/${TGET_LINE[7]%/*}"
+		fi
+		mkdir -p "${DIRS_IRAM}" "${DIRS_KRNL}"
+		nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
+		nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 	fi
 	umount "${WORK_MNTP}"
 	# --- copy initrd -> hdd --------------------------------------------------
@@ -1631,23 +1650,60 @@ function funcCreate_menu_cfg_preseed() {
 #	funcPrintf "      create: boot options for preseed"
 	# --- boot option ---------------------------------------------------------
 	case "${TGET_LINE[1]}" in
-#		*-mini-*         ) BOOT_OPTN="auto=true";;
-		*                ) BOOT_OPTN="auto=true ${CONF_FILE}";;
+#		*-mini-*              ) BOOT_OPTN="auto=true";;
+		*                     ) BOOT_OPTN="auto=true ${CONF_FILE}";;
 	esac
 	case "${TGET_LINE[1]}" in
-		ubuntu-desktop-* | \
-		ubuntu-legacy-*  ) BOOT_OPTN="automatic-ubiquity noprompt ${BOOT_OPTN}";;
-		*                ) ;;
+		ubuntu-desktop-*      | \
+		ubuntu-legacy-*       ) BOOT_OPTN="automatic-ubiquity noprompt ${BOOT_OPTN}";;
+		*                     ) ;;
 	esac
-	BOOT_OPTN+=" netcfg/disable_autoconfig=true"
-	BOOT_OPTN+=" netcfg/choose_interface=${ETHR_NAME}"
-	BOOT_OPTN+=" netcfg/get_hostname=${HOST_NAME}.${WGRP_NAME}"
-	BOOT_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
-	BOOT_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
-	BOOT_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
-	BOOT_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
-	BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	BOOT_OPTN+=" fsck.mode=skip"
+	case "${TGET_LINE[1]}" in
+		debian-live-10        | \
+		debian-live-11        )
+			BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+			BOOT_OPTN+=" ip=dhcp"
+			BOOT_OPTN+=" boot=live root=/boot toram=filesystem.squashfs"
+			BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+			BOOT_OPTN+=" fsck.mode=skip"
+						;;
+		debian-live-*         )
+			BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+			BOOT_OPTN+=" ip=dhcp"
+			BOOT_OPTN+=" boot=live components"
+			BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+			BOOT_OPTN+=" fsck.mode=skip"
+			;;
+		ubuntu-desktop-18.*   )			# This version does not support pxeboot
+			;;
+		ubuntu-desktop-20.*   | \
+		ubuntu-desktop-22.*   | \
+		ubuntu-legacy-*       )
+			BOOT_OPTN="url=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+			BOOT_OPTN+=" ip=dhcp"
+			BOOT_OPTN+=" boot=casper maybe-ubiquity"
+			BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+			BOOT_OPTN+=" fsck.mode=skip"
+			;;
+		ubuntu-desktop-*      )
+			BOOT_OPTN="url=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+			BOOT_OPTN+=" ip=dhcp"
+			BOOT_OPTN+=" boot=casper layerfs-path=minimal.standard.live.squashfs"
+			BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+			BOOT_OPTN+=" fsck.mode=skip"
+			;;
+		*                     )
+			BOOT_OPTN+=" netcfg/disable_autoconfig=true"
+			BOOT_OPTN+=" netcfg/choose_interface=${ETHR_NAME}"
+			BOOT_OPTN+=" netcfg/get_hostname=${HOST_NAME}.${WGRP_NAME}"
+			BOOT_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
+			BOOT_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
+			BOOT_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
+			BOOT_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
+			BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+			BOOT_OPTN+=" fsck.mode=skip"
+			;;
+	esac
 	if [[ -n "${SCRN_MODE:-}" ]]; then
 		BOOT_OPTN="vga=${SCRN_MODE} ${BOOT_OPTN}"
 	fi
@@ -1664,7 +1720,7 @@ function funcCreate_menu_cfg_nocloud() {
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for nocloud"
 	# --- boot option ---------------------------------------------------------
-	BOOT_OPTN="boot=casper automatic-ubiquity noprompt autoinstall ds=nocloud-net\\;s=${CONF_FILE}"
+	BOOT_OPTN="boot=casper automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${CONF_FILE}"
 	BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
 	BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	BOOT_OPTN+=" fsck.mode=skip"
@@ -1782,20 +1838,42 @@ _EOT_
 					if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
 						return
 					fi
+					if [[ "${MENU_PATH}" =~ bios ]]; then
+						cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
+							label ${TGET_LINE[1]}
+							 	menu label ^${MENU_ENTR}
+							 	kernel memdisk
+							 	append initrd=isos/${TGET_LINE[4]} iso raw
+							
+_EOT_
+					fi
 					;;
 				memtest86\+ )
 					if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
 						return
 					fi
-					cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
-						label ${TGET_LINE[1]}
-						 	menu label ^${MENU_ENTR}
-						 	linux  boot/${TGET_LINE[1]}/${TGET_LINE[7]}
-						
+					if [[ "${MENU_PATH}" =~ bios ]]; then
+						cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
+							label ${TGET_LINE[1]}
+							 	menu label ^${MENU_ENTR}
+							 	kernel boot/${TGET_LINE[1]}/${TGET_LINE[7]}
+							
 _EOT_
+					else
+						cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
+							label ${TGET_LINE[1]}
+							 	menu label ^${MENU_ENTR}
+							 	kernel boot/${TGET_LINE[1]}/${TGET_LINE[6]}
+							
+_EOT_
+					fi
 					;;
+				hdt      | \
 				shutdown | \
 				restart  )
+					if [[ ! "${MENU_PATH}" =~ bios ]]; then
+						return
+					fi
 					cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
 						label ${TGET_LINE[1]}
 						 	menu label ^${MENU_ENTR}
@@ -1811,9 +1889,8 @@ _EOT_
 					cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
 						label ${TGET_LINE[1]}
 						 	menu label ^${MENU_ENTR}
-						 	linux  boot/${TGET_LINE[1]}/${TGET_LINE[7]}
-						 	initrd boot/${TGET_LINE[1]}/${TGET_LINE[6]}
-						 	append ${BOOT_OPTN} ---
+						 	kernel boot/${TGET_LINE[1]}/${TGET_LINE[7]}
+						 	append initrd=boot/${TGET_LINE[1]}/${TGET_LINE[6]} ${BOOT_OPTN} ---
 						
 _EOT_
 					;;
@@ -2149,6 +2226,7 @@ function funcCall_create() {
 		rm -rf "${MENU_PATH}"
 		case "${MENU_DIRS}" in
 			*bios )
+				cp --archive --update /usr/lib/syslinux/memdisk         "${MENU_DIRS}/"
 				cp --archive --update /usr/lib/syslinux/modules/bios/.  "${MENU_DIRS}/"
 				cp --archive --update /usr/lib/PXELINUX/.               "${MENU_DIRS}/"
 				;;
@@ -2194,6 +2272,7 @@ function funcCall_create() {
 					;;
 				memtest86\+  )
 					;;
+				hdt          | \
 				shutdown     | \
 				restart      )
 					;;

@@ -429,7 +429,7 @@ function funcString() {
 # --- print with screen control -----------------------------------------------
 function funcPrintf() {
 	declare -r    SET_ENV_X="$(set -o | awk '$1=="xtrace"  {print $2;}')"
-#	declare -r    SET_ENV_E="$(set -o | awk '$1=="errexit" {print $2;}')"
+	declare -r    SET_ENV_E="$(set -o | awk '$1=="errexit" {print $2;}')"
 	set +x
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 #	declare -r    OLD_IFS="${IFS}"
@@ -499,11 +499,11 @@ function funcPrintf() {
 	echo -e "${RET_STR}${TXT_RESET}"
 	IFS="${OLD_IFS}"
 	# -------------------------------------------------------------------------
-#	if [[ "${SET_ENV_E}" = "on" ]]; then
-#		set -e
-#	else
-#		set +e
-#	fi
+	if [[ "${SET_ENV_E}" = "on" ]]; then
+		set -e
+	else
+		set +e
+	fi
 	if [[ "${SET_ENV_X}" = "on" ]]; then
 		set -x
 	else
@@ -771,6 +771,8 @@ function funcNetwork_parameter() {
 	declare -a    GWAY_INFO=()
 #	declare -a    NSVR_INFO=()
 	declare       WORK_PARM=""
+	declare       WORK_TEXT=""
+	declare       FILE_PATH=""
 	declare -i    I=0
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
@@ -812,27 +814,44 @@ function funcNetwork_parameter() {
 		IPV4_BCST+=("${IPV4_UADR[I]}.255")
 		IPV4_LGWY+=("${IPV4_GWAY[I]##*.}")
 		# --- nameserver ------------------------------------------------------
+		WORK_PARM=""
 		# shellcheck disable=SC2312
-		if [[ -n "$(command -v connmanctl 2> /dev/null)" ]]; then
-			WORK_PARM="$(find /var/lib/connman/ -name "ethernet_${ETHR_MADR[I]//:/}_*" -type d -printf "%P")"
-			IPV4_NSVR+=("$(LANG=C connmanctl services "${WORK_PARM}"        \
-			             | sed -ne '/^[ \t]*Nameservers[ \t]*=/ { '         \
-			                    -e 's/^.*\[[ \t]*\(.*\)[ \t]*\]$/\1/'       \
-			                    -e 's/,//g'                                 \
-			                    -e "s/.*\(${IPV4_UADR[I]}\.[0-9]\+\).*/\1/" \
-			                    -e 'p}'                                     \
-			)")
-		elif [[ -n "$(command -v nmcli 2> /dev/null)" ]]; then
-			IPV4_NSVR+=("$(LANG=C nmcli device show "${ETHR_NAME[I]}"       \
-			             | sed -ne '/IP4.DNS/ {'                            \
-			                    -e "s/.*\(${IPV4_UADR[I]}\.[0-9]\+\).*/\1/" \
-			                    -e 'p}'                                     \
-			)")
-		elif [[ -n "$(command -v netplan 2> /dev/null)" ]]; then
-			IPV4_NSVR+=("$(awk '$1=="nameserver"&&$2~"'"${IPV4_ADDR[I]%.*}"'" {print $2;}' /etc/resolv.conf)")
-		else
-			IPV4_NSVR+=("$(awk '$1=="nameserver"&&$2~"'"${IPV4_ADDR[I]%.*}"'" {print $2;}' /etc/resolv.conf)")
+		if [[ -z "${WORK_PARM:-}" ]] && [[ -n "$(command -v systemd-resolve 2> /dev/null)" ]] \
+		&& [[ "$(systemctl status "systemd-resolved.service" | awk '/Active:/ {print $2;}')" = "active" ]]; then
+			WORK_PARM="$(LANG=C systemd-resolve --status "${ETHR_NAME[I]}"         \
+			           | sed -ne '/DNS Servers:/,/DNS Domain:/                  {' \
+			                  -e "s/.*[ \t]\+\(${IPV4_UADR[I]}\.[0-9]\+\).*/\1/p}" \
+			)"
 		fi
+		# shellcheck disable=SC2312
+		if [[ -z "${WORK_PARM:-}" ]] && [[ -n "$(command -v connmanctl 2> /dev/null)" ]] \
+		&& [[ "$(systemctl status "connman.service" | awk '/Active:/ {print $2;}')" = "active" ]]; then
+			WORK_TEXT="$(find /var/lib/connman/ -name "*_${ETHR_MADR[I]//:/}_*" -type d -printf "%P")"
+			WORK_PARM="$(LANG=C connmanctl services "${WORK_TEXT}"                 \
+			           | sed -ne '/^[ \t]*Nameservers[ \t]*=/                   {' \
+			                  -e "s/.*[ \t]\+\(${IPV4_UADR[I]}\.[0-9]\+\).*/\1/p}" \
+			)"
+		fi
+		# shellcheck disable=SC2312
+		if [[ -z "${WORK_PARM:-}" ]] && [[ -n "$(command -v nmcli 2> /dev/null)" ]] \
+		&& [[ "$(systemctl status "NetworkManager.service" | awk '/Active:/ {print $2;}')" = "active" ]]; then
+			WORK_PARM="$(LANG=C nmcli device show "${ETHR_NAME[I]}"                \
+			           | sed -ne '/IP4.DNS/                                     {' \
+			                  -e "s/.*[ \t]\+\(${IPV4_UADR[I]}\.[0-9]\+\).*/\1/p}" \
+			)"
+		fi
+		# shellcheck disable=SC2312
+		if [[ -z "${WORK_PARM:-}" ]] && [[ -n "$(command -v netplan 2> /dev/null)" ]] \
+		&& [[ -n "$(netplan help 2>&1 | sed -ne '/^[ \t]\+get[ \t]/p')" ]]; then
+			WORK_TEXT="ethernets.${ETHR_NAME[I]}.nameservers.addresses"
+			WORK_PARM="$(netplan get "${WORK_TEXT}" 2>&1                           \
+			           | sed -ne "s/.*[ \t]\+\(${IPV4_UADR[I]}\.[0-9]\+\).*/\1/p"  \
+			)"
+		fi
+		if [[ -z "${WORK_PARM:-}" ]]; then
+			WORK_PARM="$(awk '$1=="nameserver"&&$2~"'"${IPV4_ADDR[I]%.*}"'" {print $2;}' /etc/resolv.conf)"
+		fi
+		IPV4_NSVR+=("${WORK_PARM}")
 		# ---------------------------------------------------------------------
 		IFS='.'
 		set -f
@@ -874,6 +893,57 @@ function funcNetwork_parameter() {
 		LINK_UADR+=("$(funcSubstr "${LINK_FADR[I]:-}"  1 19)")
 		LINK_LADR+=("$(funcSubstr "${LINK_FADR[I]:-}" 21 19)")
 	done
+}
+
+# ------ hosts ----------------------------------------------------------------
+function funcNetwork_hosts() {
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare -r    MSGS_TITL="hosts"
+	declare -r    FILE_PATH="/etc/hosts"
+	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
+	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+	declare -r    SYSD_NAME="dnsmasq.service"
+	declare -i    I=0
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	# --- hosts ---------------------------------------------------------------
+	if [[ -f "${FILE_PATH}" ]]; then
+		if [[ ! -f "${FILE_ORIG}" ]]; then
+			mkdir -p "${FILE_ORIG%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
+		else
+			mkdir -p "${FILE_BACK%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_BACK}"
+		fi
+	fi
+	sed -i "${FILE_PATH}"                          \
+	    -e '/^127\.0\.1\.1/d'                      \
+	    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'         \
+	    -e 's/^\([0-9a-zA-Z:]\+\)[ \t]\+/\1\t\t/g'
+	for ((I="${#LINK_FADR[@]}"-1; I>=0; I--))
+	do
+		sed -i "${FILE_PATH}"                                                \
+		    -e "/^${LINK_FADR[I]}/d"                                         \
+		    -e "/^127\.0\.0\.1/a ${LINK_FADR[I]}\t${HOST_FQDN} ${HOST_NAME}"
+	done
+	for ((I="${#IPV6_FADR[@]}"-1; I>=0; I--))
+	do
+		sed -i "${FILE_PATH}"                                                \
+		    -e "/^${IPV6_FADR[I]}/d"                                         \
+		    -e "/^127\.0\.0\.1/a ${IPV6_FADR[I]}\t${HOST_FQDN} ${HOST_NAME}"
+	done
+	for ((I="${#IPV4_ADDR[@]}"-1; I>=0; I--))
+	do
+		sed -i "${FILE_PATH}"                                                \
+		    -e "/^${IPV4_ADDR[I]}/d"                                         \
+		    -e "/^127\.0\.0\.1/a ${IPV4_ADDR[I]}\t${HOST_FQDN} ${HOST_NAME}"
+	done
+	# shellcheck disable=SC2312,SC2310
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
+		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
+		systemctl --quiet restart "${SYSD_NAME}"
+	fi
 }
 
 # ------ hosts.allow / hosts.deny ---------------------------------------------
@@ -1096,11 +1166,11 @@ function funcNetwork_networkmanager() {
 #	if [[ -f /etc/dnsmasq.conf ]]; then
 #		SYSD_NAME="dnsmasq.service"
 #		FILE_PATH+="/dnsmasq.conf"
-#		CONF_PARM="[main]"$'\n'"dns=dnsmasq"
+#		CONF_PARM="[main]"$'\n'"systemd-resolved=false"$'\n'"dns=dnsmasq"
 #	else
 		SYSD_NAME="systemd-resolved.service"
 		FILE_PATH+="/none-dns.conf"
-		CONF_PARM="[main]"$'\n'"dns=none"
+		CONF_PARM="[main]"$'\n'"systemd-resolved=false"$'\n'"dns=none"
 #	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312,SC2310
@@ -1224,10 +1294,41 @@ function funcNetwork_pxe_conf() {
 	fi
 	for FILE_LINE in "${TFTP_ROOT}"/menu-{bios,efi{32,64}}
 	do
-		if [[ -d "${FILE_LINE}/boot" ]]; then
-			continue
+		funcPrintf "      ${MSGS_TITL}: create a symbolic link [${FILE_LINE}/boot]"
+		if [[ -d "${FILE_LINE}/boot/." ]] || [[ -L "${FILE_LINE}/boot" ]]; then
+			funcPrintf "      ${MSGS_TITL}: symbolic link or directory exists [${FILE_LINE}/boot]"
+		else
+			ln -sr "${TFTP_ROOT}/boot" "${FILE_LINE}"
 		fi
-		ln -s "${TFTP_ROOT}/boot" "${FILE_LINE}"
+		funcPrintf "      ${MSGS_TITL}: create a symbolic link [${FILE_LINE}/pxelinux.cfg/default]"
+		if [[ -f "${FILE_LINE}/pxelinux.cfg/default" ]] || [[ -L "${FILE_LINE}/pxelinux.cfg/default" ]]; then
+			funcPrintf "      ${MSGS_TITL}: symbolic link or file exists [pxelinux.cfg/default]"
+		else
+			touch "${FILE_LINE}/syslinux.cfg"
+			ln -sr "${FILE_LINE}/syslinux.cfg" "${FILE_LINE}/pxelinux.cfg/default"
+		fi
+		if [[ -d /usr/lib/syslinux/. ]]; then
+			# pxe boot:
+			#   syslinux-common syslinux-efi pxelinux dnsmasq apache2 7zip rsync
+			funcPrintf "      ${MSGS_TITL}: copy syslinux module"
+			case "${FILE_LINE}" in
+				*bios )
+					cp --archive --update /usr/lib/syslinux/memdisk         "${FILE_LINE}/"
+					cp --archive --update /usr/lib/syslinux/modules/bios/.  "${FILE_LINE}/"
+					cp --archive --update /usr/lib/PXELINUX/.               "${FILE_LINE}/"
+					;;
+				*efi32)
+					cp --archive --update /usr/lib/syslinux/modules/efi32/. "${FILE_LINE}/"
+					cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${FILE_LINE}/"
+					;;
+				*efi64)
+					cp --archive --update /usr/lib/syslinux/modules/efi64/. "${FILE_LINE}/"
+					cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${FILE_LINE}/"
+					;;
+				* )
+					;;
+			esac
+		fi
 	done
 	# -------------------------------------------------------------------------
 	if [[ -f "${FILE_PATH}" ]]; then
@@ -1242,75 +1343,77 @@ function funcNetwork_pxe_conf() {
 	funcPrintf "      ${MSGS_TITL}: create config file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_PATH}"
-		# log
-		#log-facility=/var/log/dnsmasq/dnsmasq.log
-		#log-queries
-		#log-dhcp
+		# --- log ---------------------------------------------------------------------
+		log-queries													# dns query log output
+		log-dhcp													# dhcp transaction log output
+		#log-facility=												# log output file name
 		
-		# dns
-		#port=0
-		domain-needed
-		bogus-priv
-		expand-hosts
-		domain=${HOST_DMAN}
-		#domain=local
-		#conf-file=/usr/share/dnsmasq-base/trust-anchors.conf
-		#dnssec
-		#server=/${IPV4_RADR[0]}.in-addr.arpa/${IPV4_ADDR[0]}
-		#server=/${HOST_DMAN}/${IPV4_ADDR[0]}
-		#server=/local/${IPV4_ADDR[0]}
-		#local=/${HOST_DMAN}/
-		#local=/local/
-		#listen-address=${IPV6_LHST},${IPV4_LHST},${IPV4_NSVR[0]}
+		# --- dns ---------------------------------------------------------------------
+		#port=5353													# listening port
+		bogus-priv													# do not perform reverse lookup of private ip address on upstream server
+		domain-needed												# do not forward plain names
+		domain=${HOST_DMAN},${IPV4_NTWK[0]}/${IPV4_CIDR[0]},local						# local domain name
+		expand-hosts												# add domain name to host
+		filterwin2k													# filter for windows
+		interface=${ETHR_NAME[0]}											# listen to interface
+		listen-address=${IPV6_LHST},${IPV4_LHST},${IPV4_ADDR[0]}					# listen to ip address
+		server=8.8.8.8												# directly specify upstream server
+		server=8.8.4.4												# directly specify upstream server
+		#no-hosts													# don't read the hostnames in /etc/hosts
+		#no-poll													# don't poll /etc/resolv.conf for changes
+		no-resolv													# don't read /etc/resolv.conf
+		strict-order												# try in the registration order of /etc/resolv.conf
 		
-		# dhcp
-		interface=${ETHR_NAME[0]}
-		#no-dhcp-interface=
-		#dhcp-leasefile=/var/log/dnsmasq/dnsmasq.leases             # lease file
-		#dhcp-range=${IPV4_UADR[0]}.${DHCP_SADR},${IPV4_UADR[0]}.${DHCP_EADR},${DHCP_LEAS}                   # dhcp range
-		dhcp-range=${IPV4_NTWK[0]},proxy                                # proxy dhcp
-		dhcp-option=option:netmask,${IPV4_MASK[0]}                    # netmask
-		dhcp-no-override
-		#                                                           # dnsmasq --help dhcp
-		#dhcp-option=option:domain-name,${HOST_DMAN}                   # 15 domain-name
-		#dhcp-option=option:netmask,${IPV4_MASK[0]}                   #  1 netmask
-		#dhcp-option=option:28,${IPV4_BCST[0]}                        # 28 broadcast
-		dhcp-option=option:router,${IPV4_GWAY[0]}                     #  3 router
-		dhcp-option=option:dns-server,${IPV4_ADDR[0]},${IPV4_NSVR[0]}     #  6 dns-server
-		#dhcp-option=option:ntp-server,${NTPS_ADDR}              # 42 ntp-server
-		#dhcp-option=option:tftp-server,${IPV4_ADDR[0]}                 # 66 tftp-server
-		#dhcp-option=option:bootfile-name,                          # 67 bootfile-name
+		# --- dhcp --------------------------------------------------------------------
+		dhcp-range=${IPV4_NTWK[0]},proxy,${IPV4_CIDR[0]}								# proxy dhcp
+		#dhcp-range=${IPV4_UADR[0]}.${DHCP_SADR},${IPV4_UADR[0]}.${DHCP_EADR},${DHCP_LEAS}					# dhcp range
+		#dhcp-option=option:netmask,${IPV4_MASK[0]}					#  1 netmask
+		#dhcp-option=option:router,${IPV4_GWAY[0]}					#  3 router
+		#dhcp-option=option:dns-server,${IPV4_ADDR[0]},${IPV4_NSVR[0]}	#  6 dns-server
+		#dhcp-option=option:domain-name,${HOST_DMAN}					# 15 domain-name
+		#dhcp-option=option:28,${IPV4_BCST[0]}						# 28 broadcast
+		#dhcp-option=option:ntp-server,${NTPS_ADDR}				# 42 ntp-server
+		#dhcp-option=option:tftp-server,${IPV4_ADDR[0]}					# 66 tftp-server
+		#dhcp-option=option:bootfile-name,							# 67 bootfile-name
 		
-		# tftp
-		enable-tftp
-		tftp-root=${TFTP_ROOT}
+		# --- tftp --------------------------------------------------------------------
+		enable-tftp													# enable tftp server
+		tftp-root=/var/tftp											# tftp root directory
+		#tftp-lowercase												# convert tftp request path to all lowercase
+		#tftp-no-blocksize											# stop negotiating "block size" option
+		#tftp-no-fail												# do not abort startup even if tftp directory is not accessible
+		#tftp-secure												# enable tftp secure mode
 		
-		# pxe
-		pxe-prompt="Press F8 for boot menu", 10
-		dhcp-vendorclass=set:bios      , PXEClient:Arch:00000       #  0 Intel x86PC
-		dhcp-vendorclass=set:pc98      , PXEClient:Arch:00001       #  1 NEC/PC98
-		dhcp-vendorclass=set:efi-ia64  , PXEClient:Arch:00002       #  2 EFI Itanium
-		dhcp-vendorclass=set:alpha     , PXEClient:Arch:00003       #  3 DEC Alpha
-		dhcp-vendorclass=set:arc_x86   , PXEClient:Arch:00004       #  4 Arc x86
-		dhcp-vendorclass=set:intel_lc  , PXEClient:Arch:00005       #  5 Intel Lean Client
-		dhcp-vendorclass=set:efi-ia32  , PXEClient:Arch:00006       #  6 EFI IA32
-		dhcp-vendorclass=set:efi-bc    , PXEClient:Arch:00007       #  7 EFI BC
-		dhcp-vendorclass=set:efi-xscale, PXEClient:Arch:00008       #  8 EFI Xscale
-		dhcp-vendorclass=set:efi-x86_64, PXEClient:Arch:00009       #  9 EFI x86-64
-		dhcp-vendorclass=set:efi-arm32 , PXEClient:Arch:0000a       # 10 ARM 32bit
-		dhcp-vendorclass=set:efi-arm64 , PXEClient:Arch:0000b       # 11 ARM 64bit
-		dhcp-boot=tag:bios      , menu-bios/pxelinux.0              #  0 Intel x86PC
-		#dhcp-boot=tag:pc98      ,                                  #  1 NEC/PC98
-		#dhcp-boot=tag:efi-ia64  ,                                  #  2 EFI Itanium
-		#dhcp-boot=tag:alpha     ,                                  #  3 DEC Alpha
-		#dhcp-boot=tag:arc_x86   ,                                  #  4 Arc x86
-		#dhcp-boot=tag:intel_lc  ,                                  #  5 Intel Lean Client
-		#dhcp-boot=tag:efi-ia32  ,                                  #  6 EFI IA32
-		dhcp-boot=tag:efi-bc    , menu-efi64/syslinux.efi           #  7 EFI BC
-		#dhcp-boot=tag:efi-xscale,                                  #  8 EFI Xscale
-		dhcp-boot=tag:efi-x86_64, menu-efi64/syslinux.efi           #  9 EFI x86-64
-		#dhcp-boot=tag:efi-arm32 ,                                  # 10 ARM 32bit
-		#dhcp-boot=tag:efi-arm64 ,                                  # 11 ARM 64bit
+		# --- pxe boot ----------------------------------------------------------------
+		pxe-prompt="Press F8 for boot menu", 10						# pxe boot prompt
+		
+		# --- boot modules by architecture --------------------------------------------
+		dhcp-boot=tag:bios				, menu-bios/lpxelinux.0		#  0 Intel x86PC
+		#dhcp-boot=tag:pc98				,							#  1 NEC/PC98
+		#dhcp-boot=tag:efi-ia64			,							#  2 EFI Itanium
+		#dhcp-boot=tag:alpha			,							#  3 DEC Alpha
+		#dhcp-boot=tag:arc_x86			,							#  4 Arc x86
+		#dhcp-boot=tag:intel_lc			,							#  5 Intel Lean Client
+		dhcp-boot=tag:efi-ia32			, menu-efi32/syslinux.efi	#  6 EFI IA32
+		dhcp-boot=tag:efi-bc			, menu-efi64/syslinux.efi	#  7 EFI BC
+		#dhcp-boot=tag:efi-xscale		,							#  8 EFI Xscale
+		dhcp-boot=tag:efi-x86_64		, menu-efi64/syslinux.efi	#  9 EFI x86-64
+		#dhcp-boot=tag:efi-arm32		,							# 10 ARM 32bit
+		#dhcp-boot=tag:efi-arm64		,							# 11 ARM 64bit
+		
+		# --- architecture classification ---------------------------------------------
+		dhcp-vendorclass=set:bios		, PXEClient:Arch:00000		#  0 Intel x86PC
+		dhcp-vendorclass=set:pc98		, PXEClient:Arch:00001		#  1 NEC/PC98
+		dhcp-vendorclass=set:efi-ia64	, PXEClient:Arch:00002		#  2 EFI Itanium
+		dhcp-vendorclass=set:alpha		, PXEClient:Arch:00003		#  3 DEC Alpha
+		dhcp-vendorclass=set:arc_x86	, PXEClient:Arch:00004		#  4 Arc x86
+		dhcp-vendorclass=set:intel_lc	, PXEClient:Arch:00005		#  5 Intel Lean Client
+		dhcp-vendorclass=set:efi-ia32	, PXEClient:Arch:00006		#  6 EFI IA32
+		dhcp-vendorclass=set:efi-bc		, PXEClient:Arch:00007		#  7 EFI BC
+		dhcp-vendorclass=set:efi-xscale	, PXEClient:Arch:00008		#  8 EFI Xscale
+		dhcp-vendorclass=set:efi-x86_64	, PXEClient:Arch:00009		#  9 EFI x86-64
+		dhcp-vendorclass=set:efi-arm32	, PXEClient:Arch:0000a		# 10 ARM 32bit
+		dhcp-vendorclass=set:efi-arm64	, PXEClient:Arch:0000b		# 11 ARM 64bit
 _EOT_
 	# -------------------------------------------------------------------------
 	SYSD_NAME="dnsmasq.service"
@@ -1446,6 +1549,28 @@ function funcApplication_package_manager() {
 	esac
 }
 
+# ----- system kernel ---------------------------------------------------------
+function funcApplication_system_kernel() {
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare -r    MSGS_TITL="kernel"
+	declare -r    FILE_PATH="/etc/modprobe.d/blacklist-floppy.conf"
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	if [[ -z "$(lsmod | sed -ne '/floppy/p')" ]]; then
+		return
+	fi
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "      ${MSGS_TITL}: rmmod floppy"
+	rmmod floppy
+	funcPrintf "      ${MSGS_TITL}: create blacklist file"
+	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
+	echo 'blacklist floppy' > "${FILE_PATH}"
+	funcPrintf "      ${MSGS_TITL}: dpkg-reconfigure initramfs-tools"
+	dpkg-reconfigure initramfs-tools
+}
+
 # ----- system shared directory -----------------------------------------------
 function funcApplication_system_shared_directory() {
 	declare -r    MSGS_TITL="shared directory"
@@ -1542,6 +1667,26 @@ function funcApplication_system_user_environment() {
 		else
 			USER_HOME="$(awk -F ':' '$1=='\""${USER_NAME}"\"' {print $6;}' /etc/passwd)"
 		fi
+		# --- .bash_history ---------------------------------------------------
+		funcPrintf "      ${MSGS_TITL}: bash_history"
+		FILE_PATH="${USER_HOME}/.bash_history"
+		FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
+		FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+		if [[ -f "${FILE_PATH}" ]]; then
+			if [[ ! -f "${FILE_ORIG}" ]]; then
+				mkdir -p "${FILE_ORIG%/*}"
+				cp --archive "${FILE_PATH}" "${FILE_ORIG}"
+			else
+				mkdir -p "${FILE_BACK%/*}"
+				cp --archive "${FILE_PATH}" "${FILE_BACK}"
+			fi
+		fi
+		funcPrintf "      ${MSGS_TITL}: create config file"
+		funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
+		cat <<- '_EOT_' | sed -e 's/^ *//g' > "${FILE_PATH}"
+			sudo bash -c 'apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade'
+_EOT_
+		chown "${USER_NAME}": "${FILE_PATH}"
 		# --- vim -------------------------------------------------------------
 		# shellcheck disable=SC2312
 		if [[ -n "$(command -v vim 2> /dev/null)" ]]; then
@@ -1655,10 +1800,14 @@ function funcApplication_user_add() {
 	declare       DIRS_HOME="${DIRS_SHAR}/data/usr"			# root of home directory
 	# shellcheck disable=SC2155
 	declare -r    LGIN_SHEL="$(command -v nologin)"			# login shell (disallow system login to samba user)
-	pdbedit -L > /dev/null									# for creating passdb.tdb
-	declare -r    SAMB_PWDB="$(find /var/lib/samba/ -name 'passdb.tdb' \( -type f -o -type l \))"
-	declare -r    SAMB_TEMP="${DIRS_TEMP}/smbpasswd.list.${DATE_TIME}"
 	declare -r    PROG_PWDB="${DIRS_ARCH}/${FILE_USER##*/}.${DATE_TIME}"
+	declare -r    SAMB_TEMP="${DIRS_TEMP}/smbpasswd.list.${DATE_TIME}"
+	declare       SAMB_PWDB=""
+	# shellcheck disable=SC2312
+	if [[ -n "$(command -v pdbedit 2> /dev/null)" ]]; then
+		pdbedit -L > /dev/null								# for creating passdb.tdb
+		SAMB_PWDB="$(find /var/lib/samba/ -name 'passdb.tdb' \( -type f -o -type l \))"
+	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
@@ -1857,12 +2006,12 @@ function funcApplication_ntp_chrony() {
 function funcApplication_ntp_timesyncd() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
 	declare -r    MSGS_TITL="ntp"
-	declare -r    FILE_PATH="/etc/systemd/timesyncd.conf.d/ntp.conf"
+	declare -r    FILE_PATH="$(find "/etc/systemd" -name "timesyncd.conf" \( -type f -o -type l \))"
 	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	declare       SYSD_NAME=""
 	# -------------------------------------------------------------------------
-	if [[ ! -d "${FILE_PATH%/*}/." ]]; then
+	if [[ -z "${FILE_PATH}" ]]; then
 		return
 	fi
 	# -------------------------------------------------------------------------
@@ -2009,7 +2158,7 @@ function funcApplication_apache() {
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	declare       SYSD_NAME=""
 	# -------------------------------------------------------------------------
-	if [[ ! -d "${FILE_PATH%/*}/." ]]; then
+	if [[ -z "${FILE_PATH}" ]]; then
 		return
 	fi
 	# -------------------------------------------------------------------------
@@ -2585,27 +2734,47 @@ function funcDebug_dns() {
 	funcPrintf "----- ping check $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	funcPrintf "----- connman chk $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ss -tulpn | sed -n '/:53/p' $(funcString "${COLS_SIZE}" '-')"
 	ss -tulpn | sed -n '/:53/p'
+	RET_CD=$?
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	funcPrintf "----- nslookup $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- nslookup ${HOST_FQDN} $(funcString "${COLS_SIZE}" '-')"
 	nslookup "${HOST_FQDN}"
+	RET_CD=$?
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
+	funcPrintf "----- nslookup ${IPV4_ADDR[0]} $(funcString "${COLS_SIZE}" '-')"
 	nslookup "${IPV4_ADDR[0]}"
-	# -------------------------------------------------------------------------
-#	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
-#	nslookup "${IPV6_ADDR[0]}"
-	# -------------------------------------------------------------------------
-#	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
-#	nslookup "${LINK_ADDR[0]}"
+	RET_CD=$?
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	funcPrintf "----- dns check $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- nslookup ${IPV6_ADDR[0]} $(funcString "${COLS_SIZE}" '-')"
+	nslookup "${IPV6_ADDR[0]}"
+	RET_CD=$?
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	fi
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- nslookup ${LINK_ADDR[0]} $(funcString "${COLS_SIZE}" '-')"
+	nslookup "${LINK_ADDR[0]}"
+	RET_CD=$?
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	fi
+	# -------------------------------------------------------------------------
+#	# shellcheck disable=SC2312
+#	funcPrintf "----- dns check $(funcString "${COLS_SIZE}" '-')"
 #	dig @localhost "${IPV4_RADR[0]}.in-addr.arpa" DNSKEY +dnssec +multi
 	# -------------------------------------------------------------------------
 #	# shellcheck disable=SC2312
@@ -2625,27 +2794,44 @@ function funcDebug_dns() {
 #	dig @"${LINK_ADDR[0]}" "${HOST_DMAN}" axfr
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
+	funcPrintf "----- dig ${HOST_FQDN} A +nostats +nocomments $(funcString "${COLS_SIZE}" '-')"
 	dig "${HOST_FQDN}" A +nostats +nocomments
-	# -------------------------------------------------------------------------
-#	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
-#	dig "${HOST_FQDN}" AAAA +nostats +nocomments
+	RET_CD=$?
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
+	funcPrintf "----- dig ${HOST_FQDN} AAAA +nostats +nocomments $(funcString "${COLS_SIZE}" '-')"
+	dig "${HOST_FQDN}" AAAA +nostats +nocomments
+	RET_CD=$?
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	fi
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- dig -x ${IPV4_ADDR[0]} +nostats +nocomments $(funcString "${COLS_SIZE}" '-')"
 	dig -x "${IPV4_ADDR[0]}" +nostats +nocomments
-	# -------------------------------------------------------------------------
-#	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
-#	dig -x "${IPV6_ADDR[0]}" +nostats +nocomments
-	# -------------------------------------------------------------------------
-#	# shellcheck disable=SC2312
-#	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
-#	dig -x "${LINK_ADDR[0]}" +nostats +nocomments
+	RET_CD=$?
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
-	funcPrintf "----- dns check $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- dig -x ${IPV6_ADDR[0]} +nostats +nocomments $(funcString "${COLS_SIZE}" '-')"
+	dig -x "${IPV6_ADDR[0]}" +nostats +nocomments
+	RET_CD=$?
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	fi
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- dig -x ${LINK_ADDR[0]} +nostats +nocomments $(funcString "${COLS_SIZE}" '-')"
+	dig -x "${LINK_ADDR[0]}" +nostats +nocomments
+	RET_CD=$?
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	fi
 	# -------------------------------------------------------------------------
 	set -e
 }
@@ -3023,7 +3209,7 @@ function funcCall_network() {
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-		COMD_LIST=("aldy" "nic" "resolv" "pxe" "fwall" "$@")
+		COMD_LIST=("host" "aldy" "nic" "resolv" "pxe" "fwall" "$@")
 		IFS=' =,'
 		set -f
 		set -- "${COMD_LIST[@]:-}"
@@ -3034,6 +3220,9 @@ function funcCall_network() {
 	do
 		COMD_LIST=("${@:-}")
 		case "${1:-}" in
+			host )						# ===== hosts =========================
+				funcNetwork_hosts
+				;;
 			aldy )						# ===== hosts.allow / hosts.deny ======
 				funcNetwork_hosts_allow_deny
 				;;
@@ -3104,8 +3293,12 @@ function funcCall_package() {
 				funcSystem_control
 				;;
 			sys )						# ===== system ========================
+				funcApplication_system_kernel
 				funcApplication_system_shared_directory
 				funcApplication_system_user_environment
+				;;
+			syskrn )					# ===== system kernel =================
+				funcApplication_system_kernel
 				;;
 			sysenv )					# ===== system environment ============
 				funcApplication_system_user_environment
@@ -3243,7 +3436,8 @@ function funcMain() {
 		funcPrintf "  -a | -all"
 		funcPrintf ""
 		funcPrintf "network settings (empty is [ options ])"
-		funcPrintf "  -n | --network [ aldy nic resolv pxe fwall ]"
+		funcPrintf "  -n | --network [ host aldy nic resolv pxe fwall ]"
+		funcPrintf "    host    hosts"
 		funcPrintf "    aldy    hosts.allow / hosts.deny"
 		funcPrintf "    nic     connman netplan networkmanager"
 		funcPrintf "    resolv  resolv.conf"
@@ -3254,7 +3448,8 @@ function funcMain() {
 		funcPrintf "  -p | --package [ pmn ctl sys usr av ntp ssh dns web smb vm root ]"
 		funcPrintf "    pmn     package manager"
 		funcPrintf "    ctl     system control"
-		funcPrintf "    sys     [ sysenv sysdir ]"
+		funcPrintf "    sys     [ syskrn sysenv sysdir ]"
+		funcPrintf "    syskrn  system kernel"
 		funcPrintf "    sysenv  system environment"
 		funcPrintf "    sysdir  system shared directory"
 		funcPrintf "    usr     user add"
@@ -3297,30 +3492,30 @@ function funcMain() {
 		# ---------------------------------------------------------------------
 		# shellcheck disable=SC2312
 		funcPrintf "---- system information $(funcString "${COLS_SIZE}" '-')"
-		funcPrintf "     distribution name  : ${DIST_NAME}"
-		funcPrintf "     code name          : ${DIST_CODE}"
-		funcPrintf "     version name       : ${DIST_VERS}"
-		funcPrintf "     version number     : ${DIST_VRID}"
+		funcPrintf "     distribution name  : ${DIST_NAME:-}"
+		funcPrintf "     code name          : ${DIST_CODE:-}"
+		funcPrintf "     version name       : ${DIST_VERS:-}"
+		funcPrintf "     version number     : ${DIST_VRID:-}"
 		# shellcheck disable=SC2312
 		funcPrintf "---- network information $(funcString "${COLS_SIZE}" '-')"
-		funcPrintf "     network device name: ${ETHR_NAME[0]}"
-		funcPrintf "     network mac address: ${ETHR_MADR[0]}"
-		funcPrintf "     IPv4 address       : ${IPV4_ADDR[0]}"
-		funcPrintf "     IPv4 cidr          : ${IPV4_CIDR[0]}"
-		funcPrintf "     IPv4 subnetmask    : ${IPV4_MASK[0]}"
-		funcPrintf "     IPv4 gateway       : ${IPV4_GWAY[0]}"
-		funcPrintf "     IPv4 nameserver    : ${IPV4_NSVR[0]}"
-		funcPrintf "     IPv4 domain        : ${IPV4_WGRP[0]}"
-		funcPrintf "     IPv4 dhcp mode     : ${IPV4_DHCP[0]}"
-		funcPrintf "     IPv6 address       : ${IPV6_ADDR[0]}"
-		funcPrintf "     IPv6 cidr          : ${IPV6_CIDR[0]}"
-		funcPrintf "     IPv6 subnetmask    : ${IPV6_MASK[0]}"
-		funcPrintf "     IPv6 gateway       : ${IPV6_GWAY[0]}"
-		funcPrintf "     IPv6 nameserver    : ${IPV6_NSVR[0]}"
-		funcPrintf "     IPv6 domain        : ${IPV6_WGRP[0]}"
-		funcPrintf "     IPv6 dhcp mode     : ${IPV6_DHCP[0]}"
-		funcPrintf "     LINK address       : ${LINK_ADDR[0]}"
-		funcPrintf "     LINK cidr          : ${LINK_CIDR[0]}"
+		funcPrintf "     network device name: ${ETHR_NAME[0]:-}"
+		funcPrintf "     network mac address: ${ETHR_MADR[0]:-}"
+		funcPrintf "     IPv4 address       : ${IPV4_ADDR[0]:-}"
+		funcPrintf "     IPv4 cidr          : ${IPV4_CIDR[0]:-}"
+		funcPrintf "     IPv4 subnetmask    : ${IPV4_MASK[0]:-}"
+		funcPrintf "     IPv4 gateway       : ${IPV4_GWAY[0]:-}"
+		funcPrintf "     IPv4 nameserver    : ${IPV4_NSVR[0]:-}"
+		funcPrintf "     IPv4 domain        : ${IPV4_WGRP[0]:-}"
+		funcPrintf "     IPv4 dhcp mode     : ${IPV4_DHCP[0]:-}"
+		funcPrintf "     IPv6 address       : ${IPV6_ADDR[0]:-}"
+		funcPrintf "     IPv6 cidr          : ${IPV6_CIDR[0]:-}"
+		funcPrintf "     IPv6 subnetmask    : ${IPV6_MASK[0]:-}"
+		funcPrintf "     IPv6 gateway       : ${IPV6_GWAY[0]:-}"
+		funcPrintf "     IPv6 nameserver    : ${IPV6_NSVR[0]:-}"
+		funcPrintf "     IPv6 domain        : ${IPV6_WGRP[0]:-}"
+		funcPrintf "     IPv6 dhcp mode     : ${IPV6_DHCP[0]:-}"
+		funcPrintf "     LINK address       : ${LINK_ADDR[0]:-}"
+		funcPrintf "     LINK cidr          : ${LINK_CIDR[0]:-}"
 		# ---------------------------------------------------------------------
 		IFS=' =,'
 		set -f
