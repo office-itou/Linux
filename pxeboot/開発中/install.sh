@@ -167,6 +167,10 @@
 
 	# --- firewall ------------------------------------------------------------
 	declare -r    FWAL_ZONE="home"			# firewall zone name
+											# firewall port
+	declare -r -a FWAL_PRTS=( \
+		"30000-60000/udp" \
+	)
 											# firewall additional service list
 	declare -r -a FWAL_LIST=( \
 		"dns"        \
@@ -204,7 +208,7 @@
 
 	# --- hostname ------------------------------------------------------------
 	# shellcheck disable=SC2155
-	declare -r    HOST_FQDN="$(hostname)"		# host fqdn
+	declare -r    HOST_FQDN="$(hostname -f)"	# host fqdn
 	declare -r    HOST_NAME="${HOST_FQDN%.*}"	# host name
 	declare -r    HOST_DMAN="${HOST_FQDN##*.}"	# domain
 
@@ -895,6 +899,32 @@ function funcNetwork_parameter() {
 	done
 }
 
+# ------ nsswitch -------------------------------------------------------------
+function funcNetwork_nsswitch() {
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare -r    MSGS_TITL="nsswitch"
+	declare -r    FILE_PATH="/etc/nsswitch.conf"
+	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
+	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	if [[ -f "${FILE_PATH}" ]]; then
+		if [[ ! -f "${FILE_ORIG}" ]]; then
+			mkdir -p "${FILE_ORIG%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
+		else
+			mkdir -p "${FILE_BACK%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_BACK}"
+		fi
+	fi
+	# --- nsswitch ------------------------------------------------------------
+	sed -i "${FILE_PATH}"         \
+	    -e '/^hosts:/          {' \
+	    -e '/wins/! s/$/ wins/ }'
+}
+
 # ------ hosts ----------------------------------------------------------------
 function funcNetwork_hosts() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
@@ -921,18 +951,18 @@ function funcNetwork_hosts() {
 	    -e '/^127\.0\.1\.1/d'                      \
 	    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'         \
 	    -e 's/^\([0-9a-zA-Z:]\+\)[ \t]\+/\1\t\t/g'
-	for ((I="${#LINK_FADR[@]}"-1; I>=0; I--))
-	do
-		sed -i "${FILE_PATH}"                                                \
-		    -e "/^${LINK_FADR[I]}/d"                                         \
-		    -e "/^127\.0\.0\.1/a ${LINK_FADR[I]}\t${HOST_FQDN} ${HOST_NAME}"
-	done
-	for ((I="${#IPV6_FADR[@]}"-1; I>=0; I--))
-	do
-		sed -i "${FILE_PATH}"                                                \
-		    -e "/^${IPV6_FADR[I]}/d"                                         \
-		    -e "/^127\.0\.0\.1/a ${IPV6_FADR[I]}\t${HOST_FQDN} ${HOST_NAME}"
-	done
+#	for ((I="${#LINK_FADR[@]}"-1; I>=0; I--))
+#	do
+#		sed -i "${FILE_PATH}"                                                \
+#		    -e "/^${LINK_FADR[I]}/d"                                         \
+#		    -e "/^127\.0\.0\.1/a ${LINK_FADR[I]}\t${HOST_FQDN} ${HOST_NAME}"
+#	done
+#	for ((I="${#IPV6_FADR[@]}"-1; I>=0; I--))
+#	do
+#		sed -i "${FILE_PATH}"                                                \
+#		    -e "/^${IPV6_FADR[I]}/d"                                         \
+#		    -e "/^127\.0\.0\.1/a ${IPV6_FADR[I]}\t${HOST_FQDN} ${HOST_NAME}"
+#	done
 	for ((I="${#IPV4_ADDR[@]}"-1; I>=0; I--))
 	do
 		sed -i "${FILE_PATH}"                                                \
@@ -1344,8 +1374,8 @@ function funcNetwork_pxe_conf() {
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_PATH}"
 		# --- log ---------------------------------------------------------------------
-		log-queries													# dns query log output
-		log-dhcp													# dhcp transaction log output
+		#log-queries												# dns query log output
+		#log-dhcp													# dhcp transaction log output
 		#log-facility=												# log output file name
 		
 		# --- dns ---------------------------------------------------------------------
@@ -1356,12 +1386,12 @@ function funcNetwork_pxe_conf() {
 		expand-hosts												# add domain name to host
 		filterwin2k													# filter for windows
 		interface=${ETHR_NAME[0]}											# listen to interface
-		listen-address=${IPV6_LHST},${IPV4_LHST},${IPV4_ADDR[0]}					# listen to ip address
-		server=8.8.8.8												# directly specify upstream server
-		server=8.8.4.4												# directly specify upstream server
+		#listen-address=${IPV6_LHST},${IPV4_LHST},${IPV4_ADDR[0]}					# listen to ip address
+		#server=8.8.8.8												# directly specify upstream server
+		#server=8.8.4.4												# directly specify upstream server
 		#no-hosts													# don't read the hostnames in /etc/hosts
 		#no-poll													# don't poll /etc/resolv.conf for changes
-		no-resolv													# don't read /etc/resolv.conf
+		#no-resolv													# don't read /etc/resolv.conf
 		strict-order												# try in the registration order of /etc/resolv.conf
 		
 		# --- dhcp --------------------------------------------------------------------
@@ -1436,9 +1466,10 @@ _EOT_
 function funcNetwork_firewall() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
 	declare -r    MSGS_TITL="firewall"
+	declare       FWAL_PORT=""
 	declare       FWAL_NAME=""
 	declare -a    WORK_ARRY=()
-	declare       WORK_NAME=""
+	declare       WORK_PARM=""
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	if [[ -z "$(command -v firewall-cmd 2> /dev/null)" ]]; then
@@ -1448,13 +1479,35 @@ function funcNetwork_firewall() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	if [[ "$(firewall-cmd --get-zone-of-interface="${ETHR_NAME[0]}" 2>&1)" != "${FWAL_ZONE}" ]] \
+	&& [[ "$(firewall-cmd --get-default-zone 2>&1)" != "${FWAL_ZONE}" ]]; then
+		funcPrintf "      ${MSGS_TITL}: change zone: ${FWAL_ZONE}"
+		funcPrintf "      ${MSGS_TITL}: change interface: ${ETHR_NAME[0]}"
+		firewall-cmd --quiet --zone="${FWAL_ZONE}" --add-interface="${ETHR_NAME[0]}" --permanent
+	fi
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2207
+	WORK_ARRY=($(firewall-cmd --list-ports --zone="${FWAL_ZONE}"))
+	for FWAL_PORT in "${FWAL_PRTS[@]}"
+	do
+		for WORK_PARM in "${WORK_ARRY[@]}"
+		do
+			if [[ "${FWAL_PORT}" = "${WORK_PARM}" ]]; then
+				continue 2
+			fi
+		done
+		funcPrintf "      ${MSGS_TITL}: add port ${FWAL_PORT}"
+		firewall-cmd --quiet --add-port="${FWAL_PORT}" --zone="${FWAL_ZONE}" --permanent
+	done
+	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2207
 	WORK_ARRY=($(firewall-cmd --list-services --zone="${FWAL_ZONE}"))
 	for FWAL_NAME in "${FWAL_LIST[@]}"
 	do
-		for WORK_NAME in "${WORK_ARRY[@]}"
+		for WORK_PARM in "${WORK_ARRY[@]}"
 		do
-			if [[ "${FWAL_NAME}" = "${WORK_NAME}" ]]; then
+			if [[ "${FWAL_NAME}" = "${WORK_PARM}" ]]; then
 				continue 2
 			fi
 		done
@@ -1462,8 +1515,10 @@ function funcNetwork_firewall() {
 		firewall-cmd --quiet --add-service="${FWAL_NAME}" --zone="${FWAL_ZONE}" --permanent
 	done
 	# -------------------------------------------------------------------------
-	funcPrintf "      ${MSGS_TITL}: reload firewall"
+	funcPrintf "      ${MSGS_TITL}: firewall reload"
 	firewall-cmd --quiet --reload
+	funcPrintf "      ${MSGS_TITL}: firewall runtime to permanent"
+	firewall-cmd --runtime-to-permanent
 }
 
 # ==== application ============================================================
@@ -1628,6 +1683,7 @@ function funcApplication_system_shared_directory() {
 function funcApplication_system_user_environment() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
 	declare -r    MSGS_TITL="user environment"
+	declare       LINK_PATH=""
 	declare       FILE_PATH=""
 	declare       FILE_ORIG=""
 	declare       FILE_BACK=""
@@ -1691,9 +1747,11 @@ _EOT_
 		# shellcheck disable=SC2312
 		if [[ -n "$(command -v vim 2> /dev/null)" ]]; then
 			funcPrintf "      ${MSGS_TITL}: vim"
+			LINK_PATH="${USER_HOME}/.virc"
 			FILE_PATH="${USER_HOME}/.vimrc"
 			FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 			FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+			# --- .vimrc ------------------------------------------------------
 			if [[ -f "${FILE_PATH}" ]]; then
 				if [[ ! -f "${FILE_ORIG}" ]]; then
 					mkdir -p "${FILE_ORIG%/*}"
@@ -1717,6 +1775,41 @@ _EOT_
 				syntax on               " Vim5 and later versions support syntax highlighting.
 _EOT_
 			chown "${USER_NAME}": "${FILE_PATH}"
+			# --- vi ----------------------------------------------------------
+			if [[ -f /etc/virc ]]; then
+				# --- .virc -------------------------------------------------------
+				if [[ ! -L "${LINK_PATH}" ]]; then
+					funcPrintf "      ${MSGS_TITL}: create config link"
+					funcPrintf "      ${MSGS_TITL}: ${LINK_PATH}"
+					ln -sr "${FILE_PATH}" "${LINK_PATH}"
+					chown "${USER_NAME}": "${LINK_PATH}"
+				fi
+				# --- .bashrc -----------------------------------------------------
+				FILE_PATH="${USER_HOME}/.bashrc"
+				# shellcheck disable=SC2312
+				if [[ -f "${FILE_PATH}" ]] && [[ -z "$(sed -n '/alias for vim/p' "${FILE_PATH}")" ]]; then
+					funcPrintf "      ${MSGS_TITL}: alias for vim"
+					FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
+					FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+					if [[ -f "${FILE_PATH}" ]]; then
+						if [[ ! -f "${FILE_ORIG}" ]]; then
+							mkdir -p "${FILE_ORIG%/*}"
+							cp --archive "${FILE_PATH}" "${FILE_ORIG}"
+						else
+							mkdir -p "${FILE_BACK%/*}"
+							cp --archive "${FILE_PATH}" "${FILE_BACK}"
+						fi
+					fi
+					funcPrintf "      ${MSGS_TITL}: setup config file"
+					funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
+					cat <<- '_EOT_' | sed -e 's/^ *//g' >> "${FILE_PATH}"
+						# --- alias for vim ---
+						alias vi='vim'
+						alias view='vim'
+_EOT_
+					chown "${USER_NAME}": "${FILE_PATH}"
+				fi
+			fi
 		fi
 		# --- curl ------------------------------------------------------------
 		# shellcheck disable=SC2312
@@ -2198,6 +2291,12 @@ function funcApplication_samba() {
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	declare -r    FILE_TEMP="${DIRS_TEMP}/${FILE_PATH##*/}.${DATE_TIME}"
 	declare -a    SYSD_ARRY=()
+	declare -r    COMD_UADD="$(command -v useradd)"
+	declare -r    COMD_UDEL="$(command -v userdel)"
+	declare -r    COMD_GADD="$(command -v groupadd)"
+	declare -r    COMD_GDEL="$(command -v groupdel)"
+	declare -r    COMD_GPWD="$(command -v gpasswd)"
+	declare -r    COMD_FALS="$(command -v false)"
 	# -------------------------------------------------------------------------
 	if [[ ! -d "${FILE_PATH%/*}/." ]]; then
 		return
@@ -2216,37 +2315,74 @@ function funcApplication_samba() {
 	funcPrintf "      ${MSGS_TITL}: create config file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 	# --- orig -> verbose -> delete unseted line & edit parm ------------------
-	testparm -s -v "${FILE_ORIG}"                2> /dev/null | \
-	sed -e '/^[ \t]*allow nt4 crypto[ \t]*=/d'                  \
-	    -e '/^[ \t]*client lanman auth[ \t]*=/d'                \
-	    -e '/^[ \t]*client NTLMv2 auth[ \t]*=/d'                \
-	    -e '/^[ \t]*client plaintext auth[ \t]*=/d'             \
-	    -e '/^[ \t]*client schannel[ \t]*=/d'                   \
-	    -e '/^[ \t]*client use spnego principal[ \t]*=/d'       \
-	    -e '/^[ \t]*client use spnego[ \t]*=/d'                 \
-	    -e '/^[ \t]*domain logons[ \t]*=/d'                     \
-	    -e '/^[ \t]*enable privileges[ \t]*=/d'                 \
-	    -e '/^[ \t]*encrypt passwords[ \t]*=/d'                 \
-	    -e '/^[ \t]*idmap backend[ \t]*=/d'                     \
-	    -e '/^[ \t]*idmap gid[ \t]*=/d'                         \
-	    -e '/^[ \t]*idmap uid[ \t]*=/d'                         \
-	    -e '/^[ \t]*lanman auth[ \t]*=/d'                       \
-	    -e '/^[ \t]*lsa over netlogon[ \t]*=/d'                 \
-	    -e '/^[ \t]*nbt client socket address[ \t]*=/d'         \
-	    -e '/^[ \t]*null passwords[ \t]*=/d'                    \
-	    -e '/^[ \t]*raw NTLMv2 auth[ \t]*=/d'                   \
-	    -e '/^[ \t]*reject md5 clients[ \t]*=/d'                \
-	    -e '/^[ \t]*server schannel[ \t]*=/d'                   \
-	    -e '/^[ \t]*server schannel require seal[ \t]*=/d'      \
-	    -e '/^[ \t]*syslog[ \t]*=/d'                            \
-	    -e '/^[ \t]*syslog only[ \t]*=/d'                       \
-	    -e '/^[ \t]*unicode[ \t]*=/d'                           \
-	    -e '/^[ \t]*acl check permissions[ \t]*=/d'             \
-	    -e '/^[ \t]*allocation roundup size[ \t]*=/d'           \
-	    -e '/^[ \t]*blocking locks[ \t]*=/d'                    \
-	    -e '/^[ \t]*[[:print:]]\+[ \t]*=[ \t]*$/d'              \
-	    -e '/^[ \t]*winbind separator[ \t]*=/d'                 \
-	    -e 's/^\([ \t]*dos charset[ \t]*=[ \t]*\).*$/\1=CP932/' \
+	testparm -s -v "${FILE_ORIG}"                                                                2> /dev/null | \
+	sed -e "s~^\([ \t]*add group script[ \t]*=[ \t]*\).*$~\1${COMD_GADD} %g~"                                   \
+	    -e "s~^\([ \t]*add machine script[ \t]*=[ \t]*\).*$~\1${COMD_UADD} -d /dev/null -s ${COMD_FALS} %u~"    \
+	    -e "s~^\([ \t]*add user script[ \t]*=[ \t]*\).*$~\1${COMD_UADD} %u~"                                    \
+	    -e "s~^\([ \t]*add user to group script[ \t]*=[ \t]*\).*$~\1${COMD_GPWD} -a %u %g~"                     \
+	    -e "s~^\([ \t]*delete group script[ \t]*=[ \t]*\).*$~\1${COMD_GDEL} %g~"                                \
+	    -e "s~^\([ \t]*delete user from group script[ \t]*=[ \t]*\).*$~\1${COMD_GPWD} -d %u %g~"                \
+	    -e "s~^\([ \t]*delete user script[ \t]*=[ \t]*\).*$~\1${COMD_UDEL} %u~"                                 \
+	    -e "s/^\([ \t]*netbios name[ \t]*=[ \t]*\).*$/\1${HOST_NAME^^}/"                                        \
+	    -e "s/^\([ \t]*workgroup[ \t]*=[ \t]*\).*$/\1${HOST_DMAN^^}/"                                           \
+	    -e 's/^\([ \t]*dos charset[ \t]*=[ \t]*\).*$/\1CP932/'                                                  \
+	    -e 's~^\([ \t]*log file[ \t]*=[ \t]*\).*$~\1/var/log/samba/log\.%m~'                                    \
+	    -e 's/^\([ \t]*logging[ \t]*=[ \t]*\).*$/\1file/'                                                       \
+	    -e 's/^\([ \t]*security[ \t]*=[ \t]*\).*$/\1USER/'                                                      \
+	    -e 's/^\([ \t]*server role[ \t]*=[ \t]*\).*$/\1AUTO/'                                                   \
+	    -e 's/^\([ \t]*unix password sync[ \t]*=[ \t]*\).*$/\1No/'                                              \
+	    -e 's/^\([ \t]*wins support[ \t]*=[ \t]*\).*$/\1No/'                                                    \
+	    -e '/^[ \t]*\.*[ \t]*=/d'                                                                               \
+	    -e '/^[ \t]*[[:print:]]\+[ \t]*=[ \t]*$/d'                                                              \
+	    -e '/^[ \t]*acl check permissions[ \t]*=/d'                                                             \
+	    -e '/^[ \t]*ad dc functional level[ \t]*=/d'                                                            \
+	    -e '/^[ \t]*allocation roundup size[ \t]*=/d'                                                           \
+	    -e '/^[ \t]*allow nt4 crypto[ \t]*=/d'                                                                  \
+	    -e '/^[ \t]*blocking locks[ \t]*=/d'                                                                    \
+	    -e '/^[ \t]*client NTLMv2 auth[ \t]*=/d'                                                                \
+	    -e '/^[ \t]*client ipc min protocol[ \t]*=/d'                                                           \
+	    -e '/^[ \t]*client lanman auth[ \t]*=/d'                                                                \
+	    -e '/^[ \t]*client min protocol[ \t]*=/d'                                                               \
+	    -e '/^[ \t]*client plaintext auth[ \t]*=/d'                                                             \
+	    -e '/^[ \t]*client schannel[ \t]*=/d'                                                                   \
+	    -e '/^[ \t]*client use spnego principal[ \t]*=/d'                                                       \
+	    -e '/^[ \t]*client use spnego[ \t]*=/d'                                                                 \
+	    -e '/^[ \t]*copy[ \t]*=/d'                                                                              \
+	    -e '/^[ \t]*dns proxy[ \t]*=/d'                                                                         \
+	    -e '/^[ \t]*domain logons[ \t]*=/d'                                                                     \
+	    -e '/^[ \t]*domain master[ \t]*=/d'                                                                     \
+	    -e '/^[ \t]*enable privileges[ \t]*=/d'                                                                 \
+	    -e '/^[ \t]*encrypt passwords[ \t]*=/d'                                                                 \
+	    -e '/^[ \t]*idmap backend[ \t]*=/d'                                                                     \
+	    -e '/^[ \t]*idmap gid[ \t]*=/d'                                                                         \
+	    -e '/^[ \t]*idmap uid[ \t]*=/d'                                                                         \
+	    -e '/^[ \t]*lanman auth[ \t]*=/d'                                                                       \
+	    -e '/^[ \t]*logon drive[ \t]*=/d'                                                                       \
+	    -e '/^[ \t]*logon home[ \t]*=/d'                                                                        \
+	    -e '/^[ \t]*logon path[ \t]*=/d'                                                                        \
+	    -e '/^[ \t]*logon script[ \t]*=/d'                                                                      \
+	    -e '/^[ \t]*lsa over netlogon[ \t]*=/d'                                                                 \
+	    -e '/^[ \t]*map to guest[ \t]*=/d'                                                                      \
+	    -e '/^[ \t]*nbt client socket address[ \t]*=/d'                                                         \
+	    -e '/^[ \t]*null passwords[ \t]*=/d'                                                                    \
+	    -e '/^[ \t]*obey pam restrictions[ \t]*=/d'                                                             \
+	    -e '/^[ \t]*only user[ \t]*=/d'                                                                         \
+	    -e '/^[ \t]*pam password change[ \t]*=/d'                                                               \
+	    -e '/^[ \t]*paranoid server security[ \t]*=/d'                                                          \
+	    -e '/^[ \t]*password level[ \t]*=/d'                                                                    \
+	    -e '/^[ \t]*preferred master[ \t]*=/d'                                                                  \
+	    -e '/^[ \t]*raw NTLMv2 auth[ \t]*=/d'                                                                   \
+	    -e '/^[ \t]*reject md5 clients[ \t]*=/d'                                                                \
+	    -e '/^[ \t]*server schannel require seal[ \t]*=/d'                                                      \
+	    -e '/^[ \t]*server schannel[ \t]*=/d'                                                                   \
+	    -e '/^[ \t]*share modes[ \t]*=/d'                                                                       \
+	    -e '/^[ \t]*syslog only[ \t]*=/d'                                                                       \
+	    -e '/^[ \t]*syslog[ \t]*=/d'                                                                            \
+	    -e '/^[ \t]*time offset[ \t]*=/d'                                                                       \
+	    -e '/^[ \t]*unicode[ \t]*=/d'                                                                           \
+	    -e '/^[ \t]*use spnego[ \t]*=/d'                                                                        \
+	    -e '/^[ \t]*usershare allow guests[ \t]*=/d'                                                            \
+	    -e '/^[ \t]*winbind separator[ \t]*=/d'                                                                 \
 	>   "${FILE_TEMP}"
 	cat <<- _EOT_ | sed -e 's/^ *//g' >> "${FILE_TEMP}"
 		[homes]
@@ -3209,7 +3345,7 @@ function funcCall_network() {
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-		COMD_LIST=("host" "aldy" "nic" "resolv" "pxe" "fwall" "$@")
+		COMD_LIST=("nss" "host" "aldy" "nic" "resolv" "pxe" "fwall" "$@")
 		IFS=' =,'
 		set -f
 		set -- "${COMD_LIST[@]:-}"
@@ -3220,6 +3356,9 @@ function funcCall_network() {
 	do
 		COMD_LIST=("${@:-}")
 		case "${1:-}" in
+			nss )						# ===== nsswitch ======================
+				funcNetwork_nsswitch
+				;;
 			host )						# ===== hosts =========================
 				funcNetwork_hosts
 				;;
@@ -3436,7 +3575,8 @@ function funcMain() {
 		funcPrintf "  -a | -all"
 		funcPrintf ""
 		funcPrintf "network settings (empty is [ options ])"
-		funcPrintf "  -n | --network [ host aldy nic resolv pxe fwall ]"
+		funcPrintf "  -n | --network [ nss host aldy nic resolv pxe fwall ]"
+		funcPrintf "    nss     nsswitch"
 		funcPrintf "    host    hosts"
 		funcPrintf "    aldy    hosts.allow / hosts.deny"
 		funcPrintf "    nic     connman netplan networkmanager"

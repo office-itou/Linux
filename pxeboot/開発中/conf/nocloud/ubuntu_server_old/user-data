@@ -158,6 +158,7 @@ autoinstall:
   - samba
   - smbclient
   - cifs-utils
+  - libnss-winbind
 # - ubuntu-desktop
 # - ubuntu-gnome-desktop
 # - language-pack-ja
@@ -171,6 +172,7 @@ autoinstall:
 # - thunderbird
 # - thunderbird-locale-ja
 # -----------------------------------------------------------------------------
+# - avahi-daemon
 # - bind9
 # - bind9utils
 # - dnsutils
@@ -197,7 +199,9 @@ autoinstall:
 # - echo $'# Let NetworkManager manage all devices on this system\nnetwork\x3a\n  version\x3a 2\n  renderer\x3a NetworkManager\n' \
 #   > /target/etc/netplan/99-NetworkManager-all.yaml;
   late-commands:
-  - for LINE in $(cat /proc/cmdline);
+  - LOG_FILE="/target/var/log/installer/network_info.log";
+    mkdir -p "${LOG_FILE%/*}";
+    for LINE in $(cat /proc/cmdline);
     do
         case "${LINE}" in
             ip=*)
@@ -218,20 +222,47 @@ autoinstall:
                 OLD_WGRP="${OLD_FQDN#*.}";
                 NIC_HOST="${NIC_FQDN%.*}";
                 NIC_WGRP="${NIC_FQDN#*.}";
+                echo "--- cmdline ---"      >> "${LOG_FILE}";
+                cat /proc/cmdline           >> "${LOG_FILE}";
+                echo "NIC_IPV4=${NIC_IPV4}" >> "${LOG_FILE}";
+                echo "NIC_GATE=${NIC_GATE}" >> "${LOG_FILE}";
+                echo "NIC_MASK=${NIC_MASK}" >> "${LOG_FILE}";
+                echo "NIC_FQDN=${NIC_FQDN}" >> "${LOG_FILE}";
+                echo "NIC_NAME=${NIC_NAME}" >> "${LOG_FILE}";
+                echo "NIC_DNS4=${NIC_DNS4}" >> "${LOG_FILE}";
+                echo "OLD_FQDN=${OLD_FQDN}" >> "${LOG_FILE}";
+                echo "OLD_HOST=${OLD_HOST}" >> "${LOG_FILE}";
+                echo "OLD_WGRP=${OLD_WGRP}" >> "${LOG_FILE}";
+                echo "NIC_HOST=${NIC_HOST}" >> "${LOG_FILE}";
+                echo "NIC_WGRP=${NIC_WGRP}" >> "${LOG_FILE}";
+                echo "--- hostname ---"     >> "${LOG_FILE}";
+                cat /target/etc/hostname    >> "${LOG_FILE}";
                 echo "${NIC_FQDN}" > /target/etc/hostname;
-                sed -i /target/etc/hosts                                       \
-                    -e '/^127\.0\.1\.1/d'                                      \
-                    -e "/^${NIC_IPV4}/d"                                       \
-                    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'                         \
-                    -e 's/^\([0-9a-zA-Z:]\+\)[ \t]\+/\1\t\t/g'                 \
-                    -e "/^127\.0\.0\.1/a ${NIC_IPV4}\t${NIC_FQDN} ${NIC_HOST}" \
-                    -e "s/${OLD_HOST}/${NIC_HOST}/g"                           \
+                echo "--- hostname ---"     >> "${LOG_FILE}";
+                cat /target/etc/hostname    >> "${LOG_FILE}";
+                echo "--- hosts ---"        >> "${LOG_FILE}";
+                cat /target/etc/hosts       >> "${LOG_FILE}";
+                sed -i /target/etc/hosts
+                    -e '/^127\.0\.1\.1/d'
+                    -e "/^${NIC_IPV4}/d"
+                    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'
+                    -e 's/^\([0-9a-zA-Z:]\+\)[ \t]\+/\1\t\t/g'
+                    -e "/^127\.0\.0\.1/a ${NIC_IPV4}\t${NIC_FQDN} ${NIC_HOST}"
+                    -e "s/${OLD_HOST}/${NIC_HOST}/g"
                     -e "s/${OLD_FQDN}/${NIC_FQDN}/g";
+                echo "--- hosts ---"        >> "${LOG_FILE}";
+                cat /target/etc/hosts       >> "${LOG_FILE}";
+                echo ""                     >> "${LOG_FILE}";
                 ;;
         esac;
     done;
-  - if [ -f /etc/NetworkManager/NetworkManager.conf ]; then
+  - LOG_FILE="/target/var/log/installer/network_info.log";
+    mkdir -p "${LOG_FILE%/*}";
+    if [ -f /etc/NetworkManager/NetworkManager.conf ]; then
+        echo "--- 90-dns-none.conf ---"                 >> "${LOG_FILE}";
         echo -e "[main]\ndns=none" > /etc/NetworkManager/conf.d/90-dns-none.conf;
+        cat /etc/NetworkManager/conf.d/90-dns-none.conf >> "${LOG_FILE}";
+        echo ""                                         >> "${LOG_FILE}";
     fi;
   - LOG_FILE="/target/var/log/installer/network_info.log";
     mkdir -p "${LOG_FILE%/*}";
