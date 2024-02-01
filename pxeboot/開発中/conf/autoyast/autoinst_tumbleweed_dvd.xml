@@ -143,12 +143,18 @@ device -->
         <interpreter>shell</interpreter>
         <location/>
         <source>#!/bin/sh
-LANG=C chmod u+w /etc/sudoers
-LANG=C sed -i.orig /etc/sudoers                         \
-           -e 's/^\(Defaults.*targetpw\)/# \1/g'        \
-           -e 's/^\(ALL.*ALL\)/# \1/g'                  \
-           -e '/NOPASSWD:/! s/^#.*\(%wheel.*ALL\)/\1/g'
-LANG=C chmod u-w /etc/sudoers
+DIRS_LIST="$(LANG=C find /usr -maxdepth 1 -name 'etc' -type d)"
+FILE_LIST="$(LANG=C find /etc ${DIRS_LIST} -name 'sudoers' -type f)"
+for FILE in ${FILE_LIST}
+do
+    LANG=C chmod u+w "${FILE}"
+    LANG=C sed -i.orig "${FILE}"                      \
+               -e '/^Defaults[ \t]\+targetpw/ s/^/#/' \
+               -e '/^ALL[ \t]\+ALL/           s/^/#/' \
+               -e '/^#[ \t]*%wheel[ \t]\+ALL/      {' \
+               -e '/NOPASSWD:/! s/^#[ \t]\+//      }'
+    LANG=C chmod u-w "${FILE}"
+done
 exit 0</source>
       </script>
       <script t="map">
@@ -203,9 +209,25 @@ exit 0</source>
 #LANG=C firewall-cmd --zone=home --change-interface=ens160 --permanent
 #LANG=C firewall-cmd --set-default-zone=home
 #LANG=C firewall-cmd --reload
-LANG=C sed -i.orig /etc/sysconfig/network/ifcfg-ens160 \
-           -e '/^ZONE=/ s/^/#/'                        \
-           -e '$a ZONE=home'
+NIC_LIST="$(LANG=C find /etc/sysconfig/network/ \( -name 'ifcfg-eth*[0-9]' -o -name 'ifcfg-ens*[0-9]' \) -type f)"
+for NIC in ${NIC_LIST}
+do
+    if [ "${NIC##*/}" = "ifcfg-ens160" ] || [ "${NIC##*/}" = "ifcfg-eth0" ]; then
+        LANG=C sed -i.orig "${NIC}"                 \
+                   -e '/^ZONE=/ s/^/#/'             \
+                   -e '$a ZONE=home'
+    else
+        LANG=C sed -i.orig "${NIC}"                 \
+                   -e '/^BOOTPROTO=/             {' \
+                   -e 's/^/#/'                      \
+                   -e 'a BOOTPROTO='\''none'\'''    \
+                   -e '}'                           \
+                   -e '/^STARTMODE=/             {' \
+                   -e 's/^/#/'                      \
+                   -e 'a STARTMODE='\''hotplug'\''' \
+                   -e '}'
+    fi
+done
 LANG=C sed -i.orig /etc/sysconfig/network/config                               \
            -e '/^NETCONFIG_DNS_STATIC_SERVERS=/ s/"\(.*\)"/"::1 127.0.0.1 \1"/'
 if [ -f /etc/hostname.work ]; then
@@ -230,10 +252,10 @@ exit 0</source>
     <services t="map">
       <enable t="list">
         <service>chronyd</service>
-        <service>named</service>
         <service>nmb</service>
         <service>smb</service>
         <service>sshd</service>
+        <service>winbind</service>
       </enable>
     </services>
   </services-manager>

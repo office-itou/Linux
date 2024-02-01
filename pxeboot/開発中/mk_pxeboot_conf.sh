@@ -1424,14 +1424,15 @@ function funcCreate_nocloud() {
 
 # ----- create kickstart.cfg --------------------------------------------------
 function funcCreate_kickstart() {
+	declare -r    IMGS_ADDR="${HTTP_ADDR}/imgs"
 	declare -r    DIRS_NAME="${DIRS_CONF}/kickstart"
 	declare       FILE_PATH=""
-	declare -r -a FILE_LIST=(                       \
-		"ks_almalinux-9_"{net,dvd}".cfg"            \
-		"ks_centos-stream-"{8..9}"_"{net,dvd}".cfg" \
-		"ks_fedora-"{38..39}"_"{net,dvd}".cfg"      \
-		"ks_miraclelinux-"{8..9}"_"{net,dvd}".cfg"  \
-		"ks_rockylinux-"{8..9}"_"{net,dvd}".cfg"    \
+	declare -r -a FILE_LIST=(                           \
+		"ks_almalinux-9_"{net,dvd,web}".cfg"            \
+		"ks_centos-stream-"{8..9}"_"{net,dvd,web}".cfg" \
+		"ks_fedora-"{38..39}"_"{net,dvd,web}".cfg"      \
+		"ks_miraclelinux-"{8..9}"_"{net,dvd,web}".cfg"  \
+		"ks_rockylinux-"{8..9}"_"{net,dvd,web}".cfg"    \
 	)
 	declare       DSTR_NAME=""
 	declare       DSTR_NUMS=""
@@ -1475,6 +1476,22 @@ function funcCreate_kickstart() {
 				    -e "/%post/,/%end/                     { " \
 				    -e "s/\$releasever/${RLNX_NUMS}/g      } "
 				;;
+			*_web* )
+				sed -i "${FILE_PATH}"                          \
+				    -e "/^cdrom/ s/^/#/                      " \
+				    -e "s/_HOSTNAME_/${DSTR_NAME%%-*}/       " \
+				    -e "/^#.*(${DSTR_SECT}).*$/,/^$/       { " \
+				    -e '/_WEBADDR_/                        { ' \
+				    -e "/^#url[ \t]\+/  s/^#//g              " \
+				    -e "/^#repo[ \t]\+/ s/^#//g              " \
+				    -e "/_WEBADDR_/!                       { " \
+				    -e '/^url[ \t]\+/   s/^/#/g              ' \
+				    -e '/^repo[ \t]\+/  s/^/#/g            } ' \
+				    -e "s/\$releasever/${DSTR_NUMS}/g        " \
+				    -e "s/\$basearch/${BASE_ARCH}/g       }} " \
+				    -e "/%post/,/%end/                     { " \
+				    -e "s/\$releasever/${RLNX_NUMS}/g      } "
+				;;
 			* )
 				sed -i "${FILE_PATH}"                          \
 				    -e "/^cdrom/ s/^/#/                      " \
@@ -1506,6 +1523,15 @@ function funcCreate_kickstart() {
 			    -e "/_WEBADDR_/!                   { " \
 			    -e "/^#repo[ \t]\+/ s/^#//g       }} "
 		fi
+		case "${FILE_LIST[I]}" in
+			*_web* )
+				sed -i "${FILE_PATH}"                          \
+				    -e "/^#.*(${DSTR_SECT}).*$/,/^$/       { " \
+				    -e "s%_WEBADDR_%${IMGS_ADDR}%g         } " \
+				;;
+			* )
+				;;
+		esac
 #		sed -i "${FILE_PATH}"                          \
 #		    -e "/^#.*(${DSTR_SECT}).*$/,/^$/       { " \
 #		    -e "s%_WEBADDR_%${WEBS_ADDR}/imgs%g    } "
@@ -1545,7 +1571,6 @@ function funcCreate_autoyast() {
 			    -e "/<media_url>/ s~/\(leap\)/[0-9.]*/~/\1/${DSTR_NUMS#*-}/~g } " \
 			    -e '/<!-- leap$/ s/$/ -->/g                                     ' \
 			    -e '/^leap -->/  s/^/<!-- /g                                  } ' \
-			    -e 's/ens160/eth0/g                                             ' \
 			    -e 's~\(<product>\).*\(</product>\)~\1Leap\2~                   '
 		else
 			sed -i "${FILE_PATH}"                                                 \
@@ -1555,13 +1580,19 @@ function funcCreate_autoyast() {
 			    -e '/<media_url>/ s~/leap/[0-9.]*/~/tumbleweed/~g             } ' \
 			    -e '/<!-- tumbleweed$/ s/$/ -->/g                               ' \
 			    -e '/^tumbleweed -->/  s/^/<!-- /g                            } ' \
-			    -e 's/eth0/ens160/g                                             ' \
 			    -e 's~\(<product>\).*\(</product>\)~\1openSUSE\2~               '
 		fi
 		if [[ "${FILE_PATH}" =~ _lxde ]]; then
 			sed -i "${FILE_PATH}"                     \
 			    -e '/<!-- desktop lxde$/ s/$/ -->/g ' \
 			    -e '/^desktop lxde -->/  s/^/<!-- /g'
+		fi
+		if [[ "${FILE_PATH}" =~ _dvd ]]; then
+			sed -i "${FILE_PATH}"                                     \
+			    -e '/<image_installation t="boolean">/ s/false/true/'
+		else
+			sed -i "${FILE_PATH}"                                     \
+			    -e '/<image_installation t="boolean">/ s/true/false/'
 		fi
 	done
 	chmod ugo-x "${DIRS_NAME}/"*
@@ -1736,11 +1767,15 @@ function funcCreate_menu_cfg_kickstart() {
 	declare       BOOT_OPTN=""
 	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 #	declare -r    CONF_FILE="hd:sr0:/${TGET_LINE[8]} inst.stage2=hd:LABEL=${TGET_LINE[14]}"
-	declare -r    CONF_FILE="${HTTP_ADDR}/conf/${TGET_LINE[8]} inst.repo=${HTTP_ADDR}/imgs/${TGET_LINE[1]}"
+	declare -r    CONF_FILE="${HTTP_ADDR}/conf/${TGET_LINE[8]/_dvd/_web}"
+	declare -r    IMGS_FILE="inst.repo=${HTTP_ADDR}/imgs/${TGET_LINE[1]}"
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for kickstart"
 	# --- boot option ---------------------------------------------------------
 	BOOT_OPTN="inst.ks=${CONF_FILE}"
+	if [[ ! "${TGET_LINE[1]}" =~ -netinst ]]; then
+		BOOT_OPTN+=" ${IMGS_FILE}"
+	fi
 	BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:none,auto6 nameserver=${IPV4_NSVR}"
 	BOOT_OPTN+=" locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	BOOT_OPTN+=" fsck.mode=skip"
@@ -1756,7 +1791,8 @@ function funcCreate_menu_cfg_autoyast() {
 	declare       BOOT_OPTN=""
 	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 #	declare -r    CONF_FILE="cd:/${TGET_LINE[8]}"
-	declare -r    CONF_FILE="${HTTP_ADDR}/conf/${TGET_LINE[8]} install==${HTTP_ADDR}/imgs/${TGET_LINE[1]}"
+	declare -r    CONF_FILE="${HTTP_ADDR}/conf/${TGET_LINE[8]}"
+	declare -r    IMGS_FILE="install=${HTTP_ADDR}/imgs/${TGET_LINE[1]}"
 	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for autoyast"
 	case "${TGET_LINE[1]}" in
@@ -1765,6 +1801,9 @@ function funcCreate_menu_cfg_autoyast() {
 	esac
 	# --- boot option ---------------------------------------------------------
 	BOOT_OPTN="autoyast=${CONF_FILE}"
+	if [[ ! "${TGET_LINE[1]}" =~ -netinst ]]; then
+		BOOT_OPTN+=" ${IMGS_FILE}"
+	fi
 	BOOT_OPTN+=" hostname=${HOST_NAME}.${WGRP_NAME} ifcfg=${WORK_ETHR}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME}"
 	BOOT_OPTN+=" locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	BOOT_OPTN+=" fsck.mode=skip"

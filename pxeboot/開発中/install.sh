@@ -673,14 +673,14 @@ function funcSystem_control() {
 		SRVC_LINE=(${SRVC_LIST[I]})
 		SYSD_ARRY=()
 		SYSD_NAME=()
-		#                    debian/ubuntu                   fedora/centos/...              opensuse
+		#                    debian/ubuntu                               fedora/centos/...                           opensuse
 		case "${SRVC_LINE[0]}" in
-			fwl ) SYSD_ARRY=(""                              "firewalld.service"            "firewalld.service"           );;
-			sel ) SYSD_ARRY=(""                              "selinux-autorelabel.service"  ""                            );;
-			ssh ) SYSD_ARRY=("ssh.service"                   "sshd.service"                 "sshd.service"                );;
-			dns ) SYSD_ARRY=("dnsmasq.service"               "dnsmasq.service"              "dnsmasq.service"             );;
-			web ) SYSD_ARRY=("apache2.service"               "httpd.service"                "apache2.service"             );;
-			smb ) SYSD_ARRY=("smbd.service nmbd.service"     "smb.service nmb.service"      "smb.service nmb.service"     );;
+			fwl ) SYSD_ARRY=(""                                          "firewalld.service"                         "firewalld.service"                         );;
+			sel ) SYSD_ARRY=(""                                          "selinux-autorelabel.service"               ""                                          );;
+			ssh ) SYSD_ARRY=("ssh.service"                               "sshd.service"                              "sshd.service"                              );;
+			dns ) SYSD_ARRY=("dnsmasq.service"                           "dnsmasq.service"                           "dnsmasq.service"                           );;
+			web ) SYSD_ARRY=("apache2.service"                           "httpd.service"                             "apache2.service"                           );;
+			smb ) SYSD_ARRY=("smbd.service nmbd.service"                 "smb.service nmb.service winbind.service"   "smb.service nmb.service"                   );;
 			*   ) ;;
 		esac
 		case "${DIST_NAME}" in
@@ -903,7 +903,9 @@ function funcNetwork_parameter() {
 function funcNetwork_nsswitch() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
 	declare -r    MSGS_TITL="nsswitch"
-	declare -r    FILE_PATH="/etc/nsswitch.conf"
+	declare -r    DIRS_PATH="$(find /usr -maxdepth 1 -name 'etc' -type d)"
+	# shellcheck disable=SC2086
+	declare -r    FILE_PATH="$(find /etc ${DIRS_PATH} -name 'nsswitch.conf' -type f)"
 	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	# -------------------------------------------------------------------------
@@ -1031,6 +1033,52 @@ function funcNetwork_hosts_allow_deny() {
 	do
 		echo "${HOST_DENY[I]}" >> "${FILE_PATH}"
 	done
+}
+
+# ------ dnsmasq --------------------------------------------------------------
+function funcNetwork_dnsmasq() {
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare -r    MSGS_TITL="dnsmasq"
+	declare       FILE_PATH="/lib/systemd/system/dnsmasq.service"
+	declare       FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
+	declare       FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+	declare       SYSD_NAME="dnsmasq.service"
+	# -------------------------------------------------------------------------
+	if [[ ! -f "${FILE_PATH}" ]]; then
+		return
+	fi
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	if [[ ! -f "${FILE_ORIG}" ]]; then
+		mkdir -p "${FILE_ORIG%/*}"
+		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
+	else
+		mkdir -p "${FILE_BACK%/*}"
+		cp --archive "${FILE_PATH}" "${FILE_BACK}"
+	fi
+	# -------------------------------------------------------------------------
+	sed -i "${FILE_PATH}"                     \
+	    -e '/\[Unit\]/,/\[.\+\]/           {' \
+	    -e '/^Requires=/                   {' \
+	    -e 's/^/#/g'                          \
+	    -e 'a Requires=network-online.target' \
+	    -e '                               }' \
+	    -e '/^After=/                      {' \
+	    -e 's/^/#/g'                          \
+	    -e 'a After=network-online.target'    \
+	    -e '                               }' \
+	    -e '}'
+	# -------------------------------------------------------------------------
+	funcPrintf "      ${MSGS_TITL}: daemon reload"
+	systemctl --quiet daemon-reload
+	# shellcheck disable=SC2312,SC2310
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
+		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
+		systemctl --quiet restart "${SYSD_NAME}"
+	fi
+#	sleep 1
 }
 
 # ------ connman --------------------------------------------------------------
@@ -1622,8 +1670,11 @@ function funcApplication_system_kernel() {
 	funcPrintf "      ${MSGS_TITL}: create blacklist file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 	echo 'blacklist floppy' > "${FILE_PATH}"
-	funcPrintf "      ${MSGS_TITL}: dpkg-reconfigure initramfs-tools"
-	dpkg-reconfigure initramfs-tools
+	# shellcheck disable=SC2312
+	if [[ -n "$(command -v dpkg-reconfigure 2> /dev/null)" ]]; then
+		funcPrintf "      ${MSGS_TITL}: dpkg-reconfigure initramfs-tools"
+		dpkg-reconfigure initramfs-tools
+	fi
 }
 
 # ----- system shared directory -----------------------------------------------
@@ -1739,9 +1790,13 @@ function funcApplication_system_user_environment() {
 		fi
 		funcPrintf "      ${MSGS_TITL}: create config file"
 		funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
-		cat <<- '_EOT_' | sed -e 's/^ *//g' > "${FILE_PATH}"
-			sudo bash -c 'apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade'
+		touch "${FILE_PATH}"
+		# shellcheck disable=SC2312
+		if [[ -n "$(command -v apt-get 2> /dev/null)" ]]; then
+			cat <<- '_EOT_' | sed -e 's/^ *//g' > "${FILE_PATH}"
+				sudo bash -c 'apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade'
 _EOT_
+		fi
 		chown "${USER_NAME}": "${FILE_PATH}"
 		# --- vim -------------------------------------------------------------
 		# shellcheck disable=SC2312
@@ -2071,9 +2126,13 @@ function funcApplication_clamav() {
 function funcApplication_ntp_chrony() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
 	declare -r    MSGS_TITL="ntp"
-	declare -r    FILE_PATH="$(find "/etc" -name 'chrony.conf' \( -type f -o -type l \))"
+	declare -r    CONF_PATH="$(find "/etc" -name 'chrony.conf' \( -type f -o -type l \))"
+	declare -r    INCL_PATH="$(awk '$1=="include" {print $2;}' "${CONF_PATH}")"
+	declare -r    FILE_DIRS="${INCL_PATH%/*}"
+	declare -r    FILE_PATH="${FILE_DIRS}/pool.conf"
 	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+	declare       SYSD_NAME=""
 	# -------------------------------------------------------------------------
 	if [[ ! -f "${FILE_PATH}" ]]; then
 		return
@@ -2089,8 +2148,18 @@ function funcApplication_ntp_chrony() {
 		mkdir -p "${FILE_BACK%/*}"
 		cp --archive "${FILE_PATH}" "${FILE_BACK}"
 	fi
-#	funcPrintf "      ${MSGS_TITL}: create config file"
-#	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
+	funcPrintf "      ${MSGS_TITL}: create config file"
+	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
+	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_PATH}"
+		pool ${NTPS_NAME} iburst
+_EOT_
+	# -------------------------------------------------------------------------
+	SYSD_NAME="chronyd.service"
+	# shellcheck disable=SC2312,SC2310
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
+		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
+		systemctl --quiet restart "${SYSD_NAME}"
+	fi
 	funcPrintf "      ${MSGS_TITL}: hwclock --systohc"
 	hwclock --systohc
 }
@@ -3345,7 +3414,7 @@ function funcCall_network() {
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-		COMD_LIST=("nss" "host" "aldy" "nic" "resolv" "pxe" "fwall" "$@")
+		COMD_LIST=("nss" "host" "aldy" "svce" "nic" "resolv" "pxe" "fwall" "$@")
 		IFS=' =,'
 		set -f
 		set -- "${COMD_LIST[@]:-}"
@@ -3364,6 +3433,9 @@ function funcCall_network() {
 				;;
 			aldy )						# ===== hosts.allow / hosts.deny ======
 				funcNetwork_hosts_allow_deny
+				;;
+			svce )						# ===== service =======================
+				funcNetwork_dnsmasq
 				;;
 			nic )						# ===== nic ===========================
 				# ------ connman ----------------------------------
@@ -3575,17 +3647,18 @@ function funcMain() {
 		funcPrintf "  -a | -all"
 		funcPrintf ""
 		funcPrintf "network settings (empty is [ options ])"
-		funcPrintf "  -n | --network [ nss host aldy nic resolv pxe fwall ]"
+		funcPrintf "  -n | --network [ nss host aldy svce nic resolv pxe fwall ]"
 		funcPrintf "    nss     nsswitch"
 		funcPrintf "    host    hosts"
 		funcPrintf "    aldy    hosts.allow / hosts.deny"
+		funcPrintf "    svce    service"
 		funcPrintf "    nic     connman netplan networkmanager"
 		funcPrintf "    resolv  resolv.conf"
 		funcPrintf "    pxe     pxe boot (dnsmasq)"
 		funcPrintf "    fwall   firewall"
 		funcPrintf ""
 		funcPrintf "package settings (empty is [ options ])"
-		funcPrintf "  -p | --package [ pmn ctl sys usr av ntp ssh dns web smb vm root ]"
+		funcPrintf "  -p | --package [ pmn ctl sys usr av ntp ssh dns web smb vm grub root ]"
 		funcPrintf "    pmn     package manager"
 		funcPrintf "    ctl     system control"
 		funcPrintf "    sys     [ syskrn sysenv sysdir ]"
@@ -3594,6 +3667,8 @@ function funcMain() {
 		funcPrintf "    sysdir  system shared directory"
 		funcPrintf "    usr     user add"
 		funcPrintf "    av      clamav"
+		funcPrintf "    ntp     ntp"
+		funcPrintf "    ssh     ssh"
 		funcPrintf "    dns     dnsmasq"
 		funcPrintf "    web     apache2"
 		funcPrintf "    smb     samba"
@@ -3603,7 +3678,7 @@ function funcMain() {
 		funcPrintf "    root    disable root user login"
 		funcPrintf ""
 		funcPrintf "debug print and test (empty is [ options ])"
-		funcPrintf "  -d | --debug [ sys net ntp smb vm ]"
+		funcPrintf "  -d | --debug [ sys net ntp smb vm lvm ]"
 		funcPrintf "    func    function test"
 		funcPrintf "    text    text color test"
 		funcPrintf "    sys     system"
@@ -3611,6 +3686,7 @@ function funcMain() {
 		funcPrintf "    ntp     ntp"
 		funcPrintf "    smb     smb"
 		funcPrintf "    vm      open-vm-tools"
+		funcPrintf "    lvm     lvm"
 		funcPrintf ""
 		funcPrintf "restoring original files"
 		funcPrintf "  -r | --restore"
