@@ -145,6 +145,7 @@ autoinstall:
   packages:
   - standard^
   - apt-transport-https
+  - firewalld
   - network-manager
   - bash-completion
   - build-essential
