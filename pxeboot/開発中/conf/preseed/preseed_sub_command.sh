@@ -10,7 +10,9 @@
 #	set -o pipefail						# End with in pipe error
 
 	trap 'exit 1' 1 2 3 15
+	export LANG=C
 	#--------------------------------------------------------------------------
+	readonly PROG_PATH="$0"
 	readonly PROG_PRAM="$*"
 	readonly PROG_NAME="${0##*/}"
 	readonly WORK_DIRS="${0%/*}"
@@ -18,7 +20,7 @@
 	readonly TGET_DIRS="/target"
 	readonly LOGS_DIRS="${TGET_DIRS}/var/log/installer"
 	# shellcheck disable=SC2155
-	readonly DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\L\1/ip')"
+	readonly DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\1/ip' | tr '[:upper:]' '[:lower:]')"
 	# shellcheck disable=SC2155
 	readonly COMD_LINE="$(cat /proc/cmdline)"
 	#--------------------------------------------------------------------------
@@ -106,7 +108,17 @@ funcIPv4GetNetCIDR() {
 ### subroutine ################################################################
 # --- packages ----------------------------------------------------------------
 funcInstallPackages() {
+	readonly SRCS_LIST="/etc/apt/sources.list"
 	echo "${PROG_NAME}: funcInstallPackages"
+	#--------------------------------------------------------------------------
+	if [ ! -f "${SRCS_LIST}" ]; then
+		echo "${PROG_NAME}: file does not exist ${SRCS_LIST}"
+	else
+		sed -i "${SRCS_LIST}"                \
+		    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
+#		echo "${PROG_NAME}: --- sources.list ---"
+#		cat "${SRCS_LIST}"
+	fi
 	#--------------------------------------------------------------------------
 	LIST_TASK="$(sed -ne '/^[ \t]*tasksel[ \t]\+tasksel\/first[ \t]\+/,/[^\\]$/p' "${SEED_FILE}" | \
 	             sed -e  '/^[ \t]*tasksel[ \t]\+/d'                                                \
@@ -125,48 +137,28 @@ funcInstallPackages() {
 	#--------------------------------------------------------------------------
 	LIST_DPKG=""
 	if [ -n "${LIST_PACK:-}" ]; then
-#		LIST_DPKG="$(LANG=C dpkg-query --list "${LIST_PACK:-}" 2>&1 | grep -E -v '^ii|^\+|^\||^Desired' || true 2> /dev/null)"
-		# shellcheck disable=SC2154
-		LIST_DPKG="$(in-target --pass-stdout sh -c                                                         \
-		            "LANG=C dpkg-query --show --showformat='${Status} ${Package}\n' ${LIST_PACK:-} 2>&1" | \
-		             sed -ne '/install ok installed:/! s/^.*[ \t]\([[:graph:]]\)/\1/gp'                    \
-		             sed -e  's/\r\n*/\n/g'                                                                \
-		                 -e  ':l; N; s/\n/ /; b l;'                                                      | \
+		# shellcheck disable=SC2086
+		LIST_DPKG="$(dpkg-query --show --showformat='${Status} ${Package}\n' ${LIST_PACK:-} 2>&1 | \
+		             sed -ne '/install ok installed:/! s/^.*[ \t]\([[:graph:]]\)/\1/gp'          | \
+		             sed -e  's/\r\n*/\n/g'                                                        \
+		                 -e  ':l; N; s/\n/ /; b l;'                                              | \
 		             sed -e  's/[ \t]\+/ /g')"
-	fi
-#	if [ -z "${LIST_DPKG:-}" ]; then
-#		echo "${PROG_NAME}: Finish the installation"
-#		return
-#	fi
-	#--------------------------------------------------------------------------
-	SRCS_LIST="${TGET_DIRS}/etc/apt/sources.list"
-	if [ ! -f "${SRCS_LIST}" ]; then
-		echo "${PROG_NAME}: file does not exist ${SRCS_LIST}"
-	else
-		sed -i "${SRCS_LIST}"                \
-		    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
-		echo "${PROG_NAME}: --- sources.list ---"
-		cat "${SRCS_LIST}"
 	fi
 	#--------------------------------------------------------------------------
 	echo "${PROG_NAME}: Run the installation"
 	echo "${PROG_NAME}: LIST_DPKG=${LIST_DPKG:-}"
 	echo "${PROG_NAME}: LIST_TASK=${LIST_TASK:-}"
-#	echo "${PROG_NAME}: <<<"
-#	echo "${LIST_DPKG}"
-#	echo "${PROG_NAME}: >>>"
 	#--------------------------------------------------------------------------
-	in-target --pass-stdout sh -c "LANG=C apt-get -qq    update"
-	in-target --pass-stdout sh -c "LANG=C apt-get -qq -y upgrade"
-	in-target --pass-stdout sh -c "LANG=C apt-get -qq -y dist-upgrade"
+	apt-get -qq    update
+	apt-get -qq -y upgrade
+	apt-get -qq -y dist-upgrade
 	if [ -n "${LIST_DPKG:-}" ]; then
 		# shellcheck disable=SC2086
-		in-target --pass-stdout sh -c "LANG=C apt-get -qq -y install ${LIST_DPKG}"
+		apt-get -qq -y install ${LIST_DPKG}
 	fi
-	# shellcheck disable=SC2312
-	if [ -n "${LIST_TASK:-}" ] && [ -n "$(in-target --pass-stdout sh -c "LANG=C command -v tasksel 2> /dev/null")" ]; then
+	if [ -n "${LIST_TASK:-}" ] && [ -n "$(command -v tasksel 2> /dev/null || true)" ]; then
 		# shellcheck disable=SC2086
-		in-target --pass-stdout sh -c "LANG=C tasksel install ${LIST_TASK}"
+		tasksel install ${LIST_TASK}
 	fi
 	echo "${PROG_NAME}: Installation completed"
 }
@@ -246,10 +238,10 @@ funcSetupNetwork() {
 	fi
 	#--- nic parameter --------------------------------------------------------
 	if [ -z "${NIC_NAME}" ] || [ "${NIC_NAME}" = "auto" ]; then
-		IP4_INFO="$(LANG=C ip -4 -oneline address show | sed -ne '/^2:[ \t]\+/p')"
+		IP4_INFO="$(ip -4 -oneline address show | sed -ne '/^2:[ \t]\+/p')"
 		NIC_NAME="$(echo "${IP4_INFO}" | sed -ne 's/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\)[ \t]\+inet.*$/\1/p')"
 	fi
-	IP4_INFO="$(LANG=C ip -4 -oneline link show "${NIC_NAME}" 2> /dev/null)"
+	IP4_INFO="$(ip -4 -oneline link show "${NIC_NAME}" 2> /dev/null)"
 	NIC_MADR="$(echo "${IP4_INFO}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
 	CON_MADR="$(echo "${NIC_MADR}" | sed -ne 's/://gp')"
 	#--- hostname / hosts -----------------------------------------------------
@@ -336,16 +328,16 @@ funcSetupNetwork() {
 			Enable=true
 			Tethering=false
 _EOT_
-		for IP4_INFO in $(LANG=C ip -4 -oneline link show)
+		for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
 		do
-			MAC_ADDR="$(echo "${IP4_INFO}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
+			MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
 			CON_ADDR="$(echo "${MAC_ADDR}" | sed -ne 's/://gp')"
 			CON_NAME="ethernet_${CON_ADDR}_cable"
 			CON_DIRS="${TGET_DIRS}/var/lib/connman/${CON_NAME}"
 			CON_FILE="${CON_DIRS}/settings"
 			mkdir -p "${CON_DIRS}"
 			chmod 700 "${CON_DIRS}"
-			if [ "${CON_ADDR}" = "${CON_MADR}" ]; then
+			if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
 				cat <<- _EOT_ | sed -e 's/^ *//g' > "${CON_FILE}"
 					[${CON_NAME}]
 					Name=Wired
@@ -356,7 +348,7 @@ _EOT_
 					IPv4.local_address=${NIC_IPV4}
 					IPv4.gateway=${NIC_GATE}
 					IPv6.method=auto
-					IPv6.privacy=disabled
+					IPv6.privacy=preferred
 					Nameservers=127.0.0.1;::1;${NIC_DNS4};
 					Timeservers=ntp.nict.jp;
 					Domains=${NIC_WGRP};
@@ -372,7 +364,7 @@ _EOT_
 					IPv4.method=dhcp
 					IPv4.DHCP.LastAddress=
 					IPv6.method=auto
-					IPv6.privacy=disabled
+					IPv6.privacy=preferred
 _EOT_
 			fi
 			echo "${PROG_NAME}: --- ${CON_NAME}/settings ---"
@@ -405,9 +397,9 @@ _EOT_
 _EOT_
 		# --- network manager -------------------------------------------------
 		I=1
-		for NICS_NAME in $(LANG=C ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+		for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
 		do
-			MAC_ADDR="$(LANG=C ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
+			MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
 			FILE_DIRS="/etc/NetworkManager/system-connections"
 			FILE_NAME="Wired connection ${I}"
 			FILE_PATH="${FILE_DIRS}/${FILE_NAME}"
@@ -469,46 +461,46 @@ _EOT_
 		done
 	fi
 	# --- netplan -------------------------------------------------------------
-#	if [ -d "${TGET_DIRS}/etc/netplan/." ]; then
-#		echo "${PROG_NAME}: funcSetupNetwork: netplan"
-#		CONF_DIRS="${TGET_DIRS}/etc/netplan"
-#		for FILE_LINE in "${CONF_DIRS}"/*
-#		do
-#			if [[ ! -f "${FILE_LINE}" ]]; then
-#				continue
-#			fi
-#			# shellcheck disable=SC2312
-#			if [ -z "$(sed -n "/${NIC_NAME}/p" "${FILE_LINE}")" ]; then
-#				echo "${PROG_NAME}: funcSetupNetwork: skip editing files [${FILE_LINE}]"
-#				cat "${FILE_LINE}"
-#				continue
-#			fi
-#			echo "${PROG_NAME}: funcSetupNetwork: edit the file [${FILE_LINE}]"
-#			for NICS_NAME in $(LANG=C ip -4 -oneline link show | awk '/^[0-9]+:/&&!/^1:/ {gsub(":","",$2); print $2;}')
-#			do
-#				echo "${PROG_NAME}: funcSetupNetwork: add nic information [${NICS_NAME}]"
-#				if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
-#					if [ -z "${NIC_IPV4}" ]; then
-#						DHCP_FLAG="true"
-#					else
-#						DHCP_FLAG="false"
-#					fi
-#					cat <<- _EOT_ >> "${FILE_LINE}"
-#						      dhcp4: ${DHCP_FLAG}
-#						      dhcp6: true
-#_EOT_
-#				else
-#					cat <<- _EOT_ >> "${FILE_LINE}"
-#						    ${NICS_NAME}:
-#						      dhcp4: true
-#						      dhcp6: true
-#_EOT_
-#				fi
-#			done
-#			echo "${PROG_NAME}: --- ${FILE_LINE} ---"
-#			cat "${FILE_LINE}"
-#		done
-#	fi
+	if [ -d "${TGET_DIRS}/etc/netplan/." ]; then
+		echo "${PROG_NAME}: funcSetupNetwork: netplan"
+		CONF_DIRS="${TGET_DIRS}/etc/netplan"
+		for FILE_LINE in "${CONF_DIRS}"/*
+		do
+			if [ ! -f "${FILE_LINE}" ]; then
+				continue
+			fi
+			# shellcheck disable=SC2312
+			if [ -z "$(sed -n "/${NIC_NAME}/p" "${FILE_LINE}")" ]; then
+				echo "${PROG_NAME}: funcSetupNetwork: skip editing files [${FILE_LINE}]"
+				cat "${FILE_LINE}"
+				continue
+			fi
+			echo "${PROG_NAME}: funcSetupNetwork: edit the file [${FILE_LINE}]"
+			for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+			do
+				echo "${PROG_NAME}: funcSetupNetwork: add nic information [${NICS_NAME}]"
+				if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
+					if [ -z "${NIC_IPV4}" ]; then
+						DHCP_FLAG="true"
+					else
+						DHCP_FLAG="false"
+					fi
+					cat <<- _EOT_ >> "${FILE_LINE}"
+						      dhcp4: ${DHCP_FLAG}
+						      dhcp6: true
+_EOT_
+				else
+					cat <<- _EOT_ >> "${FILE_LINE}"
+						    ${NICS_NAME}:
+						      dhcp4: true
+						      dhcp6: true
+_EOT_
+				fi
+			done
+			echo "${PROG_NAME}: --- ${FILE_LINE} ---"
+			cat "${FILE_LINE}"
+		done
+	fi
 }
 
 # --- gdm3 --------------------------------------------------------------------
@@ -523,12 +515,25 @@ _EOT_
 ### Main ######################################################################
 funcMain() {
 	echo "${PROG_NAME}: funcMain"
-	funcInstallPackages
+	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
+	if [ -n "${PROG_PRAM}" ]; then
+		funcInstallPackages
+		exit 0
+	fi
+	# -------------------------------------------------------------------------
+	cp --archive "${PROG_PATH}" "${TGET_DIRS}/tmp/"
+	cp --archive "${SEED_FILE}" "${TGET_DIRS}/tmp/"
+	echo "${PROG_NAME}: --- in-target ---"
+	echo "${PROG_NAME}: ${PROG_NAME}"
+	echo "${PROG_NAME}: --- in-target start ---"
+	in-target --pass-stdout sh -c "LANG=C /tmp/${PROG_NAME} /tmp/${SEED_FILE##*/}"
+	echo "${PROG_NAME}: --- in-target end ---"
 	funcSetupNetwork
 #	funcChange_gdm3_configure
 }
 
 	funcMain
+
 ### Termination ###############################################################
 	echo "${PROG_NAME}: === End ==="
 	exit 0

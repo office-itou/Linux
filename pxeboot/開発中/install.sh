@@ -1522,6 +1522,7 @@ function funcApplication_package_manager() {
 	declare       SYSD_NAME=""
 	declare       DIST_URLS=""
 	declare       DIST_DIRS=""
+	declare       BACK_PORT=""
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
@@ -1556,9 +1557,10 @@ function funcApplication_package_manager() {
 			    "${FILE_ORIG}"               \
 			>   "${FILE_PATH}"
 			# --- create backports.list ---------------------------------------
-			DIST_URLS="$(awk '$1=="deb"&&$3=='\""${DIST_CODE}"\"' {print $2;}' "${FILE_PATH}")"
-			DIST_DIRS="$(awk '$1=="deb"&&$3=='\""${DIST_CODE}"\"' {printf("%s %s %s %s", $4, $5, $6, $7);}' "${FILE_PATH}")"
-			if [[ -n "${DIST_URLS}" ]] && [[ -n "${DIST_DIRS}" ]]; then
+			BACK_PORT="$(awk '$1=="deb"&&$3=='\""${DIST_CODE}-backports"\"'  {print $0;}' "${FILE_PATH}")"
+			DIST_URLS="$(awk '$1=="deb"&&$3=='\""${DIST_CODE}"\"'&&$0~/main/ {print $2;}' "${FILE_PATH}")"
+			DIST_DIRS="$(awk '$1=="deb"&&$3=='\""${DIST_CODE}"\"'&&$0~/main/ {printf("%s %s %s %s", $4, $5, $6, $7);}' "${FILE_PATH}")"
+			if [[ -z "${BACK_PORT}" ]] && [[ -n "${DIST_URLS}" ]] && [[ -n "${DIST_DIRS}" ]]; then
 				FILE_PATH="/etc/apt/sources.list.d/backports.list"
 				FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 				FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
