@@ -97,8 +97,9 @@ autoinstall:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$6$rounds=4096$Cfa1S6SZYnDnpset$kJYk5SIIT9s5SdtVRr0XqDVaxflECFdKIyLTCaZ9WHgG4MCcJQGePEltaWh7s88uldssyiKIS94AGelMcZWOU."
+    password: "$6$rounds=4096$NUxODT.NncFC/y54$GiLCVhSESOQoIiwTYsDFadujln3bMfw0eu3.nL9ddIvsFFAWVc05.Rfo3fT7Kh5xVFjjCSW1NarAYAChB.WLZ1"
 #   plain_text_passwd: "master"
+#   mkpasswd --method=SHA-512 --rounds=4096 [plain_text_passwd]
 # =============================================================================
   locale: ja_JP.UTF-8
   keyboard:
@@ -146,6 +147,7 @@ autoinstall:
   - standard^
   - apt-transport-https
   - firewalld
+  - traceroute
   - network-manager
   - bash-completion
   - build-essential

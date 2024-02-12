@@ -274,8 +274,8 @@
 	declare -r -a DATA_LIST_NET=(                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
 		"m  menu-entry                  Auto%20install%20Net%20install      -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 		"o  debian-netinst-10           Debian%2010                         debian          debian-10.13.0-amd64-netinst.iso            install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_old.cfg        linux/debian        2019-07-06  2024-06-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-10.[0-9.]*-amd64-netinst.iso                 " \
-		"o  debian-netinst-11           Debian%2011                         debian          debian-11.8.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-11.[0-9.]*-amd64-netinst.iso                    " \
-		"o  debian-netinst-12           Debian%2012                         debian          debian-12.4.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso                             " \
+		"o  debian-netinst-11           Debian%2011                         debian          debian-11.9.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-11.[0-9.]*-amd64-netinst.iso                    " \
+		"o  debian-netinst-12           Debian%2012                         debian          debian-12.5.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso                             " \
 		"o  debian-netinst-13           Debian%2013                         debian          debian-13.0.0-amd64-netinst.iso             install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  debian-netinst-testing      Debian%20testing                    debian          debian-testing-amd64-netinst.iso            install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                 " \
 		"o  fedora-netinst-38           Fedora%20Server%2038                fedora          Fedora-Server-netinst-x86_64-38-1.6.iso     images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_net.cfg          linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-[0-9.]*.iso   " \
@@ -296,8 +296,8 @@
 	declare -r -a DATA_LIST_DVD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
 		"m  menu-entry                  Auto%20install%20DVD%20media        -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 		"o  debian-10                   Debian%2010                         debian          debian-10.13.0-amd64-DVD-1.iso              install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_old.cfg        linux/debian        2019-07-06  2024-06-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-10.[0-9.]*-amd64-DVD-1.iso                  " \
-		"o  debian-11                   Debian%2011                         debian          debian-11.8.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-11.[0-9.]*-amd64-DVD-1.iso                     " \
-		"o  debian-12                   Debian%2012                         debian          debian-12.4.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-12.[0-9.]*-amd64-DVD-1.iso                              " \
+		"o  debian-11                   Debian%2011                         debian          debian-11.9.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-11.[0-9.]*-amd64-DVD-1.iso                     " \
+		"o  debian-12                   Debian%2012                         debian          debian-12.5.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-12.[0-9.]*-amd64-DVD-1.iso                              " \
 		"o  debian-13                   Debian%2013                         debian          debian-13.0.0-amd64-DVD-1.iso               install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  debian-testing              Debian%20testing                    debian          debian-testing-amd64-DVD-1.iso              install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                   " \
 		"o  ubuntu-server-18.04         Ubuntu%2018.04%20Server             ubuntu          ubuntu-18.04.6-server-amd64.iso             install/netboot/ubuntu-installer/amd64  initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04[0-9.]*-server-amd64.iso                                         " \
@@ -328,8 +328,8 @@
 	declare -r -a DATA_LIST_LIVE=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
 		"m  menu-entry                  Live%20media                        -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 		"o  debian-live-10              Debian%2010%20Live                  debian          debian-live-10.13.0-amd64-lxde.iso          live                                    initrd.img-4.19.0-21-amd64  vmlinuz-4.19.0-21-amd64 preseed/ps_debian_desktop_old.cfg       linux/debian        2019-07-06  2024-06-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso      " \
-		"o  debian-live-11              Debian%2011%20Live                  debian          debian-live-11.8.0-amd64-lxde.iso           live                                    initrd.img-5.10.0-26-amd64  vmlinuz-5.10.0-26-amd64 preseed/ps_debian_desktop.cfg           linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso         " \
-		"o  debian-live-12              Debian%2012%20Live                  debian          debian-live-12.4.0-amd64-lxde.iso           live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                  " \
+		"o  debian-live-11              Debian%2011%20Live                  debian          debian-live-11.9.0-amd64-lxde.iso           live                                    initrd.img-5.10.0-26-amd64  vmlinuz-5.10.0-26-amd64 preseed/ps_debian_desktop.cfg           linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso         " \
+		"o  debian-live-12              Debian%2012%20Live                  debian          debian-live-12.5.0-amd64-lxde.iso           live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                  " \
 		"o  debian-live-13              Debian%2013%20Live                  debian          debian-live-13.0.0-amd64-lxde.iso           live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  debian-live-testing         Debian%20testing%20Live             debian          debian-live-testing-amd64-lxde.iso          live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                       " \
 		"x  ubuntu-desktop-18.04        Ubuntu%2018.04%20Desktop            ubuntu          ubuntu-18.04.6-desktop-amd64.iso            casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-amd64.iso                                                        " \
@@ -863,7 +863,8 @@ function funcCreate_link() {
 	for ((I=0; I<"${#DATA_LIST[@]}"; I++))
 	do
 		read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
-		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${HGFS_DIRS}/${DATA_LINE[9]}/${DATA_LINE[4]}" ]]; then
+#		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${HGFS_DIRS}/${DATA_LINE[9]}/${DATA_LINE[4]}" ]]; then
+		if [[ "${DATA_LINE[0]}" != "o" ]]; then
 			continue
 		fi
 		mkdir -p "${DIRS_ISOS}"
@@ -884,7 +885,7 @@ function funcCreate_preseed_kill_dhcp() {
 	funcPrintf "create filet: ${FILE_NAME/${PWD}\/}"
 	mkdir -p "${DIRS_NAME}"
 	# -------------------------------------------------------------------------
-	cat <<- '_EOT_SH_' | sed -e 's/^ *//g' > "${FILE_NAME}"
+	cat <<- '_EOT_SH_' | sed -e '/^ [^ ]*/ s/^ *//g' > "${FILE_NAME}"
 		#!/bin/sh
 		
 		### initialization ############################################################
@@ -915,7 +916,7 @@ function funcCreate_preseed_sub_command() {
 	funcPrintf "create filet: ${FILE_NAME/${PWD}\/}"
 	mkdir -p "${DIRS_NAME}"
 	# -------------------------------------------------------------------------
-	cat <<- '_EOT_SH_' | sed -e 's/^ *//g' > "${FILE_NAME}"
+	cat <<- '_EOT_SH_' | sed -e '/^ [^ ]*/ s/^ *//g' > "${FILE_NAME}"
 		#!/bin/sh
 		
 		### initialization ############################################################
@@ -1214,12 +1215,14 @@ function funcCreate_preseed_sub_command() {
 		 	# --- avahi ---------------------------------------------------------------
 		 	if [ -f "${TGET_DIRS}/etc/avahi/avahi-daemon.conf" ]; then
 		 		echo "${PROG_NAME}: funcSetupNetwork: avahi"
+		 		in-target --pass-stdout sh -c "LANG=C systemctl mask avahi-daemon.service avahi-daemon.socket"
+		 		in-target --pass-stdout sh -c "LANG=C systemctl disable avahi-daemon.service avahi-daemon.socket"
 		#		sed -i "${TGET_DIRS}/etc/avahi/avahi-daemon.conf" \
 		#			-e '/allow-interfaces=/ {'                    \
 		#			-e 's/^#//'                                   \
 		#			-e "s/=.*/=${NIC_NAME}/ }"
-		 		echo "${PROG_NAME}: --- avahi-daemon.conf ---"
-		 		cat "${TGET_DIRS}/etc/avahi/avahi-daemon.conf"
+		#		echo "${PROG_NAME}: --- avahi-daemon.conf ---"
+		#		cat "${TGET_DIRS}/etc/avahi/avahi-daemon.conf"
 		 	fi
 		 	#--- exit for DHCP --------------------------------------------------------
 		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
@@ -1231,14 +1234,14 @@ function funcCreate_preseed_sub_command() {
 		#		CNF_FILE="${TGET_DIRS}/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
 		#		mkdir -p "${CNF_FILE%/*}"
 		#		# shellcheck disable=SC2312
-		#		cat <<- _EOT_ | sed -e 's/^ *//g' > "${CNF_FILE}"
+		#		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${CNF_FILE}"
 		#			[Service]
 		#			ExecStart=
 		#			ExecStart=$(command -v connmand 2> /dev/null) -n --nodnsproxy
 		#_EOT_
 		 		SET_FILE="${TGET_DIRS}/var/lib/connman/settings"
 		 		mkdir -p "${SET_FILE%/*}"
-		 		cat <<- _EOT_ | sed -e 's/^ *//g' > "${SET_FILE}"
+		 		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${SET_FILE}"
 		 			[global]
 		 			OfflineMode=false
 		 			
@@ -1256,7 +1259,7 @@ function funcCreate_preseed_sub_command() {
 		 			mkdir -p "${CON_DIRS}"
 		 			chmod 700 "${CON_DIRS}"
 		 			if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
-		 				cat <<- _EOT_ | sed -e 's/^ *//g' > "${CON_FILE}"
+		 				cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${CON_FILE}"
 		 					[${CON_NAME}]
 		 					Name=Wired
 		 					AutoConnect=true
@@ -1274,7 +1277,7 @@ function funcCreate_preseed_sub_command() {
 		 					IPv6.DHCP.DUID=
 		_EOT_
 		 			else
-		 				cat <<- _EOT_ | sed -e 's/^ *//g' > "${CON_FILE}"
+		 				cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${CON_FILE}"
 		 					[${CON_NAME}]
 		 					Name=Wired
 		 					AutoConnect=false
@@ -1297,14 +1300,17 @@ function funcCreate_preseed_sub_command() {
 		 		CONF_DIRS="${TGET_DIRS}/etc/netplan"
 		 		for FILE_PATH in "${CONF_DIRS}"/*
 		 		do
-		 			if [ -f "${FILE_PATH}" ]; then
-		 				echo "${PROG_NAME}: moving the netplan file ${FILE_PATH}"
-		 				BACK_DIRS="${LOGS_DIRS}/netplan"
-		 				if [ ! -d "${BACK_DIRS}/." ]; then
-		 					mkdir -p "${BACK_DIRS}"
-		 				fi
-		 				mv "${FILE_PATH}" "${BACK_DIRS}"
+		 			# shellcheck disable=SC2312
+		 			if [ ! -f "${FILE_PATH}" ] \
+		 			|| [ -z "$(sed -ne '/^[ \t]\+ethernets:[ \t]*$/p' "${FILE_PATH}")" ]; then
+		 				continue
 		 			fi
+		 			echo "${PROG_NAME}: moving the netplan file ${FILE_PATH}"
+		 			BACK_DIRS="${LOGS_DIRS}/netplan"
+		 			if [ ! -d "${BACK_DIRS}/." ]; then
+		 				mkdir -p "${BACK_DIRS}"
+		 			fi
+		 			mv "${FILE_PATH}" "${BACK_DIRS}"
 		 		done
 		 		# --- none-dns.conf ---------------------------------------------------
 		 		CONF_DIRS="${TGET_DIRS}/etc/NetworkManager/conf.d"
@@ -1318,7 +1324,8 @@ function funcCreate_preseed_sub_command() {
 		 		for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
 		 		do
 		 			MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
-		 			FILE_DIRS="/etc/NetworkManager/system-connections"
+		 			NMAN_DIRS="/etc/NetworkManager/system-connections"
+		 			FILE_DIRS="${TGET_DIRS}${NMAN_DIRS}"
 		 			FILE_NAME="Wired connection ${I}"
 		 			FILE_PATH="${FILE_DIRS}/${FILE_NAME}"
 		 			if [ ! -d "${FILE_DIRS}/." ]; then
@@ -1339,6 +1346,7 @@ function funcCreate_preseed_sub_command() {
 		 					id=${FILE_NAME}
 		 					type=ethernet
 		 					interface-name=${NICS_NAME}
+		 					autoconnect=true
 		 					zone=home
 		 					
 		 					[ethernet]
@@ -1360,6 +1368,7 @@ function funcCreate_preseed_sub_command() {
 		 					id=${FILE_NAME}
 		 					type=ethernet
 		 					interface-name=${NICS_NAME}
+		 					autoconnect=false
 		 					
 		 					[ethernet]
 		 					mac-address=${MAC_ADDR}
@@ -1373,6 +1382,7 @@ function funcCreate_preseed_sub_command() {
 		_EOT_
 		 			fi
 		 			chmod 600 "${FILE_PATH}"
+		 			cp --archive "${FILE_PATH}" "${NMAN_DIRS#}"
 		 			echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 			cat "${FILE_PATH}"
 		 			I=$((I+1))
@@ -1693,7 +1703,7 @@ function funcCreate_kickstart() {
 		sed -e "/%packages/,/%end/ {"                  \
 		    -e "/desktop/ s/^-//g  }"                  \
 		    "${FILE_PATH}"                             \
-		>   "${FILE_PATH/.cfg/_desktop.cfg}"
+		>   "${FILE_PATH/\.cfg/_desktop\.cfg}"
 	done
 	chmod ugo-x "${DIRS_NAME}/"*
 }
@@ -1978,7 +1988,7 @@ function funcCreate_menu_cfg_syslinux() {
 	funcPrintf "      create: ${TGET_LINE[2]//%20/ }"
 	# --- create menu.cfg -----------------------------------------------------
 	if [[ ! -f "${MENU_PATH}" ]]; then
-		cat <<- _EOT_ | sed -e 's/^ *//g' > "${MENU_PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${MENU_PATH}"
 			path ./
 			prompt 0
 			timeout 0
@@ -2019,7 +2029,7 @@ _EOT_
 	case "${TGET_LINE[0]}" in
 		m )
 			MENU_ENTR="[ ${TGET_LINE[2]//%20/ } ... ]"
-			cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
 				label ${TGET_LINE[2]//%20/-}
 				 	menu label ^${MENU_ENTR}
 				
@@ -2033,7 +2043,7 @@ _EOT_
 						return
 					fi
 					if [[ "${MENU_PATH}" =~ bios ]]; then
-						cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
+						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
 							label ${TGET_LINE[1]}
 							 	menu label ^${MENU_ENTR}
 							 	kernel memdisk
@@ -2047,14 +2057,14 @@ _EOT_
 						return
 					fi
 					if [[ "${MENU_PATH}" =~ bios ]]; then
-						cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
+						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
 							label ${TGET_LINE[1]}
 							 	menu label ^${MENU_ENTR}
 							 	kernel boot/${TGET_LINE[1]}/${TGET_LINE[7]}
 							
 _EOT_
 					else
-						cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
+						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
 							label ${TGET_LINE[1]}
 							 	menu label ^${MENU_ENTR}
 							 	kernel boot/${TGET_LINE[1]}/${TGET_LINE[6]}
@@ -2068,7 +2078,7 @@ _EOT_
 					if [[ ! "${MENU_PATH}" =~ bios ]]; then
 						return
 					fi
-					cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
+					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
 						label ${TGET_LINE[1]}
 						 	menu label ^${MENU_ENTR}
 						 	com32 ${TGET_LINE[6]}
@@ -2080,7 +2090,7 @@ _EOT_
 						return
 					fi
 					MENU_ENTR="$(printf "%-60.60s%20.20s" "- ${TGET_LINE[2]//%20/ }" "${TGET_LINE[10]} ${TGET_LINE[12]}")"
-					cat <<- _EOT_ | sed -e 's/^ *//g' >> "${MENU_PATH}"
+					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
 						label ${TGET_LINE[1]}
 						 	menu label ^${MENU_ENTR}
 						 	kernel boot/${TGET_LINE[1]}/${TGET_LINE[7]}
@@ -2121,12 +2131,12 @@ function funcCall_function() {
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
-	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_WRK1}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${FILE_WRK1}"
 		line 1
 		line 2
 		line 3
 _EOT_
-	cat <<- _EOT_ | sed -e 's/^ *//g' > "${FILE_WRK2}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${FILE_WRK2}"
 		line 1
 		Line 2
 		line 3

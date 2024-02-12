@@ -296,12 +296,14 @@ funcSetupNetwork() {
 	# --- avahi ---------------------------------------------------------------
 	if [ -f "${TGET_DIRS}/etc/avahi/avahi-daemon.conf" ]; then
 		echo "${PROG_NAME}: funcSetupNetwork: avahi"
+		in-target --pass-stdout sh -c "LANG=C systemctl mask avahi-daemon.service avahi-daemon.socket"
+		in-target --pass-stdout sh -c "LANG=C systemctl disable avahi-daemon.service avahi-daemon.socket"
 #		sed -i "${TGET_DIRS}/etc/avahi/avahi-daemon.conf" \
 #			-e '/allow-interfaces=/ {'                    \
 #			-e 's/^#//'                                   \
 #			-e "s/=.*/=${NIC_NAME}/ }"
-		echo "${PROG_NAME}: --- avahi-daemon.conf ---"
-		cat "${TGET_DIRS}/etc/avahi/avahi-daemon.conf"
+#		echo "${PROG_NAME}: --- avahi-daemon.conf ---"
+#		cat "${TGET_DIRS}/etc/avahi/avahi-daemon.conf"
 	fi
 	#--- exit for DHCP --------------------------------------------------------
 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
@@ -313,14 +315,14 @@ funcSetupNetwork() {
 #		CNF_FILE="${TGET_DIRS}/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
 #		mkdir -p "${CNF_FILE%/*}"
 #		# shellcheck disable=SC2312
-#		cat <<- _EOT_ | sed -e 's/^ *//g' > "${CNF_FILE}"
+#		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${CNF_FILE}"
 #			[Service]
 #			ExecStart=
 #			ExecStart=$(command -v connmand 2> /dev/null) -n --nodnsproxy
 #_EOT_
 		SET_FILE="${TGET_DIRS}/var/lib/connman/settings"
 		mkdir -p "${SET_FILE%/*}"
-		cat <<- _EOT_ | sed -e 's/^ *//g' > "${SET_FILE}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${SET_FILE}"
 			[global]
 			OfflineMode=false
 			
@@ -338,7 +340,7 @@ _EOT_
 			mkdir -p "${CON_DIRS}"
 			chmod 700 "${CON_DIRS}"
 			if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
-				cat <<- _EOT_ | sed -e 's/^ *//g' > "${CON_FILE}"
+				cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${CON_FILE}"
 					[${CON_NAME}]
 					Name=Wired
 					AutoConnect=true
@@ -356,7 +358,7 @@ _EOT_
 					IPv6.DHCP.DUID=
 _EOT_
 			else
-				cat <<- _EOT_ | sed -e 's/^ *//g' > "${CON_FILE}"
+				cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${CON_FILE}"
 					[${CON_NAME}]
 					Name=Wired
 					AutoConnect=false
@@ -379,14 +381,17 @@ _EOT_
 		CONF_DIRS="${TGET_DIRS}/etc/netplan"
 		for FILE_PATH in "${CONF_DIRS}"/*
 		do
-			if [ -f "${FILE_PATH}" ]; then
-				echo "${PROG_NAME}: moving the netplan file ${FILE_PATH}"
-				BACK_DIRS="${LOGS_DIRS}/netplan"
-				if [ ! -d "${BACK_DIRS}/." ]; then
-					mkdir -p "${BACK_DIRS}"
-				fi
-				mv "${FILE_PATH}" "${BACK_DIRS}"
+			# shellcheck disable=SC2312
+			if [ ! -f "${FILE_PATH}" ] \
+			|| [ -z "$(sed -ne '/^[ \t]\+ethernets:[ \t]*$/p' "${FILE_PATH}")" ]; then
+				continue
 			fi
+			echo "${PROG_NAME}: moving the netplan file ${FILE_PATH}"
+			BACK_DIRS="${LOGS_DIRS}/netplan"
+			if [ ! -d "${BACK_DIRS}/." ]; then
+				mkdir -p "${BACK_DIRS}"
+			fi
+			mv "${FILE_PATH}" "${BACK_DIRS}"
 		done
 		# --- none-dns.conf ---------------------------------------------------
 		CONF_DIRS="${TGET_DIRS}/etc/NetworkManager/conf.d"
@@ -400,7 +405,8 @@ _EOT_
 		for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
 		do
 			MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
-			FILE_DIRS="/etc/NetworkManager/system-connections"
+			NMAN_DIRS="/etc/NetworkManager/system-connections"
+			FILE_DIRS="${TGET_DIRS}${NMAN_DIRS}"
 			FILE_NAME="Wired connection ${I}"
 			FILE_PATH="${FILE_DIRS}/${FILE_NAME}"
 			if [ ! -d "${FILE_DIRS}/." ]; then
@@ -421,6 +427,7 @@ _EOT_
 					id=${FILE_NAME}
 					type=ethernet
 					interface-name=${NICS_NAME}
+					autoconnect=true
 					zone=home
 					
 					[ethernet]
@@ -442,6 +449,7 @@ _EOT_
 					id=${FILE_NAME}
 					type=ethernet
 					interface-name=${NICS_NAME}
+					autoconnect=false
 					
 					[ethernet]
 					mac-address=${MAC_ADDR}
@@ -455,6 +463,7 @@ _EOT_
 _EOT_
 			fi
 			chmod 600 "${FILE_PATH}"
+			cp --archive "${FILE_PATH}" "${NMAN_DIRS#}"
 			echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 			cat "${FILE_PATH}"
 			I=$((I+1))
