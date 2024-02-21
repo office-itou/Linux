@@ -32,8 +32,8 @@ autoinstall:
 # =============================================================================
 # bootcmd:
 # =============================================================================
-# early-commands:
-# - dd if=/dev/zero of=/dev/nvme0n1 bs=512 count=34
+  early-commands:
+  - dd if=/dev/zero of=/dev/nvme0n1 bs=1M count=10
 # =============================================================================
   storage:
 #   grub:
@@ -142,6 +142,7 @@ autoinstall:
 # drivers:
 #   install: true
 # =============================================================================
+# updates: security
   updates: all
   packages:
   - standard^
@@ -157,6 +158,7 @@ autoinstall:
   - clamav
   - openssh-server
   - dnsmasq
+  - dnsutils
   - apache2
   - samba
   - smbclient
@@ -187,104 +189,92 @@ autoinstall:
     ntp:
       servers:
       - ntp.nict.jp
+    runcmd:
+    - export LANG=C;
+      set -x;
+      set -e;
+      NMAN_DIRS="/etc/netplan";
+      if [ -d "${NMAN_DIRS}/." ]; then
+          ls -l "${NMAN_DIRS}";
+          find "${NMAN_DIRS}" \( -name '*.yaml' -a ! -name '99-network-manager-all.yaml' \) -type f -exec rm -f '{}' \; 2>&1;
+          ls -l "${NMAN_DIRS}";
+      fi;
+      exit 0;
 #   timezone: Asia/Tokyo
 # =============================================================================
   power_state:
     mode: reboot
 # =============================================================================
-# runcmd:
-# =============================================================================
-# late-commands:
-  - lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv;
-#   resize2fs /dev/ubuntu-vg/ubuntu-lv;
-  - echo $'# Let networkd manage all devices on this system\nnetwork\x3a\n  version\x3a 2\n  renderer\x3a networkd\n' \
-#   > /target/etc/netplan/99-networkd-all.yaml;
-  - echo $'# Let NetworkManager manage all devices on this system\nnetwork\x3a\n  version\x3a 2\n  renderer\x3a NetworkManager\n' \
-#   > /target/etc/netplan/99-NetworkManager-all.yaml;
   late-commands:
-  - LOG_FILE="/target/var/log/installer/network_info.log";
-    mkdir -p "${LOG_FILE%/*}";
-    for LINE in $(cat /proc/cmdline);
+  - export LANG=C;
+    set -x;
+    set -e;
+    TGET_ROOT="";
+    if [ -d "/target/." ]; then
+        TGET_ROOT="/target";
+    fi;
+    PROG_ROOT="/var/log/installer/nocloud";
+    PROG_NAME="nocloud-late-commands.sh";
+    LOGS_NAME="${TGET_ROOT}${PROG_ROOT}/${PROG_NAME%.*}.log";
+    mkdir -p "${TGET_ROOT}${PROG_ROOT}";
+    cd "${TGET_ROOT}${PROG_ROOT}" || exit 1;
+    CMD_LINE="$(cat /proc/cmdline)";
+    for LINE in ${CMD_LINE};
     do
         case "${LINE}" in
-            ip=*)
-                OLD_IFS=${IFS};
-                IFS=':';
-                set -f;
-                set -- ${LINE#ip=};
-                set +f;
-                NIC_IPV4="${1}";
-                NIC_GATE="${3}";
-                NIC_MASK="${4}";
-                NIC_FQDN="${5}";
-                NIC_NAME="${6}";
-                NIC_DNS4="${8}";
-                IFS=${OLD_IFS};
-                OLD_FQDN="$(cat /etc/hostname)";
-                OLD_HOST="${OLD_FQDN%.*}";
-                OLD_WGRP="${OLD_FQDN#*.}";
-                NIC_HOST="${NIC_FQDN%.*}";
-                NIC_WGRP="${NIC_FQDN#*.}";
-                echo "--- cmdline ---"      >> "${LOG_FILE}";
-                cat /proc/cmdline           >> "${LOG_FILE}";
-                echo "NIC_IPV4=${NIC_IPV4}" >> "${LOG_FILE}";
-                echo "NIC_GATE=${NIC_GATE}" >> "${LOG_FILE}";
-                echo "NIC_MASK=${NIC_MASK}" >> "${LOG_FILE}";
-                echo "NIC_FQDN=${NIC_FQDN}" >> "${LOG_FILE}";
-                echo "NIC_NAME=${NIC_NAME}" >> "${LOG_FILE}";
-                echo "NIC_DNS4=${NIC_DNS4}" >> "${LOG_FILE}";
-                echo "OLD_FQDN=${OLD_FQDN}" >> "${LOG_FILE}";
-                echo "OLD_HOST=${OLD_HOST}" >> "${LOG_FILE}";
-                echo "OLD_WGRP=${OLD_WGRP}" >> "${LOG_FILE}";
-                echo "NIC_HOST=${NIC_HOST}" >> "${LOG_FILE}";
-                echo "NIC_WGRP=${NIC_WGRP}" >> "${LOG_FILE}";
-                echo "--- hostname ---"     >> "${LOG_FILE}";
-                cat /target/etc/hostname    >> "${LOG_FILE}";
-                echo "${NIC_FQDN}" > /target/etc/hostname;
-                echo "--- hostname ---"     >> "${LOG_FILE}";
-                cat /target/etc/hostname    >> "${LOG_FILE}";
-                echo "--- hosts ---"        >> "${LOG_FILE}";
-                cat /target/etc/hosts       >> "${LOG_FILE}";
-                sed -i /target/etc/hosts
-                    -e '/^127\.0\.1\.1/d'
-                    -e "/^${NIC_IPV4}/d"
-                    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'
-                    -e 's/^\([0-9a-zA-Z:]\+\)[ \t]\+/\1\t\t/g'
-                    -e "/^127\.0\.0\.1/a ${NIC_IPV4}\t${NIC_FQDN} ${NIC_HOST}"
-                    -e "s/${OLD_HOST}/${NIC_HOST}/g"
-                    -e "s/${OLD_FQDN}/${NIC_FQDN}/g";
-                echo "--- hosts ---"        >> "${LOG_FILE}";
-                cat /target/etc/hosts       >> "${LOG_FILE}";
-                echo ""                     >> "${LOG_FILE}";
+            ds=nocloud* )
+                SEED="${LINE#*\;s*=}";
+                case "${SEED}" in
+                    file://* | /*        )
+                        FILE="${SEED#*/}";
+                        cp "${FILE%/*}/${PROG_NAME}" ./;
+                        ;;
+                    http://* | https://* )
+                        URL="${SEED}";
+                        wget "${URL%/*}/${PROG_NAME}";
+                        ;;
+                    * ) ;;
+                esac;
                 ;;
+            * ) ;;
         esac;
     done;
-  - LOG_FILE="/target/var/log/installer/network_info.log";
-    mkdir -p "${LOG_FILE%/*}";
-    if [ -f /etc/NetworkManager/NetworkManager.conf ]; then
-        echo "--- 90-dns-none.conf ---"                 >> "${LOG_FILE}";
-        echo -e "[main]\ndns=none" > /etc/NetworkManager/conf.d/90-dns-none.conf;
-        cat /etc/NetworkManager/conf.d/90-dns-none.conf >> "${LOG_FILE}";
-        echo ""                                         >> "${LOG_FILE}";
+    if [ ! -f "./${PROG_NAME}" ]; then
+        exit 0;
     fi;
-  - LOG_FILE="/target/var/log/installer/network_info.log";
-    mkdir -p "${LOG_FILE%/*}";
-    echo "--- cmdline ---"         >> "${LOG_FILE}";
-    cat /proc/cmdline              >> "${LOG_FILE}";
-    echo "--- hostname ---"        >> "${LOG_FILE}";
-    cat /target/etc/hostname       >> "${LOG_FILE}";
-    echo "--- hosts ---"           >> "${LOG_FILE}";
-    cat /target/etc/hosts          >> "${LOG_FILE}";
-    echo "--- resolv.conf ---"     >> "${LOG_FILE}";
-    cat /target/etc/resolv.conf    >> "${LOG_FILE}";
-    for FILE in $(ls /target/etc/netplan/*.*);
-    do
-        echo "--- ${FILE##*/} ---" >> "${LOG_FILE}";
-        cat "${FILE}"              >> "${LOG_FILE}";
-    done;
-    echo "--- ip a ---"            >> "${LOG_FILE}";
-    ip a                           >> "${LOG_FILE}";
-    echo "--- end ---"             >> "${LOG_FILE}";
+    chmod +x "./${PROG_NAME}";
+    if [ -d "${TGET_ROOT}/." ]; then
+        if [ -n "${SUBIQUITY_ROOT:-}" ]; then
+            echo "curtin in-target --target=/target -- sh -c '${PROG_ROOT}/${PROG_NAME}' -n";
+            echo "start";
+            curtin in-target --target=/target -- sh -c ''"${PROG_ROOT}"/"${PROG_NAME}"' -n' > "${LOGS_NAME}" 2>&1;
+            echo "complete";
+        else
+            echo "in-target --pass-stdout sh -c '${PROG_ROOT}/${PROG_NAME}' -n";
+            echo "start";
+            in-target --pass-stdout sh -c ''"${PROG_ROOT}"/"${PROG_NAME}"' -n' > "${LOGS_NAME}" 2>&1;
+            echo "complete";
+        fi;
+    else
+        echo "\"./${PROG_NAME}\" -n";
+        echo "start";
+        "./${PROG_NAME}" -n > "${LOGS_NAME}" 2>&1;
+        echo "complete";
+    fi;
+    NMAN_DIRS="/etc/netplan";
+    BACK_DIRS="${TGET_ROOT}${PROG_ROOT}/orig${NMAN_DIRS}";
+    if [ -d "${NMAN_DIRS}/." ] && [ -d "${BACK_DIRS}/." ]; then
+        ls -l "${NMAN_DIRS}";
+        find "${BACK_DIRS}" \( -name '*.yaml' -a ! -name '99-network-manager-all.yaml' \) -type f -exec cp --archive '{}' "${NMAN_DIRS}" \; 2>&1;
+        ls -l "${NMAN_DIRS}";
+    fi;
+    NMAN_DIRS="/etc/NetworkManager";
+    if [ -d "${NMAN_DIRS}/." ] && [ -d "${TGET_ROOT}${NMAN_DIRS}/." ]; then
+        ls -l "${NMAN_DIRS}";
+        cp --archive "${TGET_ROOT}${NMAN_DIRS}"/* "${NMAN_DIRS}" 2>&1;
+        ls -l "${NMAN_DIRS}";
+    fi;
+    exit 0;
 # =============================================================================
 # memo:
 #   https://ubuntu.com/server/docs/install/autoinstall-reference
@@ -292,5 +282,5 @@ autoinstall:
 #   https://cloudinit.readthedocs.io/
 #   https://curtin.readthedocs.io/
 # =============================================================================
-# Created at 2023/07/06 17:39:39
+# Created at 202x/xx/xx xx:xx:xx
 # === EOF =====================================================================

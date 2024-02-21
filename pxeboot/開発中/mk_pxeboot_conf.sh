@@ -908,10 +908,10 @@ function funcCreate_preseed_kill_dhcp() {
 _EOT_SH_
 }
 
-# ----- create preseed sub command --------------------------------------------
-function funcCreate_preseed_sub_command() {
-	declare -r    DIRS_NAME="${DIRS_CONF}/preseed"
-	declare -r    FILE_NAME="${DIRS_NAME}/preseed_sub_command.sh"
+# ----- create late command ---------------------------------------------------
+function funcCreate_late_command() {
+	declare -r    DIRS_NAME="${DIRS_CONF}/script"
+	declare -r    FILE_NAME="${DIRS_NAME}/late_command.sh"
 	# -------------------------------------------------------------------------
 	funcPrintf "create filet: ${FILE_NAME/${PWD}\/}"
 	mkdir -p "${DIRS_NAME}"
@@ -921,7 +921,7 @@ function funcCreate_preseed_sub_command() {
 		
 		### initialization ############################################################
 		#	set -n								# Check for syntax errors
-		#	set -x								# Show command and argument expansion
+		 	set -x								# Show command and argument expansion
 		 	set -o ignoreeof					# Do not exit with Ctrl+D
 		 	set +m								# Disable job control
 		 	set -e								# End with status other than 0
@@ -930,28 +930,65 @@ function funcCreate_preseed_sub_command() {
 		
 		 	trap 'exit 1' 1 2 3 15
 		 	export LANG=C
+		
 		 	#--------------------------------------------------------------------------
 		 	readonly PROG_PATH="$0"
 		 	readonly PROG_PRAM="$*"
 		 	readonly PROG_NAME="${0##*/}"
 		 	readonly WORK_DIRS="${0%/*}"
-		 	readonly SEED_FILE="${WORK_DIRS}/preseed.cfg"
 		 	readonly TGET_DIRS="/target"
-		 	readonly LOGS_DIRS="${TGET_DIRS}/var/log/installer"
+		 	readonly ORIG_DIRS="${WORK_DIRS}/orig"
 		 	# shellcheck disable=SC2155
 		 	readonly DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\1/ip' | tr '[:upper:]' '[:lower:]')"
 		 	# shellcheck disable=SC2155
 		 	readonly COMD_LINE="$(cat /proc/cmdline)"
+		 	SEED_FILE=""
+		 	for LINE in ${COMD_LINE};
+		 	do
+		 		case "${LINE}" in
+		 			iso-url=*.iso  )                                     ;;
+		 			url=*.iso      )                                     ;;
+		 			preseed/file=* ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
+		 			file=*         ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
+		 			preseed/url=*  ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
+		 			url=*          ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
+		 			ds=nocloud*    ) SEED_FILE="${WORK_DIRS}/user-data"  ;;
+		 			*              )                                     ;;
+		 		esac
+		 	done
+		
 		 	#--------------------------------------------------------------------------
 		 	echo "${PROG_NAME}: === Start ==="
+		 	echo "${PROG_NAME}: PROG_PATH=${PROG_PATH}"
 		 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
 		 	echo "${PROG_NAME}: PROG_NAME=${PROG_NAME}"
 		 	echo "${PROG_NAME}: WORK_DIRS=${WORK_DIRS}"
 		 	echo "${PROG_NAME}: SEED_FILE=${SEED_FILE}"
 		 	echo "${PROG_NAME}: TGET_DIRS=${TGET_DIRS}"
-		 	echo "${PROG_NAME}: LOGS_DIRS=${LOGS_DIRS}"
+		 	echo "${PROG_NAME}: ORIG_DIRS=${ORIG_DIRS}"
 		 	echo "${PROG_NAME}: DIST_NAME=${DIST_NAME}"
 		 	echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
+		
+		 	#--- parameter  -----------------------------------------------------------
+		 	NTP_ADDR="ntp.nict.jp"
+		 	IP6_LHST="::1"
+		 	IP4_LHST="127.0.0.1"
+		 	IP4_DUMY="127.0.1.1"
+		 	OLD_FQDN="$(cat /etc/hostname)"
+		 	OLD_HOST="${OLD_FQDN%.*}"
+		 	OLD_WGRP="${OLD_FQDN#*.}"
+		 	NIC_BIT4=""
+		 	NIC_MADR=""
+		 	NMN_FLAG=""					# nm_config, ifupdown, loopback
+		 	FIX_IPV4=""
+		 	NIC_IPV4=""
+		 	NIC_GATE=""
+		 	NIC_MASK=""
+		 	NIC_FQDN=""
+		 	NIC_NAME=""
+		 	NIC_DNS4=""
+		 	NIC_HOST=""
+		 	NIC_WGRP=""
 		
 		### common ####################################################################
 		
@@ -1026,17 +1063,41 @@ function funcCreate_preseed_sub_command() {
 		
 		### subroutine ################################################################
 		# --- packages ----------------------------------------------------------------
+		# run on target
 		funcInstallPackages() {
-		 	readonly SRCS_LIST="/etc/apt/sources.list"
-		 	echo "${PROG_NAME}: funcInstallPackages"
+		 	FUNC_NAME="funcInstallPackages"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
 		 	#--------------------------------------------------------------------------
-		 	if [ ! -f "${SRCS_LIST}" ]; then
-		 		echo "${PROG_NAME}: file does not exist ${SRCS_LIST}"
-		 	else
-		 		sed -i "${SRCS_LIST}"                \
-		 		    -e '/cdrom/ s/^ *\(deb\)/# \1/g'
-		#		echo "${PROG_NAME}: --- sources.list ---"
-		#		cat "${SRCS_LIST}"
+		 	FILE_DIRS="/etc/apt"
+		 	BACK_DIRS="${ORIG_DIRS}"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
+		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 	fi
+		 	if [ ! -d "${FILE_DIRS}/." ]; then
+		 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
+		 		return
+		 	fi
+		 	# --- backup --------------------------------------------------------------
+		 	if [ ! -d "${BACK_DIRS}/." ]; then
+		 		mkdir -p "${BACK_DIRS}"
+		 	fi
+		 	find "${FILE_DIRS}" -name '*.list' -type f | \
+		 	while read -r FILE_NAME
+		 	do
+		 		echo "${PROG_NAME}: ${FILE_NAME} moved"
+		 		cp -a "${FILE_NAME}" "${BACK_DIRS}"
+		 	done
+		 	FILE_NAME="${FILE_DIRS}/sources.list"
+		 	sed -i "${FILE_NAME}"                     \
+		 	    -e '/^[ \t]*deb[ \t]\+cdrom/ s/^/#/g'
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 	cat "${FILE_NAME}"
+		 	#--------------------------------------------------------------------------
+		 	if [ ! -f "${SEED_FILE}" ]; then
+		 		echo "${PROG_NAME}: file does not exist ${SEED_FILE}"
+		 		return
 		 	fi
 		 	#--------------------------------------------------------------------------
 		 	LIST_TASK="$(sed -ne '/^[ \t]*tasksel[ \t]\+tasksel\/first[ \t]\+/,/[^\\]$/p' "${SEED_FILE}" | \
@@ -1082,28 +1143,27 @@ function funcCreate_preseed_sub_command() {
 		 	echo "${PROG_NAME}: Installation completed"
 		}
 		
-		# --- network -----------------------------------------------------------------
-		funcSetupNetwork() {
-		 	echo "${PROG_NAME}: funcSetupNetwork"
-		 	#--- preseed.cfg parameter ------------------------------------------------
-		 	FIX_IPV4="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/\(disable_dhcp\|disable_autoconfig\)[ \t]\+/ s/^.*[ \t]//p' "${SEED_FILE}")"
-		 	NIC_IPV4="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_ipaddress[ \t]\+/                        s/^.*[ \t]//p' "${SEED_FILE}")"
-		 	NIC_MASK="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_netmask[ \t]\+/                          s/^.*[ \t]//p' "${SEED_FILE}")"
-		 	NIC_GATE="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_gateway[ \t]\+/                          s/^.*[ \t]//p' "${SEED_FILE}")"
-		 	NIC_DNS4="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_nameservers[ \t]\+/                      s/^.*[ \t]//p' "${SEED_FILE}")"
-		 	NIC_WGRP="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_domain[ \t]\+/                           s/^.*[ \t]//p' "${SEED_FILE}")"
-		 	NIC_HOST="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_hostname[ \t]\+/                         s/^.*[ \t]//p' "${SEED_FILE}")"
-		 	NIC_WGRP="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_domain[ \t]\+/                           s/^.*[ \t]//p' "${SEED_FILE}")"
-		 	NIC_NAME="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/choose_interface[ \t]\+/                     s/^.*[ \t]//p' "${SEED_FILE}")"
-		 	NIC_FQDN="${NIC_HOST}"
-		 	if [ -n "${NIC_WGRP}" ]; then
-		 		NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
+		# --- network get parameter ---------------------------------------------------
+		# run on target
+		funcGetNetwork_parameter() {
+		 	FUNC_NAME="funcGetNetwork_parameter"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	#--- parameter ------------------------------------------------------------
+		 	if [ -f "${SEED_FILE}" ]; then
+		 		FIX_IPV4="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/\(disable_dhcp\|disable_autoconfig\)[ \t]\+/ s/^.*[ \t]//p' "${SEED_FILE}")"
+		 		NIC_IPV4="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_ipaddress[ \t]\+/                        s/^.*[ \t]//p' "${SEED_FILE}")"
+		 		NIC_GATE="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_gateway[ \t]\+/                          s/^.*[ \t]//p' "${SEED_FILE}")"
+		 		NIC_MASK="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_netmask[ \t]\+/                          s/^.*[ \t]//p' "${SEED_FILE}")"
+		 		NIC_FQDN="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_hostname[ \t]\+/                         s/^.*[ \t]//p' "${SEED_FILE}")"
+		 		NIC_NAME="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/choose_interface[ \t]\+/                     s/^.*[ \t]//p' "${SEED_FILE}")"
+		 		NIC_DNS4="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_nameservers[ \t]\+/                      s/^.*[ \t]//p' "${SEED_FILE}")"
+		 		NIC_HOST="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_hostname[ \t]\+/                         s/^.*[ \t]//p' "${SEED_FILE}")"
+		 		NIC_WGRP="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_domain[ \t]\+/                           s/^.*[ \t]//p' "${SEED_FILE}")"
+		 		if [ -n "${NIC_WGRP}" ]; then
+		 			NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
+		 		fi
 		 	fi
-		 	NIC_BIT4=""
-		 	NIC_MADR=""
-		 	CON_NAME=""
-		 	NMN_FLAG=""		# nm_config, ifupdown, loopback
-		 	#--- /proc/cmdline parameter  ---------------------------------------------
+		 	#--- /proc/cmdline parameter ----------------------------------------------
 		 	for LINE in ${COMD_LINE}
 		 	do
 		 		case "${LINE}" in
@@ -1135,25 +1195,24 @@ function funcCreate_preseed_sub_command() {
 		 			                                 NIC_NAME="${6}"
 		 			                                 NIC_DNS4="${8}"
 		 			                                 IFS=${OLD_IFS}
-		 			                                 break
 		 			                                 ;;
-		 			*) ;;
+		 			*)  ;;
 		 		esac
 		 	done
+		 	#--- hostname -------------------------------------------------------------
+		 	if [ -n "${NIC_WGRP}" ]; then
+		 		NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
+		 	else
+		 		NIC_WGRP="$(sed -ne 's/^search[ \t]\+\([[:alnum:]]\+\)[ \t]*/\1/p' /etc/resolv.conf)"
+		 	fi
 		 	#--- network parameter ----------------------------------------------------
-		 	NIC_HOST="${NIC_FQDN%.*}"
-		 	NIC_WGRP="${NIC_FQDN#*.}"
-		 	if [ -z "${NIC_WGRP}" ]; then
-		 		NIC_WGRP="$(sed -ne 's/^search[ \t]\+\([[:alnum:]]\+\)[ \t]*/\1/p' "${TGET_DIRS}/etc/resolv.conf")"
-		 	fi
-		 	if [ -n "${NIC_MASK}" ]; then
-		 		NIC_BIT4="$(funcIPv4GetNetCIDR "${NIC_MASK}")"
-		 	fi
 		 	if [ -n "${NIC_IPV4#*/}" ] && [ "${NIC_IPV4#*/}" != "${NIC_IPV4}" ]; then
 		 		FIX_IPV4="true"
 		 		NIC_BIT4="${NIC_IPV4#*/}"
 		 		NIC_IPV4="${NIC_IPV4%/*}"
 		 		NIC_MASK="$(funcIPv4GetNetmask "${NIC_BIT4}")"
+		 	else
+		 		NIC_BIT4="$(funcIPv4GetNetCIDR "${NIC_MASK}")"
 		 	fi
 		 	#--- nic parameter --------------------------------------------------------
 		 	if [ -z "${NIC_NAME}" ] || [ "${NIC_NAME}" = "auto" ]; then
@@ -1163,272 +1222,565 @@ function funcCreate_preseed_sub_command() {
 		 	IP4_INFO="$(ip -4 -oneline link show "${NIC_NAME}" 2> /dev/null)"
 		 	NIC_MADR="$(echo "${IP4_INFO}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
 		 	CON_MADR="$(echo "${NIC_MADR}" | sed -ne 's/://gp')"
-		 	#--- hostname / hosts -----------------------------------------------------
-		 	OLD_FQDN="$(cat "${TGET_DIRS}/etc/hostname")"
-		 	OLD_HOST="${OLD_FQDN%.*}"
-		#	OLD_WGRP="${OLD_FQDN#*.}"
-		 	echo "${NIC_FQDN}" > "${TGET_DIRS}/etc/hostname"
-		 	sed -i "${TGET_DIRS}/etc/hosts"                                \
-		 	    -e '/^127\.0\.1\.1/d'                                      \
-		 	    -e "/^${NIC_IPV4}/d"                                       \
-		 	    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'                         \
-		 	    -e 's/^\([0-9a-zA-Z:]\+\)[ \t]\+/\1\t\t/g'                 \
-		 	    -e "/^127\.0\.0\.1/a ${NIC_IPV4}\t${NIC_FQDN} ${NIC_HOST}" \
-		 	    -e "s/${OLD_HOST}/${NIC_HOST}/g"                           \
-		 	    -e "s/${OLD_FQDN}/${NIC_FQDN}/g"
-		#	sed -i "${TGET_DIRS}/etc/hosts"                                            \
-		#	    -e 's/\([ \t]\+\)'${OLD_HOST}'\([ \t]*\)$/\1'${NIC_HOST}'\2/'          \
-		#	    -e 's/\([ \t]\+\)'${OLD_FQDN}'\([ \t]*$\|[ \t]\+\)/\1'${NIC_FQDN}'\2/'
 		 	#--- debug print ----------------------------------------------------------
 		 	echo "${PROG_NAME}: FIX_IPV4=${FIX_IPV4}"
-		 	echo "${PROG_NAME}: NIC_IPV4=${NIC_IPV4}"
-		 	echo "${PROG_NAME}: NIC_MASK=${NIC_MASK}"
-		 	echo "${PROG_NAME}: NIC_GATE=${NIC_GATE}"
-		 	echo "${PROG_NAME}: NIC_DNS4=${NIC_DNS4}"
-		 	echo "${PROG_NAME}: NIC_FQDN=${NIC_FQDN}"
-		 	echo "${PROG_NAME}: NIC_HOST=${NIC_HOST}"
-		 	echo "${PROG_NAME}: NIC_WGRP=${NIC_WGRP}"
-		 	echo "${PROG_NAME}: NIC_BIT4=${NIC_BIT4}"
 		 	echo "${PROG_NAME}: NIC_NAME=${NIC_NAME}"
 		 	echo "${PROG_NAME}: NIC_MADR=${NIC_MADR}"
 		 	echo "${PROG_NAME}: CON_MADR=${CON_MADR}"
+		 	echo "${PROG_NAME}: NIC_IPV4=${NIC_IPV4}"
+		 	echo "${PROG_NAME}: NIC_MASK=${NIC_MASK}"
+		 	echo "${PROG_NAME}: NIC_BIT4=${NIC_BIT4}"
+		 	echo "${PROG_NAME}: NIC_DNS4=${NIC_DNS4}"
+		 	echo "${PROG_NAME}: NIC_GATE=${NIC_GATE}"
+		 	echo "${PROG_NAME}: NIC_FQDN=${NIC_FQDN}"
+		 	echo "${PROG_NAME}: NIC_HOST=${NIC_HOST}"
+		 	echo "${PROG_NAME}: NIC_WGRP=${NIC_WGRP}"
+		 	echo "${PROG_NAME}: IP6_LHST=${IP6_LHST}"
+		 	echo "${PROG_NAME}: IP4_LHST=${IP4_LHST}"
+		 	echo "${PROG_NAME}: IP4_DUMY=${IP4_DUMY}"
+		 	echo "${PROG_NAME}: NTP_ADDR=${NTP_ADDR}"
+		 	echo "${PROG_NAME}: OLD_FQDN=${OLD_FQDN}"
+		 	echo "${PROG_NAME}: OLD_HOST=${OLD_HOST}"
+		 	echo "${PROG_NAME}: OLD_WGRP=${OLD_WGRP}"
 		 	echo "${PROG_NAME}: NMN_FLAG=${NMN_FLAG}"
-		 	echo "${PROG_NAME}: --- hostname ---"
-		 	cat "${TGET_DIRS}/etc/hostname"
-		 	echo "${PROG_NAME}: --- hosts ---"
-		 	cat "${TGET_DIRS}/etc/hosts"
-		 	echo "${PROG_NAME}: --- resolv.conf ---"
-		 	cat "${TGET_DIRS}/etc/resolv.conf"
+		}
+		
+		# --- network setup hostname --------------------------------------------------
+		# run on target
+		funcSetupNetwork_hostname() {
+		 	FUNC_NAME="funcSetupNetwork_hostname"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	# --- hostname ------------------------------------------------------------
+		 	FILE_NAME="/etc/hostname"
+		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 	fi
+		 	if [ ! -f "${FILE_NAME}" ]; then
+		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
+		 		return
+		 	fi
+		 	echo "${PROG_NAME}: ${FILE_NAME}"
+		 	if [ ! -d "${BACK_DIRS}/." ]; then
+		 		mkdir -p "${BACK_DIRS}"
+		 	fi
+		 	cp -a "${FILE_NAME}" "${BACK_DIRS}"
+		 	echo "${NIC_FQDN}" > "${FILE_NAME}"
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 	cat "${FILE_NAME}"
+		}
+		
+		# --- network setup hosts -----------------------------------------------------
+		# run on target
+		funcSetupNetwork_hosts() {
+		 	FUNC_NAME="funcSetupNetwork_hosts"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	# --- hosts ---------------------------------------------------------------
+		 	FILE_NAME="/etc/hosts"
+		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 	fi
+		 	if [ ! -f "${FILE_NAME}" ]; then
+		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
+		 		return
+		 	fi
+		 	echo "${PROG_NAME}: ${FILE_NAME}"
+		 	if [ ! -d "${BACK_DIRS}/." ]; then
+		 		mkdir -p "${BACK_DIRS}"
+		 	fi
+		 	cp -a "${FILE_NAME}" "${BACK_DIRS}"
+		 	sed -i "${FILE_NAME}"                                          \
+		 	    -e "/^${IP4_DUMY}/d"                                       \
+		 	    -e "/^${NIC_IPV4}/d"                                       \
+		 	    -e 's/^\([0-9.]\+\)[ \t]\+/\1\t/g'                         \
+		 	    -e 's/^\([0-9a-zA-Z:]\+\)[ \t]\+/\1\t\t/g'                 \
+		 	    -e "/^${IP4_LHST}/a ${NIC_IPV4}\t${NIC_FQDN} ${NIC_HOST}"  \
+		 	    -e "s/${OLD_HOST}/${NIC_HOST}/g"                           \
+		 	    -e "s/${OLD_FQDN}/${NIC_FQDN}/g"
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 	cat "${FILE_NAME}"
+		}
+		
+		# --- network setup firewalld -------------------------------------------------
+		# run on target
+		funcSetupNetwork_firewalld() {
+		 	FUNC_NAME="funcSetupNetwork_firewalld"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
 		 	# --- firewalld -----------------------------------------------------------
-		 	if [ -f "${TGET_DIRS}/etc/firewalld/firewalld.conf" ]; then
-		 		echo "${PROG_NAME}: funcSetupNetwork: firewalld"
-		#		echo "${PROG_NAME}: --- add-interface=\"${NIC_NAME}\" ---"
-		#		firewall-cmd --zone=home --add-interface="${NIC_NAME}" --permanent
-		#		echo "${PROG_NAME}: --- reload ---"
-		#		firewall-cmd --reload
-		#		echo "${PROG_NAME}: --- list-all ---"
-		#		firewall-cmd --zone=home --list-all
-		 		sed -e '/<\/zone>/i \  <interface name="'"${NIC_NAME}"'"\/>' \
-		 		    "${TGET_DIRS}/usr/lib/firewalld/zones/home.xml"          \
-		 		>   "${TGET_DIRS}/etc/firewalld/zones/home.xml"
+		 	FILE_NAME="/etc/firewalld/firewalld.conf"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
 		 	fi
+		 	if [ ! -f "${FILE_NAME}" ]; then
+		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
+		 		return
+		 	fi
+		 	ULIB_NAME="/usr/lib/firewalld/zones/home.xml"
+		 	FILE_NAME="/etc/firewalld/zones/home.xml"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		 		ULIB_NAME="${TGET_DIRS}/${ULIB_NAME}"
+		 	fi
+		 	echo "${PROG_NAME}: ${FILE_NAME}"
+		 	sed -e '/<\/zone>/i \  <interface name="'"${NIC_NAME}"'"\/>' \
+		 	    "${ULIB_NAME}"                                           \
+		 	>   "${FILE_NAME}"
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 	cat "${FILE_NAME}"
+		}
+		
+		# --- network setup avahi -----------------------------------------------------
+		# run on target
+		funcSetupNetwork_avahi() {
+		 	FUNC_NAME="funcSetupNetwork_avahi"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
 		 	# --- avahi ---------------------------------------------------------------
-		 	if [ -f "${TGET_DIRS}/etc/avahi/avahi-daemon.conf" ]; then
-		 		echo "${PROG_NAME}: funcSetupNetwork: avahi"
-		 		in-target --pass-stdout sh -c "LANG=C systemctl mask avahi-daemon.service avahi-daemon.socket"
-		 		in-target --pass-stdout sh -c "LANG=C systemctl disable avahi-daemon.service avahi-daemon.socket"
-		#		sed -i "${TGET_DIRS}/etc/avahi/avahi-daemon.conf" \
-		#			-e '/allow-interfaces=/ {'                    \
-		#			-e 's/^#//'                                   \
-		#			-e "s/=.*/=${NIC_NAME}/ }"
-		#		echo "${PROG_NAME}: --- avahi-daemon.conf ---"
-		#		cat "${TGET_DIRS}/etc/avahi/avahi-daemon.conf"
+		 	FILE_NAME="/lib/systemd/system/avahi-daemon.service"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
 		 	fi
+		 	if [ ! -f "${FILE_NAME}" ]; then
+		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
+		 		return
+		 	fi
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} masked"
+		 	systemctl mask    avahi-daemon.service avahi-daemon.socket
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} disabled"
+		 	systemctl disable avahi-daemon.service avahi-daemon.socket
+		#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+		#	systemctl daemon-reload
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
+		}
+		
+		# --- network setup dnsmasq ---------------------------------------------------
+		# run on target
+		funcSetupNetwork_dnsmasq() {
+		 	FUNC_NAME="funcSetupNetwork_dnsmasq"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	# --- dnsmasq -------------------------------------------------------------
+		 	FILE_NAME="/lib/systemd/system/dnsmasq.service"
+		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 	fi
+		 	if [ ! -f "${FILE_NAME}" ]; then
+		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
+		 		return
+		 	fi
+		 	echo "${PROG_NAME}: ${FILE_NAME}"
+		 	if [ ! -d "${BACK_DIRS}/." ]; then
+		 		mkdir -p "${BACK_DIRS}"
+		 	fi
+		 	cp -a "${FILE_NAME}" "${BACK_DIRS}"
+		 	sed -i "${FILE_NAME}"                                    \
+		 	    -e '/\[Unit\]/,/\[.\+\]/                          {' \
+		 	    -e '/^Requires=/                                  {' \
+		 	    -e 's/^/#/g'                                         \
+		 	    -e 'a Requires=network-online.target'                \
+		 	    -e '                                              }' \
+		 	    -e '/^After=/                                     {' \
+		 	    -e 's/^/#/g'                                         \
+		 	    -e 'a After=network-online.target'                   \
+		 	    -e '                                              }' \
+		 	    -e '                                              }'
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 	cat "${FILE_NAME}"
+		 	#--- none-dns.conf --------------------------------------------------------
+		 	FILE_DIRS="/etc/NetworkManager/conf.d"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
+		 	fi
+		 	if [ -d "${FILE_DIRS}/." ]; then
+		 		FILE_NAME="${FILE_DIRS}/none-dns.conf"
+		 		echo "${PROG_NAME}: ${FILE_NAME}"
+		 		cat <<- _EOT_ > "${FILE_NAME}"
+		 			[main]
+		 			systemd-resolved=false
+		 			dns=none
+		_EOT_
+		 		#--- debug print ------------------------------------------------------
+		 		echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 		cat "${FILE_NAME}"
+		 	fi
+		 	#--- systemctl ------------------------------------------------------------
+		 	FILE_NAME="/lib/systemd/system/systemd-resolved.service"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		 	fi
+		 	if [ ! -f "${FILE_NAME}" ]; then
+		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
+		 		return
+		 	fi
+		#	echo "${PROG_NAME}: ${FILE_NAME##*/} masked"
+		#	systemctl mask    systemd-resolved.service
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} disabled"
+		 	systemctl disable systemd-resolved.service
+		#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+		#	systemctl daemon-reload
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
+		}
+		
+		# --- network setup connman ---------------------------------------------------
+		# run on target
+		funcSetupNetwork_connman() {
+		 	FUNC_NAME="funcSetupNetwork_connman"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
 		 	#--- exit for DHCP --------------------------------------------------------
 		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
 		 		return
 		 	fi
 		 	# --- connman -------------------------------------------------------------
-		 	if [ -d "${TGET_DIRS}/etc/connman" ]; then
-		 		echo "${PROG_NAME}: funcSetupNetwork: connman"
-		#		CNF_FILE="${TGET_DIRS}/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
-		#		mkdir -p "${CNF_FILE%/*}"
-		#		# shellcheck disable=SC2312
-		#		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${CNF_FILE}"
-		#			[Service]
-		#			ExecStart=
-		#			ExecStart=$(command -v connmand 2> /dev/null) -n --nodnsproxy
-		#_EOT_
-		 		SET_FILE="${TGET_DIRS}/var/lib/connman/settings"
-		 		mkdir -p "${SET_FILE%/*}"
-		 		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${SET_FILE}"
-		 			[global]
-		 			OfflineMode=false
-		 			
-		 			[Wired]
-		 			Enable=true
-		 			Tethering=false
-		_EOT_
-		 		for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
-		 		do
-		 			MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
-		 			CON_ADDR="$(echo "${MAC_ADDR}" | sed -ne 's/://gp')"
-		 			CON_NAME="ethernet_${CON_ADDR}_cable"
-		 			CON_DIRS="${TGET_DIRS}/var/lib/connman/${CON_NAME}"
-		 			CON_FILE="${CON_DIRS}/settings"
-		 			mkdir -p "${CON_DIRS}"
-		 			chmod 700 "${CON_DIRS}"
-		 			if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
-		 				cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${CON_FILE}"
-		 					[${CON_NAME}]
-		 					Name=Wired
-		 					AutoConnect=true
-		 					Modified=
-		 					IPv4.method=manual
-		 					IPv4.netmask_prefixlen=${NIC_BIT4}
-		 					IPv4.local_address=${NIC_IPV4}
-		 					IPv4.gateway=${NIC_GATE}
-		 					IPv6.method=auto
-		 					IPv6.privacy=preferred
-		 					Nameservers=127.0.0.1;::1;${NIC_DNS4};
-		 					Timeservers=ntp.nict.jp;
-		 					Domains=${NIC_WGRP};
-		 					mDNS=true
-		 					IPv6.DHCP.DUID=
-		_EOT_
-		 			else
-		 				cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${CON_FILE}"
-		 					[${CON_NAME}]
-		 					Name=Wired
-		 					AutoConnect=false
-		 					Modified=
-		 					IPv4.method=dhcp
-		 					IPv4.DHCP.LastAddress=
-		 					IPv6.method=auto
-		 					IPv6.privacy=preferred
-		_EOT_
-		 			fi
-		 			echo "${PROG_NAME}: --- ${CON_NAME}/settings ---"
-		 			cat "${CON_FILE}"
-		 		done
+		 	FILE_DIRS="/etc/connman"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
 		 	fi
-		 	# --- NetworkManager ------------------------------------------------------
-		 	if [ -d "${TGET_DIRS}/etc/NetworkManager/." ]; then
-		 		echo "${PROG_NAME}: funcSetupNetwork: NetworkManager"
-		 		# --- netplan ---------------------------------------------------------
-		 		echo "${PROG_NAME}: moving the netplan file"
-		 		CONF_DIRS="${TGET_DIRS}/etc/netplan"
-		 		for FILE_PATH in "${CONF_DIRS}"/*
-		 		do
-		 			# shellcheck disable=SC2312
-		 			if [ ! -f "${FILE_PATH}" ] \
-		 			|| [ -z "$(sed -ne '/^[ \t]\+ethernets:[ \t]*$/p' "${FILE_PATH}")" ]; then
-		 				continue
-		 			fi
-		 			echo "${PROG_NAME}: moving the netplan file ${FILE_PATH}"
-		 			BACK_DIRS="${LOGS_DIRS}/netplan"
-		 			if [ ! -d "${BACK_DIRS}/." ]; then
-		 				mkdir -p "${BACK_DIRS}"
-		 			fi
-		 			mv "${FILE_PATH}" "${BACK_DIRS}"
-		 		done
-		 		# --- none-dns.conf ---------------------------------------------------
-		 		CONF_DIRS="${TGET_DIRS}/etc/NetworkManager/conf.d"
-		 		mkdir -p "${CONF_DIRS}"
-		 		cat <<- _EOT_ > "${CONF_DIRS}/none-dns.conf"
-		 			[main]
-		 			dns=none
+		 	if [ ! -d "${FILE_DIRS}/." ]; then
+		 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
+		 		return
+		 	fi
+		 	# --- disable_dns_proxy.conf ----------------------------------------------
+		 	FILE_DIRS="/etc/systemd/system/connman.service.d"
+		 	FILE_NAME="${FILE_DIRS}/disable_dns_proxy.conf"
+		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 	fi
+		 	# --- backup --------------------------------------------------------------
+		 	echo "${PROG_NAME}: ${FILE_NAME}"
+		 	if [ -f "${FILE_NAME}" ]; then
+		 		if [ ! -d "${BACK_DIRS}/." ]; then
+		 			mkdir -p "${BACK_DIRS}"
+		 		fi
+		 		cp -a "${FILE_NAME}" "${BACK_DIRS}"
+		 	fi
+		 	mkdir -p "${FILE_DIRS}"
+		 	# shellcheck disable=SC2312
+		 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${FILE_NAME}"
+		 		[Service]
+		 		ExecStart=
+		 		ExecStart=$(command -v connmand 2> /dev/null) -n --nodnsproxy
 		_EOT_
-		 		# --- network manager -------------------------------------------------
-		 		I=1
-		 		for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
-		 		do
-		 			MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
-		 			NMAN_DIRS="/etc/NetworkManager/system-connections"
-		 			FILE_DIRS="${TGET_DIRS}${NMAN_DIRS}"
-		 			FILE_NAME="Wired connection ${I}"
-		 			FILE_PATH="${FILE_DIRS}/${FILE_NAME}"
-		 			if [ ! -d "${FILE_DIRS}/." ]; then
-		 				mkdir -p "${FILE_DIRS}"
-		 			fi
-		 			if [ -f "${FILE_PATH}" ]; then
-		 				echo "${PROG_NAME}: moving the network manager file ${FILE_NAME}"
-		 				BACK_DIRS="${LOGS_DIRS}/NetworkManager"
-		 				if [ ! -d "${BACK_DIRS}/." ]; then
-		 					mkdir -p "${BACK_DIRS}"
-		 				fi
-		 				mv "${FILE_PATH}" "${BACK_DIRS}"
-		 			fi
-		 			echo "${PROG_NAME}: create file ${FILE_NAME}"
-		 			if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
-		 				cat <<- _EOT_ > "${FILE_PATH}"
-		 					[connection]
-		 					id=${FILE_NAME}
-		 					type=ethernet
-		 					interface-name=${NICS_NAME}
-		 					autoconnect=true
-		 					zone=home
-		 					
-		 					[ethernet]
-		 					mac-address=${MAC_ADDR}
-		 					mac-address-blacklist=
-		 					
-		 					[ipv4]
-		 					method=manual
-		 					address1=${NIC_IPV4}/${NIC_BIT4},${NIC_GATE}
-		 					dns=${NIC_DNS4};
-		 					dns-search=${NIC_WGRP};
-		 					
-		 					[ipv6]
-		 					method=auto
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 	cat "${FILE_NAME}"
+		 	# --- settings ------------------------------------------------------------
+		 	FILE_DIRS="/var/lib/connman"
+		 	FILE_NAME="${FILE_DIRS}/settings"
+		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_DIRS="${TGET_DIRS}/var/lib/connman"
+		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 	fi
+		 	# --- backup --------------------------------------------------------------
+		 	echo "${PROG_NAME}: ${FILE_NAME}"
+		 	if [ -f "${FILE_NAME}" ]; then
+		 		if [ ! -d "${BACK_DIRS}/." ]; then
+		 			mkdir -p "${BACK_DIRS}"
+		 		fi
+		 		cp -a "${FILE_NAME}" "${BACK_DIRS}"
+		 	fi
+		 	mkdir -p "${FILE_NAME%/*}"
+		 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${FILE_NAME}"
+		 		[global]
+		 		OfflineMode=false
+		 		
+		 		[Wired]
+		 		Enable=true
+		 		Tethering=false
 		_EOT_
-		 			else
-		 				cat <<- _EOT_ > "${FILE_PATH}"
-		 					[connection]
-		 					id=${FILE_NAME}
-		 					type=ethernet
-		 					interface-name=${NICS_NAME}
-		 					autoconnect=false
-		 					
-		 					[ethernet]
-		 					mac-address=${MAC_ADDR}
-		 					mac-address-blacklist=
-		 					
-		 					[ipv4]
-		 					method=auto
-		 					
-		 					[ipv6]
-		 					method=auto
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 	cat "${FILE_NAME}"
+		 	# --- create --------------------------------------------------------------
+		 	for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+		 	do
+		 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
+		 		CON_ADDR="$(echo "${MAC_ADDR}" | sed -ne 's/://gp')"
+		 		CON_NAME="ethernet_${CON_ADDR}_cable"
+		 		CON_DIRS="${FILE_DIRS}/${CON_NAME}"
+		 		CON_FILE="${CON_DIRS}/settings"
+		 		mkdir -p "${CON_DIRS}"
+		 		chmod 700 "${CON_DIRS}"
+		 		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
+		 			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${CON_FILE}"
+		 				[${CON_NAME}]
+		 				Name=Wired
+		 				AutoConnect=true
+		 				Modified=
+		 				IPv4.method=manual
+		 				IPv4.netmask_prefixlen=${NIC_BIT4}
+		 				IPv4.local_address=${NIC_IPV4}
+		 				IPv4.gateway=${NIC_GATE}
+		 				IPv6.method=auto
+		 				IPv6.privacy=preferred
+		 				Nameservers=${IP6_LHST};${IP4_LHST};${NIC_DNS4};
+		 				Timeservers=${NTP_ADDR};
+		 				Domains=${NIC_WGRP};
+		 				mDNS=false
+		 				IPv6.DHCP.DUID=
 		_EOT_
-		 			fi
-		 			chmod 600 "${FILE_PATH}"
-		 			cp --archive "${FILE_PATH}" "${NMAN_DIRS#}"
-		 			echo "${PROG_NAME}: --- ${FILE_NAME} ---"
-		 			cat "${FILE_PATH}"
-		 			I=$((I+1))
-		 		done
+		 		else
+		 			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${CON_FILE}"
+		 				[${CON_NAME}]
+		 				Name=Wired
+		 				AutoConnect=false
+		 				Modified=
+		 				IPv4.method=dhcp
+		 				IPv4.DHCP.LastAddress=
+		 				IPv6.method=auto
+		 				IPv6.privacy=preferred
+		_EOT_
+		 		fi
+		 		chmod 600 "${CON_FILE}"
+		 		#--- debug print ------------------------------------------------------
+		 		echo "${PROG_NAME}: --- ${CON_FILE} ---"
+		 		cat "${CON_FILE}"
+		 	done
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: --- ${FILE_DIRS} ---"
+		 	ls -lR "${FILE_DIRS}"
+		#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+		#	systemctl daemon-reload
+		#	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
+		#	systemctl restart connman.service
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
+		}
+		
+		# --- network setup netplan ---------------------------------------------------
+		# run on target
+		funcSetupNetwork_netplan() {
+		 	FUNC_NAME="funcSetupNetwork_netplan"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	#--- exit for DHCP --------------------------------------------------------
+		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
+		 		return
 		 	fi
 		 	# --- netplan -------------------------------------------------------------
-		 	if [ -d "${TGET_DIRS}/etc/netplan/." ]; then
-		 		echo "${PROG_NAME}: funcSetupNetwork: netplan"
-		 		CONF_DIRS="${TGET_DIRS}/etc/netplan"
-		 		for FILE_LINE in "${CONF_DIRS}"/*
-		 		do
-		 			if [ ! -f "${FILE_LINE}" ]; then
-		 				continue
-		 			fi
-		 			# shellcheck disable=SC2312
-		 			if [ -z "$(sed -n "/${NIC_NAME}/p" "${FILE_LINE}")" ]; then
-		 				echo "${PROG_NAME}: funcSetupNetwork: skip editing files [${FILE_LINE}]"
-		 				cat "${FILE_LINE}"
-		 				continue
-		 			fi
-		 			echo "${PROG_NAME}: funcSetupNetwork: edit the file [${FILE_LINE}]"
-		 			for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
-		 			do
-		 				echo "${PROG_NAME}: funcSetupNetwork: add nic information [${NICS_NAME}]"
-		 				if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
-		 					if [ -z "${NIC_IPV4}" ]; then
-		 						DHCP_FLAG="true"
-		 					else
-		 						DHCP_FLAG="false"
-		 					fi
-		 					cat <<- _EOT_ >> "${FILE_LINE}"
-		 						      dhcp4: ${DHCP_FLAG}
-		 						      dhcp6: true
-		_EOT_
-		 				else
-		 					cat <<- _EOT_ >> "${FILE_LINE}"
-		 						    ${NICS_NAME}:
-		 						      dhcp4: true
-		 						      dhcp6: true
-		_EOT_
-		 				fi
-		 			done
-		 			echo "${PROG_NAME}: --- ${FILE_LINE} ---"
-		 			cat "${FILE_LINE}"
-		 		done
+		 	FILE_DIRS="/etc/netplan"
+		 	CLUD_DIRS="/etc/cloud/cloud.cfg.d"
+		 	BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
+		 		CLUD_DIRS="${TGET_DIRS}/${CLUD_DIRS}"
+		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
 		 	fi
+		 	if [ ! -d "${FILE_DIRS}/." ]; then
+		 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
+		 		return
+		 	fi
+		 	# --- backup --------------------------------------------------------------
+		 	if [ ! -d "${BACK_DIRS}/." ]; then
+		 		mkdir -p "${BACK_DIRS}"
+		 	fi
+		#	for FILE_NAME in "${FILE_DIRS}"/*.yaml
+		#	do
+		#		if [ ! -f "${FILE_NAME}" ]; then
+		#			continue
+		#		fi
+		#		echo "${PROG_NAME}: ${FILE_NAME} moved"
+		#		mv "${FILE_NAME}" "${BACK_DIRS}"
+		#	done
+		 	find "${FILE_DIRS}" -name '*.yaml' -type f | \
+		 	while read -r FILE_NAME
+		 	do
+		 		echo "${PROG_NAME}: ${FILE_NAME} moved"
+		 		mv "${FILE_NAME}" "${BACK_DIRS}"
+		 	done
+		 	# --- create --------------------------------------------------------------
+		 	NMAN_DIRS="/etc/NetworkManager"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		NMAN_DIRS="${TGET_DIRS}/${NMAN_DIRS}"
+		 	fi
+		 	if [ -d "${NMAN_DIRS}/." ]; then
+		 		if [ -d "${CLUD_DIRS}/." ]; then
+		 			FILE_NAME="${CLUD_DIRS}/99-disable-network-config.cfg"
+		 			cat <<- _EOT_ > "${FILE_NAME}"
+		 				network: {config: disabled}
+		_EOT_
+		 			#--- debug print --------------------------------------------------
+		 			echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 			cat "${FILE_NAME}"
+		 		fi
+		 		FILE_NAME="${FILE_DIRS}/99-network-manager-all.yaml"
+		 		cat <<- _EOT_ > "${FILE_NAME}"
+		 			network:
+		 			  version: 2
+		 			  renderer: NetworkManager
+		_EOT_
+		 		chmod 600 "${FILE_NAME}"
+		 		#--- debug print ------------------------------------------------------
+		 		echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 		cat "${FILE_NAME}"
+		#		netplan apply
+		 		return
+		 	fi
+		 	echo "${PROG_NAME}: directory does not exist ${NMAN_DIRS}"
+		 	FILE_NAME="${FILE_DIRS}/99-network-config-all.yaml"
+		 	cat <<- _EOT_ > "${FILE_NAME}"
+		 		network:
+		 		  version: 2
+		 		  ethernets:
+		_EOT_
+		 	for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+		 	do
+		 		if [ "${NICS_NAME}" = "${NIC_NAME}" ] && [ "${FIX_IPV4}" = "true" ]; then
+		 			cat <<- _EOT_ >> "${FILE_NAME}"
+		 				    ${NICS_NAME}:
+		 				      addresses:
+		 				      - ${NIC_IPV4}/${NIC_BIT4}
+		 				      gateway4: ${NIC_GATE}
+		 				      nameservers:
+		 				        search:
+		 				        - ${NIC_WGRP}
+		 				        addresses:
+		 				        - ${IP6_LHST}
+		 				        - ${IP4_LHST}
+		 				        - ${NIC_DNS4}
+		 				      dhcp4: false
+		 				      dhcp6: true
+		 				      ipv6-privacy: true
+		_EOT_
+		 		else
+		 			cat <<- _EOT_ >> "${FILE_NAME}"
+		 				    ${NICS_NAME}:
+		 				      dhcp4: true
+		 				      dhcp6: true
+		 				      ipv6-privacy: true
+		_EOT_
+		 		fi
+		 		chmod 600 "${FILE_NAME}"
+		 	done
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 	cat "${FILE_NAME}"
+		#	netplan apply
+		}
+		# --- network setup network manager -------------------------------------------
+		# run on target
+		funcSetupNetwork_network_manager() {
+		 	FUNC_NAME="funcSetupNetwork_network_manager"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	#--- exit for DHCP --------------------------------------------------------
+		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
+		 		return
+		 	fi
+		 	# --- network manager -----------------------------------------------------
+		 	FILE_DIRS="/etc/NetworkManager"
+		 	BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
+		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 	fi
+		 	if [ ! -d "${FILE_DIRS}/." ]; then
+		 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
+		 		return
+		 	fi
+		 	# --- backup --------------------------------------------------------------
+		 	if [ ! -d "${BACK_DIRS}/system-connections/." ]; then
+		 		mkdir -p "${BACK_DIRS}/system-connections"
+		 	fi
+		#	for FILE_NAME in "${FILE_DIRS}/system-connections"/*
+		#	do
+		#		if [ ! -f "${FILE_NAME}" ]; then
+		#			continue
+		#		fi
+		#		echo "${PROG_NAME}: ${FILE_NAME} moved"
+		#		mv "${FILE_NAME}" "${BACK_DIRS}/system-connections"
+		#	done
+		 	find "${FILE_DIRS}/system-connections" -name '*.yaml' -type f | \
+		 	while read -r FILE_NAME
+		 	do
+		 		echo "${PROG_NAME}: ${FILE_NAME} moved"
+		 		mv "${FILE_NAME}" "${BACK_DIRS}/system-connections"
+		 	done
+		 	# --- create --------------------------------------------------------------
+		 	echo "${PROG_NAME}: create file"
+		 	I=1
+		 	for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+		 	do
+		 		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
+		 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
+		 		echo "${PROG_NAME}: ${FILE_NAME}"
+		 		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
+		 			cat <<- _EOT_ > "${FILE_NAME}"
+		 				[connection]
+		 				id=${FILE_NAME##*/}
+		 				type=ethernet
+		 				interface-name=${NICS_NAME}
+		 				autoconnect=true
+		 				zone=home
+		 				
+		 				[ethernet]
+		 				mac-address=${MAC_ADDR}
+		 				mac-address-blacklist=
+		 				
+		 				[ipv4]
+		 				method=manual
+		 				address1=${NIC_IPV4}/${NIC_BIT4},${NIC_GATE}
+		 				dns=${NIC_DNS4};
+		 				dns-search=${NIC_WGRP};
+		 				
+		 				[ipv6]
+		 				method=auto
+		_EOT_
+		 		else
+		 			cat <<- _EOT_ > "${FILE_NAME}"
+		 				[connection]
+		 				id=${FILE_NAME##*/}
+		 				type=ethernet
+		 				interface-name=${NICS_NAME}
+		 				autoconnect=false
+		 				
+		 				[ethernet]
+		 				mac-address=${MAC_ADDR}
+		 				mac-address-blacklist=
+		 				
+		 				[ipv4]
+		 				method=auto
+		 				
+		 				[ipv6]
+		 				method=auto
+		_EOT_
+		 		fi
+		 		chmod 600 "${FILE_NAME}"
+		 		if [ -d "${TGET_DIRS}/." ]; then
+		 			cp --archive "${FILE_NAME}" "${FILE_DIRS#*/}"
+		 		fi
+		 		#--- debug print ------------------------------------------------------
+		 		echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 		cat "${FILE_NAME}"
+		 		I=$((I+1))
+		 	done
+		#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+		#	systemctl daemon-reload
+		#	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
+		#	systemctl restart NetworkManager.service
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
+		}
+		# --- network -----------------------------------------------------------------
+		funcSetupNetwork() {
+		 	FUNC_NAME="funcSetupNetwork"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	# -------------------------------------------------------------------------
+		 	funcGetNetwork_parameter
+		 	funcSetupNetwork_hostname
+		 	funcSetupNetwork_hosts
+		 	funcSetupNetwork_firewalld
+		 	funcSetupNetwork_avahi
+		 	funcSetupNetwork_dnsmasq
+		 	funcSetupNetwork_connman
+		 	funcSetupNetwork_netplan
+		 	funcSetupNetwork_network_manager
 		}
 		
 		# --- gdm3 --------------------------------------------------------------------
@@ -1443,21 +1795,30 @@ function funcCreate_preseed_sub_command() {
 		### Main ######################################################################
 		funcMain() {
 		 	echo "${PROG_NAME}: funcMain"
-		 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
-		 	if [ -n "${PROG_PRAM}" ]; then
-		 		funcInstallPackages
-		 		exit 0
-		 	fi
-		 	# -------------------------------------------------------------------------
-		 	cp --archive "${PROG_PATH}" "${TGET_DIRS}/tmp/"
-		 	cp --archive "${SEED_FILE}" "${TGET_DIRS}/tmp/"
-		 	echo "${PROG_NAME}: --- in-target ---"
-		 	echo "${PROG_NAME}: ${PROG_NAME}"
-		 	echo "${PROG_NAME}: --- in-target start ---"
-		 	in-target --pass-stdout sh -c "LANG=C /tmp/${PROG_NAME} /tmp/${SEED_FILE##*/}"
-		 	echo "${PROG_NAME}: --- in-target end ---"
-		 	funcSetupNetwork
-		#	funcChange_gdm3_configure
+		 	COMD_LIST="${PROG_PRAM}"
+		 	OLD_IFS="${IFS}"
+		 	IFS=' =,'
+		 	set -f
+		 	# shellcheck disable=SC2086
+		 	set -- ${COMD_LIST:-}
+		 	set +f
+		 	IFS=${OLD_IFS}
+		 	while [ -n "${1:-}" ]
+		 	do
+		 		case "${1:-}" in
+		 			-p | --packages )
+		 				shift
+		 				funcInstallPackages
+		 				;;
+		 			-n | --network  )
+		 				shift
+		 				funcSetupNetwork
+		 				;;
+		 			* )
+		 				shift
+		 				;;
+		 		esac
+		 	done
 		}
 		
 		 	funcMain
@@ -1467,6 +1828,10 @@ function funcCreate_preseed_sub_command() {
 		 	exit 0
 		### EOF #######################################################################
 _EOT_SH_
+	# -------------------------------------------------------------------------
+	mkdir -p "${DIRS_CONF}"/{preseed,nocloud,kickstart,autoyast}
+	cp -a "${FILE_NAME}" "${DIRS_CONF}/preseed/preseed_late_command.sh"
+	cp -a "${FILE_NAME}" "${DIRS_CONF}/nocloud/nocloud-late-commands.sh"
 }
 
 # ----- create preseed.cfg ----------------------------------------------------
@@ -2342,9 +2707,9 @@ function funcCall_config() {
 		# shellcheck disable=SC2034
 		COMD_LIST=("${@:-}")
 		case "${1:-}" in
-			cmd )						# ==== create preseed kill dhcp / sub command
+			cmd )						# ==== create preseed kill dhcp / late command
 				funcCreate_preseed_kill_dhcp
-				funcCreate_preseed_sub_command
+				funcCreate_late_command
 				;;
 			preseed )					# ==== create preseed.cfg =============
 				funcCreate_preseed_cfg
