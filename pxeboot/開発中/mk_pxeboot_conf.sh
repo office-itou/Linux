@@ -303,7 +303,7 @@
 		"o  ubuntu-server-18.04         Ubuntu%2018.04%20Server             ubuntu          ubuntu-18.04.6-server-amd64.iso             install/netboot/ubuntu-installer/amd64  initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04[0-9.]*-server-amd64.iso                                         " \
 		"o  ubuntu-live-18.04           Ubuntu%2018.04%20Live%20Server      ubuntu          ubuntu-18.04.6-live-server-amd64.iso        casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server_old               linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-live-server-amd64.iso                                                    " \
 		"o  ubuntu-live-20.04           Ubuntu%2020.04%20Live%20Server      ubuntu          ubuntu-20.04.6-live-server-amd64.iso        casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-live-server-amd64.iso                                                     " \
-		"o  ubuntu-live-22.04           Ubuntu%2022.04%20Live%20Server      ubuntu          ubuntu-22.04.3-live-server-amd64.iso        casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-live-server-amd64.iso                                                     " \
+		"o  ubuntu-live-22.04           Ubuntu%2022.04%20Live%20Server      ubuntu          ubuntu-22.04.4-live-server-amd64.iso        casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-live-server-amd64.iso                                                     " \
 		"x  ubuntu-live-23.04           Ubuntu%2023.04%20Live%20Server      ubuntu          ubuntu-23.04-live-server-amd64.iso          casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   linux/ubuntu        2023-04-20  2024-01-20  xx:xx:xx    0   -   -   https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-live-server-amd64.iso                                                     " \
 		"o  ubuntu-live-23.10           Ubuntu%2023.10%20Live%20Server      ubuntu          ubuntu-23.10-live-server-amd64.iso          casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   linux/ubuntu        2023-10-12  2024-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-live-server-amd64.iso                                                    " \
 		"o  ubuntu-live-24.04           Ubuntu%2024.04%20Live%20Server      ubuntu          ubuntu-24.04-live-server-amd64.iso          casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   linux/ubuntu        2024-04-25  2029-05-31  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-live-server-amd64.iso                                                     " \
@@ -334,7 +334,7 @@
 		"o  debian-live-testing         Debian%20testing%20Live             debian          debian-live-testing-amd64-lxde.iso          live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                       " \
 		"x  ubuntu-desktop-18.04        Ubuntu%2018.04%20Desktop            ubuntu          ubuntu-18.04.6-desktop-amd64.iso            casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-amd64.iso                                                        " \
 		"o  ubuntu-desktop-20.04        Ubuntu%2020.04%20Desktop            ubuntu          ubuntu-20.04.6-desktop-amd64.iso            casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-desktop-amd64.iso                                                         " \
-		"o  ubuntu-desktop-22.04        Ubuntu%2022.04%20Desktop            ubuntu          ubuntu-22.04.3-desktop-amd64.iso            casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-amd64.iso                                                         " \
+		"o  ubuntu-desktop-22.04        Ubuntu%2022.04%20Desktop            ubuntu          ubuntu-22.04.4-desktop-amd64.iso            casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-amd64.iso                                                         " \
 		"x  ubuntu-desktop-23.04        Ubuntu%2023.04%20Desktop            ubuntu          ubuntu-23.04-desktop-amd64.iso              casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        2023-04-20  2024-01-20  xx:xx:xx    0   -   -   https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-amd64.iso                                                         " \
 		"o  ubuntu-desktop-23.10        Ubuntu%2023.10%20Desktop            ubuntu          ubuntu-23.10.1-desktop-amd64.iso            casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  linux/ubuntu        2023-10-12  2024-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-desktop-amd64.iso                                                        " \
 		"o  ubuntu-desktop-24.04        Ubuntu%2024.04%20Desktop            ubuntu          ubuntu-24.04-desktop-amd64.iso              casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
@@ -833,7 +833,6 @@ function funcCreate_link() {
 		"${DATA_LIST_DVD[@]}"  \
 		"${DATA_LIST_LIVE[@]}" \
 		"${DATA_LIST_TOOL[@]}" \
-		"${DATA_LIST_SCMD[@]}" \
 	)
 	declare -a    DATA_LINE=()
 	declare       DIRS_NAME=""
@@ -921,7 +920,7 @@ function funcCreate_late_command() {
 		
 		### initialization ############################################################
 		#	set -n								# Check for syntax errors
-		 	set -x								# Show command and argument expansion
+		#	set -x								# Show command and argument expansion
 		 	set -o ignoreeof					# Do not exit with Ctrl+D
 		 	set +m								# Disable job control
 		 	set -e								# End with status other than 0
@@ -935,37 +934,43 @@ function funcCreate_late_command() {
 		 	readonly PROG_PATH="$0"
 		 	readonly PROG_PRAM="$*"
 		 	readonly PROG_NAME="${0##*/}"
-		 	readonly WORK_DIRS="${0%/*}"
+		 	readonly PROG_DIRS="${0%/*}"
 		 	readonly TGET_DIRS="/target"
-		 	readonly ORIG_DIRS="${WORK_DIRS}/orig"
-		 	# shellcheck disable=SC2155
-		 	readonly DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\1/ip' | tr '[:upper:]' '[:lower:]')"
-		 	# shellcheck disable=SC2155
-		 	readonly COMD_LINE="$(cat /proc/cmdline)"
+		 	readonly ORIG_DIRS="${PROG_DIRS}/orig"
+		 	readonly CRNT_DIRS="${PROG_DIRS}/crnt"
+		#	readonly LOGS_NAME="${PROG_DIRS}/${PROG_NAME%.*}.log"
+		 	readonly COMD_PARM="${PROG_DIRS}/${PROG_NAME%.*}.prm";
+		 	DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\1/ip' | tr '[:upper:]' '[:lower:]')"
+		 	readonly DIST_NAME
+		 	if [ -f "${COMD_PARM}" ]; then
+		 		COMD_LINE="$(cat "${COMD_PARM}")"
+		 	else
+		 		COMD_LINE="$(cat /proc/cmdline)"
+		 	fi
+		 	readonly COMD_LINE
 		 	SEED_FILE=""
 		 	for LINE in ${COMD_LINE};
 		 	do
 		 		case "${LINE}" in
-		 			iso-url=*.iso  )                                     ;;
-		 			url=*.iso      )                                     ;;
-		 			preseed/file=* ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
-		 			file=*         ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
-		 			preseed/url=*  ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
-		 			url=*          ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
-		 			ds=nocloud*    ) SEED_FILE="${WORK_DIRS}/user-data"  ;;
-		 			*              )                                     ;;
+		 			iso-url=*.iso  | url=*.iso )                                     ;;
+		 			preseed/file=* | file=*    ) SEED_FILE="${PROG_DIRS}/preseed.cfg";;
+		 			preseed/url=*  | url=*     ) SEED_FILE="${PROG_DIRS}/preseed.cfg";;
+		 			ds=nocloud*                ) SEED_FILE="${PROG_DIRS}/user-data"  ;;
+		 			*                          )                                     ;;
 		 		esac
 		 	done
+		 	readonly SEED_FILE
 		
 		 	#--------------------------------------------------------------------------
 		 	echo "${PROG_NAME}: === Start ==="
 		 	echo "${PROG_NAME}: PROG_PATH=${PROG_PATH}"
 		 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
 		 	echo "${PROG_NAME}: PROG_NAME=${PROG_NAME}"
-		 	echo "${PROG_NAME}: WORK_DIRS=${WORK_DIRS}"
+		 	echo "${PROG_NAME}: PROG_DIRS=${PROG_DIRS}"
 		 	echo "${PROG_NAME}: SEED_FILE=${SEED_FILE}"
 		 	echo "${PROG_NAME}: TGET_DIRS=${TGET_DIRS}"
 		 	echo "${PROG_NAME}: ORIG_DIRS=${ORIG_DIRS}"
+		 	echo "${PROG_NAME}: CRNT_DIRS=${CRNT_DIRS}"
 		 	echo "${PROG_NAME}: DIST_NAME=${DIST_NAME}"
 		 	echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
 		
@@ -1071,8 +1076,8 @@ function funcCreate_late_command() {
 		 	FILE_DIRS="/etc/apt"
 		 	BACK_DIRS="${ORIG_DIRS}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
-		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
+		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
 		 	if [ ! -d "${FILE_DIRS}/." ]; then
 		 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
@@ -1200,9 +1205,13 @@ function funcCreate_late_command() {
 		 		esac
 		 	done
 		 	#--- hostname -------------------------------------------------------------
-		 	if [ -n "${NIC_WGRP}" ]; then
-		 		NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
-		 	else
+		 	if [ -z "${NIC_HOST}" ] && [ -n "${NIC_FQDN%.*}" ]; then
+		 		NIC_HOST="${NIC_FQDN%.*}"
+		 	fi
+		 	if [ -z "${NIC_WGRP}" ] && [ -n "${NIC_FQDN##*.}" ]; then
+		 		NIC_WGRP="${NIC_FQDN##*.}"
+		 	fi
+		 	if [ -z "${NIC_WGRP}" ]; then
 		 		NIC_WGRP="$(sed -ne 's/^search[ \t]\+\([[:alnum:]]\+\)[ \t]*/\1/p' /etc/resolv.conf)"
 		 	fi
 		 	#--- network parameter ----------------------------------------------------
@@ -1254,8 +1263,8 @@ function funcCreate_late_command() {
 		 	FILE_NAME="/etc/hostname"
 		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
 		 	if [ ! -f "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
@@ -1281,8 +1290,8 @@ function funcCreate_late_command() {
 		 	FILE_NAME="/etc/hosts"
 		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
 		 	if [ ! -f "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
@@ -1314,7 +1323,7 @@ function funcCreate_late_command() {
 		 	# --- firewalld -----------------------------------------------------------
 		 	FILE_NAME="/etc/firewalld/firewalld.conf"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
 		 	if [ ! -f "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
@@ -1323,8 +1332,8 @@ function funcCreate_late_command() {
 		 	ULIB_NAME="/usr/lib/firewalld/zones/home.xml"
 		 	FILE_NAME="/etc/firewalld/zones/home.xml"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		 		ULIB_NAME="${TGET_DIRS}/${ULIB_NAME}"
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 		ULIB_NAME="${TGET_DIRS}${ULIB_NAME}"
 		 	fi
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
 		 	sed -e '/<\/zone>/i \  <interface name="'"${NIC_NAME}"'"\/>' \
@@ -1343,18 +1352,18 @@ function funcCreate_late_command() {
 		 	# --- avahi ---------------------------------------------------------------
 		 	FILE_NAME="/lib/systemd/system/avahi-daemon.service"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
 		 	if [ ! -f "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+		 	systemctl daemon-reload
 		 	echo "${PROG_NAME}: ${FILE_NAME##*/} masked"
-		 	systemctl mask    avahi-daemon.service avahi-daemon.socket
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} disabled"
-		 	systemctl disable avahi-daemon.service avahi-daemon.socket
-		#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
-		#	systemctl daemon-reload
+		 	systemctl mask          avahi-daemon.service avahi-daemon.socket
+		#	echo "${PROG_NAME}: ${FILE_NAME##*/} disabled"
+		#	systemctl disable --now avahi-daemon.service avahi-daemon.socket
 		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
 		}
 		
@@ -1367,8 +1376,8 @@ function funcCreate_late_command() {
 		 	FILE_NAME="/lib/systemd/system/dnsmasq.service"
 		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
 		 	if [ ! -f "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
@@ -1396,7 +1405,7 @@ function funcCreate_late_command() {
 		 	#--- none-dns.conf --------------------------------------------------------
 		 	FILE_DIRS="/etc/NetworkManager/conf.d"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
+		 		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
 		 	fi
 		 	if [ -d "${FILE_DIRS}/." ]; then
 		 		FILE_NAME="${FILE_DIRS}/none-dns.conf"
@@ -1413,18 +1422,62 @@ function funcCreate_late_command() {
 		 	#--- systemctl ------------------------------------------------------------
 		 	FILE_NAME="/lib/systemd/system/systemd-resolved.service"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
 		 	if [ ! -f "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
-		#	echo "${PROG_NAME}: ${FILE_NAME##*/} masked"
-		#	systemctl mask    systemd-resolved.service
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+		 	systemctl daemon-reload
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} masked"
+		 	systemctl mask          systemd-resolved.service
 		 	echo "${PROG_NAME}: ${FILE_NAME##*/} disabled"
-		 	systemctl disable systemd-resolved.service
-		#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
-		#	systemctl daemon-reload
+		 	systemctl disable --now systemd-resolved.service
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
+		 	#--- resolv.conf ----------------------------------------------------------
+		 	FILE_NAME="/etc/resolv.conf"
+		 	WORK_NAME="${FILE_NAME}.manually-configured"
+		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
+		#	WORK_DIRS="${CRNT_DIRS}${FILE_NAME%/*}"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 		WORK_NAME="${TGET_DIRS}${WORK_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
+		#		WORK_DIRS="${TGET_DIRS}${WORK_DIRS}"
+		 	fi
+		 	# --- backup --------------------------------------------------------------
+		 	echo "${PROG_NAME}: ${FILE_NAME}"
+		 	if [ -f "${FILE_NAME}" ]; then
+		 		if [ ! -d "${BACK_DIRS}/." ]; then
+		 			mkdir -p "${BACK_DIRS}"
+		 		fi
+		 		cp -a "${FILE_NAME}" "${BACK_DIRS}"
+		 	fi
+		 	# --- create --------------------------------------------------------------
+		#	ls -l "${FILE_NAME}"
+		#	rm -f "${FILE_NAME}"
+		#	ls -l "${FILE_NAME}" 2> /dev/null || true
+		 	# shellcheck disable=SC2312
+		 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${WORK_NAME}"
+		 		# Generated by user script
+		 		search ${NIC_WGRP}
+		 		nameserver ${IP6_LHST}
+		 		nameserver ${IP4_LHST}
+		 		nameserver ${NIC_DNS4}
+		_EOT_
+		 	rm -f "${FILE_NAME}"
+		 	ln -s "${WORK_NAME}" "${FILE_NAME}"
+		#	chattr -i "${FILE_NAME}"
+		#	lsattr "${FILE_NAME}"
+		#	ls -l "${FILE_NAME}"
+		#	if [ ! -d "${WORK_DIRS}/." ]; then
+		#		mkdir -p "${WORK_DIRS}"
+		#	fi
+		#	cp -a "${FILE_NAME}" "${WORK_DIRS}"
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 	cat "${FILE_NAME}"
 		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
 		}
 		
@@ -1440,7 +1493,7 @@ function funcCreate_late_command() {
 		 	# --- connman -------------------------------------------------------------
 		 	FILE_DIRS="/etc/connman"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
+		 		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
 		 	fi
 		 	if [ ! -d "${FILE_DIRS}/." ]; then
 		 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
@@ -1451,8 +1504,8 @@ function funcCreate_late_command() {
 		 	FILE_NAME="${FILE_DIRS}/disable_dns_proxy.conf"
 		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
 		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
@@ -1478,8 +1531,8 @@ function funcCreate_late_command() {
 		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_DIRS="${TGET_DIRS}/var/lib/connman"
-		 		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
 		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
@@ -1549,10 +1602,10 @@ function funcCreate_late_command() {
 		 	#--- debug print ----------------------------------------------------------
 		 	echo "${PROG_NAME}: --- ${FILE_DIRS} ---"
 		 	ls -lR "${FILE_DIRS}"
-		#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
-		#	systemctl daemon-reload
-		#	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
-		#	systemctl restart connman.service
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+		 	systemctl daemon-reload
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
+		 	systemctl restart connman.service
 		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
 		}
 		
@@ -1570,9 +1623,9 @@ function funcCreate_late_command() {
 		 	CLUD_DIRS="/etc/cloud/cloud.cfg.d"
 		 	BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
-		 		CLUD_DIRS="${TGET_DIRS}/${CLUD_DIRS}"
-		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
+		 		CLUD_DIRS="${TGET_DIRS}${CLUD_DIRS}"
+		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
 		 	if [ ! -d "${FILE_DIRS}/." ]; then
 		 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
@@ -1599,7 +1652,7 @@ function funcCreate_late_command() {
 		 	# --- create --------------------------------------------------------------
 		 	NMAN_DIRS="/etc/NetworkManager"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		NMAN_DIRS="${TGET_DIRS}/${NMAN_DIRS}"
+		 		NMAN_DIRS="${TGET_DIRS}${NMAN_DIRS}"
 		 	fi
 		 	if [ -d "${NMAN_DIRS}/." ]; then
 		 		if [ -d "${CLUD_DIRS}/." ]; then
@@ -1621,7 +1674,7 @@ function funcCreate_late_command() {
 		 		#--- debug print ------------------------------------------------------
 		 		echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 		cat "${FILE_NAME}"
-		#		netplan apply
+		 		netplan apply
 		 		return
 		 	fi
 		 	echo "${PROG_NAME}: directory does not exist ${NMAN_DIRS}"
@@ -1663,12 +1716,12 @@ function funcCreate_late_command() {
 		 	#--- debug print ----------------------------------------------------------
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
-		#	netplan apply
+		 	netplan apply
 		}
 		# --- network setup network manager -------------------------------------------
 		# run on target
-		funcSetupNetwork_network_manager() {
-		 	FUNC_NAME="funcSetupNetwork_network_manager"
+		funcSetupNetwork_nmanagr() {
+		 	FUNC_NAME="funcSetupNetwork_nmanagr"
 		 	echo "${PROG_NAME}: ${FUNC_NAME}"
 		 	#--- exit for DHCP --------------------------------------------------------
 		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
@@ -1678,8 +1731,8 @@ function funcCreate_late_command() {
 		 	FILE_DIRS="/etc/NetworkManager"
 		 	BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
-		 		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		 		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
+		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
 		 	if [ ! -d "${FILE_DIRS}/." ]; then
 		 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
@@ -1761,10 +1814,10 @@ function funcCreate_late_command() {
 		 		cat "${FILE_NAME}"
 		 		I=$((I+1))
 		 	done
-		#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
-		#	systemctl daemon-reload
-		#	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
-		#	systemctl restart NetworkManager.service
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+		 	systemctl daemon-reload
+		 	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
+		 	systemctl restart NetworkManager.service
 		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
 		}
 		# --- network -----------------------------------------------------------------
@@ -1779,8 +1832,8 @@ function funcCreate_late_command() {
 		 	funcSetupNetwork_avahi
 		 	funcSetupNetwork_dnsmasq
 		 	funcSetupNetwork_connman
+		 	funcSetupNetwork_nmanagr
 		 	funcSetupNetwork_netplan
-		 	funcSetupNetwork_network_manager
 		}
 		
 		# --- gdm3 --------------------------------------------------------------------

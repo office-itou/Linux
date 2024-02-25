@@ -2,7 +2,7 @@
 
 ### initialization ############################################################
 #	set -n								# Check for syntax errors
-	set -x								# Show command and argument expansion
+#	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
 	set +m								# Disable job control
 	set -e								# End with status other than 0
@@ -16,37 +16,43 @@
 	readonly PROG_PATH="$0"
 	readonly PROG_PRAM="$*"
 	readonly PROG_NAME="${0##*/}"
-	readonly WORK_DIRS="${0%/*}"
+	readonly PROG_DIRS="${0%/*}"
 	readonly TGET_DIRS="/target"
-	readonly ORIG_DIRS="${WORK_DIRS}/orig"
-	# shellcheck disable=SC2155
-	readonly DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\1/ip' | tr '[:upper:]' '[:lower:]')"
-	# shellcheck disable=SC2155
-	readonly COMD_LINE="$(cat /proc/cmdline)"
+	readonly ORIG_DIRS="${PROG_DIRS}/orig"
+	readonly CRNT_DIRS="${PROG_DIRS}/crnt"
+#	readonly LOGS_NAME="${PROG_DIRS}/${PROG_NAME%.*}.log"
+	readonly COMD_PARM="${PROG_DIRS}/${PROG_NAME%.*}.prm";
+	DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\1/ip' | tr '[:upper:]' '[:lower:]')"
+	readonly DIST_NAME
+	if [ -f "${COMD_PARM}" ]; then
+		COMD_LINE="$(cat "${COMD_PARM}")"
+	else
+		COMD_LINE="$(cat /proc/cmdline)"
+	fi
+	readonly COMD_LINE
 	SEED_FILE=""
 	for LINE in ${COMD_LINE};
 	do
 		case "${LINE}" in
-			iso-url=*.iso  )                                     ;;
-			url=*.iso      )                                     ;;
-			preseed/file=* ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
-			file=*         ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
-			preseed/url=*  ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
-			url=*          ) SEED_FILE="${WORK_DIRS}/preseed.cfg";;
-			ds=nocloud*    ) SEED_FILE="${WORK_DIRS}/user-data"  ;;
-			*              )                                     ;;
+			iso-url=*.iso  | url=*.iso )                                     ;;
+			preseed/file=* | file=*    ) SEED_FILE="${PROG_DIRS}/preseed.cfg";;
+			preseed/url=*  | url=*     ) SEED_FILE="${PROG_DIRS}/preseed.cfg";;
+			ds=nocloud*                ) SEED_FILE="${PROG_DIRS}/user-data"  ;;
+			*                          )                                     ;;
 		esac
 	done
+	readonly SEED_FILE
 
 	#--------------------------------------------------------------------------
 	echo "${PROG_NAME}: === Start ==="
 	echo "${PROG_NAME}: PROG_PATH=${PROG_PATH}"
 	echo "${PROG_NAME}: PROG_PRAM=${PROG_PRAM}"
 	echo "${PROG_NAME}: PROG_NAME=${PROG_NAME}"
-	echo "${PROG_NAME}: WORK_DIRS=${WORK_DIRS}"
+	echo "${PROG_NAME}: PROG_DIRS=${PROG_DIRS}"
 	echo "${PROG_NAME}: SEED_FILE=${SEED_FILE}"
 	echo "${PROG_NAME}: TGET_DIRS=${TGET_DIRS}"
 	echo "${PROG_NAME}: ORIG_DIRS=${ORIG_DIRS}"
+	echo "${PROG_NAME}: CRNT_DIRS=${CRNT_DIRS}"
 	echo "${PROG_NAME}: DIST_NAME=${DIST_NAME}"
 	echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
 
@@ -152,8 +158,8 @@ funcInstallPackages() {
 	FILE_DIRS="/etc/apt"
 	BACK_DIRS="${ORIG_DIRS}"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
-		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
+		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
 	if [ ! -d "${FILE_DIRS}/." ]; then
 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
@@ -281,9 +287,13 @@ funcGetNetwork_parameter() {
 		esac
 	done
 	#--- hostname -------------------------------------------------------------
-	if [ -n "${NIC_WGRP}" ]; then
-		NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
-	else
+	if [ -z "${NIC_HOST}" ] && [ -n "${NIC_FQDN%.*}" ]; then
+		NIC_HOST="${NIC_FQDN%.*}"
+	fi
+	if [ -z "${NIC_WGRP}" ] && [ -n "${NIC_FQDN##*.}" ]; then
+		NIC_WGRP="${NIC_FQDN##*.}"
+	fi
+	if [ -z "${NIC_WGRP}" ]; then
 		NIC_WGRP="$(sed -ne 's/^search[ \t]\+\([[:alnum:]]\+\)[ \t]*/\1/p' /etc/resolv.conf)"
 	fi
 	#--- network parameter ----------------------------------------------------
@@ -335,8 +345,8 @@ funcSetupNetwork_hostname() {
 	FILE_NAME="/etc/hostname"
 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
 	if [ ! -f "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
@@ -362,8 +372,8 @@ funcSetupNetwork_hosts() {
 	FILE_NAME="/etc/hosts"
 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
 	if [ ! -f "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
@@ -395,7 +405,7 @@ funcSetupNetwork_firewalld() {
 	# --- firewalld -----------------------------------------------------------
 	FILE_NAME="/etc/firewalld/firewalld.conf"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 	fi
 	if [ ! -f "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
@@ -404,8 +414,8 @@ funcSetupNetwork_firewalld() {
 	ULIB_NAME="/usr/lib/firewalld/zones/home.xml"
 	FILE_NAME="/etc/firewalld/zones/home.xml"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		ULIB_NAME="${TGET_DIRS}/${ULIB_NAME}"
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		ULIB_NAME="${TGET_DIRS}${ULIB_NAME}"
 	fi
 	echo "${PROG_NAME}: ${FILE_NAME}"
 	sed -e '/<\/zone>/i \  <interface name="'"${NIC_NAME}"'"\/>' \
@@ -424,18 +434,18 @@ funcSetupNetwork_avahi() {
 	# --- avahi ---------------------------------------------------------------
 	FILE_NAME="/lib/systemd/system/avahi-daemon.service"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 	fi
 	if [ ! -f "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
+	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+	systemctl daemon-reload
 	echo "${PROG_NAME}: ${FILE_NAME##*/} masked"
-	systemctl mask    avahi-daemon.service avahi-daemon.socket
-	echo "${PROG_NAME}: ${FILE_NAME##*/} disabled"
-	systemctl disable avahi-daemon.service avahi-daemon.socket
-#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
-#	systemctl daemon-reload
+	systemctl mask          avahi-daemon.service avahi-daemon.socket
+#	echo "${PROG_NAME}: ${FILE_NAME##*/} disabled"
+#	systemctl disable --now avahi-daemon.service avahi-daemon.socket
 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
 }
 
@@ -448,8 +458,8 @@ funcSetupNetwork_dnsmasq() {
 	FILE_NAME="/lib/systemd/system/dnsmasq.service"
 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
 	if [ ! -f "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
@@ -477,7 +487,7 @@ funcSetupNetwork_dnsmasq() {
 	#--- none-dns.conf --------------------------------------------------------
 	FILE_DIRS="/etc/NetworkManager/conf.d"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
+		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
 	fi
 	if [ -d "${FILE_DIRS}/." ]; then
 		FILE_NAME="${FILE_DIRS}/none-dns.conf"
@@ -494,18 +504,62 @@ _EOT_
 	#--- systemctl ------------------------------------------------------------
 	FILE_NAME="/lib/systemd/system/systemd-resolved.service"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 	fi
 	if [ ! -f "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
-#	echo "${PROG_NAME}: ${FILE_NAME##*/} masked"
-#	systemctl mask    systemd-resolved.service
+	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+	systemctl daemon-reload
+	echo "${PROG_NAME}: ${FILE_NAME##*/} masked"
+	systemctl mask          systemd-resolved.service
 	echo "${PROG_NAME}: ${FILE_NAME##*/} disabled"
-	systemctl disable systemd-resolved.service
-#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
-#	systemctl daemon-reload
+	systemctl disable --now systemd-resolved.service
+	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
+	#--- resolv.conf ----------------------------------------------------------
+	FILE_NAME="/etc/resolv.conf"
+	WORK_NAME="${FILE_NAME}.manually-configured"
+	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
+#	WORK_DIRS="${CRNT_DIRS}${FILE_NAME%/*}"
+	if [ -d "${TGET_DIRS}/." ]; then
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		WORK_NAME="${TGET_DIRS}${WORK_NAME}"
+		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
+#		WORK_DIRS="${TGET_DIRS}${WORK_DIRS}"
+	fi
+	# --- backup --------------------------------------------------------------
+	echo "${PROG_NAME}: ${FILE_NAME}"
+	if [ -f "${FILE_NAME}" ]; then
+		if [ ! -d "${BACK_DIRS}/." ]; then
+			mkdir -p "${BACK_DIRS}"
+		fi
+		cp -a "${FILE_NAME}" "${BACK_DIRS}"
+	fi
+	# --- create --------------------------------------------------------------
+#	ls -l "${FILE_NAME}"
+#	rm -f "${FILE_NAME}"
+#	ls -l "${FILE_NAME}" 2> /dev/null || true
+	# shellcheck disable=SC2312
+	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${WORK_NAME}"
+		# Generated by user script
+		search ${NIC_WGRP}
+		nameserver ${IP6_LHST}
+		nameserver ${IP4_LHST}
+		nameserver ${NIC_DNS4}
+_EOT_
+	rm -f "${FILE_NAME}"
+	ln -s "${WORK_NAME}" "${FILE_NAME}"
+#	chattr -i "${FILE_NAME}"
+#	lsattr "${FILE_NAME}"
+#	ls -l "${FILE_NAME}"
+#	if [ ! -d "${WORK_DIRS}/." ]; then
+#		mkdir -p "${WORK_DIRS}"
+#	fi
+#	cp -a "${FILE_NAME}" "${WORK_DIRS}"
+	#--- debug print ----------------------------------------------------------
+	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+	cat "${FILE_NAME}"
 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
 }
 
@@ -521,7 +575,7 @@ funcSetupNetwork_connman() {
 	# --- connman -------------------------------------------------------------
 	FILE_DIRS="/etc/connman"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
+		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
 	fi
 	if [ ! -d "${FILE_DIRS}/." ]; then
 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
@@ -532,8 +586,8 @@ funcSetupNetwork_connman() {
 	FILE_NAME="${FILE_DIRS}/disable_dns_proxy.conf"
 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
 	# --- backup --------------------------------------------------------------
 	echo "${PROG_NAME}: ${FILE_NAME}"
@@ -559,8 +613,8 @@ _EOT_
 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 	if [ -d "${TGET_DIRS}/." ]; then
 		FILE_DIRS="${TGET_DIRS}/var/lib/connman"
-		FILE_NAME="${TGET_DIRS}/${FILE_NAME}"
-		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
 	# --- backup --------------------------------------------------------------
 	echo "${PROG_NAME}: ${FILE_NAME}"
@@ -630,10 +684,10 @@ _EOT_
 	#--- debug print ----------------------------------------------------------
 	echo "${PROG_NAME}: --- ${FILE_DIRS} ---"
 	ls -lR "${FILE_DIRS}"
-#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
-#	systemctl daemon-reload
-#	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
-#	systemctl restart connman.service
+	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+	systemctl daemon-reload
+	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
+	systemctl restart connman.service
 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
 }
 
@@ -651,9 +705,9 @@ funcSetupNetwork_netplan() {
 	CLUD_DIRS="/etc/cloud/cloud.cfg.d"
 	BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
-		CLUD_DIRS="${TGET_DIRS}/${CLUD_DIRS}"
-		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
+		CLUD_DIRS="${TGET_DIRS}${CLUD_DIRS}"
+		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
 	if [ ! -d "${FILE_DIRS}/." ]; then
 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
@@ -680,7 +734,7 @@ funcSetupNetwork_netplan() {
 	# --- create --------------------------------------------------------------
 	NMAN_DIRS="/etc/NetworkManager"
 	if [ -d "${TGET_DIRS}/." ]; then
-		NMAN_DIRS="${TGET_DIRS}/${NMAN_DIRS}"
+		NMAN_DIRS="${TGET_DIRS}${NMAN_DIRS}"
 	fi
 	if [ -d "${NMAN_DIRS}/." ]; then
 		if [ -d "${CLUD_DIRS}/." ]; then
@@ -702,7 +756,7 @@ _EOT_
 		#--- debug print ------------------------------------------------------
 		echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		cat "${FILE_NAME}"
-#		netplan apply
+		netplan apply
 		return
 	fi
 	echo "${PROG_NAME}: directory does not exist ${NMAN_DIRS}"
@@ -744,12 +798,12 @@ _EOT_
 	#--- debug print ----------------------------------------------------------
 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 	cat "${FILE_NAME}"
-#	netplan apply
+	netplan apply
 }
 # --- network setup network manager -------------------------------------------
 # run on target
-funcSetupNetwork_network_manager() {
-	FUNC_NAME="funcSetupNetwork_network_manager"
+funcSetupNetwork_nmanagr() {
+	FUNC_NAME="funcSetupNetwork_nmanagr"
 	echo "${PROG_NAME}: ${FUNC_NAME}"
 	#--- exit for DHCP --------------------------------------------------------
 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
@@ -759,8 +813,8 @@ funcSetupNetwork_network_manager() {
 	FILE_DIRS="/etc/NetworkManager"
 	BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
 	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_DIRS="${TGET_DIRS}/${FILE_DIRS}"
-		BACK_DIRS="${TGET_DIRS}/${BACK_DIRS}"
+		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
+		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
 	if [ ! -d "${FILE_DIRS}/." ]; then
 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
@@ -842,10 +896,10 @@ _EOT_
 		cat "${FILE_NAME}"
 		I=$((I+1))
 	done
-#	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
-#	systemctl daemon-reload
-#	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
-#	systemctl restart NetworkManager.service
+	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+	systemctl daemon-reload
+	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
+	systemctl restart NetworkManager.service
 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
 }
 # --- network -----------------------------------------------------------------
@@ -860,8 +914,8 @@ funcSetupNetwork() {
 	funcSetupNetwork_avahi
 	funcSetupNetwork_dnsmasq
 	funcSetupNetwork_connman
+	funcSetupNetwork_nmanagr
 	funcSetupNetwork_netplan
-	funcSetupNetwork_network_manager
 }
 
 # --- gdm3 --------------------------------------------------------------------
