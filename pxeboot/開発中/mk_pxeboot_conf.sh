@@ -1066,7 +1066,52 @@ function funcCreate_late_command() {
 		 	printf '%d' "${MASK}"
 		}
 		
+		# --- service status ----------------------------------------------------------
+		funcServiceStatus() {
+		 	SRVC_STAT="$(systemctl is-enabled "$1" 2> /dev/null || true)"
+		 	# -------------------------------------------------------------------------
+		 	if [ -z "${SRVC_STAT}" ]; then
+		 		SRVC_STAT="not-found"
+		 	fi
+		 	case "${SRVC_STAT}" in
+		 		disabled        ) SRVC_STAT="disabled";;
+		 		enabled         | \
+		 		enabled-runtime ) SRVC_STAT="enabled";;
+		 		linked          | \
+		 		linked-runtime  ) SRVC_STAT="linked";;
+		 		masked          | \
+		 		masked-runtime  ) SRVC_STAT="masked";;
+		 		alias           ) ;;
+		 		static          ) ;;
+		 		indirect        ) ;;
+		 		generated       ) ;;
+		 		transient       ) ;;
+		 		bad             ) ;;
+		 		not-found       ) ;;
+		 		*               ) SRVC_STAT="undefined";;
+		 	esac
+		 	echo "${SRVC_STAT}"
+		}
+
 		### subroutine ################################################################
+		# --- blacklist ---------------------------------------------------------------
+		# run on target
+		funcSetupBlacklist() {
+		 	FUNC_NAME="funcSetupBlacklist"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	# -------------------------------------------------------------------------
+		 	FILE_NAME="/etc/modprobe.d/blacklist-floppy.conf"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 	fi
+		 	rmmod floppy
+		 	echo 'blacklist floppy' > "${FILE_NAME}"
+		 	#--- debug print ----------------------------------------------------------
+		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 	cat "${FILE_NAME}"
+		#	dpkg-reconfigure initramfs-tools
+		}
+		
 		# --- packages ----------------------------------------------------------------
 		# run on target
 		funcInstallPackages() {
@@ -1350,7 +1395,9 @@ function funcCreate_late_command() {
 		 	FUNC_NAME="funcSetupNetwork_avahi"
 		 	echo "${PROG_NAME}: ${FUNC_NAME}"
 		 	# --- avahi ---------------------------------------------------------------
-		 	FILE_NAME="/lib/systemd/system/avahi-daemon.service"
+		 	SRVC_NAME="avahi-daemon.service"
+		 	SOCK_NAME="avahi-daemon.socket"
+		 	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
@@ -1358,13 +1405,21 @@ function funcCreate_late_command() {
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+		 	# --- systemctl -----------------------------------------------------------
+		 	echo "${PROG_NAME}: daemon-reload"
 		 	systemctl daemon-reload
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} masked"
-		 	systemctl mask          avahi-daemon.service avahi-daemon.socket
-		#	echo "${PROG_NAME}: ${FILE_NAME##*/} disabled"
-		#	systemctl disable --now avahi-daemon.service avahi-daemon.socket
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
+		 	for SYSD_NAME in "${SRVC_NAME}" "${SOCK_NAME}"
+		 	do
+		 		SYSD_STAT="$(funcServiceStatus "${SYSD_NAME}")"
+		 		if [ "${SYSD_STAT}" != "enabled" ]; then
+		 			continue
+		 		fi
+		 		echo "${PROG_NAME}: ${SRVC_NAME} masked"
+		 		systemctl mask "${SYSD_NAME}"
+		 		echo "${PROG_NAME}: ${SRVC_NAME} disabled"
+		 		systemctl disable --now "${SYSD_NAME}"
+		 	done
+		 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
 		}
 		
 		# --- network setup dnsmasq ---------------------------------------------------
@@ -1373,7 +1428,8 @@ function funcCreate_late_command() {
 		 	FUNC_NAME="funcSetupNetwork_dnsmasq"
 		 	echo "${PROG_NAME}: ${FUNC_NAME}"
 		 	# --- dnsmasq -------------------------------------------------------------
-		 	FILE_NAME="/lib/systemd/system/dnsmasq.service"
+		 	SRVC_NAME="dnsmasq.service"
+		 	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
 		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
@@ -1383,11 +1439,13 @@ function funcCreate_late_command() {
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
+		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
 		 	if [ ! -d "${BACK_DIRS}/." ]; then
 		 		mkdir -p "${BACK_DIRS}"
 		 	fi
 		 	cp -a "${FILE_NAME}" "${BACK_DIRS}"
+		 	# --- dnsmasq.service -----------------------------------------------------
 		 	sed -i "${FILE_NAME}"                                    \
 		 	    -e '/\[Unit\]/,/\[.\+\]/                          {' \
 		 	    -e '/^Requires=/                                  {' \
@@ -1420,7 +1478,8 @@ function funcCreate_late_command() {
 		 		cat "${FILE_NAME}"
 		 	fi
 		 	#--- systemctl ------------------------------------------------------------
-		 	FILE_NAME="/lib/systemd/system/systemd-resolved.service"
+		 	SRVC_NAME="systemd-resolved.service"
+		 	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
@@ -1428,13 +1487,16 @@ function funcCreate_late_command() {
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+		 	echo "${PROG_NAME}: daemon-reload"
 		 	systemctl daemon-reload
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} masked"
-		 	systemctl mask          systemd-resolved.service
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} disabled"
-		 	systemctl disable --now systemd-resolved.service
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
+		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+		 	if [ "${SYSD_STAT}" = "enabled" ]; then
+		 		echo "${PROG_NAME}: ${SRVC_NAME} masked"
+		 		systemctl mask "${SRVC_NAME}"
+		 		echo "${PROG_NAME}: ${SRVC_NAME} disabled"
+		 		systemctl disable --now "${SRVC_NAME}"
+		 	fi
+		 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
 		 	#--- resolv.conf ----------------------------------------------------------
 		 	FILE_NAME="/etc/resolv.conf"
 		 	WORK_NAME="${FILE_NAME}.manually-configured"
@@ -1491,12 +1553,15 @@ function funcCreate_late_command() {
 		 		return
 		 	fi
 		 	# --- connman -------------------------------------------------------------
-		 	FILE_DIRS="/etc/connman"
+		 	SRVC_NAME="connman.service"
+		 	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
+		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -d "${FILE_DIRS}/." ]; then
-		 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
+		 	if [ ! -f "${FILE_NAME}" ]; then
+		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
 		 	# --- disable_dns_proxy.conf ----------------------------------------------
@@ -1515,6 +1580,7 @@ function funcCreate_late_command() {
 		 		fi
 		 		cp -a "${FILE_NAME}" "${BACK_DIRS}"
 		 	fi
+		 	# --- create file ---------------------------------------------------------
 		 	mkdir -p "${FILE_DIRS}"
 		 	# shellcheck disable=SC2312
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${FILE_NAME}"
@@ -1542,6 +1608,7 @@ function funcCreate_late_command() {
 		 		fi
 		 		cp -a "${FILE_NAME}" "${BACK_DIRS}"
 		 	fi
+		 	# --- create file ---------------------------------------------------------
 		 	mkdir -p "${FILE_NAME%/*}"
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${FILE_NAME}"
 		 		[global]
@@ -1554,7 +1621,7 @@ function funcCreate_late_command() {
 		 	#--- debug print ----------------------------------------------------------
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
-		 	# --- create --------------------------------------------------------------
+		 	# --- create file ---------------------------------------------------------
 		 	for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
 		 	do
 		 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
@@ -1602,11 +1669,127 @@ function funcCreate_late_command() {
 		 	#--- debug print ----------------------------------------------------------
 		 	echo "${PROG_NAME}: --- ${FILE_DIRS} ---"
 		 	ls -lR "${FILE_DIRS}"
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
+		 	echo "${PROG_NAME}: daemon-reload"
 		 	systemctl daemon-reload
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
-		 	systemctl restart connman.service
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
+		 	#--- systemctl ------------------------------------------------------------
+		 	echo "${PROG_NAME}: daemon-reload"
+		 	systemctl daemon-reload
+		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+		 	if [ "${SYSD_STAT}" = "enabled" ]; then
+		 		echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
+		 		systemctl restart "${SRVC_NAME}"
+		 	fi
+		 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
+		}
+		
+		# --- network setup network manager -------------------------------------------
+		# run on target
+		funcSetupNetwork_nmanagr() {
+		 	FUNC_NAME="funcSetupNetwork_nmanagr"
+		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	#--- exit for DHCP --------------------------------------------------------
+		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
+		 		return
+		 	fi
+		 	# --- network manager -----------------------------------------------------
+		 	SRVC_NAME="NetworkManager.service"
+		 	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
+		 	FILE_DIRS="/etc/NetworkManager"
+		 	BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
+		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
+		 	fi
+		 	if [ ! -f "${FILE_NAME}" ]; then
+		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
+		 		return
+		 	fi
+		 	# --- backup --------------------------------------------------------------
+		 	if [ ! -d "${BACK_DIRS}/system-connections/." ]; then
+		 		mkdir -p "${BACK_DIRS}/system-connections"
+		 	fi
+		#	for FILE_NAME in "${FILE_DIRS}/system-connections"/*
+		#	do
+		#		if [ ! -f "${FILE_NAME}" ]; then
+		#			continue
+		#		fi
+		#		echo "${PROG_NAME}: ${FILE_NAME} moved"
+		#		mv "${FILE_NAME}" "${BACK_DIRS}/system-connections"
+		#	done
+		 	find "${FILE_DIRS}/system-connections" -name '*.yaml' -type f | \
+		 	while read -r FILE_NAME
+		 	do
+		 		echo "${PROG_NAME}: ${FILE_NAME} moved"
+		 		mv "${FILE_NAME}" "${BACK_DIRS}/system-connections"
+		 	done
+		 	# --- create --------------------------------------------------------------
+		 	echo "${PROG_NAME}: create file"
+		 	I=1
+		 	for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+		 	do
+		 		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
+		 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
+		 		echo "${PROG_NAME}: ${FILE_NAME}"
+		 		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
+		 			cat <<- _EOT_ > "${FILE_NAME}"
+		 				[connection]
+		 				id=${FILE_NAME##*/}
+		 				type=ethernet
+		 				interface-name=${NICS_NAME}
+		 				autoconnect=true
+		 				zone=home
+		 				
+		 				[ethernet]
+		 				mac-address=${MAC_ADDR}
+		 				mac-address-blacklist=
+		 				
+		 				[ipv4]
+		 				method=manual
+		 				address1=${NIC_IPV4}/${NIC_BIT4},${NIC_GATE}
+		 				dns=${NIC_DNS4};
+		 				dns-search=${NIC_WGRP};
+		 				
+		 				[ipv6]
+		 				method=auto
+		_EOT_
+		 		else
+		 			cat <<- _EOT_ > "${FILE_NAME}"
+		 				[connection]
+		 				id=${FILE_NAME##*/}
+		 				type=ethernet
+		 				interface-name=${NICS_NAME}
+		 				autoconnect=false
+		 				
+		 				[ethernet]
+		 				mac-address=${MAC_ADDR}
+		 				mac-address-blacklist=
+		 				
+		 				[ipv4]
+		 				method=auto
+		 				
+		 				[ipv6]
+		 				method=auto
+		_EOT_
+		 		fi
+		 		chmod 600 "${FILE_NAME}"
+		 		if [ -d "${TGET_DIRS}/." ]; then
+		 			cp --archive "${FILE_NAME}" "${FILE_DIRS#*/}"
+		 		fi
+		 		#--- debug print ------------------------------------------------------
+		 		echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		 		cat "${FILE_NAME}"
+		 		I=$((I+1))
+		 	done
+		 	#--- systemctl ------------------------------------------------------------
+		 	echo "${PROG_NAME}: daemon-reload"
+		 	systemctl daemon-reload
+		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+		 	if [ "${SYSD_STAT}" = "enabled" ]; then
+		 		echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
+		 		systemctl restart "${SRVC_NAME}"
+		 	fi
+		 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
 		}
 		
 		# --- network setup netplan ---------------------------------------------------
@@ -1691,7 +1874,9 @@ function funcCreate_late_command() {
 		 				    ${NICS_NAME}:
 		 				      addresses:
 		 				      - ${NIC_IPV4}/${NIC_BIT4}
-		 				      gateway4: ${NIC_GATE}
+		 				      routes:
+		 				        - to: default
+		 				          via: ${NIC_GATE}
 		 				      nameservers:
 		 				        search:
 		 				        - ${NIC_WGRP}
@@ -1718,108 +1903,7 @@ function funcCreate_late_command() {
 		 	cat "${FILE_NAME}"
 		 	netplan apply
 		}
-		# --- network setup network manager -------------------------------------------
-		# run on target
-		funcSetupNetwork_nmanagr() {
-		 	FUNC_NAME="funcSetupNetwork_nmanagr"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
-		 	#--- exit for DHCP --------------------------------------------------------
-		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
-		 		return
-		 	fi
-		 	# --- network manager -----------------------------------------------------
-		 	FILE_DIRS="/etc/NetworkManager"
-		 	BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
-		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
-		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
-		 	fi
-		 	if [ ! -d "${FILE_DIRS}/." ]; then
-		 		echo "${PROG_NAME}: directory does not exist ${FILE_DIRS}"
-		 		return
-		 	fi
-		 	# --- backup --------------------------------------------------------------
-		 	if [ ! -d "${BACK_DIRS}/system-connections/." ]; then
-		 		mkdir -p "${BACK_DIRS}/system-connections"
-		 	fi
-		#	for FILE_NAME in "${FILE_DIRS}/system-connections"/*
-		#	do
-		#		if [ ! -f "${FILE_NAME}" ]; then
-		#			continue
-		#		fi
-		#		echo "${PROG_NAME}: ${FILE_NAME} moved"
-		#		mv "${FILE_NAME}" "${BACK_DIRS}/system-connections"
-		#	done
-		 	find "${FILE_DIRS}/system-connections" -name '*.yaml' -type f | \
-		 	while read -r FILE_NAME
-		 	do
-		 		echo "${PROG_NAME}: ${FILE_NAME} moved"
-		 		mv "${FILE_NAME}" "${BACK_DIRS}/system-connections"
-		 	done
-		 	# --- create --------------------------------------------------------------
-		 	echo "${PROG_NAME}: create file"
-		 	I=1
-		 	for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
-		 	do
-		 		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
-		 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
-		 		echo "${PROG_NAME}: ${FILE_NAME}"
-		 		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
-		 			cat <<- _EOT_ > "${FILE_NAME}"
-		 				[connection]
-		 				id=${FILE_NAME##*/}
-		 				type=ethernet
-		 				interface-name=${NICS_NAME}
-		 				autoconnect=true
-		 				zone=home
-		 				
-		 				[ethernet]
-		 				mac-address=${MAC_ADDR}
-		 				mac-address-blacklist=
-		 				
-		 				[ipv4]
-		 				method=manual
-		 				address1=${NIC_IPV4}/${NIC_BIT4},${NIC_GATE}
-		 				dns=${NIC_DNS4};
-		 				dns-search=${NIC_WGRP};
-		 				
-		 				[ipv6]
-		 				method=auto
-		_EOT_
-		 		else
-		 			cat <<- _EOT_ > "${FILE_NAME}"
-		 				[connection]
-		 				id=${FILE_NAME##*/}
-		 				type=ethernet
-		 				interface-name=${NICS_NAME}
-		 				autoconnect=false
-		 				
-		 				[ethernet]
-		 				mac-address=${MAC_ADDR}
-		 				mac-address-blacklist=
-		 				
-		 				[ipv4]
-		 				method=auto
-		 				
-		 				[ipv6]
-		 				method=auto
-		_EOT_
-		 		fi
-		 		chmod 600 "${FILE_NAME}"
-		 		if [ -d "${TGET_DIRS}/." ]; then
-		 			cp --archive "${FILE_NAME}" "${FILE_DIRS#*/}"
-		 		fi
-		 		#--- debug print ------------------------------------------------------
-		 		echo "${PROG_NAME}: --- ${FILE_NAME} ---"
-		 		cat "${FILE_NAME}"
-		 		I=$((I+1))
-		 	done
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} daemon-reload"
-		 	systemctl daemon-reload
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
-		 	systemctl restart NetworkManager.service
-		 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
-		}
+		
 		# --- network -----------------------------------------------------------------
 		funcSetupNetwork() {
 		 	FUNC_NAME="funcSetupNetwork"
@@ -1859,6 +1943,10 @@ function funcCreate_late_command() {
 		 	while [ -n "${1:-}" ]
 		 	do
 		 		case "${1:-}" in
+		 			-b | --blacklist )
+		 				shift
+		 				funcSetupBlacklist
+		 				;;
 		 			-p | --packages )
 		 				shift
 		 				funcInstallPackages

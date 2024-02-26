@@ -222,15 +222,14 @@ autoinstall:
         PROG_NAME="${TGET_ROOT}/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
         LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.log";
         test -f "${PROG_NAME}"
-        && (chmod +x "${PROG_NAME}";
-            echo "=== start ${PROG_NAME} ===";
+        && (echo "=== start ${PROG_NAME} ===";
+            chmod +x "${PROG_NAME}";
             "${PROG_NAME}" -n | tee -a "${LOGS_NAME}";
             echo "=== complete ${PROG_NAME} ===";);
         echo "### complete ${FUNC_NAME} ###";'
     - ' exec 2>&1;
         export LANG=C;
         FUNC_NAME="user-data runcmd";
-        reboot;
         echo "### complete ${FUNC_NAME} ###";'
 #   timezone: Asia/Tokyo
 # =============================================================================
@@ -286,7 +285,7 @@ autoinstall:
                   case "${SEED_TYPE}" in
                       preseed ) wget -O preseed.cfg "${SEED_ADDR}";;
                       nocloud ) wget "${SEED_ADDR}/user-data"     ;;
-                      *       )                                     ;;
+                      *       )                                   ;;
                   esac;
                   wget "${SEED_ADDR%/*}/${PROG_NAME##*/}";
                   ;;
@@ -301,14 +300,22 @@ autoinstall:
                           cp "${SEED_FILE}/user-data"        ./;
                           cp "${SEED_FILE}/${PROG_NAME##*/}" ./;
                           ;;
-                      *       )
-                          ;;
+                      *       ) ;;
                   esac;
                   ;;
-              *                    )
-                  ;;
+              *                    ) ;;
           esac;
       done;
+      test -n "${PROG_NAME:-}"
+      && (test -f "${PROG_NAME}"
+          && (echo "=== start ${PROG_NAME} ===";
+              chmod +x "${PROG_NAME}";
+              (test -d "${TGET_ROOT}/."
+              && (test -n "${SUBIQUITY_ROOT:-}"
+                  && (curtin in-target --target=/target -- sh -c ''"${PROG_NAME}" -b'' | tee -a "${LOGS_NAME}";))
+                  || (in-target --pass-stdout sh -c ''"${PROG_NAME}" -b'' | tee -a "${LOGS_NAME}";)
+              || ("${PROG_NAME}" -b | tee -a "${LOGS_NAME}";))
+              echo "=== complete ${PROG_NAME} ===";));
       echo "### complete ${FUNC_NAME} ###";'
 # =============================================================================
 # memo:
