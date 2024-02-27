@@ -193,24 +193,23 @@ autoinstall:
     ntp:
       servers:
       - ntp.nict.jp
-# =============================================================================
     runcmd:
     - ' exec 2>&1;
         export LANG=C;
         FUNC_NAME="user-data runcmd";
         echo "### start ${FUNC_NAME} ###";'
-    - ' exec 2>&1;
-        export LANG=C;
-        FUNC_NAME="user-data runcmd <change root password>";
-        echo "### start ${FUNC_NAME} ###";
-        echo "root:r00t" | chpasswd;
-        echo "### complete ${FUNC_NAME} ###";'
-    - ' exec 2>&1;
-        export LANG=C;
-        FUNC_NAME="user-data runcmd <change ssh root login>";
-        echo "### start ${FUNC_NAME} ###";
-        echo "PermitRootLogin yes" > /etc/ssh/sshd_config.d/root_login.conf;
-        echo "### complete ${FUNC_NAME} ###";'
+#   - ' exec 2>&1;
+#       export LANG=C;
+#       FUNC_NAME="user-data runcmd <change root password>";
+#       echo "### start ${FUNC_NAME} ###";
+#       echo "root:r00t" | chpasswd;
+#       echo "### complete ${FUNC_NAME} ###";'
+#   - ' exec 2>&1;
+#       export LANG=C;
+#       FUNC_NAME="user-data runcmd <change ssh root login>";
+#       echo "### start ${FUNC_NAME} ###";
+#       echo "PermitRootLogin yes" > /etc/ssh/sshd_config.d/root_login.conf;
+#       echo "### complete ${FUNC_NAME} ###";'
     - ' exec 2>&1;
         export LANG=C;
         FUNC_NAME="user-data runcmd <system setup>";
@@ -219,13 +218,24 @@ autoinstall:
         test -d "/target/."
         && TGET_ROOT="/target";
         SEED_TYPE="nocloud";
-        PROG_NAME="${TGET_ROOT}/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
-        LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.log";
-        test -f "${PROG_NAME}"
-        && (echo "=== start ${PROG_NAME} ===";
-            chmod +x "${PROG_NAME}";
-            "${PROG_NAME}" -n | tee -a "${LOGS_NAME}";
-            echo "=== complete ${PROG_NAME} ===";);
+        PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
+        LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.current.log";
+        echo "TGET_ROOT=${TGET_ROOT}";
+        echo "SEED_TYPE=${SEED_TYPE}";
+        echo "PROG_NAME=${PROG_NAME}";
+        echo "LOGS_NAME=${LOGS_NAME}";
+        test -n "${TGET_ROOT}${PROG_NAME:-}"
+        && (test -f "${TGET_ROOT}${PROG_NAME}"
+            && (echo "=== start ${TGET_ROOT}${PROG_NAME} ===";
+                test -x "${TGET_ROOT}${PROG_NAME}"
+                || chmod +x "${TGET_ROOT}${PROG_NAME}";
+                ((test -n "${TGET_ROOT}"
+                    && test -d "${TGET_ROOT}/."
+                        && ((test -n "${SUBIQUITY_ROOT:-}"
+                            && (curtin in-target --target=/target -- sh -c "${PROG_NAME} -n;" | tee -a "${LOGS_NAME}";))
+                            || (in-target --pass-stdout sh -c "${PROG_NAME} -n;" | tee -a "${LOGS_NAME}";)))
+                || ("${TGET_ROOT}${PROG_NAME}" -n | tee -a "${LOGS_NAME}";));
+                echo "=== complete ${TGET_ROOT}${PROG_NAME} ===";));
         echo "### complete ${FUNC_NAME} ###";'
     - ' exec 2>&1;
         export LANG=C;
@@ -254,20 +264,20 @@ autoinstall:
       test -d "/target/."
       && TGET_ROOT="/target";
       SEED_TYPE="nocloud";
-      PROG_NAME="${TGET_ROOT}/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
-      LOGS_NAME="${PROG_NAME%.*}.log";
-      COMD_PARM="${PROG_NAME%.*}.prm";
+      PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
+      LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.targets.log";
+      COMD_PARM="${TGET_ROOT}${PROG_NAME%.*}.prm";
       echo "TGET_ROOT=${TGET_ROOT}";
       echo "SEED_TYPE=${SEED_TYPE}";
       echo "PROG_NAME=${PROG_NAME}";
       echo "LOGS_NAME=${LOGS_NAME}";
       echo "COMD_PARM=${COMD_PARM}";
-      mkdir -p "${PROG_NAME%/*}";
+      mkdir -p "${TGET_ROOT}${PROG_NAME%/*}";
       cat /proc/cmdline > "${COMD_PARM}";
-      cd "${PROG_NAME%/*}" || return 1;
+      cd "${TGET_ROOT}${PROG_NAME%/*}" || return 1;
       test -f "/preseed.cfg"
       && (cp "/preseed.cfg"      ./;
-          cp "/${PROG_NAME##*/}" ./;);
+          cp "/${TGET_ROOT}${PROG_NAME##*/}" ./;);
       COMD_LINE="$(cat "${COMD_PARM}")";
       echo "COMD_LINE=${COMD_LINE}";
       for LINE in ${COMD_LINE};
@@ -306,16 +316,18 @@ autoinstall:
               *                    ) ;;
           esac;
       done;
-      test -n "${PROG_NAME:-}"
-      && (test -f "${PROG_NAME}"
-          && (echo "=== start ${PROG_NAME} ===";
-              chmod +x "${PROG_NAME}";
-              (test -d "${TGET_ROOT}/."
-              && (test -n "${SUBIQUITY_ROOT:-}"
-                  && (curtin in-target --target=/target -- sh -c ''"${PROG_NAME}" -b'' | tee -a "${LOGS_NAME}";))
-                  || (in-target --pass-stdout sh -c ''"${PROG_NAME}" -b'' | tee -a "${LOGS_NAME}";)
-              || ("${PROG_NAME}" -b | tee -a "${LOGS_NAME}";))
-              echo "=== complete ${PROG_NAME} ===";));
+      test -n "${TGET_ROOT}${PROG_NAME:-}"
+      && (test -f "${TGET_ROOT}${PROG_NAME}"
+          && (echo "=== start ${TGET_ROOT}${PROG_NAME} ===";
+              test -x "${TGET_ROOT}${PROG_NAME}"
+              || chmod +x "${TGET_ROOT}${PROG_NAME}";
+              ((test -n "${TGET_ROOT}"
+                  && test -d "${TGET_ROOT}/."
+                      && ((test -n "${SUBIQUITY_ROOT:-}"
+                          && (curtin in-target --target=/target -- sh -c "${PROG_NAME} -n;" | tee -a "${LOGS_NAME}";))
+                          || (in-target --pass-stdout sh -c "${PROG_NAME} -n;" | tee -a "${LOGS_NAME}";)))
+              || ("${TGET_ROOT}${PROG_NAME}" -n | tee -a "${LOGS_NAME}";));
+              echo "=== complete ${TGET_ROOT}${PROG_NAME} ===";));
       echo "### complete ${FUNC_NAME} ###";'
 # =============================================================================
 # memo:

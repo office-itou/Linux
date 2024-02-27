@@ -1100,16 +1100,23 @@ function funcCreate_late_command() {
 		 	FUNC_NAME="funcSetupBlacklist"
 		 	echo "${PROG_NAME}: ${FUNC_NAME}"
 		 	# -------------------------------------------------------------------------
-		 	FILE_NAME="/etc/modprobe.d/blacklist-floppy.conf"
+		 	FILE_DIRS="/etc/modprobe.d"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
 		 	fi
+		 	if [ ! -d "${FILE_DIRS}/." ]; then
+		 		echo "${PROG_NAME}: mkdir ${FILE_DIRS}"
+		 		mkdir -p "${FILE_DIRS}"
+		 	fi
+		 	FILE_NAME="${FILE_DIRS}/blacklist-floppy.conf"
+		 	echo "${PROG_NAME}: rmmod floppy"
 		 	rmmod floppy
+		 	echo "${PROG_NAME}: create file ${FILE_DIRS}"
 		 	echo 'blacklist floppy' > "${FILE_NAME}"
 		 	#--- debug print ----------------------------------------------------------
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
-		#	dpkg-reconfigure initramfs-tools
+		 	dpkg-reconfigure initramfs-tools
 		}
 		
 		# --- packages ----------------------------------------------------------------
