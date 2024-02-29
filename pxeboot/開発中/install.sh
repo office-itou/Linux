@@ -676,7 +676,7 @@ function funcSystem_control() {
 		SYSD_NAME=()
 		#                    debian/ubuntu                               fedora/centos/...                           opensuse
 		case "${SRVC_LINE[0]}" in
-			fwl ) SYSD_ARRY=(""                                          "firewalld.service"                         "firewalld.service"                         );;
+			fwl ) SYSD_ARRY=("firewalld.service"                         "firewalld.service"                         "firewalld.service"                         );;
 			sel ) SYSD_ARRY=(""                                          "selinux-autorelabel.service"               ""                                          );;
 			ssh ) SYSD_ARRY=("ssh.service"                               "sshd.service"                              "sshd.service"                              );;
 			dns ) SYSD_ARRY=("dnsmasq.service"                           "dnsmasq.service"                           "dnsmasq.service"                           );;

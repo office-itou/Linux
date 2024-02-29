@@ -31,8 +31,7 @@ autoinstall:
 #   preserve_sources_list: false
 # =============================================================================
   early-commands:
-  - ' exec 2>&1;
-      export LANG=C;
+  - ' export LANG=C;
       FUNC_NAME="early-commands";
       echo "### start ${FUNC_NAME} ###";
       dd if=/dev/zero of=/dev/nvme0n1 bs=1M count=10;
@@ -154,6 +153,7 @@ autoinstall:
   - firewalld
   - traceroute
   - network-manager
+  - openvswitch-switch
   - bash-completion
   - build-essential
   - curl
@@ -194,24 +194,20 @@ autoinstall:
       servers:
       - ntp.nict.jp
     runcmd:
-    - ' exec 2>&1;
-        export LANG=C;
+    - ' export LANG=C;
         FUNC_NAME="user-data runcmd";
         echo "### start ${FUNC_NAME} ###";'
-#   - ' exec 2>&1;
-#       export LANG=C;
+#   - ' export LANG=C;
 #       FUNC_NAME="user-data runcmd <change root password>";
 #       echo "### start ${FUNC_NAME} ###";
 #       echo "root:r00t" | chpasswd;
 #       echo "### complete ${FUNC_NAME} ###";'
-#   - ' exec 2>&1;
-#       export LANG=C;
+#   - ' export LANG=C;
 #       FUNC_NAME="user-data runcmd <change ssh root login>";
 #       echo "### start ${FUNC_NAME} ###";
 #       echo "PermitRootLogin yes" > /etc/ssh/sshd_config.d/root_login.conf;
 #       echo "### complete ${FUNC_NAME} ###";'
-    - ' exec 2>&1;
-        export LANG=C;
+    - ' export LANG=C;
         FUNC_NAME="user-data runcmd <system setup>";
         echo "### start ${FUNC_NAME} ###";
         TGET_ROOT="";
@@ -232,13 +228,12 @@ autoinstall:
                 ((test -n "${TGET_ROOT}"
                     && test -d "${TGET_ROOT}/."
                         && ((test -n "${SUBIQUITY_ROOT:-}"
-                            && (curtin in-target --target=/target -- sh -c "${PROG_NAME} -n;" | tee -a "${LOGS_NAME}";))
-                            || (in-target --pass-stdout sh -c "${PROG_NAME} -n;" | tee -a "${LOGS_NAME}";)))
-                || ("${TGET_ROOT}${PROG_NAME}" -n | tee -a "${LOGS_NAME}";));
+                            && (curtin in-target --target=/target -- sh -c "${PROG_NAME} -n -s;" | tee -a "${LOGS_NAME}";))
+                            || (in-target --pass-stdout sh -c "${PROG_NAME} -n -s;" | tee -a "${LOGS_NAME}";)))
+                || ("${TGET_ROOT}${PROG_NAME}" -n -s | tee -a "${LOGS_NAME}";));
                 echo "=== complete ${TGET_ROOT}${PROG_NAME} ===";));
         echo "### complete ${FUNC_NAME} ###";'
-    - ' exec 2>&1;
-        export LANG=C;
+    - ' export LANG=C;
         FUNC_NAME="user-data runcmd";
         echo "### complete ${FUNC_NAME} ###";'
 #   timezone: Asia/Tokyo
@@ -256,8 +251,7 @@ autoinstall:
     mode: reboot
 # =============================================================================
   late-commands:
-  - ' exec 2>&1;
-      export LANG=C;
+  - ' export LANG=C;
       FUNC_NAME="late-commands";
       echo "### start ${FUNC_NAME} ###";
       TGET_ROOT="";
@@ -324,9 +318,9 @@ autoinstall:
               ((test -n "${TGET_ROOT}"
                   && test -d "${TGET_ROOT}/."
                       && ((test -n "${SUBIQUITY_ROOT:-}"
-                          && (curtin in-target --target=/target -- sh -c "${PROG_NAME} -n;" | tee -a "${LOGS_NAME}";))
-                          || (in-target --pass-stdout sh -c "${PROG_NAME} -n;" | tee -a "${LOGS_NAME}";)))
-              || ("${TGET_ROOT}${PROG_NAME}" -n | tee -a "${LOGS_NAME}";));
+                          && (curtin in-target --target=/target -- sh -c "${PROG_NAME} -b;" | tee -a "${LOGS_NAME}";))
+                          || (in-target --pass-stdout sh -c "${PROG_NAME} -b;" | tee -a "${LOGS_NAME}";)))
+              || ("${TGET_ROOT}${PROG_NAME}" -b | tee -a "${LOGS_NAME}";));
               echo "=== complete ${TGET_ROOT}${PROG_NAME} ===";));
       echo "### complete ${FUNC_NAME} ###";'
 # =============================================================================
