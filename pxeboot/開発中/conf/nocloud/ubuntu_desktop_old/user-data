@@ -31,15 +31,17 @@ autoinstall:
 #   preserve_sources_list: false
 # =============================================================================
   early-commands:
-  - ' export LANG=C;
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
       FUNC_NAME="early-commands";
       echo "### start ${FUNC_NAME} ###";
       dd if=/dev/zero of=/dev/nvme0n1 bs=1M count=10;
-      echo "### complete ${FUNC_NAME} ###";'
+      echo "### complete ${FUNC_NAME} ###";' ]
 # =============================================================================
   storage:
-#   grub:
-#     reorder_uefi: false
+    grub:
+      reorder_uefi: false
     layout:
       name: lvm
       sizing-policy: all
@@ -99,9 +101,9 @@ autoinstall:
     hostname: sv-ubuntu.workgroup
     realname: Master
     username: master
-    password: "$1$9wmVQBSz$zrhHtC5Htdyz5fLjYngVh."
+    password: "$6$5RyzqnKMKDR7ue3k$1DvQQotQIhde..Z7XFkb3uz2QpgdNkPepBhroQxuhWzR9AnCz/tjryChFKMVClzWYqsuGZTKxRNbXVpE081Q70"
 #   plain_text_passwd: "master"
-#   openssl passwd [plain_text_passwd]
+#   echo "master" | openssl passwd -6 -stdin
 #   (run in an environment equivalent to the OS to be installed)
 # =============================================================================
   locale: ja_JP.UTF-8
@@ -109,6 +111,22 @@ autoinstall:
     layout: jp
   timezone: Asia/Tokyo
 # =============================================================================
+  network:
+    version: 2
+    ethernets:
+      any-ens:
+        match:
+          name: "en*"
+        dhcp4: true
+        dhcp6: true
+        ipv6-privacy: true
+      any-eth:
+        match:
+          name: "et*"
+        dhcp4: true
+        dhcp6: true
+        ipv6-privacy: true
+# -----------------------------------------------------------------------------
 # network:
 #   version: 2
 #   ethernets:
@@ -194,48 +212,81 @@ autoinstall:
       servers:
       - ntp.nict.jp
     runcmd:
-    - ' export LANG=C;
+    - [ sh, -c, '
+        exec 2>&1;
+        export LANG=C;
         FUNC_NAME="user-data runcmd";
-        echo "### start ${FUNC_NAME} ###";'
-    - ' export LANG=C;
-#       FUNC_NAME="user-data runcmd <change root password>";
-#       echo "### start ${FUNC_NAME} ###";
-#       echo "root:r00t" | chpasswd;
-#       echo "### complete ${FUNC_NAME} ###";'
-    - ' export LANG=C;
-#       FUNC_NAME="user-data runcmd <change ssh root login>";
-#       echo "### start ${FUNC_NAME} ###";
-#       echo "PermitRootLogin yes" > /etc/ssh/sshd_config.d/root_login.conf;
-#       echo "### complete ${FUNC_NAME} ###";'
-    - ' export LANG=C;
-        FUNC_NAME="user-data runcmd <system setup>";
+        echo "### start ${FUNC_NAME} ###";' ]
+    - [ sh, -c, '
+        exec 2>&1;
+        export LANG=C;
+        FUNC_NAME="user-data runcmd <enable firewalld.service>";
         echo "### start ${FUNC_NAME} ###";
         TGET_ROOT="";
-        test -d "/target/."
-        && TGET_ROOT="/target";
+        if [ -d "/target/." ]; then
+           TGET_ROOT="/target";
+        fi;
+        SEED_TYPE="nocloud";
+        SRVC_NAME="firewalld.service";
+        PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
+        LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.current.log";
+        FILE_NAME="${TGET_ROOT}/lib/systemd/system/${SRVC_NAME}";
+        if [ -f "${FILE_NAME}" ]; then
+            echo "=== start ${FILE_NAME} ===" | tee -a "${LOGS_NAME}";
+            if [ -n "${TGET_ROOT}" ]; then
+                if [ -n "${SUBIQUITY_ROOT:-}" ]; then
+                    curtin in-target --target=/target -- sh -c "systemctl enable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";
+                else
+                    in-target --pass-stdout sh -c "systemctl enable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";
+                fi;
+            else
+                systemctl enable firewalld.service; systemctl is-enabled firewalld.service | tee -a "${LOGS_NAME}";
+            fi;
+            echo "=== complete ${FILE_NAME} ===" | tee -a "${LOGS_NAME}";
+        else
+            echo "not exist: ${FILE_NAME}" | tee -a "${LOGS_NAME}";
+        fi;
+        echo "### complete ${FUNC_NAME} ###";' ]
+    - [ sh, -c, '
+        exec 2>&1;
+        export LANG=C;
+        FUNC_NAME="user-data runcmd <setup network>";
+        echo "### start ${FUNC_NAME} ###";
+        TGET_ROOT="";
+        if [ -d "/target/." ]; then
+            TGET_ROOT="/target";
+        fi;
         SEED_TYPE="nocloud";
         PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
         LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.current.log";
-        echo "TGET_ROOT=${TGET_ROOT}";
-        echo "SEED_TYPE=${SEED_TYPE}";
-        echo "PROG_NAME=${PROG_NAME}";
-        echo "LOGS_NAME=${LOGS_NAME}";
-        test -n "${TGET_ROOT}${PROG_NAME:-}"
-        && (test -f "${TGET_ROOT}${PROG_NAME}"
-            && (echo "=== start ${TGET_ROOT}${PROG_NAME} ===";
-                test -x "${TGET_ROOT}${PROG_NAME}"
-                || chmod +x "${TGET_ROOT}${PROG_NAME}";
-                ((test -n "${TGET_ROOT}"
-                    && test -d "${TGET_ROOT}/."
-                        && ((test -n "${SUBIQUITY_ROOT:-}"
-                            && (curtin in-target --target=/target -- sh -c "${PROG_NAME} -n -s;" | tee -a "${LOGS_NAME}";))
-                            || (in-target --pass-stdout sh -c "${PROG_NAME} -n -s;" | tee -a "${LOGS_NAME}";)))
-                || ("${TGET_ROOT}${PROG_NAME}" -n -s | tee -a "${LOGS_NAME}";));
-                echo "=== complete ${TGET_ROOT}${PROG_NAME} ===";));
-        echo "### complete ${FUNC_NAME} ###";'
-    - ' export LANG=C;
+        echo "TGET_ROOT=${TGET_ROOT}" | tee -a "${LOGS_NAME}";
+        echo "SEED_TYPE=${SEED_TYPE}" | tee -a "${LOGS_NAME}";
+        echo "PROG_NAME=${PROG_NAME}" | tee -a "${LOGS_NAME}";
+        echo "LOGS_NAME=${LOGS_NAME}" | tee -a "${LOGS_NAME}";
+        if [ -n "${TGET_ROOT}${PROG_NAME:-}" ]; then
+            if [ -f "${TGET_ROOT}${PROG_NAME}" ]; then
+                echo "=== start ${TGET_ROOT}${PROG_NAME} ===" | tee -a "${LOGS_NAME}";
+                if [ ! -x "${TGET_ROOT}${PROG_NAME}" ]; then
+                   chmod +x "${TGET_ROOT}${PROG_NAME}";
+                fi;
+                if [ -n "${TGET_ROOT}" ]; then
+                    if [ -n "${SUBIQUITY_ROOT:-}" ]; then
+                        curtin in-target --target=/target -- sh -c "${PROG_NAME} -n h -s;" | tee -a "${LOGS_NAME}";
+                    else
+                        in-target --pass-stdout sh -c "${PROG_NAME} -n h -s;" | tee -a "${LOGS_NAME}";
+                    fi;
+                else
+                    "${TGET_ROOT}${PROG_NAME}" -n h -s | tee -a "${LOGS_NAME}";
+                fi;
+                echo "=== complete ${TGET_ROOT}${PROG_NAME} ===" | tee -a "${LOGS_NAME}";
+            fi;
+        fi;
+        echo "### complete ${FUNC_NAME} ###";' ]
+    - [ sh, -c, '
+        exec 2>&1;
+        export LANG=C;
         FUNC_NAME="user-data runcmd";
-        echo "### complete ${FUNC_NAME} ###";'
+        echo "### complete ${FUNC_NAME} ###";' ]
 #   timezone: Asia/Tokyo
 # =============================================================================
 # runcmd:
@@ -251,27 +302,36 @@ autoinstall:
     mode: reboot
 # =============================================================================
   late-commands:
-  - ' export LANG=C;
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
       FUNC_NAME="late-commands";
+      echo "### start ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="late-commands <setup network>";
       echo "### start ${FUNC_NAME} ###";
       TGET_ROOT="";
-      test -d "/target/."
-      && TGET_ROOT="/target";
+      if [ -d "/target/." ]; then
+          TGET_ROOT="/target";
+      fi;
       SEED_TYPE="nocloud";
       PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
       LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.targets.log";
       COMD_PARM="${TGET_ROOT}${PROG_NAME%.*}.prm";
-      echo "TGET_ROOT=${TGET_ROOT}";
-      echo "SEED_TYPE=${SEED_TYPE}";
-      echo "PROG_NAME=${PROG_NAME}";
-      echo "LOGS_NAME=${LOGS_NAME}";
-      echo "COMD_PARM=${COMD_PARM}";
+      echo "TGET_ROOT=${TGET_ROOT}" | tee -a "${LOGS_NAME}";
+      echo "SEED_TYPE=${SEED_TYPE}" | tee -a "${LOGS_NAME}";
+      echo "PROG_NAME=${PROG_NAME}" | tee -a "${LOGS_NAME}";
+      echo "LOGS_NAME=${LOGS_NAME}" | tee -a "${LOGS_NAME}";
+      echo "COMD_PARM=${COMD_PARM}" | tee -a "${LOGS_NAME}";
       mkdir -p "${TGET_ROOT}${PROG_NAME%/*}";
       cat /proc/cmdline > "${COMD_PARM}";
       cd "${TGET_ROOT}${PROG_NAME%/*}" || return 1;
-      test -f "/preseed.cfg"
-      && (cp "/preseed.cfg"      ./;
-          cp "/${TGET_ROOT}${PROG_NAME##*/}" ./;);
+      if [ -f "/preseed.cfg" ]; then
+          cp "/preseed.cfg"                  ./;
+          cp "/${TGET_ROOT}${PROG_NAME##*/}" ./;
+      fi;
       COMD_LINE="$(cat "${COMD_PARM}")";
       echo "COMD_LINE=${COMD_LINE}";
       for LINE in ${COMD_LINE};
@@ -287,22 +347,22 @@ autoinstall:
           case "${SEED_ADDR}" in
               http://* | https://* )
                   case "${SEED_TYPE}" in
-                      preseed ) wget -O preseed.cfg "${SEED_ADDR}";;
-                      nocloud ) wget "${SEED_ADDR}/user-data"     ;;
-                      *       )                                   ;;
+                      preseed ) wget -O preseed.cfg "${SEED_ADDR}" | tee -a "${LOGS_NAME}";;
+                      nocloud ) wget "${SEED_ADDR}/user-data"      | tee -a "${LOGS_NAME}";;
+                      *       )                                                           ;;
                   esac;
-                  wget "${SEED_ADDR%/*}/${PROG_NAME##*/}";
+                  wget "${SEED_ADDR%/*}/${PROG_NAME##*/}" | tee -a "${LOGS_NAME}";
                   ;;
               file://* | /*        )
                   SEED_FILE="${SEED_TYPE#*:/}";
                   case "${SEED_TYPE}" in
                       preseed )
-                          cp "${SEED_FILE}"                     ./preseed.cfg;
-                          cp "${SEED_FILE%/*}/${PROG_NAME##*/}" ./;
+                          cp "${SEED_FILE}"                     ./preseed.cfg | tee -a "${LOGS_NAME}";
+                          cp "${SEED_FILE%/*}/${PROG_NAME##*/}" ./            | tee -a "${LOGS_NAME}";
                           ;;
                       nocloud )
-                          cp "${SEED_FILE}/user-data"        ./;
-                          cp "${SEED_FILE}/${PROG_NAME##*/}" ./;
+                          cp "${SEED_FILE}/user-data"        ./ | tee -a "${LOGS_NAME}";
+                          cp "${SEED_FILE}/${PROG_NAME##*/}" ./ | tee -a "${LOGS_NAME}";
                           ;;
                       *       ) ;;
                   esac;
@@ -310,19 +370,91 @@ autoinstall:
               *                    ) ;;
           esac;
       done;
-      test -n "${TGET_ROOT}${PROG_NAME:-}"
-      && (test -f "${TGET_ROOT}${PROG_NAME}"
-          && (echo "=== start ${TGET_ROOT}${PROG_NAME} ===";
-              test -x "${TGET_ROOT}${PROG_NAME}"
-              || chmod +x "${TGET_ROOT}${PROG_NAME}";
-              ((test -n "${TGET_ROOT}"
-                  && test -d "${TGET_ROOT}/."
-                      && ((test -n "${SUBIQUITY_ROOT:-}"
-                          && (curtin in-target --target=/target -- sh -c "${PROG_NAME} -b;" | tee -a "${LOGS_NAME}";))
-                          || (in-target --pass-stdout sh -c "${PROG_NAME} -b;" | tee -a "${LOGS_NAME}";)))
-              || ("${TGET_ROOT}${PROG_NAME}" -b | tee -a "${LOGS_NAME}";));
-              echo "=== complete ${TGET_ROOT}${PROG_NAME} ===";));
-      echo "### complete ${FUNC_NAME} ###";'
+      if [ -n "${TGET_ROOT}${PROG_NAME:-}" ]; then
+          if [ -f "${TGET_ROOT}${PROG_NAME}" ]; then
+              echo "=== start ${TGET_ROOT}${PROG_NAME} ===" | tee -a "${LOGS_NAME}";
+              if [ ! -x "${TGET_ROOT}${PROG_NAME}" ]; then
+                 chmod +x "${TGET_ROOT}${PROG_NAME}";
+              fi;
+              if [ -n "${TGET_ROOT}" ]; then
+                  if [ -n "${SUBIQUITY_ROOT:-}" ]; then
+                      curtin in-target --target=/target -- sh -c "${PROG_NAME} -b -n s;" | tee -a "${LOGS_NAME}";
+                  else
+                      in-target --pass-stdout sh -c "${PROG_NAME} -b -n s;" | tee -a "${LOGS_NAME}";
+                  fi;
+              else
+                  "${TGET_ROOT}${PROG_NAME}" -b -n s | tee -a "${LOGS_NAME}";
+              fi;
+              echo "=== complete ${TGET_ROOT}${PROG_NAME} ===" | tee -a "${LOGS_NAME}";
+          fi;
+      fi;
+      echo "### complete ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+#     exec 2>&1;
+#     export LANG=C;
+#     FUNC_NAME="late-commands <change root password>";
+#     echo "### start ${FUNC_NAME} ###";
+#     ROOT_USER="root:r00t";
+#     TGET_ROOT="";
+#     if [ -d "/target/." ]; then
+#         TGET_ROOT="/target";
+#     fi;
+#     if [ -n "${TGET_ROOT}" ]; then
+#         if [ -n "${SUBIQUITY_ROOT:-}" ]; then
+#             curtin in-target --target=/target -- sh -c "echo \"${ROOT_USER}\" | chpasswd;";
+#         else
+#             in-target --pass-stdout sh -c "echo \"${ROOT_USER}\" | chpasswd;";
+#         fi;
+#     else
+#         echo "${ROOT_USER}" | chpasswd;
+#     fi;
+#     echo "### complete ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+#     exec 2>&1;
+#     export LANG=C;
+#     FUNC_NAME="late-commands <change ssh root login>";
+#     echo "### start ${FUNC_NAME} ###";
+#     TGET_ROOT="";
+#     if [ -d "/target/." ]; then
+#         TGET_ROOT="/target";
+#     fi;
+#     echo "PermitRootLogin yes" > "${TGET_ROOT}/etc/ssh/sshd_config.d/root_login.conf";
+#     echo "### complete ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="user-data runcmd <disable firewalld.service>";
+      echo "### start ${FUNC_NAME} ###";
+      TGET_ROOT="";
+      if [ -d "/target/." ]; then
+         TGET_ROOT="/target";
+      fi;
+      SEED_TYPE="nocloud";
+      SRVC_NAME="firewalld.service";
+      PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
+      LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.targets.log";
+      FILE_NAME="${TGET_ROOT}/lib/systemd/system/${SRVC_NAME}";
+      if [ -f "${FILE_NAME}" ]; then
+          echo "=== start ${FILE_NAME} ===" | tee -a "${LOGS_NAME}";
+          if [ -n "${TGET_ROOT}" ]; then
+              if [ -n "${SUBIQUITY_ROOT:-}" ]; then
+                  curtin in-target --target=/target -- sh -c "systemctl disable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";
+              else
+                  in-target --pass-stdout sh -c "systemctl disable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";
+              fi;
+          else
+              systemctl disable firewalld.service; systemctl is-enabled firewalld.service | tee -a "${LOGS_NAME}";
+          fi;
+          echo "=== complete ${FILE_NAME} ===" | tee -a "${LOGS_NAME}";
+      else
+          echo "not exist: ${FILE_NAME}" | tee -a "${LOGS_NAME}";
+      fi;
+      echo "### complete ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="late-commands";
+      echo "### complete ${FUNC_NAME} ###";' ]
 # =============================================================================
 # memo:
 #   https://ubuntu.com/server/docs/install/autoinstall-reference

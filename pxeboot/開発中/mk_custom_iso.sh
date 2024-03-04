@@ -182,7 +182,7 @@
 #															# 1440x 900   : WXGA+  (16:10)
 #															# 1360x 768   : HD     (16:9)
 #	declare -r    SCRN_MODE="775"							# 1280x1024x 8: SXGA   (5:4)
-#	declare -r    SCRN_MODE="794"							#          x16
+	declare -r    SCRN_MODE="794"							#          x16
 #	declare -r    SCRN_MODE="795"							#          x24
 #	declare -r    SCRN_MODE="829"							#          x32
 #															# 1280x 960   :        (4:3)
@@ -191,7 +191,7 @@
 #															# 1280x 720   : WXGA   (16:9)
 #															# 1152x 864   :        (4:3)
 #	declare -r    SCRN_MODE="773"							# 1024x 768x 8: XGA    (4:3)
-	declare -r    SCRN_MODE="791"							#          x16
+#	declare -r    SCRN_MODE="791"							#          x16
 #	declare -r    SCRN_MODE="792"							#          x24
 #	declare -r    SCRN_MODE="824"							#          x32
 #	declare -r    SCRN_MODE="771"							#  800x 600x 8: SVGA   (4:3)
@@ -202,6 +202,35 @@
 #	declare -r    SCRN_MODE="785"							#          x16
 #	declare -r    SCRN_MODE="786"							#          x24
 #	declare -r    SCRN_MODE="809"							#          x32
+
+	# --- vga mode ------------------------------------------------------------
+	# |           |   8 |  16 |  24 |  32 | bit
+	# |screnn size| 256 | 64k | 16M |  4G | colors
+	# |  640x 480 | 769 | 785 | 786 | 809 | VGA    (4:3)
+	# |  800x 600 | 771 | 788 | 789 | 814 | SVGA   (4:3)
+	# | 1024x 768 | 773 | 791 | 792 | 824 | XGA    (4:3)
+	# | 1152x 864 | --- | --- | --- | --- |        (4:3)
+	# | 1280x 720 | --- | --- | --- | --- | WXGA   (16:9)
+	# | 1280x 768 | --- | --- | --- | --- |        (4:3)
+	# | 1280x 800 | --- | --- | --- | --- |        (16:10)
+	# | 1280x 960 | --- | --- | --- | --- |        (4:3)
+	# | 1280x1024 | 775 | 794 | 795 | 829 | SXGA   (5:4)
+	# | 1360x 768 | --- | --- | --- | --- | HD     (16:9)
+	# | 1400x1050 | --- | --- | --- | --- |        (4:3)
+	# | 1440x 900 | --- | --- | --- | --- | WXGA+  (16:10)
+	# | 1600x1200 | --- | --- | --- | --- | UXGA   (4:3)
+	# | 1680x1050 | --- | --- | --- | --- | WSXGA+ (16:10)
+	# | 1792x1344 | --- | --- | --- | --- |        (4:3)
+	# | 1856x1392 | --- | --- | --- | --- |        (4:3)
+	# | 1920x1080 | --- | --- | --- | 980 | FHD    (16:9)
+	# | 1920x1200 | 893 | --- | --- | --- | WUXGA  (16:10)
+	# | 1920x1440 | --- | --- | --- | --- |        (4:3)
+	# | 2560x1440 | --- | --- | --- | --- | WQHD   (16:9)
+	# | 2560x1600 | --- | --- | --- | --- |        (16:10)
+	# | 2880x1800 | --- | --- | --- | --- |        (16:10)
+	# | 3840x2160 | --- | --- | --- | --- | 4K UHD (16:9)
+	# | 3840x2400 | --- | --- | --- | --- |        (16:10)
+	# | 7680x4320 | --- | --- | --- | --- | 8K UHD (16:9)
 
 	# === network =============================================================
 
@@ -971,6 +1000,7 @@ function funcCreate_late_command() {
 		 	echo "${PROG_NAME}: TGET_DIRS=${TGET_DIRS}"
 		 	echo "${PROG_NAME}: ORIG_DIRS=${ORIG_DIRS}"
 		 	echo "${PROG_NAME}: CRNT_DIRS=${CRNT_DIRS}"
+		 	echo "${PROG_NAME}: COMD_PARM=${COMD_PARM}"
 		 	echo "${PROG_NAME}: DIST_NAME=${DIST_NAME}"
 		 	echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
 		
@@ -1098,25 +1128,35 @@ function funcCreate_late_command() {
 		# run on target
 		funcSetupBlacklist() {
 		 	FUNC_NAME="funcSetupBlacklist"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	# -------------------------------------------------------------------------
-		 	FILE_NAME="/etc/modprobe.d/blacklist-floppy.conf"
+		 	FILE_DIRS="/etc/modprobe.d"
 		 	if [ -d "${TGET_DIRS}/." ]; then
-		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
 		 	fi
+		 	if [ ! -d "${FILE_DIRS}/." ]; then
+		 		echo "${PROG_NAME}: mkdir ${FILE_DIRS}"
+		 		mkdir -p "${FILE_DIRS}"
+		 	fi
+		 	FILE_NAME="${FILE_DIRS}/blacklist-floppy.conf"
+		 	echo "${PROG_NAME}: rmmod floppy"
 		 	rmmod floppy
+		 	echo "${PROG_NAME}: create file ${FILE_DIRS}"
 		 	echo 'blacklist floppy' > "${FILE_NAME}"
 		 	#--- debug print ----------------------------------------------------------
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
-		#	dpkg-reconfigure initramfs-tools
+		 	# shellcheck disable=SC2312
+		 	if [ -n "$(command -v dpkg-reconfigure 2> /dev/null)" ]; then
+		 		dpkg-reconfigure initramfs-tools
+		 	fi
 		}
 		
 		# --- packages ----------------------------------------------------------------
 		# run on target
 		funcInstallPackages() {
 		 	FUNC_NAME="funcInstallPackages"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	#--------------------------------------------------------------------------
 		 	FILE_DIRS="/etc/apt"
 		 	BACK_DIRS="${ORIG_DIRS}"
@@ -1186,7 +1226,8 @@ function funcCreate_late_command() {
 		 		# shellcheck disable=SC2086
 		 		apt-get -qq -y install ${LIST_DPKG}
 		 	fi
-		 	if [ -n "${LIST_TASK:-}" ] && [ -n "$(command -v tasksel 2> /dev/null || true)" ]; then
+		 	# shellcheck disable=SC2312
+		 	if [ -n "${LIST_TASK:-}" ] && [ -n "$(command -v tasksel 2> /dev/null)" ]; then
 		 		# shellcheck disable=SC2086
 		 		tasksel install ${LIST_TASK}
 		 	fi
@@ -1197,7 +1238,7 @@ function funcCreate_late_command() {
 		# run on target
 		funcGetNetwork_parameter() {
 		 	FUNC_NAME="funcGetNetwork_parameter"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	#--- parameter ------------------------------------------------------------
 		 	if [ -f "${SEED_FILE}" ]; then
 		 		FIX_IPV4="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/\(disable_dhcp\|disable_autoconfig\)[ \t]\+/ s/^.*[ \t]//p' "${SEED_FILE}")"
@@ -1303,7 +1344,7 @@ function funcCreate_late_command() {
 		# run on target
 		funcSetupNetwork_hostname() {
 		 	FUNC_NAME="funcSetupNetwork_hostname"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	# --- hostname ------------------------------------------------------------
 		 	FILE_NAME="/etc/hostname"
 		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
@@ -1330,7 +1371,7 @@ function funcCreate_late_command() {
 		# run on target
 		funcSetupNetwork_hosts() {
 		 	FUNC_NAME="funcSetupNetwork_hosts"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	# --- hosts ---------------------------------------------------------------
 		 	FILE_NAME="/etc/hosts"
 		 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
@@ -1364,8 +1405,17 @@ function funcCreate_late_command() {
 		# run on target
 		funcSetupNetwork_firewalld() {
 		 	FUNC_NAME="funcSetupNetwork_firewalld"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	# --- firewalld -----------------------------------------------------------
+		 	SRVC_NAME="firewalld.service"
+		 	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
+		 	if [ -d "${TGET_DIRS}/." ]; then
+		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		 	fi
+		 	if [ ! -f "${FILE_NAME}" ]; then
+		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
+		 		return
+		 	fi
 		 	FILE_NAME="/etc/firewalld/firewalld.conf"
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
@@ -1384,16 +1434,28 @@ function funcCreate_late_command() {
 		 	sed -e '/<\/zone>/i \  <interface name="'"${NIC_NAME}"'"\/>' \
 		 	    "${ULIB_NAME}"                                           \
 		 	>   "${FILE_NAME}"
+		 	# shellcheck disable=SC2312
+		 	if [ -z "$(sed -ne '/^[ \t]*<service name="samba"\/>[ \t]*$/p' "${FILE_NAME}")" ]; then
+		 		sed -i "${FILE_NAME}"                                \
+		 		    -e '/samba-client/i \  <service name="samba"\/>'
+		 	fi
 		 	#--- debug print ----------------------------------------------------------
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
+		 	#--- systemctl ------------------------------------------------------------
+		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+		 	if [ "${SYSD_STAT}" = "enabled" ]; then
+		 		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
+		 		systemctl restart "${SRVC_NAME}"
+		 	fi
+		 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
 		}
 		
 		# --- network setup avahi -----------------------------------------------------
 		# run on target
 		funcSetupNetwork_avahi() {
 		 	FUNC_NAME="funcSetupNetwork_avahi"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	# --- avahi ---------------------------------------------------------------
 		 	SRVC_NAME="avahi-daemon.service"
 		 	SOCK_NAME="avahi-daemon.socket"
@@ -1414,10 +1476,12 @@ function funcCreate_late_command() {
 		 		if [ "${SYSD_STAT}" != "enabled" ]; then
 		 			continue
 		 		fi
+		 		echo "${PROG_NAME}: ${SRVC_NAME} stop"
+		 		systemctl stop "${SYSD_NAME}"
 		 		echo "${PROG_NAME}: ${SRVC_NAME} masked"
 		 		systemctl mask "${SYSD_NAME}"
-		 		echo "${PROG_NAME}: ${SRVC_NAME} disabled"
-		 		systemctl disable --now "${SYSD_NAME}"
+		#		echo "${PROG_NAME}: ${SRVC_NAME} disabled"
+		#		systemctl disable --now "${SYSD_NAME}"
 		 	done
 		 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
 		}
@@ -1426,7 +1490,7 @@ function funcCreate_late_command() {
 		# run on target
 		funcSetupNetwork_dnsmasq() {
 		 	FUNC_NAME="funcSetupNetwork_dnsmasq"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	# --- dnsmasq -------------------------------------------------------------
 		 	SRVC_NAME="dnsmasq.service"
 		 	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
@@ -1478,8 +1542,8 @@ function funcCreate_late_command() {
 		 		cat "${FILE_NAME}"
 		 	fi
 		 	#--- systemctl ------------------------------------------------------------
-		 	SRVC_NAME="systemd-resolved.service"
-		 	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
+		 	SYSD_NAME="systemd-resolved.service"
+		 	FILE_NAME="/lib/systemd/system/${SYSD_NAME}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
@@ -1489,12 +1553,19 @@ function funcCreate_late_command() {
 		 	fi
 		 	echo "${PROG_NAME}: daemon-reload"
 		 	systemctl daemon-reload
+		 	SYSD_STAT="$(funcServiceStatus "${SYSD_NAME}")"
+		 	if [ "${SYSD_STAT}" = "enabled" ]; then
+		 		echo "${PROG_NAME}: ${SYSD_NAME} stop"
+		 		systemctl stop "${SYSD_NAME}"
+		 		echo "${PROG_NAME}: ${SYSD_NAME} masked"
+		 		systemctl mask "${SYSD_NAME}"
+		#		echo "${PROG_NAME}: ${SYSD_NAME} disabled"
+		#		systemctl disable --now "${SYSD_NAME}"
+		 	fi
 		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
 		 	if [ "${SYSD_STAT}" = "enabled" ]; then
-		 		echo "${PROG_NAME}: ${SRVC_NAME} masked"
-		 		systemctl mask "${SRVC_NAME}"
-		 		echo "${PROG_NAME}: ${SRVC_NAME} disabled"
-		 		systemctl disable --now "${SRVC_NAME}"
+		 		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
+		 		systemctl restart "${SRVC_NAME}"
 		 	fi
 		 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
 		 	#--- resolv.conf ----------------------------------------------------------
@@ -1519,7 +1590,7 @@ function funcCreate_late_command() {
 		 	# --- create --------------------------------------------------------------
 		#	ls -l "${FILE_NAME}"
 		#	rm -f "${FILE_NAME}"
-		#	ls -l "${FILE_NAME}" 2> /dev/null || true
+		#	ls -l "${FILE_NAME}" 2> /dev/null
 		 	# shellcheck disable=SC2312
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${WORK_NAME}"
 		 		# Generated by user script
@@ -1547,7 +1618,7 @@ function funcCreate_late_command() {
 		# run on target
 		funcSetupNetwork_connman() {
 		 	FUNC_NAME="funcSetupNetwork_connman"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	#--- exit for DHCP --------------------------------------------------------
 		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
 		 		return
@@ -1676,7 +1747,7 @@ function funcCreate_late_command() {
 		 	systemctl daemon-reload
 		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
 		 	if [ "${SYSD_STAT}" = "enabled" ]; then
-		 		echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
+		 		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
 		 		systemctl restart "${SRVC_NAME}"
 		 	fi
 		 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
@@ -1686,7 +1757,7 @@ function funcCreate_late_command() {
 		# run on target
 		funcSetupNetwork_nmanagr() {
 		 	FUNC_NAME="funcSetupNetwork_nmanagr"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	#--- exit for DHCP --------------------------------------------------------
 		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
 		 		return
@@ -1695,10 +1766,12 @@ function funcCreate_late_command() {
 		 	SRVC_NAME="NetworkManager.service"
 		 	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
 		 	FILE_DIRS="/etc/NetworkManager"
+		 	CONF_FILE="${FILE_DIRS}/NetworkManager.conf"
 		 	BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
+		 		CONF_FILE="${TGET_DIRS}${CONF_FILE}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
 		 	if [ ! -f "${FILE_NAME}" ]; then
@@ -1709,20 +1782,25 @@ function funcCreate_late_command() {
 		 	if [ ! -d "${BACK_DIRS}/system-connections/." ]; then
 		 		mkdir -p "${BACK_DIRS}/system-connections"
 		 	fi
-		#	for FILE_NAME in "${FILE_DIRS}/system-connections"/*
-		#	do
-		#		if [ ! -f "${FILE_NAME}" ]; then
-		#			continue
-		#		fi
-		#		echo "${PROG_NAME}: ${FILE_NAME} moved"
-		#		mv "${FILE_NAME}" "${BACK_DIRS}/system-connections"
-		#	done
+		 	echo "${PROG_NAME}: ${CONF_FILE}"
+		 	if [ -f "${CONF_FILE}" ]; then
+		 		cp -a "${CONF_FILE}" "${BACK_DIRS}"
+		 	fi
 		 	find "${FILE_DIRS}/system-connections" -name '*.yaml' -type f | \
 		 	while read -r FILE_NAME
 		 	do
 		 		echo "${PROG_NAME}: ${FILE_NAME} moved"
 		 		mv "${FILE_NAME}" "${BACK_DIRS}/system-connections"
 		 	done
+		 	# --- change --------------------------------------------------------------
+		#	echo "${PROG_NAME}: change file"
+		#	sed -e '/^\[ifupdown\]$/,/^\[.*]$/  {' \
+		#	    -e '/^managed=.*$/ s/=.*$/=true/}' \
+		#	      "${BACK_DIRS}/${CONF_FILE##*/}"  \
+		#	    > "${CONF_FILE}"
+		 	#--- debug print ------------------------------------------------------
+		#	echo "${PROG_NAME}: --- ${CONF_FILE} ---"
+		#	cat "${CONF_FILE}"
 		 	# --- create --------------------------------------------------------------
 		 	echo "${PROG_NAME}: create file"
 		 	I=1
@@ -1786,8 +1864,17 @@ function funcCreate_late_command() {
 		 	systemctl daemon-reload
 		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
 		 	if [ "${SYSD_STAT}" = "enabled" ]; then
-		 		echo "${PROG_NAME}: ${FILE_NAME##*/} restarted"
+		 		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
 		 		systemctl restart "${SRVC_NAME}"
+		#		for NICS_NAME in lo $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+		#		do
+		#			echo "${PROG_NAME}: nmcli device set ${NICS_NAME} managed true"
+		#			nmcli device set "${NICS_NAME}" managed true
+		#		done
+		#		echo "${PROG_NAME}: nmcli general reload"
+		#		nmcli general reload
+		#		echo "${PROG_NAME}: nmcli connection up Wired connection 1"
+		#		nmcli connection up "Wired connection 1"
 		 	fi
 		 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
 		}
@@ -1796,7 +1883,7 @@ function funcCreate_late_command() {
 		# run on target
 		funcSetupNetwork_netplan() {
 		 	FUNC_NAME="funcSetupNetwork_netplan"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	#--- exit for DHCP --------------------------------------------------------
 		 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
 		 		return
@@ -1857,7 +1944,16 @@ function funcCreate_late_command() {
 		 		#--- debug print ------------------------------------------------------
 		 		echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 		cat "${FILE_NAME}"
+		 		# --- reload netplan --------------------------------------------------
 		 		netplan apply
+		 		# --- reload network manager ------------------------------------------
+		 		for NICS_NAME in lo $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+		 		do
+		 			echo "${PROG_NAME}: nmcli device set ${NICS_NAME} managed true"
+		 			nmcli device set "${NICS_NAME}" managed true
+		 		done
+		 		echo "${PROG_NAME}: nmcli general reload"
+		 		nmcli general reload
 		 		return
 		 	fi
 		 	echo "${PROG_NAME}: directory does not exist ${NMAN_DIRS}"
@@ -1905,9 +2001,9 @@ function funcCreate_late_command() {
 		}
 		
 		# --- network -----------------------------------------------------------------
-		funcSetupNetwork() {
-		 	FUNC_NAME="funcSetupNetwork"
-		 	echo "${PROG_NAME}: ${FUNC_NAME}"
+		funcSetupNetwork_software() {
+		 	FUNC_NAME="funcSetupNetwork_software"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		 	# -------------------------------------------------------------------------
 		 	funcGetNetwork_parameter
 		 	funcSetupNetwork_hostname
@@ -1915,14 +2011,61 @@ function funcCreate_late_command() {
 		 	funcSetupNetwork_firewalld
 		 	funcSetupNetwork_avahi
 		 	funcSetupNetwork_dnsmasq
+		}
+		
+		funcSetupNetwork_hardware() {
+		 	FUNC_NAME="funcSetupNetwork_hardware"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
+		 	# -------------------------------------------------------------------------
+		 	funcGetNetwork_parameter
 		 	funcSetupNetwork_connman
 		 	funcSetupNetwork_nmanagr
 		 	funcSetupNetwork_netplan
 		}
 		
+		# --- service -----------------------------------------------------------------
+		funcSetupService() {
+		 	FUNC_NAME="funcSetupService"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
+		 	# -------------------------------------------------------------------------
+		 	echo "${PROG_NAME}: daemon-reload"
+		 	systemctl daemon-reload
+		 	OLD_IFS="${IFS}"
+		 	for SRVC_LINE in \
+		 		"0 systemd-resolved.service"                \
+		 		"0 connman.service"                         \
+		 		"0 NetworkManager.service"                  \
+		 		"1 firewalld.service"                       \
+		 		"0 ssh.service"                             \
+		 		"1 dnsmasq.service"                         \
+		 		"0 apache2.service"                         \
+		 		"1 smbd.service"                            \
+		 		"1 nmbd.service"
+		 	do
+		 		IFS=' '
+		 		set -f
+		 		# shellcheck disable=SC2086
+		 		set -- ${SRVC_LINE:-}
+		 		set +f
+		 		IFS=${OLD_IFS}
+		 		SRVC_FLAG="${1:-}"
+		 		SRVC_NAME="${2:-}"
+		 		if [ "${SRVC_FLAG}" -eq 0 ]; then
+		 			continue
+		 		fi
+		 		SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+		 		if [ "${SYSD_STAT}" != "enabled" ]; then
+		 			continue
+		 		fi
+		 		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
+		 		systemctl restart "${SRVC_NAME}"
+		 	done
+		}
+		
 		# --- gdm3 --------------------------------------------------------------------
 		#funcChange_gdm3_configure() {
-		#	echo "${PROG_NAME}: funcChange_gdm3_configure"
+		#	FUNC_NAME="funcChange_gdm3_configure"
+		#	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 		#	if [ -f "${TGET_DIRS}/etc/gdm3/custom.conf" ]; then
 		#		sed -i.orig "${TGET_DIRS}/etc/gdm3/custom.conf" \
 		#		    -e '/WaylandEnable=false/ s/^#//'
@@ -1931,13 +2074,14 @@ function funcCreate_late_command() {
 		
 		### Main ######################################################################
 		funcMain() {
-		 	echo "${PROG_NAME}: funcMain"
-		 	COMD_LIST="${PROG_PRAM}"
+		 	FUNC_NAME="funcMain"
+		 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
+		 	PRAM_LIST="${PROG_PRAM}"
 		 	OLD_IFS="${IFS}"
 		 	IFS=' =,'
 		 	set -f
 		 	# shellcheck disable=SC2086
-		 	set -- ${COMD_LIST:-}
+		 	set -- ${PRAM_LIST:-}
 		 	set +f
 		 	IFS=${OLD_IFS}
 		 	while [ -n "${1:-}" ]
@@ -1953,7 +2097,15 @@ function funcCreate_late_command() {
 		 				;;
 		 			-n | --network  )
 		 				shift
-		 				funcSetupNetwork
+		 				case "${1:-}" in
+		 					s | software ) shift; funcSetupNetwork_software;;
+		 					h | hardware ) shift; funcSetupNetwork_hardware;;
+		 					*            ) ;;
+		 				esac
+		 				;;
+		 			-s | --service  )
+		 				shift
+		 				funcSetupService
 		 				;;
 		 			* )
 		 				shift

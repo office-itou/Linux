@@ -53,6 +53,7 @@
 	echo "${PROG_NAME}: TGET_DIRS=${TGET_DIRS}"
 	echo "${PROG_NAME}: ORIG_DIRS=${ORIG_DIRS}"
 	echo "${PROG_NAME}: CRNT_DIRS=${CRNT_DIRS}"
+	echo "${PROG_NAME}: COMD_PARM=${COMD_PARM}"
 	echo "${PROG_NAME}: DIST_NAME=${DIST_NAME}"
 	echo "${PROG_NAME}: COMD_LINE=${COMD_LINE}"
 
@@ -180,7 +181,7 @@ funcServiceStatus() {
 # run on target
 funcSetupBlacklist() {
 	FUNC_NAME="funcSetupBlacklist"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	# -------------------------------------------------------------------------
 	FILE_DIRS="/etc/modprobe.d"
 	if [ -d "${TGET_DIRS}/." ]; then
@@ -198,14 +199,17 @@ funcSetupBlacklist() {
 	#--- debug print ----------------------------------------------------------
 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 	cat "${FILE_NAME}"
-	dpkg-reconfigure initramfs-tools
+	# shellcheck disable=SC2312
+	if [ -n "$(command -v dpkg-reconfigure 2> /dev/null)" ]; then
+		dpkg-reconfigure initramfs-tools
+	fi
 }
 
 # --- packages ----------------------------------------------------------------
 # run on target
 funcInstallPackages() {
 	FUNC_NAME="funcInstallPackages"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	#--------------------------------------------------------------------------
 	FILE_DIRS="/etc/apt"
 	BACK_DIRS="${ORIG_DIRS}"
@@ -287,7 +291,7 @@ funcInstallPackages() {
 # run on target
 funcGetNetwork_parameter() {
 	FUNC_NAME="funcGetNetwork_parameter"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	#--- parameter ------------------------------------------------------------
 	if [ -f "${SEED_FILE}" ]; then
 		FIX_IPV4="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/\(disable_dhcp\|disable_autoconfig\)[ \t]\+/ s/^.*[ \t]//p' "${SEED_FILE}")"
@@ -393,7 +397,7 @@ funcGetNetwork_parameter() {
 # run on target
 funcSetupNetwork_hostname() {
 	FUNC_NAME="funcSetupNetwork_hostname"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	# --- hostname ------------------------------------------------------------
 	FILE_NAME="/etc/hostname"
 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
@@ -420,7 +424,7 @@ funcSetupNetwork_hostname() {
 # run on target
 funcSetupNetwork_hosts() {
 	FUNC_NAME="funcSetupNetwork_hosts"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	# --- hosts ---------------------------------------------------------------
 	FILE_NAME="/etc/hosts"
 	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
@@ -454,7 +458,7 @@ funcSetupNetwork_hosts() {
 # run on target
 funcSetupNetwork_firewalld() {
 	FUNC_NAME="funcSetupNetwork_firewalld"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	# --- firewalld -----------------------------------------------------------
 	SRVC_NAME="firewalld.service"
 	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
@@ -504,7 +508,7 @@ funcSetupNetwork_firewalld() {
 # run on target
 funcSetupNetwork_avahi() {
 	FUNC_NAME="funcSetupNetwork_avahi"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	# --- avahi ---------------------------------------------------------------
 	SRVC_NAME="avahi-daemon.service"
 	SOCK_NAME="avahi-daemon.socket"
@@ -539,7 +543,7 @@ funcSetupNetwork_avahi() {
 # run on target
 funcSetupNetwork_dnsmasq() {
 	FUNC_NAME="funcSetupNetwork_dnsmasq"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	# --- dnsmasq -------------------------------------------------------------
 	SRVC_NAME="dnsmasq.service"
 	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
@@ -667,7 +671,7 @@ _EOT_
 # run on target
 funcSetupNetwork_connman() {
 	FUNC_NAME="funcSetupNetwork_connman"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	#--- exit for DHCP --------------------------------------------------------
 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
 		return
@@ -806,7 +810,7 @@ _EOT_
 # run on target
 funcSetupNetwork_nmanagr() {
 	FUNC_NAME="funcSetupNetwork_nmanagr"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	#--- exit for DHCP --------------------------------------------------------
 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
 		return
@@ -932,7 +936,7 @@ _EOT_
 # run on target
 funcSetupNetwork_netplan() {
 	FUNC_NAME="funcSetupNetwork_netplan"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	#--- exit for DHCP --------------------------------------------------------
 	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
 		return
@@ -1050,9 +1054,9 @@ _EOT_
 }
 
 # --- network -----------------------------------------------------------------
-funcSetupNetwork() {
-	FUNC_NAME="funcSetupNetwork"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+funcSetupNetwork_software() {
+	FUNC_NAME="funcSetupNetwork_software"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	# -------------------------------------------------------------------------
 	funcGetNetwork_parameter
 	funcSetupNetwork_hostname
@@ -1060,6 +1064,13 @@ funcSetupNetwork() {
 	funcSetupNetwork_firewalld
 	funcSetupNetwork_avahi
 	funcSetupNetwork_dnsmasq
+}
+
+funcSetupNetwork_hardware() {
+	FUNC_NAME="funcSetupNetwork_hardware"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
+	# -------------------------------------------------------------------------
+	funcGetNetwork_parameter
 	funcSetupNetwork_connman
 	funcSetupNetwork_nmanagr
 	funcSetupNetwork_netplan
@@ -1068,20 +1079,20 @@ funcSetupNetwork() {
 # --- service -----------------------------------------------------------------
 funcSetupService() {
 	FUNC_NAME="funcSetupService"
-	echo "${PROG_NAME}: ${FUNC_NAME}"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 	# -------------------------------------------------------------------------
 	echo "${PROG_NAME}: daemon-reload"
 	systemctl daemon-reload
 	OLD_IFS="${IFS}"
 	for SRVC_LINE in \
-		"0 systemd-resolved.service" \
-		"0 connman.service" \
-		"0 NetworkManager.service" \
-		"1 firewalld.service" \
-		"0 ssh.service" \
-		"1 dnsmasq.service" \
-		"0 apache2.service" \
-		"1 smbd.service" \
+		"0 systemd-resolved.service"                \
+		"0 connman.service"                         \
+		"0 NetworkManager.service"                  \
+		"1 firewalld.service"                       \
+		"0 ssh.service"                             \
+		"1 dnsmasq.service"                         \
+		"0 apache2.service"                         \
+		"1 smbd.service"                            \
 		"1 nmbd.service"
 	do
 		IFS=' '
@@ -1106,7 +1117,8 @@ funcSetupService() {
 
 # --- gdm3 --------------------------------------------------------------------
 #funcChange_gdm3_configure() {
-#	echo "${PROG_NAME}: funcChange_gdm3_configure"
+#	FUNC_NAME="funcChange_gdm3_configure"
+#	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
 #	if [ -f "${TGET_DIRS}/etc/gdm3/custom.conf" ]; then
 #		sed -i.orig "${TGET_DIRS}/etc/gdm3/custom.conf" \
 #		    -e '/WaylandEnable=false/ s/^#//'
@@ -1115,13 +1127,14 @@ funcSetupService() {
 
 ### Main ######################################################################
 funcMain() {
-	echo "${PROG_NAME}: funcMain"
-	COMD_LIST="${PROG_PRAM}"
+	FUNC_NAME="funcMain"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
+	PRAM_LIST="${PROG_PRAM}"
 	OLD_IFS="${IFS}"
 	IFS=' =,'
 	set -f
 	# shellcheck disable=SC2086
-	set -- ${COMD_LIST:-}
+	set -- ${PRAM_LIST:-}
 	set +f
 	IFS=${OLD_IFS}
 	while [ -n "${1:-}" ]
@@ -1137,7 +1150,11 @@ funcMain() {
 				;;
 			-n | --network  )
 				shift
-				funcSetupNetwork
+				case "${1:-}" in
+					s | software ) shift; funcSetupNetwork_software;;
+					h | hardware ) shift; funcSetupNetwork_hardware;;
+					*            ) ;;
+				esac
 				;;
 			-s | --service  )
 				shift
