@@ -220,6 +220,24 @@ autoinstall:
     - [ sh, -c, '
         exec 2>&1;
         export LANG=C;
+        FUNC_NAME="user-data runcmd <create link resolv.conf>";
+        echo "### start ${FUNC_NAME} ###";
+        TGET_ROOT="";
+        if [ -d "/target/." ]; then
+           TGET_ROOT="/target";
+        fi;
+        FILE_NAME="${TGET_ROOT}/etc/resolv.conf";
+        CONF_FILE="${FILE_NAME}.manually-configured";
+        if [ -f "${CONF_FILE}" ]; then
+            echo "rm -f \"${FILE_NAME}\"";
+            rm -f "${FILE_NAME}";
+            echo "ln -s \"${CONF_FILE}\" \"${FILE_NAME}\"";
+            ln -s "${CONF_FILE}" "${FILE_NAME}";
+        fi;
+        echo "### complete ${FUNC_NAME} ###";' ]
+    - [ sh, -c, '
+        exec 2>&1;
+        export LANG=C;
         FUNC_NAME="user-data runcmd <enable firewalld.service>";
         echo "### start ${FUNC_NAME} ###";
         TGET_ROOT="";
@@ -271,12 +289,12 @@ autoinstall:
                 fi;
                 if [ -n "${TGET_ROOT}" ]; then
                     if [ -n "${SUBIQUITY_ROOT:-}" ]; then
-                        curtin in-target --target=/target -- sh -c "${PROG_NAME} -n h -s;" | tee -a "${LOGS_NAME}";
+                        curtin in-target --target=/target -- sh -c "${PROG_NAME} -n h -s;" 2>&1 | tee -a "${LOGS_NAME}";
                     else
-                        in-target --pass-stdout sh -c "${PROG_NAME} -n h -s;" | tee -a "${LOGS_NAME}";
+                        in-target --pass-stdout sh -c "${PROG_NAME} -n h -s;" 2>&1 | tee -a "${LOGS_NAME}";
                     fi;
                 else
-                    "${TGET_ROOT}${PROG_NAME}" -n h -s | tee -a "${LOGS_NAME}";
+                    "${TGET_ROOT}${PROG_NAME}" -n h -s 2>&1 | tee -a "${LOGS_NAME}";
                 fi;
                 echo "=== complete ${TGET_ROOT}${PROG_NAME} ===" | tee -a "${LOGS_NAME}";
             fi;
@@ -378,12 +396,12 @@ autoinstall:
               fi;
               if [ -n "${TGET_ROOT}" ]; then
                   if [ -n "${SUBIQUITY_ROOT:-}" ]; then
-                      curtin in-target --target=/target -- sh -c "${PROG_NAME} -b -n s;" | tee -a "${LOGS_NAME}";
+                      curtin in-target --target=/target -- sh -c "${PROG_NAME} -b -n s;" 2>&1 | tee -a "${LOGS_NAME}";
                   else
-                      in-target --pass-stdout sh -c "${PROG_NAME} -b -n s;" | tee -a "${LOGS_NAME}";
+                      in-target --pass-stdout sh -c "${PROG_NAME} -b -n s;" 2>&1 | tee -a "${LOGS_NAME}";
                   fi;
               else
-                  "${TGET_ROOT}${PROG_NAME}" -b -n s | tee -a "${LOGS_NAME}";
+                  "${TGET_ROOT}${PROG_NAME}" -b -n s 2>&1 | tee -a "${LOGS_NAME}";
               fi;
               echo "=== complete ${TGET_ROOT}${PROG_NAME} ===" | tee -a "${LOGS_NAME}";
           fi;
