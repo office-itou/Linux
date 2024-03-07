@@ -1821,6 +1821,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
 		 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
 		 		echo "${PROG_NAME}: ${FILE_NAME}"
+		 		nmcli connection delete "${FILE_NAME##*/}" || true
 		 		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
 		 			cat <<- _EOT_ > "${FILE_NAME}"
 		 				[connection]
@@ -2045,9 +2046,9 @@ function funcCreate_late_command() {
 		 	systemctl daemon-reload
 		 	OLD_IFS="${IFS}"
 		 	for SRVC_LINE in \
-		 		"0 systemd-resolved.service"                \
-		 		"0 connman.service"                         \
-		 		"0 NetworkManager.service"                  \
+		 		"1 systemd-resolved.service"                \
+		 		"1 connman.service"                         \
+		 		"1 NetworkManager.service"                  \
 		 		"1 firewalld.service"                       \
 		 		"0 ssh.service"                             \
 		 		"1 dnsmasq.service"                         \
@@ -2247,8 +2248,9 @@ function funcCreate_nocloud() {
 			    -e 's/bind9-dnsutils/dnsutils/'
 		fi
 		if [[ "${DIRS_NAME}" =~ _desktop ]]; then
-			sed -i "${DIRS_NAME}/user-data"                                             \
-			    -e '/^[ \t]*packages:$/,/:$/ { :l; /^#[ \t]*-[ \t]/ s/^#/ /; n; b l; }'
+			sed -i "${DIRS_NAME}/user-data"                                    \
+			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
+			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
 		fi
 		touch "${DIRS_NAME}/meta-data"      --reference "${DIRS_NAME}/user-data"
 		touch "${DIRS_NAME}/network-config" --reference "${DIRS_NAME}/user-data"
@@ -2587,7 +2589,12 @@ function funcCreate_menu_cfg_nocloud() {
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for nocloud"
 	# --- boot option ---------------------------------------------------------
-	BOOT_OPTN="boot=casper automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${CONF_FILE}"
+	BOOT_OPTN="boot=casper"
+	case "${TGET_LINE[1]}" in
+		ubuntu-desktop-23.*   ) BOOT_OPTN+=" layerfs-path=minimal.standard.live.squashfs";;
+		*                     ) ;;
+	esac
+	BOOT_OPTN+=" automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${CONF_FILE}"
 	BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
 	BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	BOOT_OPTN+=" fsck.mode=skip"

@@ -874,6 +874,7 @@ funcSetupNetwork_nmanagr() {
 		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
 		echo "${PROG_NAME}: ${FILE_NAME}"
+		nmcli connection delete "${FILE_NAME##*/}" || true
 		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
 			cat <<- _EOT_ > "${FILE_NAME}"
 				[connection]
@@ -1098,9 +1099,9 @@ funcSetupService() {
 	systemctl daemon-reload
 	OLD_IFS="${IFS}"
 	for SRVC_LINE in \
-		"0 systemd-resolved.service"                \
-		"0 connman.service"                         \
-		"0 NetworkManager.service"                  \
+		"1 systemd-resolved.service"                \
+		"1 connman.service"                         \
+		"1 NetworkManager.service"                  \
 		"1 firewalld.service"                       \
 		"0 ssh.service"                             \
 		"1 dnsmasq.service"                         \

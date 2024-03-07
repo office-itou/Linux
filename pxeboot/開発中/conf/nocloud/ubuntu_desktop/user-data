@@ -198,14 +198,14 @@ autoinstall:
   - firefox-locale-ja
   - thunderbird
   - thunderbird-locale-ja
-# -----------------------------------------------------------------------------
-  - avahi-daemon
-  - bind9
-  - bind9-utils
-  - bind9-dnsutils
-  - resolvconf
-  - isc-dhcp-server
-  - minidlna
+# --------------------------------------------------------------------------- :
+# - avahi-daemon
+# - bind9
+# - bind9-utils
+# - bind9-dnsutils
+# - resolvconf
+# - isc-dhcp-server
+# - minidlna
 # =============================================================================
   user-data:
     ntp:
@@ -252,7 +252,7 @@ autoinstall:
         if [ -f "${FILE_NAME}" ]; then
             echo "=== start ${FILE_NAME} ===" | tee -a "${LOGS_NAME}";
             if [ -n "${TGET_ROOT}" ]; then
-                if [ -n "${SUBIQUITY_ROOT:-}" ]; then
+                if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
                     curtin in-target --target=/target -- sh -c "systemctl enable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";
                 else
                     in-target --pass-stdout sh -c "systemctl enable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";
@@ -288,7 +288,7 @@ autoinstall:
                    chmod +x "${TGET_ROOT}${PROG_NAME}";
                 fi;
                 if [ -n "${TGET_ROOT}" ]; then
-                    if [ -n "${SUBIQUITY_ROOT:-}" ]; then
+                    if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
                         curtin in-target --target=/target -- sh -c "${PROG_NAME} -n h -s;" 2>&1 | tee -a "${LOGS_NAME}";
                     else
                         in-target --pass-stdout sh -c "${PROG_NAME} -n h -s;" 2>&1 | tee -a "${LOGS_NAME}";
@@ -308,7 +308,7 @@ autoinstall:
 #   timezone: Asia/Tokyo
 # =============================================================================
 # runcmd:
-  - export LANG=C;
+# - export LANG=C;
 #   echo "=== start runcmd ===";
 #   echo "=== complete runcmd ===";
 #   ls -l /etc/resolv.conf*;
@@ -338,12 +338,12 @@ autoinstall:
       PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
       LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.targets.log";
       COMD_PARM="${TGET_ROOT}${PROG_NAME%.*}.prm";
+      mkdir -p "${TGET_ROOT}${PROG_NAME%/*}";
       echo "TGET_ROOT=${TGET_ROOT}" | tee -a "${LOGS_NAME}";
       echo "SEED_TYPE=${SEED_TYPE}" | tee -a "${LOGS_NAME}";
       echo "PROG_NAME=${PROG_NAME}" | tee -a "${LOGS_NAME}";
       echo "LOGS_NAME=${LOGS_NAME}" | tee -a "${LOGS_NAME}";
       echo "COMD_PARM=${COMD_PARM}" | tee -a "${LOGS_NAME}";
-      mkdir -p "${TGET_ROOT}${PROG_NAME%/*}";
       cat /proc/cmdline > "${COMD_PARM}";
       cd "${TGET_ROOT}${PROG_NAME%/*}" || return 1;
       if [ -f "/preseed.cfg" ]; then
@@ -351,7 +351,7 @@ autoinstall:
           cp "/${TGET_ROOT}${PROG_NAME##*/}" ./;
       fi;
       COMD_LINE="$(cat "${COMD_PARM}")";
-      echo "COMD_LINE=${COMD_LINE}";
+      echo "COMD_LINE=${COMD_LINE}" | tee -a "${LOGS_NAME}";
       for LINE in ${COMD_LINE};
       do
           SEED_ADDR="";
@@ -395,7 +395,7 @@ autoinstall:
                  chmod +x "${TGET_ROOT}${PROG_NAME}";
               fi;
               if [ -n "${TGET_ROOT}" ]; then
-                  if [ -n "${SUBIQUITY_ROOT:-}" ]; then
+                  if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
                       curtin in-target --target=/target -- sh -c "${PROG_NAME} -b -n s;" 2>&1 | tee -a "${LOGS_NAME}";
                   else
                       in-target --pass-stdout sh -c "${PROG_NAME} -b -n s;" 2>&1 | tee -a "${LOGS_NAME}";
@@ -407,7 +407,7 @@ autoinstall:
           fi;
       fi;
       echo "### complete ${FUNC_NAME} ###";' ]
-  - [ sh, -c, '
+# - [ sh, -c, '
 #     exec 2>&1;
 #     export LANG=C;
 #     FUNC_NAME="late-commands <change root password>";
@@ -418,7 +418,7 @@ autoinstall:
 #         TGET_ROOT="/target";
 #     fi;
 #     if [ -n "${TGET_ROOT}" ]; then
-#         if [ -n "${SUBIQUITY_ROOT:-}" ]; then
+#         if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
 #             curtin in-target --target=/target -- sh -c "echo \"${ROOT_USER}\" | chpasswd;";
 #         else
 #             in-target --pass-stdout sh -c "echo \"${ROOT_USER}\" | chpasswd;";
@@ -427,7 +427,7 @@ autoinstall:
 #         echo "${ROOT_USER}" | chpasswd;
 #     fi;
 #     echo "### complete ${FUNC_NAME} ###";' ]
-  - [ sh, -c, '
+# - [ sh, -c, '
 #     exec 2>&1;
 #     export LANG=C;
 #     FUNC_NAME="late-commands <change ssh root login>";
@@ -455,7 +455,7 @@ autoinstall:
       if [ -f "${FILE_NAME}" ]; then
           echo "=== start ${FILE_NAME} ===" | tee -a "${LOGS_NAME}";
           if [ -n "${TGET_ROOT}" ]; then
-              if [ -n "${SUBIQUITY_ROOT:-}" ]; then
+              if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
                   curtin in-target --target=/target -- sh -c "systemctl disable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";
               else
                   in-target --pass-stdout sh -c "systemctl disable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";

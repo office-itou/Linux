@@ -381,12 +381,12 @@
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- system command ----------------------------------------------------------
-	declare -r -a DATA_LIST_SCMD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
-		"m  menu-entry                  System%20command                    -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
-		"o  hdt                         Hardware%20info                     system          -                                           -                                       hdt.c32                     -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
-		"o  shutdown                    System%20shutdown                   system          -                                           -                                       poweroff.c32                -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
-		"o  restart                     System%20restart                    system          -                                           -                                       reboot.c32                  -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
-	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
+#	declare -r -a DATA_LIST_SCMD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+#		"m  menu-entry                  System%20command                    -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+#		"o  hdt                         Hardware%20info                     system          -                                           -                                       hdt.c32                     -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+#		"o  shutdown                    System%20shutdown                   system          -                                           -                                       poweroff.c32                -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+#		"o  restart                     System%20restart                    system          -                                           -                                       reboot.c32                  -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+#	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 	# --- target of creation --------------------------------------------------
 	declare -a    TGET_LIST=()
@@ -905,7 +905,7 @@ function funcCreate_link() {
 	done
 }
 
-# ----- create late command ---------------------------------------------------
+# ----- create preseed kill dhcp ----------------------------------------------
 function funcCreate_preseed_kill_dhcp() {
 	declare -r    DIRS_NAME="${DIRS_CONF}/preseed"
 	declare -r    FILE_NAME="${DIRS_NAME}/preseed_kill_dhcp.sh"
@@ -1821,6 +1821,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
 		 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
 		 		echo "${PROG_NAME}: ${FILE_NAME}"
+		 		nmcli connection delete "${FILE_NAME##*/}" || true
 		 		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
 		 			cat <<- _EOT_ > "${FILE_NAME}"
 		 				[connection]
@@ -2045,9 +2046,9 @@ function funcCreate_late_command() {
 		 	systemctl daemon-reload
 		 	OLD_IFS="${IFS}"
 		 	for SRVC_LINE in \
-		 		"0 systemd-resolved.service"                \
-		 		"0 connman.service"                         \
-		 		"0 NetworkManager.service"                  \
+		 		"1 systemd-resolved.service"                \
+		 		"1 connman.service"                         \
+		 		"1 NetworkManager.service"                  \
 		 		"1 firewalld.service"                       \
 		 		"0 ssh.service"                             \
 		 		"1 dnsmasq.service"                         \
@@ -2138,6 +2139,125 @@ _EOT_SH_
 	mkdir -p "${DIRS_CONF}"/{preseed,nocloud,kickstart,autoyast}
 	cp -a "${FILE_NAME}" "${DIRS_CONF}/preseed/preseed_late_command.sh"
 	cp -a "${FILE_NAME}" "${DIRS_CONF}/nocloud/nocloud-late-commands.sh"
+}
+
+# ----- create preseed.cfg ----------------------------------------------------
+function funcCreate_preseed_cfg() {
+	declare -r    DIRS_NAME="${DIRS_CONF}/preseed"
+	declare       FILE_PATH=""
+	declare -r -a FILE_LIST=(                       \
+		"ps_debian_"{server,desktop}{,_old}".cfg"   \
+		"ps_ubuntu_"{server,desktop}{,_old}".cfg"   \
+		"ps_ubiquity_"{server,desktop}{,_old}".cfg" \
+	)
+	declare       FILE_TMPL=""
+	declare       INSR_STRS=""			# string to insert
+	declare -i    I=0
+	# -------------------------------------------------------------------------
+	for ((I=0; I<"${#FILE_LIST[@]}"; I++))
+	do
+		case "${FILE_LIST[I]}" in
+			*_debian_*   ) FILE_TMPL="${CONF_SEDD}";;
+			*_ubuntu_*   ) FILE_TMPL="${CONF_SEDU}";;
+			*_ubiquity_* ) FILE_TMPL="${CONF_SEDU}";;
+			* ) continue;;
+		esac
+		FILE_PATH="${DIRS_NAME}/${FILE_LIST[I]}"
+		funcPrintf "create filet: ${FILE_PATH/${PWD}\/}"
+		mkdir -p "${FILE_PATH%/*}"
+		# ---------------------------------------------------------------------
+		cp --backup "${FILE_TMPL}" "${FILE_PATH}"
+		if [[ "${FILE_LIST[I]}" =~ _old ]]; then
+			sed -i "${FILE_PATH}"               \
+			    -e 's/bind9-utils/bind9utils/'  \
+			    -e 's/bind9-dnsutils/dnsutils/'
+		fi
+		if [[ "${FILE_LIST[I]}" =~ _desktop ]]; then
+			sed -i "${FILE_PATH}"                                              \
+			    -e '/^[ \t]*d-i[ \t]\+pkgsel\/include[ \t]\+/,/^#.*[^\\]$/ { ' \
+			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                 \
+			    -e 's/^#/ /g                                               }'
+		fi
+		if [[ "${FILE_LIST[I]}" =~ _ubiquity_ ]]; then
+			IFS= INSR_STRS=$(
+				sed -n '/^[^#].*preseed\/late_command/,/[^\\]$/p' "${FILE_PATH}" | \
+				sed -e 's/\\/\\\\/g'                                               \
+				    -e 's/d-i/ubiquity/'                                           \
+				    -e 's%preseed\/late_command%ubiquity\/success_command%'      | \
+				sed -e ':l; N; s/\n/\\n/; b l;'
+			)
+			IFS=${OLD_IFS}
+			if [[ -n "${INSR_STRS}" ]]; then
+				sed -i "${FILE_PATH}"                                   \
+				    -e '/^[^#].*preseed\/late_command/,/[^\\]$/     { ' \
+				    -e 's/^/#/g                                       ' \
+				    -e 's/^#  /# /g                                 } ' \
+				    -e '/^[^#].*ubiquity\/success_command/,/[^\\]$/ { ' \
+				    -e 's/^/#/g                                       ' \
+				    -e 's/^#  /# /g                                 } '
+				sed -i "${FILE_PATH}"                                   \
+				    -e "/ubiquity\/success_command/i \\${INSR_STRS}"
+			fi
+		fi
+	done
+	# --- expert --------------------------------------------------------------
+	FILE_TMPL="${DIRS_NAME}/ps_debian_server.cfg"
+	FILE_PATH="${FILE_TMPL/\.cfg/_expert\.cfg}"
+	sed -e '/^[ \t]*d-i[ \t]\+partman-auto\/init_automatically_partition[ \t]\+/                            { ' \
+	    -e 's/^/#/g                                                                                           ' \
+	    -e 's/^#  /# /g                                                                                     } ' \
+	    -e '/^[ \t]*d-i[ \t]\+partman-auto\/disk[ \t]\+/                                                    { ' \
+	    -e 's/^/#/g                                                                                           ' \
+	    -e 's/^#  /# /g                                                                                     } ' \
+	    -e '/^[ \t]*d-i[ \t]\+partman-auto\/choose_recipe[ \t]\+/                                           { ' \
+	    -e 's/^/#/g                                                                                           ' \
+	    -e 's/^#  /# /g                                                                                     } ' \
+	    -e '/^[ \t]*d-i[ \t]\+partman\/early_command[ \t]\+/,/[^\\]$/                                       { ' \
+	    -e '0,/[^\\]$/                                                                                      { ' \
+	    -e '/pvremove[ \t]\+/a \      pvremove /dev/sda*     -ff -y; '\\\\''                                    \
+	    -e '/dd[ \t]\+/a \      dd if=/dev/zero of=/dev/sda     bs=1M count=10; '\\\\''                         \
+	    -e '                                                                                               }} ' \
+	    -e '/^#*[ \t]*d-i[ \t]\+partman-auto\/expert_recipe[ \t]\+/,/[^\\]$/                                { ' \
+	    -e '0,/[^\\]$/                                                                                      { ' \
+	    -e 's/^#/ /g                                                                                       }} ' \
+	    -e '/^#[ \t]*d-i[ \t]\+partman-auto\/disk[ \t]\+string[ \t]\+\/dev\/nvme0n1[ \t]\+\/dev\/sda[ \t]*/ { ' \
+	    -e '0,/[^\\]$/                                                                                      { ' \
+	    -e 's/^#/ /g                                                                                       }} ' \
+	    "${FILE_TMPL}"                                                                                          \
+	>   "${FILE_PATH}"
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${DIRS_NAME}/"*
+}
+
+# ----- create nocloud --------------------------------------------------------
+function funcCreate_nocloud() {
+	declare -r -a DIRS_LIST=("${DIRS_CONF}/nocloud/ubuntu_"{server,desktop}{,_old})
+	declare       DIRS_NAME=""
+	declare -i    I=0
+	# -------------------------------------------------------------------------
+	for ((I=0; I<"${#DIRS_LIST[@]}"; I++))
+	do
+		DIRS_NAME="${DIRS_LIST[I]}"
+		funcPrintf "create filet: ${DIRS_NAME/${PWD}\/}"
+		mkdir -p "${DIRS_NAME}"
+		# ---------------------------------------------------------------------
+		cp --backup "${CONF_CLUD}" "${DIRS_NAME}/user-data"
+		if [[ "${DIRS_NAME}" =~ _old ]]; then
+			sed -i "${DIRS_NAME}/user-data"     \
+			    -e 's/bind9-utils/bind9utils/'  \
+			    -e 's/bind9-dnsutils/dnsutils/'
+		fi
+		if [[ "${DIRS_NAME}" =~ _desktop ]]; then
+			sed -i "${DIRS_NAME}/user-data"                                    \
+			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
+			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
+		fi
+		touch "${DIRS_NAME}/meta-data"      --reference "${DIRS_NAME}/user-data"
+		touch "${DIRS_NAME}/network-config" --reference "${DIRS_NAME}/user-data"
+#		touch "${DIRS_NAME}/user-data"      --reference "${DIRS_NAME}/user-data"
+		touch "${DIRS_NAME}/vendor-data"    --reference "${DIRS_NAME}/user-data"
+		chmod ugo-x "${DIRS_NAME}/"*
+	done
 }
 
 # ----- create kickstart.cfg --------------------------------------------------
