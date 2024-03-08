@@ -289,9 +289,9 @@ autoinstall:
                 fi;
                 if [ -n "${TGET_ROOT}" ]; then
                     if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
-                        curtin in-target --target=/target -- sh -c "${PROG_NAME} -n h -s;" 2>&1 | tee -a "${LOGS_NAME}";
+                        curtin in-target --target=/target -- sh -c "${PROG_NAME} -n h -s; 2>&1" | tee -a "${LOGS_NAME}";
                     else
-                        in-target --pass-stdout sh -c "${PROG_NAME} -n h -s;" 2>&1 | tee -a "${LOGS_NAME}";
+                        in-target --pass-stdout sh -c "${PROG_NAME} -n h -s; 2>&1" | tee -a "${LOGS_NAME}";
                     fi;
                 else
                     "${TGET_ROOT}${PROG_NAME}" -n h -s 2>&1 | tee -a "${LOGS_NAME}";
@@ -396,9 +396,9 @@ autoinstall:
               fi;
               if [ -n "${TGET_ROOT}" ]; then
                   if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
-                      curtin in-target --target=/target -- sh -c "${PROG_NAME} -b -n s;" 2>&1 | tee -a "${LOGS_NAME}";
+                      curtin in-target --target=/target -- sh -c "${PROG_NAME} -b -n s; 2>&1" | tee -a "${LOGS_NAME}";
                   else
-                      in-target --pass-stdout sh -c "${PROG_NAME} -b -n s;" 2>&1 | tee -a "${LOGS_NAME}";
+                      in-target --pass-stdout sh -c "${PROG_NAME} -b -n s; 2>&1" | tee -a "${LOGS_NAME}";
                   fi;
               else
                   "${TGET_ROOT}${PROG_NAME}" -b -n s 2>&1 | tee -a "${LOGS_NAME}";
