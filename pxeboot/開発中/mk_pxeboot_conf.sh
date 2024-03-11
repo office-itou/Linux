@@ -204,33 +204,42 @@
 #	declare -r    SCRN_MODE="809"							#          x32
 
 	# --- vga mode ------------------------------------------------------------
-	# |           |   8 |  16 |  24 |  32 | bit
-	# |screnn size| 256 | 64k | 16M |  4G | colors
-	# |  640x 480 | 769 | 785 | 786 | 809 | VGA    (4:3)
-	# |  800x 600 | 771 | 788 | 789 | 814 | SVGA   (4:3)
-	# | 1024x 768 | 773 | 791 | 792 | 824 | XGA    (4:3)
-	# | 1152x 864 | --- | --- | --- | --- |        (4:3)
-	# | 1280x 720 | --- | --- | --- | --- | WXGA   (16:9)
-	# | 1280x 768 | --- | --- | --- | --- |        (4:3)
-	# | 1280x 800 | --- | --- | --- | --- |        (16:10)
-	# | 1280x 960 | --- | --- | --- | --- |        (4:3)
-	# | 1280x1024 | 775 | 794 | 795 | 829 | SXGA   (5:4)
-	# | 1360x 768 | --- | --- | --- | --- | HD     (16:9)
-	# | 1400x1050 | --- | --- | --- | --- |        (4:3)
-	# | 1440x 900 | --- | --- | --- | --- | WXGA+  (16:10)
-	# | 1600x1200 | --- | --- | --- | --- | UXGA   (4:3)
-	# | 1680x1050 | --- | --- | --- | --- | WSXGA+ (16:10)
-	# | 1792x1344 | --- | --- | --- | --- |        (4:3)
-	# | 1856x1392 | --- | --- | --- | --- |        (4:3)
-	# | 1920x1080 | --- | --- | --- | 980 | FHD    (16:9)
-	# | 1920x1200 | 893 | --- | --- | --- | WUXGA  (16:10)
-	# | 1920x1440 | --- | --- | --- | --- |        (4:3)
-	# | 2560x1440 | --- | --- | --- | --- | WQHD   (16:9)
-	# | 2560x1600 | --- | --- | --- | --- |        (16:10)
-	# | 2880x1800 | --- | --- | --- | --- |        (16:10)
-	# | 3840x2160 | --- | --- | --- | --- | 4K UHD (16:9)
-	# | 3840x2400 | --- | --- | --- | --- |        (16:10)
-	# | 7680x4320 | --- | --- | --- | --- | 8K UHD (16:9)
+	# |           | video |   8 |  16 |  24 |  32 | bit
+	# |screnn size| info  | 256 | 64k | 16M |  4G | colors
+	# |  320x 200 | 0x000 | --- | --- | --- | --- |        (16:10)
+	# |  320x 240 | 0x00b | --- | --- | --- | --- |        (4:3)
+	# |  400x 300 | 0x00c | --- | --- | --- | --- |        (4:3)
+	# |  512x 384 | 0x00d | --- | --- | --- | --- |        (4:3)
+	# |  640x 480 | 0x001 | 769 | 785 | 786 | 809 | VGA    (4:3)
+	# |  720x 480 | 0x012 | --- | --- | --- | --- |        (3:2)
+	# |  720x 576 | 0x013 | --- | --- | --- | --- |        ()
+	# |  800x 480 | 0x014 | --- | --- | --- | --- |        (5:3)
+	# |  800x 600 | 0x002 | 771 | 788 | 789 | 814 | SVGA   (4:3)
+	# |  854x 480 | 0x00e | --- | --- | --- | --- |        (16:9)
+	# | 1024x 768 | 0x003 | 773 | 791 | 792 | 824 | XGA    (4:3)
+	# | 1152x 864 | 0x005 | --- | --- | --- | --- |        (4:3)
+	# | 1280x 720 | 0x00f | --- | --- | --- | --- | WXGA   (16:9)
+	# | 1280x 768 | 0x015 | --- | --- | --- | --- |        (4:3)
+	# | 1280x 800 | 0x010 | --- | --- | --- | --- |        (16:10)
+	# | 1280x 960 | 0x006 | --- | --- | --- | --- |        (4:3)
+	# | 1280x1024 | 0x004 | 775 | 794 | 795 | 829 | SXGA   (5:4)
+	# | 1280x1024 | 0x007 | --- | --- | --- | --- | SXGA   (5:4)
+	# | 1360x 768 | 0x00a | --- | --- | --- | --- | HD     (16:9)
+	# | 1400x1050 | 0x008 | --- | --- | --- | --- |        (4:3)
+	# | 1440x 900 | 0x011 | --- | --- | --- | --- | WXGA+  (16:10)
+	# | 1600x1200 | 0x009 | --- | --- | --- | --- | UXGA   (4:3)
+	# | 1680x1050 |       | --- | --- | --- | --- | WSXGA+ (16:10)
+	# | 1792x1344 |       | --- | --- | --- | --- |        (4:3)
+	# | 1856x1392 |       | --- | --- | --- | --- |        (4:3)
+	# | 1920x1080 |       | --- | --- | --- | 980 | FHD    (16:9)
+	# | 1920x1200 |       | 893 | --- | --- | --- | WUXGA  (16:10)
+	# | 1920x1440 |       | --- | --- | --- | --- |        (4:3)
+	# | 2560x1440 |       | --- | --- | --- | --- | WQHD   (16:9)
+	# | 2560x1600 |       | --- | --- | --- | --- |        (16:10)
+	# | 2880x1800 |       | --- | --- | --- | --- |        (16:10)
+	# | 3840x2160 |       | --- | --- | --- | --- | 4K UHD (16:9)
+	# | 3840x2400 |       | --- | --- | --- | --- |        (16:10)
+	# | 7680x4320 |       | --- | --- | --- | --- | 8K UHD (16:9)
 
 	# === network =============================================================
 
@@ -353,14 +362,14 @@
 		"o  windows-11                  Windows%2011                        windows         Win11_23H2_Japanese_x64v2_custom.iso        -                                       -                           -                       -                                       windows/Windows11   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
-# --- live media --------------------------------------------------------------
+# --- live media live mode ----------------------------------------------------
 	declare -r -a DATA_LIST_LIVE=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
-		"m  menu-entry                  Live%20media                        -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
-		"o  debian-live-10              Debian%2010%20Live                  debian          debian-live-10.13.0-amd64-lxde.iso          d-i                                     initrd.gz                   vmlinuz                 preseed/ps_debian_desktop_old.cfg       linux/debian        2019-07-06  2024-06-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso      " \
-		"o  debian-live-11              Debian%2011%20Live                  debian          debian-live-11.9.0-amd64-lxde.iso           d-i                                     initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso         " \
-		"o  debian-live-12              Debian%2012%20Live                  debian          debian-live-12.5.0-amd64-lxde.iso           install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                  " \
-		"o  debian-live-13              Debian%2013%20Live                  debian          debian-live-13.0.0-amd64-lxde.iso           install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                               " \
-		"o  debian-live-testing         Debian%20testing%20Live             debian          debian-live-testing-amd64-lxde.iso          install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                       " \
+		"m  menu-entry                  Live%20media%20Live%20mode          -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+		"o  debian-live-10              Debian%2010%20Live                  debian          debian-live-10.13.0-amd64-lxde.iso          live                                    initrd.img-4.19.0-21-amd64  vmlinuz-4.19.0-21-amd64 preseed/ps_debian_desktop_old.cfg       linux/debian        2019-07-06  2024-06-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso      " \
+		"o  debian-live-11              Debian%2011%20Live                  debian          debian-live-11.9.0-amd64-lxde.iso           live                                    initrd.img-5.10.0-28-amd64  vmlinuz-5.10.0-28-amd64 preseed/ps_debian_desktop.cfg           linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso         " \
+		"o  debian-live-12              Debian%2012%20Live                  debian          debian-live-12.5.0-amd64-lxde.iso           live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                  " \
+		"o  debian-live-13              Debian%2013%20Live                  debian          debian-live-13.0.0-amd64-lxde.iso           live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"o  debian-live-testing         Debian%20testing%20Live             debian          debian-live-testing-amd64-lxde.iso          live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                       " \
 		"x  ubuntu-desktop-18.04        Ubuntu%2018.04%20Desktop            ubuntu          ubuntu-18.04.6-desktop-amd64.iso            casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-amd64.iso                                                        " \
 		"o  ubuntu-desktop-20.04        Ubuntu%2020.04%20Desktop            ubuntu          ubuntu-20.04.6-desktop-amd64.iso            casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-desktop-amd64.iso                                                         " \
 		"o  ubuntu-desktop-22.04        Ubuntu%2022.04%20Desktop            ubuntu          ubuntu-22.04.4-desktop-amd64.iso            casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-amd64.iso                                                         " \
@@ -374,11 +383,15 @@
 		"x  ubuntu-legacy-noble         Ubuntu%20noble%20Legacy%20Desktop   ubuntu          noble-desktop-legacy-amd64.iso              casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
-#		"o  debian-live-10              Debian%2010%20Live                  debian          debian-live-10.13.0-amd64-lxde.iso          live                                    initrd.img-4.19.0-21-amd64  vmlinuz-4.19.0-21-amd64 preseed/ps_debian_desktop_old.cfg       linux/debian        2019-07-06  2024-06-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso      " \
-#		"o  debian-live-11              Debian%2011%20Live                  debian          debian-live-11.9.0-amd64-lxde.iso           live                                    initrd.img-5.10.0-26-amd64  vmlinuz-5.10.0-26-amd64 preseed/ps_debian_desktop.cfg           linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso         " \
-#		"o  debian-live-12              Debian%2012%20Live                  debian          debian-live-12.5.0-amd64-lxde.iso           live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                  " \
-#		"o  debian-live-13              Debian%2013%20Live                  debian          debian-live-13.0.0-amd64-lxde.iso           live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                               " \
-#		"o  debian-live-testing         Debian%20testing%20Live             debian          debian-live-testing-amd64-lxde.iso          live                                    initrd.img                  vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                       " \
+# --- live media install mode -------------------------------------------------
+	declare -r -a DATA_LIST_INST=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+		"m  menu-entry                  Live%20media%20Install%20mode       -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+		"o  debian-live-10              Debian%2010%20Live                  debian          debian-live-10.13.0-amd64-lxde.iso          d-i                                     initrd.gz                   vmlinuz                 preseed/ps_debian_desktop_old.cfg       linux/debian        2019-07-06  2024-06-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso      " \
+		"o  debian-live-11              Debian%2011%20Live                  debian          debian-live-11.9.0-amd64-lxde.iso           d-i                                     initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        2021-08-14  2026-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso         " \
+		"o  debian-live-12              Debian%2012%20Live                  debian          debian-live-12.5.0-amd64-lxde.iso           install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        2023-06-10  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                  " \
+		"o  debian-live-13              Debian%2013%20Live                  debian          debian-live-13.0.0-amd64-lxde.iso           install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"o  debian-live-testing         Debian%20testing%20Live             debian          debian-live-testing-amd64-lxde.iso          install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                       " \
+	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- tool --------------------------------------------------------------------
 	declare -r -a DATA_LIST_TOOL=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
@@ -867,6 +880,7 @@ function funcCreate_link() {
 		"${DATA_LIST_NET[@]}"  \
 		"${DATA_LIST_DVD[@]}"  \
 		"${DATA_LIST_LIVE[@]}" \
+		"${DATA_LIST_INST[@]}" \
 		"${DATA_LIST_TOOL[@]}" \
 	)
 	declare -a    DATA_LINE=()
@@ -2616,21 +2630,34 @@ function funcCreate_menu_cfg_preseed() {
 		ubuntu-*              ) BOOT_OPTN+=" netcfg/target_network_config=NetworkManager";;
 		*                     ) ;;
 	esac
+	BOOT_OPTN+=" netcfg/disable_autoconfig=true"
+	BOOT_OPTN+=" netcfg/choose_interface=${ETHR_NAME}"
+	BOOT_OPTN+=" netcfg/get_hostname=${HOST_NAME}.${WGRP_NAME}"
+	BOOT_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
+	BOOT_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
+	BOOT_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
+	BOOT_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
+	BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	BOOT_OPTN+=" fsck.mode=skip"
 	case "${TGET_LINE[1]}" in
 		debian-live-10        | \
 		debian-live-11        )
-			BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
-			BOOT_OPTN+=" ip=dhcp"
-			BOOT_OPTN+=" boot=live root=/boot toram=filesystem.squashfs"
-			BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-			BOOT_OPTN+=" fsck.mode=skip"
-						;;
+			if [[ "${TGET_LINE[5]}" = "live" ]]; then
+				BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+				BOOT_OPTN+=" ip=dhcp"
+				BOOT_OPTN+=" boot=live root=/boot toram=filesystem.squashfs"
+				BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				BOOT_OPTN+=" fsck.mode=skip"
+			fi
+			;;
 		debian-live-*         )
-			BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
-			BOOT_OPTN+=" ip=dhcp"
-			BOOT_OPTN+=" boot=live components"
-			BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-			BOOT_OPTN+=" fsck.mode=skip"
+			if [[ "${TGET_LINE[5]}" = "live" ]]; then
+				BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+				BOOT_OPTN+=" ip=dhcp"
+				BOOT_OPTN+=" boot=live components"
+				BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+				BOOT_OPTN+=" fsck.mode=skip"
+			fi
 			;;
 		ubuntu-desktop-18.*   )			# This version does not support pxeboot
 			;;
@@ -2651,15 +2678,6 @@ function funcCreate_menu_cfg_preseed() {
 			BOOT_OPTN+=" fsck.mode=skip"
 			;;
 		*                     )
-			BOOT_OPTN+=" netcfg/disable_autoconfig=true"
-			BOOT_OPTN+=" netcfg/choose_interface=${ETHR_NAME}"
-			BOOT_OPTN+=" netcfg/get_hostname=${HOST_NAME}.${WGRP_NAME}"
-			BOOT_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
-			BOOT_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
-			BOOT_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
-			BOOT_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
-			BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-			BOOT_OPTN+=" fsck.mode=skip"
 			;;
 	esac
 	if [[ -n "${SCRN_MODE:-}" ]]; then
@@ -3152,6 +3170,7 @@ function funcCall_create() {
 		"${DATA_LIST_NET[@]}"  \
 		"${DATA_LIST_DVD[@]}"  \
 		"${DATA_LIST_LIVE[@]}" \
+		"${DATA_LIST_INST[@]}" \
 		"${DATA_LIST_TOOL[@]}" \
 		"${DATA_LIST_SCMD[@]}" \
 	)

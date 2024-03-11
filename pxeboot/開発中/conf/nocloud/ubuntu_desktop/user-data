@@ -167,6 +167,8 @@ autoinstall:
   updates: all
   packages:
   - standard^
+  - hdparm
+  - nvme-cli
   - apt-transport-https
   - firewalld
   - traceroute
@@ -254,19 +256,19 @@ autoinstall:
         LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.current.log";
         FILE_NAME="${TGET_ROOT}/lib/systemd/system/${SRVC_NAME}";
         if [ -f "${FILE_NAME}" ]; then
-            echo "=== start ${FILE_NAME} ===" | tee -a "${LOGS_NAME}";
+            echo "=== start ${FILE_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
             if [ -n "${TGET_ROOT}" ]; then
                 if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
-                    curtin in-target --target=/target -- sh -c "systemctl enable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";
+                    curtin in-target --target=/target -- sh -c "systemctl enable firewalld.service; systemctl is-enabled firewalld.service;" 2>&1 | tee -a "${LOGS_NAME}";
                 else
-                    in-target --pass-stdout sh -c "systemctl enable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";
+                    in-target --pass-stdout sh -c "systemctl enable firewalld.service; systemctl is-enabled firewalld.service;" 2>&1 | tee -a "${LOGS_NAME}";
                 fi;
             else
-                systemctl enable firewalld.service; systemctl is-enabled firewalld.service | tee -a "${LOGS_NAME}";
+                systemctl enable firewalld.service; systemctl is-enabled firewalld.service 2>&1 | tee -a "${LOGS_NAME}";
             fi;
-            echo "=== complete ${FILE_NAME} ===" | tee -a "${LOGS_NAME}";
+            echo "=== complete ${FILE_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
         else
-            echo "not exist: ${FILE_NAME}" | tee -a "${LOGS_NAME}";
+            echo "not exist: ${FILE_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
         fi;
         echo "### complete ${FUNC_NAME} ###";' ]
     - [ sh, -c, '
@@ -281,26 +283,26 @@ autoinstall:
         SEED_TYPE="nocloud";
         PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
         LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.current.log";
-        echo "TGET_ROOT=${TGET_ROOT}" | tee -a "${LOGS_NAME}";
-        echo "SEED_TYPE=${SEED_TYPE}" | tee -a "${LOGS_NAME}";
-        echo "PROG_NAME=${PROG_NAME}" | tee -a "${LOGS_NAME}";
-        echo "LOGS_NAME=${LOGS_NAME}" | tee -a "${LOGS_NAME}";
+        echo "TGET_ROOT=${TGET_ROOT}" 2>&1 | tee -a "${LOGS_NAME}";
+        echo "SEED_TYPE=${SEED_TYPE}" 2>&1 | tee -a "${LOGS_NAME}";
+        echo "PROG_NAME=${PROG_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
+        echo "LOGS_NAME=${LOGS_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
         if [ -n "${TGET_ROOT}${PROG_NAME:-}" ]; then
             if [ -f "${TGET_ROOT}${PROG_NAME}" ]; then
-                echo "=== start ${TGET_ROOT}${PROG_NAME} ===" | tee -a "${LOGS_NAME}";
+                echo "=== start ${TGET_ROOT}${PROG_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
                 if [ ! -x "${TGET_ROOT}${PROG_NAME}" ]; then
                    chmod +x "${TGET_ROOT}${PROG_NAME}";
                 fi;
                 if [ -n "${TGET_ROOT}" ]; then
                     if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
-                        curtin in-target --target=/target -- sh -c "${PROG_NAME} -n h -s; 2>&1" | tee -a "${LOGS_NAME}";
+                        curtin in-target --target=/target -- sh -c "${PROG_NAME} -n h -s; 2>&1" 2>&1 | tee -a "${LOGS_NAME}";
                     else
-                        in-target --pass-stdout sh -c "${PROG_NAME} -n h -s; 2>&1" | tee -a "${LOGS_NAME}";
+                        in-target --pass-stdout sh -c "${PROG_NAME} -n h -s; 2>&1" 2>&1 | tee -a "${LOGS_NAME}";
                     fi;
                 else
-                    "${TGET_ROOT}${PROG_NAME}" -n h -s 2>&1 | tee -a "${LOGS_NAME}";
+                    "${TGET_ROOT}${PROG_NAME}" -n h -s 2>&1 2>&1 | tee -a "${LOGS_NAME}";
                 fi;
-                echo "=== complete ${TGET_ROOT}${PROG_NAME} ===" | tee -a "${LOGS_NAME}";
+                echo "=== complete ${TGET_ROOT}${PROG_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
             fi;
         fi;
         echo "### complete ${FUNC_NAME} ###";' ]
@@ -343,11 +345,11 @@ autoinstall:
       LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.targets.log";
       COMD_PARM="${TGET_ROOT}${PROG_NAME%.*}.prm";
       mkdir -p "${TGET_ROOT}${PROG_NAME%/*}";
-      echo "TGET_ROOT=${TGET_ROOT}" | tee -a "${LOGS_NAME}";
-      echo "SEED_TYPE=${SEED_TYPE}" | tee -a "${LOGS_NAME}";
-      echo "PROG_NAME=${PROG_NAME}" | tee -a "${LOGS_NAME}";
-      echo "LOGS_NAME=${LOGS_NAME}" | tee -a "${LOGS_NAME}";
-      echo "COMD_PARM=${COMD_PARM}" | tee -a "${LOGS_NAME}";
+      echo "TGET_ROOT=${TGET_ROOT}" 2>&1 | tee -a "${LOGS_NAME}";
+      echo "SEED_TYPE=${SEED_TYPE}" 2>&1 | tee -a "${LOGS_NAME}";
+      echo "PROG_NAME=${PROG_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
+      echo "LOGS_NAME=${LOGS_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
+      echo "COMD_PARM=${COMD_PARM}" 2>&1 | tee -a "${LOGS_NAME}";
       cat /proc/cmdline > "${COMD_PARM}";
       cd "${TGET_ROOT}${PROG_NAME%/*}" || return 1;
       if [ -f "/preseed.cfg" ]; then
@@ -355,7 +357,7 @@ autoinstall:
           cp "/${TGET_ROOT}${PROG_NAME##*/}" ./;
       fi;
       COMD_LINE="$(cat "${COMD_PARM}")";
-      echo "COMD_LINE=${COMD_LINE}" | tee -a "${LOGS_NAME}";
+      echo "COMD_LINE=${COMD_LINE}" 2>&1 | tee -a "${LOGS_NAME}";
       for LINE in ${COMD_LINE};
       do
           SEED_ADDR="";
@@ -366,25 +368,30 @@ autoinstall:
               ds=nocloud*                ) SEED_ADDR="${LINE#*\;s*=}";;
               *                          )                           ;;
           esac;
+          echo "SEED_ADDR=${SEED_ADDR}" 2>&1 | tee -a "${LOGS_NAME}";
           case "${SEED_ADDR}" in
               http://* | https://* )
                   case "${SEED_TYPE}" in
-                      preseed ) wget -O preseed.cfg "${SEED_ADDR}" | tee -a "${LOGS_NAME}";;
-                      nocloud ) wget "${SEED_ADDR}/user-data"      | tee -a "${LOGS_NAME}";;
+                      preseed ) wget -O preseed.cfg "${SEED_ADDR}" 2>&1 | tee -a "${LOGS_NAME}";;
+                      nocloud ) wget "${SEED_ADDR}/user-data"      2>&1 | tee -a "${LOGS_NAME}";;
                       *       )                                                           ;;
                   esac;
-                  wget "${SEED_ADDR%/*}/${PROG_NAME##*/}" | tee -a "${LOGS_NAME}";
+                  wget "${SEED_ADDR%/*}/${PROG_NAME##*/}" 2>&1 | tee -a "${LOGS_NAME}";
                   ;;
               file://* | /*        )
-                  SEED_FILE="${SEED_TYPE#*:/}";
+                  SEED_FILE="${SEED_ADDR#*:/}";
+                  if [ -f "${TGET_ROOT}/media${SEED_FILE}" ]; then
+                      SEED_FILE="${TGET_ROOT}/media${SEED_FILE}";
+                  fi;
+                  echo "SEED_FILE=${SEED_FILE}" 2>&1 | tee -a "${LOGS_NAME}";
                   case "${SEED_TYPE}" in
                       preseed )
-                          cp "${SEED_FILE}"                     ./preseed.cfg | tee -a "${LOGS_NAME}";
-                          cp "${SEED_FILE%/*}/${PROG_NAME##*/}" ./            | tee -a "${LOGS_NAME}";
+                          cp "${SEED_FILE}"                     ./preseed.cfg 2>&1 | tee -a "${LOGS_NAME}";
+                          cp "${SEED_FILE%/*}/${PROG_NAME##*/}" ./            2>&1 | tee -a "${LOGS_NAME}";
                           ;;
                       nocloud )
-                          cp "${SEED_FILE}/user-data"        ./ | tee -a "${LOGS_NAME}";
-                          cp "${SEED_FILE}/${PROG_NAME##*/}" ./ | tee -a "${LOGS_NAME}";
+                          cp "${SEED_FILE}/user-data"           ./ 2>&1 | tee -a "${LOGS_NAME}";
+                          cp "${SEED_FILE%/*}/${PROG_NAME##*/}" ./ 2>&1 | tee -a "${LOGS_NAME}";
                           ;;
                       *       ) ;;
                   esac;
@@ -394,20 +401,20 @@ autoinstall:
       done;
       if [ -n "${TGET_ROOT}${PROG_NAME:-}" ]; then
           if [ -f "${TGET_ROOT}${PROG_NAME}" ]; then
-              echo "=== start ${TGET_ROOT}${PROG_NAME} ===" | tee -a "${LOGS_NAME}";
+              echo "=== start ${TGET_ROOT}${PROG_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
               if [ ! -x "${TGET_ROOT}${PROG_NAME}" ]; then
                  chmod +x "${TGET_ROOT}${PROG_NAME}";
               fi;
               if [ -n "${TGET_ROOT}" ]; then
                   if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
-                      curtin in-target --target=/target -- sh -c "${PROG_NAME} -b -n s; 2>&1" | tee -a "${LOGS_NAME}";
+                      curtin in-target --target=/target -- sh -c "${PROG_NAME} -b -n s; 2>&1" 2>&1 | tee -a "${LOGS_NAME}";
                   else
-                      in-target --pass-stdout sh -c "${PROG_NAME} -b -n s; 2>&1" | tee -a "${LOGS_NAME}";
+                      in-target --pass-stdout sh -c "${PROG_NAME} -b -n s; 2>&1" 2>&1 | tee -a "${LOGS_NAME}";
                   fi;
               else
-                  "${TGET_ROOT}${PROG_NAME}" -b -n s 2>&1 | tee -a "${LOGS_NAME}";
+                  "${TGET_ROOT}${PROG_NAME}" -b -n s 2>&1 2>&1 | tee -a "${LOGS_NAME}";
               fi;
-              echo "=== complete ${TGET_ROOT}${PROG_NAME} ===" | tee -a "${LOGS_NAME}";
+              echo "=== complete ${TGET_ROOT}${PROG_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
           fi;
       fi;
       echo "### complete ${FUNC_NAME} ###";' ]
@@ -457,19 +464,19 @@ autoinstall:
       LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.targets.log";
       FILE_NAME="${TGET_ROOT}/lib/systemd/system/${SRVC_NAME}";
       if [ -f "${FILE_NAME}" ]; then
-          echo "=== start ${FILE_NAME} ===" | tee -a "${LOGS_NAME}";
+          echo "=== start ${FILE_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
           if [ -n "${TGET_ROOT}" ]; then
               if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
-                  curtin in-target --target=/target -- sh -c "systemctl disable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";
+                  curtin in-target --target=/target -- sh -c "systemctl disable firewalld.service; systemctl is-enabled firewalld.service;" 2>&1 | tee -a "${LOGS_NAME}";
               else
-                  in-target --pass-stdout sh -c "systemctl disable firewalld.service; systemctl is-enabled firewalld.service;" | tee -a "${LOGS_NAME}";
+                  in-target --pass-stdout sh -c "systemctl disable firewalld.service; systemctl is-enabled firewalld.service;" 2>&1 | tee -a "${LOGS_NAME}";
               fi;
           else
-              systemctl disable firewalld.service; systemctl is-enabled firewalld.service | tee -a "${LOGS_NAME}";
+              systemctl disable firewalld.service; systemctl is-enabled firewalld.service 2>&1 | tee -a "${LOGS_NAME}";
           fi;
-          echo "=== complete ${FILE_NAME} ===" | tee -a "${LOGS_NAME}";
+          echo "=== complete ${FILE_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
       else
-          echo "not exist: ${FILE_NAME}" | tee -a "${LOGS_NAME}";
+          echo "not exist: ${FILE_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
       fi;
       echo "### complete ${FUNC_NAME} ###";' ]
   - [ sh, -c, '
