@@ -1900,15 +1900,15 @@ function funcCreate_late_command() {
 		 	if [ "${SYSD_STAT}" = "enabled" ]; then
 		 		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
 		 		systemctl restart "${SRVC_NAME}"
-		#		for NICS_NAME in lo $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
-		#		do
-		#			echo "${PROG_NAME}: nmcli device set ${NICS_NAME} managed true"
-		#			nmcli device set "${NICS_NAME}" managed true
-		#		done
-		#		echo "${PROG_NAME}: nmcli general reload"
-		#		nmcli general reload
-		#		echo "${PROG_NAME}: nmcli connection up Wired connection 1"
-		#		nmcli connection up "Wired connection 1"
+		 		for NICS_NAME in lo $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+		 		do
+		 			echo "${PROG_NAME}: nmcli device set ${NICS_NAME} managed true"
+		 			nmcli device set "${NICS_NAME}" managed true
+		 		done
+		 		echo "${PROG_NAME}: nmcli general reload"
+		 		nmcli general reload
+		 		echo "${PROG_NAME}: nmcli connection up Wired connection 1"
+		 		nmcli connection up "Wired connection 1"
 		 	fi
 		 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
 		}
@@ -3479,9 +3479,18 @@ function funcCreate_remaster_nocloud() {
 	declare -r    WORK_CONF="${WORK_IMGS}/${TGET_LINE[8]%/*}"
 	funcPrintf "      create: boot options for nocloud"
 	# --- boot option ---------------------------------------------------------
-	BOOT_OPTN="boot=casper automatic-ubiquity noprompt autoinstall ds=nocloud-net\\;s=file:///cdrom/${TGET_LINE[8]}"
-	BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
-	BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	BOOT_OPTN="boot=casper automatic-ubiquity noprompt autoinstall ds=nocloud\\;s=/cdrom/${TGET_LINE[8]}"
+	case "${TGET_LINE[1]}" in
+		ubuntu-live-18.04)
+			BOOT_OPTN+=" ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${HOST_NAME}.${WGRP_NAME}"
+			;;
+		*                )
+			BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
+			;;
+	esac
+#	BOOT_OPTN+=" debian-installer/language=ja keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+#	BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	BOOT_OPTN+=" debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	BOOT_OPTN+=" fsck.mode=skip"
 	# --- syslinux.cfg --------------------------------------------------------
 	funcCreate_syslinux_cfg "${BOOT_OPTN}" "${TGET_LINE[@]}"

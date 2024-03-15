@@ -933,15 +933,15 @@ _EOT_
 	if [ "${SYSD_STAT}" = "enabled" ]; then
 		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
 		systemctl restart "${SRVC_NAME}"
-#		for NICS_NAME in lo $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
-#		do
-#			echo "${PROG_NAME}: nmcli device set ${NICS_NAME} managed true"
-#			nmcli device set "${NICS_NAME}" managed true
-#		done
-#		echo "${PROG_NAME}: nmcli general reload"
-#		nmcli general reload
-#		echo "${PROG_NAME}: nmcli connection up Wired connection 1"
-#		nmcli connection up "Wired connection 1"
+		for NICS_NAME in lo $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+		do
+			echo "${PROG_NAME}: nmcli device set ${NICS_NAME} managed true"
+			nmcli device set "${NICS_NAME}" managed true
+		done
+		echo "${PROG_NAME}: nmcli general reload"
+		nmcli general reload
+		echo "${PROG_NAME}: nmcli connection up Wired connection 1"
+		nmcli connection up "Wired connection 1"
 	fi
 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
 }

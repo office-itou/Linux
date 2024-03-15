@@ -167,8 +167,6 @@ autoinstall:
   updates: all
   packages:
   - standard^
-  - hdparm
-  - nvme-cli
   - apt-transport-https
   - firewalld
   - traceroute
@@ -204,6 +202,9 @@ autoinstall:
 # - pxelinux
 # - syslinux-common
 # - syslinux-efi
+# -----------------------------------------------------------------------------
+# - hdparm
+# - nvme-cli
 # -----------------------------------------------------------------------------
 # - avahi-daemon
 # - bind9
