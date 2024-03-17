@@ -719,7 +719,7 @@ function funcSystem_control() {
 			ssh ) SYSD_ARRY=("ssh.service"                               "sshd.service"                              "sshd.service"                              );;
 			dns ) SYSD_ARRY=("dnsmasq.service"                           "dnsmasq.service"                           "dnsmasq.service"                           );;
 			web ) SYSD_ARRY=("apache2.service"                           "httpd.service"                             "apache2.service"                           );;
-			smb ) SYSD_ARRY=("smbd.service nmbd.service"                 "smb.service nmb.service winbind.service"   "smb.service nmb.service"                   );;
+			smb ) SYSD_ARRY=("smbd.service nmbd.service winbind.service" "smb.service nmb.service winbind.service"   "smb.service nmb.service"                   );;
 			*   ) ;;
 		esac
 		case "${DIST_NAME}" in
@@ -2648,11 +2648,15 @@ _EOT_
 	else
 		return
 	fi
+	# shellcheck disable=SC2312,SC2310
+	if [[ "$(funcServiceStatus "winbind.service")" != "not-found" ]]; then
+		SYSD_ARRY=("${SYSD_ARRY[@]}" "winbind.service")
+	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_ARRY[0]}")" = "enabled" ]]; then
-		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_ARRY[0]} ${SYSD_ARRY[1]}"
-		systemctl --quiet restart "${SYSD_ARRY[0]}" "${SYSD_ARRY[1]}"
+		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_ARRY[*]}"
+		systemctl --quiet restart "${SYSD_ARRY[@]}"
 	fi
 	rm -f "${FILE_TEMP}"
 }
