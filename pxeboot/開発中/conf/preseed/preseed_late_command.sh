@@ -643,17 +643,19 @@ funcSetupNetwork_dnsmasq() {
 	fi
 	cp -a "${FILE_NAME}" "${BACK_DIRS}"
 	# --- dnsmasq.service -----------------------------------------------------
-	sed -i "${FILE_NAME}"                                    \
-	    -e '/\[Unit\]/,/\[.\+\]/                          {' \
-	    -e '/^Requires=/                                  {' \
-	    -e 's/^/#/g'                                         \
-	    -e 'a Requires=network-online.target'                \
-	    -e '                                              }' \
-	    -e '/^After=/                                     {' \
-	    -e 's/^/#/g'                                         \
-	    -e 'a After=network-online.target'                   \
-	    -e '                                              }' \
-	    -e '                                              }'
+	sed -i "${FILE_NAME}"                                         \
+	    -e '/\[Unit\]/,/\[.\+\]/                               {' \
+	    -e '/^Requires=/                                       {' \
+	    -e 's/^/#/g'                                              \
+	    -e 'a Requires=network-online.target'                     \
+	    -e '                                                   }' \
+	    -e '/^After=/                                          {' \
+	    -e 's/^/#/g'                                              \
+	    -e 'a After=network-online.target'                        \
+	    -e '                                                   }' \
+	    -e '                                                   }' \
+	    -e '/^ExecStartPost=.* systemd-start-resolvconf$/ s/^/#/' \
+	    -e '/^ExecStop=.* systemd-stop-resolvconf$/       s/^/#/'
 	#--- debug print ----------------------------------------------------------
 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 	cat "${FILE_NAME}"
@@ -675,6 +677,56 @@ _EOT_
 		cat "${FILE_NAME}"
 	fi
 	echo "${PROG_NAME}: ${FILE_NAME##*/} completed"
+}
+
+# --- network setup samba -----------------------------------------------------
+# run on target
+funcSetupNetwork_samba() {
+	FUNC_NAME="funcSetupNetwork_samba"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
+	# --- smb.conf ------------------------------------------------------------
+	FILE_NAME="/etc/samba/smb.conf"
+	BACK_DIRS="${ORIG_DIRS}${FILE_NAME%/*}"
+	if [ -d "${TGET_DIRS}/." ]; then
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
+	fi
+	if [ ! -f "${FILE_NAME}" ]; then
+		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
+		return
+	fi
+	echo "${PROG_NAME}: ${FILE_NAME}"
+	if [ ! -d "${BACK_DIRS}/." ]; then
+		mkdir -p "${BACK_DIRS}"
+	fi
+	cp -a "${FILE_NAME}" "${BACK_DIRS}"
+	sed -i "${FILE_NAME}"                                                   \
+	    -e "/^[;#]*[ \t]*interfaces[ \t]*=/a \    interfaces = ${NIC_NAME}"
+	#--- debug print ----------------------------------------------------------
+	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+	cat "${FILE_NAME}"
+	#--- systemctl ------------------------------------------------------------
+	if [ -f /lib/systemd/system/smbd.service ]; then
+		SRVC_SMBD="smbd.service"
+		SRVC_NMBD="nmbd.service"
+	else
+		SRVC_SMBD="smb.service"
+		SRVC_NMBD="nmb.service"
+	fi
+	echo "${PROG_NAME}: daemon-reload"
+	systemctl daemon-reload
+	SYSD_STAT="$(funcServiceStatus "${SRVC_SMBD}")"
+	if [ "${SYSD_STAT}" = "enabled" ]; then
+		echo "${PROG_NAME}: ${SRVC_SMBD} restarted"
+		systemctl restart "${SRVC_SMBD}"
+	fi
+	echo "${PROG_NAME}: ${SRVC_NMBD} completed"
+	SYSD_STAT="$(funcServiceStatus "${SRVC_NMBD}")"
+	if [ "${SYSD_STAT}" = "enabled" ]; then
+		echo "${PROG_NAME}: ${SRVC_NMBD} restarted"
+		systemctl restart "${SRVC_NMBD}"
+	fi
+	echo "${PROG_NAME}: ${SRVC_NMBD} completed"
 }
 
 # --- network setup connman ---------------------------------------------------
@@ -816,136 +868,6 @@ _EOT_
 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
 }
 
-# --- network setup network manager -------------------------------------------
-# run on target
-funcSetupNetwork_nmanagr() {
-	FUNC_NAME="funcSetupNetwork_nmanagr"
-	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
-	#--- exit for DHCP --------------------------------------------------------
-	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
-		return
-	fi
-	# --- network manager -----------------------------------------------------
-	SRVC_NAME="NetworkManager.service"
-	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
-	FILE_DIRS="/etc/NetworkManager"
-	CONF_FILE="${FILE_DIRS}/NetworkManager.conf"
-	BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
-	if [ -d "${TGET_DIRS}/." ]; then
-		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
-		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
-		CONF_FILE="${TGET_DIRS}${CONF_FILE}"
-		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
-	fi
-	if [ ! -f "${FILE_NAME}" ]; then
-		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
-		return
-	fi
-	# --- backup --------------------------------------------------------------
-	if [ ! -d "${BACK_DIRS}/system-connections/." ]; then
-		mkdir -p "${BACK_DIRS}/system-connections"
-	fi
-	echo "${PROG_NAME}: ${CONF_FILE}"
-	if [ -f "${CONF_FILE}" ]; then
-		cp -a "${CONF_FILE}" "${BACK_DIRS}"
-	fi
-	find "${FILE_DIRS}/system-connections" -name '*.yaml' -type f | \
-	while read -r FILE_NAME
-	do
-		echo "${PROG_NAME}: ${FILE_NAME} moved"
-		mv "${FILE_NAME}" "${BACK_DIRS}/system-connections"
-	done
-	# --- change --------------------------------------------------------------
-#	echo "${PROG_NAME}: change file"
-#	sed -e '/^\[ifupdown\]$/,/^\[.*]$/  {' \
-#	    -e '/^managed=.*$/ s/=.*$/=true/}' \
-#	      "${BACK_DIRS}/${CONF_FILE##*/}"  \
-#	    > "${CONF_FILE}"
-	#--- debug print ------------------------------------------------------
-#	echo "${PROG_NAME}: --- ${CONF_FILE} ---"
-#	cat "${CONF_FILE}"
-	# --- create --------------------------------------------------------------
-	echo "${PROG_NAME}: create file"
-	I=1
-	for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
-	do
-		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
-		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
-		echo "${PROG_NAME}: ${FILE_NAME}"
-		nmcli connection delete "${FILE_NAME##*/}" || true
-		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
-			cat <<- _EOT_ > "${FILE_NAME}"
-				[connection]
-				id=${FILE_NAME##*/}
-				#uuid=
-				type=802-3-ethernet
-				interface-name=${NICS_NAME}
-				autoconnect=true
-				zone=home
-				
-				[802-3-ethernet]
-				mac=${MAC_ADDR}
-				
-				[ipv4]
-				method=manual
-				dns=${NIC_DNS4};
-				address1=${NIC_IPV4}/${NIC_BIT4},${NIC_GATE}
-				dns-search=${NIC_WGRP};
-				
-				[ipv6]
-				method=auto
-				ip6-privacy=2
-_EOT_
-		else
-			cat <<- _EOT_ > "${FILE_NAME}"
-				[connection]
-				id=${FILE_NAME##*/}
-				#uuid=
-				type=802-3-ethernet
-				interface-name=${NICS_NAME}
-				autoconnect=false
-				#zone=home
-				
-				[802-3-ethernet]
-				mac=${MAC_ADDR}
-				
-				[ipv4]
-				method=auto
-				
-				[ipv6]
-				method=auto
-				ip6-privacy=2
-_EOT_
-		fi
-		chmod 600 "${FILE_NAME}"
-		if [ -d "${TGET_DIRS}/." ]; then
-			cp --archive "${FILE_NAME}" "${FILE_DIRS#*/}"
-		fi
-		#--- debug print ------------------------------------------------------
-		echo "${PROG_NAME}: --- ${FILE_NAME} ---"
-		cat "${FILE_NAME}"
-		I=$((I+1))
-	done
-	#--- systemctl ------------------------------------------------------------
-	echo "${PROG_NAME}: daemon-reload"
-	systemctl daemon-reload
-	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
-	if [ "${SYSD_STAT}" = "enabled" ]; then
-		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
-		systemctl restart "${SRVC_NAME}"
-		for NICS_NAME in lo $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
-		do
-			echo "${PROG_NAME}: nmcli device set ${NICS_NAME} managed true"
-			nmcli device set "${NICS_NAME}" managed true
-		done
-		echo "${PROG_NAME}: nmcli general reload"
-		nmcli general reload
-		echo "${PROG_NAME}: nmcli connection up Wired connection 1"
-		nmcli connection up "Wired connection 1"
-	fi
-	echo "${PROG_NAME}: ${SRVC_NAME} completed"
-}
-
 # --- network setup netplan ---------------------------------------------------
 # run on target
 funcSetupNetwork_netplan() {
@@ -1009,96 +931,12 @@ _EOT_
 			  renderer: NetworkManager
 _EOT_
 		chmod 600 "${FILE_NAME}"
-		# --- 99-network-config-all.yaml --------------------------------------
-#		FILE_NAME="${FILE_DIRS}/99-network-config-all.yaml"
-#		cat <<- _EOT_ > "${FILE_NAME}"
-#			network:
-#			  version: 2
-#			  renderer: NetworkManager
-#			  ethernets:
-#_EOT_
-#		I=1
-#		for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
-#		do
-#			MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
-#			echo "${PROG_NAME}: ${FILE_NAME}"
-#			nmcli connection delete "${FILE_NAME##*/}" || true
-#			if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
-#				cat <<- _EOT_ >> "${FILE_NAME}"
-#					    ${NICS_NAME}:
-#					      addresses:
-#					      - ${NIC_IPV4}/${NIC_BIT4}
-#					#     routes:
-#					#     - to: default
-#					#       via: ${NIC_GATE}
-#					      gateway4: ${NIC_GATE}
-#					      nameservers:
-#					        search:
-#					        - ${NIC_WGRP}
-#					        addresses:
-#					        - ${IP6_LHST}
-#					        - ${IP4_LHST}
-#					        - ${NIC_DNS4}
-#					      dhcp4: false
-#					      dhcp6: true
-#					      ipv6-privacy: true
-#					      networkmanager:
-#					        name: "Wired connection ${I}"
-#					        device: ${NICS_NAME}
-#_EOT_
-#			else
-#				cat <<- _EOT_ >> "${FILE_NAME}"
-#					    ${NICS_NAME}:
-#					      dhcp4: false
-#					      dhcp6: false
-#					      ipv6-privacy: true
-#					      networkmanager:
-#					        name: "Wired connection ${I}"
-#					        device: ${NICS_NAME}
-#_EOT_
-#			fi
-#			I=$((I+1))
-#		done
-#		chmod 600 "${FILE_NAME}"
-		#--- debug print ------------------------------------------------------
-#		echo "${PROG_NAME}: --- ${FILE_NAME} ---"
-#		cat "${FILE_NAME}"
-		# --- backup ----------------------------------------------------------
-#		FILE_DIRS="/etc/NetworkManager"
-#		CONF_FILE="${FILE_DIRS}/NetworkManager.conf"
-#		BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
-#		if [ -d "${TGET_DIRS}/." ]; then
-#			FILE_NAME="${TGET_DIRS}${FILE_NAME}"
-#			FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
-#			CONF_FILE="${TGET_DIRS}${CONF_FILE}"
-#			BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
-#		fi
-#		if [ ! -d "${BACK_DIRS}/system-connections/." ]; then
-#			mkdir -p "${BACK_DIRS}/system-connections"
-#		fi
-#		echo "${PROG_NAME}: ${CONF_FILE}"
-#		if [ -f "${CONF_FILE}" ]; then
-#			cp -a "${CONF_FILE}" "${BACK_DIRS}"
-#		fi
-#		find "${FILE_DIRS}/system-connections" -name '*.yaml' -type f | \
-#		while read -r FILE_NAME
-#		do
-#			echo "${PROG_NAME}: ${FILE_NAME} moved"
-#			mv "${FILE_NAME}" "${BACK_DIRS}/system-connections"
-#		done
-		# --- reload network manager ------------------------------------------
-#		for NICS_NAME in lo $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
-#		do
-#			echo "${PROG_NAME}: nmcli device set ${NICS_NAME} managed true"
-#			nmcli device set "${NICS_NAME}" managed true
-#		done
-#		echo "${PROG_NAME}: nmcli general reload"
-#		nmcli general reload
 		# --- reload netplan --------------------------------------------------
-		echo "${PROG_NAME}: netplan apply"
-		netplan apply
+#		echo "${PROG_NAME}: netplan apply"
+#		netplan apply
 		return
 	fi
+	# --- 99-network-config-all.yaml ------------------------------------------
 	echo "${PROG_NAME}: directory does not exist ${NMAN_DIRS}"
 	FILE_NAME="${FILE_DIRS}/99-network-config-all.yaml"
 	cat <<- _EOT_ > "${FILE_NAME}"
@@ -1145,6 +983,171 @@ _EOT_
 	netplan apply
 }
 
+# --- network setup network manager -------------------------------------------
+# run on target
+funcSetupNetwork_nmanagr() {
+	FUNC_NAME="funcSetupNetwork_nmanagr"
+	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
+	#--- exit for DHCP --------------------------------------------------------
+	if [ "${FIX_IPV4}" != "true" ] || [ -z "${NIC_IPV4}" ]; then
+		return
+	fi
+	# --- network manager -----------------------------------------------------
+	SRVC_NAME="NetworkManager.service"
+	FILE_NAME="/lib/systemd/system/${SRVC_NAME}"
+	FILE_DIRS="/etc/NetworkManager"
+	CONF_FILE="${FILE_DIRS}/NetworkManager.conf"
+	BACK_DIRS="${ORIG_DIRS}${FILE_DIRS}"
+	if [ -d "${TGET_DIRS}/." ]; then
+		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
+		FILE_DIRS="${TGET_DIRS}${FILE_DIRS}"
+		CONF_FILE="${TGET_DIRS}${CONF_FILE}"
+		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
+	fi
+	if [ ! -f "${FILE_NAME}" ]; then
+		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
+		return
+	fi
+	# --- backup --------------------------------------------------------------
+	if [ ! -d "${BACK_DIRS}/system-connections/." ]; then
+		mkdir -p "${BACK_DIRS}/system-connections"
+	fi
+	echo "${PROG_NAME}: ${CONF_FILE}"
+	if [ -f "${CONF_FILE}" ]; then
+		cp -a "${CONF_FILE}" "${BACK_DIRS}"
+	fi
+	find "${FILE_DIRS}/system-connections" -name '*.yaml' -type f | \
+	while read -r FILE_NAME
+	do
+		echo "${PROG_NAME}: ${FILE_NAME} moved"
+		mv "${FILE_NAME}" "${BACK_DIRS}/system-connections"
+	done
+	# --- change --------------------------------------------------------------
+#	echo "${PROG_NAME}: change file"
+#	sed -e '/^\[ifupdown\]$/,/^\[.*]$/  {' \
+#	    -e '/^managed=.*$/ s/=.*$/=true/}' \
+#	      "${BACK_DIRS}/${CONF_FILE##*/}"  \
+#	    > "${CONF_FILE}"
+	#--- debug print ----------------------------------------------------------
+#	echo "${PROG_NAME}: --- ${CONF_FILE} ---"
+#	cat "${CONF_FILE}"
+	# --- delete --------------------------------------------------------------
+#	echo "${PROG_NAME}: delete connection"
+#	IFS='' nmcli connection show | while read -r LINE
+#	do
+#		case "${LINE}" in
+#			"NAME "*)
+#				TEXT_LINE="${LINE%%UUID[ \t]*}"
+#				TEXT_CONT="${#TEXT_LINE}"
+#				;;
+#			*)
+#				CON_NAME="$(echo "${LINE}" | cut -c 1-"${TEXT_CONT}")"
+#				echo "${PROG_NAME}: ${CON_NAME}"
+#				nmcli connection delete "${CON_NAME}" || true
+#				;;
+#		esac
+#	done
+	# --- create --------------------------------------------------------------
+	echo "${PROG_NAME}: create file"
+	I=1
+	for NICS_NAME in $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+	do
+		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
+		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
+		echo "${PROG_NAME}: ${FILE_NAME}"
+		if [ -f "${FILE_NAME}" ]; then
+			nmcli connection delete "${FILE_NAME##*/}" || true
+		fi
+		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
+			cat <<- _EOT_ > "${FILE_NAME}"
+				[connection]
+				id=${FILE_NAME##*/}
+				#uuid=
+				type=802-3-ethernet
+				interface-name=${NICS_NAME}
+				autoconnect=true
+				zone=home
+				
+				[802-3-ethernet]
+				mac=${MAC_ADDR}
+				
+				[ipv4]
+				method=manual
+				dns=${NIC_DNS4};
+				address1=${NIC_IPV4}/${NIC_BIT4},${NIC_GATE}
+				dns-search=${NIC_WGRP};
+				
+				[ipv6]
+				method=auto
+				ip6-privacy=2
+_EOT_
+		else
+			cat <<- _EOT_ > "${FILE_NAME}"
+				[connection]
+				id=${FILE_NAME##*/}
+				#uuid=
+				type=802-3-ethernet
+				interface-name=${NICS_NAME}
+				autoconnect=false
+				#zone=home
+				
+				[802-3-ethernet]
+				mac=${MAC_ADDR}
+				
+				[ipv4]
+				method=auto
+				
+				[ipv6]
+				method=auto
+				ip6-privacy=2
+_EOT_
+		fi
+		chmod 600 "${FILE_NAME}"
+		if [ -d "${TGET_DIRS}/." ]; then
+			cp --archive "${FILE_NAME}" "${FILE_DIRS#*/}"
+		fi
+		#--- debug print ------------------------------------------------------
+		echo "${PROG_NAME}: --- ${FILE_NAME} ---"
+		cat "${FILE_NAME}"
+		I=$((I+1))
+	done
+	#--- systemctl ------------------------------------------------------------
+	echo "${PROG_NAME}: daemon-reload"
+	systemctl daemon-reload
+	SRVC_NWKD="systemd-networkd.service"
+	SOCK_NWKD="systemd-networkd.socket"
+	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+	if [ "${SYSD_STAT}" = "enabled" ]; then
+		echo "${PROG_NAME}: ${SRVC_NWKD} ${SOCK_NWKD} stop"
+		systemctl stop "${SRVC_NWKD}" "${SOCK_NWKD}"
+		echo "${PROG_NAME}: ${SRVC_NWKD} ${SOCK_NWKD} mask"
+		systemctl mask "${SRVC_NWKD}" "${SOCK_NWKD}"
+	fi
+	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+	if [ "${SYSD_STAT}" = "enabled" ]; then
+		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
+		systemctl restart "${SRVC_NAME}"
+		for NICS_NAME in lo $(ip -4 -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+		do
+			echo "${PROG_NAME}: nmcli device set ${NICS_NAME} managed true"
+			nmcli device set "${NICS_NAME}" managed true || true
+		done
+		echo "${PROG_NAME}: nmcli general reload"
+		nmcli general reload
+		echo "${PROG_NAME}: nmcli connection up Wired connection 1"
+		nmcli connection up "Wired connection 1"
+		echo "${PROG_NAME}: nmcli connection show"
+		nmcli connection show
+		# --- reload netplan --------------------------------------------------
+		# shellcheck disable=SC2312
+		if [ -n "$(command -v netplan 2> /dev/null)" ]; then
+			echo "${PROG_NAME}: netplan apply"
+			netplan apply
+		fi
+	fi
+	echo "${PROG_NAME}: ${SRVC_NAME} completed"
+}
+
 # --- network -----------------------------------------------------------------
 funcSetupNetwork_software() {
 	FUNC_NAME="funcSetupNetwork_software"
@@ -1157,6 +1160,7 @@ funcSetupNetwork_software() {
 	funcSetupNetwork_avahi
 	funcSetupNetwork_resolv
 	funcSetupNetwork_dnsmasq
+	funcSetupNetwork_samba
 }
 
 funcSetupNetwork_hardware() {
@@ -1165,8 +1169,8 @@ funcSetupNetwork_hardware() {
 	# -------------------------------------------------------------------------
 	funcGetNetwork_parameter
 	funcSetupNetwork_connman
-	funcSetupNetwork_nmanagr
 	funcSetupNetwork_netplan
+	funcSetupNetwork_nmanagr
 }
 
 # --- service -----------------------------------------------------------------
@@ -1182,9 +1186,9 @@ funcSetupService() {
 		"1 connman.service"                         \
 		"1 NetworkManager.service"                  \
 		"1 firewalld.service"                       \
-		"0 ssh.service"                             \
+		"- ssh.service"                             \
 		"1 dnsmasq.service"                         \
-		"0 apache2.service"                         \
+		"- apache2.service"                         \
 		"1 smbd.service"                            \
 		"1 nmbd.service"
 	do
@@ -1196,7 +1200,7 @@ funcSetupService() {
 		IFS=${OLD_IFS}
 		SRVC_FLAG="${1:-}"
 		SRVC_NAME="${2:-}"
-		if [ "${SRVC_FLAG}" -eq 0 ]; then
+		if [ "${SRVC_FLAG}" = "-" ]; then
 			continue
 		fi
 		SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
