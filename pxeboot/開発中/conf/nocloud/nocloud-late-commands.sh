@@ -643,19 +643,19 @@ funcSetupNetwork_dnsmasq() {
 	fi
 	cp -a "${FILE_NAME}" "${BACK_DIRS}"
 	# --- dnsmasq.service -----------------------------------------------------
-	sed -i "${FILE_NAME}"                                         \
-	    -e '/\[Unit\]/,/\[.\+\]/                               {' \
-	    -e '/^Requires=/                                       {' \
-	    -e 's/^/#/g'                                              \
-	    -e 'a Requires=network-online.target'                     \
-	    -e '                                                   }' \
-	    -e '/^After=/                                          {' \
-	    -e 's/^/#/g'                                              \
-	    -e 'a After=network-online.target'                        \
-	    -e '                                                   }' \
-	    -e '                                                   }' \
-	    -e '/^ExecStartPost=.* systemd-start-resolvconf$/ s/^/#/' \
-	    -e '/^ExecStop=.* systemd-stop-resolvconf$/       s/^/#/'
+	sed -i "${FILE_NAME}"                           \
+	    -e '/\[Unit\]/,/\[.\+\]/                 {' \
+	    -e '/^Requires=/                         {' \
+	    -e 's/^/#/g'                                \
+	    -e 'a Requires=network-online.target'       \
+	    -e '                                     }' \
+	    -e '/^After=/                            {' \
+	    -e 's/^/#/g'                                \
+	    -e 'a After=network-online.target'          \
+	    -e '                                     }' \
+	    -e '                                     }' \
+	    -e '/^ExecStartPost=.*-resolvconf$/ s/^/#/' \
+	    -e '/^ExecStop=.*-resolvconf$/      s/^/#/'
 	#--- debug print ----------------------------------------------------------
 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 	cat "${FILE_NAME}"
