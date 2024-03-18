@@ -453,7 +453,7 @@ autoinstall:
   - [ sh, -c, '
       exec 2>&1;
       export LANG=C;
-      FUNC_NAME="user-data runcmd <disable firewalld.service>";
+      FUNC_NAME="late-commands <disable firewalld.service>";
       echo "### start ${FUNC_NAME} ###";
       TGET_ROOT="";
       if [ -d "/target/." ]; then
