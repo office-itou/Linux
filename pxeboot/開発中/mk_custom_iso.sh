@@ -957,6 +957,7 @@ _EOT_SH_
 }
 
 # ----- create late command ---------------------------------------------------
+# ----- create late command ---------------------------------------------------
 function funcCreate_late_command() {
 	declare -r    DIRS_NAME="${DIRS_CONF}/script"
 	declare -r    FILE_NAME="${DIRS_NAME}/late_command.sh"
@@ -1118,27 +1119,38 @@ function funcCreate_late_command() {
 		
 		# --- service status ----------------------------------------------------------
 		funcServiceStatus() {
-		 	SRVC_STAT="$(systemctl is-enabled "$1" 2> /dev/null || true)"
-		 	# -------------------------------------------------------------------------
-		 	if [ -z "${SRVC_STAT}" ]; then
-		 		SRVC_STAT="not-found"
-		 	fi
-		 	case "${SRVC_STAT}" in
-		 		disabled        ) SRVC_STAT="disabled";;
-		 		enabled         | \
-		 		enabled-runtime ) SRVC_STAT="enabled";;
-		 		linked          | \
-		 		linked-runtime  ) SRVC_STAT="linked";;
-		 		masked          | \
-		 		masked-runtime  ) SRVC_STAT="masked";;
-		 		alias           ) ;;
-		 		static          ) ;;
-		 		indirect        ) ;;
-		 		generated       ) ;;
-		 		transient       ) ;;
-		 		bad             ) ;;
-		 		not-found       ) ;;
-		 		*               ) SRVC_STAT="undefined";;
+		 	SRVC_STAT="undefined"
+		 	case "$1" in
+		 		is-enabled )
+		 			SRVC_STAT="$(systemctl is-enabled "$2" 2> /dev/null || true)"
+		 			if [ -z "${SRVC_STAT}" ]; then
+		 				SRVC_STAT="not-found"
+		 			fi
+		 			case "${SRVC_STAT}" in
+		 				disabled        ) SRVC_STAT="disabled";;
+		 				enabled         | \
+		 				enabled-runtime ) SRVC_STAT="enabled";;
+		 				linked          | \
+		 				linked-runtime  ) SRVC_STAT="linked";;
+		 				masked          | \
+		 				masked-runtime  ) SRVC_STAT="masked";;
+		 				alias           ) ;;
+		 				static          ) ;;
+		 				indirect        ) ;;
+		 				generated       ) ;;
+		 				transient       ) ;;
+		 				bad             ) ;;
+		 				not-found       ) ;;
+		 				*               ) ;;
+		 			esac
+		 			;;
+		 		is-active  )
+		 			SRVC_STAT="$(systemctl is-active "$2" 2> /dev/null || true)"
+		 			if [ -z "${SRVC_STAT}" ]; then
+		 				SRVC_STAT="not-found"
+		 			fi
+		 			;;
+		 		*          ) ;;
 		 	esac
 		 	echo "${SRVC_STAT}"
 		}
@@ -1466,7 +1478,7 @@ function funcCreate_late_command() {
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
 		 	#--- systemctl ------------------------------------------------------------
-		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+		 	SYSD_STAT="$(funcServiceStatus "is-enabled" "${SRVC_NAME}")"
 		 	if [ "${SYSD_STAT}" = "enabled" ]; then
 		 		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
 		 		systemctl restart "${SRVC_NAME}"
@@ -1495,7 +1507,7 @@ function funcCreate_late_command() {
 		 	systemctl daemon-reload
 		 	for SYSD_NAME in "${SRVC_NAME}" "${SOCK_NAME}"
 		 	do
-		 		SYSD_STAT="$(funcServiceStatus "${SYSD_NAME}")"
+		 		SYSD_STAT="$(funcServiceStatus "is-enabled" "${SYSD_NAME}")"
 		 		if [ "${SYSD_STAT}" != "enabled" ]; then
 		 			continue
 		 		fi
@@ -1529,7 +1541,7 @@ function funcCreate_late_command() {
 		 	# --- systemctl -----------------------------------------------------------
 		 	echo "${PROG_NAME}: daemon-reload"
 		 	systemctl daemon-reload
-		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+		 	SYSD_STAT="$(funcServiceStatus "is-enabled" "${SRVC_NAME}")"
 		 	if [ "${SYSD_STAT}" = "enabled" ]; then
 		 		echo "${PROG_NAME}: ${SRVC_NAME} stop"
 		 		systemctl stop "${SRVC_NAME}"
@@ -1682,13 +1694,13 @@ function funcCreate_late_command() {
 		 	fi
 		 	echo "${PROG_NAME}: daemon-reload"
 		 	systemctl daemon-reload
-		 	SYSD_STAT="$(funcServiceStatus "${SRVC_SMBD}")"
+		 	SYSD_STAT="$(funcServiceStatus "is-enabled" "${SRVC_SMBD}")"
 		 	if [ "${SYSD_STAT}" = "enabled" ]; then
 		 		echo "${PROG_NAME}: ${SRVC_SMBD} restarted"
 		 		systemctl restart "${SRVC_SMBD}"
 		 	fi
 		 	echo "${PROG_NAME}: ${SRVC_NMBD} completed"
-		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NMBD}")"
+		 	SYSD_STAT="$(funcServiceStatus "is-enabled" "${SRVC_NMBD}")"
 		 	if [ "${SYSD_STAT}" = "enabled" ]; then
 		 		echo "${PROG_NAME}: ${SRVC_NMBD} restarted"
 		 		systemctl restart "${SRVC_NMBD}"
@@ -1827,7 +1839,7 @@ function funcCreate_late_command() {
 		 	#--- systemctl ------------------------------------------------------------
 		 	echo "${PROG_NAME}: daemon-reload"
 		 	systemctl daemon-reload
-		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+		 	SYSD_STAT="$(funcServiceStatus "is-enabled" "${SRVC_NAME}")"
 		 	if [ "${SYSD_STAT}" = "enabled" ]; then
 		 		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
 		 		systemctl restart "${SRVC_NAME}"
@@ -1999,21 +2011,27 @@ function funcCreate_late_command() {
 		#	echo "${PROG_NAME}: --- ${CONF_FILE} ---"
 		#	cat "${CONF_FILE}"
 		 	# --- delete --------------------------------------------------------------
-		#	echo "${PROG_NAME}: delete connection"
-		#	IFS='' nmcli connection show | while read -r LINE
-		#	do
-		#		case "${LINE}" in
-		#			"NAME "*)
-		#				TEXT_LINE="${LINE%%UUID[ \t]*}"
-		#				TEXT_CONT="${#TEXT_LINE}"
-		#				;;
-		#			*)
-		#				CON_NAME="$(echo "${LINE}" | cut -c 1-"${TEXT_CONT}")"
-		#				echo "${PROG_NAME}: ${CON_NAME}"
-		#				nmcli connection delete "${CON_NAME}" || true
-		#				;;
-		#		esac
-		#	done
+		 	SYSD_STAT="$(funcServiceStatus "is-active" "${SRVC_NAME}")"
+		 	if [ "${SYSD_STAT}" = "active" ]; then
+		 		echo "${PROG_NAME}: delete connection"
+		 		IFS='' nmcli connection show | while read -r LINE
+		 		do
+		 			if [ -z "${LINE}" ]; then
+		 				break
+		 			fi
+		 			case "${LINE}" in
+		 				"NAME "*)
+		 					TEXT_LINE="${LINE%%UUID[ \t]*}"
+		 					TEXT_CONT="${#TEXT_LINE}"
+		 					;;
+		 				*)
+		 					CON_NAME="$(echo "${LINE}" | cut -c 1-"${TEXT_CONT}" | sed -e 's/[ \t]*$//g')"
+		 					echo "${PROG_NAME}: ${CON_NAME}"
+		 					nmcli connection delete "${CON_NAME}" || true
+		 					;;
+		 			esac
+		 		done
+		 	fi
 		 	# --- create --------------------------------------------------------------
 		 	echo "${PROG_NAME}: create file"
 		 	I=1
@@ -2083,14 +2101,14 @@ function funcCreate_late_command() {
 		 	systemctl daemon-reload
 		 	SRVC_NWKD="systemd-networkd.service"
 		 	SOCK_NWKD="systemd-networkd.socket"
-		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+		 	SYSD_STAT="$(funcServiceStatus "is-enabled" "${SRVC_NAME}")"
 		 	if [ "${SYSD_STAT}" = "enabled" ]; then
 		 		echo "${PROG_NAME}: ${SRVC_NWKD} ${SOCK_NWKD} stop"
 		 		systemctl stop "${SRVC_NWKD}" "${SOCK_NWKD}"
 		 		echo "${PROG_NAME}: ${SRVC_NWKD} ${SOCK_NWKD} mask"
 		 		systemctl mask "${SRVC_NWKD}" "${SOCK_NWKD}"
 		 	fi
-		 	SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+		 	SYSD_STAT="$(funcServiceStatus "is-enabled" "${SRVC_NAME}")"
 		 	if [ "${SYSD_STAT}" = "enabled" ]; then
 		 		echo "${PROG_NAME}: ${SRVC_NAME} restarted"
 		 		systemctl restart "${SRVC_NAME}"
@@ -2103,6 +2121,10 @@ function funcCreate_late_command() {
 		 		nmcli general reload
 		 		echo "${PROG_NAME}: nmcli connection up Wired connection 1"
 		 		nmcli connection up "Wired connection 1"
+		 		echo "${PROG_NAME}: nmcli networking off"
+		 		nmcli networking off
+		 		echo "${PROG_NAME}: nmcli networking on"
+		 		nmcli networking on
 		 		echo "${PROG_NAME}: nmcli connection show"
 		 		nmcli connection show
 		 		# --- reload netplan --------------------------------------------------
@@ -2111,6 +2133,13 @@ function funcCreate_late_command() {
 		 			echo "${PROG_NAME}: netplan apply"
 		 			netplan apply
 		 		fi
+		 		# --- restart winbind.service -----------------------------------------
+		#		SRVC_WBND="winbind.service"
+		#		SYSD_STAT="$(funcServiceStatus "is-enabled" "${SRVC_WBND}")"
+		#		if [ "${SYSD_STAT}" = "enabled" ]; then
+		#			echo "${PROG_NAME}: ${SRVC_WBND} restarted"
+		#			systemctl restart smbd.service nmbd.service winbind.service
+		#		fi
 		 	fi
 		 	echo "${PROG_NAME}: ${SRVC_NAME} completed"
 		}
@@ -2157,7 +2186,8 @@ function funcCreate_late_command() {
 		 		"1 dnsmasq.service"                         \
 		 		"- apache2.service"                         \
 		 		"1 smbd.service"                            \
-		 		"1 nmbd.service"
+		 		"1 nmbd.service"                            \
+		 		"1 winbind.service"
 		 	do
 		 		IFS=' '
 		 		set -f
@@ -2170,7 +2200,7 @@ function funcCreate_late_command() {
 		 		if [ "${SRVC_FLAG}" = "-" ]; then
 		 			continue
 		 		fi
-		 		SYSD_STAT="$(funcServiceStatus "${SRVC_NAME}")"
+		 		SYSD_STAT="$(funcServiceStatus "is-enabled" "${SRVC_NAME}")"
 		 		if [ "${SYSD_STAT}" != "enabled" ]; then
 		 			continue
 		 		fi
