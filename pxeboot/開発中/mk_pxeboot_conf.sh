@@ -2647,13 +2647,17 @@ function funcCreate_menu_cfg_preseed() {
 	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 #	declare -r    CONF_FILE="file=/cdrom/${TGET_LINE[8]}"
 	declare -r    CONF_FILE="url=${HTTP_ADDR}/conf/${TGET_LINE[8]}"
+#	declare -r    RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000"
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for preseed"
 	# --- boot option ---------------------------------------------------------
 	case "${TGET_LINE[1]}" in
 #		*-mini-*              ) BOOT_OPTN="auto=true";;
 		*                     ) BOOT_OPTN="auto=true ${CONF_FILE}";;
+#		*                     ) BOOT_OPTN="auto=true ${CONF_FILE} ${RAMS_DISK}";;
 	esac
+#	BOOT_OPTN+=" url=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+#	BOOT_OPTN+=" fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
 	case "${TGET_LINE[1]}" in
 		ubuntu-desktop-*      | \
 		ubuntu-legacy-*       ) BOOT_OPTN="automatic-ubiquity noprompt ${BOOT_OPTN}";;
@@ -2725,7 +2729,8 @@ function funcCreate_menu_cfg_nocloud() {
 	declare       BOOT_OPTN=""
 	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 #	declare -r    CONF_FILE="file:///cdrom/${TGET_LINE[8]}"
-	declare -r    CONF_FILE="${HTTP_ADDR}/conf/${TGET_LINE[8]} root=/dev/ram0 ramdisk_size=1500000"
+	declare -r    CONF_FILE="${HTTP_ADDR}/conf/${TGET_LINE[8]}"
+	declare -r    RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000"
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for nocloud"
 	# --- boot option ---------------------------------------------------------
@@ -2735,6 +2740,7 @@ function funcCreate_menu_cfg_nocloud() {
 		*                     ) ;;
 	esac
 	BOOT_OPTN+=" automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${CONF_FILE}"
+	BOOT_OPTN+=" ${RAMS_DISK}"
 	case "${TGET_LINE[1]}" in
 		ubuntu-live-18.*      | \
 		ubuntu-live-20.*      | \

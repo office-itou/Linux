@@ -1349,12 +1349,13 @@ function funcNetwork_resolv_conf() {
 	# -------------------------------------------------------------------------
 	if [[ -h "${FILE_PATH}" ]]; then
 		funcPrintf "      ${MSGS_TITL}: link file already exists"
-		# shellcheck disable=SC2312,SC2310
-		if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
-			return
-		fi
-		funcPrintf "      ${MSGS_TITL}: rm -f ${FILE_PATH}"
-		rm -f "${FILE_PATH}"
+		return
+#		# shellcheck disable=SC2312,SC2310
+#		if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
+#			return
+#		fi
+#		funcPrintf "      ${MSGS_TITL}: rm -f ${FILE_PATH}"
+#		rm -f "${FILE_PATH}"
 	fi
 	if [[ -f "${FILE_PATH}" ]]; then
 		if [[ ! -f "${FILE_ORIG}" ]]; then
