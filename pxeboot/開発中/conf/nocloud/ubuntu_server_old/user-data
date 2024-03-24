@@ -242,8 +242,8 @@ autoinstall:
         if [ -f "${CONF_FILE}" ]; then
             echo "rm -f \"${FILE_NAME}\"";
             rm -f "${FILE_NAME}";
-            echo "ln -s \"${CONF_FILE}\" \"${FILE_NAME}\"";
-            ln -s "${CONF_FILE}" "${FILE_NAME}";
+            echo "cp -a \"${CONF_FILE}\" \"${FILE_NAME}\"";
+            cp -a "${CONF_FILE}" "${FILE_NAME}";
         fi;
         echo "### complete ${FUNC_NAME} ###";' ]
     - [ sh, -c, '
