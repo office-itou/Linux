@@ -610,7 +610,8 @@ funcSetupNetwork_resolv() {
 		nameserver ${NIC_DNS4}
 _EOT_
 	rm -f "${FILE_NAME}"
-	ln -s "${CONF_FILE}" "${FILE_NAME}"
+	cp -a "${CONF_FILE}" "${FILE_NAME}"
+#	ln -s "${CONF_FILE}" "${FILE_NAME}"
 	#--- debug print ----------------------------------------------------------
 	echo "${PROG_NAME}: --- ls -l ${CONF_FILE} ${FILE_NAME} ---"
 	ls -l "${CONF_FILE}" "${FILE_NAME}"
