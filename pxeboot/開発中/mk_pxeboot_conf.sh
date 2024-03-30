@@ -29,7 +29,7 @@
 	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
 	# -------------------------------------------------------------------------
-	declare -r -a APP_LIST=("syslinux-common" "syslinux-efi" "pxelinux" "dnsmasq" "apache2" "7zip" "rsync")
+	declare -r -a APP_LIST=("syslinux-common" "syslinux-efi" "pxelinux" "dnsmasq" "apache2" "7zip" "rsync" "bzip2" "gzip" "lz4" "lzop" "xz-utils" "zstd")
 	declare -a    APP_FIND=()
 	declare       APP_LINE=""
 	# shellcheck disable=SC2312
@@ -116,6 +116,11 @@
 # --- niceness values ---------------------------------------------------------
 	declare -r -i NICE_VALU=19								# -20: favorable to the process
 															#  19: least favorable to the process
+	declare -r -i IONICE_CLAS=2								#   1: Realtime
+															#   2: Best-effort
+															#   3: Idle
+	declare -r -i IONICE_VALU=7								#   0: favorable to the process
+															#   7: least favorable to the process
 
 # --- set parameters ----------------------------------------------------------
 
@@ -261,7 +266,7 @@
 	declare -r    HGFS_DIRS="/mnt/hgfs/workspace/Image"	# vmware shared directory
 
 	# --- configuration file template -----------------------------------------
-	declare -r    CONF_LINK="${HGFS_DIRS}/linux/bin"
+	declare -r    CONF_LINK="${HGFS_DIRS}/linux/bin/conf"
 	declare -r    CONF_DIRS="${DIRS_CONF}/_template"
 	declare -r    CONF_KICK="${CONF_DIRS}/kickstart_common.cfg"
 	declare -r    CONF_CLUD="${CONF_DIRS}/nocloud-ubuntu-user-data"
@@ -2621,8 +2626,8 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${BOOT_DIRS}"
 	# --- copy iso -> hdd -----------------------------------------------------
 	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
-#	nice -n "${NICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
-	nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/"
+#	nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
+	nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/"
 	if [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" ]] && [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" ]]; then
 		DIRS_IRAM="${BOOT_DIRS}"
 		DIRS_KRNL="${BOOT_DIRS}"
@@ -2633,8 +2638,8 @@ function funcCreate_copy_iso2hdd() {
 			DIRS_KRNL="${BOOT_DIRS}/${TGET_LINE[7]%/*}"
 		fi
 		mkdir -p "${DIRS_IRAM}" "${DIRS_KRNL}"
-		nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
-		nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
+		nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
+		nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 	fi
 	umount "${WORK_MNTP}"
 	# --- copy initrd -> hdd --------------------------------------------------
@@ -2794,7 +2799,8 @@ function funcCreate_menu_cfg_nocloud() {
 			fi
 			;;
 	esac
-	BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+#	BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	BOOT_OPTN+=" debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	BOOT_OPTN+=" fsck.mode=skip"
 	if [[ -n "${SCRN_MODE:-}" ]]; then
 		BOOT_OPTN="vga=${SCRN_MODE} ${BOOT_OPTN}"
@@ -3427,15 +3433,8 @@ function funcMain() {
 		funcPrintf "    nocloud     nocloud"
 		funcPrintf "    kickstart   kickstart.cfg"
 		funcPrintf "    autoyast    autoyast.xml"
-		funcPrintf "  --create [ options ] [ empty | all | id number ]"
-		funcPrintf "    mini        mini.iso"
-		funcPrintf "    net         netint"
-		funcPrintf "    dvd         dvd image"
-		funcPrintf "    live        live image"
-#		funcPrintf "    tool        tool"
-		funcPrintf "    empty       waiting for input"
-		funcPrintf "    a | all     create all targets"
-		funcPrintf "    id number   create with selected target id"
+		funcPrintf "create pxeboot environment"
+		funcPrintf "  --create"
 	else
 		IFS=' =,'
 		set -f

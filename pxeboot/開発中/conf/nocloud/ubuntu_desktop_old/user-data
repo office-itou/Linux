@@ -36,7 +36,9 @@ autoinstall:
       export LANG=C;
       FUNC_NAME="early-commands";
       echo "### start ${FUNC_NAME} ###";
-      dd if=/dev/zero of=/dev/nvme0n1 bs=1M count=10;
+      DEVICE="/dev/nvme0n1";
+      sfdisk --wipe always --wipe-partitions always --delete "${DEVICE}";
+      dd if=/dev/zero of="${DEVICE}" bs=1M count=10;
       echo "### complete ${FUNC_NAME} ###";' ]
 # =============================================================================
   storage:
@@ -99,9 +101,9 @@ autoinstall:
 # =============================================================================
   identity:
     hostname: sv-ubuntu.workgroup
-    realname: Master
+    realname: 'Master'
     username: master
-    password: "$6$5RyzqnKMKDR7ue3k$1DvQQotQIhde..Z7XFkb3uz2QpgdNkPepBhroQxuhWzR9AnCz/tjryChFKMVClzWYqsuGZTKxRNbXVpE081Q70"
+    password: '$6$5RyzqnKMKDR7ue3k$1DvQQotQIhde..Z7XFkb3uz2QpgdNkPepBhroQxuhWzR9AnCz/tjryChFKMVClzWYqsuGZTKxRNbXVpE081Q70'
 #   plain_text_passwd: "master"
 #   echo "master" | openssl passwd -6 -stdin
 #   (run in an environment equivalent to the OS to be installed)

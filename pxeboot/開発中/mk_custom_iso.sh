@@ -116,6 +116,11 @@
 # --- niceness values ---------------------------------------------------------
 	declare -r -i NICE_VALU=19								# -20: favorable to the process
 															#  19: least favorable to the process
+	declare -r -i IONICE_CLAS=2								#   1: Realtime
+															#   2: Best-effort
+															#   3: Idle
+	declare -r -i IONICE_VALU=7								#   0: favorable to the process
+															#   7: least favorable to the process
 
 # --- set parameters ----------------------------------------------------------
 
@@ -261,7 +266,7 @@
 	declare -r    HGFS_DIRS="/mnt/hgfs/workspace/Image"	# vmware shared directory
 
 	# --- configuration file template -----------------------------------------
-	declare -r    CONF_LINK="${HGFS_DIRS}/linux/bin"
+	declare -r    CONF_LINK="${HGFS_DIRS}/linux/bin/conf"
 	declare -r    CONF_DIRS="${DIRS_CONF}/_template"
 	declare -r    CONF_KICK="${CONF_DIRS}/kickstart_common.cfg"
 	declare -r    CONF_CLUD="${CONF_DIRS}/nocloud-ubuntu-user-data"
@@ -2889,7 +2894,7 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${WORK_DIRS}/"{mnt,img,ram}
 	# --- copy iso -> hdd -----------------------------------------------------
 	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
-	nice -n "${NICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
+	nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
 	umount "${WORK_MNTP}"
 	# --- copy initrd -> hdd --------------------------------------------------
 	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
@@ -3673,7 +3678,7 @@ function funcCreate_remaster_iso_file() {
 		rm -f md5sum.txt
 		find . ! -name 'md5sum.txt' -type f -exec md5sum {} \; > md5sum.txt
 		chmod ugo-w md5sum.txt
-		nice -n "${NICE_VALU}" xorriso -as mkisofs \
+		nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" xorriso -as mkisofs \
 		    -quiet \
 		    -volid "${TGET_LINE[14]//%20/ }" \
 		    -eltorito-boot "${FILE_IBIN}" \
@@ -4270,7 +4275,18 @@ function funcMain() {
 		funcPrintf "    nocloud     nocloud"
 		funcPrintf "    kickstart   kickstart.cfg"
 		funcPrintf "    autoyast    autoyast.xml"
+		funcPrintf "create iso image files"
 		funcPrintf "  --create [ options ] [ empty | all | id number ]"
+		funcPrintf "    mini        mini.iso"
+		funcPrintf "    net         netint"
+		funcPrintf "    dvd         dvd image"
+		funcPrintf "    live        live image"
+#		funcPrintf "    tool        tool"
+		funcPrintf "    empty       waiting for input"
+		funcPrintf "    a | all     create all targets"
+		funcPrintf "    id number   create with selected target id"
+		funcPrintf "download iso image files"
+		funcPrintf "  --download [ options ] [ empty | all | id number ]"
 		funcPrintf "    mini        mini.iso"
 		funcPrintf "    net         netint"
 		funcPrintf "    dvd         dvd image"
