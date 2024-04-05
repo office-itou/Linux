@@ -2665,6 +2665,7 @@ function funcCreate_menu_cfg_preseed() {
 #	declare -r    CONF_FILE="file=/cdrom/${TGET_LINE[8]}"
 	declare -r    CONF_FILE="url=${HTTP_ADDR}/conf/${TGET_LINE[8]}"
 	declare -r    RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000"
+	declare -r    LIVE_IMGS="live/filesystem.squashfs"
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for preseed"
 	# --- boot option ---------------------------------------------------------
@@ -2705,19 +2706,21 @@ function funcCreate_menu_cfg_preseed() {
 	BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
 	BOOT_OPTN+=" fsck.mode=skip"
 	case "${TGET_LINE[1]}" in
-		debian-live-10        | \
-		debian-live-11        )
-			if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
-				BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
-				BOOT_OPTN+=" ip=dhcp"
-				BOOT_OPTN+=" boot=live root=/boot toram=filesystem.squashfs"
-				BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-				BOOT_OPTN+=" fsck.mode=skip"
-			fi
-			;;
+#		debian-live-10        | \
+#		debian-live-11        )
+#			if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
+#				BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+#				BOOT_OPTN="fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}"
+#				BOOT_OPTN+=" ip=dhcp"
+#				BOOT_OPTN+=" boot=live root=/boot toram=filesystem.squashfs"
+#				BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+#				BOOT_OPTN+=" fsck.mode=skip"
+#			fi
+#			;;
 		debian-live-*         )
 			if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
-				BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+#				BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+				BOOT_OPTN="fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}"
 				BOOT_OPTN+=" ip=dhcp"
 				BOOT_OPTN+=" boot=live components"
 				BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
