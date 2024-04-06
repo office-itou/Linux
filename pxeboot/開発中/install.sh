@@ -2670,7 +2670,9 @@ function funcApplication_open_vm_tools() {
 	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	declare -r -a INST_PAKG=("open-vm-tools" "open-vm-tools-desktop")
+	declare       PKGS_SRCH="${PKGS_MNGR}"
 	declare       HGFS_FSYS=""
+	declare -i    RET_CD=0
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	if [[ -z "$(lsmod | awk '$1~/vmwgfx|vmw_balloon|vmmouse_drv|vmware_drv|vmxnet3|vmw_pvscsi/ {print $1;}')" ]]; then
@@ -2680,6 +2682,26 @@ function funcApplication_open_vm_tools() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
+	case "${DIST_NAME}" in
+		debian       | \
+		ubuntu       ) PKGS_SRCH="apt-cache";;
+		fedora       | \
+		centos       | \
+		almalinux    | \
+		miraclelinux | \
+		rocky        ) ;;
+		opensuse-*   ) ;;
+		*            )
+			funcPrintf "not supported on ${DIST_NAME}"
+			exit 1
+			;;
+	esac
+	# shellcheck disable=SC2312
+	if [[ -z "$("${PKGS_SRCH}" search open-vm-tools 2> /dev/null | awk '$0~/open-vm-tools/ {print $0;}')" ]]; then
+		funcPrintf "      ${MSGS_TITL}: ${TXT_RESET}${TXT_BYELLOW}unsupported package [${INST_PAKG[@]}]${TXT_RESET}"
+		return
+	fi
+	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	if [[ -z "$(command -v vmware-checkvm 2> /dev/null)" ]]; then
 		funcPrintf "      ${MSGS_TITL}: install open-vm-tools"
@@ -2688,6 +2710,12 @@ function funcApplication_open_vm_tools() {
 		funcPrintf "      ${MSGS_TITL}: install package"
 		funcPrintf "      ${MSGS_TITL}: ${INST_PAKG[*]}"
 		"${PKGS_MNGR}" "${PKGS_OPTN[@]}" install "${INST_PAKG[@]}"
+		RET_CD=$?
+		if [[ "${RET_CD}" -ne 0 ]]; then
+			funcPrintf "      ${MSGS_TITL}: ${TXT_RED}${TXT_REV}package install error[${RET_CD}]${TXT_RESET}"
+			funcPrintf "      ${MSGS_TITL}: ${INST_PAKG[*]}"
+			exit 1
+		fi
 	fi
 	# -------------------------------------------------------------------------
 	if [[ ! -f "${FILE_ORIG}" ]]; then
