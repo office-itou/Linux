@@ -2742,7 +2742,7 @@ function funcApplication_open_vm_tools() {
 	# shellcheck disable=SC2312
 	if [[ -f "${FILE_PATH}" ]] && [[ -z "$(sed -n "/${HGFS_FSYS}/p" "${FILE_PATH}")" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${FILE_PATH}"
-			.host:/         ${HGFS_DIRS}       ${HGFS_FSYS} allow_other,auto_unmount,defaults 0 0
+			.host:/         ${HGFS_DIRS}       ${HGFS_FSYS} allow_other,auto_unmount,defaults,nofail 0 0
 _EOT_
 	fi
 	# -------------------------------------------------------------------------
