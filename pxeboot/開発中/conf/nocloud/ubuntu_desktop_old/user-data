@@ -177,7 +177,6 @@ autoinstall:
   - firewalld
   - traceroute
   - network-manager
-  - openvswitch-switch
   - bash-completion
   - build-essential
   - curl
@@ -204,6 +203,8 @@ autoinstall:
   - firefox-locale-ja
   - thunderbird
   - thunderbird-locale-ja
+# -----------------------------------------------------------------------------
+# - openvswitch-switch
 # -----------------------------------------------------------------------------
 # - pxelinux
 # - syslinux-common
