@@ -6,8 +6,8 @@ autoinstall:
 #   verbose: true
 #   output:
 # =============================================================================
-  refresh-installer:
-    update: true
+# refresh-installer:
+#   update: true
 # =============================================================================
 # apt:
 #   disable_components: []
