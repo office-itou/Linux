@@ -975,7 +975,6 @@ _EOT_SH_
 }
 
 # ----- create late command ---------------------------------------------------
-# ----- create late command ---------------------------------------------------
 function funcCreate_late_command() {
 	declare -r    DIRS_NAME="${DIRS_CONF}/script"
 	declare -r    FILE_NAME="${DIRS_NAME}/late_command.sh"
@@ -1324,13 +1323,13 @@ function funcCreate_late_command() {
 		 			interface=*                    ) NIC_NAME="${LINE#interface=}"                   ;;
 		 			hostname=*                     ) NIC_FQDN="${LINE#hostname=}"                    ;;
 		 			domain=*                       ) NIC_WGRP="${LINE#domain=}"                      ;;
-		 			ip=dhcp                        ) FIX_IPV4="false"; break                         ;;
-		 			ip=*                           ) FIX_IPV4="true"
+		 			ip=dhcp | ip4=dhcp | ipv4=dhcp ) FIX_IPV4="false"; break                         ;;
+		 			ip=* | ip4=* | ipv4=*          ) FIX_IPV4="true"
 		 			                                 OLD_IFS=${IFS}
-		 			                                 IFS=':'
+		 			                                 IFS=':,'
 		 			                                 set -f
 		 			                                 # shellcheck disable=SC2086
-		 			                                 set -- ${LINE#ip=}
+		 			                                 set -- ${LINE#ip*=}
 		 			                                 set +f
 		 			                                 NIC_IPV4="${1}"
 		 			                                 NIC_GATE="${3}"
@@ -3003,7 +3002,22 @@ function funcCreate_autoinst_cfg_syslinux() {
 			if [[ ! -f "${AUTO_PATH}" ]]; then
 				# --- standard installation mode ------------------------------
 				cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${AUTO_PATH}"
-					menu resolution ${MENU_RESO/x/ }
+					menu resolution			${MENU_RESO/x/ }
+					
+					menu width				120
+					menu margin				4
+					menu vshift				5
+					menu rows				25
+					menu tabmsgrow			31
+					menu cmdlinerow			33
+					menu timeoutrow			33
+					menu helpmsgrow			37
+					menu hekomsgendrow		39
+					
+					menu title Boot Menu: ${TGET_LINE[4]} ${TGET_LINE[10]} ${TGET_LINE[12]}
+					menu tabmsg Press ENTER to boot or TAB to edit a menu entry
+					menu background splash.png
+					
 					timeout ${MENU_TOUT}
 					
 					label auto_install
@@ -3132,6 +3146,8 @@ function funcCreate_autoinst_cfg_grub() {
 					loadfont \$font
 					insmod gfxterm
 					insmod png
+					insmod all_video
+					insmod vga
 					terminal_output gfxterm
 					
 					set gfxmode=${MENU_RESO}x${MENU_DPTH},auto
@@ -3139,6 +3155,7 @@ function funcCreate_autoinst_cfg_grub() {
 					set timeout=${MENU_TOUT::-1}
 					set timeout_style=menu
 					set theme=${DIRS_MENU/${WORK_IMGS}/}/theme.txt
+					export theme
 					
 					menuentry 'Automatic installation' {
 					 	set gfxpayload=keep
@@ -3264,7 +3281,7 @@ _EOT_
 		desktop-color: "#000000"
 		title-color: "#ffffff"
 		title-font: "Unifont Regular 16"
-		title-text: "Boot Menu with GRUB"
+		title-text: "Boot Menu: ${TGET_LINE[4]} ${TGET_LINE[10]} ${TGET_LINE[12]}"
 		message-font: "Unifont Regular 16"
 		terminal-font: "Unifont Regular 16"
 		terminal-border: "0"
@@ -3532,13 +3549,18 @@ function funcCreate_remaster_nocloud() {
 	declare -r    WORK_CONF="${WORK_IMGS}/${TGET_LINE[8]%/*}"
 	funcPrintf "      create: boot options for nocloud"
 	# --- boot option ---------------------------------------------------------
-	BOOT_OPTN="boot=casper automatic-ubiquity noprompt autoinstall ds=nocloud\\;s=/cdrom/${TGET_LINE[8]}"
+	case "${TGET_LINE[1]}" in
+		ubuntu-live-18.*      ) BOOT_OPTN="boot=casper";;
+		*                     ) BOOT_OPTN=""           ;;
+	esac
+	BOOT_OPTN+=" automatic-ubiquity noprompt autoinstall ds=nocloud\\;s=/cdrom/${TGET_LINE[8]}"
 	case "${TGET_LINE[1]}" in
 		ubuntu-live-18.04)
 			BOOT_OPTN+=" ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${HOST_NAME}.${WGRP_NAME}"
 			;;
 		*                )
-			BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
+			BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}::${ETHR_NAME}:static:${IPV4_NSVR} hostname=${HOST_NAME}.${WGRP_NAME}"
+#			BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
 			;;
 	esac
 #	BOOT_OPTN+=" debian-installer/language=ja keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
@@ -3546,9 +3568,9 @@ function funcCreate_remaster_nocloud() {
 	BOOT_OPTN+=" debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	BOOT_OPTN+=" fsck.mode=skip"
 	# --- syslinux.cfg --------------------------------------------------------
-	funcCreate_syslinux_cfg "${BOOT_OPTN}" "${TGET_LINE[@]}"
+	funcCreate_syslinux_cfg "${BOOT_OPTN## }" "${TGET_LINE[@]}"
 	# --- grub.cfg ------------------------------------------------------------
-	funcCreate_grub_cfg "${BOOT_OPTN}" "${TGET_LINE[@]}"
+	funcCreate_grub_cfg "${BOOT_OPTN## }" "${TGET_LINE[@]}"
 	# --- copy the configuration file -----------------------------------------
 	mkdir -p "${WORK_CONF}"
 	cp -a "${DIRS_CONF}/${TGET_LINE[8]%/*}/nocloud-late-commands.sh" "${WORK_CONF}"

@@ -1324,13 +1324,13 @@ function funcCreate_late_command() {
 		 			interface=*                    ) NIC_NAME="${LINE#interface=}"                   ;;
 		 			hostname=*                     ) NIC_FQDN="${LINE#hostname=}"                    ;;
 		 			domain=*                       ) NIC_WGRP="${LINE#domain=}"                      ;;
-		 			ip=dhcp                        ) FIX_IPV4="false"; break                         ;;
-		 			ip=*                           ) FIX_IPV4="true"
+		 			ip=dhcp | ip4=dhcp | ipv4=dhcp ) FIX_IPV4="false"; break                         ;;
+		 			ip=* | ip4=* | ipv4=*          ) FIX_IPV4="true"
 		 			                                 OLD_IFS=${IFS}
-		 			                                 IFS=':'
+		 			                                 IFS=':,'
 		 			                                 set -f
 		 			                                 # shellcheck disable=SC2086
-		 			                                 set -- ${LINE#ip=}
+		 			                                 set -- ${LINE#ip*=}
 		 			                                 set +f
 		 			                                 NIC_IPV4="${1}"
 		 			                                 NIC_GATE="${3}"
@@ -2772,11 +2772,14 @@ function funcCreate_menu_cfg_nocloud() {
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for nocloud"
 	# --- boot option ---------------------------------------------------------
-	BOOT_OPTN="boot=casper"
 	case "${TGET_LINE[1]}" in
-		ubuntu-desktop-23.*   ) BOOT_OPTN+=" layerfs-path=minimal.standard.live.squashfs";;
-		*                     ) ;;
+		ubuntu-live-18.*      ) BOOT_OPTN="boot=casper";;
+		*                     ) BOOT_OPTN=""           ;;
 	esac
+#	case "${TGET_LINE[1]}" in
+#		ubuntu-desktop-23.*   ) BOOT_OPTN+=" layerfs-path=minimal.standard.live.squashfs";;
+#		*                     ) ;;
+#	esac
 	if [[ "${TGET_LINE[8]#*/}" != "-" ]]; then
 		BOOT_OPTN+=" automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${CONF_FILE}"
 	fi
@@ -2799,7 +2802,8 @@ function funcCreate_menu_cfg_nocloud() {
 			;;
 		*                )
 			if [[ "${TGET_LINE[8]#*/}" != "-" ]]; then
-				BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
+				BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}::${ETHR_NAME}:static:${IPV4_NSVR} hostname=${HOST_NAME}.${WGRP_NAME}"
+#				BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
 			else
 				BOOT_OPTN+=" ip=dhcp"
 			fi
@@ -2809,9 +2813,9 @@ function funcCreate_menu_cfg_nocloud() {
 	BOOT_OPTN+=" debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	BOOT_OPTN+=" fsck.mode=skip"
 	if [[ -n "${SCRN_MODE:-}" ]]; then
-		BOOT_OPTN="vga=${SCRN_MODE} ${BOOT_OPTN}"
+		BOOT_OPTN="vga=${SCRN_MODE} ${BOOT_OPTN## }"
 	fi
-	echo "${BOOT_OPTN}"
+	echo "${BOOT_OPTN## }"
 }
 
 # ----- create menu.cfg kickstart ---------------------------------------------

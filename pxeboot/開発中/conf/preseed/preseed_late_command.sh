@@ -338,13 +338,13 @@ funcGetNetwork_parameter() {
 			interface=*                    ) NIC_NAME="${LINE#interface=}"                   ;;
 			hostname=*                     ) NIC_FQDN="${LINE#hostname=}"                    ;;
 			domain=*                       ) NIC_WGRP="${LINE#domain=}"                      ;;
-			ip=dhcp                        ) FIX_IPV4="false"; break                         ;;
-			ip=*                           ) FIX_IPV4="true"
+			ip=dhcp | ip4=dhcp | ipv4=dhcp ) FIX_IPV4="false"; break                         ;;
+			ip=* | ip4=* | ipv4=*          ) FIX_IPV4="true"
 			                                 OLD_IFS=${IFS}
-			                                 IFS=':'
+			                                 IFS=':,'
 			                                 set -f
 			                                 # shellcheck disable=SC2086
-			                                 set -- ${LINE#ip=}
+			                                 set -- ${LINE#ip*=}
 			                                 set +f
 			                                 NIC_IPV4="${1}"
 			                                 NIC_GATE="${3}"

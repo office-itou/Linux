@@ -6,8 +6,9 @@ autoinstall:
 #   verbose: true
 #   output:
 # =============================================================================
-# refresh-installer:
-#   update: true
+  refresh-installer:
+    update: true
+    channel: 'stable'
 # =============================================================================
 # apt:
 #   disable_components: []
@@ -171,6 +172,8 @@ autoinstall:
 # =============================================================================
 # updates: security
   updates: all
+  package_update: true
+  package_upgrade: true
   packages:
   - standard^
   - apt-transport-https
