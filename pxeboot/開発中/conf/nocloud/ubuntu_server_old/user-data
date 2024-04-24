@@ -8,7 +8,7 @@ autoinstall:
 # =============================================================================
   refresh-installer:
     update: true
-    channel: 'stable'
+#   channel: edge
 # =============================================================================
 # apt:
 #   disable_components: []

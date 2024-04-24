@@ -416,6 +416,9 @@
 	declare -r -a DATA_LIST_TOOL=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
 		"m  menu-entry                  System%20tools                      -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 		"o  memtest86+                  Memtest86+                          memtest86+      mt86plus_7.00_64.grub.iso                   .                                       EFI/BOOT/memtest            boot/memtest            -                                       linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                            " \
+		"o  winpe                       WinPE                               windows         WinPE.iso                                   .                                       -                           -                       -                                       windows/WindPE      -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"o  ati2020x64                  ATI2020x64                          windows         WinPE_ATI2020x64.iso                        .                                       -                           -                       -                                       windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"o  ati2020x86                  ATI2020x86                          windows         WinPE_ATI2020x86.iso                        .                                       -                           -                       -                                       windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- system command ----------------------------------------------------------
@@ -2964,6 +2967,22 @@ _EOT_
 _EOT_
 					fi
 					;;
+				winpe      | \
+				ati2020x64 | \
+				ati2020x86 )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
+						return
+					fi
+					if [[ "${MENU_PATH}" =~ bios ]]; then
+						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
+							label ${TGET_LINE[1]}
+							 	menu label ^${MENU_ENTR}
+							 	kernel memdisk
+							 	append initrd=isos/${TGET_LINE[4]} iso raw
+							
+_EOT_
+					fi
+					;;
 				hdt      | \
 				shutdown | \
 				restart  )
@@ -3367,7 +3386,10 @@ function funcCall_create() {
 					;;
 				windows      )
 					;;
-				memtest86\+  )
+				memtest86\+  | \
+				winpe        | \
+				ati2020x64   | \
+				ati2020x86   )
 					;;
 				hdt          | \
 				shutdown     | \
