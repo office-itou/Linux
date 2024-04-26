@@ -2970,7 +2970,7 @@ _EOT_
 _EOT_
 					fi
 					;;
-				winpe      | \
+				winpe-*    | \
 				ati2020x64 | \
 				ati2020x86 )
 					if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
