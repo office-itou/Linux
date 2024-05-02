@@ -2447,7 +2447,7 @@ function funcCreate_kickstart() {
 		DSTR_NUMS="$(echo "${FILE_LIST[I]}" | sed -ne 's%^.*'"${DSTR_NAME}"'-\([0-9.]\+\)_.*$%\1%p')"
 		DSTR_SECT="${DSTR_NAME/-/ }"
 		RLNX_NUMS="${DSTR_NUMS}"
-		if [[ "${DSTR_NAME}" = "fedora" ]] && [[ ${DSTR_NUMS} -ge 38 ]] && [[ ${DSTR_NUMS} -le 39 ]]; then
+		if [[ "${DSTR_NAME}" = "fedora" ]] && [[ ${DSTR_NUMS} -ge 38 ]] && [[ ${DSTR_NUMS} -le 40 ]]; then
 			RLNX_NUMS="9"
 		fi
 		# ---------------------------------------------------------------------
@@ -2470,7 +2470,8 @@ function funcCreate_kickstart() {
 				    -e "s/\$releasever/${DSTR_NUMS}/g        " \
 				    -e "s/\$basearch/${BASE_ARCH}/g       }} " \
 				    -e "/%post/,/%end/                     { " \
-				    -e "s/\$releasever/${RLNX_NUMS}/g      } "
+				    -e "s/\$releasever/${RLNX_NUMS}/g        " \
+				    -e "s/\$basearch/${BASE_ARCH}/g        } "
 				;;
 			*_web* )
 				sed -i "${FILE_PATH}"                          \
@@ -2486,7 +2487,8 @@ function funcCreate_kickstart() {
 				    -e "s/\$releasever/${DSTR_NUMS}/g        " \
 				    -e "s/\$basearch/${BASE_ARCH}/g       }} " \
 				    -e "/%post/,/%end/                     { " \
-				    -e "s/\$releasever/${RLNX_NUMS}/g      } "
+				    -e "s/\$releasever/${RLNX_NUMS}/g        " \
+				    -e "s/\$basearch/${BASE_ARCH}/g        } "
 				;;
 			* )
 				sed -i "${FILE_PATH}"                          \
@@ -2502,7 +2504,8 @@ function funcCreate_kickstart() {
 				    -e "s/\$releasever/${DSTR_NUMS}/g        " \
 				    -e "s/\$basearch/${BASE_ARCH}/g       }} " \
 				    -e "/%post/,/%end/                     { " \
-				    -e "s/\$releasever/${RLNX_NUMS}/g      } "
+				    -e "s/\$releasever/${RLNX_NUMS}/g        " \
+				    -e "s/\$basearch/${BASE_ARCH}/g        } "
 				;;
 		esac
 		if [[ ${RLNX_NUMS} -le 8 ]]; then
@@ -2635,8 +2638,8 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${BOOT_DIRS}"
 	# --- copy iso -> hdd -----------------------------------------------------
 	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
-#	nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
-	nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/"
+#	ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
+	ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/"
 	if [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" ]] && [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" ]]; then
 		DIRS_IRAM="${BOOT_DIRS}"
 		DIRS_KRNL="${BOOT_DIRS}"
@@ -2647,8 +2650,8 @@ function funcCreate_copy_iso2hdd() {
 			DIRS_KRNL="${BOOT_DIRS}/${TGET_LINE[7]%/*}"
 		fi
 		mkdir -p "${DIRS_IRAM}" "${DIRS_KRNL}"
-		nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
-		nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
+		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
+		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 	fi
 	umount "${WORK_MNTP}"
 	# --- copy initrd -> hdd --------------------------------------------------

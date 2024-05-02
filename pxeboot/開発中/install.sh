@@ -1342,14 +1342,20 @@ function funcNetwork_resolv_conf() {
 	declare -r    FILE_PATH="/etc/resolv.conf"
 	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+	declare -r    CONF_FILE="${FILE_PATH}.manually-configured"
 	declare -r    SYSD_NAME="systemd-resolved.service"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
 	if [[ -h "${FILE_PATH}" ]]; then
-		funcPrintf "      ${MSGS_TITL}: link file already exists"
-		return
+		if [[ "$(realpath "${FILE_PATH}")" = "${CONF_FILE}" ]]; then
+			funcPrintf "      ${MSGS_TITL}: link file already exists"
+			return
+		fi
+		touch "${CONF_FILE}"
+		rm -f "${FILE_PATH}"
+		ln -s "${CONF_FILE}" "${FILE_PATH}"
 #		# shellcheck disable=SC2312,SC2310
 #		if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 #			return
@@ -2741,8 +2747,10 @@ function funcApplication_open_vm_tools() {
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 	# shellcheck disable=SC2312
 	if [[ -f "${FILE_PATH}" ]] && [[ -z "$(sed -n "/${HGFS_FSYS}/p" "${FILE_PATH}")" ]]; then
+		# depending on the os, "nofail" can be added as an option
+		# example: .host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults,nofail 0 0
 		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${FILE_PATH}"
-			.host:/         ${HGFS_DIRS}       ${HGFS_FSYS} allow_other,auto_unmount,defaults,nofail 0 0
+			.host:/         ${HGFS_DIRS}       ${HGFS_FSYS} allow_other,auto_unmount,defaults 0 0
 _EOT_
 	fi
 	# -------------------------------------------------------------------------

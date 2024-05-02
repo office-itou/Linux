@@ -2447,7 +2447,7 @@ function funcCreate_kickstart() {
 		DSTR_NUMS="$(echo "${FILE_LIST[I]}" | sed -ne 's%^.*'"${DSTR_NAME}"'-\([0-9.]\+\)_.*$%\1%p')"
 		DSTR_SECT="${DSTR_NAME/-/ }"
 		RLNX_NUMS="${DSTR_NUMS}"
-		if [[ "${DSTR_NAME}" = "fedora" ]] && [[ ${DSTR_NUMS} -ge 38 ]] && [[ ${DSTR_NUMS} -le 39 ]]; then
+		if [[ "${DSTR_NAME}" = "fedora" ]] && [[ ${DSTR_NUMS} -ge 38 ]] && [[ ${DSTR_NUMS} -le 40 ]]; then
 			RLNX_NUMS="9"
 		fi
 		# ---------------------------------------------------------------------
@@ -2470,7 +2470,8 @@ function funcCreate_kickstart() {
 				    -e "s/\$releasever/${DSTR_NUMS}/g        " \
 				    -e "s/\$basearch/${BASE_ARCH}/g       }} " \
 				    -e "/%post/,/%end/                     { " \
-				    -e "s/\$releasever/${RLNX_NUMS}/g      } "
+				    -e "s/\$releasever/${RLNX_NUMS}/g        " \
+				    -e "s/\$basearch/${BASE_ARCH}/g        } "
 				;;
 			*_web* )
 				sed -i "${FILE_PATH}"                          \
@@ -2486,7 +2487,8 @@ function funcCreate_kickstart() {
 				    -e "s/\$releasever/${DSTR_NUMS}/g        " \
 				    -e "s/\$basearch/${BASE_ARCH}/g       }} " \
 				    -e "/%post/,/%end/                     { " \
-				    -e "s/\$releasever/${RLNX_NUMS}/g      } "
+				    -e "s/\$releasever/${RLNX_NUMS}/g        " \
+				    -e "s/\$basearch/${BASE_ARCH}/g        } "
 				;;
 			* )
 				sed -i "${FILE_PATH}"                          \
@@ -2502,7 +2504,8 @@ function funcCreate_kickstart() {
 				    -e "s/\$releasever/${DSTR_NUMS}/g        " \
 				    -e "s/\$basearch/${BASE_ARCH}/g       }} " \
 				    -e "/%post/,/%end/                     { " \
-				    -e "s/\$releasever/${RLNX_NUMS}/g      } "
+				    -e "s/\$releasever/${RLNX_NUMS}/g        " \
+				    -e "s/\$basearch/${BASE_ARCH}/g        } "
 				;;
 		esac
 		if [[ ${RLNX_NUMS} -le 8 ]]; then
@@ -2902,7 +2905,7 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${WORK_DIRS}/"{mnt,img,ram}
 	# --- copy iso -> hdd -----------------------------------------------------
 	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
-	nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
+	ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
 	umount "${WORK_MNTP}"
 	# --- copy initrd -> hdd --------------------------------------------------
 	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
@@ -3709,7 +3712,7 @@ function funcCreate_remaster_iso_file() {
 		rm -f md5sum.txt
 		find . ! -name 'md5sum.txt' -type f -exec md5sum {} \; > md5sum.txt
 		chmod ugo-w md5sum.txt
-		nice -n "${NICE_VALU}" ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" xorriso -as mkisofs \
+		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" xorriso -as mkisofs \
 		    -quiet \
 		    -volid "${TGET_LINE[14]//%20/ }" \
 		    -eltorito-boot "${FILE_IBIN}" \
