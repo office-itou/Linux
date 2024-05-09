@@ -276,7 +276,7 @@ exit 0</source>
       <package>fuse</package>
       <package>glibc-i18ndata</package>
       <package>glibc-locale</package>
-      <package>ibus-mozc</package>
+      <package>ibus-anthy</package>
       <package>less</package>
       <package>minidlna</package>
       <package>openssh-server</package>

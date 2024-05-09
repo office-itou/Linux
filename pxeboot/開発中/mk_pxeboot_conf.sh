@@ -2693,15 +2693,18 @@ function funcCreate_menu_cfg_preseed() {
 #		*                     ) BOOT_OPTN="auto=true ${CONF_FILE} ${RAMS_DISK}";;
 	esac
 	case "${TGET_LINE[1]}" in
+		*-mini-*              ) ;;
 		ubuntu-desktop-*      | \
 		ubuntu-legacy-*       ) BOOT_OPTN="automatic-ubiquity noprompt ${BOOT_OPTN}";;
 		*                     ) ;;
 	esac
 	case "${TGET_LINE[1]}" in
+		*-mini-*              ) ;;
 		ubuntu-*              ) BOOT_OPTN+=" ${RAMS_DISK} url=${HTTP_ADDR}/isos/${TGET_LINE[4]}";;
 		*                     ) BOOT_OPTN+=" fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"           ;;
 	esac
 	case "${TGET_LINE[1]}" in
+		*-mini-*              ) ;;
 		ubuntu-live-18.04     | \
 		ubuntu-desktop-*      | \
 		ubuntu-legacy-*       ) ;;

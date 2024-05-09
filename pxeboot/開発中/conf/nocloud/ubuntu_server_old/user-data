@@ -199,13 +199,16 @@ autoinstall:
 # - language-pack-ja
 # - language-pack-gnome-ja
 # - fonts-noto
-# - ibus-mozc
-# - mozc-utils-gui
+# - kasumi
+# - ibus-anthy
 # - libreoffice-l10n-ja
 # - libreoffice-help-ja
 # - firefox-locale-ja
 # - thunderbird
 # - thunderbird-locale-ja
+# -----------------------------------------------------------------------------
+# - ibus-mozc
+# - mozc-utils-gui
 # -----------------------------------------------------------------------------
 # - openvswitch-switch
 # -----------------------------------------------------------------------------
