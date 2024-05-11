@@ -2846,9 +2846,14 @@ function funcCreate_remaster_download() {
 #	declare -r    MSGS_TITL="create target list"
 #	declare -r -a DATA_LIST=("$@")
 	declare -r -a CURL_OPTN=("--location" "--http1.1" "--progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
+	declare -n    COMD_RETN="$1"
+	shift
 	declare -a    TGET_LINE=("$@")
 	declare -i    RET_CD=0
 	declare -i    I=0
+	declare -r    FILE_ISOS="${DIRS_ISOS}/${TGET_LINE[4]}"
+	# --- label clear ---------------------------------------------------------
+	COMD_RETN=""
 	# --- download ------------------------------------------------------------
 	case "${TGET_LINE[15]}" in
 		*${TXT_CYAN}*  | \
@@ -2878,6 +2883,16 @@ function funcCreate_remaster_download() {
 		* )
 			;;
 	esac
+	# --- label set -----------------------------------------------------------
+	if [[ "${RET_CD}" -ne 0 ]] || [[ ! -f "${FILE_ISOS}" ]]; then
+		return
+	fi
+	# shellcheck disable=SC2312
+	if [[ -n "$(command -v volname 2> /dev/null)" ]]; then
+		COMD_RETN="$(volname "${FILE_ISOS}")"
+	else
+		COMD_RETN="$(LANG=C blkid -s LABEL "${FILE_ISOS}" | sed -ne 's/^.*="\(.*\)"/\1/p')"
+	fi
 }
 
 # ----- copy iso contents to hdd ----------------------------------------------
@@ -3745,6 +3760,7 @@ function funcCreate_remaster() {
 #	declare -i    RET_CD=0
 	declare -i    I=0
 #	declare -i    J=0
+	declare       FILE_VLID=""
 	# -------------------------------------------------------------------------
 	for I in $(eval echo "${TGET_INDX}")
 	do
@@ -3752,7 +3768,11 @@ function funcCreate_remaster() {
 		# shellcheck disable=SC2312
 		funcPrintf "===    start: ${TGET_LINE[4]} $(funcString "${COLS_SIZE}" '=')"
 		# --- download --------------------------------------------------------
-		funcCreate_remaster_download "${TGET_LINE[@]}"
+		funcCreate_remaster_download FILE_VLID "${TGET_LINE[@]}"
+		if [[ -n "${FILE_VLID}" ]]; then
+			TGET_LINE[14]="${FILE_VLID// /%20}"
+			TGET_LIST[I-1]="${TGET_LINE[*]}"
+		fi
 		# --- skip check ------------------------------------------------------
 		if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
 			# shellcheck disable=SC2312
@@ -4167,6 +4187,7 @@ function funcMedia_download() {
 	declare       WORK_ENUM=""
 	declare -i    I=0
 	declare -i    J=0
+	declare       FILE_VLID=""
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
@@ -4246,7 +4267,7 @@ function funcMedia_download() {
 				# shellcheck disable=SC2312
 				funcPrintf "===    start: ${TGET_LINE[4]} $(funcString "${COLS_SIZE}" '=')"
 				# --- download ------------------------------------------------
-				funcCreate_remaster_download "${TGET_LINE[@]}"
+				funcCreate_remaster_download FILE_VLID "${TGET_LINE[@]}"
 				# shellcheck disable=SC2312
 				funcPrintf "=== complete: ${TGET_LINE[4]} $(funcString "${COLS_SIZE}" '=')"
 			done
