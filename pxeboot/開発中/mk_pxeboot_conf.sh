@@ -68,18 +68,30 @@
 	#   |-- temp ---------------------- temporary directory
 	#   `-- tftp ---------------------- tftp contents
 	#       |-- boot
+	#       |   `-- grub
+	#       |       |-- grub.cfg ------ menu base
+	#       |       |-- menu.cfg ------ menu file
+	#       |       |-- fonts
+	#       |       |   `-- unicode.pf2
+	#       |       |-- i386-pc
+	#       |       |   `-- core.0 ---- bootloader
+	#       |       |-- locale
+	#       |       `-- x86_64-efi
+	#       |           `-- core.efi -- bootloader
 	#       |-- menu-bios
-	#       |   |-- boot -> ../boot
+	#       |   |-- syslinux.cfg ------ syslinux configuration for mbr environment
+	#       |   |-- boot -> ../load
 	#       |   `-- pxelinux.cfg
 	#       |       `-- default -> ../syslinux.cfg
-	#       |-- menu-efi32
-	#       |   |-- boot -> ../boot
+	#       |-- menu-efi64
+	#       |   |-- syslinux.cfg ------ syslinux configuration for uefi(x86_64) environment
+	#       |   |-- boot -> ../load
 	#       |   `-- pxelinux.cfg
 	#       |       `-- default -> ../syslinux.cfg
-	#       `-- menu-efi64
-	#           |-- boot -> ../boot
-	#           `-- pxelinux.cfg
-	#               `-- default -> ../syslinux.cfg
+	#       |-- load ------------------ load module
+	#       |-- imgs -> ../imgs
+	#       |-- isos -> ../isos
+	#       `-- rmak -> ../rmak
 	#   /var/tftp/ -> ~/share/tftp
 	#   /var/www/
 	#   `-- html -> ~/share/html
@@ -187,7 +199,7 @@
 #															# 1440x 900   : WXGA+  (16:10)
 #															# 1360x 768   : HD     (16:9)
 #	declare -r    SCRN_MODE="775"							# 1280x1024x 8: SXGA   (5:4)
-	declare -r    SCRN_MODE="794"							#          x16
+#	declare -r    SCRN_MODE="794"							#          x16
 #	declare -r    SCRN_MODE="795"							#          x24
 #	declare -r    SCRN_MODE="829"							#          x32
 #															# 1280x 960   :        (4:3)
@@ -312,6 +324,7 @@
 		"o  debian-mini-testing         Debian%20testing                    debian          mini-testing-amd64.iso                      .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso                                                                " \
 		"o  ubuntu-mini-18.04           Ubuntu%2018.04                      ubuntu          mini-bionic-amd64.iso                       .                                       initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso                      " \
 		"o  ubuntu-mini-20.04           Ubuntu%2020.04                      ubuntu          mini-focal-amd64.iso                        .                                       initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso                " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- netinst -----------------------------------------------------------------
@@ -336,6 +349,7 @@
 		"o  opensuse-leap-netinst-15.5  openSUSE%20Leap%2015.5              openSUSE        openSUSE-Leap-15.5-NET-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_net.xml     linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-stable/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                 " \
 		"o  opensuse-leap-netinst-15.6  openSUSE%20Leap%2015.6              openSUSE        openSUSE-Leap-15.6-NET-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_net.xml     linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Media.iso                          " \
 		"o  opensuse-tumbleweed-netinst openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-NET-x86_64-Current.iso  boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_net.xml    linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                   " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- dvd image ---------------------------------------------------------------
@@ -372,6 +386,7 @@
 		"o  opensuse-tumbleweed         openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-DVD-x86_64-Current.iso  boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_dvd.xml    linux/openSUSE      2021-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   " \
 		"o  windows-10                  Windows%2010                        windows         Win10_22H2_Japanese_x64.iso                 -                                       -                           -                       -                                       windows/Windows10   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  windows-11                  Windows%2011                        windows         Win11_23H2_Japanese_x64v2_custom.iso        -                                       -                           -                       -                                       windows/Windows11   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- live media install mode -------------------------------------------------
@@ -395,6 +410,7 @@
 		"o  ubuntu-legacy-23.10         Ubuntu%2023.10%20Legacy%20Desktop   ubuntu          ubuntu-23.10-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        2023-10-12  2024-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-amd64.iso                                 " \
 		"x  ubuntu-legacy-24.04         Ubuntu%2024.04%20Legacy%20Desktop   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"x  ubuntu-legacy-noble         Ubuntu%20noble%20Legacy%20Desktop   ubuntu          noble-desktop-legacy-amd64.iso              casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- live media live mode ----------------------------------------------------
@@ -418,6 +434,7 @@
 		"o  ubuntu-legacy-23.10         Ubuntu%2023.10%20Legacy%20Desktop   ubuntu          ubuntu-23.10-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/-                               linux/ubuntu        2023-10-12  2024-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-amd64.iso                                 " \
 		"x  ubuntu-legacy-24.04         Ubuntu%2024.04%20Legacy%20Desktop   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/-                               linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"x  ubuntu-legacy-noble         Ubuntu%20noble%20Legacy%20Desktop   ubuntu          noble-desktop-legacy-amd64.iso              casper                                  initrd                      vmlinuz                 preseed/-                               linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- tool --------------------------------------------------------------------
@@ -428,6 +445,7 @@
 		"o  winpe-x86                   WinPE%20x86                         windows         WinPEx86.iso                                .                                       -                           -                       -                                       windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  ati2020x64                  ATI2020x64                          windows         WinPE_ATI2020x64.iso                        .                                       -                           -                       -                                       windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  ati2020x86                  ATI2020x86                          windows         WinPE_ATI2020x86.iso                        .                                       -                           -                       -                                       windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- system command ----------------------------------------------------------
@@ -436,6 +454,7 @@
 		"o  hdt                         Hardware%20info                     system          -                                           -                                       hdt.c32                     -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  shutdown                    System%20shutdown                   system          -                                           -                                       poweroff.c32                -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  restart                     System%20restart                    system          -                                           -                                       reboot.c32                  -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 	# --- target of creation --------------------------------------------------
@@ -835,24 +854,22 @@ function funcCreate_directory() {
 		"${DIRS_ORIG}"                                                                      \
 		"${DIRS_RMAK}"                                                                      \
 		"${DIRS_TEMP}"                                                                      \
-		"${DIRS_TFTP}"/{boot,menu-{bios,efi{32,64}}/pxelinux.cfg}                           \
+		"${DIRS_TFTP}"/{load,menu-{bios,efi64}/pxelinux.cfg}                                \
 	)
 	declare -r -a LINK_LIST=(                                                               \
 		"${DIRS_CONF}                         ${DIRS_HTML}/"                                \
 		"${DIRS_IMGS}                         ${DIRS_HTML}/"                                \
 		"${DIRS_ISOS}                         ${DIRS_HTML}/"                                \
 		"${DIRS_RMAK}                         ${DIRS_HTML}/"                                \
-		"${DIRS_TFTP}/boot                    ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_TFTP}/boot                    ${DIRS_TFTP}/menu-efi32/"                     \
-		"${DIRS_TFTP}/boot                    ${DIRS_TFTP}/menu-efi64/"                     \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/"                                \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/"                                \
+		"${DIRS_TFTP}/load                    ${DIRS_TFTP}/menu-bios/"                      \
+		"${DIRS_TFTP}/load                    ${DIRS_TFTP}/menu-efi64/"                     \
 		"${DIRS_TFTP}/menu-bios/syslinux.cfg  ${DIRS_TFTP}/menu-bios/pxelinux.cfg/default"  \
-		"${DIRS_TFTP}/menu-efi32/syslinux.cfg ${DIRS_TFTP}/menu-efi32/pxelinux.cfg/default" \
 		"${DIRS_TFTP}/menu-efi64/syslinux.cfg ${DIRS_TFTP}/menu-efi64/pxelinux.cfg/default" \
 		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi32/"                     \
 		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi64/"                     \
 		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi32/"                     \
 		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi64/"                     \
 	)
 	declare -a    LINK_LINE=()
@@ -919,7 +936,7 @@ function funcCreate_link() {
 	declare       FILE_NAME=""
 	declare -i    I=0
 
-	if [[ -n "${CONF_LINK}" ]] && [[ -d "${CONF_LINK}" ]]; then
+	if [[ -n "${CONF_LINK}" ]] && [[ -d "${CONF_LINK}/." ]]; then
 		for FILE_NAME in \
 			"${CONF_KICK}" \
 			"${CONF_CLUD}" \
@@ -2608,7 +2625,7 @@ function funcCreate_copy_iso2hdd() {
 	declare -r -a TGET_LINE=("$@")
 	declare -r    FILE_PATH="${DIRS_ISOS}/${TGET_LINE[4]}"
 	declare -r    DEST_DIRS="${DIRS_IMGS}/${TGET_LINE[1]}"
-	declare -r    BOOT_DIRS="${DIRS_TFTP}/boot/${TGET_LINE[1]}"
+	declare -r    BOOT_DIRS="${DIRS_TFTP}/load/${TGET_LINE[1]}"
 	declare -r    WORK_DIRS="${DIRS_TEMP}/${TGET_LINE[1]}"
 	declare -r    WORK_MNTP="${WORK_DIRS}/mnt"
 #	declare -r    WORK_IMGS="${WORK_DIRS}/img"
@@ -2655,9 +2672,12 @@ function funcCreate_copy_iso2hdd() {
 		if [[ "${TGET_LINE[7]%/*}" != "${TGET_LINE[7]##*/}" ]]; then
 			DIRS_KRNL="${BOOT_DIRS}/${TGET_LINE[7]%/*}"
 		fi
+		rm -rf "${DIRS_IRAM}/${TGET_LINE[6]##*/}" "${DIRS_KRNL}/${TGET_LINE[7]##*/}"
 		mkdir -p "${DIRS_IRAM}" "${DIRS_KRNL}"
-		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
-		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
+		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
+		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
+#		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
+#		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 	fi
 	umount "${WORK_MNTP}"
 	# --- copy initrd -> hdd --------------------------------------------------
@@ -2678,226 +2698,310 @@ function funcCreate_copy_iso2hdd() {
 # ----- create menu.cfg preseed -----------------------------------------------
 function funcCreate_menu_cfg_preseed() {
 	declare -r -a TGET_LINE=("$@")
-	declare       BOOT_OPTN=""
 	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 #	declare -r    CONF_FILE="file=/cdrom/${TGET_LINE[8]}"
 	declare -r    CONF_FILE="url=${HTTP_ADDR}/conf/${TGET_LINE[8]}"
 	declare -r    RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000"
 	declare -r    LIVE_IMGS="live/filesystem.squashfs"
+	declare -a    BOOT_WORK=()
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for preseed"
+	# --- boot clear ----------------------------------------------------------
+	BOOT_WORK=()
+	# --- root option ---------------------------------------------------------
+	BOOT_WORK+=("tftp")
+#	BOOT_WORK+=("${HTTP_ADDR%%:*},${HTTP_ADDR##*/}")
+	# --- isofile option ------------------------------------------------------
+	BOOT_WORK+=("${TGET_LINE[4]}")
+	# --- isoaddr option ------------------------------------------------------
+	BOOT_WORK+=("fetch=${HTTP_ADDR}/isos/\${isofile}")
+	case "${TGET_LINE[1]}" in
+		ubuntu-*              ) BOOT_WORK[2]="iso-url=${HTTP_ADDR}/isos/\${isofile}";;
+		*                     ) ;;
+	esac
+	# --- install option ------------------------------------------------------
+	BOOT_WORK+=("auto=true ${CONF_FILE}")
+	case "${TGET_LINE[1]}" in
+		ubuntu-desktop-*      | \
+		ubuntu-legacy-*       ) BOOT_WORK[3]="automatic-ubiquity noprompt ${BOOT_WORK[3]}";;
+		*                     ) ;;
+	esac
+	# --- network option ------------------------------------------------------
+	BOOT_WORK+=("netcfg/disable_autoconfig=true netcfg/choose_interface=${ETHR_NAME} netcfg/get_hostname=${HOST_NAME}.${WGRP_NAME} netcfg/get_ipaddress=${IPV4_ADDR} netcfg/get_netmask=${IPV4_MASK} netcfg/get_gateway=${IPV4_GWAY} netcfg/get_nameservers=${IPV4_NSVR}")
+	case "${TGET_LINE[1]}" in
+		ubuntu-live-18.04     ) BOOT_WORK[4]="ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${HOST_NAME}.${WGRP_NAME}";;
+		ubuntu-desktop-*      | \
+		ubuntu-legacy-*       ) BOOT_WORK[4]="ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}";;
+		ubuntu-*              ) BOOT_WORK[4]="${BOOT_WORK[4]} netcfg/target_network_config=NetworkManager";;
+		*                     ) ;;
+	esac
+	# --- locales option ------------------------------------------------------
+	BOOT_WORK+=("locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106")
+	case "${TGET_LINE[1]}" in
+		ubuntu-desktop-*      | \
+		ubuntu-legacy-*       ) BOOT_WORK[5]="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		*                     ) ;;
+	esac
+	# --- ramdisk option ------------------------------------------------------
+	BOOT_WORK+=("")
+	case "${TGET_LINE[1]}" in
+		ubuntu-*              ) BOOT_WORK[6]="${RAMS_DISK}";;
+		*                     ) ;;
+	esac
 	# --- boot option ---------------------------------------------------------
-	case "${TGET_LINE[1]}" in
-#		*-mini-*              ) BOOT_OPTN="auto=true";;
-		*                     ) BOOT_OPTN="auto=true ${CONF_FILE}";;
-#		*                     ) BOOT_OPTN="auto=true ${CONF_FILE} ${RAMS_DISK}";;
-	esac
-	case "${TGET_LINE[1]}" in
-		*-mini-*              ) ;;
-		ubuntu-desktop-*      | \
-		ubuntu-legacy-*       ) BOOT_OPTN="automatic-ubiquity noprompt ${BOOT_OPTN}";;
-		*                     ) ;;
-	esac
-	case "${TGET_LINE[1]}" in
-		*-mini-*              ) ;;
-		ubuntu-*              ) BOOT_OPTN+=" ${RAMS_DISK} url=${HTTP_ADDR}/isos/${TGET_LINE[4]}";;
-		*                     ) BOOT_OPTN+=" fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"           ;;
-	esac
-	case "${TGET_LINE[1]}" in
-		*-mini-*              ) ;;
-		ubuntu-live-18.04     | \
-		ubuntu-desktop-*      | \
-		ubuntu-legacy-*       ) ;;
-		ubuntu-*              ) BOOT_OPTN+=" netcfg/target_network_config=NetworkManager";;
-		*                     ) ;;
-	esac
-	case "${TGET_LINE[1]}" in
-		ubuntu-live-18.04     ) BOOT_OPTN+=" ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${HOST_NAME}.${WGRP_NAME}";;
-		ubuntu-desktop-*      | \
-		ubuntu-legacy-*       ) BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}";;
-		*                     ) BOOT_OPTN+=" netcfg/disable_autoconfig=true"
-								BOOT_OPTN+=" netcfg/choose_interface=${ETHR_NAME}"
-								BOOT_OPTN+=" netcfg/get_hostname=${HOST_NAME}.${WGRP_NAME}"
-								BOOT_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
-								BOOT_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
-								BOOT_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
-								BOOT_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
-			;;
-	esac
-	BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	BOOT_OPTN+=" fsck.mode=skip"
-	case "${TGET_LINE[1]}" in
-#		debian-live-10        | \
-#		debian-live-11        )
-#			if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
-#				BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
-#				BOOT_OPTN="fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}"
-#				BOOT_OPTN+=" ip=dhcp"
-#				BOOT_OPTN+=" boot=live root=/boot toram=filesystem.squashfs"
-#				BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-#				BOOT_OPTN+=" fsck.mode=skip"
-#			fi
-#			;;
-		debian-live-*         )
-			if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
-#				BOOT_OPTN="fetch=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
-				BOOT_OPTN="fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}"
-				BOOT_OPTN+=" ip=dhcp"
-				BOOT_OPTN+=" boot=live components"
-				BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-				BOOT_OPTN+=" fsck.mode=skip"
-			fi
-			;;
-		ubuntu-desktop-18.*   )			# This version does not support pxeboot
-			;;
-		ubuntu-desktop-20.*   | \
-		ubuntu-desktop-22.*   | \
-		ubuntu-legacy-*       )
-			if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
-				BOOT_OPTN="url=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
-				BOOT_OPTN+=" ip=dhcp"
-				BOOT_OPTN+=" boot=casper maybe-ubiquity"
-				BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				BOOT_OPTN+=" fsck.mode=skip"
-			fi
-			;;
-		ubuntu-desktop-*      )
-			if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
-				BOOT_OPTN="url=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
-				BOOT_OPTN+=" ip=dhcp"
-				BOOT_OPTN+=" boot=casper layerfs-path=minimal.standard.live.squashfs"
-				BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-				BOOT_OPTN+=" fsck.mode=skip"
-			fi
-			;;
-		*                     )
-			;;
-	esac
-	if [[ -n "${SCRN_MODE:-}" ]]; then
-		BOOT_OPTN="vga=${SCRN_MODE} ${BOOT_OPTN}"
+	BOOT_WORK+=("\${isoaddr} \${install} \${network} \${locales} \${ramdisk} fsck.mode=skip")
+	# --- live mode -----------------------------------------------------------
+	if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
+		BOOT_WORK[3]=""
+		BOOT_WORK[4]="ip=dhcp"
+		case "${TGET_LINE[1]}" in
+			debian-live-*         ) BOOT_WORK[2]="boot=live components fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}";;
+			ubuntu-desktop-18.*   ) ;;	# This version does not support pxeboot
+			ubuntu-desktop-20.*   | \
+			ubuntu-desktop-22.*   | \
+			ubuntu-legacy-*       ) BOOT_WORK[2]="boot=casper maybe-ubiquity ${BOOT_WORK[2]}";;
+			ubuntu-desktop-*      ) BOOT_WORK[2]="boot=casper layerfs-path=minimal.standard.live.squashfs ${BOOT_WORK[2]}";;
+			*                     ) ;;
+		esac
 	fi
-	echo "${BOOT_OPTN}"
+	# --- output --------------------------------------------------------------
+	IFS=
+	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
+		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
+		set root='${BOOT_WORK[0]}'
+		set isofile='${BOOT_WORK[1]}'
+		set isoaddr="${BOOT_WORK[2]}"
+		set install='${BOOT_WORK[3]}'
+		set network='${BOOT_WORK[4]}'
+		set locales='${BOOT_WORK[5]}'
+		set ramdisk='${BOOT_WORK[6]}'
+		set options="${BOOT_WORK[7]}"
+_EOT_
+	IFS="${OLD_IFS}"
+#	echo "${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip"
 }
 
 # ----- create menu.cfg nocloud -----------------------------------------------
 function funcCreate_menu_cfg_nocloud() {
 	declare -r -a TGET_LINE=("$@")
-	declare       BOOT_OPTN=""
 	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 #	declare -r    CONF_FILE="file:///cdrom/${TGET_LINE[8]}"
 	declare -r    CONF_FILE="${HTTP_ADDR}/conf/${TGET_LINE[8]}"
 	declare -r    RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000"
+#	declare -r    LIVE_IMGS="live/filesystem.squashfs"
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for nocloud"
-	# --- boot option ---------------------------------------------------------
-	case "${TGET_LINE[1]}" in
-		ubuntu-live-18.*      ) BOOT_OPTN="boot=casper";;
-		*                     ) BOOT_OPTN=""           ;;
-	esac
-#	case "${TGET_LINE[1]}" in
-#		ubuntu-desktop-23.*   ) BOOT_OPTN+=" layerfs-path=minimal.standard.live.squashfs";;
-#		*                     ) ;;
-#	esac
-	if [[ "${TGET_LINE[8]#*/}" != "-" ]]; then
-		BOOT_OPTN+=" automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${CONF_FILE}"
-	fi
-	BOOT_OPTN+=" ${RAMS_DISK}"
+	# --- boot clear ----------------------------------------------------------
+	BOOT_WORK=()
+	# --- root option ---------------------------------------------------------
+	BOOT_WORK+=("tftp")
+#	BOOT_WORK+=("${HTTP_ADDR%%:*},${HTTP_ADDR##*/}")
+	# --- isofile option ------------------------------------------------------
+	BOOT_WORK+=("${TGET_LINE[4]}")
+	# --- isoaddr option ------------------------------------------------------
+	BOOT_WORK+=("")
 	case "${TGET_LINE[1]}" in
 		ubuntu-live-18.*      | \
 		ubuntu-live-20.*      | \
 		ubuntu-live-22.*      | \
-		ubuntu-desktop-22.*   ) BOOT_OPTN+=" url="    ;;
-		*                     ) BOOT_OPTN+=" iso-url=";;
+		ubuntu-desktop-22.*   ) BOOT_WORK[2]="url=${HTTP_ADDR}/isos/\${isofile}";;
+		ubuntu-*              ) BOOT_WORK[2]="iso-url=${HTTP_ADDR}/isos/\${isofile}";;
+		*                     ) ;;
 	esac
-	BOOT_OPTN+="${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+	# --- install option ------------------------------------------------------
+	BOOT_WORK+=("")
 	case "${TGET_LINE[1]}" in
-		ubuntu-live-18.04)
-			if [[ "${TGET_LINE[8]#*/}" != "-" ]]; then
-				BOOT_OPTN+=" ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${HOST_NAME}.${WGRP_NAME}"
-			else
-				BOOT_OPTN+=" ip=dhcp"
-			fi
-			;;
-		*                )
-			if [[ "${TGET_LINE[8]#*/}" != "-" ]]; then
-				BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}::${ETHR_NAME}:static:${IPV4_NSVR} hostname=${HOST_NAME}.${WGRP_NAME}"
-#				BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
-			else
-				BOOT_OPTN+=" ip=dhcp"
-			fi
-			;;
+		ubuntu-*              ) BOOT_WORK[3]="automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${CONF_FILE}";;
+		*                     ) ;;
 	esac
-#	BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	BOOT_OPTN+=" debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	BOOT_OPTN+=" fsck.mode=skip"
-	if [[ -n "${SCRN_MODE:-}" ]]; then
-		BOOT_OPTN="vga=${SCRN_MODE} ${BOOT_OPTN## }"
+	# --- network option ------------------------------------------------------
+	BOOT_WORK+=("")
+	case "${TGET_LINE[1]}" in
+		ubuntu-live-18.04     ) BOOT_WORK[4]="ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${HOST_NAME}.${WGRP_NAME}";;
+		ubuntu-*              ) BOOT_WORK[4]="ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}::${ETHR_NAME}:static:${IPV4_NSVR} hostname=${HOST_NAME}.${WGRP_NAME}";;
+		*                     ) ;;
+	esac
+	# --- locales option ------------------------------------------------------
+	BOOT_WORK+=("")
+	case "${TGET_LINE[1]}" in
+		ubuntu-*              ) BOOT_WORK[5]="debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		*                     ) ;;
+	esac
+	# --- ramdisk option ------------------------------------------------------
+	BOOT_WORK+=("")
+	case "${TGET_LINE[1]}" in
+		ubuntu-*              ) BOOT_WORK[6]="${RAMS_DISK}";;
+		*                     ) ;;
+	esac
+	# --- boot option ---------------------------------------------------------
+	BOOT_WORK+=("\${isoaddr} \${install} \${network} \${locales} \${ramdisk} fsck.mode=skip")
+	# --- live mode -----------------------------------------------------------
+	if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
+#		BOOT_WORK[0]="${HTTP_ADDR%%:*},${HTTP_ADDR##*/}"
+		BOOT_WORK[3]=""
+		BOOT_WORK[4]="ip=dhcp"
+		case "${TGET_LINE[1]}" in
+			ubuntu-desktop-18.*   ) ;;	# This version does not support pxeboot
+			ubuntu-desktop-20.*   | \
+			ubuntu-desktop-22.*   | \
+			ubuntu-legacy-*       ) BOOT_WORK[2]="boot=casper maybe-ubiquity ${BOOT_WORK[2]}";;
+			ubuntu-desktop-*      ) BOOT_WORK[2]="boot=casper layerfs-path=minimal.standard.live.squashfs ${BOOT_WORK[2]}";;
+			*                     ) ;;
+		esac
 	fi
-	echo "${BOOT_OPTN## }"
+
+	# --- output --------------------------------------------------------------
+	IFS=
+	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
+		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
+		set root='${BOOT_WORK[0]}'
+		set isofile='${BOOT_WORK[1]}'
+		set isoaddr="${BOOT_WORK[2]}"
+		set install='${BOOT_WORK[3]}'
+		set network='${BOOT_WORK[4]}'
+		set locales='${BOOT_WORK[5]}'
+		set ramdisk='${BOOT_WORK[6]}'
+		set options="${BOOT_WORK[7]}"
+_EOT_
+	IFS="${OLD_IFS}"
+#	echo "${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip"
 }
 
 # ----- create menu.cfg kickstart ---------------------------------------------
 function funcCreate_menu_cfg_kickstart() {
 	declare -r -a TGET_LINE=("$@")
-	declare       BOOT_OPTN=""
 	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 #	declare -r    CONF_FILE="hd:sr0:/${TGET_LINE[8]} inst.stage2=hd:LABEL=${TGET_LINE[14]}"
 	declare -r    CONF_FILE="${HTTP_ADDR}/conf/${TGET_LINE[8]/_dvd/_web}"
-	declare -r    IMGS_FILE="inst.stage2=${HTTP_ADDR}/imgs/${TGET_LINE[1]}"
+#	declare -r    RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000"
+#	declare -r    LIVE_IMGS="live/filesystem.squashfs"
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for kickstart"
+	# --- boot clear ----------------------------------------------------------
+	BOOT_WORK=()
+	# --- root option ---------------------------------------------------------
+	BOOT_WORK+=("tftp")
+#	BOOT_WORK+=("${HTTP_ADDR%%:*},${HTTP_ADDR##*/}")
+	# --- isofile option ------------------------------------------------------
+	BOOT_WORK+=("${TGET_LINE[4]}")
+	# --- isoaddr option ------------------------------------------------------
+	BOOT_WORK+=("inst.stage2=${HTTP_ADDR}/imgs/${TGET_LINE[1]}")
+#	BOOT_WORK+=("inst.stage2=${HTTP_ADDR}/imgs/\${isofile}")
+#	case "${TGET_LINE[1]}" in
+#		*-netinst*            ) BOOT_WORK[2]="";;
+#		*                     ) ;;
+#	esac
+	# --- install option ------------------------------------------------------
+	BOOT_WORK+=("inst.ks=${CONF_FILE}")
+	# --- network option ------------------------------------------------------
+	BOOT_WORK+=("ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:none,auto6 nameserver=${IPV4_NSVR}")
+	# --- locales option ------------------------------------------------------
+	BOOT_WORK+=("locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106")
+	# --- ramdisk option ------------------------------------------------------
+	BOOT_WORK+=("")
 	# --- boot option ---------------------------------------------------------
-	BOOT_OPTN="inst.ks=${CONF_FILE}"
-#	if [[ ! "${TGET_LINE[1]}" =~ -netinst ]]; then
-		BOOT_OPTN+=" ${IMGS_FILE}"
-#	fi
-	BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:none,auto6 nameserver=${IPV4_NSVR}"
-	BOOT_OPTN+=" locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	BOOT_OPTN+=" fsck.mode=skip"
-	if [[ -n "${SCRN_MODE:-}" ]]; then
-		BOOT_OPTN="vga=${SCRN_MODE} ${BOOT_OPTN}"
+	BOOT_WORK+=("\${isoaddr} \${install} \${network} \${locales} \${ramdisk} fsck.mode=skip")
+	# --- live mode -----------------------------------------------------------
+	if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
+		BOOT_WORK[3]=""
+		BOOT_WORK[4]="ip=dhcp"
 	fi
-	echo "${BOOT_OPTN}"
+	# --- output --------------------------------------------------------------
+	IFS=
+	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
+		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
+		set root='${BOOT_WORK[0]}'
+		set isofile='${BOOT_WORK[1]}'
+		set isoaddr="${BOOT_WORK[2]}"
+		set install='${BOOT_WORK[3]}'
+		set network='${BOOT_WORK[4]}'
+		set locales='${BOOT_WORK[5]}'
+		set ramdisk='${BOOT_WORK[6]}'
+		set options="${BOOT_WORK[7]}"
+_EOT_
+	IFS="${OLD_IFS}"
+#	echo "${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip"
 }
 
 # ----- create menu.cfg autoyast ----------------------------------------------
 function funcCreate_menu_cfg_autoyast() {
 	declare -r -a TGET_LINE=("$@")
-	declare       BOOT_OPTN=""
 	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 #	declare -r    CONF_FILE="cd:/${TGET_LINE[8]}"
 	declare -r    CONF_FILE="${HTTP_ADDR}/conf/${TGET_LINE[8]}"
-	declare -r    IMGS_FILE="install=${HTTP_ADDR}/imgs/${TGET_LINE[1]}"
+	declare -r    RAMS_DISK="root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096"
+#	declare -r    LIVE_IMGS="live/filesystem.squashfs"
 	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for autoyast"
+	# --- boot clear ----------------------------------------------------------
+	BOOT_WORK=()
+	# --- root option ---------------------------------------------------------
+	BOOT_WORK+=("tftp")
+#	BOOT_WORK+=("${HTTP_ADDR%%:*},${HTTP_ADDR##*/}")
+	# --- isofile option ------------------------------------------------------
+	BOOT_WORK+=("${TGET_LINE[4]}")
+	# --- isoaddr option ------------------------------------------------------
+	BOOT_WORK+=("install=${HTTP_ADDR}/imgs/\${isofile}")
+	case "${TGET_LINE[1]}" in
+		*-netinst*            ) BOOT_WORK[2]="";;
+		*                     ) ;;
+	esac
+	# --- install option ------------------------------------------------------
+	BOOT_WORK+=("autoyast=${CONF_FILE}")
+	# --- network option ------------------------------------------------------
 	case "${TGET_LINE[1]}" in
 		opensuse-*-15* ) WORK_ETHR="eth0";;
 		*              ) ;;
 	esac
+	BOOT_WORK+=("ifcfg=${WORK_ETHR}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME} hostname=${HOST_NAME}.${WGRP_NAME}")
+	# --- locales option ------------------------------------------------------
+	BOOT_WORK+=("locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106")
+	# --- ramdisk option ------------------------------------------------------
+	BOOT_WORK+=("${RAMS_DISK}")
 	# --- boot option ---------------------------------------------------------
-	BOOT_OPTN="autoyast=${CONF_FILE}"
-	if [[ ! "${TGET_LINE[1]}" =~ -netinst ]]; then
-		BOOT_OPTN+=" ${IMGS_FILE}"
+	BOOT_WORK+=("\${isoaddr} \${install} \${network} \${locales} \${ramdisk} fsck.mode=skip")
+	# --- live mode -----------------------------------------------------------
+	if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
+		BOOT_WORK[3]=""
+		BOOT_WORK[4]="ip=dhcp"
 	fi
-	BOOT_OPTN+=" hostname=${HOST_NAME}.${WGRP_NAME} ifcfg=${WORK_ETHR}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME}"
-	BOOT_OPTN+=" locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	BOOT_OPTN+=" fsck.mode=skip"
-	if [[ -n "${SCRN_MODE:-}" ]]; then
-		BOOT_OPTN="vga=${SCRN_MODE} ${BOOT_OPTN}"
-	fi
-	echo "${BOOT_OPTN}"
+	# --- output --------------------------------------------------------------
+	IFS=
+	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
+		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
+		set root='${BOOT_WORK[0]}'
+		set isofile='${BOOT_WORK[1]}'
+		set isoaddr="${BOOT_WORK[2]}"
+		set install='${BOOT_WORK[3]}'
+		set network='${BOOT_WORK[4]}'
+		set locales='${BOOT_WORK[5]}'
+		set ramdisk='${BOOT_WORK[6]}'
+		set options="${BOOT_WORK[7]}"
+_EOT_
+	IFS="${OLD_IFS}"
+#	echo "${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip"
 }
 
-# ----- create menu.cfg for syslinux ------------------------------------------
-function funcCreate_menu_cfg_syslinux() {
-	declare -r    MENU_PATH="$1"							# menu.cfg path
-	declare       BOOT_OPTN="$2"							# boot option
-	shift 2
-	declare -r -a TGET_LINE=("$@")
+# ----- create menu for syslinux ----------------------------------------------
+function funcCreate_syslinux_cfg() {
+	declare -r    MENU_DIRS="$1"							# menu directory
+	declare -r -n MENU_NAME="$2"							# menu file name
+	declare       BOOT_OPTN="$3"							# boot option
+	declare -r -n TGET_INFO="$4"							# media information
+	declare -r -i TABS_CONT="$5"							# tabs count
+	declare       TABS_STRS=""								# tabs string
+	declare       MENU_PATH=""								# menu path
 	declare       MENU_ENTR=""								# meny entry
-	funcPrintf "      create: ${TGET_LINE[2]//%20/ }"
-	# --- create menu.cfg -----------------------------------------------------
-	if [[ ! -f "${MENU_PATH}" ]]; then
+#	funcPrintf "      create: ${TGET_INFO[2]//%20/ }"
+	if [[ "${TABS_CONT}" -gt 0 ]]; then
+		TABS_STRS="$(funcString "$(("${TABS_CONT}"*4))" " ")"
+	else
+		TABS_STRS=""
+	fi
+	# --- create syslinux.cfg -------------------------------------------------
+	MENU_PATH="${MENU_DIRS}/${MENU_NAME[0]}"
+	if [[ ! -f "${MENU_PATH}" ]] \
+	|| [[ ! -s "${MENU_PATH}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${MENU_PATH}"
 			path ./
 			prompt 0
@@ -2936,48 +3040,51 @@ function funcCreate_menu_cfg_syslinux() {
 			
 _EOT_
 	fi
-	case "${TGET_LINE[0]}" in
+	case "${TGET_INFO[0]}" in
 		m )
-			MENU_ENTR="[ ${TGET_LINE[2]//%20/ } ... ]"
+			if [[ "${TGET_INFO[2]}" = "-" ]]; then
+				return
+			fi
+			MENU_ENTR="[ ${TGET_INFO[2]//%20/ } ... ]"
 			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
-				label ${TGET_LINE[2]//%20/-}
+				label ${TGET_INFO[2]//%20/-}
 				 	menu label ^${MENU_ENTR}
 				
 _EOT_
 			;;
 		o )
-			MENU_ENTR="$(printf "%-60.60s" "- ${TGET_LINE[2]//%20/ }")"
-			case "${TGET_LINE[1]}" in
+			MENU_ENTR="$(printf "%-60.60s" "- ${TGET_INFO[2]//%20/ }")"
+			case "${TGET_INFO[1]}" in
 				windows-* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					if [[ "${MENU_PATH}" =~ bios ]]; then
 						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
-							label ${TGET_LINE[1]}
+							label ${TGET_INFO[1]}
 							 	menu label ^${MENU_ENTR}
 							 	kernel memdisk
-							 	append initrd=isos/${TGET_LINE[4]} iso raw
+							 	append initrd=${HTTP_ADDR}/isos/${TGET_INFO[4]} iso raw
 							
 _EOT_
 					fi
 					;;
 				memtest86\+ )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					if [[ "${MENU_PATH}" =~ bios ]]; then
 						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
-							label ${TGET_LINE[1]}
+							label ${TGET_INFO[1]}
 							 	menu label ^${MENU_ENTR}
-							 	kernel boot/${TGET_LINE[1]}/${TGET_LINE[7]}
+							 	kernel load/${TGET_INFO[1]}/${TGET_INFO[7]}
 							
 _EOT_
 					else
 						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
-							label ${TGET_LINE[1]}
+							label ${TGET_INFO[1]}
 							 	menu label ^${MENU_ENTR}
-							 	kernel boot/${TGET_LINE[1]}/${TGET_LINE[6]}
+							 	kernel load/${TGET_INFO[1]}/${TGET_INFO[6]}
 							
 _EOT_
 					fi
@@ -2985,15 +3092,15 @@ _EOT_
 				winpe-*    | \
 				ati2020x64 | \
 				ati2020x86 )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					if [[ "${MENU_PATH}" =~ bios ]]; then
 						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
-							label ${TGET_LINE[1]}
+							label ${TGET_INFO[1]}
 							 	menu label ^${MENU_ENTR}
 							 	kernel memdisk
-							 	append initrd=isos/${TGET_LINE[4]} iso raw
+							 	append initrd=${HTTP_ADDR}/isos/${TGET_INFO[4]} iso raw
 							
 _EOT_
 					fi
@@ -3005,22 +3112,254 @@ _EOT_
 						return
 					fi
 					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
-						label ${TGET_LINE[1]}
+						label ${TGET_INFO[1]}
 						 	menu label ^${MENU_ENTR}
-						 	com32 ${TGET_LINE[6]}
+						 	com32 ${TGET_INFO[6]}
 						
 _EOT_
 					;;
 				* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
-					MENU_ENTR="$(printf "%-60.60s%20.20s" "- ${TGET_LINE[2]//%20/ }" "${TGET_LINE[10]} ${TGET_LINE[12]}")"
+					MENU_ENTR="$(printf "%-60.60s%20.20s" "- ${TGET_INFO[2]//%20/ }" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
 					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
-						label ${TGET_LINE[1]}
+						label ${TGET_INFO[1]}
 						 	menu label ^${MENU_ENTR}
-						 	kernel boot/${TGET_LINE[1]}/${TGET_LINE[7]}
-						 	append initrd=boot/${TGET_LINE[1]}/${TGET_LINE[6]} ${BOOT_OPTN} ---
+						 	kernel load/${TGET_INFO[1]}/${TGET_INFO[7]}
+						 	append initrd=load/${TGET_INFO[1]}/${TGET_INFO[6]} ${BOOT_OPTN} ---
+						
+_EOT_
+					;;
+			esac
+			;;
+		* )
+			;;
+	esac
+}
+
+# ----- create menu for grub --------------------------------------------------
+function funcCreate_grub_cfg() {
+	declare -r    MENU_DIRS="$1"							# menu directory
+	declare -r -n MENU_NAME="$2"							# menu file name
+	declare -r -n BOOT_OPTN="$3"							# boot option
+	declare -r -n TGET_INFO="$4"							# media information
+	declare -r -i TABS_CONT="$5"							# tabs count
+	declare       TABS_STRS=""								# tabs string
+	declare       MENU_PATH=""								# menu path
+	declare       MENU_ENTR=""								# meny entry
+#	funcPrintf "      create: ${TGET_INFO[2]//%20/ }"
+	if [[ "${TABS_CONT}" -gt 0 ]]; then
+		TABS_STRS="$(funcString "$(("${TABS_CONT}"*4))" " ")"
+	else
+		TABS_STRS=""
+	fi
+	# --- create grub.cfg -----------------------------------------------------
+	MENU_PATH="${MENU_DIRS}/${MENU_NAME[0]}"
+	if [[ ! -f "${MENU_PATH}" ]] \
+	|| [[ ! -s "${MENU_PATH}" ]]; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${MENU_PATH}"
+			set default="0"
+			set timeout="-1"
+			
+			if [ "x\${feature_default_font_path}" = "xy" ] ; then
+			 	font="unicode"
+			else
+			 	font="\${prefix}/font.pf2"
+			fi
+			
+			if loadfont "\$font" ; then
+			#	set lang="ja_JP"
+			
+			#	set gfxmode="7680x4320" # 8K UHD (16:9)
+			#	set gfxmode="3840x2400" #        (16:10)
+			#	set gfxmode="3840x2160" # 4K UHD (16:9)
+			#	set gfxmode="2880x1800" #        (16:10)
+			#	set gfxmode="2560x1600" #        (16:10)
+			#	set gfxmode="2560x1440" # WQHD   (16:9)
+			#	set gfxmode="1920x1440" #        (4:3)
+			#	set gfxmode="1920x1200" # WUXGA  (16:10)
+			#	set gfxmode="1920x1080" # FHD    (16:9)
+			#	set gfxmode="1856x1392" #        (4:3)
+			#	set gfxmode="1792x1344" #        (4:3)
+			#	set gfxmode="1680x1050" # WSXGA+ (16:10)
+			#	set gfxmode="1600x1200" # UXGA   (4:3)
+			#	set gfxmode="1400x1050" #        (4:3)
+			#	set gfxmode="1440x900"  # WXGA+  (16:10)
+			#	set gfxmode="1360x768"  # HD     (16:9)
+			#	set gfxmode="1280x1024" # SXGA   (5:4)
+			#	set gfxmode="1280x960"  #        (4:3)
+			#	set gfxmode="1280x800"  #        (16:10)
+			#	set gfxmode="1280x768"  #        (4:3)
+			#	set gfxmode="1280x720"  # WXGA   (16:9)
+			#	set gfxmode="1152x864"  #        (4:3)
+			#	set gfxmode="1024x768"  # XGA    (4:3)
+			#	set gfxmode="800x600"   # SVGA   (4:3)
+			#	set gfxmode="640x480"   # VGA    (4:3)
+			 	set gfxmode="${MENU_RESO}"
+			 	set gfxpayload="keep"
+			
+			 	if [ "\${grub_platform}" = "efi" ]; then
+			 		insmod efi_gop
+			 		insmod efi_uga
+			 	else
+			 		insmod vbe
+			 		insmod vga
+			 	fi
+			
+			 	insmod gfxterm
+			 	insmod gettext
+			 	terminal_output gfxterm
+			fi
+			
+			set menu_color_normal="cyan/blue"
+			set menu_color_highlight="white/blue"
+			
+			#export lang
+			export gfxmode
+			export gfxpayload
+			export menu_color_normal
+			export menu_color_highlight
+			
+			insmod play
+			play 960 440 1 0 4 440 1
+			
+			source "\${prefix}/${MENU_NAME[1]}"
+			
+			menuentry '[ System command ]' {
+			 	true
+			}
+			
+			menuentry '- System shutdown' {
+			 	echo "System shutting down ..."
+			 	halt
+			}
+			
+			menuentry '- System restart' {
+			 	echo "System rebooting ..."
+			 	reboot
+			}
+			
+			if [ "\${grub_platform}" = "efi" ]; then
+			 	menuentry '- Boot from next volume' {
+			 		exit 1
+			 	
+			
+			 	menuentry '- UEFI Firmware Settings' {
+			 		fwsetup
+			 	
+			fi
+_EOT_
+	fi
+	# --- create menu.cfg -----------------------------------------------------
+	MENU_PATH="${MENU_DIRS}/${MENU_NAME[1]}"
+	case "${TGET_INFO[0]}" in
+		m )
+			if [[ "${TGET_INFO[2]}" = "-" ]] \
+			|| [[ "${TGET_INFO[2]}" = "System%20command" ]]; then
+				return
+			fi
+			MENU_ENTR="[ ${TGET_INFO[2]//%20/ } ... ]"
+			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
+				menuentry '${MENU_ENTR}' {
+				 	true
+				}
+				
+_EOT_
+			;;
+		o )
+			MENU_ENTR="$(printf "%-60.60s" "- ${TGET_INFO[2]//%20/ }")"
+			case "${TGET_INFO[1]}" in
+				windows-* )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+						return
+					fi
+					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
+						if [ "\${grub_platform}" = "pc" ]; then
+						 	menuentry '${MENU_ENTR}' {
+						 		echo 'Loading ${TGET_INFO[2]//%20/ } ...'
+						 		insmod progress
+						 		set isofile="(${HTTP_ADDR%%:*},${HTTP_ADDR##*/})/isos/${TGET_INFO[4]}"
+						 		export isofile
+						 		echo 'Loading linux ...'
+						 		linux16 memdisk iso raw
+						 		echo 'Loading initrd ...'
+						 		initrd16 "\$isofile"
+						 	}
+						fi
+						
+_EOT_
+					;;
+				memtest86\+ )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+						return
+					fi
+					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
+						menuentry '${MENU_ENTR}' {
+						 	echo 'Loading ${TGET_INFO[2]//%20/ } ...'
+						 	set root='tftp'
+						 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+						 	insmod progress
+						 	echo   'Loading linux ...'
+						 	if [ "\${grub_platform}" = "efi" ]; then
+						 		echo 'Loading UEFI Version ...'
+						 		linux  (\$root)/load/${TGET_INFO[1]}/${TGET_INFO[6]}
+						 	else
+						 		echo 'Loading BIOS Version ...'
+						 		linux  (\$root)/load/${TGET_INFO[1]}/${TGET_INFO[7]}
+						 	fi
+						}
+							
+_EOT_
+					;;
+				winpe-*    | \
+				ati2020x64 | \
+				ati2020x86 )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+						return
+					fi
+					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
+						if [ "\${grub_platform}" = "pc" ]; then
+						 	menuentry '${MENU_ENTR}' {
+						 		echo 'Loading ${TGET_INFO[2]//%20/ } ...'
+						 		insmod progress
+						 		set isofile="(${HTTP_ADDR%%:*},${HTTP_ADDR##*/})/isos/${TGET_INFO[4]}"
+						 		export isofile
+						 		echo 'Loading linux ...'
+						 		linux16 memdisk iso raw
+						 		echo 'Loading initrd ...'
+						 		initrd16 "\$isofile"
+						 	}
+						fi
+						
+_EOT_
+					;;
+				hdt      | \
+				shutdown | \
+				restart  )
+					;;
+				* )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+						return
+					fi
+					MENU_ENTR="$(printf "%-60.60s%20.20s" "- ${TGET_INFO[2]//%20/ }" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
+					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
+						menuentry '${MENU_ENTR}' {
+						 	echo 'Loading ${TGET_INFO[2]//%20/ } ...'
+						 	${BOOT_OPTN[0]}
+						 	${BOOT_OPTN[1]}
+						 	${BOOT_OPTN[2]}
+						 	${BOOT_OPTN[3]}
+						 	${BOOT_OPTN[4]}
+						 	${BOOT_OPTN[5]}
+						 	${BOOT_OPTN[6]}
+						 	${BOOT_OPTN[7]}
+						 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+						 	echo 'Loading linux ...'
+						 	linux  (\$root)/load/${TGET_INFO[1]}/${TGET_INFO[7]} \${options} ---
+						 	echo 'Loading initrd ...'
+						 	initrd (\$root)/load/${TGET_INFO[1]}/${TGET_INFO[6]}
+						}
 						
 _EOT_
 					;;
@@ -3306,6 +3645,7 @@ function funcCall_create() {
 #	declare -r -a COMD_ENUM=("mini" "net" "dvd" "live" "tool")
 #	declare       WORK_PARM=""
 #	declare       WORK_ENUM=""
+	declare       WORK_LINE=""
 	declare -a    DATA_LIST=(  \
 		"${DATA_LIST_MINI[@]}" \
 		"${DATA_LIST_NET[@]}"  \
@@ -3316,106 +3656,142 @@ function funcCall_create() {
 		"${DATA_LIST_SCMD[@]}" \
 	)
 	declare -a    DATA_LINE=()
-	declare       MENU_DIRS=""								# menu.cfg directory
-	declare       MENU_PATH=""								# menu.cfg path
-	declare       BOOT_OPTN=""								# boot option
+	declare -r    DIRS_GRUB="boot/grub"						# grub directory
+	declare -r -a MENU_GRUB=("grub.cfg" "menu.cfg")			# grub.cfg / menu.cfg
+	declare -r -a MENU_SLNX=("syslinux.cfg" "menu.cfg")		# syslinux.cfg / menu.cfg
+	declare       MENU_DIRS=""								# menu directory
+	declare       MENU_PATH=""								# menu file path
+	declare -a    BOOT_ARRY=()								# boot option array
+	declare       BOOT_OPTN=""								# boot option (syslinux)
+	declare -a    BOOT_GRUB=()								# boot option (grub)
 	declare       FILE_PATH=""
 	declare -a    FILE_INFO=()
 	declare       FILE_SIZE=""
 	declare       FILE_TIME=""
+	declare -i    TABS_CONT=0
 	declare -i    I=0
 #	declare -i    J=0
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "      create: syslinux /grub menu file"
+	# -------------------------------------------------------------------------
+	for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},${DIRS_GRUB}}
+	do
+		funcPrintf "        copy: ${MENU_DIRS##*/}"
+		mkdir -p "${MENU_DIRS}"
+		case "${MENU_DIRS}" in
+			*bios )
+				: > "${MENU_DIRS}/${MENU_SLNX[0]}"
+				: > "${MENU_DIRS}/${MENU_SLNX[1]}"
+				if [[ ! -f "${MENU_DIRS}/pxelinux.0" ]]; then
+					cp --archive --update /usr/lib/syslinux/memdisk         "${MENU_DIRS}/"
+					cp --archive --update /usr/lib/syslinux/modules/bios/.  "${MENU_DIRS}/"
+					cp --archive --update /usr/lib/PXELINUX/.               "${MENU_DIRS}/"
+				fi
+				;;
+			*efi32)
+				: > "${MENU_DIRS}/${MENU_SLNX[0]}"
+				: > "${MENU_DIRS}/${MENU_SLNX[1]}"
+				if [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
+					cp --archive --update /usr/lib/syslinux/modules/efi32/. "${MENU_DIRS}/"
+					cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${MENU_DIRS}/"
+				fi
+				;;
+			*efi64)
+				: > "${MENU_DIRS}/${MENU_SLNX[0]}"
+				: > "${MENU_DIRS}/${MENU_SLNX[1]}"
+				if [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
+					cp --archive --update /usr/lib/syslinux/modules/efi64/. "${MENU_DIRS}/"
+					cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${MENU_DIRS}/"
+				fi
+				;;
+			*grub )
+				: > "${MENU_DIRS}/${MENU_GRUB[0]}"
+				: > "${MENU_DIRS}/${MENU_GRUB[1]}"
+				if [[ ! -f "${MENU_DIRS}/x86_64-efi/core.efi" ]] \
+				|| [[ ! -f "${MENU_DIRS}/i386-pc/core.0"      ]]; then
+					cp --archive --update /usr/lib/syslinux/memdisk         "${DIRS_TFTP}/"
+					grub-mknetdir --net-directory="${DIRS_TFTP}" --subdir="${DIRS_GRUB}"
+				fi
+				;;
+			* )
+				;;
+		esac
+	done
 	# -------------------------------------------------------------------------
 	for ((I=0; I<"${#DATA_LIST[@]}"; I++))
 	do
 		read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
 		FILE_PATH="${DIRS_ISOS}/${DATA_LINE[4]}"
-		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${FILE_PATH}" ]]; then
-			continue
+#		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${FILE_PATH}" ]]; then
+#			continue
+#		fi
+		if [[ "${DATA_LINE[0]}" = "o" ]] && [[ -f "${FILE_PATH}" ]]; then
+			# --- copy iso contents to hdd ------------------------------------
+			funcCreate_copy_iso2hdd "${DATA_LINE[@]}"
+			# --- file information --------------------------------------------
+			# shellcheck disable=SC2312
+			read -r -a FILE_INFO < <(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${FILE_PATH}")
+			FILE_SIZE="${FILE_INFO[4]}"
+			FILE_TIME="${FILE_INFO[5]}"
+			DATA_LINE[10]="${FILE_TIME:0:4}-${FILE_TIME:4:2}-${FILE_TIME:6:2}"
+			DATA_LINE[12]="${FILE_TIME:8:2}:${FILE_TIME:10:2}:${FILE_TIME:12:2}"
+			DATA_LINE[13]="${FILE_SIZE}"
+			DATA_LIST[I]="${DATA_LINE[*]}"
 		fi
-		# --- copy iso contents to hdd ----------------------------------------
-		funcCreate_copy_iso2hdd "${DATA_LINE[@]}"
-		# --- file information ------------------------------------------------
-		# shellcheck disable=SC2312
-		read -r -a FILE_INFO < <(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${FILE_PATH}")
-		FILE_SIZE="${FILE_INFO[4]}"
-		FILE_TIME="${FILE_INFO[5]}"
-		DATA_LINE[10]="${FILE_TIME:0:4}-${FILE_TIME:4:2}-${FILE_TIME:6:2}"
-		DATA_LINE[12]="${FILE_TIME:8:2}:${FILE_TIME:10:2}:${FILE_TIME:12:2}"
-		DATA_LINE[13]="${FILE_SIZE}"
-		DATA_LIST[I]="${DATA_LINE[*]}"
-	done
-	for MENU_DIRS in "${DIRS_TFTP}/menu-"{bios,efi{32,64}}
-	do
-		MENU_PATH="${MENU_DIRS}/syslinux.cfg"
-		funcPrintf "        copy: ${MENU_DIRS##*/}"
-#		rm -rf "${MENU_DIRS}"
-#		mkdir -p "${MENU_DIRS}"
-		rm -rf "${MENU_PATH}"
-		case "${MENU_DIRS}" in
-			*bios )
-				cp --archive --update /usr/lib/syslinux/memdisk         "${MENU_DIRS}/"
-				cp --archive --update /usr/lib/syslinux/modules/bios/.  "${MENU_DIRS}/"
-				cp --archive --update /usr/lib/PXELINUX/.               "${MENU_DIRS}/"
+		# --- create menu -----------------------------------------------------
+		BOOT_ARRY=()
+		case "${DATA_LINE[1]%%-*}" in
+			menu         ) ;;
+			debian       | \
+			ubuntu       ) 
+				case "${DATA_LINE[8]%%/*}" in
+					preseed* ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_preseed "${DATA_LINE[@]}");;
+					nocloud* ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_nocloud "${DATA_LINE[@]}");;
+					*        ) funcPrintf "not supported on ${DATA_LINE[1]}"; exit 1;;
+				esac
 				;;
-			*efi32)
-				cp --archive --update /usr/lib/syslinux/modules/efi32/. "${MENU_DIRS}/"
-				cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${MENU_DIRS}/"
-				;;
-			*efi64)
-				cp --archive --update /usr/lib/syslinux/modules/efi64/. "${MENU_DIRS}/"
-				cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${MENU_DIRS}/"
-				;;
-			* )
+			fedora       | \
+			centos       | \
+			almalinux    | \
+			miraclelinux | \
+			rockylinux   ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_kickstart "${DATA_LINE[@]}");;
+			opensuse     ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_autoyast "${DATA_LINE[@]}");;
+			windows      ) ;;
+			memtest86\+  ) ;;
+			winpe        | \
+			ati2020x64   | \
+			ati2020x86   ) ;;
+			hdt          | \
+			shutdown     | \
+			restart      ) ;;
+			*            )				# --- not supported -------------------
+				funcPrintf "not supported on ${DATA_LINE[1]}"
+				exit 1
 				;;
 		esac
-		funcPrintf "      create: ${MENU_PATH##*/} for syslinux"
-		for ((I=0; I<"${#DATA_LIST[@]}"; I++))
+		IFS="${OLD_IFS}"
+		# ---------------------------------------------------------------------
+		BOOT_OPTN=""
+		BOOT_GRUB=()
+		for ((J=0; J<"${#BOOT_ARRY[@]}"; J++))
 		do
-			read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
-			# --- create menu -------------------------------------------------
-			BOOT_OPTN=""
-			case "${DATA_LINE[1]%%-*}" in
-				menu         )
-					;;
-				debian       | \
-				ubuntu       ) 
-					case "${DATA_LINE[8]%%/*}" in
-						preseed* ) BOOT_OPTN="$(funcCreate_menu_cfg_preseed "${DATA_LINE[@]}")";;
-						nocloud* ) BOOT_OPTN="$(funcCreate_menu_cfg_nocloud "${DATA_LINE[@]}")";;
-						*        ) funcPrintf "not supported on ${DATA_LINE[1]}"; exit 1;;
-					esac
-					;;
-				fedora       | \
-				centos       | \
-				almalinux    | \
-				miraclelinux | \
-				rockylinux   )
-					BOOT_OPTN="$(funcCreate_menu_cfg_kickstart "${DATA_LINE[@]}")"
-					;;
-				opensuse     )
-					BOOT_OPTN="$(funcCreate_menu_cfg_autoyast "${DATA_LINE[@]}")"
-					;;
-				windows      )
-					;;
-				memtest86\+  | \
-				winpe        | \
-				ati2020x64   | \
-				ati2020x86   )
-					;;
-				hdt          | \
-				shutdown     | \
-				restart      )
-					;;
-				*            )				# --- not supported -------------------
-					funcPrintf "not supported on ${DATA_LINE[1]}"
-					exit 1
-					;;
+			case "${J}" in
+				0 ) BOOT_OPTN="${BOOT_ARRY[J]}";;
+				* ) BOOT_GRUB+=("${BOOT_ARRY[J]}");;
 			esac
-			funcCreate_menu_cfg_syslinux "${MENU_PATH}" "${BOOT_OPTN}" "${DATA_LINE[@]}"
+		done
+		# ---------------------------------------------------------------------
+		for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},boot/grub}
+		do
+			case "${MENU_DIRS}" in
+				*bios | \
+				*efi32| \
+				*efi64) funcCreate_syslinux_cfg "${MENU_DIRS}" MENU_SLNX "${BOOT_OPTN}" DATA_LINE "${TABS_CONT}";;
+				*grub ) funcCreate_grub_cfg     "${MENU_DIRS}" MENU_GRUB    BOOT_GRUB   DATA_LINE "${TABS_CONT}";;
+				*     ) ;;
+			esac
 		done
 	done
 	# -------------------------------------------------------------------------

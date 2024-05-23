@@ -68,18 +68,30 @@
 	#   |-- temp ---------------------- temporary directory
 	#   `-- tftp ---------------------- tftp contents
 	#       |-- boot
+	#       |   `-- grub
+	#       |       |-- grub.cfg ------ menu base
+	#       |       |-- menu.cfg ------ menu file
+	#       |       |-- fonts
+	#       |       |   `-- unicode.pf2
+	#       |       |-- i386-pc
+	#       |       |   `-- core.0 ---- bootloader
+	#       |       |-- locale
+	#       |       `-- x86_64-efi
+	#       |           `-- core.efi -- bootloader
 	#       |-- menu-bios
-	#       |   |-- boot -> ../boot
+	#       |   |-- syslinux.cfg ------ syslinux configuration for mbr environment
+	#       |   |-- boot -> ../load
 	#       |   `-- pxelinux.cfg
 	#       |       `-- default -> ../syslinux.cfg
-	#       |-- menu-efi32
-	#       |   |-- boot -> ../boot
+	#       |-- menu-efi64
+	#       |   |-- syslinux.cfg ------ syslinux configuration for uefi(x86_64) environment
+	#       |   |-- boot -> ../load
 	#       |   `-- pxelinux.cfg
 	#       |       `-- default -> ../syslinux.cfg
-	#       `-- menu-efi64
-	#           |-- boot -> ../boot
-	#           `-- pxelinux.cfg
-	#               `-- default -> ../syslinux.cfg
+	#       |-- load ------------------ load module
+	#       |-- imgs -> ../imgs
+	#       |-- isos -> ../isos
+	#       `-- rmak -> ../rmak
 	#   /var/tftp/ -> ~/share/tftp
 	#   /var/www/
 	#   `-- html -> ~/share/html
@@ -312,6 +324,7 @@
 		"o  debian-mini-testing         Debian%20testing                    debian          mini-testing-amd64.iso                      .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso                                                                " \
 		"o  ubuntu-mini-18.04           Ubuntu%2018.04                      ubuntu          mini-bionic-amd64.iso                       .                                       initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso                      " \
 		"o  ubuntu-mini-20.04           Ubuntu%2020.04                      ubuntu          mini-focal-amd64.iso                        .                                       initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso                " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- netinst -----------------------------------------------------------------
@@ -336,6 +349,7 @@
 		"o  opensuse-leap-netinst-15.5  openSUSE%20Leap%2015.5              openSUSE        openSUSE-Leap-15.5-NET-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_net.xml     linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-stable/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                 " \
 		"o  opensuse-leap-netinst-15.6  openSUSE%20Leap%2015.6              openSUSE        openSUSE-Leap-15.6-NET-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_net.xml     linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Media.iso                          " \
 		"o  opensuse-tumbleweed-netinst openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-NET-x86_64-Current.iso  boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_net.xml    linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                   " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- dvd image ---------------------------------------------------------------
@@ -372,6 +386,7 @@
 		"o  opensuse-tumbleweed         openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-DVD-x86_64-Current.iso  boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_dvd.xml    linux/openSUSE      2021-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   " \
 		"o  windows-10                  Windows%2010                        windows         Win10_22H2_Japanese_x64.iso                 -                                       -                           -                       -                                       windows/Windows10   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  windows-11                  Windows%2011                        windows         Win11_23H2_Japanese_x64v2_custom.iso        -                                       -                           -                       -                                       windows/Windows11   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- live media install mode -------------------------------------------------
@@ -395,6 +410,7 @@
 		"o  ubuntu-legacy-23.10         Ubuntu%2023.10%20Legacy%20Desktop   ubuntu          ubuntu-23.10-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        2023-10-12  2024-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-amd64.iso                                 " \
 		"x  ubuntu-legacy-24.04         Ubuntu%2024.04%20Legacy%20Desktop   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"x  ubuntu-legacy-noble         Ubuntu%20noble%20Legacy%20Desktop   ubuntu          noble-desktop-legacy-amd64.iso              casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- live media live mode ----------------------------------------------------
@@ -418,6 +434,7 @@
 		"o  ubuntu-legacy-23.10         Ubuntu%2023.10%20Legacy%20Desktop   ubuntu          ubuntu-23.10-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/-                               linux/ubuntu        2023-10-12  2024-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-amd64.iso                                 " \
 		"x  ubuntu-legacy-24.04         Ubuntu%2024.04%20Legacy%20Desktop   ubuntu          ubuntu-24.04-desktop-legacy-amd64.iso       casper                                  initrd                      vmlinuz                 preseed/-                               linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"x  ubuntu-legacy-noble         Ubuntu%20noble%20Legacy%20Desktop   ubuntu          noble-desktop-legacy-amd64.iso              casper                                  initrd                      vmlinuz                 preseed/-                               linux/ubuntu        -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- tool --------------------------------------------------------------------
@@ -428,6 +445,7 @@
 		"o  winpe-x86                   WinPE%20x86                         windows         WinPEx86.iso                                .                                       -                           -                       -                                       windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  ati2020x64                  ATI2020x64                          windows         WinPE_ATI2020x64.iso                        .                                       -                           -                       -                                       windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 		"o  ati2020x86                  ATI2020x86                          windows         WinPE_ATI2020x86.iso                        .                                       -                           -                       -                                       windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- system command ----------------------------------------------------------
@@ -436,6 +454,7 @@
 #		"o  hdt                         Hardware%20info                     system          -                                           -                                       hdt.c32                     -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 #		"o  shutdown                    System%20shutdown                   system          -                                           -                                       poweroff.c32                -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
 #		"o  restart                     System%20restart                    system          -                                           -                                       reboot.c32                  -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+#		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
 #	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 	# --- target of creation --------------------------------------------------
@@ -835,24 +854,22 @@ function funcCreate_directory() {
 		"${DIRS_ORIG}"                                                                      \
 		"${DIRS_RMAK}"                                                                      \
 		"${DIRS_TEMP}"                                                                      \
-		"${DIRS_TFTP}"/{boot,menu-{bios,efi{32,64}}/pxelinux.cfg}                           \
+		"${DIRS_TFTP}"/{load,menu-{bios,efi64}/pxelinux.cfg}                                \
 	)
 	declare -r -a LINK_LIST=(                                                               \
 		"${DIRS_CONF}                         ${DIRS_HTML}/"                                \
 		"${DIRS_IMGS}                         ${DIRS_HTML}/"                                \
 		"${DIRS_ISOS}                         ${DIRS_HTML}/"                                \
 		"${DIRS_RMAK}                         ${DIRS_HTML}/"                                \
-		"${DIRS_TFTP}/boot                    ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_TFTP}/boot                    ${DIRS_TFTP}/menu-efi32/"                     \
-		"${DIRS_TFTP}/boot                    ${DIRS_TFTP}/menu-efi64/"                     \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/"                                \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/"                                \
+		"${DIRS_TFTP}/load                    ${DIRS_TFTP}/menu-bios/"                      \
+		"${DIRS_TFTP}/load                    ${DIRS_TFTP}/menu-efi64/"                     \
 		"${DIRS_TFTP}/menu-bios/syslinux.cfg  ${DIRS_TFTP}/menu-bios/pxelinux.cfg/default"  \
-		"${DIRS_TFTP}/menu-efi32/syslinux.cfg ${DIRS_TFTP}/menu-efi32/pxelinux.cfg/default" \
 		"${DIRS_TFTP}/menu-efi64/syslinux.cfg ${DIRS_TFTP}/menu-efi64/pxelinux.cfg/default" \
 		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi32/"                     \
 		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi64/"                     \
 		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi32/"                     \
 		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi64/"                     \
 	)
 	declare -a    LINK_LINE=()
@@ -919,7 +936,7 @@ function funcCreate_link() {
 	declare       FILE_NAME=""
 	declare -i    I=0
 
-	if [[ -n "${CONF_LINK}" ]] && [[ -d "${CONF_LINK}" ]]; then
+	if [[ -n "${CONF_LINK}" ]] && [[ -d "${CONF_LINK}/." ]]; then
 		for FILE_NAME in \
 			"${CONF_KICK}" \
 			"${CONF_CLUD}" \
