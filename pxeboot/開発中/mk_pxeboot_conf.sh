@@ -449,13 +449,13 @@
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 # --- system command ----------------------------------------------------------
-	declare -r -a DATA_LIST_SCMD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
-		"m  menu-entry                  System%20command                    -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
-		"o  hdt                         Hardware%20info                     system          -                                           -                                       hdt.c32                     -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
-		"o  shutdown                    System%20shutdown                   system          -                                           -                                       poweroff.c32                -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
-		"o  restart                     System%20restart                    system          -                                           -                                       reboot.c32                  -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
-		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
-	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
+#	declare -r -a DATA_LIST_SCMD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+#		"m  menu-entry                  System%20command                    -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+#		"o  hdt                         Hardware%20info                     system          -                                           -                                       hdt.c32                     -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+#		"o  shutdown                    System%20shutdown                   system          -                                           -                                       poweroff.c32                -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+#		"o  restart                     System%20restart                    system          -                                           -                                       reboot.c32                  -                       -                                       -                   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
+#		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+#	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 	# --- target of creation --------------------------------------------------
 #	declare -a    TGET_LIST=()
@@ -2652,9 +2652,9 @@ function funcCreate_copy_iso2hdd() {
 		set -e
 	fi
 	# --- remove directory ----------------------------------------------------
-	rm -rf "${WORK_DIRS}"
-#	rm -rf "${DEST_DIRS}"
-#	rm -rf "${BOOT_DIRS}"
+	rm -rf "${WORK_DIRS:?}"
+#	rm -rf "${DEST_DIRS:?}"
+#	rm -rf "${BOOT_DIRS:?}"
 	# --- create directory ----------------------------------------------------
 	mkdir -p "${WORK_DIRS}/"{mnt,img,ram}
 	mkdir -p "${DEST_DIRS}"
@@ -2672,7 +2672,7 @@ function funcCreate_copy_iso2hdd() {
 		if [[ "${TGET_LINE[7]%/*}" != "${TGET_LINE[7]##*/}" ]]; then
 			DIRS_KRNL="${BOOT_DIRS}/${TGET_LINE[7]%/*}"
 		fi
-		rm -rf "${DIRS_IRAM}/${TGET_LINE[6]##*/}" "${DIRS_KRNL}/${TGET_LINE[7]##*/}"
+		rm -rf "${DIRS_IRAM:?}/${TGET_LINE[6]##*/}" "${DIRS_KRNL:?}/${TGET_LINE[7]##*/}"
 		mkdir -p "${DIRS_IRAM}" "${DIRS_KRNL}"
 		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
 		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
@@ -2692,7 +2692,7 @@ function funcCreate_copy_iso2hdd() {
 #		done < <(find "${WORK_IMGS}" -name 'initrd*' -type f)
 #	fi
 	# --- remove directory ----------------------------------------------------
-	rm -rf "${WORK_DIRS}"
+	rm -rf "${WORK_DIRS:?}"
 }
 
 # ----- create menu.cfg preseed -----------------------------------------------
@@ -2994,7 +2994,7 @@ function funcCreate_syslinux_cfg() {
 	declare       MENU_ENTR=""								# meny entry
 #	funcPrintf "      create: ${TGET_INFO[2]//%20/ }"
 	if [[ "${TABS_CONT}" -gt 0 ]]; then
-		TABS_STRS="$(funcString "$(("${TABS_CONT}"*4))" " ")"
+		TABS_STRS="$(funcString "${TABS_CONT}" $'\t')"
 	else
 		TABS_STRS=""
 	fi
@@ -3150,7 +3150,7 @@ function funcCreate_grub_cfg() {
 	declare       MENU_ENTR=""								# meny entry
 #	funcPrintf "      create: ${TGET_INFO[2]//%20/ }"
 	if [[ "${TABS_CONT}" -gt 0 ]]; then
-		TABS_STRS="$(funcString "$(("${TABS_CONT}"*4))" " ")"
+		TABS_STRS="$(funcString "${TABS_CONT}" $'\t')"
 	else
 		TABS_STRS=""
 	fi
@@ -3255,17 +3255,12 @@ _EOT_
 	MENU_PATH="${MENU_DIRS}/${MENU_NAME[1]}"
 	case "${TGET_INFO[0]}" in
 		m )
-			if [[ "${TGET_INFO[2]}" = "-" ]] \
-			|| [[ "${TGET_INFO[2]}" = "System%20command" ]]; then
-				return
-			fi
 			MENU_ENTR="[ ${TGET_INFO[2]//%20/ } ... ]"
-			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
-				menuentry '${MENU_ENTR}' {
-				 	true
-				}
-				
-_EOT_
+			case "${TGET_INFO[2]}" in
+				System%20command ) return;;
+				-                ) echo "}"                        >> "${MENU_PATH}";;
+				*                ) echo "submenu '${MENU_ENTR}' {" >> "${MENU_PATH}";;
+			esac
 			;;
 		o )
 			MENU_ENTR="$(printf "%-60.60s" "- ${TGET_INFO[2]//%20/ }")"
@@ -3274,7 +3269,7 @@ _EOT_
 					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
-					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
+					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
 						if [ "\${grub_platform}" = "pc" ]; then
 						 	menuentry '${MENU_ENTR}' {
 						 		echo 'Loading ${TGET_INFO[2]//%20/ } ...'
@@ -3287,14 +3282,13 @@ _EOT_
 						 		initrd16 "\$isofile"
 						 	}
 						fi
-						
 _EOT_
 					;;
 				memtest86\+ )
 					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
-					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
+					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
 						menuentry '${MENU_ENTR}' {
 						 	echo 'Loading ${TGET_INFO[2]//%20/ } ...'
 						 	set root='tftp'
@@ -3309,7 +3303,6 @@ _EOT_
 						 		linux  (\$root)/load/${TGET_INFO[1]}/${TGET_INFO[7]}
 						 	fi
 						}
-							
 _EOT_
 					;;
 				winpe-*    | \
@@ -3318,7 +3311,7 @@ _EOT_
 					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
-					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
+					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
 						if [ "\${grub_platform}" = "pc" ]; then
 						 	menuentry '${MENU_ENTR}' {
 						 		echo 'Loading ${TGET_INFO[2]//%20/ } ...'
@@ -3331,7 +3324,6 @@ _EOT_
 						 		initrd16 "\$isofile"
 						 	}
 						fi
-						
 _EOT_
 					;;
 				hdt      | \
@@ -3343,7 +3335,7 @@ _EOT_
 						return
 					fi
 					MENU_ENTR="$(printf "%-60.60s%20.20s" "- ${TGET_INFO[2]//%20/ }" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
-					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' >> "${MENU_PATH}"
+					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
 						menuentry '${MENU_ENTR}' {
 						 	echo 'Loading ${TGET_INFO[2]//%20/ } ...'
 						 	${BOOT_OPTN[0]}
@@ -3360,7 +3352,6 @@ _EOT_
 						 	echo 'Loading initrd ...'
 						 	initrd (\$root)/load/${TGET_INFO[1]}/${TGET_INFO[6]}
 						}
-						
 _EOT_
 					;;
 			esac
@@ -3646,6 +3637,7 @@ function funcCall_create() {
 #	declare       WORK_PARM=""
 #	declare       WORK_ENUM=""
 	declare       WORK_LINE=""
+	declare       WORK_FILE=""
 	declare -a    DATA_LIST=(  \
 		"${DATA_LIST_MINI[@]}" \
 		"${DATA_LIST_NET[@]}"  \
@@ -3657,6 +3649,8 @@ function funcCall_create() {
 	)
 	declare -a    DATA_LINE=()
 	declare -r    DIRS_GRUB="boot/grub"						# grub directory
+	declare -r    BOOT_PXE0="pxelinux.0"					# pxeboot module for bios
+	declare -r    BOOT_UEFI="bootx64.efi"					# pxeboot module for uefi
 	declare -r -a MENU_GRUB=("grub.cfg" "menu.cfg")			# grub.cfg / menu.cfg
 	declare -r -a MENU_SLNX=("syslinux.cfg" "menu.cfg")		# syslinux.cfg / menu.cfg
 	declare       MENU_DIRS=""								# menu directory
@@ -3713,6 +3707,41 @@ function funcCall_create() {
 				|| [[ ! -f "${MENU_DIRS}/i386-pc/core.0"      ]]; then
 					cp --archive --update /usr/lib/syslinux/memdisk         "${DIRS_TFTP}/"
 					grub-mknetdir --net-directory="${DIRS_TFTP}" --subdir="${DIRS_GRUB}"
+				fi
+				if [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}" ]] \
+				|| [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
+					WORK_FILE="${DIRS_TEMP}/setvars.conf"
+					cat <<- '_EOT_' | sed 's/^ *//g' > "${WORK_FILE}"
+						set root=(tftp)
+						set net_default_server=${HTTP_ADDR#*://}
+						set prefix=boot/grub
+_EOT_
+					# ---------------------------------------------------------
+					if [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}"  ]]; then
+						sudo grub-mkimage \
+						    --format=i386-pc-pxe \
+						    --output="${MENU_DIRS}/${BOOT_PXE0}" \
+						    --prefix=/boot/grub \
+						    --config="${WORK_FILE}" \
+						    --compression=none \
+						    chain memdisk loopback tftp http pxe linux linux16 halt reboot configfile \
+						    net nativedisk iso9660 udf ext2 fat ntfs part_gpt part_msdos probe \
+						    minicmd normal boot cat cpuid echo font ls lvm regexp search test true \
+						    all_video gfxmenu gfxterm gfxterm_background vga video play progress
+					fi
+					# ---------------------------------------------------------
+					if [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
+						sudo grub-mkimage \
+						    --format=x86_64-efi \
+						    --output="${MENU_DIRS}/${BOOT_UEFI}" \
+						    --prefix=/boot/grub \
+						    --config="${WORK_FILE}" \
+						    --compression=auto \
+						    chain memdisk loopback tftp http linux linux16 linuxefi halt reboot configfile tpm \
+						    net nativedisk iso9660 udf ext2 fat ntfs part_gpt part_msdos probe \
+						    minicmd normal boot cat cpuid echo font ls lvm regexp search test true \
+						    all_video gfxmenu gfxterm gfxterm_background video play progress
+					fi
 				fi
 				;;
 			* )
@@ -3783,6 +3812,17 @@ function funcCall_create() {
 			esac
 		done
 		# ---------------------------------------------------------------------
+		if [[ "${DATA_LINE[0]}" = "m" ]]; then
+			if [[ "${DATA_LINE[2]}" = "-" ]]; then
+				TABS_CONT=$(("${TABS_CONT}" - 1))
+			else
+				TABS_CONT=$(("${TABS_CONT}" + 1))
+			fi
+		fi
+		if [[ "${TABS_CONT}" -lt 0 ]]; then
+			TABS_CONT=0
+		fi
+		# ---------------------------------------------------------------------
 		for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},boot/grub}
 		do
 			case "${MENU_DIRS}" in
@@ -3795,7 +3835,7 @@ function funcCall_create() {
 		done
 	done
 	# -------------------------------------------------------------------------
-	rm -rf "${DIRS_TEMP}"
+	rm -rf "${DIRS_TEMP:?}"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2034
 	COMD_RETN="${COMD_LIST[*]:-}"

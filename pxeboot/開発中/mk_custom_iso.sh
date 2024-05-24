@@ -2938,7 +2938,7 @@ function funcCreate_copy_iso2hdd() {
 		set -e
 	fi
 	# --- remove directory ----------------------------------------------------
-	rm -rf "${WORK_DIRS}"
+	rm -rf "${WORK_DIRS:?}"
 	# --- create directory ----------------------------------------------------
 	mkdir -p "${WORK_DIRS}/"{mnt,img,ram}
 	# --- copy iso -> hdd -----------------------------------------------------
@@ -2957,7 +2957,7 @@ function funcCreate_copy_iso2hdd() {
 		done < <(find "${WORK_IMGS}" -name 'initrd*' -type f)
 	fi
 	# --- remove directory ----------------------------------------------------
-#	rm -rf "${WORK_DIRS}"
+#	rm -rf "${WORK_DIRS:?}"
 }
 
 # ----- create autoinst.cfg for syslinux --------------------------------------
@@ -3765,7 +3765,7 @@ function funcCreate_remaster_iso_file() {
 	# --- copy iso image ------------------------------------------------------
 	cp -a "${WORK_DIRS}/${FILE_PATH##*/}" "${FILE_PATH%/*}"
 	# --- remove directory ----------------------------------------------------
-	rm -rf "${WORK_DIRS}"
+	rm -rf "${WORK_DIRS:?}"
 }
 
 # ----- create remaster -------------------------------------------------------
@@ -4186,7 +4186,7 @@ function funcCall_create() {
 		shift
 	done
 	# -------------------------------------------------------------------------
-	rm -rf "${DIRS_TEMP}"
+	rm -rf "${DIRS_TEMP:?}"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2034
 	COMD_RETN="${COMD_LIST[*]:-}"
@@ -4292,7 +4292,7 @@ function funcMedia_download() {
 		shift
 	done
 	# -------------------------------------------------------------------------
-	rm -rf "${DIRS_TEMP}"
+	rm -rf "${DIRS_TEMP:?}"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2034
 	COMD_RETN="${COMD_LIST[*]:-}"
