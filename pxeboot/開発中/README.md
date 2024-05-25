@@ -136,8 +136,13 @@
     |-- imgs -> ../imgs
     |-- isos -> ../isos
     `-- rmak -> ../rmak
+
 /var/tftp/ -> ~/share/tftp
+
 /var/www/
 `-- html -> ~/share/html
+
+/etc/dnsmasq.d/
+`-- pxe.conf ------------------ pxeboot dnsmasq configuration file
 ```
   
