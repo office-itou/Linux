@@ -74,10 +74,10 @@
 	#       |       |-- fonts
 	#       |       |   `-- unicode.pf2
 	#       |       |-- i386-pc
-	#       |       |   `-- core.0 ---- bootloader
+	#       |       |   `-- pxelinux.0 --- bootloader
 	#       |       |-- locale
 	#       |       `-- x86_64-efi
-	#       |           `-- core.efi -- bootloader
+	#       |           `-- bootx64.efi -- bootloader
 	#       |-- menu-bios
 	#       |   |-- syslinux.cfg ------ syslinux configuration for mbr environment
 	#       |   |-- boot -> ../load
@@ -3704,8 +3704,8 @@ function funcCall_create() {
 			*grub )
 				: > "${MENU_DIRS}/${MENU_GRUB[0]}"
 				: > "${MENU_DIRS}/${MENU_GRUB[1]}"
-				if [[ ! -f "${MENU_DIRS}/x86_64-efi/core.efi" ]] \
-				|| [[ ! -f "${MENU_DIRS}/i386-pc/core.0"      ]]; then
+				if [[ ! -f "${MENU_DIRS}/x86_64-efi/${MENU_GRUB[1]}" ]] \
+				|| [[ ! -f "${MENU_DIRS}/i386-pc/${MENU_GRUB[0]}"    ]]; then
 					cp --archive --update /usr/lib/syslinux/memdisk         "${DIRS_TFTP}/"
 					grub-mknetdir --net-directory="${DIRS_TFTP}" --subdir="${DIRS_GRUB}"
 				fi

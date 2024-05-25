@@ -74,10 +74,10 @@
 	#       |       |-- fonts
 	#       |       |   `-- unicode.pf2
 	#       |       |-- i386-pc
-	#       |       |   `-- core.0 ---- bootloader
+	#       |       |   `-- pxelinux.0 --- bootloader
 	#       |       |-- locale
 	#       |       `-- x86_64-efi
-	#       |           `-- core.efi -- bootloader
+	#       |           `-- bootx64.efi -- bootloader
 	#       |-- menu-bios
 	#       |   |-- syslinux.cfg ------ syslinux configuration for mbr environment
 	#       |   |-- boot -> ../load

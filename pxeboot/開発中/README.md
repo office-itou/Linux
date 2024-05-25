@@ -10,7 +10,7 @@
 | Storage        | NVMe 64 GiB / SATA 20GiB        |
 | Network        | NIC1 e1000e / NIC2 e1000e       |
   
-## result  
+## Result  
   
 | Media        | File name                                  | Looding | Booting | Install | Note                                      |
 | ------------ | ------------------------------------------ | :-----: | :-----: | :-----: | ----------------------------------------- |
@@ -86,8 +86,58 @@
 |              | WinPE_ATI2020x64.iso                       |    O    |    O    |    -    | No special mention                        |
 |              | WinPE_ATI2020x86.iso                       |    O    |    O    |    -    | "                                         |
   
-## Note:  
+## Note  
   
 ･Live mode minimum memory is 8GiB  
 ･pxeboot is very slow and transfer speed is around 1.9MiB/s  
+  
+## tree diagram
+  
+```bash:
+~/share/
+|-- conf ---------------------- configuration file
+|   |-- _template
+|   |-- autoyast
+|   |-- kickstart
+|   |-- nocloud
+|   `-- preseed
+|-- html ---------------------- html contents
+|   |-- conf -> ../conf
+|   |-- imgs -> ../imgs
+|   |-- isos -> ../isos
+|   `-- rmak -> ../rmak
+|-- imgs ---------------------- iso file extraction destination
+|-- isos ---------------------- iso file
+|-- rmak ---------------------- remake file
+|-- temp ---------------------- temporary directory
+`-- tftp ---------------------- tftp contents
+    |-- boot
+    |   `-- grub
+    |       |-- grub.cfg ------ menu base
+    |       |-- menu.cfg ------ menu file
+    |       |-- fonts
+    |       |   `-- unicode.pf2
+    |       |-- i386-pc
+    |       |   `-- pxelinux.0 --- bootloader
+    |       |-- locale
+    |       `-- x86_64-efi
+    |           `-- bootx64.efi -- bootloader
+    |-- menu-bios
+    |   |-- syslinux.cfg ------ syslinux configuration for mbr environment
+    |   |-- boot -> ../load
+    |   `-- pxelinux.cfg
+    |       `-- default -> ../syslinux.cfg
+    |-- menu-efi64
+    |   |-- syslinux.cfg ------ syslinux configuration for uefi(x86_64) environment
+    |   |-- boot -> ../load
+    |   `-- pxelinux.cfg
+    |       `-- default -> ../syslinux.cfg
+    |-- load ------------------ load module
+    |-- imgs -> ../imgs
+    |-- isos -> ../isos
+    `-- rmak -> ../rmak
+/var/tftp/ -> ~/share/tftp
+/var/www/
+`-- html -> ~/share/html
+```
   
