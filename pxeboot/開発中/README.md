@@ -2,9 +2,19 @@
   
 ## System configuration  
   
+  ### Host PC  
+  
+| Module         | Detail                           |
+| -------------- | -------------------------------- |
+| Windows        | Windows 10 Pro 22H2              |
+| Virtual system | VMware Workstation 16 Pro        |
+| Processor      | Intel Core i7-6700 CPU @ 3.40GHz |
+| Memory         | 32GiB                            |
+  
+  ### Guest PC  
+  
 | Module         | Detail                          |
 | -------------- | ------------------------------- |
-| Virtual system | VMware Workstation 16 Pro       |
 | Processor      | 1 processor / 2 cores (i7-6700) |
 | Memory         | 4GiB (Live mode is 8GiB)        |
 | Storage        | NVMe 64 GiB / SATA 20GiB        |
