@@ -29,7 +29,7 @@
 	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
 	# -------------------------------------------------------------------------
-	declare -r -a APP_LIST=("syslinux-common" "syslinux-efi" "pxelinux" "dnsmasq" "apache2" "7zip" "rsync" "bzip2" "gzip" "lz4" "lzop" "xz-utils" "zstd")
+	declare -r -a APP_LIST=("syslinux-common" "syslinux-efi" "pxelinux" "grub-common" "grub-efi-amd64" "grub-pc-bin" "dnsmasq" "apache2" "7zip" "rsync" "bzip2" "gzip" "lz4" "lzop" "xz-utils" "zstd")
 	declare -a    APP_FIND=()
 	declare       APP_LINE=""
 	# shellcheck disable=SC2312
@@ -272,7 +272,8 @@
 	# === system ==============================================================
 
 	# --- tftp / web server address -------------------------------------------
-	declare -r    HTTP_ADDR="http://192.168.1.10"
+	declare -r    HTTP_ADDR="http://$(LANG=C ip -4 -oneline address show scope global | awk '{split($4,s,"/"); print s[1];}')"
+#	declare -r    HTTP_ADDR="http://192.168.1.10"
 
 	# --- open-vm-tools -------------------------------------------------------
 	declare -r    HGFS_DIRS="/mnt/hgfs/workspace/Image"	# vmware shared directory

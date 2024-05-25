@@ -272,7 +272,8 @@
 	# === system ==============================================================
 
 	# --- tftp / web server address -------------------------------------------
-	declare -r    HTTP_ADDR="http://192.168.1.10"
+	declare -r    HTTP_ADDR="http://$(LANG=C ip -4 -oneline address show scope global | awk '{split($4,s,"/"); print s[1];}')"
+#	declare -r    HTTP_ADDR="http://192.168.1.10"
 
 	# --- open-vm-tools -------------------------------------------------------
 	declare -r    HGFS_DIRS="/mnt/hgfs/workspace/Image"	# vmware shared directory

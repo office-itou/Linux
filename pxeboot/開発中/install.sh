@@ -1397,6 +1397,7 @@ function funcNetwork_pxe_conf() {
 	declare       FILE_LINE=""
 #	declare       WORK_DIRS=""
 #	declare       WORK_TYPE=""
+	declare       WORK_FILE=""
 	declare       SYSD_NAME=""
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
@@ -1404,7 +1405,8 @@ function funcNetwork_pxe_conf() {
 	# -------------------------------------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: create directory"
 	funcPrintf "      ${MSGS_TITL}: ${TFTP_ROOT}"
-	mkdir -p "${TFTP_ROOT}"/{boot,grub,menu-{bios,efi{32,64}}/pxelinux.cfg}
+#	mkdir -p "${TFTP_ROOT}/"{boot,grub,menu-{bios,efi{32,64}}/pxelinux.cfg}
+	mkdir -p "${TFTP_ROOT}/"{menu-{bios,efi64},boot/grub}
 	mkdir -p "${DIRS_PATH}"
 	touch "${FILE_PATH}"
 	if [[ -f /etc/selinux/config ]]; then
@@ -1428,44 +1430,125 @@ function funcNetwork_pxe_conf() {
 		fi
 		restorecon -R -F "${DIRS_PATH}"
 	fi
-	for FILE_LINE in "${TFTP_ROOT}"/menu-{bios,efi{32,64}}
-	do
-		funcPrintf "      ${MSGS_TITL}: create a symbolic link [${FILE_LINE}/boot]"
-		if [[ -d "${FILE_LINE}/boot/." ]] || [[ -L "${FILE_LINE}/boot" ]]; then
-			funcPrintf "      ${MSGS_TITL}: symbolic link or directory exists [${FILE_LINE}/boot]"
-		else
-			ln -sr "${TFTP_ROOT}/boot" "${FILE_LINE}"
-		fi
-		funcPrintf "      ${MSGS_TITL}: create a symbolic link [${FILE_LINE}/pxelinux.cfg/default]"
-		if [[ -f "${FILE_LINE}/pxelinux.cfg/default" ]] || [[ -L "${FILE_LINE}/pxelinux.cfg/default" ]]; then
-			funcPrintf "      ${MSGS_TITL}: symbolic link or file exists [pxelinux.cfg/default]"
-		else
-			touch "${FILE_LINE}/syslinux.cfg"
-			ln -sr "${FILE_LINE}/syslinux.cfg" "${FILE_LINE}/pxelinux.cfg/default"
-		fi
-		if [[ -d /usr/lib/syslinux/. ]]; then
-			# pxe boot:
-			#   syslinux-common syslinux-efi pxelinux dnsmasq apache2 7zip rsync
-			funcPrintf "      ${MSGS_TITL}: copy syslinux module"
+#	for FILE_LINE in "${TFTP_ROOT}"/menu-{bios,efi{32,64}}
+#	do
+#		funcPrintf "      ${MSGS_TITL}: create a symbolic link [${FILE_LINE}/boot]"
+#		if [[ -d "${FILE_LINE}/boot/." ]] || [[ -L "${FILE_LINE}/boot" ]]; then
+#			funcPrintf "      ${MSGS_TITL}: symbolic link or directory exists [${FILE_LINE}/boot]"
+#		else
+#			ln -sr "${TFTP_ROOT}/boot" "${FILE_LINE}"
+#		fi
+#		funcPrintf "      ${MSGS_TITL}: create a symbolic link [${FILE_LINE}/pxelinux.cfg/default]"
+#		if [[ -f "${FILE_LINE}/pxelinux.cfg/default" ]] || [[ -L "${FILE_LINE}/pxelinux.cfg/default" ]]; then
+#			funcPrintf "      ${MSGS_TITL}: symbolic link or file exists [pxelinux.cfg/default]"
+#		else
+#			touch "${FILE_LINE}/syslinux.cfg"
+#			ln -sr "${FILE_LINE}/syslinux.cfg" "${FILE_LINE}/pxelinux.cfg/default"
+#		fi
+#		if [[ -d /usr/lib/syslinux/. ]]; then
+#			# pxe boot:
+#			#   syslinux-common syslinux-efi pxelinux dnsmasq apache2 7zip rsync
+#			funcPrintf "      ${MSGS_TITL}: copy syslinux module"
+#			case "${FILE_LINE}" in
+#				*bios )
+#					cp --archive --update /usr/lib/syslinux/memdisk         "${FILE_LINE}/"
+#					cp --archive --update /usr/lib/syslinux/modules/bios/.  "${FILE_LINE}/"
+#					cp --archive --update /usr/lib/PXELINUX/.               "${FILE_LINE}/"
+#					;;
+#				*efi32)
+#					cp --archive --update /usr/lib/syslinux/modules/efi32/. "${FILE_LINE}/"
+#					cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${FILE_LINE}/"
+#					;;
+#				*efi64)
+#					cp --archive --update /usr/lib/syslinux/modules/efi64/. "${FILE_LINE}/"
+#					cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${FILE_LINE}/"
+#					;;
+#				* )
+#					;;
+#			esac
+#		fi
+#	done
+	if [[ -d /usr/lib/syslinux/. ]]; then
+		for FILE_LINE in "${TFTP_ROOT}/"{menu-{bios,efi64},boot/grub}
+		do
+			funcPrintf "        copy: ${FILE_LINE##*/}"
+#			mkdir -p "${FILE_LINE}"
 			case "${FILE_LINE}" in
 				*bios )
-					cp --archive --update /usr/lib/syslinux/memdisk         "${FILE_LINE}/"
-					cp --archive --update /usr/lib/syslinux/modules/bios/.  "${FILE_LINE}/"
-					cp --archive --update /usr/lib/PXELINUX/.               "${FILE_LINE}/"
+					: > "${FILE_LINE}/syslinux.cfg"
+					: > "${FILE_LINE}/menu.cfg"
+					if [[ ! -f "${FILE_LINE}/pxelinux.0" ]]; then
+						cp --archive --update /usr/lib/syslinux/memdisk         "${FILE_LINE}/"
+						cp --archive --update /usr/lib/syslinux/modules/bios/.  "${FILE_LINE}/"
+						cp --archive --update /usr/lib/PXELINUX/.               "${FILE_LINE}/"
+					fi
 					;;
 				*efi32)
-					cp --archive --update /usr/lib/syslinux/modules/efi32/. "${FILE_LINE}/"
-					cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${FILE_LINE}/"
+					: > "${FILE_LINE}/syslinux.cfg"
+					: > "${FILE_LINE}/menu.cfg"
+					if [[ ! -f "${FILE_LINE}/syslinux.efi" ]]; then
+						cp --archive --update /usr/lib/syslinux/modules/efi32/. "${FILE_LINE}/"
+						cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${FILE_LINE}/"
+					fi
 					;;
 				*efi64)
-					cp --archive --update /usr/lib/syslinux/modules/efi64/. "${FILE_LINE}/"
-					cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${FILE_LINE}/"
+					: > "${FILE_LINE}/syslinux.cfg"
+					: > "${FILE_LINE}/menu.cfg"
+					if [[ ! -f "${FILE_LINE}/syslinux.efi" ]]; then
+						cp --archive --update /usr/lib/syslinux/modules/efi64/. "${FILE_LINE}/"
+						cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${FILE_LINE}/"
+					fi
+					;;
+				*grub )
+					: > "${FILE_LINE}/grub.cfg"
+					: > "${FILE_LINE}/menu.cfg"
+					if [[ ! -d "${FILE_LINE}/x86_64-efi/." ]] \
+					|| [[ ! -d "${FILE_LINE}/i386-pc/."    ]]; then
+						cp --archive --update /usr/lib/syslinux/memdisk         "${TFTP_ROOT}/"
+						grub-mknetdir --net-directory="${TFTP_ROOT}" --subdir="boot/grub"
+					fi
+					if [[ ! -f "${FILE_LINE}/pxelinux.0" ]] \
+					|| [[ ! -f "${FILE_LINE}/bootx64.efi" ]]; then
+						mkdir -p "${DIRS_TEMP}"
+						WORK_FILE="${DIRS_TEMP}/setvars.conf"
+						cat <<- _EOT_ | sed 's/^ *//g' > "${WORK_FILE}"
+							set root=(tftp)
+							set net_default_server="${HTTP_ADDR#*://}"
+							set prefix=boot/grub
+_EOT_
+						# ---------------------------------------------------------
+						if [[ ! -f "${FILE_LINE}/pxelinux.0"  ]]; then
+							sudo grub-mkimage \
+							    --format=i386-pc-pxe \
+							    --output="${FILE_LINE}/pxelinux.0" \
+							    --prefix=/boot/grub \
+							    --config="${WORK_FILE}" \
+							    --compression=none \
+							    chain memdisk loopback tftp http pxe linux linux16 halt reboot configfile \
+							    net nativedisk iso9660 udf ext2 fat ntfs part_gpt part_msdos probe \
+							    minicmd normal boot cat cpuid echo font ls lvm regexp search test true \
+							    all_video gfxmenu gfxterm gfxterm_background vga video play progress
+						fi
+						# ---------------------------------------------------------
+						if [[ ! -f "${FILE_LINE}/bootx64.efi" ]]; then
+							sudo grub-mkimage \
+							    --format=x86_64-efi \
+							    --output="${FILE_LINE}/bootx64.efi" \
+							    --prefix=/boot/grub \
+							    --config="${WORK_FILE}" \
+							    --compression=auto \
+							    chain memdisk loopback tftp http linux linux16 linuxefi halt reboot configfile tpm \
+							    net nativedisk iso9660 udf ext2 fat ntfs part_gpt part_msdos probe \
+							    minicmd normal boot cat cpuid echo font ls lvm regexp search test true \
+							    all_video gfxmenu gfxterm gfxterm_background video play progress
+						fi
+					fi
 					;;
 				* )
 					;;
 			esac
-		fi
-	done
+		done
+	fi
 	# -------------------------------------------------------------------------
 	if [[ -f "${FILE_PATH}" ]]; then
 		if [[ ! -f "${FILE_ORIG}" ]]; then
@@ -1513,7 +1596,7 @@ function funcNetwork_pxe_conf() {
 		#dhcp-option=option:bootfile-name,							# 67 bootfile-name
 		
 		# --- tftp --------------------------------------------------------------------
-		enable-tftp													# enable tftp server
+		#enable-tftp=${ETHR_NAME[0]}											# enable tftp server
 		tftp-root=/var/tftp											# tftp root directory
 		#tftp-lowercase												# convert tftp request path to all lowercase
 		#tftp-no-blocksize											# stop negotiating "block size" option
@@ -1524,16 +1607,19 @@ function funcNetwork_pxe_conf() {
 		pxe-prompt="Press F8 for boot menu", 10						# pxe boot prompt
 		
 		# --- boot modules by architecture --------------------------------------------
-		dhcp-boot=tag:bios				, menu-bios/lpxelinux.0		#  0 Intel x86PC
+		dhcp-boot=tag:bios				, boot/grub/pxelinux.0		#  0 Intel x86PC
+		dhcp-boot=tag:efi-bc			, boot/grub/bootx64.efi		#  7 EFI BC
+		dhcp-boot=tag:efi-x86_64		, boot/grub/bootx64.efi		#  9 EFI x86-64
+		#dhcp-boot=tag:bios				, menu-bios/lpxelinux.0		#  0 Intel x86PC
 		#dhcp-boot=tag:pc98				,							#  1 NEC/PC98
 		#dhcp-boot=tag:efi-ia64			,							#  2 EFI Itanium
 		#dhcp-boot=tag:alpha			,							#  3 DEC Alpha
 		#dhcp-boot=tag:arc_x86			,							#  4 Arc x86
 		#dhcp-boot=tag:intel_lc			,							#  5 Intel Lean Client
-		dhcp-boot=tag:efi-ia32			, menu-efi32/syslinux.efi	#  6 EFI IA32
-		dhcp-boot=tag:efi-bc			, menu-efi64/syslinux.efi	#  7 EFI BC
+		#dhcp-boot=tag:efi-ia32			, menu-efi32/syslinux.efi	#  6 EFI IA32
+		#dhcp-boot=tag:efi-bc			, menu-efi64/syslinux.efi	#  7 EFI BC
 		#dhcp-boot=tag:efi-xscale		,							#  8 EFI Xscale
-		dhcp-boot=tag:efi-x86_64		, menu-efi64/syslinux.efi	#  9 EFI x86-64
+		#dhcp-boot=tag:efi-x86_64		, menu-efi64/syslinux.efi	#  9 EFI x86-64
 		#dhcp-boot=tag:efi-arm32		,							# 10 ARM 32bit
 		#dhcp-boot=tag:efi-arm64		,							# 11 ARM 64bit
 		
@@ -3853,7 +3939,7 @@ function funcMain() {
 		funcPrintf "sudo ./${PROG_NAME} [ options ]"
 		funcPrintf ""
 		funcPrintf "all install process (same as --network and --package)"
-		funcPrintf "  -a | -all"
+		funcPrintf "  -a | --all"
 		funcPrintf ""
 		funcPrintf "network settings (empty is [ options ])"
 		funcPrintf "  -n | --network [ nss host aldy svce nic resolv pxe ]"
@@ -3951,7 +4037,7 @@ function funcMain() {
 		while [[ -n "${1:-}" ]]
 		do
 			case "${1:-}" in
-				-a | -all       )			# ==== all ========================
+				-a | --all       )			# ==== all ========================
 					funcCall_all COMD_LINE "$@"
 					;;
 				-c | --cleaning )			# ==== cleaning ===================

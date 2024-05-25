@@ -98,8 +98,8 @@
   
 ## Note  
   
-･Live mode minimum memory is 8GiB  
-･pxeboot is very slow and transfer speed is around 1.9MiB/s  
+* Live mode minimum memory is 8GiB  
+* pxeboot is very slow and transfer speed is around 1.9MiB/s  
   
 ## Tree diagram
   
@@ -155,4 +155,11 @@
 /etc/dnsmasq.d/
 `-- pxe.conf ------------------ pxeboot dnsmasq configuration file
 ```
+  
+## Reference  
+  
+| Application | URL                                                |
+| ----------- | -------------------------------------------------- |
+| Markdown    | https://qiita.com/Qiita/items/c686397e4a0f4f11683d |
+| Dnsmasq     | https://man.archlinux.org/man/dnsmasq.8            |
   
