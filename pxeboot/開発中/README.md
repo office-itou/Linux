@@ -91,7 +91,7 @@
 ･Live mode minimum memory is 8GiB  
 ･pxeboot is very slow and transfer speed is around 1.9MiB/s  
   
-## tree diagram
+## Tree diagram
   
 ```bash:
 ~/share/
