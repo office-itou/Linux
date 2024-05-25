@@ -2941,7 +2941,8 @@ function funcCreate_menu_cfg_autoyast() {
 	# --- isofile option ------------------------------------------------------
 	BOOT_WORK+=("${TGET_LINE[4]}")
 	# --- isoaddr option ------------------------------------------------------
-	BOOT_WORK+=("install=${HTTP_ADDR}/imgs/\${isofile}")
+#	BOOT_WORK+=("install=${HTTP_ADDR}/imgs/\${isofile}")
+	BOOT_WORK+=("install=${HTTP_ADDR}/imgs/${TGET_LINE[1]}")
 	case "${TGET_LINE[1]}" in
 		*-netinst*            ) BOOT_WORK[2]="";;
 		*                     ) ;;
