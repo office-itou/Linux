@@ -1,6 +1,6 @@
-**PXEBOOT**  
+# **PXEBOOT**  
   
-# System configuration  
+## System configuration  
   
 | Module         | Detail                          |
 | -------------- | ------------------------------- |
@@ -10,7 +10,7 @@
 | Storage        | NVMe 64 GiB / SATA 20GiB        |
 | Network        | NIC1 e1000e / NIC2 e1000e       |
   
-# result  
+## result  
   
 | Media        | File name                                  | Looding | Booting | Install | Note                                      |
 | ------------ | ------------------------------------------ | :-----: | :-----: | :-----: | ----------------------------------------- |
@@ -86,7 +86,7 @@
 |              | WinPE_ATI2020x64.iso                       |    O    |    O    |    -    | No special mention                        |
 |              | WinPE_ATI2020x86.iso                       |    O    |    O    |    -    | "                                         |
   
-# Note:  
+## Note:  
   
 ･Live mode minimum memory is 8GiB  
 ･pxeboot is very slow and transfer speed is around 1.9MiB/s  
