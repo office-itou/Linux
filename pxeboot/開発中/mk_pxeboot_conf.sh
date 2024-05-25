@@ -3704,17 +3704,18 @@ function funcCall_create() {
 			*grub )
 				: > "${MENU_DIRS}/${MENU_GRUB[0]}"
 				: > "${MENU_DIRS}/${MENU_GRUB[1]}"
-				if [[ ! -f "${MENU_DIRS}/x86_64-efi/${MENU_GRUB[1]}" ]] \
-				|| [[ ! -f "${MENU_DIRS}/i386-pc/${MENU_GRUB[0]}"    ]]; then
+				if [[ ! -d "${MENU_DIRS}/x86_64-efi/." ]] \
+				|| [[ ! -d "${MENU_DIRS}/i386-pc/."    ]]; then
 					cp --archive --update /usr/lib/syslinux/memdisk         "${DIRS_TFTP}/"
 					grub-mknetdir --net-directory="${DIRS_TFTP}" --subdir="${DIRS_GRUB}"
 				fi
 				if [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}" ]] \
 				|| [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
+					mkdir -p "${DIRS_TEMP}"
 					WORK_FILE="${DIRS_TEMP}/setvars.conf"
-					cat <<- '_EOT_' | sed 's/^ *//g' > "${WORK_FILE}"
+					cat <<- _EOT_ | sed 's/^ *//g' > "${WORK_FILE}"
 						set root=(tftp)
-						set net_default_server=${HTTP_ADDR#*://}
+						set net_default_server="${HTTP_ADDR#*://}"
 						set prefix=boot/grub
 _EOT_
 					# ---------------------------------------------------------
@@ -3921,6 +3922,10 @@ function funcMain() {
 					funcCall_config COMD_LINE "$@"
 					;;
 				--create )
+					if [[ ! -d "${DIRS_TFTP}/." ]]; then
+						funcCreate_directory
+						funcCreate_link
+					fi
 					funcCall_create COMD_LINE "$@"
 					;;
 				* )
