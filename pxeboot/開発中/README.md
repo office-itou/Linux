@@ -1,6 +1,8 @@
 **PXEBOOT**  
   
 System configuration  
+| Module         | Detail                          |
+| -------------- | ------------------------------- |
 | Virtual system | VMware Workstation 16 Pro       |
 | Processor      | 1 processor / 2 cores (i7-6700) |
 | Memory         | 4GiB (Live mode is 8GiB)        |
