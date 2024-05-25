@@ -1,6 +1,7 @@
 **PXEBOOT**  
   
-System configuration  
+# System configuration  
+  
 | Module         | Detail                          |
 | -------------- | ------------------------------- |
 | Virtual system | VMware Workstation 16 Pro       |
@@ -8,6 +9,8 @@ System configuration
 | Memory         | 4GiB (Live mode is 8GiB)        |
 | Storage        | NVMe 64 GiB / SATA 20GiB        |
 | Network        | NIC1 e1000e / NIC2 e1000e       |
+  
+# result  
   
 | Media        | File name                                  | Looding | Booting | Install | Note                                      |
 | ------------ | ------------------------------------------ | :-----: | :-----: | :-----: | ----------------------------------------- |
@@ -83,7 +86,8 @@ System configuration
 |              | WinPE_ATI2020x64.iso                       |    O    |    O    |    -    | No special mention                        |
 |              | WinPE_ATI2020x86.iso                       |    O    |    O    |    -    | "                                         |
   
-Note:  
+# Note:  
+  
 ･Live mode minimum memory is 8GiB  
 ･pxeboot is very slow and transfer speed is around 1.9MiB/s  
   
