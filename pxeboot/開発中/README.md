@@ -27,9 +27,9 @@
 | mini.iso     | mini-buster-amd64.iso                      |    O    |    O    |    O    | Network installation only                 |
 |              | mini-bullseye-amd64.iso                    |    O    |    O    |    O    | "                                         |
 |              | mini-bookworm-amd64.iso                    |    O    |    O    |    O    | "                                         |
-|              | mini-trixie-amd64.iso                      |    O    |    O    |    O    | "                                         |
-|              | mini-testing-amd64.iso                     |    O    |    O    |    O    | "                                         |
-|              | mini-bionic-amd64.iso                      |    O    |    O    |    O    | "                                         |
+|              | mini-trixie-amd64.iso                      |    O    |    O    |    X    | Kernel module mismatch                    |
+|              | mini-testing-amd64.iso                     |    O    |    O    |    O    | Network installation only                 |
+|              | mini-bionic-amd64.iso                      |    O    |    O    |    O    | Network installation only                 |
 |              | mini-focal-amd64.iso                       |    O    |    O    |    O    | "                                         |
 | Net install  | debian-10.13.0-amd64-netinst.iso           |    O    |    O    |    X    | Unable to detect media                    |
 |              | debian-11.9.0-amd64-netinst.iso            |    O    |    O    |    X    | "                                         |
