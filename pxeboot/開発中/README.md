@@ -92,14 +92,15 @@
 |              | ubuntu-24.04-desktop-amd64.iso             |    O    |    X    |    -    | Unable to start live mode                 |
 |              | ubuntu-23.10-desktop-legacy-amd64.iso      |    O    |    O    |    -    | No special mention                        |
 | System tools | mt86plus_7.00_64.grub.iso                  |    O    |    O    |    -    | No special mention                        |
-|              | WinPEx64.iso                               |    O    |    X    |    -    | Hang on boot                              |
-|              | WinPE_ATI2020x64.iso                       |    O    |    O    |    -    | No special mention                        |
+|              | WinPEx64.iso                               |    O    |    O    |    -    | No special mention (ADK 10.0.19041.1)     |
+|              | WinPE_ATI2020x64.iso                       |    O    |    O    |    -    | "                                         |
 |              | WinPE_ATI2020x86.iso                       |    O    |    O    |    -    | "                                         |
   
 ## Note  
   
 * Live mode minimum memory is 8GiB  
 * pxeboot is very slow and transfer speed is around 1.9MiB/s  
+* Booting succeeded with Windows ADK 10.0.19041.1, but failed with ADK 10.1.25398.1  
   
 ## Tree diagram
   
