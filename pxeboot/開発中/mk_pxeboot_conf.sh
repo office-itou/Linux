@@ -272,6 +272,9 @@
 	# === system ==============================================================
 
 	# --- tftp / web server address -------------------------------------------
+	declare -r    TFTP_PROT="http://"
+	declare -r    TFTP_ADDR="\${net_default_server}"
+	# shellcheck disable=SC2155
 	declare -r    HTTP_ADDR="http://$(LANG=C ip -4 -oneline address show scope global | awk '{split($4,s,"/"); print s[1];}')"
 #	declare -r    HTTP_ADDR="http://192.168.1.10"
 
@@ -343,7 +346,7 @@
 		"o  centos-stream-netinst-8     CentOS%20Stream%208                 centos          CentOS-Stream-8-x86_64-latest-boot.iso      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-8_net.cfg    linux/centos        20xx-xx-xx  2024-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                              " \
 		"o  centos-stream-netinst-9     CentOS%20Stream%209                 centos          CentOS-Stream-9-latest-x86_64-boot.iso      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_net.cfg    linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                 " \
 		"o  almalinux-netinst-9         Alma%20Linux%209                    almalinux       AlmaLinux-9-latest-x86_64-boot.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_net.cfg        linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-boot.iso                                    " \
-		"o  rockylinux-netinst-8        Rocky%20Linux%208                   Rocky           Rocky-8.9-x86_64-boot.iso                   images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_net.cfg       linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-boot.iso                                          " \
+		"o  rockylinux-netinst-8        Rocky%20Linux%208                   Rocky           Rocky-8.10-x86_64-boot.iso                  images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_net.cfg       linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-boot.iso                                          " \
 		"o  rockylinux-netinst-9        Rocky%20Linux%209                   Rocky           Rocky-9-latest-x86_64-boot.iso              images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_net.cfg       linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-boot.iso                                   " \
 		"o  miraclelinux-netinst-8      Miracle%20Linux%208                 miraclelinux    MIRACLELINUX-8.8-rtm-minimal-x86_64.iso     images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_net.cfg     linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso    " \
 		"o  miraclelinux-netinst-9      Miracle%20Linux%209                 miraclelinux    MIRACLELINUX-9.2-rtm-minimal-x86_64.iso     images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_net.cfg     linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso    " \
@@ -378,7 +381,7 @@
 		"o  centos-stream-8             CentOS%20Stream%208                 centos          CentOS-Stream-8-x86_64-latest-dvd1.iso      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-8_dvd.cfg    linux/centos        2019-xx-xx  2024-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                              " \
 		"o  centos-stream-9             CentOS%20Stream%209                 centos          CentOS-Stream-9-latest-x86_64-dvd1.iso      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_dvd.cfg    linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                 " \
 		"o  almalinux-9                 Alma%20Linux%209                    almalinux       AlmaLinux-9-latest-x86_64-dvd.iso           images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_dvd.cfg        linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-dvd.iso                                     " \
-		"o  rockylinux-8                Rocky%20Linux%208                   Rocky           Rocky-8.9-x86_64-dvd1.iso                   images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_dvd.cfg       linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-dvd1.iso                                          " \
+		"o  rockylinux-8                Rocky%20Linux%208                   Rocky           Rocky-8.10-x86_64-dvd1.iso                  images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_dvd.cfg       linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-dvd1.iso                                          " \
 		"o  rockylinux-9                Rocky%20Linux%209                   Rocky           Rocky-9-latest-x86_64-dvd.iso               images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_dvd.cfg       linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-dvd.iso                                    " \
 		"o  miraclelinux-8              Miracle%20Linux%208                 miraclelinux    MIRACLELINUX-8.8-rtm-x86_64.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_dvd.cfg     linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso            " \
 		"o  miraclelinux-9              Miracle%20Linux%209                 miraclelinux    MIRACLELINUX-9.2-rtm-x86_64.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_dvd.cfg     linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso            " \
@@ -872,6 +875,7 @@ function funcCreate_directory() {
 		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi64/"                     \
 		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-bios/"                      \
 		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi64/"                     \
+		"${DIRS_TFTP}/load                    ${DIRS_HTML}/"                                \
 	)
 	declare -a    LINK_LINE=()
 	declare       LINK_NAME=""
@@ -2770,9 +2774,9 @@ function funcCreate_menu_cfg_preseed() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
 		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
 		set root='${BOOT_WORK[0]}'
-		set isofile='${BOOT_WORK[1]}'
-		set isoaddr="${BOOT_WORK[2]}"
-		set install='${BOOT_WORK[3]}'
+		set isofile='${BOOT_WORK[1]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}'
+		set isoaddr="${BOOT_WORK[2]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
+		set install="${BOOT_WORK[3]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
 		set network='${BOOT_WORK[4]}'
 		set locales='${BOOT_WORK[5]}'
 		set ramdisk='${BOOT_WORK[6]}'
@@ -2856,9 +2860,9 @@ function funcCreate_menu_cfg_nocloud() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
 		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
 		set root='${BOOT_WORK[0]}'
-		set isofile='${BOOT_WORK[1]}'
-		set isoaddr="${BOOT_WORK[2]}"
-		set install='${BOOT_WORK[3]}'
+		set isofile='${BOOT_WORK[1]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}'
+		set isoaddr="${BOOT_WORK[2]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
+		set install="${BOOT_WORK[3]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
 		set network='${BOOT_WORK[4]}'
 		set locales='${BOOT_WORK[5]}'
 		set ramdisk='${BOOT_WORK[6]}'
@@ -2912,9 +2916,9 @@ function funcCreate_menu_cfg_kickstart() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
 		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
 		set root='${BOOT_WORK[0]}'
-		set isofile='${BOOT_WORK[1]}'
-		set isoaddr="${BOOT_WORK[2]}"
-		set install='${BOOT_WORK[3]}'
+		set isofile='${BOOT_WORK[1]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}'
+		set isoaddr="${BOOT_WORK[2]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
+		set install="${BOOT_WORK[3]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
 		set network='${BOOT_WORK[4]}'
 		set locales='${BOOT_WORK[5]}'
 		set ramdisk='${BOOT_WORK[6]}'
@@ -2972,9 +2976,9 @@ function funcCreate_menu_cfg_autoyast() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
 		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
 		set root='${BOOT_WORK[0]}'
-		set isofile='${BOOT_WORK[1]}'
-		set isoaddr="${BOOT_WORK[2]}"
-		set install='${BOOT_WORK[3]}'
+		set isofile='${BOOT_WORK[1]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}'
+		set isoaddr="${BOOT_WORK[2]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
+		set install="${BOOT_WORK[3]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
 		set network='${BOOT_WORK[4]}'
 		set locales='${BOOT_WORK[5]}'
 		set ramdisk='${BOOT_WORK[6]}'
@@ -3279,7 +3283,7 @@ _EOT_
 						 		set isofile="(${HTTP_ADDR%%:*},${HTTP_ADDR##*/})/isos/${TGET_INFO[4]}"
 						 		export isofile
 						 		echo 'Loading linux ...'
-						 		linux16 memdisk iso raw
+						 		linux16 (tftp)/memdisk iso raw
 						 		echo 'Loading initrd ...'
 						 		initrd16 "\$isofile"
 						 	}
@@ -3293,16 +3297,15 @@ _EOT_
 					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
 						menuentry '${MENU_ENTR}' {
 						 	echo 'Loading ${TGET_INFO[2]//%20/ } ...'
-						 	set root='tftp'
 						 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 						 	insmod progress
 						 	echo   'Loading linux ...'
 						 	if [ "\${grub_platform}" = "efi" ]; then
 						 		echo 'Loading UEFI Version ...'
-						 		linux  (\$root)/load/${TGET_INFO[1]}/${TGET_INFO[6]}
+						 		linux  (tftp)/load/${TGET_INFO[1]}/${TGET_INFO[6]}
 						 	else
 						 		echo 'Loading BIOS Version ...'
-						 		linux  (\$root)/load/${TGET_INFO[1]}/${TGET_INFO[7]}
+						 		linux  (tftp)/load/${TGET_INFO[1]}/${TGET_INFO[7]}
 						 	fi
 						}
 _EOT_
@@ -3321,7 +3324,7 @@ _EOT_
 						 		set isofile="(${HTTP_ADDR%%:*},${HTTP_ADDR##*/})/isos/${TGET_INFO[4]}"
 						 		export isofile
 						 		echo 'Loading linux ...'
-						 		linux16 memdisk iso raw
+						 		linux16 (tftp)/memdisk iso raw
 						 		echo 'Loading initrd ...'
 						 		initrd16 "\$isofile"
 						 	}
@@ -3340,7 +3343,6 @@ _EOT_
 					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
 						menuentry '${MENU_ENTR}' {
 						 	echo 'Loading ${TGET_INFO[2]//%20/ } ...'
-						 	${BOOT_OPTN[0]}
 						 	${BOOT_OPTN[1]}
 						 	${BOOT_OPTN[2]}
 						 	${BOOT_OPTN[3]}
@@ -3349,10 +3351,11 @@ _EOT_
 						 	${BOOT_OPTN[6]}
 						 	${BOOT_OPTN[7]}
 						 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+						 	insmod progress
 						 	echo 'Loading linux ...'
-						 	linux  (\$root)/load/${TGET_INFO[1]}/${TGET_INFO[7]} \${options} ---
+						 	linux  (tftp)/load/${TGET_INFO[1]}/${TGET_INFO[7]} \${options} ---
 						 	echo 'Loading initrd ...'
-						 	initrd (\$root)/load/${TGET_INFO[1]}/${TGET_INFO[6]}
+						 	initrd (tftp)/load/${TGET_INFO[1]}/${TGET_INFO[6]}
 						}
 _EOT_
 					;;
@@ -3708,6 +3711,7 @@ function funcCall_create() {
 				if [[ ! -d "${MENU_DIRS}/x86_64-efi/." ]] \
 				|| [[ ! -d "${MENU_DIRS}/i386-pc/."    ]]; then
 					cp --archive --update /usr/lib/syslinux/memdisk         "${DIRS_TFTP}/"
+					cp --archive --update /usr/lib/syslinux/memdisk         "${DIRS_HTML}/"
 					grub-mknetdir --net-directory="${DIRS_TFTP}" --subdir="${DIRS_GRUB}"
 				fi
 				if [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}" ]] \
@@ -3715,18 +3719,17 @@ function funcCall_create() {
 					mkdir -p "${DIRS_TEMP}"
 					WORK_FILE="${DIRS_TEMP}/setvars.conf"
 					cat <<- _EOT_ | sed 's/^ *//g' > "${WORK_FILE}"
-						set root=(tftp)
 						set net_default_server="${HTTP_ADDR#*://}"
-						set prefix=boot/grub
 _EOT_
 					# ---------------------------------------------------------
 					if [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}"  ]]; then
-						sudo grub-mkimage \
+						grub-mkimage \
+						    --directory=/usr/lib/grub/i386-pc \
 						    --format=i386-pc-pxe \
 						    --output="${MENU_DIRS}/${BOOT_PXE0}" \
-						    --prefix=/boot/grub \
+						    --prefix='(tftp)/boot/grub' \
 						    --config="${WORK_FILE}" \
-						    --compression=none \
+						    --compression=auto \
 						    chain memdisk loopback tftp http pxe linux linux16 halt reboot configfile \
 						    net nativedisk iso9660 udf ext2 fat ntfs part_gpt part_msdos probe \
 						    minicmd normal boot cat cpuid echo font ls lvm regexp search test true \
@@ -3734,10 +3737,11 @@ _EOT_
 					fi
 					# ---------------------------------------------------------
 					if [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
-						sudo grub-mkimage \
+						grub-mkimage \
+						    --directory=/usr/lib/grub/x86_64-efi \
 						    --format=x86_64-efi \
 						    --output="${MENU_DIRS}/${BOOT_UEFI}" \
-						    --prefix=/boot/grub \
+						    --prefix='(tftp)/boot/grub' \
 						    --config="${WORK_FILE}" \
 						    --compression=auto \
 						    chain memdisk loopback tftp http linux linux16 linuxefi halt reboot configfile tpm \
