@@ -1129,6 +1129,7 @@ function funcNetwork_connmanctl() {
 	declare       FILE_ORIG=""
 	declare       FILE_BACK=""
 	declare       SYSD_NAME=""
+	declare -a    NICS_NAME=()
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	if [[ -z "$(command -v connmanctl 2> /dev/null)" ]]; then
@@ -1156,6 +1157,7 @@ function funcNetwork_connmanctl() {
 			    -e '/^PreferredTechnologies[ \t]*=/     s/^/#/'                                    \
 			    -e '/^SingleConnectedTechnology[ \t]*=/ s/^/#/'                                    \
 			    -e '/^EnableOnlineCheck[ \t]*=/         s/^/#/'                                    \
+			    -e '/^NetworkInterfaceBlacklist*=/      s/^/#/'                                    \
 			    -e '/^#[ \t]*AllowHostnameUpdates[ \t]*=/a AllowHostnameUpdates = false'           \
 			    -e '/^#[ \t]*PreferredTechnologies[ \t]*=/a PreferredTechnologies = ethernet,wifi' \
 			    -e '/^#[ \t]*SingleConnectedTechnology[ \t]*=/a SingleConnectedTechnology = true'  \
@@ -1170,11 +1172,18 @@ function funcNetwork_connmanctl() {
 				PreferredTechnologies = ethernet,wifi
 				SingleConnectedTechnology = true
 				EnableOnlineCheck = false
+				# NetworkInterfaceBlacklist = vmnet,vboxnet,virbr,ifb,ve-,vb-
 _EOT_
 		fi
 		if [[ "${#ETHR_NAME[@]}" -gt 1 ]]; then
 			sed -i "${FILE_PATH}"                              \
 			    -e '/SingleConnectedTechnology/ s/true/false/'
+		fi
+		mapfile NICS_NAME < <(ip -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
+		unset NICS_NAME[0]
+		if [[ "${#NICS_NAME[@]}" -ge 1 ]]; then
+			sed -i "${FILE_PATH}"                                                                            \
+			    -e "/^#[ \t]*NetworkInterfaceBlacklist[ \t]*=/a NetworkInterfaceBlacklist = ${NICS_NAME[*]}"
 		fi
 	fi
 	# -------------------------------------------------------------------------
@@ -2790,7 +2799,7 @@ function funcApplication_open_vm_tools() {
 	esac
 	# shellcheck disable=SC2312
 	if [[ -z "$("${PKGS_SRCH}" search open-vm-tools 2> /dev/null | awk '$0~/open-vm-tools/ {print $0;}')" ]]; then
-		funcPrintf "      ${MSGS_TITL}: ${TXT_RESET}${TXT_BYELLOW}unsupported package [${INST_PAKG[@]}]${TXT_RESET}"
+		funcPrintf "      ${MSGS_TITL}: ${TXT_RESET}${TXT_BYELLOW}unsupported package [${INST_PAKG[*]}]${TXT_RESET}"
 		return
 	fi
 	# -------------------------------------------------------------------------
