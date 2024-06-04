@@ -1598,7 +1598,7 @@ _EOT_
 		#no-poll													# don't poll /etc/resolv.conf for changes
 		#no-resolv													# don't read /etc/resolv.conf
 		strict-order												# try in the registration order of /etc/resolv.conf
-		bind-dynamic												# enable bind-interfaces and the default hybrid network mode
+		#bind-dynamic												# enable bind-interfaces and the default hybrid network mode
 		
 		# --- dhcp --------------------------------------------------------------------
 		dhcp-range=${IPV4_NTWK[0]},proxy,${IPV4_CIDR[0]}								# proxy dhcp
