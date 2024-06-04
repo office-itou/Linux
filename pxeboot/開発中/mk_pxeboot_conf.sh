@@ -623,7 +623,7 @@ function funcString() {
 # --- print with screen control -----------------------------------------------
 function funcPrintf() {
 	declare -r    SET_ENV_X="$(set -o | awk '$1=="xtrace"  {print $2;}')"
-#	declare -r    SET_ENV_E="$(set -o | awk '$1=="errexit" {print $2;}')"
+	declare -r    SET_ENV_E="$(set -o | awk '$1=="errexit" {print $2;}')"
 	set +x
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 #	declare -r    OLD_IFS="${IFS}"
@@ -693,11 +693,11 @@ function funcPrintf() {
 	echo -e "${RET_STR}${TXT_RESET}"
 	IFS="${OLD_IFS}"
 	# -------------------------------------------------------------------------
-#	if [[ "${SET_ENV_E}" = "on" ]]; then
-#		set -e
-#	else
-#		set +e
-#	fi
+	if [[ "${SET_ENV_E}" = "on" ]]; then
+		set -e
+	else
+		set +e
+	fi
 	if [[ "${SET_ENV_X}" = "on" ]]; then
 		set -x
 	else

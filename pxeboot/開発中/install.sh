@@ -471,7 +471,7 @@ function funcString() {
 # --- print with screen control -----------------------------------------------
 function funcPrintf() {
 	declare -r    SET_ENV_X="$(set -o | awk '$1=="xtrace"  {print $2;}')"
-#	declare -r    SET_ENV_E="$(set -o | awk '$1=="errexit" {print $2;}')"
+	declare -r    SET_ENV_E="$(set -o | awk '$1=="errexit" {print $2;}')"
 	set +x
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 #	declare -r    OLD_IFS="${IFS}"
@@ -541,11 +541,11 @@ function funcPrintf() {
 	echo -e "${RET_STR}${TXT_RESET}"
 	IFS="${OLD_IFS}"
 	# -------------------------------------------------------------------------
-#	if [[ "${SET_ENV_E}" = "on" ]]; then
-#		set -e
-#	else
-#		set +e
-#	fi
+	if [[ "${SET_ENV_E}" = "on" ]]; then
+		set -e
+	else
+		set +e
+	fi
 	if [[ "${SET_ENV_X}" = "on" ]]; then
 		set -x
 	else
@@ -1483,8 +1483,10 @@ function funcNetwork_pxe_conf() {
 #			mkdir -p "${FILE_LINE}"
 			case "${FILE_LINE}" in
 				*bios )
-					: > "${FILE_LINE}/syslinux.cfg"
-					: > "${FILE_LINE}/menu.cfg"
+					if [[ ! -s "${FILE_LINE}/menu.cfg" ]]; then
+						: > "${FILE_LINE}/syslinux.cfg"
+						: > "${FILE_LINE}/menu.cfg"
+					fi
 					if [[ ! -f "${FILE_LINE}/pxelinux.0" ]]; then
 						cp --archive --update /usr/lib/syslinux/memdisk         "${FILE_LINE}/"
 						cp --archive --update /usr/lib/syslinux/modules/bios/.  "${FILE_LINE}/"
@@ -1492,24 +1494,30 @@ function funcNetwork_pxe_conf() {
 					fi
 					;;
 				*efi32)
-					: > "${FILE_LINE}/syslinux.cfg"
-					: > "${FILE_LINE}/menu.cfg"
+					if [[ ! -s "${FILE_LINE}/menu.cfg" ]]; then
+						: > "${FILE_LINE}/syslinux.cfg"
+						: > "${FILE_LINE}/menu.cfg"
+					fi
 					if [[ ! -f "${FILE_LINE}/syslinux.efi" ]]; then
 						cp --archive --update /usr/lib/syslinux/modules/efi32/. "${FILE_LINE}/"
 						cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${FILE_LINE}/"
 					fi
 					;;
 				*efi64)
-					: > "${FILE_LINE}/syslinux.cfg"
-					: > "${FILE_LINE}/menu.cfg"
+					if [[ ! -s "${FILE_LINE}/menu.cfg" ]]; then
+						: > "${FILE_LINE}/syslinux.cfg"
+						: > "${FILE_LINE}/menu.cfg"
+					fi
 					if [[ ! -f "${FILE_LINE}/syslinux.efi" ]]; then
 						cp --archive --update /usr/lib/syslinux/modules/efi64/. "${FILE_LINE}/"
 						cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${FILE_LINE}/"
 					fi
 					;;
 				*grub )
-					: > "${FILE_LINE}/grub.cfg"
-					: > "${FILE_LINE}/menu.cfg"
+					if [[ ! -s "${FILE_LINE}/grub.cfg" ]]; then
+						: > "${FILE_LINE}/grub.cfg"
+						: > "${FILE_LINE}/menu.cfg"
+					fi
 					if [[ ! -d "${FILE_LINE}/x86_64-efi/." ]] \
 					|| [[ ! -d "${FILE_LINE}/i386-pc/."    ]]; then
 						cp --archive --update /usr/lib/syslinux/memdisk         "${TFTP_ROOT}/"
@@ -1579,17 +1587,18 @@ _EOT_
 		#port=5353													# listening port
 		bogus-priv													# do not perform reverse lookup of private ip address on upstream server
 		domain-needed												# do not forward plain names
-		domain=${HOST_DMAN},${IPV4_NTWK[0]}/${IPV4_CIDR[0]},local						# local domain name
+		domain=${HOST_DMAN}											# local domain name
 		expand-hosts												# add domain name to host
 		filterwin2k													# filter for windows
 		interface=${ETHR_NAME[0]}											# listen to interface
-		#listen-address=${IPV6_LHST},${IPV4_LHST},${IPV4_ADDR[0]}					# listen to ip address
+		listen-address=${IPV6_LHST},${IPV4_LHST},${IPV4_ADDR[0]}					# listen to ip address
 		#server=8.8.8.8												# directly specify upstream server
 		#server=8.8.4.4												# directly specify upstream server
 		#no-hosts													# don't read the hostnames in /etc/hosts
 		#no-poll													# don't poll /etc/resolv.conf for changes
 		#no-resolv													# don't read /etc/resolv.conf
 		strict-order												# try in the registration order of /etc/resolv.conf
+		bind-dynamic												# enable bind-interfaces and the default hybrid network mode
 		
 		# --- dhcp --------------------------------------------------------------------
 		dhcp-range=${IPV4_NTWK[0]},proxy,${IPV4_CIDR[0]}								# proxy dhcp
