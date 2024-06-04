@@ -471,7 +471,7 @@ function funcString() {
 # --- print with screen control -----------------------------------------------
 function funcPrintf() {
 	declare -r    SET_ENV_X="$(set -o | awk '$1=="xtrace"  {print $2;}')"
-	declare -r    SET_ENV_E="$(set -o | awk '$1=="errexit" {print $2;}')"
+#	declare -r    SET_ENV_E="$(set -o | awk '$1=="errexit" {print $2;}')"
 	set +x
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 #	declare -r    OLD_IFS="${IFS}"
@@ -541,11 +541,11 @@ function funcPrintf() {
 	echo -e "${RET_STR}${TXT_RESET}"
 	IFS="${OLD_IFS}"
 	# -------------------------------------------------------------------------
-	if [[ "${SET_ENV_E}" = "on" ]]; then
-		set -e
-	else
-		set +e
-	fi
+#	if [[ "${SET_ENV_E}" = "on" ]]; then
+#		set -e
+#	else
+#		set +e
+#	fi
 	if [[ "${SET_ENV_X}" = "on" ]]; then
 		set -x
 	else
@@ -599,12 +599,11 @@ function funcCurl() {
 #	declare -i    INT_SIZ
 #	declare -i    INT_UNT
 #	declare -a    TXT_UNT=("Byte" "KiB" "MiB" "GiB" "TiB")
-	declare -i    I=0
 	set +e
 	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
 	RET_CD=$?
 	set -e
-	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
+	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${RET_CD}" -eq 35 ]] || [[ "${#WEBS_PAGE[@]}" -le 0 ]]; then
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
 		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 		return "${RET_CD}"
@@ -1180,7 +1179,7 @@ _EOT_
 			    -e '/SingleConnectedTechnology/ s/true/false/'
 		fi
 		mapfile NICS_NAME < <(ip -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
-		unset NICS_NAME[0]
+		unset 'NICS_NAME[0]'
 		if [[ "${#NICS_NAME[@]}" -ge 1 ]]; then
 			sed -i "${FILE_PATH}"                                                                            \
 			    -e "/^#[ \t]*NetworkInterfaceBlacklist[ \t]*=/a NetworkInterfaceBlacklist = ${NICS_NAME[*]}"
