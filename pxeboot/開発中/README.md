@@ -2,7 +2,7 @@
   
 ## System configuration  
   
-  ### Host PC  
+### Host PC  
   
 | Module         | Detail                           |
 | -------------- | -------------------------------- |
@@ -11,7 +11,7 @@
 | Processor      | Intel Core i7-6700 CPU @ 3.40GHz |
 | Memory         | 32GiB                            |
   
-  ### Guest PC  
+### Guest PC  
   
 | Module         | Detail                          |
 | -------------- | ------------------------------- |
