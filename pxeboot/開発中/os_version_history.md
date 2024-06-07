@@ -2,7 +2,7 @@
   
 ## Debian  
   
-| Life  | Version. | Code-name          | Release date |End of support|  Long-term   | Note         |
+| Life  | Version. | Code name          | Release date |End of support|  Long term   | Note         |
 | :---: | :------: | : ---------------- | :----------: | :----------: | :----------: | :----------- |
 |  EOL  |    1.1   | Buzz               |  1996-06-17  |              |              |              |
 |  EOL  |    1.2   | Rex                |  1996-12-12  |              |              |              |
@@ -30,7 +30,7 @@
 
 ## Ubuntu  
   
-| Life  | Version. | Code-name          | Release date |End of support|  Long-term   | Note         |
+| Life  | Version. | Code name          | Release date |End of support|  Long term   | Note         |
 | :---: | -------: | : ---------------- | :----------: | :----------: | :----------: | :----------- |
 |  EOL  |   4.10   | Warty Warthog      |  2004-10-20  |  2006-04-30  |              |              |
 |  EOL  |   5.04   | Hoary Hedgehog     |  2005-04-08  |  2006-10-31  |              |              |
@@ -185,7 +185,7 @@
   
 ## openSUSE  
   
-| Life  | Version. | Code-name          | Release date |End of support|  Kernel         | Note         |
+| Life  | Version. | Code name          | Release date |End of support|  Kernel         | Note         |
 | :---: | :------: | : ---------------- | :----------: | :----------: | :-------------- | :----------- |
 |  EOL  |   15.0   | Leap               |  2018-05-25  |  2019-12-03  | 4.12            |              |
 |  EOL  |   15.1   |                    |  2019-05-22  |  2021-01-31  | 4.12            |              |
