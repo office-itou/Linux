@@ -1402,169 +1402,47 @@ function funcNetwork_pxe_conf() {
 	declare -r    FILE_PATH="${DIRS_PATH}/pxe.conf"
 	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+	declare -r    CONF_PATH="/etc/dnsmasq.conf"
+	declare -r    CONF_ORIG="${DIRS_ORIG}/${FILE_PATH}"
+	declare -r    CONF_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	declare       FILE_LINE=""
 #	declare       WORK_DIRS=""
 #	declare       WORK_TYPE=""
-	declare       WORK_FILE=""
+#	declare       WORK_FILE=""
 	declare       SYSD_NAME=""
+#	declare -a    SELX_OPTN=()
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: create directory"
 	funcPrintf "      ${MSGS_TITL}: ${TFTP_ROOT}"
-#	mkdir -p "${TFTP_ROOT}/"{boot,grub,menu-{bios,efi{32,64}}/pxelinux.cfg}
 	mkdir -p "${TFTP_ROOT}/"{menu-{bios,efi64},boot/grub}
 	mkdir -p "${DIRS_PATH}"
 	touch "${FILE_PATH}"
+	# -------------------------------------------------------------------------
 	if [[ -f /etc/selinux/config ]]; then
-		WORK_DIRS="${TFTP_ROOT/\./\\.}(/.*)?"
-		WORK_TYPE="tftpdir_t"
-		# shellcheck disable=SC2312
-		if [[ -z "$(semanage fcontext --list | awk 'index($1,"'"${WORK_DIRS//\\/\\\\}"'")&&index($4,"'"${WORK_TYPE}"'") {split($4,a,":"); print a[3];}')" ]]; then
-			funcPrintf "      ${MSGS_TITL}: semanage fcontext --add --type ${WORK_TYPE}"
-			funcPrintf "      ${MSGS_TITL}: ${WORK_DIRS}"
-			semanage fcontext --add --type "${WORK_TYPE}" "${WORK_DIRS}"
-		fi
-		restorecon -R -F "${TFTP_ROOT}"
-		# ---------------------------------------------------------------------
-		WORK_DIRS="${DIRS_PATH/\./\\.}(/.*)?"
-		WORK_TYPE="dnsmasq_etc_t"
-		# shellcheck disable=SC2312
-		if [[ -z "$(semanage fcontext --list | awk 'index($1,"'"${WORK_DIRS//\\/\\\\}"'")&&index($4,"'"${WORK_TYPE}"'") {split($4,a,":"); print a[3];}')" ]]; then
-			funcPrintf "      ${MSGS_TITL}: semanage fcontext --add --type ${WORK_TYPE}"
-			funcPrintf "      ${MSGS_TITL}: ${WORK_DIRS}"
-			semanage fcontext --add --type "${WORK_TYPE}" "${WORK_DIRS}"
-		fi
-		restorecon -R -F "${DIRS_PATH}"
+		funcPrintf "      ${MSGS_TITL}: setsebool"
+		setsebool -P httpd_enable_homedirs 1
+		setsebool -P httpd_use_nfs 1
+		setsebool -P httpd_use_fusefs 1
+		setsebool -P tftp_home_dir 1
+		setsebool -P tftp_anon_write 1
 	fi
-#	for FILE_LINE in "${TFTP_ROOT}"/menu-{bios,efi{32,64}}
-#	do
-#		funcPrintf "      ${MSGS_TITL}: create a symbolic link [${FILE_LINE}/boot]"
-#		if [[ -d "${FILE_LINE}/boot/." ]] || [[ -L "${FILE_LINE}/boot" ]]; then
-#			funcPrintf "      ${MSGS_TITL}: symbolic link or directory exists [${FILE_LINE}/boot]"
-#		else
-#			ln -sr "${TFTP_ROOT}/boot" "${FILE_LINE}"
-#		fi
-#		funcPrintf "      ${MSGS_TITL}: create a symbolic link [${FILE_LINE}/pxelinux.cfg/default]"
-#		if [[ -f "${FILE_LINE}/pxelinux.cfg/default" ]] || [[ -L "${FILE_LINE}/pxelinux.cfg/default" ]]; then
-#			funcPrintf "      ${MSGS_TITL}: symbolic link or file exists [pxelinux.cfg/default]"
-#		else
-#			touch "${FILE_LINE}/syslinux.cfg"
-#			ln -sr "${FILE_LINE}/syslinux.cfg" "${FILE_LINE}/pxelinux.cfg/default"
-#		fi
-#		if [[ -d /usr/lib/syslinux/. ]]; then
-#			# pxe boot:
-#			#   syslinux-common syslinux-efi pxelinux dnsmasq apache2 7zip rsync
-#			funcPrintf "      ${MSGS_TITL}: copy syslinux module"
-#			case "${FILE_LINE}" in
-#				*bios )
-#					cp --archive --update /usr/lib/syslinux/memdisk         "${FILE_LINE}/"
-#					cp --archive --update /usr/lib/syslinux/modules/bios/.  "${FILE_LINE}/"
-#					cp --archive --update /usr/lib/PXELINUX/.               "${FILE_LINE}/"
-#					;;
-#				*efi32)
-#					cp --archive --update /usr/lib/syslinux/modules/efi32/. "${FILE_LINE}/"
-#					cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${FILE_LINE}/"
-#					;;
-#				*efi64)
-#					cp --archive --update /usr/lib/syslinux/modules/efi64/. "${FILE_LINE}/"
-#					cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${FILE_LINE}/"
-#					;;
-#				* )
-#					;;
-#			esac
-#		fi
-#	done
-	if [[ -d /usr/lib/syslinux/. ]]; then
-		for FILE_LINE in "${TFTP_ROOT}/"{menu-{bios,efi64},boot/grub}
-		do
-			funcPrintf "        copy: ${FILE_LINE##*/}"
-#			mkdir -p "${FILE_LINE}"
-			case "${FILE_LINE}" in
-				*bios )
-					if [[ ! -s "${FILE_LINE}/menu.cfg" ]]; then
-						: > "${FILE_LINE}/syslinux.cfg"
-						: > "${FILE_LINE}/menu.cfg"
-					fi
-					if [[ ! -f "${FILE_LINE}/pxelinux.0" ]]; then
-						cp --archive --update /usr/lib/syslinux/memdisk         "${FILE_LINE}/"
-						cp --archive --update /usr/lib/syslinux/modules/bios/.  "${FILE_LINE}/"
-						cp --archive --update /usr/lib/PXELINUX/.               "${FILE_LINE}/"
-					fi
-					;;
-				*efi32)
-					if [[ ! -s "${FILE_LINE}/menu.cfg" ]]; then
-						: > "${FILE_LINE}/syslinux.cfg"
-						: > "${FILE_LINE}/menu.cfg"
-					fi
-					if [[ ! -f "${FILE_LINE}/syslinux.efi" ]]; then
-						cp --archive --update /usr/lib/syslinux/modules/efi32/. "${FILE_LINE}/"
-						cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${FILE_LINE}/"
-					fi
-					;;
-				*efi64)
-					if [[ ! -s "${FILE_LINE}/menu.cfg" ]]; then
-						: > "${FILE_LINE}/syslinux.cfg"
-						: > "${FILE_LINE}/menu.cfg"
-					fi
-					if [[ ! -f "${FILE_LINE}/syslinux.efi" ]]; then
-						cp --archive --update /usr/lib/syslinux/modules/efi64/. "${FILE_LINE}/"
-						cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${FILE_LINE}/"
-					fi
-					;;
-				*grub )
-					if [[ ! -s "${FILE_LINE}/grub.cfg" ]]; then
-						: > "${FILE_LINE}/grub.cfg"
-						: > "${FILE_LINE}/menu.cfg"
-					fi
-					if [[ ! -d "${FILE_LINE}/x86_64-efi/." ]] \
-					|| [[ ! -d "${FILE_LINE}/i386-pc/."    ]]; then
-						cp --archive --update /usr/lib/syslinux/memdisk         "${TFTP_ROOT}/"
-						grub-mknetdir --net-directory="${TFTP_ROOT}" --subdir="boot/grub"
-					fi
-					if [[ ! -f "${FILE_LINE}/pxelinux.0" ]] \
-					|| [[ ! -f "${FILE_LINE}/bootx64.efi" ]]; then
-						mkdir -p "${DIRS_TEMP}"
-						WORK_FILE="${DIRS_TEMP}/setvars.conf"
-						cat <<- _EOT_ | sed 's/^ *//g' > "${WORK_FILE}"
-							set root=(tftp)
-							set net_default_server="${HTTP_ADDR#*://}"
-							set prefix=boot/grub
-_EOT_
-						# ---------------------------------------------------------
-						if [[ ! -f "${FILE_LINE}/pxelinux.0"  ]]; then
-							sudo grub-mkimage \
-							    --format=i386-pc-pxe \
-							    --output="${FILE_LINE}/pxelinux.0" \
-							    --prefix=/boot/grub \
-							    --config="${WORK_FILE}" \
-							    --compression=none \
-							    chain memdisk loopback tftp http pxe linux linux16 halt reboot configfile \
-							    net nativedisk iso9660 udf ext2 fat ntfs part_gpt part_msdos probe \
-							    minicmd normal boot cat cpuid echo font ls lvm regexp search test true \
-							    all_video gfxmenu gfxterm gfxterm_background vga video play progress
-						fi
-						# ---------------------------------------------------------
-						if [[ ! -f "${FILE_LINE}/bootx64.efi" ]]; then
-							sudo grub-mkimage \
-							    --format=x86_64-efi \
-							    --output="${FILE_LINE}/bootx64.efi" \
-							    --prefix=/boot/grub \
-							    --config="${WORK_FILE}" \
-							    --compression=auto \
-							    chain memdisk loopback tftp http linux linux16 linuxefi halt reboot configfile tpm \
-							    net nativedisk iso9660 udf ext2 fat ntfs part_gpt part_msdos probe \
-							    minicmd normal boot cat cpuid echo font ls lvm regexp search test true \
-							    all_video gfxmenu gfxterm gfxterm_background video play progress
-						fi
-					fi
-					;;
-				* )
-					;;
-			esac
-		done
+	# -------------------------------------------------------------------------
+	if [[ -f "${CONF_PATH}" ]]; then
+		if [[ ! -f "${CONF_ORIG}" ]]; then
+			mkdir -p "${CONF_ORIG%/*}"
+			cp --archive "${CONF_PATH}" "${CONF_ORIG}"
+		else
+			mkdir -p "${CONF_BACK%/*}"
+			cp --archive "${CONF_PATH}" "${CONF_BACK}"
+		fi
 	fi
+	funcPrintf "      ${MSGS_TITL}: edit config file"
+	funcPrintf "      ${MSGS_TITL}: ${CONF_PATH}"
+	sed -i "${CONF_PATH}"               \
+	    -e '/^bind-interfaces$/ s/^/#/'
 	# -------------------------------------------------------------------------
 	if [[ -f "${FILE_PATH}" ]]; then
 		if [[ ! -f "${FILE_ORIG}" ]]; then
@@ -1598,7 +1476,7 @@ _EOT_
 		#no-poll													# don't poll /etc/resolv.conf for changes
 		#no-resolv													# don't read /etc/resolv.conf
 		strict-order												# try in the registration order of /etc/resolv.conf
-		#bind-dynamic												# enable bind-interfaces and the default hybrid network mode
+		bind-dynamic												# enable bind-interfaces and the default hybrid network mode
 		
 		# --- dhcp --------------------------------------------------------------------
 		dhcp-range=${IPV4_NTWK[0]},proxy,${IPV4_CIDR[0]}								# proxy dhcp
@@ -1653,22 +1531,18 @@ _EOT_
 		dhcp-vendorclass=set:efi-x86_64	, PXEClient:Arch:00009		#  9 EFI x86-64
 		dhcp-vendorclass=set:efi-arm32	, PXEClient:Arch:0000a		# 10 ARM 32bit
 		dhcp-vendorclass=set:efi-arm64	, PXEClient:Arch:0000b		# 11 ARM 64bit
+		
+		# --- dnsmasq manual page -----------------------------------------------------
+		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
+		
+		# --- eof ---------------------------------------------------------------------
 _EOT_
 	# -------------------------------------------------------------------------
 	SYSD_NAME="dnsmasq.service"
-	# shellcheck disable=SC2312
-#	if [[ -z "$(command -v nmcli 2> /dev/null)" ]]; then
-		# shellcheck disable=SC2312,SC2310
-		if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
-			funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
-			systemctl --quiet restart "${SYSD_NAME}"
-		fi
-#	else
-#		funcPrintf "      ${MSGS_TITL}: stop ${SYSD_NAME}"
-#		systemctl --quiet stop    "${SYSD_NAME}"
-#		funcPrintf "      ${MSGS_TITL}: disable ${SYSD_NAME}"
-#		systemctl --quiet disable "${SYSD_NAME}"
-#	fi
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
+		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
+		systemctl --quiet restart "${SYSD_NAME}"
+	fi
 }
 
 # ==== application ============================================================
@@ -1912,16 +1786,22 @@ function funcApplication_system_shared_directory() {
 	funcPrintf "      ${MSGS_TITL}: ${DIRS_SHAR}"
 	mkdir -p "${DIRS_SHAR}"/{cifs,data/{adm/{netlogon,profiles},arc,bak,pub,usr},dlna/{movies,others,photos,sounds}}
 	if [[ -f /etc/selinux/config ]]; then
-		WORK_DIRS="${DIRS_SHAR/\./\\.}(/.*)?"
-		WORK_TYPE="samba_share_t"
-		# shellcheck disable=SC2312
-		if [[ -z "$(semanage fcontext --list | awk 'index($1,"'"${WORK_DIRS//\\/\\\\}"'")&&index($4,"'"${WORK_TYPE}"'") {split($4,a,":"); print a[3];}')" ]]; then
-			funcPrintf "      ${MSGS_TITL}: semanage fcontext --add --type ${WORK_TYPE}"
-			funcPrintf "      ${MSGS_TITL}: ${WORK_DIRS}"
-			semanage fcontext --add --type "${WORK_TYPE}" "${WORK_DIRS}"
-		fi
-		restorecon -R -F "${DIRS_SHAR}"
+		funcPrintf "      ${MSGS_TITL}: setsebool"
+		setsebool -P samba_enable_home_dirs 1
+		setsebool -P samba_export_all_ro 1
+		setsebool -P samba_export_all_rw 1
 	fi
+#	if [[ -f /etc/selinux/config ]]; then
+#		WORK_DIRS="${DIRS_SHAR/\./\\.}(/.*)?"
+#		WORK_TYPE="samba_share_t"
+#		# shellcheck disable=SC2312
+#		if [[ -z "$(semanage fcontext --list | awk 'index($1,"'"${WORK_DIRS//\\/\\\\}"'")&&index($4,"'"${WORK_TYPE}"'") {split($4,a,":"); print a[3];}')" ]]; then
+#			funcPrintf "      ${MSGS_TITL}: semanage fcontext --add --type ${WORK_TYPE}"
+#			funcPrintf "      ${MSGS_TITL}: ${WORK_DIRS}"
+#			semanage fcontext --add --type "${WORK_TYPE}" "${WORK_DIRS}"
+#		fi
+#		restorecon -R -F "${DIRS_SHAR}"
+#	fi
 	# --- create cifs directory -----------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: create cifs directory"
 	funcPrintf "      ${MSGS_TITL}: /mnt"
