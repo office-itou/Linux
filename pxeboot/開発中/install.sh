@@ -185,23 +185,61 @@
 	# funcNetwork_pxe_conf creates directory
 	#
 	# tree diagram
-	#   /var/tftp/
-	#   |-- boot
-	#   |-- grub
-	#   |-- menu-bios
-	#   |   |-- boot -> /var/tftp/boot
-	#   |   `-- pxelinux.cfg
-	#   |-- menu-efi32
-	#   |   |-- boot -> /var/tftp/boot
-	#   |   `-- pxelinux.cfg
-	#   `-- menu-efi64
-	#       |-- boot -> /var/tftp/boot
-	#       `-- pxelinux.cfg
+	#   ~/share/
+	#   |-- conf ---------------------- configuration file
+	#   |   |-- _template
+	#   |   |-- autoyast
+	#   |   |-- kickstart
+	#   |   |-- nocloud
+	#   |   `-- preseed
+	#   |-- html ---------------------- html contents
+	#   |   |-- conf -> ../conf
+	#   |   |-- imgs -> ../imgs
+	#   |   |-- isos -> ../isos
+	#   |   `-- rmak -> ../rmak
+	#   |-- imgs ---------------------- iso file extraction destination
+	#   |-- isos ---------------------- iso file
+	#   |-- load ---------------------- load module
+	#   |-- rmak ---------------------- remake file
+	#   |-- temp ---------------------- temporary directory
+	#   `-- tftp ---------------------- tftp contents
+	#       |-- boot
+	#       |   `-- grub
+	#       |       |-- grub.cfg ------ menu base
+	#       |       |-- menu.cfg ------ menu file
+	#       |       |-- fonts
+	#       |       |   `-- unicode.pf2
+	#       |       |-- i386-pc
+	#       |       |   `-- pxelinux.0 --- bootloader
+	#       |       |-- locale
+	#       |       `-- x86_64-efi
+	#       |           `-- bootx64.efi -- bootloader
+	#       |-- menu-bios
+	#       |   |-- syslinux.cfg ------ syslinux configuration for mbr environment
+	#       |   |-- boot -> ../load
+	#       |   `-- pxelinux.cfg
+	#       |       `-- default -> ../syslinux.cfg
+	#       |-- menu-efi64
+	#       |   |-- syslinux.cfg ------ syslinux configuration for uefi(x86_64) environment
+	#       |   |-- boot -> ../load
+	#       |   `-- pxelinux.cfg
+	#       |       `-- default -> ../syslinux.cfg
+	#       |-- load -> ../load
+	#       |-- imgs -> ../imgs
+	#       |-- isos -> ../isos
+	#       `-- rmak -> ../rmak
+	#
+	#   /var/lib/
+	#   `-- tftpboot -> /home/master/share/tftp
+	#
 	#   /var/www/
-	#   `-- html
-	#       `-- index.html
+	#   `-- html -> /home/master/share/html
+	#
+	#   /etc/dnsmasq.d/
+	#   `-- pxe.conf ------------------ pxeboot dnsmasq configuration file
 
-	declare -r    TFTP_ROOT="/var/tftp"
+	declare -r    TFTP_ROOT="/var/lib/tftpboot"
+#	declare -r    TFTP_ROOT="/var/tftp"
 
 	# --- firewall ------------------------------------------------------------
 	declare -r    FWAL_ZONE="home"			# firewall zone name
@@ -1424,10 +1462,10 @@ function funcNetwork_pxe_conf() {
 	if [[ -f /etc/selinux/config ]]; then
 		funcPrintf "      ${MSGS_TITL}: setsebool"
 		setsebool -P httpd_enable_homedirs 1
-		setsebool -P httpd_use_nfs 1
-		setsebool -P httpd_use_fusefs 1
-		setsebool -P tftp_home_dir 1
-		setsebool -P tftp_anon_write 1
+#		setsebool -P httpd_use_nfs 1
+#		setsebool -P httpd_use_fusefs 1
+#		setsebool -P tftp_home_dir 1
+#		setsebool -P tftp_anon_write 1
 	fi
 	# -------------------------------------------------------------------------
 	if [[ -f "${CONF_PATH}" ]]; then
@@ -1468,7 +1506,7 @@ function funcNetwork_pxe_conf() {
 		domain=${HOST_DMAN}											# local domain name
 		expand-hosts												# add domain name to host
 		filterwin2k													# filter for windows
-		interface=${ETHR_NAME[0]}											# listen to interface
+		interface=lo,${ETHR_NAME[0]}											# listen to interface
 		listen-address=${IPV6_LHST},${IPV4_LHST},${IPV4_ADDR[0]}					# listen to ip address
 		#server=8.8.8.8												# directly specify upstream server
 		#server=8.8.4.4												# directly specify upstream server
@@ -1482,9 +1520,9 @@ function funcNetwork_pxe_conf() {
 		dhcp-range=${IPV4_NTWK[0]},proxy,${IPV4_CIDR[0]}								# proxy dhcp
 		#dhcp-range=${IPV4_UADR[0]}.${DHCP_SADR},${IPV4_UADR[0]}.${DHCP_EADR},${DHCP_LEAS}					# dhcp range
 		#dhcp-option=option:netmask,${IPV4_MASK[0]}					#  1 netmask
-		#dhcp-option=option:router,${IPV4_GWAY[0]}					#  3 router
-		#dhcp-option=option:dns-server,${IPV4_ADDR[0]},${IPV4_NSVR[0]}	#  6 dns-server
-		#dhcp-option=option:domain-name,${HOST_DMAN}					# 15 domain-name
+		dhcp-option=option:router,${IPV4_GWAY[0]}						#  3 router
+		dhcp-option=option:dns-server,${IPV4_ADDR[0]},${IPV4_NSVR[0]}	#  6 dns-server
+		dhcp-option=option:domain-name,${HOST_DMAN}					# 15 domain-name
 		#dhcp-option=option:28,${IPV4_BCST[0]}						# 28 broadcast
 		#dhcp-option=option:ntp-server,${NTPS_ADDR}				# 42 ntp-server
 		#dhcp-option=option:tftp-server,${IPV4_ADDR[0]}					# 66 tftp-server
@@ -1492,46 +1530,27 @@ function funcNetwork_pxe_conf() {
 		
 		# --- tftp --------------------------------------------------------------------
 		#enable-tftp=${ETHR_NAME[0]}											# enable tftp server
-		tftp-root=/var/tftp											# tftp root directory
+		tftp-root=/var/lib/tftpboot									# tftp root directory
 		#tftp-lowercase												# convert tftp request path to all lowercase
-		#tftp-no-blocksize											# stop negotiating "block size" option
+		tftp-no-blocksize											# stop negotiating "block size" option
 		#tftp-no-fail												# do not abort startup even if tftp directory is not accessible
 		#tftp-secure												# enable tftp secure mode
 		
 		# --- pxe boot ----------------------------------------------------------------
-		pxe-prompt="Press F8 for boot menu", 10						# pxe boot prompt
-		
-		# --- boot modules by architecture --------------------------------------------
-		dhcp-boot=tag:bios				, boot/grub/pxelinux.0		#  0 Intel x86PC
-		dhcp-boot=tag:efi-bc			, boot/grub/bootx64.efi		#  7 EFI BC
-		dhcp-boot=tag:efi-x86_64		, boot/grub/bootx64.efi		#  9 EFI x86-64
-		#dhcp-boot=tag:bios				, menu-bios/lpxelinux.0		#  0 Intel x86PC
-		#dhcp-boot=tag:pc98				,							#  1 NEC/PC98
-		#dhcp-boot=tag:efi-ia64			,							#  2 EFI Itanium
-		#dhcp-boot=tag:alpha			,							#  3 DEC Alpha
-		#dhcp-boot=tag:arc_x86			,							#  4 Arc x86
-		#dhcp-boot=tag:intel_lc			,							#  5 Intel Lean Client
-		#dhcp-boot=tag:efi-ia32			, menu-efi32/syslinux.efi	#  6 EFI IA32
-		#dhcp-boot=tag:efi-bc			, menu-efi64/syslinux.efi	#  7 EFI BC
-		#dhcp-boot=tag:efi-xscale		,							#  8 EFI Xscale
-		#dhcp-boot=tag:efi-x86_64		, menu-efi64/syslinux.efi	#  9 EFI x86-64
-		#dhcp-boot=tag:efi-arm32		,							# 10 ARM 32bit
-		#dhcp-boot=tag:efi-arm64		,							# 11 ARM 64bit
-		
-		# --- architecture classification ---------------------------------------------
-		dhcp-vendorclass=set:bios		, PXEClient:Arch:00000		#  0 Intel x86PC
-		dhcp-vendorclass=set:pc98		, PXEClient:Arch:00001		#  1 NEC/PC98
-		dhcp-vendorclass=set:efi-ia64	, PXEClient:Arch:00002		#  2 EFI Itanium
-		dhcp-vendorclass=set:alpha		, PXEClient:Arch:00003		#  3 DEC Alpha
-		dhcp-vendorclass=set:arc_x86	, PXEClient:Arch:00004		#  4 Arc x86
-		dhcp-vendorclass=set:intel_lc	, PXEClient:Arch:00005		#  5 Intel Lean Client
-		dhcp-vendorclass=set:efi-ia32	, PXEClient:Arch:00006		#  6 EFI IA32
-		dhcp-vendorclass=set:efi-bc		, PXEClient:Arch:00007		#  7 EFI BC
-		dhcp-vendorclass=set:efi-xscale	, PXEClient:Arch:00008		#  8 EFI Xscale
-		dhcp-vendorclass=set:efi-x86_64	, PXEClient:Arch:00009		#  9 EFI x86-64
-		dhcp-vendorclass=set:efi-arm32	, PXEClient:Arch:0000a		# 10 ARM 32bit
-		dhcp-vendorclass=set:efi-arm64	, PXEClient:Arch:0000b		# 11 ARM 64bit
-		
+		pxe-prompt="Press F8 for boot menu", 0						# pxe boot prompt
+		pxe-service=x86PC             , "PXEBoot-x86PC"            , boot/grub/pxelinux		#  0 Intel x86PC
+		#pxe-service=PC98             , "PXEBoot-PC98"             ,						#  1 NEC/PC98
+		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,						#  2 EFI Itanium
+		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,						#  3 DEC Alpha
+		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,						#  4 Arc x86
+		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",						#  5 Intel Lean Client
+		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,						#  6 EFI IA32
+		pxe-service=BC_EFI            , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi	#  7 EFI BC
+		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,						#  8 EFI Xscale
+		pxe-service=x86-64_EFI        , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi	#  9 EFI x86-64
+		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,						# 10 ARM 32bit
+		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,						# 11 ARM 64bit
+
 		# --- dnsmasq manual page -----------------------------------------------------
 		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
 		

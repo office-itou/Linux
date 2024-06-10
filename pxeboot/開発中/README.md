@@ -119,6 +119,7 @@
 |   `-- rmak -> ../rmak
 |-- imgs ---------------------- iso file extraction destination
 |-- isos ---------------------- iso file
+|-- load ---------------------- load module
 |-- rmak ---------------------- remake file
 |-- temp ---------------------- temporary directory
 `-- tftp ---------------------- tftp contents
@@ -143,15 +144,16 @@
     |   |-- boot -> ../load
     |   `-- pxelinux.cfg
     |       `-- default -> ../syslinux.cfg
-    |-- load ------------------ load module
+    |-- load -> ../load
     |-- imgs -> ../imgs
     |-- isos -> ../isos
     `-- rmak -> ../rmak
 
-/var/tftp/ -> ~/share/tftp
+/var/lib/
+`-- tftpboot -> /home/master/share/tftp
 
 /var/www/
-`-- html -> ~/share/html
+`-- html -> /home/master/share/html
 
 /etc/dnsmasq.d/
 `-- pxe.conf ------------------ pxeboot dnsmasq configuration file

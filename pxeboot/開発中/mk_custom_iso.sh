@@ -49,6 +49,9 @@
 
 # *** data section ************************************************************
 
+	# --- tftp server ---------------------------------------------------------
+	# funcNetwork_pxe_conf creates directory
+	#
 	# tree diagram
 	#   ~/share/
 	#   |-- conf ---------------------- configuration file
@@ -64,6 +67,7 @@
 	#   |   `-- rmak -> ../rmak
 	#   |-- imgs ---------------------- iso file extraction destination
 	#   |-- isos ---------------------- iso file
+	#   |-- load ---------------------- load module
 	#   |-- rmak ---------------------- remake file
 	#   |-- temp ---------------------- temporary directory
 	#   `-- tftp ---------------------- tftp contents
@@ -88,13 +92,19 @@
 	#       |   |-- boot -> ../load
 	#       |   `-- pxelinux.cfg
 	#       |       `-- default -> ../syslinux.cfg
-	#       |-- load ------------------ load module
+	#       |-- load -> ../load
 	#       |-- imgs -> ../imgs
 	#       |-- isos -> ../isos
 	#       `-- rmak -> ../rmak
-	#   /var/tftp/ -> ~/share/tftp
+	#
+	#   /var/lib/
+	#   `-- tftpboot -> /home/master/share/tftp
+	#
 	#   /var/www/
-	#   `-- html -> ~/share/html
+	#   `-- html -> /home/master/share/html
+	#
+	#   /etc/dnsmasq.d/
+	#   `-- pxe.conf ------------------ pxeboot dnsmasq configuration file
 
 # --- working directory name --------------------------------------------------
 	declare -r    PROG_PATH="$0"
@@ -113,10 +123,16 @@
 	declare -r    DIRS_HTML="${DIRS_WORK}/html"					# html contents
 	declare -r    DIRS_IMGS="${DIRS_WORK}/imgs"					# iso file extraction destination
 	declare -r    DIRS_ISOS="${DIRS_WORK}/isos"					# iso file
+	declare -r    DIRS_LOAD="${DIRS_WORK}/load"					# load module
 	declare -r    DIRS_ORIG="${DIRS_WORK}/orig"					# original file
 	declare -r    DIRS_RMAK="${DIRS_WORK}/rmak"					# remake file
 	declare -r    DIRS_TEMP="${DIRS_WORK}/temp/${PROG_PROC}"	# temporary directory
 	declare -r    DIRS_TFTP="${DIRS_WORK}/tftp"					# tftp contents
+
+	# --- server service ------------------------------------------------------
+	declare -r    HTML_ROOT="/var/www/html"						# html contents
+	declare -r    TFTP_ROOT="/var/lib/tftpboot"					# tftp contents
+#	declare -r    TFTP_ROOT="/var/tftp"							# tftp contents
 
 # --- work variables ----------------------------------------------------------
 	declare -r    OLD_IFS="${IFS}"
@@ -282,7 +298,7 @@
 	declare -r    HGFS_DIRS="/mnt/hgfs/workspace/Image"	# vmware shared directory
 
 	# --- configuration file template -----------------------------------------
-	declare -r    CONF_LINK="${HGFS_DIRS}/linux/bin/conf"
+	declare -r    CONF_LINK="${HGFS_DIRS}/linux/bin/conf/_template"
 	declare -r    CONF_DIRS="${DIRS_CONF}/_template"
 	declare -r    CONF_KICK="${CONF_DIRS}/kickstart_common.cfg"
 	declare -r    CONF_CLUD="${CONF_DIRS}/nocloud-ubuntu-user-data"
@@ -851,6 +867,8 @@ function funcServiceStatus() {
 
 # ----- create directory ------------------------------------------------------
 function funcCreate_directory() {
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	# shellcheck disable=SC1083
 	declare -r -a DIRS_LIST=(                                                               \
 		"${DIRS_WORK}"                                                                      \
 		"${DIRS_BACK}"                                                                      \
@@ -858,32 +876,35 @@ function funcCreate_directory() {
 		"${DIRS_HTML}"                                                                      \
 		"${DIRS_IMGS}"                                                                      \
 		"${DIRS_ISOS}"                                                                      \
+		"${DIRS_LOAD}"                                                                      \
 		"${DIRS_ORIG}"                                                                      \
 		"${DIRS_RMAK}"                                                                      \
 		"${DIRS_TEMP}"                                                                      \
-		"${DIRS_TFTP}"/{load,menu-{bios,efi64}/pxelinux.cfg}                                \
+		"${DIRS_TFTP}"/menu-{bios,efi64}/pxelinux.cfg                                       \
 	)
 	declare -r -a LINK_LIST=(                                                               \
 		"${DIRS_CONF}                         ${DIRS_HTML}/"                                \
 		"${DIRS_IMGS}                         ${DIRS_HTML}/"                                \
 		"${DIRS_ISOS}                         ${DIRS_HTML}/"                                \
+		"${DIRS_LOAD}                         ${DIRS_HTML}/"                                \
 		"${DIRS_RMAK}                         ${DIRS_HTML}/"                                \
 		"${DIRS_IMGS}                         ${DIRS_TFTP}/"                                \
 		"${DIRS_ISOS}                         ${DIRS_TFTP}/"                                \
-		"${DIRS_TFTP}/load                    ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_TFTP}/load                    ${DIRS_TFTP}/menu-efi64/"                     \
+		"${DIRS_LOAD}                         ${DIRS_TFTP}/"                                \
+		"${DIRS_LOAD}                         ${DIRS_TFTP}/menu-bios/"                      \
+		"${DIRS_LOAD}                         ${DIRS_TFTP}/menu-efi64/"                     \
 		"${DIRS_TFTP}/menu-bios/syslinux.cfg  ${DIRS_TFTP}/menu-bios/pxelinux.cfg/default"  \
 		"${DIRS_TFTP}/menu-efi64/syslinux.cfg ${DIRS_TFTP}/menu-efi64/pxelinux.cfg/default" \
 		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-bios/"                      \
 		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi64/"                     \
 		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-bios/"                      \
 		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi64/"                     \
-		"${DIRS_TFTP}/load                    ${DIRS_HTML}/"                                \
 	)
 	declare -a    LINK_LINE=()
 	declare       LINK_NAME=""
+	declare       BACK_NAME=""
 	declare       WORK_DIRS=""
-	declare       WORK_ATTR=""
+#	declare       WORK_ATTR=""
 	declare -i    I=0
 
 	mkdir -p "${DIRS_LIST[@]}"
@@ -897,36 +918,60 @@ function funcCreate_directory() {
 		else
 			LINK_NAME="${LINK_LINE[1]}"
 		fi
-		if [[ -L "${LINK_NAME}" ]]; then
-			funcPrintf "symbolic link exist : ${LINK_NAME/${PWD}\//}"
-		else
-			funcPrintf "symbolic link create: ${LINK_LINE[0]/${PWD}\//} -> ${LINK_LINE[1]/${PWD}\//}"
+		if [[ -h "${LINK_NAME}" ]] || [[ -d "${LINK_NAME}/." ]]; then
+			if [[ -h "${LINK_NAME}" ]]; then
+				funcPrintf "symbolic link exist : ${LINK_NAME}"
+			else
+				funcPrintf "directory exist     : ${LINK_NAME}"
+			fi
+			continue
+#			BACK_NAME="${DIRS_BACK}/${LINK_NAME}.${DATE_TIME}"
+#			funcPrintf "directory move      : ${LINK_NAME} -> ${BACK_NAME}"
+#			mkdir -p "${BACK_NAME%/*}"
+#			mv "${LINK_NAME}" "${BACK_NAME}"
+		fi
+		funcPrintf "symbolic link create: ${LINK_LINE[0]} -> ${LINK_LINE[1]}"
+		if [[ "${LINK_LINE[1]}" =~ ${DIRS_WORK} ]]; then
 			ln -sr "${LINK_LINE[0]}" "${LINK_LINE[1]}"
+		else
+			ln -s "${LINK_LINE[0]}" "${LINK_LINE[1]}"
 		fi
 	done
 	# -------------------------------------------------------------------------
-	if [[ -d "/var/www/${DIRS_HTML##*/}/." ]] && [[ ! -L "/var/www/${DIRS_HTML##*/}" ]]; then
-		funcPrintf "symbolic link create: ${DIRS_HTML} -> /var/www"
-		mv "/var/www/${DIRS_HTML##*/}" "/var/www/${DIRS_HTML##*/}.back"
-		ln -s "${DIRS_HTML}" /var/www
-	fi
-	if [[ -d "/var/${DIRS_TFTP##*/}/." ]] && [[ ! -L "/var/${DIRS_TFTP##*/}" ]]; then
-		funcPrintf "symbolic link create: ${DIRS_TFTP} -> /var"
-		mv "/var/${DIRS_TFTP##*/}" "/var/${DIRS_TFTP##*/}.back"
-		ln -s "${DIRS_TFTP}" /var
-	fi
-	WORK_DIRS="${DIRS_TFTP}"
-	while [[ -n "${WORK_DIRS:-}" ]]
-	do
-		WORK_ATTR="$(stat --format=%a "${WORK_DIRS:-}")"
-		if [[ "${WORK_ATTR:-}" != "755" ]]; then
-			funcPrintf "the attribute of '${WORK_DIRS}' is '${WORK_ATTR}', so access via tftp is not possible"
-			funcPrintf "when running tftp, set the directory attribute to '755'"
-			funcPrintf "chmod go=rx ${WORK_DIRS}"
-			exit 1
+	if [[ -h "${HTML_ROOT}" ]]; then
+		funcPrintf "symbolic link exist : ${HTML_ROOT}"
+	else
+		if [[ -d "${HTML_ROOT}/." ]]; then
+			BACK_NAME="${HTML_ROOT}.back.${DATE_TIME}"
+			funcPrintf "directory move      : ${HTML_ROOT} -> ${BACK_NAME}"
+			mv "${HTML_ROOT}" "${BACK_NAME}"
 		fi
-		WORK_DIRS="${WORK_DIRS%/*}"
-	done
+		funcPrintf "symbolic link create: ${DIRS_HTML} -> ${HTML_ROOT}"
+		ln -s "${DIRS_HTML}" "${HTML_ROOT}"
+	fi
+	if [[ -h "${TFTP_ROOT}" ]]; then
+		funcPrintf "symbolic link exist : ${TFTP_ROOT}"
+	else
+		if [[ -d "${TFTP_ROOT}/." ]]; then
+			BACK_NAME="${TFTP_ROOT}.back.${DATE_TIME}"
+			funcPrintf "directory move      : ${TFTP_ROOT} -> ${BACK_NAME}"
+			mv "${TFTP_ROOT}" "${BACK_NAME}"
+		fi
+		funcPrintf "symbolic link create: ${DIRS_TFTP} -> ${TFTP_ROOT}"
+		ln -s "${DIRS_TFTP}" "${TFTP_ROOT}"
+	fi
+#	WORK_DIRS="${DIRS_TFTP}"
+#	while [[ -n "${WORK_DIRS:-}" ]]
+#	do
+#		WORK_ATTR="$(stat --format=%a "${WORK_DIRS:-}")"
+#		if [[ "${WORK_ATTR:-}" != "755" ]]; then
+#			funcPrintf "the attribute of '${WORK_DIRS}' is '${WORK_ATTR}', so access via tftp is not possible"
+#			funcPrintf "when running tftp, set the directory attribute to '755'"
+#			funcPrintf "chmod go=rx ${WORK_DIRS}"
+#			exit 1
+#		fi
+#		WORK_DIRS="${WORK_DIRS%/*}"
+#	done
 }
 
 # ----- create link -----------------------------------------------------------
