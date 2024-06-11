@@ -3782,7 +3782,7 @@ function funcCall_create() {
 				: > "${MENU_DIRS}/${MENU_GRUB[1]}"
 				if [[ ! -f "${MENU_DIRS}/x86_64-efi/grub.cfg" ]] \
 				|| [[ ! -f "${MENU_DIRS}/i386-pc/grub.cfg"    ]]; then
-					mkdir -p "${DIRS_TFTP}/boot/grub/{fonts,locale,i386-pc,x86_64-efi}"
+					mkdir -p "${DIRS_TFTP}/boot/grub/"{fonts,locale,i386-pc,x86_64-efi}
 					if [[ -f /usr/lib/syslinux/memdisk ]]; then
 						cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_TFTP}/"
 						cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_HTML}/"
