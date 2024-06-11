@@ -4501,6 +4501,7 @@ function funcMain() {
 		done
 	fi
 
+	rm -rf "${DIRS_TEMP:?}"
 	# ==== complete ===========================================================
 	# shellcheck disable=SC2312
 	funcPrintf "--- complete $(funcString "${COLS_SIZE}" '-')"
