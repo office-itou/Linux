@@ -188,6 +188,7 @@ autoinstall:
   - clamav
   - openssh-server
   - dnsmasq
+  - tftpd-hpa
   - bind9-dnsutils
   - apache2
   - samba
