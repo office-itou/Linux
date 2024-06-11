@@ -199,7 +199,6 @@
 	#   |   `-- rmak -> ../rmak
 	#   |-- imgs ---------------------- iso file extraction destination
 	#   |-- isos ---------------------- iso file
-	#   |-- load ---------------------- load module
 	#   |-- rmak ---------------------- remake file
 	#   |-- temp ---------------------- temporary directory
 	#   `-- tftp ---------------------- tftp contents
@@ -224,16 +223,16 @@
 	#       |   |-- boot -> ../load
 	#       |   `-- pxelinux.cfg
 	#       |       `-- default -> ../syslinux.cfg
-	#       |-- load -> ../load
+	#       |-- load ------------------ load module
 	#       |-- imgs -> ../imgs
 	#       |-- isos -> ../isos
 	#       `-- rmak -> ../rmak
 	#
 	#   /var/lib/
-	#   `-- tftpboot -> /home/master/share/tftp
+	#   `-- tftpboot -> ${HOME}/share/tftp
 	#
 	#   /var/www/
-	#   `-- html -> /home/master/share/html
+	#   `-- html -> ${HOME}/share/html
 	#
 	#   /etc/dnsmasq.d/
 	#   `-- pxe.conf ------------------ pxeboot dnsmasq configuration file
@@ -1432,6 +1431,41 @@ _EOT_
 #	lsattr "${FILE_PATH}"
 }
 
+# ------ tftpd-hpa ------------------------------------------------------------
+function funcNetwork_tftpd_hpa() {
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare -r    MSGS_TITL="tftpd-hpa"
+	declare -r    DIRS_PATH="/etc/default"
+	declare -r    CONF_PATH="${DIRS_PATH}/tftpd-hpa"
+	declare -r    CONF_ORIG="${DIRS_ORIG}/${CONF_PATH}"
+	declare -r    CONF_BACK="${DIRS_BACK}/${CONF_PATH}.${DATE_TIME}"
+	declare       SYSD_NAME="tftp.socket"
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	if [[ -f "${CONF_PATH}" ]]; then
+		if [[ ! -f "${CONF_ORIG}" ]]; then
+			mkdir -p "${CONF_ORIG%/*}"
+			cp --archive "${CONF_PATH}" "${CONF_ORIG}"
+		else
+			mkdir -p "${CONF_BACK%/*}"
+			cp --archive "${CONF_PATH}" "${CONF_BACK}"
+		fi
+		funcPrintf "      ${MSGS_TITL}: edit config file"
+		funcPrintf "      ${MSGS_TITL}: ${CONF_PATH}"
+		sed -i "${CONF_PATH}"                                     \
+		    -e "/^TFTP_DIRECTORY=/ s%=.*$%=\"${TFTP_ROOT}\"%"     \
+		    -e '/^TFTP_OPTIONS=/   s/=.*$/="--secure --verbose"/'
+		SYSD_NAME="tftpd-hpa.service"
+	fi
+	# -------------------------------------------------------------------------
+	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
+		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
+		systemctl --quiet restart "${SYSD_NAME}"
+	fi
+}
+
 # ------ pxe.conf -------------------------------------------------------------
 function funcNetwork_pxe_conf() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
@@ -1530,24 +1564,24 @@ function funcNetwork_pxe_conf() {
 		
 		# --- tftp --------------------------------------------------------------------
 		#enable-tftp=${ETHR_NAME[0]}											# enable tftp server
-		tftp-root=/var/lib/tftpboot									# tftp root directory
+		#tftp-root=${TFTP_ROOT}								# tftp root directory
 		#tftp-lowercase												# convert tftp request path to all lowercase
-		tftp-no-blocksize											# stop negotiating "block size" option
+		#tftp-no-blocksize											# stop negotiating "block size" option
 		#tftp-no-fail												# do not abort startup even if tftp directory is not accessible
 		#tftp-secure												# enable tftp secure mode
 		
 		# --- pxe boot ----------------------------------------------------------------
-		pxe-prompt="Press F8 for boot menu", 0						# pxe boot prompt
-		pxe-service=x86PC             , "PXEBoot-x86PC"            , boot/grub/pxelinux		#  0 Intel x86PC
+		#pxe-prompt="Press F8 for boot menu", 0						# pxe boot prompt
+		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux		#  0 Intel x86PC
 		#pxe-service=PC98             , "PXEBoot-PC98"             ,						#  1 NEC/PC98
 		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,						#  2 EFI Itanium
 		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,						#  3 DEC Alpha
 		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,						#  4 Arc x86
 		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",						#  5 Intel Lean Client
 		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,						#  6 EFI IA32
-		pxe-service=BC_EFI            , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi	#  7 EFI BC
+		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi	#  7 EFI BC
 		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,						#  8 EFI Xscale
-		pxe-service=x86-64_EFI        , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi	#  9 EFI x86-64
+		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi	#  9 EFI x86-64
 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,						# 10 ARM 32bit
 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,						# 11 ARM 64bit
 
@@ -2668,6 +2702,9 @@ _EOT_
 		systemctl --quiet restart "${SYSD_ARRY[@]}"
 	fi
 	rm -f "${FILE_TEMP}"
+	funcPrintf "      ${MSGS_TITL}: ${TXT_RESET}${TXT_BYELLOW}To access your home directory from a Windows PC,${TXT_RESET}"
+	funcPrintf "      ${MSGS_TITL}: ${TXT_RESET}${TXT_BYELLOW} run the following command:${TXT_RESET}"
+	funcPrintf "      ${MSGS_TITL}: chmod go=rx \${HOME}"
 }
 
 # ----- open-vm-tools ---------------------------------------------------------
@@ -2938,9 +2975,9 @@ function funcRestore_settings() {
 		"/etc/systemd/system/connman.service.d/disable_dns_proxy.conf" \
 		"/etc/systemd/timesyncd.conf"                                  \
 		"/etc/systemd/timesyncd.conf.d/ntp.conf"                       \
-		"/home/master/.bashrc"                                         \
-		"/home/master/.curlrc"                                         \
-		"/home/master/.vimrc"                                          \
+		"${HOME}/.bashrc"                                              \
+		"${HOME}/.curlrc"                                              \
+		"${HOME}/.vimrc"                                               \
 		"/root/.bashrc"                                                \
 		"/root/.curlrc"                                                \
 		"/root/.vimrc"                                                 \
@@ -3625,7 +3662,7 @@ function funcCall_network() {
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-		COMD_LIST=("nss" "host" "aldy" "svce" "nic" "resolv" "pxe" "$@")
+		COMD_LIST=("nss" "host" "aldy" "svce" "nic" "resolv" "tftp" "pxe" "$@")
 		IFS=' =,'
 		set -f
 		set -- "${COMD_LIST[@]:-}"
@@ -3667,6 +3704,9 @@ function funcCall_network() {
 				;;
 			resolv )					# ===== resolv.conf ===================
 				funcNetwork_resolv_conf
+				;;
+			tftp )						# ===== tftpd-hpa =====================
+				funcNetwork_tftpd_hpa
 				;;
 			pxe )						# ===== pxe.conf ======================
 				funcNetwork_pxe_conf
@@ -3858,13 +3898,14 @@ function funcMain() {
 		funcPrintf "  -a | --all"
 		funcPrintf ""
 		funcPrintf "network settings (empty is [ options ])"
-		funcPrintf "  -n | --network [ nss host aldy svce nic resolv pxe ]"
+		funcPrintf "  -n | --network [ nss host aldy svce nic resolv tftp pxe ]"
 		funcPrintf "    nss     nsswitch"
 		funcPrintf "    host    hosts"
 		funcPrintf "    aldy    hosts.allow / hosts.deny"
 		funcPrintf "    svce    service"
 		funcPrintf "    nic     connman netplan networkmanager"
 		funcPrintf "    resolv  resolv.conf"
+		funcPrintf "    tftpd   tftp server"
 		funcPrintf "    pxe     pxe boot (dnsmasq)"
 		funcPrintf ""
 		funcPrintf "package settings (empty is [ options ])"

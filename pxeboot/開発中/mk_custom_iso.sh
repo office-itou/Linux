@@ -67,7 +67,6 @@
 	#   |   `-- rmak -> ../rmak
 	#   |-- imgs ---------------------- iso file extraction destination
 	#   |-- isos ---------------------- iso file
-	#   |-- load ---------------------- load module
 	#   |-- rmak ---------------------- remake file
 	#   |-- temp ---------------------- temporary directory
 	#   `-- tftp ---------------------- tftp contents
@@ -92,16 +91,16 @@
 	#       |   |-- boot -> ../load
 	#       |   `-- pxelinux.cfg
 	#       |       `-- default -> ../syslinux.cfg
-	#       |-- load -> ../load
+	#       |-- load ------------------ load module
 	#       |-- imgs -> ../imgs
 	#       |-- isos -> ../isos
 	#       `-- rmak -> ../rmak
 	#
 	#   /var/lib/
-	#   `-- tftpboot -> /home/master/share/tftp
+	#   `-- tftpboot -> ${HOME}/share/tftp
 	#
 	#   /var/www/
-	#   `-- html -> /home/master/share/html
+	#   `-- html -> ${HOME}/share/html
 	#
 	#   /etc/dnsmasq.d/
 	#   `-- pxe.conf ------------------ pxeboot dnsmasq configuration file
@@ -123,7 +122,6 @@
 	declare -r    DIRS_HTML="${DIRS_WORK}/html"					# html contents
 	declare -r    DIRS_IMGS="${DIRS_WORK}/imgs"					# iso file extraction destination
 	declare -r    DIRS_ISOS="${DIRS_WORK}/isos"					# iso file
-	declare -r    DIRS_LOAD="${DIRS_WORK}/load"					# load module
 	declare -r    DIRS_ORIG="${DIRS_WORK}/orig"					# original file
 	declare -r    DIRS_RMAK="${DIRS_WORK}/rmak"					# remake file
 	declare -r    DIRS_TEMP="${DIRS_WORK}/temp/${PROG_PROC}"	# temporary directory
@@ -868,37 +866,35 @@ function funcServiceStatus() {
 # ----- create directory ------------------------------------------------------
 function funcCreate_directory() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
-	# shellcheck disable=SC1083
-	declare -r -a DIRS_LIST=(                                                               \
-		"${DIRS_WORK}"                                                                      \
-		"${DIRS_BACK}"                                                                      \
-		"${DIRS_CONF}"/{_template,autoyast,kickstart,nocloud,preseed}                       \
-		"${DIRS_HTML}"                                                                      \
-		"${DIRS_IMGS}"                                                                      \
-		"${DIRS_ISOS}"                                                                      \
-		"${DIRS_LOAD}"                                                                      \
-		"${DIRS_ORIG}"                                                                      \
-		"${DIRS_RMAK}"                                                                      \
-		"${DIRS_TEMP}"                                                                      \
-		"${DIRS_TFTP}"/menu-{bios,efi64}/pxelinux.cfg                                       \
+	declare -r -a DIRS_LIST=(                                                                            \
+		"${DIRS_WORK}"                                                                                   \
+		"${DIRS_BACK}"                                                                                   \
+		"${DIRS_CONF}"/{_template,autoyast,kickstart,nocloud,preseed}                                    \
+		"${DIRS_HTML}"                                                                                   \
+		"${DIRS_IMGS}"                                                                                   \
+		"${DIRS_ISOS}"                                                                                   \
+		"${DIRS_ORIG}"                                                                                   \
+		"${DIRS_RMAK}"                                                                                   \
+		"${DIRS_TEMP}"                                                                                   \
+		"${DIRS_TFTP}"/{boot/grub/{fonts,i386-pc,locale,x86_64-efi},load,menu-{bios,efi64}/pxelinux.cfg} \
+
 	)
-	declare -r -a LINK_LIST=(                                                               \
-		"${DIRS_CONF}                         ${DIRS_HTML}/"                                \
-		"${DIRS_IMGS}                         ${DIRS_HTML}/"                                \
-		"${DIRS_ISOS}                         ${DIRS_HTML}/"                                \
-		"${DIRS_LOAD}                         ${DIRS_HTML}/"                                \
-		"${DIRS_RMAK}                         ${DIRS_HTML}/"                                \
-		"${DIRS_IMGS}                         ${DIRS_TFTP}/"                                \
-		"${DIRS_ISOS}                         ${DIRS_TFTP}/"                                \
-		"${DIRS_LOAD}                         ${DIRS_TFTP}/"                                \
-		"${DIRS_LOAD}                         ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_LOAD}                         ${DIRS_TFTP}/menu-efi64/"                     \
-		"${DIRS_TFTP}/menu-bios/syslinux.cfg  ${DIRS_TFTP}/menu-bios/pxelinux.cfg/default"  \
-		"${DIRS_TFTP}/menu-efi64/syslinux.cfg ${DIRS_TFTP}/menu-efi64/pxelinux.cfg/default" \
-		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi64/"                     \
-		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi64/"                     \
+	declare -r -a LINK_LIST=(                                                                            \
+		"${DIRS_CONF}                         ${DIRS_HTML}/"                                             \
+		"${DIRS_IMGS}                         ${DIRS_HTML}/"                                             \
+		"${DIRS_ISOS}                         ${DIRS_HTML}/"                                             \
+		"${DIRS_RMAK}                         ${DIRS_HTML}/"                                             \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/"                                             \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/"                                             \
+		"${DIRS_TFTP}/load                    ${DIRS_HTML}/"                                             \
+		"${DIRS_TFTP}/load                    ${DIRS_TFTP}/menu-bios/"                                   \
+		"${DIRS_TFTP}/load                    ${DIRS_TFTP}/menu-efi64/"                                  \
+		"${DIRS_TFTP}/menu-bios/syslinux.cfg  ${DIRS_TFTP}/menu-bios/pxelinux.cfg/default"               \
+		"${DIRS_TFTP}/menu-efi64/syslinux.cfg ${DIRS_TFTP}/menu-efi64/pxelinux.cfg/default"              \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-bios/"                                   \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi64/"                                  \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-bios/"                                   \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi64/"                                  \
 	)
 	declare -a    LINK_LINE=()
 	declare       LINK_NAME=""

@@ -92,16 +92,16 @@
 	#       |   |-- boot -> ../load
 	#       |   `-- pxelinux.cfg
 	#       |       `-- default -> ../syslinux.cfg
-	#       |-- load -> ../load
+	#       |-- load ------------------ load module
 	#       |-- imgs -> ../imgs
 	#       |-- isos -> ../isos
 	#       `-- rmak -> ../rmak
 	#
 	#   /var/lib/
-	#   `-- tftpboot -> /home/master/share/tftp
+	#   `-- tftpboot -> ${HOME}/share/tftp
 	#
 	#   /var/www/
-	#   `-- html -> /home/master/share/html
+	#   `-- html -> ${HOME}/share/html
 	#
 	#   /etc/dnsmasq.d/
 	#   `-- pxe.conf ------------------ pxeboot dnsmasq configuration file
@@ -123,7 +123,6 @@
 	declare -r    DIRS_HTML="${DIRS_WORK}/html"					# html contents
 	declare -r    DIRS_IMGS="${DIRS_WORK}/imgs"					# iso file extraction destination
 	declare -r    DIRS_ISOS="${DIRS_WORK}/isos"					# iso file
-	declare -r    DIRS_LOAD="${DIRS_WORK}/load"					# load module
 	declare -r    DIRS_ORIG="${DIRS_WORK}/orig"					# original file
 	declare -r    DIRS_RMAK="${DIRS_WORK}/rmak"					# remake file
 	declare -r    DIRS_TEMP="${DIRS_WORK}/temp/${PROG_PROC}"	# temporary directory
@@ -868,37 +867,35 @@ function funcServiceStatus() {
 # ----- create directory ------------------------------------------------------
 function funcCreate_directory() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
-	# shellcheck disable=SC1083
-	declare -r -a DIRS_LIST=(                                                               \
-		"${DIRS_WORK}"                                                                      \
-		"${DIRS_BACK}"                                                                      \
-		"${DIRS_CONF}"/{_template,autoyast,kickstart,nocloud,preseed}                       \
-		"${DIRS_HTML}"                                                                      \
-		"${DIRS_IMGS}"                                                                      \
-		"${DIRS_ISOS}"                                                                      \
-		"${DIRS_LOAD}"                                                                      \
-		"${DIRS_ORIG}"                                                                      \
-		"${DIRS_RMAK}"                                                                      \
-		"${DIRS_TEMP}"                                                                      \
-		"${DIRS_TFTP}"/menu-{bios,efi64}/pxelinux.cfg                                       \
+	declare -r -a DIRS_LIST=(                                                                            \
+		"${DIRS_WORK}"                                                                                   \
+		"${DIRS_BACK}"                                                                                   \
+		"${DIRS_CONF}"/{_template,autoyast,kickstart,nocloud,preseed}                                    \
+		"${DIRS_HTML}"                                                                                   \
+		"${DIRS_IMGS}"                                                                                   \
+		"${DIRS_ISOS}"                                                                                   \
+		"${DIRS_ORIG}"                                                                                   \
+		"${DIRS_RMAK}"                                                                                   \
+		"${DIRS_TEMP}"                                                                                   \
+		"${DIRS_TFTP}"/{boot/grub/{fonts,i386-pc,locale,x86_64-efi},load,menu-{bios,efi64}/pxelinux.cfg} \
+
 	)
-	declare -r -a LINK_LIST=(                                                               \
-		"${DIRS_CONF}                         ${DIRS_HTML}/"                                \
-		"${DIRS_IMGS}                         ${DIRS_HTML}/"                                \
-		"${DIRS_ISOS}                         ${DIRS_HTML}/"                                \
-		"${DIRS_LOAD}                         ${DIRS_HTML}/"                                \
-		"${DIRS_RMAK}                         ${DIRS_HTML}/"                                \
-		"${DIRS_IMGS}                         ${DIRS_TFTP}/"                                \
-		"${DIRS_ISOS}                         ${DIRS_TFTP}/"                                \
-		"${DIRS_LOAD}                         ${DIRS_TFTP}/"                                \
-		"${DIRS_LOAD}                         ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_LOAD}                         ${DIRS_TFTP}/menu-efi64/"                     \
-		"${DIRS_TFTP}/menu-bios/syslinux.cfg  ${DIRS_TFTP}/menu-bios/pxelinux.cfg/default"  \
-		"${DIRS_TFTP}/menu-efi64/syslinux.cfg ${DIRS_TFTP}/menu-efi64/pxelinux.cfg/default" \
-		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi64/"                     \
-		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-bios/"                      \
-		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi64/"                     \
+	declare -r -a LINK_LIST=(                                                                            \
+		"${DIRS_CONF}                         ${DIRS_HTML}/"                                             \
+		"${DIRS_IMGS}                         ${DIRS_HTML}/"                                             \
+		"${DIRS_ISOS}                         ${DIRS_HTML}/"                                             \
+		"${DIRS_RMAK}                         ${DIRS_HTML}/"                                             \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/"                                             \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/"                                             \
+		"${DIRS_TFTP}/load                    ${DIRS_HTML}/"                                             \
+		"${DIRS_TFTP}/load                    ${DIRS_TFTP}/menu-bios/"                                   \
+		"${DIRS_TFTP}/load                    ${DIRS_TFTP}/menu-efi64/"                                  \
+		"${DIRS_TFTP}/menu-bios/syslinux.cfg  ${DIRS_TFTP}/menu-bios/pxelinux.cfg/default"               \
+		"${DIRS_TFTP}/menu-efi64/syslinux.cfg ${DIRS_TFTP}/menu-efi64/pxelinux.cfg/default"              \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-bios/"                                   \
+		"${DIRS_IMGS}                         ${DIRS_TFTP}/menu-efi64/"                                  \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-bios/"                                   \
+		"${DIRS_ISOS}                         ${DIRS_TFTP}/menu-efi64/"                                  \
 	)
 	declare -a    LINK_LINE=()
 	declare       LINK_NAME=""
@@ -2715,7 +2712,9 @@ function funcCreate_copy_iso2hdd() {
 	# --- copy iso -> hdd -----------------------------------------------------
 	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
 #	ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
-	ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/"
+	if [[ ! -d "${DEST_DIRS}/." ]] || [[  "$(("0$(stat --format=%a "${DEST_DIRS}/")" & 0200))" -ne 0 ]]; then
+		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/"
+	fi
 	if [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" ]] && [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" ]]; then
 		DIRS_IRAM="${BOOT_DIRS}"
 		DIRS_KRNL="${BOOT_DIRS}"
@@ -2727,10 +2726,14 @@ function funcCreate_copy_iso2hdd() {
 		fi
 		rm -rf "${DIRS_IRAM:?}/${TGET_LINE[6]##*/}" "${DIRS_KRNL:?}/${TGET_LINE[7]##*/}"
 		mkdir -p "${DIRS_IRAM}" "${DIRS_KRNL}"
-		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
-		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
-#		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
-#		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
+		if [[ ! -d "${DIRS_IRAM}/." ]] || [[  "$(("0$(stat --format=%a "${DIRS_IRAM}/")" & 0200))" -ne 0 ]]; then
+			ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
+		fi
+		if [[ ! -d "${DIRS_KRNL}/." ]] || [[  "$(("0$(stat --format=%a "${DIRS_KRNL}/")" & 0200))" -ne 0 ]]; then
+			ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
+		fi
+#		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
+#		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 	fi
 	umount "${WORK_MNTP}"
 	# --- copy initrd -> hdd --------------------------------------------------
@@ -3711,6 +3714,13 @@ function funcCall_create() {
 	declare -a    BOOT_ARRY=()								# boot option array
 	declare       BOOT_OPTN=""								# boot option (syslinux)
 	declare -a    BOOT_GRUB=()								# boot option (grub)
+	declare       COMD_NAME="grub-mkimage"					# debian / ubuntu
+	declare -r -a MODU_LIST=( \
+		"chain" "memdisk" "loopback" "tftp" "http" "linux" "halt" "reboot" "configfile" \
+		"net" "nativedisk" "iso9660" "udf" "ext2" "fat" "ntfs" "part_gpt" "part_msdos" "probe" \
+		"minicmd" "normal" "boot" "cat" "cpuid" "echo" "font" "ls" "lvm" "regexp" "search" "test" "true" \
+		"all_video" "gfxmenu" "gfxterm" "gfxterm_background" "video" "play" "progress"
+	)
 	declare       FILE_PATH=""
 	declare -a    FILE_INFO=()
 	declare       FILE_SIZE=""
@@ -3722,6 +3732,11 @@ function funcCall_create() {
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	funcPrintf "      create: syslinux /grub menu file"
+	# -------------------------------------------------------------
+	# shellcheck disable=SC2312
+	if [[ -z "$(command -v "${COMD_NAME}" 2> /dev/null)" ]]; then
+		COMD_NAME="grub2-mkimage"
+	fi
 	# -------------------------------------------------------------------------
 	for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},${DIRS_GRUB}}
 	do
@@ -3732,71 +3747,81 @@ function funcCall_create() {
 				: > "${MENU_DIRS}/${MENU_SLNX[0]}"
 				: > "${MENU_DIRS}/${MENU_SLNX[1]}"
 				if [[ ! -f "${MENU_DIRS}/pxelinux.0" ]]; then
-					cp --archive --update /usr/lib/syslinux/memdisk         "${MENU_DIRS}/"
-					cp --archive --update /usr/lib/syslinux/modules/bios/.  "${MENU_DIRS}/"
-					cp --archive --update /usr/lib/PXELINUX/.               "${MENU_DIRS}/"
+					if [[ -d /usr/lib/syslinux/modules/bios/. ]]; then
+						cp --archive --update /usr/lib/syslinux/memdisk         "${MENU_DIRS}/"
+						cp --archive --update /usr/lib/syslinux/modules/bios/.  "${MENU_DIRS}/"
+						cp --archive --update /usr/lib/PXELINUX/.               "${MENU_DIRS}/"
+					else
+						cp --archive --update /usr/share/syslinux/memdisk       "${MENU_DIRS}/"
+						cp --archive --update /usr/share/syslinux/.             "${MENU_DIRS}/"
+					fi
 				fi
 				;;
 			*efi32)
 				: > "${MENU_DIRS}/${MENU_SLNX[0]}"
 				: > "${MENU_DIRS}/${MENU_SLNX[1]}"
 				if [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
-					cp --archive --update /usr/lib/syslinux/modules/efi32/. "${MENU_DIRS}/"
-					cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${MENU_DIRS}/"
+					if [[ -d /usr/lib/syslinux/modules/efi32/. ]]; then
+						cp --archive --update /usr/lib/syslinux/modules/efi32/. "${MENU_DIRS}/"
+						cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${MENU_DIRS}/"
+					fi
 				fi
 				;;
 			*efi64)
 				: > "${MENU_DIRS}/${MENU_SLNX[0]}"
 				: > "${MENU_DIRS}/${MENU_SLNX[1]}"
 				if [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
-					cp --archive --update /usr/lib/syslinux/modules/efi64/. "${MENU_DIRS}/"
-					cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${MENU_DIRS}/"
+					if [[ -d /usr/lib/syslinux/modules/efi64/. ]]; then
+						cp --archive --update /usr/lib/syslinux/modules/efi64/. "${MENU_DIRS}/"
+						cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${MENU_DIRS}/"
+					fi
 				fi
 				;;
 			*grub )
 				: > "${MENU_DIRS}/${MENU_GRUB[0]}"
 				: > "${MENU_DIRS}/${MENU_GRUB[1]}"
-				if [[ ! -d "${MENU_DIRS}/x86_64-efi/." ]] \
-				|| [[ ! -d "${MENU_DIRS}/i386-pc/."    ]]; then
-					cp --archive --update /usr/lib/syslinux/memdisk         "${DIRS_TFTP}/"
-					cp --archive --update /usr/lib/syslinux/memdisk         "${DIRS_HTML}/"
-					grub-mknetdir --net-directory="${DIRS_TFTP}" --subdir="${DIRS_GRUB}"
+				if [[ ! -f "${MENU_DIRS}/x86_64-efi/grub.cfg" ]] \
+				|| [[ ! -f "${MENU_DIRS}/i386-pc/grub.cfg"    ]]; then
+					mkdir -p "${DIRS_TFTP}/boot/grub/{fonts,locale,i386-pc,x86_64-efi}"
+					if [[ -f /usr/lib/syslinux/memdisk ]]; then
+						cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_TFTP}/"
+						cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_HTML}/"
+						grub-mknetdir --net-directory="${DIRS_TFTP}" --subdir="${DIRS_GRUB}"
+					else
+						cp --archive --update /usr/share/syslinux/memdisk "${DIRS_TFTP}/"
+						cp --archive --update /usr/share/syslinux/memdisk "${DIRS_HTML}/"
+						cp --archive --update /usr/lib/grub/i386-pc/.     "${DIRS_TFTP}/boot/grub/i386-pc/"
+						cp --archive --update /usr/lib/grub/x86_64-efi/.  "${DIRS_TFTP}/boot/grub/x86_64-efi/"
+						cp --archive --update /usr/share/grub/*.pf2       "${DIRS_TFTP}/boot/grub/fonts/"
+					fi
 				fi
-				if [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}" ]] \
-				|| [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
-					mkdir -p "${DIRS_TEMP}"
-					WORK_FILE="${DIRS_TEMP}/setvars.conf"
-					cat <<- _EOT_ | sed 's/^ *//g' > "${WORK_FILE}"
-						set net_default_server="${HTTP_ADDR#*://}"
+				# -------------------------------------------------------------
+				mkdir -p "${DIRS_TEMP}"
+				WORK_FILE="${DIRS_TEMP}/setvars.conf"
+				cat <<- _EOT_ | sed 's/^ *//g' > "${WORK_FILE}"
+					set net_default_server="${HTTP_ADDR#*://}"
 _EOT_
-					# ---------------------------------------------------------
-					if [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}"  ]]; then
-						grub-mkimage \
-						    --directory=/usr/lib/grub/i386-pc \
-						    --format=i386-pc-pxe \
-						    --output="${MENU_DIRS}/${BOOT_PXE0}" \
-						    --prefix='(tftp)/boot/grub' \
-						    --config="${WORK_FILE}" \
-						    --compression=auto \
-						    chain memdisk loopback tftp http pxe linux linux16 halt reboot configfile \
-						    net nativedisk iso9660 udf ext2 fat ntfs part_gpt part_msdos probe \
-						    minicmd normal boot cat cpuid echo font ls lvm regexp search test true \
-						    all_video gfxmenu gfxterm gfxterm_background vga video play progress
-					fi
-					# ---------------------------------------------------------
-					if [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
-						grub-mkimage \
-						    --directory=/usr/lib/grub/x86_64-efi \
-						    --format=x86_64-efi \
-						    --output="${MENU_DIRS}/${BOOT_UEFI}" \
-						    --prefix='(tftp)/boot/grub' \
-						    --config="${WORK_FILE}" \
-						    --compression=auto \
-						    chain memdisk loopback tftp http linux linux16 linuxefi halt reboot configfile tpm \
-						    net nativedisk iso9660 udf ext2 fat ntfs part_gpt part_msdos probe \
-						    minicmd normal boot cat cpuid echo font ls lvm regexp search test true \
-						    all_video gfxmenu gfxterm gfxterm_background video play progress
-					fi
+				# -------------------------------------------------------------
+				if [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}"  ]]; then
+					"${COMD_NAME}" \
+					    --directory=/usr/lib/grub/i386-pc \
+					    --format=i386-pc-pxe \
+					    --output="${MENU_DIRS}/${BOOT_PXE0}" \
+					    --prefix='(tftp)/boot/grub' \
+					    --config="${WORK_FILE}" \
+					    --compression=auto \
+					    "${MODU_LIST[@]}" pxe vga
+				fi
+				# -------------------------------------------------------------
+				if [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
+					"${COMD_NAME}" \
+					    --directory=/usr/lib/grub/x86_64-efi \
+					    --format=x86_64-efi \
+					    --output="${MENU_DIRS}/${BOOT_UEFI}" \
+					    --prefix='(tftp)/boot/grub' \
+					    --config="${WORK_FILE}" \
+					    --compression=auto \
+					    "${MODU_LIST[@]}" tpm
 				fi
 				;;
 			* )
