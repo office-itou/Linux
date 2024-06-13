@@ -2711,10 +2711,7 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${BOOT_DIRS}"
 	# --- copy iso -> hdd -----------------------------------------------------
 	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
-#	ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
-	if [[ ! -d "${DEST_DIRS}/." ]] || [[  "$(("0$(stat --format=%a "${DEST_DIRS}/")" & 0200))" -ne 0 ]]; then
-		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/"
-	fi
+	ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/" 2>/dev/null || true
 	if [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" ]] && [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" ]]; then
 		DIRS_IRAM="${BOOT_DIRS}"
 		DIRS_KRNL="${BOOT_DIRS}"
@@ -2726,12 +2723,8 @@ function funcCreate_copy_iso2hdd() {
 		fi
 		rm -rf "${DIRS_IRAM:?}/${TGET_LINE[6]##*/}" "${DIRS_KRNL:?}/${TGET_LINE[7]##*/}"
 		mkdir -p "${DIRS_IRAM}" "${DIRS_KRNL}"
-		if [[ ! -d "${DIRS_IRAM}/." ]] || [[  "$(("0$(stat --format=%a "${DIRS_IRAM}/")" & 0200))" -ne 0 ]]; then
-			ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
-		fi
-		if [[ ! -d "${DIRS_KRNL}/." ]] || [[  "$(("0$(stat --format=%a "${DIRS_KRNL}/")" & 0200))" -ne 0 ]]; then
-			ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
-		fi
+		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
+		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 #		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
 #		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 	fi
