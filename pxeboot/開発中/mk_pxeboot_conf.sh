@@ -2711,7 +2711,13 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${BOOT_DIRS}"
 	# --- copy iso -> hdd -----------------------------------------------------
 	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
-	ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/" 2>/dev/null || true
+	touch -c "${DEST_DIRS}" 2>/dev/null
+	RET_CD=$?
+	if [[ "${RET_CD}" -eq 0 ]]; then
+		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/" 2>/dev/null || true
+#	else
+#		funcPrintf "        skip: ${TGET_LINE[4]}"
+	fi
 	if [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" ]] && [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" ]]; then
 		DIRS_IRAM="${BOOT_DIRS}"
 		DIRS_KRNL="${BOOT_DIRS}"
@@ -3327,7 +3333,7 @@ _EOT_
 						 		set isofile="(${HTTP_ADDR%%:*},${HTTP_ADDR##*/})/isos/${TGET_INFO[4]}"
 						 		export isofile
 						 		echo 'Loading linux ...'
-						 		linux16 (tftp)/memdisk iso raw
+						 		linux16 (tftp,\${net_default_server})/memdisk iso raw
 						 		echo 'Loading initrd ...'
 						 		initrd16 "\$isofile"
 						 	}
@@ -3346,10 +3352,10 @@ _EOT_
 						 	echo   'Loading linux ...'
 						 	if [ "\${grub_platform}" = "efi" ]; then
 						 		echo 'Loading UEFI Version ...'
-						 		linux  (tftp)/load/${TGET_INFO[1]}/${TGET_INFO[6]}
+						 		linux  (tftp,\${net_default_server})/load/${TGET_INFO[1]}/${TGET_INFO[6]}
 						 	else
 						 		echo 'Loading BIOS Version ...'
-						 		linux  (tftp)/load/${TGET_INFO[1]}/${TGET_INFO[7]}
+						 		linux  (tftp,\${net_default_server})/load/${TGET_INFO[1]}/${TGET_INFO[7]}
 						 	fi
 						}
 _EOT_
@@ -3368,7 +3374,7 @@ _EOT_
 						 		set isofile="(${HTTP_ADDR%%:*},${HTTP_ADDR##*/})/isos/${TGET_INFO[4]}"
 						 		export isofile
 						 		echo 'Loading linux ...'
-						 		linux16 (tftp)/memdisk iso raw
+						 		linux16 (tftp,\${net_default_server})/memdisk iso raw
 						 		echo 'Loading initrd ...'
 						 		initrd16 "\$isofile"
 						 	}
@@ -3397,9 +3403,9 @@ _EOT_
 						 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 						 	insmod progress
 						 	echo 'Loading linux ...'
-						 	linux  (tftp)/load/${TGET_INFO[1]}/${TGET_INFO[7]} \${options} ---
+						 	linux  (tftp,\${net_default_server})/load/${TGET_INFO[1]}/${TGET_INFO[7]} \${options} ---
 						 	echo 'Loading initrd ...'
-						 	initrd (tftp)/load/${TGET_INFO[1]}/${TGET_INFO[6]}
+						 	initrd (tftp,\${net_default_server})/load/${TGET_INFO[1]}/${TGET_INFO[6]}
 						}
 _EOT_
 					;;
@@ -3800,9 +3806,9 @@ _EOT_
 					    --directory=/usr/lib/grub/i386-pc \
 					    --format=i386-pc-pxe \
 					    --output="${MENU_DIRS}/${BOOT_PXE0}" \
-					    --prefix='(tftp)/boot/grub' \
-					    --config="${WORK_FILE}" \
+					    --prefix="(tftp,${HTTP_ADDR#*://})/boot/grub" \
 					    --compression=auto \
+					    --config="${WORK_FILE}" \
 					    "${MODU_LIST[@]}" pxe vga
 				fi
 				# -------------------------------------------------------------
@@ -3811,9 +3817,9 @@ _EOT_
 					    --directory=/usr/lib/grub/x86_64-efi \
 					    --format=x86_64-efi \
 					    --output="${MENU_DIRS}/${BOOT_UEFI}" \
-					    --prefix='(tftp)/boot/grub' \
-					    --config="${WORK_FILE}" \
+					    --prefix="(tftp,${HTTP_ADDR#*://})/boot/grub" \
 					    --compression=auto \
+					    --config="${WORK_FILE}" \
 					    "${MODU_LIST[@]}" tpm
 				fi
 				;;

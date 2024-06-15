@@ -5,7 +5,7 @@
     # =========================================================================
     # common
     # =========================================================================
-        sudo apt-get install isolinux isomd5sum xorriso xxd 7zip pxelinux rsync syslinux-efi lz4 lzop shellcheck grub-pc-bin
+        sudo apt-get install isolinux isomd5sum xorriso xxd 7zip pxelinux rsync syslinux-efi lz4 lzop grub-pc-bin
         sudo apt-get install tree shellcheck
         chmod go=rx ${HOME}
     # --- backup install shell ------------------------------------------------
@@ -79,11 +79,39 @@ _EOT_
     # link pc [ fedora / centos ]
     # =========================================================================
         sudo dnf -y install \
-            selinux-policy-targeted selinux-policy-mls \
-            policycoreutils policycoreutils-gui libselinux-utils policycoreutils-python-utils setools-console checkpolicy \
-            nfs-utils \
-            tftp-server tftp \
-            syslinux grub2-pc-modules grub2-efi-x64-modules
+            syslinux grub2-pc-modules grub2-efi-x64-modules \
+            p7zip \
+            tree shellcheck
+        sudo systemctl enable --now tftp.socket
+        chmod go=rx ${HOME}
+    # --- backup install shell ------------------------------------------------
+        sudo mv install.sh install.sh.user.lst install
+    # --- create shell link ---------------------------------------------------
+        ln -s /mnt/hgfs/workspace/Image/linux/bin/install.sh                     .
+        ln -s /mnt/hgfs/workspace/Image/linux/bin/_sv-server/install.sh.user.lst .
+        ln -s /mnt/hgfs/workspace/Image/linux/bin/mk_custom_iso.sh               .
+        ln -s /mnt/hgfs/workspace/Image/linux/bin/mk_pxeboot_conf.sh             .
+    # --- create work directory -----------------------------------------------
+        sudo ./mk_custom_iso.sh --link
+    #   sudo ./mk_pxeboot_conf.sh --link
+    # +++ [ setup pxeboot server ] ++++++++++++++++++++++++++++++++++++++++++++
+#       sudo sed -i /etc/default/tftpd-hpa                       \
+#           -e "/^TFTP_DIRECTORY=/ s%=.*$%=\"/var/lib/tftpboot\"%" \
+#           -e '/^TFTP_OPTIONS=/   s/=.*$/="--secure --verbose"/'
+        sudo sed -i /etc/dnsmasq.d/pxe.conf      \
+            -e '/^#pxe-prompt=/            s/^#//' \
+            -e '/^#pxe-service=x86PC/      s/^#//' \
+            -e '/^#pxe-service=BC_EFI/     s/^#//' \
+            -e '/^#pxe-service=x86-64_EFI/ s/^#//'
+        sudo systemctl restart dnsmasq.service
+    # +++ [ setup nfs ] +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        sudo dnf -y install nfs-utils
+        sudo firewall-cmd --add-service=nfs --permanent --zone=home
+        sudo firewall-cmd --reload
+        sudo firewall-cmd --list-all --zone=home
+        sudo sed -i.orig /etc/exports -e '$ a /home 192.168.1.0/24(ro,no_subtree_check,no_root_squash,no_wdelay)'
+        sudo exportfs -ar
+        sudo exportfs -v
     # -------------------------------------------------------------------------
         sudo cp -a /usr/share/syslinux/memdisk /var/lib/tftpboot/
         sudo cp -a /usr/lib/grub/i386-pc/*     /var/lib/tftpboot/boot/grub/i386-pc/
@@ -115,9 +143,18 @@ _EOT_
         sudo ln -s /mnt/share.nfs/master/share/{imgs,isos,rmak} ~/share/
         ls -l ~/share/
     # --- exec shell ----------------------------------------------------------
-        sudo ./mk_custom_iso.sh --download a
+#       sudo ./mk_custom_iso.sh --download a
         sudo ./mk_pxeboot_conf.sh --create
-        sudo ./mk_custom_iso.sh --create a
+#       sudo ./mk_custom_iso.sh --create a
+
+
+        sudo sed -e '/^ExecStart=/ s% -s % -s -v -m /etc/tftpd.map %' -i /usr/lib/systemd/system/tftp.service
+        cat <<- _EOT_ | sed 's/^ *//g' | sudo tee /etc/tftpd.map
+			rg \\ /
+_EOT_
+        sudo systemctl daemon-reload
+        sudo systemctl restart tftp.socket
+        ps -Af | grep tftp
 
     # =========================================================================
     # Memo: SELinux
