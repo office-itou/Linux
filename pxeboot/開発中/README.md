@@ -101,6 +101,7 @@
 * Live mode minimum memory is 8GiB  
 * pxeboot is very slow and transfer speed is around 1.9MiB/s  
 * Booting succeeded with Windows ADK 10.0.19041.1, but failed with ADK 10.1.25398.1  
+* WinPE is BIOS mode only  
   
 ## Tree diagram
   
