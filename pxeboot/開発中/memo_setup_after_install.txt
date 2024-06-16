@@ -80,7 +80,6 @@ _EOT_
     # =========================================================================
         sudo dnf -y install \
             syslinux grub2-pc-modules grub2-efi-x64-modules \
-            p7zip \
             tree shellcheck
         sudo systemctl enable --now tftp.socket
         chmod go=rx ${HOME}
@@ -109,14 +108,14 @@ _EOT_
         sudo firewall-cmd --add-service=nfs --permanent --zone=home
         sudo firewall-cmd --reload
         sudo firewall-cmd --list-all --zone=home
-        sudo sed -i.orig /etc/exports -e '$ a /home 192.168.1.0/24(ro,no_subtree_check,no_root_squash,no_wdelay)'
+        sudo echo '/home 192.168.1.0/24(ro,no_subtree_check,no_root_squash,no_wdelay)' | sudo tee -a /etc/exports
         sudo exportfs -ar
         sudo exportfs -v
     # -------------------------------------------------------------------------
-        sudo cp -a /usr/share/syslinux/memdisk /var/lib/tftpboot/
-        sudo cp -a /usr/lib/grub/i386-pc/*     /var/lib/tftpboot/boot/grub/i386-pc/
-        sudo cp -a /usr/lib/grub/x86_64-efi/*  /var/lib/tftpboot/boot/grub/x86_64-efi/
-        sudo cp -a /usr/share/grub/*.pf2       /var/lib/tftpboot/boot/grub/fonts/
+#       sudo cp -a /usr/share/syslinux/memdisk /var/lib/tftpboot/
+#       sudo cp -a /usr/lib/grub/i386-pc/*     /var/lib/tftpboot/boot/grub/i386-pc/
+#       sudo cp -a /usr/lib/grub/x86_64-efi/*  /var/lib/tftpboot/boot/grub/x86_64-efi/
+#       sudo cp -a /usr/share/grub/*.pf2       /var/lib/tftpboot/boot/grub/fonts/
     # --- samba server --------------------------------------------------------
         sudo setsebool -P samba_enable_home_dirs 1
         sudo setsebool -P samba_export_all_ro 1
@@ -125,6 +124,7 @@ _EOT_
         sudo setsebool -P httpd_enable_homedirs 1
         sudo setsebool -P httpd_use_nfs 1
         sudo setsebool -P httpd_use_fusefs 1
+        sudo setsebool -P httpd_read_user_content 1
     # --- tftp server ---------------------------------------------------------
          sudo setsebool -P tftp_home_dir 1
     # -------------------------------------------------------------------------
@@ -159,15 +159,19 @@ _EOT_
     # =========================================================================
     # Memo: SELinux
     # =========================================================================
-    # --- 全初期化 --------------------------------------------------------------
+    # --- 全初期化 ------------------------------------------------------------
         sudo touch /.autorelabel
     # --- SELinux 確認・解除・設定
         sudo getenforce
         sudo setenforce 0 or 1
         sudo getenforce
-    # --- サイレント拒否 --------------------------------------------------------
+    # --- サイレント拒否 ------------------------------------------------------
         sudo seinfo                     # サイレント拒否が何個あるか確認する(Dontaudit項目)
         sudo sesearch --dontaudit       # サイレント拒否の一覧を表示する
         sudo semodule -DB               # サイレント拒否を無効化する(ロギングするようになる)
         sudo semodule -B                # サイレント拒否を有効化する(再度ロギングしなくなる)
+
+
+# *** iPXE ********************************************************************
+wget https://boot.ipxe.org/{1mb,Shell.efi,ipxe.dsk,ipxe.efi,ipxe.iso,ipxe.lkrn,ipxe.png,ipxe.pxe,ipxe.usb,memtest,memtest.0,memtest.bin,memtest.elf,memtest420.0,memtest501.0,snponly.efi,texture.png,tinycore.ipxe,ucode.bin,undionly.kpxe}
 
