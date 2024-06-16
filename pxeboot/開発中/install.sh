@@ -1561,14 +1561,7 @@ function funcNetwork_pxe_conf() {
 		#dhcp-option=option:ntp-server,${NTPS_ADDR}				# 42 ntp-server
 		#dhcp-option=option:tftp-server,${IPV4_ADDR[0]}					# 66 tftp-server
 		#dhcp-option=option:bootfile-name,							# 67 bootfile-name
-		
-		# --- tftp --------------------------------------------------------------------
-		#enable-tftp=${ETHR_NAME[0]}											# enable tftp server
-		#tftp-root=${TFTP_ROOT}								# tftp root directory
-		#tftp-lowercase												# convert tftp request path to all lowercase
-		#tftp-no-blocksize											# stop negotiating "block size" option
-		#tftp-no-fail												# do not abort startup even if tftp directory is not accessible
-		#tftp-secure												# enable tftp secure mode
+		dhcp-no-override											# disable re-use of the dhcp servername and filename fields as extra option space
 		
 		# --- pxe boot ----------------------------------------------------------------
 		#pxe-prompt="Press F8 for boot menu", 0						# pxe boot prompt
@@ -1584,7 +1577,21 @@ function funcNetwork_pxe_conf() {
 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi	#  9 EFI x86-64
 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,						# 10 ARM 32bit
 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,						# 11 ARM 64bit
-
+		
+		# --- ipxe block --------------------------------------------------------------
+		#pxe-service=tag:iPXE ,x86PC     , "PXEBoot-x86PC"     , /autoexec.ipxe				#  0 Intel x86PC (iPXE)
+		#pxe-service=tag:!iPXE,x86PC     , "PXEBoot-x86PC"     , ipxe/undionly.kpxe			#  0 Intel x86PC
+		#pxe-service=tag:!iPXE,BC_EFI    , "PXEBoot-BC_EFI"    , ipxe/ipxe.efi				#  7 EFI BC
+		#pxe-service=tag:!iPXE,x86-64_EFI, "PXEBoot-x86-64_EFI", ipxe/ipxe.efi				#  9 EFI x86-64
+		
+		# --- tftp --------------------------------------------------------------------
+		#enable-tftp=${ETHR_NAME[0]}											# enable tftp server
+		#tftp-root=${TFTP_ROOT}								# tftp root directory
+		#tftp-lowercase												# convert tftp request path to all lowercase
+		#tftp-no-blocksize											# stop negotiating "block size" option
+		#tftp-no-fail												# do not abort startup even if tftp directory is not accessible
+		#tftp-secure												# enable tftp secure mode
+		
 		# --- dnsmasq manual page -----------------------------------------------------
 		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
 		
