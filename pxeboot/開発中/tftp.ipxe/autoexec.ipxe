@@ -1,0 +1,86 @@
+#!ipxe
+
+cpuid --ext 29 && set arch amd64 || set arch x86
+
+dhcp
+
+set menu-timeout 0
+isset ${menu-default} || set menu-default exit
+
+:start
+
+:menu
+menu Select the OS type you want to boot
+item --gap --      --------------------------------------------------------------------------------
+item winpe-x64     WinPE 64bit
+item ati2020x64    ATI2020 64bit
+item ati2020x86    ATI2020 32bit
+item windows-10    Windows 10
+item windows-11    Windows 11
+item --gap --      [ System command ] 
+item shell         iPXE shell
+#item shutdown      System shutting down
+item restart       System rebooting
+item --gap --      --------------------------------------------------------------------------------
+choose --timeout ${menu-timeout} --default ${menu-default} selected || goto menu
+goto ${selected}
+
+:winpe-x64
+set addr http://192.168.1.12/imgs/winpe-x64
+kernel ipxe/wimboot
+initrd ${addr}/Boot/BCD                     BCD
+initrd ${addr}/Boot/boot.sdi                boot.sdi
+initrd -n boot.wim ${addr}/sources/boot.wim boot.wim
+boot
+
+:ati2020x64
+set addr http://192.168.1.12/imgs/ati2020x64
+kernel ipxe/wimboot
+initrd ${addr}/Boot/BCD                     BCD
+initrd ${addr}/Boot/boot.sdi                boot.sdi
+initrd -n boot.wim ${addr}/sources/boot.wim boot.wim
+boot
+
+:ati2020x86
+set addr http://192.168.1.12/imgs/ati2020x86
+kernel ipxe/wimboot
+initrd ${addr}/Boot/BCD                     BCD
+initrd ${addr}/Boot/boot.sdi                boot.sdi
+initrd -n boot.wim ${addr}/sources/boot.wim boot.wim
+boot
+
+:windows-10
+set addr http://192.168.1.12/imgs/windows-10
+kernel ipxe/wimboot
+initrd ${addr}/install.bat                  install.bat
+initrd ${addr}/winpeshl.ini                 winpeshl.ini
+initrd ${addr}/boot/bcd                     BCD
+initrd ${addr}/boot/boot.sdi                boot.sdi
+initrd -n boot.wim ${addr}/sources/boot.wim boot.wim
+boot
+
+:windows-11
+set addr http://192.168.1.12/imgs/windows-11
+kernel ipxe/wimboot
+initrd ${addr}/install.bat                  install.bat
+initrd ${addr}/winpeshl.ini                 winpeshl.ini
+initrd ${addr}/boot/bcd                     BCD
+initrd ${addr}/boot/boot.sdi                boot.sdi
+initrd -n boot.wim ${addr}/sources/boot.wim boot.wim
+boot
+
+:shell
+echo "Boot iPXE shell ..."
+shell
+goto start
+
+:shutdown
+echo "System shutting down ..."
+poweroff
+
+:restart
+echo "System rebooting ..."
+reboot
+
+:exit
+exit
