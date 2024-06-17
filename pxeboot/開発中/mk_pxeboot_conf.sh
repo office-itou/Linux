@@ -3715,10 +3715,16 @@ function funcCall_create() {
 	declare -a    BOOT_GRUB=()								# boot option (grub)
 	declare       COMD_NAME="grub-mkimage"					# debian / ubuntu
 	declare -r -a MODU_LIST=( \
-		"chain" "memdisk" "loopback" "tftp" "http" "linux" "halt" "reboot" "configfile" \
-		"net" "nativedisk" "iso9660" "udf" "ext2" "fat" "ntfs" "part_gpt" "part_msdos" "probe" \
-		"minicmd" "normal" "boot" "cat" "cpuid" "echo" "font" "ls" "lvm" "regexp" "search" "test" "true" \
-		"all_video" "gfxmenu" "gfxterm" "gfxterm_background" "video" "play" "progress"
+		"all_video" "boot" "btrfs" "cat" "chain" "configfile" "echo" \
+		"ext2" "fat" "font" "gettext" "gfxmenu" "gfxterm" \
+		"gfxterm_background" "gzio" "halt" "help" "hfsplus" "http" \
+		"iso9660" "jpeg" "keystatus" "linux" "loadenv" "loopback" \
+		"ls" "lvm" "memdisk" "minicmd" "nativedisk" "net" "normal" \
+		"ntfs" "part_apple" "part_gpt" "part_msdos" "password_pbkdf2" \
+		"png" "probe" "progress" "reboot" "regexp" "search" \
+		"search_fs_file" "search_fs_uuid" "search_label" "sleep" \
+		"smbios" "squash4" "test" "tftp" "true" "udf" "video" \
+		"xfs" "zfs" "zfscrypt" "zfsinfo" \
 	)
 	declare       FILE_PATH=""
 	declare -a    FILE_INFO=()
@@ -3809,7 +3815,7 @@ _EOT_
 					    --prefix="(tftp,${HTTP_ADDR#*://})/boot/grub" \
 					    --compression=auto \
 					    --config="${WORK_FILE}" \
-					    "${MODU_LIST[@]}" pxe vga
+					    "${MODU_LIST[@]}" cpuid play pxe vga
 				fi
 				# -------------------------------------------------------------
 				if [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
@@ -3820,7 +3826,7 @@ _EOT_
 					    --prefix="(tftp,${HTTP_ADDR#*://})/boot/grub" \
 					    --compression=auto \
 					    --config="${WORK_FILE}" \
-					    "${MODU_LIST[@]}" tpm
+					    "${MODU_LIST[@]}" cpuid play tpm efifwsetup efinet lsefi lsefimmap lsefisystab lssal
 				fi
 				;;
 			* )

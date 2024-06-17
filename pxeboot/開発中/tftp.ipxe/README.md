@@ -27,6 +27,29 @@
 `-- autoexec.ipxe
 ```
   
+``` bash:
+/var/www/html/
+|-- conf ---------------------- configuration file
+|-- imgs ---------------------- iso file extraction destination
+|   |-- ati2020x64
+|   |-- ati2020x86
+|   |-- windows-10
+|   |   |-- install.cmd ------- instruction file for connecting to the file server and starting the installer
+|   |   |-- setup.exe --------- installation executable file
+|   |   |-- unattend.xml ------ unattended installation instruction file
+|   |   `-- winpeshl.ini ------ instructions for running the file in WinPE
+|   |-- windows-11
+|   |   |-- bypass.cmd -------- restriction bypass instruction file
+|   |   |-- install.cmd ------- instruction file for connecting to the file server and starting the installer
+|   |   |-- setup.exe --------- installation executable file
+|   |   |-- unattend.xml ------ unattended installation instruction file
+|   |   `-- winpeshl.ini ------ instructions for running the file in WinPE
+|   `-- winpe-x64
+|-- isos ---------------------- iso file
+|-- load ---------------------- load module
+`-- rmak ---------------------- remake file
+```
+  
 ## Configuration file  
   
 ### dnsmasq  
@@ -71,4 +94,10 @@ pxe-service=tag:!iPXE,x86-64_EFI,"PXEBoot-x86-64_EFI",ipxe/ipxe.efi
 | iPXE        | https://boot.ipxe.org/ipxe.efi                                   |
 | "           | https://boot.ipxe.org/undionly.kpxe                              |
 | wimboot     | https://github.com/ipxe/wimboot/releases/latest/download/wimboot |
+  
+## Reference  
+  
+| Application | URL                                                |
+| ----------- | -------------------------------------------------- |
+| iPXE(WinPE) | https://ipxe.org/howto/winpe                       |
   

@@ -175,3 +175,24 @@ _EOT_
 # *** iPXE ********************************************************************
 wget https://boot.ipxe.org/{1mb,Shell.efi,ipxe.dsk,ipxe.efi,ipxe.iso,ipxe.lkrn,ipxe.png,ipxe.pxe,ipxe.usb,memtest,memtest.0,memtest.bin,memtest.elf,memtest420.0,memtest501.0,snponly.efi,texture.png,tinycore.ipxe,ucode.bin,undionly.kpxe}
 
+
+
+sudo wget https://boot.ipxe.org/{ipxe.efi,undionly.kpxe}
+sudo wget https://github.com/ipxe/wimboot/releases/latest/download/wimboot
+
+
+
+cat <<- _EOT_ | sed 's/^ *//g' | sudo tee -a "~/share/imgs/windows-10/install.cmd"
+	@Echo Off
+	SetLocal
+	Set /P SHARENAME=Enter the name of the Windows shared folder where you extracted the installation media.
+	wpeinit
+	net use "%SHARENAME%"
+	"%SHARENAME%\setup.exe"
+	EndLocal
+_EOT_
+
+cat <<- _EOT_ | sed 's/^ *//g' | sudo tee -a "~/share/imgs/windows-10/winpeshl.ini"
+	[LaunchApps]
+	"install.cmd"
+_EOT_
