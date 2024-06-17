@@ -15,7 +15,7 @@
   
 ## Tree diagram
   
-```bash:
+``` bash:
 /var/lib/tftpboot/
 |-- imgs ---------------------- iso file extraction destination
 |-- isos ---------------------- iso file
@@ -27,31 +27,35 @@
 `-- autoexec.ipxe
 ```
   
-```bash:/etc/dnsmasq.d/pxe.conf
+## Configuration file  
+  
+### dnsmasq  
+  
+``` bash:/etc/dnsmasq.d/pxe.conf
 # --- log ---------------------------------------------------------------------
-#log-queries												# dns query log output
-#log-dhcp													# dhcp transaction log output
+#log-queries                                                # dns query log output
+#log-dhcp                                                   # dhcp transaction log output
 
 # --- dns ---------------------------------------------------------------------
-bogus-priv													# do not perform reverse lookup of private ip address on upstream server
-domain-needed												# do not forward plain names
-domain=workgroup											# local domain name
-expand-hosts												# add domain name to host
-filterwin2k													# filter for windows
-interface=lo,ens160											# listen to interface
-listen-address=::1,127.0.0.1,192.168.1.12					# listen to ip address
-strict-order												# try in the registration order of /etc/resolv.conf
-bind-dynamic												# enable bind-interfaces and the default hybrid network mode
+bogus-priv                                                  # do not perform reverse lookup of private ip address on upstream server
+domain-needed                                               # do not forward plain names
+domain=workgroup                                            # local domain name
+expand-hosts                                                # add domain name to host
+filterwin2k                                                 # filter for windows
+interface=lo,ens160                                         # listen to interface
+listen-address=::1,127.0.0.1,192.168.1.12                   # listen to ip address
+strict-order                                                # try in the registration order of /etc/resolv.conf
+bind-dynamic                                                # enable bind-interfaces and the default hybrid network mode
 
 # --- dhcp --------------------------------------------------------------------
-dhcp-range=192.168.1.0,proxy,24								# proxy dhcp
-dhcp-option=option:router,192.168.1.254						#  3 router
-dhcp-option=option:dns-server,192.168.1.12,192.168.1.254	#  6 dns-server
-dhcp-option=option:domain-name,workgroup					# 15 domain-name
+dhcp-range=192.168.1.0,proxy,24                             # proxy dhcp
+dhcp-option=option:router,192.168.1.254                     #  3 router
+dhcp-option=option:dns-server,192.168.1.12,192.168.1.254    #  6 dns-server
+dhcp-option=option:domain-name,workgroup                    # 15 domain-name
 dhcp-match=set:iPXE,175
 
 # --- pxe boot ----------------------------------------------------------------
-pxe-prompt="Press F8 for boot menu", 0						# pxe boot prompt
+pxe-prompt="Press F8 for boot menu", 0                      # pxe boot prompt
 pxe-service=tag:iPXE ,x86PC     ,"PXEBoot-x86PC"     ,/autoexec.ipxe
 pxe-service=tag:!iPXE,x86PC     ,"PXEBoot-x86PC"     ,ipxe/undionly.kpxe
 pxe-service=tag:!iPXE,BC_EFI    ,"PXEBoot-BC_EFI"    ,ipxe/ipxe.efi

@@ -105,7 +105,7 @@
   
 ## Tree diagram
   
-```bash:
+``` bash:
 ~/share/
 |-- conf ---------------------- configuration file
 |   |-- _template
