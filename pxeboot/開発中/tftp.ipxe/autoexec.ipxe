@@ -11,19 +11,65 @@ isset ${menu-default} || set menu-default exit
 
 :menu
 menu Select the OS type you want to boot
-item --gap --      --------------------------------------------------------------------------------
-item winpe-x64     WinPE 64bit
-item ati2020x64    ATI2020 64bit
-item ati2020x86    ATI2020 32bit
-item windows-10    Windows 10
-item windows-11    Windows 11
-item --gap --      [ System command ] 
-item shell         iPXE shell
-#item shutdown      System shutting down
-item restart       System rebooting
-item --gap --      --------------------------------------------------------------------------------
+item --gap --           --------------------------------------------------------------------------------
+item debian-netinst-12  Debian 12
+item ubuntu-live-24.04  Ubuntu 24.04 Live Server
+item winpe-x64          WinPE 64bit
+item ati2020x64         ATI2020 64bit
+item ati2020x86         ATI2020 32bit
+item windows-10         Windows 10
+item windows-11         Windows 11
+item --gap --          [ System command ] 
+item shell             iPXE shell
+#item shutdown          System shutting down
+item restart           System rebooting
+item --gap --          --------------------------------------------------------------------------------
 choose --timeout ${menu-timeout} --default ${menu-default} selected || goto menu
 goto ${selected}
+
+:debian-netinst-12
+set svraddr 192.168.1.12
+set knladdr http://${svraddr}/imgs/debian-netinst-12
+set isofile debian-12.5.0-amd64-netinst.iso
+set isoaddr fetch=http://${svraddr}/isos/${isofile}
+set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
+set netname netcfg/get_hostname=sv-debian.workgroup
+set netaddr netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
+set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 ${netname} ${netaddr}
+set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
+set ramdisk
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
+echo Loading ${isofile} ...
+echo Loading kernel ...
+kernel ${knladdr}/install.amd/vmlinuz ${options} ---
+echo Loading initrd ...
+initrd ${knladdr}/install.amd/initrd.gz
+echo Booting
+boot
+echo Exit
+exit
+
+:ubuntu-live-24.04
+set svraddr 192.168.1.12
+set knladdr http://${svraddr}/imgs/ubuntu-live-24.04
+set isofile ubuntu-24.04-live-server-amd64.iso
+set isoaddr iso-url=http://${svraddr}/isos/${isofile}
+set install automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=http://${svraddr}/conf/nocloud/ubuntu_server
+set netname hostname=sv-ubuntu.workgroup
+set netaddr ip=192.168.1.1::192.168.1.254:255.255.255.0::ens160:static:192.168.1.254
+set network ${netname} ${netaddr}
+set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set ramdisk root=/dev/ram0 ramdisk_size=1500000
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
+echo Loading ${isofile} ...
+echo Loading kernel ...
+kernel ${knladdr}/casper/vmlinuz ${options} ---
+echo Loading initrd ...
+initrd ${knladdr}/casper/initrd
+echo Booting
+boot
+echo Exit
+exit
 
 :winpe-x64
 set addr http://192.168.1.12/imgs/winpe-x64
@@ -52,7 +98,7 @@ boot
 :windows-10
 set addr http://192.168.1.12/imgs/windows-10
 kernel ipxe/wimboot
-initrd ${addr}/install.bat                  install.bat
+initrd ${addr}/install.cmd                  install.cmd
 initrd ${addr}/winpeshl.ini                 winpeshl.ini
 initrd ${addr}/boot/bcd                     BCD
 initrd ${addr}/boot/boot.sdi                boot.sdi
@@ -62,7 +108,7 @@ boot
 :windows-11
 set addr http://192.168.1.12/imgs/windows-11
 kernel ipxe/wimboot
-initrd ${addr}/install.bat                  install.bat
+initrd ${addr}/install.cmd                  install.cmd
 initrd ${addr}/winpeshl.ini                 winpeshl.ini
 initrd ${addr}/boot/bcd                     BCD
 initrd ${addr}/boot/boot.sdi                boot.sdi
