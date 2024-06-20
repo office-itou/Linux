@@ -1,7 +1,5 @@
 #!ipxe
 
-console --x 1024 --y 768 ||
-
 cpuid --ext 29 && set arch amd64 || set arch x86
 
 dhcp
@@ -13,78 +11,78 @@ isset ${menu-default} || set menu-default exit
 
 :menu
 menu Select the OS type you want to boot
-item --gap --                           --------------------------------------------------------------------------------
+item --gap --                           --------------------------------------------------------------------------
 item --gap --                           [ Auto install mini.iso ... ]
-item debian-mini-10                     - Debian 10                                                 2022-09-06 22:57:03
-item debian-mini-11                     - Debian 11                                                 2024-02-05 11:50:23
-item debian-mini-12                     - Debian 12                                                 2024-02-05 07:43:43
-item debian-mini-13                     - Debian 13                                                 2023-06-07 01:01:56
-item debian-mini-testing                - Debian testing                                            2024-06-20 00:02:21
-item ubuntu-mini-18.04                  - Ubuntu 18.04                                              2021-09-15 15:14:00
-item ubuntu-mini-20.04                  - Ubuntu 20.04                                              2023-03-14 22:28:31
+item debian-mini-10                     - Debian 10 .......................................... 2022-09-06 22:57:03
+item debian-mini-11                     - Debian 11 .......................................... 2024-02-05 11:50:23
+item debian-mini-12                     - Debian 12 .......................................... 2024-02-05 07:43:43
+item debian-mini-13                     - Debian 13 .......................................... 2023-06-07 01:01:56
+item debian-mini-testing                - Debian testing ..................................... 2024-06-20 00:02:21
+item ubuntu-mini-18.04                  - Ubuntu 18.04 ....................................... 2021-09-15 15:14:00
+item ubuntu-mini-20.04                  - Ubuntu 20.04 ....................................... 2023-03-14 22:28:31
 item --gap --                           [ Auto install Net install ... ]
-item debian-netinst-10                  - Debian 10                                                 2022-09-10 19:52:36
-item debian-netinst-11                  - Debian 11                                                 2024-02-10 16:56:37
-item debian-netinst-12                  - Debian 12                                                 2024-02-10 13:46:02
-item debian-netinst-testing             - Debian testing                                            2024-06-20 09:39:32
-item fedora-netinst-39                  - Fedora Server 39                                          2023-10-31 22:05:26
-item fedora-netinst-40                  - Fedora Server 40                                          2024-04-14 18:30:19
-item centos-stream-netinst-9            - CentOS Stream 9                                           2024-06-17 03:57:15
-item almalinux-netinst-9                - Alma Linux 9                                              2024-05-03 22:12:51
-item rockylinux-netinst-8               - Rocky Linux 8                                             2024-05-27 14:13:45
-item rockylinux-netinst-9               - Rocky Linux 9                                             2024-05-05 01:12:29
-item miraclelinux-netinst-8             - Miracle Linux 8                                           2023-10-04 10:06:21
-item miraclelinux-netinst-9             - Miracle Linux 9                                           2023-10-04 08:24:35
-item opensuse-leap-netinst-15.5         - openSUSE Leap 15.5                                        2023-05-23 15:09:21
-item opensuse-leap-netinst-15.6         - openSUSE Leap 15.6                                        2024-05-29 19:05:41
-item opensuse-tumbleweed-netinst        - openSUSE Tumbleweed                                       2024-06-19 08:55:14
+item debian-netinst-10                  - Debian 10 .......................................... 2022-09-10 19:52:36
+item debian-netinst-11                  - Debian 11 .......................................... 2024-02-10 16:56:37
+item debian-netinst-12                  - Debian 12 .......................................... 2024-02-10 13:46:02
+item debian-netinst-testing             - Debian testing ..................................... 2024-06-20 09:39:32
+item fedora-netinst-39                  - Fedora Server 39 ................................... 2023-10-31 22:05:26
+item fedora-netinst-40                  - Fedora Server 40 ................................... 2024-04-14 18:30:19
+item centos-stream-netinst-9            - CentOS Stream 9 .................................... 2024-06-17 03:57:15
+item almalinux-netinst-9                - Alma Linux 9 ....................................... 2024-05-03 22:12:51
+item rockylinux-netinst-8               - Rocky Linux 8 ...................................... 2024-05-27 14:13:45
+item rockylinux-netinst-9               - Rocky Linux 9 ...................................... 2024-05-05 01:12:29
+item miraclelinux-netinst-8             - Miracle Linux 8 .................................... 2023-10-04 10:06:21
+item miraclelinux-netinst-9             - Miracle Linux 9 .................................... 2023-10-04 08:24:35
+item opensuse-leap-netinst-15.5         - openSUSE Leap 15.5 ................................. 2023-05-23 15:09:21
+item opensuse-leap-netinst-15.6         - openSUSE Leap 15.6 ................................. 2024-05-29 19:05:41
+item opensuse-tumbleweed-netinst        - openSUSE Tumbleweed ................................ 2024-06-19 08:55:14
 item --gap --                           [ Auto install DVD media ... ]
-item debian-10                          - Debian 10                                                 2022-09-10 19:55:00
-item debian-11                          - Debian 11                                                 2024-02-10 16:57:57
-item debian-12                          - Debian 12                                                 2024-02-10 13:47:07
-item debian-testing                     - Debian testing                                            2024-06-17 04:55:43
-item ubuntu-server-18.04                - Ubuntu 18.04 Server                                       2021-09-16 00:01:34
-item ubuntu-live-18.04                  - Ubuntu 18.04 Live Server                                  2021-09-15 20:42:12
-item ubuntu-live-20.04                  - Ubuntu 20.04 Live Server                                  2023-03-14 23:02:35
-item ubuntu-live-22.04                  - Ubuntu 22.04 Live Server                                  2024-02-16 23:52:36
-item ubuntu-live-23.10                  - Ubuntu 23.10 Live Server                                  2023-10-11 04:52:01
-item ubuntu-live-24.04                  - Ubuntu 24.04 Live Server                                  2024-04-23 12:46:14
-item ubuntu-live-oracular               - Ubuntu oracular Live Server                               2024-06-20 08:09:50
-item fedora-39                          - Fedora Server 39                                          2023-11-01 01:01:16
-item fedora-40                          - Fedora Server 40                                          2024-04-14 22:54:06
-item centos-stream-9                    - CentOS Stream 9                                           2024-06-17 04:13:15
-item almalinux-9                        - Alma Linux 9                                              2024-05-03 22:26:18
-item rockylinux-8                       - Rocky Linux 8                                             2024-05-27 15:14:45
-item rockylinux-9                       - Rocky Linux 9                                             2024-05-05 22:41:50
-item miraclelinux-8                     - Miracle Linux 8                                           2023-10-04 10:06:21
-item miraclelinux-9                     - Miracle Linux 9                                           2023-10-04 09:37:20
-item opensuse-leap-15.5                 - openSUSE Leap 15.5                                        2023-05-23 15:21:52
-item opensuse-leap-15.6                 - openSUSE Leap 15.6                                        2024-05-29 19:12:19
-item opensuse-tumbleweed                - openSUSE Tumbleweed                                       2024-06-19 08:53:58
+item debian-10                          - Debian 10 .......................................... 2022-09-10 19:55:00
+item debian-11                          - Debian 11 .......................................... 2024-02-10 16:57:57
+item debian-12                          - Debian 12 .......................................... 2024-02-10 13:47:07
+item debian-testing                     - Debian testing ..................................... 2024-06-17 04:55:43
+item ubuntu-server-18.04                - Ubuntu 18.04 Server ................................ 2021-09-16 00:01:34
+item ubuntu-live-18.04                  - Ubuntu 18.04 Live Server ........................... 2021-09-15 20:42:12
+item ubuntu-live-20.04                  - Ubuntu 20.04 Live Server ........................... 2023-03-14 23:02:35
+item ubuntu-live-22.04                  - Ubuntu 22.04 Live Server ........................... 2024-02-16 23:52:36
+item ubuntu-live-23.10                  - Ubuntu 23.10 Live Server ........................... 2023-10-11 04:52:01
+item ubuntu-live-24.04                  - Ubuntu 24.04 Live Server ........................... 2024-04-23 12:46:14
+item ubuntu-live-oracular               - Ubuntu oracular Live Server ........................ 2024-06-20 08:09:50
+item fedora-39                          - Fedora Server 39 ................................... 2023-11-01 01:01:16
+item fedora-40                          - Fedora Server 40 ................................... 2024-04-14 22:54:06
+item centos-stream-9                    - CentOS Stream 9 .................................... 2024-06-17 04:13:15
+item almalinux-9                        - Alma Linux 9 ....................................... 2024-05-03 22:26:18
+item rockylinux-8                       - Rocky Linux 8 ...................................... 2024-05-27 15:14:45
+item rockylinux-9                       - Rocky Linux 9 ...................................... 2024-05-05 22:41:50
+item miraclelinux-8                     - Miracle Linux 8 .................................... 2023-10-04 10:06:21
+item miraclelinux-9                     - Miracle Linux 9 .................................... 2023-10-04 09:37:20
+item opensuse-leap-15.5                 - openSUSE Leap 15.5 ................................. 2023-05-23 15:21:52
+item opensuse-leap-15.6                 - openSUSE Leap 15.6 ................................. 2024-05-29 19:12:19
+item opensuse-tumbleweed                - openSUSE Tumbleweed ................................ 2024-06-19 08:53:58
 item windows-10                         - Windows 10                                                
 item windows-11                         - Windows 11                                                
 item --gap --                           [ Live media Install mode ... ]
-item debian-live-10                     - Debian 10 Live                                            2022-09-10 19:01:33
-item debian-live-11                     - Debian 11 Live                                            2024-02-10 16:08:38
-item debian-live-12                     - Debian 12 Live                                            2024-02-10 11:07:25
-item debian-live-testing                - Debian testing Live                                       2024-06-17 02:15:25
-item ubuntu-desktop-20.04               - Ubuntu 20.04 Desktop                                      2023-03-16 15:58:09
-item ubuntu-desktop-22.04               - Ubuntu 22.04 Desktop                                      2024-02-20 19:39:40
-item ubuntu-desktop-23.10               - Ubuntu 23.10 Desktop                                      2023-10-16 11:31:22
-item ubuntu-desktop-24.04               - Ubuntu 24.04 Desktop                                      2024-04-24 11:29:21
-item ubuntu-desktop-oracular            - Ubuntu oracular Desktop                                   2024-06-19 07:15:45
-item ubuntu-legacy-23.10                - Ubuntu 23.10 Legacy Desktop                               2023-10-10 04:57:59
+item debian-live-10                     - Debian 10 Live ..................................... 2022-09-10 19:01:33
+item debian-live-11                     - Debian 11 Live ..................................... 2024-02-10 16:08:38
+item debian-live-12                     - Debian 12 Live ..................................... 2024-02-10 11:07:25
+item debian-live-testing                - Debian testing Live ................................ 2024-06-17 02:15:25
+item ubuntu-desktop-20.04               - Ubuntu 20.04 Desktop ............................... 2023-03-16 15:58:09
+item ubuntu-desktop-22.04               - Ubuntu 22.04 Desktop ............................... 2024-02-20 19:39:40
+item ubuntu-desktop-23.10               - Ubuntu 23.10 Desktop ............................... 2023-10-16 11:31:22
+item ubuntu-desktop-24.04               - Ubuntu 24.04 Desktop ............................... 2024-04-24 11:29:21
+item ubuntu-desktop-oracular            - Ubuntu oracular Desktop ............................ 2024-06-19 07:15:45
+item ubuntu-legacy-23.10                - Ubuntu 23.10 Legacy Desktop ........................ 2023-10-10 04:57:59
 item --gap --                           [ Live media Live mode ... ]
-item debian-live-10                     - Debian 10 Live                                            2022-09-10 19:01:33
-item debian-live-11                     - Debian 11 Live                                            2024-02-10 16:08:38
-item debian-live-12                     - Debian 12 Live                                            2024-02-10 11:07:25
-item debian-live-testing                - Debian testing Live                                       2024-06-17 02:15:25
-item ubuntu-desktop-20.04               - Ubuntu 20.04 Desktop                                      2023-03-16 15:58:09
-item ubuntu-desktop-22.04               - Ubuntu 22.04 Desktop                                      2024-02-20 19:39:40
-item ubuntu-desktop-23.10               - Ubuntu 23.10 Desktop                                      2023-10-16 11:31:22
-item ubuntu-desktop-24.04               - Ubuntu 24.04 Desktop                                      2024-04-24 11:29:21
-item ubuntu-desktop-oracular            - Ubuntu oracular Desktop                                   2024-06-19 07:15:45
-item ubuntu-legacy-23.10                - Ubuntu 23.10 Legacy Desktop                               2023-10-10 04:57:59
+item debian-live-10                     - Debian 10 Live ..................................... 2022-09-10 19:01:33
+item debian-live-11                     - Debian 11 Live ..................................... 2024-02-10 16:08:38
+item debian-live-12                     - Debian 12 Live ..................................... 2024-02-10 11:07:25
+item debian-live-testing                - Debian testing Live ................................ 2024-06-17 02:15:25
+item ubuntu-desktop-20.04               - Ubuntu 20.04 Desktop ............................... 2023-03-16 15:58:09
+item ubuntu-desktop-22.04               - Ubuntu 22.04 Desktop ............................... 2024-02-20 19:39:40
+item ubuntu-desktop-23.10               - Ubuntu 23.10 Desktop ............................... 2023-10-16 11:31:22
+item ubuntu-desktop-24.04               - Ubuntu 24.04 Desktop ............................... 2024-04-24 11:29:21
+item ubuntu-desktop-oracular            - Ubuntu oracular Desktop ............................ 2024-06-19 07:15:45
+item ubuntu-legacy-23.10                - Ubuntu 23.10 Legacy Desktop ........................ 2023-10-10 04:57:59
 item --gap --                           [ System tools ... ]
 item memtest86+                         - Memtest86+                                                
 item winpe-x64                          - WinPE x64                                                 
@@ -94,8 +92,7 @@ item --gap --                           [ System command ]
 item shell                              iPXE shell
 #item shutdown                          System shutdown
 item restart                            System reboot
-item status                             System status
-item --gap --                           --------------------------------------------------------------------------------
+item --gap --                           --------------------------------------------------------------------------
 choose --timeout ${menu-timeout} --default ${menu-default} selected || goto menu
 goto ${selected}
 
@@ -1401,71 +1398,6 @@ exit
 :restart
 echo "System rebooting ..."
 reboot
-exit
-
-:status
-echo === Network device settings ===
-show mac ||
-show bustype ||
-show busloc ||
-show busid ||
-show chip ||
-show ssid ||
-show active-scan ||
-show key ||
-echo === IPv4 settings ===
-show ip ||
-show netmask ||
-show gateway ||
-show dns ||
-show domain ||
-echo === Boot settings ===
-show filename ||
-show next-server ||
-show root-path ||
-show san-filename ||
-show initiator-iqn ||
-show keep-san ||
-show skip-san-boot ||
-sleep 30
-echo === Host settings ===
-show hostname ||
-show uuid ||
-show user-class ||
-show manufacturer ||
-show product ||
-show serial ||
-show asset ||
-echo === Authentication settings ===
-show username ||
-show password ||
-show reverse-username ||
-show reverse-password ||
-echo === Cryptography settings ===
-show crosscert ||
-show trust ||
-show cert ||
-show privkey ||
-echo === Miscellaneous settings ===
-show buildarch ||
-show cpumodel ||
-show cpuvendor ||
-show cwduri ||
-show cwuri ||
-show dhcp-server ||
-show keymap ||
-show memsize ||
-show platform ||
-show priority ||
-show scriptlet ||
-show syslog ||
-show syslogs ||
-show sysmac ||
-show unixtime ||
-show use-cached ||
-show version ||
-show vram ||
-sleep 600
 exit
 
 :exit
