@@ -107,19 +107,24 @@
   
 ``` bash:
 ~/share/
+|-- back ---------------------- backup directory
 |-- conf ---------------------- configuration file
 |   |-- _template
 |   |-- autoyast
 |   |-- kickstart
 |   |-- nocloud
-|   `-- preseed
+|   |-- preseed
+|   |-- script
+|   `-- windows
 |-- html ---------------------- html contents
 |   |-- conf -> ../conf
 |   |-- imgs -> ../imgs
 |   |-- isos -> ../isos
+|   |-- load -> ../tftp/load
 |   `-- rmak -> ../rmak
 |-- imgs ---------------------- iso file extraction destination
 |-- isos ---------------------- iso file
+|-- orig ---------------------- backup directory (original file)
 |-- rmak ---------------------- remake file
 |-- temp ---------------------- temporary directory
 `-- tftp ---------------------- tftp contents
@@ -134,20 +139,26 @@
     |       |-- locale
     |       `-- x86_64-efi
     |           `-- bootx64.efi -- bootloader
+    |-- imgs -> ../imgs
+    |-- ipxe ------------------ ipxe module
+    |-- isos -> ../isos
+    |-- load ------------------ load module
     |-- menu-bios
     |   |-- syslinux.cfg ------ syslinux configuration for mbr environment
     |   |-- boot -> ../load
+    |   |-- imgs -> ../imgs
+    |   |-- isos -> ../isos
+    |   |-- load -> ../load
     |   `-- pxelinux.cfg
     |       `-- default -> ../syslinux.cfg
-    |-- menu-efi64
-    |   |-- syslinux.cfg ------ syslinux configuration for uefi(x86_64) environment
-    |   |-- boot -> ../load
-    |   `-- pxelinux.cfg
-    |       `-- default -> ../syslinux.cfg
-    |-- load ------------------ load module
-    |-- imgs -> ../imgs
-    |-- isos -> ../isos
-    `-- rmak -> ../rmak
+    `-- menu-efi64
+        |-- syslinux.cfg ------ syslinux configuration for uefi(x86_64) environment
+        |-- boot -> ../load
+        |-- imgs -> ../imgs
+        |-- isos -> ../isos
+        |-- load -> ../load
+        `-- pxelinux.cfg
+            `-- default -> ../syslinux.cfg
 
 /var/lib/
 `-- tftpboot -> ${HOME}/share/tftp
