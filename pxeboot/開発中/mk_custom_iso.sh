@@ -286,11 +286,11 @@
 	# === system ==============================================================
 
 	# --- tftp / web server address -------------------------------------------
+	# shellcheck disable=SC2155
+	declare -r    SRVR_ADDR="$(LANG=C ip -4 -oneline address show scope global | awk '{split($4,s,"/"); print s[1];}')"
 #	declare -r    TFTP_PROT="http://"
 #	declare -r    TFTP_ADDR="\${net_default_server}"
-	# shellcheck disable=SC2155
-	declare -r    HTTP_ADDR="http://$(LANG=C ip -4 -oneline address show scope global | awk '{split($4,s,"/"); print s[1];}')"
-#	declare -r    HTTP_ADDR="http://192.168.1.10"
+	declare -r    HTTP_ADDR="http://\${svraddr}"
 
 	# --- open-vm-tools -------------------------------------------------------
 	declare -r    HGFS_DIRS="/mnt/hgfs/workspace/Image"	# vmware shared directory
@@ -2492,7 +2492,7 @@ function funcCreate_nocloud() {
 
 # ----- create kickstart.cfg --------------------------------------------------
 function funcCreate_kickstart() {
-	declare -r    IMGS_ADDR="${HTTP_ADDR}/imgs"
+	declare -r    IMGS_ADDR="http://${SRVR_ADDR}/imgs"
 	declare -r    DIRS_NAME="${DIRS_CONF}/kickstart"
 	declare       FILE_PATH=""
 	declare -r -a FILE_LIST=(                           \

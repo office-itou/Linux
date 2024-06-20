@@ -182,7 +182,7 @@ sudo wget https://github.com/ipxe/wimboot/releases/latest/download/wimboot
 
 
 
-cat <<- _EOT_ | sed 's/^ *//g' | sudo tee -a "~/share/imgs/windows-10/install.cmd"
+cat <<- _EOT_ | sed 's/^ *//g' | sudo tee ~/share/imgs/windows-10/install.cmd
 	@Echo Off
 	SetLocal
 	Set /P SHARENAME=Enter the name of the Windows shared folder where you extracted the installation media.
@@ -192,7 +192,22 @@ cat <<- _EOT_ | sed 's/^ *//g' | sudo tee -a "~/share/imgs/windows-10/install.cm
 	EndLocal
 _EOT_
 
-cat <<- _EOT_ | sed 's/^ *//g' | sudo tee -a "~/share/imgs/windows-10/winpeshl.ini"
+cat <<- _EOT_ | sed 's/^ *//g' | sudo tee ~/share/imgs/windows-10/winpeshl.ini
+	[LaunchApps]
+	"install.cmd"
+_EOT_
+
+cat <<- _EOT_ | sed 's/^ *//g' | sudo tee ~/share/imgs/windows-11/install.cmd
+	@Echo Off
+	SetLocal
+	Set /P SHARENAME=Enter the name of the Windows shared folder where you extracted the installation media.
+	wpeinit
+	net use "%SHARENAME%"
+	"%SHARENAME%\setup.exe"
+	EndLocal
+_EOT_
+
+cat <<- _EOT_ | sed 's/^ *//g' | sudo tee ~/share/imgs/windows-11/winpeshl.ini
 	[LaunchApps]
 	"install.cmd"
 _EOT_

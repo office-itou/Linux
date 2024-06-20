@@ -287,11 +287,11 @@
 	# === system ==============================================================
 
 	# --- tftp / web server address -------------------------------------------
-	declare -r    TFTP_PROT="http://"
-	declare -r    TFTP_ADDR="\${net_default_server}"
 	# shellcheck disable=SC2155
-	declare -r    HTTP_ADDR="http://$(LANG=C ip -4 -oneline address show scope global | awk '{split($4,s,"/"); print s[1];}')"
-#	declare -r    HTTP_ADDR="http://192.168.1.10"
+	declare -r    SRVR_ADDR="$(LANG=C ip -4 -oneline address show scope global | awk '{split($4,s,"/"); print s[1];}')"
+#	declare -r    TFTP_PROT="http://"
+#	declare -r    TFTP_ADDR="\${net_default_server}"
+	declare -r    HTTP_ADDR="http://\${svraddr}"
 
 	# --- open-vm-tools -------------------------------------------------------
 	declare -r    HGFS_DIRS="/mnt/hgfs/workspace/Image"	# vmware shared directory
@@ -2493,7 +2493,7 @@ function funcCreate_nocloud() {
 
 # ----- create kickstart.cfg --------------------------------------------------
 function funcCreate_kickstart() {
-	declare -r    IMGS_ADDR="${HTTP_ADDR}/imgs"
+	declare -r    IMGS_ADDR="http://${SRVR_ADDR}/imgs"
 	declare -r    DIRS_NAME="${DIRS_CONF}/kickstart"
 	declare       FILE_PATH=""
 	declare -r -a FILE_LIST=(                           \
@@ -2759,56 +2759,62 @@ function funcCreate_menu_cfg_preseed() {
 	declare -r    RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000"
 	declare -r    LIVE_IMGS="live/filesystem.squashfs"
 	declare -a    BOOT_WORK=()
+	declare       BOOT_BIOS=""
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for preseed"
 	# --- boot clear ----------------------------------------------------------
 	BOOT_WORK=()
-	# --- root option ---------------------------------------------------------
+	# --- 00: root option -----------------------------------------------------
 	BOOT_WORK+=("tftp")
 #	BOOT_WORK+=("${HTTP_ADDR%%:*},${HTTP_ADDR##*/}")
-	# --- isofile option ------------------------------------------------------
+	# --- 01: iso file option -------------------------------------------------
 	BOOT_WORK+=("${TGET_LINE[4]}")
-	# --- isoaddr option ------------------------------------------------------
+	# --- 02: iso addr option -------------------------------------------------
 	BOOT_WORK+=("fetch=${HTTP_ADDR}/isos/\${isofile}")
 	case "${TGET_LINE[1]}" in
 		ubuntu-*              ) BOOT_WORK[2]="iso-url=${HTTP_ADDR}/isos/\${isofile}";;
 		*                     ) ;;
 	esac
-	# --- install option ------------------------------------------------------
+	# --- 03: install option --------------------------------------------------
 	BOOT_WORK+=("auto=true ${CONF_FILE}")
 	case "${TGET_LINE[1]}" in
 		ubuntu-desktop-*      | \
 		ubuntu-legacy-*       ) BOOT_WORK[3]="automatic-ubiquity noprompt ${BOOT_WORK[3]}";;
 		*                     ) ;;
 	esac
-	# --- network option ------------------------------------------------------
-	BOOT_WORK+=("netcfg/disable_autoconfig=true netcfg/choose_interface=${ETHR_NAME} netcfg/get_hostname=${HOST_NAME}.${WGRP_NAME} netcfg/get_ipaddress=${IPV4_ADDR} netcfg/get_netmask=${IPV4_MASK} netcfg/get_gateway=${IPV4_GWAY} netcfg/get_nameservers=${IPV4_NSVR}")
+	# --- 04: host name -------------------------------------------------------
+	BOOT_WORK+=("${HOST_NAME}.${WGRP_NAME}")
+	# --- 05: network option --------------------------------------------------
+	BOOT_WORK+=("netcfg/disable_autoconfig=true netcfg/choose_interface=${ETHR_NAME} netcfg/get_hostname=\${netname} netcfg/get_ipaddress=${IPV4_ADDR} netcfg/get_netmask=${IPV4_MASK} netcfg/get_gateway=${IPV4_GWAY} netcfg/get_nameservers=${IPV4_NSVR}")
 	case "${TGET_LINE[1]}" in
-		ubuntu-live-18.04     ) BOOT_WORK[4]="ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${HOST_NAME}.${WGRP_NAME}";;
+		ubuntu-live-18.04     ) BOOT_WORK[5]="ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=\${netname}";;
 		ubuntu-desktop-*      | \
-		ubuntu-legacy-*       ) BOOT_WORK[4]="ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}";;
-		ubuntu-*              ) BOOT_WORK[4]="${BOOT_WORK[4]} netcfg/target_network_config=NetworkManager";;
+		ubuntu-legacy-*       ) BOOT_WORK[5]="ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:\${netname}:${ETHR_NAME}:static:${IPV4_NSVR}";;
+		ubuntu-*              ) BOOT_WORK[5]="${BOOT_WORK[4]} netcfg/target_network_config=NetworkManager";;
 		*                     ) ;;
 	esac
-	# --- locales option ------------------------------------------------------
+	# --- 06: locales option --------------------------------------------------
 	BOOT_WORK+=("locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106")
 	case "${TGET_LINE[1]}" in
 		ubuntu-desktop-*      | \
-		ubuntu-legacy-*       ) BOOT_WORK[5]="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		ubuntu-legacy-*       ) BOOT_WORK[6]="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
 		*                     ) ;;
 	esac
-	# --- ramdisk option ------------------------------------------------------
+	# --- 07: ramdisk option --------------------------------------------------
 	BOOT_WORK+=("")
 	case "${TGET_LINE[1]}" in
-		ubuntu-*              ) BOOT_WORK[6]="${RAMS_DISK}";;
+		ubuntu-*              ) BOOT_WORK[7]="${RAMS_DISK}";;
 		*                     ) ;;
 	esac
-	# --- boot option ---------------------------------------------------------
+	# --- 08: boot option -----------------------------------------------------
 	BOOT_WORK+=("\${isoaddr} \${install} \${network} \${locales} \${ramdisk} fsck.mode=skip")
+	# --- 09: kernel addr option ----------------------------------------------
+	BOOT_WORK+=("${HTTP_ADDR}/imgs/${TGET_LINE[1]}")
 	# --- live mode -----------------------------------------------------------
 	if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
 		BOOT_WORK[3]=""
-		BOOT_WORK[4]="ip=dhcp"
+		BOOT_WORK[4]=""
+		BOOT_WORK[5]="ip=dhcp"
 		case "${TGET_LINE[1]}" in
 			debian-live-*         ) BOOT_WORK[2]="boot=live components fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}";;
 			ubuntu-desktop-18.*   ) ;;	# This version does not support pxeboot
@@ -2820,17 +2826,21 @@ function funcCreate_menu_cfg_preseed() {
 		esac
 	fi
 	# --- output --------------------------------------------------------------
+	BOOT_BIOS="${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[5]//\${netname}/${HOST_NAME}.${WGRP_NAME}} ${BOOT_WORK[6]} ${BOOT_WORK[7]} fsck.mode=skip"
 	IFS=
 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
-		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
+		${BOOT_BIOS//\${svraddr}/${SRVR_ADDR}}"
 		set root='${BOOT_WORK[0]}'
-		set isofile='${BOOT_WORK[1]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}'
-		set isoaddr="${BOOT_WORK[2]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
-		set install="${BOOT_WORK[3]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
-		set network='${BOOT_WORK[4]}'
-		set locales='${BOOT_WORK[5]}'
-		set ramdisk='${BOOT_WORK[6]}'
-		set options="${BOOT_WORK[7]}"
+		set svraddr='${SRVR_ADDR}'
+		set isofile='${BOOT_WORK[1]}'
+		set isoaddr="${BOOT_WORK[2]}"
+		set install="${BOOT_WORK[3]}"
+		set netname='${BOOT_WORK[4]}'
+		set network="${BOOT_WORK[5]}"
+		set locales='${BOOT_WORK[6]}'
+		set ramdisk='${BOOT_WORK[7]}'
+		set options="${BOOT_WORK[8]}"
+		set knladdr="${BOOT_WORK[9]}"
 _EOT_
 	IFS="${OLD_IFS}"
 #	echo "${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip"
@@ -2848,12 +2858,12 @@ function funcCreate_menu_cfg_nocloud() {
 #	funcPrintf "      create: boot options for nocloud"
 	# --- boot clear ----------------------------------------------------------
 	BOOT_WORK=()
-	# --- root option ---------------------------------------------------------
+	# --- 00: root option -----------------------------------------------------
 	BOOT_WORK+=("tftp")
 #	BOOT_WORK+=("${HTTP_ADDR%%:*},${HTTP_ADDR##*/}")
-	# --- isofile option ------------------------------------------------------
+	# --- 01: iso file option -------------------------------------------------
 	BOOT_WORK+=("${TGET_LINE[4]}")
-	# --- isoaddr option ------------------------------------------------------
+	# --- 02: iso addr option -------------------------------------------------
 	BOOT_WORK+=("")
 	case "${TGET_LINE[1]}" in
 		ubuntu-live-18.*      | \
@@ -2863,38 +2873,43 @@ function funcCreate_menu_cfg_nocloud() {
 		ubuntu-*              ) BOOT_WORK[2]="iso-url=${HTTP_ADDR}/isos/\${isofile}";;
 		*                     ) ;;
 	esac
-	# --- install option ------------------------------------------------------
+	# --- 03: install option --------------------------------------------------
 	BOOT_WORK+=("")
 	case "${TGET_LINE[1]}" in
 		ubuntu-*              ) BOOT_WORK[3]="automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=${CONF_FILE}";;
 		*                     ) ;;
 	esac
-	# --- network option ------------------------------------------------------
+	# --- 04: host name -------------------------------------------------------
+	BOOT_WORK+=("${HOST_NAME}.${WGRP_NAME}")
+	# --- 05: network option --------------------------------------------------
 	BOOT_WORK+=("")
 	case "${TGET_LINE[1]}" in
-		ubuntu-live-18.04     ) BOOT_WORK[4]="ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${HOST_NAME}.${WGRP_NAME}";;
-		ubuntu-*              ) BOOT_WORK[4]="ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}::${ETHR_NAME}:static:${IPV4_NSVR} hostname=${HOST_NAME}.${WGRP_NAME}";;
+		ubuntu-live-18.04     ) BOOT_WORK[5]="ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=\${netname}";;
+		ubuntu-*              ) BOOT_WORK[5]="ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}::${ETHR_NAME}:static:${IPV4_NSVR} hostname=\${netname}";;
 		*                     ) ;;
 	esac
-	# --- locales option ------------------------------------------------------
+	# --- 06: locales option --------------------------------------------------
 	BOOT_WORK+=("")
 	case "${TGET_LINE[1]}" in
-		ubuntu-*              ) BOOT_WORK[5]="debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		ubuntu-*              ) BOOT_WORK[6]="debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
 		*                     ) ;;
 	esac
-	# --- ramdisk option ------------------------------------------------------
+	# --- 07: ramdisk option --------------------------------------------------
 	BOOT_WORK+=("")
 	case "${TGET_LINE[1]}" in
-		ubuntu-*              ) BOOT_WORK[6]="${RAMS_DISK}";;
+		ubuntu-*              ) BOOT_WORK[7]="${RAMS_DISK}";;
 		*                     ) ;;
 	esac
-	# --- boot option ---------------------------------------------------------
+	# --- 08: boot option -----------------------------------------------------
 	BOOT_WORK+=("\${isoaddr} \${install} \${network} \${locales} \${ramdisk} fsck.mode=skip")
+	# --- 09: kernel addr option ----------------------------------------------
+	BOOT_WORK+=("${HTTP_ADDR}/imgs/${TGET_LINE[1]}")
 	# --- live mode -----------------------------------------------------------
 	if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
 #		BOOT_WORK[0]="${HTTP_ADDR%%:*},${HTTP_ADDR##*/}"
 		BOOT_WORK[3]=""
-		BOOT_WORK[4]="ip=dhcp"
+		BOOT_WORK[4]=""
+		BOOT_WORK[5]="ip=dhcp"
 		case "${TGET_LINE[1]}" in
 			ubuntu-desktop-18.*   ) ;;	# This version does not support pxeboot
 			ubuntu-desktop-20.*   | \
@@ -2904,19 +2919,22 @@ function funcCreate_menu_cfg_nocloud() {
 			*                     ) ;;
 		esac
 	fi
-
 	# --- output --------------------------------------------------------------
+	BOOT_BIOS="${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[5]//\${netname}/${HOST_NAME}.${WGRP_NAME}} ${BOOT_WORK[6]} ${BOOT_WORK[7]} fsck.mode=skip"
 	IFS=
 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
-		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
+		${BOOT_BIOS//\${svraddr}/${SRVR_ADDR}}"
 		set root='${BOOT_WORK[0]}'
-		set isofile='${BOOT_WORK[1]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}'
-		set isoaddr="${BOOT_WORK[2]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
-		set install="${BOOT_WORK[3]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
-		set network='${BOOT_WORK[4]}'
-		set locales='${BOOT_WORK[5]}'
-		set ramdisk='${BOOT_WORK[6]}'
-		set options="${BOOT_WORK[7]}"
+		set svraddr='${SRVR_ADDR}'
+		set isofile='${BOOT_WORK[1]}'
+		set isoaddr="${BOOT_WORK[2]}"
+		set install="${BOOT_WORK[3]}"
+		set netname='${BOOT_WORK[4]}'
+		set network="${BOOT_WORK[5]}"
+		set locales='${BOOT_WORK[6]}'
+		set ramdisk='${BOOT_WORK[7]}'
+		set options="${BOOT_WORK[8]}"
+		set knladdr="${BOOT_WORK[9]}"
 _EOT_
 	IFS="${OLD_IFS}"
 #	echo "${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip"
@@ -2934,45 +2952,54 @@ function funcCreate_menu_cfg_kickstart() {
 #	funcPrintf "      create: boot options for kickstart"
 	# --- boot clear ----------------------------------------------------------
 	BOOT_WORK=()
-	# --- root option ---------------------------------------------------------
+	# --- 00: root option -----------------------------------------------------
 	BOOT_WORK+=("tftp")
 #	BOOT_WORK+=("${HTTP_ADDR%%:*},${HTTP_ADDR##*/}")
-	# --- isofile option ------------------------------------------------------
+	# --- 01: iso file option -------------------------------------------------
 	BOOT_WORK+=("${TGET_LINE[4]}")
-	# --- isoaddr option ------------------------------------------------------
+	# --- 02: iso addr option -------------------------------------------------
 	BOOT_WORK+=("inst.stage2=${HTTP_ADDR}/imgs/${TGET_LINE[1]}")
 #	BOOT_WORK+=("inst.stage2=${HTTP_ADDR}/imgs/\${isofile}")
 #	case "${TGET_LINE[1]}" in
 #		*-netinst*            ) BOOT_WORK[2]="";;
 #		*                     ) ;;
 #	esac
-	# --- install option ------------------------------------------------------
+	# --- 03: install option --------------------------------------------------
 	BOOT_WORK+=("inst.ks=${CONF_FILE}")
-	# --- network option ------------------------------------------------------
-	BOOT_WORK+=("ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:none,auto6 nameserver=${IPV4_NSVR}")
-	# --- locales option ------------------------------------------------------
+	# --- 04: host name -------------------------------------------------------
+	BOOT_WORK+=("${HOST_NAME}.${WGRP_NAME}")
+	# --- 05: network option --------------------------------------------------
+	BOOT_WORK+=("ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:\${netname}:${ETHR_NAME}:none,auto6 nameserver=${IPV4_NSVR}")
+	# --- 06: locales option --------------------------------------------------
 	BOOT_WORK+=("locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106")
-	# --- ramdisk option ------------------------------------------------------
+	# --- 07: ramdisk option --------------------------------------------------
 	BOOT_WORK+=("")
-	# --- boot option ---------------------------------------------------------
+	# --- 08: boot option -----------------------------------------------------
 	BOOT_WORK+=("\${isoaddr} \${install} \${network} \${locales} \${ramdisk} fsck.mode=skip")
+	# --- 09: kernel addr option ----------------------------------------------
+	BOOT_WORK+=("${HTTP_ADDR}/imgs/${TGET_LINE[1]}")
 	# --- live mode -----------------------------------------------------------
 	if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
 		BOOT_WORK[3]=""
-		BOOT_WORK[4]="ip=dhcp"
+		BOOT_WORK[4]=""
+		BOOT_WORK[5]="ip=dhcp"
 	fi
 	# --- output --------------------------------------------------------------
+	BOOT_BIOS="${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[5]//\${netname}/${HOST_NAME}.${WGRP_NAME}} ${BOOT_WORK[6]} ${BOOT_WORK[7]} fsck.mode=skip"
 	IFS=
 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
-		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
+		${BOOT_BIOS//\${svraddr}/${SRVR_ADDR}}"
 		set root='${BOOT_WORK[0]}'
-		set isofile='${BOOT_WORK[1]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}'
-		set isoaddr="${BOOT_WORK[2]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
-		set install="${BOOT_WORK[3]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
-		set network='${BOOT_WORK[4]}'
-		set locales='${BOOT_WORK[5]}'
-		set ramdisk='${BOOT_WORK[6]}'
-		set options="${BOOT_WORK[7]}"
+		set svraddr='${SRVR_ADDR}'
+		set isofile='${BOOT_WORK[1]}'
+		set isoaddr="${BOOT_WORK[2]}"
+		set install="${BOOT_WORK[3]}"
+		set netname='${BOOT_WORK[4]}'
+		set network="${BOOT_WORK[5]}"
+		set locales='${BOOT_WORK[6]}'
+		set ramdisk='${BOOT_WORK[7]}'
+		set options="${BOOT_WORK[8]}"
+		set knladdr="${BOOT_WORK[9]}"
 _EOT_
 	IFS="${OLD_IFS}"
 #	echo "${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip"
@@ -2990,49 +3017,58 @@ function funcCreate_menu_cfg_autoyast() {
 #	funcPrintf "      create: boot options for autoyast"
 	# --- boot clear ----------------------------------------------------------
 	BOOT_WORK=()
-	# --- root option ---------------------------------------------------------
+	# --- 00: root option -----------------------------------------------------
 	BOOT_WORK+=("tftp")
 #	BOOT_WORK+=("${HTTP_ADDR%%:*},${HTTP_ADDR##*/}")
-	# --- isofile option ------------------------------------------------------
+	# --- 01: iso file option -------------------------------------------------
 	BOOT_WORK+=("${TGET_LINE[4]}")
-	# --- isoaddr option ------------------------------------------------------
+	# --- 02: iso addr option -------------------------------------------------
 #	BOOT_WORK+=("install=${HTTP_ADDR}/imgs/\${isofile}")
 	BOOT_WORK+=("install=${HTTP_ADDR}/imgs/${TGET_LINE[1]}")
 	case "${TGET_LINE[1]}" in
 		*-netinst*            ) BOOT_WORK[2]="";;
 		*                     ) ;;
 	esac
-	# --- install option ------------------------------------------------------
+	# --- 03: install option --------------------------------------------------
 	BOOT_WORK+=("autoyast=${CONF_FILE}")
-	# --- network option ------------------------------------------------------
+	# --- 04: host name -------------------------------------------------------
+	BOOT_WORK+=("${HOST_NAME}.${WGRP_NAME}")
+	# --- 05: network option --------------------------------------------------
 	case "${TGET_LINE[1]}" in
 		opensuse-*-15* ) WORK_ETHR="eth0";;
 		*              ) ;;
 	esac
-	BOOT_WORK+=("ifcfg=${WORK_ETHR}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME} hostname=${HOST_NAME}.${WGRP_NAME}")
-	# --- locales option ------------------------------------------------------
+	BOOT_WORK+=("ifcfg=${WORK_ETHR}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME} hostname=\${netname}")
+	# --- 06: locales option --------------------------------------------------
 	BOOT_WORK+=("locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106")
-	# --- ramdisk option ------------------------------------------------------
+	# --- 07: ramdisk option --------------------------------------------------
 	BOOT_WORK+=("${RAMS_DISK}")
-	# --- boot option ---------------------------------------------------------
+	# --- 08: boot option -----------------------------------------------------
 	BOOT_WORK+=("\${isoaddr} \${install} \${network} \${locales} \${ramdisk} fsck.mode=skip")
+	# --- 09: kernel addr option ----------------------------------------------
+	BOOT_WORK+=("${HTTP_ADDR}/imgs/${TGET_LINE[1]}")
 	# --- live mode -----------------------------------------------------------
 	if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
 		BOOT_WORK[3]=""
-		BOOT_WORK[4]="ip=dhcp"
+		BOOT_WORK[4]=""
+		BOOT_WORK[5]="ip=dhcp"
 	fi
 	# --- output --------------------------------------------------------------
+	BOOT_BIOS="${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[5]//\${netname}/${HOST_NAME}.${WGRP_NAME}} ${BOOT_WORK[6]} ${BOOT_WORK[7]} fsck.mode=skip"
 	IFS=
 	cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g'
-		${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip
+		${BOOT_BIOS//\${svraddr}/${SRVR_ADDR}}"
 		set root='${BOOT_WORK[0]}'
-		set isofile='${BOOT_WORK[1]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}'
-		set isoaddr="${BOOT_WORK[2]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
-		set install="${BOOT_WORK[3]//${HTTP_ADDR}/${TFTP_PROT}${TFTP_ADDR}}"
-		set network='${BOOT_WORK[4]}'
-		set locales='${BOOT_WORK[5]}'
-		set ramdisk='${BOOT_WORK[6]}'
-		set options="${BOOT_WORK[7]}"
+		set svraddr='${SRVR_ADDR}'
+		set isofile='${BOOT_WORK[1]}'
+		set isoaddr="${BOOT_WORK[2]}"
+		set install="${BOOT_WORK[3]}"
+		set netname='${BOOT_WORK[4]}'
+		set network="${BOOT_WORK[5]}"
+		set locales='${BOOT_WORK[6]}'
+		set ramdisk='${BOOT_WORK[7]}'
+		set options="${BOOT_WORK[8]}"
+		set knladdr="${BOOT_WORK[9]}"
 _EOT_
 	IFS="${OLD_IFS}"
 #	echo "${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[4]} ${BOOT_WORK[5]} ${BOOT_WORK[6]} fsck.mode=skip"
@@ -3204,6 +3240,7 @@ function funcCreate_grub_cfg() {
 	declare       TABS_STRS=""								# tabs string
 	declare       MENU_PATH=""								# menu path
 	declare       MENU_ENTR=""								# meny entry
+	declare -i    I=0
 #	funcPrintf "      create: ${TGET_INFO[2]//%20/ }"
 	if [[ "${TABS_CONT}" -gt 0 ]]; then
 		TABS_STRS="$(funcString "${TABS_CONT}" $'\t')"
@@ -3393,13 +3430,21 @@ _EOT_
 					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
 						menuentry '${MENU_ENTR}' {
 						 	echo 'Loading ${TGET_INFO[2]//%20/ } ...'
-						 	${BOOT_OPTN[1]}
-						 	${BOOT_OPTN[2]}
-						 	${BOOT_OPTN[3]}
-						 	${BOOT_OPTN[4]}
-						 	${BOOT_OPTN[5]}
-						 	${BOOT_OPTN[6]}
-						 	${BOOT_OPTN[7]}
+_EOT_
+					for ((I=0; I<"${#BOOT_OPTN[@]}"; I++))
+					do
+						if [[ "${BOOT_OPTN[I]}" =~ set\ svraddr ]]; then
+							cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
+							 	${BOOT_OPTN[I]}
+							 	if [ -n "\${net_default_server}" ]; then ${BOOT_OPTN[I]/svraddr/net_default_server}; fi
+_EOT_
+							continue
+						fi
+						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
+							 	${BOOT_OPTN[I]}
+_EOT_
+					done
+					cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
 						 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 						 	insmod progress
 						 	echo 'Loading linux ...'
@@ -3408,6 +3453,203 @@ _EOT_
 						 	initrd (tftp,\${net_default_server})/load/${TGET_INFO[1]}/${TGET_INFO[6]}
 						}
 _EOT_
+					;;
+			esac
+			;;
+		* )
+			;;
+	esac
+}
+
+# ----- create menu for ipxe script -------------------------------------------
+function funcCreate_autoexec_ipxe() {
+	declare -r    MENU_DIRS="$1"							# menu directory
+	declare -r -n MENU_NAME="$2"							# menu file name
+	declare -r -n BOOT_OPTN="$3"							# boot option
+	declare -r -n TGET_INFO="$4"							# media information
+	declare -r -i TABS_CONT="$5"							# tabs count
+	declare       TABS_STRS=""								# tabs string
+	declare       MENU_PATH=""								# menu path
+	declare       MENU_ENTR=""								# meny entry
+	declare       MENU_TEXT=""								# meny text
+	declare -a    MENU_ARRY=()								# meny text
+	declare -r -i MENU_SPCS=40
+	declare -i    I=0
+#	funcPrintf "      create: ${TGET_INFO[2]//%20/ }"
+	if [[ "${TABS_CONT}" -gt 0 ]]; then
+		TABS_STRS="$(funcString "${TABS_CONT}" $'\t')"
+	else
+		TABS_STRS=""
+	fi
+	# --- create autoexec.ipxe ------------------------------------------------
+	MENU_PATH="${MENU_DIRS}/${MENU_NAME[0]}"
+	if [[ ! -f "${MENU_PATH}" ]] \
+	|| [[ ! -s "${MENU_PATH}" ]]; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${MENU_PATH}"
+			#!ipxe
+			
+			cpuid --ext 29 && set arch amd64 || set arch x86
+			
+			dhcp
+			
+			set menu-timeout 0
+			isset \${menu-default} || set menu-default exit
+			
+			:start
+			
+			:menu
+			menu Select the OS type you want to boot
+			item --gap --                           --------------------------------------------------------------------------------
+			item --gap --                           [ System command ]
+			item shell                              iPXE shell
+			#item shutdown                          System shutdown
+			item restart                            System reboot
+			item --gap --                           --------------------------------------------------------------------------------
+			choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
+			goto \${selected}
+			
+			:shell
+			echo "Booting iPXE shell ..."
+			shell
+			goto start
+			
+			:shutdown
+			echo "System shutting down ..."
+			poweroff
+			exit
+			
+			:restart
+			echo "System rebooting ..."
+			reboot
+			exit
+			
+			:exit
+			exit
+_EOT_
+	fi
+	case "${TGET_INFO[0]}" in
+		m )
+			if [[ "${TGET_INFO[2]}" = "-" ]]; then
+				return
+			fi
+			MENU_ENTR="[ ${TGET_INFO[2]//%20/ } ... ]"
+			MENU_TEXT="$(printf "%-${MENU_SPCS}.${MENU_SPCS}s%s" "item --gap --" "${MENU_ENTR}")"
+			sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
+			;;
+		o )
+			MENU_ENTR="$(printf "%-60.60s" "- ${TGET_INFO[2]//%20/ }")"
+			MENU_TEXT="$(printf "%-${MENU_SPCS}.${MENU_SPCS}s%s" "item ${TGET_INFO[1]}" "${MENU_ENTR}")"
+			case "${TGET_INFO[1]}" in
+				windows-* )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+						return
+					fi
+					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
+					read -r -a MENU_ARRY < <(
+						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+							:${TGET_INFO[1]}
+							echo Loading ${TGET_INFO[2]//%20/ } ...
+							set svraddr ${SRVR_ADDR}
+							isset \${next-server} && set svraddr \${next-server}} ||
+							set knladdr http://\${svraddr}/imgs/${TGET_INFO[1]}
+							kernel ipxe/wimboot
+							initrd \${knladdr}/install.cmd                  install.cmd
+							initrd \${knladdr}/winpeshl.ini                 winpeshl.ini
+							initrd \${knladdr}/boot/bcd                     BCD
+							initrd \${knladdr}/boot/boot.sdi                boot.sdi
+							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim
+							boot
+							exit
+							
+_EOT_
+					)
+					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_ARRY[*]}"
+					;;
+				winpe-*    | \
+				ati2020x64 | \
+				ati2020x86 )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+						return
+					fi
+					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
+					read -r -a MENU_ARRY < <(
+						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+							:${TGET_INFO[1]}
+							echo Loading ${TGET_INFO[2]//%20/ } ...
+							set svraddr ${SRVR_ADDR}
+							isset \${next-server} && set svraddr \${next-server}} ||
+							set knladdr http://\${svraddr}/imgs/${TGET_INFO[1]}
+							kernel ipxe/wimboot
+							initrd \${knladdr}/boot/bcd                     BCD
+							initrd \${knladdr}/boot/boot.sdi                boot.sdi
+							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim
+							boot
+							exit
+							
+_EOT_
+					)
+					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_ARRY[*]}"
+					;;
+				memtest86\+ )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+						return
+					fi
+					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
+					read -r -a MENU_ARRY < <(
+						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+							:${TGET_INFO[1]}
+							echo Loading ${TGET_INFO[2]//%20/ } ...
+							set svraddr ${SRVR_ADDR}
+							isset \${next-server} && set svraddr \${next-server}} ||
+							set knladdr http://\${svraddr}/imgs/${TGET_INFO[1]}
+							iseq \${platform} efi && kernel \${knladdr}/${TGET_INFO[6]} || kernel \${knladdr}/${TGET_INFO[7]}
+							boot
+							exit
+							
+_EOT_
+					)
+					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_ARRY[*]}"
+					;;
+				* )
+					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+						return
+					fi
+					MENU_ENTR="$(printf "%-59.60s%20.20s" "- ${TGET_INFO[2]//%20/ }" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
+					MENU_TEXT="$(printf "%-${MENU_SPCS}.${MENU_SPCS}s%s" "item ${TGET_INFO[1]}" "${MENU_ENTR}")"
+					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
+					read -r -a MENU_ARRY < <(
+						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+							:${TGET_INFO[1]}
+							echo Loading ${TGET_INFO[2]//%20/ } ...
+_EOT_
+					)
+					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_ARRY[*]}"
+					for ((I=0; I<"${#BOOT_OPTN[@]}"; I++))
+					do
+						read -r -a MENU_ARRY < <(
+							if [[ "${BOOT_OPTN[I]}" =~ set\ svraddr ]]; then
+								cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+									${BOOT_OPTN[I]}
+									isset \${next-server} && ${BOOT_OPTN[I]/${SRVR_ADDR}/\$\{next-server\}} ||
+_EOT_
+							else
+								cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+										${BOOT_OPTN[I]}
+_EOT_
+							fi
+						)
+						sed -i "${MENU_PATH}" -e "/^:shell\$/i ${MENU_ARRY[*]}"
+					done
+					read -r -a MENU_ARRY < <(
+						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+							kernel \${knladdr}/${TGET_INFO[5]}/${TGET_INFO[7]} \${options} ---
+							initrd \${knladdr}/${TGET_INFO[5]}/${TGET_INFO[6]}
+							boot
+							exit
+							
+_EOT_
+					)
+					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_ARRY[*]}"
 					;;
 			esac
 			;;
@@ -3707,12 +3949,14 @@ function funcCall_create() {
 	declare -r    BOOT_PXE0="pxelinux.0"					# pxeboot module for bios
 	declare -r    BOOT_UEFI="bootx64.efi"					# pxeboot module for uefi
 	declare -r -a MENU_GRUB=("grub.cfg" "menu.cfg")			# grub.cfg / menu.cfg
-	declare -r -a MENU_SLNX=("syslinux.cfg" "menu.cfg")		# syslinux.cfg / menu.cfg
+	declare -r -a MENU_SLNX=("syslinux.cfg")				# syslinux.cfg
+	declare -r -a MENU_IPXE=("../autoexec.ipxe")			# autoexec.ipxe
 	declare       MENU_DIRS=""								# menu directory
 	declare       MENU_PATH=""								# menu file path
 	declare -a    BOOT_ARRY=()								# boot option array
 	declare       BOOT_OPTN=""								# boot option (syslinux)
 	declare -a    BOOT_GRUB=()								# boot option (grub)
+	declare -a    BOOT_IPXE=()								# boot option (ipxe)
 	declare       COMD_NAME="grub-mkimage"					# debian / ubuntu
 	declare -r -a MODU_LIST=( \
 		"all_video" "boot" "btrfs" "cat" "chain" "configfile" "echo" \
@@ -3726,6 +3970,7 @@ function funcCall_create() {
 		"smbios" "squash4" "test" "tftp" "true" "udf" "video" \
 		"xfs" "zfs" "zfscrypt" "zfsinfo" \
 	)
+	declare -r -a CURL_OPTN=("--location" "--http1.1" "--progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
 	declare       FILE_PATH=""
 	declare -a    FILE_INFO=()
 	declare       FILE_SIZE=""
@@ -3743,14 +3988,16 @@ function funcCall_create() {
 		COMD_NAME="grub2-mkimage"
 	fi
 	# -------------------------------------------------------------------------
-	for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},${DIRS_GRUB}}
+	for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},${DIRS_GRUB},ipxe}
 	do
 		funcPrintf "        copy: ${MENU_DIRS##*/}"
 		mkdir -p "${MENU_DIRS}"
 		case "${MENU_DIRS}" in
 			*bios )
-				: > "${MENU_DIRS}/${MENU_SLNX[0]}"
-				: > "${MENU_DIRS}/${MENU_SLNX[1]}"
+				for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
+				do
+					: > "${MENU_DIRS}/${MENU_SLNX[I]}"
+				done
 				if [[ ! -f "${MENU_DIRS}/pxelinux.0" ]]; then
 					if [[ -d /usr/lib/syslinux/modules/bios/. ]]; then
 						cp --archive --update /usr/lib/syslinux/memdisk         "${MENU_DIRS}/"
@@ -3763,8 +4010,10 @@ function funcCall_create() {
 				fi
 				;;
 			*efi32)
-				: > "${MENU_DIRS}/${MENU_SLNX[0]}"
-				: > "${MENU_DIRS}/${MENU_SLNX[1]}"
+				for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
+				do
+					: > "${MENU_DIRS}/${MENU_SLNX[I]}"
+				done
 				if [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
 					if [[ -d /usr/lib/syslinux/modules/efi32/. ]]; then
 						cp --archive --update /usr/lib/syslinux/modules/efi32/. "${MENU_DIRS}/"
@@ -3773,8 +4022,10 @@ function funcCall_create() {
 				fi
 				;;
 			*efi64)
-				: > "${MENU_DIRS}/${MENU_SLNX[0]}"
-				: > "${MENU_DIRS}/${MENU_SLNX[1]}"
+				for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
+				do
+					: > "${MENU_DIRS}/${MENU_SLNX[I]}"
+				done
 				if [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
 					if [[ -d /usr/lib/syslinux/modules/efi64/. ]]; then
 						cp --archive --update /usr/lib/syslinux/modules/efi64/. "${MENU_DIRS}/"
@@ -3783,8 +4034,10 @@ function funcCall_create() {
 				fi
 				;;
 			*grub )
-				: > "${MENU_DIRS}/${MENU_GRUB[0]}"
-				: > "${MENU_DIRS}/${MENU_GRUB[1]}"
+				for ((I=0; I<"${#MENU_GRUB[@]}"; I++))
+				do
+					: > "${MENU_DIRS}/${MENU_GRUB[I]}"
+				done
 				if [[ ! -f "${MENU_DIRS}/x86_64-efi/grub.cfg" ]] \
 				|| [[ ! -f "${MENU_DIRS}/i386-pc/grub.cfg"    ]]; then
 					mkdir -p "${DIRS_TFTP}/boot/grub/"{fonts,locale,i386-pc,x86_64-efi}
@@ -3795,9 +4048,9 @@ function funcCall_create() {
 					else
 						cp --archive --update /usr/share/syslinux/memdisk "${DIRS_TFTP}/"
 						cp --archive --update /usr/share/syslinux/memdisk "${DIRS_HTML}/"
-						cp --archive --update /usr/lib/grub/i386-pc/.     "${DIRS_TFTP}/boot/grub/i386-pc/"
-						cp --archive --update /usr/lib/grub/x86_64-efi/.  "${DIRS_TFTP}/boot/grub/x86_64-efi/"
-						cp --archive --update /usr/share/grub/*.pf2       "${DIRS_TFTP}/boot/grub/fonts/"
+						cp --archive --update /usr/lib/grub/i386-pc/.     "${MENU_DIRS}/i386-pc/"
+						cp --archive --update /usr/lib/grub/x86_64-efi/.  "${MENU_DIRS}/x86_64-efi/"
+						cp --archive --update /usr/share/grub/*.pf2       "${MENU_DIRS}/fonts/"
 					fi
 				fi
 				# -------------------------------------------------------------
@@ -3827,6 +4080,21 @@ _EOT_
 					    --compression=auto \
 					    --config="${WORK_FILE}" \
 					    "${MODU_LIST[@]}" cpuid play tpm efifwsetup efinet lsefi lsefimmap lsefisystab lssal
+				fi
+				;;
+			*ipxe )
+				for ((I=0; I<"${#MENU_IPXE[@]}"; I++))
+				do
+					: > "${MENU_DIRS}/${MENU_IPXE[I]}"
+				done
+				if [[ ! -f "${MENU_DIRS}/undionly.kpxe" ]]; then
+					curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://boot.ipxe.org/undionly.kpxe"
+				fi
+				if [[ ! -f "${MENU_DIRS}/ipxe.efi"      ]]; then
+					curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://boot.ipxe.org/ipxe.efi"
+				fi
+				if [[ ! -f "${MENU_DIRS}/wimboot"       ]]; then
+					curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://github.com/ipxe/wimboot/releases/latest/download/wimboot"
 				fi
 				;;
 			* )
@@ -3889,11 +4157,13 @@ _EOT_
 		# ---------------------------------------------------------------------
 		BOOT_OPTN=""
 		BOOT_GRUB=()
+		BOOT_IPXE=()
 		for ((J=0; J<"${#BOOT_ARRY[@]}"; J++))
 		do
 			case "${J}" in
 				0 ) BOOT_OPTN="${BOOT_ARRY[J]}";;
-				* ) BOOT_GRUB+=("${BOOT_ARRY[J]}");;
+				* ) BOOT_GRUB+=("${BOOT_ARRY[J]}")
+				    BOOT_IPXE+=("${BOOT_ARRY[J]}");;
 			esac
 		done
 		# ---------------------------------------------------------------------
@@ -3908,13 +4178,14 @@ _EOT_
 			TABS_CONT=0
 		fi
 		# ---------------------------------------------------------------------
-		for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},boot/grub}
+		for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},boot/grub,ipxe}
 		do
 			case "${MENU_DIRS}" in
 				*bios | \
 				*efi32| \
-				*efi64) funcCreate_syslinux_cfg "${MENU_DIRS}" MENU_SLNX "${BOOT_OPTN}" DATA_LINE "${TABS_CONT}";;
-				*grub ) funcCreate_grub_cfg     "${MENU_DIRS}" MENU_GRUB    BOOT_GRUB   DATA_LINE "${TABS_CONT}";;
+				*efi64) funcCreate_syslinux_cfg  "${MENU_DIRS}" MENU_SLNX "${BOOT_OPTN}" DATA_LINE "${TABS_CONT}";;
+				*grub ) funcCreate_grub_cfg      "${MENU_DIRS}" MENU_GRUB    BOOT_GRUB   DATA_LINE "${TABS_CONT}";;
+				*ipxe ) funcCreate_autoexec_ipxe "${MENU_DIRS}" MENU_IPXE    BOOT_IPXE   DATA_LINE "${TABS_CONT}";;
 				*     ) ;;
 			esac
 		done
