@@ -20,6 +20,42 @@
 | Storage        | NVMe 64 GiB / SATA 20GiB        |
 | Network        | NIC1 e1000e / NIC2 e1000e       |
   
+### File server  
+  
+| Module         | Detail                          |
+| -------------- | ------------------------------- |
+| Processor      | 1 processor / 2 cores (i7-6700) |
+| Memory         | 4GiB                            |
+| Storage        | NVMe 20 GiB / SATA 500GiB       |
+| Network        | NIC1 e1000e / NIC2 -            |
+  
+| Item        | Detail                     |
+| ----------- | -------------------------- |
+| Interface   | ens160                     |
+| IP address  | 192.168.1.10               |
+| Netmask     | 24 (255.255.255.0)         |
+| Router      | 192.168.1.254              |
+| DNS server  | 192.168.1.10,192.168.1.254 |
+| Domain name | workgroup                  |
+  
+### DNS / DHCP Proxy / TFTP / WEB / Samba server  
+  
+| Module         | Detail                          |
+| -------------- | ------------------------------- |
+| Processor      | 1 processor / 2 cores (i7-6700) |
+| Memory         | 4GiB                            |
+| Storage        | NVMe 64 GiB / SATA 20GiB        |
+| Network        | NIC1 e1000e / NIC2 e1000e       |
+  
+| Item        | Detail                     |
+| ----------- | -------------------------- |
+| Interface   | ens160                     |
+| IP address  | 192.168.1.12               |
+| Netmask     | 24 (255.255.255.0)         |
+| Router      | 192.168.1.254              |
+| DNS server  | 192.168.1.12,192.168.1.254 |
+| Domain name | workgroup                  |
+  
 ## Result  
   
 | Media        | File name                                  | Looding | Booting | Install | Note                                      |
@@ -128,19 +164,24 @@
 |-- rmak ---------------------- remake file
 |-- temp ---------------------- temporary directory
 `-- tftp ---------------------- tftp contents
+    |-- autoexec.ipxe --------- ipxe script file (menu file)
+    |-- memdisk --------------- memdisk of syslinux
     |-- boot
     |   `-- grub
+    |       |-- bootx64.efi --- bootloader (i386-pc-pxe)
     |       |-- grub.cfg ------ menu base
     |       |-- menu.cfg ------ menu file
+    |       |-- pxelinux.0 ---- bootloader (x86_64-efi)
     |       |-- fonts
     |       |   `-- unicode.pf2
     |       |-- i386-pc
-    |       |   `-- pxelinux.0 --- bootloader
     |       |-- locale
     |       `-- x86_64-efi
-    |           `-- bootx64.efi -- bootloader
     |-- imgs -> ../imgs
     |-- ipxe ------------------ ipxe module
+    |   |-- ipxe.efi
+    |   |-- undionly.kpxe
+    |   `-- wimboot
     |-- isos -> ../isos
     |-- load ------------------ load module
     |-- menu-bios
@@ -176,4 +217,5 @@
 | ----------- | -------------------------------------------------- |
 | Markdown    | https://qiita.com/Qiita/items/c686397e4a0f4f11683d |
 | Dnsmasq     | https://man.archlinux.org/man/dnsmasq.8            |
+| iPXE(WinPE) | https://ipxe.org/howto/winpe                       |
   
