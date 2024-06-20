@@ -3499,12 +3499,12 @@ function funcCreate_autoexec_ipxe() {
 			
 			:menu
 			menu Select the OS type you want to boot
-			item --gap --                           --------------------------------------------------------------------------------
+			item --gap --                           --------------------------------------------------------------------------
 			item --gap --                           [ System command ]
 			item shell                              iPXE shell
 			#item shutdown                          System shutdown
 			item restart                            System reboot
-			item --gap --                           --------------------------------------------------------------------------------
+			item --gap --                           --------------------------------------------------------------------------
 			choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
 			goto \${selected}
 			
@@ -3614,7 +3614,7 @@ _EOT_
 					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
-					MENU_ENTR="$(printf "%-59.60s%20.20s" "- ${TGET_INFO[2]//%20/ }" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
+					MENU_ENTR="$(printf "%-54.54s%20.20s" "- ${TGET_INFO[2]//%20/ } $(funcString 60 '.')" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
 					MENU_TEXT="$(printf "%-${MENU_SPCS}.${MENU_SPCS}s%s" "item ${TGET_INFO[1]}" "${MENU_ENTR}")"
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
 					read -r -a MENU_ARRY < <(
