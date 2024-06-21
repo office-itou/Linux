@@ -54,48 +54,63 @@
 	#
 	# tree diagram
 	#   ~/share/
+	#   |-- back ---------------------- backup directory
 	#   |-- conf ---------------------- configuration file
 	#   |   |-- _template
 	#   |   |-- autoyast
 	#   |   |-- kickstart
 	#   |   |-- nocloud
-	#   |   `-- preseed
+	#   |   |-- preseed
+	#   |   |-- script
+	#   |   `-- windows
 	#   |-- html ---------------------- html contents
 	#   |   |-- conf -> ../conf
 	#   |   |-- imgs -> ../imgs
 	#   |   |-- isos -> ../isos
+	#   |   |-- load -> ../tftp/load
 	#   |   `-- rmak -> ../rmak
 	#   |-- imgs ---------------------- iso file extraction destination
 	#   |-- isos ---------------------- iso file
-	#   |-- load ---------------------- load module
+	#   |-- orig ---------------------- backup directory (original file)
 	#   |-- rmak ---------------------- remake file
 	#   |-- temp ---------------------- temporary directory
 	#   `-- tftp ---------------------- tftp contents
+	#       |-- autoexec.ipxe --------- ipxe script file (menu file)
+	#       |-- memdisk --------------- memdisk of syslinux
 	#       |-- boot
 	#       |   `-- grub
+	#       |       |-- bootx64.efi --- bootloader (i386-pc-pxe)
 	#       |       |-- grub.cfg ------ menu base
 	#       |       |-- menu.cfg ------ menu file
+	#       |       |-- pxelinux.0 ---- bootloader (x86_64-efi)
 	#       |       |-- fonts
 	#       |       |   `-- unicode.pf2
 	#       |       |-- i386-pc
-	#       |       |   `-- pxelinux.0 --- bootloader
 	#       |       |-- locale
 	#       |       `-- x86_64-efi
-	#       |           `-- bootx64.efi -- bootloader
+	#       |-- imgs -> ../imgs
+	#       |-- ipxe ------------------ ipxe module
+	#       |   |-- ipxe.efi
+	#       |   |-- undionly.kpxe
+	#       |   `-- wimboot
+	#       |-- isos -> ../isos
+	#       |-- load ------------------ load module
 	#       |-- menu-bios
 	#       |   |-- syslinux.cfg ------ syslinux configuration for mbr environment
 	#       |   |-- boot -> ../load
+	#       |   |-- imgs -> ../imgs
+	#       |   |-- isos -> ../isos
+	#       |   |-- load -> ../load
 	#       |   `-- pxelinux.cfg
 	#       |       `-- default -> ../syslinux.cfg
-	#       |-- menu-efi64
-	#       |   |-- syslinux.cfg ------ syslinux configuration for uefi(x86_64) environment
-	#       |   |-- boot -> ../load
-	#       |   `-- pxelinux.cfg
-	#       |       `-- default -> ../syslinux.cfg
-	#       |-- load ------------------ load module
-	#       |-- imgs -> ../imgs
-	#       |-- isos -> ../isos
-	#       `-- rmak -> ../rmak
+	#       `-- menu-efi64
+	#           |-- syslinux.cfg ------ syslinux configuration for uefi(x86_64) environment
+	#           |-- boot -> ../load
+	#           |-- imgs -> ../imgs
+	#           |-- isos -> ../isos
+	#           |-- load -> ../load
+	#           `-- pxelinux.cfg
+	#               `-- default -> ../syslinux.cfg
 	#
 	#   /var/lib/
 	#   `-- tftpboot -> ${HOME}/share/tftp
@@ -365,7 +380,7 @@
 		"o  rockylinux-netinst-9        Rocky%20Linux%209                   Rocky           Rocky-9-latest-x86_64-boot.iso              images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_net.cfg       linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-boot.iso                                   " \
 		"o  miraclelinux-netinst-8      Miracle%20Linux%208                 miraclelinux    MIRACLELINUX-8.8-rtm-minimal-x86_64.iso     images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_net.cfg     linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso    " \
 		"o  miraclelinux-netinst-9      Miracle%20Linux%209                 miraclelinux    MIRACLELINUX-9.2-rtm-minimal-x86_64.iso     images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_net.cfg     linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso    " \
-		"o  opensuse-leap-netinst-15.5  openSUSE%20Leap%2015.5              openSUSE        openSUSE-Leap-15.5-NET-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_net.xml     linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-stable/iso/openSUSE-Leap-[0-9.]*-NET-x86_64-Media.iso                 " \
+		"o  opensuse-leap-netinst-15.5  openSUSE%20Leap%2015.5              openSUSE        openSUSE-Leap-15.5-NET-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_net.xml     linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-NET-x86_64-Media.iso                          " \
 		"o  opensuse-leap-netinst-15.6  openSUSE%20Leap%2015.6              openSUSE        openSUSE-Leap-15.6-NET-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_net.xml     linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Media.iso                          " \
 		"o  opensuse-tumbleweed-netinst openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-NET-x86_64-Current.iso  boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_net.xml    linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                   " \
 		"m  menu-entry                  -                                   -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
@@ -401,7 +416,7 @@
 		"o  rockylinux-9                Rocky%20Linux%209                   Rocky           Rocky-9-latest-x86_64-dvd.iso               images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_dvd.cfg       linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-dvd.iso                                    " \
 		"o  miraclelinux-8              Miracle%20Linux%208                 miraclelinux    MIRACLELINUX-8.8-rtm-x86_64.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_dvd.cfg     linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso            " \
 		"o  miraclelinux-9              Miracle%20Linux%209                 miraclelinux    MIRACLELINUX-9.2-rtm-x86_64.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_dvd.cfg     linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso            " \
-		"o  opensuse-leap-15.5          openSUSE%20Leap%2015.5              openSUSE        openSUSE-Leap-15.5-DVD-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_dvd.xml     linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/openSUSE-stable/iso/openSUSE-Leap-[0-9.]*-DVD-x86_64-Media.iso                 " \
+		"o  opensuse-leap-15.5          openSUSE%20Leap%2015.5              openSUSE        openSUSE-Leap-15.5-DVD-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_dvd.xml     linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-DVD-x86_64-Media.iso                          " \
 		"o  opensuse-leap-15.6          openSUSE%20Leap%2015.6              openSUSE        openSUSE-Leap-15.6-DVD-x86_64-Media.iso     boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_dvd.xml     linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso                          " \
 		"o  opensuse-tumbleweed         openSUSE%20Tumbleweed               openSUSE        openSUSE-Tumbleweed-DVD-x86_64-Current.iso  boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_dvd.xml    linux/openSUSE      2021-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                   " \
 		"o  windows-10                  Windows%2010                        windows         Win10_22H2_Japanese_x64.iso                 -                                       -                           -                       -                                       windows/Windows10   -           -           xx:xx:xx    0   -   -   -                                                                                                                               " \
@@ -3551,10 +3566,11 @@ _EOT_
 							echo Loading ${TGET_INFO[2]//%20/ } ...
 							set svraddr ${SRVR_ADDR}
 							isset \${next-server} && set svraddr \${next-server}} ||
+							set cfgaddr http://\${svraddr}/conf/windows
 							set knladdr http://\${svraddr}/imgs/${TGET_INFO[1]}
 							kernel ipxe/wimboot
-							initrd \${knladdr}/install.cmd                  install.cmd
-							initrd \${knladdr}/winpeshl.ini                 winpeshl.ini
+							initrd \${cfgaddr}/install.cmd                  install.cmd
+							initrd \${cfgaddr}/winpeshl.ini                 winpeshl.ini
 							initrd \${knladdr}/boot/bcd                     BCD
 							initrd \${knladdr}/boot/boot.sdi                boot.sdi
 							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim
@@ -3642,6 +3658,7 @@ _EOT_
 					done
 					read -r -a MENU_ARRY < <(
 						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+							echo -n Kernel options: && read --timeout 3 options
 							kernel \${knladdr}/${TGET_INFO[5]}/${TGET_INFO[7]} \${options} ---
 							initrd \${knladdr}/${TGET_INFO[5]}/${TGET_INFO[6]}
 							boot
