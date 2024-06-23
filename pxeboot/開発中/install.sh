@@ -1596,6 +1596,8 @@ function funcNetwork_pxe_conf() {
 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,						# 11 ARM 64bit
 		
 		# --- ipxe block --------------------------------------------------------------
+		#dhcp-match=set:iPXE,175																# 
+		#pxe-prompt="Press F8 for boot menu", 0												# pxe boot prompt
 		#pxe-service=tag:iPXE ,x86PC     , "PXEBoot-x86PC"     , /autoexec.ipxe				#  0 Intel x86PC (iPXE)
 		#pxe-service=tag:!iPXE,x86PC     , "PXEBoot-x86PC"     , ipxe/undionly.kpxe			#  0 Intel x86PC
 		#pxe-service=tag:!iPXE,BC_EFI    , "PXEBoot-BC_EFI"    , ipxe/ipxe.efi				#  7 EFI BC
