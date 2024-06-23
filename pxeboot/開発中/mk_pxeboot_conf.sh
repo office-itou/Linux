@@ -3571,7 +3571,7 @@ _EOT_
 							:${TGET_INFO[1]}
 							echo Loading ${TGET_INFO[2]//%20/ } ...
 							set svraddr ${SRVR_ADDR}
-							isset \${next-server} && set svraddr \${next-server}} ||
+							isset \${next-server} && set svraddr \${next-server} ||
 							set cfgaddr http://\${svraddr}/conf/windows
 							set knladdr http://\${svraddr}/imgs/${TGET_INFO[1]}
 							echo Loading kernel and initrd ...
@@ -3602,7 +3602,7 @@ _EOT_
 							:${TGET_INFO[1]}
 							echo Loading ${TGET_INFO[2]//%20/ } ...
 							set svraddr ${SRVR_ADDR}
-							isset \${next-server} && set svraddr \${next-server}} ||
+							isset \${next-server} && set svraddr \${next-server} ||
 							set knladdr http://\${svraddr}/imgs/${TGET_INFO[1]}
 							echo Loading kernel and initrd ...
 							kernel ipxe/wimboot
@@ -3626,7 +3626,7 @@ _EOT_
 							:${TGET_INFO[1]}
 							echo Loading ${TGET_INFO[2]//%20/ } ...
 							set svraddr ${SRVR_ADDR}
-							isset \${next-server} && set svraddr \${next-server}} ||
+							isset \${next-server} && set svraddr \${next-server} ||
 							set knladdr http://\${svraddr}/imgs/${TGET_INFO[1]}
 							iseq \${platform} efi && set knlfile \${knladdr}/${TGET_INFO[6]} || set knlfile \${knladdr}/${TGET_INFO[7]}
 							echo Loading kernel ...
