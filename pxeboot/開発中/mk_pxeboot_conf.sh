@@ -3484,10 +3484,11 @@ function funcCreate_autoexec_ipxe() {
 	declare -r -n TGET_INFO="$4"							# media information
 	declare -r -i TABS_CONT="$5"							# tabs count
 	declare       TABS_STRS=""								# tabs string
+	declare       WORK_STRS=""								# work string
 	declare       MENU_PATH=""								# menu path
 	declare       MENU_ENTR=""								# meny entry
 	declare       MENU_TEXT=""								# meny text
-	declare -a    MENU_ARRY=()								# meny text
+#	declare -a    MENU_ARRY=()								# meny text
 	declare -r -i MENU_SPCS=40
 	declare -i    I=0
 #	funcPrintf "      create: ${TGET_INFO[2]//%20/ }"
@@ -3507,6 +3508,7 @@ function funcCreate_autoexec_ipxe() {
 			
 			dhcp
 			
+			set optn-timeout 3000
 			set menu-timeout 0
 			isset \${menu-default} || set menu-default exit
 			
@@ -3516,9 +3518,9 @@ function funcCreate_autoexec_ipxe() {
 			menu Select the OS type you want to boot
 			item --gap --                           --------------------------------------------------------------------------
 			item --gap --                           [ System command ]
-			item shell                              iPXE shell
-			#item shutdown                          System shutdown
-			item restart                            System reboot
+			item -- shell                           - iPXE shell
+			#item -- shutdown                       - System shutdown
+			item -- restart                         - System reboot
 			item --gap --                           --------------------------------------------------------------------------
 			choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
 			goto \${selected}
@@ -3538,6 +3540,10 @@ function funcCreate_autoexec_ipxe() {
 			reboot
 			exit
 			
+			:error
+			prompt Press any key to continue
+			exit
+			
 			:exit
 			exit
 _EOT_
@@ -3553,14 +3559,14 @@ _EOT_
 			;;
 		o )
 			MENU_ENTR="$(printf "%-60.60s" "- ${TGET_INFO[2]//%20/ }")"
-			MENU_TEXT="$(printf "%-${MENU_SPCS}.${MENU_SPCS}s%s" "item ${TGET_INFO[1]}" "${MENU_ENTR}")"
+			MENU_TEXT="$(printf "%-${MENU_SPCS}.${MENU_SPCS}s%s" "item -- ${TGET_INFO[1]}" "${MENU_ENTR}")"
 			case "${TGET_INFO[1]}" in
 				windows-* )
 					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
-					read -r -a MENU_ARRY < <(
+					MENU_TEXT="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							:${TGET_INFO[1]}
 							echo Loading ${TGET_INFO[2]//%20/ } ...
@@ -3568,18 +3574,21 @@ _EOT_
 							isset \${next-server} && set svraddr \${next-server}} ||
 							set cfgaddr http://\${svraddr}/conf/windows
 							set knladdr http://\${svraddr}/imgs/${TGET_INFO[1]}
+							echo Loading kernel and initrd ...
 							kernel ipxe/wimboot
-							initrd \${cfgaddr}/install.cmd                  install.cmd
-							initrd \${cfgaddr}/winpeshl.ini                 winpeshl.ini
-							initrd \${knladdr}/boot/bcd                     BCD
-							initrd \${knladdr}/boot/boot.sdi                boot.sdi
-							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim
-							boot
+							initrd \${cfgaddr}/unattend.xml                 unattend.xml || goto error
+							initrd \${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
+							initrd -n install.cmd \${cfgaddr}/inst_w${TGET_INFO[1]##*-}.cmd  install.cmd  || goto error
+							initrd \${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
+							initrd \${knladdr}/boot/bcd                     BCD          || goto error
+							initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
+							boot || goto error
 							exit
 							
 _EOT_
-					)
-					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_ARRY[*]}"
+					)"
+					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_TEXT}"
 					;;
 				winpe-*    | \
 				ati2020x64 | \
@@ -3588,61 +3597,67 @@ _EOT_
 						return
 					fi
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
-					read -r -a MENU_ARRY < <(
+					MENU_TEXT="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							:${TGET_INFO[1]}
 							echo Loading ${TGET_INFO[2]//%20/ } ...
 							set svraddr ${SRVR_ADDR}
 							isset \${next-server} && set svraddr \${next-server}} ||
 							set knladdr http://\${svraddr}/imgs/${TGET_INFO[1]}
+							echo Loading kernel and initrd ...
 							kernel ipxe/wimboot
-							initrd \${knladdr}/boot/bcd                     BCD
-							initrd \${knladdr}/boot/boot.sdi                boot.sdi
-							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim
-							boot
+							initrd \${knladdr}/Boot/BCD                     BCD      || goto error
+							initrd \${knladdr}/Boot/boot.sdi                boot.sdi || goto error
+							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim || goto error
+							boot || goto error
 							exit
 							
 _EOT_
-					)
-					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_ARRY[*]}"
+					)"
+					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_TEXT}"
 					;;
 				memtest86\+ )
 					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
-					read -r -a MENU_ARRY < <(
+					MENU_TEXT="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							:${TGET_INFO[1]}
 							echo Loading ${TGET_INFO[2]//%20/ } ...
 							set svraddr ${SRVR_ADDR}
 							isset \${next-server} && set svraddr \${next-server}} ||
 							set knladdr http://\${svraddr}/imgs/${TGET_INFO[1]}
-							iseq \${platform} efi && kernel \${knladdr}/${TGET_INFO[6]} || kernel \${knladdr}/${TGET_INFO[7]}
-							boot
+							iseq \${platform} efi && set knlfile \${knladdr}/${TGET_INFO[6]} || set knlfile \${knladdr}/${TGET_INFO[7]}
+							echo Loading kernel ...
+							kernel \${knlfile} || goto error
+							boot || goto error
 							exit
 							
 _EOT_
-					)
-					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_ARRY[*]}"
+					)"
+					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_TEXT}"
 					;;
 				* )
 					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
+					if [[ "${TGET_INFO[8]#*/}" = "-" ]]; then
+						TGET_INFO[1]="live-${TGET_INFO[1]}"
+					fi
 					MENU_ENTR="$(printf "%-54.54s%20.20s" "- ${TGET_INFO[2]//%20/ } $(funcString 60 '.')" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
-					MENU_TEXT="$(printf "%-${MENU_SPCS}.${MENU_SPCS}s%s" "item ${TGET_INFO[1]}" "${MENU_ENTR}")"
+					MENU_TEXT="$(printf "%-${MENU_SPCS}.${MENU_SPCS}s%s" "item -- ${TGET_INFO[1]}" "${MENU_ENTR}")"
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
-					read -r -a MENU_ARRY < <(
+					MENU_TEXT="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							:${TGET_INFO[1]}
 							echo Loading ${TGET_INFO[2]//%20/ } ...
 _EOT_
-					)
-					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_ARRY[*]}"
+					)"
+					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_TEXT}"
 					for ((I=0; I<"${#BOOT_OPTN[@]}"; I++))
 					do
-						read -r -a MENU_ARRY < <(
+						MENU_TEXT="$(
 							if [[ "${BOOT_OPTN[I]}" =~ set\ svraddr ]]; then
 								cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 									${BOOT_OPTN[I]}
@@ -3653,20 +3668,29 @@ _EOT_
 										${BOOT_OPTN[I]}
 _EOT_
 							fi
-						)
-						sed -i "${MENU_PATH}" -e "/^:shell\$/i ${MENU_ARRY[*]}"
+						)"
+						if [[ -n "${MENU_TEXT##* }" ]]; then
+							sed -i "${MENU_PATH}" -e "/^:shell\$/i ${MENU_TEXT}"
+						fi
 					done
-					read -r -a MENU_ARRY < <(
+					MENU_TEXT="$(
+						if [[ "${TGET_INFO[5]}" = "." ]]; then
+							WORK_STRS="\${knladdr}"
+						else
+							WORK_STRS="\${knladdr}/${TGET_INFO[5]}"
+						fi
 						cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
-							echo -n Kernel options: && read --timeout 3 options
-							kernel \${knladdr}/${TGET_INFO[5]}/${TGET_INFO[7]} \${options} ---
-							initrd \${knladdr}/${TGET_INFO[5]}/${TGET_INFO[6]}
-							boot
+							echo Editing kernel options (Timeout after \${optn-timeout}ms):
+							read --timeout \${optn-timeout} options ||
+							echo Loading kernel and initrd ...
+							kernel ${WORK_STRS}/${TGET_INFO[7]} \${options} --- || goto error
+							initrd ${WORK_STRS}/${TGET_INFO[6]} || goto error
+							boot || goto error
 							exit
 							
 _EOT_
-					)
-					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_ARRY[*]}"
+					)"
+					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_TEXT}"
 					;;
 			esac
 			;;

@@ -33,7 +33,7 @@
         sudo firewall-cmd --add-service=nfs --permanent --zone=home
         sudo firewall-cmd --reload
         sudo firewall-cmd --list-all --zone=home
-        sudo sed -i.orig /etc/exports -e '$ a /home 192.168.1.0/24(ro,no_subtree_check,no_root_squash,no_wdelay)'
+        sudo sed -i.orig /etc/exports -e '$ a /home 192.168.1.0/24(all_squash,no_subtree_check)'
         sudo exportfs -ar
         sudo exportfs -v
 
@@ -108,7 +108,7 @@ _EOT_
         sudo firewall-cmd --add-service=nfs --permanent --zone=home
         sudo firewall-cmd --reload
         sudo firewall-cmd --list-all --zone=home
-        sudo echo '/home 192.168.1.0/24(ro,no_subtree_check,no_root_squash,no_wdelay)' | sudo tee -a /etc/exports
+        sudo sed -i.orig /etc/exports -e '$ a /home 192.168.1.0/24(all_squash,no_subtree_check)'
         sudo exportfs -ar
         sudo exportfs -v
     # -------------------------------------------------------------------------
