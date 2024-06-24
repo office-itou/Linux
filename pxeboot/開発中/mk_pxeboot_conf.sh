@@ -57,12 +57,25 @@
 	#   |-- back ---------------------- backup directory
 	#   |-- conf ---------------------- configuration file
 	#   |   |-- _template
+	#   |   |   |-- kickstart_common.cfg
+	#   |   |   |-- nocloud-ubuntu-user-data
+	#   |   |   |-- preseed_debian.cfg
+	#   |   |   |-- preseed_ubuntu.cfg
+	#   |   |   `-- yast_opensuse.xml
 	#   |   |-- autoyast
 	#   |   |-- kickstart
 	#   |   |-- nocloud
 	#   |   |-- preseed
 	#   |   |-- script
+	#   |   |   `-- late_command.sh
 	#   |   `-- windows
+	#   |       |-- bypass.cmd
+	#   |       |-- inst_w10.cmd
+	#   |       |-- inst_w11.cmd
+	#   |       |-- shutdown.cmd
+	#   |       |-- startnet.cmd
+	#   |       |-- unattend.xml
+	#   |       `-- winpeshl.ini
 	#   |-- html ---------------------- html contents
 	#   |   |-- conf -> ../conf
 	#   |   |-- imgs -> ../imgs
@@ -111,13 +124,13 @@
 	#           |-- load -> ../load
 	#           `-- pxelinux.cfg
 	#               `-- default -> ../syslinux.cfg
-	#
+	#   
 	#   /var/lib/
 	#   `-- tftpboot -> ${HOME}/share/tftp
-	#
+	#   
 	#   /var/www/
 	#   `-- html -> ${HOME}/share/html
-	#
+	#   
 	#   /etc/dnsmasq.d/
 	#   `-- pxe.conf ------------------ pxeboot dnsmasq configuration file
 
