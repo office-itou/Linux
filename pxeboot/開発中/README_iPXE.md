@@ -39,7 +39,7 @@
 |              | oracular-live-server-amd64.iso             | 6.8.0   |    O    |    O    |    O    | "                                          |
 |              | Fedora-Server-dvd-x86_64-39-1.5.iso        | 6.5.6   |    O    |    O    |    O    | No special mention                         |
 |              | Fedora-Server-dvd-x86_64-40-1.14.iso       | 6.8.5   |    O    |    O    |    O    | "                                          |
-|              | CentOS-Stream-9-latest-x86_64-dvd1.iso     | 5.14.0  |    O    |    O    |    ?    | "                                          |
+|              | CentOS-Stream-9-latest-x86_64-dvd1.iso     | 5.14.0  |    O    |    O    |    O    | "                                          |
 |              | AlmaLinux-9-latest-x86_64-dvd.iso          | 5.14.0  |    O    |    O    |    O    | "                                          |
 |              | Rocky-8.9-x86_64-dvd1.iso                  | 4.18.0  |    O    |    X    |    -    | Crash during startup                       |
 |              | Rocky-9-latest-x86_64-dvd.iso              | 5.14.0  |    O    |    O    |    O    | No special mention                         |
