@@ -13,6 +13,9 @@
 |                   | TFTP           | tftpd-hpa 5.2                    |
 |                   | HTTP           | apache2 2.4.59                   |
 |                   | SMB/CIFS       | samba 4.17.12                    |
+|                   | iPXE           | undionly.kpxe 3.70 or newer      |
+|                   |                | ipxe.efi                         |
+|                   |                | wimboot 2.8.0                    |
   
 ### Hardware  
   
