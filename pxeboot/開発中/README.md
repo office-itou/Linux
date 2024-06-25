@@ -8,6 +8,11 @@
 | ----------------- | -------------- | -------------------------------- |
 | Host PC           | Windows        | Windows 10 Pro 22H2              |
 |                   | Virtual system | VMware Workstation 16 Pro        |
+| Guest PC (Server) | Linux          | Debian 12 (stable)               |
+|                   | DNS/DHCP       | dnsmasq 2.89                     |
+|                   | TFTP           | tftpd-hpa 5.2                    |
+|                   | HTTP           | apache2 2.4.59                   |
+|                   | SMB/CIFS       | samba 4.17.12                    |
   
 ### Hardware  
   
