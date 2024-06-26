@@ -22,11 +22,15 @@
         sudo sed -i /etc/default/tftpd-hpa                       \
             -e "/^TFTP_DIRECTORY=/ s%=.*$%=\"/var/lib/tftpboot\"%" \
             -e '/^TFTP_OPTIONS=/   s/=.*$/="--secure --verbose"/'
-        sudo sed -i /etc/dnsmasq.d/pxe.conf      \
-            -e '/^#pxe-prompt=/            s/^#//' \
-            -e '/^#pxe-service=x86PC/      s/^#//' \
-            -e '/^#pxe-service=BC_EFI/     s/^#//' \
-            -e '/^#pxe-service=x86-64_EFI/ s/^#//'
+        sudo sed -i /etc/dnsmasq.d/pxe.conf           \
+            -e '/^pxe/ s/^/#/g'                       \
+            -e '/ipxe block/,/^$/ {'                  \
+            -e '/^#dhcp-match=set:iPXE,175/   s/^#//' \
+            -e '/^#pxe-prompt=/               s/^#//' \
+            -e '/^#pxe-service=.*,x86PC/      s/^#//' \
+            -e '/^#pxe-service=.*,BC_EFI/     s/^#//' \
+            -e '/^#pxe-service=.*,x86-64_EFI/ s/^#//' \
+            -e '}'
         sudo systemctl restart dnsmasq.service tftpd-hpa.service
     # +++ [ setup nfs ] +++++++++++++++++++++++++++++++++++++++++++++++++++++++
         sudo apt-get install nfs-kernel-server
