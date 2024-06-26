@@ -3983,8 +3983,8 @@ function funcCall_create() {
 #	declare -r    OLD_IFS="${IFS}"
 	declare -r    MSGS_TITL="call create"
 	declare -n    COMD_RETN="$1"
-	shift 2
-	declare -a    COMD_LIST=("$@")
+#	shift 2
+#	declare -a    COMD_LIST=("$@")
 #	declare -r -a COMD_ENUM=("mini" "net" "dvd" "live" "tool")
 #	declare       WORK_PARM=""
 #	declare       WORK_ENUM=""
@@ -4013,6 +4013,7 @@ function funcCall_create() {
 	declare -a    BOOT_GRUB=()								# boot option (grub)
 	declare -a    BOOT_IPXE=()								# boot option (ipxe)
 	declare       COMD_NAME="grub-mkimage"					# debian / ubuntu
+	declare -i    COMD_INST=0								# command install skip or forced
 	declare -r -a MODU_LIST=( \
 		"all_video" "boot" "btrfs" "cat" "chain" "configfile" "echo" \
 		"ext2" "fat" "font" "gettext" "gfxmenu" "gfxterm" \
@@ -4037,219 +4038,306 @@ function funcCall_create() {
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	funcPrintf "      create: syslinux /grub menu file"
-	# -------------------------------------------------------------
+	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	if [[ -z "$(command -v "${COMD_NAME}" 2> /dev/null)" ]]; then
 		COMD_NAME="grub2-mkimage"
 	fi
 	# -------------------------------------------------------------------------
-	for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},${DIRS_GRUB},ipxe}
+	shift 2
+	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
+		COMD_LIST=("cmd" "menu" "$@")
+		IFS=' =,'
+		set -f
+		set -- "${COMD_LIST[@]:-}"
+		set +f
+		IFS=${OLD_IFS}
+	fi
+	while [[ -n "${1:-}" ]]
 	do
-		funcPrintf "        copy: ${MENU_DIRS##*/}"
-		mkdir -p "${MENU_DIRS}"
-		case "${MENU_DIRS}" in
-			*bios )
-				for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
+		# shellcheck disable=SC2034
+		COMD_LIST=("${@:-}")
+		case "${1:-}" in
+			cmd )						# ==== create system command
+				case "${2:-}" in
+					F | force ) COMD_INST=1; shift;;
+					* ) ;;
+				esac
+				for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},${DIRS_GRUB},ipxe}
 				do
-					: > "${MENU_DIRS}/${MENU_SLNX[I]}"
-				done
-				if [[ ! -f "${MENU_DIRS}/pxelinux.0" ]]; then
-					if [[ -d /usr/lib/syslinux/modules/bios/. ]]; then
-						cp --archive --update /usr/lib/syslinux/memdisk         "${MENU_DIRS}/"
-						cp --archive --update /usr/lib/syslinux/modules/bios/.  "${MENU_DIRS}/"
-						cp --archive --update /usr/lib/PXELINUX/.               "${MENU_DIRS}/"
+					if [[ "${COMD_INST}" -eq 0 ]]; then
+						funcPrintf "        copy: ${MENU_DIRS##*/}"
 					else
-						cp --archive --update /usr/share/syslinux/memdisk       "${MENU_DIRS}/"
-						cp --archive --update /usr/share/syslinux/.             "${MENU_DIRS}/"
+						funcPrintf " forced copy: ${MENU_DIRS##*/}"
 					fi
-				fi
-				;;
-			*efi32)
-				for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
-				do
-					: > "${MENU_DIRS}/${MENU_SLNX[I]}"
-				done
-				if [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
-					if [[ -d /usr/lib/syslinux/modules/efi32/. ]]; then
-						cp --archive --update /usr/lib/syslinux/modules/efi32/. "${MENU_DIRS}/"
-						cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${MENU_DIRS}/"
-					fi
-				fi
-				;;
-			*efi64)
-				for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
-				do
-					: > "${MENU_DIRS}/${MENU_SLNX[I]}"
-				done
-				if [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
-					if [[ -d /usr/lib/syslinux/modules/efi64/. ]]; then
-						cp --archive --update /usr/lib/syslinux/modules/efi64/. "${MENU_DIRS}/"
-						cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${MENU_DIRS}/"
-					fi
-				fi
-				;;
-			*grub )
-				for ((I=0; I<"${#MENU_GRUB[@]}"; I++))
-				do
-					: > "${MENU_DIRS}/${MENU_GRUB[I]}"
-				done
-				if [[ ! -f "${MENU_DIRS}/x86_64-efi/grub.cfg" ]] \
-				|| [[ ! -f "${MENU_DIRS}/i386-pc/grub.cfg"    ]]; then
-					mkdir -p "${DIRS_TFTP}/boot/grub/"{fonts,locale,i386-pc,x86_64-efi}
-					if [[ -f /usr/lib/syslinux/memdisk ]]; then
-						cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_TFTP}/"
-						cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_HTML}/"
-						grub-mknetdir --net-directory="${DIRS_TFTP}" --subdir="${DIRS_GRUB}"
-					else
-						cp --archive --update /usr/share/syslinux/memdisk "${DIRS_TFTP}/"
-						cp --archive --update /usr/share/syslinux/memdisk "${DIRS_HTML}/"
-						cp --archive --update /usr/lib/grub/i386-pc/.     "${MENU_DIRS}/i386-pc/"
-						cp --archive --update /usr/lib/grub/x86_64-efi/.  "${MENU_DIRS}/x86_64-efi/"
-						cp --archive --update /usr/share/grub/*.pf2       "${MENU_DIRS}/fonts/"
-					fi
-				fi
-				# -------------------------------------------------------------
-				mkdir -p "${DIRS_TEMP}"
-				WORK_FILE="${DIRS_TEMP}/setvars.conf"
-				cat <<- _EOT_ | sed 's/^ *//g' > "${WORK_FILE}"
-					set net_default_server="${HTTP_ADDR#*://}"
+					mkdir -p "${MENU_DIRS}"
+					case "${MENU_DIRS}" in
+						*bios )
+#							for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
+#							do
+#								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
+#							done
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/pxelinux.0" ]]; then
+								if [[ -d /usr/lib/syslinux/modules/bios/. ]]; then
+									cp --archive --update /usr/lib/syslinux/memdisk         "${MENU_DIRS}/"
+									cp --archive --update /usr/lib/syslinux/modules/bios/.  "${MENU_DIRS}/"
+									cp --archive --update /usr/lib/PXELINUX/.               "${MENU_DIRS}/"
+								else
+									cp --archive --update /usr/share/syslinux/memdisk       "${MENU_DIRS}/"
+									cp --archive --update /usr/share/syslinux/.             "${MENU_DIRS}/"
+								fi
+							fi
+							;;
+						*efi32)
+#							for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
+#							do
+#								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
+#							done
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
+								if [[ -d /usr/lib/syslinux/modules/efi32/. ]]; then
+									cp --archive --update /usr/lib/syslinux/modules/efi32/. "${MENU_DIRS}/"
+									cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${MENU_DIRS}/"
+								fi
+							fi
+							;;
+						*efi64)
+#							for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
+#							do
+#								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
+#							done
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
+								if [[ -d /usr/lib/syslinux/modules/efi64/. ]]; then
+									cp --archive --update /usr/lib/syslinux/modules/efi64/. "${MENU_DIRS}/"
+									cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${MENU_DIRS}/"
+								fi
+							fi
+							;;
+						*grub )
+#							for ((I=0; I<"${#MENU_GRUB[@]}"; I++))
+#							do
+#								: > "${MENU_DIRS}/${MENU_GRUB[I]}"
+#							done
+							if [[ "${COMD_INST}" -ne 0 ]] \
+							|| [[ ! -f "${MENU_DIRS}/x86_64-efi/grub.cfg" ]] \
+							|| [[ ! -f "${MENU_DIRS}/i386-pc/grub.cfg"    ]]; then
+								mkdir -p "${DIRS_TFTP}/boot/grub/"{fonts,locale,i386-pc,x86_64-efi}
+								if [[ -f /usr/lib/syslinux/memdisk ]]; then
+									cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_TFTP}/"
+									cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_HTML}/"
+									grub-mknetdir --net-directory="${DIRS_TFTP}" --subdir="${DIRS_GRUB}"
+								else
+									cp --archive --update /usr/share/syslinux/memdisk "${DIRS_TFTP}/"
+									cp --archive --update /usr/share/syslinux/memdisk "${DIRS_HTML}/"
+									cp --archive --update /usr/lib/grub/i386-pc/.     "${MENU_DIRS}/i386-pc/"
+									cp --archive --update /usr/lib/grub/x86_64-efi/.  "${MENU_DIRS}/x86_64-efi/"
+									cp --archive --update /usr/share/grub/*.pf2       "${MENU_DIRS}/fonts/"
+								fi
+							fi
+							# -------------------------------------------------
+							mkdir -p "${DIRS_TEMP}"
+							WORK_FILE="${DIRS_TEMP}/setvars.conf"
+							cat <<- _EOT_ | sed 's/^ *//g' > "${WORK_FILE}"
+								set net_default_server="${HTTP_ADDR#*://}"
 _EOT_
-				# -------------------------------------------------------------
-				if [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}"  ]]; then
-					"${COMD_NAME}" \
-					    --directory=/usr/lib/grub/i386-pc \
-					    --format=i386-pc-pxe \
-					    --output="${MENU_DIRS}/${BOOT_PXE0}" \
-					    --prefix="(tftp,${HTTP_ADDR#*://})/boot/grub" \
-					    --compression=auto \
-					    --config="${WORK_FILE}" \
-					    "${MODU_LIST[@]}" cpuid play pxe vga
-				fi
-				# -------------------------------------------------------------
-				if [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
-					"${COMD_NAME}" \
-					    --directory=/usr/lib/grub/x86_64-efi \
-					    --format=x86_64-efi \
-					    --output="${MENU_DIRS}/${BOOT_UEFI}" \
-					    --prefix="(tftp,${HTTP_ADDR#*://})/boot/grub" \
-					    --compression=auto \
-					    --config="${WORK_FILE}" \
-					    "${MODU_LIST[@]}" cpuid play tpm efifwsetup efinet lsefi lsefimmap lsefisystab lssal
-				fi
-				;;
-			*ipxe )
-				for ((I=0; I<"${#MENU_IPXE[@]}"; I++))
-				do
-					: > "${MENU_DIRS}/${MENU_IPXE[I]}"
+							# -------------------------------------------------
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}"  ]]; then
+								"${COMD_NAME}" \
+								    --directory=/usr/lib/grub/i386-pc \
+								    --format=i386-pc-pxe \
+								    --output="${MENU_DIRS}/${BOOT_PXE0}" \
+								    --prefix="(tftp,${HTTP_ADDR#*://})/boot/grub" \
+								    --compression=auto \
+								    --config="${WORK_FILE}" \
+								    "${MODU_LIST[@]}" cpuid play pxe vga
+							fi
+							# -------------------------------------------------
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
+								"${COMD_NAME}" \
+								    --directory=/usr/lib/grub/x86_64-efi \
+								    --format=x86_64-efi \
+								    --output="${MENU_DIRS}/${BOOT_UEFI}" \
+								    --prefix="(tftp,${HTTP_ADDR#*://})/boot/grub" \
+								    --compression=auto \
+								    --config="${WORK_FILE}" \
+								    "${MODU_LIST[@]}" cpuid play tpm efifwsetup efinet lsefi lsefimmap lsefisystab lssal
+							fi
+							;;
+						*ipxe )
+#							for ((I=0; I<"${#MENU_IPXE[@]}"; I++))
+#							do
+#								: > "${MENU_DIRS}/${MENU_IPXE[I]}"
+#							done
+							if [[ "${COMD_INST}" -ne 0 ]] \
+							|| [[ ! -f "${MENU_DIRS}/undionly.kpxe" ]] \
+							|| [[ ! -f "${MENU_DIRS}/ipxe.efi"      ]]; then
+								rm -f "${MENU_DIRS}/"{undionly.kpxe,ipxe.efi,wimboot}
+								mkdir -p "${DIRS_TEMP}"
+#								pushd "${DIRS_TEMP}" > /dev/null
+#									# shellcheck disable=SC2312
+#									if [[ -n "$(command -v apt-get 2> /dev/null)" ]]; then
+#										apt-get -qq download ipxe 2> /dev/null
+#										dpkg -x ipxe_*_all.deb ipxe
+#										cp -a ipxe/usr/lib/ipxe/undionly.kpxe "${MENU_DIRS}"
+#										cp -a ipxe/boot/ipxe.efi              "${MENU_DIRS}"
+#									fi
+#								popd  > /dev/null
+							fi
+							if [[ ! -f "${MENU_DIRS}/undionly.kpxe" ]]; then
+								curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://boot.ipxe.org/undionly.kpxe"
+							fi
+							if [[ ! -f "${MENU_DIRS}/ipxe.efi"      ]]; then
+								curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://boot.ipxe.org/ipxe.efi"
+							fi
+							if [[ ! -f "${MENU_DIRS}/wimboot"       ]]; then
+								curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://github.com/ipxe/wimboot/releases/latest/download/wimboot"
+							fi
+							;;
+						* )
+							;;
+					esac
 				done
-				if [[ ! -f "${MENU_DIRS}/undionly.kpxe" ]]; then
-					curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://boot.ipxe.org/undionly.kpxe"
-				fi
-				if [[ ! -f "${MENU_DIRS}/ipxe.efi"      ]]; then
-					curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://boot.ipxe.org/ipxe.efi"
-				fi
-				if [[ ! -f "${MENU_DIRS}/wimboot"       ]]; then
-					curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://github.com/ipxe/wimboot/releases/latest/download/wimboot"
-				fi
+				;;
+			menu )						# ==== create menu fle
+				for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},${DIRS_GRUB},ipxe}
+				do
+					mkdir -p "${MENU_DIRS}"
+					case "${MENU_DIRS}" in
+						*bios )
+							for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
+							do
+								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
+							done
+							;;
+						*efi32)
+							for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
+							do
+								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
+							done
+							;;
+						*efi64)
+							for ((I=0; I<"${#MENU_SLNX[@]}"; I++))
+							do
+								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
+							done
+							;;
+						*grub )
+							for ((I=0; I<"${#MENU_GRUB[@]}"; I++))
+							do
+								: > "${MENU_DIRS}/${MENU_GRUB[I]}"
+							done
+							;;
+						*ipxe )
+							for ((I=0; I<"${#MENU_IPXE[@]}"; I++))
+							do
+								: > "${MENU_DIRS}/${MENU_IPXE[I]}"
+							done
+							;;
+						* )
+							;;
+					esac
+				done
+				# -------------------------------------------------------------
+				for ((I=0; I<"${#DATA_LIST[@]}"; I++))
+				do
+					read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
+					FILE_PATH="${DIRS_ISOS}/${DATA_LINE[4]}"
+#					if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${FILE_PATH}" ]]; then
+#						continue
+#					fi
+					if [[ "${DATA_LINE[0]}" = "o" ]] && [[ -f "${FILE_PATH}" ]]; then
+						# --- copy iso contents to hdd ------------------------
+						funcCreate_copy_iso2hdd "${DATA_LINE[@]}"
+						# --- file information --------------------------------
+						# shellcheck disable=SC2312
+						read -r -a FILE_INFO < <(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${FILE_PATH}")
+						FILE_SIZE="${FILE_INFO[4]}"
+						FILE_TIME="${FILE_INFO[5]}"
+						DATA_LINE[10]="${FILE_TIME:0:4}-${FILE_TIME:4:2}-${FILE_TIME:6:2}"
+						DATA_LINE[12]="${FILE_TIME:8:2}:${FILE_TIME:10:2}:${FILE_TIME:12:2}"
+						DATA_LINE[13]="${FILE_SIZE}"
+						DATA_LIST[I]="${DATA_LINE[*]}"
+					fi
+					# --- create menu -----------------------------------------
+					BOOT_ARRY=()
+					case "${DATA_LINE[1]%%-*}" in
+						menu         ) ;;
+						debian       | \
+						ubuntu       ) 
+							case "${DATA_LINE[8]%%/*}" in
+								preseed* ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_preseed "${DATA_LINE[@]}");;
+								nocloud* ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_nocloud "${DATA_LINE[@]}");;
+								*        ) funcPrintf "not supported on ${DATA_LINE[1]}"; exit 1;;
+							esac
+							;;
+						fedora       | \
+						centos       | \
+						almalinux    | \
+						miraclelinux | \
+						rockylinux   ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_kickstart "${DATA_LINE[@]}");;
+						opensuse     ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_autoyast "${DATA_LINE[@]}");;
+						windows      ) ;;
+						memtest86\+  ) ;;
+						winpe        | \
+						ati2020x64   | \
+						ati2020x86   ) ;;
+						hdt          | \
+						shutdown     | \
+						restart      ) ;;
+						*            )				# --- not supported -------
+							funcPrintf "not supported on ${DATA_LINE[1]}"
+							exit 1
+							;;
+					esac
+					IFS="${OLD_IFS}"
+					# ---------------------------------------------------------
+					BOOT_OPTN=""
+					BOOT_GRUB=()
+					BOOT_IPXE=()
+					for ((J=0; J<"${#BOOT_ARRY[@]}"; J++))
+					do
+						case "${J}" in
+							0 ) BOOT_OPTN="${BOOT_ARRY[J]}";;
+							* ) BOOT_GRUB+=("${BOOT_ARRY[J]}")
+							    BOOT_IPXE+=("${BOOT_ARRY[J]}");;
+						esac
+					done
+					# ---------------------------------------------------------
+					if [[ "${DATA_LINE[0]}" = "m" ]]; then
+						if [[ "${DATA_LINE[2]}" = "-" ]]; then
+							TABS_CONT=$(("${TABS_CONT}" - 1))
+						else
+							TABS_CONT=$(("${TABS_CONT}" + 1))
+						fi
+					fi
+					if [[ "${TABS_CONT}" -lt 0 ]]; then
+						TABS_CONT=0
+					fi
+					# ---------------------------------------------------------
+					for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},boot/grub,ipxe}
+					do
+						case "${MENU_DIRS}" in
+							*bios | \
+							*efi32| \
+							*efi64) funcCreate_syslinux_cfg  "${MENU_DIRS}" MENU_SLNX "${BOOT_OPTN}" DATA_LINE "${TABS_CONT}";;
+							*grub ) funcCreate_grub_cfg      "${MENU_DIRS}" MENU_GRUB    BOOT_GRUB   DATA_LINE "${TABS_CONT}";;
+							*ipxe ) funcCreate_autoexec_ipxe "${MENU_DIRS}" MENU_IPXE    BOOT_IPXE   DATA_LINE "${TABS_CONT}";;
+							*     ) ;;
+						esac
+					done
+				done
+				;;
+			-* )
+				break
 				;;
 			* )
 				;;
 		esac
+		shift
 	done
-	# -------------------------------------------------------------------------
-	for ((I=0; I<"${#DATA_LIST[@]}"; I++))
-	do
-		read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
-		FILE_PATH="${DIRS_ISOS}/${DATA_LINE[4]}"
-#		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${FILE_PATH}" ]]; then
-#			continue
-#		fi
-		if [[ "${DATA_LINE[0]}" = "o" ]] && [[ -f "${FILE_PATH}" ]]; then
-			# --- copy iso contents to hdd ------------------------------------
-			funcCreate_copy_iso2hdd "${DATA_LINE[@]}"
-			# --- file information --------------------------------------------
-			# shellcheck disable=SC2312
-			read -r -a FILE_INFO < <(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${FILE_PATH}")
-			FILE_SIZE="${FILE_INFO[4]}"
-			FILE_TIME="${FILE_INFO[5]}"
-			DATA_LINE[10]="${FILE_TIME:0:4}-${FILE_TIME:4:2}-${FILE_TIME:6:2}"
-			DATA_LINE[12]="${FILE_TIME:8:2}:${FILE_TIME:10:2}:${FILE_TIME:12:2}"
-			DATA_LINE[13]="${FILE_SIZE}"
-			DATA_LIST[I]="${DATA_LINE[*]}"
-		fi
-		# --- create menu -----------------------------------------------------
-		BOOT_ARRY=()
-		case "${DATA_LINE[1]%%-*}" in
-			menu         ) ;;
-			debian       | \
-			ubuntu       ) 
-				case "${DATA_LINE[8]%%/*}" in
-					preseed* ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_preseed "${DATA_LINE[@]}");;
-					nocloud* ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_nocloud "${DATA_LINE[@]}");;
-					*        ) funcPrintf "not supported on ${DATA_LINE[1]}"; exit 1;;
-				esac
-				;;
-			fedora       | \
-			centos       | \
-			almalinux    | \
-			miraclelinux | \
-			rockylinux   ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_kickstart "${DATA_LINE[@]}");;
-			opensuse     ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_autoyast "${DATA_LINE[@]}");;
-			windows      ) ;;
-			memtest86\+  ) ;;
-			winpe        | \
-			ati2020x64   | \
-			ati2020x86   ) ;;
-			hdt          | \
-			shutdown     | \
-			restart      ) ;;
-			*            )				# --- not supported -------------------
-				funcPrintf "not supported on ${DATA_LINE[1]}"
-				exit 1
-				;;
-		esac
-		IFS="${OLD_IFS}"
-		# ---------------------------------------------------------------------
-		BOOT_OPTN=""
-		BOOT_GRUB=()
-		BOOT_IPXE=()
-		for ((J=0; J<"${#BOOT_ARRY[@]}"; J++))
-		do
-			case "${J}" in
-				0 ) BOOT_OPTN="${BOOT_ARRY[J]}";;
-				* ) BOOT_GRUB+=("${BOOT_ARRY[J]}")
-				    BOOT_IPXE+=("${BOOT_ARRY[J]}");;
-			esac
-		done
-		# ---------------------------------------------------------------------
-		if [[ "${DATA_LINE[0]}" = "m" ]]; then
-			if [[ "${DATA_LINE[2]}" = "-" ]]; then
-				TABS_CONT=$(("${TABS_CONT}" - 1))
-			else
-				TABS_CONT=$(("${TABS_CONT}" + 1))
-			fi
-		fi
-		if [[ "${TABS_CONT}" -lt 0 ]]; then
-			TABS_CONT=0
-		fi
-		# ---------------------------------------------------------------------
-		for MENU_DIRS in "${DIRS_TFTP}/"{menu-{bios,efi64},boot/grub,ipxe}
-		do
-			case "${MENU_DIRS}" in
-				*bios | \
-				*efi32| \
-				*efi64) funcCreate_syslinux_cfg  "${MENU_DIRS}" MENU_SLNX "${BOOT_OPTN}" DATA_LINE "${TABS_CONT}";;
-				*grub ) funcCreate_grub_cfg      "${MENU_DIRS}" MENU_GRUB    BOOT_GRUB   DATA_LINE "${TABS_CONT}";;
-				*ipxe ) funcCreate_autoexec_ipxe "${MENU_DIRS}" MENU_IPXE    BOOT_IPXE   DATA_LINE "${TABS_CONT}";;
-				*     ) ;;
-			esac
-		done
-	done
-	# -------------------------------------------------------------------------
-	rm -rf "${DIRS_TEMP:?}"
-	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2034
 	COMD_RETN="${COMD_LIST[*]:-}"
+	# -------------------------------------------------------------------------
+	rm -rf "${DIRS_TEMP:?}"
 }
 
 # === main ====================================================================
