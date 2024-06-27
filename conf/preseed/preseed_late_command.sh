@@ -2,7 +2,7 @@
 
 ### initialization ############################################################
 #	set -n								# Check for syntax errors
-#	set -x								# Show command and argument expansion
+	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
 	set +m								# Disable job control
 	set -e								# End with status other than 0
