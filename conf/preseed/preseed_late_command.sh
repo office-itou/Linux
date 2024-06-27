@@ -378,7 +378,7 @@ funcGetNetwork_parameter() {
 	fi
 	#--- nic parameter --------------------------------------------------------
 	if [ -z "${NIC_NAME}" ] || [ "${NIC_NAME}" = "auto" ]; then
-		IP4_INFO="$(ip -4 -oneline address show | sed -ne '/^2:[ \t]\+/p')"
+		IP4_INFO="$(ip -4 -oneline address m | sed -ne '/^2:[ \t]\+/p')"
 		NIC_NAME="$(echo "${IP4_INFO}" | sed -ne 's/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\)[ \t]\+inet.*$/\1/p')"
 	fi
 	IP4_INFO="$(ip -4 -oneline link show "${NIC_NAME}" 2> /dev/null)"
