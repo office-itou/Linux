@@ -306,7 +306,24 @@ funcInstallPackages() {
 funcGetNetwork_parameter() {
 	FUNC_NAME="funcGetNetwork_parameter"
 	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
-	#--- parameter ------------------------------------------------------------
+	#--- nic parameter --------------------------------------------------------
+	IP4_INFO="$(ip -4 -oneline address show primary | sed -ne '/^2:[ \t]\+/p')"
+	LNK_INFO="$(ip -4 -oneline link show | sed -ne '/^2:[ \t]\+/p')"
+	NIC_NAME="$(echo "${IP4_INFO}" | sed -ne 's/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\)[ \t]\+inet.*$/\1/p')"
+	NIC_MADR="$(echo "${LNK_INFO}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
+	CON_MADR="$(echo "${NIC_MADR}" | sed -ne 's/://gp')"
+	NIC_IPV4="$(echo "${IP4_INFO}" | sed -ne 's%^.*inet[ \t]\+\([0-9.]\+\)/*\([0-9]*\)[ \t]\+.*$%\1%p')"
+	NIC_BIT4="$(echo "${IP4_INFO}" | sed -ne 's%^.*inet[ \t]\+\([0-9.]\+\)/*\([0-9]*\)[ \t]\+.*$%\2%p')"
+	NIC_BIT4="$([ -n "${NIC_BIT4}" ] && echo "${NIC_BIT4}" || echo 0)"
+	NIC_MASK="$(funcIPv4GetNetmask "${NIC_BIT4}")"
+	FIX_IPV4="$([ -n "${NIC_BIT4}" ] && echo "true" || echo "false")"
+	NIC_DNS4="$(sed -ne '/nameserver/ s/^.*[ \t]\+\([0-9.:]\+\)[ \t]*/\1/p' /etc/resolv.conf | head -n 1)"
+	NIC_GATE="$(ip -4 -oneline route list dev ens160 default | sed -ne 's/^.*via[ \t]\+\([0-9.]\+\)[ \t]\+onlink .*/\1/p')"
+	NIC_FQDN="$(hostname -f)"
+	NIC_HOST="${NIC_FQDN%.*}"
+	NIC_WGRP="${NIC_FQDN##*.}"
+	NMN_FLAG=""
+	#--- preseed parameter ----------------------------------------------------
 	if [ -f "${SEED_FILE}" ]; then
 		FIX_IPV4="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/\(disable_dhcp\|disable_autoconfig\)[ \t]\+/ s/^.*[ \t]//p' "${SEED_FILE}")"
 		NIC_IPV4="$(sed -ne '/^[ \t]*d-i[ \t]\+netcfg\/get_ipaddress[ \t]\+/                        s/^.*[ \t]//p' "${SEED_FILE}")"
@@ -376,14 +393,14 @@ funcGetNetwork_parameter() {
 	else
 		NIC_BIT4="$(funcIPv4GetNetCIDR "${NIC_MASK}")"
 	fi
-	#--- nic parameter --------------------------------------------------------
-	if [ -z "${NIC_NAME}" ] || [ "${NIC_NAME}" = "auto" ]; then
-		IP4_INFO="$(ip -4 -oneline address m | sed -ne '/^2:[ \t]\+/p')"
-		NIC_NAME="$(echo "${IP4_INFO}" | sed -ne 's/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\)[ \t]\+inet.*$/\1/p')"
-	fi
-	IP4_INFO="$(ip -4 -oneline link show "${NIC_NAME}" 2> /dev/null)"
-	NIC_MADR="$(echo "${IP4_INFO}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
-	CON_MADR="$(echo "${NIC_MADR}" | sed -ne 's/://gp')"
+#	#--- nic parameter --------------------------------------------------------
+#	if [ -z "${NIC_NAME}" ] || [ "${NIC_NAME}" = "auto" ]; then
+#		IP4_INFO="$(ip -4 -oneline address show primary | sed -ne '/^2:[ \t]\+/p')"
+#		NIC_NAME="$(echo "${IP4_INFO}" | sed -ne 's/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\)[ \t]\+inet.*$/\1/p')"
+#	fi
+#	IP4_INFO="$(ip -4 -oneline link show "${NIC_NAME}" 2> /dev/null)"
+#	NIC_MADR="$(echo "${IP4_INFO}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
+#	CON_MADR="$(echo "${NIC_MADR}" | sed -ne 's/://gp')"
 	#--- debug print ----------------------------------------------------------
 	echo "${PROG_NAME}: FIX_IPV4=${FIX_IPV4}"
 	echo "${PROG_NAME}: NIC_NAME=${NIC_NAME}"
