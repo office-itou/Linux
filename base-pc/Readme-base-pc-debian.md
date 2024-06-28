@@ -21,9 +21,6 @@ Skip Screen is the default value
 | ![autoinstall-011](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-01-autoinstall-011.png) |
 | ![autoinstall-012](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-01-autoinstall-012.png) |
 | ![autoinstall-013](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-01-autoinstall-013.png) |
-| ![autoinstall-014](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-01-autoinstall-014.png) |
-| ![autoinstall-015](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-01-autoinstall-015.png) |
-| ![autoinstall-016](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-01-autoinstall-016.png) |
   
 ### Login  
   
