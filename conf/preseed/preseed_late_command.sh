@@ -304,7 +304,8 @@ funcInstallPackages() {
 # --- network get parameter ---------------------------------------------------
 # run on target
 funcGetNetwork_parameter_sub() {
-	for LINE in $1
+	LIST="${1}"
+	for LINE in "${LIST}"
 	do
 		case "${LINE}" in
 			netcfg/target_network_config=* ) NMN_FLAG="${LINE#netcfg/target_network_config=}";;
@@ -358,14 +359,14 @@ funcGetNetwork_parameter() {
 	NIC_MASK="$(funcIPv4GetNetmask "${NIC_BIT4}")"
 	FIX_IPV4="$([ -n "${NIC_BIT4}" ] && echo "true" || echo "false")"
 	NIC_DNS4="$(sed -ne '/nameserver/ s/^.*[ \t]\+\([0-9.:]\+\)[ \t]*/\1/p' /etc/resolv.conf | head -n 1)"
-	NIC_GATE="$(ip -4 -oneline route list dev ens160 default | sed -ne 's/^.*via[ \t]\+\([0-9.]\+\)[ \t]\+onlink .*/\1/p')"
+	NIC_GATE="$(ip -4 -oneline route list dev "${NIC_NAME}" default | sed -ne 's/^.*via[ \t]\+\([0-9.]\+\)[ \t]\+onlink .*/\1/p')"
 	NIC_FQDN="$(hostname -f)"
 	NIC_HOST="${NIC_FQDN%.*}"
 	NIC_WGRP="${NIC_FQDN##*.}"
 	NMN_FLAG=""
 	#--- preseed parameter ----------------------------------------------------
 	if [ -f "${SEED_FILE}" ]; then
-		funcGetNetwork_parameter_sub "${SEED_FILE}"
+		funcGetNetwork_parameter_sub "$(cat ${SEED_FILE})"
 		if [ -n "${NIC_WGRP}" ]; then
 			NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
 		fi
