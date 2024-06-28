@@ -359,7 +359,7 @@ funcGetNetwork_parameter() {
 	NIC_MASK="$(funcIPv4GetNetmask "${NIC_BIT4}")"
 	FIX_IPV4="$([ -n "${NIC_BIT4}" ] && echo "true" || echo "false")"
 	NIC_DNS4="$(sed -ne '/nameserver/ s/^.*[ \t]\+\([0-9.:]\+\)[ \t]*/\1/p' /etc/resolv.conf | head -n 1)"
-	NIC_GATE="$(ip -4 -oneline route list dev "${NIC_NAME}" default | sed -ne 's/^.*via[ \t]\+\([0-9.]\+\)[ \t]\+onlink .*/\1/p')"
+	NIC_GATE="$(ip -4 -oneline route list dev "${NIC_NAME}" default | sed -ne 's/^.*via[ \t]\+\([0-9.]\+\)[ \t]\+.*/\1/p')"
 	NIC_FQDN="$(hostname -f)"
 	NIC_HOST="${NIC_FQDN%.*}"
 	NIC_WGRP="${NIC_FQDN##*.}"
