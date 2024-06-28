@@ -43,3 +43,21 @@ Skip Screen is the default value
 | wget https://raw.githubusercontent.com/office-itou/Linux/master/base-pc/script/install.sh                        |
 | wget https://raw.githubusercontent.com/office-itou/Linux/master/base-pc/script/install.sh.user.lst               |
   
+## Script Operation  
+  
+| Screenshot                                                                                                       |
+| :--------------------------------------------------------------------------------------------------------------: |
+| ![script-001](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-04-script-001.png)           |
+| ![script-002](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-04-script-002.png)           |
+| ![script-003](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-04-script-003.png)           |
+| ![script-004](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-04-script-004.png)           |
+| ![script-005](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-04-script-005.png)           |
+| ![script-006](https://github.com/office-itou/Linux/blob/master/base-pc/image/debian-04-script-006.png)           |
+  
+| software                                                                                                         |
+| :--------------------------------------------------------------------------------------------------------------- |
+| sudo mkdir -p share/conf/_template                                                                               |
+| cd share/conf/_template                                                                                          |
+| sudo wget -q https://raw.githubusercontent.com/office-itou/Linux/master/conf/_template/{kickstart_common.cfg,nocloud-ubuntu-user-data,preseed_debian.cfg,preseed_ubuntu.cfg,yast_opensuse.xml} |
+| wget -q https://raw.githubusercontent.com/office-itou/Linux/master/shell-script/mk_custom_iso.sh                 |
+  
