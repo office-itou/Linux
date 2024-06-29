@@ -29,7 +29,7 @@
 	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
 	# -------------------------------------------------------------------------
-	declare -r -a APP_LIST=("syslinux-common" "syslinux-efi" "pxelinux" "grub-common" "grub-efi-amd64" "grub-pc-bin" "dnsmasq" "apache2" "7zip" "rsync" "bzip2" "gzip" "lz4" "lzop" "xz-utils" "zstd")
+	declare -r -a APP_LIST=("tftpd-hpa" "syslinux-common" "syslinux-efi" "pxelinux" "grub-common" "grub-efi-amd64" "grub-pc-bin" "dnsmasq" "apache2" "7zip" "rsync" "bzip2" "gzip" "lz4" "lzop" "xz-utils" "zstd")
 	declare -a    APP_FIND=()
 	declare       APP_LINE=""
 	# shellcheck disable=SC2312
@@ -4437,7 +4437,7 @@ function funcMain() {
 				--create )
 					if [[ ! -d "${DIRS_TFTP}/." ]]; then
 						funcCreate_directory
-						funcCreate_link
+#						funcCreate_link
 					fi
 					funcCall_create COMD_LINE "$@"
 					;;
