@@ -62,7 +62,7 @@ sudo ./mk_custom_iso.sh --conf
 ## run (target mini.iso file)  
   
 ``` bash:
-sudo ./mk_custom_iso.sh --create mini
+sudo ./mk_custom_iso.sh --download mini
 sudo ./mk_pxeboot_conf.sh --create
 ```
   
