@@ -15,20 +15,18 @@ menu Select the OS type you want to boot
 item --gap --                           --------------------------------------------------------------------------
 item --gap --                           [ Auto install mini.iso ... ]
 item -- debian-mini-10                  - Debian 10 .......................................... 2022-09-06 22:57:03
-item -- debian-mini-11                  - Debian 11 .......................................... 2024-02-05 11:50:23
-item -- debian-mini-12                  - Debian 12 .......................................... 2024-02-05 07:43:43
+item -- debian-mini-11                  - Debian 11 .......................................... 2024-06-24 17:01:08
+item -- debian-mini-12                  - Debian 12 .......................................... 2024-06-24 11:54:34
 item -- debian-mini-13                  - Debian 13 .......................................... 2023-06-07 01:01:56
-item -- debian-mini-testing             - Debian testing ..................................... 2024-06-23 00:02:19
+item -- debian-mini-testing             - Debian testing ..................................... 2024-06-29 00:02:26
 item -- ubuntu-mini-18.04               - Ubuntu 18.04 ....................................... 2021-09-15 15:14:00
 item -- ubuntu-mini-20.04               - Ubuntu 20.04 ....................................... 2023-03-14 22:28:31
 item --gap --                           [ Auto install Net install ... ]
 item -- debian-netinst-10               - Debian 10 .......................................... 2022-09-10 19:52:36
-item -- debian-netinst-11               - Debian 11 .......................................... 2024-02-10 16:56:37
-item -- debian-netinst-12               - Debian 12 .......................................... 2024-02-10 13:46:02
-item -- debian-netinst-testing          - Debian testing ..................................... 2024-06-23 15:19:31
+item -- debian-netinst-testing          - Debian testing ..................................... 2024-06-28 15:19:32
 item -- fedora-netinst-39               - Fedora Server 39 ................................... 2023-10-31 22:05:26
 item -- fedora-netinst-40               - Fedora Server 40 ................................... 2024-04-14 18:30:19
-item -- centos-stream-netinst-9         - CentOS Stream 9 .................................... 2024-06-17 03:57:15
+item -- centos-stream-netinst-9         - CentOS Stream 9 .................................... 2024-06-24 03:57:51
 item -- almalinux-netinst-9             - Alma Linux 9 ....................................... 2024-05-03 22:12:51
 item -- rockylinux-netinst-8            - Rocky Linux 8 ...................................... 2024-05-27 14:13:45
 item -- rockylinux-netinst-9            - Rocky Linux 9 ...................................... 2024-05-05 01:12:29
@@ -36,22 +34,20 @@ item -- miraclelinux-netinst-8          - Miracle Linux 8 ......................
 item -- miraclelinux-netinst-9          - Miracle Linux 9 .................................... 2023-10-04 08:24:35
 item -- opensuse-leap-netinst-15.5      - openSUSE Leap 15.5 ................................. 2023-05-23 15:09:21
 item -- opensuse-leap-netinst-15.6      - openSUSE Leap 15.6 ................................. 2024-06-20 11:42:39
-item -- opensuse-tumbleweed-netinst     - openSUSE Tumbleweed ................................ 2024-06-21 17:27:00
+item -- opensuse-tumbleweed-netinst     - openSUSE Tumbleweed ................................ 2024-06-28 17:16:06
 item --gap --                           [ Auto install DVD media ... ]
 item -- debian-10                       - Debian 10 .......................................... 2022-09-10 19:55:00
-item -- debian-11                       - Debian 11 .......................................... 2024-02-10 16:57:57
-item -- debian-12                       - Debian 12 .......................................... 2024-02-10 13:47:07
-item -- debian-testing                  - Debian testing ..................................... 2024-06-17 04:55:43
+item -- debian-testing                  - Debian testing ..................................... 2024-06-24 04:56:14
 item -- ubuntu-server-18.04             - Ubuntu 18.04 Server ................................ 2021-09-16 00:01:34
 item -- ubuntu-live-18.04               - Ubuntu 18.04 Live Server ........................... 2021-09-15 20:42:12
 item -- ubuntu-live-20.04               - Ubuntu 20.04 Live Server ........................... 2023-03-14 23:02:35
 item -- ubuntu-live-22.04               - Ubuntu 22.04 Live Server ........................... 2024-02-16 23:52:36
 item -- ubuntu-live-23.10               - Ubuntu 23.10 Live Server ........................... 2023-10-11 04:52:01
 item -- ubuntu-live-24.04               - Ubuntu 24.04 Live Server ........................... 2024-04-23 12:46:14
-item -- ubuntu-live-oracular            - Ubuntu oracular Live Server ........................ 2024-06-23 08:10:15
+item -- ubuntu-live-oracular            - Ubuntu oracular Live Server ........................ 2024-06-27 08:31:59
 item -- fedora-39                       - Fedora Server 39 ................................... 2023-11-01 01:01:16
 item -- fedora-40                       - Fedora Server 40 ................................... 2024-04-14 22:54:06
-item -- centos-stream-9                 - CentOS Stream 9 .................................... 2024-06-17 04:13:15
+item -- centos-stream-9                 - CentOS Stream 9 .................................... 2024-06-24 04:11:56
 item -- almalinux-9                     - Alma Linux 9 ....................................... 2024-05-03 22:26:18
 item -- rockylinux-8                    - Rocky Linux 8 ...................................... 2024-05-27 15:14:45
 item -- rockylinux-9                    - Rocky Linux 9 ...................................... 2024-05-05 22:41:50
@@ -59,30 +55,26 @@ item -- miraclelinux-8                  - Miracle Linux 8 ......................
 item -- miraclelinux-9                  - Miracle Linux 9 .................................... 2023-10-04 09:37:20
 item -- opensuse-leap-15.5              - openSUSE Leap 15.5 ................................. 2023-05-23 15:21:52
 item -- opensuse-leap-15.6              - openSUSE Leap 15.6 ................................. 2024-06-20 11:56:54
-item -- opensuse-tumbleweed             - openSUSE Tumbleweed ................................ 2024-06-21 17:29:56
+item -- opensuse-tumbleweed             - openSUSE Tumbleweed ................................ 2024-06-28 17:18:52
 item -- windows-10                      - Windows 10                                                
 item -- windows-11                      - Windows 11                                                
 item --gap --                           [ Live media Install mode ... ]
 item -- debian-live-10                  - Debian 10 Live ..................................... 2022-09-10 19:01:33
-item -- debian-live-11                  - Debian 11 Live ..................................... 2024-02-10 16:08:38
-item -- debian-live-12                  - Debian 12 Live ..................................... 2024-02-10 11:07:25
-item -- debian-live-testing             - Debian testing Live ................................ 2024-06-17 02:15:25
+item -- debian-live-testing             - Debian testing Live ................................ 2024-06-24 02:13:06
 item -- ubuntu-desktop-20.04            - Ubuntu 20.04 Desktop ............................... 2023-03-16 15:58:09
 item -- ubuntu-desktop-22.04            - Ubuntu 22.04 Desktop ............................... 2024-02-20 19:39:40
 item -- ubuntu-desktop-23.10            - Ubuntu 23.10 Desktop ............................... 2023-10-16 11:31:22
 item -- ubuntu-desktop-24.04            - Ubuntu 24.04 Desktop ............................... 2024-04-24 11:29:21
-item -- ubuntu-desktop-oracular         - Ubuntu oracular Desktop ............................ 2024-06-19 07:15:45
+item -- ubuntu-desktop-oracular         - Ubuntu oracular Desktop ............................ 2024-06-28 06:57:28
 item -- ubuntu-legacy-23.10             - Ubuntu 23.10 Legacy Desktop ........................ 2023-10-10 04:57:59
 item --gap --                           [ Live media Live mode ... ]
 item -- live-debian-live-10             - Debian 10 Live ..................................... 2022-09-10 19:01:33
-item -- live-debian-live-11             - Debian 11 Live ..................................... 2024-02-10 16:08:38
-item -- live-debian-live-12             - Debian 12 Live ..................................... 2024-02-10 11:07:25
-item -- live-debian-live-testing        - Debian testing Live ................................ 2024-06-17 02:15:25
+item -- live-debian-live-testing        - Debian testing Live ................................ 2024-06-24 02:13:06
 item -- live-ubuntu-desktop-20.04       - Ubuntu 20.04 Desktop ............................... 2023-03-16 15:58:09
 item -- live-ubuntu-desktop-22.04       - Ubuntu 22.04 Desktop ............................... 2024-02-20 19:39:40
 item -- live-ubuntu-desktop-23.10       - Ubuntu 23.10 Desktop ............................... 2023-10-16 11:31:22
 item -- live-ubuntu-desktop-24.04       - Ubuntu 24.04 Desktop ............................... 2024-04-24 11:29:21
-item -- live-ubuntu-desktop-oracular    - Ubuntu oracular Desktop ............................ 2024-06-19 07:15:45
+item -- live-ubuntu-desktop-oracular    - Ubuntu oracular Desktop ............................ 2024-06-28 06:57:28
 item -- live-ubuntu-legacy-23.10        - Ubuntu 23.10 Legacy Desktop ........................ 2023-10-10 04:57:59
 item --gap --                           [ System tools ... ]
 item -- memtest86+                      - Memtest86+                                                
@@ -110,8 +102,9 @@ set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-mini-10
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/linux ${options} --- || goto error
 initrd ${knladdr}/initrd.gz || goto error
@@ -131,8 +124,9 @@ set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-mini-11
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/linux ${options} --- || goto error
 initrd ${knladdr}/initrd.gz || goto error
@@ -152,8 +146,9 @@ set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-mini-12
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/linux ${options} --- || goto error
 initrd ${knladdr}/initrd.gz || goto error
@@ -173,8 +168,9 @@ set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-mini-13
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/linux ${options} --- || goto error
 initrd ${knladdr}/initrd.gz || goto error
@@ -194,8 +190,9 @@ set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-mini-testing
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/linux ${options} --- || goto error
 initrd ${knladdr}/initrd.gz || goto error
@@ -216,8 +213,9 @@ set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-mini-18.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/linux ${options} --- || goto error
 initrd ${knladdr}/initrd.gz || goto error
@@ -238,8 +236,9 @@ set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-mini-20.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/linux ${options} --- || goto error
 initrd ${knladdr}/initrd.gz || goto error
@@ -259,50 +258,9 @@ set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-netinst-10
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
-boot || goto error
-exit
-
-:debian-netinst-11
-echo Loading Debian 11 ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-11.9.0-amd64-netinst.iso
-set isoaddr fetch=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
-set netname sv-debian.workgroup
-set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-netinst-11
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
-boot || goto error
-exit
-
-:debian-netinst-12
-echo Loading Debian 12 ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-12.5.0-amd64-netinst.iso
-set isoaddr fetch=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
-set netname sv-debian.workgroup
-set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-netinst-12
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/install.amd/initrd.gz || goto error
@@ -322,8 +280,9 @@ set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-netinst-testing
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/install.amd/initrd.gz || goto error
@@ -343,8 +302,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/fedora-netinst-39
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -364,8 +324,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/fedora-netinst-40
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -385,8 +346,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/centos-stream-netinst-9
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -406,8 +368,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/almalinux-netinst-9
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -427,8 +390,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/rockylinux-netinst-8
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -448,8 +412,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/rockylinux-netinst-9
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -469,8 +434,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/miraclelinux-netinst-8
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -490,8 +456,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/miraclelinux-netinst-9
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -511,8 +478,9 @@ set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layout
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/opensuse-leap-netinst-15.5
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
 initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
@@ -532,8 +500,9 @@ set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layout
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/opensuse-leap-netinst-15.6
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
 initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
@@ -553,8 +522,9 @@ set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layout
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/opensuse-tumbleweed-netinst
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
 initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
@@ -574,50 +544,9 @@ set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-10
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
-boot || goto error
-exit
-
-:debian-11
-echo Loading Debian 11 ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-11.9.0-amd64-DVD-1.iso
-set isoaddr fetch=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
-set netname sv-debian.workgroup
-set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-11
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
-boot || goto error
-exit
-
-:debian-12
-echo Loading Debian 12 ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-12.5.0-amd64-DVD-1.iso
-set isoaddr fetch=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
-set netname sv-debian.workgroup
-set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-12
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/install.amd/initrd.gz || goto error
@@ -637,8 +566,9 @@ set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-testing
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/install.amd/initrd.gz || goto error
@@ -659,8 +589,9 @@ set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-server-18.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/install/netboot/ubuntu-installer/amd64/linux ${options} --- || goto error
 initrd ${knladdr}/install/netboot/ubuntu-installer/amd64/initrd.gz || goto error
@@ -681,8 +612,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-live-18.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -703,8 +635,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-live-20.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -725,8 +658,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-live-22.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -747,8 +681,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-live-23.10
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -769,8 +704,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-live-24.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -791,8 +727,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-live-oracular
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -812,8 +749,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/fedora-39
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -833,8 +771,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/fedora-40
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -854,8 +793,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/centos-stream-9
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -875,8 +815,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/almalinux-9
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -896,8 +837,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/rockylinux-8
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -917,8 +859,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/rockylinux-9
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -938,8 +881,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/miraclelinux-8
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -959,8 +903,9 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,a
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/miraclelinux-9
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
@@ -981,8 +926,9 @@ set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layout
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/opensuse-leap-15.5
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
 initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
@@ -1003,8 +949,9 @@ set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layout
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/opensuse-leap-15.6
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
 initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
@@ -1025,8 +972,9 @@ set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layout
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/opensuse-tumbleweed
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
 initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
@@ -1082,53 +1030,12 @@ set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-live-10
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/d-i/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/d-i/initrd.gz || goto error
-boot || goto error
-exit
-
-:debian-live-11
-echo Loading Debian 11 Live ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-live-11.9.0-amd64-lxde.iso
-set isoaddr fetch=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_desktop.cfg
-set netname sv-debian.workgroup
-set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-live-11
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/d-i/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/d-i/initrd.gz || goto error
-boot || goto error
-exit
-
-:debian-live-12
-echo Loading Debian 12 Live ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-live-12.5.0-amd64-lxde.iso
-set isoaddr fetch=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_desktop.cfg
-set netname sv-debian.workgroup
-set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-live-12
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/install/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install/initrd.gz || goto error
 boot || goto error
 exit
 
@@ -1145,8 +1052,9 @@ set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-live-testing
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/install/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/install/initrd.gz || goto error
@@ -1167,8 +1075,9 @@ set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-desktop-20.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -1189,8 +1098,9 @@ set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-desktop-22.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -1211,8 +1121,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-desktop-23.10
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -1233,8 +1144,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-desktop-24.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -1255,8 +1167,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-desktop-oracular
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -1277,8 +1190,9 @@ set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-legacy-23.10
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -1296,49 +1210,12 @@ set network ip=dhcp
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-live-10
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/live/vmlinuz-4.19.0-21-amd64 ${options} --- || goto error
 initrd ${knladdr}/live/initrd.img-4.19.0-21-amd64 || goto error
-boot || goto error
-exit
-
-:live-debian-live-11
-echo Loading Debian 11 Live ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-live-11.9.0-amd64-lxde.iso
-set isoaddr boot=live components fetch=http://${svraddr}/imgs/debian-live-11/live/filesystem.squashfs
-set network ip=dhcp
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-live-11
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/live/vmlinuz-5.10.0-28-amd64 ${options} --- || goto error
-initrd ${knladdr}/live/initrd.img-5.10.0-28-amd64 || goto error
-boot || goto error
-exit
-
-:live-debian-live-12
-echo Loading Debian 12 Live ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-live-12.5.0-amd64-lxde.iso
-set isoaddr boot=live components fetch=http://${svraddr}/imgs/debian-live-12/live/filesystem.squashfs
-set network ip=dhcp
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-live-12
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/live/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/live/initrd.img || goto error
 boot || goto error
 exit
 
@@ -1353,8 +1230,9 @@ set network ip=dhcp
 set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/debian-live-testing
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/live/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/live/initrd.img || goto error
@@ -1373,8 +1251,9 @@ set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-desktop-20.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -1393,8 +1272,9 @@ set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-desktop-22.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -1413,8 +1293,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-desktop-23.10
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -1433,8 +1314,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-desktop-24.04
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -1453,8 +1335,9 @@ set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-desktop-oracular
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -1473,8 +1356,9 @@ set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcod
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
 set knladdr http://${svraddr}/imgs/ubuntu-legacy-23.10
-echo Editing kernel options (Timeout after ${optn-timeout}ms):
-read --timeout ${optn-timeout} options ||
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
