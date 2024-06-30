@@ -3738,7 +3738,7 @@ function funcCall_function() {
 	declare -r    MSGS_TITL="call function test"
 	declare -r    FILE_WRK1="/tmp/testfile1.txt"
 	declare -r    FILE_WRK2="/tmp/testfile2.txt"
-	declare -r    TEST_ADDR="https://raw.githubusercontent.com/office-itou/Linux/master/README.md"
+	declare -r    TEST_ADDR="https://raw.githubusercontent.com/office-itou/Linux/master/Readme.md"
 	declare -r -a CURL_OPTN=(         \
 		"--location"                  \
 		"--progress-bar"              \
