@@ -669,7 +669,8 @@ function funcCurl() {
 	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
 	RET_CD=$?
 	set -e
-	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${RET_CD}" -eq 35 ]] || [[ "${#WEBS_PAGE[@]}" -le 0 ]]; then
+#	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${RET_CD}" -eq 35 ]] || [[ "${#WEBS_PAGE[@]}" -le 0 ]]; then
+	if [[ "${RET_CD}" -ne 0 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
 		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 		return "${RET_CD}"
@@ -3460,7 +3461,7 @@ function funcCall_function() {
 	declare -r    MSGS_TITL="call function test"
 	declare -r    FILE_WRK1="${DIRS_TEMP}/testfile1.txt"
 	declare -r    FILE_WRK2="${DIRS_TEMP}/testfile2.txt"
-	declare -r    HTTP_ADDR="https://raw.githubusercontent.com/office-itou/Linux/master/README.md"
+	declare -r    HTTP_ADDR="https://raw.githubusercontent.com/office-itou/Linux/master/Readme.md"
 	declare -r -a CURL_OPTN=(         \
 		"--location"                  \
 		"--progress-bar"              \
