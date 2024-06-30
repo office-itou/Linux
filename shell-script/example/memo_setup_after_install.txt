@@ -5,8 +5,8 @@
     # =========================================================================
     # common
     # =========================================================================
-        sudo apt-get install isolinux isomd5sum xorriso xxd 7zip pxelinux rsync syslinux-efi lz4 lzop grub-pc-bin
-        sudo apt-get install tree shellcheck
+        sudo apt-get install isolinux isomd5sum xorriso xxd 7zip pxelinux rsync syslinux-efi lz4 lzop grub-pc-bin \
+                             tree shellcheck
         chmod go=rx ${HOME}
     # --- backup install shell ------------------------------------------------
         sudo mv install.sh install.sh.user.lst install
