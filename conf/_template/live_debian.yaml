@@ -1,0 +1,93 @@
+mmdebstrap:
+# aptopts:
+#   - "Apt::Install-Recommends true"
+# architectures:
+#   - amd64
+  components:
+    - "main contrib non-free non-free-firmware"
+# dpkgopts:
+# hostname:
+# install-recommends:
+  keyrings:
+    - /home/master/share/keys
+# mirrors:
+#   - http://deb.debian.org/debian
+  mode: sudo
+  packages:
+# --- live base ---------------------------------------------------------------
+    - open-infrastructure-system-boot                       # Boot Debian-based system images
+#   - open-infrastructure-system-build                      # Build Debian-based system images
+    - open-infrastructure-system-config                     # Configure Debian-based system images
+    - open-infrastructure-system-images                     # Debian-based system images
+#   - init                                                  # metapackage ensuring an init system is installed
+#   - iproute2                                              # networking and traffic control tools
+#   - less                                                  # pager program similar to more
+#   - libpam-systemd                                        # system and service manager - PAM module
+#   - live-boot                                             # Live System Boot Components
+#   - live-config                                           # Live System Configuration Components
+    - locales                                               # GNU C Library: National Language (locale) data [support]
+    - sudo                                                  # Provide limited super user privileges to specific users
+    - linux-image-amd64                                     # Linux for 64-bit PCs (meta-package)
+    - open-vm-tools                                         # Open VMware Tools for virtual machines hosted on VMware (CLI)
+    - open-vm-tools-desktop                                 # Open VMware Tools for virtual machines hosted on VMware (GUI)
+    - zstd                                                  # fast lossless compression algorithm -- CLI tool
+    - dosfstools                                            # utilities for making and checking MS-DOS FAT filesystems
+    - exfat-fuse                                            # read and write exFAT driver for FUSE
+    - ntfs-3g                                               # read/write NTFS driver for FUSE
+# --- common ------------------------------------------------------------------
+    - apt-transport-https                                   # transitional package for https support
+    - firewalld                                             # dynamically managed firewall with support for network zones
+    - traceroute                                            # Traces the route taken by packets over an IPv4/IPv6 network
+    - connman                                               # Intel Connection Manager daemon
+    - bash-completion                                       # programmable completion for the bash shell
+    - build-essential                                       # Informational list of build-essential packages
+    - curl                                                  # command line tool for transferring data with URL syntax
+    - vim                                                   # Vi IMproved - enhanced vi editor
+    - bc                                                    # GNU bc arbitrary precision calculator language
+    - clamav                                                # anti-virus utility for Unix - command-line interface
+    - openssh-server                                        # secure shell (SSH) server, for secure access from remote machines
+    - dnsmasq                                               # Small caching DNS proxy and DHCP/TFTP server
+    - tftpd-hpa                                             # HPA's tftp server
+    - bind9-dnsutils                                        # Clients provided with BIND 9
+    - apache2                                               # Apache HTTP Server
+    - samba                                                 # SMB/CIFS file, print, and login server for Unix
+    - smbclient                                             # command-line SMB/CIFS clients for Unix
+    - cifs-utils                                            # Common Internet File System utilities
+    - libnss-winbind                                        # Samba nameservice integration plugins
+# --- desktop -----------------------------------------------------------------
+    - task-desktop                                          # Debian desktop environment
+    - task-lxde-desktop                                     # LXDE
+    - task-laptop                                           # laptop
+    - task-japanese                                         # Japanese environment
+    - task-japanese-desktop                                 # Japanese desktop
+    - fonts-noto                                            # metapackage to pull in all Noto fonts
+    - kasumi                                                # Simple dictionary utility for Anthy
+    - ibus-anthy                                            # anthy engine for IBus
+    - libreoffice-l10n-ja                                   # office productivity suite -- Japanese language package
+    - libreoffice-help-ja                                   # office productivity suite -- Japanese help
+    - firefox-esr-l10n-ja                                   # Japanese language package for Firefox ESR
+    - thunderbird                                           # mail/news client with RSS, chat and integrated spam filter support
+    - thunderbird-l10n-ja                                   # Japanese language package for Thunderbird
+# --- options [ add to preseed ] ----------------------------------------------
+    - gnome                                                 # Full GNOME Desktop Environment, with extra components
+    - unifont                                               # font with a glyph for each visible Unicode Plane 0 character
+    - unifont-bin                                           # utilities for manipulating GNU Unifont
+    - chromium                                              # web browser
+    - chromium-l10n                                         # web browser - language packs
+    - connman-gtk                                           # fully-featured GUI for ConnMan with systray support
+# setup-hooks:
+# essential-hooks:
+  customize-hooks:
+#   - chroot "$1" usermod --password "$(echo 'password' | openssl passwd -6 -stdin)" root
+    - chroot "$1" passwd --delete root
+    - chroot "$1" sh -c 'echo "PasswordAuthentication yes\nPermitRootLogin no" > /etc/ssh/sshd_config.d/sshd.conf'
+    - chroot "$1" sh -c 'if [ -e /usr/bin/startlxde ]; then update-alternatives --set "x-session-manager" "/usr/bin/startlxde"; update-alternatives --get-selections | grep x-session-manager; fi '
+    - chroot "$1" systemctl disable firewalld.service clamav-freshclam.service dnsmasq.service tftpd-hpa.service apache2.service
+    - chroot "$1" systemctl enable ssh.service smbd.service nmbd.service
+#   - chroot "$1" firewall-cmd --permanent --change-interface=ens160 --zone=home
+  cleanup-hooks:
+    - rm "$1/etc/hostname" "$1/etc/hosts"
+    - P="$1"; for D in $(mount | awk '$3~"'$P'" { print $3;}' | sort -r); do umount "${D}" || umount --force "${D}" || umount --lazy "${D}"; done
+# suite:
+# target: filesystem.squashfs
+  variant: minbase
