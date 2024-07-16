@@ -106,6 +106,25 @@ _EOT_
 			    -e '/^single_click=/ s/=.*$/=0/'
 		fi
 	done
+	_GDM3_OPTIONS="$(
+		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+			AutomaticLoginEnable=true
+			AutomaticLogin=${LIVE_USERNAME}
+			TimedLoginEnable=true
+			TimedLogin=${LIVE_USERNAME}
+			TimedLoginDelay=5
+			
+_EOT_
+	)"
+	_CONF_FLAG=""
+	grep -l 'AutomaticLoginEnable[ \t]*=[ \t]*true' /etc/gdm3/*.conf | while IFS= read -r FILE_PATH
+	do
+		sed -e '/^\[daemon\]/,/^\[.*\]/ {' -e '/^[^#\[]\+/ s/^/#/}' "${FILE_PATH}"
+		if [ -z "${_CONF_FLAG:-}" ]; then
+			sed -i -e "s%^\(\[daemon\].*\)$%\1\n${_GDM3_OPTIONS}%" "${FILE_PATH}"
+			_CONF_FLAG="true"
+		fi
+	done
 
 	# --- set network parameter -----------------------------------------------
 	_RETURN_VALUE="$(command -v nmcli 2> /dev/null)"
