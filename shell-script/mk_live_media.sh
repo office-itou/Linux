@@ -48,6 +48,14 @@
 	declare -r    DIRS_TEMP="${DIRS_WORK}/temp/${PROG_PROC}"	# temporary directory
 #	declare -r    DIRS_TFTP="${DIRS_WORK}/tftp"					# tftp contents
 
+# --- niceness values ---------------------------------------------------------
+	declare -r -i NICE_VALU=19								# -20: favorable to the process
+															#  19: least favorable to the process
+	declare -r -i IONICE_CLAS=3								#   1: Realtime
+															#   2: Best-effort
+															#   3: Idle
+#	declare -r -i IONICE_VALU=7								#   0: favorable to the process
+															#   7: least favorable to the process
 
 #	sudo bash -c 'for D in share/{html,imgs,isos,rmak} ; do mv "${D}" "${D}.back"; ln -s "/mnt/share.nfs/master/share/${D##*/}" share; done'
 #	sudo ln -s /mnt/hgfs/workspace/Image/linux/bin/keyring share/keys
@@ -95,6 +103,9 @@
 	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 	declare -r    OLD_IFS="${IFS}"
+	declare -i    start_time=0
+	declare -i    end_time=0
+	declare -i    section_start_time=0
 	declare -a    COMD_LINE=("${PROG_PARM[@]}")
 	declare -a    DIRS_LIST=()
 	declare       DIRS_NAME=""
@@ -122,7 +133,11 @@
 	fi
 
 	date +"%Y/%m/%d %H:%M:%S"
+	start_time=$(date +%s)
 
+	# -------------------------------------------------------------------------
+	renice -n "${NICE_VALU}"   -p "$$" > /dev/null
+	ionice -c "${IONICE_CLAS}" -p "$$"
 	# -------------------------------------------------------------------------
 	DIRS_LIST=()
 	for DIRS_NAME in "${DIRS_TEMP%.*}."*
@@ -136,7 +151,7 @@
 		fi
 	done
 	if [[ "${#DIRS_LIST[@]}" -gt 0 ]]; then
-		funcPrintf "remove unnecessary temporary directories"
+		echo "remove unnecessary temporary directories"
 		rm -rf "${DIRS_LIST[@]}"
 	fi
 	# -------------------------------------------------------------------------
@@ -209,6 +224,7 @@
 
 		for ((I=0; I<"${#TGET_LIST[@]}"; I++))
 		do
+			section_start_time=$(date +%s)
 			read -r -a TGET_LINE < <(echo "${TGET_LIST[I]}")
 			if [[ "${TGET_LINE[0]}" != "o" ]]; then
 				continue
@@ -223,7 +239,7 @@
 			# --- create squashfs file ----------------------------------------
 			if [[ -z "${FLAG_KEEP}" ]] || [[ ! -f "${DIRS_LIVE}/${SQFS_NAME}" ]]; then
 				rm -rf "${DIRS_LIVE:?}"
-				bdebstrap \
+				ionice -c "${IONICE_CLAS}" bdebstrap \
 				    --config "${DIRS_CONF}/_template/live_${TGET_LINE[3]}.yaml" \
 				    --suite "${TGET_LINE[1]##*-}" \
 				    --name "${TGET_LINE[1]}" \
@@ -394,7 +410,7 @@ _EOT_
 _EOT_
 			umount "${DIRS_MNTS}"
 			# --- create iso file ---------------------------------------------
-			xorriso -as mkisofs                                 \
+			ionice -c "${IONICE_CLAS}" xorriso -as mkisofs      \
 			    -verbose                                        \
 			    -iso-level 3                                    \
 			    -full-iso9660-filenames                         \
@@ -412,9 +428,13 @@ _EOT_
 			    -output "${DIRS_LIVE}.iso"                      \
 			    "${DIRS_CDFS}"
 			rm -rf "${DIRS_LIVE:?}"
+			end_time=$(date +%s)
+			echo "${TGET_LINE[2]//%20/ } elapsed time: $((end_time-section_start_time)) [sec]"
 		done
 	fi
 
+	end_time=$(date +%s)
+	echo "elapsed time: $((end_time-start_time)) [sec]"
 	date +"%Y/%m/%d %H:%M:%S"
 
 	exit 0
