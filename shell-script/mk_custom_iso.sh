@@ -168,10 +168,10 @@
 # --- niceness values ---------------------------------------------------------
 	declare -r -i NICE_VALU=19								# -20: favorable to the process
 															#  19: least favorable to the process
-	declare -r -i IONICE_CLAS=2								#   1: Realtime
+	declare -r -i IONICE_CLAS=3								#   1: Realtime
 															#   2: Best-effort
 															#   3: Idle
-	declare -r -i IONICE_VALU=7								#   0: favorable to the process
+#	declare -r -i IONICE_VALU=7								#   0: favorable to the process
 															#   7: least favorable to the process
 
 # --- set parameters ----------------------------------------------------------
@@ -3090,7 +3090,7 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${WORK_DIRS}/"{mnt,img,ram}
 	# --- copy iso -> hdd -----------------------------------------------------
 	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
-	ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
+	ionice -c "${IONICE_CLAS}" cp -a "${WORK_MNTP}/." "${WORK_IMGS}/"
 	umount "${WORK_MNTP}"
 	# --- copy initrd -> hdd --------------------------------------------------
 	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
@@ -3897,7 +3897,7 @@ function funcCreate_remaster_iso_file() {
 		rm -f md5sum.txt
 		find . ! -name 'md5sum.txt' -type f -exec md5sum {} \; > md5sum.txt
 		chmod ugo-w md5sum.txt
-		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" xorriso -as mkisofs \
+		ionice -c "${IONICE_CLAS}" xorriso -as mkisofs \
 		    -quiet \
 		    -volid "${TGET_LINE[14]//%20/ }" \
 		    -eltorito-boot "${FILE_IBIN}" \
@@ -3910,7 +3910,7 @@ function funcCreate_remaster_iso_file() {
 		    . > /dev/null 2>&1
 	popd > /dev/null
 	# --- copy iso image ------------------------------------------------------
-	cp -a "${WORK_DIRS}/${FILE_PATH##*/}" "${FILE_PATH%/*}"
+	ionice -c "${IONICE_CLAS}" cp -a "${WORK_DIRS}/${FILE_PATH##*/}" "${FILE_PATH%/*}"
 	# --- remove directory ----------------------------------------------------
 	rm -rf "${WORK_DIRS:?}"
 }
@@ -4487,6 +4487,9 @@ function funcMain() {
 	funcPrintf "--- start $(funcString "${COLS_SIZE}" '-')"
 	# shellcheck disable=SC2312
 	funcPrintf "--- main $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	renice -n "${NICE_VALU}"   -p "$$" > /dev/null
+	ionice -c "${IONICE_CLAS}" -p "$$"
 	# -------------------------------------------------------------------------
 	DIRS_LIST=()
 	for DIRS_NAME in "${DIRS_TEMP%.*}."*
