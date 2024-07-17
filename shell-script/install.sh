@@ -1245,6 +1245,7 @@ _EOT_
 			sed -i "${FILE_PATH}"                              \
 			    -e '/SingleConnectedTechnology/ s/true/false/'
 		fi
+		# shellcheck disable=SC2312
 		mapfile NICS_NAME < <(ip -oneline link show | sed -ne '/1:[ \t]\+lo:/! s/^[0-9]\+:[ \t]\+\([[:alnum:]]\+\):[ \t]\+.*$/\1/p')
 		unset 'NICS_NAME[0]'
 		if [[ "${#NICS_NAME[@]}" -ge 1 ]]; then
@@ -1424,6 +1425,7 @@ function funcNetwork_resolv_conf() {
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
 	if [[ -h "${FILE_PATH}" ]]; then
+		# shellcheck disable=SC2312
 		if [[ "$(realpath "${FILE_PATH}")" = "${CONF_FILE}" ]]; then
 			funcPrintf "      ${MSGS_TITL}: link file already exists"
 			return
@@ -1490,6 +1492,7 @@ function funcNetwork_tftpd_hpa() {
 		SYSD_NAME="tftpd-hpa.service"
 	fi
 	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
@@ -1631,6 +1634,7 @@ function funcNetwork_pxe_conf() {
 _EOT_
 	# -------------------------------------------------------------------------
 	SYSD_NAME="dnsmasq.service"
+	# shellcheck disable=SC2312,SC2310
 	if [[ "$(funcServiceStatus "${SYSD_NAME}")" = "enabled" ]]; then
 		funcPrintf "      ${MSGS_TITL}: restart ${SYSD_NAME}"
 		systemctl --quiet restart "${SYSD_NAME}"
@@ -3898,6 +3902,9 @@ function funcMain() {
 	declare -i    end_time=0
 	declare -i    I=0
 	declare -a    COMD_LINE=("${PROG_PARM[@]}")
+	declare -a    DIRS_LIST=()
+	declare       DIRS_NAME=""
+	declare       PSID_NAME=""
 
 	# ==== start ==============================================================
 
@@ -3920,7 +3927,6 @@ function funcMain() {
 	if [[ "${COLS_SIZE}" -lt 80 ]]; then
 		COLS_SIZE=80
 	fi
-
 	# --- main ----------------------------------------------------------------
 	start_time=$(date +%s)
 	# shellcheck disable=SC2312
@@ -3929,6 +3935,22 @@ function funcMain() {
 	funcPrintf "--- start $(funcString "${COLS_SIZE}" '-')"
 	# shellcheck disable=SC2312
 	funcPrintf "--- main $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	DIRS_LIST=()
+	for DIRS_NAME in "${DIRS_TEMP%.*}."*
+	do
+		if [[ ! -d "${DIRS_NAME}/." ]]; then
+			continue
+		fi
+		PSID_NAME="$(ps --pid "${DIRS_NAME##*.}" --format comm= || true)"
+		if [[ -z "${PSID_NAME:-}" ]]; then
+			DIRS_LIST+=("${DIRS_NAME}")
+		fi
+	done
+	if [[ "${#DIRS_LIST[@]}" -gt 0 ]]; then
+		funcPrintf "remove unnecessary temporary directories"
+		rm -rf "${DIRS_LIST[@]}"
+	fi
 	# -------------------------------------------------------------------------
 	if [[ -z "${PROG_PARM[*]}" ]]; then
 		funcPrintf "sudo ./${PROG_NAME} [ options ]"
