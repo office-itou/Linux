@@ -36,10 +36,7 @@
 	mapfile APP_FIND < <(LANG=C apt list "${APP_LIST[@]}" 2> /dev/null | sed -e '/\(^[[:blank:]]*$\|WARNING\|Listing\|installed\)/! {' -e 's%\([[:graph:]]\)/.*%\1%g' -ne 'p}' | sed -z 's/[\r\n]\+/ /g')
 	for I in "${!APP_FIND[@]}"
 	do
-		if [[ -n "${APP_LINE}" ]]; then
-			APP_LINE+=" "
-		fi
-		APP_LINE+="${APP_FIND[${I}]}"
+		APP_LINE+="${APP_LINE:+" "}${APP_FIND[${I}]}"
 	done
 	if [[ -n "${APP_LINE}" ]]; then
 		echo "please install these:"
@@ -820,7 +817,7 @@ function funcCurl() {
 	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
 	RET_CD=$?
 	set -e
-	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${RET_CD}" -eq 35 ]] || [[ "${#WEBS_PAGE[@]}" -le 0 ]]; then
+	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${RET_CD}" -eq 35 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
 		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 		return "${RET_CD}"
@@ -1417,7 +1414,7 @@ function funcCreate_late_command() {
 		# run on target
 		funcGetNetwork_parameter_sub() {
 		 	LIST="${1}"
-		 	for LINE in "${LIST}"
+		 	for LINE in ${LIST}
 		 	do
 		 		case "${LINE}" in
 		 			netcfg/target_network_config=* ) NMN_FLAG="${LINE#netcfg/target_network_config=}";;
@@ -1478,7 +1475,8 @@ function funcCreate_late_command() {
 		 	NMN_FLAG=""
 		 	#--- preseed parameter ----------------------------------------------------
 		 	if [ -f "${SEED_FILE}" ]; then
-		 		funcGetNetwork_parameter_sub "$(cat ${SEED_FILE})"
+		 		# shellcheck disable=SC2312
+		 		funcGetNetwork_parameter_sub "$(cat "${SEED_FILE}")"
 		 		if [ -n "${NIC_WGRP}" ]; then
 		 			NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
 		 		fi
@@ -3693,6 +3691,7 @@ _EOT_
 					if [[ "${TGET_INFO[8]#*/}" = "-" ]]; then
 						TGET_INFO[1]="live-${TGET_INFO[1]}"
 					fi
+					# shellcheck disable=SC2312
 					MENU_ENTR="$(printf "%-54.54s%20.20s" "- ${TGET_INFO[2]//%20/ } $(funcString 60 '.')" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
 					MENU_TEXT="$(printf "%-${MENU_SPCS}.${MENU_SPCS}s%s" "item -- ${TGET_INFO[1]}" "${MENU_ENTR}")"
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
@@ -4294,10 +4293,12 @@ _EOT_
 					fi
 					# --- create menu -----------------------------------------
 					BOOT_ARRY=()
+					# shellcheck disable=SC2312
 					case "${DATA_LINE[1]%%-*}" in
 						menu         ) ;;
 						debian       | \
 						ubuntu       ) 
+							# shellcheck disable=SC2312
 							case "${DATA_LINE[8]%%/*}" in
 								preseed* ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_preseed "${DATA_LINE[@]}");;
 								nocloud* ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_nocloud "${DATA_LINE[@]}");;
@@ -4383,6 +4384,9 @@ function funcMain() {
 	declare -i    end_time=0
 	declare -i    I=0
 	declare -a    COMD_LINE=("${PROG_PARM[@]}")
+	declare -a    DIRS_LIST=()
+	declare       DIRS_NAME=""
+	declare       PSID_NAME=""
 
 	# ==== start ==============================================================
 
@@ -4414,6 +4418,22 @@ function funcMain() {
 	funcPrintf "--- start $(funcString "${COLS_SIZE}" '-')"
 	# shellcheck disable=SC2312
 	funcPrintf "--- main $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	DIRS_LIST=()
+	for DIRS_NAME in "${DIRS_TEMP%.*}."*
+	do
+		if [[ ! -d "${DIRS_NAME}/." ]]; then
+			continue
+		fi
+		PSID_NAME="$(ps --pid "${DIRS_NAME##*.}" --format comm= || true)"
+		if [[ -z "${PSID_NAME:-}" ]]; then
+			DIRS_LIST+=("${DIRS_NAME}")
+		fi
+	done
+	if [[ "${#DIRS_LIST[@]}" -gt 0 ]]; then
+		funcPrintf "remove unnecessary temporary directories"
+		rm -rf "${DIRS_LIST[@]}"
+	fi
 	# -------------------------------------------------------------------------
 	if [[ -z "${PROG_PARM[*]}" ]]; then
 		funcPrintf "sudo ./${PROG_NAME} [ options ]"
