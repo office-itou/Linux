@@ -305,7 +305,7 @@ funcInstallPackages() {
 # run on target
 funcGetNetwork_parameter_sub() {
 	LIST="${1}"
-	for LINE in "${LIST}"
+	for LINE in ${LIST}
 	do
 		case "${LINE}" in
 			netcfg/target_network_config=* ) NMN_FLAG="${LINE#netcfg/target_network_config=}";;
@@ -366,7 +366,8 @@ funcGetNetwork_parameter() {
 	NMN_FLAG=""
 	#--- preseed parameter ----------------------------------------------------
 	if [ -f "${SEED_FILE}" ]; then
-		funcGetNetwork_parameter_sub "$(cat ${SEED_FILE})"
+		# shellcheck disable=SC2312
+		funcGetNetwork_parameter_sub "$(cat "${SEED_FILE}")"
 		if [ -n "${NIC_WGRP}" ]; then
 			NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
 		fi
