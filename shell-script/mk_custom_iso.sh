@@ -36,10 +36,7 @@
 	mapfile APP_FIND < <(LANG=C apt list "${APP_LIST[@]}" 2> /dev/null | sed -e '/\(^[[:blank:]]*$\|WARNING\|Listing\|installed\)/! {' -e 's%\([[:graph:]]\)/.*%\1%g' -ne 'p}' | sed -z 's/[\r\n]\+/ /g')
 	for I in "${!APP_FIND[@]}"
 	do
-		if [[ -n "${APP_LINE}" ]]; then
-			APP_LINE+=" "
-		fi
-		APP_LINE+="${APP_FIND[${I}]}"
+		APP_LINE+="${APP_LINE:+" "}${APP_FIND[${I}]}"
 	done
 	if [[ -n "${APP_LINE}" ]]; then
 		echo "please install these:"
@@ -820,7 +817,7 @@ function funcCurl() {
 	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
 	RET_CD=$?
 	set -e
-	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${RET_CD}" -eq 35 ]] || [[ "${#WEBS_PAGE[@]}" -le 0 ]]; then
+	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${RET_CD}" -eq 35 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
 		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 		return "${RET_CD}"
@@ -1417,7 +1414,7 @@ function funcCreate_late_command() {
 		# run on target
 		funcGetNetwork_parameter_sub() {
 		 	LIST="${1}"
-		 	for LINE in "${LIST}"
+		 	for LINE in ${LIST}
 		 	do
 		 		case "${LINE}" in
 		 			netcfg/target_network_config=* ) NMN_FLAG="${LINE#netcfg/target_network_config=}";;
@@ -1478,7 +1475,8 @@ function funcCreate_late_command() {
 		 	NMN_FLAG=""
 		 	#--- preseed parameter ----------------------------------------------------
 		 	if [ -f "${SEED_FILE}" ]; then
-		 		funcGetNetwork_parameter_sub "$(cat ${SEED_FILE})"
+		 		# shellcheck disable=SC2312
+		 		funcGetNetwork_parameter_sub "$(cat "${SEED_FILE}")"
 		 		if [ -n "${NIC_WGRP}" ]; then
 		 			NIC_FQDN="${NIC_HOST}.${NIC_WGRP}"
 		 		fi
@@ -3687,18 +3685,18 @@ function funcCreate_remaster_preseed() {
 		*                ) ;;
 	esac
 	case "${TGET_LINE[1]}" in
-		ubuntu-*         ) BOOT_OPTN+=" netcfg/target_network_config=NetworkManager";;
+		ubuntu-*         ) BOOT_OPTN+="${BOOT_OPTN:+" "}netcfg/target_network_config=NetworkManager";;
 		*                ) ;;
 	esac
-	BOOT_OPTN+=" netcfg/disable_autoconfig=true"
-	BOOT_OPTN+=" netcfg/choose_interface=${ETHR_NAME}"
-	BOOT_OPTN+=" netcfg/get_hostname=${HOST_NAME}.${WGRP_NAME}"
-	BOOT_OPTN+=" netcfg/get_ipaddress=${IPV4_ADDR}"
-	BOOT_OPTN+=" netcfg/get_netmask=${IPV4_MASK}"
-	BOOT_OPTN+=" netcfg/get_gateway=${IPV4_GWAY}"
-	BOOT_OPTN+=" netcfg/get_nameservers=${IPV4_NSVR}"
-	BOOT_OPTN+=" locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
-	BOOT_OPTN+=" fsck.mode=skip"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}netcfg/disable_autoconfig=true"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}netcfg/choose_interface=${ETHR_NAME}"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}netcfg/get_hostname=${HOST_NAME}.${WGRP_NAME}"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}netcfg/get_ipaddress=${IPV4_ADDR}"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}netcfg/get_netmask=${IPV4_MASK}"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}netcfg/get_gateway=${IPV4_GWAY}"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}netcfg/get_nameservers=${IPV4_NSVR}"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}fsck.mode=skip"
 	# --- syslinux.cfg --------------------------------------------------------
 	funcCreate_syslinux_cfg "${BOOT_OPTN}" "${TGET_LINE[@]}"
 	# --- grub.cfg ------------------------------------------------------------
@@ -3750,20 +3748,20 @@ function funcCreate_remaster_nocloud() {
 		ubuntu-live-18.*      ) BOOT_OPTN="boot=casper";;
 		*                     ) BOOT_OPTN=""           ;;
 	esac
-	BOOT_OPTN+=" automatic-ubiquity noprompt autoinstall ds=nocloud\\;s=/cdrom/${TGET_LINE[8]}"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}automatic-ubiquity noprompt autoinstall ds=nocloud\\;s=/cdrom/${TGET_LINE[8]}"
 	case "${TGET_LINE[1]}" in
 		ubuntu-live-18.04)
-			BOOT_OPTN+=" ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${HOST_NAME}.${WGRP_NAME}"
+			BOOT_OPTN+="${BOOT_OPTN:+" "}ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${HOST_NAME}.${WGRP_NAME}"
 			;;
 		*                )
-			BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}::${ETHR_NAME}:static:${IPV4_NSVR} hostname=${HOST_NAME}.${WGRP_NAME}"
-#			BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
+			BOOT_OPTN+="${BOOT_OPTN:+" "}ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}::${ETHR_NAME}:static:${IPV4_NSVR} hostname=${HOST_NAME}.${WGRP_NAME}"
+#			BOOT_OPTN+="${BOOT_OPTN:+" "}ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
 			;;
 	esac
-#	BOOT_OPTN+=" debian-installer/language=ja keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-#	BOOT_OPTN+=" debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	BOOT_OPTN+=" debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	BOOT_OPTN+=" fsck.mode=skip"
+#	BOOT_OPTN+="${BOOT_OPTN:+" "}debian-installer/language=ja keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+#	BOOT_OPTN+="${BOOT_OPTN:+" "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}fsck.mode=skip"
 	# --- syslinux.cfg --------------------------------------------------------
 	funcCreate_syslinux_cfg "${BOOT_OPTN## }" "${TGET_LINE[@]}"
 	# --- grub.cfg ------------------------------------------------------------
@@ -3786,10 +3784,10 @@ function funcCreate_remaster_kickstart() {
 	funcPrintf "      create: boot options for kickstart"
 	# --- boot option ---------------------------------------------------------
 	BOOT_OPTN="inst.ks=hd:sr0:/${TGET_LINE[8]}"
-	BOOT_OPTN+=" ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:none,auto6 nameserver=${IPV4_NSVR}"
-	BOOT_OPTN+=" locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	BOOT_OPTN+=" fsck.mode=skip"
-	BOOT_OPTN+=" inst.stage2=hd:LABEL=${TGET_LINE[14]}"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:none,auto6 nameserver=${IPV4_NSVR}"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}fsck.mode=skip"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}inst.stage2=hd:LABEL=${TGET_LINE[14]}"
 	# --- syslinux.cfg --------------------------------------------------------
 	funcCreate_syslinux_cfg "${BOOT_OPTN}" "${TGET_LINE[@]}"
 	# --- grub.cfg ------------------------------------------------------------
@@ -3815,9 +3813,9 @@ function funcCreate_remaster_autoyast() {
 	esac
 	# --- boot option ---------------------------------------------------------
 	BOOT_OPTN="autoyast=cd:/${TGET_LINE[8]}"
-	BOOT_OPTN+=" hostname=${HOST_NAME}.${WGRP_NAME} ifcfg=${WORK_ETHR}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME}"
-	BOOT_OPTN+=" locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	BOOT_OPTN+=" fsck.mode=skip"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}hostname=${HOST_NAME}.${WGRP_NAME} ifcfg=${WORK_ETHR}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME}"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	BOOT_OPTN+="${BOOT_OPTN:+" "}fsck.mode=skip"
 	# --- syslinux.cfg --------------------------------------------------------
 	funcCreate_syslinux_cfg "${BOOT_OPTN}" "${TGET_LINE[@]}"
 	# --- grub.cfg ------------------------------------------------------------
@@ -4455,6 +4453,9 @@ function funcMain() {
 	declare -i    end_time=0
 	declare -i    I=0
 	declare -a    COMD_LINE=("${PROG_PARM[@]}")
+	declare -a    DIRS_LIST=()
+	declare       DIRS_NAME=""
+	declare       PSID_NAME=""
 
 	# ==== start ==============================================================
 
@@ -4486,6 +4487,22 @@ function funcMain() {
 	funcPrintf "--- start $(funcString "${COLS_SIZE}" '-')"
 	# shellcheck disable=SC2312
 	funcPrintf "--- main $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	DIRS_LIST=()
+	for DIRS_NAME in "${DIRS_TEMP%.*}."*
+	do
+		if [[ ! -d "${DIRS_NAME}/." ]]; then
+			continue
+		fi
+		PSID_NAME="$(ps --pid "${DIRS_NAME##*.}" --format comm= || true)"
+		if [[ -z "${PSID_NAME:-}" ]]; then
+			DIRS_LIST+=("${DIRS_NAME}")
+		fi
+	done
+	if [[ "${#DIRS_LIST[@]}" -gt 0 ]]; then
+		funcPrintf "remove unnecessary temporary directories"
+		rm -rf "${DIRS_LIST[@]}"
+	fi
 	# -------------------------------------------------------------------------
 	if [[ -z "${PROG_PARM[*]}" ]]; then
 		funcPrintf "sudo ./${PROG_NAME} [ options ]"
