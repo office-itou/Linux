@@ -87,11 +87,13 @@ Required working space:
 ## Tree diagram
   
 ``` bash:
-~/share/
-|-- back ---------------------- backup directory
-|-- conf ---------------------- configuration file
+${HOME}/share
+|-- back ------------------------------ backup directory
+|-- conf ------------------------------ configuration file
 |   |-- _template
 |   |   |-- kickstart_common.cfg
+|   |   |-- live_debian.yaml
+|   |   |-- live_ubuntu.yaml
 |   |   |-- nocloud-ubuntu-user-data
 |   |   |-- preseed_debian.cfg
 |   |   |-- preseed_ubuntu.cfg
@@ -101,7 +103,10 @@ Required working space:
 |   |-- nocloud
 |   |-- preseed
 |   |-- script
-|   |   `-- late_command.sh
+|   |   |-- late_command.sh
+|   |   |-- live_0000-user-conf-param.sh
+|   |   |-- live_9999-user-conf-debug.sh
+|   |   `-- live_9999-user-conf-setup.sh
 |   `-- windows
 |       |-- bypass.cmd
 |       |-- inst_w10.cmd
@@ -110,54 +115,52 @@ Required working space:
 |       |-- startnet.cmd
 |       |-- unattend.xml
 |       `-- winpeshl.ini
-|-- html ---------------------- html contents
+|-- html <- /var/www/html ------------- html contents
 |   |-- conf -> ../conf
 |   |-- imgs -> ../imgs
 |   |-- isos -> ../isos
 |   |-- load -> ../tftp/load
+|   |-- pack -> ../pack
 |   `-- rmak -> ../rmak
-|-- imgs ---------------------- iso file extraction destination
-|-- isos ---------------------- iso file
-|-- orig ---------------------- backup directory (original file)
-|-- rmak ---------------------- remake file
-|-- temp ---------------------- temporary directory
-`-- tftp ---------------------- tftp contents
-    |-- autoexec.ipxe --------- ipxe script file (menu file)
-    |-- memdisk --------------- memdisk of syslinux
+|-- imgs ------------------------------ iso file extraction destination
+|-- isos ------------------------------ iso file
+|-- keys ------------------------------ keyring file
+|-- live ------------------------------ live media file
+|-- orig ------------------------------ backup directory (original file)
+|-- pack
+|   |-- debian
+|   `-- ubuntu
+|-- rmak ------------------------------ remake file
+|-- temp ------------------------------ temporary directory
+`-- tftp <- /var/lib/tftpboot --------- tftp contents
+    |-- autoexec.ipxe ----------------- ipxe script file (menu file)
+    |-- memdisk ----------------------- memdisk of syslinux
     |-- boot
     |   `-- grub
-    |       |-- bootx64.efi --- bootloader (i386-pc-pxe)
-    |       |-- grub.cfg ------ menu base
-    |       |-- menu.cfg ------ menu file
-    |       |-- pxelinux.0 ---- bootloader (x86_64-efi)
+    |       |-- bootx64.efi ----------- bootloader (i386-pc-pxe)
+    |       |-- grub.cfg -------------- menu base
+    |       |-- menu.cfg -------------- menu file
+    |       |-- pxelinux.0 ------------ bootloader (x86_64-efi)
     |       |-- fonts
-    |       |   `-- unicode.pf2
     |       |-- i386-pc
     |       |-- locale
     |       `-- x86_64-efi
     |-- imgs -> ../imgs
-    |-- ipxe ------------------ ipxe module
-    |   |-- ipxe.efi
-    |   |-- undionly.kpxe
-    |   `-- wimboot
+    |-- ipxe -------------------------- ipxe module
     |-- isos -> ../isos
-    |-- load ------------------ load module
+    |-- load -------------------------- load module
     |-- menu-bios
-    |   |-- syslinux.cfg ------ syslinux configuration for mbr environment
-    |   |-- boot -> ../load
-    |   |-- imgs -> ../imgs
-    |   |-- isos -> ../isos
+    |   |-- syslinux.cfg -------------- syslinux configuration for mbr environment
+    |   |-- imgs -> ../../imgs
+    |   |-- isos -> ../../isos
     |   |-- load -> ../load
     |   `-- pxelinux.cfg
-    |       `-- default -> ../syslinux.cfg
     `-- menu-efi64
-        |-- syslinux.cfg ------ syslinux configuration for uefi(x86_64) environment
-        |-- boot -> ../load
-        |-- imgs -> ../imgs
-        |-- isos -> ../isos
+        |-- syslinux.cfg -------------- syslinux configuration for uefi(x86_64) environment
+        |-- imgs -> ../../imgs
+        |-- isos -> ../../isos
         |-- load -> ../load
         `-- pxelinux.cfg
-            `-- default -> ../syslinux.cfg
 
 /var/lib/
 `-- tftpboot -> ${HOME}/share/tftp
@@ -166,7 +169,7 @@ Required working space:
 `-- html -> ${HOME}/share/html
 
 /etc/dnsmasq.d/
-`-- pxe.conf ------------------ pxeboot dnsmasq configuration file
+`-- pxe.conf -------------------------- pxeboot dnsmasq configuration file
 ```
   
 ## Reference  
