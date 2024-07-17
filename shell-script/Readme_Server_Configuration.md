@@ -142,11 +142,15 @@ ${HOME}/share
     |       |-- menu.cfg -------------- menu file
     |       |-- pxelinux.0 ------------ bootloader (x86_64-efi)
     |       |-- fonts
+    |       |   `-- unicode.pf2
     |       |-- i386-pc
     |       |-- locale
     |       `-- x86_64-efi
     |-- imgs -> ../imgs
     |-- ipxe -------------------------- ipxe module
+    |   |-- ipxe.efi
+    |   |-- undionly.kpxe
+    |   `-- wimboot
     |-- isos -> ../isos
     |-- load -------------------------- load module
     |-- menu-bios
@@ -155,12 +159,14 @@ ${HOME}/share
     |   |-- isos -> ../../isos
     |   |-- load -> ../load
     |   `-- pxelinux.cfg
+    |       `-- default -> ../syslinux.cfg
     `-- menu-efi64
         |-- syslinux.cfg -------------- syslinux configuration for uefi(x86_64) environment
         |-- imgs -> ../../imgs
         |-- isos -> ../../isos
         |-- load -> ../load
         `-- pxelinux.cfg
+            `-- default -> ../syslinux.cfg
 
 /var/lib/
 `-- tftpboot -> ${HOME}/share/tftp
