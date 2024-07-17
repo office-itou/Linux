@@ -168,10 +168,10 @@
 # --- niceness values ---------------------------------------------------------
 	declare -r -i NICE_VALU=19								# -20: favorable to the process
 															#  19: least favorable to the process
-	declare -r -i IONICE_CLAS=2								#   1: Realtime
+	declare -r -i IONICE_CLAS=3								#   1: Realtime
 															#   2: Best-effort
 															#   3: Idle
-	declare -r -i IONICE_VALU=7								#   0: favorable to the process
+#	declare -r -i IONICE_VALU=0								#   0: favorable to the process
 															#   7: least favorable to the process
 
 # --- set parameters ----------------------------------------------------------
@@ -2775,7 +2775,7 @@ function funcCreate_copy_iso2hdd() {
 	touch -c "${DEST_DIRS}" 2>/dev/null
 	RET_CD=$?
 	if [[ "${RET_CD}" -eq 0 ]]; then
-		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/" 2>/dev/null || true
+		ionice -c "${IONICE_CLAS}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/" 2>/dev/null || true
 #	else
 #		funcPrintf "        skip: ${TGET_LINE[4]}"
 	fi
@@ -2790,8 +2790,8 @@ function funcCreate_copy_iso2hdd() {
 		fi
 		rm -rf "${DIRS_IRAM:?}/${TGET_LINE[6]##*/}" "${DIRS_KRNL:?}/${TGET_LINE[7]##*/}"
 		mkdir -p "${DIRS_IRAM}" "${DIRS_KRNL}"
-		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
-		ionice -c "${IONICE_CLAS}" -n "${IONICE_VALU}" nice -n "${NICE_VALU}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
+		ionice -c "${IONICE_CLAS}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
+		ionice -c "${IONICE_CLAS}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 #		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
 #		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 	fi
@@ -4418,6 +4418,9 @@ function funcMain() {
 	funcPrintf "--- start $(funcString "${COLS_SIZE}" '-')"
 	# shellcheck disable=SC2312
 	funcPrintf "--- main $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	renice -n "${NICE_VALU}"   -p "$$" > /dev/null
+	ionice -c "${IONICE_CLAS}" -p "$$"
 	# -------------------------------------------------------------------------
 	DIRS_LIST=()
 	for DIRS_NAME in "${DIRS_TEMP%.*}."*
