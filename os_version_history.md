@@ -103,10 +103,10 @@
   
 ## CentOS Stream  
   
-| Life  | Version. | Release date |End of support|  Kernel         | Note          |
-| :---: | :------: | :----------: | :----------: | :-------------- | :------------ |
-|  EOL  |    8     |  2019-09-24  |  2024-05-31  | 4.18.0          |               |
-|       |    9     |  2021-12-03  |  2027-xx-xx  | 5.14.0          |               |
+| Version. | Life  | Release date |End of support|  Kernel         | Note          |
+| :------: | :---: | :----------: | :----------: | :-------------- | :------------ |
+|    8     |  EOL  |  2019-09-24  |  2024-05-31  | 4.18.0          |               |
+|    9     |       |  2021-12-03  |  2027-xx-xx  | 5.14.0          |               |
   
 * https://en.wikipedia.org/wiki/CentOS_Stream  
   
