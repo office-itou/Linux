@@ -11,11 +11,13 @@
 	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
 	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2155
+	declare -r    APP_ARCH="$(dpkg --print-architecture)"
 	declare -r -a APP_LIST=("bdebstrap" "dosfstools" "grub-efi-ia32-bin" "grub-pc-bin" "isolinux" "shellcheck" "tree" "squashfs-tools-ng" "xorriso")
 	declare -a    APP_FIND=()
 	declare       APP_LINE=""
 	# shellcheck disable=SC2312
-	mapfile APP_FIND < <(LANG=C apt list "${APP_LIST[@]}" 2> /dev/null | sed -e '/\(^[[:blank:]]*$\|WARNING\|Listing\|installed\)/! {' -e 's%\([[:graph:]]\)/.*%\1%g' -ne 'p}' | sed -z 's/[\r\n]\+/ /g')
+	mapfile APP_FIND < <(LANG=C apt list "${APP_LIST[@]}" 2> /dev/null | sed -e '/\(all\|'"${APP_ARCH:-}"'\)/ {' -e '/\(^[[:blank:]]*$\|WARNING\|Listing\|installed\)/! {' -e 's%\([[:graph:]]\)/.*%\1%g' -ne 'p}}' | sed -z 's/[\r\n]\+/ /g')
 	for I in "${!APP_FIND[@]}"
 	do
 		APP_LINE+="${APP_LINE:+" "}${APP_FIND[${I}]}"
