@@ -429,7 +429,7 @@ _EOT_
 			    -isohybrid-gpt-basdat                           \
 			    -output "${DIRS_LIVE}.iso"                      \
 			    "${DIRS_CDFS}"
-			rm -rf "${DIRS_LIVE:?}"
+#			rm -rf "${DIRS_LIVE:?}"
 			end_time=$(date +%s)
 			echo "${TGET_LINE[2]//%20/ } elapsed time: $((end_time-section_start_time)) [sec]"
 		done
