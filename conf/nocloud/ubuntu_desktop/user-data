@@ -200,14 +200,16 @@ autoinstall:
   - language-pack-ja
   - language-pack-gnome-ja
   - fonts-noto
-  - kasumi
-  - ibus-anthy
+  - fcitx5-mozc
+  - gnome-shell-extensions
   - libreoffice-l10n-ja
   - libreoffice-help-ja
   - firefox-locale-ja
   - thunderbird
   - thunderbird-locale-ja
 # -----------------------------------------------------------------------------
+# - kasumi
+# - ibus-anthy
 # - ibus-mozc
 # - mozc-utils-gui
 # -----------------------------------------------------------------------------
