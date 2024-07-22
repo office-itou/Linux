@@ -31,6 +31,10 @@ mmdebstrap:
     - open-vm-tools                                         # Open VMware Tools for virtual machines hosted on VMware (CLI)
     - open-vm-tools-desktop                                 # Open VMware Tools for virtual machines hosted on VMware (GUI)
     - zstd                                                  # fast lossless compression algorithm -- CLI tool
+    - apt-utils                                             # package management related utility programs
+    - fdisk                                                 # collection of partitioning utilities
+    - gdisk                                                 # GPT fdisk text-mode partitioning tool
+    - lvm2                                                  # Linux Logical Volume Manager
     - dosfstools                                            # utilities for making and checking MS-DOS FAT filesystems
     - exfat-fuse                                            # read and write exFAT driver for FUSE
     - ntfs-3g                                               # read/write NTFS driver for FUSE
@@ -61,7 +65,9 @@ mmdebstrap:
     - language-pack-ja                                      # translation updates for language Japanese
     - language-pack-gnome-ja                                # GNOME translation updates for language Japanese
     - fonts-noto                                            # metapackage to pull in all Noto fonts
-    - kasumi                                                # Simple dictionary utility for Anthy
+    - fcitx5-mozc                                           # Mozc engine for fcitx5 - Client of the Mozc input method
+    - gnome-shell-extensions                                # Extensions to extend functionality of GNOME Shell
+#   - kasumi                                                # Simple dictionary utility for Anthy
 #   - ibus-anthy                                            # 
     - libreoffice-l10n-ja                                   # office productivity suite -- Japanese language package
     - libreoffice-help-ja                                   # office productivity suite -- Japanese help
@@ -73,7 +79,14 @@ mmdebstrap:
     - unifont                                               # font with a glyph for each visible Unicode Plane 0 character
     - unifont-bin                                           # utilities for manipulating GNU Unifont
     - fonts-ubuntu                                          # sans-serif font set from Ubuntu
-    - gnome-icon-theme                                      # This package contains the default icon theme used by the GNOME
+    - ubuntu-standard                                       # Ubuntu standard system
+    - ubuntu-server                                         # Ubuntu Server system
+    - ubuntu-server-minimal                                 # Ubuntu Server minimal system
+    - ubuntu-report                                         # Report hardware and other collected metrics
+    - ibus                                                  # Intelligent Input Bus - core
+    - xxd                                                   # tool to make (or reverse) a hex dump
+#   - gnome-shell                                           # extension-prefs - tool to enable / disable GNOME Shell extensions
+#   - gnome-icon-theme                                      # This package contains the default icon theme used by the GNOME
     - chromium-browser                                      # Transitional package - chromium-browser -> chromium snap
     - chromium-browser-l10n                                 # Transitional package - chromium-browser-l10n -> chromium snap
 #   - connman-gtk                                           # fully-featured GUI for ConnMan with systray support
@@ -84,6 +97,7 @@ mmdebstrap:
     - chroot "$1" passwd --delete root
     - chroot "$1" sh -c 'echo "PasswordAuthentication yes\nPermitRootLogin no" > /etc/ssh/sshd_config.d/sshd.conf'
     - chroot "$1" sh -c 'if [ -e /usr/bin/startlxde ]; then update-alternatives --set "x-session-manager" "/usr/bin/startlxde"; update-alternatives --get-selections | grep x-session-manager; fi '
+    - chroot "$1" sh -c 'if [ -d /etc/dconf/. ]; then mkdir -p /etc/dconf/db/local.d; echo "user-db:user\nsystem-db:local" > /etc/dconf/profile/user; echo "[org/gnome/desktop/session]\nidle-delay="uint32 0"\n\n[org/gnome/desktop/interface]\ncursor-theme=\"Adwaita\"\nicon-theme=\"Adwaita\"\ngtk-theme=\"Adwaita\"\n\n" > /etc/dconf/db/local.d/01-userkeyfile; dconf compile /etc/dconf/db/local /etc/dconf/db/local.d; rm /etc/dconf/db/local.d/01-userkeyfile; fi'
     - chroot "$1" systemctl disable firewalld.service clamav-freshclam.service dnsmasq.service tftpd-hpa.service apache2.service
     - chroot "$1" systemctl enable ssh.service smbd.service nmbd.service
 #   - chroot "$1" firewall-cmd --permanent --change-interface=ens160 --zone=home
