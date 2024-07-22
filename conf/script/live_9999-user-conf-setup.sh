@@ -106,6 +106,8 @@ _EOT_
 			    -e '/^single_click=/ s/=.*$/=0/'
 		fi
 	done
+
+	# --- set auto login parameter --------------------------------------------
 	_GDM3_OPTIONS="$(
 		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 			AutomaticLoginEnable=true
@@ -119,9 +121,12 @@ _EOT_
 	_CONF_FLAG=""
 	grep -l 'AutomaticLoginEnable[ \t]*=[ \t]*true' /etc/gdm3/*.conf | while IFS= read -r FILE_PATH
 	do
-		sed -e '/^\[daemon\]/,/^\[.*\]/ {' -e '/^[^#\[]\+/ s/^/#/}' "${FILE_PATH}"
+		sed -i "${FILE_PATH}"              \
+		    -e '/^\[daemon\]/,/^\[.*\]/ {' \
+		    -e '/^[^#\[]\+/ s/^/#/}' 
 		if [ -z "${_CONF_FLAG:-}" ]; then
-			sed -i -e "s%^\(\[daemon\].*\)$%\1\n${_GDM3_OPTIONS}%" "${FILE_PATH}"
+			sed -i "${FILE_PATH}"                               \
+			    -e "s%^\(\[daemon\].*\)$%\1\n${_GDM3_OPTIONS}%"
 			_CONF_FLAG="true"
 		fi
 	done
