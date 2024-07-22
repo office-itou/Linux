@@ -31,6 +31,10 @@ mmdebstrap:
     - open-vm-tools                                         # Open VMware Tools for virtual machines hosted on VMware (CLI)
     - open-vm-tools-desktop                                 # Open VMware Tools for virtual machines hosted on VMware (GUI)
     - zstd                                                  # fast lossless compression algorithm -- CLI tool
+    - apt-utils                                             # package management related utility programs
+    - fdisk                                                 # collection of partitioning utilities
+    - gdisk                                                 # GPT fdisk text-mode partitioning tool
+    - lvm2                                                  # Linux Logical Volume Manager
     - dosfstools                                            # utilities for making and checking MS-DOS FAT filesystems
     - exfat-fuse                                            # read and write exFAT driver for FUSE
     - ntfs-3g                                               # read/write NTFS driver for FUSE
@@ -61,8 +65,10 @@ mmdebstrap:
     - task-japanese                                         # Japanese environment
     - task-japanese-desktop                                 # Japanese desktop
     - fonts-noto                                            # metapackage to pull in all Noto fonts
-    - kasumi                                                # Simple dictionary utility for Anthy
-    - ibus-anthy                                            # anthy engine for IBus
+    - fcitx5-mozc                                           # Mozc engine for fcitx5 - Client of the Mozc input method
+    - gnome-shell-extensions                                # Extensions to extend functionality of GNOME Shell
+#   - kasumi                                                # Simple dictionary utility for Anthy
+#   - ibus-anthy                                            # anthy engine for IBus
     - libreoffice-l10n-ja                                   # office productivity suite -- Japanese language package
     - libreoffice-help-ja                                   # office productivity suite -- Japanese help
     - firefox-esr-l10n-ja                                   # Japanese language package for Firefox ESR
