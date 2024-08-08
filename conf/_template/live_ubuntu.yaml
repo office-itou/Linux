@@ -180,11 +180,11 @@ mmdebstrap:
     - cups                                                  # Common UNIX Printing System(tm) - PPD/driver support, web interface
 #   - desktop-base                                          # common files for the Debian Desktop
     - fcitx5                                                # Next generation of Fcitx Input Method Framework
-#   - fcitx5-config-qt                                      # configuration tool for Fcitx5 (Qt version)
-#   - fcitx5-frontend-gtk2                                  # GTK2 IM Module for fcitx5
-#   - fcitx5-frontend-gtk3                                  # GTK3 IM Module for fcitx5
+    - fcitx5-config-qt                                      # configuration tool for Fcitx5 (Qt version)
+    - fcitx5-frontend-gtk2                                  # GTK2 IM Module for fcitx5
+    - fcitx5-frontend-gtk3                                  # GTK3 IM Module for fcitx5
 #   - fcitx5-frontend-gtk4                                  # GTK4 IM Module for fcitx5
-#   - fcitx5-frontend-qt5                                   # IM module for fcitx5
+    - fcitx5-frontend-qt5                                   # IM module for fcitx5
     - fcitx5-mozc                                           # Mozc engine for fcitx5 - Client of the Mozc input method
     - fontconfig                                            # generic font configuration library - support binaries
 #   - fonts-ipafont                                         # Japanese OpenType font set, all IPA Fonts
@@ -244,11 +244,6 @@ mmdebstrap:
     - psmisc                                                # utilities that use the proc file system
 #   - synaptic                                              # Graphical package manager
     - system-config-printer                                 # graphical interface to configure the printing system
-#   - task-desktop                                          # Debian desktop environment
-#   - task-japanese-desktop                                 # Japanese desktop
-#   - task-laptop                                           # laptop
-#   - task-lxde-desktop                                     # LXDE
-#   - uim                                                   # Universal Input Method - main binary package
     - wireless-tools                                        # Tools for manipulating Linux Wireless Extensions
     - x11-utils                                             # X11 utilities
     - xdg-utils                                             # desktop integration utilities from freedesktop.org
@@ -257,6 +252,21 @@ mmdebstrap:
     - xserver-xorg-input-all                                # X.Org X server -- input driver metapackage
     - xserver-xorg-video-all                                # X.Org X server -- output driver metapackage
     - zenity                                                # Display graphical dialog boxes from shell scripts
+# --- gvfs --------------------------------------------------------------------
+#   - gvfs                                                  # userspace virtual filesystem - GIO module
+#   - gvfs-backends                                         # userspace virtual filesystem - backends
+#   - gvfs-common                                           # userspace virtual filesystem - common data files
+#   - gvfs-daemons                                          # userspace virtual filesystem - servers
+#   - gvfs-fuse                                             # userspace virtual filesystem - fuse server
+#   - gvfs-libs                                             # userspace virtual filesystem - private libraries
+#  -- debian-desktop ----------------------------------------------------------
+#   - connman-gtk                                           # fully-featured GUI for ConnMan with systray support
+#   - connman-ui                                            # full-featured GTK-based tray icon UI for ConnMan
+#   - task-desktop                                          # Debian desktop environment
+#   - task-japanese-desktop                                 # Japanese desktop
+#   - task-laptop                                           # laptop
+#   - task-lxde-desktop                                     # LXDE
+#   - uim                                                   # Universal Input Method - main binary package
 #  -- ubuntu-desktop ----------------------------------------------------------
     - adwaita-icon-theme                                    # default icon theme of GNOME (small subset)
 #   - adwaita-icon-theme-full                               # default icon theme of GNOME
@@ -328,12 +338,12 @@ mmdebstrap:
 #   - chroot "$1" sh -c 'echo "PasswordAuthentication yes\nPermitRootLogin no" > /etc/ssh/sshd_config.d/sshd.conf'
 #   - chroot "$1" sh -c 'if [ -e /usr/bin/startlxde ]; then update-alternatives --set "x-session-manager" "/usr/bin/startlxde"; update-alternatives --get-selections | grep x-session-manager; fi'
 #   - chroot "$1" sh -c 'if [ -d /etc/dconf/. ]; then mkdir -p /etc/dconf/db/local.d /etc/dconf/profile; echo "user-db:user\nsystem-db:local" > /etc/dconf/profile/user; echo "[org/gnome/desktop/session]\nidle-delay="uint32 0"\n\n[org/gnome/desktop/interface]\ncursor-theme=\"Adwaita\"\nicon-theme=\"Adwaita\"\ngtk-theme=\"Adwaita\"\n\n" > /etc/dconf/db/local.d/01-userkeyfile; dconf compile /etc/dconf/db/local /etc/dconf/db/local.d; rm /etc/dconf/db/local.d/01-userkeyfile; fi'
-    - chroot "$1" systemctl disable firewalld.service clamav-freshclam.service dnsmasq.service tftpd-hpa.service apache2.service
-    - chroot "$1" systemctl enable ssh.service smbd.service nmbd.service
     - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show fctix5 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then im-config -n fcitx5; fi'
     - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show lightdm 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then dpkg-reconfigure --no-reload lightdm; fi'
 #   - chroot "$1" sh -c '_RETURN_VALUE="$(command -v snap 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then snap install firefox chromium; fi'
 #   - chroot "$1" firewall-cmd --permanent --change-interface=ens160 --zone=home
+    - chroot "$1" systemctl disable firewalld.service clamav-freshclam.service dnsmasq.service tftpd-hpa.service apache2.service
+    - chroot "$1" systemctl enable ssh.service smbd.service nmbd.service
   cleanup-hooks:
     - rm "$1/etc/hostname" "$1/etc/hosts"
     - P="$1"; for D in $(mount | awk '$3~"'$P'" { print $3;}' | sort -r); do umount "${D}" || umount --force "${D}" || umount --lazy "${D}"; done
