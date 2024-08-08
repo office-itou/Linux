@@ -19,7 +19,15 @@
 
 	# --- set hostname parameter ----------------------------------------------
 	if [ -n "${LIVE_HOSTNAME:-}" ]; then
-		hostnamectl hostname "${LIVE_HOSTNAME}"
+		echo "set hostname parameter: ${LIVE_HOSTNAME}" | tee /dev/console
+#		hostnamectl hostname "${LIVE_HOSTNAME}"
+		FILE_PATH="/etc/hostname"
+		cat <<- _EOT_ > "${FILE_PATH}"
+			${LIVE_HOSTNAME}
+_EOT_
+		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+			< "${FILE_PATH}" tee /dev/console
+		fi
 	fi
 
 	# --- set user parameter --------------------------------------------------
@@ -46,6 +54,7 @@
 		if [ -n "${LIVE_USER_FULLNAME}" ]; then
 			usermod --comment "${LIVE_USER_FULLNAME}" "${LIVE_USERNAME}"
 		fi
+		passwd --delete root
 	fi
 	for DIRS_NAME in /root /home/*
 	do
@@ -107,13 +116,32 @@ _EOT_
 		fi
 	done
 
+	# --- set ssh parameter ---------------------------------------------------
+	if [ -d /etc/ssh/sshd_config.d/. ]; then
+		echo "set ssh parameter" | tee /dev/console
+		_CONF_FLAG="no"
+		if [ -z "${LIVE_USERNAME:-}" ]; then
+			_CONF_FLAG="yes"
+		fi
+		FILE_PATH="/etc/ssh/sshd_config.d/sshd.conf"
+		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${FILE_PATH}"
+			PasswordAuthentication yes
+			PermitRootLogin ${_CONF_FLAG}
+		
+_EOT_
+		chmod 600 "${FILE_PATH}"
+		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+			< "${FILE_PATH}" tee /dev/console
+		fi
+	fi
+
 	# --- set auto login parameter --------------------------------------------
 	_GDM3_OPTIONS="$(
 		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 			AutomaticLoginEnable=true
-			AutomaticLogin=${LIVE_USERNAME}
+			AutomaticLogin=${LIVE_USERNAME:-root}
 			TimedLoginEnable=true
-			TimedLogin=${LIVE_USERNAME}
+			TimedLogin=${LIVE_USERNAME:-root}
 			TimedLoginDelay=5
 			
 _EOT_
@@ -128,6 +156,9 @@ _EOT_
 			sed -i "${FILE_PATH}"                               \
 			    -e "s%^\(\[daemon\].*\)$%\1\n${_GDM3_OPTIONS}%"
 			_CONF_FLAG="true"
+		fi
+		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+			< "${FILE_PATH}" tee /dev/console
 		fi
 	done
 
@@ -145,7 +176,65 @@ _EOT_
 				  renderer: NetworkManager
 _EOT_
 			chmod 600 "${FILE_PATH}"
+			if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+				< "${FILE_PATH}" tee /dev/console
+			fi
 		fi
+	fi
+
+	# --- set lxde parameter --------------------------------------------------
+	_RETURN_VALUE="$(command -v startlxde 2> /dev/null)"
+	if [ -n "${_RETURN_VALUE:-}" ]; then
+		echo "set lxde parameter" | tee /dev/console
+		update-alternatives --set "x-session-manager" "/usr/bin/startlxde"
+		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+			update-alternatives --get-selections | grep x-session-manager | tee /dev/console
+		fi
+	fi
+
+	# --- set gnome parameter -------------------------------------------------
+	_RETURN_VALUE="$(command -v dconf 2> /dev/null)"
+	if [ -n "${_RETURN_VALUE:-}" ]; then
+		echo "set gnome parameter" | tee /dev/console
+		if [ ! -d /etc/dconf/db/local.d/. ]; then 
+			mkdir -p /etc/dconf/db/local.d
+		fi
+		if [ ! -d /etc/dconf/profile/. ]; then 
+			mkdir -p /etc/dconf/profile
+		fi
+		FILE_PATH="/etc/dconf/profile/user"
+		cat <<- _EOT_ > "${FILE_PATH}"
+			user-db:user
+			system-db:local
+_EOT_
+		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+			< "${FILE_PATH}" tee /dev/console
+		fi
+		FILE_PATH="/etc/dconf/db/local.d/01-userkeyfile"
+		touch : > "${FILE_PATH}"
+		_RETURN_VALUE="$(dcon read /org/gnome/desktop/session)"
+		if [ -n "${_RETURN_VALUE:-}" ]; then
+			cat <<- _EOT_ >> "${FILE_PATH}"
+				[org/gnome/desktop/session]
+				idle-delay="uint32 0"
+				
+_EOT_
+		fi
+		_RETURN_VALUE="$(dcon read /org/gnome/desktop/interface)"
+		if [ -n "${_RETURN_VALUE:-}" ]; then
+			cat <<- _EOT_ >> "${FILE_PATH}"
+				[org/gnome/desktop/interface]
+				cursor-theme=\"Adwaita\"
+				icon-theme=\"Adwaita\"
+				gtk-theme=\"Adwaita\"
+				
+_EOT_
+		fi
+		dconf compile /etc/dconf/db/local /etc/dconf/db/local.d
+		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+			< "${FILE_PATH}" tee /dev/console
+		fi
+		rm -f "${FILE_PATH}"
 	fi
 
 	# --- set vmware parameter ------------------------------------------------
@@ -162,6 +251,10 @@ _EOT_
 _EOT_
 		systemctl daemon-reload
 		mount "${LIVE_HGFS}"
+		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+			< /etc/fstab     tee /dev/console
+			< /etc/fuse.conf tee /dev/console
+		fi
 	fi
 
 	# --- create state file ---------------------------------------------------
