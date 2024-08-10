@@ -95,7 +95,7 @@
 		"x  live-ubuntu-14.04-trusty    Live%20Ubuntu%2014.04               ubuntu          live-ubuntu-14.04-trusty                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
 		"L  live-ubuntu-16.04-xenial    Live%20Ubuntu%2016.04               ubuntu          live-ubuntu-16.04-xenial                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2016-04-21  2026-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
 		"L  live-ubuntu-18.04-bionic    Live%20Ubuntu%2018.04               ubuntu          live-ubuntu-18.04-bionic                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"s  live-ubuntu-20.04-focal     Live%20Ubuntu%2020.04               ubuntu          live-ubuntu-20.04-focal                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"o  live-ubuntu-20.04-focal     Live%20Ubuntu%2020.04               ubuntu          live-ubuntu-20.04-focal                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
 		"o  live-ubuntu-22.04-jammy     Live%20Ubuntu%2022.04               ubuntu          live-ubuntu-22.04-jammy                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
 		"x  live-ubuntu-23.04-lunar     Live%20Ubuntu%2023.04               ubuntu          live-ubuntu-23.04-lunar                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
 		"x  live-ubuntu-23.10-mantic    Live%20Ubuntu%2023.10               ubuntu          live-ubuntu-23.10-mantic                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
@@ -116,8 +116,11 @@
 	declare -a    TGET_LINE=()
 	declare       FLAG_KEEP=""
 	declare       FLAG_SIMU=""
+	declare       OPTN_CONF=""
 	declare       OPTN_KEYS=""
 	declare       OPTN_COMP=""
+	declare       FILE_YAML=""
+	declare       FILE_CONF=""
 #	declare       DIRS_CONF=""
 	declare       DIRS_LIVE=""
 #	declare       DIRS_TEMP=""
@@ -264,20 +267,56 @@
 			DIRS_MNTS="${DIRS_TEMP}/${TGET_LINE[1]}/mnts"
 			SQFS_NAME="${TGET_LINE[1]}.squashfs"
 #			SQFS_NAME="filesystem.squashfs"
-			case "${TGET_LINE[1]}" in
-				live-debian-10-buster      | \
-				live-debian-11-bullseye    ) OPTN_COMP="--components=main,contrib,non-free";;
-				live-debian-*              ) OPTN_COMP="--components=main,contrib,non-free,non-free-firmware";;
-				live-ubuntu-*              ) OPTN_COMP="--components=main,multiverse,restricted,universe";;
-				*                          ) OPTN_COMP="";;
-			esac
+			# --- create cd/dvd image -----------------------------------------
+			rm -rf "${DIRS_TEMP:?}/${TGET_LINE[1]}:?"
+			mkdir -p "${DIRS_TEMP}/${TGET_LINE[1]}/"{cdfs/{.disk,EFI/boot,boot/grub/{live-theme,x86_64-efi},isolinux,live/{boot,config.conf.d}},mnts}
 			# --- create squashfs file ----------------------------------------
 			if [[ -z "${FLAG_KEEP}" ]] || [[ ! -f "${DIRS_LIVE}/${SQFS_NAME}" ]]; then
 				rm -rf "${DIRS_LIVE:?}"
 				mkdir -p "${DIRS_LIVE:?}"
-				# shellcheck disable=SC2086,SC2248
+				# -------------------------------------------------------------
+				OPTN_COMP=""
+#				case "${TGET_LINE[1]}" in
+#					live-debian-10-buster      | \
+#					live-debian-11-bullseye    ) OPTN_COMP="--components=main,contrib,non-free";;
+#					live-debian-*              ) OPTN_COMP="--components=main,contrib,non-free,non-free-firmware";;
+#					live-ubuntu-*              ) OPTN_COMP="--components=main,multiverse,restricted,universe";;
+#					*                          ) OPTN_COMP="";;
+#				esac
+				# -------------------------------------------------------------
+				FILE_YAML="${DIRS_CONF}/_template/live_${TGET_LINE[3]}.yaml"
+				FILE_CONF="${DIRS_TEMP}/${TGET_LINE[1]}/${FILE_YAML##*/}"
+				OPTN_CONF="--config ${FILE_CONF}"
+				case "${TGET_LINE[1]}" in
+					live-debian-10-*    | \
+					live-debian-11-*    )
+						sed -e '/^ \+components:/,/^ \+- \+/ {'             \
+						    -e 's/ *non-free-firmware//g}'                  \
+						    -e '/^ \+- \+fcitx5-frontend-gtk4 \+/ s/^ /#/g' \
+						    "${FILE_YAML}"                                  \
+						> "${FILE_CONF}"
+						;;
+					live-ubuntu-20.04-* )
+						sed -e '/^ \+- \+firmware-sof-signed \+/  s/^ /#/g' \
+						    -e '/^ \+- \+exfatprogs \+/           s/^ /#/g' \
+						    -e '/^ \+- \+media-types \+/          s/^ /#/g' \
+						    -e '/^ \+- \+polkitd \+/              s/^ /#/g' \
+						    -e '/^ \+- \+fcitx5-config-qt \+/     s/^ /#/g' \
+						    -e '/^ \+- \+fcitx5-frontend-gtk4 \+/ s/^ /#/g' \
+						    -e '/^ \+- \+fcitx5-mozc \+/          s/^ /#/g' \
+						    -e '/^ \+- \+ibus-gtk4 \+/            s/^ /#/g' \
+						    -e '/^ \+- \+fuse3 \+/                s/^ /#/g' \
+						    "${FILE_YAML}"                                  \
+						> "${FILE_CONF}"
+						;;
+					live-debian-*       ) cp -a "${FILE_YAML}" "${FILE_CONF}";;
+					live-ubuntu-*       ) cp -a "${FILE_YAML}" "${FILE_CONF}";;
+					*                   ) OPTN_CONF="";;
+				esac
+				# -------------------------------------------------------------
+				# shellcheck disable=SC2086,SC2090,SC2248
 				ionice -c "${IONICE_CLAS}" bdebstrap \
-				    --config "${DIRS_CONF}/_template/live_${TGET_LINE[3]}.yaml" \
+				    ${OPTN_CONF:-} \
 				    --name "${TGET_LINE[1]}" \
 				    ${FLAG_SIMU:-} \
 				    --output-base-dir "${DIRS_WORK}/live" \
@@ -286,13 +325,14 @@
 				    --suite "${TGET_LINE[1]##*-}" \
 				    --target "${SQFS_NAME}"
 #				    || continue
+				if [[ -f "${FILE_CONF}" ]]; then
+					cp -a "${FILE_CONF}" "${DIRS_LIVE}"
+					chmod 644 "${DIRS_LIVE}/${FILE_CONF##*/}"
+				fi
 				if [[ -n "${FLAG_SIMU:-}" ]]; then
 					continue
 				fi
 			fi
-			# --- create cd/dvd image -----------------------------------------
-			rm -rf "${DIRS_TEMP:?}/${TGET_LINE[1]}:?"
-			mkdir -p "${DIRS_TEMP}/${TGET_LINE[1]}/"{cdfs/{.disk,EFI/boot,boot/grub/{live-theme,x86_64-efi},isolinux,live/{boot,config.conf.d}},mnts}
 			# ---- copy script ------------------------------------------------
 			for PATH_SRCS in "${DIRS_CONF}/script/"live_*sh
 			do
