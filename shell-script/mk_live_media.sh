@@ -287,30 +287,39 @@
 				FILE_YAML="${DIRS_CONF}/_template/live_${TGET_LINE[3]}.yaml"
 				FILE_CONF="${DIRS_TEMP}/${TGET_LINE[1]}/${FILE_YAML##*/}"
 				OPTN_CONF="--config ${FILE_CONF}"
+				cp -a "${FILE_YAML}" "${FILE_CONF}"
 				case "${TGET_LINE[1]}" in
 					live-debian-10-*    | \
-					live-debian-11-*    )
-						sed -e '/^ \+components:/,/^ \+- \+/ {'             \
-						    -e 's/ *non-free-firmware//g}'                  \
-						    -e '/^ \+- \+fcitx5-frontend-gtk4 \+/ s/^ /#/g' \
-						    "${FILE_YAML}"                                  \
-						> "${FILE_CONF}"
-						;;
+					live-debian-11-*    | \
 					live-ubuntu-20.04-* )
-						sed -e '/^ \+- \+firmware-sof-signed \+/  s/^ /#/g' \
-						    -e '/^ \+- \+exfatprogs \+/           s/^ /#/g' \
-						    -e '/^ \+- \+media-types \+/          s/^ /#/g' \
-						    -e '/^ \+- \+polkitd \+/              s/^ /#/g' \
-						    -e '/^ \+- \+fcitx5-config-qt \+/     s/^ /#/g' \
-						    -e '/^ \+- \+fcitx5-frontend-gtk4 \+/ s/^ /#/g' \
-						    -e '/^ \+- \+fcitx5-mozc \+/          s/^ /#/g' \
-						    -e '/^ \+- \+ibus-gtk4 \+/            s/^ /#/g' \
-						    -e '/^ \+- \+fuse3 \+/                s/^ /#/g' \
-						    "${FILE_YAML}"                                  \
+						sed -e '/^ *components:/,/^ *- */ {'             \
+						    -e 's/ *non-free-firmware//g}'               \
+						    -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'   \
+						    -e '/^[# ]*- */{'                            \
+						    -e '/^ *- *firmware-sof-signed */  s/^ /#/g' \
+						    -e '/^ *- *exfatprogs */           s/^ /#/g' \
+						    -e '/^ *- *fuse3 */                s/^ /#/g' \
+						    -e '/^ *- *media-types */          s/^ /#/g' \
+						    -e '/^ *- *polkitd */              s/^ /#/g' \
+						    -e '/^ *- *fcitx5-config-qt */     s/^ /#/g' \
+						    -e '/^ *- *fcitx5-frontend-gtk4 */ s/^ /#/g' \
+						    -e '/^ *- *fcitx5-mozc */          s/^ /#/g' \
+						    -e '/^ *- *ibus-gtk4 */            s/^ /#/g' \
+						    -e '}}'                                      \
+						    "${FILE_YAML}"                               \
 						> "${FILE_CONF}"
 						;;
-					live-debian-*       ) cp -a "${FILE_YAML}" "${FILE_CONF}";;
-					live-ubuntu-*       ) cp -a "${FILE_YAML}" "${FILE_CONF}";;
+					live-debian-13-*    | \
+					live-debian-xx-*    )
+						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'   \
+						    -e '/^[# ]*- */{'                            \
+						    -e '/^ *- *policykit-1 */          s/^ /#/g' \
+						    -e '}}'                                      \
+						    "${FILE_YAML}"                               \
+						> "${FILE_CONF}"
+						;;
+					live-debian-*       | \
+					live-ubuntu-*       ) ;;
 					*                   ) OPTN_CONF="";;
 				esac
 				# -------------------------------------------------------------
