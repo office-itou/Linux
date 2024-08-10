@@ -3,8 +3,8 @@ mmdebstrap:
 #   - "Apt::Install-Recommends true"
 # architectures:
 #   - amd64
-# components:
-#   - "main multiverse restricted universe"
+  components:
+    - "main multiverse restricted universe"
 # dpkgopts:
 # hostname:
 # install-recommends:
@@ -183,9 +183,15 @@ mmdebstrap:
     - fcitx5-config-qt                                      # configuration tool for Fcitx5 (Qt version)
     - fcitx5-frontend-gtk2                                  # GTK2 IM Module for fcitx5
     - fcitx5-frontend-gtk3                                  # GTK3 IM Module for fcitx5
-#   - fcitx5-frontend-gtk4                                  # GTK4 IM Module for fcitx5
+    - fcitx5-frontend-gtk4                                  # GTK4 IM Module for fcitx5
     - fcitx5-frontend-qt5                                   # IM module for fcitx5
+    - fcitx5-modules                                        # Fcitx Input Method Framework v5 (core modules)
+#   - fcitx5-module-emoji                                   # Fcitx Input Method Framework v5 (emoji module)
+#   - fcitx5-module-quickphrase                             # Fcitx Input Method Framework v5 (quickphrase module)
+#   - fcitx5-module-wayland                                 # Fcitx Input Method Framework v5 (wayland modules)
+#   - fcitx5-module-xorg                                    # Fcitx Input Method Framework v5 (xorg modules)
     - fcitx5-mozc                                           # Mozc engine for fcitx5 - Client of the Mozc input method
+    - fcitx5-table                                          # Fcitx Input Method Framework v5 (builtin table support)
     - fontconfig                                            # generic font configuration library - support binaries
 #   - fonts-ipafont                                         # Japanese OpenType font set, all IPA Fonts
     - fonts-noto                                            # metapackage to pull in all Noto fonts
@@ -201,6 +207,7 @@ mmdebstrap:
 #   - fonts-symbola                                         # symbolic font providing emoji characters from Unicode 9.0
 #   - fonts-vlgothic                                        # Japanese TrueType font from Vine Linux
     - gdm3                                                  # GNOME Display Manager
+    - gedit                                                 # official text editor of the GNOME desktop environment
     - gnome-disk-utility                                    # manage and configure disk drives and media
 #-  - gnome-initial-setup                                   # Initial GNOME system setup helper
     - gnome-session-bin                                     # GNOME Session Manager - Minimal runtime
@@ -216,6 +223,7 @@ mmdebstrap:
     - ibus-gtk                                              # Intelligent Input Bus - GTK2 support
     - ibus-gtk3                                             # Intelligent Input Bus - GTK3 support
     - ibus-gtk4                                             # Intelligent Input Bus - GTK4 support
+    - ibus-mozc                                             # Mozc engine for IBus - Client of the Mozc input method
     - im-config                                             # Input method configuration framework
 #   - iw                                                    # tool for configuring Linux wireless devices
     - libreoffice-calc                                      # office productivity suite -- spreadsheet
@@ -242,8 +250,11 @@ mmdebstrap:
     - poppler-data                                          # encoding data for the poppler PDF rendering library
 #   - powertop                                              # diagnose issues with power consumption and management
     - psmisc                                                # utilities that use the proc file system
+    - qt5-gtk-platformtheme                                 # Qt 5 GTK+ 3 platform theme
+    - qttranslations5-l10n                                  # translations for Qt 5
 #   - synaptic                                              # Graphical package manager
     - system-config-printer                                 # graphical interface to configure the printing system
+    - unicode-cldr-core                                     # Common data from Unicode CLDR (core)
     - wireless-tools                                        # Tools for manipulating Linux Wireless Extensions
     - x11-utils                                             # X11 utilities
     - xdg-utils                                             # desktop integration utilities from freedesktop.org
@@ -314,8 +325,11 @@ mmdebstrap:
 #   - libevent-2.1-7                                        # Asynchronous event notification library
 #   - libflac8                                              # Free Lossless Audio Codec - runtime C library
 #   - libgbm1                                               # generic buffer management API -- runtime
+    - libgtk2.0-bin                                         # programs for the GTK graphical user interface library
 #   - libgtk-3-0                                            # GTK graphical user interface library
+    - libgtk-3-bin                                          # programs for the GTK graphical user interface library
 #   - libharfbuzz0b                                         # OpenType text shaping engine (shared library)
+    - libime-bin                                            # Generic Input Method Implementation (tools)
 #   - liblcms2-2                                            # Little CMS 2 color management library
 #   - libnspr4                                              # NetScape Portable Runtime Library
 #   - libnss3                                               # Network Security Service libraries
@@ -325,6 +339,7 @@ mmdebstrap:
     - libpam-gnome-keyring                                  # PAM module to unlock the GNOME keyring upon login
 #   - libpango-1.0-0                                        # Layout and rendering of internationalized text
 #   - libpulse0                                             # PulseAudio client libraries
+#   - libxcb-imdkit1                                        # XIM protocol implementation in XCB
 #   - libxcomposite1                                        # X11 Composite extension library
 #   - libxdamage1                                           # X11 damaged region extension library
 #   - libxfixes3                                            # X11 miscellaneous 'fixes' extension library
