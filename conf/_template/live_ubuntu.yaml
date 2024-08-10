@@ -14,40 +14,40 @@ mmdebstrap:
 #   - http://archive.ubuntu.com/ubuntu
   mode: sudo
   packages:
-#  -- live base ---------------------------------------------------------------
+# --- live base ---------------------------------------------------------------
     - open-infrastructure-system-boot                       # Boot Debian-based system images
     - open-infrastructure-system-config                     # Configure Debian-based system images
     - open-infrastructure-system-images                     # Debian-based system images
-#  -- live base [ ubuntu linux image ] ----------------------------------------
+# --- live base [ ubuntu linux image ] ----------------------------------------
     - linux-image-generic                                   # Generic Linux kernel image
-#  -- live base [ firmware ] --------------------------------------------------
+# --- live base [ firmware ] --------------------------------------------------
     - amd64-microcode                                       # Processor microcode firmware for AMD CPUs
     - intel-microcode                                       # Processor microcode firmware for Intel CPUs
     - iucode-tool                                           # Intel processor microcode tool
-    - firmware-sof-signed                                   #  Intel SOF firmware - signed
+    - firmware-sof-signed                                   # Intel SOF firmware - signed
     - linux-firmware                                        # Firmware for Linux kernel drivers
-#  -- dosfstools --------------------------------------------------------------
+# --- dosfstools --------------------------------------------------------------
     - dosfstools                                            # utilities for making and checking MS-DOS FAT filesystems
-#  -- exfat-fuse --------------------------------------------------------------
+# --- exfat-fuse --------------------------------------------------------------
     - exfat-fuse                                            # read and write exFAT driver for FUSE
     - exfatprogs                                            # tools to create, check and label exFAT filesystems
-#  -- ntfs-3g -----------------------------------------------------------------
+# --- ntfs-3g -----------------------------------------------------------------
     - ntfs-3g                                               # read/write NTFS driver for FUSE
 #   - libntfs-3g89                                          # read/write NTFS driver for FUSE (runtime library)
-#  -- lvm2 --------------------------------------------------------------------
+# --- lvm2 --------------------------------------------------------------------
     - lvm2                                                  # Linux Logical Volume Manager
     - dmeventd                                              # Linux Kernel Device Mapper event daemon
 #   - libaio1                                               # Linux kernel AIO access library - shared library
 #   - libdevmapper-event1.02.1                              # Linux Kernel Device Mapper event support library
 #   - liblvm2cmd2.03                                        # LVM2 command library
-#  -- server base [ shared library ] ------------------------------------------
+# --- server base [ shared library ] ------------------------------------------
 #   - libasound2                                            # shared library for ALSA applications
 #   - libblockdev-crypto2                                   # Crypto plugin for libblockdev
 #   - libblockdev-mdraid2                                   # MD RAID plugin for libblockdev
 #   - libc6                                                 # GNU C Library: Shared libraries
 #   - libcups2                                              # Common UNIX Printing System(tm) - Core library
 #   - libdav1d5                                             # fast and small AV1 video stream decoder (shared library)
-#   - libdav1d6                                             # 
+#   - libdav1d6                                             # fast and small AV1 video stream decoder (shared library)
 #   - libdbus-1-3                                           # simple interprocess messaging system (library)
 #   - libdrm2                                               # Userspace interface to kernel DRM services -- runtime
 #   - libexpat1                                             # XML parsing C library - runtime library
@@ -71,18 +71,32 @@ mmdebstrap:
 #   - libxmlsec1-openssl                                    # Openssl engine for the XML security library
 #   - libxslt1.1                                            # XSLT 1.0 processing library - runtime library
 #   - libzstd1                                              # fast lossless compression algorithm
-#  -- dependencies ------------------------------------------------------------
+# --- dependencies ------------------------------------------------------------
+#   - at-spi2-common                                        # Assistive Technology Service Provider Interface (common files)
+#   - at-spi2-core                                          # Assistive Technology Service Provider Interface (D-Bus core)
+    - dconf-gsettings-backend                               # simple configuration storage system - GSettings back-end
+    - dconf-service                                         # simple configuration storage system - D-Bus service
+    - fontconfig                                            # generic font configuration library - support binaries
+    - gsettings-desktop-schemas                             # GSettings desktop-wide schemas
+    - gtk-update-icon-cache                                 # icon theme caching utility
+    - hicolor-icon-theme                                    # default fallback theme for FreeDesktop.org icon themes
+    - alsa-topology-conf                                    # ALSA topology configuration files
+    - alsa-ucm-conf                                         # ALSA Use Case Manager configuration files
     - iproute2                                              # networking and traffic control tools
     - lsb-release                                           # Linux Standard Base version reporting utility
     - pciutils                                              # PCI utilities
     - zlib1g                                                # compression library - runtime
-#  -- open-vm-tools -----------------------------------------------------------
+    - zstd                                                  # fast lossless compression algorithm -- CLI tool
+# --- open-vm-tools -----------------------------------------------------------
     - open-vm-tools                                         # Open VMware Tools for virtual machines hosted on VMware (CLI)
     - open-vm-tools-desktop                                 # Open VMware Tools for virtual machines hosted on VMware (GUI)
     - ethtool                                               # display or change Ethernet device settings
     - fuse3                                                 # Filesystem in Userspace (3.x version)
     - zerofree                                              # zero free blocks from ext2, ext3 and ext4 file-systems
-#  -- server base [ installed ] -----------------------------------------------
+    - xauth                                                 # X authentication utility
+    - xdg-utils                                             # desktop integration utilities from freedesktop.org
+    - xserver-xorg-video-vmware                             # X.Org X server -- VMware display driver
+# --- server base [ installed ] -----------------------------------------------
     - adduser                                               # add and remove users and groups
     - apache2                                               # Apache HTTP Server
 #   - apache2-bin                                           # Apache HTTP Server (modules and other binary files)
@@ -170,7 +184,7 @@ mmdebstrap:
     - winbind                                               # service to resolve user and group information from Windows NT servers
     - wpasupplicant                                         # client support for WPA and WPA2 (IEEE 802.11i)
     - xauth                                                 # X authentication utility
-#  -- desktop base [ installed ] ----------------------------------------------
+# --- desktop base [ installed ] ----------------------------------------------
     - alsa-utils                                            # Utilities for configuring and using ALSA
     - anacron                                               # cron-like program that doesn't go by time
 #   - anthy                                                 # Japanese kana-kanji conversion - utilities
@@ -192,7 +206,7 @@ mmdebstrap:
 #   - fcitx5-module-xorg                                    # Fcitx Input Method Framework v5 (xorg modules)
     - fcitx5-mozc                                           # Mozc engine for fcitx5 - Client of the Mozc input method
     - fcitx5-table                                          # Fcitx Input Method Framework v5 (builtin table support)
-    - fontconfig                                            # generic font configuration library - support binaries
+#   - fontconfig                                            # generic font configuration library - support binaries
 #   - fonts-ipafont                                         # Japanese OpenType font set, all IPA Fonts
     - fonts-noto                                            # metapackage to pull in all Noto fonts
     - fonts-noto-cjk                                        # "No Tofu" font families with large Unicode coverage (CJK regular and bold)
@@ -270,7 +284,7 @@ mmdebstrap:
 #   - gvfs-daemons                                          # userspace virtual filesystem - servers
 #   - gvfs-fuse                                             # userspace virtual filesystem - fuse server
 #   - gvfs-libs                                             # userspace virtual filesystem - private libraries
-#  -- debian-desktop ----------------------------------------------------------
+# --- debian-desktop ----------------------------------------------------------
 #   - connman-gtk                                           # fully-featured GUI for ConnMan with systray support
 #   - connman-ui                                            # full-featured GTK-based tray icon UI for ConnMan
 #   - task-desktop                                          # Debian desktop environment
@@ -278,7 +292,7 @@ mmdebstrap:
 #   - task-laptop                                           # laptop
 #   - task-lxde-desktop                                     # LXDE
 #   - uim                                                   # Universal Input Method - main binary package
-#  -- ubuntu-desktop ----------------------------------------------------------
+# --- ubuntu-desktop ----------------------------------------------------------
     - adwaita-icon-theme                                    # default icon theme of GNOME (small subset)
 #   - adwaita-icon-theme-full                               # default icon theme of GNOME
     - fonts-ubuntu                                          # sans-serif font set from Ubuntu
@@ -307,16 +321,16 @@ mmdebstrap:
 #   - xscreensaver                                          # Screensaver daemon and frontend for X11
 #   - xscreensaver-data                                     # Screen saver modules for screensaver frontends
     - yaru-theme-icon                                       # Yaru icon theme from the Ubuntu Community
-#  -- thunderbird -------------------------------------------------------------
+# --- thunderbird -------------------------------------------------------------
     - thunderbird                                           # Email, RSS and newsgroup client with integrated spam filter
     - thunderbird-locale-ja                                 # Japanese language pack for Thunderbird
-#  -- firefox -----------------------------------------------------------------
+# --- firefox -----------------------------------------------------------------
     - firefox                                               # Transitional package - firefox -> firefox snap
     - firefox-locale-ja                                     # Transitional package - firefox-locale-ja -> firefox snap
-#  -- chromium ---------------------------------------------------------------
+# --- chromium ---------------------------------------------------------------
     - chromium-browser                                      # Transitional package - chromium-browser -> chromium snap
     - chromium-browser-l10n                                 # Transitional package - chromium-browser-l10n -> chromium snap
-#  -- desktop base [ shared library ] -----------------------------------------
+# --- desktop base [ shared library ] -----------------------------------------
 #   - libatk-bridge2.0-0                                    # AT-SPI 2 toolkit bridge - shared library
 #   - libatk1.0-0                                           # ATK accessibility toolkit
 #   - libatspi2.0-0                                         # Assistive Technology Service Provider Interface - shared library
