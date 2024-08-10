@@ -25,6 +25,7 @@ mmdebstrap:
     - intel-microcode                                       # Processor microcode firmware for Intel CPUs
     - iucode-tool                                           # Intel processor microcode tool
     - firmware-linux                                        # Binary firmware for various drivers in the Linux kernel (metapackage)
+#   - linux-firmware                                        # Firmware for Linux kernel drivers
 # --- dosfstools --------------------------------------------------------------
     - dosfstools                                            # utilities for making and checking MS-DOS FAT filesystems
 # --- exfat-fuse --------------------------------------------------------------
@@ -45,6 +46,7 @@ mmdebstrap:
 #   - libblockdev-mdraid2                                   # MD RAID plugin for libblockdev
 #   - libc6                                                 # GNU C Library: Shared libraries
 #   - libcups2                                              # Common UNIX Printing System(tm) - Core library
+#   - libdav1d5                                             # fast and small AV1 video stream decoder (shared library)
 #   - libdav1d6                                             # fast and small AV1 video stream decoder (shared library)
 #   - libdbus-1-3                                           # simple interprocess messaging system (library)
 #   - libdrm2                                               # Userspace interface to kernel DRM services -- runtime
@@ -54,6 +56,8 @@ mmdebstrap:
 #   - libfuse3-3                                            # Filesystem in Userspace (library) (3.x version)
 #   - libgcc-s1                                             # GCC support library
 #   - libglib2.0-0                                          # GLib library of C routines
+#   - libjpeg-turbo8                                        # IJG JPEG compliant runtime library.
+#   - libjpeg8                                              # Independent JPEG Group's JPEG runtime library (dependency package)
 #   - libmspack0                                            # library for Microsoft compression formats (shared library)
 #   - libpng16-16                                           # PNG library - runtime (version 1.6)
 #   - libssl3                                               # Secure Sockets Layer toolkit - shared libraries
@@ -68,16 +72,30 @@ mmdebstrap:
 #   - libxslt1.1                                            # XSLT 1.0 processing library - runtime library
 #   - libzstd1                                              # fast lossless compression algorithm
 # --- dependencies ------------------------------------------------------------
+#   - at-spi2-common                                        # Assistive Technology Service Provider Interface (common files)
+#   - at-spi2-core                                          # Assistive Technology Service Provider Interface (D-Bus core)
+    - dconf-gsettings-backend                               # simple configuration storage system - GSettings back-end
+    - dconf-service                                         # simple configuration storage system - D-Bus service
+    - fontconfig                                            # generic font configuration library - support binaries
+    - gsettings-desktop-schemas                             # GSettings desktop-wide schemas
+    - gtk-update-icon-cache                                 # icon theme caching utility
+    - hicolor-icon-theme                                    # default fallback theme for FreeDesktop.org icon themes
+    - alsa-topology-conf                                    # ALSA topology configuration files
+    - alsa-ucm-conf                                         # ALSA Use Case Manager configuration files
     - iproute2                                              # networking and traffic control tools
     - lsb-release                                           # Linux Standard Base version reporting utility (minimal implementation)
     - pciutils                                              # PCI utilities
     - zlib1g                                                # compression library - runtime
+    - zstd                                                  # fast lossless compression algorithm -- CLI tool
 # --- open-vm-tools -----------------------------------------------------------
     - open-vm-tools                                         # Open VMware Tools for virtual machines hosted on VMware (CLI)
     - open-vm-tools-desktop                                 # Open VMware Tools for virtual machines hosted on VMware (GUI)
     - ethtool                                               # display or change Ethernet device settings
     - fuse3                                                 # Filesystem in Userspace (3.x version)
     - zerofree                                              # zero free blocks from ext2, ext3 and ext4 file-systems
+    - xauth                                                 # X authentication utility
+    - xdg-utils                                             # desktop integration utilities from freedesktop.org
+    - xserver-xorg-video-vmware                             # X.Org X server -- VMware display driver
 # --- server base [ installed ] -----------------------------------------------
     - adduser                                               # add and remove users and groups
     - apache2                                               # Apache HTTP Server
@@ -188,7 +206,7 @@ mmdebstrap:
 #   - fcitx5-module-xorg                                    # Fcitx Input Method Framework v5 (xorg modules)
     - fcitx5-mozc                                           # Mozc engine for fcitx5 - Client of the Mozc input method
     - fcitx5-table                                          # Fcitx Input Method Framework v5 (builtin table support)
-    - fontconfig                                            # generic font configuration library - support binaries
+#   - fontconfig                                            # generic font configuration library - support binaries
 #   - fonts-ipafont                                         # Japanese OpenType font set (Mincho and Gothic)
     - fonts-noto                                            # metapackage to pull in all Noto fonts
     - fonts-noto-cjk                                        # "No Tofu" font families with large Unicode coverage (CJK regular and bold)
@@ -203,6 +221,7 @@ mmdebstrap:
 #   - fonts-symbola                                         # symbolic font providing emoji characters from Unicode 9.0
 #   - fonts-vlgothic                                        # Japanese TrueType font from Vine Linux
     - gdm3                                                  # GNOME Display Manager
+    - gedit                                                 # popular text editor for the GNOME desktop environment
     - gnome-disk-utility                                    # manage and configure disk drives and media
 #   - gnome-initial-setup                                   # Initial GNOME system setup helper
     - gnome-session-bin                                     # GNOME Session Manager - Minimal runtime
@@ -217,7 +236,7 @@ mmdebstrap:
     - ibus-data                                             # Intelligent Input Bus - data files
     - ibus-gtk                                              # Intelligent Input Bus - GTK2 support
     - ibus-gtk3                                             # Intelligent Input Bus - GTK3 support
-#   - ibus-gtk4                                             # Intelligent Input Bus - GTK4 support
+    - ibus-gtk4                                             # Intelligent Input Bus - GTK4 support
     - ibus-mozc                                             # Mozc engine for IBus - Client of the Mozc input method
     - im-config                                             # Input method configuration framework
 #   - iw                                                    # tool for configuring Linux wireless devices
@@ -240,7 +259,8 @@ mmdebstrap:
     - mozc-utils-gui                                        # GUI utilities of the Mozc input method
     - mythes-en-us                                          # English (USA) Thesaurus for LibreOffice
     - orca                                                  # Scriptable screen reader
-#   - policykit-1                                           # transitional package for polkitd and pkexec
+    - policykit-1                                           # transitional package for polkitd and pkexec
+#   - policykit-desktop-privileges                          # run common desktop actions without password
     - poppler-data                                          # encoding data for the poppler PDF rendering library
 #   - powertop                                              # diagnose issues with power consumption and management
     - psmisc                                                # utilities that use the proc file system
@@ -264,7 +284,7 @@ mmdebstrap:
     - gvfs-daemons                                          # userspace virtual filesystem - servers
     - gvfs-fuse                                             # userspace virtual filesystem - fuse server
     - gvfs-libs                                             # userspace virtual filesystem - private libraries
-#  -- debian-desktop ----------------------------------------------------------
+# --- debian-desktop ----------------------------------------------------------
     - connman-gtk                                           # fully-featured GUI for ConnMan with systray support
     - connman-ui                                            # full-featured GTK-based tray icon UI for ConnMan
     - task-desktop                                          # Debian desktop environment
@@ -272,30 +292,52 @@ mmdebstrap:
     - task-laptop                                           # laptop
     - task-lxde-desktop                                     # LXDE
 #   - uim                                                   # Universal Input Method - main binary package
-#  -- ubuntu-desktop ----------------------------------------------------------
-#   - adwaita-icon-theme                                    # default icon theme of GNOME
+# --- ubuntu-desktop ----------------------------------------------------------
+#   - adwaita-icon-theme                                    # default icon theme of GNOME (small subset)
+#   - adwaita-icon-theme-full                               # default icon theme of GNOME
 #   - fonts-ubuntu                                          # sans-serif font set from Ubuntu
+#   - language-pack-gnome-ja                                # GNOME translation updates for language Japanese
+#   - language-pack-ja                                      # translation updates for language Japanese
 #   - task-japanese-gnome-desktop                           # Japanese GNOME desktop
-#   - ubuntu-keyring                                        # all GnuPG keys used by Ubuntu Project
+#-  - ubuntu-advantage-desktop-daemon                       # Daemon to allow access to ubuntu-advantage via D-Bus
+#-  - ubuntu-advantage-tools                                # transitional dummy package for ubuntu-pro-client
+#   - ubuntu-desktop                                        # The Ubuntu desktop system
+#-  - ubuntu-desktop-minimal                                # The Ubuntu desktop minimal system
+#-  - ubuntu-docs                                           # Ubuntu Desktop Guide
+#-  - ubuntu-drivers-common                                 # Detect and install additional Ubuntu driver packages
+#   - ubuntu-gnome-desktop                                  # The Ubuntu desktop system (transitional package)
+#-  - ubuntu-keyring                                        # GnuPG keys of the Ubuntu archive
+#-  - ubuntu-minimal                                        # Minimal core of Ubuntu
+#-  - ubuntu-mono                                           # Ubuntu Mono Icon theme
+#-  - ubuntu-pro-client-l10n                                # Translations for Ubuntu Pro Client
+#-  - ubuntu-release-upgrader-core                          # manage release upgrades
+#-  - ubuntu-release-upgrader-gtk                           # manage release upgrades
+#-  - ubuntu-report                                         # Report hardware and other collected metrics
+#-  - ubuntu-session                                        # Ubuntu session with GNOME Shell
+#-  - ubuntu-settings                                       # default settings for the Ubuntu desktop
+#   - ubuntu-standard                                       # The Ubuntu standard system
+#-  - ubuntu-wallpapers                                     # Ubuntu Wallpapers
+#-  - ubuntu-wallpapers-jammy                               # Ubuntu 22.04 Wallpapers
 #   - xscreensaver                                          # Screensaver daemon and frontend for X11
 #   - xscreensaver-data                                     # Screen saver modules for screensaver frontends
 #   - yaru-theme-icon                                       # Yaru icon theme from the Ubuntu Community
-#  -- thunderbird -------------------------------------------------------------
+# --- thunderbird -------------------------------------------------------------
     - thunderbird                                           # mail/news client with RSS, chat and integrated spam filter support
     - thunderbird-l10n-ja                                   # Japanese language package for Thunderbird
-#  -- firefox -----------------------------------------------------------------
+# --- firefox -----------------------------------------------------------------
     - firefox-esr                                           # Mozilla Firefox web browser - Extended Support Release (ESR)
     - firefox-esr-l10n-ja                                   # Japanese language package for Firefox ESR
-#  -- chromium ---------------------------------------------------------------
+# --- chromium ----------------------------------------------------------------
     - chromium                                              # web browser
     - chromium-l10n                                         # web browser - language packs
-#  -- desktop base [ shared library ] -----------------------------------------
+# --- desktop base [ shared library ] -----------------------------------------
 #   - libatk-bridge2.0-0                                    # AT-SPI 2 toolkit bridge - shared library
 #   - libatk1.0-0                                           # ATK accessibility toolkit
 #   - libatspi2.0-0                                         # Assistive Technology Service Provider Interface - shared library
 #   - libcairo2                                             # Cairo 2D vector graphics library
 #   - libdouble-conversion3                                 # routines to convert IEEE floats to and from strings
 #   - libevent-2.1-7                                        # Asynchronous event notification library
+#   - libflac8                                              # Free Lossless Audio Codec - runtime C library
 #   - libgbm1                                               # generic buffer management API -- runtime
     - libgtk2.0-bin                                         # programs for the GTK graphical user interface library
 #   - libgtk-3-0                                            # GTK graphical user interface library
@@ -305,6 +347,7 @@ mmdebstrap:
 #   - liblcms2-2                                            # Little CMS 2 color management library
 #   - libnspr4                                              # NetScape Portable Runtime Library
 #   - libnss3                                               # Network Security Service libraries
+#   - libopenh264-6                                         # OpenH264 Video Codec
 #   - libopenjp2-7                                          # JPEG 2000 image compression/decompression library
 #   - libopus0                                              # Opus codec runtime library
     - libpam-gnome-keyring                                  # PAM module to unlock the GNOME keyring upon login
