@@ -211,7 +211,7 @@ _EOT_
 			< "${FILE_PATH}" tee /dev/console
 		fi
 		FILE_PATH="/etc/dconf/db/local.d/01-userkeyfile"
-		touch : > "${FILE_PATH}"
+		: > "${FILE_PATH}"
 		_RETURN_VALUE="$(dcon read /org/gnome/desktop/session)"
 		if [ -n "${_RETURN_VALUE:-}" ]; then
 			cat <<- _EOT_ >> "${FILE_PATH}"

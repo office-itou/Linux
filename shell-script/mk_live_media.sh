@@ -95,7 +95,7 @@
 		"x  live-ubuntu-14.04-trusty    Live%20Ubuntu%2014.04               ubuntu          live-ubuntu-14.04-trusty                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
 		"L  live-ubuntu-16.04-xenial    Live%20Ubuntu%2016.04               ubuntu          live-ubuntu-16.04-xenial                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2016-04-21  2026-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
 		"L  live-ubuntu-18.04-bionic    Live%20Ubuntu%2018.04               ubuntu          live-ubuntu-18.04-bionic                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"o  live-ubuntu-20.04-focal     Live%20Ubuntu%2020.04               ubuntu          live-ubuntu-20.04-focal                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"s  live-ubuntu-20.04-focal     Live%20Ubuntu%2020.04               ubuntu          live-ubuntu-20.04-focal                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
 		"o  live-ubuntu-22.04-jammy     Live%20Ubuntu%2022.04               ubuntu          live-ubuntu-22.04-jammy                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
 		"x  live-ubuntu-23.04-lunar     Live%20Ubuntu%2023.04               ubuntu          live-ubuntu-23.04-lunar                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
 		"x  live-ubuntu-23.10-mantic    Live%20Ubuntu%2023.10               ubuntu          live-ubuntu-23.10-mantic                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
@@ -116,6 +116,7 @@
 	declare -a    TGET_LINE=()
 	declare       FLAG_KEEP=""
 	declare       FLAG_SIMU=""
+	declare       FLAG_CONT=""
 	declare       OPTN_CONF=""
 	declare       OPTN_KEYS=""
 	declare       OPTN_COMP=""
@@ -212,11 +213,30 @@
 					shift
 					COMD_LINE=("${@:-}")
 					;;
+				-c | --continue )
+					FLAG_CONT="true"
+					shift
+					COMD_LINE=("${@:-}")
+					;;
 				-a | --all )
 					for ((I=0; I<"${#TGET_LIST[@]}"; I++))
 					do
 						read -r -a TGET_LINE < <(echo "${TGET_LIST[I]}")
 						if [[ "${TGET_LINE[0]}" != "-" ]]; then
+							continue
+						fi
+						TGET_LINE[0]="o"
+						TGET_LIST[I]="${TGET_LINE[*]}"
+					done
+					shift
+					COMD_LINE=("${@:-}")
+					;;
+				debian | \
+				ubuntu )
+					for ((I=0; I<"${#TGET_LIST[@]}"; I++))
+					do
+						read -r -a TGET_LINE < <(echo "${TGET_LIST[I]}")
+						if [[ "${TGET_LINE[0]}" != "-" ]] || [[ "${TGET_LINE[3]}" != "$1" ]]; then
 							continue
 						fi
 						TGET_LINE[0]="o"
@@ -296,28 +316,29 @@
 						    -e 's/ *non-free-firmware//g}'               \
 						    -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'   \
 						    -e '/^[# ]*- */{'                            \
-						    -e '/^ *- *firmware-sof-signed */  s/^ /#/g' \
+						    -e '/^ *- *at-spi2-common */       s/^ /#/g' \
 						    -e '/^ *- *exfatprogs */           s/^ /#/g' \
 						    -e '/^ *- *fuse3 */                s/^ /#/g' \
 						    -e '/^ *- *media-types */          s/^ /#/g' \
 						    -e '/^ *- *polkitd */              s/^ /#/g' \
 						    -e '/^ *- *fcitx5-config-qt */     s/^ /#/g' \
 						    -e '/^ *- *fcitx5-frontend-gtk4 */ s/^ /#/g' \
-						    -e '/^ *- *fcitx5-mozc */          s/^ /#/g' \
+						    -e '/^ *- *fcitx5-frontend-qt6 */  s/^ /#/g' \
 						    -e '/^ *- *ibus-gtk4 */            s/^ /#/g' \
 						    -e '}}'                                      \
 						    "${FILE_YAML}"                               \
 						> "${FILE_CONF}"
 						;;
-					live-debian-13-*    | \
-					live-debian-xx-*    )
-						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'   \
-						    -e '/^[# ]*- */{'                            \
-						    -e '/^ *- *policykit-1 */          s/^ /#/g' \
-						    -e '}}'                                      \
-						    "${FILE_YAML}"                               \
-						> "${FILE_CONF}"
-						;;
+#					live-debian-13-*    | \
+#					live-debian-xx-*    )
+#						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'   \
+#						    -e '/^[# ]*- */{'                            \
+#						    -e '/^ *- *policykit-1 */          s/^ /#/g' \
+#						    -e '/^ *- *polkitd-pkla */         s/^ /#/g' \
+#						    -e '}}'                                      \
+#						    "${FILE_YAML}"                               \
+#						> "${FILE_CONF}"
+#						;;
 					live-debian-*       | \
 					live-ubuntu-*       ) ;;
 					*                   ) OPTN_CONF="";;
@@ -332,8 +353,8 @@
 				    ${OPTN_KEYS:-} \
 				    ${OPTN_COMP:-} \
 				    --suite "${TGET_LINE[1]##*-}" \
-				    --target "${SQFS_NAME}"
-#				    || continue
+				    --target "${SQFS_NAME}" \
+				    || if [[ -n "${FLAG_CONT:-}" ]]; then continue; else exit 1; fi
 				if [[ -f "${FILE_CONF}" ]]; then
 					cp -a "${FILE_CONF}" "${DIRS_LIVE}"
 					chmod 644 "${DIRS_LIVE}/${FILE_CONF##*/}"
@@ -516,12 +537,14 @@ _EOT_
 			    "${DIRS_CDFS}"
 #			rm -rf "${DIRS_LIVE:?}"
 			end_time=$(date +%s)
-			echo "${TGET_LINE[2]//%20/ } elapsed time: $((end_time-section_start_time)) [sec]"
+#			echo "${TGET_LINE[2]//%20/ } elapsed time: $((end_time-section_start_time)) [sec]"
+			printf "${TGET_LINE[2]//%20/ } elapsed time: %dd%02dh%02dm%02ds\n" $(((end_time-section_start_time)/86400)) $(((end_time-section_start_time)%86400/3600)) $(((end_time-section_start_time)%3600/60)) $(((end_time-section_start_time)%60))
 		done
 	fi
 
 	end_time=$(date +%s)
-	echo "elapsed time: $((end_time-start_time)) [sec]"
+#	echo "elapsed time: $((end_time-start_time)) [sec]"
+	printf "elapsed time: %dd%02dh%02dm%02ds\n" $(((end_time-start_time)/86400)) $(((end_time-start_time)%86400/3600)) $(((end_time-start_time)%3600/60)) $(((end_time-start_time)%60))
 	date +"%Y/%m/%d %H:%M:%S"
 
 	exit 0

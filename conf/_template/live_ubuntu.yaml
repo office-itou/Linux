@@ -18,75 +18,28 @@ mmdebstrap:
     - open-infrastructure-system-boot                       # Boot Debian-based system images
     - open-infrastructure-system-config                     # Configure Debian-based system images
     - open-infrastructure-system-images                     # Debian-based system images
-# --- live base [ ubuntu linux image ] ----------------------------------------
+# --- live base [ debian linux image ] ----------------------------------------
     - linux-image-generic                                   # Generic Linux kernel image
 # --- live base [ firmware ] --------------------------------------------------
     - amd64-microcode                                       # Processor microcode firmware for AMD CPUs
     - intel-microcode                                       # Processor microcode firmware for Intel CPUs
     - iucode-tool                                           # Intel processor microcode tool
-    - firmware-sof-signed                                   # Intel SOF firmware - signed
     - linux-firmware                                        # Firmware for Linux kernel drivers
+    - firmware-sof-signed                                   # Intel SOF firmware - signed
 # --- dosfstools --------------------------------------------------------------
     - dosfstools                                            # utilities for making and checking MS-DOS FAT filesystems
 # --- exfat-fuse --------------------------------------------------------------
     - exfat-fuse                                            # read and write exFAT driver for FUSE
-    - exfatprogs                                            # tools to create, check and label exFAT filesystems
+    - exfatprogs                                            # exFAT file system utilities
 # --- ntfs-3g -----------------------------------------------------------------
     - ntfs-3g                                               # read/write NTFS driver for FUSE
-#   - libntfs-3g89                                          # read/write NTFS driver for FUSE (runtime library)
+#   - libntfs-3g89t64                                       # read/write NTFS driver for FUSE (runtime library)
 # --- lvm2 --------------------------------------------------------------------
     - lvm2                                                  # Linux Logical Volume Manager
     - dmeventd                                              # Linux Kernel Device Mapper event daemon
-#   - libaio1                                               # Linux kernel AIO access library - shared library
+#   - libaio1t64                                            # Linux kernel AIO access library - shared library
 #   - libdevmapper-event1.02.1                              # Linux Kernel Device Mapper event support library
 #   - liblvm2cmd2.03                                        # LVM2 command library
-# --- server base [ shared library ] ------------------------------------------
-#   - libasound2                                            # shared library for ALSA applications
-#   - libblockdev-crypto2                                   # Crypto plugin for libblockdev
-#   - libblockdev-mdraid2                                   # MD RAID plugin for libblockdev
-#   - libc6                                                 # GNU C Library: Shared libraries
-#   - libcups2                                              # Common UNIX Printing System(tm) - Core library
-#   - libdav1d5                                             # fast and small AV1 video stream decoder (shared library)
-#   - libdav1d6                                             # fast and small AV1 video stream decoder (shared library)
-#   - libdbus-1-3                                           # simple interprocess messaging system (library)
-#   - libdrm2                                               # Userspace interface to kernel DRM services -- runtime
-#   - libexpat1                                             # XML parsing C library - runtime library
-#   - libfontconfig1                                        # generic font configuration library - runtime
-#   - libfreetype6                                          # FreeType 2 font engine, shared library files
-#   - libfuse3-3                                            # Filesystem in Userspace (library) (3.x version)
-#   - libgcc-s1                                             # GCC support library
-#   - libglib2.0-0                                          # GLib library of C routines
-#   - libjpeg-turbo8                                        # IJG JPEG compliant runtime library.
-#   - libjpeg8                                              # Independent JPEG Group's JPEG runtime library (dependency package)
-#   - libmspack0                                            # library for Microsoft compression formats (shared library)
-#   - libpng16-16                                           # PNG library - runtime (version 1.6)
-#   - libssl3                                               # Secure Sockets Layer toolkit - shared libraries
-#   - libtirpc3                                             # transport-independent RPC library
-#   - libudev1                                              # libudev shared library
-#   - libx11-6                                              # X11 client-side library
-#   - libxcb1                                               # X C Binding
-#   - libxext6                                              # X11 miscellaneous extension library
-#   - libxml2                                               # GNOME XML library
-#   - libxmlsec1                                            # XML security library
-#   - libxmlsec1-openssl                                    # Openssl engine for the XML security library
-#   - libxslt1.1                                            # XSLT 1.0 processing library - runtime library
-#   - libzstd1                                              # fast lossless compression algorithm
-# --- dependencies ------------------------------------------------------------
-#   - at-spi2-common                                        # Assistive Technology Service Provider Interface (common files)
-#   - at-spi2-core                                          # Assistive Technology Service Provider Interface (D-Bus core)
-    - dconf-gsettings-backend                               # simple configuration storage system - GSettings back-end
-    - dconf-service                                         # simple configuration storage system - D-Bus service
-    - fontconfig                                            # generic font configuration library - support binaries
-    - gsettings-desktop-schemas                             # GSettings desktop-wide schemas
-    - gtk-update-icon-cache                                 # icon theme caching utility
-    - hicolor-icon-theme                                    # default fallback theme for FreeDesktop.org icon themes
-    - alsa-topology-conf                                    # ALSA topology configuration files
-    - alsa-ucm-conf                                         # ALSA Use Case Manager configuration files
-    - iproute2                                              # networking and traffic control tools
-    - lsb-release                                           # Linux Standard Base version reporting utility
-    - pciutils                                              # PCI utilities
-    - zlib1g                                                # compression library - runtime
-    - zstd                                                  # fast lossless compression algorithm -- CLI tool
 # --- open-vm-tools -----------------------------------------------------------
     - open-vm-tools                                         # Open VMware Tools for virtual machines hosted on VMware (CLI)
     - open-vm-tools-desktop                                 # Open VMware Tools for virtual machines hosted on VMware (GUI)
@@ -96,202 +49,216 @@ mmdebstrap:
     - xauth                                                 # X authentication utility
     - xdg-utils                                             # desktop integration utilities from freedesktop.org
     - xserver-xorg-video-vmware                             # X.Org X server -- VMware display driver
-# --- server base [ installed ] -----------------------------------------------
-    - adduser                                               # add and remove users and groups
-    - apache2                                               # Apache HTTP Server
-#   - apache2-bin                                           # Apache HTTP Server (modules and other binary files)
-#   - apache2-data                                          # Apache HTTP Server (common files)
-#   - apache2-utils                                         # Apache HTTP Server (utility programs for web servers)
-    - apparmor                                              # user-space parser utility for AppArmor
-    - apt                                                   # commandline package manager
-    - apt-transport-https                                   # transitional package for https support
-    - attr                                                  # utilities for manipulating filesystem extended attributes
-    - bash-completion                                       # programmable completion for the bash shell
-    - bc                                                    # GNU bc arbitrary precision calculator language
-    - bind9-dnsutils                                        # Clients provided with BIND 9
-    - bind9-host                                            # DNS Lookup Utility
-    - bluez                                                 # Bluetooth tools and daemons
-    - build-essential                                       # Informational list of build-essential packages
-    - cifs-utils                                            # Common Internet File System utilities
-    - clamav                                                # anti-virus utility for Unix - command-line interface
-#   - clamav-base                                           # anti-virus utility for Unix - base package
-#   - clamav-freshclam                                      # anti-virus utility for Unix - virus database update utility
-#   - connman                                               # Intel Connection Manager daemon
-    - curl                                                  # command line tool for transferring data with URL syntax
-    - dbus                                                  # simple interprocess messaging system (daemon and utilities)
-    - debconf                                               # Debian configuration management system
-    - debianutils                                           # Miscellaneous utilities specific to Debian
-    - dnsmasq                                               # Small caching DNS proxy and DHCP/TFTP server
-#-  - dnsmasq-base                                          # Small caching DNS proxy and DHCP/TFTP server
-    - dpkg-dev                                              # Debian package development tools
+# --- base system -------------------------------------------------------------
+    - alsa-topology-conf                                    # ALSA topology configuration files
+    - alsa-ucm-conf                                         # ALSA Use Case Manager configuration files
+#   - apparmor                                              # user-space parser utility for AppArmor
+    - apt-utils                                             # package management related utility programs
+#   - at-spi2-core                                          # Assistive Technology Service Provider Interface (D-Bus core)
+#   - bluez                                                 # Bluetooth tools and daemons
+#   - bsdextrautils                                         # extra utilities from 4.4BSD-Lite
+#   - ca-certificates                                       # Common CA certificates
+#   - console-setup                                         # console font and keymap setup program
+#   - console-setup-linux                                   # Linux specific part of console-setup
+    - cron                                                  # process scheduling daemon
+#   - cron-daemon-common                                    # process scheduling daemon's configuration files
+    - debconf-i18n                                          # full internationalization support for debconf
+#   - dirmngr                                               # GNU privacy guard - network certificate management service
+#   - dmidecode                                             # SMBIOS/DMI table decoder
     - eject                                                 # ejects CDs and operates CD-Changers under Linux
+#   - fakeroot                                              # tool for simulating superuser privileges
 #   - fbterm                                                # fast framebuffer based terminal emulator for Linux
-    - firewalld                                             # dynamically managed firewall with support for network zones
-    - gcc                                                   # GNU C compiler
-    - init-system-helpers                                   # helper tools for all init systems
-#   - ipset                                                 # administration tool for kernel IP sets
-    - iptables                                              # administration tools for packet filtering and NAT
-    - keyutils                                              # Linux Key Management Utilities
-    - libnss-winbind                                        # Samba nameservice integration plugins
-#   - libpam-runtime                                        # Runtime support for the PAM library
+    - fdisk                                                 # collection of partitioning utilities
+    - file                                                  # Recognize the type of data in a file using "magic" numbers
+#   - gettext-base                                          # GNU Internationalization utilities for the base system
+    - gnupg                                                 # GNU privacy guard - a free PGP replacement
+#   - gnupg-l10n                                            # GNU privacy guard - localization files
+#   - gnupg-utils                                           # GNU privacy guard - utility programs
+#   - gpg                                                   # GNU Privacy Guard -- minimalist public key operations
+#   - gpg-agent                                             # GNU privacy guard - cryptographic agent
+#   - gpg-wks-client                                        # GNU privacy guard - Web Key Service client
+#   - gpg-wks-server                                        # GNU privacy guard - Web Key Service server
+#   - gpgconf                                               # GNU privacy guard - core configuration utilities
+#   - gpgsm                                                 # GNU privacy guard - S/MIME version
+#   - groff-base                                            # GNU troff text-formatting system (base system components)
+#   - grub-common                                           # GRand Unified Bootloader (common files)
+#   - gsettings-desktop-schemas                             # GSettings desktop-wide schemas
+#   - ifupdown                                              # high level tools to configure network interfaces
+    - init                                                  # metapackage ensuring an init system is installed
+    - iputils-ping                                          # Tools to test the reachability of network hosts
+#   - isc-dhcp-client                                       # DHCP client for automatically obtaining an IP address
+#   - isc-dhcp-common                                       # common manpages relevant to all of the isc-dhcp packages
+#   - iso-codes                                             # ISO language, territory, currency, script codes and their translations
+#   - kbd                                                   # Linux console font and keytable utilities
+#   - keyutils                                              # Linux Key Management Utilities
+#   - laptop-detect                                         # system chassis type checker
+    - less                                                  # pager program similar to more
+#   - libalgorithm-diff-perl                                # module to find differences between files
+#   - libalgorithm-merge-perl                               # Perl module for three-way merge of textual data
+#   - libasound2-data                                       # Configuration files and profiles for ALSA drivers
+#   - libc-devtools                                         # GNU C Library: Development tools
+#   - libfile-fcntllock-perl                                # Perl module for file locking with fcntl(2)
+#   - libgdk-pixbuf2.0-bin                                  # GDK Pixbuf library (thumbnailer)
+#   - libglib2.0-data                                       # Common files for GLib library
+#   - libgtk-3-bin                                          # programs for the GTK graphical user interface library
+#   - libldap-common                                        # OpenLDAP common files for libraries
+#   - liblockfile-bin                                       # support binaries for and cli utilities based on liblockfile
+#   - libmagic-mgc                                          # File type determination library using "magic" numbers (compiled magic file)
+#   - libtext-wrapi18n-perl                                 # internationalized substitute of Text::Wrap
     - locales                                               # GNU C Library: National Language (locale) data [support]
-    - logrotate                                             # Log rotation utility
-#   - lv                                                    # Powerful Multilingual File Viewer
-#   - make                                                  # utility for directing compilation
-#   - manpages-ja                                           # Japanese version of the manual pages (for users)
+#   - lsof                                                  # utility to list open files
+#   - mailcap                                               # Debian's mailcap system, and support programs
+#   - man-db                                                # tools for reading manual pages
+#   - manpages                                              # Manual pages about using a GNU/Linux system
+#   - manpages-dev                                          # Manual pages about using GNU/Linux for development
 #   - manpages-ja-dev                                       # Japanese version of the manual pages (for developers)
-    - media-types                                           # List of standard media types and their usual file extension
-    - ncurses-term                                          # additional terminal type definitions
-    - netbase                                               # Basic TCP/IP networking system
-    - network-manager                                       # network management framework (daemon and userspace tools)
+#   - mime-support                                          # 
+#   - nano                                                  # small, friendly text editor inspired by Pico
+#   - ncurses-term                                          # additional terminal type definitions
+#   - nftables                                              # Program to control packet filtering rules by Netfilter project
 #   - nkf                                                   # Network Kanji code conversion Filter
 #   - ofono                                                 # Mobile telephony stack (daemon)
-    - openssh-client                                        # secure shell (SSH) client, for secure access to remote machines
-    - openssh-server                                        # secure shell (SSH) server, for secure access from remote machines
-    - openssh-sftp-server                                   # secure shell (SSH) sftp server module, for SFTP access from remote machines
-    - passwd                                                # change and administer password and group data
-    - perl                                                  # Larry Wall's Practical Extraction and Report Language
-    - polkitd                                               # framework for managing administrative policies and privileges
-    - procps                                                # /proc file system utilities
-#   - pxelinux                                              # collection of bootloaders (PXE network bootloader)
-    - python3                                               # interactive high-level object-oriented language (default python3 version)
-#   - python3-cap-ng                                        # Python3 bindings for libcap-ng
-    - python3-dbus                                          # simple interprocess messaging system (Python 3 interface)
-#   - python3-dnspython                                     # DNS toolkit for Python 3
-#   - python3-firewall                                      # Python3 bindings for firewalld
-    - python3-gi                                            # Python 3 bindings for gobject-introspection libraries
-#   - python3-markdown                                      # text-to-HTML conversion library/tool (Python 3 version)
-#   - python3-nftables                                      # nftables/libnftables python3 module
-#   - python3-samba                                         # Python 3 bindings for Samba
-#   - runit-helper                                          # dh-runit implementation detail
-    - samba                                                 # SMB/CIFS file, print, and login server for Unix
-#   - samba-common                                          # common files used by both the Samba server and client
-#   - samba-common-bin                                      # Samba common files used by both the server and the client
-    - smbclient                                             # command-line SMB/CIFS clients for Unix
-    - ssl-cert                                              # simple debconf wrapper for OpenSSL
+#   - openssl                                               # Secure Sockets Layer toolkit - cryptographic utility
+#   - os-prober                                             # utility to detect other OSes on a set of drives
+#   - pinentry-curses                                       # curses-based PIN or pass-phrase entry dialog for GnuPG
+#   - publicsuffix                                          # accurate, machine-readable list of domain name suffixes
+#   - python3-certifi                                       # root certificates for validating SSL certs and verifying TLS hosts (python3)
+#   - python3-chardet                                       # Universal Character Encoding Detector (Python3)
+#   - python3-click                                         # Wrapper around optparse for command line utilities - Python 3.x
+#   - python3-colorama                                      # Cross-platform colored terminal text in Python - Python 3.x
+#   - python3-cryptography                                  # Python library exposing cryptographic recipes and primitives (Python 3)
+#   - python3-idna                                          # Python IDNA2008 (RFC 5891) handling (Python 3)
+#   - python3-pkg-resources                                 # Package Discovery and Resource Access using pkg_resources
+#   - python3-six                                           # Python 2 and 3 compatibility library
+    - rsync                                                 # fast, versatile, remote (and local) file-copying tool
+#   - ssl-cert                                              # simple debconf wrapper for OpenSSL
     - sudo                                                  # Provide limited super user privileges to specific users
-    - sysvinit-utils                                        # System-V-like utilities
-#   - task-japanese                                         # Japanese environment
-#   - tasksel                                               # tool for selecting tasks for installation on Debian systems
-#   - tdb-tools                                             # Trivial Database - bundled binaries
-    - tftpd-hpa                                             # HPA's tftp server
+    - task-japanese                                         # Japanese environment
+    - unifont                                               # font with a glyph for each visible Unicode Plane 0 character
+    - usbutils                                              # Linux USB utilities
+#   - usr-is-merged                                         # 
+#   - vim-tiny                                              # Vi IMproved - enhanced vi editor - compact version
+#   - wamerican                                             # American English dictionary words for /usr/share/dict
+    - whiptail                                              # Displays user-friendly dialog boxes from shell scripts
+#   - wpasupplicant                                         # client support for WPA and WPA2 (IEEE 802.11i)
+#   - xcvt                                                  # VESA CVT standard timing modelines generator
+#   - xdg-user-dirs                                         # tool to manage well known user directories
+#   - xfonts-base                                           # standard fonts for X
+#   - xfonts-encodings                                      # Encodings for X.Org fonts
+#   - xfonts-utils                                          # X Window System font utility programs
+    - zstd                                                  # fast lossless compression algorithm -- CLI tool
+# --- server base [ installed ] -----------------------------------------------
+    - apt-transport-https                                   # transitional package for https support
+    - firewalld                                             # dynamically managed firewall with support for network zones
     - traceroute                                            # Traces the route taken by packets over an IPv4/IPv6 network
-    - ucf                                                   # Update Configuration File(s): preserve user changes to config files
-#   - unifont                                               # font with a glyph for each visible Unicode Plane 0 character
+#   - connman                                               # Intel Connection Manager daemon
+    - network-manager                                       # network management framework (daemon and userspace tools)
+    - bash-completion                                       # programmable completion for the bash shell
+    - build-essential                                       # Informational list of build-essential packages
+    - curl                                                  # command line tool for transferring data with URL syntax
     - vim                                                   # Vi IMproved - enhanced vi editor
-#-  - vim-common                                            # Vi IMproved - Common files
-#   - vim-runtime                                           # Vi IMproved - Runtime files
-    - winbind                                               # service to resolve user and group information from Windows NT servers
-    - wpasupplicant                                         # client support for WPA and WPA2 (IEEE 802.11i)
-    - xauth                                                 # X authentication utility
+    - bc                                                    # GNU bc arbitrary precision calculator language
+    - clamav                                                # anti-virus utility for Unix - command-line interface
+    - openssh-server                                        # secure shell (SSH) server, for secure access from remote machines
+    - dnsmasq                                               # Small caching DNS proxy and DHCP/TFTP server - system daemon
+    - tftpd-hpa                                             # HPA's tftp server
+    - bind9-dnsutils                                        # Clients provided with BIND 9
+    - apache2                                               # Apache HTTP Server
+    - samba                                                 # SMB/CIFS file, print, and login server for Unix
+    - smbclient                                             # command-line SMB/CIFS clients for Unix
+    - cifs-utils                                            # Common Internet File System utilities
+    - libnss-winbind                                        # Samba nameservice integration plugins
 # --- desktop base [ installed ] ----------------------------------------------
-    - alsa-utils                                            # Utilities for configuring and using ALSA
-    - anacron                                               # cron-like program that doesn't go by time
-#   - anthy                                                 # Japanese kana-kanji conversion - utilities
-#   - avahi-autoipd                                         # Avahi IPv4LL network address configuration daemon
-#   - avahi-daemon                                          # Avahi mDNS/DNS-SD daemon
-#   - bluetooth                                             # Bluetooth support (metapackage)
-    - cups                                                  # Common UNIX Printing System(tm) - PPD/driver support, web interface
-#   - desktop-base                                          # common files for the Debian Desktop
-    - fcitx5                                                # Next generation of Fcitx Input Method Framework
-    - fcitx5-config-qt                                      # configuration tool for Fcitx5 (Qt version)
-    - fcitx5-frontend-gtk2                                  # GTK2 IM Module for fcitx5
-    - fcitx5-frontend-gtk3                                  # GTK3 IM Module for fcitx5
-    - fcitx5-frontend-gtk4                                  # GTK4 IM Module for fcitx5
-    - fcitx5-frontend-qt5                                   # IM module for fcitx5
-    - fcitx5-modules                                        # Fcitx Input Method Framework v5 (core modules)
-#   - fcitx5-module-emoji                                   # Fcitx Input Method Framework v5 (emoji module)
-#   - fcitx5-module-quickphrase                             # Fcitx Input Method Framework v5 (quickphrase module)
-#   - fcitx5-module-wayland                                 # Fcitx Input Method Framework v5 (wayland modules)
-#   - fcitx5-module-xorg                                    # Fcitx Input Method Framework v5 (xorg modules)
-    - fcitx5-mozc                                           # Mozc engine for fcitx5 - Client of the Mozc input method
-    - fcitx5-table                                          # Fcitx Input Method Framework v5 (builtin table support)
-#   - fontconfig                                            # generic font configuration library - support binaries
-#   - fonts-ipafont                                         # Japanese OpenType font set, all IPA Fonts
+    - ubuntu-desktop                                        # Ubuntu desktop system
+    - ubuntu-gnome-desktop                                  # The Ubuntu desktop system (transitional package)
+    - language-pack-ja                                      # translation updates for language Japanese
+    - language-pack-gnome-ja                                # GNOME translation updates for language Japanese
     - fonts-noto                                            # metapackage to pull in all Noto fonts
+    - im-config                                             # Input method configuration framework
+    - fcitx5-mozc                                           # Mozc engine for fcitx5 - Client of the Mozc input method
+    - mozc-utils-gui                                        # GUI utilities of the Mozc input method
+    - gnome-shell-extensions                                # Extensions to extend functionality of GNOME Shell
+    - libreoffice-l10n-ja                                   # office productivity suite -- Japanese language package
+    - libreoffice-help-ja                                   # office productivity suite -- Japanese help
+    - firefox-locale-ja                                     # Transitional package - firefox-locale-ja -> firefox snap
+    - thunderbird                                           # Transitional package - thunderbird -> thunderbird snap
+    - thunderbird-locale-ja                                 # Transitional package - thunderbird-locale-ja -> thunderbird snap
+# --- desktop base [ display manager ] ----------------------------------------
+    - gdm3                                                  # GNOME Display Manager
+#   - lightdm                                               # Display Manager
+# --- desktop base [ dependencies ] -------------------------------------------
+#   - acl                                                   # access control list - utilities
+    - alsa-utils                                            # Utilities for configuring and using ALSA
+#   - connman-gtk                                           # fully-featured GUI for ConnMan with systray support
+#   - gstreamer1.0-alsa                                     # GStreamer plugin for ALSA
+#   - fcitx5-config-qt                                      # configuration tool for Fcitx5 (Qt version)
+#   - fcitx5-frontend-gtk3                                  # GTK3 IM Module for fcitx5
+#   - fcitx5-frontend-gtk4                                  # GTK4 IM Module for fcitx5
+#   - fcitx5-frontend-qt5                                   # Qt5 IM module for fcitx5
+#   - fcitx5-frontend-qt6                                   # Qt6 IM module for fcitx5
+    - fonts-ipafont                                         # Japanese OpenType font set, all IPA Fonts
     - fonts-noto-cjk                                        # "No Tofu" font families with large Unicode coverage (CJK regular and bold)
     - fonts-noto-cjk-extra                                  # "No Tofu" font families with large Unicode coverage (CJK all weight)
     - fonts-noto-color-emoji                                # color emoji font from Google
-    - fonts-noto-core                                       # "No Tofu" font families with large Unicode coverage (core)
     - fonts-noto-extra                                      # "No Tofu" font families with large Unicode coverage (extra)
     - fonts-noto-mono                                       # "No Tofu" monospaced font family with large Unicode coverage
     - fonts-noto-ui-core                                    # "No Tofu" font families with large Unicode coverage (UI core)
     - fonts-noto-ui-extra                                   # "No Tofu" font families with large Unicode coverage (UI extra)
     - fonts-noto-unhinted                                   # "No Tofu" font families with large Unicode coverage (unhinted)
-#   - fonts-symbola                                         # symbolic font providing emoji characters from Unicode 9.0
-#   - fonts-vlgothic                                        # Japanese TrueType font from Vine Linux
-    - gdm3                                                  # GNOME Display Manager
-    - gedit                                                 # official text editor of the GNOME desktop environment
-    - gnome-disk-utility                                    # manage and configure disk drives and media
-#-  - gnome-initial-setup                                   # Initial GNOME system setup helper
-    - gnome-session-bin                                     # GNOME Session Manager - Minimal runtime
-    - gnome-settings-daemon                                 # daemon handling the GNOME session settings
-    - gnome-shell                                           # graphical shell for the GNOME desktop
-    - gnome-shell-common                                    # common files for the GNOME graphical shell
-#   - gnome-shell-extension-prefs                           # tool to enable / disable GNOME Shell extensions
-    - gnome-shell-extensions                                # Extensions to extend functionality of GNOME Shell
-    - hunspell-en-us                                        # English_american dictionary for hunspell
-    - hyphen-en-us                                          # English (US) hyphenation patterns
+    - fonts-symbola                                         # symbolic font providing emoji characters from Unicode 9.0
+    - fonts-vlgothic                                        # Japanese TrueType font from Vine Linux
+    - i965-va-driver                                        # VAAPI driver for Intel G45 & HD Graphics family
     - ibus                                                  # Intelligent Input Bus - core
-    - ibus-data                                             # Intelligent Input Bus - data files
-    - ibus-gtk                                              # Intelligent Input Bus - GTK2 support
-    - ibus-gtk3                                             # Intelligent Input Bus - GTK3 support
-    - ibus-gtk4                                             # Intelligent Input Bus - GTK4 support
-    - ibus-mozc                                             # Mozc engine for IBus - Client of the Mozc input method
-    - im-config                                             # Input method configuration framework
-#   - iw                                                    # tool for configuring Linux wireless devices
-    - libreoffice-calc                                      # office productivity suite -- spreadsheet
-    - libreoffice-common                                    # office productivity suite -- arch-independent files
-    - libreoffice-core                                      # office productivity suite -- arch-dependent files
-    - libreoffice-gtk3                                      # office productivity suite -- GTK+ 3 integration
-    - libreoffice-help-common                               # office productivity suite -- common files for LibreOffice help
-    - libreoffice-help-en-us                                # office productivity suite -- English_american help
-    - libreoffice-help-ja                                   # office productivity suite -- Japanese help
-    - libreoffice-impress                                   # office productivity suite -- presentation
-    - libreoffice-l10n-ja                                   # office productivity suite -- Japanese language package
-    - libreoffice-writer                                    # office productivity suite -- word processor
-#   - lightdm                                               # Display Manager
-#   - lxde                                                  # metapackage for LXDE
-#   - lxlauncher                                            # LXDE launcher for netbooks
-#   - lxtask                                                # LXDE task manager
-#   - lynx                                                  # classic non-graphical (text-mode) web browser
-    - mozc-server                                           # Server of the Mozc input method
-    - mozc-utils-gui                                        # GUI utilities of the Mozc input method
-    - mythes-en-us                                          # English (USA) Thesaurus for LibreOffice
-    - orca                                                  # Scriptable screen reader
-    - policykit-1                                           # transitional package for polkitd and pkexec
-    - policykit-desktop-privileges                          # run common desktop actions without password
-    - poppler-data                                          # encoding data for the poppler PDF rendering library
-#   - powertop                                              # diagnose issues with power consumption and management
-    - psmisc                                                # utilities that use the proc file system
-    - qt5-gtk-platformtheme                                 # Qt 5 GTK+ 3 platform theme
-    - qttranslations5-l10n                                  # translations for Qt 5
-#   - synaptic                                              # Graphical package manager
-    - system-config-printer                                 # graphical interface to configure the printing system
-    - unicode-cldr-core                                     # Common data from Unicode CLDR (core)
-    - wireless-tools                                        # Tools for manipulating Linux Wireless Extensions
-    - x11-utils                                             # X11 utilities
-    - xdg-utils                                             # desktop integration utilities from freedesktop.org
-    - xorg                                                  # X.Org X Window System
-#   - xsane                                                 # featureful graphical frontend for SANE (Scanner Access Now Easy)
-    - xserver-xorg-input-all                                # X.Org X server -- input driver metapackage
-    - xserver-xorg-video-all                                # X.Org X server -- output driver metapackage
-    - zenity                                                # Display graphical dialog boxes from shell scripts
+    - intel-media-va-driver                                 # VAAPI driver for the Intel GEN8+ Graphics family
+    - pavucontrol                                           # PulseAudio Volume Control
+    - pulseaudio                                            # PulseAudio sound server
+    - pulseaudio-utils                                      # Command line tools for the PulseAudio sound server
+    - rtkit                                                 # Realtime Policy and Watchdog Daemon
+    - xdg-user-dirs-gtk                                     # tool to manage well known user directories (Gtk extension)
+#   - xmms2-core                                            # XMMS2 - core package
+#   - xmms2-plugin-alsa                                     # XMMS2 - ALSA output
+# --- xorg --------------------------------------------------------------------
+    - xscreensaver                                          # Screensaver daemon and frontend for X11
+#   - xscreensaver-data-extra                               # Extra screen saver modules for screensaver frontends
+#   - xscreensaver-gl                                       # GL(Mesa) screen saver modules for screensaver frontends
+#   - xscreensaver-gl-extra                                 # Extra GL(Mesa) screen saver modules for screensaver frontends
+#   - xscreensaver-screensaver-bsod                         # BSOD screen saver module from XScreenSaver
+#   - xscreensaver-screensaver-dizzy                        # Graphics demo that makes you dizzy (XScreenSaver hack)
+#   - xscreensaver-screensaver-webcollage                   # Webcollage screen saver module from XScreenSaver
+    - xserver-xorg-legacy                                   # setuid root Xorg server wrapper
+    - xserver-xorg-video-intel                              # X.Org X server -- Intel i8xx, i9xx display driver
+    - xserver-xorg-video-nouveau                            # X.Org X server -- Nouveau display driver
+#   - xserver-xorg-video-qxl                                # X.Org X server -- QXL display driver
+# --- gnome -------------------------------------------------------------------
+#   - gnome-accessibility-themes                            # High Contrast GTK 2 theme and icons
+#   - gnome-brave-icon-theme                                # blue variation of the GNOME-Colors icon theme
+#   - gnome-colors                                          # set of GNOME icon themes
+#   - gnome-colors-common                                   # common icons for all GNOME-Colors icon themes
+#   - gnome-desktop3-data                                   # Common files for GNOME desktop apps
+    - gnome-disk-utility                                    # manage and configure disk drives and media
+#   - gnome-dust-icon-theme                                 # chocolate variation of the GNOME-Colors icon theme
+#   - gnome-human-icon-theme                                # orange variation of the GNOME-Colors icon theme
+#   - gnome-icon-theme                                      # This package contains the default icon theme used by the GNOME
+#   - gnome-illustrious-icon-theme                          # pink variation of the GNOME-Colors icon theme
+#   - gnome-keyring                                         # GNOME keyring services (daemon and tools)
+#   - gnome-keyring-pkcs11                                  # GNOME keyring module for the PKCS#11 module loading library
+#   - gnome-noble-icon-theme                                # purple variation of the GNOME-Colors icon theme
+#   - gnome-screenshot                                      # screenshot application for GNOME
+#   - gnome-system-tools                                    # Cross-platform configuration utilities
+#   - gnome-themes-extra                                    # Adwaita GTK 2 theme ?? engine
+#   - gnome-themes-extra-data                               # Adwaita GTK 2 theme and Adwaita-dark GTK 3 theme ?? common files
+#   - gnome-wine-icon-theme                                 # red variation of the GNOME-Colors icon theme
+#   - gnome-wise-icon-theme                                 # green variation of the GNOME-Colors icon theme
 # --- gvfs --------------------------------------------------------------------
-#   - gvfs                                                  # userspace virtual filesystem - GIO module
-#   - gvfs-backends                                         # userspace virtual filesystem - backends
-#   - gvfs-common                                           # userspace virtual filesystem - common data files
-#   - gvfs-daemons                                          # userspace virtual filesystem - servers
-#   - gvfs-fuse                                             # userspace virtual filesystem - fuse server
-#   - gvfs-libs                                             # userspace virtual filesystem - private libraries
-# --- debian-desktop ----------------------------------------------------------
-#   - connman-gtk                                           # fully-featured GUI for ConnMan with systray support
-#   - connman-ui                                            # full-featured GTK-based tray icon UI for ConnMan
-#   - task-desktop                                          # Debian desktop environment
-#   - task-japanese-desktop                                 # Japanese desktop
-#   - task-laptop                                           # laptop
-#   - task-lxde-desktop                                     # LXDE
-#   - uim                                                   # Universal Input Method - main binary package
+    - gvfs                                                  # userspace virtual filesystem - GIO module
+    - gvfs-backends                                         # userspace virtual filesystem - backends
+    - gvfs-common                                           # userspace virtual filesystem - common data files
+    - gvfs-daemons                                          # userspace virtual filesystem - servers
+    - gvfs-fuse                                             # userspace virtual filesystem - fuse server
+    - gvfs-libs                                             # userspace virtual filesystem - private libraries
+# --- chromium ---------------------------------------------------------------
+    - chromium-browser                                      # Transitional package - chromium-browser -> chromium snap
+    - chromium-browser-l10n                                 # Transitional package - chromium-browser-l10n -> chromium snap
 # --- ubuntu-desktop ----------------------------------------------------------
     - adwaita-icon-theme                                    # default icon theme of GNOME (small subset)
 #   - adwaita-icon-theme-full                               # default icon theme of GNOME
@@ -321,44 +288,6 @@ mmdebstrap:
 #   - xscreensaver                                          # Screensaver daemon and frontend for X11
 #   - xscreensaver-data                                     # Screen saver modules for screensaver frontends
     - yaru-theme-icon                                       # Yaru icon theme from the Ubuntu Community
-# --- thunderbird -------------------------------------------------------------
-    - thunderbird                                           # Email, RSS and newsgroup client with integrated spam filter
-    - thunderbird-locale-ja                                 # Japanese language pack for Thunderbird
-# --- firefox -----------------------------------------------------------------
-    - firefox                                               # Transitional package - firefox -> firefox snap
-    - firefox-locale-ja                                     # Transitional package - firefox-locale-ja -> firefox snap
-# --- chromium ---------------------------------------------------------------
-    - chromium-browser                                      # Transitional package - chromium-browser -> chromium snap
-    - chromium-browser-l10n                                 # Transitional package - chromium-browser-l10n -> chromium snap
-# --- desktop base [ shared library ] -----------------------------------------
-#   - libatk-bridge2.0-0                                    # AT-SPI 2 toolkit bridge - shared library
-#   - libatk1.0-0                                           # ATK accessibility toolkit
-#   - libatspi2.0-0                                         # Assistive Technology Service Provider Interface - shared library
-#   - libcairo2                                             # Cairo 2D vector graphics library
-#   - libdouble-conversion3                                 # routines to convert IEEE floats to and from strings
-#   - libevent-2.1-7                                        # Asynchronous event notification library
-#   - libflac8                                              # Free Lossless Audio Codec - runtime C library
-#   - libgbm1                                               # generic buffer management API -- runtime
-    - libgtk2.0-bin                                         # programs for the GTK graphical user interface library
-#   - libgtk-3-0                                            # GTK graphical user interface library
-    - libgtk-3-bin                                          # programs for the GTK graphical user interface library
-#   - libharfbuzz0b                                         # OpenType text shaping engine (shared library)
-    - libime-bin                                            # Generic Input Method Implementation (tools)
-#   - liblcms2-2                                            # Little CMS 2 color management library
-#   - libnspr4                                              # NetScape Portable Runtime Library
-#   - libnss3                                               # Network Security Service libraries
-#   - libopenh264-6                                         # OpenH264 Video Codec
-#   - libopenjp2-7                                          # JPEG 2000 image compression/decompression library
-#   - libopus0                                              # Opus codec runtime library
-    - libpam-gnome-keyring                                  # PAM module to unlock the GNOME keyring upon login
-#   - libpango-1.0-0                                        # Layout and rendering of internationalized text
-#   - libpulse0                                             # PulseAudio client libraries
-#   - libxcb-imdkit1                                        # XIM protocol implementation in XCB
-#   - libxcomposite1                                        # X11 Composite extension library
-#   - libxdamage1                                           # X11 damaged region extension library
-#   - libxfixes3                                            # X11 miscellaneous 'fixes' extension library
-#   - libxkbcommon0                                         # library interface to the XKB compiler - shared library
-#   - libxrandr2                                            # X11 RandR extension library
 # setup-hooks:
 # essential-hooks:
   customize-hooks:
@@ -367,14 +296,16 @@ mmdebstrap:
 #   - chroot "$1" sh -c 'echo "PasswordAuthentication yes\nPermitRootLogin no" > /etc/ssh/sshd_config.d/sshd.conf'
 #   - chroot "$1" sh -c 'if [ -e /usr/bin/startlxde ]; then update-alternatives --set "x-session-manager" "/usr/bin/startlxde"; update-alternatives --get-selections | grep x-session-manager; fi'
 #   - chroot "$1" sh -c 'if [ -d /etc/dconf/. ]; then mkdir -p /etc/dconf/db/local.d /etc/dconf/profile; echo "user-db:user\nsystem-db:local" > /etc/dconf/profile/user; echo "[org/gnome/desktop/session]\nidle-delay="uint32 0"\n\n[org/gnome/desktop/interface]\ncursor-theme=\"Adwaita\"\nicon-theme=\"Adwaita\"\ngtk-theme=\"Adwaita\"\n\n" > /etc/dconf/db/local.d/01-userkeyfile; dconf compile /etc/dconf/db/local /etc/dconf/db/local.d; rm /etc/dconf/db/local.d/01-userkeyfile; fi'
-    - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show fctix5 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then im-config -n fcitx5; fi'
+#   - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show fcitx5 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then im-config -n fcitx5; fi'
+    - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show fcitx5 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then sed -i -e '\''/^IM_CONFIG_DEFAULT_MODE=/ s/=.*$/=fcitx5/'\'' /etc/default/im-config; fi'
+    - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show samba 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then sed -i -e '\''/hosts:/{'\'' -e '\''/wins/! s/$/ wins/}'\'' /etc/nsswitch.conf; fi'
     - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show lightdm 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then dpkg-reconfigure --no-reload lightdm; fi'
+    - chroot "$1" sh -c '_UNITS="firewalld.service clamav-freshclam.service dnsmasq.service tftpd-hpa.service apache2.service"; _PARM="$(echo "${_UNITS}" | sed -e '\''s/ /|/g'\'')"; _RETURN_VALUE="$(systemctl list-unit-files ${_UNITS} | awk '\''$0~/'\''"${_PARM}"'\''/ {print $1;}'\'')"; if [ -n "${_RETURN_VALUE:-}" ]; then systemctl disable ${_RETURN_VALUE}; fi'
+    - chroot "$1" sh -c '_UNITS="ssh.service smbd.service nmbd.service"; _PARM="$(echo "${_UNITS}" | sed -e '\''s/ /|/g'\'')"; _RETURN_VALUE="$(systemctl list-unit-files ${_UNITS} | awk '\''$0~/'\''"${_PARM}"'\''/ {print $1;}'\'')"; if [ -n "${_RETURN_VALUE:-}" ]; then systemctl enable ${_RETURN_VALUE}; fi'
 #   - chroot "$1" sh -c '_RETURN_VALUE="$(command -v snap 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then snap install firefox chromium; fi'
 #   - chroot "$1" firewall-cmd --permanent --change-interface=ens160 --zone=home
-    - chroot "$1" systemctl disable firewalld.service clamav-freshclam.service dnsmasq.service tftpd-hpa.service apache2.service
-    - chroot "$1" systemctl enable ssh.service smbd.service nmbd.service
   cleanup-hooks:
-    - rm "$1/etc/hostname" "$1/etc/hosts"
+    - rm -f "$1/etc/hostname" "$1/etc/hosts"
     - P="$1"; for D in $(mount | awk '$3~"'$P'" { print $3;}' | sort -r); do umount "${D}" || umount --force "${D}" || umount --lazy "${D}"; done
 # suite:
 # target: filesystem.squashfs
@@ -383,9 +314,9 @@ mmdebstrap:
 # variant: essential                    # "Essential:yes" packages.
 # variant: apt                          # The essential set plus apt.
 # variant: required                     # The essential set plus all packages with Priority:required and apt.
-# variant: minbase                      # "
+  variant: minbase                      # "
 # variant: buildd                       # The minbase set plus build-essential.
 # variant: important                    # The required set plus all packages with Priority:important.
 # variant: debootstrap                  # "
 # variant: -                            # "
-  variant: standard                     # The important set plus all packages with Priority:standard.
+# variant: standard                     # The important set plus all packages with Priority:standard.

@@ -4104,7 +4104,8 @@ function funcMain() {
 	# shellcheck disable=SC2312
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 	end_time=$(date +%s)
-	funcPrintf "elapsed time: $((end_time-start_time)) [sec]"
+#	funcPrintf "elapsed time: $((end_time-start_time)) [sec]"
+	funcPrintf "elapsed time: %dd%02dh%02dm%02ds\n" $(((end_time-start_time)/86400)) $(((end_time-start_time)%86400/3600)) $(((end_time-start_time)%3600/60)) $(((end_time-start_time)%60))
 }
 
 # *** main processing section *************************************************
