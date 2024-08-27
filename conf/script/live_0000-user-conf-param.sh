@@ -28,7 +28,7 @@
 	LIVE_USERNAME="${LIVE_USERNAME:-user}"
 	LIVE_PASSWORD="${LIVE_PASSWORD:-live}"
 	LIVE_USER_FULLNAME="${LIVE_USER_FULLNAME:-${LIVE_OS_NAME:-Unknown} Live user}"
-	LIVE_USER_DEFAULT_GROUPS="${LIVE_USER_DEFAULT_GROUPS:-audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth debian-tor sudo}"
+	LIVE_USER_DEFAULT_GROUPS="${LIVE_USER_DEFAULT_GROUPS:-audio cdrom dip floppy video plugdev netdev powerdev scanner bluetooth debian-tor}"
 
 	LIVE_UTC="yes"
 	LIVE_LOCALES="ja_JP.UTF-8"

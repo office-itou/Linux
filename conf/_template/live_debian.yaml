@@ -54,7 +54,7 @@ mmdebstrap:
     - alsa-ucm-conf                                         # ALSA Use Case Manager configuration files
 #   - apparmor                                              # user-space parser utility for AppArmor
     - apt-utils                                             # package management related utility programs
-#   - at-spi2-core                                          # Assistive Technology Service Provider Interface (D-Bus core)
+    - at-spi2-core                                          # Assistive Technology Service Provider Interface (D-Bus core)
 #   - bluez                                                 # Bluetooth tools and daemons
 #   - bsdextrautils                                         # extra utilities from 4.4BSD-Lite
 #   - ca-certificates                                       # Common CA certificates
@@ -121,6 +121,8 @@ mmdebstrap:
 #   - openssl                                               # Secure Sockets Layer toolkit - cryptographic utility
 #   - os-prober                                             # utility to detect other OSes on a set of drives
 #   - pinentry-curses                                       # curses-based PIN or pass-phrase entry dialog for GnuPG
+    - plymouth                                              # boot animation, logger and I/O multiplexer
+    - plymouth-label                                        # boot animation, logger and I/O multiplexer - label control
 #   - publicsuffix                                          # accurate, machine-readable list of domain name suffixes
 #   - python3-certifi                                       # root certificates for validating SSL certs and verifying TLS hosts (python3)
 #   - python3-chardet                                       # Universal Character Encoding Detector (Python3)
@@ -131,9 +133,11 @@ mmdebstrap:
 #   - python3-pkg-resources                                 # Package Discovery and Resource Access using pkg_resources
 #   - python3-six                                           # Python 2 and 3 compatibility library
     - rsync                                                 # fast, versatile, remote (and local) file-copying tool
+    - shellcheck                                            # lint tool for shell scripts
 #   - ssl-cert                                              # simple debconf wrapper for OpenSSL
     - sudo                                                  # Provide limited super user privileges to specific users
     - task-japanese                                         # Japanese environment
+    - tree                                                  # displays an indented directory tree, in color
     - unifont                                               # font with a glyph for each visible Unicode Plane 0 character
     - usbutils                                              # Linux USB utilities
 #   - usr-is-merged                                         # Transitional package to assert a merged-/usr system
@@ -210,6 +214,7 @@ mmdebstrap:
     - i965-va-driver                                        # VAAPI driver for Intel G45 & HD Graphics family
     - ibus                                                  # Intelligent Input Bus - core
     - intel-media-va-driver                                 # VAAPI driver for the Intel GEN8+ Graphics family
+    - mesa-vulkan-drivers                                   # Mesa Vulkan graphics drivers
     - pavucontrol                                           # PulseAudio Volume Control
     - pulseaudio                                            # PulseAudio sound server
     - pulseaudio-utils                                      # Command line tools for the PulseAudio sound server
