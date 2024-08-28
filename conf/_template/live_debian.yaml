@@ -85,6 +85,9 @@ mmdebstrap:
 #   - gsettings-desktop-schemas                             # GSettings desktop-wide schemas
 #   - ifupdown                                              # high level tools to configure network interfaces
     - init                                                  # metapackage ensuring an init system is installed
+    - iproute2                                              # networking and traffic control tools
+    - ipset                                                 # administration tool for kernel IP sets
+    - iptables                                              # administration tools for packet filtering and NAT
     - iputils-ping                                          # Tools to test the reachability of network hosts
 #   - isc-dhcp-client                                       # DHCP client for automatically obtaining an IP address
 #   - isc-dhcp-common                                       # common manpages relevant to all of the isc-dhcp packages
@@ -156,6 +159,8 @@ mmdebstrap:
     - firewalld                                             # dynamically managed firewall with support for network zones
     - traceroute                                            # Traces the route taken by packets over an IPv4/IPv6 network
     - connman                                               # Intel Connection Manager daemon
+#   - netplan.io                                            # YAML network configuration abstraction for various backends
+#   - network-manager                                       # network management framework (daemon and userspace tools)
     - bash-completion                                       # programmable completion for the bash shell
     - build-essential                                       # Informational list of build-essential packages
     - curl                                                  # command line tool for transferring data with URL syntax
