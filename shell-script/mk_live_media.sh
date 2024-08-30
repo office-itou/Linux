@@ -141,8 +141,9 @@
 		exit 1
 	fi
 
-	date +"%Y/%m/%d %H:%M:%S"
 	start_time=$(date +%s)
+	date +"%Y/%m/%d %H:%M:%S"
+	echo "--- start ---"
 
 	# -------------------------------------------------------------------------
 	renice -n "${NICE_VALU}"   -p "$$" > /dev/null
@@ -280,7 +281,7 @@
 			if [[ "${TGET_LINE[0]}" != "o" ]]; then
 				continue
 			fi
-			echo -e "\033[m\033[45m${TGET_LINE[2]//%20/ }\033[m"
+			echo -e "\033[m\033[45m${TGET_LINE[2]//%20/ } [${TGET_LINE[1]##*-}]\033[m"
 #			DIRS_CONF="${DIRS_WORK}/conf"
 			DIRS_LIVE="${DIRS_WORK}/live/${TGET_LINE[1]}"
 			DIRS_CDFS="${DIRS_TEMP}/${TGET_LINE[1]}/cdfs"
@@ -321,10 +322,10 @@
 						    -e '/^ *- *fuse3 */                s/^ /#/g' \
 						    -e '/^ *- *media-types */          s/^ /#/g' \
 						    -e '/^ *- *polkitd */              s/^ /#/g' \
-						    -e '/^ *- *fcitx5-config-qt */     s/^ /#/g' \
 						    -e '/^ *- *fcitx5-frontend-gtk4 */ s/^ /#/g' \
 						    -e '/^ *- *fcitx5-frontend-qt6 */  s/^ /#/g' \
 						    -e '/^ *- *ibus-gtk4 */            s/^ /#/g' \
+						    -e '/^ *- *gnome-text-editor */    s/^ /#/g' \
 						    -e '}}'                                      \
 						    "${FILE_YAML}"                               \
 						> "${FILE_CONF}"
@@ -448,7 +449,7 @@ _EOT_
 _EOT_
 			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/live.cfg"
 				label ${TGET_LINE[2]//%20/_}
-				 	menu label ^${TGET_LINE[2]//%20/ }
+				 	menu label ^${TGET_LINE[2]//%20/ } [${TGET_LINE[1]##*-}]
 				 	menu default
 				 	linux /live/vmlinuz
 				 	initrd /live/initrd.img
@@ -483,7 +484,7 @@ _EOT_
 				set lang=ja_JP
 				grub_platform
 				
-				menuentry "${TGET_LINE[2]//%20/ }" {
+				menuentry "${TGET_LINE[2]//%20/ } [${TGET_LINE[1]##*-}]" {
 				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 				 	linux  /live/vmlinuz boot=live components quiet splash overlay-size=90%
 				 	initrd /live/initrd.img
@@ -542,10 +543,11 @@ _EOT_
 		done
 	fi
 
+	echo "--- complete ---"
+	date +"%Y/%m/%d %H:%M:%S"
 	end_time=$(date +%s)
 #	echo "elapsed time: $((end_time-start_time)) [sec]"
 	printf "elapsed time: %dd%02dh%02dm%02ds\n" $(((end_time-start_time)/86400)) $(((end_time-start_time)%86400/3600)) $(((end_time-start_time)%3600/60)) $(((end_time-start_time)%60))
-	date +"%Y/%m/%d %H:%M:%S"
 
 	exit 0
 # https://manpages.debian.org/bookworm/live-boot-doc/live-boot.7.ja.html
