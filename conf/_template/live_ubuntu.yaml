@@ -15,9 +15,11 @@ mmdebstrap:
   mode: sudo
   packages:
 # --- live base ---------------------------------------------------------------
-    - open-infrastructure-system-boot                       # Boot Debian-based system images
-    - open-infrastructure-system-config                     # Configure Debian-based system images
-    - open-infrastructure-system-images                     # Debian-based system images
+#   - open-infrastructure-system-boot                       # Boot Debian-based system images
+#   - open-infrastructure-system-config                     # Configure Debian-based system images
+#   - open-infrastructure-system-images                     # Debian-based system images
+    - live-boot                                             # Live System Boot Components
+    - live-config                                           # Live System Configuration Components
 # --- live base [ debian linux image ] ----------------------------------------
     - linux-image-generic                                   # Generic Linux kernel image
 # --- live base [ firmware ] --------------------------------------------------
@@ -58,7 +60,8 @@ mmdebstrap:
 #   - bluez                                                 # Bluetooth tools and daemons
 #   - bsdextrautils                                         # extra utilities from 4.4BSD-Lite
 #   - ca-certificates                                       # Common CA certificates
-#   - console-setup                                         # console font and keymap setup program
+    - console-data                                          # keymaps, fonts, charset maps, fallback tables for 'kbd'.
+    - console-setup                                         # console font and keymap setup program
 #   - console-setup-linux                                   # Linux specific part of console-setup
     - cron                                                  # process scheduling daemon
 #   - cron-daemon-common                                    # process scheduling daemon's configuration files
@@ -92,7 +95,7 @@ mmdebstrap:
 #   - isc-dhcp-client                                       # DHCP client for automatically obtaining an IP address
 #   - isc-dhcp-common                                       # common manpages relevant to all of the isc-dhcp packages
 #   - iso-codes                                             # ISO language, territory, currency, script codes and their translations
-#   - kbd                                                   # Linux console font and keytable utilities
+    - kbd                                                   # Linux console font and keytable utilities
 #   - keyutils                                              # Linux Key Management Utilities
 #   - laptop-detect                                         # system chassis type checker
     - less                                                  # pager program similar to more
@@ -124,7 +127,12 @@ mmdebstrap:
 #   - openssl                                               # Secure Sockets Layer toolkit - cryptographic utility
 #   - os-prober                                             # utility to detect other OSes on a set of drives
 #   - pinentry-curses                                       # curses-based PIN or pass-phrase entry dialog for GnuPG
-    - plymouth-label                                        # 
+    - plymouth                                              # boot animation, logger and I/O multiplexer
+    - plymouth-label                                        # boot animation, logger and I/O multiplexer - label control
+    - plymouth-themes                                       # boot animation, logger and I/O multiplexer - themes
+    - plymouth-x11                                          # boot animation, logger and I/O multiplexer - X11 renderer
+    - plymouth-theme-spinner                                # boot animation, logger and I/O multiplexer - spinner theme
+    - plymouth-theme-ubuntu-text                            # boot animation, logger and I/O multiplexer - ubuntu text theme
 #   - publicsuffix                                          # accurate, machine-readable list of domain name suffixes
 #   - python3-certifi                                       # root certificates for validating SSL certs and verifying TLS hosts (python3)
 #   - python3-chardet                                       # Universal Character Encoding Detector (Python3)
@@ -147,6 +155,7 @@ mmdebstrap:
 #   - wamerican                                             # American English dictionary words for /usr/share/dict
     - whiptail                                              # Displays user-friendly dialog boxes from shell scripts
 #   - wpasupplicant                                         # client support for WPA and WPA2 (IEEE 802.11i)
+    - x11-xkb-utils                                         # X11 XKB utilities
 #   - xcvt                                                  # VESA CVT standard timing modelines generator
 #   - xdg-user-dirs                                         # tool to manage well known user directories
 #   - xfonts-base                                           # standard fonts for X
@@ -198,7 +207,9 @@ mmdebstrap:
     - alsa-utils                                            # Utilities for configuring and using ALSA
 #   - connman-gtk                                           # fully-featured GUI for ConnMan with systray support
 #   - gstreamer1.0-alsa                                     # GStreamer plugin for ALSA
-#   - fcitx5-config-qt                                      # configuration tool for Fcitx5 (Qt version)
+    - fcitx5-config-qt                                      # configuration tool for Fcitx5 (Qt version)
+#   - fcitx5-frontend-all                                   # Fcitx Input Method Framework v5 (IM Module Metapackage)
+#   - fcitx5-frontend-gtk2                                  # GTK2 IM Module for fcitx5
 #   - fcitx5-frontend-gtk3                                  # GTK3 IM Module for fcitx5
 #   - fcitx5-frontend-gtk4                                  # GTK4 IM Module for fcitx5
 #   - fcitx5-frontend-qt5                                   # Qt5 IM module for fcitx5
@@ -216,11 +227,15 @@ mmdebstrap:
     - fonts-vlgothic                                        # Japanese TrueType font from Vine Linux
     - i965-va-driver                                        # VAAPI driver for Intel G45 & HD Graphics family
     - ibus                                                  # Intelligent Input Bus - core
+    - ibus-gtk                                              # Intelligent Input Bus - GTK2 support
+    - ibus-gtk3                                             # Intelligent Input Bus - GTK3 support
+    - ibus-gtk4                                             # Intelligent Input Bus - GTK4 support
     - intel-media-va-driver                                 # VAAPI driver for the Intel GEN8+ Graphics family
     - mesa-vulkan-drivers                                   # Mesa Vulkan graphics drivers
     - pavucontrol                                           # PulseAudio Volume Control
     - pulseaudio                                            # PulseAudio sound server
     - pulseaudio-utils                                      # Command line tools for the PulseAudio sound server
+#   - qtwayland5                                            # QtWayland platform plugin
     - rtkit                                                 # Realtime Policy and Watchdog Daemon
     - xdg-user-dirs-gtk                                     # tool to manage well known user directories (Gtk extension)
 #   - xmms2-core                                            # XMMS2 - core package
@@ -251,8 +266,10 @@ mmdebstrap:
 #   - gnome-keyring                                         # GNOME keyring services (daemon and tools)
 #   - gnome-keyring-pkcs11                                  # GNOME keyring module for the PKCS#11 module loading library
 #   - gnome-noble-icon-theme                                # purple variation of the GNOME-Colors icon theme
+    - gnome-power-manager                                   # power management tool for the GNOME desktop
 #   - gnome-screenshot                                      # screenshot application for GNOME
 #   - gnome-system-tools                                    # Cross-platform configuration utilities
+    - gnome-text-editor                                     # simple text editor for GNOME
 #   - gnome-themes-extra                                    # Adwaita GTK 2 theme ?? engine
 #   - gnome-themes-extra-data                               # Adwaita GTK 2 theme and Adwaita-dark GTK 3 theme ?? common files
 #   - gnome-wine-icon-theme                                 # red variation of the GNOME-Colors icon theme
@@ -288,6 +305,7 @@ mmdebstrap:
 #-  - ubuntu-release-upgrader-core                          # manage release upgrades
 #-  - ubuntu-release-upgrader-gtk                           # manage release upgrades
 #-  - ubuntu-report                                         # Report hardware and other collected metrics
+    - ubuntu-server                                         # Ubuntu Server system
 #-  - ubuntu-session                                        # Ubuntu session with GNOME Shell
 #-  - ubuntu-settings                                       # default settings for the Ubuntu desktop
     - ubuntu-standard                                       # The Ubuntu standard system
