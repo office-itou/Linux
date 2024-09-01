@@ -6,8 +6,8 @@ autoinstall:
 #   verbose: true
 #   output:
 # =============================================================================
-  refresh-installer:
-    update: true
+# refresh-installer:
+#   update: true
 #   channel: edge
 # =============================================================================
 # apt:
@@ -200,7 +200,9 @@ autoinstall:
   - language-pack-ja
   - language-pack-gnome-ja
   - fonts-noto
+  - im-config
   - fcitx5-mozc
+  - mozc-utils-gui
   - gnome-shell-extensions
   - libreoffice-l10n-ja
   - libreoffice-help-ja

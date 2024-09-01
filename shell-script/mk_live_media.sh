@@ -141,9 +141,9 @@
 		exit 1
 	fi
 
+	echo -e "\033[m\033[42m--- start ---\033[m"
 	start_time=$(date +%s)
 	date +"%Y/%m/%d %H:%M:%S"
-	echo "--- start ---"
 
 	# -------------------------------------------------------------------------
 	renice -n "${NICE_VALU}"   -p "$$" > /dev/null
@@ -313,35 +313,67 @@
 					live-debian-10-*    | \
 					live-debian-11-*    | \
 					live-ubuntu-20.04-* )
-						sed -e '/^ *components:/,/^ *- */ {'             \
-						    -e 's/ *non-free-firmware//g}'               \
-						    -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'   \
-						    -e '/^[# ]*- */{'                            \
-						    -e '/^ *- *at-spi2-common */       s/^ /#/g' \
-						    -e '/^ *- *exfatprogs */           s/^ /#/g' \
-						    -e '/^ *- *fuse3 */                s/^ /#/g' \
-						    -e '/^ *- *media-types */          s/^ /#/g' \
-						    -e '/^ *- *polkitd */              s/^ /#/g' \
-						    -e '/^ *- *fcitx5-frontend-gtk4 */ s/^ /#/g' \
-						    -e '/^ *- *fcitx5-frontend-qt6 */  s/^ /#/g' \
-						    -e '/^ *- *ibus-gtk4 */            s/^ /#/g' \
-						    -e '/^ *- *gnome-text-editor */    s/^ /#/g' \
-						    -e '}}'                                      \
-						    "${FILE_YAML}"                               \
+						sed -e '/^ *components:/,/^ *- */ {'                                  \
+						    -e 's/ *non-free-firmware//g}'                                    \
+						    -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                        \
+						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                    \
+						    -e '/^ * *- *at-spi2-common\(\| .*\|#.*\)$/             s/^ /#/g' \
+						    -e '/^ * *- *exfatprogs\(\| .*\|#.*\)$/                 s/^ /#/g' \
+						    -e '/^ * *- *fuse3\(\| .*\|#.*\)$/                      s/^ /#/g' \
+						    -e '/^ * *- *media-types\(\| .*\|#.*\)$/                s/^ /#/g' \
+						    -e '/^ * *- *polkitd\(\| .*\|#.*\)$/                    s/^ /#/g' \
+						    -e '/^ * *- *fcitx5-frontend-all\(\| .*\|#.*\)$/        s/^ /#/g' \
+						    -e '/^ * *- *fcitx5-frontend-gtk[0-9]\+\(\| .*\|#.*\)$/ s/^ /#/g' \
+						    -e '/^ * *- *fcitx5-frontend-qt[0-9]\+\(\| .*\|#.*\)$/  s/^ /#/g' \
+						    -e '/^ * *- *ibus-gtk[0-9]\+\(\| .*\|#.*\)$/            s/^ /#/g' \
+						    -e '/^ * *- *gnome-text-editor\(\| .*\|#.*\)$/          s/^ /#/g' \
+						    -e '/^#* *- *fcitx5-frontend-gtk[2-3]\(\| .*\|#.*\)$/   s/^#/ /g' \
+						    -e '/^#* *- *fcitx5-frontend-qt[4-5]\(\| .*\|#.*\)$/    s/^#/ /g' \
+						    -e '/^#* *- *ibus-gtk[2-3]\(\| .*\|#.*\)$/              s/^#/ /g' \
+						    -e '}}'                                                           \
+						    "${FILE_YAML}"                                                    \
 						> "${FILE_CONF}"
 						;;
-#					live-debian-13-*    | \
-#					live-debian-xx-*    )
-#						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'   \
-#						    -e '/^[# ]*- */{'                            \
-#						    -e '/^ *- *policykit-1 */          s/^ /#/g' \
-#						    -e '/^ *- *polkitd-pkla */         s/^ /#/g' \
-#						    -e '}}'                                      \
-#						    "${FILE_YAML}"                               \
-#						> "${FILE_CONF}"
-#						;;
+					live-debian-12-*    )
+						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                        \
+						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                    \
+						    -e '/^ * *- *fcitx5-frontend-all\(\| .*\|#.*\)$/        s/^ /#/g' \
+						    -e '/^ * *- *fcitx5-frontend-gtk[0-9]\+\(\| .*\|#.*\)$/ s/^ /#/g' \
+						    -e '/^ * *- *fcitx5-frontend-qt[0-9]\+\(\| .*\|#.*\)$/  s/^ /#/g' \
+						    -e '/^ * *- *ibus-gtk[0-9]\+\(\| .*\|#.*\)$/            s/^ /#/g' \
+						    -e '/^#* *- *fcitx5-frontend-gtk[2-4]\(\| .*\|#.*\)$/   s/^#/ /g' \
+						    -e '/^#* *- *fcitx5-frontend-qt[4-6]\(\| .*\|#.*\)$/    s/^#/ /g' \
+						    -e '/^#* *- *ibus-gtk[2-4]\(\| .*\|#.*\)$/              s/^#/ /g' \
+						    -e '}}'                                                           \
+						    "${FILE_YAML}"                                                    \
+						> "${FILE_CONF}"
+						;;
+					live-ubuntu-22.04-* )
+						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                        \
+						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                    \
+						    -e '/^ * *- *fcitx5-frontend-all\(\| .*\|#.*\)$/        s/^ /#/g' \
+						    -e '/^ * *- *fcitx5-frontend-gtk[0-9]\+\(\| .*\|#.*\)$/ s/^ /#/g' \
+						    -e '/^ * *- *fcitx5-frontend-qt[0-9]\+\(\| .*\|#.*\)$/  s/^ /#/g' \
+						    -e '/^ * *- *ibus-gtk[0-9]\+\(\| .*\|#.*\)$/            s/^ /#/g' \
+						    -e '/^#* *- *fcitx5-frontend-gtk[2-4]\(\| .*\|#.*\)$/   s/^#/ /g' \
+						    -e '/^#* *- *fcitx5-frontend-qt[4-5]\(\| .*\|#.*\)$/    s/^#/ /g' \
+						    -e '/^#* *- *ibus-gtk[2-4]\(\| .*\|#.*\)$/              s/^#/ /g' \
+						    -e '}}'                                                           \
+						    "${FILE_YAML}"                                                    \
+						> "${FILE_CONF}"
+						;;
 					live-debian-*       | \
-					live-ubuntu-*       ) ;;
+					live-ubuntu-*       )
+						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                        \
+						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                    \
+						    -e '/^ * *- *fcitx5-frontend-all\(\| .*\|#.*\)$/        s/^ /#/g' \
+						    -e '/^#* *- *fcitx5-frontend-gtk[0-9]\(\| .*\|#.*\)$/   s/^#/ /g' \
+						    -e '/^#* *- *fcitx5-frontend-qt[0-9]\(\| .*\|#.*\)$/    s/^#/ /g' \
+						    -e '/^#* *- *ibus-gtk[0-9]\(\| .*\|#.*\)$/              s/^#/ /g' \
+						    -e '}}'                                                           \
+						    "${FILE_YAML}"                                                    \
+						> "${FILE_CONF}"
+						;;
 					*                   ) OPTN_CONF="";;
 				esac
 				# -------------------------------------------------------------
@@ -536,18 +568,21 @@ _EOT_
 			    -isohybrid-gpt-basdat                           \
 			    -output "${DIRS_LIVE}.iso"                      \
 			    "${DIRS_CDFS}"
-#			rm -rf "${DIRS_LIVE:?}"
+			if [[ -z "${FLAG_KEEP}" ]]; then
+				rm -rf "${DIRS_LIVE:?}"
+			fi
 			end_time=$(date +%s)
 #			echo "${TGET_LINE[2]//%20/ } elapsed time: $((end_time-section_start_time)) [sec]"
 			printf "${TGET_LINE[2]//%20/ } elapsed time: %dd%02dh%02dm%02ds\n" $(((end_time-section_start_time)/86400)) $(((end_time-section_start_time)%86400/3600)) $(((end_time-section_start_time)%3600/60)) $(((end_time-section_start_time)%60))
 		done
+		ls -lth "${DIRS_WORK}/live/"*.iso
 	fi
 
-	echo "--- complete ---"
 	date +"%Y/%m/%d %H:%M:%S"
 	end_time=$(date +%s)
 #	echo "elapsed time: $((end_time-start_time)) [sec]"
 	printf "elapsed time: %dd%02dh%02dm%02ds\n" $(((end_time-start_time)/86400)) $(((end_time-start_time)%86400/3600)) $(((end_time-start_time)%3600/60)) $(((end_time-start_time)%60))
+	echo -e "\033[m\033[42m--- complete ---\033[m"
 
 	exit 0
 # https://manpages.debian.org/bookworm/live-boot-doc/live-boot.7.ja.html

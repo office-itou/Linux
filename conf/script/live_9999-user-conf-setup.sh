@@ -219,24 +219,24 @@ _EOT_
 		fi
 		_FILE_PATH="/etc/dconf/db/local.d/01-userkeyfile"
 		: > "${_FILE_PATH}"
-		_RETURN_VALUE="$(dcon read /org/gnome/desktop/session)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
+#		_RETURN_VALUE="$(dconf read /org/gnome/desktop/session)"
+#		if [ -n "${_RETURN_VALUE:-}" ]; then
 			cat <<- _EOT_ >> "${_FILE_PATH}"
 				[org/gnome/desktop/session]
 				idle-delay="uint32 0"
 				
 _EOT_
-		fi
-		_RETURN_VALUE="$(dcon read /org/gnome/desktop/interface)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
-			cat <<- _EOT_ >> "${_FILE_PATH}"
-				[org/gnome/desktop/interface]
-				cursor-theme=\"Adwaita\"
-				icon-theme=\"Adwaita\"
-				gtk-theme=\"Adwaita\"
-				
-_EOT_
-		fi
+#		fi
+#		_RETURN_VALUE="$(dconf read /org/gnome/desktop/interface)"
+#		if [ -n "${_RETURN_VALUE:-}" ]; then
+#			cat <<- _EOT_ >> "${_FILE_PATH}"
+#				[org/gnome/desktop/interface]
+#				cursor-theme=\"Adwaita\"
+#				icon-theme=\"Adwaita\"
+#				gtk-theme=\"Adwaita\"
+#				
+#_EOT_
+#		fi
 		dconf compile /etc/dconf/db/local /etc/dconf/db/local.d
 		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
 			< "${_FILE_PATH}" tee /dev/console
