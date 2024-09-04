@@ -15,19 +15,24 @@ mmdebstrap:
   mode: sudo
   packages:
 # --- live base ---------------------------------------------------------------
+    - live-boot                                             # Live System Boot Components
+    - live-config                                           # Live System Configuration Components
+    - live-tools                                            # Live System Extra Components
 #   - open-infrastructure-system-boot                       # Boot Debian-based system images
 #   - open-infrastructure-system-config                     # Configure Debian-based system images
 #   - open-infrastructure-system-images                     # Debian-based system images
-    - live-boot                                             # Live System Boot Components
-    - live-config                                           # Live System Configuration Components
-# --- live base [ debian linux image ] ----------------------------------------
+# --- live base [ ubuntu linux image ] ----------------------------------------
     - linux-image-generic                                   # Generic Linux kernel image
 # --- live base [ firmware ] --------------------------------------------------
     - amd64-microcode                                       # Processor microcode firmware for AMD CPUs
     - intel-microcode                                       # Processor microcode firmware for Intel CPUs
-    - iucode-tool                                           # Intel processor microcode tool
     - linux-firmware                                        # Firmware for Linux kernel drivers
     - firmware-sof-signed                                   # Intel SOF firmware - signed
+    - i965-va-driver                                        # VAAPI driver for Intel G45 & HD Graphics family
+    - intel-media-va-driver                                 # VAAPI driver for the Intel GEN8+ Graphics family
+    - mesa-va-drivers                                       # Mesa VA-API video acceleration drivers
+    - mesa-vdpau-drivers                                    # Mesa VDPAU video acceleration drivers
+    - mesa-vulkan-drivers                                   # Mesa Vulkan graphics drivers
 # --- dosfstools --------------------------------------------------------------
     - dosfstools                                            # utilities for making and checking MS-DOS FAT filesystems
 # --- exfat-fuse --------------------------------------------------------------
@@ -35,47 +40,56 @@ mmdebstrap:
     - exfatprogs                                            # exFAT file system utilities
 # --- ntfs-3g -----------------------------------------------------------------
     - ntfs-3g                                               # read/write NTFS driver for FUSE
-#   - libntfs-3g89t64                                       # read/write NTFS driver for FUSE (runtime library)
 # --- lvm2 --------------------------------------------------------------------
     - lvm2                                                  # Linux Logical Volume Manager
-    - dmeventd                                              # Linux Kernel Device Mapper event daemon
-#   - libaio1t64                                            # Linux kernel AIO access library - shared library
-#   - libdevmapper-event1.02.1                              # Linux Kernel Device Mapper event support library
-#   - liblvm2cmd2.03                                        # LVM2 command library
+#   - thin-provisioning-tools                               # Tools for handling thinly provisioned device-mapper meta-data
+# --- mdadm -------------------------------------------------------------------
+    - mdadm                                                 # tool for managing Linux MD devices (software RAID)
+    - finalrd                                               # final runtime directory for shutdown
 # --- open-vm-tools -----------------------------------------------------------
     - open-vm-tools                                         # Open VMware Tools for virtual machines hosted on VMware (CLI)
     - open-vm-tools-desktop                                 # Open VMware Tools for virtual machines hosted on VMware (GUI)
-    - ethtool                                               # display or change Ethernet device settings
+#   - cloud-init                                            # initialization and customization tool for cloud instances
     - fuse3                                                 # Filesystem in Userspace (3.x version)
-    - zerofree                                              # zero free blocks from ext2, ext3 and ext4 file-systems
     - xauth                                                 # X authentication utility
     - xdg-utils                                             # desktop integration utilities from freedesktop.org
-    - xserver-xorg-video-vmware                             # X.Org X server -- VMware display driver
 # --- base system -------------------------------------------------------------
     - alsa-topology-conf                                    # ALSA topology configuration files
     - alsa-ucm-conf                                         # ALSA Use Case Manager configuration files
 #   - apparmor                                              # user-space parser utility for AppArmor
-    - apt-utils                                             # package management related utility programs
+#   - apt-utils                                             # package management related utility programs
 #   - at-spi2-core                                          # Assistive Technology Service Provider Interface (D-Bus core)
 #   - bluez                                                 # Bluetooth tools and daemons
 #   - bsdextrautils                                         # extra utilities from 4.4BSD-Lite
 #   - ca-certificates                                       # Common CA certificates
-    - console-data                                          # keymaps, fonts, charset maps, fallback tables for 'kbd'.
+#   - connman                                               # Intel Connection Manager daemon
+#   - console-data                                          # keymaps, fonts, charset maps, fallback tables for 'kbd'.
     - console-setup                                         # console font and keymap setup program
 #   - console-setup-linux                                   # Linux specific part of console-setup
     - cron                                                  # process scheduling daemon
 #   - cron-daemon-common                                    # process scheduling daemon's configuration files
-    - debconf-i18n                                          # full internationalization support for debconf
+    - cryptsetup                                            # disk encryption support - startup scripts
+#   - curlftpfs                                             # 
+    - dbus                                                  # simple interprocess messaging system (daemon and utilities)
+    - dbus-user-session                                     # simple interprocess messaging system (systemd --user integration)
+    - dbus-x11                                              # simple interprocess messaging system (X11 deps)
+#   - debconf-i18n                                          # full internationalization support for debconf
+    - debian-installer-launcher                             # Debian Installer desktop launcher
+    - desktop-base                                          # common files for the Debian Desktop
 #   - dirmngr                                               # GNU privacy guard - network certificate management service
 #   - dmidecode                                             # SMBIOS/DMI table decoder
     - eject                                                 # ejects CDs and operates CD-Changers under Linux
+    - ethtool                                               # display or change Ethernet device settings
 #   - fakeroot                                              # tool for simulating superuser privileges
 #   - fbterm                                                # fast framebuffer based terminal emulator for Linux
     - fdisk                                                 # collection of partitioning utilities
     - file                                                  # Recognize the type of data in a file using "magic" numbers
-#   - gettext-base                                          # GNU Internationalization utilities for the base system
+    - fontconfig-config                                     # generic font configuration library - configuration
+    - fonts-dejavu-core                                     # Vera font family derivate with additional characters
+    - fonts-unifont                                         # OpenType version of GNU Unifont
+    - gettext-base                                          # GNU Internationalization utilities for the base system
     - gnupg                                                 # GNU privacy guard - a free PGP replacement
-#   - gnupg-l10n                                            # GNU privacy guard - localization files
+    - gnupg-l10n                                            # GNU privacy guard - localization files
 #   - gnupg-utils                                           # GNU privacy guard - utility programs
 #   - gpg                                                   # GNU Privacy Guard -- minimalist public key operations
 #   - gpg-agent                                             # GNU privacy guard - cryptographic agent
@@ -86,18 +100,20 @@ mmdebstrap:
 #   - groff-base                                            # GNU troff text-formatting system (base system components)
 #   - grub-common                                           # GRand Unified Bootloader (common files)
 #   - gsettings-desktop-schemas                             # GSettings desktop-wide schemas
-#   - ifupdown                                              # high level tools to configure network interfaces
+#   - httpfs2                                               # FUSE filesystem for mounting files from http servers
+    - ifupdown                                              # high level tools to configure network interfaces
     - init                                                  # metapackage ensuring an init system is installed
     - iproute2                                              # networking and traffic control tools
     - ipset                                                 # administration tool for kernel IP sets
     - iptables                                              # administration tools for packet filtering and NAT
     - iputils-ping                                          # Tools to test the reachability of network hosts
-#   - isc-dhcp-client                                       # DHCP client for automatically obtaining an IP address
-#   - isc-dhcp-common                                       # common manpages relevant to all of the isc-dhcp packages
+    - isc-dhcp-client                                       # DHCP client for automatically obtaining an IP address
+    - isc-dhcp-common                                       # common manpages relevant to all of the isc-dhcp packages
 #   - iso-codes                                             # ISO language, territory, currency, script codes and their translations
     - kbd                                                   # Linux console font and keytable utilities
+    - keyboard-configuration                                # system-wide keyboard preferences
 #   - keyutils                                              # Linux Key Management Utilities
-#   - laptop-detect                                         # system chassis type checker
+    - laptop-detect                                         # system chassis type checker
     - less                                                  # pager program similar to more
 #   - libalgorithm-diff-perl                                # module to find differences between files
 #   - libalgorithm-merge-perl                               # Perl module for three-way merge of textual data
@@ -112,6 +128,8 @@ mmdebstrap:
 #   - libmagic-mgc                                          # File type determination library using "magic" numbers (compiled magic file)
 #   - libtext-wrapi18n-perl                                 # internationalized substitute of Text::Wrap
     - locales                                               # GNU C Library: National Language (locale) data [support]
+    - locales-all                                           # GNU C Library: Precompiled locale data
+    - lsb-base                                              # transitional package for Linux Standard Base init script functionality
 #   - lsof                                                  # utility to list open files
 #   - mailcap                                               # Debian's mailcap system, and support programs
 #   - man-db                                                # tools for reading manual pages
@@ -126,13 +144,15 @@ mmdebstrap:
 #   - ofono                                                 # Mobile telephony stack (daemon)
 #   - openssl                                               # Secure Sockets Layer toolkit - cryptographic utility
 #   - os-prober                                             # utility to detect other OSes on a set of drives
+    - pciutils                                              # PCI utilities
 #   - pinentry-curses                                       # curses-based PIN or pass-phrase entry dialog for GnuPG
-    - plymouth                                              # boot animation, logger and I/O multiplexer
-    - plymouth-label                                        # boot animation, logger and I/O multiplexer - label control
-    - plymouth-themes                                       # boot animation, logger and I/O multiplexer - themes
-    - plymouth-x11                                          # boot animation, logger and I/O multiplexer - X11 renderer
-    - plymouth-theme-spinner                                # boot animation, logger and I/O multiplexer - spinner theme
-    - plymouth-theme-ubuntu-text                            # boot animation, logger and I/O multiplexer - ubuntu text theme
+#   - plymouth                                              # boot animation, logger and I/O multiplexer
+#   - plymouth-label                                        # boot animation, logger and I/O multiplexer - label control
+#   - plymouth-themes                                       # boot animation, logger and I/O multiplexer - themes
+#   - plymouth-theme-spinner                                # boot animation, logger and I/O multiplexer - spinner theme
+#   - plymouth-theme-ubuntu-text                            # boot animation, logger and I/O multiplexer - ubuntu text theme
+#   - plymouth-x11                                          # boot animation, logger and I/O multiplexer - X11 renderer
+    - psf-unifont                                           # PSF (console) version of GNU Unifont with APL support
 #   - publicsuffix                                          # accurate, machine-readable list of domain name suffixes
 #   - python3-certifi                                       # root certificates for validating SSL certs and verifying TLS hosts (python3)
 #   - python3-chardet                                       # Universal Character Encoding Detector (Python3)
@@ -146,21 +166,28 @@ mmdebstrap:
     - shellcheck                                            # lint tool for shell scripts
 #   - ssl-cert                                              # simple debconf wrapper for OpenSSL
     - sudo                                                  # Provide limited super user privileges to specific users
-    - task-japanese                                         # Japanese environment
+#   - task-japanese                                         # Japanese environment
+    - thermald                                              # Thermal monitoring and controlling daemon
     - tree                                                  # displays an indented directory tree, in color
     - unifont                                               # font with a glyph for each visible Unicode Plane 0 character
     - usbutils                                              # Linux USB utilities
+    - user-setup                                            # Set up initial user and password
 #   - usr-is-merged                                         # 
+    - uuid-runtime                                          # runtime components for the Universally Unique ID library
 #   - vim-tiny                                              # Vi IMproved - enhanced vi editor - compact version
 #   - wamerican                                             # American English dictionary words for /usr/share/dict
+    - wget                                                  # retrieves files from the web
     - whiptail                                              # Displays user-friendly dialog boxes from shell scripts
 #   - wpasupplicant                                         # client support for WPA and WPA2 (IEEE 802.11i)
-    - x11-xkb-utils                                         # X11 XKB utilities
+#   - x11-xkb-utils                                         # X11 XKB utilities
 #   - xcvt                                                  # VESA CVT standard timing modelines generator
 #   - xdg-user-dirs                                         # tool to manage well known user directories
-#   - xfonts-base                                           # standard fonts for X
-#   - xfonts-encodings                                      # Encodings for X.Org fonts
-#   - xfonts-utils                                          # X Window System font utility programs
+    - xfonts-base                                           # standard fonts for X
+    - xfonts-encodings                                      # Encodings for X.Org fonts
+    - xfonts-unifont                                        # PCF (bitmap) version of GNU Unifont
+    - xfonts-utils                                          # X Window System font utility programs
+    - xserver-xorg-video-vmware                             # X.Org X server -- VMware display driver
+    - zerofree                                              # zero free blocks from ext2, ext3 and ext4 file-systems
     - zstd                                                  # fast lossless compression algorithm -- CLI tool
 # --- server base [ installed ] -----------------------------------------------
     - apt-transport-https                                   # transitional package for https support
@@ -225,13 +252,13 @@ mmdebstrap:
     - fonts-noto-unhinted                                   # "No Tofu" font families with large Unicode coverage (unhinted)
     - fonts-symbola                                         # symbolic font providing emoji characters from Unicode 9.0
     - fonts-vlgothic                                        # Japanese TrueType font from Vine Linux
-    - i965-va-driver                                        # VAAPI driver for Intel G45 & HD Graphics family
+#   - i965-va-driver                                        # VAAPI driver for Intel G45 & HD Graphics family
     - ibus                                                  # Intelligent Input Bus - core
     - ibus-gtk                                              # Intelligent Input Bus - GTK2 support
     - ibus-gtk3                                             # Intelligent Input Bus - GTK3 support
     - ibus-gtk4                                             # Intelligent Input Bus - GTK4 support
-    - intel-media-va-driver                                 # VAAPI driver for the Intel GEN8+ Graphics family
-    - mesa-vulkan-drivers                                   # Mesa Vulkan graphics drivers
+#   - intel-media-va-driver                                 # VAAPI driver for the Intel GEN8+ Graphics family
+#   - mesa-vulkan-drivers                                   # Mesa Vulkan graphics drivers
     - pavucontrol                                           # PulseAudio Volume Control
     - pulseaudio                                            # PulseAudio sound server
     - pulseaudio-utils                                      # Command line tools for the PulseAudio sound server

@@ -134,6 +134,7 @@
 	declare       WORK_STRS=""
 #	declare -a    PARM=()
 	declare -i    I=0
+	declare -r    BOOT_OPTN="live components quiet splash overlay-size=90% noeject hooks=medium"
 
 	# shellcheck disable=SC2312
 	if [[ "$(whoami)" != "root" ]]; then
@@ -289,12 +290,16 @@
 			SQFS_NAME="${TGET_LINE[1]}.squashfs"
 #			SQFS_NAME="filesystem.squashfs"
 			# --- create cd/dvd image -----------------------------------------
-			rm -rf "${DIRS_TEMP:?}/${TGET_LINE[1]}:?"
-			mkdir -p "${DIRS_TEMP}/${TGET_LINE[1]}/"{cdfs/{.disk,EFI/boot,boot/grub/{live-theme,x86_64-efi},isolinux,live/{boot,config.conf.d}},mnts}
-			# --- create squashfs file ----------------------------------------
 			if [[ -z "${FLAG_KEEP}" ]] || [[ ! -f "${DIRS_LIVE}/${SQFS_NAME}" ]]; then
 				rm -rf "${DIRS_LIVE:?}"
-				mkdir -p "${DIRS_LIVE:?}"
+			fi
+			mkdir -p "${DIRS_LIVE:?}" \
+			         "${DIRS_MNTS}"   \
+			         "${DIRS_CDFS}/"{.disk,EFI/boot,boot/grub/{live-theme,x86_64-efi},isolinux,live/{boot,config.conf.d,config-hooks,config-preseed}}
+			# --- create squashfs file ----------------------------------------
+			if [[ -z "${FLAG_KEEP}" ]] || [[ ! -f "${DIRS_LIVE}/${SQFS_NAME}" ]]; then
+#				rm -rf "${DIRS_LIVE:?}"
+#				mkdir -p "${DIRS_LIVE:?}"
 				# -------------------------------------------------------------
 				OPTN_COMP=""
 #				case "${TGET_LINE[1]}" in
@@ -397,12 +402,13 @@
 				fi
 			fi
 			# ---- copy script ------------------------------------------------
-			for PATH_SRCS in "${DIRS_CONF}/script/"live_*sh
+			for PATH_SRCS in "${DIRS_CONF}/script/"live_*.{sh,conf}
 			do
 				FILE_NAME="${PATH_SRCS##*live_}"
 				case "${PATH_SRCS##*live_}" in
-					????-user-boot*) PATH_DEST="${DIRS_CDFS}/live/boot/${FILE_NAME}";;
-					????-user-conf*) PATH_DEST="${DIRS_CDFS}/live/config.conf.d/${FILE_NAME}.conf";;
+					????-user-boot*     ) PATH_DEST="${DIRS_CDFS}/live/boot/${FILE_NAME}";;
+					????-user-conf*.conf) PATH_DEST="${DIRS_CDFS}/live/config.conf.d/${FILE_NAME}";;
+					????-user-conf*.sh  ) PATH_DEST="${DIRS_CDFS}/live/config-hooks/${FILE_NAME}";;
 					*) continue;;
 				esac
 				echo "${PATH_SRCS} -> ${PATH_DEST}"
@@ -485,7 +491,7 @@ _EOT_
 				 	menu default
 				 	linux /live/vmlinuz
 				 	initrd /live/initrd.img
-				 	append boot=live components quiet splash overlay-size=90%
+				 	append boot=${BOOT_OPTN}
 _EOT_
 			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/install.cfg"
 				#label installstart
@@ -518,7 +524,7 @@ _EOT_
 				
 				menuentry "${TGET_LINE[2]//%20/ } [${TGET_LINE[1]##*-}]" {
 				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-				 	linux  /live/vmlinuz boot=live components quiet splash overlay-size=90%
+				 	linux  /live/vmlinuz boot=${BOOT_OPTN}
 				 	initrd /live/initrd.img
 				}
 				menuentry "System shutdown" {

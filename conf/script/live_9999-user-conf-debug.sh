@@ -24,6 +24,7 @@
 		echo "LIVE_DEBUGOUT                         = [${LIVE_DEBUGOUT:-}]"                    | tee /dev/console
 		echo "LIVE_OS_NAME                          = [${LIVE_OS_NAME:-}]"                     | tee /dev/console
 		echo "LIVE_OS_ID                            = [${LIVE_OS_ID:-}]"                       | tee /dev/console
+		echo "LIVE_PASSWORD                         = [${LIVE_PASSWORD:-}]"                    | tee /dev/console
 		echo "LIVE_HGFS                             = [${LIVE_HGFS:-}]"                        | tee /dev/console
 		echo "--- live-boot - System Boot Components ----------------------------------------" | tee /dev/console
 		echo "DISABLE_CDROM                         = [${DISABLE_CDROM:-}]"                    | tee /dev/console
@@ -70,6 +71,9 @@
 		echo "LIVE_XORG_RESOLUTION                  = [${LIVE_XORG_RESOLUTION:-}]"             | tee /dev/console
 		echo "LIVE_WLAN_DRIVER                      = [${LIVE_WLAN_DRIVER:-}]"                 | tee /dev/console
 		echo "LIVE_HOOKS                            = [${LIVE_HOOKS:-}]"                       | tee /dev/console
+		echo "LIVE_CONFIG_NOROOT                    = [${LIVE_CONFIG_NOROOT:-}]"               | tee /dev/console
+		echo "LIVE_CONFIG_NOAUTOLOGIN               = [${LIVE_CONFIG_NOAUTOLOGIN:-}]"          | tee /dev/console
+		echo "LIVE_CONFIG_NOX11AUTOLOGIN            = [${LIVE_CONFIG_NOX11AUTOLOGIN:-}]"       | tee /dev/console
 		echo "LIVE_CONFIG_DEBUG                     = [${LIVE_CONFIG_DEBUG:-}]"                | tee /dev/console
 		echo "=== put debug parameter [ end ] ===============================================" | tee /dev/console
 		set -x

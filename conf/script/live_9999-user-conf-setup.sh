@@ -62,6 +62,19 @@ _EOT_
 			fi
 		fi
 		passwd --delete root
+		# --- auto login ------------------------------------------------------
+		_SYSTEMD_DIR="/etc/systemd/system"
+		for _NUMBER in $(seq 1 6)
+		do
+			_FILE_PATH="/etc/systemd/system/getty@tty${_NUMBER}.service.d/live-config_autologin.conf"
+			mkdir -p "${_FILE_PATH%/*}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${_FILE_PATH}"
+				[Service]
+				Type=idle
+				ExecStart=
+				ExecStart=-/sbin/agetty --autologin ${LIVE_USERNAME} --noclear %I \$TERM
+_EOT_
+		done
 	fi
 	for DIRS_NAME in /root /home/*
 	do
@@ -143,31 +156,33 @@ _EOT_
 	fi
 
 	# --- set auto login parameter --------------------------------------------
-	_GDM3_OPTIONS="$(
-		cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
-			AutomaticLoginEnable=true
-			AutomaticLogin=${LIVE_USERNAME:-root}
-			TimedLoginEnable=true
-			TimedLogin=${LIVE_USERNAME:-root}
-			TimedLoginDelay=5
-			
+	if [ -d /etc/gdm3/. ]; then
+		_GDM3_OPTIONS="$(
+			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+				AutomaticLoginEnable=true
+				AutomaticLogin=${LIVE_USERNAME:-root}
+				TimedLoginEnable=true
+				TimedLogin=${LIVE_USERNAME:-root}
+				TimedLoginDelay=5
+				
 _EOT_
-	)"
-	_CONF_FLAG=""
-	grep -l 'AutomaticLoginEnable[ \t]*=[ \t]*true' /etc/gdm3/*.conf | while IFS= read -r _FILE_PATH
-	do
-		sed -i "${_FILE_PATH}"              \
-		    -e '/^\[daemon\]/,/^\[.*\]/ {' \
-		    -e '/^[^#\[]\+/ s/^/#/}' 
-		if [ -z "${_CONF_FLAG:-}" ]; then
-			sed -i "${_FILE_PATH}"                               \
-			    -e "s%^\(\[daemon\].*\)$%\1\n${_GDM3_OPTIONS}%"
-			_CONF_FLAG="true"
-		fi
-		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
-			< "${_FILE_PATH}" tee /dev/console
-		fi
-	done
+		)"
+		_CONF_FLAG=""
+		grep -l 'AutomaticLoginEnable[ \t]*=[ \t]*true' /etc/gdm3/*.conf | while IFS= read -r _FILE_PATH
+		do
+			sed -i "${_FILE_PATH}"              \
+			    -e '/^\[daemon\]/,/^\[.*\]/ {' \
+			    -e '/^[^#\[]\+/ s/^/#/}' 
+			if [ -z "${_CONF_FLAG:-}" ]; then
+				sed -i "${_FILE_PATH}"                               \
+				    -e "s%^\(\[daemon\].*\)$%\1\n${_GDM3_OPTIONS}%"
+				_CONF_FLAG="true"
+			fi
+			if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+				< "${_FILE_PATH}" tee /dev/console
+			fi
+		done
+	fi
 
 	# --- set network parameter -----------------------------------------------
 	_RETURN_VALUE="$(command -v nmcli 2> /dev/null)"
