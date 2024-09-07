@@ -14,6 +14,12 @@
 #	PROG_DIRS="${PROG_PATH%/*}"
 	PROG_NAME="${PROG_PATH##*/}"
 
+	if [ -f "/var/lib/live/config/${PROG_NAME%.*}" ]; then
+		# shellcheck disable=SC2028
+		echo "\033[m\033[41malready runned: ${PROG_PATH}\033[m" | tee /dev/console
+		return
+	fi
+
 	# shellcheck disable=SC2028
 	echo "\033[m\033[45mstart: ${PROG_PATH}\033[m" | tee /dev/console
 

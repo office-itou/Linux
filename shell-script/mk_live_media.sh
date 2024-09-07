@@ -134,7 +134,7 @@
 	declare       WORK_STRS=""
 #	declare -a    PARM=()
 	declare -i    I=0
-	declare -r    BOOT_OPTN="live components quiet splash overlay-size=90% noeject hooks=medium"
+	declare -r    BOOT_OPTN="live components quiet splash overlay-size=90% noeject hooks=medium xorg-resolution=1680x1050"
 
 	# shellcheck disable=SC2312
 	if [[ "$(whoami)" != "root" ]]; then
@@ -171,11 +171,18 @@
 #	mkdir -p ${DIRS_WORK}/live
 
 	if [[ -z "${PROG_PARM[*]}" ]]; then
-		echo "sudo ./${PROG_NAME} [ options ]"
-#		echo "reusing a previously created filesystem.squashfs"
-#		echo "  -k | --keep"
-		echo "create a full suite"
-		echo "  -a | --all"
+		echo "sudo ./${PROG_NAME} [ options ] suites"
+		echo "options"
+#		echo "  reusing a previously created filesystem.squashfs"
+#		echo "    -k | --keep"
+		echo "  check selected packages (simulation only)"
+		echo "    -s | --simu"
+		echo "  do not stop on errors"
+		echo "    -c | --continue"
+		echo "suites"
+		echo "  create a full suite or debian or ubuntu"
+		echo "    -a | --all | debian | ubuntu"
+		echo "  create one or more suites"
 		WORK_STRS=""
 		for ((I=0; I<"${#TGET_LIST[@]}"; I++))
 		do
@@ -185,8 +192,8 @@
 			fi
 			WORK_STRS+="${WORK_STRS:+" | "}${TGET_LINE[1]##*-}"
 		done
-		echo "choose any suite"
-		echo "  ${WORK_STRS:?}"
+		echo "    choose any suite"
+		echo "      [ ${WORK_STRS:?} ]"
 	else
 		for ((I=0; I<"${#TGET_LIST[@]}"; I++))
 		do
@@ -332,6 +339,8 @@
 						    -e '/^ * *- *fcitx5-frontend-qt[0-9]\+\(\| .*\|#.*\)$/  s/^ /#/g' \
 						    -e '/^ * *- *ibus-gtk[0-9]\+\(\| .*\|#.*\)$/            s/^ /#/g' \
 						    -e '/^ * *- *gnome-text-editor\(\| .*\|#.*\)$/          s/^ /#/g' \
+						    -e '/^ * *- *power-profiles-daemon\(\| .*\|#.*\)$/      s/^ /#/g' \
+						    -e '/^ * *- *xcvt\(\| .*\|#.*\)$/                       s/^ /#/g' \
 						    -e '/^#* *- *fcitx5-frontend-gtk[2-3]\(\| .*\|#.*\)$/   s/^#/ /g' \
 						    -e '/^#* *- *fcitx5-frontend-qt[4-5]\(\| .*\|#.*\)$/    s/^#/ /g' \
 						    -e '/^#* *- *ibus-gtk[2-3]\(\| .*\|#.*\)$/              s/^#/ /g' \

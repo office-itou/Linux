@@ -14,6 +14,12 @@
 #	PROG_DIRS="${PROG_PATH%/*}"
 	PROG_NAME="${PROG_PATH##*/}"
 
+	if [ -f "/var/lib/live/config/${PROG_NAME%.*}" ]; then
+		# shellcheck disable=SC2028
+		echo "\033[m\033[41malready runned: ${PROG_PATH}\033[m" | tee /dev/console
+		return
+	fi
+
 	# shellcheck disable=SC2028
 	echo "\033[m\033[45mstart: ${PROG_PATH}\033[m" | tee /dev/console
 
@@ -161,9 +167,9 @@ _EOT_
 			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 				AutomaticLoginEnable=true
 				AutomaticLogin=${LIVE_USERNAME:-root}
-				TimedLoginEnable=true
-				TimedLogin=${LIVE_USERNAME:-root}
-				TimedLoginDelay=5
+				#TimedLoginEnable=true
+				#TimedLogin=${LIVE_USERNAME:-root}
+				#TimedLoginDelay=5
 				
 _EOT_
 		)"
@@ -234,13 +240,26 @@ _EOT_
 		fi
 		_FILE_PATH="/etc/dconf/db/local.d/01-userkeyfile"
 		: > "${_FILE_PATH}"
+		cat <<- _EOT_ >> "${_FILE_PATH}"
+			[org/gnome/desktop/input-sources]
+			sources=[('xkb', 'jp')]
+			xkb-options=@as []
+			
+			[org/gnome/desktop/screensaver]
+			idle-activation-enabled=false
+			lock-enabled=false
+			
+			[org/gnome/desktop/session]
+			idle-delay=uint32 0
+			
+_EOT_
 #		_RETURN_VALUE="$(dconf read /org/gnome/desktop/session)"
 #		if [ -n "${_RETURN_VALUE:-}" ]; then
-			cat <<- _EOT_ >> "${_FILE_PATH}"
-				[org/gnome/desktop/session]
-				idle-delay="uint32 0"
-				
-_EOT_
+#			cat <<- _EOT_ >> "${_FILE_PATH}"
+#				[org/gnome/desktop/session]
+#				idle-delay="uint32 0"
+#				
+#_EOT_
 #		fi
 #		_RETURN_VALUE="$(dconf read /org/gnome/desktop/interface)"
 #		if [ -n "${_RETURN_VALUE:-}" ]; then

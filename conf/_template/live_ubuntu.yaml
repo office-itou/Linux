@@ -57,7 +57,7 @@ mmdebstrap:
     - alsa-topology-conf                                    # ALSA topology configuration files
     - alsa-ucm-conf                                         # ALSA Use Case Manager configuration files
 #   - apparmor                                              # user-space parser utility for AppArmor
-#   - apt-utils                                             # package management related utility programs
+    - apt-utils                                             # package management related utility programs
 #   - at-spi2-core                                          # Assistive Technology Service Provider Interface (D-Bus core)
 #   - bluez                                                 # Bluetooth tools and daemons
 #   - bsdextrautils                                         # extra utilities from 4.4BSD-Lite
@@ -74,7 +74,7 @@ mmdebstrap:
     - dbus-user-session                                     # simple interprocess messaging system (systemd --user integration)
     - dbus-x11                                              # simple interprocess messaging system (X11 deps)
 #   - debconf-i18n                                          # full internationalization support for debconf
-    - debian-installer-launcher                             # Debian Installer desktop launcher
+#   - debian-installer-launcher                             # Debian Installer desktop launcher
     - desktop-base                                          # common files for the Debian Desktop
 #   - dirmngr                                               # GNU privacy guard - network certificate management service
 #   - dmidecode                                             # SMBIOS/DMI table decoder
@@ -88,6 +88,7 @@ mmdebstrap:
     - fonts-dejavu-core                                     # Vera font family derivate with additional characters
     - fonts-unifont                                         # OpenType version of GNU Unifont
     - gettext-base                                          # GNU Internationalization utilities for the base system
+    - gir1.2-dbusmenu-glib-0.4                              # typelib file for libdbusmenu-glib4
     - gnupg                                                 # GNU privacy guard - a free PGP replacement
     - gnupg-l10n                                            # GNU privacy guard - localization files
 #   - gnupg-utils                                           # GNU privacy guard - utility programs
@@ -112,7 +113,7 @@ mmdebstrap:
 #   - iso-codes                                             # ISO language, territory, currency, script codes and their translations
     - kbd                                                   # Linux console font and keytable utilities
     - keyboard-configuration                                # system-wide keyboard preferences
-#   - keyutils                                              # Linux Key Management Utilities
+    - keyutils                                              # Linux Key Management Utilities
     - laptop-detect                                         # system chassis type checker
     - less                                                  # pager program similar to more
 #   - libalgorithm-diff-perl                                # module to find differences between files
@@ -123,6 +124,7 @@ mmdebstrap:
 #   - libgdk-pixbuf2.0-bin                                  # GDK Pixbuf library (thumbnailer)
 #   - libglib2.0-data                                       # Common files for GLib library
 #   - libgtk-3-bin                                          # programs for the GTK graphical user interface library
+    - libime-bin                                            # Generic Input Method Implementation (tools)
 #   - libldap-common                                        # OpenLDAP common files for libraries
 #   - liblockfile-bin                                       # support binaries for and cli utilities based on liblockfile
 #   - libmagic-mgc                                          # File type determination library using "magic" numbers (compiled magic file)
@@ -133,9 +135,10 @@ mmdebstrap:
 #   - lsof                                                  # utility to list open files
 #   - mailcap                                               # Debian's mailcap system, and support programs
 #   - man-db                                                # tools for reading manual pages
-#   - manpages                                              # Manual pages about using a GNU/Linux system
-#   - manpages-dev                                          # Manual pages about using GNU/Linux for development
-#   - manpages-ja-dev                                       # Japanese version of the manual pages (for developers)
+    - manpages                                              # Manual pages about using a GNU/Linux system
+    - manpages-dev                                          # Manual pages about using GNU/Linux for development
+    - manpages-ja                                           # Japanese version of the manual pages (for users)
+    - manpages-ja-dev                                       # Japanese version of the manual pages (for developers)
 #   - mime-support                                          # 
 #   - nano                                                  # small, friendly text editor inspired by Pico
 #   - ncurses-term                                          # additional terminal type definitions
@@ -187,6 +190,7 @@ mmdebstrap:
     - xfonts-unifont                                        # PCF (bitmap) version of GNU Unifont
     - xfonts-utils                                          # X Window System font utility programs
     - xserver-xorg-video-vmware                             # X.Org X server -- VMware display driver
+    - xxd                                                   # tool to make (or reverse) a hex dump
     - zerofree                                              # zero free blocks from ext2, ext3 and ext4 file-systems
     - zstd                                                  # fast lossless compression algorithm -- CLI tool
 # --- server base [ installed ] -----------------------------------------------
@@ -257,28 +261,49 @@ mmdebstrap:
     - ibus-gtk                                              # Intelligent Input Bus - GTK2 support
     - ibus-gtk3                                             # Intelligent Input Bus - GTK3 support
     - ibus-gtk4                                             # Intelligent Input Bus - GTK4 support
+    - ibus-table                                            # table engine for IBus
 #   - intel-media-va-driver                                 # VAAPI driver for the Intel GEN8+ Graphics family
+    - jq                                                    # lightweight and flexible command-line JSON processor
+    - libfastjson4                                          # fast json library for C
+    - libjson-c5                                            # JSON manipulation library - shared library
+    - libjson-glib-1.0-0                                    # GLib JSON manipulation library
+    - libjson-glib-1.0-common                               # GLib JSON manipulation library (common files)
+    - libpam-gnome-keyring                                  # PAM module to unlock the GNOME keyring upon login
+    - libpam-sss                                            # Pam module for the System Security Services Daemon
 #   - mesa-vulkan-drivers                                   # Mesa Vulkan graphics drivers
+    - orca                                                  # Scriptable screen reader
     - pavucontrol                                           # PulseAudio Volume Control
+    - power-profiles-daemon                                 # Makes power profiles handling available over D-Bus.
+    - powermgmt-base                                        # common utils for power management
     - pulseaudio                                            # PulseAudio sound server
     - pulseaudio-utils                                      # Command line tools for the PulseAudio sound server
 #   - qtwayland5                                            # QtWayland platform plugin
     - rtkit                                                 # Realtime Policy and Watchdog Daemon
+    - upower                                                # abstraction for power management
     - xdg-user-dirs-gtk                                     # tool to manage well known user directories (Gtk extension)
 #   - xmms2-core                                            # XMMS2 - core package
 #   - xmms2-plugin-alsa                                     # XMMS2 - ALSA output
-# --- xorg --------------------------------------------------------------------
-    - xscreensaver                                          # Screensaver daemon and frontend for X11
+# --- xserver -----------------------------------------------------------------
+    - x11-apps                                              # X applications
+    - x11-common                                            # X Window System (X.Org) infrastructure
+    - x11-session-utils                                     # X session utilities
+    - x11-utils                                             # X11 utilities
+    - x11-xkb-utils                                         # X11 XKB utilities
+    - x11-xserver-utils                                     # X server utilities
+    - xcvt                                                  # VESA CVT standard timing modelines generator
+#   - xscreensaver                                          # Screensaver daemon and frontend for X11
 #   - xscreensaver-data-extra                               # Extra screen saver modules for screensaver frontends
 #   - xscreensaver-gl                                       # GL(Mesa) screen saver modules for screensaver frontends
 #   - xscreensaver-gl-extra                                 # Extra GL(Mesa) screen saver modules for screensaver frontends
 #   - xscreensaver-screensaver-bsod                         # BSOD screen saver module from XScreenSaver
 #   - xscreensaver-screensaver-dizzy                        # Graphics demo that makes you dizzy (XScreenSaver hack)
 #   - xscreensaver-screensaver-webcollage                   # Webcollage screen saver module from XScreenSaver
+    - xserver-xephyr                                        # nested X server
     - xserver-xorg-legacy                                   # setuid root Xorg server wrapper
     - xserver-xorg-video-intel                              # X.Org X server -- Intel i8xx, i9xx display driver
     - xserver-xorg-video-nouveau                            # X.Org X server -- Nouveau display driver
 #   - xserver-xorg-video-qxl                                # X.Org X server -- QXL display driver
+    - xwayland                                              # X server for running X clients under Wayland
 # --- gnome -------------------------------------------------------------------
 #   - gnome-accessibility-themes                            # High Contrast GTK 2 theme and icons
 #   - gnome-brave-icon-theme                                # blue variation of the GNOME-Colors icon theme
@@ -290,12 +315,14 @@ mmdebstrap:
 #   - gnome-human-icon-theme                                # orange variation of the GNOME-Colors icon theme
 #   - gnome-icon-theme                                      # This package contains the default icon theme used by the GNOME
 #   - gnome-illustrious-icon-theme                          # pink variation of the GNOME-Colors icon theme
-#   - gnome-keyring                                         # GNOME keyring services (daemon and tools)
-#   - gnome-keyring-pkcs11                                  # GNOME keyring module for the PKCS#11 module loading library
+    - gnome-keyring                                         # GNOME keyring services (daemon and tools)
+    - gnome-keyring-pkcs11                                  # GNOME keyring module for the PKCS#11 module loading library
 #   - gnome-noble-icon-theme                                # purple variation of the GNOME-Colors icon theme
     - gnome-power-manager                                   # power management tool for the GNOME desktop
+    - gnome-remote-desktop                                  # Remote desktop daemon for GNOME using PipeWire
 #   - gnome-screenshot                                      # screenshot application for GNOME
 #   - gnome-system-tools                                    # Cross-platform configuration utilities
+    - gnome-terminal                                        # GNOME terminal emulator application
     - gnome-text-editor                                     # simple text editor for GNOME
 #   - gnome-themes-extra                                    # Adwaita GTK 2 theme ?? engine
 #   - gnome-themes-extra-data                               # Adwaita GTK 2 theme and Adwaita-dark GTK 3 theme ?? common files
@@ -311,6 +338,15 @@ mmdebstrap:
 # --- chromium ---------------------------------------------------------------
     - chromium-browser                                      # Transitional package - chromium-browser -> chromium snap
     - chromium-browser-l10n                                 # Transitional package - chromium-browser-l10n -> chromium snap
+# --- libreoffice -------------------------------------------------------------
+    - libreoffice-base                                      # office productivity suite -- database
+    - libreoffice-calc                                      # office productivity suite -- spreadsheet
+    - libreoffice-core                                      # office productivity suite -- arch-dependent files
+    - libreoffice-draw                                      # office productivity suite -- drawing
+    - libreoffice-impress                                   # office productivity suite -- presentation
+    - libreoffice-math                                      # office productivity suite -- equation editor
+    - libreoffice-report-builder-bin                        # LibreOffice component for building database reports -- libraries
+    - libreoffice-writer                                    # office productivity suite -- word processor
 # --- ubuntu-desktop ----------------------------------------------------------
     - adwaita-icon-theme                                    # default icon theme of GNOME (small subset)
 #   - adwaita-icon-theme-full                               # default icon theme of GNOME
@@ -325,7 +361,7 @@ mmdebstrap:
 #-  - ubuntu-docs                                           # Ubuntu Desktop Guide
 #-  - ubuntu-drivers-common                                 # Detect and install additional Ubuntu driver packages
     - ubuntu-gnome-desktop                                  # The Ubuntu desktop system (transitional package)
-#-  - ubuntu-keyring                                        # GnuPG keys of the Ubuntu archive
+    - ubuntu-keyring                                        # GnuPG keys of the Ubuntu archive
 #-  - ubuntu-minimal                                        # Minimal core of Ubuntu
 #-  - ubuntu-mono                                           # Ubuntu Mono Icon theme
 #-  - ubuntu-pro-client-l10n                                # Translations for Ubuntu Pro Client
@@ -333,11 +369,43 @@ mmdebstrap:
 #-  - ubuntu-release-upgrader-gtk                           # manage release upgrades
 #-  - ubuntu-report                                         # Report hardware and other collected metrics
     - ubuntu-server                                         # Ubuntu Server system
-#-  - ubuntu-session                                        # Ubuntu session with GNOME Shell
+    - ubuntu-session                                        # Ubuntu session with GNOME Shell
+#   - ubuntu-session-xsession                               # Ubuntu on Xorg session with GNOME Shell
 #-  - ubuntu-settings                                       # default settings for the Ubuntu desktop
     - ubuntu-standard                                       # The Ubuntu standard system
-#-  - ubuntu-wallpapers                                     # Ubuntu Wallpapers
+    - ubuntu-wallpapers                                     # Ubuntu Wallpapers
+#-  - ubuntu-wallpapers-karmic                              # Ubuntu 9.10 Wallpapers
+#-  - ubuntu-wallpapers-lucid                               # Ubuntu 10.04 Wallpapers
+#-  - ubuntu-wallpapers-maverick                            # Ubuntu 10.10 Wallpapers
+#-  - ubuntu-wallpapers-natty                               # Ubuntu 11.04 Wallpapers
+#-  - ubuntu-wallpapers-oneiric                             # Ubuntu 11.10 Wallpapers
+#-  - ubuntu-wallpapers-precise                             # Ubuntu 12.04 Wallpapers
+#-  - ubuntu-wallpapers-quantal                             # Ubuntu 12.10 Wallpapers
+#-  - ubuntu-wallpapers-raring                              # Ubuntu 13.04 Wallpapers
+#-  - ubuntu-wallpapers-saucy                               # Ubuntu 13.10 Wallpapers
+#-  - ubuntu-wallpapers-trusty                              # Ubuntu 14.04 Wallpapers
+#-  - ubuntu-wallpapers-utopic                              # Ubuntu 14.10 Wallpapers
+#-  - ubuntu-wallpapers-vivid                               # Ubuntu 15.04 Wallpapers
+#-  - ubuntu-wallpapers-wily                                # Ubuntu 15.10 Wallpapers
+#-  - ubuntu-wallpapers-xenial                              # Ubuntu 16.04 Wallpapers
+#-  - ubuntu-wallpapers-yakkety                             # Ubuntu 16.10 Wallpapers
+#-  - ubuntu-wallpapers-zesty                               # Ubuntu 17.04 Wallpapers
+#-  - ubuntu-wallpapers-artful                              # Ubuntu 17.10 Wallpapers
+#-  - ubuntu-wallpapers-bionic                              # Ubuntu 18.04 Wallpapers
+#-  - ubuntu-wallpapers-cosmic                              # Ubuntu 18.10 Wallpapers
+#-  - ubuntu-wallpapers-disco                               # Ubuntu 19.04 Wallpapers
+#-  - ubuntu-wallpapers-eoan                                # Ubuntu 19.10 Wallpapers
+#-  - ubuntu-wallpapers-focal                               # Ubuntu 20.04 Wallpapers
+#-  - ubuntu-wallpapers-groovy                              # Ubuntu 20.10 Wallpapers
+#-  - ubuntu-wallpapers-hirsute                             # Ubuntu 21.04 Wallpapers
+#-  - ubuntu-wallpapers-impish                              # Ubuntu 21.10 Wallpapers
 #-  - ubuntu-wallpapers-jammy                               # Ubuntu 22.04 Wallpapers
+#-  - ubuntu-wallpapers-kinetic                             # Ubuntu 22.10 Wallpapers
+#-  - ubuntu-wallpapers-lunar                               # Ubuntu 23.04 Wallpapers
+#-  - ubuntu-wallpapers-mantic                              # Ubuntu 23.10 Wallpapers
+#-  - ubuntu-wallpapers-noble                               # Ubuntu 24.04 Wallpapers
+#-  - ubuntu-wallpapers-oracular                            # Ubuntu 24.10 Wallpapers
+#-  - ubuntu-wallpapers-lts-legacy                          # Ubuntu LTSes Wallpapers
 #   - xscreensaver                                          # Screensaver daemon and frontend for X11
 #   - xscreensaver-data                                     # Screen saver modules for screensaver frontends
     - yaru-theme-icon                                       # Yaru icon theme from the Ubuntu Community
@@ -350,7 +418,7 @@ mmdebstrap:
 #   - chroot "$1" sh -c 'if [ -e /usr/bin/startlxde ]; then update-alternatives --set "x-session-manager" "/usr/bin/startlxde"; update-alternatives --get-selections | grep x-session-manager; fi'
 #   - chroot "$1" sh -c 'if [ -d /etc/dconf/. ]; then mkdir -p /etc/dconf/db/local.d /etc/dconf/profile; echo "user-db:user\nsystem-db:local" > /etc/dconf/profile/user; echo "[org/gnome/desktop/session]\nidle-delay="uint32 0"\n\n[org/gnome/desktop/interface]\ncursor-theme=\"Adwaita\"\nicon-theme=\"Adwaita\"\ngtk-theme=\"Adwaita\"\n\n" > /etc/dconf/db/local.d/01-userkeyfile; dconf compile /etc/dconf/db/local /etc/dconf/db/local.d; rm /etc/dconf/db/local.d/01-userkeyfile; fi'
 #   - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show fcitx5 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then im-config -n fcitx5; fi'
-    - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show fcitx5 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then sed -i -e '\''/^IM_CONFIG_DEFAULT_MODE=/ s/=.*$/=fcitx5/'\'' /etc/default/im-config; fi'
+#   - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show fcitx5 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then sed -i -e '\''/^IM_CONFIG_DEFAULT_MODE=/ s/=.*$/=fcitx5/'\'' /etc/default/im-config; fi'
     - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show samba 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then sed -i -e '\''/hosts:/{'\'' -e '\''/wins/! s/$/ wins/}'\'' /etc/nsswitch.conf; fi'
     - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show lightdm 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then dpkg-reconfigure --no-reload lightdm; fi'
     - chroot "$1" sh -c '_UNITS="firewalld.service clamav-freshclam.service dnsmasq.service tftpd-hpa.service apache2.service"; _PARM="$(echo "${_UNITS}" | sed -e '\''s/ /|/g'\'')"; _RETURN_VALUE="$(systemctl list-unit-files ${_UNITS} | awk '\''$0~/'\''"${_PARM}"'\''/ {print $1;}'\'')"; if [ -n "${_RETURN_VALUE:-}" ]; then systemctl disable ${_RETURN_VALUE}; fi'
