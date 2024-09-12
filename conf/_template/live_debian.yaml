@@ -64,6 +64,7 @@ mmdebstrap:
 #   - bluez                                                 # Bluetooth tools and daemons
 #   - bsdextrautils                                         # extra utilities from 4.4BSD-Lite
 #   - ca-certificates                                       # Common CA certificates
+    - command-not-found                                     # Suggest installation of packages in interactive bash sessions
 #   - connman                                               # Intel Connection Manager daemon
 #   - console-data                                          # keymaps, fonts, charset maps, fallback tables for 'kbd'.
     - console-setup                                         # console font and keymap setup program
@@ -74,7 +75,7 @@ mmdebstrap:
 #   - curlftpfs                                             # 
     - dbus                                                  # simple interprocess messaging system (system message bus)
     - dbus-user-session                                     # simple interprocess messaging system (systemd --user integration)
-    - dbus-x11                                              # simple interprocess messaging system (X11 deps)
+#   - dbus-x11                                              # simple interprocess messaging system (X11 deps)
 #   - debconf-i18n                                          # full internationalization support for debconf
 #   - debian-installer-launcher                             # Debian Installer desktop launcher
     - desktop-base                                          # common files for the Debian Desktop
@@ -93,7 +94,8 @@ mmdebstrap:
     - gir1.2-dbusmenu-glib-0.4                              # typelib file for libdbusmenu-glib4
     - gnupg                                                 # GNU privacy guard - a free PGP replacement
     - gnupg-l10n                                            # GNU privacy guard - localization files
-#   - gnupg-utils                                           # GNU privacy guard - utility programs
+    - gnupg-utils                                           # GNU privacy guard - utility programs
+    - gnupg2                                                # GNU privacy guard - a free PGP replacement (dummy transitional package)
 #   - gpg                                                   # GNU Privacy Guard -- minimalist public key operations
 #   - gpg-agent                                             # GNU privacy guard - cryptographic agent
 #   - gpg-wks-client                                        # GNU privacy guard - Web Key Service client
@@ -149,6 +151,9 @@ mmdebstrap:
 #   - ofono                                                 # Mobile telephony stack (daemon)
 #   - openssl                                               # Secure Sockets Layer toolkit - cryptographic utility
 #   - os-prober                                             # utility to detect other OSes on a set of drives
+    - packagekit                                            # Provides a package management service
+    - packagekit-tools                                      # Provides PackageKit command-line tools
+    - pass                                                  # lightweight directory-based password manager
     - pciutils                                              # PCI utilities
 #   - pinentry-curses                                       # curses-based PIN or pass-phrase entry dialog for GnuPG
 #   - plymouth                                              # boot animation, logger and I/O multiplexer
@@ -224,6 +229,7 @@ mmdebstrap:
     - task-japanese-desktop                                 # Japanese desktop
     - fonts-noto                                            # metapackage to pull in all Noto fonts
     - im-config                                             # Input method configuration framework
+    - zenity                                                # Display graphical dialog boxes from shell scripts
     - fcitx5-mozc                                           # Mozc engine for fcitx5 - Client of the Mozc input method
     - mozc-utils-gui                                        # GUI utilities of the Mozc input method
     - gnome-shell-extensions                                # Extensions to extend functionality of GNOME Shell
@@ -308,6 +314,7 @@ mmdebstrap:
 # --- gnome -------------------------------------------------------------------
 #   - gnome-accessibility-themes                            # High Contrast GTK+ 2 theme and icons
 #   - gnome-brave-icon-theme                                # blue variation of the GNOME-Colors icon theme
+    - gnome-calendar                                        # Calendar application for GNOME
 #   - gnome-colors                                          # set of GNOME icon themes
 #   - gnome-colors-common                                   # common icons for all GNOME-Colors icon themes
 #   - gnome-desktop3-data                                   # Common files for GNOME desktop apps
@@ -353,13 +360,19 @@ mmdebstrap:
   customize-hooks:
     - chroot "$1" usermod --password "$(echo 'password' | openssl passwd -6 -stdin)" root
 #   - chroot "$1" passwd --delete root
-#   - chroot "$1" sh -c 'echo "PasswordAuthentication yes\nPermitRootLogin no" > /etc/ssh/sshd_config.d/sshd.conf'
+    - chroot "$1" sh -c 'echo "PasswordAuthentication yes\nPermitRootLogin no" > /etc/ssh/sshd_config.d/sshd.conf'
 #   - chroot "$1" sh -c 'if [ -e /usr/bin/startlxde ]; then update-alternatives --set "x-session-manager" "/usr/bin/startlxde"; update-alternatives --get-selections | grep x-session-manager; fi'
 #   - chroot "$1" sh -c 'if [ -d /etc/dconf/. ]; then mkdir -p /etc/dconf/db/local.d /etc/dconf/profile; echo "user-db:user\nsystem-db:local" > /etc/dconf/profile/user; echo "[org/gnome/desktop/session]\nidle-delay="uint32 0"\n\n[org/gnome/desktop/interface]\ncursor-theme=\"Adwaita\"\nicon-theme=\"Adwaita\"\ngtk-theme=\"Adwaita\"\n\n" > /etc/dconf/db/local.d/01-userkeyfile; dconf compile /etc/dconf/db/local /etc/dconf/db/local.d; rm /etc/dconf/db/local.d/01-userkeyfile; fi'
+#   - chroot "$1" sh -c 'if dpkg-query --show xscreensaver > /dev/null 2>&1; then echo -e "mode:\t\toff\nselected:\t-1" > .xscreensaver; fi'
+#   - chroot "$1" sh -c 'if dpkg-query --show fcitx5 > /dev/null 2>&1; then im-config -n fcitx5; fi'
+    - chroot "$1" sh -c 'if dpkg-query --show fcitx5 > /dev/null 2>&1; then sed -i -e '\''/^IM_CONFIG_DEFAULT_MODE=/ s/=.*$/=fcitx5/'\'' -e '\''/^CJKV_LOCALES=/ s/=.*$/="ja_JP"/'\'' -e '\''/^IM_CONFIG_PREFERRED_RULE=/ s/=.*$/="ja_JP,fcitx5"/'\'' /etc/default/im-config; fi'
+    - chroot "$1" sh -c 'if dpkg-query --show samba > /dev/null 2>&1; then sed -i -e '\''/hosts:/{'\'' -e '\''/wins/! s/$/ wins/}'\'' /etc/nsswitch.conf; fi'
+    - chroot "$1" sh -c 'if dpkg-query --show lightdm > /dev/null 2>&1; then dpkg-reconfigure --no-reload lightdm; fi'
+#   - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show xscreensaver 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then echo -e "mode:\t\toff\nselected:\t-1" > .xscreensaver; fi'
 #   - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show fcitx5 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then im-config -n fcitx5; fi'
 #   - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show fcitx5 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then sed -i -e '\''/^IM_CONFIG_DEFAULT_MODE=/ s/=.*$/=fcitx5/'\'' /etc/default/im-config; fi'
-    - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show samba 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then sed -i -e '\''/hosts:/{'\'' -e '\''/wins/! s/$/ wins/}'\'' /etc/nsswitch.conf; fi'
-    - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show lightdm 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then dpkg-reconfigure --no-reload lightdm; fi'
+#   - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show samba 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then sed -i -e '\''/hosts:/{'\'' -e '\''/wins/! s/$/ wins/}'\'' /etc/nsswitch.conf; fi'
+#   - chroot "$1" sh -c '_RETURN_VALUE="$(dpkg-query --show lightdm 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then dpkg-reconfigure --no-reload lightdm; fi'
     - chroot "$1" sh -c '_UNITS="firewalld.service clamav-freshclam.service dnsmasq.service tftpd-hpa.service apache2.service"; _PARM="$(echo "${_UNITS}" | sed -e '\''s/ /|/g'\'')"; _RETURN_VALUE="$(systemctl list-unit-files ${_UNITS} | awk '\''$0~/'\''"${_PARM}"'\''/ {print $1;}'\'')"; if [ -n "${_RETURN_VALUE:-}" ]; then systemctl disable ${_RETURN_VALUE}; fi'
     - chroot "$1" sh -c '_UNITS="ssh.service smbd.service nmbd.service"; _PARM="$(echo "${_UNITS}" | sed -e '\''s/ /|/g'\'')"; _RETURN_VALUE="$(systemctl list-unit-files ${_UNITS} | awk '\''$0~/'\''"${_PARM}"'\''/ {print $1;}'\'')"; if [ -n "${_RETURN_VALUE:-}" ]; then systemctl enable ${_RETURN_VALUE}; fi'
 #   - chroot "$1" sh -c '_RETURN_VALUE="$(command -v snap 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then snap install firefox chromium; fi'

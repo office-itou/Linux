@@ -134,7 +134,7 @@
 	declare       WORK_STRS=""
 #	declare -a    PARM=()
 	declare -i    I=0
-	declare -r    BOOT_OPTN="live components quiet splash overlay-size=90% noeject hooks=medium xorg-resolution=1680x1050"
+	declare -r    BOOT_OPTN="live components quiet splash overlay-size=90% noeject hooks=medium xorg-resolution=1680x1050 utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A"
 
 	# shellcheck disable=SC2312
 	if [[ "$(whoami)" != "root" ]]; then
@@ -450,13 +450,13 @@
 	#			"https://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/debian-installer/amd64/boot-screens/splash.png"
 			cp -a /usr/lib/syslinux/modules/bios/* "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux"
 			cp -a /usr/lib/ISOLINUX/isolinux.bin   "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux"
-			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/isolinux.cfg"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/isolinux.cfg"
 				include menu.cfg
 				default vesamenu.c32
 				prompt 0
 				timeout 50
 _EOT_
-			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/menu.cfg"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/menu.cfg"
 				menu resolution 1024 768
 				menu hshift 12
 				menu width 100
@@ -477,7 +477,7 @@ _EOT_
 				
 				menu clear
 _EOT_
-			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/stdmenu.cfg"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/stdmenu.cfg"
 				menu background		splash.png
 				menu color title	* #FFFFFFFF *
 				menu color border	* #00000000 #00000000 none
@@ -494,7 +494,7 @@ _EOT_
 				menu tabmsgrow 18
 				menu tabmsg Press ENTER to boot or TAB to edit a menu entry
 _EOT_
-			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/live.cfg"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/live.cfg"
 				label ${TGET_LINE[2]//%20/_}
 				 	menu label ^${TGET_LINE[2]//%20/ } [${TGET_LINE[1]##*-}]
 				 	menu default
@@ -502,14 +502,14 @@ _EOT_
 				 	initrd /live/initrd.img
 				 	append boot=${BOOT_OPTN}
 _EOT_
-			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/install.cfg"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/install.cfg"
 				#label installstart
 				#	menu label Start ^installer
 				#	linux /install/gtk/vmlinuz
 				#	initrd /install/gtk/initrd.gz
 				#	append vga=788  --- quiet
 _EOT_
-			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/utilities.cfg"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux/utilities.cfg"
 				label hdt
 				 	menu label ^Hardware Detection Tool (HDT)
 				 	com32 hdt.c32
@@ -525,7 +525,7 @@ _EOT_
 			# ---- create grub ----------------------------------------------------
 			cp -a /usr/lib/grub/x86_64-efi/*  "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/boot/grub/x86_64-efi"
 			cp -a /usr/share/grub/unicode.pf2 "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/boot/grub"
-			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/boot/grub/grub.cfg"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/boot/grub/grub.cfg"
 				set timeout=5
 				set default=0
 				set lang=ja_JP
@@ -559,7 +559,7 @@ _EOT_
 			mount "${DIRS_CDFS}/boot/grub/efi.img" "${DIRS_MNTS}"
 			mkdir -p "${DIRS_MNTS}/"{EFI/boot,boot/grub}
 			cp -a "${DIRS_CDFS}/EFI/boot/"{bootx64.efi,grubx64.efi} "${DIRS_MNTS}/EFI/boot/"
-			cat <<- _EOT_ | sed -e '/^ [^ ]*/ s/^ *//g' > "${DIRS_MNTS}/boot/grub/grub.cfg"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_MNTS}/boot/grub/grub.cfg"
 				search --set=root --file /.disk/info
 				set prefix=(\$root)/boot/grub
 				configfile (\$root)/boot/grub/grub.cfg

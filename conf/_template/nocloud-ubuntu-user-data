@@ -201,6 +201,7 @@ autoinstall:
 # - language-pack-gnome-ja
 # - fonts-noto
 # - im-config
+# - zenity
 # - fcitx5-mozc
 # - mozc-utils-gui
 # - gnome-shell-extensions
