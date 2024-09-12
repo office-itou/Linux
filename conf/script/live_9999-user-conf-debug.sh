@@ -24,7 +24,7 @@
 	echo "\033[m\033[45mstart: ${PROG_PATH}\033[m" | tee /dev/console
 
 	# --- put debug parameter -------------------------------------------------
-	if [ "${LIVE_BOOT_DEBUG:-}" = "true" ] || [ "${LIVE_CONFIG_DEBUG:-}" = "true" ]; then
+	if [ "${LIVE_DEBUGOUT:-}" = "true" ] || [ "${LIVE_BOOT_DEBUG:-}" = "true" ] || [ "${LIVE_CONFIG_DEBUG:-}" = "true" ]; then
 		echo "=== put debug parameter [ start ] =============================================" | tee /dev/console
 		echo "--- common parameter ----------------------------------------------------------" | tee /dev/console
 		echo "LIVE_DEBUGOUT                         = [${LIVE_DEBUGOUT:-}]"                    | tee /dev/console

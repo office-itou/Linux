@@ -175,66 +175,42 @@ _EOT_
 	fi
 
 	# --- set gnome parameter -------------------------------------------------
-	_RETURN_VALUE="$(command -v dconf 2> /dev/null)"
-	if [ -n "${_RETURN_VALUE:-}" ]; then
-		echo "set gnome parameter" | tee /dev/console
-		# --- create dconf profile --------------------------------------------
-		_FILE_PATH="/etc/dconf/profile/user"
-		mkdir -p "${_FILE_PATH%/*}"
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			user-db:user
-			system-db:local
+#	if [ "${LIVE_OS_NAME:-}" = "ubuntu" ]; then
+		_RETURN_VALUE="$(command -v dconf 2> /dev/null)"
+		if [ -n "${_RETURN_VALUE:-}" ]; then
+			echo "set gnome parameter" | tee /dev/console
+			# --- create dconf profile ----------------------------------------
+			_FILE_PATH="/etc/dconf/profile/user"
+			mkdir -p "${_FILE_PATH%/*}"
+			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+				user-db:user
+				system-db:local
 _EOT_
-		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
-			< "${_FILE_PATH}" tee /dev/console
-		fi
-		# --- create dconf db -------------------------------------------------
-		_FILE_PATH="/etc/dconf/db/local.d/00-user-settings"
-		mkdir -p "${_FILE_PATH%/*}"
-		: > "${_FILE_PATH}"
-#		# --- xsettings -------------------------------------------------------
-#		_RETURN_VALUE="$(command -v fcitx5 2> /dev/null)"
-#		if [ -n "${_RETURN_VALUE:-}" ]; then
-#			echo "set gnome parameter: xsettings" | tee /dev/console
-#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-#				[org/gnome/settings-daemon/plugins/xsettings]
-#				overrides={'Gtk/IMModule': <'fcitx'>}
-#				
-#_EOT_
-#		fi
-#		# --- input-sources ---------------------------------------------------
-#		_RETURN_VALUE="$(echo "${LIVE_LOCALES:-}" | sed -e 's/\(.*\)/\L\1/')"
-#		if [ "${_RETURN_VALUE:-}" = "ja_jp.utf-8" ]; then
-#			echo "set gnome parameter: input-sources [${LIVE_LOCALES}]" | tee /dev/console
-#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-#				[org/gnome/desktop/input-sources]
-#				sources=[('xkb', 'jp')]
-#				xkb-options=@as []
-#				
-#_EOT_
-#		fi
-#		# --- screensaver -----------------------------------------------------
-#		echo "set gnome parameter: screensaver" | tee /dev/console
-#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-#			[org/gnome/desktop/screensaver]
-#			idle-activation-enabled=false
-#			lock-enabled=false
-#			
-#_EOT_
-		# --- session ---------------------------------------------------------
-		echo "set gnome parameter: session" | tee /dev/console
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-			[org/gnome/desktop/session]
-			idle-delay=uint32 0
-			
+			if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+				< "${_FILE_PATH}" tee /dev/console
+			fi
+			# --- create dconf db ---------------------------------------------
+			_FILE_PATH="/etc/dconf/db/local.d/00-user-settings"
+			mkdir -p "${_FILE_PATH%/*}"
+			: > "${_FILE_PATH}"
+			# --- session -----------------------------------------------------
+			echo "set gnome parameter: session" | tee /dev/console
+			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+				[org/gnome/desktop/session]
+				idle-delay=uint32 0
+				
 _EOT_
-		# --- debug out -------------------------------------------------------
-		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
-			< "${_FILE_PATH}" tee /dev/console
+			# --- debug out ---------------------------------------------------
+			if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+				< "${_FILE_PATH}" tee /dev/console
+			fi
+			# --- dconf update ------------------------------------------------
+			if systemctl status  dbus.service; then
+				echo "set gnome parameter: dconf update" | tee /dev/console
+				dconf update
+			fi
 		fi
-		# --- dconf update ----------------------------------------------------
-		dconf update
-	fi
+#	fi
 
 	# --- add user ------------------------------------------------------------
 	if [ -n "${LIVE_USERNAME:-}" ]; then
@@ -304,69 +280,71 @@ _EOT_
 _EOT_
 		chown "${USER_NAME}": "${_FILE_PATH}"
 		# --- monitors.xml ----------------------------------------------------
-		_RETURN_VALUE="$(command -v xrandr 2> /dev/null)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
-			case "${LIVE_XORG_RESOLUTION}" in				# resolution
-#				 640x480 ) _RATE="60.000";;					# VGA    (4:3)
-				 800x600 ) _RATE="60.317";;					# SVGA   (4:3)
-				1024x768 ) _RATE="60.004";;					# XGA    (4:3)
-#				1152x864 ) _RATE="60.000";;					#        (4:3)
-				1280x720 ) _RATE="60.000";;					# WXGA   (16:9)
-				1280x768 ) _RATE="59.995";;					#        (4:3)
-				1280x800 ) _RATE="60.000";;					#        (16:10)
-				1280x960 ) _RATE="60.940";;					#        (4:3)
-				1280x1024) _RATE="60.020";;					# SXGA   (5:4)
-				1366x768 ) _RATE="60.000";;					# HD     (16:9)
-				1400x1050) _RATE="59.978";;					#        (4:3)
-				1440x900 ) _RATE="59.901";;					# WXGA+  (16:10)
-				1600x1200) _RATE="60.000";;					# UXGA   (4:3)
-				1680x1050) _RATE="59.954";;					# WSXGA+ (16:10)
-				1792x1344) _RATE="60.000";;					#        (4:3)
-				1856x1392) _RATE="59.995";;					#        (4:3)
-				1920x1080) _RATE="60.000";;					# FHD    (16:9)
-				1920x1200) _RATE="59.950";;					# WUXGA  (16:10)
-				1920x1440) _RATE="60.000";;					#        (4:3)
-#				2560x1440) _RATE="60.000";;					# WQHD   (16:9)
-#				2560x1600) _RATE="60.000";;					#        (16:10)
-#				2880x1800) _RATE="60.000";;					#        (16:10)
-#				3840x2160) _RATE="60.000";;					# 4K UHD (16:9)
-#				3840x2400) _RATE="60.000";;					#        (16:10)
-#				7680x4320) _RATE="60.000";;					# 8K UHD (16:9)
-				*        ) _RATE="60.000";;					# 
-			esac
-			_DIRS_GDM3="var/lib/gdm/.config"
-			_FILE_PATH="${DIRS_NAME}/.config/monitors.xml"
-			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console
-			sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-				<monitors version="2">
-				  <configuration>
-				    <logicalmonitor>
-				      <x>0</x>
-				      <y>0</y>
-				      <scale>1</scale>
-				      <primary>yes</primary>
-				      <monitor>
-				        <monitorspec>
-				          <connector>Virtual-1</connector>
-				          <vendor>unknown</vendor>
-				          <product>unknown</product>
-				          <serial>unknown</serial>
-				        </monitorspec>
-				        <mode>
-				          <width>${LIVE_XORG_RESOLUTION%%x*}</width>
-				          <height>${LIVE_XORG_RESOLUTION#*x}</height>
-				          <rate>${_RATE}</rate>
-				        </mode>
-				      </monitor>
-				    </logicalmonitor>
-				  </configuration>
-				</monitors>
+		if [ -d /etc/gdm3/. ]; then
+			_RETURN_VALUE="$(command -v xrandr 2> /dev/null)"
+			if [ -n "${_RETURN_VALUE:-}" ]; then
+				case "${LIVE_XORG_RESOLUTION:-}" in				# resolution
+#					 640x480 ) _RATE="60.000";;					# VGA    (4:3)
+					 800x600 ) _RATE="60.317";;					# SVGA   (4:3)
+					1024x768 ) _RATE="60.004";;					# XGA    (4:3)
+#					1152x864 ) _RATE="60.000";;					#        (4:3)
+					1280x720 ) _RATE="60.000";;					# WXGA   (16:9)
+					1280x768 ) _RATE="59.995";;					#        (4:3)
+					1280x800 ) _RATE="60.000";;					#        (16:10)
+					1280x960 ) _RATE="60.940";;					#        (4:3)
+					1280x1024) _RATE="60.020";;					# SXGA   (5:4)
+					1366x768 ) _RATE="60.000";;					# HD     (16:9)
+					1400x1050) _RATE="59.978";;					#        (4:3)
+					1440x900 ) _RATE="59.901";;					# WXGA+  (16:10)
+					1600x1200) _RATE="60.000";;					# UXGA   (4:3)
+					1680x1050) _RATE="59.954";;					# WSXGA+ (16:10)
+					1792x1344) _RATE="60.000";;					#        (4:3)
+					1856x1392) _RATE="59.995";;					#        (4:3)
+					1920x1080) _RATE="60.000";;					# FHD    (16:9)
+					1920x1200) _RATE="59.950";;					# WUXGA  (16:10)
+					1920x1440) _RATE="60.000";;					#        (4:3)
+#					2560x1440) _RATE="60.000";;					# WQHD   (16:9)
+#					2560x1600) _RATE="60.000";;					#        (16:10)
+#					2880x1800) _RATE="60.000";;					#        (16:10)
+#					3840x2160) _RATE="60.000";;					# 4K UHD (16:9)
+#					3840x2400) _RATE="60.000";;					#        (16:10)
+#					7680x4320) _RATE="60.000";;					# 8K UHD (16:9)
+					*        ) _RATE="60.000";;					# 
+				esac
+				_DIRS_GDM3="var/lib/gdm/.config"
+				_FILE_PATH="${DIRS_NAME}/.config/monitors.xml"
+				echo "set user parameter: ${_FILE_PATH}" | tee /dev/console
+				sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+					<monitors version="2">
+					  <configuration>
+					    <logicalmonitor>
+					      <x>0</x>
+					      <y>0</y>
+					      <scale>1</scale>
+					      <primary>yes</primary>
+					      <monitor>
+					        <monitorspec>
+					          <connector>Virtual-1</connector>
+					          <vendor>unknown</vendor>
+					          <product>unknown</product>
+					          <serial>unknown</serial>
+					        </monitorspec>
+					        <mode>
+					          <width>${LIVE_XORG_RESOLUTION%%x*}</width>
+					          <height>${LIVE_XORG_RESOLUTION#*x}</height>
+					          <rate>${_RATE}</rate>
+					        </mode>
+					      </monitor>
+					    </logicalmonitor>
+					  </configuration>
+					</monitors>
 _EOT_
-			chown "${USER_NAME}": "${_FILE_PATH}"
-			sudo --user=gdm mkdir -p "${_DIRS_GDM3}"
-			cp "${_FILE_PATH}" "${_DIRS_GDM3}"
-			chown gdm: "${_DIRS_GDM3}/${_FILE_PATH##*/}"
+				chown "${USER_NAME}": "${_FILE_PATH}"
+				sudo --user=gdm mkdir -p "${_DIRS_GDM3}"
+				cp "${_FILE_PATH}" "${_DIRS_GDM3}"
+				chown gdm: "${_DIRS_GDM3}/${_FILE_PATH##*/}"
+			fi
 		fi
 		# --- fcitx5 ----------------------------------------------------------
 		_RETURN_VALUE="$(command -v fcitx5 2> /dev/null)"
@@ -379,13 +357,13 @@ _EOT_
 				# Group Name
 				Name=デフォルト
 				# Layout
-				Default Layout=${LIVE_KEYBOARD_LAYOUTS}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
+				Default Layout=${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
 				# Default Input Method
 				DefaultIM=mozc
 				
 				[Groups/0/Items/0]
 				# Name
-				Name=keyboard-${LIVE_KEYBOARD_LAYOUTS}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
+				Name=keyboard-${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
 				# Layout
 				Layout=
 				
@@ -494,14 +472,16 @@ _EOT_
 _EOT_
 			chown "${USER_NAME}": "${_FILE_PATH}"
 		fi
-		# --- reset gnome parameter -------------------------------------------
-		_RETURN_VALUE="$(command -v dconf 2> /dev/null)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
-			echo "reset gnome parameter" | tee /dev/console
-			sudo --user="${USER_NAME}" dconf reset /org/gnome/desktop/input-sources/mru-sources
-			sudo --user="${USER_NAME}" dconf reset /org/gnome/desktop/input-sources/sources
-			sudo --user="${USER_NAME}" dconf reset /org/gnome/desktop/input-sources/xkb-options
-		fi
+#		# --- reset gnome parameter -------------------------------------------
+#		if [ "${LIVE_OS_NAME:-}" = "ubuntu" ]; then
+#			_RETURN_VALUE="$(command -v dconf 2> /dev/null)"
+#			if [ -n "${_RETURN_VALUE:-}" ]; then
+#				echo "reset gnome parameter" | tee /dev/console
+#				sudo --user="${USER_NAME}" dconf reset /org/gnome/desktop/input-sources/mru-sources
+#				sudo --user="${USER_NAME}" dconf reset /org/gnome/desktop/input-sources/sources
+#				sudo --user="${USER_NAME}" dconf reset /org/gnome/desktop/input-sources/xkb-options
+#			fi
+#		fi
 	done
 
 	# --- create state file ---------------------------------------------------
