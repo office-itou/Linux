@@ -205,10 +205,12 @@ _EOT_
 				< "${_FILE_PATH}" tee /dev/console
 			fi
 			# --- dconf update ------------------------------------------------
-			if systemctl status  dbus.service; then
-				echo "set gnome parameter: dconf update" | tee /dev/console
-				dconf update
-			fi
+#			if systemctl status  dbus.service; then
+#				echo "set gnome parameter: dconf update" | tee /dev/console
+#				dconf update
+				echo "set gnome parameter: dconf compile" | tee /dev/console
+				dconf compile "${_FILE_PATH%.*}" "${_FILE_PATH%/*}"
+#			fi
 		fi
 #	fi
 
