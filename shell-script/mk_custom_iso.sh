@@ -753,14 +753,19 @@ function funcPrintf() {
 	MAX_COLS+=$((CTRL_CNT-(WORK_CNT-TEMP_CNT)))
 	# --- convert utf-8 code --------------------------------------------------
 	set +e
-	RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -"${MAX_COLS}" | iconv -f CP932 -t UTF-8 2> /dev/null)"
-	RET_CD=$?
-	set -e
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		set +e
+	if RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -"${MAX_COLS}" | iconv -f CP932 -t UTF-8 2> /dev/null)"; then
 		RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -$((MAX_COLS-1)) | iconv -f CP932 -t UTF-8 2> /dev/null) "
-		set -e
 	fi
+	set -e
+#	set +e
+#	RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -"${MAX_COLS}" | iconv -f CP932 -t UTF-8 2> /dev/null)"
+#	RET_CD=$?
+#	set -e
+#	if [[ "${RET_CD}" -ne 0 ]]; then
+#		set +e
+#		RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -$((MAX_COLS-1)) | iconv -f CP932 -t UTF-8 2> /dev/null) "
+#		set -e
+#	fi
 #	RET_STR+="$(echo -n -e "${TXT_RESET}")"
 	# -------------------------------------------------------------------------
 	echo -e "${RET_STR}${TXT_RESET}"
@@ -828,7 +833,8 @@ function funcCurl() {
 	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
 	RET_CD=$?
 	set -e
-	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${RET_CD}" -eq 35 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
+#	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${RET_CD}" -eq 35 ]] || [[ "${#WEBS_PAGE[@]}" -le 0 ]]; then
+	if [[ "${RET_CD}" -ne 0 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
 		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 		return "${RET_CD}"
@@ -3994,9 +4000,9 @@ function funcCreate_remaster() {
 function funcCall_function() {
 #	declare -r    OLD_IFS="${IFS}"
 	declare -r    MSGS_TITL="call function test"
-	declare -r    FILE_WRK1="/tmp/testfile1.txt"
-	declare -r    FILE_WRK2="/tmp/testfile2.txt"
-	declare -r    TEST_ADDR="https://raw.githubusercontent.com/office-itou/Linux/master/Readme.md"
+	declare -r    FILE_WRK1="${DIRS_TEMP}/testfile1.txt"
+	declare -r    FILE_WRK2="${DIRS_TEMP}/testfile2.txt"
+	declare -r    HTTP_ADDR="https://raw.githubusercontent.com/office-itou/Linux/master/Readme.md"
 	declare -r -a CURL_OPTN=(         \
 		"--location"                  \
 		"--progress-bar"              \
@@ -4008,9 +4014,12 @@ function funcCall_function() {
 		"--retry" "3"                 \
 		"--create-dirs"               \
 		"--output-dir" "${DIRS_TEMP}" \
-		"${TEST_ADDR}"                \
+		"${HTTP_ADDR}"                \
 	)
 	declare       TEST_PARM=""
+	declare -i    I=0
+	declare       H1=""
+	declare       H2=""
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
@@ -4024,6 +4033,27 @@ _EOT_
 		Line 2
 		line 3
 _EOT_
+
+	# --- text print test -----------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- text print test $(funcString "${COLS_SIZE}" '-')"
+	H1=""
+	H2=""
+	for ((I=1; I<="${COLS_SIZE}"+10; I++))
+	do
+		if [[ $((I % 10)) -eq 0 ]]; then
+			H1+="         $((I%100/10))"
+		fi
+		H2+="$((I%10))"
+	done
+	funcPrintf "${H1}"
+	funcPrintf "${H2}"
+	# shellcheck disable=SC2312
+	funcPrintf "$(funcString "${COLS_SIZE}" '->')"
+	# shellcheck disable=SC2312
+	funcPrintf "$(funcString "${COLS_SIZE}" '→')"
+	echo ""
+
 	# --- text color test -----------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- text color test $(funcString "${COLS_SIZE}" '-')"

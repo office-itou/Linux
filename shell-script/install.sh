@@ -603,14 +603,19 @@ function funcPrintf() {
 	MAX_COLS+=$((CTRL_CNT-(WORK_CNT-TEMP_CNT)))
 	# --- convert utf-8 code --------------------------------------------------
 	set +e
-	RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -"${MAX_COLS}" | iconv -f CP932 -t UTF-8 2> /dev/null)"
-	RET_CD=$?
-	set -e
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		set +e
+	if RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -"${MAX_COLS}" | iconv -f CP932 -t UTF-8 2> /dev/null)"; then
 		RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -$((MAX_COLS-1)) | iconv -f CP932 -t UTF-8 2> /dev/null) "
-		set -e
 	fi
+	set -e
+#	set +e
+#	RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -"${MAX_COLS}" | iconv -f CP932 -t UTF-8 2> /dev/null)"
+#	RET_CD=$?
+#	set -e
+#	if [[ "${RET_CD}" -ne 0 ]]; then
+#		set +e
+#		RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -$((MAX_COLS-1)) | iconv -f CP932 -t UTF-8 2> /dev/null) "
+#		set -e
+#	fi
 #	RET_STR+="$(echo -n -e "${TXT_RESET}")"
 	# -------------------------------------------------------------------------
 	echo -e "${RET_STR}${TXT_RESET}"
@@ -2363,14 +2368,18 @@ _EOT_
 function funcApplication_ntp_timesyncd() {
 	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
 	declare -r    MSGS_TITL="ntp"
-	declare -r    FILE_PATH="$(find "/etc/systemd" -name "timesyncd.conf" \( -type f -o -type l \))"
+#	declare -r    FILE_PATH="$(find "/etc/systemd" -name "timesyncd.conf" \( -type f -o -type l \))"
+	declare -r    FILE_PATH="/etc/systemd/timesyncd.conf.d/local.conf"
 	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	declare       SYSD_NAME=""
 	# -------------------------------------------------------------------------
-	if [[ -z "${FILE_PATH}" ]]; then
+	if ! dpkg-query --show systemd-timesyncd > /dev/null 2>&1; then
 		return
 	fi
+#	if [[ -z "${FILE_PATH}" ]]; then
+#		return
+#	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL}: timesyncd $(funcString "${COLS_SIZE}" '-')"
@@ -2384,10 +2393,15 @@ function funcApplication_ntp_timesyncd() {
 	fi
 	funcPrintf "      ${MSGS_TITL}: create config file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
+	mkdir -p "${FILE_PATH%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
 		# --- user settings ---
 		[Time]
 		NTP=${NTPS_NAME}
+		FallbackNTP=ntp1.jst.mfeed.ad.jp ntp2.jst.mfeed.ad.jp ntp3.jst.mfeed.ad.jp
+		PollIntervalMinSec=1h
+		PollIntervalMaxSec=1d
+		SaveIntervalSec=infinity
 _EOT_
 	# -------------------------------------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: set-timezone"
@@ -3489,6 +3503,9 @@ function funcCall_function() {
 		"${HTTP_ADDR}"                \
 	)
 	declare       TEST_PARM=""
+	declare -i    I=0
+	declare       H1=""
+	declare       H2=""
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
@@ -3502,11 +3519,61 @@ _EOT_
 		Line 2
 		line 3
 _EOT_
+
+	# --- text print test -----------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- text print test $(funcString "${COLS_SIZE}" '-')"
+	H1=""
+	H2=""
+	for ((I=1; I<="${COLS_SIZE}"+10; I++))
+	do
+		if [[ $((I % 10)) -eq 0 ]]; then
+			H1+="         $((I%100/10))"
+		fi
+		H2+="$((I%10))"
+	done
+	funcPrintf "${H1}"
+	funcPrintf "${H2}"
+	# shellcheck disable=SC2312
+	funcPrintf "$(funcString "${COLS_SIZE}" '->')"
+	# shellcheck disable=SC2312
+	funcPrintf "$(funcString "${COLS_SIZE}" '→')"
+	echo ""
+
 	# --- text color test -----------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- text color test $(funcString "${COLS_SIZE}" '-')"
 	funcPrintf "--no-cutting" "funcColorTest"
 	funcColorTest
+	echo ""
+
+	# --- printf --------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "---- printf $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "--no-cutting" "funcPrintf"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_RESET}"    "TXT_RESET"    "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_ULINE}"    "TXT_ULINE"    "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_ULINERST}" "TXT_ULINERST" "${TXT_RESET}"
+#	funcPrintf "%s : %-12.12s : %s" "${TXT_BLINK}"    "TXT_BLINK"    "${TXT_RESET}"
+#	funcPrintf "%s : %-12.12s : %s" "${TXT_BLINKRST}" "TXT_BLINKRST" "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_REV}"      "TXT_REV"      "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_REVRST}"   "TXT_REVRST"   "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_BLACK}"    "TXT_BLACK"    "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_RED}"      "TXT_RED"      "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_GREEN}"    "TXT_GREEN"    "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_YELLOW}"   "TXT_YELLOW"   "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_BLUE}"     "TXT_BLUE"     "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_MAGENTA}"  "TXT_MAGENTA"  "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_CYAN}"     "TXT_CYAN"     "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_WHITE}"    "TXT_WHITE"    "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_BBLACK}"   "TXT_BBLACK"   "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_BRED}"     "TXT_BRED"     "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_BGREEN}"   "TXT_BGREEN"   "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_BYELLOW}"  "TXT_BYELLOW"  "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_BBLUE}"    "TXT_BBLUE"    "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_BMAGENTA}" "TXT_BMAGENTA" "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_BCYAN}"    "TXT_BCYAN"    "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_BWHITE}"   "TXT_BWHITE"   "${TXT_RESET}"
 	echo ""
 
 	# --- diff ----------------------------------------------------------------
