@@ -134,7 +134,7 @@
 	declare       WORK_STRS=""
 #	declare -a    PARM=()
 	declare -i    I=0
-	declare -r    BOOT_OPTN="live components quiet splash overlay-size=90% noeject hooks=medium xorg-resolution=1680x1050 utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A"
+	declare -r    BOOT_OPTN="live components quiet splash overlay-size=90% hooks=medium xorg-resolution=1680x1050 utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A"
 
 	# shellcheck disable=SC2312
 	if [[ "$(whoami)" != "root" ]]; then
@@ -296,17 +296,17 @@
 			DIRS_MNTS="${DIRS_TEMP}/${TGET_LINE[1]}/mnts"
 			SQFS_NAME="${TGET_LINE[1]}.squashfs"
 #			SQFS_NAME="filesystem.squashfs"
-			# --- create cd/dvd image -----------------------------------------
-			if [[ -z "${FLAG_KEEP}" ]] || [[ ! -f "${DIRS_LIVE}/${SQFS_NAME}" ]]; then
+			FILE_YAML="${DIRS_CONF}/_template/live_${TGET_LINE[3]}.yaml"
+			FILE_CONF="${DIRS_TEMP}/${TGET_LINE[1]}/${FILE_YAML##*/}"
+			# --- create cd/dvd image [ create squashfs file ] ----------------
+			if [[ -z "${FLAG_KEEP}" ]] \
+			|| [[ ! -f "${DIRS_LIVE}/${SQFS_NAME}" ]] \
+			|| [[ ! -f "${DIRS_LIVE}/manifest" ]] \
+			|| [[ "${FILE_YAML}" -nt "${DIRS_LIVE}/${SQFS_NAME}" ]]; then
 				rm -rf "${DIRS_LIVE:?}"
-			fi
-			mkdir -p "${DIRS_LIVE:?}" \
-			         "${DIRS_MNTS}"   \
-			         "${DIRS_CDFS}/"{.disk,EFI/boot,boot/grub/{live-theme,x86_64-efi},isolinux,live/{boot,config.conf.d,config-hooks,config-preseed}}
-			# --- create squashfs file ----------------------------------------
-			if [[ -z "${FLAG_KEEP}" ]] || [[ ! -f "${DIRS_LIVE}/${SQFS_NAME}" ]]; then
-#				rm -rf "${DIRS_LIVE:?}"
-#				mkdir -p "${DIRS_LIVE:?}"
+				mkdir -p "${DIRS_LIVE:?}" \
+				         "${DIRS_MNTS}"   \
+				         "${DIRS_CDFS}/"{.disk,EFI/boot,boot/grub/{live-theme,x86_64-efi},isolinux,live/{boot,config.conf.d,config-hooks,config-preseed}}
 				# -------------------------------------------------------------
 				OPTN_COMP=""
 #				case "${TGET_LINE[1]}" in
@@ -317,79 +317,354 @@
 #					*                          ) OPTN_COMP="";;
 #				esac
 				# -------------------------------------------------------------
-				FILE_YAML="${DIRS_CONF}/_template/live_${TGET_LINE[3]}.yaml"
-				FILE_CONF="${DIRS_TEMP}/${TGET_LINE[1]}/${FILE_YAML##*/}"
 				OPTN_CONF="--config ${FILE_CONF}"
 				cp -a "${FILE_YAML}" "${FILE_CONF}"
 				case "${TGET_LINE[1]}" in
-					live-debian-10-*    | \
-					live-debian-11-*    | \
-					live-ubuntu-20.04-* )
-						sed -e '/^ *components:/,/^ *- */ {'                                  \
-						    -e 's/ *non-free-firmware//g}'                                    \
-						    -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                        \
-						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                    \
-						    -e '/^ * *- *at-spi2-common\(\| .*\|#.*\)$/             s/^ /#/g' \
-						    -e '/^ * *- *exfatprogs\(\| .*\|#.*\)$/                 s/^ /#/g' \
-						    -e '/^ * *- *fuse3\(\| .*\|#.*\)$/                      s/^ /#/g' \
-						    -e '/^ * *- *media-types\(\| .*\|#.*\)$/                s/^ /#/g' \
-						    -e '/^ * *- *polkitd\(\| .*\|#.*\)$/                    s/^ /#/g' \
-						    -e '/^ * *- *fcitx5-frontend-all\(\| .*\|#.*\)$/        s/^ /#/g' \
-						    -e '/^ * *- *fcitx5-frontend-gtk[0-9]\+\(\| .*\|#.*\)$/ s/^ /#/g' \
-						    -e '/^ * *- *fcitx5-frontend-qt[0-9]\+\(\| .*\|#.*\)$/  s/^ /#/g' \
-						    -e '/^ * *- *ibus-gtk[0-9]\+\(\| .*\|#.*\)$/            s/^ /#/g' \
-						    -e '/^ * *- *gnome-text-editor\(\| .*\|#.*\)$/          s/^ /#/g' \
-						    -e '/^ * *- *power-profiles-daemon\(\| .*\|#.*\)$/      s/^ /#/g' \
-						    -e '/^ * *- *xcvt\(\| .*\|#.*\)$/                       s/^ /#/g' \
-						    -e '/^#* *- *fcitx5-frontend-gtk[2-3]\(\| .*\|#.*\)$/   s/^#/ /g' \
-						    -e '/^#* *- *fcitx5-frontend-qt[4-5]\(\| .*\|#.*\)$/    s/^#/ /g' \
-						    -e '/^#* *- *ibus-gtk[2-3]\(\| .*\|#.*\)$/              s/^#/ /g' \
-						    -e '}}'                                                           \
-						    "${FILE_YAML}"                                                    \
+					live-debian-11-*    )
+						sed -e '/^ *components:/,/^ *- */ {'                                                      \
+						    -e 's/ *non-free-firmware//g}'                                                        \
+						    -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
+						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
+						    -e '/^ * *- *cron-daemon-common\(\| .*\|#.*\)$/                             s/^ /#/g' \
+						    -e '/^ * *- *firmware-realtek-rtl8723cs-bt\(\| .*\|#.*\)$/                  s/^ /#/g' \
+						    -e '/^ * *- *gnome-browser-connector\(\| .*\|#.*\)$/                        s/^ /#/g' \
+						    -e '/^ * *- *gnome-shell-extension-desktop-icons-ng\(\| .*\|#.*\)$/         s/^ /#/g' \
+						    -e '/^ * *- *gstreamer1.0-libcamera\(\| .*\|#.*\)$/                         s/^ /#/g' \
+						    -e '/^ * *- *pipewire-alsa\(\| .*\|#.*\)$/                                  s/^ /#/g' \
+						    -e '/^ * *- *pipewire-audio\(\| .*\|#.*\)$/                                 s/^ /#/g' \
+						    -e '/^ * *- *pipewire-libcamera\(\| .*\|#.*\)$/                             s/^ /#/g' \
+						    -e '/^ * *- *polkitd-pkla\(\| .*\|#.*\)$/                                   s/^ /#/g' \
+						    -e '/^ * *- *python3-charset-normalizer\(\| .*\|#.*\)$/                     s/^ /#/g' \
+						    -e '/^ * *- *python3-markdown-it\(\| .*\|#.*\)$/                            s/^ /#/g' \
+						    -e '/^ * *- *python3-mdurl\(\| .*\|#.*\)$/                                  s/^ /#/g' \
+						    -e '/^ * *- *python3-rfc3987\(\| .*\|#.*\)$/                                s/^ /#/g' \
+						    -e '/^ * *- *samba-ad-provision\(\| .*\|#.*\)$/                             s/^ /#/g' \
+						    -e '/^ * *- *usr-is-merged\(\| .*\|#.*\)$/                                  s/^ /#/g' \
+						    -e '/^ * *- *wireplumber\(\| .*\|#.*\)$/                                    s/^ /#/g' \
+						    -e '}}'                                                                               \
+						    "${FILE_YAML}"                                                                        \
 						> "${FILE_CONF}"
 						;;
-					live-debian-12-*    )
-						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                        \
-						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                    \
-						    -e '/^ * *- *fcitx5-frontend-all\(\| .*\|#.*\)$/        s/^ /#/g' \
-						    -e '/^ * *- *fcitx5-frontend-gtk[0-9]\+\(\| .*\|#.*\)$/ s/^ /#/g' \
-						    -e '/^ * *- *fcitx5-frontend-qt[0-9]\+\(\| .*\|#.*\)$/  s/^ /#/g' \
-						    -e '/^ * *- *ibus-gtk[0-9]\+\(\| .*\|#.*\)$/            s/^ /#/g' \
-						    -e '/^#* *- *fcitx5-frontend-gtk[2-4]\(\| .*\|#.*\)$/   s/^#/ /g' \
-						    -e '/^#* *- *fcitx5-frontend-qt[4-6]\(\| .*\|#.*\)$/    s/^#/ /g' \
-						    -e '/^#* *- *ibus-gtk[2-4]\(\| .*\|#.*\)$/              s/^#/ /g' \
-						    -e '}}'                                                           \
-						    "${FILE_YAML}"                                                    \
+					live-debian-13-*    )
+						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
+						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
+						    -e '/^ * *- *bdebstrap\(\| .*\|#.*\)$/                                      s/^ /#/g' \
+						    -e '/^ * *- *fbterm\(\| .*\|#.*\)$/                                         s/^ /#/g' \
+						    -e '/^ * *- *mime-support\(\| .*\|#.*\)$/                                   s/^ /#/g' \
+						    -e '/^ * *- *ofono\(\| .*\|#.*\)$/                                          s/^ /#/g' \
+						    -e '/^ * *- *polkitd-pkla\(\| .*\|#.*\)$/                                   s/^ /#/g' \
+						    -e '/^ * *- *python3-pysimplesoap\(\| .*\|#.*\)$/                           s/^ /#/g' \
+						    -e '}}'                                                                               \
+						    "${FILE_YAML}"                                                                        \
+						> "${FILE_CONF}"
+						;;
+					live-debian-xx-*    )
+						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
+						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
+						    -e '/^ * *- *mime-support\(\| .*\|#.*\)$/                                   s/^ /#/g' \
+						    -e '/^ * *- *polkitd-pkla\(\| .*\|#.*\)$/                                   s/^ /#/g' \
+						    -e '}}'                                                                               \
+						    "${FILE_YAML}"                                                                        \
 						> "${FILE_CONF}"
 						;;
 					live-ubuntu-22.04-* )
-						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                        \
-						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                    \
-						    -e '/^ * *- *fcitx5-frontend-all\(\| .*\|#.*\)$/        s/^ /#/g' \
-						    -e '/^ * *- *fcitx5-frontend-gtk[0-9]\+\(\| .*\|#.*\)$/ s/^ /#/g' \
-						    -e '/^ * *- *fcitx5-frontend-qt[0-9]\+\(\| .*\|#.*\)$/  s/^ /#/g' \
-						    -e '/^ * *- *ibus-gtk[0-9]\+\(\| .*\|#.*\)$/            s/^ /#/g' \
-						    -e '/^#* *- *fcitx5-frontend-gtk[2-4]\(\| .*\|#.*\)$/   s/^#/ /g' \
-						    -e '/^#* *- *fcitx5-frontend-qt[4-5]\(\| .*\|#.*\)$/    s/^#/ /g' \
-						    -e '/^#* *- *ibus-gtk[2-4]\(\| .*\|#.*\)$/              s/^#/ /g' \
-						    -e '}}'                                                           \
-						    "${FILE_YAML}"                                                    \
+						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
+						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
+						    -e '/^ * *- *cron-daemon-common\(\| .*\|#.*\)$/                             s/^ /#/g' \
+						    -e '/^ * *- *firmware-realtek-rtl8723cs-bt\(\| .*\|#.*\)$/                  s/^ /#/g' \
+						    -e '/^ * *- *fonts-liberation-sans-narrow\(\| .*\|#.*\)$/                   s/^ /#/g' \
+						    -e '/^ * *- *gnome-browser-connector\(\| .*\|#.*\)$/                        s/^ /#/g' \
+						    -e '/^ * *- *gnome-shell-extension-ubuntu-tiling-assistant\(\| .*\|#.*\)$/  s/^ /#/g' \
+						    -e '/^ * *- *gstreamer1.0-libcamera\(\| .*\|#.*\)$/                         s/^ /#/g' \
+						    -e '/^ * *- *libgpgme11t64\(\| .*\|#.*\)$/                                  s/^ /#/g' \
+						    -e '/^ * *- *pipewire-alsa\(\| .*\|#.*\)$/                                  s/^ /#/g' \
+						    -e '/^ * *- *pipewire-audio\(\| .*\|#.*\)$/                                 s/^ /#/g' \
+						    -e '/^ * *- *pipewire-libcamera\(\| .*\|#.*\)$/                             s/^ /#/g' \
+						    -e '/^ * *- *python3-mdurl\(\| .*\|#.*\)$/                                  s/^ /#/g' \
+						    -e '/^ * *- *python3-rfc3987\(\| .*\|#.*\)$/                                s/^ /#/g' \
+						    -e '/^ * *- *samba-ad-provision\(\| .*\|#.*\)$/                             s/^ /#/g' \
+						    -e '/^ * *- *ubuntu-kernel-accessories\(\| .*\|#.*\)$/                      s/^ /#/g' \
+						    -e '}}'                                                                               \
+						    "${FILE_YAML}"                                                                        \
 						> "${FILE_CONF}"
 						;;
 					live-debian-*       | \
 					live-ubuntu-*       )
-						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                        \
-						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                    \
-						    -e '/^ * *- *fcitx5-frontend-all\(\| .*\|#.*\)$/        s/^ /#/g' \
-						    -e '/^#* *- *fcitx5-frontend-gtk[0-9]\(\| .*\|#.*\)$/   s/^#/ /g' \
-						    -e '/^#* *- *fcitx5-frontend-qt[0-9]\(\| .*\|#.*\)$/    s/^#/ /g' \
-						    -e '/^#* *- *ibus-gtk[0-9]\(\| .*\|#.*\)$/              s/^#/ /g' \
-						    -e '}}'                                                           \
-						    "${FILE_YAML}"                                                    \
+						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
+						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
+						    -e '}}'                                                                               \
+						    "${FILE_YAML}"                                                                        \
 						> "${FILE_CONF}"
 						;;
 					*                   ) OPTN_CONF="";;
 				esac
+				# -------------------------------------------------------------
+				cat <<- '_EOT_SH_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/customize-hooks.sh"
+					#!/bin/sh
+					
+					#	set -n								# Check for syntax errors
+					#	set -x								# Show command and argument expansion
+					#	set -o ignoreeof					# Do not exit with Ctrl+D
+					#	set +m								# Disable job control
+					 	set -e								# End with status other than 0
+					 	set -u								# End with undefined variable reference
+					#	set -o pipefail						# End with in pipe error
+					
+					 	trap 'exit 1' HUP INT QUIT TERM
+					
+					 	readonly    PROG_PATH="$0"
+					#	readonly -a PROG_PARM=("${@:-}")
+					#	readonly    PROG_DIRS="${PROG_PATH%/*}"
+					#	readonly    PROG_NAME="${PROG_PATH##*/}"
+					#	readonly    PROG_PROC="${PROG_NAME}.$$"
+					#	readonly    DIRS_WORK="${PWD}/${PROG_NAME%.*}"
+					#	readonly    DIRS_WORK="${PWD}/share"
+					
+					# --- start -------------------------------------------------------------------
+					 	printf "\033[m\033[45mstart: %s\033[m\n" "${PROG_PATH}"
+					
+					# --- function systemctl ------------------------------------------------------
+					funcSystemctl () {
+					 	_OPTIONS="$1"
+					 	_COMMAND="$2"
+					 	_UNITS="$3"
+					 	_PARM="$(echo "${_UNITS}" | sed -e 's/ /|/g')"
+					 	# shellcheck disable=SC2086
+					 	_RETURN_VALUE="$(systemctl ${_OPTIONS} list-unit-files ${_UNITS} | awk '$0~/'"${_PARM}"'/ {print $1;}')"
+					 	if [ -n "${_RETURN_VALUE:-}" ]; then
+					 		# shellcheck disable=SC2086
+					 		systemctl ${_OPTIONS} "${_COMMAND}" ${_RETURN_VALUE}
+					 	fi
+					}
+					
+					# --- setup root password -----------------------------------------------------
+					 	printf "\033[m\033[42m%s\033[m\n" "setup root password"
+					 	_RETURN_VALUE="$(echo 'password' | openssl passwd -6 -stdin)"
+					 	usermod --password "${_RETURN_VALUE}" root
+					#	passwd --delete root
+					
+					# --- setup ssh login ---------------------------------------------------------
+					 	if dpkg-query --show openssh-server > /dev/null 2>&1; then
+					 		printf "\033[m\033[42m%s\033[m\n" "setup ssh login"
+					 		_FILE_PATH="/etc/ssh/sshd_config.d/sshd.conf"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 			PasswordAuthentication yes
+					 			PermitRootLogin no
+					_EOT_
+					 	fi
+					
+					# --- setup systemd-timesyncd.service -----------------------------------------
+					 	# timedatectl show-timesync --all
+					 	if dpkg-query --show systemd-timesyncd > /dev/null 2>&1; then
+					 		printf "\033[m\033[42m%s\033[m\n" "setup systemd-timesyncd.service"
+					 		_FILE_PATH="/etc/systemd/timesyncd.conf.d/local.conf"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 			[Time]
+					 			NTP=ntp.nict.jp
+					 			FallbackNTP=ntp1.jst.mfeed.ad.jp ntp2.jst.mfeed.ad.jp ntp3.jst.mfeed.ad.jp
+					 			PollIntervalMinSec=1h
+					 			PollIntervalMaxSec=1d
+					 			SaveIntervalSec=infinity
+					_EOT_
+					 	fi
+					
+					# --- setup connman -----------------------------------------------------------
+					 	if dpkg-query --show connman > /dev/null 2>&1; then
+					 		printf "\033[m\033[42m%s\033[m\n" "setup connman"
+					 		if _RETURN_VALUE="$(command -v connmand 2> /dev/null)"; then
+					 			_FILE_PATH="/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
+					 			mkdir -p "${_FILE_PATH%/*}"
+					 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 				[Service]
+					 				ExecStart=
+					 				ExecStart=${_RETURN_VALUE:?} -n --nodnsproxy
+					_EOT_
+					 		fi
+					 		_FILE_PATH="/etc/connman/main.conf"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		sed -i "${_FILE_PATH}"                                                                 \
+					 		    -e '/^AllowHostnameUpdates[ \t]*=/      s/^/#/'                                    \
+					 		    -e '/^PreferredTechnologies[ \t]*=/     s/^/#/'                                    \
+					 		    -e '/^SingleConnectedTechnology[ \t]*=/ s/^/#/'                                    \
+					 		    -e '/^EnableOnlineCheck[ \t]*=/         s/^/#/'                                    \
+					 		    -e '/^NetworkInterfaceBlacklist*=/      s/^/#/'                                    \
+					 		    -e '/^#[ \t]*AllowHostnameUpdates[ \t]*=/a AllowHostnameUpdates = false'           \
+					 		    -e '/^#[ \t]*PreferredTechnologies[ \t]*=/a PreferredTechnologies = ethernet,wifi' \
+					 		    -e '/^#[ \t]*SingleConnectedTechnology[ \t]*=/a SingleConnectedTechnology = true'  \
+					 		    -e '/^#[ \t]*EnableOnlineCheck[ \t]*=/a EnableOnlineCheck = false'
+					 	fi
+					
+					# --- setup fcitx5 ------------------------------------------------------------
+					 	if dpkg-query --show fcitx5 > /dev/null 2>&1; then
+					 		printf "\033[m\033[42m%s\033[m\n" "setup fcitx5"
+					 		_FILE_PATH="/etc/default/im-config"
+					 		sed -i "${_FILE_PATH}"                                        \
+					 		    -e '/^IM_CONFIG_DEFAULT_MODE=/   s/=.*$/=fcitx5/'         \
+					 		    -e '/^CJKV_LOCALES=/             s/=.*$/="ja_JP"/'        \
+					 		    -e '/^IM_CONFIG_PREFERRED_RULE=/ s/=.*$/="ja_JP,fcitx5"/'
+					 	fi
+					
+					# --- setup samba -------------------------------------------------------------
+					 	if dpkg-query --show samba > /dev/null 2>&1; then
+					 		printf "\033[m\033[42m%s\033[m\n" "setup samba"
+					 		_FILE_PATH="/etc/nsswitch.conf"
+					 		sed -i "${_FILE_PATH}"       \
+					 		    -e '/hosts:/{'           \
+					 		    -e '/wins/! s/$/ wins/}'
+					 	fi
+					
+					# --- setup lightdm -----------------------------------------------------------
+					#	if dpkg-query --show lightdm > /dev/null 2>&1; then
+					#		printf "\033[m\033[42m%s\033[m\n" "setup lightdm"
+					#		dpkg-reconfigure --no-reload lightdm
+					#	fi
+					
+					# --- setup wireplumber -------------------------------------------------------
+					 	if dpkg-query --show wireplumber > /dev/null 2>&1; then
+					 		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
+					 		printf "\033[m\033[42m%s\033[m\n" "setup wireplumber"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 			monitor.alsa.rules = [
+					 			  {
+					 			    matches = [
+					 			      # This matches the value of the 'node.name' property of the node.
+					 			      {
+					 			        node.name = "~alsa_output.*"
+					 			      }
+					 			    ]
+					 			    actions = {
+					 			      # Apply all the desired node specific settings here.
+					 			      update-props = {
+					 			        api.alsa.period-size   = 1024
+					 			        api.alsa.headroom      = 8192
+					 			        session.suspend-timeout-seconds = 0
+					 			      }
+					 			    }
+					 			  }
+					 			]
+					_EOT_
+					 	fi
+					
+					# --- setup pipewire ----------------------------------------------------------
+					 	if dpkg-query --show pipewire > /dev/null 2>&1; then
+					 		printf "\033[m\033[42m%s\033[m\n" "setup pipewire"
+					 		_FILE_PATH="/etc/pipewire/pipewire.conf.d/pipewire.conf"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 			context.properties = {
+					 			    ## Properties for the DSP configuration.
+					 			    default.clock.rate          = 48000
+					 			    default.clock.allowed-rates = [ 384000 192000 96000 48000 44100 ]
+					 			    default.clock.quantum       = 2048
+					 			    default.clock.min-quantum   = 2048
+					 			    # These overrides are only applied when running in a vm.
+					 			    vm.overrides = {
+					 			        default.clock.min-quantum = 2048
+					 			    }
+					 			}
+					
+					 			context.modules = [
+					 			    { name = libpipewire-module-rt
+					 			        args = {
+					 			            nice.level    = -15
+					 			            #rt.prio      = 88
+					 			            #rt.time.soft = -1
+					 			            #rt.time.hard = -1
+					 			        }
+					 			        flags = [ ifexists nofail ]
+					 			    }
+					 			]
+					_EOT_
+					 		_FILE_PATH="/etc/pipewire/pipewire-pulse.conf.d/pipewire-pulse.conf"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 			context.modules = [
+					 			    { name = libpipewire-module-rt
+					 			        args = {
+					 			            nice.level   = -15
+					 			            #rt.prio      = 88
+					 			            #rt.time.soft = -1
+					 			            #rt.time.hard = -1
+					 			        }
+					 			        flags = [ ifexists nofail ]
+					 			    }
+					 			]
+					
+					 			pulse.cmd = [
+					 			    { cmd = "load-module" args = "module-always-sink" flags = [ ] }
+					 			    { cmd = "load-module" args = "module-switch-on-connect" }
+					 			    #{ cmd = "load-module" args = "module-gsettings" flags = [ "nofail" ] }
+					 			]
+					_EOT_
+					 	fi
+					
+					# --- setup pulseaudio --------------------------------------------------------
+					 	if dpkg-query --show pulseaudio > /dev/null 2>&1; then
+					 		printf "\033[m\033[42m%s\033[m\n" "setup pulseaudio"
+					 		if id pulse > /dev/null 2>&1; then
+					 			usermod -aG lp pulse
+					 		fi
+					
+					 		_FILE_PATH="/etc/pulse/default.pa.d/unload_driver_modules_for_bluetooth"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 			### unload driver modules for Bluetooth hardware
+					 			.ifexists module-bluetooth-policy.so
+					 			  unload-module module-bluetooth-policy
+					 			.endif
+					 			
+					 			.ifexists module-bluetooth-discover.so
+					 			  unload-module module-bluetooth-discover
+					 			.endif
+					_EOT_
+					 	fi
+					
+					# --- setup bluetooth ---------------------------------------------------------
+					 	if dpkg-query --show bluetooth > /dev/null 2>&1; then
+					 		printf "\033[m\033[42m%s\033[m\n" "setup bluetooth"
+					 		_FILE_PATH="/etc/bluetooth/audio.conf"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 			[General]
+					 			Enable=Source,Sink,Media,Socket
+					_EOT_
+					 	fi
+					
+					# --- install snap packages ---------------------------------------------------
+					#	if dpkg-query --show snap > /dev/null 2>&1; then
+					#		printf "\033[m\033[42m%s\033[m\n" "install snap packages"
+					#		snap install firefox chromium
+					#	fi
+					
+					# --- setup firewall ----------------------------------------------------------
+					#	if dpkg-query --show firewalld > /dev/null 2>&1; then
+					#		printf "\033[m\033[42m%s\033[m\n" "setup firewall"
+					#		firewall-cmd --permanent --change-interface=ens160 --zone=home
+					#	fi
+					
+					# --- setup systemctl ---------------------------------------------------------
+					 	printf "\033[m\033[42m%s\033[m\n" "setup systemctl"
+					#	funcSystemctl "--user"   "mask"    "wireplumber.service"
+					#	funcSystemctl "--system" "mask"    "avahi-daemon.service avahi-daemon.socket"
+					 	funcSystemctl "--system" "disable" "firewalld.service clamav-freshclam.service tftpd-hpa.service apache2.service"
+					 	funcSystemctl "--system" "enable"  "ssh.service dnsmasq.service smbd.service nmbd.service"
+					
+					# --- exit --------------------------------------------------------------------
+					 	printf "\033[m\033[45mcomplete: %s\033[m\n" "${PROG_PATH}"
+					 	exit 0
+					
+					# --- eof ---------------------------------------------------------------------
+_EOT_SH_
+				if dpkg-query --show shellcheck > /dev/null 2>&1; then
+					if ! shellcheck -o all "${DIRS_TEMP}/${TGET_LINE[1]}/customize-hooks.sh" > /dev/null 2>&1; then
+						printf "\033[m\033[41mfail: %s\033[m" "${DIRS_TEMP}/${TGET_LINE[1]}/customize-hooks.sh"
+						shellcheck -o all "${DIRS_TEMP}/${TGET_LINE[1]}/customize-hooks.sh"
+						exit 1
+					fi
+				fi
 				# -------------------------------------------------------------
 				# shellcheck disable=SC2086,SC2090,SC2248
 				ionice -c "${IONICE_CLAS}" bdebstrap \
@@ -399,6 +674,10 @@
 				    --output-base-dir "${DIRS_WORK}/live" \
 				    ${OPTN_KEYS:-} \
 				    ${OPTN_COMP:-} \
+				    --customize-hook "cp -a \"${DIRS_TEMP}/${TGET_LINE[1]}/customize-hooks.sh\" \"\$1\"" \
+				    --customize-hook "chmod +x \"\$1/customize-hooks.sh\"" \
+				    --customize-hook "chroot \"\$1\" \"/customize-hooks.sh\"" \
+				    --customize-hook "rm -f \"\$1/customize-hooks.sh\"" \
 				    --suite "${TGET_LINE[1]##*-}" \
 				    --target "${SQFS_NAME}" \
 				    || if [[ -n "${FLAG_CONT:-}" ]]; then continue; else exit 1; fi
@@ -411,6 +690,8 @@
 				fi
 			fi
 			# ---- copy script ------------------------------------------------
+			mkdir -p "${DIRS_MNTS}"   \
+			         "${DIRS_CDFS}/"{.disk,EFI/boot,boot/grub/{live-theme,x86_64-efi},isolinux,live/{boot,config.conf.d,config-hooks,config-preseed}}
 			for PATH_SRCS in "${DIRS_CONF}/script/"live_*.{sh,conf}
 			do
 				FILE_NAME="${PATH_SRCS##*live_}"
@@ -590,7 +871,7 @@ _EOT_
 #			echo "${TGET_LINE[2]//%20/ } elapsed time: $((end_time-section_start_time)) [sec]"
 			printf "${TGET_LINE[2]//%20/ } elapsed time: %dd%02dh%02dm%02ds\n" $(((end_time-section_start_time)/86400)) $(((end_time-section_start_time)%86400/3600)) $(((end_time-section_start_time)%3600/60)) $(((end_time-section_start_time)%60))
 		done
-		ls -lth "${DIRS_WORK}/live/"*.iso
+		ls -lth "${DIRS_WORK}/live/"*.iso 2> /dev/null || true
 	fi
 
 	date +"%Y/%m/%d %H:%M:%S"
@@ -632,3 +913,8 @@ _EOT_
 #	    [--target TARGET] 
 #	    [--mirrors MIRRORS] 
 #	    [SUITE [TARGET [MIRROR...]]]
+# *****************************************************************************
+# ALSA test
+# aplay -l
+# for F in /usr/share/sounds/alsa/*.wav; do aplay --device=sysdefault:CARD=Generic $F; done
+# *****************************************************************************

@@ -1838,6 +1838,8 @@ function funcApplication_firewall() {
 	# -------------------------------------------------------------------------
 #	funcPrintf "      ${MSGS_TITL}: firewall runtime to permanent"
 #	firewall-cmd --quiet --runtime-to-permanent
+	funcPrintf "      ${MSGS_TITL}: firewall change-interface"
+	firewall-cmd --quiet --zone="${FWAL_ZONE}" --change-interface="${ETHR_NAME[0]}" --permanent
 	funcPrintf "      ${MSGS_TITL}: firewall reload"
 	firewall-cmd --quiet --reload
 }
