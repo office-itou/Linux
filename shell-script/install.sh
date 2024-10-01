@@ -2376,7 +2376,7 @@ function funcApplication_ntp_timesyncd() {
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	declare       SYSD_NAME=""
 	# -------------------------------------------------------------------------
-	if ! apt list --installed 2> /dev/null | grep -q systemd-timesyncd; then
+	if ! LANG=C apt list 'systemd-timesyncd' 2> /dev/null | grep -q 'installed'; then
 		return
 	fi
 #	if [[ -z "${FILE_PATH}" ]]; then

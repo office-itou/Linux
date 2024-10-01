@@ -461,6 +461,11 @@
 					 	fi
 					}
 					
+					# --- function is package -----------------------------------------------------
+					funcIsPackage () {
+					 	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed'
+					}
+					
 					# --- setup root password -----------------------------------------------------
 					 	printf "\033[m\033[42m%s\033[m\n" "setup root password"
 					 	_RETURN_VALUE="$(echo 'password' | openssl passwd -6 -stdin)"
@@ -468,7 +473,8 @@
 					#	passwd --delete root
 					
 					# --- setup ssh login ---------------------------------------------------------
-					 	if apt list --installed 2> /dev/null | grep -q openssh-server; then
+					 	# shellcheck disable=SC2091,SC2310
+					 	if $(funcIsPackage 'openssh-server'); then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup ssh login"
 					 		_FILE_PATH="/etc/ssh/sshd_config.d/sshd.conf"
 					 		mkdir -p "${_FILE_PATH%/*}"
@@ -480,7 +486,8 @@
 					
 					# --- setup systemd-timesyncd.service -----------------------------------------
 					 	# timedatectl show-timesync --all
-					 	if apt list --installed 2> /dev/null | grep -q systemd-timesyncd; then
+					 	# shellcheck disable=SC2091,SC2310
+					 	if $(funcIsPackage 'systemd-timesyncd'); then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup systemd-timesyncd.service"
 					 		_FILE_PATH="/etc/systemd/timesyncd.conf.d/local.conf"
 					 		mkdir -p "${_FILE_PATH%/*}"
@@ -495,7 +502,8 @@
 					 	fi
 					
 					# --- setup connman -----------------------------------------------------------
-					 	if apt list --installed 2> /dev/null | grep -q connman; then
+					 	# shellcheck disable=SC2091,SC2310
+					 	if $(funcIsPackage 'connman'); then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup connman"
 					 		if _RETURN_VALUE="$(command -v connmand 2> /dev/null)"; then
 					 			_FILE_PATH="/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
@@ -521,7 +529,8 @@
 					 	fi
 					
 					# --- setup fcitx5 ------------------------------------------------------------
-					 	if apt list --installed 2> /dev/null | grep -q fcitx5; then
+					 	# shellcheck disable=SC2091,SC2310
+					 	if $(funcIsPackage 'fcitx5'); then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup fcitx5"
 					 		_FILE_PATH="/etc/default/im-config"
 					 		sed -i "${_FILE_PATH}"                                        \
@@ -531,7 +540,8 @@
 					 	fi
 					
 					# --- setup samba -------------------------------------------------------------
-					 	if apt list --installed 2> /dev/null | grep -q samba; then
+					 	# shellcheck disable=SC2091,SC2310
+					 	if $(funcIsPackage 'samba'); then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup samba"
 					 		_FILE_PATH="/etc/nsswitch.conf"
 					 		sed -i "${_FILE_PATH}"       \
@@ -540,13 +550,15 @@
 					 	fi
 					
 					# --- setup lightdm -----------------------------------------------------------
-					#	if apt list --installed 2> /dev/null | grep -q lightdm; then
+					#	# shellcheck disable=SC2091,SC2310
+					#	if $(funcIsPackage 'lightdm'); then
 					#		printf "\033[m\033[42m%s\033[m\n" "setup lightdm"
 					#		dpkg-reconfigure --no-reload lightdm
 					#	fi
 					
 					# --- setup wireplumber -------------------------------------------------------
-					 	if apt list --installed 2> /dev/null | grep -q wireplumber; then
+					 	# shellcheck disable=SC2091,SC2310
+					 	if $(funcIsPackage 'wireplumber'); then
 					 		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
 					 		printf "\033[m\033[42m%s\033[m\n" "setup wireplumber"
 					 		mkdir -p "${_FILE_PATH%/*}"
@@ -573,7 +585,8 @@
 					 	fi
 					
 					# --- setup pipewire ----------------------------------------------------------
-					 	if apt list --installed 2> /dev/null | grep -q pipewire; then
+					 	# shellcheck disable=SC2091,SC2310
+					 	if $(funcIsPackage 'pipewire'); then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup pipewire"
 					 		# --- debian 11 -------------------------------------------------------
 					 		# https://wiki.debian.org/PipeWire
@@ -673,7 +686,8 @@
 					 	fi
 					
 					# --- setup pulseaudio --------------------------------------------------------
-					 	if apt list --installed 2> /dev/null | grep -q pulseaudio; then
+					 	# shellcheck disable=SC2091,SC2310
+					 	if $(funcIsPackage 'pulseaudio'); then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup pulseaudio"
 					 		if id pulse > /dev/null 2>&1; then
 					 			usermod -aG lp pulse
@@ -691,17 +705,18 @@
 					 			  unload-module module-bluetooth-discover
 					 			.endif
 					_EOT_
-					 			# --- service -----------------------------------------------------
-					 			systemctl --global daemon-reload || true
-					 			systemctl --global disable pipewire pipewire-pulse || true
-					 			systemctl --global mask    pipewire pipewire-pulse || true
-					 			systemctl --global unmask  pulseaudio || true
-					 			systemctl --global enable  pulseaudio || true
-					 			ldconfig
+					 		# --- service ---------------------------------------------------------
+					 		systemctl --global daemon-reload || true
+					 		systemctl --global disable pipewire pipewire-pulse || true
+					 		systemctl --global mask    pipewire pipewire-pulse || true
+					 		systemctl --global unmask  pulseaudio || true
+					 		systemctl --global enable  pulseaudio || true
+					 		ldconfig
 					 	fi
 					
 					# --- setup bluetooth ---------------------------------------------------------
-					 	if apt list --installed 2> /dev/null | grep -q bluetooth; then
+					 	# shellcheck disable=SC2091,SC2310
+					 	if $(funcIsPackage 'bluetooth'); then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup bluetooth"
 					 		_FILE_PATH="/etc/bluetooth/audio.conf"
 					 		mkdir -p "${_FILE_PATH%/*}"
@@ -712,13 +727,15 @@
 					 	fi
 					
 					# --- install snap packages ---------------------------------------------------
-					#	if apt list --installed 2> /dev/null | grep -q snap; then
+					#	# shellcheck disable=SC2091,SC2310
+					#	if $(funcIsPackage 'snap'); then
 					#		printf "\033[m\033[42m%s\033[m\n" "install snap packages"
 					#		snap install firefox chromium
 					#	fi
 					
 					# --- setup firewall ----------------------------------------------------------
-					#	if apt list --installed 2> /dev/null | grep -q firewalld; then
+					#	# shellcheck disable=SC2091,SC2310
+					#	if $(funcIsPackage 'firewalld'); then
 					#		printf "\033[m\033[42m%s\033[m\n" "setup firewall"
 					#		firewall-cmd --permanent --change-interface=ens160 --zone=home
 					#	fi
@@ -736,7 +753,7 @@
 					
 					# --- eof ---------------------------------------------------------------------
 _EOT_SH_
-				if apt list --installed 2> /dev/null | grep -q shellcheck; then
+				if LANG=C apt list 'shellcheck' 2> /dev/null | grep -q 'installed'; then
 					if ! shellcheck -o all "${DIRS_TEMP}/${TGET_LINE[1]}/customize-hooks.sh" > /dev/null 2>&1; then
 						printf "\033[m\033[41mfail: %s\033[m" "${DIRS_TEMP}/${TGET_LINE[1]}/customize-hooks.sh"
 						shellcheck -o all "${DIRS_TEMP}/${TGET_LINE[1]}/customize-hooks.sh"
