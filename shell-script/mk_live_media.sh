@@ -468,7 +468,7 @@
 					#	passwd --delete root
 					
 					# --- setup ssh login ---------------------------------------------------------
-					 	if dpkg-query --show openssh-server > /dev/null 2>&1; then
+					 	if apt list --installed 2> /dev/null | grep -q openssh-server; then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup ssh login"
 					 		_FILE_PATH="/etc/ssh/sshd_config.d/sshd.conf"
 					 		mkdir -p "${_FILE_PATH%/*}"
@@ -480,7 +480,7 @@
 					
 					# --- setup systemd-timesyncd.service -----------------------------------------
 					 	# timedatectl show-timesync --all
-					 	if dpkg-query --show systemd-timesyncd > /dev/null 2>&1; then
+					 	if apt list --installed 2> /dev/null | grep -q systemd-timesyncd; then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup systemd-timesyncd.service"
 					 		_FILE_PATH="/etc/systemd/timesyncd.conf.d/local.conf"
 					 		mkdir -p "${_FILE_PATH%/*}"
@@ -495,7 +495,7 @@
 					 	fi
 					
 					# --- setup connman -----------------------------------------------------------
-					 	if dpkg-query --show connman > /dev/null 2>&1; then
+					 	if apt list --installed 2> /dev/null | grep -q connman; then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup connman"
 					 		if _RETURN_VALUE="$(command -v connmand 2> /dev/null)"; then
 					 			_FILE_PATH="/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
@@ -521,7 +521,7 @@
 					 	fi
 					
 					# --- setup fcitx5 ------------------------------------------------------------
-					 	if dpkg-query --show fcitx5 > /dev/null 2>&1; then
+					 	if apt list --installed 2> /dev/null | grep -q fcitx5; then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup fcitx5"
 					 		_FILE_PATH="/etc/default/im-config"
 					 		sed -i "${_FILE_PATH}"                                        \
@@ -531,7 +531,7 @@
 					 	fi
 					
 					# --- setup samba -------------------------------------------------------------
-					 	if dpkg-query --show samba > /dev/null 2>&1; then
+					 	if apt list --installed 2> /dev/null | grep -q samba; then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup samba"
 					 		_FILE_PATH="/etc/nsswitch.conf"
 					 		sed -i "${_FILE_PATH}"       \
@@ -540,13 +540,13 @@
 					 	fi
 					
 					# --- setup lightdm -----------------------------------------------------------
-					#	if dpkg-query --show lightdm > /dev/null 2>&1; then
+					#	if apt list --installed 2> /dev/null | grep -q lightdm; then
 					#		printf "\033[m\033[42m%s\033[m\n" "setup lightdm"
 					#		dpkg-reconfigure --no-reload lightdm
 					#	fi
 					
 					# --- setup wireplumber -------------------------------------------------------
-					 	if dpkg-query --show wireplumber > /dev/null 2>&1; then
+					 	if apt list --installed 2> /dev/null | grep -q wireplumber; then
 					 		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
 					 		printf "\033[m\033[42m%s\033[m\n" "setup wireplumber"
 					 		mkdir -p "${_FILE_PATH%/*}"
@@ -573,7 +573,7 @@
 					 	fi
 					
 					# --- setup pipewire ----------------------------------------------------------
-					 	if dpkg-query --show pipewire > /dev/null 2>&1; then
+					 	if apt list --installed 2> /dev/null | grep -q pipewire; then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup pipewire"
 					 		# --- debian 11 -------------------------------------------------------
 					 		# https://wiki.debian.org/PipeWire
@@ -673,7 +673,7 @@
 					 	fi
 					
 					# --- setup pulseaudio --------------------------------------------------------
-					 	if dpkg-query --show pulseaudio > /dev/null 2>&1; then
+					 	if apt list --installed 2> /dev/null | grep -q pulseaudio; then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup pulseaudio"
 					 		if id pulse > /dev/null 2>&1; then
 					 			usermod -aG lp pulse
@@ -701,7 +701,7 @@
 					 	fi
 					
 					# --- setup bluetooth ---------------------------------------------------------
-					 	if dpkg-query --show bluetooth > /dev/null 2>&1; then
+					 	if apt list --installed 2> /dev/null | grep -q bluetooth; then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup bluetooth"
 					 		_FILE_PATH="/etc/bluetooth/audio.conf"
 					 		mkdir -p "${_FILE_PATH%/*}"
@@ -712,13 +712,13 @@
 					 	fi
 					
 					# --- install snap packages ---------------------------------------------------
-					#	if dpkg-query --show snap > /dev/null 2>&1; then
+					#	if apt list --installed 2> /dev/null | grep -q snap; then
 					#		printf "\033[m\033[42m%s\033[m\n" "install snap packages"
 					#		snap install firefox chromium
 					#	fi
 					
 					# --- setup firewall ----------------------------------------------------------
-					#	if dpkg-query --show firewalld > /dev/null 2>&1; then
+					#	if apt list --installed 2> /dev/null | grep -q firewalld; then
 					#		printf "\033[m\033[42m%s\033[m\n" "setup firewall"
 					#		firewall-cmd --permanent --change-interface=ens160 --zone=home
 					#	fi
@@ -736,7 +736,7 @@
 					
 					# --- eof ---------------------------------------------------------------------
 _EOT_SH_
-				if dpkg-query --show shellcheck > /dev/null 2>&1; then
+				if apt list --installed 2> /dev/null | grep -q shellcheck; then
 					if ! shellcheck -o all "${DIRS_TEMP}/${TGET_LINE[1]}/customize-hooks.sh" > /dev/null 2>&1; then
 						printf "\033[m\033[41mfail: %s\033[m" "${DIRS_TEMP}/${TGET_LINE[1]}/customize-hooks.sh"
 						shellcheck -o all "${DIRS_TEMP}/${TGET_LINE[1]}/customize-hooks.sh"

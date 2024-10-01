@@ -544,18 +544,8 @@ mmdebstrap:
 # essential-hooks:
 # customize-hooks:
 #   - chroot "$1" usermod --password "$(echo 'password' | openssl passwd -6 -stdin)" root
-#-  - chroot "$1" passwd --delete root
+#   - chroot "$1" passwd --delete root
 #   - chroot "$1" sh -c 'echo "PasswordAuthentication yes\nPermitRootLogin no" > /etc/ssh/sshd_config.d/sshd.conf'
-#   - chroot "$1" sh -c 'if dpkg-query --show fcitx5 > /dev/null 2>&1; then sed -i -e '\''/^IM_CONFIG_DEFAULT_MODE=/ s/=.*$/=fcitx5/'\'' -e '\''/^CJKV_LOCALES=/ s/=.*$/="ja_JP"/'\'' -e '\''/^IM_CONFIG_PREFERRED_RULE=/ s/=.*$/="ja_JP,fcitx5"/'\'' /etc/default/im-config; fi'
-#   - chroot "$1" sh -c 'if dpkg-query --show samba > /dev/null 2>&1; then sed -i -e '\''/hosts:/{'\'' -e '\''/wins/! s/$/ wins/}'\'' /etc/nsswitch.conf; fi'
-#   - chroot "$1" sh -c 'if dpkg-query --show lightdm > /dev/null 2>&1; then dpkg-reconfigure --no-reload lightdm; fi'
-#   - chroot "$1" sh -c 'if [ -d /etc/pulse/default.pa.d/. ]; then echo "### unload driver modules for Bluetooth hardware\n.ifexists module-bluetooth-policy.so\n  unload-module module-bluetooth-policy\n.endif\n\n.ifexists module-bluetooth-discover.so\n  unload-module module-bluetooth-discover\n.endif" > /etc/pulse/default.pa.d/unload_driver_modules_for_bluetooth; fi
-#   - chroot "$1" sh -c 'if id pulse > /dev/null 2>&1; then usermod -aG lp pulse; fi'
-#   - chroot "$1" sh -c '_UNITS="avahi-daemon.service"; _PARM="$(echo "${_UNITS}" | sed -e '\''s/ /|/g'\'')"; _RETURN_VALUE="$(systemctl list-unit-files ${_UNITS} | awk '\''$0~/'\''"${_PARM}"'\''/ {print $1;}'\'')"; if [ -n "${_RETURN_VALUE:-}" ]; then systemctl mask ${_RETURN_VALUE}; fi'
-#   - chroot "$1" sh -c '_UNITS="firewalld.service clamav-freshclam.service dnsmasq.service tftpd-hpa.service apache2.service"; _PARM="$(echo "${_UNITS}" | sed -e '\''s/ /|/g'\'')"; _RETURN_VALUE="$(systemctl list-unit-files ${_UNITS} | awk '\''$0~/'\''"${_PARM}"'\''/ {print $1;}'\'')"; if [ -n "${_RETURN_VALUE:-}" ]; then systemctl disable ${_RETURN_VALUE}; fi'
-#   - chroot "$1" sh -c '_UNITS="ssh.service smbd.service nmbd.service"; _PARM="$(echo "${_UNITS}" | sed -e '\''s/ /|/g'\'')"; _RETURN_VALUE="$(systemctl list-unit-files ${_UNITS} | awk '\''$0~/'\''"${_PARM}"'\''/ {print $1;}'\'')"; if [ -n "${_RETURN_VALUE:-}" ]; then systemctl enable ${_RETURN_VALUE}; fi'
-#-  - chroot "$1" sh -c '_RETURN_VALUE="$(command -v snap 2> /dev/null)"; if [ -n "${_RETURN_VALUE:-}" ]; then snap install firefox chromium; fi'
-#-  - chroot "$1" firewall-cmd --permanent --change-interface=ens160 --zone=home
   cleanup-hooks:
     - rm -f "$1/etc/hostname" "$1/etc/hosts"
     - P="$1"; for D in $(mount | awk '$3~"'$P'" { print $3;}' | sort -r); do umount "${D}" || umount --force "${D}" || umount --lazy "${D}"; done
