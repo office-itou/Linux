@@ -254,7 +254,7 @@ mmdebstrap:
     - netplan.io                                            # Declarative network configuration for various backends
     - nftables                                              # Program to control packet filtering rules by Netfilter project
     - nkf                                                   # Network Kanji code conversion Filter
-#   - ofono                                                 # Mobile telephony stack (daemon)
+    - ofono                                                 # Mobile telephony stack (daemon)
     - open-iscsi                                            # iSCSI initiator tools
     - os-prober                                             # utility to detect other OSes on a set of drives
     - parted                                                # disk partition manipulator
@@ -303,6 +303,7 @@ mmdebstrap:
     - psf-unifont                                           # PSF (console) version of GNU Unifont with APL support
     - psmisc                                                # utilities that use the proc file system
     - publicsuffix                                          # accurate, machine-readable list of domain name suffixes
+#   - pulseaudio                                            # PulseAudio sound server
     - pxelinux                                              # collection of bootloaders (PXE network bootloader)
     - python-apt-common                                     # Python interface to libapt-pkg (locales)
     - python3-anyio                                         # Asynchronous compatibility layer (Python 3)
@@ -445,6 +446,16 @@ mmdebstrap:
     - chromium-chromedriver                                 # Transitional package - chromium-chromedriver -> chromium snap
 #   - connman-gtk                                           # fully-featured GUI for ConnMan with systray support
     - dconf-editor                                          # simple configuration storage system - graphical editor
+    - fcitx5-config-qt                                      # configuration tool for Fcitx5 (Qt version)
+    - fcitx5-frontend-all                                   # Fcitx Input Method Framework v5 (IM Module Metapackage)
+#   - fcitx5-frontend-fbterm                                # FbTerm frontend for fcitx5
+#   - fcitx5-frontend-gtk2                                  # GTK2 IM Module for fcitx5
+#   - fcitx5-frontend-gtk3                                  # GTK3 IM Module for fcitx5
+#   - fcitx5-frontend-gtk4                                  # GTK4 IM Module for fcitx5
+#   - fcitx5-frontend-qt5                                   # Qt5 IM module for fcitx5
+#   - fcitx5-frontend-qt6                                   # Qt6 IM module for fcitx5
+#   - fcitx5-frontend-tmux                                  # Tmux fcitx5 client
+    - ffmpeg                                                # Tools for transcoding, streaming and playing of multimedia files
     - firefox                                               # Transitional package - firefox -> firefox snap
     - gnome-browser-connector                               # GNOME Shell extensions integration for web browsers
     - gnome-colors                                          # set of GNOME icon themes
@@ -466,6 +477,7 @@ mmdebstrap:
     - gstreamer1.0-alsa                                     # GStreamer plugin for ALSA
     - gstreamer1.0-gl                                       # GStreamer plugins for GL
     - gstreamer1.0-gtk3                                     # GStreamer plugin for GTK+3
+    - gstreamer1.0-libav                                    # ffmpeg plugin for GStreamer
 #   - gstreamer1.0-libcamera                                # complex camera support library (GStreamer plugin)
     - gstreamer1.0-packagekit                               # GStreamer plugin to install codecs using PackageKit
     - gstreamer1.0-pipewire                                 # GStreamer 1.0 plugin for the PipeWire multimedia server

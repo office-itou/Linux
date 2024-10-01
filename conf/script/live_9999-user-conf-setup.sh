@@ -454,6 +454,28 @@ _EOT_
 #_EOT_
 #			chown "${USER_NAME}": "${_FILE_PATH}"
 		fi
+		# --- gtkrc-2.0 -------------------------------------------------------
+		if [ -d /etc/gtk-2.0/. ]; then
+			_FILE_PATH="${DIRS_NAME}/.gtkrc-2.0.mine"
+			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+				#gtk-theme-name="Raleigh"
+				#gtk-icon-theme-name="nuoveXT2"
+				gtk-font-name="Sans 9"
+				#gtk-cursor-theme-size=18
+				#gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
+				#gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
+				#gtk-button-images=1
+				#gtk-menu-images=1
+				#gtk-enable-event-sounds=1
+				#gtk-enable-input-feedback-sounds=1
+				#gtk-xft-antialias=1
+				#gtk-xft-hinting=1
+				#gtk-xft-hintstyle="hintslight"
+				#gtk-xft-rgba="rgb"
+_EOT_
+			chown "${USER_NAME}": "${_FILE_PATH}"
+		fi
 		# --- lxterminal.conf -------------------------------------------------
 		_RETURN_VALUE="$(command -v lxterminal 2> /dev/null)"
 		if [ -n "${_RETURN_VALUE:-}" ]; then
@@ -493,8 +515,8 @@ _EOT_
 				audiblebell=false
 				visualbell=false
 				tabpos=top
-				geometry_columns=80
-				geometry_rows=24
+				geometry_columns=120
+				geometry_rows=30
 				hidescrollbar=false
 				hidemenubar=false
 				hideclosebutton=false

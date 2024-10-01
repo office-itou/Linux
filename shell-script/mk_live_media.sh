@@ -114,9 +114,9 @@
 	declare       PSID_NAME=""
 	declare -a    TGET_LIST=("${DATA_LIST_CSTM[@]}")
 	declare -a    TGET_LINE=()
-	declare       FLAG_KEEP=""
-	declare       FLAG_SIMU=""
-	declare       FLAG_CONT=""
+	declare       FLAG_KEEP=""			# reusing a previously created filesystem.squashfs
+	declare       FLAG_SIMU=""			# check selected packages (simulation only)
+	declare       FLAG_CONT=""			# do not stop on errors
 	declare       OPTN_CONF=""
 	declare       OPTN_KEYS=""
 	declare       OPTN_COMP=""
@@ -217,6 +217,11 @@
 					shift
 					COMD_LINE=("${@:-}")
 					;;
+				-f | --force )
+					FLAG_KEEP="force"
+					shift
+					COMD_LINE=("${@:-}")
+					;;
 				-s | --simu )
 					FLAG_SIMU="--simulate"
 					shift
@@ -299,7 +304,7 @@
 			FILE_YAML="${DIRS_CONF}/_template/live_${TGET_LINE[3]}.yaml"
 			FILE_CONF="${DIRS_TEMP}/${TGET_LINE[1]}/${FILE_YAML##*/}"
 			# --- create cd/dvd image [ create squashfs file ] ----------------
-			if [[ -z "${FLAG_KEEP}" ]] \
+			if [[ "${FLAG_KEEP}" != "true" ]] \
 			|| [[ ! -f "${DIRS_LIVE}/${SQFS_NAME}" ]] \
 			|| [[ ! -f "${DIRS_LIVE}/manifest" ]] \
 			|| [[ "${FILE_YAML}" -nt "${DIRS_LIVE}/${SQFS_NAME}" ]]; then
@@ -326,13 +331,13 @@
 						    -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
 						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
 						    -e '/^ * *- *cron-daemon-common\(\| .*\|#.*\)$/                             s/^ /#/g' \
+						    -e '/^ * *- *fcitx5-frontend-[[:graph:]]\+\(\| .*\|#.*\)$/                  s/^ /#/g' \
 						    -e '/^ * *- *firmware-realtek-rtl8723cs-bt\(\| .*\|#.*\)$/                  s/^ /#/g' \
 						    -e '/^ * *- *gnome-browser-connector\(\| .*\|#.*\)$/                        s/^ /#/g' \
 						    -e '/^ * *- *gnome-shell-extension-desktop-icons-ng\(\| .*\|#.*\)$/         s/^ /#/g' \
 						    -e '/^ * *- *gstreamer1.0-libcamera\(\| .*\|#.*\)$/                         s/^ /#/g' \
 						    -e '/^ * *- *pipewire-alsa\(\| .*\|#.*\)$/                                  s/^ /#/g' \
 						    -e '/^ * *- *pipewire-audio\(\| .*\|#.*\)$/                                 s/^ /#/g' \
-						    -e '/^ * *- *pipewire-libcamera\(\| .*\|#.*\)$/                             s/^ /#/g' \
 						    -e '/^ * *- *polkitd-pkla\(\| .*\|#.*\)$/                                   s/^ /#/g' \
 						    -e '/^ * *- *python3-charset-normalizer\(\| .*\|#.*\)$/                     s/^ /#/g' \
 						    -e '/^ * *- *python3-markdown-it\(\| .*\|#.*\)$/                            s/^ /#/g' \
@@ -341,6 +346,9 @@
 						    -e '/^ * *- *samba-ad-provision\(\| .*\|#.*\)$/                             s/^ /#/g' \
 						    -e '/^ * *- *usr-is-merged\(\| .*\|#.*\)$/                                  s/^ /#/g' \
 						    -e '/^ * *- *wireplumber\(\| .*\|#.*\)$/                                    s/^ /#/g' \
+						    -e '/^# * *- *fcitx5-frontend-gtk[2-3]\(\| .*\|#.*\)$/                      s/^#/ /g' \
+						    -e '/^# * *- *fcitx5-frontend-qt5\(\| .*\|#.*\)$/                           s/^#/ /g' \
+						    -e '/^# * *- *pulseaudio\(\| .*\|#.*\)$/                                    s/^#/ /g' \
 						    -e '}}'                                                                               \
 						    "${FILE_YAML}"                                                                        \
 						> "${FILE_CONF}"
@@ -422,6 +430,10 @@
 					
 					# --- start -------------------------------------------------------------------
 					 	printf "\033[m\033[45mstart: %s\033[m\n" "${PROG_PATH}"
+					 	_DISTRIBUTION="$(lsb_release -is | tr '[:upper:]' '[:lower:]' | sed -e 's| |-|g')"
+					 	_RELEASE="$(lsb_release -rs | tr '[:upper:]' '[:lower:]')"
+					 	_CODENAME="$(lsb_release -cs | tr '[:upper:]' '[:lower:]')"
+					 	printf "\033[m\033[93m%s\033[m\n" "setup: ${_DISTRIBUTION:-} ${_RELEASE:-} ${_CODENAME:-}"
 					
 					# --- function systemctl ------------------------------------------------------
 					funcSystemctl () {
@@ -551,54 +563,101 @@
 					# --- setup pipewire ----------------------------------------------------------
 					 	if dpkg-query --show pipewire > /dev/null 2>&1; then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup pipewire"
-					 		_FILE_PATH="/etc/pipewire/pipewire.conf.d/pipewire.conf"
-					 		mkdir -p "${_FILE_PATH%/*}"
-					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-					 			context.properties = {
-					 			    ## Properties for the DSP configuration.
-					 			    default.clock.rate          = 48000
-					 			    default.clock.allowed-rates = [ 384000 192000 96000 48000 44100 ]
-					 			    default.clock.quantum       = 2048
-					 			    default.clock.min-quantum   = 2048
-					 			    # These overrides are only applied when running in a vm.
-					 			    vm.overrides = {
-					 			        default.clock.min-quantum = 2048
-					 			    }
-					 			}
-					
-					 			context.modules = [
-					 			    { name = libpipewire-module-rt
-					 			        args = {
-					 			            nice.level    = -15
-					 			            #rt.prio      = 88
-					 			            #rt.time.soft = -1
-					 			            #rt.time.hard = -1
-					 			        }
-					 			        flags = [ ifexists nofail ]
-					 			    }
-					 			]
+					 		# --- debian 11 -------------------------------------------------------
+					 		# https://wiki.debian.org/PipeWire
+					 		if [ "${_DISTRIBUTION:-}" = "debian" ] && [ "${_RELEASE:-}" = "11" ]; then
+					 			# --- PulseAudio --------------------------------------------------
+					 			_FILE_PATH="/etc/pipewire/media-session.d/with-pulseaudio"
+					 			mkdir -p "${_FILE_PATH%/*}"
+					 			touch touch "${_FILE_PATH}"
+					 			cp -a /usr/share/doc/pipewire/examples/systemd/user/pipewire-pulse.* /etc/systemd/user/
+					 			# --- ALSA --------------------------------------------------------
+					 			_FILE_PATH="/etc/pipewire/media-session.d/with-alsa"
+					 			mkdir -p "${_FILE_PATH%/*}"
+					 			touch touch "${_FILE_PATH}"
+					 			cp -a /usr/share/doc/pipewire/examples/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d/
+					 			# --- JACK --------------------------------------------------------
+					 			_FILE_PATH="/etc/pipewire/media-session.d/with-alsa"
+					 			mkdir -p "${_FILE_PATH%/*}"
+					 			touch touch "${_FILE_PATH}"
+					 			sudo cp -a /usr/share/doc/pipewire/examples/ld.so.conf.d/pipewire-jack-*.conf /etc/ld.so.conf.d/
+					 			# --- Bluetooth ---------------------------------------------------
+					 			_FILE_PATH="/etc/pipewire/media-session.d/bluez-monitor.conf"
+					 			mkdir -p "${_FILE_PATH%/*}"
+					 			touch touch "${_FILE_PATH}"
+					 			# --- service -----------------------------------------------------
+					 			systemctl --global daemon-reload || true
+					 			systemctl --global disable pulseaudio || true
+					 			systemctl --global mask    pulseaudio || true
+					 			systemctl --global unmask  pipewire pipewire-pulse || true
+					 			systemctl --global enable  pipewire pipewire-pulse || true
+					 			ldconfig
+					 			# --- config ------------------------------------------------------
+					 			_FILE_PATH="/etc/pipewire/pipewire.conf.d/pipewire.conf"
+					 			mkdir -p "${_FILE_PATH%/*}"
+					 			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 				properties = {
+					 				    ## Properties for the DSP configuration
+					 				    default.clock.rate =                48000
+					 				    default.clock.quantum =             2048
+					 				    default.clock.min-quantum =         2048
+					 				    #default.clock.max-quantum =        8192
+					 				    #default.video.width =              640
+					 				    #default.video.height =             480
+					 				    #default.video.rate.num =           25
+					 				    #default.video.rate.denom =         1
+					 				}
 					_EOT_
-					 		_FILE_PATH="/etc/pipewire/pipewire-pulse.conf.d/pipewire-pulse.conf"
-					 		mkdir -p "${_FILE_PATH%/*}"
-					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-					 			context.modules = [
-					 			    { name = libpipewire-module-rt
-					 			        args = {
-					 			            nice.level   = -15
-					 			            #rt.prio      = 88
-					 			            #rt.time.soft = -1
-					 			            #rt.time.hard = -1
-					 			        }
-					 			        flags = [ ifexists nofail ]
-					 			    }
-					 			]
-					
-					 			pulse.cmd = [
-					 			    { cmd = "load-module" args = "module-always-sink" flags = [ ] }
-					 			    { cmd = "load-module" args = "module-switch-on-connect" }
-					 			    #{ cmd = "load-module" args = "module-gsettings" flags = [ "nofail" ] }
-					 			]
+					 		else
+					 			_FILE_PATH="/etc/pipewire/pipewire.conf.d/pipewire.conf"
+					 			mkdir -p "${_FILE_PATH%/*}"
+					 			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 				context.properties = {
+					 				    ## Properties for the DSP configuration.
+					 				    default.clock.rate          = 48000
+					 				    default.clock.allowed-rates = [ 384000 192000 96000 48000 44100 ]
+					 				    default.clock.quantum       = 2048
+					 				    default.clock.min-quantum   = 2048
+					 				    # These overrides are only applied when running in a vm.
+					 				    vm.overrides = {
+					 				        default.clock.min-quantum = 2048
+					 				    }
+					 				}
+					 				
+					 				context.modules = [
+					 				    { name = libpipewire-module-rt
+					 				        args = {
+					 				            nice.level    = -15
+					 				            #rt.prio      = 88
+					 				            #rt.time.soft = -1
+					 				            #rt.time.hard = -1
+					 				        }
+					 				        flags = [ ifexists nofail ]
+					 				    }
+					 				]
 					_EOT_
+					 			_FILE_PATH="/etc/pipewire/pipewire-pulse.conf.d/pipewire-pulse.conf"
+					 			mkdir -p "${_FILE_PATH%/*}"
+					 			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 				context.modules = [
+					 				    { name = libpipewire-module-rt
+					 				        args = {
+					 				            nice.level   = -15
+					 				            #rt.prio      = 88
+					 				            #rt.time.soft = -1
+					 				            #rt.time.hard = -1
+					 				        }
+					 				        flags = [ ifexists nofail ]
+					 				    }
+					 				]
+					 				
+					 				pulse.cmd = [
+					 				    { cmd = "load-module" args = "module-always-sink" flags = [ ] }
+					 				    { cmd = "load-module" args = "module-switch-on-connect" }
+					 				    #{ cmd = "load-module" args = "module-gsettings" flags = [ "nofail" ] }
+					 				]
+					_EOT_
+					 		fi
 					 	fi
 					
 					# --- setup pulseaudio --------------------------------------------------------
@@ -620,6 +679,13 @@
 					 			  unload-module module-bluetooth-discover
 					 			.endif
 					_EOT_
+					 			# --- service -----------------------------------------------------
+					 			systemctl --global daemon-reload || true
+					 			systemctl --global disable pipewire pipewire-pulse || true
+					 			systemctl --global mask    pipewire pipewire-pulse || true
+					 			systemctl --global unmask  pulseaudio || true
+					 			systemctl --global enable  pulseaudio || true
+					 			ldconfig
 					 	fi
 					
 					# --- setup bluetooth ---------------------------------------------------------
@@ -647,7 +713,7 @@
 					
 					# --- setup systemctl ---------------------------------------------------------
 					 	printf "\033[m\033[42m%s\033[m\n" "setup systemctl"
-					#	funcSystemctl "--user"   "mask"    "wireplumber.service"
+					#	funcSystemctl "--global" "mask"    "wireplumber.service"
 					#	funcSystemctl "--system" "mask"    "avahi-daemon.service avahi-daemon.socket"
 					 	funcSystemctl "--system" "disable" "firewalld.service clamav-freshclam.service tftpd-hpa.service apache2.service"
 					 	funcSystemctl "--system" "enable"  "ssh.service dnsmasq.service smbd.service nmbd.service"
