@@ -506,6 +506,7 @@ mmdebstrap:
     - usb.ids                                               # USB ID Repository
 #   - usbmuxd                                               # USB multiplexor daemon for iPhone and iPod Touch devices
 #   - xdg-utils                                             # desktop integration utilities from freedesktop.org
+    - xterm                                                 # X terminal emulator
 # --- desktop base [ ubuntu ] -------------------------------------------------
 #   - fonts-cantarell                                       # sans serif font family designed for on-screen readability
 #   - fonts-dejavu-mono                                     # Vera font family derivate with additional characters

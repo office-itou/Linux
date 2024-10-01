@@ -353,6 +353,18 @@
 						    "${FILE_YAML}"                                                                        \
 						> "${FILE_CONF}"
 						;;
+					live-debian-12-*    )
+						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
+						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
+						    -e '/^ * *- *fcitx5-frontend-[[:graph:]]\+\(\| .*\|#.*\)$/                  s/^ /#/g' \
+						    -e '/^# * *- *fcitx5-frontend-gtk[2-4]\(\| .*\|#.*\)$/                      s/^#/ /g' \
+						    -e '/^# * *- *fcitx5-frontend-qt[5-6]\(\| .*\|#.*\)$/                       s/^#/ /g' \
+						    -e '/^# * *- *fcitx5-frontend-fbterm\(\| .*\|#.*\)$/                        s/^#/ /g' \
+						    -e '/^# * *- *fcitx5-frontend-tmux\(\| .*\|#.*\)$/                          s/^#/ /g' \
+						    -e '}}'                                                                               \
+						    "${FILE_YAML}"                                                                        \
+						> "${FILE_CONF}"
+						;;
 					live-debian-13-*    )
 						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
 						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
