@@ -698,92 +698,61 @@ function funcString() {
 
 # --- print with screen control -----------------------------------------------
 function funcPrintf() {
+#	declare -r    SET_ENV_E="$(set -o | awk '$1=="errexit" {print $2;}')"
 	declare -r    SET_ENV_X="$(set -o | awk '$1=="xtrace"  {print $2;}')"
-	declare -r    SET_ENV_E="$(set -o | awk '$1=="errexit" {print $2;}')"
 	set +x
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 #	declare -r    OLD_IFS="${IFS}"
-	declare -i    RET_CD=0
-	declare -r    CHR_ESC="$(echo -n -e "\033")"
-	declare -i    MAX_COLS=${COLS_SIZE:-80}
-	declare       RET_STR=""
-	declare       INP_STR=""
+#	declare -i    RET_CD=0
+	declare       FLAG_CUT=""
+	declare       TEXT_FMAT=""
+	declare -r    CTRL_ESCP=$'\033['
+	declare       PRNT_STR=""
 	declare       SJIS_STR=""
-	declare -i    SJIS_CNT=0
-	declare       WORK_STR=""
-	declare -i    WORK_CNT=0
 	declare       TEMP_STR=""
-	declare -i    TEMP_CNT=0
+	declare       WORK_STR=""
 	declare -i    CTRL_CNT=0
+	declare -i    MAX_COLS="${COLS_SIZE:-80}"
 	# -------------------------------------------------------------------------
-	# %[-9.9][diouxXfeEgGcs]
-	if [[ "$1" = "--no-cutting" ]]; then
-		shift
-		# shellcheck disable=SC2312
-		if [[ -n "$(echo "$1" | sed -ne '/%[0-9.-]*[diouxXfeEgGcs]\+/p')" ]]; then
-			# shellcheck disable=SC2059
-			INP_STR="$(printf "$@")"
-		else
-			INP_STR="$(echo -e "$@")"
-		fi
-		echo -e "${INP_STR}${TXT_RESET}"
-		return
-	fi
 	IFS=$'\n'
-#	INP_STR="$(echo -e "$@")"
-	# shellcheck disable=SC2312
-	if [[ -n "$(echo "$1" | sed -ne '/%[0-9.-]*[diouxXfeEgGcs]\+/p')" ]]; then
-		# shellcheck disable=SC2059
-		INP_STR="$(printf "$@")"
-	else
-		INP_STR="$(echo -e "$@")"
+	if [[ "$1" = "--no-cutting" ]]; then					# no cutting print
+		FLAG_CUT="true"
+		shift
 	fi
-	# --- convert sjis code ---------------------------------------------------
-	SJIS_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932)"
-	SJIS_CNT="$(echo -n "${SJIS_STR}" | wc -c)"
-	# --- remove escape code --------------------------------------------------
-	TEMP_STR="$(echo -n "${SJIS_STR}" | sed -e "s/${CHR_ESC}\[[0-9]*m//g")"
-	TEMP_CNT="$(echo -n "${TEMP_STR}" | wc -c)"
-	# --- count escape code ---------------------------------------------------
-	CTRL_CNT=$((SJIS_CNT-TEMP_CNT))
-	# --- string cut ----------------------------------------------------------
-	WORK_STR="$(echo -n "${SJIS_STR}" | cut -b $((MAX_COLS+CTRL_CNT))-)"
-	WORK_CNT="$(echo -n "${WORK_STR}" | wc -c)"
-	# --- remove escape code --------------------------------------------------
-	TEMP_STR="$(echo -n "${WORK_STR}" | sed -e "s/${CHR_ESC}\[[0-9]*m//g")"
-	TEMP_CNT="$(echo -n "${TEMP_STR}" | wc -c)"
-	# --- calc ----------------------------------------------------------------
-	MAX_COLS+=$((CTRL_CNT-(WORK_CNT-TEMP_CNT)))
-	# --- convert utf-8 code --------------------------------------------------
-	set +e
-	if RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -"${MAX_COLS}" | iconv -f CP932 -t UTF-8 2> /dev/null)"; then
-		RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -$((MAX_COLS-1)) | iconv -f CP932 -t UTF-8 2> /dev/null) "
+	if [[ "$1" =~ %[0-9.-]*[diouxXfeEgGcs]+ ]]; then
+		# shellcheck disable=SC2001
+		TEXT_FMAT="$(echo "$1" | sed -e 's/%\([0-9.-]*\)s/%\1b/g')"
+		shift
 	fi
-	set -e
-#	set +e
-#	RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -"${MAX_COLS}" | iconv -f CP932 -t UTF-8 2> /dev/null)"
-#	RET_CD=$?
-#	set -e
-#	if [[ "${RET_CD}" -ne 0 ]]; then
-#		set +e
-#		RET_STR="$(echo -n "${INP_STR}" | iconv -f UTF-8 -t CP932 | cut -b -$((MAX_COLS-1)) | iconv -f CP932 -t UTF-8 2> /dev/null) "
-#		set -e
-#	fi
-#	RET_STR+="$(echo -n -e "${TXT_RESET}")"
-	# -------------------------------------------------------------------------
-	echo -e "${RET_STR}${TXT_RESET}"
+	# shellcheck disable=SC2059
+	PRNT_STR="$(printf "${TEXT_FMAT:-%b}" "${@:-}")"
+	if [[ -z "${FLAG_CUT}" ]]; then
+		SJIS_STR="$(echo -n "${PRNT_STR:-}" | iconv -f UTF-8 -t CP932)"
+		TEMP_STR="$(echo -n "${SJIS_STR}" | sed -e "s/${CTRL_ESCP}[0-9]*m//g")"
+		if [[ "${#TEMP_STR}" -gt "${MAX_COLS}" ]]; then
+			CTRL_CNT=$((${#SJIS_STR}-${#TEMP_STR}))
+			WORK_STR="$(echo -n "${SJIS_STR}" | cut -b $((MAX_COLS+CTRL_CNT))-)"
+			TEMP_STR="$(echo -n "${WORK_STR}" | sed -e "s/${CTRL_ESCP}[0-9]*m//g")"
+			MAX_COLS+=$((CTRL_CNT-(${#WORK_STR}-${#TEMP_STR})))
+			# shellcheck disable=SC2312
+			if ! PRNT_STR="$(echo -n "${SJIS_STR:-}" | cut -b -"${MAX_COLS}"   | iconv -f CP932 -t UTF-8 2> /dev/null)"; then
+				 PRNT_STR="$(echo -n "${SJIS_STR:-}" | cut -b -$((MAX_COLS-1)) | iconv -f CP932 -t UTF-8 2> /dev/null) "
+			fi
+		fi
+	fi
+	printf "%b\n" "${PRNT_STR:-}"
 	IFS="${OLD_IFS}"
 	# -------------------------------------------------------------------------
-	if [[ "${SET_ENV_E}" = "on" ]]; then
-		set -e
-	else
-		set +e
-	fi
 	if [[ "${SET_ENV_X}" = "on" ]]; then
 		set -x
 	else
 		set +x
 	fi
+#	if [[ "${SET_ENV_E}" = "on" ]]; then
+#		set -e
+#	else
+#		set +e
+#	fi
 }
 
 # ----- unit conversion -------------------------------------------------------
@@ -832,12 +801,18 @@ function funcCurl() {
 #	declare -i    INT_SIZ
 #	declare -i    INT_UNT
 #	declare -a    TXT_UNT=("Byte" "KiB" "MiB" "GiB" "TiB")
-	set +e
-	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
-	RET_CD=$?
-	set -e
+#	set +e
+#	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
+#	RET_CD=$?
+#	set -e
 #	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${RET_CD}" -eq 35 ]] || [[ "${#WEBS_PAGE[@]}" -le 0 ]]; then
-	if [[ "${RET_CD}" -ne 0 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
+#	if [[ "${RET_CD}" -ne 0 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
+#		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
+#		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
+#		return "${RET_CD}"
+#	fi
+	if ! ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)"); then
+		RET_CD="$?"
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
 		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 		return "${RET_CD}"
@@ -879,20 +854,35 @@ function funcCurl() {
 #	fi
 
 	funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
-	curl "$@"
-	RET_CD=$?
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		for ((I=0; I<3; I++))
-		do
-			funcPrintf "retry  count: ${I}"
-			curl --continue-at "$@"
-			RET_CD=$?
-			if [[ "${RET_CD}" -eq 0 ]]; then
-				break
-			fi
-		done
+	if curl "$@"; then
+		return $?
 	fi
+
+	for ((I=0; I<3; I++))
+	do
+		funcPrintf "retry  count: ${I}"
+		if curl --continue-at "$@"; then
+			return "$?"
+		else
+			RET_CD="$?"
+		fi
+	done
 	return "${RET_CD}"
+
+#	curl "$@"
+#	RET_CD=$?
+#	if [[ "${RET_CD}" -ne 0 ]]; then
+#		for ((I=0; I<3; I++))
+#		do
+#			funcPrintf "retry  count: ${I}"
+#			curl --continue-at "$@"
+#			RET_CD=$?
+#			if [[ "${RET_CD}" -eq 0 ]]; then
+#				break
+#			fi
+#		done
+#	fi
+#	return "${RET_CD}"
 }
 
 # --- service status ----------------------------------------------------------
@@ -2764,7 +2754,7 @@ function funcCreate_copy_iso2hdd() {
 	declare       DIRS_KRNL=""
 	declare       DIRS_IRAM=""
 #	declare       FILE_IRAM=""
-	declare -i    RET_CD=0
+#	declare -i    RET_CD=0
 	funcPrintf "        copy: ${TGET_LINE[4]}"
 	if [[ "${TGET_LINE[0]}" != "o" ]] || [[ ! -f "${FILE_PATH}" ]]; then
 		return
@@ -2772,9 +2762,10 @@ function funcCreate_copy_iso2hdd() {
 	# --- forced unmount ------------------------------------------------------
 	if [[ -d "${WORK_MNTP}/." ]]; then
 		set +e
-		mountpoint -q "${WORK_MNTP}"
-		RET_CD=$?
-		if [[ "${RET_CD}" -eq 0 ]]; then
+#		mountpoint -q "${WORK_MNTP}"
+#		RET_CD=$?
+#		if [[ "${RET_CD}" -eq 0 ]]; then
+		if mountpoint -q "${WORK_MNTP}"; then
 			if [[ "${WORK_MNTP##*/}" = "dev" ]]; then
 				umount -q "${WORK_MNTP}/pts" || umount -q -lf "${WORK_MNTP}/pts"
 			fi
@@ -2792,9 +2783,10 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${BOOT_DIRS}"
 	# --- copy iso -> hdd -----------------------------------------------------
 	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
-	touch -c "${DEST_DIRS}" 2>/dev/null
-	RET_CD=$?
-	if [[ "${RET_CD}" -eq 0 ]]; then
+#	touch -c "${DEST_DIRS}" 2>/dev/null
+#	RET_CD=$?
+#	if [[ "${RET_CD}" -eq 0 ]]; then
+	if touch -c "${DEST_DIRS}" 2>/dev/null; then
 		ionice -c "${IONICE_CLAS}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/" 2>/dev/null || true
 #	else
 #		funcPrintf "        skip: ${TGET_LINE[4]}"
@@ -3775,7 +3767,7 @@ function funcCall_function() {
 	declare -r    MSGS_TITL="call function test"
 	declare -r    FILE_WRK1="${DIRS_TEMP}/testfile1.txt"
 	declare -r    FILE_WRK2="${DIRS_TEMP}/testfile2.txt"
-	declare -r    HTTP_ADDR="https://raw.githubusercontent.com/office-itou/Linux/master/Readme.md"
+	declare -r    TEST_ADDR="https://raw.githubusercontent.com/office-itou/Linux/master/Readme.md"
 	declare -r -a CURL_OPTN=(         \
 		"--location"                  \
 		"--progress-bar"              \
@@ -3787,7 +3779,7 @@ function funcCall_function() {
 		"--retry" "3"                 \
 		"--create-dirs"               \
 		"--output-dir" "${DIRS_TEMP}" \
-		"${HTTP_ADDR}"                \
+		"${TEST_ADDR}"                \
 	)
 	declare       TEST_PARM=""
 	declare -i    I=0
@@ -3796,11 +3788,13 @@ function funcCall_function() {
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	mkdir -p "${FILE_WRK1%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_WRK1}"
 		line 1
 		line 2
 		line 3
 _EOT_
+	mkdir -p "${FILE_WRK2%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_WRK2}"
 		line 1
 		Line 2
@@ -3825,6 +3819,8 @@ _EOT_
 	funcPrintf "$(funcString "${COLS_SIZE}" '->')"
 	# shellcheck disable=SC2312
 	funcPrintf "$(funcString "${COLS_SIZE}" '→')"
+	# shellcheck disable=SC2312
+	funcPrintf "_$(funcString "${COLS_SIZE}" '→')_"
 	echo ""
 
 	# --- text color test -----------------------------------------------------
