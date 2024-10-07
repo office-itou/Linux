@@ -64,7 +64,7 @@ mmdebstrap:
 #   - thin-provisioning-tools                               # Tools for handling thinly provisioned device-mapper meta-data
 # --- mdadm -------------------------------------------------------------------
     - mdadm                                                 # Tool to administer Linux MD arrays (software RAID)
-#   - finalrd                                               # 
+#   - finalrd                                               #
 # --- open-vm-tools -----------------------------------------------------------
     - open-vm-tools                                         # Open VMware Tools for virtual machines hosted on VMware (CLI)
     - open-vm-tools-desktop                                 # Open VMware Tools for virtual machines hosted on VMware (GUI)
@@ -103,6 +103,7 @@ mmdebstrap:
     - cups-common                                           # Common UNIX Printing System(tm) - common files
     - dbus                                                  # simple interprocess messaging system (system message bus)
     - dbus-user-session                                     # simple interprocess messaging system (systemd --user integration)
+    - dbus-x11                                              # simple interprocess messaging system (X11 deps)
     - dconf-cli                                             # simple configuration storage system - utilities
     - debconf-i18n                                          # full internationalization support for debconf
     - debconf-utils                                         # debconf utilities
@@ -118,6 +119,7 @@ mmdebstrap:
     - doc-debian                                            # Debian Project documentation and other documents
     - e2fsprogs-l10n                                        # ext2/ext3/ext4 file system utilities - translations
 #   - ed                                                    # classic UNIX line editor
+    - edid-decode                                           # decode the binary EDID information from monitors
     - efibootmgr                                            # Interact with the EFI Boot Manager
     - eject                                                 # ejects CDs and operates CD-Changers under Linux
     - ethtool                                               # display or change Ethernet device settings
@@ -181,6 +183,7 @@ mmdebstrap:
     - iso-codes                                             # ISO language, territory, currency, script codes and their translations
     - isolinux                                              # collection of bootloaders (ISO 9660 bootloader)
     - isomd5sum                                             # ISO9660 checksum utilities
+    - jackd                                                 # JACK Audio Connection Kit (default server package)
     - java-wrappers                                         # wrappers for java executables
     - javascript-common                                     # Base support for JavaScript library packages
     - keyutils                                              # Linux Key Management Utilities
@@ -195,6 +198,7 @@ mmdebstrap:
 #   - libboost-thread1.74.0                                 # portable C++ multi-threading
     - libc-devtools                                         # GNU C Library: Development tools
     - libc-l10n                                             # GNU C Library: localization files
+#   - libcamera0.0.3                                        # complex camera support library
     - libcephfs2                                            # Ceph distributed file system client library
     - libdbus-1-3                                           # simple interprocess messaging system (library)
     - libdiscover2                                          # hardware identification library
@@ -260,6 +264,7 @@ mmdebstrap:
     - nano                                                  # small, friendly text editor inspired by Pico
     - ncurses-term                                          # additional terminal type definitions
     - needrestart                                           # check which daemons need to be restarted after library upgrades
+    - net-tools                                             #
     - netcat-traditional                                    # TCP/IP swiss army knife
 #   - netplan.io                                            # YAML network configuration abstraction for various backends
     - nftables                                              # Program to control packet filtering rules by Netfilter project
@@ -276,13 +281,21 @@ mmdebstrap:
     - pipewire-audio-client-libraries                       # transitional package for pipewire-alsa and pipewire-jack
     - pipewire-doc                                          # libraries for the PipeWire multimedia server - documentation
 #   - pipewire-jack                                         # PipeWire JACK plugin
-#   - pipewire-libcamera                                    # PipeWire libcamera plugin
+    - pipewire-libcamera                                    # PipeWire libcamera plugin
 #   - pipewire-media-session                                # example session manager for PipeWire
 #   - pipewire-media-session-alsa                           # example session manager for PipeWire (alsa)
 #   - pipewire-media-session-jack                           # example session manager for PipeWire (jack)
 #   - pipewire-media-session-pulseaudio                     # example session manager for PipeWire (pulseaudio)
+    - pipewire-pulse                                        # PipeWire PulseAudio daemon
 #   - pipewire-tests                                        # PipeWire multimedia server - tests and examples
 #   - pipewire-v4l2                                         # PipeWire V4L2 plugin
+    - plymouth                                              # boot animation, logger and I/O multiplexer
+    - plymouth-label                                        # boot animation, logger and I/O multiplexer - label control
+#   - plymouth-theme-breeze                                 # Breeze theme for Plymouth
+    - plymouth-theme-hamara                                 # boot animation, logger and I/O multiplexer - Hamara theme
+    - plymouth-theme-mobian                                 # boot animation, logger and I/O multiplexer - Mobian theme
+    - plymouth-themes                                       # boot animation, logger and I/O multiplexer - themes
+    - plymouth-x11                                          # boot animation, logger and I/O multiplexer - X11 renderer
     - polkitd-pkla                                          # Legacy "local authority" (.pkla) backend for polkitd
     - powermgmt-base                                        # common utils for power management
 #   - printer-driver-all                                    # printer drivers metapackage
@@ -314,6 +327,7 @@ mmdebstrap:
     - psmisc                                                # utilities that use the proc file system
     - publicsuffix                                          # accurate, machine-readable list of domain name suffixes
 #   - pulseaudio                                            # PulseAudio sound server
+#   - pulseaudio-module-bluetooth                           # Bluetooth module for PulseAudio sound server
     - pxelinux                                              # collection of bootloaders (PXE network bootloader)
     - python-apt-common                                     # Python interface to libapt-pkg (locales)
     - python3-anyio                                         # Asynchronous compatibility layer (Python 3)
@@ -364,7 +378,8 @@ mmdebstrap:
     - python3-webcolors                                     # python3 library of color names and value formats
     - python3-yaml                                          # YAML parser and emitter for Python3
     - reportbug                                             # reports bugs in the Debian distribution
-    - rfkill                                                # tool for enabling and disabling wireless devices
+#   - resolvconf                                            # name server information handler
+#   - rfkill                                                # tool for enabling and disabling wireless devices
     - rsync                                                 # fast, versatile, remote (and local) file-copying tool
     - samba-ad-provision                                    # Samba files needed for AD domain provision
     - samba-dsdb-modules                                    # Samba Directory Services Database
@@ -379,6 +394,7 @@ mmdebstrap:
     - sudo                                                  # Provide limited super user privileges to specific users
     - syslinux-common                                       # collection of bootloaders (common)
     - syslinux-efi                                          # collection of bootloaders (UEFI bootloader)
+    - systemd-resolved                                      # systemd DNS resolver
     - systemd-timesyncd                                     # minimalistic service to synchronize local time with NTP servers
     - task-japanese                                         # Japanese environment
     - tasksel                                               # tool for selecting tasks for installation on Debian systems
@@ -399,6 +415,7 @@ mmdebstrap:
     - whiptail                                              # Displays user-friendly dialog boxes from shell scripts
     - wpasupplicant                                         # client support for WPA and WPA2 (IEEE 802.11i)
     - xauth                                                 # X authentication utility
+#   - xcvt                                                  # VESA CVT standard timing modelines generator
     - xdg-user-dirs                                         # tool to manage well known user directories
     - xdg-utils                                             # desktop integration utilities from freedesktop.org
     - xfonts-75dpi                                          # 75 dpi fonts for X
@@ -472,6 +489,7 @@ mmdebstrap:
     - thunderbird                                           # mail/news client with RSS, chat and integrated spam filter support
     - thunderbird-l10n-ja                                   # Japanese language package for Thunderbird
 # --- desktop base [ depends ] ------------------------------------------------
+    - at-spi2-core                                          # Assistive Technology Service Provider Interface (D-Bus core)
     - blueman                                               # Graphical bluetooth manager
     - bluemon                                               # Activate or deactivate programs based on Bluetooth link quality
     - chromium                                              # web browser
@@ -491,22 +509,52 @@ mmdebstrap:
 #   - fcitx5-frontend-tmux                                  # Tmux fcitx5 client
     - ffmpeg                                                # Tools for transcoding, streaming and playing of multimedia files
     - firefox-esr                                           # Mozilla Firefox web browser - Extended Support Release (ESR)
+    - gnome-accessibility-themes                            # High Contrast GTK 2 theme and icons
+#   - gnome-backgrounds                                     # Set of backgrounds packaged with the GNOME desktop
+#   - gnome-bluetooth-3-common                              # GNOME Bluetooth 3 common files
+#   - gnome-bluetooth-sendto                                # GNOME Bluetooth Send To app
+    - gnome-brave-icon-theme                                # blue variation of the GNOME-Colors icon theme
     - gnome-browser-connector                               # GNOME Shell extensions integration for web browsers
     - gnome-colors                                          # set of GNOME icon themes
+#   - gnome-colors-common                                   # common icons for all GNOME-Colors icon themes
     - gnome-control-center                                  # utilities to configure the GNOME desktop
     - gnome-control-center-data                             # configuration applets for GNOME - data files
+    - gnome-desktop3-data                                   # Common files for GNOME desktop apps
     - gnome-disk-utility                                    # manage and configure disk drives and media
     - gnome-font-viewer                                     # font viewer for GNOME
+    - gnome-dust-icon-theme                                 # chocolate variation of the GNOME-Colors icon theme
+    - gnome-human-icon-theme                                # orange variation of the GNOME-Colors icon theme
+    - gnome-icon-theme                                      # This package contains the default icon theme used by the GNOME
+    - gnome-illustrious-icon-theme                          # pink variation of the GNOME-Colors icon theme
+    - gnome-keyring                                         # GNOME keyring services (daemon and tools)
+#   - gnome-keyring-pkcs11                                  # GNOME keyring module for the PKCS#11 module loading library
     - gnome-menus                                           # GNOME implementation of the freedesktop menu specification
-    - gnome-session                                         # GNOME Session Manager - GNOME 3 session
-    - gnome-session-canberra                                # GNOME session log in and log out sound events
-    - gnome-session-common                                  # GNOME Session Manager - common files
-    - gnome-shell-extension-appindicator                    # AppIndicator, KStatusNotifierItem and tray support for GNOME Shell
-    - gnome-shell-extension-desktop-icons-ng                # desktop icon support for GNOME Shell
-#   - gnome-shell-extension-ubuntu-dock                     # 
-#   - gnome-shell-extension-ubuntu-tiling-assistant         # 
-    - gnome-terminal                                        # GNOME terminal emulator application
-    - gnome-terminal-data                                   # Data files for the GNOME terminal emulator
+    - gnome-noble-icon-theme                                # purple variation of the GNOME-Colors icon theme
+#   - gnome-online-accounts                                 # service to manage online accounts for the GNOME desktop
+    - gnome-screenshot                                      # screenshot application for GNOME
+#   - gnome-session                                         # GNOME Session Manager - GNOME 3 session
+#   - gnome-session-bin                                     # GNOME Session Manager - Minimal runtime
+#   - gnome-session-canberra                                # GNOME session log in and log out sound events
+#   - gnome-session-common                                  # GNOME Session Manager - common files
+#   - gnome-settings-daemon                                 # daemon handling the GNOME session settings
+#   - gnome-settings-daemon-common                          # daemon handling the GNOME session settings - common files
+#   - gnome-shell                                           # graphical shell for the GNOME desktop
+#   - gnome-shell-common                                    # common files for the GNOME graphical shell
+#   - gnome-shell-extension-appindicator                    # AppIndicator, KStatusNotifierItem and tray support for GNOME Shell
+#   - gnome-shell-extension-desktop-icons-ng                # desktop icon support for GNOME Shell
+#   - gnome-shell-extension-prefs                           # tool to enable / disable GNOME Shell extensions
+#   - gnome-shell-extension-ubuntu-dock                     #
+#   - gnome-shell-extension-ubuntu-tiling-assistant         #
+#   - gnome-shell-extensions                                # Extensions to extend functionality of GNOME Shell
+#   - gnome-system-tools                                    # Cross-platform configuration utilities
+#   - gnome-terminal                                        # GNOME terminal emulator application
+#   - gnome-terminal-data                                   # Data files for the GNOME terminal emulator
+    - gnome-themes-extra                                    # Adwaita GTK 2 theme — engine
+    - gnome-themes-extra-data                               # Adwaita GTK 2 theme and Adwaita-dark GTK 3 theme — common files
+#   - gnome-user-docs                                       # GNOME Help
+#   - gnome-user-share                                      # User level public file sharing via WebDAV
+    - gnome-wine-icon-theme                                 # red variation of the GNOME-Colors icon theme
+    - gnome-wise-icon-theme                                 # green variation of the GNOME-Colors icon theme
     - gstreamer1.0-alsa                                     # GStreamer plugin for ALSA
     - gstreamer1.0-gl                                       # GStreamer plugins for GL
     - gstreamer1.0-gtk3                                     # GStreamer plugin for GTK+3
@@ -525,7 +573,15 @@ mmdebstrap:
 #   - libcanberra-pulse                                     # PulseAudio backend for libcanberra
 #   - libnss-mdns                                           # NSS module for Multicast DNS name resolution
     - libreoffice                                           # office productivity suite (metapackage)
-#   - network-manager-gnome                                 # network management framework (GNOME frontend)
+#   - lightdm                                               # simple display manager
+#   - lightdm-autologin-greeter                             # Autologin greeter for LightDM
+#   - lightdm-gtk-greeter                                   # simple display manager (GTK+ greeter)
+#   - lightdm-gtk-greeter-settings                          # settings editor for the LightDM GTK+ Greeter
+#   - lightdm-remote-session-freerdp2                       # LightDM Remote Logon Support for RDP sessions
+#   - lightdm-remote-session-x2go                           # LightDM Remote Logon Support for X2Go sessions
+#   - lightdm-settings                                      # LightDM Settings Configuration Tool
+#   - lightdm-vala                                          # simple display manager (Vala files)
+    - network-manager-gnome                                 # network management framework (GNOME frontend)
     - iw                                                    # tool for configuring Linux wireless devices
     - pavucontrol                                           # PulseAudio Volume Control
     - pulseaudio-utils                                      # Command line tools for the PulseAudio sound server

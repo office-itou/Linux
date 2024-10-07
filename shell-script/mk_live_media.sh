@@ -85,24 +85,24 @@
 #	|       |  24.10   | Oracular Oriole    |  2024-10-10  |  2025-07-xx  |              | 6.8.0          |               |
 
 # --- custom live image -------------------------------------------------------
-	declare -r -a DATA_LIST_CSTM=(                                                                                                                                                                                                                                                                                                                                                                                                                                                \
-		"m  menu-entry                  Live%20media%20Live%20mode          -               -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
-		"x  live-debian-10-buster       Live%20Debian%2010                  debian          live-debian-10-buster-amd64-lxde.iso        live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
-		"o  live-debian-11-bullseye     Live%20Debian%2011                  debian          live-debian-11-bullseye-amd64-lxde.iso      live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
-		"o  live-debian-12-bookworm     Live%20Debian%2012                  debian          live-debian-12-bookworm-amd64-lxde.iso      live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
-		"o  live-debian-13-trixie       Live%20Debian%2013                  debian          live-debian-13-trixie-amd64-lxde.iso        live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
-		"o  live-debian-xx-unstable     Live%20Debian%20xx                  debian          live-debian-xx-unstable-amd64-lxde.iso      live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
-		"x  live-ubuntu-14.04-trusty    Live%20Ubuntu%2014.04               ubuntu          live-ubuntu-14.04-trusty                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"L  live-ubuntu-16.04-xenial    Live%20Ubuntu%2016.04               ubuntu          live-ubuntu-16.04-xenial                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2016-04-21  2026-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"L  live-ubuntu-18.04-bionic    Live%20Ubuntu%2018.04               ubuntu          live-ubuntu-18.04-bionic                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"s  live-ubuntu-20.04-focal     Live%20Ubuntu%2020.04               ubuntu          live-ubuntu-20.04-focal                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"o  live-ubuntu-22.04-jammy     Live%20Ubuntu%2022.04               ubuntu          live-ubuntu-22.04-jammy                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"x  live-ubuntu-23.04-lunar     Live%20Ubuntu%2023.04               ubuntu          live-ubuntu-23.04-lunar                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"x  live-ubuntu-23.10-mantic    Live%20Ubuntu%2023.10               ubuntu          live-ubuntu-23.10-mantic                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"o  live-ubuntu-24.04-noble     Live%20Ubuntu%2024.04               ubuntu          live-ubuntu-24.04-noble                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2024-04-25  2034-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"o  live-ubuntu-24.10-oracular  Live%20Ubuntu%2024.10               ubuntu          live-ubuntu-24.10-oracular                  live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"s  live-ubuntu-xx.xx-devel     Live%20Ubuntu%20xx.xx               ubuntu          live-ubuntu-xx.xx-devel                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-	) #  0  1                           2                                   3               4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
+	declare -r -a DATA_LIST_CSTM=(                                                                                                                                                                                                                                                                                                                                                                                                                                                    \
+		"m  menu-entry                  Live%20media%20Live%20mode          -                   -                                           -                                       -                           -                       -                                       -                   -           -           -           -   -   -   -                                                                                                                               " \
+		"x  live-debian-10-buster       Live%20Debian%2010                  debian              live-debian-10-buster-amd64-lxde.iso        live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
+		"o  live-debian-11-bullseye     Live%20Debian%2011                  debian              live-debian-11-bullseye-amd64-lxde.iso      live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
+		"o  live-debian-12-bookworm     Live%20Debian%2012                  debian              live-debian-12-bookworm-amd64-lxde.iso      live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
+		"o  live-debian-13-trixie       Live%20Debian%2013                  debian              live-debian-13-trixie-amd64-lxde.iso        live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
+		"o  live-debian-xx-unstable     Live%20Debian%20xx                  debian              live-debian-xx-unstable-amd64-lxde.iso      live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
+		"x  live-ubuntu-14.04-trusty    Live%20Ubuntu%2014.04               ubuntu              live-ubuntu-14.04-trusty                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"L  live-ubuntu-16.04-xenial    Live%20Ubuntu%2016.04               ubuntu              live-ubuntu-16.04-xenial                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2016-04-21  2026-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"L  live-ubuntu-18.04-bionic    Live%20Ubuntu%2018.04               ubuntu              live-ubuntu-18.04-bionic                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"s  live-ubuntu-20.04-focal     Live%20Ubuntu%2020.04               ubuntu              live-ubuntu-20.04-focal                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"o  live-ubuntu-22.04-jammy     Live%20Ubuntu%2022.04               ubuntu              live-ubuntu-22.04-jammy                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"x  live-ubuntu-23.04-lunar     Live%20Ubuntu%2023.04               ubuntu              live-ubuntu-23.04-lunar                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"x  live-ubuntu-23.10-mantic    Live%20Ubuntu%2023.10               ubuntu              live-ubuntu-23.10-mantic                    live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"o  live-ubuntu-24.04-noble     Live%20Ubuntu%2024.04               ubuntu              live-ubuntu-24.04-noble                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2024-04-25  2034-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"o  live-ubuntu-24.10-oracular  Live%20Ubuntu%2024.10               ubuntu              live-ubuntu-24.10-oracular                  live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"s  live-ubuntu-xx.xx-devel     Live%20Ubuntu%20xx.xx               ubuntu              live-ubuntu-xx.xx-devel                     live                                    initrd.gz                   vmlinuz                 preseed/-                               linux/ubuntu        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+	) #  0  1                           2                                   3                   4                                           5                                       6                           7                       8                                       9                   10          11          12          13  14  15  16
 
 	declare -r    OLD_IFS="${IFS}"
 	declare -i    start_time=0
@@ -308,6 +308,7 @@
 			|| [[ ! -f "${DIRS_LIVE}/${SQFS_NAME}" ]] \
 			|| [[ ! -f "${DIRS_LIVE}/manifest" ]] \
 			|| [[ "${FILE_YAML}" -nt "${DIRS_LIVE}/${SQFS_NAME}" ]]; then
+#			|| [[ "${PROG_PATH}" -nt "${DIRS_LIVE}/${SQFS_NAME}" ]]; then
 				rm -rf "${DIRS_LIVE:?}"
 				mkdir -p "${DIRS_LIVE:?}" \
 				         "${DIRS_MNTS}"   \
@@ -330,25 +331,30 @@
 						    -e 's/ *non-free-firmware//g}'                                                        \
 						    -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
 						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
-						    -e '/^ * *- *cron-daemon-common\(\| .*\|#.*\)$/                             s/^ /#/g' \
-						    -e '/^ * *- *fcitx5-frontend-[[:graph:]]\+\(\| .*\|#.*\)$/                  s/^ /#/g' \
-						    -e '/^ * *- *firmware-realtek-rtl8723cs-bt\(\| .*\|#.*\)$/                  s/^ /#/g' \
-						    -e '/^ * *- *gnome-browser-connector\(\| .*\|#.*\)$/                        s/^ /#/g' \
-						    -e '/^ * *- *gnome-shell-extension-desktop-icons-ng\(\| .*\|#.*\)$/         s/^ /#/g' \
-						    -e '/^ * *- *gstreamer1.0-libcamera\(\| .*\|#.*\)$/                         s/^ /#/g' \
-						    -e '/^ * *- *pipewire-alsa\(\| .*\|#.*\)$/                                  s/^ /#/g' \
-						    -e '/^ * *- *pipewire-audio\(\| .*\|#.*\)$/                                 s/^ /#/g' \
-						    -e '/^ * *- *polkitd-pkla\(\| .*\|#.*\)$/                                   s/^ /#/g' \
-						    -e '/^ * *- *python3-charset-normalizer\(\| .*\|#.*\)$/                     s/^ /#/g' \
-						    -e '/^ * *- *python3-markdown-it\(\| .*\|#.*\)$/                            s/^ /#/g' \
-						    -e '/^ * *- *python3-mdurl\(\| .*\|#.*\)$/                                  s/^ /#/g' \
-						    -e '/^ * *- *python3-rfc3987\(\| .*\|#.*\)$/                                s/^ /#/g' \
-						    -e '/^ * *- *samba-ad-provision\(\| .*\|#.*\)$/                             s/^ /#/g' \
-						    -e '/^ * *- *usr-is-merged\(\| .*\|#.*\)$/                                  s/^ /#/g' \
-						    -e '/^ * *- *wireplumber\(\| .*\|#.*\)$/                                    s/^ /#/g' \
+							-e '/^ * *- *cron-daemon-common\(\| .*\|#.*\)$/                             s/^ /#/g' \
+							-e '/^ * *- *fcitx5-frontend-[[:graph:]]\+\(\| .*\|#.*\)$/                  s/^ /#/g' \
+							-e '/^ * *- *firmware-realtek-rtl8723cs-bt\(\| .*\|#.*\)$/                  s/^ /#/g' \
+							-e '/^ * *- *gnome-browser-connector\(\| .*\|#.*\)$/                        s/^ /#/g' \
+							-e '/^ * *- *gnome-shell-extension-desktop-icons-ng\(\| .*\|#.*\)$/         s/^ /#/g' \
+							-e '/^ * *- *gstreamer1.0-libcamera\(\| .*\|#.*\)$/                         s/^ /#/g' \
+							-e '/^ * *- *pipewire-alsa\(\| .*\|#.*\)$/                                  s/^ /#/g' \
+							-e '/^ * *- *pipewire-audio\(\| .*\|#.*\)$/                                 s/^ /#/g' \
+							-e '/^ * *- *pipewire-libcamera\(\| .*\|#.*\)$/                             s/^ /#/g' \
+							-e '/^ * *- *pipewire-pulse\(\| .*\|#.*\)$/                                 s/^ /#/g' \
+							-e '/^ * *- *plymouth-theme-mobian\(\| .*\|#.*\)$/                          s/^ /#/g' \
+							-e '/^ * *- *polkitd-pkla\(\| .*\|#.*\)$/                                   s/^ /#/g' \
+							-e '/^ * *- *python3-charset-normalizer\(\| .*\|#.*\)$/                     s/^ /#/g' \
+							-e '/^ * *- *python3-markdown-it\(\| .*\|#.*\)$/                            s/^ /#/g' \
+							-e '/^ * *- *python3-mdurl\(\| .*\|#.*\)$/                                  s/^ /#/g' \
+							-e '/^ * *- *python3-rfc3987\(\| .*\|#.*\)$/                                s/^ /#/g' \
+							-e '/^ * *- *samba-ad-provision\(\| .*\|#.*\)$/                             s/^ /#/g' \
+							-e '/^ * *- *systemd-resolved\(\| .*\|#.*\)$/                               s/^ /#/g' \
+							-e '/^ * *- *usr-is-merged\(\| .*\|#.*\)$/                                  s/^ /#/g' \
+							-e '/^ * *- *wireplumber\(\| .*\|#.*\)$/                                    s/^ /#/g' \
 						    -e '/^# * *- *fcitx5-frontend-gtk[2-3]\(\| .*\|#.*\)$/                      s/^#/ /g' \
 						    -e '/^# * *- *fcitx5-frontend-qt5\(\| .*\|#.*\)$/                           s/^#/ /g' \
-						    -e '/^# * *- *pulseaudio\(\| .*\|#.*\)$/                                    s/^#/ /g' \
+						    -e '/^# * *- *pulseaudio.*\(\| .*\|#.*\)$/                                  s/^#/ /g' \
+						    -e '/^# * *- *resolvconf\(\| .*\|#.*\)$/                                    s/^#/ /g' \
 						    -e '}}'                                                                               \
 						    "${FILE_YAML}"                                                                        \
 						> "${FILE_CONF}"
@@ -378,6 +384,15 @@
 						    "${FILE_YAML}"                                                                        \
 						> "${FILE_CONF}"
 						;;
+					live-debian-xx-*    )
+						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
+						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
+						    -e '/^ * *- *mime-support\(\| .*\|#.*\)$/                                   s/^ /#/g' \
+						    -e '/^ * *- *polkitd-pkla\(\| .*\|#.*\)$/                                   s/^ /#/g' \
+						    -e '}}'                                                                               \
+						    "${FILE_YAML}"                                                                        \
+						> "${FILE_CONF}"
+						;;
 					live-ubuntu-22.04-*    )
 						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
 						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
@@ -390,36 +405,6 @@
 						    -e '/^ * *- *fonts-liberation-sans-narrow\(\| .*\|#.*\)$/                   s/^ /#/g' \
 						    -e '/^ * *- *gnome-browser-connector\(\| .*\|#.*\)$/                        s/^ /#/g' \
 						    -e '/^ * *- *gnome-shell-extension-ubuntu-tiling-assistant\(\| .*\|#.*\)$/  s/^ /#/g' \
-						    -e '/^ * *- *libgpgme11t64\(\| .*\|#.*\)$/                                  s/^ /#/g' \
-						    -e '/^ * *- *pipewire-alsa\(\| .*\|#.*\)$/                                  s/^ /#/g' \
-						    -e '/^ * *- *pipewire-audio\(\| .*\|#.*\)$/                                 s/^ /#/g' \
-						    -e '/^ * *- *python3-mdurl\(\| .*\|#.*\)$/                                  s/^ /#/g' \
-						    -e '/^ * *- *python3-rfc3987\(\| .*\|#.*\)$/                                s/^ /#/g' \
-						    -e '/^ * *- *samba-ad-provision\(\| .*\|#.*\)$/                             s/^ /#/g' \
-						    -e '/^ * *- *ubuntu-kernel-accessories\(\| .*\|#.*\)$/                      s/^ /#/g' \
-						    -e '/^# * *- *fcitx5-frontend-gtk[2-4]\(\| .*\|#.*\)$/                      s/^#/ /g' \
-						    -e '/^# * *- *fcitx5-frontend-qt5\(\| .*\|#.*\)$/                           s/^#/ /g' \
-						    -e '}}'                                                                               \
-						    "${FILE_YAML}"                                                                        \
-						> "${FILE_CONF}"
-						;;
-					live-debian-xx-*    )
-						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
-						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
-						    -e '/^ * *- *mime-support\(\| .*\|#.*\)$/                                   s/^ /#/g' \
-						    -e '/^ * *- *polkitd-pkla\(\| .*\|#.*\)$/                                   s/^ /#/g' \
-						    -e '}}'                                                                               \
-						    "${FILE_YAML}"                                                                        \
-						> "${FILE_CONF}"
-						;;
-					live-ubuntu-22.04-* )
-						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
-						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
-						    -e '/^ * *- *cron-daemon-common\(\| .*\|#.*\)$/                             s/^ /#/g' \
-						    -e '/^ * *- *firmware-realtek-rtl8723cs-bt\(\| .*\|#.*\)$/                  s/^ /#/g' \
-						    -e '/^ * *- *fonts-liberation-sans-narrow\(\| .*\|#.*\)$/                   s/^ /#/g' \
-						    -e '/^ * *- *gnome-browser-connector\(\| .*\|#.*\)$/                        s/^ /#/g' \
-						    -e '/^ * *- *gnome-shell-extension-ubuntu-tiling-assistant\(\| .*\|#.*\)$/  s/^ /#/g' \
 						    -e '/^ * *- *gstreamer1.0-libcamera\(\| .*\|#.*\)$/                         s/^ /#/g' \
 						    -e '/^ * *- *libgpgme11t64\(\| .*\|#.*\)$/                                  s/^ /#/g' \
 						    -e '/^ * *- *pipewire-alsa\(\| .*\|#.*\)$/                                  s/^ /#/g' \
@@ -428,7 +413,12 @@
 						    -e '/^ * *- *python3-mdurl\(\| .*\|#.*\)$/                                  s/^ /#/g' \
 						    -e '/^ * *- *python3-rfc3987\(\| .*\|#.*\)$/                                s/^ /#/g' \
 						    -e '/^ * *- *samba-ad-provision\(\| .*\|#.*\)$/                             s/^ /#/g' \
+						    -e '/^ * *- *systemd-resolved\(\| .*\|#.*\)$/                               s/^ /#/g' \
 						    -e '/^ * *- *ubuntu-kernel-accessories\(\| .*\|#.*\)$/                      s/^ /#/g' \
+						    -e '/^# * *- *fcitx5-frontend-gtk[2-4]\(\| .*\|#.*\)$/                      s/^#/ /g' \
+						    -e '/^# * *- *fcitx5-frontend-qt5\(\| .*\|#.*\)$/                           s/^#/ /g' \
+						    -e '/^# * *- *pulseaudio.*\(\| .*\|#.*\)$/                                  s/^#/ /g' \
+						    -e '/^# * *- *resolvconf\(\| .*\|#.*\)$/                                    s/^#/ /g' \
 						    -e '}}'                                                                               \
 						    "${FILE_YAML}"                                                                        \
 						> "${FILE_CONF}"
@@ -493,9 +483,9 @@
 					
 					# --- setup root password -----------------------------------------------------
 					 	printf "\033[m\033[42m%s\033[m\n" "setup root password"
-					 	_RETURN_VALUE="$(echo 'password' | openssl passwd -6 -stdin)"
-					 	usermod --password "${_RETURN_VALUE}" root
-					#	passwd --delete root
+					#	_RETURN_VALUE="$(echo 'password' | openssl passwd -6 -stdin)"
+					#	usermod --password "${_RETURN_VALUE}" root
+					 	passwd --delete root
 					
 					# --- setup ssh login ---------------------------------------------------------
 					 	# shellcheck disable=SC2091,SC2310
@@ -506,6 +496,53 @@
 					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
 					 			PasswordAuthentication yes
 					 			PermitRootLogin no
+					_EOT_
+					 	fi
+					
+					# --- set network parameter ---------------------------------------------------
+					 	# shellcheck disable=SC2091,SC2310
+					 	if $(funcIsPackage 'network-manager') \
+					 	&& $(funcIsPackage 'netplan.io'     ); then
+					 		printf "\033[m\033[42m%s\033[m\n" "setup network parameter: nmcli with netplan"
+					 		_FILE_PATH="/etc/netplan/99-network-manager-all.yaml"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 			network:
+					 			  version: 2
+					 			  renderer: NetworkManager
+					_EOT_
+					 		chmod 600 "${_FILE_PATH}"
+					 	fi
+					
+					# --- set bluetooth -----------------------------------------------------------
+					# https://askubuntu.com/questions/1306723/bluetooth-service-fails-and-freezes-after-some-time-in-ubuntu-18-04
+					#	# shellcheck disable=SC2091,SC2310
+					#	if $(funcIsPackage 'rfkill'   ) \
+					#	&& $(funcIsPackage 'bluetooth'); then
+					#		printf "\033[m\033[42m%s\033[m\n" "setup bluetooth parameter"
+					#		rfkill unblock bluetooth || true
+					#	fi
+					#
+					# --- setup systemd-resolved.service ------------------------------------------
+					 	if [ -f /etc/systemd/resolved.conf ] \
+					 	&& [ -f /etc/dnsmasq.conf          ]; then
+					 		printf "\033[m\033[42m%s\033[m\n" "setup systemd-resolved.service"
+					 		_FILE_PATH="/etc/systemd/resolved.conf.d/resolved.conf"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 			[Resolve]
+					 			DNS=127.0.0.1
+					_EOT_
+					 		_FILE_PATH="/etc/dnsmasq.d/dnsmasq.conf"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 			no-poll                                 # don't poll /etc/resolv.conf for changes
+					 			no-resolv                               # don't read /etc/resolv.conf
+					 			listen-address=::1,127.0.0.1            # listen to ip address
+					 			server=8.8.8.8                          # directly specify upstream server
+					 			server=8.8.4.4                          # directly specify upstream server
+					 			no-dhcp-interface=                      # disable DHCP service
+					 			bind-interfaces                         # enable bind-interfaces
 					_EOT_
 					 	fi
 					
@@ -582,174 +619,264 @@
 					#	fi
 					
 					# --- setup wireplumber -------------------------------------------------------
-					 	# shellcheck disable=SC2091,SC2310
-					 	if $(funcIsPackage 'wireplumber'); then
-					 		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
-					 		printf "\033[m\033[42m%s\033[m\n" "setup wireplumber"
-					 		mkdir -p "${_FILE_PATH%/*}"
-					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-					 			monitor.alsa.rules = [
-					 			  {
-					 			    matches = [
-					 			      # This matches the value of the 'node.name' property of the node.
-					 			      {
-					 			        node.name = "~alsa_output.*"
-					 			      }
-					 			    ]
-					 			    actions = {
-					 			      # Apply all the desired node specific settings here.
-					 			      update-props = {
-					 			        api.alsa.period-size   = 1024
-					 			        api.alsa.headroom      = 8192
-					 			        session.suspend-timeout-seconds = 0
-					 			      }
-					 			    }
-					 			  }
-					 			]
-					_EOT_
-					 	fi
+					#	# shellcheck disable=SC2091,SC2310
+					#	if $(funcIsPackage 'wireplumber'); then
+					#		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
+					#		printf "\033[m\033[42m%s\033[m\n" "setup wireplumber"
+					#		mkdir -p "${_FILE_PATH%/*}"
+					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#			monitor.alsa.rules = [
+					#			  {
+					#			    matches = [
+					#			      # This matches the value of the 'node.name' property of the node.
+					#			      {
+					#			        node.name = "~alsa_output.*"
+					#			      }
+					#			    ]
+					#			    actions = {
+					#			      # Apply all the desired node specific settings here.
+					#			      update-props = {
+					#			        api.alsa.period-size   = 1024
+					#			        api.alsa.headroom      = 8192
+					#			        session.suspend-timeout-seconds = 0
+					#			      }
+					#			    }
+					#			  }
+					#			]
+					#_EOT_
+					#
+					#		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/51-alsa-pro-audio.conf"
+					#		mkdir -p "${_FILE_PATH%/*}"
+					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#			monitor.alsa.rules = [
+					#			  {
+					#			    matches = [
+					#			      {
+					#			        device.name = "~alsa_card.*"
+					#			      }
+					#			    ]
+					#			    actions = {
+					#			      update-props = {
+					#			        api.alsa.use-acp = false,
+					#			        device.profile = "pro-audio"
+					#			        api.acp.auto-profile = false
+					#			        api.acp.auto-port = false
+					#			      }
+					#			    }
+					#			  }
+					#			]
+					#_EOT_
+					#		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/51-headphones.conf"
+					#		mkdir -p "${_FILE_PATH%/*}"
+					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#			monitor.bluez.rules = [
+					#			  {
+					#			    matches = [
+					#			      {
+					#			        node.name = "bluez_output.02_11_45_A0_B3_27.a2dp-sink"
+					#			      }
+					#			    ]
+					#			    actions = {
+					#			      update-props = {
+					#			        node.nick = "Headphones"
+					#			      }
+					#			    }
+					#			  }
+					#			]
+					#_EOT_
+					#		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/80-bluez-properties.conf"
+					#		mkdir -p "${_FILE_PATH%/*}"
+					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#			 onitor.bluez.properties = {
+					#			  bluez5.roles = [ a2dp_sink a2dp_source bap_sink bap_source hsp_hs hsp_ag hfp_hf hfp_ag ]
+					#			  bluez5.hfphsp-backend = "native"
+					#			}
+					#_EOT_
+					#		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/80-disable-alsa-reserve.conf"
+					#		mkdir -p "${_FILE_PATH%/*}"
+					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#			wireplumber.profiles = {
+					#			  main = {
+					#			    monitor.alsa.reserve-device = disabled
+					#			  }
+					#			}
+					#_EOT_
+					#		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/80-disable-logind.conf"
+					#		mkdir -p "${_FILE_PATH%/*}"
+					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#			wireplumber.profiles = {
+					#			  main = {
+					#			    monitor.bluez.seat-monitoring = disabled
+					#			  }
+					#			}
+					#_EOT_
+					#		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/80-policy.conf"
+					#		mkdir -p "${_FILE_PATH%/*}"
+					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#			wireplumber.settings = {
+					#			  linking.allow-moving-streams = false
+					#			  linking.follow-default-target = false
+					#			}
+					#_EOT_
+					#		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/99-my-script.conf.sample"
+					#		mkdir -p "${_FILE_PATH%/*}"
+					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#			wireplumber.components = [
+					#			  {
+					#			    name = my-script.lua, type = script/lua
+					#			    provides = custom.my-script
+					#			  }
+					#			]
+					#
+					#			wireplumber.profiles = {
+					#			  main = {
+					#			    custom.my-script = required
+					#			  }
+					#			}
+					#_EOT_
+					#	fi
 					
 					# --- setup pipewire ----------------------------------------------------------
-					 	# shellcheck disable=SC2091,SC2310
-					 	if $(funcIsPackage 'pipewire'); then
-					 		printf "\033[m\033[42m%s\033[m\n" "setup pipewire"
-					 		# --- debian 11 -------------------------------------------------------
-					 		# https://wiki.debian.org/PipeWire
-					 		if [ "${_DISTRIBUTION:-}" = "debian" ] && [ "${_RELEASE:-}" = "11" ]; then
-					 			# --- PulseAudio --------------------------------------------------
-					 			_FILE_PATH="/etc/pipewire/media-session.d/with-pulseaudio"
-					 			mkdir -p "${_FILE_PATH%/*}"
-					 			touch touch "${_FILE_PATH}"
-					 			cp -a /usr/share/doc/pipewire/examples/systemd/user/pipewire-pulse.* /etc/systemd/user/
-					 			# --- ALSA --------------------------------------------------------
-					 			_FILE_PATH="/etc/pipewire/media-session.d/with-alsa"
-					 			mkdir -p "${_FILE_PATH%/*}"
-					 			touch touch "${_FILE_PATH}"
-					 			cp -a /usr/share/doc/pipewire/examples/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d/
-					 			# --- JACK --------------------------------------------------------
-					 			_FILE_PATH="/etc/pipewire/media-session.d/with-alsa"
-					 			mkdir -p "${_FILE_PATH%/*}"
-					 			touch touch "${_FILE_PATH}"
-					 			sudo cp -a /usr/share/doc/pipewire/examples/ld.so.conf.d/pipewire-jack-*.conf /etc/ld.so.conf.d/
-					 			# --- Bluetooth ---------------------------------------------------
-					 			_FILE_PATH="/etc/pipewire/media-session.d/bluez-monitor.conf"
-					 			mkdir -p "${_FILE_PATH%/*}"
-					 			touch touch "${_FILE_PATH}"
-					 			# --- service -----------------------------------------------------
-					 			systemctl --global daemon-reload || true
-					 			systemctl --global disable pulseaudio || true
-					 			systemctl --global mask    pulseaudio || true
-					 			systemctl --global unmask  pipewire pipewire-pulse || true
-					 			systemctl --global enable  pipewire pipewire-pulse || true
-					 			ldconfig
-					 			# --- config ------------------------------------------------------
-					 			_FILE_PATH="/etc/pipewire/pipewire.conf.d/pipewire.conf"
-					 			mkdir -p "${_FILE_PATH%/*}"
-					 			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-					 				properties = {
-					 				    ## Properties for the DSP configuration
-					 				    default.clock.rate =                48000
-					 				    default.clock.quantum =             2048
-					 				    default.clock.min-quantum =         2048
-					 				    #default.clock.max-quantum =        8192
-					 				    #default.video.width =              640
-					 				    #default.video.height =             480
-					 				    #default.video.rate.num =           25
-					 				    #default.video.rate.denom =         1
-					 				}
-					_EOT_
-					 		else
-					 			_FILE_PATH="/etc/pipewire/pipewire.conf.d/pipewire.conf"
-					 			mkdir -p "${_FILE_PATH%/*}"
-					 			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-					 				context.properties = {
-					 				    ## Properties for the DSP configuration.
-					 				    default.clock.rate          = 48000
-					 				    default.clock.allowed-rates = [ 384000 192000 96000 48000 44100 ]
-					 				    default.clock.quantum       = 2048
-					 				    default.clock.min-quantum   = 2048
-					 				    # These overrides are only applied when running in a vm.
-					 				    vm.overrides = {
-					 				        default.clock.min-quantum = 2048
-					 				    }
-					 				}
-					 				
-					 				context.modules = [
-					 				    { name = libpipewire-module-rt
-					 				        args = {
-					 				            nice.level    = -15
-					 				            #rt.prio      = 88
-					 				            #rt.time.soft = -1
-					 				            #rt.time.hard = -1
-					 				        }
-					 				        flags = [ ifexists nofail ]
-					 				    }
-					 				]
-					_EOT_
-					 			_FILE_PATH="/etc/pipewire/pipewire-pulse.conf.d/pipewire-pulse.conf"
-					 			mkdir -p "${_FILE_PATH%/*}"
-					 			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-					 				context.modules = [
-					 				    { name = libpipewire-module-rt
-					 				        args = {
-					 				            nice.level   = -15
-					 				            #rt.prio      = 88
-					 				            #rt.time.soft = -1
-					 				            #rt.time.hard = -1
-					 				        }
-					 				        flags = [ ifexists nofail ]
-					 				    }
-					 				]
-					 				
-					 				pulse.cmd = [
-					 				    { cmd = "load-module" args = "module-always-sink" flags = [ ] }
-					 				    { cmd = "load-module" args = "module-switch-on-connect" }
-					 				    #{ cmd = "load-module" args = "module-gsettings" flags = [ "nofail" ] }
-					 				]
-					_EOT_
-					 		fi
-					 	fi
+					#	# shellcheck disable=SC2091,SC2310
+					#	if $(funcIsPackage 'pipewire'); then
+					#		printf "\033[m\033[42m%s\033[m\n" "setup pipewire"
+					#		# --- debian 11 -------------------------------------------------------
+					#		# https://wiki.debian.org/PipeWire
+					#		if [ "${_DISTRIBUTION:-}" = "debian" ] && [ "${_RELEASE:-}" = "11" ]; then
+					#			# --- PulseAudio --------------------------------------------------
+					#			_FILE_PATH="/etc/pipewire/media-session.d/with-pulseaudio"
+					#			mkdir -p "${_FILE_PATH%/*}"
+					#			touch touch "${_FILE_PATH}"
+					#			cp -a /usr/share/doc/pipewire/examples/systemd/user/pipewire-pulse.* /etc/systemd/user/
+					#			# --- ALSA --------------------------------------------------------
+					#			_FILE_PATH="/etc/pipewire/media-session.d/with-alsa"
+					#			mkdir -p "${_FILE_PATH%/*}"
+					#			touch touch "${_FILE_PATH}"
+					#			cp -a /usr/share/doc/pipewire/examples/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d/
+					#			# --- JACK --------------------------------------------------------
+					#			_FILE_PATH="/etc/pipewire/media-session.d/with-alsa"
+					#			mkdir -p "${_FILE_PATH%/*}"
+					#			touch touch "${_FILE_PATH}"
+					#			sudo cp -a /usr/share/doc/pipewire/examples/ld.so.conf.d/pipewire-jack-*.conf /etc/ld.so.conf.d/
+					#			# --- Bluetooth ---------------------------------------------------
+					#			_FILE_PATH="/etc/pipewire/media-session.d/bluez-monitor.conf"
+					#			mkdir -p "${_FILE_PATH%/*}"
+					#			touch touch "${_FILE_PATH}"
+					#			# --- service -----------------------------------------------------
+					#			systemctl --global daemon-reload || true
+					#			systemctl --global disable pulseaudio || true
+					#			systemctl --global mask    pulseaudio || true
+					#			systemctl --global unmask  pipewire pipewire-pulse || true
+					#			systemctl --global enable  pipewire pipewire-pulse || true
+					#			ldconfig
+					#			# --- config ------------------------------------------------------
+					#			_FILE_PATH="/etc/pipewire/pipewire.conf.d/pipewire.conf"
+					#			mkdir -p "${_FILE_PATH%/*}"
+					#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#				properties = {
+					#				    ## Properties for the DSP configuration
+					#				    default.clock.rate =                48000
+					#				    default.clock.quantum =             2048
+					#				    default.clock.min-quantum =         2048
+					#				    #default.clock.max-quantum =        8192
+					#				    #default.video.width =              640
+					#				    #default.video.height =             480
+					#				    #default.video.rate.num =           25
+					#				    #default.video.rate.denom =         1
+					#				}
+					#_EOT_
+					#		else
+					#			_FILE_PATH="/etc/pipewire/pipewire.conf.d/pipewire.conf"
+					#			mkdir -p "${_FILE_PATH%/*}"
+					#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#				context.properties = {
+					#				    ## Properties for the DSP configuration.
+					#				    default.clock.rate          = 48000
+					#				    default.clock.allowed-rates = [ 384000 192000 96000 48000 44100 ]
+					#				    default.clock.quantum       = 2048
+					#				    default.clock.min-quantum   = 2048
+					#				    # These overrides are only applied when running in a vm.
+					#				    vm.overrides = {
+					#				        default.clock.min-quantum = 2048
+					#				    }
+					#				}
+					#				
+					#				context.modules = [
+					#				    { name = libpipewire-module-rt
+					#				        args = {
+					#				            nice.level    = -15
+					#				            #rt.prio      = 88
+					#				            #rt.time.soft = -1
+					#				            #rt.time.hard = -1
+					#				        }
+					#				        flags = [ ifexists nofail ]
+					#				    }
+					#				]
+					#_EOT_
+					#			_FILE_PATH="/etc/pipewire/pipewire-pulse.conf.d/pipewire-pulse.conf"
+					#			mkdir -p "${_FILE_PATH%/*}"
+					#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#				context.modules = [
+					#				    { name = libpipewire-module-rt
+					#				        args = {
+					#				            nice.level   = -15
+					#				            #rt.prio      = 88
+					#				            #rt.time.soft = -1
+					#				            #rt.time.hard = -1
+					#				        }
+					#				        flags = [ ifexists nofail ]
+					#				    }
+					#				]
+					#				
+					#				pulse.cmd = [
+					#				    { cmd = "load-module" args = "module-always-sink" flags = [ ] }
+					#				    { cmd = "load-module" args = "module-switch-on-connect" }
+					#				    #{ cmd = "load-module" args = "module-gsettings" flags = [ "nofail" ] }
+					#				]
+					#_EOT_
+					#		fi
+					#	fi
 					
 					# --- setup pulseaudio --------------------------------------------------------
-					 	# shellcheck disable=SC2091,SC2310
-					 	if $(funcIsPackage 'pulseaudio'); then
-					 		printf "\033[m\033[42m%s\033[m\n" "setup pulseaudio"
-					 		if id pulse > /dev/null 2>&1; then
-					 			usermod -aG lp pulse
-					 		fi
-					
-					 		_FILE_PATH="/etc/pulse/default.pa.d/unload_driver_modules_for_bluetooth"
-					 		mkdir -p "${_FILE_PATH%/*}"
-					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-					 			### unload driver modules for Bluetooth hardware
-					 			.ifexists module-bluetooth-policy.so
-					 			  unload-module module-bluetooth-policy
-					 			.endif
-					 			
-					 			.ifexists module-bluetooth-discover.so
-					 			  unload-module module-bluetooth-discover
-					 			.endif
-					_EOT_
-					 		# --- service ---------------------------------------------------------
-					 		systemctl --global daemon-reload || true
-					 		systemctl --global disable pipewire pipewire-pulse || true
-					 		systemctl --global mask    pipewire pipewire-pulse || true
-					 		systemctl --global unmask  pulseaudio || true
-					 		systemctl --global enable  pulseaudio || true
-					 		ldconfig
-					 	fi
+					#	# shellcheck disable=SC2091,SC2310
+					#	if $(funcIsPackage 'pulseaudio'); then
+					#		printf "\033[m\033[42m%s\033[m\n" "setup pulseaudio"
+					#		if id pulse > /dev/null 2>&1; then
+					#			usermod -aG lp pulse
+					#		fi
+					#
+					#		_FILE_PATH="/etc/pulse/default.pa.d/unload_driver_modules_for_bluetooth"
+					#		mkdir -p "${_FILE_PATH%/*}"
+					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#			### unload driver modules for Bluetooth hardware
+					#			.ifexists module-bluetooth-policy.so
+					#			  unload-module module-bluetooth-policy
+					#			.endif
+					#			
+					#			.ifexists module-bluetooth-discover.so
+					#			  unload-module module-bluetooth-discover
+					#			.endif
+					#_EOT_
+					#		# --- service ---------------------------------------------------------
+					#		systemctl --global daemon-reload || true
+					#		systemctl --global disable pipewire pipewire-pulse || true
+					#		systemctl --global mask    pipewire pipewire-pulse || true
+					#		systemctl --global unmask  pulseaudio || true
+					#		systemctl --global enable  pulseaudio || true
+					#		ldconfig
+					#	fi
 					
 					# --- setup bluetooth ---------------------------------------------------------
-					 	# shellcheck disable=SC2091,SC2310
-					 	if $(funcIsPackage 'bluetooth'); then
-					 		printf "\033[m\033[42m%s\033[m\n" "setup bluetooth"
-					 		_FILE_PATH="/etc/bluetooth/audio.conf"
-					 		mkdir -p "${_FILE_PATH%/*}"
-					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-					 			[General]
-					 			Enable=Source,Sink,Media,Socket
-					_EOT_
-					 	fi
+					#	# shellcheck disable=SC2091,SC2310
+					#	if $(funcIsPackage 'bluetooth'); then
+					#		printf "\033[m\033[42m%s\033[m\n" "setup bluetooth"
+					#		_FILE_PATH="/etc/bluetooth/audio.conf"
+					#		mkdir -p "${_FILE_PATH%/*}"
+					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					#			[General]
+					#			Enable=Source,Sink,Media,Socket
+					#_EOT_
+					#	fi
 					
 					# --- install snap packages ---------------------------------------------------
 					#	# shellcheck disable=SC2091,SC2310
@@ -846,6 +973,21 @@ _EOT_SH_
 					;;
 			esac
 			umount "${DIRS_MNTS}"
+			# ---- create splash.png ------------------------------------------
+			# 800x600x24 black
+			# tar -cz splash.png | xxd -p
+#			pushd "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux" > /dev/null
+#				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | xxd -r -p | tar -xz
+#					1f8b0800000000000003edceaf6ec2501887e10f080921298a1a54dddc72
+#					3a4e391ad265ab61842cd92428101b251412e432472677035c01120f1781
+#					d815cc4c6326389b2199188a3484f731df5ff14b864fdda47f391cf4e468
+#					9455d3fab75a7feb95515a7c6d94d28109aa5551be1fd48c78ea7891f626
+#					c9b83bf23c19c5f1f8bfbf43f713356b356f9c62a5685b27ba0ddb22394f
+#					24fb58c8da8d5b762f44f26f5158bf9f7e7cad328e5daee7dbbbe79299a7
+#					1a1b00cecbcb43eefb5d329be5faf3678cae9be1a2d1794d3b1600000000
+#					0000000000000048d70e5c9338d500280000
+#_EOT_
+#			popd > /dev/null
 			# ---- create isolinux --------------------------------------------
 	#		wget --directory-prefix="${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/isolinux" \
 	#			"https://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/debian-installer/amd64/boot-screens/splash.png"
@@ -929,8 +1071,41 @@ _EOT_
 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/boot/grub/grub.cfg"
 				set timeout=5
 				set default=0
+				set gfxmode=auto
 				set lang=ja_JP
-				grub_platform
+				
+				if [ x\$feature_default_font_path = xy ] ; then
+				   font=unicode
+				else
+				   font=\$prefix/font.pf2
+				fi
+				
+				if loadfont \$font ; then
+				  set gfxmode=1024x768
+				  set gfxpayload=keep
+				  insmod efi_gop
+				  insmod efi_uga
+				  insmod video_bochs
+				  insmod video_cirrus
+				  insmod gfxterm
+				  insmod png
+				  terminal_output gfxterm
+				fi
+				
+				if background_image /isolinux/splash.png; then
+				  set color_normal=light-gray/black
+				  set color_highlight=white/black
+				elif background_image /splash.png; then
+				  set color_normal=light-gray/black
+				  set color_highlight=white/black
+				else
+				  set menu_color_normal=cyan/blue
+				  set menu_color_highlight=white/blue
+				fi
+				
+				insmod play
+				play 960 440 1 0 4 440 1
+				#set theme=/boot/grub/theme/1
 				
 				menuentry "${TGET_LINE[2]//%20/ } [${TGET_LINE[1]##*-}]" {
 				 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi

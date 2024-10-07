@@ -10,11 +10,25 @@
 
 #	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
-	PROG_PATH="9999-user-conf-setup.sh"
-#	PROG_DIRS="${PROG_PATH%/*}"
-	PROG_NAME="${PROG_PATH##*/}"
+#	readonly    PROG_PATH="$0"
+	readonly    PROG_PATH="9999-user-conf-setup.sh"
+#	readonly    PROG_DIRS="${PROG_PATH%/*}"
+	readonly    PROG_NAME="${PROG_PATH##*/}"
 
-#	# --- function systemctl ------------------------------------------------------
+	# --- start -------------------------------------------------------------------
+	if [ -f "/var/lib/live/config/${PROG_NAME%.*}" ]; then
+		# shellcheck disable=SC2028
+		printf "\033[m\033[41malready runned: %s\033[m\n" "${PROG_PATH}" | tee /dev/console 2>&1
+		return
+	fi
+
+	printf "\033[m\033[45mstart: %s\033[m\n" "${PROG_PATH}" | tee /dev/console 2>&1
+	_DISTRIBUTION="$(lsb_release -is | tr '[:upper:]' '[:lower:]' | sed -e 's| |-|g')"
+	_RELEASE="$(lsb_release -rs | tr '[:upper:]' '[:lower:]')"
+	_CODENAME="$(lsb_release -cs | tr '[:upper:]' '[:lower:]')"
+	printf "\033[m\033[93m%s\033[m\n" "setup: ${_DISTRIBUTION:-} ${_RELEASE:-} ${_CODENAME:-}" | tee /dev/console 2>&1
+
+	# --- function systemctl ------------------------------------------------------
 #	funcSystemctl () {
 #		_OPTIONS="$1"
 #		_COMMAND="$2"
@@ -27,16 +41,11 @@
 #			systemctl ${_OPTIONS} "${_COMMAND}" ${_RETURN_VALUE}
 #		fi
 #	}
-#	
 
-	if [ -f "/var/lib/live/config/${PROG_NAME%.*}" ]; then
-		# shellcheck disable=SC2028
-		echo "\033[m\033[41malready runned: ${PROG_PATH}\033[m" | tee /dev/console 2>&1
-		return
-	fi
-
-	# shellcheck disable=SC2028
-	echo "\033[m\033[45mstart: ${PROG_PATH}\033[m" | tee /dev/console 2>&1
+	# --- function is package -----------------------------------------------------
+	funcIsPackage () {
+		LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed'
+	}
 
 	# --- set hostname parameter ----------------------------------------------
 	if [ -n "${LIVE_HOSTNAME:-}" ]; then
@@ -53,14 +62,22 @@ _EOT_
 	fi
 
 	# --- set ssh parameter ---------------------------------------------------
-	if [ -d /etc/ssh/sshd_config.d/. ]; then
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'openssh-server'); then
 		echo "set ssh parameter" | tee /dev/console 2>&1
 		_CONF_FLAG="no"
 		if [ -z "${LIVE_USERNAME:-}" ]; then
 			_CONF_FLAG="yes"
+			if [ -z "${LIVE_PASSWORD:-}" ]; then
+				passwd --delete root
+			else
+				_RETURN_VALUE="$(echo "${LIVE_PASSWORD}" | openssl passwd -6 -stdin)"
+				usermod --password "${_RETURN_VALUE}" root
+			fi
 		fi
 		_FILE_PATH="/etc/ssh/sshd_config.d/sshd.conf"
 		echo "set ssh parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
 			PasswordAuthentication yes
 			PermitRootLogin ${_CONF_FLAG}
@@ -73,60 +90,69 @@ _EOT_
 		fi
 	fi
 
-	# --- set network parameter -----------------------------------------------
-	_RETURN_VALUE="$(command -v nmcli 2> /dev/null)"
-	if [ -n "${_RETURN_VALUE:-}" ]; then
-		echo "set network parameter: nmcli" | tee /dev/console 2>&1
-		DIRS_NAME="/etc/netplan"
-		if [ -d "${DIRS_NAME}/." ]; then
-			echo "set network parameter: nmcli with netplan" | tee /dev/console 2>&1
-			_FILE_PATH="${DIRS_NAME}/99-network-manager-all.yaml"
-			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-				network:
-				  version: 2
-				  renderer: NetworkManager
+	# --- set auto login parameter [ lightdm ] --------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'lightdm'); then
+		echo "set auto login parameter: lightdm" | tee /dev/console 2>&1
+		for _SESSION in        \
+			LXDE               \
+			gnome              \
+			gnome-xorg         \
+			gnome-classic      \
+			gnome-classic-xorg \
+			lightdm-xsession   \
+			openbox
+		do
+			if [ -f "/usr/share/xsessions/${_SESSION}" ]; then
+				_PROG_PATH="/etc/lightdm/lightdm_display.sh"
+				_FILE_PATH="/etc/lightdm/lightdm.conf.d/autologin.conf"
+				mkdir -p "${_FILE_PATH%/*}"
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					[Seat:*]
+					autologin-user=${LIVE_USERNAME:-root}
+					autologin-user-timeout=0
 _EOT_
-			chmod 600 "${_FILE_PATH}"
-			# --- debug out ---------------------------------------------------
+				break
+			fi
+		done
+	fi
+
+	# --- set auto login parameter [ gdm3 ] -----------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'gdm3'); then
+		echo "set auto login parameter: gdm3" | tee /dev/console 2>&1
+		_GDM3_OPTIONS="$(
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+				AutomaticLoginEnable=true
+				AutomaticLogin=${LIVE_USERNAME:-root}
+				#TimedLoginEnable=true
+				#TimedLogin=${LIVE_USERNAME:-root}
+				#TimedLoginDelay=5
+				
+_EOT_
+		)"
+		_CONF_FLAG=""
+		grep -l 'AutomaticLoginEnable[ \t]*=[ \t]*true' /etc/gdm3/*.conf | while IFS= read -r _FILE_PATH
+		do
+			sed -i "${_FILE_PATH}"             \
+			    -e '/^\[daemon\]/,/^\[.*\]/ {' \
+			    -e '/^[^#\[]\+/ s/^/#/}'
+			if [ -z "${_CONF_FLAG:-}" ]; then
+				sed -i "${_FILE_PATH}"                               \
+				    -e "s%^\(\[daemon\].*\)$%\1\n${_GDM3_OPTIONS}%"
+				_CONF_FLAG="true"
+			fi
+			# --- debug out -----------------------------------------------
 			if [ -n "${LIVE_DEBUGOUT:-}" ]; then
 				< "${_FILE_PATH}" tee /dev/console 2>&1
 			fi
-		fi
-	fi
-
-	# --- set bluetooth -------------------------------------------------------
-	# https://askubuntu.com/questions/1306723/bluetooth-service-fails-and-freezes-after-some-time-in-ubuntu-18-04
-	_RETURN_VALUE="$(command -v rfkill 2> /dev/null)"
-	if [ -n "${_RETURN_VALUE:-}" ]; then
-		_RETURN_VALUE="$(command -v bluetoothctl 2> /dev/null)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
-			echo "set bluetooth parameter" | tee /dev/console 2>&1
-			rfkill unblock bluetooth || true
-			if lsmod | grep -q -E '^btusb[ \t]'; then
-				rmmod btusb || true
-				modprobe btusb || true
-			fi
-		fi
-		# --- debug out -------------------------------------------------------
-		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
-			rfkill list | tee /dev/console 2>&1
-		fi
-	fi
-
-	# --- set lxde parameter --------------------------------------------------
-	_RETURN_VALUE="$(command -v startlxde 2> /dev/null)"
-	if [ -n "${_RETURN_VALUE:-}" ]; then
-		echo "set lxde parameter" | tee /dev/console 2>&1
-		update-alternatives --set "x-session-manager" "/usr/bin/startlxde"
-		# --- debug out -------------------------------------------------------
-		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
-			update-alternatives --get-selections | grep x-session-manager | tee /dev/console 2>&1
-		fi
+		done
 	fi
 
 	# --- set vmware parameter ------------------------------------------------
-	_RETURN_VALUE="$(command -v vmware-checkvm 2> /dev/null)"
-	if [ -n "${_RETURN_VALUE:-}" ] && [ -n "${LIVE_HGFS}" ]; then
+	# shellcheck disable=SC2091,SC2310
+	if [ -n "${LIVE_HGFS}" ] \
+	&& $(funcIsPackage 'open-vm-tools'); then
 		echo "set vmware parameter" | tee /dev/console 2>&1
 		mkdir -p "${LIVE_HGFS}"
 		chmod a+w "${LIVE_HGFS}"
@@ -145,118 +171,408 @@ _EOT_
 		fi
 	fi
 
-	# --- set auto login parameter --------------------------------------------
-	if [ -d /etc/gdm3/. ]; then
-		echo "set auto login parameter: gdm3" | tee /dev/console 2>&1
-		_GDM3_OPTIONS="$(
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
-				AutomaticLoginEnable=true
-				AutomaticLogin=${LIVE_USERNAME:-root}
-				#TimedLoginEnable=true
-				#TimedLogin=${LIVE_USERNAME:-root}
-				#TimedLoginDelay=5
-				
+	# --- set gnome parameter -------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'dconf-cli'); then
+		echo "set gnome parameter" | tee /dev/console 2>&1
+		# --- create dconf profile --------------------------------------------
+		_FILE_PATH="/etc/dconf/profile/user"
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			user-db:user
+			system-db:local
 _EOT_
-		)"
-		_CONF_FLAG=""
-		grep -l 'AutomaticLoginEnable[ \t]*=[ \t]*true' /etc/gdm3/*.conf | while IFS= read -r _FILE_PATH
-		do
-			sed -i "${_FILE_PATH}"              \
-			    -e '/^\[daemon\]/,/^\[.*\]/ {' \
-			    -e '/^[^#\[]\+/ s/^/#/}' 
-			if [ -z "${_CONF_FLAG:-}" ]; then
-				sed -i "${_FILE_PATH}"                               \
-				    -e "s%^\(\[daemon\].*\)$%\1\n${_GDM3_OPTIONS}%"
-				_CONF_FLAG="true"
-			fi
-			# --- debug out ---------------------------------------------------
-			if [ -n "${LIVE_DEBUGOUT:-}" ]; then
-				< "${_FILE_PATH}" tee /dev/console 2>&1
-			fi
-		done
-	fi
-
-	# --- set smb.conf parameter ----------------------------------------------
-	_FILE_PATH="/etc/samba/smb.conf"
-	if [ -f "${_FILE_PATH:-}" ]; then
-		echo "set smb.conf parameter" | tee /dev/console 2>&1
-		_GROUP="$(id "${LIVE_USERNAME:-}" 2> /dev/null | awk '{print substr($2,index($2,"(")+1,index($2,")")-index($2,"(")-1);}' || true)"
-		_GROUP="${_GROUP+"@${_GROUP}"}"
-		sed -i "${_FILE_PATH}"                                     \
-		    -e '/^;*\[homes\]$/                                 {' \
-		    -e ':l;                                             {' \
-		    -e 's/^;//;                   s/^ \t/\t/'              \
-		    -e '/^[ \t]*read only[ \t]*=/ s/^/;/'                  \
-		    -e '/^;*[ \t]*valid users[ \t]*=/a\   write list = %S' \
-		    -e '                                                }' \
-		    -e 'n; /^;*\[.*\]$/!b l;                            }'
-		if [ -n "${LIVE_HGFS:-}" ] && [ -d "${LIVE_HGFS}/." ]; then
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-				[hgfs]
-				;  browseable = No
-				   comment = VMware shared directories
-				   path = ${LIVE_HGFS}
-				${_GROUP+"   valid users = ${_GROUP}"}
-				${_GROUP+"   write list = ${_GROUP}"}
-				
-_EOT_
-		fi
 		# --- debug out -------------------------------------------------------
 		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
 			< "${_FILE_PATH}" tee /dev/console 2>&1
 		fi
-		# --- service processing ----------------------------------------------
-		_SERVICES="smbd.service nmbd.service"
-#		echo "set smb.conf parameter: try-reload-or-restart services [${_SERVICES}]" | tee /dev/console 2>&1
-		# shellcheck disable=SC2086
-#		systemctl try-reload-or-restart ${_SERVICES}
+		# --- create dconf db -------------------------------------------------
+		_FILE_PATH="/etc/dconf/db/local.d/00-user-settings"
+		mkdir -p "${_FILE_PATH%/*}"
+		: > "${_FILE_PATH}"
+		# --- session ---------------------------------------------------------
+		echo "set gnome parameter: session" | tee /dev/console 2>&1
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+			[org/gnome/desktop/session]
+			idle-delay=uint32 0
+			
+_EOT_
 		# --- debug out -------------------------------------------------------
 		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
-			# shellcheck disable=SC2086
-			systemctl status ${_SERVICES} | tee /dev/console 2>&1
+			< "${_FILE_PATH}" tee /dev/console 2>&1
+		fi
+		# --- dconf update ----------------------------------------------------
+		echo "set gnome parameter: dconf compile" | tee /dev/console 2>&1
+		dconf compile "${_FILE_PATH%.*}" "${_FILE_PATH%/*}"
+	fi
+
+#	# --- set 99x11-custom_setup ----------------------------------------------
+#	# shellcheck disable=SC2091,SC2310
+#	if $(funcIsPackage 'x11-xserver-utils') \
+#	&& $(funcIsPackage 'edid-decode')       \
+#	&& $(funcIsPackage 'open-vm-tools')     \
+#	&& [ -n "${LIVE_XORG_RESOLUTION:-}" ]; then
+#		echo "set 99x11-custom_setup" | tee /dev/console 2>&1
+#		_FILE_PATH="/etc/X11/Xsession.d/99x11-custom_setup"
+#		_LOGS_PATH="/var/log/gdm3/${_FILE_PATH##*/}.log"
+#		mkdir -p "${_FILE_PATH%/*}"
+#		mkdir -p "${_LOGS_PATH%/*}"
+#		{
+#			cat <<- _EOT_
+#				echo "<info> ${_FILE_PATH##*/}: start" > "${_LOGS_PATH}"
+#				_WIDTH="${LIVE_XORG_RESOLUTION%%x*}"
+#				_HEIGHT="${LIVE_XORG_RESOLUTION#*x}"
+#				_DISTRIBUTION="$(lsb_release -is | tr '[:upper:]' '[:lower:]' | sed -e 's| |-|g')"
+#				case "\${_DISTRIBUTION:?}" in
+#					debian) _CONNECTOR="Virtual1";;
+#					ubuntu) _CONNECTOR="Virtual-1";;
+#					*)      return;;
+#				esac
+#_EOT_
+#			cat <<- '_EOT_'
+#				_RATE="$(edid-decode --list-dmts | awk '$3=='\""${_WIDTH:?}"x"${_HEIGHT:?}"\"' {printf("%.3f", $4); exit;}')"
+#				#_CONNECTOR="$(xrandr | awk '$2=="connected"&&$3=="primary" {print $1;}')"
+#				_DIRS_GDM3="/var/lib/gdm3"
+#				_FILE_PATH="${_DIRS_GDM3}/.config/monitors.xml"
+#_EOT_
+#			cat <<- _EOT_
+#				{
+#				 	echo "<info> ${_FILE_PATH##*/}: connector=\${_CONNECTOR:-}"
+#				 	echo "<info> ${_FILE_PATH##*/}: width=\${_WIDTH:-}"
+#				 	echo "<info> ${_FILE_PATH##*/}: height=\${_HEIGHT:-}"
+#				 	echo "<info> ${_FILE_PATH##*/}: rate=\${_RATE:-} Hz"
+#				 	echo "<info> ${_FILE_PATH##*/}: file=\${_FILE_PATH:-}"
+#				} | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_LOGS_PATH}"
+#_EOT_
+#			cat <<- '_EOT_'
+#				mkdir -p "${_FILE_PATH%/*}"
+#				cat <<- _EOT_MONITORS_XML_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+#				 	<monitors version="2">
+#				 	  <configuration>
+#				 	    <logicalmonitor>
+#				 	      <x>0</x>
+#				 	      <y>0</y>
+#				 	      <scale>1</scale>
+#				 	      <primary>yes</primary>
+#				 	      <monitor>
+#				 	        <monitorspec>
+#				 	          <connector>${_CONNECTOR:?}</connector>
+#				 	          <vendor>unknown</vendor>
+#				 	          <product>unknown</product>
+#				 	          <serial>unknown</serial>
+#				 	        </monitorspec>
+#				 	        <mode>
+#				 	          <width>${_WIDTH:?}</width>
+#				 	          <height>${_HEIGHT:?}</height>
+#				 	          <rate>${_RATE:?}</rate>
+#				 	        </mode>
+#				 	      </monitor>
+#				 	    </logicalmonitor>
+#				 	  </configuration>
+#				 	</monitors>
+#				_EOT_MONITORS_XML_
+#				chown gdm: -R "${_DIRS_GDM3:?}" 2> /dev/null || /bin/true
+#				cp "${_FILE_PATH}" "${HOME}/.config"
+#_EOT_
+#			cat <<- _EOT_
+#				echo "<info> ${_FILE_PATH##*/}: complete" >> "${_LOGS_PATH}"
+#_EOT_
+#		} | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+#	fi
+
+	# --- skeleton directory --------------------------------------------------
+	echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+	DIRS_SKEL="/etc/skel"
+
+	# --- set monitors.xml ----------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'x11-xserver-utils') \
+	&& $(funcIsPackage 'edid-decode')       \
+	&& $(funcIsPackage 'open-vm-tools')     \
+	&& [ -n "${LIVE_XORG_RESOLUTION:-}" ]; then
+		_FILE_PATH="${DIRS_SKEL}/.config/monitors.xml"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		_WIDTH="${LIVE_XORG_RESOLUTION%%x*}"
+		_HEIGHT="${LIVE_XORG_RESOLUTION#*x}"
+		_RATE="$(edid-decode --list-dmts | awk '$3=='\""${_WIDTH:?}"x"${_HEIGHT:?}"\"' {printf("%.3f", $4); exit;}')"
+#		_CONNECTOR="$(xrandr | awk '$2=="connected"&&$3=="primary" {print $1;}')"
+		case "${_DISTRIBUTION:?}" in
+			debian) _CONNECTOR="Virtual1";;
+			ubuntu) _CONNECTOR="Virtual-1";;
+			*)      _CONNECTOR="";;
+		esac
+		if [ -n "${_CONNECTOR:-}" ]; then
+			mkdir -p "${_FILE_PATH%/*}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+				<monitors version="2">
+				  <configuration>
+				    <logicalmonitor>
+				      <x>0</x>
+				      <y>0</y>
+				      <scale>1</scale>
+				      <primary>yes</primary>
+				      <monitor>
+				        <monitorspec>
+				          <connector>${_CONNECTOR:?}</connector>
+				          <vendor>unknown</vendor>
+				          <product>unknown</product>
+				          <serial>unknown</serial>
+				        </monitorspec>
+				        <mode>
+				          <width>${_WIDTH:?}</width>
+				          <height>${_HEIGHT:?}</height>
+				          <rate>${_RATE:?}</rate>
+				        </mode>
+				      </monitor>
+				    </logicalmonitor>
+				  </configuration>
+				</monitors>
+_EOT_
+			if grep -q 'gdm' /etc/passwd; then
+				_FILE_CONF="/var/lib/gdm3/.config/${_FILE_PATH##*/}"
+				sudo --user=gdm mkdir -p "${_FILE_CONF%/*}"
+				cp -p "${_FILE_PATH}" "${_FILE_CONF}"
+				chown gdm: "${_FILE_CONF}" 2> /dev/null || /bin/true
+			fi
 		fi
 	fi
 
-	# --- set gnome parameter -------------------------------------------------
-#	if [ "${LIVE_OS_NAME:-}" = "ubuntu" ]; then
-		_RETURN_VALUE="$(command -v dconf 2> /dev/null)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
-			echo "set gnome parameter" | tee /dev/console 2>&1
-			# --- create dconf profile ----------------------------------------
-			_FILE_PATH="/etc/dconf/profile/user"
-			mkdir -p "${_FILE_PATH%/*}"
-			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-				user-db:user
-				system-db:local
+	# --- .bashrc -------------------------------------------------------------
+	_FILE_PATH="${DIRS_SKEL}/.bashrc"
+	echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+	mkdir -p "${_FILE_PATH%/*}"
+	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+		# --- measures against garbled characters ---
+		case "${TERM}" in
+		    linux ) export LANG=C;;
+		    *     )              ;;
+		esac
 _EOT_
-			# --- debug out ---------------------------------------------------
-			if [ -n "${LIVE_DEBUGOUT:-}" ]; then
-				< "${_FILE_PATH}" tee /dev/console 2>&1
-			fi
-			# --- create dconf db ---------------------------------------------
-			_FILE_PATH="/etc/dconf/db/local.d/00-user-settings"
-			mkdir -p "${_FILE_PATH%/*}"
-			: > "${_FILE_PATH}"
-			# --- session -----------------------------------------------------
-			echo "set gnome parameter: session" | tee /dev/console 2>&1
-			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-				[org/gnome/desktop/session]
-				idle-delay=uint32 0
-				
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'vim'); then
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+			# --- alias for vim ---
+			alias vi='vim'
+			alias view='vim'
 _EOT_
-			# --- debug out ---------------------------------------------------
-			if [ -n "${LIVE_DEBUGOUT:-}" ]; then
-				< "${_FILE_PATH}" tee /dev/console 2>&1
-			fi
-			# --- dconf update ------------------------------------------------
-#			if systemctl status  dbus.service; then
-#				echo "set gnome parameter: dconf update" | tee /dev/console 2>&1
-#				dconf update
-				echo "set gnome parameter: dconf compile" | tee /dev/console 2>&1
-				dconf compile "${_FILE_PATH%.*}" "${_FILE_PATH%/*}"
-#			fi
-		fi
+	fi
+
+	# --- .vimrc --------------------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'vim'); then
+		_FILE_PATH="${DIRS_SKEL}/.vimrc"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			set number              " Print the line number in front of each line.
+			set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+			set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+			set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+			set nowrap              " This option changes how text is displayed.
+			set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+			set laststatus=2        " The value of this option influences when the last window will have a status line always.
+			set mouse-=a            " Disable mouse usage
+			syntax on               " Vim5 and later versions support syntax highlighting.
+_EOT_
+	fi
+
+	# --- .curlrc -------------------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'curl'); then
+		_FILE_PATH="${DIRS_SKEL}/.curlrc"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			location
+			progress-bar
+			remote-time
+			show-error
+_EOT_
+	fi
+
+	# --- .xscreensaver -------------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'xscreensaver'); then
+		_FILE_PATH="${DIRS_SKEL}/.xscreensaver"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			mode:		off
+			selected:	-1
+_EOT_
+	fi
+
+	# --- fcitx5 --------------------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'fcitx5'); then
+		_FILE_PATH="${DIRS_SKEL}/.config/fcitx5/profile"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			[Groups/0]
+			# Group Name
+			Name=デフォルト
+			# Layout
+			Default Layout=${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
+			# Default Input Method
+			DefaultIM=mozc
+			
+			[Groups/0/Items/0]
+			# Name
+			Name=keyboard-${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
+			# Layout
+			Layout=
+			
+			[Groups/0/Items/1]
+			# Name
+			Name=mozc
+			# Layout
+			Layout=
+			
+			[GroupOrder]
+			0=デフォルト
+			
+_EOT_
+	fi
+
+	# --- libfm.conf ------------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'pcmanfm'); then
+		_FILE_PATH="${DIRS_SKEL}/.config/libfm/libfm.conf"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			[config]
+			single_click=0
+			
+			[places]
+			places_home=1
+			places_desktop=1
+			places_root=0
+			places_computer=1
+			places_trash=1
+			places_applications=0
+			places_network=0
+			places_unmounted=1
+_EOT_
+	fi
+
+	# --- gtkrc-2.0 -----------------------------------------------------------
+#	if [ -d /etc/gtk-2.0/. ]; then
+#		_FILE_PATH="${DIRS_SKEL}/.gtkrc-2.0"
+#		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+#		mkdir -p "${_FILE_PATH%/*}"
+#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+#			# DO NOT EDIT! This file will be overwritten by LXAppearance.
+#			# Any customization should be done in ~/.gtkrc-2.0.mine instead.
+#
+#			include "${HOME}/.gtkrc-2.0.mine"
+#			gtk-theme-name="Raleigh"
+#			gtk-icon-theme-name="nuoveXT2"
+#			gtk-font-name="Sans 9"
+#			gtk-cursor-theme-size=18
+#			gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
+#			gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
+#			gtk-button-images=1
+#			gtk-menu-images=1
+#			gtk-enable-event-sounds=1
+#			gtk-enable-input-feedback-sounds=1
+#			gtk-xft-antialias=1
+#			gtk-xft-hinting=1
+#			gtk-xft-hintstyle="hintslight"
+#			gtk-xft-rgba="rgb"
+#_EOT_
 #	fi
+
+	# --- gtkrc-3.0 -----------------------------------------------------------
+	if [ -d /etc/gtk-3.0/. ]; then
+		_FILE_PATH="${DIRS_SKEL}/.config/gtk-3.0/settings.ini"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+			[Settings]
+			gtk-theme-name=Clearlooks
+			gtk-icon-theme-name=nuoveXT2
+			gtk-font-name=Sans 9
+			gtk-cursor-theme-size=18
+			gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
+			gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
+			gtk-button-images=1
+			gtk-menu-images=1
+			gtk-enable-event-sounds=1
+			gtk-enable-input-feedback-sounds=1
+			gtk-xft-antialias=1
+			gtk-xft-hinting=1
+			gtk-xft-hintstyle=hintslight
+			gtk-xft-rgba=rgb
+_EOT_
+	fi
+
+	# --- lxterminal.conf -----------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'lxterminal'); then
+		_FILE_PATH="${DIRS_SKEL}/.config/lxterminal/lxterminal.conf"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			[general]
+			fontname=Monospace 9
+			selchars=-A-Za-z0-9,./?%&#:_
+			scrollback=1000
+			bgcolor=rgb(0,0,0)
+			fgcolor=rgb(211,215,207)
+			palette_color_0=rgb(0,0,0)
+			palette_color_1=rgb(205,0,0)
+			palette_color_2=rgb(78,154,6)
+			palette_color_3=rgb(196,160,0)
+			palette_color_4=rgb(52,101,164)
+			palette_color_5=rgb(117,80,123)
+			palette_color_6=rgb(6,152,154)
+			palette_color_7=rgb(211,215,207)
+			palette_color_8=rgb(85,87,83)
+			palette_color_9=rgb(239,41,41)
+			palette_color_10=rgb(138,226,52)
+			palette_color_11=rgb(252,233,79)
+			palette_color_12=rgb(114,159,207)
+			palette_color_13=rgb(173,127,168)
+			palette_color_14=rgb(52,226,226)
+			palette_color_15=rgb(238,238,236)
+			color_preset=Tango
+			disallowbold=false
+			boldbright=false
+			cursorblinks=false
+			cursorunderline=false
+			audiblebell=false
+			visualbell=false
+			tabpos=top
+			geometry_columns=120
+			geometry_rows=30
+			hidescrollbar=false
+			hidemenubar=false
+			hideclosebutton=false
+			hidepointer=false
+			disablef10=false
+			disablealt=false
+			disableconfirm=false
+			
+			[shortcut]
+			new_window_accel=<Primary><Shift>n
+			new_tab_accel=<Primary><Shift>t
+			close_tab_accel=<Primary><Shift>w
+			close_window_accel=<Primary><Shift>q
+			copy_accel=<Primary><Shift>c
+			paste_accel=<Primary><Shift>v
+			name_tab_accel=<Primary><Shift>i
+			previous_tab_accel=<Primary>Page_Up
+			next_tab_accel=<Primary>Page_Down
+			move_tab_left_accel=<Primary><Shift>Page_Up
+			move_tab_right_accel=<Primary><Shift>Page_Down
+			zoom_in_accel=<Primary><Shift>plus
+			zoom_out_accel=<Primary><Shift>underscore
+			zoom_reset_accel=<Primary><Shift>parenright
+_EOT_
+	fi
 
 	# --- add user ------------------------------------------------------------
 	if [ -n "${LIVE_USERNAME:-}" ]; then
@@ -268,11 +584,11 @@ _EOT_
 		if [ -z "${LIVE_PASSWORD:-}" ]; then
 			passwd --delete "${LIVE_USERNAME}"
 		else
-			# shellcheck disable=SC2028
-			echo "${LIVE_PASSWORD}\n${LIVE_PASSWORD}" | passwd "${LIVE_USERNAME}"
+			_RETURN_VALUE="$(echo "${LIVE_PASSWORD}" | openssl passwd -6 -stdin)"
+			usermod --password "${_RETURN_VALUE}" "${LIVE_USERNAME}"
 		fi
-		_RETURN_VALUE="$(command -v smbpasswd 2> /dev/null)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
+		# shellcheck disable=SC2091,SC2310
+		if $(funcIsPackage 'samba-common-bin'); then
 			smbpasswd -a "${LIVE_USERNAME}" -n
 			if [ -n "${LIVE_PASSWORD:-}" ]; then
 				# shellcheck disable=SC2028
@@ -290,7 +606,8 @@ _EOT_
 			fi
 		fi
 		passwd --delete root
-		# --- auto login ------------------------------------------------------
+		# --- set auto login parameter [ console ] ----------------------------
+		echo "set auto login parameter: console" | tee /dev/console 2>&1
 		_SYSTEMD_DIR="/etc/systemd/system"
 		for _NUMBER in $(seq 1 6)
 		do
@@ -303,367 +620,260 @@ _EOT_
 				ExecStart=-/sbin/agetty --autologin ${LIVE_USERNAME} --noclear %I \$TERM
 _EOT_
 		done
-	fi
-
-	# --- set user parameter --------------------------------------------------
-	echo "set user parameter" | tee /dev/console 2>&1
-	for DIRS_NAME in /root /home/*
-	do
-		USER_NAME="${DIRS_NAME##*/}"
-		echo "set user parameter: ${USER_NAME}" | tee /dev/console 2>&1
-		# --- .bashrc ---------------------------------------------------------
-		_FILE_PATH="${DIRS_NAME}/.bashrc"
-		echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-			# --- measures against garbled characters ---
-			case "${TERM}" in
-			    linux ) export LANG=C;;
-			    *     )              ;;
-			esac
-			# --- alias for vim ---
-			alias vi='vim'
-			alias view='vim'
+		# --- set smb.conf parameter ------------------------------------------
+		_FILE_PATH="/etc/samba/smb.conf"
+		if [ -f "${_FILE_PATH:-}" ]; then
+			echo "set smb.conf parameter" | tee /dev/console 2>&1
+			_GROUP="$(id "${LIVE_USERNAME:-}" 2> /dev/null | awk '{print substr($2,index($2,"(")+1,index($2,")")-index($2,"(")-1);}' || true)"
+			_GROUP="${_GROUP+"@${_GROUP}"}"
+			sed -i "${_FILE_PATH}"                                     \
+			    -e '/^;*\[homes\]$/                                 {' \
+			    -e ':l;                                             {' \
+			    -e 's/^;//;                   s/^ \t/\t/'              \
+			    -e '/^[ \t]*read only[ \t]*=/ s/^/;/'                  \
+			    -e '/^;*[ \t]*valid users[ \t]*=/a\   write list = %S' \
+			    -e '                                                }' \
+			    -e 'n; /^;*\[.*\]$/!b l;                            }'
+			if [ -n "${LIVE_HGFS:-}" ] && [ -d "${LIVE_HGFS}/." ]; then
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+					[hgfs]
+					;  browseable = No
+					   comment = VMware shared directories
+					   path = ${LIVE_HGFS}
+					${_GROUP+"   valid users = ${_GROUP}"}
+					${_GROUP+"   write list = ${_GROUP}"}
+					
 _EOT_
-		chown "${USER_NAME}": "${_FILE_PATH}"
-		# --- monitors.xml ----------------------------------------------------
-		if [ -d /etc/gdm3/. ]; then
-			_RETURN_VALUE="$(command -v xrandr 2> /dev/null)"
-			if [ -n "${_RETURN_VALUE:-}" ]; then
-				case "${LIVE_XORG_RESOLUTION:-}" in				# resolution
-#					 640x480 ) _RATE="60.000";;					# VGA    (4:3)
-					 800x600 ) _RATE="60.317";;					# SVGA   (4:3)
-					1024x768 ) _RATE="60.004";;					# XGA    (4:3)
-#					1152x864 ) _RATE="60.000";;					#        (4:3)
-					1280x720 ) _RATE="60.000";;					# WXGA   (16:9)
-					1280x768 ) _RATE="59.995";;					#        (4:3)
-					1280x800 ) _RATE="60.000";;					#        (16:10)
-					1280x960 ) _RATE="60.940";;					#        (4:3)
-					1280x1024) _RATE="60.020";;					# SXGA   (5:4)
-					1366x768 ) _RATE="60.000";;					# HD     (16:9)
-					1400x1050) _RATE="59.978";;					#        (4:3)
-					1440x900 ) _RATE="59.901";;					# WXGA+  (16:10)
-					1600x1200) _RATE="60.000";;					# UXGA   (4:3)
-					1680x1050) _RATE="59.954";;					# WSXGA+ (16:10)
-					1792x1344) _RATE="60.000";;					#        (4:3)
-					1856x1392) _RATE="59.995";;					#        (4:3)
-					1920x1080) _RATE="60.000";;					# FHD    (16:9)
-					1920x1200) _RATE="59.950";;					# WUXGA  (16:10)
-					1920x1440) _RATE="60.000";;					#        (4:3)
-#					2560x1440) _RATE="60.000";;					# WQHD   (16:9)
-#					2560x1600) _RATE="60.000";;					#        (16:10)
-#					2880x1800) _RATE="60.000";;					#        (16:10)
-#					3840x2160) _RATE="60.000";;					# 4K UHD (16:9)
-#					3840x2400) _RATE="60.000";;					#        (16:10)
-#					7680x4320) _RATE="60.000";;					# 8K UHD (16:9)
-					*        ) _RATE="60.000";;					# 
-				esac
-				_DIRS_GDM3="var/lib/gdm/.config"
-				_FILE_PATH="${DIRS_NAME}/.config/monitors.xml"
-				echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-				sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
-				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-					<monitors version="2">
-					  <configuration>
-					    <logicalmonitor>
-					      <x>0</x>
-					      <y>0</y>
-					      <scale>1</scale>
-					      <primary>yes</primary>
-					      <monitor>
-					        <monitorspec>
-					          <connector>Virtual-1</connector>
-					          <vendor>unknown</vendor>
-					          <product>unknown</product>
-					          <serial>unknown</serial>
-					        </monitorspec>
-					        <mode>
-					          <width>${LIVE_XORG_RESOLUTION%%x*}</width>
-					          <height>${LIVE_XORG_RESOLUTION#*x}</height>
-					          <rate>${_RATE}</rate>
-					        </mode>
-					      </monitor>
-					    </logicalmonitor>
-					  </configuration>
-					</monitors>
-_EOT_
-				chown "${USER_NAME}": "${_FILE_PATH}"
-				sudo --user=gdm mkdir -p "${_DIRS_GDM3}"
-				cp "${_FILE_PATH}" "${_DIRS_GDM3}"
-				chown gdm: "${_DIRS_GDM3}/${_FILE_PATH##*/}"
+			fi
+			# --- debug out ---------------------------------------------------
+			if [ -n "${LIVE_DEBUGOUT:-}" ]; then
+				< "${_FILE_PATH}" tee /dev/console 2>&1
 			fi
 		fi
-		# --- fcitx5 ----------------------------------------------------------
-		_RETURN_VALUE="$(command -v fcitx5 2> /dev/null)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
-			_FILE_PATH="${DIRS_NAME}/.config/fcitx5/profile"
-			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-			sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-				[Groups/0]
-				# Group Name
-				Name=デフォルト
-				# Layout
-				Default Layout=${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
-				# Default Input Method
-				DefaultIM=mozc
-				
-				[Groups/0/Items/0]
-				# Name
-				Name=keyboard-${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
-				# Layout
-				Layout=
-				
-				[Groups/0/Items/1]
-				# Name
-				Name=mozc
-				# Layout
-				Layout=
-				
-				[GroupOrder]
-				0=デフォルト
-				
-_EOT_
-			chown "${USER_NAME}": "${_FILE_PATH}"
-#			# --- .bash_profile -----------------------------------------------
-#			_FILE_PATH="${DIRS_NAME}/.bash_profile"
-#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-#				export XMODIFIERS=@im=fcitx
-#				export GTK_IM_MODULE=fcitx
-#				export QT_IM_MODULE=fcitx
+	fi
+
+#	# --- set user parameter --------------------------------------------------
+#	echo "set user parameter" | tee /dev/console 2>&1
+#	for DIRS_NAME in /root /home/*
+#	do
+#		USER_NAME="${DIRS_NAME##*/}"
+#		echo "set user parameter: ${USER_NAME}" | tee /dev/console 2>&1
+#		# --- .bashrc ---------------------------------------------------------
+#		_FILE_PATH="${DIRS_NAME}/.bashrc"
+#		echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
+#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+#			# --- measures against garbled characters ---
+#			case "${TERM}" in
+#			    linux ) export LANG=C;;
+#			    *     )              ;;
+#			esac
+#			# --- alias for vim ---
+#			alias vi='vim'
+#			alias view='vim'
 #_EOT_
-#			chown "${USER_NAME}": "${_FILE_PATH}"
-#			# --- .config/gtk-3.0/settings.ini --------------------------------
-#			_FILE_PATH="${DIRS_NAME}/.config/gtk-3.0/settings.ini"
+#		chown "${USER_NAME}": "${_FILE_PATH}"
+#		# --- monitors.xml ----------------------------------------------------
+#		_FILE_PATH="/var/lib/gdm3/.config/monitors.xml"
+#		if [ -f "${_FILE_PATH:-}" ]; then
+#			echo "set monitors.xml parameter" | tee /dev/console 2>&1
+#			_DIRS_CONF="${DIRS_NAME}/.config"
+#			mkdir -p "${_DIRS_CONF:?}" \
+#			&& chown "${USER_NAME}": "${_DIRS_CONF:?}"
+#			cp -a "${_FILE_PATH}" "${_DIRS_CONF:?}" \
+#			&& chown "${USER_NAME}": "${_DIRS_CONF:?}/${_FILE_PATH##*/}"
+#		fi
+#		# --- fcitx5 ----------------------------------------------------------
+#		# shellcheck disable=SC2091,SC2310
+#		if $(funcIsPackage 'fcitx5'); then
+#			_FILE_PATH="${DIRS_NAME}/.config/fcitx5/profile"
 #			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
 #			sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
-#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-#				[Settings]
-#				gtk-im-module=fcitx
+#			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+#				[Groups/0]
+#				# Group Name
+#				Name=デフォルト
+#				# Layout
+#				Default Layout=${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
+#				# Default Input Method
+#				DefaultIM=mozc
+#				
+#				[Groups/0/Items/0]
+#				# Name
+#				Name=keyboard-${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
+#				# Layout
+#				Layout=
+#				
+#				[Groups/0/Items/1]
+#				# Name
+#				Name=mozc
+#				# Layout
+#				Layout=
+#				
+#				[GroupOrder]
+#				0=デフォルト
+#				
 #_EOT_
 #			chown "${USER_NAME}": "${_FILE_PATH}"
-#			# --- xcb.conf --------------------------------------------------------
-#			_FILE_PATH="${DIRS_NAME}/.config/fcitx5/conf/xcb.conf"
+#		fi
+#		# --- gtkrc-2.0 -------------------------------------------------------
+#		if [ -d /etc/gtk-2.0/. ]; then
+#			_FILE_PATH="${DIRS_NAME}/.gtkrc-2.0.mine"
+#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
+#			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+#				#gtk-theme-name="Raleigh"
+#				#gtk-icon-theme-name="nuoveXT2"
+#				gtk-font-name="Sans 9"
+#				#gtk-cursor-theme-size=18
+#				#gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
+#				#gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
+#				#gtk-button-images=1
+#				#gtk-menu-images=1
+#				#gtk-enable-event-sounds=1
+#				#gtk-enable-input-feedback-sounds=1
+#				#gtk-xft-antialias=1
+#				#gtk-xft-hinting=1
+#				#gtk-xft-hintstyle="hintslight"
+#				#gtk-xft-rgba="rgb"
+#_EOT_
+#			chown "${USER_NAME}": "${_FILE_PATH}"
+#		fi
+#		# --- lxterminal.conf -------------------------------------------------
+#		# shellcheck disable=SC2091,SC2310
+#		if $(funcIsPackage 'lxterminal'); then
+#			_FILE_PATH="${DIRS_NAME}/.config/lxterminal/lxterminal.conf"
+#			_ORIG_CONF="/usr/share/lxterminal/lxterminal.conf"
+#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
+#			sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
+#			cp "${_ORIG_CONF}" "${_FILE_PATH}"
+#			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+#				[general]
+#				fontname=Monospace 9
+#				selchars=-A-Za-z0-9,./?%&#:_
+#				scrollback=1000
+#				bgcolor=rgb(0,0,0)
+#				fgcolor=rgb(211,215,207)
+#				palette_color_0=rgb(0,0,0)
+#				palette_color_1=rgb(205,0,0)
+#				palette_color_2=rgb(78,154,6)
+#				palette_color_3=rgb(196,160,0)
+#				palette_color_4=rgb(52,101,164)
+#				palette_color_5=rgb(117,80,123)
+#				palette_color_6=rgb(6,152,154)
+#				palette_color_7=rgb(211,215,207)
+#				palette_color_8=rgb(85,87,83)
+#				palette_color_9=rgb(239,41,41)
+#				palette_color_10=rgb(138,226,52)
+#				palette_color_11=rgb(252,233,79)
+#				palette_color_12=rgb(114,159,207)
+#				palette_color_13=rgb(173,127,168)
+#				palette_color_14=rgb(52,226,226)
+#				palette_color_15=rgb(238,238,236)
+#				color_preset=Tango
+#				disallowbold=false
+#				boldbright=false
+#				cursorblinks=false
+#				cursorunderline=false
+#				audiblebell=false
+#				visualbell=false
+#				tabpos=top
+#				geometry_columns=120
+#				geometry_rows=30
+#				hidescrollbar=false
+#				hidemenubar=false
+#				hideclosebutton=false
+#				hidepointer=false
+#				disablef10=false
+#				disablealt=false
+#				disableconfirm=false
+#				
+#				[shortcut]
+#				new_window_accel=<Primary><Shift>n
+#				new_tab_accel=<Primary><Shift>t
+#				close_tab_accel=<Primary><Shift>w
+#				close_window_accel=<Primary><Shift>q
+#				copy_accel=<Primary><Shift>c
+#				paste_accel=<Primary><Shift>v
+#				name_tab_accel=<Primary><Shift>i
+#				previous_tab_accel=<Primary>Page_Up
+#				next_tab_accel=<Primary>Page_Down
+#				move_tab_left_accel=<Primary><Shift>Page_Up
+#				move_tab_right_accel=<Primary><Shift>Page_Down
+#				zoom_in_accel=<Primary><Shift>plus
+#				zoom_out_accel=<Primary><Shift>underscore
+#				zoom_reset_accel=<Primary><Shift>parenright
+#_EOT_
+#			chown "${USER_NAME}": "${_FILE_PATH}"
+#		fi
+#		
+#		# --- .vimrc ----------------------------------------------------------
+#		# shellcheck disable=SC2091,SC2310
+#		if $(funcIsPackage 'vim'); then
+#			_FILE_PATH="${DIRS_NAME}/.vimrc"
+#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
+#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+#				set number              " Print the line number in front of each line.
+#				set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+#				set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+#				set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+#				set nowrap              " This option changes how text is displayed.
+#				set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+#				set laststatus=2        " The value of this option influences when the last window will have a status line always.
+#				set mouse-=a            " Disable mouse usage
+#				syntax on               " Vim5 and later versions support syntax highlighting.
+#_EOT_
+#			chown "${USER_NAME}": "${_FILE_PATH}"
+#		fi
+#		# --- .xscreensaver ---------------------------------------------------
+#		# shellcheck disable=SC2091,SC2310
+#		if $(funcIsPackage 'xscreensaver'); then
+#			_FILE_PATH="${DIRS_NAME}/.xscreensaver"
+#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
+#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+#				mode:		off
+#				selected:	-1
+#_EOT_
+#			chown "${USER_NAME}": "${_FILE_PATH}"
+#		fi
+#		# --- curl ------------------------------------------------------------
+#		# shellcheck disable=SC2091,SC2310
+#		if $(funcIsPackage 'curl'); then
+#			_FILE_PATH="${DIRS_NAME}/.curlrc"
+#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
+#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+#				location
+#				progress-bar
+#				remote-time
+#				show-error
+#_EOT_
+#			chown "${USER_NAME}": "${_FILE_PATH}"
+#		fi
+#		# --- libfm.conf ------------------------------------------------------
+#		# shellcheck disable=SC2091,SC2310
+#		if $(funcIsPackage 'pcmanfm'); then
+#			_FILE_PATH="${DIRS_NAME}/.config/libfm/libfm.conf"
 #			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
 #			sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
 #			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-#				# システム XKB 設定のオーバーライドを許可する
-#				Allow Overriding System XKB Settings=False
-#				# 常にレイアウトをグループレイアウトのみにする
-#				AlwaysSetToGroupLayout=False
+#				[config]
+#				single_click=0
+#				
+#				[places]
+#				places_home=1
+#				places_desktop=1
+#				places_root=0
+#				places_computer=1
+#				places_trash=1
+#				places_applications=0
+#				places_network=0
+#				places_unmounted=1
 #_EOT_
 #			chown "${USER_NAME}": "${_FILE_PATH}"
-		fi
-		# --- gtkrc-2.0 -------------------------------------------------------
-		if [ -d /etc/gtk-2.0/. ]; then
-			_FILE_PATH="${DIRS_NAME}/.gtkrc-2.0.mine"
-			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-				#gtk-theme-name="Raleigh"
-				#gtk-icon-theme-name="nuoveXT2"
-				gtk-font-name="Sans 9"
-				#gtk-cursor-theme-size=18
-				#gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
-				#gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
-				#gtk-button-images=1
-				#gtk-menu-images=1
-				#gtk-enable-event-sounds=1
-				#gtk-enable-input-feedback-sounds=1
-				#gtk-xft-antialias=1
-				#gtk-xft-hinting=1
-				#gtk-xft-hintstyle="hintslight"
-				#gtk-xft-rgba="rgb"
-_EOT_
-			chown "${USER_NAME}": "${_FILE_PATH}"
-		fi
-		# --- lxterminal.conf -------------------------------------------------
-		_RETURN_VALUE="$(command -v lxterminal 2> /dev/null)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
-			_FILE_PATH="${DIRS_NAME}/.config/lxterminal/lxterminal.conf"
-			_ORIG_CONF="/usr/share/lxterminal/lxterminal.conf"
-			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-			sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
-			cp "${_ORIG_CONF}" "${_FILE_PATH}"
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-				[general]
-				fontname=Monospace 9
-				selchars=-A-Za-z0-9,./?%&#:_
-				scrollback=1000
-				bgcolor=rgb(0,0,0)
-				fgcolor=rgb(211,215,207)
-				palette_color_0=rgb(0,0,0)
-				palette_color_1=rgb(205,0,0)
-				palette_color_2=rgb(78,154,6)
-				palette_color_3=rgb(196,160,0)
-				palette_color_4=rgb(52,101,164)
-				palette_color_5=rgb(117,80,123)
-				palette_color_6=rgb(6,152,154)
-				palette_color_7=rgb(211,215,207)
-				palette_color_8=rgb(85,87,83)
-				palette_color_9=rgb(239,41,41)
-				palette_color_10=rgb(138,226,52)
-				palette_color_11=rgb(252,233,79)
-				palette_color_12=rgb(114,159,207)
-				palette_color_13=rgb(173,127,168)
-				palette_color_14=rgb(52,226,226)
-				palette_color_15=rgb(238,238,236)
-				color_preset=Tango
-				disallowbold=false
-				boldbright=false
-				cursorblinks=false
-				cursorunderline=false
-				audiblebell=false
-				visualbell=false
-				tabpos=top
-				geometry_columns=120
-				geometry_rows=30
-				hidescrollbar=false
-				hidemenubar=false
-				hideclosebutton=false
-				hidepointer=false
-				disablef10=false
-				disablealt=false
-				disableconfirm=false
-				
-				[shortcut]
-				new_window_accel=<Primary><Shift>n
-				new_tab_accel=<Primary><Shift>t
-				close_tab_accel=<Primary><Shift>w
-				close_window_accel=<Primary><Shift>q
-				copy_accel=<Primary><Shift>c
-				paste_accel=<Primary><Shift>v
-				name_tab_accel=<Primary><Shift>i
-				previous_tab_accel=<Primary>Page_Up
-				next_tab_accel=<Primary>Page_Down
-				move_tab_left_accel=<Primary><Shift>Page_Up
-				move_tab_right_accel=<Primary><Shift>Page_Down
-				zoom_in_accel=<Primary><Shift>plus
-				zoom_out_accel=<Primary><Shift>underscore
-				zoom_reset_accel=<Primary><Shift>parenright
-_EOT_
-			chown "${USER_NAME}": "${_FILE_PATH}"
-		fi
-		
-		# --- .vimrc ----------------------------------------------------------
-		_RETURN_VALUE="$(command -v vim 2> /dev/null)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
-			_FILE_PATH="${DIRS_NAME}/.vimrc"
-			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-				set number              " Print the line number in front of each line.
-				set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
-				set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
-				set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
-				set nowrap              " This option changes how text is displayed.
-				set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
-				set laststatus=2        " The value of this option influences when the last window will have a status line always.
-				set mouse-=a            " Disable mouse usage
-				syntax on               " Vim5 and later versions support syntax highlighting.
-_EOT_
-			chown "${USER_NAME}": "${_FILE_PATH}"
-		fi
-		# --- .xscreensaver ---------------------------------------------------
-		_RETURN_VALUE="$(command -v xscreensaver 2> /dev/null)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
-			_FILE_PATH="${DIRS_NAME}/.xscreensaver"
-			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-				mode:		off
-				selected:	-1
-_EOT_
-			chown "${USER_NAME}": "${_FILE_PATH}"
-		fi
-		# --- curl ------------------------------------------------------------
-		_RETURN_VALUE="$(command -v curl 2> /dev/null)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
-			_FILE_PATH="${DIRS_NAME}/.curlrc"
-			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-				location
-				progress-bar
-				remote-time
-				show-error
-_EOT_
-			chown "${USER_NAME}": "${_FILE_PATH}"
-		fi
-		# --- libfm.conf ------------------------------------------------------
-		_RETURN_VALUE="$(command -v pcmanfm 2> /dev/null)"
-		if [ -n "${_RETURN_VALUE:-}" ]; then
-			_FILE_PATH="${DIRS_NAME}/.config/libfm/libfm.conf"
-			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-			sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
-			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-				[config]
-				single_click=0
-				
-				[places]
-				places_home=1
-				places_desktop=1
-				places_root=0
-				places_computer=1
-				places_trash=1
-				places_applications=0
-				places_network=0
-				places_unmounted=1
-_EOT_
-			chown "${USER_NAME}": "${_FILE_PATH}"
-		fi
-#		# --- 50-alsa-config.conf ---------------------------------------------
-#		# https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Troubleshooting
-#		_RETURN_VALUE="$(command -v wireplumber 2> /dev/null)"
-#		if [ -n "${_RETURN_VALUE:-}" ]; then
-#			_FILE_PATH="${DIRS_NAME}/.config/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
-#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-#			sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
-#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-#				monitor.alsa.rules = [
-#				  {
-#				    matches = [
-#				      # This matches the value of the 'node.name' property of the node.
-#				      {
-#				        node.name = "~alsa_output.*"
-#				      }
-#				    ]
-#				    actions = {
-#				      # Apply all the desired node specific settings here.
-#				      update-props = {
-#				        api.alsa.period-size   = 1024
-#				        api.alsa.headroom      = 8192
-#				      }
-#				    }
-#				  }
-#				]
-#_EOT_
 #		fi
-#		# --- reset gnome parameter -------------------------------------------
-#		if [ "${LIVE_OS_NAME:-}" = "ubuntu" ]; then
-#			_RETURN_VALUE="$(command -v dconf 2> /dev/null)"
-#			if [ -n "${_RETURN_VALUE:-}" ]; then
-#				echo "reset gnome parameter" | tee /dev/console 2>&1
-#				sudo --user="${USER_NAME}" dconf reset /org/gnome/desktop/input-sources/mru-sources
-#				sudo --user="${USER_NAME}" dconf reset /org/gnome/desktop/input-sources/sources
-#				sudo --user="${USER_NAME}" dconf reset /org/gnome/desktop/input-sources/xkb-options
-#			fi
-#		fi
-#		# --- systemctl user service ------------------------------------------
-#		echo "set user parameter: systemctl user service" | tee /dev/console 2>&1
-#		_DIRS_SYSD="${DIRS_NAME}/.config/systemd/user"
-#		sudo --user="${USER_NAME}" mkdir -p "${_DIRS_SYSD}"
-#		for _UNIT in "wireplumber.service"
-#		do
-#			sudo --user="${USER_NAME}" ln -s /dev/null "${_DIRS_SYSD}/${_UNIT}"
-#		done
-#		# --- debug out -------------------------------------------------------
-#		if [ -n "${LIVE_DEBUGOUT:-}" ]; then
-#			systemctl --no-pager --user list-units | tee /dev/console 2>&1
-#			find /etc/systemd/user "${_DIRS_SYSD}" -not -type d | sort | tee /dev/console 2>&1 || true
-#		fi
-	done
+#	done
 
 	# --- create state file ---------------------------------------------------
 	mkdir -p /var/lib/live/config
 	touch "/var/lib/live/config/${PROG_NAME%.*}"
-	# shellcheck disable=SC2028
-	echo "\033[m\033[45mcomplete: ${PROG_PATH}\033[m" | tee /dev/console 2>&1
+	printf "\033[m\033[45mcomplete: %s\033[m\n" "${PROG_PATH}" | tee /dev/console 2>&1
 
 ### eof #######################################################################

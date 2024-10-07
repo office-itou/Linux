@@ -10,18 +10,19 @@
 
 #	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
-	PROG_PATH="9999-user-conf-debug.sh"
-#	PROG_DIRS="${PROG_PATH%/*}"
-	PROG_NAME="${PROG_PATH##*/}"
+#	readonly    PROG_PATH="$0"
+	readonly    PROG_PATH="9999-user-conf-debug.sh"
+#	readonly    PROG_DIRS="${PROG_PATH%/*}"
+	readonly    PROG_NAME="${PROG_PATH##*/}"
 
+	# --- start -------------------------------------------------------------------
 	if [ -f "/var/lib/live/config/${PROG_NAME%.*}" ]; then
 		# shellcheck disable=SC2028
-		echo "\033[m\033[41malready runned: ${PROG_PATH}\033[m" | tee /dev/console 2>&1
+		printf "\033[m\033[41malready runned: %s\033[m\n" "${PROG_PATH}" | tee /dev/console 2>&1
 		return
 	fi
 
-	# shellcheck disable=SC2028
-	echo "\033[m\033[45mstart: ${PROG_PATH}\033[m" | tee /dev/console 2>&1
+	printf "\033[m\033[45mstart: %s\033[m\n" "${PROG_PATH}" | tee /dev/console 2>&1
 
 	# --- put debug parameter -------------------------------------------------
 	if [ "${LIVE_DEBUGOUT:-}" = "true" ] || [ "${LIVE_BOOT_DEBUG:-}" = "true" ] || [ "${LIVE_CONFIG_DEBUG:-}" = "true" ]; then
@@ -90,7 +91,6 @@
 	# --- create state file ---------------------------------------------------
 	mkdir -p /var/lib/live/config
 	touch "/var/lib/live/config/${PROG_NAME%.*}"
-	# shellcheck disable=SC2028
-	echo "\033[m\033[45mcomplete: ${PROG_PATH}\033[m" | tee /dev/console 2>&1
+	printf "\033[m\033[45mcomplete: %s\033[m\n" "${PROG_PATH}" | tee /dev/console 2>&1
 
 ### eof #######################################################################
