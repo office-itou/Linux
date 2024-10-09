@@ -39,7 +39,7 @@ mmdebstrap:
 #   - firmware-ipw2x00                                      # Binary firmware for Intel Pro Wireless 2100, 2200 and 2915
     - firmware-iwlwifi                                      # Binary firmware for Intel Wireless cards
     - firmware-realtek                                      # Binary firmware for Realtek wired/wifi/BT adapters
-    - firmware-realtek-rtl8723cs-bt                         # Bluetooth firmware for Realtek RTL8723CS
+#   - firmware-realtek-rtl8723cs-bt                         # Bluetooth firmware for Realtek RTL8723CS
 # --- microcode ---------------------------------------------------------------
     - amd64-microcode                                       # Platform firmware and microcode for AMD CPUs and SoCs
     - intel-microcode                                       # Processor microcode firmware for Intel CPUs

@@ -29,7 +29,7 @@ mmdebstrap:
     - firmware-sof-signed                                   # Intel SOF firmware - signed
     - alsa-firmware-loaders                                 # ALSA software loaders for specific hardware
     - bluez-firmware                                        # Firmware for Bluetooth devices
-    - firmware-realtek-rtl8723cs-bt                         # Bluetooth firmware for Realtek RTL8723CS
+#   - firmware-realtek-rtl8723cs-bt                         # Bluetooth firmware for Realtek RTL8723CS
 # --- microcode ---------------------------------------------------------------
     - amd64-microcode                                       # Processor microcode firmware for AMD CPUs
     - intel-microcode                                       # Processor microcode firmware for Intel CPUs
