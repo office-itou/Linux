@@ -283,7 +283,7 @@ mmdebstrap:
     - plymouth                                              # boot animation, logger and I/O multiplexer
     - plymouth-label                                        # boot animation, logger and I/O multiplexer - label control
     - plymouth-theme-hamara                                 # boot animation, logger and I/O multiplexer - Hamara theme
-    - plymouth-theme-mobian                                 # boot animation, logger and I/O multiplexer - Mobian theme
+#   - plymouth-theme-mobian                                 # boot animation, logger and I/O multiplexer - Mobian theme
     - plymouth-theme-spinner                                # boot animation, logger and I/O multiplexer - spinner theme
     - plymouth-theme-ubuntu-text                            # boot animation, logger and I/O multiplexer - ubuntu text theme
     - plymouth-themes                                       # boot animation, logger and I/O multiplexer - themes
