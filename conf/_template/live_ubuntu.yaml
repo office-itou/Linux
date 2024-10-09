@@ -66,7 +66,7 @@ mmdebstrap:
     - alsa-topology-conf                                    # ALSA topology configuration files
     - alsa-ucm-conf                                         # ALSA Use Case Manager configuration files
     - alsa-utils                                            # Utilities for configuring and using ALSA
-    - apparmor                                              # user-space parser utility for AppArmor
+#   - apparmor                                              # user-space parser utility for AppArmor
 #   - apport                                                # automatically generate crash reports for debugging
 #   - appstream                                             # Software component metadata management
     - apt-listchanges                                       # package change history notification tool
@@ -95,6 +95,7 @@ mmdebstrap:
     - dbus-user-session                                     # simple interprocess messaging system (systemd --user integration)
     - dbus-x11                                              # simple interprocess messaging system (X11 deps)
     - dconf-cli                                             # simple configuration storage system - utilities
+#   - ddcutil                                               # Control monitor settings - Standalone command line application
     - debconf-i18n                                          # full internationalization support for debconf
     - debconf-utils                                         # debconf utilities
     - debian-faq                                            # Debian Frequently Asked Questions
@@ -108,7 +109,7 @@ mmdebstrap:
     - dns-root-data                                         # DNS root data including root zone and DNSSEC key
     - doc-debian                                            # Debian Project documentation and other documents
     - e2fsprogs-l10n                                        # ext2/ext3/ext4 file system utilities - translations
-    - ed                                                    # classic UNIX line editor
+#   - ed                                                    # classic UNIX line editor
     - edid-decode                                           # decode the binary EDID information from monitors
     - efibootmgr                                            # Interact with the EFI Boot Manager
     - eject                                                 # ejects CDs and operates CD-Changers under Linux
@@ -173,7 +174,7 @@ mmdebstrap:
     - iso-codes                                             # ISO language, territory, currency, script codes and their translations
     - isolinux                                              # collection of bootloaders (ISO 9660 bootloader)
     - isomd5sum                                             # ISO9660 checksum utilities
-    - jackd                                                 #
+    - jackd                                                 # JACK Audio Connection Kit (default server package)
     - java-wrappers                                         # wrappers for java executables
     - javascript-common                                     # Base support for JavaScript library packages
     - keyutils                                              # Linux Key Management Utilities
@@ -281,8 +282,12 @@ mmdebstrap:
 #   - pipewire-v4l2                                         # PipeWire V4L2 plugin
     - plymouth                                              # boot animation, logger and I/O multiplexer
     - plymouth-label                                        # boot animation, logger and I/O multiplexer - label control
+    - plymouth-theme-hamara                                 # boot animation, logger and I/O multiplexer - Hamara theme
+    - plymouth-theme-mobian                                 # boot animation, logger and I/O multiplexer - Mobian theme
     - plymouth-theme-spinner                                # boot animation, logger and I/O multiplexer - spinner theme
     - plymouth-theme-ubuntu-text                            # boot animation, logger and I/O multiplexer - ubuntu text theme
+    - plymouth-themes                                       # boot animation, logger and I/O multiplexer - themes
+    - plymouth-x11                                          # boot animation, logger and I/O multiplexer - X11 renderer
     - polkitd-pkla                                          # Legacy "local authority" (.pkla) backend for polkitd
     - powermgmt-base                                        # common utils for power management
 #   - printer-driver-all                                    # printer drivers metapackage

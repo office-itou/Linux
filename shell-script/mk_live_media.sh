@@ -956,7 +956,7 @@ _EOT_SH_
 			touch "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/.disk/info"
 			# ---- copy filesystem --------------------------------------------
 			cp -a "${DIRS_LIVE}/manifest"     "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/live/filesystem.packages"
-			cp -a "${DIRS_LIVE}/${SQFS_NAME}" "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/live/filesystem.squashfs"
+			ionice -c "${IONICE_CLAS}" cp -a "${DIRS_LIVE}/${SQFS_NAME}" "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/live/filesystem.squashfs"
 			# ---- copy vmlinuz/initrd ----------------------------------------
 			mount -r -t squashfs "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/live/filesystem.squashfs" "${DIRS_MNTS}"
 			case "${TGET_LINE[3]}" in
@@ -1130,7 +1130,7 @@ _EOT_
 			cp -a "${DIRS_MNTS}/EFI/BOOT/grubx64.efi" "${DIRS_TEMP}/${TGET_LINE[1]}/cdfs/EFI/boot/grubx64.efi"
 			umount "${DIRS_MNTS}"
 			# ---- create efi.img ---------------------------------------------
-			dd if=/dev/zero of="${DIRS_CDFS}/boot/grub/efi.img" bs=1M count=10
+			ionice -c "${IONICE_CLAS}" dd if=/dev/zero of="${DIRS_CDFS}/boot/grub/efi.img" bs=1M count=10
 			mkfs.fat "${DIRS_CDFS}/boot/grub/efi.img"
 			mount "${DIRS_CDFS}/boot/grub/efi.img" "${DIRS_MNTS}"
 			mkdir -p "${DIRS_MNTS}/"{EFI/boot,boot/grub}

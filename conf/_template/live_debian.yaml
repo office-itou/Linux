@@ -105,6 +105,7 @@ mmdebstrap:
     - dbus-user-session                                     # simple interprocess messaging system (systemd --user integration)
     - dbus-x11                                              # simple interprocess messaging system (X11 deps)
     - dconf-cli                                             # simple configuration storage system - utilities
+#   - ddcutil                                               # Control monitor settings - Standalone command line application
     - debconf-i18n                                          # full internationalization support for debconf
     - debconf-utils                                         # debconf utilities
     - debian-faq                                            # Debian Frequently Asked Questions
@@ -377,6 +378,7 @@ mmdebstrap:
     - python3-urllib3                                       # HTTP library with thread-safe connection pooling for Python3
     - python3-webcolors                                     # python3 library of color names and value formats
     - python3-yaml                                          # YAML parser and emitter for Python3
+#   - read-edid                                             # hardware information-gathering tool for VESA PnP monitors
     - reportbug                                             # reports bugs in the Debian distribution
 #   - resolvconf                                            # name server information handler
 #   - rfkill                                                # tool for enabling and disabling wireless devices
@@ -411,8 +413,8 @@ mmdebstrap:
     - vim-tiny                                              # Vi IMproved - enhanced vi editor - compact version
     - wamerican                                             # American English dictionary words for /usr/share/dict
     - wget                                                  # retrieves files from the web
-    - wireplumber                                           # modular session / policy manager for PipeWire
     - whiptail                                              # Displays user-friendly dialog boxes from shell scripts
+    - wireplumber                                           # modular session / policy manager for PipeWire
     - wpasupplicant                                         # client support for WPA and WPA2 (IEEE 802.11i)
     - xauth                                                 # X authentication utility
 #   - xcvt                                                  # VESA CVT standard timing modelines generator
