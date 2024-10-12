@@ -35,11 +35,60 @@ autoinstall:
   - [ sh, -c, '
       exec 2>&1;
       export LANG=C;
-      FUNC_NAME="early-commands";
+      FUNC_NAME="early-commands [ wipe partitions ]";
       echo "### start ${FUNC_NAME} ###";
       DEVICE="/dev/nvme0n1";
       sfdisk --wipe always --wipe-partitions always --delete "${DEVICE}";
       dd if=/dev/zero of="${DEVICE}" bs=1M count=10;
+      echo "### complete ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="early-commands [ resolv.conf ]";
+      echo "### start ${FUNC_NAME} ###";
+      {
+        echo "nameserver 8.8.8.8";
+        echo "nameserver 8.8.4.4";
+      } >  /etc/resolv.conf;
+      echo "### complete ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="early-commands [ wireplumber.conf ]";
+      echo "### start ${FUNC_NAME} ###";
+      FILE_NAME="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf";
+      mkdir -p "${FILE_NAME%/*}";
+      {
+        echo "monitor.alsa.rules = [";
+        echo "  {";
+        echo "    matches = [";
+        echo "      # This matches the value of the node.name property of the node.";
+        echo "      {";
+        echo "        node.name = \"~alsa_output.*\"";
+        echo "      }";
+        echo "    ]";
+        echo "    actions = {";
+        echo "      # Apply all the desired node specific settings here.";
+        echo "      update-props = {";
+        echo "        api.alsa.period-size   = 1024";
+        echo "        api.alsa.headroom      = 8192";
+        echo "        session.suspend-timeout-seconds = 0";
+        echo "      }";
+        echo "    }";
+        echo "  }";
+        echo "]";
+      } > "${FILE_NAME}";
+      export USER_NAME="$(who | awk "\$1!=\"root\" {print \$1;}" | sort -u)";
+      export USER_IDNO="$(id -u "${USER_NAME}")";
+      export XDG_RUNTIME_DIR="/run/user/${USER_IDNO}";
+      export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus";
+      echo "USER     =${USER}";
+      echo "USER_NAME=${USER_NAME}";
+      echo "USER_IDNO=${USER_IDNO}";
+      runuser "${USER_NAME}" --login --command "
+        echo \"XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}\";
+        echo \"DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS}\";
+        systemctl --user restart wireplumber.service || true";
       echo "### complete ${FUNC_NAME} ###";' ]
 # =============================================================================
   storage:
@@ -175,7 +224,7 @@ autoinstall:
   package_update: true
   package_upgrade: true
   packages:
-  - standard^
+  - ubuntu-standard
   - apt-transport-https
   - firewalld
   - traceroute
