@@ -81,12 +81,12 @@
 #	declare -r    SCRN_SIZE="1920x1080"	# FHD    (16:9)
 #	declare -r    SCRN_SIZE="1856x1392"	#        (4:3)
 #	declare -r    SCRN_SIZE="1792x1344"	#        (4:3)
-#	declare -r    SCRN_SIZE="1680x1050"	# WSXGA+ (16:10)
+	declare -r    SCRN_SIZE="1680x1050"	# WSXGA+ (16:10)
 #	declare -r    SCRN_SIZE="1600x1200"	# UXGA   (4:3)
 #	declare -r    SCRN_SIZE="1400x1050"	#        (4:3)
 #	declare -r    SCRN_SIZE="1440x900"	# WXGA+  (16:10)
 #	declare -r    SCRN_SIZE="1360x768"	# HD     (16:9)
-	declare -r    SCRN_SIZE="1280x1024"	# SXGA   (5:4)
+#	declare -r    SCRN_SIZE="1280x1024"	# SXGA   (5:4)
 #	declare -r    SCRN_SIZE="1280x960"	#        (4:3)
 #	declare -r    SCRN_SIZE="1280x800"	#        (16:10)
 #	declare -r    SCRN_SIZE="1280x768"	#        (4:3)
@@ -759,6 +759,11 @@ function funcServiceStatus() {
 		*               ) SRVC_STAT="undefined";;
 	esac
 	echo "${SRVC_STAT}"
+}
+
+# --- function is package -----------------------------------------------------
+function funcIsPackage () {
+	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed'
 }
 
 # *** function section (sub functions) ****************************************
@@ -1480,6 +1485,10 @@ function funcNetwork_tftpd_hpa() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
+	funcPrintf "      ${MSGS_TITL}: create directory"
+	funcPrintf "      ${MSGS_TITL}: ${TFTP_ROOT}"
+	mkdir -p "${TFTP_ROOT}/"{menu-{bios,efi64},boot/grub}
+	# -------------------------------------------------------------------------
 	if [[ -f "${CONF_PATH}" ]]; then
 		if [[ ! -f "${CONF_ORIG}" ]]; then
 			mkdir -p "${CONF_ORIG%/*}"
@@ -1525,8 +1534,7 @@ function funcNetwork_pxe_conf() {
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: create directory"
-	funcPrintf "      ${MSGS_TITL}: ${TFTP_ROOT}"
-	mkdir -p "${TFTP_ROOT}/"{menu-{bios,efi64},boot/grub}
+	funcPrintf "      ${MSGS_TITL}: ${DIRS_PATH}"
 	mkdir -p "${DIRS_PATH}"
 	touch "${FILE_PATH}"
 	# -------------------------------------------------------------------------
@@ -2366,7 +2374,9 @@ function funcApplication_ntp_timesyncd() {
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	declare       SYSD_NAME=""
 	# -------------------------------------------------------------------------
-	if ! LANG=C apt list 'systemd-timesyncd' 2> /dev/null | grep -q 'installed'; then
+#	if ! LANG=C apt list 'systemd-timesyncd' 2> /dev/null | grep -q 'installed'; then
+	# shellcheck disable=SC2091,SC2310
+	if ! $(funcIsPackage 'systemd-timesyncd'); then
 		return
 	fi
 #	if [[ -z "${FILE_PATH}" ]]; then
@@ -2376,12 +2386,14 @@ function funcApplication_ntp_timesyncd() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL}: timesyncd $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ ! -f "${FILE_ORIG}" ]]; then
-		mkdir -p "${FILE_ORIG%/*}"
-		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
-	else
-		mkdir -p "${FILE_BACK%/*}"
-		cp --archive "${FILE_PATH}" "${FILE_BACK}"
+	if [[ -f "${FILE_PATH}" ]]; then
+		if [[ ! -f "${FILE_ORIG}" ]]; then
+			mkdir -p "${FILE_ORIG%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
+		else
+			mkdir -p "${FILE_BACK%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_BACK}"
+		fi
 	fi
 	funcPrintf "      ${MSGS_TITL}: create config file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
@@ -2998,6 +3010,56 @@ function funcApplication_root_user() {
 				;;
 		esac
 	done
+}
+
+# --- sound -------------------------------------------------------------------
+function funcApplication_sound_wireplumber() {
+	declare -r    DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare -r    MSGS_TITL="sound wireplumber"
+	declare -r    FILE_PATH="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
+	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
+	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if ! $(funcIsPackage 'wireplumber'); then
+		return
+	fi
+	# -------------------------------------------------------------------------
+	# shellcheck disable=SC2312
+	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	# -------------------------------------------------------------------------
+	if [[ -f "${FILE_PATH}" ]]; then
+		if [[ ! -f "${FILE_ORIG}" ]]; then
+			mkdir -p "${FILE_ORIG%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
+		else
+			mkdir -p "${FILE_BACK%/*}"
+			cp --archive "${FILE_PATH}" "${FILE_BACK}"
+		fi
+	fi
+	funcPrintf "      ${MSGS_TITL}: create config file"
+	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
+	mkdir -p "${FILE_PATH%/*}"
+	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
+		monitor.alsa.rules = [
+		  {
+		    matches = [
+		      # This matches the value of the 'node.name' property of the node.
+		      {
+		        node.name = "~alsa_output.*"
+		      }
+		    ]
+		    actions = {
+		      # Apply all the desired node specific settings here.
+		      update-props = {
+		        api.alsa.period-size   = 1024
+		        api.alsa.headroom      = 8192
+		        session.suspend-timeout-seconds = 0
+		      }
+		    }
+		  }
+		]
+_EOT_
 }
 
 # ==== restore ================================================================
@@ -3849,7 +3911,7 @@ function funcCall_package() {
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-		COMD_LIST=("pmn" "fwall" "ctl" "sys" "usr" "av" "ntp" "ssh" "dns" "web" "smb" "vm" "grub" "root" "$@")
+		COMD_LIST=("pmn" "fwall" "ctl" "sys" "usr" "av" "ntp" "ssh" "dns" "web" "smb" "vm" "grub" "root" "sound" "$@")
 		IFS=' =,'
 		set -f
 		set -- "${COMD_LIST[@]:-}"
@@ -3916,6 +3978,9 @@ function funcCall_package() {
 				;;
 			root )						# ===== root user =====================
 				funcApplication_root_user
+				;;
+			sound )						# ==== sound ==========================
+				funcApplication_sound_wireplumber
 				;;
 			-* )
 				break
