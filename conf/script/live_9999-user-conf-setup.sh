@@ -213,7 +213,310 @@ _EOT_
 
 	# --- skeleton directory --------------------------------------------------
 	echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
-	DIRS_SKEL="/etc/skel"
+	_DIRS_SKEL="/etc/skel"
+	_DIRS_XDGS="/etc/xdg"
+
+	# --- set lxde panel ------------------------------------------------------
+	_FILE_PATH="lxpanel/LXDE/panels/panel"
+	_XDGS_PATH="${_DIRS_XDGS}/${_FILE_PATH}"
+	_CONF_PATH="${_DIRS_SKEL}/.config/${_FILE_PATH}"
+	if [ -f "${_XDGS_PATH}" ]; then
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_CONF_PATH%/*}"
+		sed -e '/^Global {$/,/^}$/ {'              \
+		    -e '/^# *widthtype=/ s/=.*$/=request/' \
+		    -e '}'                                 \
+		       "${_XDGS_PATH}"                     \
+		>      "${_CONF_PATH}"
+	fi
+
+	# --- set lxde desktop.conf -----------------------------------------------
+	_FILE_PATH="lxsession/LXDE/desktop.conf"
+	_XDGS_PATH="${_DIRS_XDGS}/${_FILE_PATH}"
+	_CONF_PATH="${_DIRS_SKEL}/.config/${_FILE_PATH}"
+	if [ -f "${_XDGS_PATH}" ]; then
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_CONF_PATH%/*}"
+		sed -e '/^\[GTK\]$/,/^\[.*\]$/{'                         \
+		    -e ':l;'                                             \
+		    -e '/^#* *sNet\/ThemeName/     s/=.*$/=Raleigh/'     \
+		    -e '/^#* *sNet\/IconThemeName/ s/=.*$/=gnome-brave/' \
+		    -e '/^#* *sGtk\/FontName=/     s/=.*$/=Sans 9/'      \
+		    -e 'n'                                               \
+		    -e '/^\(\[.*\]\|\)$/!b l'                            \
+		    -e 'i sGtk/CursorThemeName=Adwaita'                  \
+		    -e '}'                                               \
+		       "${_XDGS_PATH}"                                   \
+		>      "${_CONF_PATH}"
+	fi
+
+	# --- set lxterminal.conf -------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'vim'); then
+		_FILE_PATH="${_DIRS_SKEL}/.config/lxterminal/lxterminal.conf"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			[general]
+			fontname=Monospace 9
+			selchars=-A-Za-z0-9,./?%&#:_
+			scrollback=1000
+			bgcolor=rgb(0,0,0)
+			fgcolor=rgb(211,215,207)
+			palette_color_0=rgb(0,0,0)
+			palette_color_1=rgb(205,0,0)
+			palette_color_2=rgb(78,154,6)
+			palette_color_3=rgb(196,160,0)
+			palette_color_4=rgb(52,101,164)
+			palette_color_5=rgb(117,80,123)
+			palette_color_6=rgb(6,152,154)
+			palette_color_7=rgb(211,215,207)
+			palette_color_8=rgb(85,87,83)
+			palette_color_9=rgb(239,41,41)
+			palette_color_10=rgb(138,226,52)
+			palette_color_11=rgb(252,233,79)
+			palette_color_12=rgb(114,159,207)
+			palette_color_13=rgb(173,127,168)
+			palette_color_14=rgb(52,226,226)
+			palette_color_15=rgb(238,238,236)
+			color_preset=Tango
+			disallowbold=false
+			boldbright=false
+			cursorblinks=false
+			cursorunderline=false
+			audiblebell=false
+			visualbell=false
+			tabpos=top
+			geometry_columns=120
+			geometry_rows=30
+			hidescrollbar=false
+			hidemenubar=false
+			hideclosebutton=false
+			hidepointer=false
+			disablef10=false
+			disablealt=false
+			disableconfirm=false
+			
+			[shortcut]
+			new_window_accel=<Primary><Shift>n
+			new_tab_accel=<Primary><Shift>t
+			close_tab_accel=<Primary><Shift>w
+			close_window_accel=<Primary><Shift>q
+			copy_accel=<Primary><Shift>c
+			paste_accel=<Primary><Shift>v
+			name_tab_accel=<Primary><Shift>i
+			previous_tab_accel=<Primary>Page_Up
+			next_tab_accel=<Primary>Page_Down
+			move_tab_left_accel=<Primary><Shift>Page_Up
+			move_tab_right_accel=<Primary><Shift>Page_Down
+			zoom_in_accel=<Primary><Shift>plus
+			zoom_out_accel=<Primary><Shift>underscore
+			zoom_reset_accel=<Primary><Shift>parenright
+_EOT_
+	fi
+
+	# --- set libfm.conf ------------------------------------------------------
+	_FILE_PATH="libfm/libfm.conf"
+	_XDGS_PATH="${_DIRS_XDGS}/${_FILE_PATH}"
+	_CONF_PATH="${_DIRS_SKEL}/.config/${_FILE_PATH}"
+	if [ -f "${_XDGS_PATH}" ]; then
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_CONF_PATH%/*}"
+		sed -e '/^\[GTK\]$/,/^\[.*\]$/{'                         \
+		    -e '/^#* *sNet\/ThemeName/     s/=.*$/=Raleigh/'     \
+		    -e '/^#* *sNet\/IconThemeName/ s/=.*$/=gnome-brave/' \
+		    -e '/^#* *sGtk\/FontName=/     s/=.*$/=Sans 9/'      \
+		    -e '}'                                               \
+		       "${_XDGS_PATH}"                                   \
+		>      "${_CONF_PATH}"
+	fi
+
+	# --- set lxde-rc.xml -----------------------------------------------------
+	_FILE_PATH="openbox/lxde-rc.xml"
+	_XDGS_PATH="${_DIRS_XDGS}/openbox/LXDE/rc.xml"
+	_CONF_PATH="${_DIRS_SKEL}/.config/${_FILE_PATH}"
+	if [ -f "${_XDGS_PATH}" ]; then
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_CONF_PATH%/*}"
+		cp "${_XDGS_PATH}" "${_CONF_PATH}"
+		# --- edit xml file ---------------------------------------------------
+		_NAME_SPCE="http://openbox.org/3.4/rc"
+		_XMLS_PATH="//N:openbox_config/N:theme"
+		# --- update ------------------------------------------------------------------
+		COUNT="$(xmlstarlet sel -N N="${_NAME_SPCE}" -t -m "${_XMLS_PATH}" -v "count(N:font)" "${_CONF_PATH}")"
+		: $((I=1))
+		while [ $((I<=COUNT)) -ne 0 ]
+		do
+			_NAME="$(xmlstarlet sel   -N N="${_NAME_SPCE}" -t -m "${_XMLS_PATH}/N:font[${I}]"        -v "N:name"  "${_CONF_PATH}" |  sed -e 's/^\(.\)\(.*\)$/\U\1\L\2/g' || true)"
+		#	_SIZE="$(xmlstarlet sel   -N N="${_NAME_SPCE}" -t -m "${_XMLS_PATH}/N:font[${I}]"        -v "N:size"  "${_CONF_PATH}" || true)"
+			         xmlstarlet ed -L -N N="${_NAME_SPCE}"    -u "${_XMLS_PATH}/N:font[${I}]/N:name" -v "${_NAME}"                        \
+			                                                  -u "${_XMLS_PATH}/N:font[${I}]/N:size" -v "9"       "${_CONF_PATH}" || true
+			I=$((I+1))
+		done
+		xmlstarlet ed -L -N N="${_NAME_SPCE}" -u "${_XMLS_PATH}/N:name" -v "Clearlooks-3.4" "${_CONF_PATH}" || true
+		# --- append ------------------------------------------------------------------
+		xmlstarlet ed -L -N N="${_NAME_SPCE}" -s "${_XMLS_PATH}"                -t "elem" -n "font"                                "${_CONF_PATH}" || true
+		xmlstarlet ed -L -N N="${_NAME_SPCE}" -s "${_XMLS_PATH}/N:font[last()]" -t "attr" -n "place"  -v "ActiveOnScreenDisplay"   \
+		                                      -s "${_XMLS_PATH}/N:font[last()]" -t "elem" -n "name"   -v "Sans"                    \
+		                                      -s "${_XMLS_PATH}/N:font[last()]" -t "elem" -n "size"   -v "9"                       \
+		                                      -s "${_XMLS_PATH}/N:font[last()]" -t "elem" -n "weight" -v "Normal"                  \
+		                                      -s "${_XMLS_PATH}/N:font[last()]" -t "elem" -n "slant"  -v "Normal"                  "${_CONF_PATH}" || true
+		xmlstarlet ed -L -N N="${_NAME_SPCE}" -s "${_XMLS_PATH}"                -t "elem" -n "font"                                "${_CONF_PATH}" || true
+		xmlstarlet ed -L -N N="${_NAME_SPCE}" -s "${_XMLS_PATH}/N:font[last()]" -t "attr" -n "place"  -v "InactiveOnScreenDisplay" \
+		                                      -s "${_XMLS_PATH}/N:font[last()]" -t "elem" -n "name"   -v "Sans"                    \
+		                                      -s "${_XMLS_PATH}/N:font[last()]" -t "elem" -n "size"   -v "9"                       \
+		                                      -s "${_XMLS_PATH}/N:font[last()]" -t "elem" -n "weight" -v "Normal"                  \
+		                                      -s "${_XMLS_PATH}/N:font[last()]" -t "elem" -n "slant"  -v "Normal"                  "${_CONF_PATH}" || true
+	fi
+
+	# --- set gtk-2.0 ---------------------------------------------------------
+	if [ -d /etc/gtk-2.0/. ]; then
+		_FILE_PATH="${_DIRS_SKEL}/.gtkrc-2.0"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+			# DO NOT EDIT! This file will be overwritten by LXAppearance.
+			# Any customization should be done in ~/.gtkrc-2.0.mine instead.
+			
+			include "${HOME}/.gtkrc-2.0.mine"
+			gtk-theme-name="Raleigh"
+			gtk-icon-theme-name="gnome-brave"
+			gtk-font-name="Sans 9"
+			gtk-cursor-theme-name="Adwaita"
+			gtk-cursor-theme-size=18
+			gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
+			gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
+			gtk-button-images=1
+			gtk-menu-images=1
+			gtk-enable-event-sounds=1
+			gtk-enable-input-feedback-sounds=1
+			gtk-xft-antialias=1
+			gtk-xft-hinting=1
+			gtk-xft-hintstyle="hintslight"
+			gtk-xft-rgba="rgb"
+_EOT_
+	fi
+
+	# --- set gtk-3.0 ---------------------------------------------------------
+	if [ -d /etc/gtk-3.0/. ]; then
+		_FILE_PATH="${_DIRS_SKEL}/.config/gtk-3.0/settings.ini"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+			[Settings]
+			gtk-theme-name=Raleigh
+			gtk-icon-theme-name=gnome-brave
+			gtk-font-name=Sans 9
+			gtk-cursor-theme-size=18
+			gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
+			gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
+			gtk-button-images=1
+			gtk-menu-images=1
+			gtk-enable-event-sounds=1
+			gtk-enable-input-feedback-sounds=1
+			gtk-xft-antialias=1
+			gtk-xft-hinting=1
+			gtk-xft-hintstyle=hintslight
+			gtk-xft-rgba=rgb
+			gtk-cursor-theme-name=Adwaita
+_EOT_
+	fi
+
+	# --- set .bashrc ---------------------------------------------------------
+	_FILE_PATH="${_DIRS_SKEL}/.bashrc"
+	echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+	mkdir -p "${_FILE_PATH%/*}"
+	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+		# --- user custom ---
+		alias vi='vim'
+		alias view='vim'
+		alias diff='diff --color=auto'
+		alias ip='ip -color=auto'
+		alias ls='ls --color=auto'
+		# --- measures against garbled characters ---
+		case "${TERM}" in
+		    linux ) export LANG=C;;
+		    *     )              ;;
+		esac
+_EOT_
+
+	# --- set .vimrc ----------------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'vim'); then
+		_FILE_PATH="${_DIRS_SKEL}/.vimrc"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			set number              " Print the line number in front of each line.
+			set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+			set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+			set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+			set nowrap              " This option changes how text is displayed.
+			set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+			set laststatus=2        " The value of this option influences when the last window will have a status line always.
+			set mouse-=a            " Disable mouse usage
+			syntax on               " Vim5 and later versions support syntax highlighting.
+_EOT_
+	fi
+
+	# --- set .curlrc ---------------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'curl'); then
+		_FILE_PATH="${_DIRS_SKEL}/.curlrc"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			location
+			progress-bar
+			remote-time
+			show-error
+_EOT_
+	fi
+
+	# --- set .xscreensaver ---------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'xscreensaver'); then
+		_FILE_PATH="${_DIRS_SKEL}/.xscreensaver"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			mode:		off
+			selected:	-1
+_EOT_
+	fi
+
+	# --- set fcitx5 ----------------------------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'fcitx5'); then
+		_FILE_PATH="${_DIRS_SKEL}/.config/fcitx5/profile"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			[Groups/0]
+			# Group Name
+			Name=デフォルト
+			# Layout
+			Default Layout=${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
+			# Default Input Method
+			DefaultIM=mozc
+			
+			[Groups/0/Items/0]
+			# Name
+			Name=keyboard-${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
+			# Layout
+			Layout=
+			
+			[Groups/0/Items/1]
+			# Name
+			Name=mozc
+			# Layout
+			Layout=
+			
+			[GroupOrder]
+			0=デフォルト
+			
+_EOT_
+	fi
 
 	# --- set monitors.xml ----------------------------------------------------
 	# shellcheck disable=SC2091,SC2310
@@ -222,7 +525,7 @@ _EOT_
 	&& $(funcIsPackage 'gdm3');              then
 #	&& $(funcIsPackage 'x11-xserver-utils') \
 #	&& $(funcIsPackage 'edid-decode')       \
-		_FILE_PATH="${DIRS_SKEL}/.config/monitors.xml"
+		_FILE_PATH="${_DIRS_SKEL}/.config/monitors.xml"
 		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
 		mkdir -p "${_FILE_PATH%/*}"
 		_WIDTH="${LIVE_XORG_RESOLUTION%%x*}"
@@ -360,346 +663,6 @@ _EOT_
 		fi
 	fi
 
-	# --- desktop.conf --------------------------------------------------------
-	_FILE_PATH="${DIRS_SKEL}/.config/lxsession/LXDE/desktop.conf"
-	echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
-	mkdir -p "${_FILE_PATH%/*}"
-	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-		[Session]
-		window_manager=openbox-lxde
-		disable_autostart=no
-		polkit/command=lxpolkit
-		clipboard/command=lxclipboard
-		xsettings_manager/command=build-in
-		proxy_manager/command=build-in
-		keyring/command=ssh-agent
-		quit_manager/command=lxsession-logout
-		lock_manager/command=lxlock
-		terminal_manager/command=lxterminal
-		
-		[GTK]
-		sNet/ThemeName=Raleigh
-		sNet/IconThemeName=gnome-brave
-		sGtk/FontName=Sans 9
-		iGtk/ToolbarStyle=3
-		iGtk/ButtonImages=1
-		iGtk/MenuImages=1
-		iGtk/CursorThemeSize=18
-		iXft/Antialias=1
-		iXft/Hinting=1
-		sXft/HintStyle=hintslight
-		sXft/RGBA=rgb
-		iNet/EnableEventSounds=1
-		iNet/EnableInputFeedbackSounds=1
-		sGtk/ColorScheme=
-		iGtk/ToolbarIconSize=3
-		sGtk/CursorThemeName=Adwaita
-		
-		[Mouse]
-		AccFactor=20
-		AccThreshold=10
-		LeftHanded=0
-		
-		[Keyboard]
-		Delay=500
-		Interval=30
-		Beep=1
-		
-		[State]
-		guess_default=true
-		
-		[Dbus]
-		lxde=true
-		
-		[Environment]
-		menu_prefix=lxde-
-_EOT_
-
-	# --- .bashrc -------------------------------------------------------------
-	_FILE_PATH="${DIRS_SKEL}/.bashrc"
-	echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
-	mkdir -p "${_FILE_PATH%/*}"
-	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-		# --- measures against garbled characters ---
-		case "${TERM}" in
-		    linux ) export LANG=C;;
-		    *     )              ;;
-		esac
-_EOT_
-	# shellcheck disable=SC2091,SC2310
-	if $(funcIsPackage 'vim'); then
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-			# --- alias for vim ---
-			alias vi='vim'
-			alias view='vim'
-_EOT_
-	fi
-
-	# --- .vimrc --------------------------------------------------------------
-	# shellcheck disable=SC2091,SC2310
-	if $(funcIsPackage 'vim'); then
-		_FILE_PATH="${DIRS_SKEL}/.vimrc"
-		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
-		mkdir -p "${_FILE_PATH%/*}"
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			set number              " Print the line number in front of each line.
-			set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
-			set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
-			set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
-			set nowrap              " This option changes how text is displayed.
-			set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
-			set laststatus=2        " The value of this option influences when the last window will have a status line always.
-			set mouse-=a            " Disable mouse usage
-			syntax on               " Vim5 and later versions support syntax highlighting.
-_EOT_
-	fi
-
-	# --- .curlrc -------------------------------------------------------------
-	# shellcheck disable=SC2091,SC2310
-	if $(funcIsPackage 'curl'); then
-		_FILE_PATH="${DIRS_SKEL}/.curlrc"
-		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
-		mkdir -p "${_FILE_PATH%/*}"
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			location
-			progress-bar
-			remote-time
-			show-error
-_EOT_
-	fi
-
-	# --- .xscreensaver -------------------------------------------------------
-	# shellcheck disable=SC2091,SC2310
-	if $(funcIsPackage 'xscreensaver'); then
-		_FILE_PATH="${DIRS_SKEL}/.xscreensaver"
-		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
-		mkdir -p "${_FILE_PATH%/*}"
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			mode:		off
-			selected:	-1
-_EOT_
-	fi
-
-	# --- fcitx5 --------------------------------------------------------------
-	# shellcheck disable=SC2091,SC2310
-	if $(funcIsPackage 'fcitx5'); then
-		_FILE_PATH="${DIRS_SKEL}/.config/fcitx5/profile"
-		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
-		mkdir -p "${_FILE_PATH%/*}"
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			[Groups/0]
-			# Group Name
-			Name=デフォルト
-			# Layout
-			Default Layout=${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
-			# Default Input Method
-			DefaultIM=mozc
-			
-			[Groups/0/Items/0]
-			# Name
-			Name=keyboard-${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
-			# Layout
-			Layout=
-			
-			[Groups/0/Items/1]
-			# Name
-			Name=mozc
-			# Layout
-			Layout=
-			
-			[GroupOrder]
-			0=デフォルト
-			
-_EOT_
-	fi
-
-	# --- pcmanfm.conf --------------------------------------------------------
-	# shellcheck disable=SC2091,SC2310
-	if $(funcIsPackage 'pcmanfm'); then
-		_FILE_PATH="${DIRS_SKEL}/.config/libfm/libfm.conf"
-		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
-		mkdir -p "${_FILE_PATH%/*}"
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			[config]
-			single_click=0
-			use_trash=1
-			confirm_del=1
-			confirm_trash=1
-			advanced_mode=0
-			si_unit=0
-			force_startup_notify=1
-			backup_as_hidden=1
-			no_usb_trash=1
-			no_child_non_expandable=0
-			show_full_names=0
-			only_user_templates=0
-			template_run_app=0
-			template_type_once=0
-			auto_selection_delay=600
-			drop_default_action=auto
-			defer_content_test=0
-			quick_exec=0
-			show_internal_volumes=0
-			terminal=x-terminal-emulator %s
-			archiver=xarchiver
-			thumbnail_local=1
-			thumbnail_max=2048
-			smart_desktop_autodrop=1
-
-			[ui]
-			big_icon_size=48
-			small_icon_size=24
-			pane_icon_size=24
-			thumbnail_size=128
-			show_thumbnail=1
-			shadow_hidden=0
-
-			[places]
-			places_home=1
-			places_desktop=1
-			places_root=1
-			places_computer=1
-			places_trash=1
-			places_applications=1
-			places_network=1
-			places_unmounted=1
-_EOT_
-	fi
-
-#	# --- gtkrc-2.0 -----------------------------------------------------------
-#	_FILE_PATH="/etc/gtk-2.0/gtkrc"
-#	if [ -d "${_FILE_PATH%/*}/." ]; then
-#		_FILE_PATH="${DIRS_SKEL}/.gtkrc-2.0"
-#		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
-#		mkdir -p "${_FILE_PATH%/*}"
-#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-#			gtk-theme-name="Raleigh"
-#			gtk-icon-theme-name="gnome-brave"
-#			gtk-font-name="Sans 9"
-#			gtk-cursor-theme-name="Adwaita"
-#			gtk-cursor-theme-size=18
-#			gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
-#			gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
-#			gtk-button-images=1
-#			gtk-menu-images=1
-#			gtk-enable-event-sounds=1
-#			gtk-enable-input-feedback-sounds=1
-#			gtk-xft-antialias=1
-#			gtk-xft-hinting=1
-#			gtk-xft-hintstyle="hintslight"
-#			gtk-xft-rgba="rgb"
-#_EOT_
-#	fi
-#
-#	# --- gtkrc-3.0 -----------------------------------------------------------
-#	_FILE_PATH="/etc/gtk-3.0/settings.ini"
-#	if [ -d "${_FILE_PATH%/*}/." ]; then
-#		_FILE_PATH="${DIRS_SKEL}/.config/gtk-3.0/settings.ini"
-#		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
-#		mkdir -p "${_FILE_PATH%/*}"
-#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-#			[Settings]
-#			gtk-icon-theme-name=gnome-brave
-#			gtk-theme-name=Raleigh
-#			gtk-font-name=Sans 9
-#			gtk-cursor-theme-name=Adwaita
-#			gtk-cursor-theme-size=18
-#			gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
-#			gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
-#			gtk-button-images=1
-#			gtk-menu-images=1
-#			gtk-enable-event-sounds=1
-#			gtk-enable-input-feedback-sounds=1
-#			gtk-xft-antialias=1
-#			gtk-xft-hinting=1
-#			gtk-xft-hintstyle=hintslight
-#			gtk-xft-rgba=rgb
-#_EOT_
-#	fi
-#
-	# --- lxterminal.conf -----------------------------------------------------
-	# shellcheck disable=SC2091,SC2310
-	if $(funcIsPackage 'lxterminal'); then
-		_FILE_PATH="${DIRS_SKEL}/.config/lxterminal/lxterminal.conf"
-		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
-		mkdir -p "${_FILE_PATH%/*}"
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			[general]
-			fontname=Monospace 9
-			selchars=-A-Za-z0-9,./?%&#:_
-			scrollback=1000
-			bgcolor=rgb(0,0,0)
-			fgcolor=rgb(211,215,207)
-			palette_color_0=rgb(0,0,0)
-			palette_color_1=rgb(205,0,0)
-			palette_color_2=rgb(78,154,6)
-			palette_color_3=rgb(196,160,0)
-			palette_color_4=rgb(52,101,164)
-			palette_color_5=rgb(117,80,123)
-			palette_color_6=rgb(6,152,154)
-			palette_color_7=rgb(211,215,207)
-			palette_color_8=rgb(85,87,83)
-			palette_color_9=rgb(239,41,41)
-			palette_color_10=rgb(138,226,52)
-			palette_color_11=rgb(252,233,79)
-			palette_color_12=rgb(114,159,207)
-			palette_color_13=rgb(173,127,168)
-			palette_color_14=rgb(52,226,226)
-			palette_color_15=rgb(238,238,236)
-			color_preset=Tango
-			disallowbold=false
-			boldbright=false
-			cursorblinks=false
-			cursorunderline=false
-			audiblebell=false
-			visualbell=false
-			tabpos=top
-			geometry_columns=120
-			geometry_rows=30
-			hidescrollbar=false
-			hidemenubar=false
-			hideclosebutton=false
-			hidepointer=false
-			disablef10=false
-			disablealt=false
-			disableconfirm=false
-			
-			[shortcut]
-			new_window_accel=<Primary><Shift>n
-			new_tab_accel=<Primary><Shift>t
-			close_tab_accel=<Primary><Shift>w
-			close_window_accel=<Primary><Shift>q
-			copy_accel=<Primary><Shift>c
-			paste_accel=<Primary><Shift>v
-			name_tab_accel=<Primary><Shift>i
-			previous_tab_accel=<Primary>Page_Up
-			next_tab_accel=<Primary>Page_Down
-			move_tab_left_accel=<Primary><Shift>Page_Up
-			move_tab_right_accel=<Primary><Shift>Page_Down
-			zoom_in_accel=<Primary><Shift>plus
-			zoom_out_accel=<Primary><Shift>underscore
-			zoom_reset_accel=<Primary><Shift>parenright
-_EOT_
-	fi
-
-	# --- gnome terminal ------------------------------------------------------
-	# shellcheck disable=SC2091,SC2310
-#	if $(funcIsPackage 'gnome-terminal') \
-#	&& command -v gsettings > /dev/null 2>&1; then
-#		echo "set gnome terminal" | tee /dev/console 2>&1
-#		_UUID="$(gsettings get org.gnome.Terminal.ProfilesList default | sed -e 's/'\''//g')"
-#		if [ -n "${_UUID:-}" ]; then
-#			echo "set gnome terminal: ${_UUID}" | tee /dev/console 2>&1
-#			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | DISPLAY=:0 dconf load /org/gnome/terminal/legacy/profiles:/
-#				[:${_UUID}]
-#				default-size-columns=120
-#				default-size-rows=30
-#				use-system-font=false
-#				font='Monospace 9'
-#_EOT_
-#		fi
-#	fi
-
 	# --- add user ------------------------------------------------------------
 	if [ -n "${LIVE_USERNAME:-}" ]; then
 		echo "add user: ${LIVE_USERNAME}" | tee /dev/console 2>&1
@@ -777,225 +740,6 @@ _EOT_
 			fi
 		fi
 	fi
-
-#	# --- set user parameter --------------------------------------------------
-#	echo "set user parameter" | tee /dev/console 2>&1
-#	for DIRS_NAME in /root /home/*
-#	do
-#		USER_NAME="${DIRS_NAME##*/}"
-#		echo "set user parameter: ${USER_NAME}" | tee /dev/console 2>&1
-#		# --- .bashrc ---------------------------------------------------------
-#		_FILE_PATH="${DIRS_NAME}/.bashrc"
-#		echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-#			# --- measures against garbled characters ---
-#			case "${TERM}" in
-#			    linux ) export LANG=C;;
-#			    *     )              ;;
-#			esac
-#			# --- alias for vim ---
-#			alias vi='vim'
-#			alias view='vim'
-#_EOT_
-#		chown "${USER_NAME}": "${_FILE_PATH}"
-#		# --- monitors.xml ----------------------------------------------------
-#		_FILE_PATH="/var/lib/gdm3/.config/monitors.xml"
-#		if [ -f "${_FILE_PATH:-}" ]; then
-#			echo "set monitors.xml parameter" | tee /dev/console 2>&1
-#			_DIRS_CONF="${DIRS_NAME}/.config"
-#			mkdir -p "${_DIRS_CONF:?}" \
-#			&& chown "${USER_NAME}": "${_DIRS_CONF:?}"
-#			cp -a "${_FILE_PATH}" "${_DIRS_CONF:?}" \
-#			&& chown "${USER_NAME}": "${_DIRS_CONF:?}/${_FILE_PATH##*/}"
-#		fi
-#		# --- fcitx5 ----------------------------------------------------------
-#		# shellcheck disable=SC2091,SC2310
-#		if $(funcIsPackage 'fcitx5'); then
-#			_FILE_PATH="${DIRS_NAME}/.config/fcitx5/profile"
-#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-#			sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
-#			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-#				[Groups/0]
-#				# Group Name
-#				Name=デフォルト
-#				# Layout
-#				Default Layout=${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
-#				# Default Input Method
-#				DefaultIM=mozc
-#				
-#				[Groups/0/Items/0]
-#				# Name
-#				Name=keyboard-${LIVE_KEYBOARD_LAYOUTS:-us}${LIVE_KEYBOARD_VARIANTS+"-${LIVE_KEYBOARD_VARIANTS}"}
-#				# Layout
-#				Layout=
-#				
-#				[Groups/0/Items/1]
-#				# Name
-#				Name=mozc
-#				# Layout
-#				Layout=
-#				
-#				[GroupOrder]
-#				0=デフォルト
-#				
-#_EOT_
-#			chown "${USER_NAME}": "${_FILE_PATH}"
-#		fi
-#		# --- gtkrc-2.0 -------------------------------------------------------
-#		if [ -d /etc/gtk-2.0/. ]; then
-#			_FILE_PATH="${DIRS_NAME}/.gtkrc-2.0.mine"
-#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-#			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-#				#gtk-theme-name="Raleigh"
-#				#gtk-icon-theme-name="nuoveXT2"
-#				gtk-font-name="Sans 9"
-#				#gtk-cursor-theme-size=18
-#				#gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
-#				#gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
-#				#gtk-button-images=1
-#				#gtk-menu-images=1
-#				#gtk-enable-event-sounds=1
-#				#gtk-enable-input-feedback-sounds=1
-#				#gtk-xft-antialias=1
-#				#gtk-xft-hinting=1
-#				#gtk-xft-hintstyle="hintslight"
-#				#gtk-xft-rgba="rgb"
-#_EOT_
-#			chown "${USER_NAME}": "${_FILE_PATH}"
-#		fi
-#		# --- lxterminal.conf -------------------------------------------------
-#		# shellcheck disable=SC2091,SC2310
-#		if $(funcIsPackage 'lxterminal'); then
-#			_FILE_PATH="${DIRS_NAME}/.config/lxterminal/lxterminal.conf"
-#			_ORIG_CONF="/usr/share/lxterminal/lxterminal.conf"
-#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-#			sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
-#			cp "${_ORIG_CONF}" "${_FILE_PATH}"
-#			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-#				[general]
-#				fontname=Monospace 9
-#				selchars=-A-Za-z0-9,./?%&#:_
-#				scrollback=1000
-#				bgcolor=rgb(0,0,0)
-#				fgcolor=rgb(211,215,207)
-#				palette_color_0=rgb(0,0,0)
-#				palette_color_1=rgb(205,0,0)
-#				palette_color_2=rgb(78,154,6)
-#				palette_color_3=rgb(196,160,0)
-#				palette_color_4=rgb(52,101,164)
-#				palette_color_5=rgb(117,80,123)
-#				palette_color_6=rgb(6,152,154)
-#				palette_color_7=rgb(211,215,207)
-#				palette_color_8=rgb(85,87,83)
-#				palette_color_9=rgb(239,41,41)
-#				palette_color_10=rgb(138,226,52)
-#				palette_color_11=rgb(252,233,79)
-#				palette_color_12=rgb(114,159,207)
-#				palette_color_13=rgb(173,127,168)
-#				palette_color_14=rgb(52,226,226)
-#				palette_color_15=rgb(238,238,236)
-#				color_preset=Tango
-#				disallowbold=false
-#				boldbright=false
-#				cursorblinks=false
-#				cursorunderline=false
-#				audiblebell=false
-#				visualbell=false
-#				tabpos=top
-#				geometry_columns=120
-#				geometry_rows=30
-#				hidescrollbar=false
-#				hidemenubar=false
-#				hideclosebutton=false
-#				hidepointer=false
-#				disablef10=false
-#				disablealt=false
-#				disableconfirm=false
-#				
-#				[shortcut]
-#				new_window_accel=<Primary><Shift>n
-#				new_tab_accel=<Primary><Shift>t
-#				close_tab_accel=<Primary><Shift>w
-#				close_window_accel=<Primary><Shift>q
-#				copy_accel=<Primary><Shift>c
-#				paste_accel=<Primary><Shift>v
-#				name_tab_accel=<Primary><Shift>i
-#				previous_tab_accel=<Primary>Page_Up
-#				next_tab_accel=<Primary>Page_Down
-#				move_tab_left_accel=<Primary><Shift>Page_Up
-#				move_tab_right_accel=<Primary><Shift>Page_Down
-#				zoom_in_accel=<Primary><Shift>plus
-#				zoom_out_accel=<Primary><Shift>underscore
-#				zoom_reset_accel=<Primary><Shift>parenright
-#_EOT_
-#			chown "${USER_NAME}": "${_FILE_PATH}"
-#		fi
-#		
-#		# --- .vimrc ----------------------------------------------------------
-#		# shellcheck disable=SC2091,SC2310
-#		if $(funcIsPackage 'vim'); then
-#			_FILE_PATH="${DIRS_NAME}/.vimrc"
-#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-#				set number              " Print the line number in front of each line.
-#				set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
-#				set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
-#				set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
-#				set nowrap              " This option changes how text is displayed.
-#				set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
-#				set laststatus=2        " The value of this option influences when the last window will have a status line always.
-#				set mouse-=a            " Disable mouse usage
-#				syntax on               " Vim5 and later versions support syntax highlighting.
-#_EOT_
-#			chown "${USER_NAME}": "${_FILE_PATH}"
-#		fi
-#		# --- .xscreensaver ---------------------------------------------------
-#		# shellcheck disable=SC2091,SC2310
-#		if $(funcIsPackage 'xscreensaver'); then
-#			_FILE_PATH="${DIRS_NAME}/.xscreensaver"
-#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-#				mode:		off
-#				selected:	-1
-#_EOT_
-#			chown "${USER_NAME}": "${_FILE_PATH}"
-#		fi
-#		# --- curl ------------------------------------------------------------
-#		# shellcheck disable=SC2091,SC2310
-#		if $(funcIsPackage 'curl'); then
-#			_FILE_PATH="${DIRS_NAME}/.curlrc"
-#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-#				location
-#				progress-bar
-#				remote-time
-#				show-error
-#_EOT_
-#			chown "${USER_NAME}": "${_FILE_PATH}"
-#		fi
-#		# --- libfm.conf ------------------------------------------------------
-#		# shellcheck disable=SC2091,SC2310
-#		if $(funcIsPackage 'pcmanfm'); then
-#			_FILE_PATH="${DIRS_NAME}/.config/libfm/libfm.conf"
-#			echo "set user parameter: ${_FILE_PATH}" | tee /dev/console 2>&1
-#			sudo --user="${USER_NAME}" mkdir -p "${_FILE_PATH%/*}"
-#			cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-#				[config]
-#				single_click=0
-#				
-#				[places]
-#				places_home=1
-#				places_desktop=1
-#				places_root=0
-#				places_computer=1
-#				places_trash=1
-#				places_applications=0
-#				places_network=0
-#				places_unmounted=1
-#_EOT_
-#			chown "${USER_NAME}": "${_FILE_PATH}"
-#		fi
-#	done
 
 	# --- create state file ---------------------------------------------------
 	mkdir -p /var/lib/live/config
