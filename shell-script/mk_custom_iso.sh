@@ -4024,15 +4024,31 @@ function funcCall_function() {
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	mkdir -p "${FILE_WRK1%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_WRK1}"
-		line 1
-		line 2
-		line 3
+		line 00
+		line 01
+		line 02
+		line 03
+		line 04
+		line 05
+		line 06
+		line 07
+		line 08
+		line 09
+		line 10
 _EOT_
 	mkdir -p "${FILE_WRK2%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_WRK2}"
-		line 1
-		Line 2
-		line 3
+		line 00
+		line 01
+		line 02
+		line 03
+		line 04
+		line_05
+		line 06
+		line 07
+		line 08
+		line 09
+		line 10
 _EOT_
 
 	# --- text print test -----------------------------------------------------
@@ -4098,6 +4114,12 @@ _EOT_
 	funcPrintf "---- diff $(funcString "${COLS_SIZE}" '-')"
 	funcPrintf "--no-cutting" "funcDiff \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
 	funcDiff "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" "function test"
+	funcPrintf "--no-cutting" "diff -y -W \"${COLS_SIZE}\" --suppress-common-lines \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
+	diff -y -W "${COLS_SIZE}" --suppress-common-lines "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" || true
+	funcPrintf "--no-cutting" "diff -y -W \"${COLS_SIZE}\" \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
+	diff -y -W "${COLS_SIZE}" "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" || true
+	funcPrintf "--no-cutting" "diff --color=always -y -W \"${COLS_SIZE}\" \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
+	diff --color=always -y -W "${COLS_SIZE}" "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" || true
 	echo ""
 
 	# --- substr --------------------------------------------------------------
