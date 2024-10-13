@@ -625,32 +625,32 @@
 					#	fi
 					
 					# --- setup wireplumber -------------------------------------------------------
-					#	# shellcheck disable=SC2091,SC2310
-					#	if $(funcIsPackage 'wireplumber'); then
-					#		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
-					#		printf "\033[m\033[42m%s\033[m\n" "setup wireplumber"
-					#		mkdir -p "${_FILE_PATH%/*}"
-					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-					#			monitor.alsa.rules = [
-					#			  {
-					#			    matches = [
-					#			      # This matches the value of the 'node.name' property of the node.
-					#			      {
-					#			        node.name = "~alsa_output.*"
-					#			      }
-					#			    ]
-					#			    actions = {
-					#			      # Apply all the desired node specific settings here.
-					#			      update-props = {
-					#			        api.alsa.period-size   = 1024
-					#			        api.alsa.headroom      = 8192
-					#			        session.suspend-timeout-seconds = 0
-					#			      }
-					#			    }
-					#			  }
-					#			]
-					#_EOT_
-					#
+					 	# shellcheck disable=SC2091,SC2310
+					 	if $(funcIsPackage 'wireplumber'); then
+					 		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
+					 		printf "\033[m\033[42m%s\033[m\n" "setup wireplumber"
+					 		mkdir -p "${_FILE_PATH%/*}"
+					 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+					 			monitor.alsa.rules = [
+					 			  {
+					 			    matches = [
+					 			      # This matches the value of the 'node.name' property of the node.
+					 			      {
+					 			        node.name = "~alsa_output.*"
+					 			      }
+					 			    ]
+					 			    actions = {
+					 			      # Apply all the desired node specific settings here.
+					 			      update-props = {
+					 			        api.alsa.period-size   = 1024
+					 			        api.alsa.headroom      = 8192
+					 			        session.suspend-timeout-seconds = 0
+					 			      }
+					 			    }
+					 			  }
+					 			]
+					 _EOT_
+					 
 					#		_FILE_PATH="/etc/wireplumber/wireplumber.conf.d/51-alsa-pro-audio.conf"
 					#		mkdir -p "${_FILE_PATH%/*}"
 					#		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
@@ -740,7 +740,7 @@
 					#			  }
 					#			}
 					#_EOT_
-					#	fi
+					 	fi
 					
 					# --- setup pipewire ----------------------------------------------------------
 					#	# shellcheck disable=SC2091,SC2310
