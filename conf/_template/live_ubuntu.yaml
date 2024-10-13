@@ -414,6 +414,7 @@ mmdebstrap:
     - xfonts-100dpi                                         # 100 dpi fonts for X
     - xfonts-scalable                                       # scalable fonts for X
     - xfonts-unifont                                        # PCF (bitmap) version of GNU Unifont
+    - xmlstarlet                                            # command line XML toolkit
     - xorriso                                               # command line ISO-9660 and Rock Ridge manipulation tool
     - xxd                                                   # tool to make (or reverse) a hex dump
     - zerofree                                              # zero free blocks from ext2, ext3 and ext4 file-systems
