@@ -2038,7 +2038,8 @@ _EOT_
 				# --- .bashrc -----------------------------------------------------
 				FILE_PATH="${USER_HOME}/.bashrc"
 				# shellcheck disable=SC2312
-				if [[ -f "${FILE_PATH}" ]] && [[ -z "$(sed -n '/alias for vim/p' "${FILE_PATH}")" ]]; then
+#				if [[ -f "${FILE_PATH}" ]] && [[ -z "$(sed -n '/alias for vim/p' "${FILE_PATH}")" ]]; then
+				if [[ -n "${FILE_PATH}" ]] && [[ -z "$(sed -n '/user custom/p' "${FILE_PATH}")" ]]; then
 					funcPrintf "      ${MSGS_TITL}: alias for vim"
 					FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 					FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
@@ -2054,9 +2055,12 @@ _EOT_
 					funcPrintf "      ${MSGS_TITL}: setup config file"
 					funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 					cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${FILE_PATH}"
-						# --- alias for vim ---
+						# --- user custom ---
 						alias vi='vim'
 						alias view='vim'
+						alias diff='diff --color=auto'
+						alias ip='ip -color=auto'
+						alias ls='ls --color=auto'
 _EOT_
 					chown "${USER_NAME}": "${FILE_PATH}"
 				fi
@@ -3565,15 +3569,31 @@ function funcCall_function() {
 	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	mkdir -p "${FILE_WRK1%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_WRK1}"
-		line 1
-		line 2
-		line 3
+		line 00
+		line 01
+		line 02
+		line 03
+		line 04
+		line 05
+		line 06
+		line 07
+		line 08
+		line 09
+		line 10
 _EOT_
 	mkdir -p "${FILE_WRK2%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_WRK2}"
-		line 1
-		Line 2
-		line 3
+		line 00
+		line 01
+		line 02
+		line 03
+		line 04
+		line_05
+		line 06
+		line 07
+		line 08
+		line 09
+		line 10
 _EOT_
 
 	# --- text print test -----------------------------------------------------
@@ -3639,6 +3659,12 @@ _EOT_
 	funcPrintf "---- diff $(funcString "${COLS_SIZE}" '-')"
 	funcPrintf "--no-cutting" "funcDiff \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
 	funcDiff "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" "function test"
+	funcPrintf "--no-cutting" "diff -y -W \"${COLS_SIZE}\" --suppress-common-lines \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
+	diff -y -W "${COLS_SIZE}" --suppress-common-lines "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" || true
+	funcPrintf "--no-cutting" "diff -y -W \"${COLS_SIZE}\" \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
+	diff -y -W "${COLS_SIZE}" "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" || true
+	funcPrintf "--no-cutting" "diff --color=always -y -W \"${COLS_SIZE}\" \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
+	diff --color=always -y -W "${COLS_SIZE}" "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" || true
 	echo ""
 
 	# --- substr --------------------------------------------------------------
