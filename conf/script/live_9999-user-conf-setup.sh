@@ -222,11 +222,19 @@ _EOT_
 	_CONF_PATH="${_DIRS_SKEL}/.config/${_FILE_PATH}"
 	if [ -f "${_XDGS_PATH}" ]; then
 		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		_ADD_OPTIONS="$(
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+			  usefontsize=1
+			  fontsize=9
+			  monitor=-1
+_EOT_
+		)"
 		mkdir -p "${_CONF_PATH%/*}"
-		sed -e '/^Global {$/,/^}$/ {'              \
-		    -e '/^# *widthtype=/ s/=.*$/=request/' \
-		    -e '}'                                 \
-		       "${_XDGS_PATH}"                     \
+		sed -e '/^Global \+{$/,/^}$/{'                   \
+		    -e '/^[ #] \+widthtype *=/ s/=.*$/=request/' \
+		    -e "/^}\$/ i\\${_ADD_OPTIONS}"               \
+		    -e '}'                                       \
+		       "${_XDGS_PATH}"                           \
 		>      "${_CONF_PATH}"
 	fi
 
@@ -250,9 +258,32 @@ _EOT_
 		>      "${_CONF_PATH}"
 	fi
 
+	# --- set lxde desktop-items-0.conf ---------------------------------------
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'pcmanfm'); then
+		_FILE_PATH="${_DIRS_SKEL}/.config/pcmanfm/LXDE/desktop-items-0.conf"
+		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
+		mkdir -p "${_FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			[*]
+			wallpaper_mode=crop
+			wallpaper_common=1
+			wallpaper=/etc/alternatives/desktop-background
+			desktop_bg=#000000
+			desktop_fg=#ffffff
+			desktop_shadow=#000000
+			desktop_font=Sans 9
+			show_wm_menu=0
+			sort=mtime;ascending;
+			show_documents=1
+			show_trash=1
+			show_mounts=1
+_EOT_
+	fi
+
 	# --- set lxterminal.conf -------------------------------------------------
 	# shellcheck disable=SC2091,SC2310
-	if $(funcIsPackage 'vim'); then
+	if $(funcIsPackage 'lxterminal'); then
 		_FILE_PATH="${_DIRS_SKEL}/.config/lxterminal/lxterminal.conf"
 		echo "set skeleton directory: ${_FILE_PATH}" | tee /dev/console 2>&1
 		mkdir -p "${_FILE_PATH%/*}"
