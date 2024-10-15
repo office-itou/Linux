@@ -16,6 +16,7 @@
 	readonly    PROG_NAME="${PROG_PATH##*/}"
 
 	# --- start -------------------------------------------------------------------
+	printf "\n" | tee /dev/console 2>&1
 	if [ -f "/var/lib/live/config/${PROG_NAME%.*}" ]; then
 		# shellcheck disable=SC2028
 		printf "\033[m\033[41malready runned: %s\033[m\n" "${PROG_PATH}" | tee /dev/console 2>&1

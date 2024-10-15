@@ -513,22 +513,22 @@
 
 # --- custom live image -------------------------------------------------------
 	declare -r -a DATA_LIST_CSTM=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
-		"m  menu-entry                  Live%20media%20Live%20mode          -                   -                                           -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                               " \
-		"x  live-debian-10-buster       Live%20Debian%2010                  debian              live-debian-10-buster-amd64.iso             live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
-		"o  live-debian-11-bullseye     Live%20Debian%2011                  debian              live-debian-11-bullseye-amd64.iso           live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
-		"o  live-debian-12-bookworm     Live%20Debian%2012                  debian              live-debian-12-bookworm-amd64.iso           live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
-		"o  live-debian-13-trixie       Live%20Debian%2013                  debian              live-debian-13-trixie-amd64.iso             live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
-		"o  live-debian-xx-unstable     Live%20Debian%20xx                  debian              live-debian-xx-unstable-amd64.iso           live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
-		"x  live-ubuntu-14.04-trusty    Live%20Ubuntu%2014.04               ubuntu              live-ubuntu-14.04-trusty-amd64.iso          live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2014-04-17  2024-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"L  live-ubuntu-16.04-xenial    Live%20Ubuntu%2016.04               ubuntu              live-ubuntu-16.04-xenial-amd64.iso          live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2016-04-21  2026-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"L  live-ubuntu-18.04-bionic    Live%20Ubuntu%2018.04               ubuntu              live-ubuntu-18.04-bionic-amd64.iso          live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"s  live-ubuntu-20.04-focal     Live%20Ubuntu%2020.04               ubuntu              live-ubuntu-20.04-focal-amd64.iso           live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"o  live-ubuntu-22.04-jammy     Live%20Ubuntu%2022.04               ubuntu              live-ubuntu-22.04-jammy-amd64.iso           live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2022-04-21  2032-04-21  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"x  live-ubuntu-23.04-lunar     Live%20Ubuntu%2023.04               ubuntu              live-ubuntu-23.04-lunar-amd64.iso           live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-04-20  2024-01-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"x  live-ubuntu-23.10-mantic    Live%20Ubuntu%2023.10               ubuntu              live-ubuntu-23.10-mantic-amd64.iso          live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-10-12  2024-07-11  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"o  live-ubuntu-24.04-noble     Live%20Ubuntu%2024.04               ubuntu              live-ubuntu-24.04-noble-amd64.iso           live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2024-04-25  2034-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"o  live-ubuntu-24.10-oracular  Live%20Ubuntu%2024.10               ubuntu              live-ubuntu-24.10-oracular-amd64.iso        live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
-		"s  live-ubuntu-xx.xx-devel     Live%20Ubuntu%20xx.xx               ubuntu              live-ubuntu-xx.xx-devel-amd64.iso           live                                    initrd.gz                   vmlinuz                 preseed/-                               ${DIRS_LIVE}                     20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"m  menu-entry                  Custom%20Live%20Media               -                   -                                           -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                               " \
+		"x  live-debian-10-buster       Live%20Debian%2010                  debian              live-debian-10-buster-amd64.iso             live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
+		"o  live-debian-11-bullseye     Live%20Debian%2011                  debian              live-debian-11-bullseye-amd64.iso           live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
+		"o  live-debian-12-bookworm     Live%20Debian%2012                  debian              live-debian-12-bookworm-amd64.iso           live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
+		"o  live-debian-13-trixie       Live%20Debian%2013                  debian              live-debian-13-trixie-amd64.iso             live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
+		"o  live-debian-xx-unstable     Live%20Debian%20xx                  debian              live-debian-xx-unstable-amd64.iso           live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                   " \
+		"x  live-ubuntu-14.04-trusty    Live%20Ubuntu%2014.04               ubuntu              live-ubuntu-14.04-trusty-amd64.iso          live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2014-04-17  2024-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"L  live-ubuntu-16.04-xenial    Live%20Ubuntu%2016.04               ubuntu              live-ubuntu-16.04-xenial-amd64.iso          live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2016-04-21  2026-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"L  live-ubuntu-18.04-bionic    Live%20Ubuntu%2018.04               ubuntu              live-ubuntu-18.04-bionic-amd64.iso          live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"s  live-ubuntu-20.04-focal     Live%20Ubuntu%2020.04               ubuntu              live-ubuntu-20.04-focal-amd64.iso           live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"o  live-ubuntu-22.04-jammy     Live%20Ubuntu%2022.04               ubuntu              live-ubuntu-22.04-jammy-amd64.iso           live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2022-04-21  2032-04-21  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"x  live-ubuntu-23.04-lunar     Live%20Ubuntu%2023.04               ubuntu              live-ubuntu-23.04-lunar-amd64.iso           live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-04-20  2024-01-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"x  live-ubuntu-23.10-mantic    Live%20Ubuntu%2023.10               ubuntu              live-ubuntu-23.10-mantic-amd64.iso          live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-10-12  2024-07-11  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"o  live-ubuntu-24.04-noble     Live%20Ubuntu%2024.04               ubuntu              live-ubuntu-24.04-noble-amd64.iso           live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2024-04-25  2034-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"o  live-ubuntu-24.10-oracular  Live%20Ubuntu%2024.10               ubuntu              live-ubuntu-24.10-oracular-amd64.iso        live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
+		"s  live-ubuntu-xx.xx-devel     Live%20Ubuntu%20xx.xx               ubuntu              live-ubuntu-xx.xx-devel-amd64.iso           live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                " \
 		"m  menu-entry                  -                                   -                   -                                           -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                               " \
 	) #  0  1                           2                                   3                   4                                           5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
 
@@ -2794,6 +2794,7 @@ function funcCreate_copy_iso2hdd() {
 #	if [[ "${RET_CD}" -eq 0 ]]; then
 	if touch -c "${DEST_DIRS}" 2>/dev/null; then
 		ionice -c "${IONICE_CLAS}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/" 2>/dev/null || true
+		chmod -R +r "${DEST_DIRS}/" 2>/dev/null || true
 #	else
 #		funcPrintf "        skip: ${TGET_LINE[4]}"
 	fi
@@ -2810,6 +2811,8 @@ function funcCreate_copy_iso2hdd() {
 		mkdir -p "${DIRS_IRAM}" "${DIRS_KRNL}"
 		ionice -c "${IONICE_CLAS}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
 		ionice -c "${IONICE_CLAS}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
+		chmod -R +r "${DIRS_IRAM}/" 2>/dev/null || true
+		chmod -R +r "${DIRS_KRNL}/" 2>/dev/null || true
 #		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
 #		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 	fi
@@ -2838,7 +2841,9 @@ function funcCreate_menu_cfg_preseed() {
 	declare -r    RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000"
 	declare -r    LIVE_IMGS="live/filesystem.squashfs"
 	declare -a    BOOT_WORK=()
+	declare       BOOT_HOOK=""
 	declare       BOOT_BIOS=""
+	declare       WORK_LINE=""
 #	declare       WORK_ETHR="${ETHR_NAME}"
 #	funcPrintf "      create: boot options for preseed"
 	# --- boot clear ----------------------------------------------------------
@@ -2895,7 +2900,24 @@ function funcCreate_menu_cfg_preseed() {
 		BOOT_WORK[4]=""
 		BOOT_WORK[5]="ip=dhcp"
 		case "${TGET_LINE[1]}" in
-			debian-live-*         ) BOOT_WORK[2]="boot=live components fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}";;
+			live-debian-*         | \
+			live-ubuntu-*         )
+#				BOOT_WORK[2]="boot=live fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}"
+				BOOT_WORK[2]="boot=live httpfs=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
+				BOOT_WORK[6]+="${BOOT_WORK[6]:+" "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A"
+				BOOT_WORK[8]+="${BOOT_WORK[8]:+" "}components quiet splash overlay-size=90% xorg-resolution=1680x1050"
+				BOOT_HOOK=""
+#				for WORK_LINE in "${DIRS_IMGS}/${TGET_LINE[1]}/live/"{config.conf,config.conf.d/*.conf,config-hooks/*}
+				for WORK_LINE in "${DIRS_IMGS}/${TGET_LINE[1]}/live/"config-hooks/*
+				do
+					if [[ ! -f "${WORK_LINE}" ]]; then
+						continue
+					fi
+					BOOT_HOOK+="${BOOT_HOOK:+"|"}${WORK_LINE/${DIRS_IMGS%/*}/${HTTP_ADDR}}"
+				done
+				BOOT_WORK[2]+="${BOOT_HOOK:+" hooks="}${BOOT_HOOK:-}"
+				;;
+			debian-live-*         ) BOOT_WORK[2]="boot=live fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}";;
 			ubuntu-desktop-18.*   ) ;;	# This version does not support pxeboot
 			ubuntu-desktop-20.*   | \
 			ubuntu-desktop-22.*   | \
@@ -4099,6 +4121,7 @@ function funcCall_create() {
 		"${DATA_LIST_INST[@]}" \
 		"${DATA_LIST_LIVE[@]}" \
 		"${DATA_LIST_TOOL[@]}" \
+		"${DATA_LIST_CSTM[@]}" \
 		"${DATA_LIST_SCMD[@]}" \
 	)
 	declare -a    DATA_LINE=()
@@ -4384,7 +4407,14 @@ _EOT_
 						winpe        | \
 						ati2020x64   | \
 						ati2020x86   ) ;;
-						live         ) ;;
+						live         ) 
+							# shellcheck disable=SC2312
+							case "${DATA_LINE[8]%%/*}" in
+								preseed* ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_preseed "${DATA_LINE[@]}");;
+								nocloud* ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_nocloud "${DATA_LINE[@]}");;
+								*        ) funcPrintf "not supported on ${DATA_LINE[1]}"; exit 1;;
+							esac
+							;;
 						hdt          | \
 						shutdown     | \
 						restart      ) ;;
