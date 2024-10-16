@@ -2854,7 +2854,8 @@ function funcCreate_menu_cfg_preseed() {
 	# --- 01: iso file option -------------------------------------------------
 	BOOT_WORK+=("${TGET_LINE[4]}")
 	# --- 02: iso addr option -------------------------------------------------
-	BOOT_WORK+=("fetch=${HTTP_ADDR}/isos/\${isofile}")
+#	BOOT_WORK+=("fetch=${HTTP_ADDR}/isos/\${isofile}")
+	BOOT_WORK+=("httpfs=${HTTP_ADDR}/isos/${TGET_LINE[4]} overlay-size=90%")
 	case "${TGET_LINE[1]}" in
 		ubuntu-*              ) BOOT_WORK[2]="iso-url=${HTTP_ADDR}/isos/\${isofile}";;
 		*                     ) ;;
@@ -2901,13 +2902,8 @@ function funcCreate_menu_cfg_preseed() {
 		BOOT_WORK[5]="ip=dhcp"
 		case "${TGET_LINE[1]}" in
 			live-debian-*         | \
-			live-ubuntu-*         )
-#				BOOT_WORK[2]="boot=live fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}"
-				BOOT_WORK[2]="boot=live httpfs=${HTTP_ADDR}/isos/${TGET_LINE[4]}"
-				BOOT_WORK[6]+="${BOOT_WORK[6]:+" "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A"
-				BOOT_WORK[8]+="${BOOT_WORK[8]:+" "}components quiet splash overlay-size=90% xorg-resolution=1680x1050"
-				BOOT_HOOK=""
-#				for WORK_LINE in "${DIRS_IMGS}/${TGET_LINE[1]}/live/"{config.conf,config.conf.d/*.conf,config-hooks/*}
+			live-ubuntu-*         | \
+			debian-live-*         )
 				for WORK_LINE in "${DIRS_IMGS}/${TGET_LINE[1]}/live/"config-hooks/*
 				do
 					if [[ ! -f "${WORK_LINE}" ]]; then
@@ -2915,9 +2911,18 @@ function funcCreate_menu_cfg_preseed() {
 					fi
 					BOOT_HOOK+="${BOOT_HOOK:+"|"}${WORK_LINE/${DIRS_IMGS%/*}/${HTTP_ADDR}}"
 				done
-				BOOT_WORK[2]+="${BOOT_HOOK:+" hooks="}${BOOT_HOOK:-}"
+#				BOOT_WORK[2]="boot=live fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}";;
+				BOOT_WORK[2]="boot=live httpfs=${HTTP_ADDR}/isos/${TGET_LINE[4]}${BOOT_HOOK:+" hooks="}${BOOT_HOOK:-}"
+				BOOT_WORK[6]+="${BOOT_WORK[6]:+" "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A"
+				BOOT_WORK[8]+="${BOOT_WORK[8]:+" "}components overlay-size=90% xorg-resolution=1680x1050"
 				;;
-			debian-live-*         ) BOOT_WORK[2]="boot=live fetch=${HTTP_ADDR}/imgs/${TGET_LINE[1]}/${LIVE_IMGS}";;
+			*                     ) ;;
+		esac
+		case "${TGET_LINE[1]}" in
+			live-debian-18.*      | \
+			live-debian-20.*      | \
+			live-debian-22.*      ) BOOT_WORK[2]+="${BOOT_WORK[2]:+" "}maybe-ubiquity";;
+			live-debian-*         ) BOOT_WORK[2]+="${BOOT_WORK[2]:+" "}${LIVE_IMGS:+"layerfs-path=${LIVE_IMGS:-}"}";;
 			ubuntu-desktop-18.*   ) ;;	# This version does not support pxeboot
 			ubuntu-desktop-20.*   | \
 			ubuntu-desktop-22.*   | \
@@ -2925,6 +2930,7 @@ function funcCreate_menu_cfg_preseed() {
 			ubuntu-desktop-*      ) BOOT_WORK[2]="boot=casper layerfs-path=minimal.standard.live.squashfs ${BOOT_WORK[2]}";;
 			*                     ) ;;
 		esac
+		BOOT_HOOK=""
 	fi
 	# --- output --------------------------------------------------------------
 	BOOT_BIOS="${BOOT_WORK[2]/\$\{isofile\}/${BOOT_WORK[1]}} ${BOOT_WORK[3]} ${BOOT_WORK[5]//\${netname}/${HOST_NAME}.${WGRP_NAME}} ${BOOT_WORK[6]} ${BOOT_WORK[7]} fsck.mode=skip"

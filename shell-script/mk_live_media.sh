@@ -382,6 +382,7 @@
 						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
 						    -e '/^ * *- *bdebstrap\(\| .*\|#.*\)$/                                      s/^ /#/g' \
 						    -e '/^ * *- *fbterm\(\| .*\|#.*\)$/                                         s/^ /#/g' \
+						    -e '/^ * *- *httpfs2\(\| .*\|#.*\)$/                                        s/^ /#/g' \
 						    -e '/^ * *- *mime-support\(\| .*\|#.*\)$/                                   s/^ /#/g' \
 						    -e '/^ * *- *ofono\(\| .*\|#.*\)$/                                          s/^ /#/g' \
 						    -e '/^ * *- *polkitd-pkla\(\| .*\|#.*\)$/                                   s/^ /#/g' \
@@ -393,6 +394,7 @@
 					live-debian-xx-*    )
 						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
 						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
+						    -e '/^ * *- *httpfs2\(\| .*\|#.*\)$/                                        s/^ /#/g' \
 						    -e '/^ * *- *mime-support\(\| .*\|#.*\)$/                                   s/^ /#/g' \
 						    -e '/^ * *- *polkitd-pkla\(\| .*\|#.*\)$/                                   s/^ /#/g' \
 						    -e '}}'                                                                               \
@@ -413,14 +415,16 @@
 						    -e '/^ * *- *gnome-shell-extension-ubuntu-tiling-assistant\(\| .*\|#.*\)$/  s/^ /#/g' \
 						    -e '/^ * *- *gstreamer1.0-libcamera\(\| .*\|#.*\)$/                         s/^ /#/g' \
 						    -e '/^ * *- *libgpgme11t64\(\| .*\|#.*\)$/                                  s/^ /#/g' \
-						    -e '/^ * *- *pipewire-alsa\(\| .*\|#.*\)$/                                  s/^ /#/g' \
-						    -e '/^ * *- *pipewire-audio\(\| .*\|#.*\)$/                                 s/^ /#/g' \
-						    -e '/^ * *- *pipewire-libcamera\(\| .*\|#.*\)$/                             s/^ /#/g' \
+							-e '/^ * *- *pipewire-alsa\(\| .*\|#.*\)$/                                  s/^ /#/g' \
+							-e '/^ * *- *pipewire-audio\(\| .*\|#.*\)$/                                 s/^ /#/g' \
+							-e '/^ * *- *pipewire-libcamera\(\| .*\|#.*\)$/                             s/^ /#/g' \
+							-e '/^ * *- *pipewire-pulse\(\| .*\|#.*\)$/                                 s/^ /#/g' \
 						    -e '/^ * *- *python3-mdurl\(\| .*\|#.*\)$/                                  s/^ /#/g' \
 						    -e '/^ * *- *python3-rfc3987\(\| .*\|#.*\)$/                                s/^ /#/g' \
 						    -e '/^ * *- *samba-ad-provision\(\| .*\|#.*\)$/                             s/^ /#/g' \
 						    -e '/^ * *- *systemd-resolved\(\| .*\|#.*\)$/                               s/^ /#/g' \
 						    -e '/^ * *- *ubuntu-kernel-accessories\(\| .*\|#.*\)$/                      s/^ /#/g' \
+							-e '/^ * *- *wireplumber\(\| .*\|#.*\)$/                                    s/^ /#/g' \
 						    -e '/^# * *- *fcitx5-frontend-gtk[2-4]\(\| .*\|#.*\)$/                      s/^#/ /g' \
 						    -e '/^# * *- *fcitx5-frontend-qt5\(\| .*\|#.*\)$/                           s/^#/ /g' \
 						    -e '/^# * *- *pulseaudio.*\(\| .*\|#.*\)$/                                  s/^#/ /g' \
@@ -433,6 +437,7 @@
 					live-ubuntu-*       )
 						sed -e '/^ *packages:/,/^[# ]*[[:graph:]]*:/{'                                            \
 						    -e '/^[# ]*-\(\| .*\|#.*\)$/{'                                                        \
+						    -e '/^ * *- *httpfs2\(\| .*\|#.*\)$/                                        s/^ /#/g' \
 						    -e '}}'                                                                               \
 						    "${FILE_YAML}"                                                                        \
 						> "${FILE_CONF}"

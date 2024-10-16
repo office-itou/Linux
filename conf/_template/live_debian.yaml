@@ -170,7 +170,7 @@ mmdebstrap:
     - grub-efi-ia32-bin                                     # GRand Unified Bootloader, version 2 (EFI-IA32 modules)
     - grub-pc-bin                                           # GRand Unified Bootloader, version 2 (PC/BIOS modules)
     - grub2-common                                          # GRand Unified Bootloader (common files for version 2)
-#   - httpfs2                                               # FUSE filesystem for mounting files from http servers
+    - httpfs2                                               # FUSE filesystem for mounting files from http servers
 #   - hwdata                                                # hardware identification / configuration data
 #   - ibverbs-providers                                     # User space provider drivers for libibverbs
     - ifupdown                                              # high level tools to configure network interfaces
