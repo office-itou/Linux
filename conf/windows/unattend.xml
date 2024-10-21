@@ -21,12 +21,14 @@
                     <WillShowUI>OnError</WillShowUI>
                 </ProductKey>
             </UserData>
+<!--
             <RunAsynchronous>
                 <RunAsynchronousCommand wcm:action="add">
-                    <Path>\\sv-server\pxe-conf\windows\bypass.cmd</Path>
+                    <Path>cmd /c for /F "usebackq tokens=1,2,3,4 " %i in (`wmic logicaldisk get caption^,description^,drivetype 2^>NUL`) do (if %l equ 2 (%i\bypass.cmd))</Path>
                     <Order>1</Order>
                 </RunAsynchronousCommand>
             </RunAsynchronous>
+-->
         </component>
     </settings>
     <settings pass="specialize">
@@ -55,12 +57,15 @@
                 </Password>
             </AutoLogon>
             <OOBE>
+                <NetworkLocation>Home</NetworkLocation>
                 <ProtectYourPC>1</ProtectYourPC>
+                <SkipMachineOOBE>true</SkipMachineOOBE>
+                <SkipUserOOBE>true</SkipUserOOBE>
             </OOBE>
             <UserAccounts>
                 <AdministratorPassword>
-                    <Value>QQBkAG0AaQBuAGkAcwB0AHIAYQB0AG8AcgBQAGEAcwBzAHcAbwByAGQA</Value>
-                    <PlainText>false</PlainText>
+                    <Value></Value>
+                    <PlainText>true</PlainText>
                 </AdministratorPassword>
             </UserAccounts>
         </component>
