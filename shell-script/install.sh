@@ -2754,6 +2754,11 @@ function funcApplication_samba() {
 		 	path = /home
 		 	valid users = @${SAMB_GRUP}
 		
+		[pxe-share]
+		 	comment = Pxeboot Shared directories
+		 	guest ok = Yes
+		 	path = /var/lib/tftpboot/imgs
+		
 _EOT_
 	testparm -s "${FILE_TEMP}" 2> /dev/null > "${FILE_PATH}"
 	# -------------------------------------------------------------------------

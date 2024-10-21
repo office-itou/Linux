@@ -2899,7 +2899,11 @@ function funcCreate_menu_cfg_preseed() {
 	if [[ "${TGET_LINE[8]#*/}" = "-" ]]; then
 		BOOT_WORK[3]=""
 		BOOT_WORK[4]=""
-		BOOT_WORK[5]="ip=dhcp"
+		case "${TGET_LINE[1]}" in
+			live-debian-*         | \
+			live-ubuntu-*         ) BOOT_WORK[5]="dhcp"   ;;
+			*                     ) BOOT_WORK[5]="ip=dhcp";;
+		esac
 		case "${TGET_LINE[1]}" in
 			live-debian-*         | \
 			live-ubuntu-*         | \

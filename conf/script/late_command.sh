@@ -857,7 +857,7 @@ _EOT_
 				IPv4.local_address=${NIC_IPV4}
 				IPv4.gateway=${NIC_GATE}
 				IPv6.method=auto
-				IPv6.privacy=preferred
+				IPv6.privacy=prefered
 				Nameservers=${IP6_LHST};${IP4_LHST};${NIC_DNS4};
 				Timeservers=${NTP_ADDR};
 				Domains=${NIC_WGRP};
@@ -873,7 +873,7 @@ _EOT_
 				IPv4.method=dhcp
 				IPv4.DHCP.LastAddress=
 				IPv6.method=auto
-				IPv6.privacy=preferred
+				IPv6.privacy=prefered
 _EOT_
 		fi
 		chmod 600 "${CON_FILE}"
@@ -998,8 +998,8 @@ _EOT_
 		else
 			cat <<- _EOT_ >> "${FILE_NAME}"
 				    ${NICS_NAME}:
-				      dhcp4: false
-				      dhcp6: false
+				      dhcp4: true
+				      dhcp6: true
 				      ipv6-privacy: true
 _EOT_
 		fi
