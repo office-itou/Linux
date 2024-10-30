@@ -170,7 +170,8 @@ mmdebstrap:
     - grub-efi-ia32-bin                                     # GRand Unified Bootloader, version 2 (EFI-IA32 modules)
     - grub-pc-bin                                           # GRand Unified Bootloader, version 2 (PC/BIOS modules)
     - grub2-common                                          # GRand Unified Bootloader (common files for version 2)
-    - httpfs2                                               # FUSE filesystem for mounting files from http servers
+#   - hdfs-cli                                              # CLI client for HDFS, written in go
+#   - httpfs2                                               # FUSE filesystem for mounting files from http servers
 #   - hwdata                                                # hardware identification / configuration data
 #   - ibverbs-providers                                     # User space provider drivers for libibverbs
     - ifupdown                                              # high level tools to configure network interfaces
@@ -585,7 +586,7 @@ mmdebstrap:
 #   - lightdm-remote-session-x2go                           # LightDM Remote Logon Support for X2Go sessions
 #   - lightdm-settings                                      # LightDM Settings Configuration Tool
 #   - lightdm-vala                                          # simple display manager (Vala files)
-    - network-manager-gnome                                 # network management framework (GNOME frontend)
+#   - network-manager-gnome                                 # network management framework (GNOME frontend)
     - iw                                                    # tool for configuring Linux wireless devices
     - pavucontrol                                           # PulseAudio Volume Control
     - pulseaudio-utils                                      # Command line tools for the PulseAudio sound server
