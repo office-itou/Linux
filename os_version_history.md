@@ -21,8 +21,8 @@
 |   10.0   | Buster             |  EOL  |  2019-07-06  |  2022-09-10  |  2024-06-30  |                | oldoldstable  |
 |   11.0   | Bullseye           |  LTS  |  2021-08-14  |  2024-07-01  |  2026-06-01  | 5.10.0         | oldstable     |
 |   12.0   | Bookworm           |       |  2023-06-10  |  2026-06-01  |  2028-06-01  | 6.1.0          | stable        |
-|   13.0   | Trixie             |       |  20xx-xx-xx  |  20xx-xx-xx  |  20xx-xx-xx  |                | testing       |
-|   14.0   | Forky              |       |  20xx-xx-xx  |  20xx-xx-xx  |  20xx-xx-xx  |                |               |
+|   13.0   | Trixie             |       |  2025-xx-xx  |  20xx-xx-xx  |  20xx-xx-xx  |                | testing       |
+|   14.0   | Forky              |       |  2027-xx-xx  |  20xx-xx-xx  |  20xx-xx-xx  |                |               |
   
 * https://en.wikipedia.org/wiki/Debian_version_history  
 * https://ja.wikipedia.org/wiki/Debian  
@@ -73,6 +73,7 @@
 |  23.10   | Mantic Minotaur    |  EOL  |  2023-10-12  |  2024-07-11  |              | 6.5.0          |               |
 |  24.04   | Noble Numbat       |       |  2024-04-25  |  2029-05-31  |  2034-04-25  | 6.8.0          |               |
 |  24.10   | Oracular Oriole    |       |  2024-10-10  |  2025-07-xx  |              | 6.8.0          |               |
+|  25.04   | Plucky Puffin      |       |  2025-04-17  |  2026-01-xx  |              |                |               |
   
 * https://en.wikipedia.org/wiki/Ubuntu_version_history  
 * https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja  
@@ -95,8 +96,8 @@
 |    38    |  EOL  | 2023-04-18   | 2024-05-14   | 6.2             |               |
 |    39    |       | 2023-11-17   | 2024-11-12   | 6.5             |               |
 |    40    |       | 2024-04-16   | 2025-05-13   | 6.8             |               |
-|    41    |       | 2024-10-15   | 20xx-xx-xx   |                 |               |
-|    42    |       | 20xx-xx-xx   | 20xx-xx-xx   |                 |               |
+|    41    |       | 2024-11-12   | 20xx-xx-xx   |                 |               |
+|    42    |       | 2025-04-22   | 20xx-xx-xx   |                 |               |
   
 * https://en.wikipedia.org/wiki/Fedora_Linux  
 * https://ja.wikipedia.org/wiki/Fedora  
@@ -106,12 +107,12 @@
 | Version. | Life  | Release date |End of support|  Kernel         | Note          |
 | :------: | :---: | :----------: | :----------: | :-------------- | :------------ |
 |    8     |  EOL  |  2019-09-24  |  2024-05-31  | 4.18.0          |               |
-|    9     |       |  2021-12-03  |  2027-xx-xx  | 5.14.0          |               |
+|    9     |       |  2021-12-03  |  2027-05-31  | 5.14.0          |               |
 |   10     |       |  2024-07-xx  |  20xx-xx-xx  | x.xx.x          |               |
   
 * https://en.wikipedia.org/wiki/CentOS_Stream  
   
-## CentOS  
+## CentOS [ End of life ]  
   
 | Version. | Life  | Release date | RHEL release |End of support|  Kernel         | Note          |
 | :------: | :---: | :----------: | :----------: | :----------: | :-------------- | :------------ |
@@ -141,7 +142,8 @@
 |   8.6    |  EOL  |  2022-05-12  |  2022-05-10  |              | 4.18.0-372      |               |
 |   8.7    |  EOL  |  2022-11-10  |  2022-11-09  |              | 4.18.0-425      |               |
 |   8.8    |  EOL  |  2023-05-18  |  2023-05-16  |              | 4.18.0-477      |               |
-|   8.9    |       |  2023-11-21  |  2023-11-14  |              | 4.18.0-513.5.1  |               |
+|   8.9    |  EOL  |  2023-11-21  |  2023-11-14  |              | 4.18.0-513.5.1  |               |
+|   8.10   |       |  2024-05-28  |  2024-05-22  |              | 4.18.0-553      |               |
 |   9.0    |  EOL  |  2022-05-26  |  2022-05-17  |              | 5.14.0-70.13.1  |               |
 |   9.1    |  EOL  |  2022-11-17  |  2022-11-15  |              | 5.14.0-162.6.1  |               |
 |   9.2    |  EOL  |  2023-05-10  |  2023-05-10  |              | 5.14.0-284.11.1 |               |
@@ -194,7 +196,8 @@
 |   15.3   |                    |  EOL  |  2021-06-02  |  2022-12-31  | 5.3.18          |               |
 |   15.4   |                    |  EOL  |  2022-06-08  |  2023-12-31  | 5.14.21         |               |
 |   15.5   |                    |       |  2023-06-07  |  2024-12-31  | 5.14.21         |               |
-|   15.6   |                    |       |  2024-06-xx  |  2025-xx-xx  |                 |               |
+|   15.6   |                    |       |  2024-06-12  |  2025-12-31  | 6.4             |               |
+|   16.0   |                    |       |  2025-11-xx  |  20xx-xx-xx  |                 |               |
 |   xx.x   | Tumbleweed         |       |  2014-11-xx  |  20xx-xx-xx  |                 |               |
   
 * https://en.wikipedia.org/wiki/OpenSUSE  
