@@ -2608,6 +2608,10 @@ function funcCreate_kickstart() {
 			continue
 		fi
 		FILE_LIST+=("${FILE_LINE}")
+		case "${FILE_LINE}" in
+			*_dvd.cfg) FILE_LIST+=("${FILE_LINE/_dvd./_web.}");;
+			*) ;;
+		esac
 	done
 	# -------------------------------------------------------------------------
 	for ((I=0; I<"${#FILE_LIST[@]}"; I++))
