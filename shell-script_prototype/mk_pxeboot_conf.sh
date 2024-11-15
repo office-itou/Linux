@@ -973,6 +973,11 @@ function funcServiceStatus() {
 	echo "${SRVC_STAT}"
 }
 
+# --- function is package -----------------------------------------------------
+function funcIsPackage () {
+	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed'
+}
+
 # *** function section (sub functions) ****************************************
 
 # === create ==================================================================
@@ -2854,32 +2859,6 @@ function funcCreate_copy_iso2hdd() {
 	declare -r -a RSYC_OPTN=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete")
 	declare       DIRS_KRNL=""
 	declare       DIRS_IRAM=""
-	declare -r -a CURL_OPTN=("--quiet" "--silent" "--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
-	declare       FILE_IRAM=""
-	declare       FILE_KRNL=""
-	declare       KRNL_VERS=""
-	declare -a    REAL_LIST=()
-	declare       REAL_LINE=""
-	declare       REAL_DISB=""
-	declare       REAL_VERS=""
-	declare       REAL_CODE=""
-	declare       WORK_IRAM=""
-#	declare       WORK_VERS=""
-	declare       WORK_ADDR=""
-	declare -a    WORK_PAGE=()
-	declare -a    WORK_LIST=""
-	declare       WORK_LINE=""
-	declare       WORK_PAKG=""
-	declare       WORK_FLAG=""
-	declare       WORK_NAME=""
-	declare       WORK_VERS=""
-	declare       WORK_CODE=""
-	declare -a    WORK_COMD=()
-#	declare       WORK_MODU=""
-#	declare       WORK_KNEL=""
-	declare       WORK_PATH=""
-	declare       FILE_TYPE=""
-	declare       COMP_TYPE=""
 #	declare -r    CPIO_ERLY="$(mktemp "${TMPDIR:-/var/tmp}/${PROG_PROC}-ERLY_XXXXXX")" || exit 1
 #	declare -r    CPIO_MAIN="$(mktemp "${TMPDIR:-/var/tmp}/${PROG_PROC}-MAIN_XXXXXX")" || exit 1
 #	declare -r    CPIO_OLAY="$(mktemp "${TMPDIR:-/var/tmp}/${PROG_PROC}-OLAY_XXXXXX")" || exit 1
@@ -4151,11 +4130,14 @@ _EOT_
 	echo ""
 
 	# --- download ------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- download $(funcString "${COLS_SIZE}" '-')"
-	funcPrintf "--no-cutting" "funcCurl ${CURL_OPTN[*]}"
-	funcCurl "${CURL_OPTN[@]}"
-	echo ""
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'curl'); then
+		# shellcheck disable=SC2312
+		funcPrintf "---- download $(funcString "${COLS_SIZE}" '-')"
+		funcPrintf "--no-cutting" "funcCurl ${CURL_OPTN[*]}"
+		funcCurl "${CURL_OPTN[@]}"
+		echo ""
+	fi
 
 	# -------------------------------------------------------------------------
 	rm -f "${FILE_WRK1}" "${FILE_WRK2}"

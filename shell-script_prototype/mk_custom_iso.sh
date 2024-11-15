@@ -792,13 +792,20 @@ function funcCurl() {
 #	declare -r    OLD_IFS="${IFS}"
 	declare -i    RET_CD=0
 	declare -i    I
-	# shellcheck disable=SC2155
-	declare       INP_URL="$(echo "$@" | sed -ne 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
-	# shellcheck disable=SC2155
-	declare       OUT_DIR="$(echo "$@" | sed -ne 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
-	# shellcheck disable=SC2155
-	declare       OUT_FILE="$(echo "$@" | sed -ne 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
-	declare -a    ARY_HED=("")
+#	# shellcheck disable=SC2155
+#	declare       INP_URL="$(echo "$@" | sed -ne 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
+#	# shellcheck disable=SC2155
+#	declare       OUT_DIR="$(echo "$@" | sed -ne 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+#	# shellcheck disable=SC2155
+#	declare       OUT_FILE="$(echo "$@" | sed -ne 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+#	# shellcheck disable=SC2155
+#	declare       MSG_FLG="$(echo "$@" | sed -ne 's%^.* --silent *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+	declare       INP_URL=""
+	declare       OUT_DIR=""
+	declare       OUT_FILE=""
+	declare       MSG_FLG=""
+	declare -a    OPT_PRM=()
+	declare -a    ARY_HED=()
 	declare       ERR_MSG=""
 	declare       WEB_SIZ=""
 	declare       WEB_TIM=""
@@ -820,11 +827,44 @@ function funcCurl() {
 #		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 #		return "${RET_CD}"
 #	fi
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1:-}" in
+			http://* | https://* )
+				OPT_PRM+=("${1}")
+				INP_URL="${1}"
+				;;
+			--output-dir )
+				OPT_PRM+=("${1}")
+				shift
+				OPT_PRM+=("${1}")
+				OUT_DIR="${1}"
+				;;
+			--output )
+				OPT_PRM+=("${1}")
+				shift
+				OPT_PRM+=("${1}")
+				OUT_FILE="${1}"
+				;;
+			--quiet )
+				MSG_FLG="true"
+				;;
+			* )
+				OPT_PRM+=("${1}")
+				;;
+		esac
+		shift
+	done
+	if [[ -z "${OUT_FILE}" ]]; then
+		OUT_FILE="${INP_URL##*/}"
+	fi
 	if ! ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)"); then
 		RET_CD="$?"
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
 #		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
-		printf "%s\n" "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
+		if [[ -z "${MSG_FLG}" ]]; then
+			printf "%s\n" "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
+		fi
 		return "${RET_CD}"
 	fi
 	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -ne '/http\/.* 200/,/^$/ s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p')
@@ -842,7 +882,9 @@ function funcCurl() {
 		LOC_TIM=$(echo "${LOC_INF}" | awk '{print $6;}')
 		LOC_SIZ=$(echo "${LOC_INF}" | awk '{print $5;}')
 		if [[ "${WEB_TIM:-0}" -eq "${LOC_TIM:-0}" ]] && [[ "${WEB_SIZ:-0}" -eq "${LOC_SIZ:-0}" ]]; then
-			funcPrintf "same    file: ${WEB_FIL}"
+			if [[ -z "${MSG_FLG}" ]]; then
+				funcPrintf "same    file: ${WEB_FIL}"
+			fi
 			return
 		fi
 	fi
@@ -863,20 +905,27 @@ function funcCurl() {
 #		done
 #	fi
 
-	funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
-	if curl "$@"; then
+	if [[ -z "${MSG_FLG}" ]]; then
+		funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
+	fi
+	if curl "${OPT_PRM[@]}"; then
 		return $?
 	fi
 
 	for ((I=0; I<3; I++))
 	do
-		funcPrintf "retry  count: ${I}"
-		if curl --continue-at "$@"; then
+		if [[ -z "${MSG_FLG}" ]]; then
+			funcPrintf "retry  count: ${I}"
+		fi
+		if curl --continue-at "${OPT_PRM[@]}"; then
 			return "$?"
 		else
 			RET_CD="$?"
 		fi
 	done
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		rm -f "${:?}"
+	fi
 	return "${RET_CD}"
 
 #	curl "$@"
@@ -922,6 +971,11 @@ function funcServiceStatus() {
 		*               ) SRVC_STAT="undefined";;
 	esac
 	echo "${SRVC_STAT}"
+}
+
+# --- function is package -----------------------------------------------------
+function funcIsPackage () {
+	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed'
 }
 
 # *** function section (sub functions) ****************************************
@@ -4247,11 +4301,14 @@ _EOT_
 	echo ""
 
 	# --- download ------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- download $(funcString "${COLS_SIZE}" '-')"
-	funcPrintf "--no-cutting" "funcCurl ${CURL_OPTN[*]}"
-	funcCurl "${CURL_OPTN[@]}"
-	echo ""
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'curl'); then
+		# shellcheck disable=SC2312
+		funcPrintf "---- download $(funcString "${COLS_SIZE}" '-')"
+		funcPrintf "--no-cutting" "funcCurl ${CURL_OPTN[*]}"
+		funcCurl "${CURL_OPTN[@]}"
+		echo ""
+	fi
 
 	# -------------------------------------------------------------------------
 	rm -f "${FILE_WRK1}" "${FILE_WRK2}"

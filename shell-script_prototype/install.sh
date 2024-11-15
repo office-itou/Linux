@@ -415,29 +415,29 @@
 
 # --- text color test ---------------------------------------------------------
 function funcColorTest() {
-	echo -e "${TXT_RESET} : TXT_RESET    : ${TXT_RESET}"
-	echo -e "${TXT_ULINE} : TXT_ULINE    : ${TXT_RESET}"
-	echo -e "${TXT_ULINERST} : TXT_ULINERST : ${TXT_RESET}"
-#	echo -e "${TXT_BLINK} : TXT_BLINK    : ${TXT_RESET}"
-#	echo -e "${TXT_BLINKRST} : TXT_BLINKRST : ${TXT_RESET}"
-	echo -e "${TXT_REV} : TXT_REV      : ${TXT_RESET}"
-	echo -e "${TXT_REVRST} : TXT_REVRST   : ${TXT_RESET}"
-	echo -e "${TXT_BLACK} : TXT_BLACK    : ${TXT_RESET}"
-	echo -e "${TXT_RED} : TXT_RED      : ${TXT_RESET}"
-	echo -e "${TXT_GREEN} : TXT_GREEN    : ${TXT_RESET}"
-	echo -e "${TXT_YELLOW} : TXT_YELLOW   : ${TXT_RESET}"
-	echo -e "${TXT_BLUE} : TXT_BLUE     : ${TXT_RESET}"
-	echo -e "${TXT_MAGENTA} : TXT_MAGENTA  : ${TXT_RESET}"
-	echo -e "${TXT_CYAN} : TXT_CYAN     : ${TXT_RESET}"
-	echo -e "${TXT_WHITE} : TXT_WHITE    : ${TXT_RESET}"
-	echo -e "${TXT_BBLACK} : TXT_BBLACK   : ${TXT_RESET}"
-	echo -e "${TXT_BRED} : TXT_BRED     : ${TXT_RESET}"
-	echo -e "${TXT_BGREEN} : TXT_BGREEN   : ${TXT_RESET}"
-	echo -e "${TXT_BYELLOW} : TXT_BYELLOW  : ${TXT_RESET}"
-	echo -e "${TXT_BBLUE} : TXT_BBLUE    : ${TXT_RESET}"
-	echo -e "${TXT_BMAGENTA} : TXT_BMAGENTA : ${TXT_RESET}"
-	echo -e "${TXT_BCYAN} : TXT_BCYAN    : ${TXT_RESET}"
-	echo -e "${TXT_BWHITE} : TXT_BWHITE   : ${TXT_RESET}"
+	printf "${TXT_RESET} : %-12.12s : ${TXT_RESET}\n" "TXT_RESET"
+	printf "${TXT_ULINE} : %-12.12s : ${TXT_RESET}\n" "TXT_ULINE"
+	printf "${TXT_ULINERST} : %-12.12s : ${TXT_RESET}\n" "TXT_ULINERST"
+#	printf "${TXT_BLINK} : %-12.12s : ${TXT_RESET}\n" "TXT_BLINK"
+#	printf "${TXT_BLINKRST} : %-12.12s : ${TXT_RESET}\n" "TXT_BLINKRST"
+	printf "${TXT_REV} : %-12.12s : ${TXT_RESET}\n" "TXT_REV"
+	printf "${TXT_REVRST} : %-12.12s : ${TXT_RESET}\n" "TXT_REVRST"
+	printf "${TXT_BLACK} : %-12.12s : ${TXT_RESET}\n" "TXT_BLACK"
+	printf "${TXT_RED} : %-12.12s : ${TXT_RESET}\n" "TXT_RED"
+	printf "${TXT_GREEN} : %-12.12s : ${TXT_RESET}\n" "TXT_GREEN"
+	printf "${TXT_YELLOW} : %-12.12s : ${TXT_RESET}\n" "TXT_YELLOW"
+	printf "${TXT_BLUE} : %-12.12s : ${TXT_RESET}\n" "TXT_BLUE"
+	printf "${TXT_MAGENTA} : %-12.12s : ${TXT_RESET}\n" "TXT_MAGENTA"
+	printf "${TXT_CYAN} : %-12.12s : ${TXT_RESET}\n" "TXT_CYAN"
+	printf "${TXT_WHITE} : %-12.12s : ${TXT_RESET}\n" "TXT_WHITE"
+	printf "${TXT_BBLACK} : %-12.12s : ${TXT_RESET}\n" "TXT_BBLACK"
+	printf "${TXT_BRED} : %-12.12s : ${TXT_RESET}\n" "TXT_BRED"
+	printf "${TXT_BGREEN} : %-12.12s : ${TXT_RESET}\n" "TXT_BGREEN"
+	printf "${TXT_BYELLOW} : %-12.12s : ${TXT_RESET}\n" "TXT_BYELLOW"
+	printf "${TXT_BBLUE} : %-12.12s : ${TXT_RESET}\n" "TXT_BBLUE"
+	printf "${TXT_BMAGENTA} : %-12.12s : ${TXT_RESET}\n" "TXT_BMAGENTA"
+	printf "${TXT_BCYAN} : %-12.12s : ${TXT_RESET}\n" "TXT_BCYAN"
+	printf "${TXT_BWHITE} : %-12.12s : ${TXT_RESET}\n" "TXT_BWHITE"
 }
 
 # --- diff --------------------------------------------------------------------
@@ -630,13 +630,20 @@ function funcCurl() {
 #	declare -r    OLD_IFS="${IFS}"
 	declare -i    RET_CD=0
 	declare -i    I
-	# shellcheck disable=SC2155
-	declare       INP_URL="$(echo "$@" | sed -ne 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
-	# shellcheck disable=SC2155
-	declare       OUT_DIR="$(echo "$@" | sed -ne 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
-	# shellcheck disable=SC2155
-	declare       OUT_FILE="$(echo "$@" | sed -ne 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
-	declare -a    ARY_HED=("")
+#	# shellcheck disable=SC2155
+#	declare       INP_URL="$(echo "$@" | sed -ne 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
+#	# shellcheck disable=SC2155
+#	declare       OUT_DIR="$(echo "$@" | sed -ne 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+#	# shellcheck disable=SC2155
+#	declare       OUT_FILE="$(echo "$@" | sed -ne 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+#	# shellcheck disable=SC2155
+#	declare       MSG_FLG="$(echo "$@" | sed -ne 's%^.* --silent *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+	declare       INP_URL=""
+	declare       OUT_DIR=""
+	declare       OUT_FILE=""
+	declare       MSG_FLG=""
+	declare -a    OPT_PRM=()
+	declare -a    ARY_HED=()
 	declare       ERR_MSG=""
 	declare       WEB_SIZ=""
 	declare       WEB_TIM=""
@@ -658,10 +665,44 @@ function funcCurl() {
 #		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 #		return "${RET_CD}"
 #	fi
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1:-}" in
+			http://* | https://* )
+				OPT_PRM+=("${1}")
+				INP_URL="${1}"
+				;;
+			--output-dir )
+				OPT_PRM+=("${1}")
+				shift
+				OPT_PRM+=("${1}")
+				OUT_DIR="${1}"
+				;;
+			--output )
+				OPT_PRM+=("${1}")
+				shift
+				OPT_PRM+=("${1}")
+				OUT_FILE="${1}"
+				;;
+			--quiet )
+				MSG_FLG="true"
+				;;
+			* )
+				OPT_PRM+=("${1}")
+				;;
+		esac
+		shift
+	done
+	if [[ -z "${OUT_FILE}" ]]; then
+		OUT_FILE="${INP_URL##*/}"
+	fi
 	if ! ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)"); then
 		RET_CD="$?"
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
-		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
+#		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
+		if [[ -z "${MSG_FLG}" ]]; then
+			printf "%s\n" "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
+		fi
 		return "${RET_CD}"
 	fi
 	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -ne '/http\/.* 200/,/^$/ s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p')
@@ -679,7 +720,9 @@ function funcCurl() {
 		LOC_TIM=$(echo "${LOC_INF}" | awk '{print $6;}')
 		LOC_SIZ=$(echo "${LOC_INF}" | awk '{print $5;}')
 		if [[ "${WEB_TIM:-0}" -eq "${LOC_TIM:-0}" ]] && [[ "${WEB_SIZ:-0}" -eq "${LOC_SIZ:-0}" ]]; then
-			funcPrintf "same    file: ${WEB_FIL}"
+			if [[ -z "${MSG_FLG}" ]]; then
+				funcPrintf "same    file: ${WEB_FIL}"
+			fi
 			return
 		fi
 	fi
@@ -700,20 +743,27 @@ function funcCurl() {
 #		done
 #	fi
 
-	funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
-	if curl "$@"; then
+	if [[ -z "${MSG_FLG}" ]]; then
+		funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
+	fi
+	if curl "${OPT_PRM[@]}"; then
 		return $?
 	fi
 
 	for ((I=0; I<3; I++))
 	do
-		funcPrintf "retry  count: ${I}"
-		if curl --continue-at "$@"; then
+		if [[ -z "${MSG_FLG}" ]]; then
+			funcPrintf "retry  count: ${I}"
+		fi
+		if curl --continue-at "${OPT_PRM[@]}"; then
 			return "$?"
 		else
 			RET_CD="$?"
 		fi
 	done
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		rm -f "${:?}"
+	fi
 	return "${RET_CD}"
 
 #	curl "$@"
@@ -2672,92 +2722,115 @@ function funcApplication_samba() {
 	>   "${FILE_TEMP}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${FILE_TEMP}"
 		[homes]
-		 	comment = Home Directories
-		 	valid users = %S
-		 	write list = @${SAMB_GRUP}
-		 	force user = ${SAMB_USER}
-		 	force group = ${SAMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+		        browseable = No
+		        comment = Home Directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        valid users = %S
+		        write list = @${SAMB_GRUP}
+		
+		
+		[printers]
+		        browseable = No
+		        comment = All Printers
+		        create mask = 0700
+		        path = /var/tmp
+		        printable = Yes
+		
+		
+		[print$]
+		        comment = Printer Drivers
+		        path = /var/lib/samba/printers
+		
 		
 		[netlogon]
-		 	comment = Network Logon Service
-		 	path = ${DIRS_SHAR}/data/adm/netlogon
-		 	valid users = @${SAMB_GRUP}
-		 	write list = @${SAMB_GADM}
-		 	force user = ${SAMB_USER}
-		 	force group = ${SAMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+		        browseable = No
+		        comment = Network Logon Service
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        path = ${DIRS_SHAR}/data/adm/netlogon
+		        valid users = @${SAMB_GRUP}
+		        write list = @${SAMB_GADM}
+		
 		
 		[profiles]
-		 	comment = User profiles
-		 	path = ${DIRS_SHAR}/data/adm/profiles
-		 	valid users = @${SAMB_GRUP}
-		 	write list = @${SAMB_GRUP}
-		#	profile acls = Yes
-		 	browseable = No
+		        browseable = No
+		        comment = User profiles
+		        path = ${DIRS_SHAR}/data/adm/profiles
+		        valid users = @${SAMB_GRUP}
+		        write list = @${SAMB_GRUP}
+		
 		
 		[share]
-		 	comment = Shared directories
-		 	path = ${DIRS_SHAR}
-		 	valid users = @${SAMB_GADM}
-		 	browseable = No
+		        browseable = No
+		        comment = Shared directories
+		        path = ${DIRS_SHAR}
+		        valid users = @${SAMB_GADM}
+		
 		
 		[cifs]
-		 	comment = CIFS directories
-		 	path = ${DIRS_SHAR}/cifs
-		 	valid users = @${SAMB_GADM}
-		 	write list = @${SAMB_GADM}
-		 	force user = ${SAMB_USER}
-		 	force group = ${SAMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+		        browseable = No
+		        comment = CIFS directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        path = ${DIRS_SHAR}/cifs
+		        valid users = @${SAMB_GADM}
+		        write list = @${SAMB_GADM}
+		
 		
 		[data]
-		 	comment = Data directories
-		 	path = ${DIRS_SHAR}/data
-		 	valid users = @${SAMB_GADM}
-		 	write list = @${SAMB_GADM}
-		 	force user = ${SAMB_USER}
-		 	force group = ${SAMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+		        browseable = No
+		        comment = Data directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        path = ${DIRS_SHAR}/data
+		        valid users = @${SAMB_GADM}
+		        write list = @${SAMB_GADM}
+		
 		
 		[dlna]
-		 	comment = DLNA directories
-		 	valid users = @${SAMB_GRUP}
-		 	path = ${DIRS_SHAR}/dlna
-		 	write list = @${SAMB_GRUP}
-		 	force user = ${SAMB_USER}
-		 	force group = ${SAMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+		        browseable = No
+		        comment = DLNA directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        path = ${DIRS_SHAR}/dlna
+		        valid users = @${SAMB_GRUP}
+		        write list = @${SAMB_GRUP}
+		
 		
 		[pub]
-		 	comment = Public directories
-		 	path = ${DIRS_SHAR}/data/pub
-		 	valid users = @${SAMB_GRUP}
+		        comment = Public directories
+		        path = ${DIRS_SHAR}/data/pub
+		        valid users = @${SAMB_GRUP}
 		
-		#[lusr]
-		#	comment = Linux /usr directories
-		#	path = /usr
-		#	valid users = @${SAMB_GRUP}
-		 
+		
 		[lhome]
-		 	comment = Linux /home directories
-		 	path = /home
-		 	valid users = @${SAMB_GRUP}
+		        comment = Linux /home directories
+		        path = /home
+		        valid users = @${SAMB_GRUP}
+		
 		
 		[pxe-share]
-		 	comment = Pxeboot Shared directories
-		 	guest ok = Yes
-		 	path = /var/lib/tftpboot/imgs
+		        comment = Pxeboot shared directories
+		        guest ok = Yes
+		        path = /var/lib/tftpboot/imgs
+		
+		
+		[pxe-conf]
+		        comment = Pxeboot configuration files directory
+		        guest ok = Yes
+		        path = /var/lib/tftpboot/conf
+		
 		
 _EOT_
 	testparm -s "${FILE_TEMP}" 2> /dev/null > "${FILE_PATH}"
