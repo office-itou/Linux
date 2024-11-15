@@ -1,0 +1,75 @@
+Rem *** open [Windows Kits] command prompt (Run as an administrator) **********
+
+Rem === download ==============================================================
+
+Rem --- Windows 11 Assessment and Deployment Kit (ADK) / WinPE ----------------
+    Curl -L -# -O -R -S "https://download.microsoft.com/download/6/1/f/61fcd094-9641-439c-adb5-6e9fe2760856/adk/adksetup.exe"
+    Curl -L -# -O -R -S "https://download.microsoft.com/download/c/6/8/c68972f8-9148-4240-818e-7288e1e54256/adkwinpeaddons/adkwinpesetup.exe"
+
+Rem --- VMware PVSCSI ドライバ ファイル ---------------------------------------
+    Curl -L -# -O -R -S "https://packages.vmware.com/tools/releases/latest/windows/VMware-tools-windows-12.4.0-23259341.iso"
+
+Rem === create WinPE image ====================================================
+
+Rem --- make directory --------------------------------------------------------
+    MkDir mount drivers scripts
+
+Rem --- copy drivers ----------------------------------------------------------
+    Copy "E:\Program Files\VMware\VMware Tools\Drivers\pvscsi\Win10\amd64\*.*" drivers
+
+Rem --- make work directory ---------------------------------------------------
+    CopyPE amd64 winpe
+
+Rem --- mount WinPE image -----------------------------------------------------
+    Dism /Mount-Image /ImageFile:winpe\media\sources\boot.wim /Index:1 /MountDir:mount
+
+Rem --- add drivers -----------------------------------------------------------
+    Dism /Image:mount /Add-Driver /Driver:drivers /Recurse
+
+Rem --- setup language --------------------------------------------------------
+    Dism /Image:mount /Add-package /PackagePath:"%WinPERoot%\amd64\WinPE_OCs\WinPE-FontSupport-JA-JP.cab"
+    Dism /Image:mount /Add-package /PackagePath:"%WinPERoot%\amd64\WinPE_OCs\ja-jp\lp.cab"
+    Dism /Image:mount /Set-AllIntl:ja-jp
+    Dism /Image:mount /Set-InputLocale:0411:00000411
+    Dism /Image:mount /Set-LayeredDriver:6
+    Dism /Image:mount /Set-TimeZone:"Tokyo Standard Time"
+
+Rem --- unmount and commit ----------------------------------------------------
+    Dism /Unmount-Image /MountDir:mount /Commit
+
+Rem --- remove [press any key message] ----------------------------------------
+    Del winpe\media\Boot\bootfix.bin
+
+Rem --- make iso file ---------------------------------------------------------
+    MakeWinPEMedia /ISO winpe WinPEx64.iso
+
+Rem *** eof *******************************************************************
+
+
+
+
+項目                        内容
+キー                        HKEY_LOCAL_MACHINE\SYSTEM\Setup\LabConfig
+値の名前（TPM）             BypassTPMCheck
+値の名前（CPU）             BypassCPUCheck
+値の名前（セキュアブート）  BypassSecureBootCheck
+値の名前（メモリ容量）      BypassRAMCheck
+値の名前（ディスク容量）    BypassStorageCheck
+型                          REG_DWORD（DWORD 32ビット）型
+値の内容                    1
+
+    REG ADD HKEY_LOCAL_MACHINE\SYSTEM\Setup\LabConfig /v BypassTPMCheck        /t REG_DWORD /d 1 /f
+    REG ADD HKEY_LOCAL_MACHINE\SYSTEM\Setup\LabConfig /v BypassCPUCheck        /t REG_DWORD /d 1 /f
+    REG ADD HKEY_LOCAL_MACHINE\SYSTEM\Setup\LabConfig /v BypassSecureBootCheck /t REG_DWORD /d 1 /f
+    REG ADD HKEY_LOCAL_MACHINE\SYSTEM\Setup\LabConfig /v BypassRAMCheck        /t REG_DWORD /d 1 /f
+    REG ADD HKEY_LOCAL_MACHINE\SYSTEM\Setup\LabConfig /v BypassStorageCheck    /t REG_DWORD /d 1 /f
+
+
+
+# --- copy scripts ------------------------------------------------------------
+# Copy startnet.cmd              mount\Windows\System32
+# Copy deploy.cmd                mount
+# Copy CreatePartitions-UEFI.txt mount
+# Copy Unattend.xml              mount
+# --- copy drivers ------------------------------------------------------------
+# Copy drivers\*.* mount\drivers
