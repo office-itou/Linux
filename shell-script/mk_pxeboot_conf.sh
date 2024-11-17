@@ -18,6 +18,11 @@
 
 # *** initialization **********************************************************
 
+	case "${1:-}" in
+		-dbg) set -x; shift;;
+		*) ;;
+	esac
+
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -159,6 +164,7 @@
 	declare -r    DIRS_ISOS="${DIRS_WORK}/isos"					# iso file
 	declare -r    DIRS_LIVE="${DIRS_WORK}/live"					# live media
 	declare -r    DIRS_ORIG="${DIRS_WORK}/orig"					# original file
+	declare -r    DIRS_PKGS="${DIRS_WORK}/pkgs"					# package file
 	declare -r    DIRS_RMAK="${DIRS_WORK}/rmak"					# remake file
 	declare -r    DIRS_TEMP="${DIRS_WORK}/temp/${PROG_PROC}"	# temporary directory
 	declare -r    DIRS_TFTP="${DIRS_WORK}/tftp"					# tftp contents
@@ -368,180 +374,183 @@
 #	declare -a    DATA_LIST=()
 
 # --- mini.iso ----------------------------------------------------------------
-	declare -r -a DATA_LIST_MINI=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \
-		"m  menu-entry                  Auto%20install%20mini.iso           -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-		"x  debian-mini-10              Debian%2010                         debian              mini-buster-amd64.iso                           .                                       initrd.gz                   linux                   preseed/ps_debian_server_old.cfg        ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/netboot/mini.iso                                                " \
-		"o  debian-mini-11              Debian%2011                         debian              mini-bullseye-amd64.iso                         .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso                                              " \
-		"o  debian-mini-12              Debian%2012                         debian              mini-bookworm-amd64.iso                         .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso                                              " \
-		"o  debian-mini-13              Debian%2013                         debian              mini-trixie-amd64.iso                           .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso                                                " \
-		"-  debian-mini-14              Debian%2014                         debian              mini-forky-amd64.iso                            .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/forky/main/installer-amd64/current/images/netboot/mini.iso                                                 " \
-		"o  debian-mini-testing         Debian%20testing                    debian              mini-testing-amd64.iso                          .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso                                                                               " \
-		"o  ubuntu-mini-18.04           Ubuntu%2018.04                      ubuntu              mini-bionic-amd64.iso                           .                                       initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        ${HGFS_DIRS}/linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso                                     " \
-		"o  ubuntu-mini-20.04           Ubuntu%2020.04                      ubuntu              mini-focal-amd64.iso                            .                                       initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        ${HGFS_DIRS}/linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso                               " \
-		"m  menu-entry                  -                                   -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-	) #  0  1                           2                                   3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
+	declare -r -a DATA_LIST_MINI=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+		"m  menu-entry                  Auto%20install%20mini.iso               -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+		"x  debian-mini-10              Debian%2010                             debian              mini-buster-amd64.iso                           .                                       initrd.gz                   linux                   preseed/ps_debian_server_old.cfg        ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/buster/main/installer-amd64/current/images/netboot/mini.iso                                                " \
+		"o  debian-mini-11              Debian%2011                             debian              mini-bullseye-amd64.iso                         .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/bullseye/main/installer-amd64/current/images/netboot/mini.iso                                              " \
+		"o  debian-mini-12              Debian%2012                             debian              mini-bookworm-amd64.iso                         .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/bookworm/main/installer-amd64/current/images/netboot/mini.iso                                              " \
+		"o  debian-mini-13              Debian%2013                             debian              mini-trixie-amd64.iso                           .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/trixie/main/installer-amd64/current/images/netboot/mini.iso                                                " \
+		"-  debian-mini-14              Debian%2014                             debian              mini-forky-amd64.iso                            .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian/dists/forky/main/installer-amd64/current/images/netboot/mini.iso                                                 " \
+		"o  debian-mini-testing         Debian%20testing                        debian              mini-testing-amd64.iso                          .                                       initrd.gz                   linux                   preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://d-i.debian.org/daily-images/amd64/daily/netboot/mini.iso                                                                               " \
+		"o  ubuntu-mini-18.04           Ubuntu%2018.04                          ubuntu              mini-bionic-amd64.iso                           .                                       initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        ${HGFS_DIRS}/linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu/dists/bionic-updates/main/installer-amd64/current/images/netboot/mini.iso                                     " \
+		"o  ubuntu-mini-20.04           Ubuntu%2020.04                          ubuntu              mini-focal-amd64.iso                            .                                       initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        ${HGFS_DIRS}/linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu/dists/focal-updates/main/installer-amd64/current/legacy-images/netboot/mini.iso                               " \
+		"m  menu-entry                  -                                       -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+	) #  0  1                           2                                       3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
 
 # --- netinst -----------------------------------------------------------------
-	declare -r -a DATA_LIST_NET=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     \
-		"m  menu-entry                  Auto%20install%20Net%20install      -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-		"x  debian-netinst-10           Debian%2010                         debian              debian-10.13.0-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_old.cfg        ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-10.[0-9.]*-amd64-netinst.iso                                " \
-		"o  debian-netinst-11           Debian%2011                         debian              debian-11.11.0-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-11.[0-9.]*-amd64-netinst.iso                                   " \
-		"o  debian-netinst-12           Debian%2012                         debian              debian-12.7.0-amd64-netinst.iso                 install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso                                            " \
-		"o  debian-netinst-13           Debian%2013                         debian              debian-13.0.0-amd64-netinst.iso                 install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"-  debian-netinst-14           Debian%2014                         debian              debian-14.0.0-amd64-netinst.iso                 install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  debian-netinst-testing      Debian%20testing                    debian              debian-testing-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                                " \
-		"x  fedora-netinst-38           Fedora%20Server%2038                fedora              Fedora-Server-netinst-x86_64-38-1.6.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-[0-9.]*.iso                  " \
-		"o  fedora-netinst-39           Fedora%20Server%2039                fedora              Fedora-Server-netinst-x86_64-39-1.5.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-netinst-x86_64-39-[0-9.]*.iso                  " \
-		"o  fedora-netinst-40           Fedora%20Server%2040                fedora              Fedora-Server-netinst-x86_64-40-1.14.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_net.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-netinst-x86_64-40-[0-9.]*.iso                  " \
-		"o  fedora-netinst-41           Fedora%20Server%2041                fedora              Fedora-Server-netinst-x86_64-41_Beta-1.2.iso    images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_net.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/test/41_Beta/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41_Beta-[0-9.]*.iso   " \
-		"x  centos-stream-netinst-8     CentOS%20Stream%208                 centos              CentOS-Stream-8-x86_64-latest-boot.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-8_net.cfg    ${HGFS_DIRS}/linux/centos        20xx-xx-xx  2024-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                             " \
-		"o  centos-stream-netinst-9     CentOS%20Stream%209                 centos              CentOS-Stream-9-latest-x86_64-boot.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_net.cfg    ${HGFS_DIRS}/linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                                " \
-		"o  centos-stream-netinst-10    CentOS%20Stream%2010                centos              CentOS-Stream-10-latest-x86_64-boot.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-10_net.cfg   ${HGFS_DIRS}/linux/centos        2024-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-boot.iso                              " \
-		"o  almalinux-netinst-9         Alma%20Linux%209                    almalinux           AlmaLinux-9-latest-x86_64-boot.iso              images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_net.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-boot.iso                                                   " \
-		"o  rockylinux-netinst-8        Rocky%20Linux%208                   Rocky               Rocky-8.10-x86_64-boot.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-boot.iso                                                         " \
-		"o  rockylinux-netinst-9        Rocky%20Linux%209                   Rocky               Rocky-9-latest-x86_64-boot.iso                  images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-boot.iso                                                  " \
-		"o  miraclelinux-netinst-8      Miracle%20Linux%208                 miraclelinux        MIRACLELINUX-8.10-rtm-minimal-x86_64.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.10-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                        " \
-		"o  miraclelinux-netinst-9      Miracle%20Linux%209                 miraclelinux        MIRACLELINUX-9.4-rtm-minimal-x86_64.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso                   " \
-		"o  opensuse-leap-netinst-15.5  openSUSE%20Leap%2015.5              openSUSE            openSUSE-Leap-15.5-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_net.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-NET-x86_64-Media.iso                                         " \
-		"o  opensuse-leap-netinst-15.6  openSUSE%20Leap%2015.6              openSUSE            openSUSE-Leap-15.6-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_net.xml     ${HGFS_DIRS}/linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Media.iso                                         " \
-		"o  opensuse-leap-netinst-16.0  openSUSE%20Leap%2016.0              openSUSE            openSUSE-Leap-16.0-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_net.xml     ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/iso/openSUSE-Leap-16.0-NET-x86_64-Media.iso                                         " \
-		"o  opensuse-tumbleweed-netinst openSUSE%20Tumbleweed               openSUSE            openSUSE-Tumbleweed-NET-x86_64-Current.iso      boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_net.xml    ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                  " \
-		"m  menu-entry                  -                                   -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-	) #  0  1                           2                                   3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
+	declare -r -a DATA_LIST_NET=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+		"m  menu-entry                  Auto%20install%20Net%20install          -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+		"x  debian-netinst-10           Debian%2010                             debian              debian-10.13.0-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_old.cfg        ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-10.[0-9.]*-amd64-netinst.iso                                " \
+		"o  debian-netinst-11           Debian%2011                             debian              debian-11.11.0-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-11.[0-9.]*-amd64-netinst.iso                                   " \
+		"o  debian-netinst-12           Debian%2012                             debian              debian-12.8.0-amd64-netinst.iso                 install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso                                            " \
+		"o  debian-netinst-13           Debian%2013                             debian              debian-13.0.0-amd64-netinst.iso                 install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"-  debian-netinst-14           Debian%2014                             debian              debian-14.0.0-amd64-netinst.iso                 install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  debian-netinst-testing      Debian%20testing                        debian              debian-testing-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                                " \
+		"x  fedora-netinst-38           Fedora%20Server%2038                    fedora              Fedora-Server-netinst-x86_64-38-1.6.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-[0-9.]*.iso                  " \
+		"o  fedora-netinst-39           Fedora%20Server%2039                    fedora              Fedora-Server-netinst-x86_64-39-1.5.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-netinst-x86_64-39-[0-9.]*.iso                  " \
+		"o  fedora-netinst-40           Fedora%20Server%2040                    fedora              Fedora-Server-netinst-x86_64-40-1.14.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_net.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-netinst-x86_64-40-[0-9.]*.iso                  " \
+		"o  fedora-netinst-41           Fedora%20Server%2041                    fedora              Fedora-Server-netinst-x86_64-41-1.4.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_net.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41-[0-9.]*.iso                  " \
+		"x  fedora-netinst-41           Fedora%20Server%2041                    fedora              Fedora-Server-netinst-x86_64-41_Beta-1.2.iso    images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_net.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/test/41_Beta/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41_Beta-[0-9.]*.iso   " \
+		"x  centos-stream-netinst-8     CentOS%20Stream%208                     centos              CentOS-Stream-8-x86_64-latest-boot.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-8_net.cfg    ${HGFS_DIRS}/linux/centos        20xx-xx-xx  2024-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                             " \
+		"o  centos-stream-netinst-9     CentOS%20Stream%209                     centos              CentOS-Stream-9-latest-x86_64-boot.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_net.cfg    ${HGFS_DIRS}/linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                                " \
+		"o  centos-stream-netinst-10    CentOS%20Stream%2010                    centos              CentOS-Stream-10-latest-x86_64-boot.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-10_net.cfg   ${HGFS_DIRS}/linux/centos        2024-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-boot.iso                              " \
+		"o  almalinux-netinst-9         Alma%20Linux%209                        almalinux           AlmaLinux-9-latest-x86_64-boot.iso              images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_net.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-boot.iso                                                   " \
+		"o  rockylinux-netinst-8        Rocky%20Linux%208                       Rocky               Rocky-8.10-x86_64-boot.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-boot.iso                                                         " \
+		"o  rockylinux-netinst-9        Rocky%20Linux%209                       Rocky               Rocky-9-latest-x86_64-boot.iso                  images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-boot.iso                                                  " \
+		"o  miraclelinux-netinst-8      Miracle%20Linux%208                     miraclelinux        MIRACLELINUX-8.10-rtm-minimal-x86_64.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.10-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                        " \
+		"o  miraclelinux-netinst-9      Miracle%20Linux%209                     miraclelinux        MIRACLELINUX-9.4-rtm-minimal-x86_64.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso                   " \
+		"o  opensuse-leap-netinst-15.5  openSUSE%20Leap%2015.5                  openSUSE            openSUSE-Leap-15.5-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_net.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-NET-x86_64-Media.iso                                         " \
+		"o  opensuse-leap-netinst-15.6  openSUSE%20Leap%2015.6                  openSUSE            openSUSE-Leap-15.6-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_net.xml     ${HGFS_DIRS}/linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Media.iso                                         " \
+		"o  opensuse-leap-netinst-16.0  openSUSE%20Leap%2016.0                  openSUSE            openSUSE-Leap-16.0-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_net.xml     ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/iso/openSUSE-Leap-16.0-NET-x86_64-Media.iso                                         " \
+		"o  opensuse-tumbleweed-netinst openSUSE%20Tumbleweed                   openSUSE            openSUSE-Tumbleweed-NET-x86_64-Current.iso      boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_net.xml    ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                  " \
+		"m  menu-entry                  -                                       -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+	) #  0  1                           2                                       3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
 
 # --- dvd image ---------------------------------------------------------------
-	declare -r -a DATA_LIST_DVD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     \
-		"m  menu-entry                  Auto%20install%20DVD%20media            -               -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-		"x  debian-10                   Debian%2010                             debian          debian-10.13.0-amd64-DVD-1.iso                  install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_old.cfg        ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-10.[0-9.]*-amd64-DVD-1.iso                                 " \
-		"o  debian-11                   Debian%2011                             debian          debian-11.11.0-amd64-DVD-1.iso                  install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-11.[0-9.]*-amd64-DVD-1.iso                                    " \
-		"o  debian-12                   Debian%2012                             debian          debian-12.7.0-amd64-DVD-1.iso                   install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-12.[0-9.]*-amd64-DVD-1.iso                                             " \
-		"o  debian-13                   Debian%2013                             debian          debian-13.0.0-amd64-DVD-1.iso                   install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"-  debian-14                   Debian%2014                             debian          debian-14.0.0-amd64-DVD-1.iso                   install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  debian-testing              Debian%20testing                        debian          debian-testing-amd64-DVD-1.iso                  install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                                  " \
-		"x  ubuntu-server-14.04         Ubuntu%2014.04%20Server                 ubuntu          ubuntu-14.04.6-server-amd64.iso                 install/netboot/ubuntu-installer/amd64  initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        ${HGFS_DIRS}/linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"-  ubuntu-server-16.04         Ubuntu%2016.04%20Server                 ubuntu          ubuntu-16.04.6-server-amd64.iso                 install/netboot/ubuntu-installer/amd64  initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        ${HGFS_DIRS}/linux/ubuntu        2016-04-21  2026-04-23  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  ubuntu-server-18.04         Ubuntu%2018.04%20Server                 ubuntu          ubuntu-18.04.6-server-amd64.iso                 install/netboot/ubuntu-installer/amd64  initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        ${HGFS_DIRS}/linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04[0-9.]*-server-amd64.iso                                                        " \
-		"o  ubuntu-live-18.04           Ubuntu%2018.04%20Live%20Server          ubuntu          ubuntu-18.04.6-live-server-amd64.iso            casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server_old               ${HGFS_DIRS}/linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-live-server-amd64.iso                                                                   " \
-		"o  ubuntu-live-20.04           Ubuntu%2020.04%20Live%20Server          ubuntu          ubuntu-20.04.6-live-server-amd64.iso            casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-live-server-amd64.iso                                                                    " \
-		"o  ubuntu-live-22.04           Ubuntu%2022.04%20Live%20Server          ubuntu          ubuntu-22.04.5-live-server-amd64.iso            casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-live-server-amd64.iso                                                                    " \
-		"x  ubuntu-live-23.04           Ubuntu%2023.04%20Live%20Server          ubuntu          ubuntu-23.04-live-server-amd64.iso              casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-live-server-amd64.iso                                                                    " \
-		"x  ubuntu-live-23.10           Ubuntu%2023.10%20Live%20Server          ubuntu          ubuntu-23.10-live-server-amd64.iso              casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-live-server-amd64.iso                                                                   " \
-		"o  ubuntu-live-24.04           Ubuntu%2024.04%20Live%20Server          ubuntu          ubuntu-24.04.1-live-server-amd64.iso            casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2034-04-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-live-server-amd64.iso                                                                    " \
-		"o  ubuntu-live-24.10           Ubuntu%2024.10%20Live%20Server          ubuntu          ubuntu-24.10-live-server-amd64.iso              casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10[0-9.]*-live-server-amd64.iso                                                                 " \
-		"-  ubuntu-live-24.10           Ubuntu%2024.10%20Live%20Server%20Beta   ubuntu          ubuntu-24.10-beta-live-server-amd64.iso         casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10-beta-live-server-amd64.iso                                                                   " \
-		"-  ubuntu-live-oracular        Ubuntu%20oracular%20Live%20Server       ubuntu          oracular-live-server-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/ubuntu-server/daily-live/current/oracular-live-server-amd64.iso                                                     " \
-		"x  fedora-38                   Fedora%20Server%2038                    fedora          Fedora-Server-dvd-x86_64-38-1.6.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                      " \
-		"o  fedora-39                   Fedora%20Server%2039                    fedora          Fedora-Server-dvd-x86_64-39-1.5.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-dvd-x86_64-39-[0-9.]*.iso                      " \
-		"o  fedora-40                   Fedora%20Server%2040                    fedora          Fedora-Server-dvd-x86_64-40-1.14.iso            images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-dvd-x86_64-40-[0-9.]*.iso                      " \
-		"o  fedora-41                   Fedora%20Server%2041                    fedora          Fedora-Server-dvd-x86_64-41_Beta-1.2.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_dvd.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/test/41_Beta/Server/x86_64/iso/Fedora-Server-dvd-x86_64-41_Beta-[0-9.]*.iso       " \
-		"x  centos-stream-8             CentOS%20Stream%208                     centos          CentOS-Stream-8-x86_64-latest-dvd1.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-8_dvd.cfg    ${HGFS_DIRS}/linux/centos        2019-xx-xx  2024-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                             " \
-		"o  centos-stream-9             CentOS%20Stream%209                     centos          CentOS-Stream-9-latest-x86_64-dvd1.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_dvd.cfg    ${HGFS_DIRS}/linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                                " \
-		"o  centos-stream-10            CentOS%20Stream%2010                    centos          CentOS-Stream-10-latest-x86_64-dvd1.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-10_dvd.cfg   ${HGFS_DIRS}/linux/centos        2024-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-dvd1.iso                              " \
-		"o  almalinux-9                 Alma%20Linux%209                        almalinux       AlmaLinux-9-latest-x86_64-dvd.iso               images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_dvd.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-dvd.iso                                                    " \
-		"o  rockylinux-8                Rocky%20Linux%208                       Rocky           Rocky-8.10-x86_64-dvd1.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-dvd1.iso                                                         " \
-		"o  rockylinux-9                Rocky%20Linux%209                       Rocky           Rocky-9-latest-x86_64-dvd.iso                   images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-dvd.iso                                                   " \
-		"o  miraclelinux-8              Miracle%20Linux%208                     miraclelinux    MIRACLELINUX-8.10-rtm-x86_64.iso                images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.10-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                                " \
-		"o  miraclelinux-9              Miracle%20Linux%209                     miraclelinux    MIRACLELINUX-9.4-rtm-x86_64.iso                 images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso                           " \
-		"o  opensuse-leap-15.5          openSUSE%20Leap%2015.5                  openSUSE        openSUSE-Leap-15.5-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-DVD-x86_64-Media.iso                                         " \
-		"o  opensuse-leap-15.6          openSUSE%20Leap%2015.6                  openSUSE        openSUSE-Leap-15.6-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso                                         " \
-		"o  opensuse-leap-16.0          openSUSE%20Leap%2016.0                  openSUSE        openSUSE-Leap-16.0-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/iso/openSUSE-Leap-16.0-DVD-x86_64-Media.iso                                         " \
-		"o  opensuse-tumbleweed         openSUSE%20Tumbleweed                   openSUSE        openSUSE-Tumbleweed-DVD-x86_64-Current.iso      boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_dvd.xml    ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                  " \
-		"o  windows-10                  Windows%2010                            windows         Win10_22H2_Japanese_x64.iso                     -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/Windows10   -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  windows-11                  Windows%2011                            windows         Win11_24H2_Japanese_x64.iso                     -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/Windows11   -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"-  windows-11                  Windows%2011%20custom                   windows         Win11_24H2_Japanese_x64_custom.iso              -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/Windows11   -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"m  menu-entry                  -                                       -               -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-	) #  0  1                           2                                   3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
+	declare -r -a DATA_LIST_DVD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+		"m  menu-entry                  Auto%20install%20DVD%20media            -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+		"x  debian-10                   Debian%2010                             debian              debian-10.13.0-amd64-DVD-1.iso                  install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_old.cfg        ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-10.[0-9.]*-amd64-DVD-1.iso                                 " \
+		"o  debian-11                   Debian%2011                             debian              debian-11.11.0-amd64-DVD-1.iso                  install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-11.[0-9.]*-amd64-DVD-1.iso                                    " \
+		"o  debian-12                   Debian%2012                             debian              debian-12.8.0-amd64-DVD-1.iso                   install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-12.[0-9.]*-amd64-DVD-1.iso                                             " \
+		"o  debian-13                   Debian%2013                             debian              debian-13.0.0-amd64-DVD-1.iso                   install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"-  debian-14                   Debian%2014                             debian              debian-14.0.0-amd64-DVD-1.iso                   install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  debian-testing              Debian%20testing                        debian              debian-testing-amd64-DVD-1.iso                  install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                                  " \
+		"x  ubuntu-server-14.04         Ubuntu%2014.04%20Server                 ubuntu              ubuntu-14.04.6-server-amd64.iso                 install/netboot/ubuntu-installer/amd64  initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        ${HGFS_DIRS}/linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"-  ubuntu-server-16.04         Ubuntu%2016.04%20Server                 ubuntu              ubuntu-16.04.6-server-amd64.iso                 install/netboot/ubuntu-installer/amd64  initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        ${HGFS_DIRS}/linux/ubuntu        2016-04-21  2026-04-23  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  ubuntu-server-18.04         Ubuntu%2018.04%20Server                 ubuntu              ubuntu-18.04.6-server-amd64.iso                 install/netboot/ubuntu-installer/amd64  initrd.gz                   linux                   preseed/ps_ubuntu_server_old.cfg        ${HGFS_DIRS}/linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/bionic/release/ubuntu-18.04[0-9.]*-server-amd64.iso                                                        " \
+		"o  ubuntu-live-18.04           Ubuntu%2018.04%20Live%20Server          ubuntu              ubuntu-18.04.6-live-server-amd64.iso            casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server_old               ${HGFS_DIRS}/linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-live-server-amd64.iso                                                                   " \
+		"o  ubuntu-live-20.04           Ubuntu%2020.04%20Live%20Server          ubuntu              ubuntu-20.04.6-live-server-amd64.iso            casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-live-server-amd64.iso                                                                    " \
+		"o  ubuntu-live-22.04           Ubuntu%2022.04%20Live%20Server          ubuntu              ubuntu-22.04.5-live-server-amd64.iso            casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-live-server-amd64.iso                                                                    " \
+		"x  ubuntu-live-23.04           Ubuntu%2023.04%20Live%20Server          ubuntu              ubuntu-23.04-live-server-amd64.iso              casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-live-server-amd64.iso                                                                    " \
+		"x  ubuntu-live-23.10           Ubuntu%2023.10%20Live%20Server          ubuntu              ubuntu-23.10-live-server-amd64.iso              casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-live-server-amd64.iso                                                                   " \
+		"o  ubuntu-live-24.04           Ubuntu%2024.04%20Live%20Server          ubuntu              ubuntu-24.04.1-live-server-amd64.iso            casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2034-04-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-live-server-amd64.iso                                                                    " \
+		"o  ubuntu-live-24.10           Ubuntu%2024.10%20Live%20Server          ubuntu              ubuntu-24.10-live-server-amd64.iso              casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10[0-9.]*-live-server-amd64.iso                                                                 " \
+		"-  ubuntu-live-24.10           Ubuntu%2024.10%20Live%20Server%20Beta   ubuntu              ubuntu-24.10-beta-live-server-amd64.iso         casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10-beta-live-server-amd64.iso                                                                   " \
+		"-  ubuntu-live-oracular        Ubuntu%20oracular%20Live%20Server       ubuntu              oracular-live-server-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/ubuntu-server/daily-live/current/oracular-live-server-amd64.iso                                                     " \
+		"x  fedora-38                   Fedora%20Server%2038                    fedora              Fedora-Server-dvd-x86_64-38-1.6.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                      " \
+		"o  fedora-39                   Fedora%20Server%2039                    fedora              Fedora-Server-dvd-x86_64-39-1.5.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-dvd-x86_64-39-[0-9.]*.iso                      " \
+		"o  fedora-40                   Fedora%20Server%2040                    fedora              Fedora-Server-dvd-x86_64-40-1.14.iso            images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-dvd-x86_64-40-[0-9.]*.iso                      " \
+		"o  fedora-41                   Fedora%20Server%2041                    fedora              Fedora-Server-dvd-x86_64-41-1.4.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_dvd.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-dvd-x86_64-41-[0-9.]*.iso                      " \
+		"x  fedora-41                   Fedora%20Server%2041                    fedora              Fedora-Server-dvd-x86_64-41_Beta-1.2.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_dvd.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/test/41_Beta/Server/x86_64/iso/Fedora-Server-dvd-x86_64-41_Beta-[0-9.]*.iso       " \
+		"x  centos-stream-8             CentOS%20Stream%208                     centos              CentOS-Stream-8-x86_64-latest-dvd1.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-8_dvd.cfg    ${HGFS_DIRS}/linux/centos        2019-xx-xx  2024-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                             " \
+		"o  centos-stream-9             CentOS%20Stream%209                     centos              CentOS-Stream-9-latest-x86_64-dvd1.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_dvd.cfg    ${HGFS_DIRS}/linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                                " \
+		"o  centos-stream-10            CentOS%20Stream%2010                    centos              CentOS-Stream-10-latest-x86_64-dvd1.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-10_dvd.cfg   ${HGFS_DIRS}/linux/centos        2024-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-dvd1.iso                              " \
+		"o  almalinux-9                 Alma%20Linux%209                        almalinux           AlmaLinux-9-latest-x86_64-dvd.iso               images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_dvd.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-dvd.iso                                                    " \
+		"o  rockylinux-8                Rocky%20Linux%208                       Rocky               Rocky-8.10-x86_64-dvd1.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-dvd1.iso                                                         " \
+		"o  rockylinux-9                Rocky%20Linux%209                       Rocky               Rocky-9-latest-x86_64-dvd.iso                   images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-dvd.iso                                                   " \
+		"o  miraclelinux-8              Miracle%20Linux%208                     miraclelinux        MIRACLELINUX-8.10-rtm-x86_64.iso                images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.10-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                                " \
+		"o  miraclelinux-9              Miracle%20Linux%209                     miraclelinux        MIRACLELINUX-9.4-rtm-x86_64.iso                 images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso                           " \
+		"o  opensuse-leap-15.5          openSUSE%20Leap%2015.5                  openSUSE            openSUSE-Leap-15.5-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-DVD-x86_64-Media.iso                                         " \
+		"o  opensuse-leap-15.6          openSUSE%20Leap%2015.6                  openSUSE            openSUSE-Leap-15.6-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso                                         " \
+		"o  opensuse-leap-16.0          openSUSE%20Leap%2016.0                  openSUSE            openSUSE-Leap-16.0-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/iso/openSUSE-Leap-16.0-DVD-x86_64-Media.iso                                         " \
+		"o  opensuse-tumbleweed         openSUSE%20Tumbleweed                   openSUSE            openSUSE-Tumbleweed-DVD-x86_64-Current.iso      boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_dvd.xml    ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                  " \
+		"o  windows-10                  Windows%2010                            windows             Win10_22H2_Japanese_x64.iso                     -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/Windows10   -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  windows-11                  Windows%2011                            windows             Win11_24H2_Japanese_x64.iso                     -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/Windows11   -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"-  windows-11                  Windows%2011%20custom                   windows             Win11_24H2_Japanese_x64_custom.iso              -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/Windows11   -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"m  menu-entry                  -                                       -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+	) #  0  1                           2                                       3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
 
 # --- live media install mode -------------------------------------------------
-	declare -r -a DATA_LIST_INST=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \
-		"m  menu-entry                  Live%20media%20Install%20mode       -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-		"x  debian-live-10              Debian%2010%20Live                  debian              debian-live-10.13.0-amd64-lxde.iso              d-i                                     initrd.gz                   vmlinuz                 preseed/ps_debian_desktop_old.cfg       ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso                     " \
-		"o  debian-live-11              Debian%2011%20Live                  debian              debian-live-11.11.0-amd64-lxde.iso              d-i                                     initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso                        " \
-		"o  debian-live-12              Debian%2012%20Live                  debian              debian-live-12.7.0-amd64-lxde.iso               install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                                 " \
-		"o  debian-live-13              Debian%2013%20Live                  debian              debian-live-13.0.0-amd64-lxde.iso               install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  debian-live-testing         Debian%20testing%20Live             debian              debian-live-testing-amd64-lxde.iso              install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                      " \
-		"x  ubuntu-desktop-14.04        Ubuntu%2014.04%20Desktop            ubuntu              ubuntu-14.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     ${HGFS_DIRS}/linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"x  ubuntu-desktop-16.04        Ubuntu%2016.04%20Desktop            ubuntu              ubuntu-16.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     ${HGFS_DIRS}/linux/ubuntu        2016-04-21  2026-04-23  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"x  ubuntu-desktop-18.04        Ubuntu%2018.04%20Desktop            ubuntu              ubuntu-18.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     ${HGFS_DIRS}/linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-amd64.iso                                                                       " \
-		"o  ubuntu-desktop-20.04        Ubuntu%2020.04%20Desktop            ubuntu              ubuntu-20.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         ${HGFS_DIRS}/linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-desktop-amd64.iso                                                                        " \
-		"o  ubuntu-desktop-22.04        Ubuntu%2022.04%20Desktop            ubuntu              ubuntu-22.04.5-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         ${HGFS_DIRS}/linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-amd64.iso                                                                        " \
-		"x  ubuntu-desktop-23.04        Ubuntu%2023.04%20Desktop            ubuntu              ubuntu-23.04-desktop-amd64.iso                  casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-amd64.iso                                                                        " \
-		"x  ubuntu-desktop-23.10        Ubuntu%2023.10%20Desktop            ubuntu              ubuntu-23.10.1-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-desktop-amd64.iso                                                                       " \
-		"o  ubuntu-desktop-24.04        Ubuntu%2024.04%20Desktop            ubuntu              ubuntu-24.04.1-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2034-04-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-desktop-amd64.iso                                                                        " \
-		"o  ubuntu-desktop-24.10        Ubuntu%2024.10%20Desktop            ubuntu              ubuntu-24.10-desktop-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10[0-9.]*-desktop-amd64.iso                                                                     " \
-		"-  ubuntu-desktop-24.10        Ubuntu%2024.10%20Desktop%20Beta     ubuntu              ubuntu-24.10-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10-beta-desktop-amd64.iso                                                                       " \
-		"x  ubuntu-desktop-24.04        Ubuntu%2024.04%20Desktop            ubuntu              ubuntu-24.04-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2029-05-31  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-beta-desktop-amd64.iso                                                                   " \
-		"-  ubuntu-desktop-oracular     Ubuntu%20oracular%20Desktop         ubuntu              oracular-desktop-amd64.iso                      casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/oracular-desktop-amd64.iso                                                                       " \
-		"x  ubuntu-legacy-23.04         Ubuntu%2023.04%20Legacy%20Desktop   ubuntu              ubuntu-23.04-desktop-legacy-amd64.iso           casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-amd64.iso                                                 " \
-		"x  ubuntu-legacy-23.10         Ubuntu%2023.10%20Legacy%20Desktop   ubuntu              ubuntu-23.10-desktop-legacy-amd64.iso           casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-amd64.iso                                                " \
-		"m  menu-entry                  -                                   -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-	) #  0  1                           2                                   3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
+	declare -r -a DATA_LIST_INST=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+		"m  menu-entry                  Live%20media%20Install%20mode           -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+		"x  debian-live-10              Debian%2010%20Live                      debian              debian-live-10.13.0-amd64-lxde.iso              d-i                                     initrd.gz                   vmlinuz                 preseed/ps_debian_desktop_old.cfg       ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso                     " \
+		"o  debian-live-11              Debian%2011%20Live                      debian              debian-live-11.11.0-amd64-lxde.iso              d-i                                     initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso                        " \
+		"o  debian-live-12              Debian%2012%20Live                      debian              debian-live-12.8.0-amd64-lxde.iso               install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                                 " \
+		"o  debian-live-13              Debian%2013%20Live                      debian              debian-live-13.0.0-amd64-lxde.iso               install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  debian-live-testing         Debian%20testing%20Live                 debian              debian-live-testing-amd64-lxde.iso              install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                      " \
+		"x  ubuntu-desktop-14.04        Ubuntu%2014.04%20Desktop                ubuntu              ubuntu-14.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     ${HGFS_DIRS}/linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"x  ubuntu-desktop-16.04        Ubuntu%2016.04%20Desktop                ubuntu              ubuntu-16.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     ${HGFS_DIRS}/linux/ubuntu        2016-04-21  2026-04-23  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"x  ubuntu-desktop-18.04        Ubuntu%2018.04%20Desktop                ubuntu              ubuntu-18.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     ${HGFS_DIRS}/linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-amd64.iso                                                                       " \
+		"o  ubuntu-desktop-20.04        Ubuntu%2020.04%20Desktop                ubuntu              ubuntu-20.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         ${HGFS_DIRS}/linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-desktop-amd64.iso                                                                        " \
+		"o  ubuntu-desktop-22.04        Ubuntu%2022.04%20Desktop                ubuntu              ubuntu-22.04.5-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         ${HGFS_DIRS}/linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-amd64.iso                                                                        " \
+		"x  ubuntu-desktop-23.04        Ubuntu%2023.04%20Desktop                ubuntu              ubuntu-23.04-desktop-amd64.iso                  casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-amd64.iso                                                                        " \
+		"x  ubuntu-desktop-23.10        Ubuntu%2023.10%20Desktop                ubuntu              ubuntu-23.10.1-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-desktop-amd64.iso                                                                       " \
+		"o  ubuntu-desktop-24.04        Ubuntu%2024.04%20Desktop                ubuntu              ubuntu-24.04.1-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2034-04-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-desktop-amd64.iso                                                                        " \
+		"o  ubuntu-desktop-24.10        Ubuntu%2024.10%20Desktop                ubuntu              ubuntu-24.10-desktop-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10[0-9.]*-desktop-amd64.iso                                                                     " \
+		"-  ubuntu-desktop-24.10        Ubuntu%2024.10%20Desktop%20Beta         ubuntu              ubuntu-24.10-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10-beta-desktop-amd64.iso                                                                       " \
+		"x  ubuntu-desktop-24.04        Ubuntu%2024.04%20Desktop                ubuntu              ubuntu-24.04-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2029-05-31  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-beta-desktop-amd64.iso                                                                   " \
+		"-  ubuntu-desktop-oracular     Ubuntu%20oracular%20Desktop             ubuntu              oracular-desktop-amd64.iso                      casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/oracular-desktop-amd64.iso                                                                       " \
+		"x  ubuntu-legacy-23.04         Ubuntu%2023.04%20Legacy%20Desktop       ubuntu              ubuntu-23.04-desktop-legacy-amd64.iso           casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_old.cfg     ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-amd64.iso                                                 " \
+		"x  ubuntu-legacy-23.10         Ubuntu%2023.10%20Legacy%20Desktop       ubuntu              ubuntu-23.10-desktop-legacy-amd64.iso           casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop.cfg         ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-amd64.iso                                                " \
+		"m  menu-entry                  -                                       -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+	) #  0  1                           2                                       3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
 
 # --- live media live mode ----------------------------------------------------
-	declare -r -a DATA_LIST_LIVE=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \
-		"m  menu-entry                  Live%20media%20Live%20mode          -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-		"x  debian-live-10              Debian%2010%20Live                  debian              debian-live-10.13.0-amd64-lxde.iso              live                                    initrd.img-4.19.0-21-amd64  vmlinuz-4.19.0-21-amd64 preseed/-                               ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso                     " \
-		"o  debian-live-11              Debian%2011%20Live                  debian              debian-live-11.11.0-amd64-lxde.iso              live                                    initrd.img-5.10.0-30-amd64  vmlinuz-5.10.0-30-amd64 preseed/-                               ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso                        " \
-		"o  debian-live-12              Debian%2012%20Live                  debian              debian-live-12.7.0-amd64-lxde.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                                 " \
-		"o  debian-live-13              Debian%2013%20Live                  debian              debian-live-13.0.0-amd64-lxde.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  debian-live-testing         Debian%20testing%20Live             debian              debian-live-testing-amd64-lxde.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                      " \
-		"x  ubuntu-desktop-14.04        Ubuntu%2014.04%20Desktop            ubuntu              ubuntu-14.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"x  ubuntu-desktop-16.04        Ubuntu%2016.04%20Desktop            ubuntu              ubuntu-16.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2016-04-21  2026-04-23  xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"x  ubuntu-desktop-18.04        Ubuntu%2018.04%20Desktop            ubuntu              ubuntu-18.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-amd64.iso                                                                       " \
-		"o  ubuntu-desktop-20.04        Ubuntu%2020.04%20Desktop            ubuntu              ubuntu-20.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-desktop-amd64.iso                                                                        " \
-		"o  ubuntu-desktop-22.04        Ubuntu%2022.04%20Desktop            ubuntu              ubuntu-22.04.5-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-amd64.iso                                                                        " \
-		"x  ubuntu-desktop-23.04        Ubuntu%2023.04%20Desktop            ubuntu              ubuntu-23.04-desktop-amd64.iso                  casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-amd64.iso                                                                        " \
-		"x  ubuntu-desktop-23.10        Ubuntu%2023.10%20Desktop            ubuntu              ubuntu-23.10.1-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-desktop-amd64.iso                                                                       " \
-		"o  ubuntu-desktop-24.04        Ubuntu%2024.04%20Desktop            ubuntu              ubuntu-24.04.1-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2034-04-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-desktop-amd64.iso                                                                        " \
-		"o  ubuntu-desktop-24.10        Ubuntu%2024.10%20Desktop            ubuntu              ubuntu-24.10-desktop-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10[0-9.]*-desktop-amd64.iso                                                                     " \
-		"-  ubuntu-desktop-24.10        Ubuntu%2024.10%20Desktop%20Beta     ubuntu              ubuntu-24.10-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10-beta-desktop-amd64.iso                                                                       " \
-		"x  ubuntu-desktop-24.04        Ubuntu%2024.04%20Desktop            ubuntu              ubuntu-24.04-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2029-05-31  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-beta-desktop-amd64.iso                                                                   " \
-		"-  ubuntu-desktop-oracular     Ubuntu%20oracular%20Desktop         ubuntu              oracular-desktop-amd64.iso                      casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/oracular-desktop-amd64.iso                                                                       " \
-		"x  ubuntu-legacy-23.04         Ubuntu%2023.04%20Legacy%20Desktop   ubuntu              ubuntu-23.04-desktop-legacy-amd64.iso           casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-amd64.iso                                                 " \
-		"x  ubuntu-legacy-23.10         Ubuntu%2023.10%20Legacy%20Desktop   ubuntu              ubuntu-23.10-desktop-legacy-amd64.iso           casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-amd64.iso                                                " \
-		"m  menu-entry                  -                                   -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-	) #  0  1                           2                                   3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
+	declare -r -a DATA_LIST_LIVE=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+		"m  menu-entry                  Live%20media%20Live%20mode              -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+		"x  debian-live-10              Debian%2010%20Live                      debian              debian-live-10.13.0-amd64-lxde.iso              live                                    initrd.img-4.19.0-21-amd64  vmlinuz-4.19.0-21-amd64 preseed/-                               ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso                     " \
+		"o  debian-live-11              Debian%2011%20Live                      debian              debian-live-11.11.0-amd64-lxde.iso              live                                    initrd.img-5.10.0-32-amd64  vmlinuz-5.10.0-32-amd64 preseed/-                               ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso                        " \
+		"o  debian-live-12              Debian%2012%20Live                      debian              debian-live-12.8.0-amd64-lxde.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                                 " \
+		"o  debian-live-13              Debian%2013%20Live                      debian              debian-live-13.0.0-amd64-lxde.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  debian-live-testing         Debian%20testing%20Live                 debian              debian-live-testing-amd64-lxde.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                      " \
+		"x  ubuntu-desktop-14.04        Ubuntu%2014.04%20Desktop                ubuntu              ubuntu-14.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"x  ubuntu-desktop-16.04        Ubuntu%2016.04%20Desktop                ubuntu              ubuntu-16.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2016-04-21  2026-04-23  xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"x  ubuntu-desktop-18.04        Ubuntu%2018.04%20Desktop                ubuntu              ubuntu-18.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2018-04-26  2028-04-26  xx:xx:xx    0   -   -   https://releases.ubuntu.com/bionic/ubuntu-18.04[0-9.]*-desktop-amd64.iso                                                                       " \
+		"o  ubuntu-desktop-20.04        Ubuntu%2020.04%20Desktop                ubuntu              ubuntu-20.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2020-04-23  2030-04-23  xx:xx:xx    0   -   -   https://releases.ubuntu.com/focal/ubuntu-20.04[0-9.]*-desktop-amd64.iso                                                                        " \
+		"o  ubuntu-desktop-22.04        Ubuntu%2022.04%20Desktop                ubuntu              ubuntu-22.04.5-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2022-04-21  2032-04-21  xx:xx:xx    0   -   -   https://releases.ubuntu.com/jammy/ubuntu-22.04[0-9.]*-desktop-amd64.iso                                                                        " \
+		"x  ubuntu-desktop-23.04        Ubuntu%2023.04%20Desktop                ubuntu              ubuntu-23.04-desktop-amd64.iso                  casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/lunar/ubuntu-23.04[0-9.]*-desktop-amd64.iso                                                                        " \
+		"x  ubuntu-desktop-23.10        Ubuntu%2023.10%20Desktop                ubuntu              ubuntu-23.10.1-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-desktop-amd64.iso                                                                       " \
+		"o  ubuntu-desktop-24.04        Ubuntu%2024.04%20Desktop                ubuntu              ubuntu-24.04.1-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2034-04-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-desktop-amd64.iso                                                                        " \
+		"o  ubuntu-desktop-24.10        Ubuntu%2024.10%20Desktop                ubuntu              ubuntu-24.10-desktop-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10[0-9.]*-desktop-amd64.iso                                                                     " \
+		"-  ubuntu-desktop-24.10        Ubuntu%2024.10%20Desktop%20Beta         ubuntu              ubuntu-24.10-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10-beta-desktop-amd64.iso                                                                       " \
+		"x  ubuntu-desktop-24.04        Ubuntu%2024.04%20Desktop                ubuntu              ubuntu-24.04-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2029-05-31  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-beta-desktop-amd64.iso                                                                   " \
+		"-  ubuntu-desktop-oracular     Ubuntu%20oracular%20Desktop             ubuntu              oracular-desktop-amd64.iso                      casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/oracular-desktop-amd64.iso                                                                       " \
+		"x  ubuntu-legacy-23.04         Ubuntu%2023.04%20Legacy%20Desktop       ubuntu              ubuntu-23.04-desktop-legacy-amd64.iso           casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-amd64.iso                                                 " \
+		"x  ubuntu-legacy-23.10         Ubuntu%2023.10%20Legacy%20Desktop       ubuntu              ubuntu-23.10-desktop-legacy-amd64.iso           casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-amd64.iso                                                " \
+		"m  menu-entry                  -                                       -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+	) #  0  1                           2                                       3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
 
 # --- tool --------------------------------------------------------------------
-	declare -r -a DATA_LIST_TOOL=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \
-		"m  menu-entry                  System%20tools                      -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-		"o  memtest86+                  Memtest86+                          memtest86+          mt86plus_7.00_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                                           " \
-		"o  winpe-x64                   WinPE%20x64                         windows             WinPEx64.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  winpe-x86                   WinPE%20x86                         windows             WinPEx86.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  ati2020x64                  ATI2020x64                          windows             WinPE_ATI2020x64.iso                            .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  ati2020x86                  ATI2020x86                          windows             WinPE_ATI2020x86.iso                            .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"m  menu-entry                  -                                   -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-	) #  0  1                           2                                   3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
+	declare -r -a DATA_LIST_TOOL=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+		"m  menu-entry                  System%20tools                          -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+		"x  memtest86plus               Memtest86+%207.00                       memtest86+          mt86plus_7.00_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                                           " \
+		"o  memtest86plus               Memtest86+%207.20                       memtest86+          mt86plus_7.20_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.20/mt86plus_7.20_64.grub.iso.zip                                                                           " \
+		"o  winpe-x64                   WinPE%20x64                             windows             WinPEx64.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  winpe-x86                   WinPE%20x86                             windows             WinPEx86.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  ati2020x64                  ATI2020x64                              windows             WinPE_ATI2020x64.iso                            .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  ati2020x86                  ATI2020x86                              windows             WinPE_ATI2020x86.iso                            .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"m  menu-entry                  -                                       -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+	) #  0  1                           2                                       3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
 
 # --- custom live image -------------------------------------------------------
-	declare -r -a DATA_LIST_CSTM=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \
-		"m  menu-entry                  Custom%20Live%20Media               -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-		"x  live-debian-10-buster       Live%20Debian%2010                  debian              live-debian-10-buster-amd64.iso                 live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                                  " \
-		"o  live-debian-11-bullseye     Live%20Debian%2011                  debian              live-debian-11-bullseye-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                                  " \
-		"o  live-debian-12-bookworm     Live%20Debian%2012                  debian              live-debian-12-bookworm-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                                  " \
-		"o  live-debian-13-trixie       Live%20Debian%2013                  debian              live-debian-13-trixie-amd64.iso                 live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                                  " \
-		"o  live-debian-xx-unstable     Live%20Debian%20xx                  debian              live-debian-xx-unstable-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                                  " \
-		"x  live-ubuntu-14.04-trusty    Live%20Ubuntu%2014.04               ubuntu              live-ubuntu-14.04-trusty-amd64.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2014-04-17  2024-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
-		"L  live-ubuntu-16.04-xenial    Live%20Ubuntu%2016.04               ubuntu              live-ubuntu-16.04-xenial-amd64.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2016-04-21  2026-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
-		"L  live-ubuntu-18.04-bionic    Live%20Ubuntu%2018.04               ubuntu              live-ubuntu-18.04-bionic-amd64.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
-		"s  live-ubuntu-20.04-focal     Live%20Ubuntu%2020.04               ubuntu              live-ubuntu-20.04-focal-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
-		"o  live-ubuntu-22.04-jammy     Live%20Ubuntu%2022.04               ubuntu              live-ubuntu-22.04-jammy-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2022-04-21  2032-04-21  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
-		"x  live-ubuntu-23.04-lunar     Live%20Ubuntu%2023.04               ubuntu              live-ubuntu-23.04-lunar-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-04-20  2024-01-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
-		"x  live-ubuntu-23.10-mantic    Live%20Ubuntu%2023.10               ubuntu              live-ubuntu-23.10-mantic-amd64.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-10-12  2024-07-11  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
-		"o  live-ubuntu-24.04-noble     Live%20Ubuntu%2024.04               ubuntu              live-ubuntu-24.04-noble-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2024-04-25  2034-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
-		"o  live-ubuntu-24.10-oracular  Live%20Ubuntu%2024.10               ubuntu              live-ubuntu-24.10-oracular-amd64.iso            live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
-		"s  live-ubuntu-xx.xx-devel     Live%20Ubuntu%20xx.xx               ubuntu              live-ubuntu-xx.xx-devel-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
-		"m  menu-entry                  -                                   -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-	) #  0  1                           2                                   3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
+	declare -r -a DATA_LIST_CSTM=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+		"m  menu-entry                  Custom%20Live%20Media                   -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+		"x  live-debian-10-buster       Live%20Debian%2010                      debian              live-debian-10-buster-amd64.iso                 live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                                  " \
+		"o  live-debian-11-bullseye     Live%20Debian%2011                      debian              live-debian-11-bullseye-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                                  " \
+		"o  live-debian-12-bookworm     Live%20Debian%2012                      debian              live-debian-12-bookworm-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                                  " \
+		"o  live-debian-13-trixie       Live%20Debian%2013                      debian              live-debian-13-trixie-amd64.iso                 live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                                  " \
+		"o  live-debian-xx-unstable     Live%20Debian%20xx                      debian              live-debian-xx-unstable-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://deb.debian.org/debian                                                                                                                  " \
+		"x  live-ubuntu-14.04-trusty    Live%20Ubuntu%2014.04                   ubuntu              live-ubuntu-14.04-trusty-amd64.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2014-04-17  2024-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
+		"L  live-ubuntu-16.04-xenial    Live%20Ubuntu%2016.04                   ubuntu              live-ubuntu-16.04-xenial-amd64.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2016-04-21  2026-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
+		"L  live-ubuntu-18.04-bionic    Live%20Ubuntu%2018.04                   ubuntu              live-ubuntu-18.04-bionic-amd64.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2018-04-26  2028-04-26  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
+		"s  live-ubuntu-20.04-focal     Live%20Ubuntu%2020.04                   ubuntu              live-ubuntu-20.04-focal-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2020-04-23  2030-04-23  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
+		"o  live-ubuntu-22.04-jammy     Live%20Ubuntu%2022.04                   ubuntu              live-ubuntu-22.04-jammy-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2022-04-21  2032-04-21  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
+		"x  live-ubuntu-23.04-lunar     Live%20Ubuntu%2023.04                   ubuntu              live-ubuntu-23.04-lunar-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-04-20  2024-01-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
+		"x  live-ubuntu-23.10-mantic    Live%20Ubuntu%2023.10                   ubuntu              live-ubuntu-23.10-mantic-amd64.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2023-10-12  2024-07-11  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
+		"o  live-ubuntu-24.04-noble     Live%20Ubuntu%2024.04                   ubuntu              live-ubuntu-24.04-noble-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2024-04-25  2034-04-25  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
+		"o  live-ubuntu-24.10-oracular  Live%20Ubuntu%2024.10                   ubuntu              live-ubuntu-24.10-oracular-amd64.iso            live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
+		"s  live-ubuntu-xx.xx-devel     Live%20Ubuntu%20xx.xx                   ubuntu              live-ubuntu-xx.xx-devel-amd64.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${DIRS_LIVE}                     20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   http://archive.ubuntu.com/ubuntu                                                                                                               " \
+		"m  menu-entry                  -                                       -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+	) #  0  1                           2                                       3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
 
 # --- system command ----------------------------------------------------------
-#	declare -r -a DATA_LIST_SCMD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \
-#		"m  menu-entry                  System%20command                    -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-#		"o  hdt                         Hardware%20info                     system              -                                               -                                       hdt.c32                     -                       -                                       -                                -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-#		"o  shutdown                    System%20shutdown                   system              -                                               -                                       poweroff.c32                -                       -                                       -                                -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-#		"o  restart                     System%20restart                    system              -                                               -                                       reboot.c32                  -                       -                                       -                                -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-#		"m  menu-entry                  -                                   -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-#	) #  0  1                           2                                   3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
+#	declare -r -a DATA_LIST_SCMD=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+#		"m  menu-entry                  System%20command                        -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+#		"o  hdt                         Hardware%20info                         system              -                                               -                                       hdt.c32                     -                       -                                       -                                -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+#		"o  shutdown                    System%20shutdown                       system              -                                               -                                       poweroff.c32                -                       -                                       -                                -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+#		"o  restart                     System%20restart                        system              -                                               -                                       reboot.c32                  -                       -                                       -                                -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+#		"m  menu-entry                  -                                       -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
+#	) #  0  1                           2                                       3                   4                                               5                                       6                           7                       8                                       9                                10          11          12          13  14  15  16
 
 	# --- target of creation --------------------------------------------------
 #	declare -a    TGET_LIST=()
@@ -601,7 +610,7 @@ function funcColorTest() {
 
 # --- diff --------------------------------------------------------------------
 function funcDiff() {
-	if [[ ! -f "$1" ]] || [[ ! -f "$2" ]]; then
+	if [[ ! -e "$1" ]] || [[ ! -e "$2" ]]; then
 		return
 	fi
 	funcPrintf "$3"
@@ -789,13 +798,20 @@ function funcCurl() {
 #	declare -r    OLD_IFS="${IFS}"
 	declare -i    RET_CD=0
 	declare -i    I
-	# shellcheck disable=SC2155
-	declare       INP_URL="$(echo "$@" | sed -ne 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
-	# shellcheck disable=SC2155
-	declare       OUT_DIR="$(echo "$@" | sed -ne 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
-	# shellcheck disable=SC2155
-	declare       OUT_FILE="$(echo "$@" | sed -ne 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
-	declare -a    ARY_HED=("")
+#	# shellcheck disable=SC2155
+#	declare       INP_URL="$(echo "$@" | sed -ne 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
+#	# shellcheck disable=SC2155
+#	declare       OUT_DIR="$(echo "$@" | sed -ne 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+#	# shellcheck disable=SC2155
+#	declare       OUT_FILE="$(echo "$@" | sed -ne 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+#	# shellcheck disable=SC2155
+#	declare       MSG_FLG="$(echo "$@" | sed -ne 's%^.* --silent *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+	declare       INP_URL=""
+	declare       OUT_DIR=""
+	declare       OUT_FILE=""
+	declare       MSG_FLG=""
+	declare -a    OPT_PRM=()
+	declare -a    ARY_HED=()
 	declare       ERR_MSG=""
 	declare       WEB_SIZ=""
 	declare       WEB_TIM=""
@@ -817,11 +833,44 @@ function funcCurl() {
 #		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 #		return "${RET_CD}"
 #	fi
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1:-}" in
+			http://* | https://* )
+				OPT_PRM+=("${1}")
+				INP_URL="${1}"
+				;;
+			--output-dir )
+				OPT_PRM+=("${1}")
+				shift
+				OPT_PRM+=("${1}")
+				OUT_DIR="${1}"
+				;;
+			--output )
+				OPT_PRM+=("${1}")
+				shift
+				OPT_PRM+=("${1}")
+				OUT_FILE="${1}"
+				;;
+			--quiet )
+				MSG_FLG="true"
+				;;
+			* )
+				OPT_PRM+=("${1}")
+				;;
+		esac
+		shift
+	done
+	if [[ -z "${OUT_FILE}" ]]; then
+		OUT_FILE="${INP_URL##*/}"
+	fi
 	if ! ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)"); then
 		RET_CD="$?"
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
 #		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
-		printf "%s\n" "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
+		if [[ -z "${MSG_FLG}" ]]; then
+			printf "%s\n" "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
+		fi
 		return "${RET_CD}"
 	fi
 	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -ne '/http\/.* 200/,/^$/ s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p')
@@ -831,15 +880,17 @@ function funcCurl() {
 	if [[ -n "${OUT_DIR}" ]] && [[ ! -d "${OUT_DIR}/." ]]; then
 		mkdir -p "${OUT_DIR}"
 	fi
-	if [[ -n "${OUT_FILE}" ]] && [[ -f "${OUT_FILE}" ]]; then
+	if [[ -n "${OUT_FILE}" ]] && [[ -e "${OUT_FILE}" ]]; then
 		WEB_FIL="${OUT_FILE}"
 	fi
-	if [[ -n "${WEB_FIL}" ]] && [[ -f "${WEB_FIL}" ]]; then
+	if [[ -n "${WEB_FIL}" ]] && [[ -e "${WEB_FIL}" ]]; then
 		LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${WEB_FIL}")
 		LOC_TIM=$(echo "${LOC_INF}" | awk '{print $6;}')
 		LOC_SIZ=$(echo "${LOC_INF}" | awk '{print $5;}')
 		if [[ "${WEB_TIM:-0}" -eq "${LOC_TIM:-0}" ]] && [[ "${WEB_SIZ:-0}" -eq "${LOC_SIZ:-0}" ]]; then
-			funcPrintf "same    file: ${WEB_FIL}"
+			if [[ -z "${MSG_FLG}" ]]; then
+				funcPrintf "same    file: ${WEB_FIL}"
+			fi
 			return
 		fi
 	fi
@@ -860,20 +911,27 @@ function funcCurl() {
 #		done
 #	fi
 
-	funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
-	if curl "$@"; then
+	if [[ -z "${MSG_FLG}" ]]; then
+		funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
+	fi
+	if curl "${OPT_PRM[@]}"; then
 		return $?
 	fi
 
 	for ((I=0; I<3; I++))
 	do
-		funcPrintf "retry  count: ${I}"
-		if curl --continue-at "$@"; then
+		if [[ -z "${MSG_FLG}" ]]; then
+			funcPrintf "retry  count: ${I}"
+		fi
+		if curl --continue-at "${OPT_PRM[@]}"; then
 			return "$?"
 		else
 			RET_CD="$?"
 		fi
 	done
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		rm -f "${:?}"
+	fi
 	return "${RET_CD}"
 
 #	curl "$@"
@@ -921,6 +979,11 @@ function funcServiceStatus() {
 	echo "${SRVC_STAT}"
 }
 
+# --- function is package -----------------------------------------------------
+function funcIsPackage () {
+	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed'
+}
+
 # *** function section (sub functions) ****************************************
 
 # === create ==================================================================
@@ -936,6 +999,7 @@ function funcCreate_directory() {
 		"${DIRS_IMGS}"                                                                                   \
 		"${DIRS_ISOS}"                                                                                   \
 		"${DIRS_ORIG}"                                                                                   \
+		"${DIRS_PKGS}"                                                                                   \
 		"${DIRS_RMAK}"                                                                                   \
 		"${DIRS_TEMP}"                                                                                   \
 		"${DIRS_TFTP}"/{boot/grub/{fonts,i386-pc,locale,x86_64-efi},load,menu-{bios,efi64}/pxelinux.cfg} \
@@ -1057,7 +1121,7 @@ function funcCreate_link() {
 			"${CONF_YAST}"
 		do
 			mkdir -p "${CONF_DIRS}"
-			if [[ -f "${FILE_NAME}" ]]; then
+			if [[ -e "${FILE_NAME}" ]]; then
 				funcPrintf "         file exist : ${FILE_NAME##*/}"
 			elif [[ -L "${FILE_NAME}" ]]; then
 				funcPrintf "symbolic link exist : ${FILE_NAME##*/}"
@@ -1071,7 +1135,7 @@ function funcCreate_link() {
 	for ((I=0; I<"${#DATA_LIST[@]}"; I++))
 	do
 		read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
-#		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${DATA_LINE[9]}/${DATA_LINE[4]}" ]]; then
+#		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -e "${DATA_LINE[9]}/${DATA_LINE[4]}" ]]; then
 		if [[ "${DATA_LINE[0]}" != "o" ]]; then
 			continue
 		fi
@@ -1151,7 +1215,7 @@ function funcCreate_late_command() {
 		 	readonly COMD_PARM="${PROG_DIRS}/${PROG_NAME%.*}.prm";
 		 	DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\1/ip' | tr '[:upper:]' '[:lower:]')"
 		 	readonly DIST_NAME
-		 	if [ -f "${COMD_PARM}" ]; then
+		 	if [ -e "${COMD_PARM}" ]; then
 		 		COMD_LINE="$(cat "${COMD_PARM}")"
 		 	else
 		 		COMD_LINE="$(cat /proc/cmdline)"
@@ -1379,7 +1443,7 @@ function funcCreate_late_command() {
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
 		 	#--------------------------------------------------------------------------
-		 	if [ ! -f "${SEED_FILE}" ]; then
+		 	if [ ! -e "${SEED_FILE}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${SEED_FILE}"
 		 		return
 		 	fi
@@ -1492,7 +1556,7 @@ function funcCreate_late_command() {
 		 	NIC_WGRP="${NIC_FQDN##*.}"
 		 	NMN_FLAG=""
 		 	#--- preseed parameter ----------------------------------------------------
-		 	if [ -f "${SEED_FILE}" ]; then
+		 	if [ -e "${SEED_FILE}" ]; then
 		 		# shellcheck disable=SC2312
 		 		funcGetNetwork_parameter_sub "$(cat "${SEED_FILE}")"
 		 		if [ -n "${NIC_WGRP}" ]; then
@@ -1563,7 +1627,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1590,7 +1654,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1623,7 +1687,7 @@ function funcCreate_late_command() {
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1631,7 +1695,7 @@ function funcCreate_late_command() {
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1674,7 +1738,7 @@ function funcCreate_late_command() {
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1710,7 +1774,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1737,7 +1801,7 @@ function funcCreate_late_command() {
 		 	fi
 		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
-		 	if [ -f "${FILE_NAME}" ]; then
+		 	if [ -e "${FILE_NAME}" ]; then
 		 		if [ ! -d "${BACK_DIRS}/." ]; then
 		 			mkdir -p "${BACK_DIRS}"
 		 		fi
@@ -1788,7 +1852,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1847,7 +1911,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1862,7 +1926,7 @@ function funcCreate_late_command() {
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
 		 	#--- systemctl ------------------------------------------------------------
-		 	if [ -f /lib/systemd/system/smbd.service ]; then
+		 	if [ -e /lib/systemd/system/smbd.service ]; then
 		 		SRVC_SMBD="smbd.service"
 		 		SRVC_NMBD="nmbd.service"
 		 	else
@@ -1902,7 +1966,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1916,7 +1980,7 @@ function funcCreate_late_command() {
 		 	fi
 		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
-		 	if [ -f "${FILE_NAME}" ]; then
+		 	if [ -e "${FILE_NAME}" ]; then
 		 		if [ ! -d "${BACK_DIRS}/." ]; then
 		 			mkdir -p "${BACK_DIRS}"
 		 		fi
@@ -1944,7 +2008,7 @@ function funcCreate_late_command() {
 		 	fi
 		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
-		 	if [ -f "${FILE_NAME}" ]; then
+		 	if [ -e "${FILE_NAME}" ]; then
 		 		if [ ! -d "${BACK_DIRS}/." ]; then
 		 			mkdir -p "${BACK_DIRS}"
 		 		fi
@@ -2052,7 +2116,7 @@ function funcCreate_late_command() {
 		 	fi
 		#	for FILE_NAME in "${FILE_DIRS}"/*.yaml
 		#	do
-		#		if [ ! -f "${FILE_NAME}" ]; then
+		#		if [ ! -e "${FILE_NAME}" ]; then
 		#			continue
 		#		fi
 		#		echo "${PROG_NAME}: ${FILE_NAME} moved"
@@ -2160,7 +2224,7 @@ function funcCreate_late_command() {
 		 		CONF_FILE="${TGET_DIRS}${CONF_FILE}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -2169,7 +2233,7 @@ function funcCreate_late_command() {
 		 		mkdir -p "${BACK_DIRS}/system-connections"
 		 	fi
 		 	echo "${PROG_NAME}: ${CONF_FILE}"
-		 	if [ -f "${CONF_FILE}" ]; then
+		 	if [ -e "${CONF_FILE}" ]; then
 		 		cp -a "${CONF_FILE}" "${BACK_DIRS}"
 		 	fi
 		 	find "${FILE_DIRS}/system-connections" -name '*.yaml' -type f | \
@@ -2217,7 +2281,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
 		 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
 		 		echo "${PROG_NAME}: ${FILE_NAME}"
-		 		if [ -f "${FILE_NAME}" ]; then
+		 		if [ -e "${FILE_NAME}" ]; then
 		 			nmcli connection delete "${FILE_NAME##*/}" || true
 		 		fi
 		 		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
@@ -2390,7 +2454,7 @@ function funcCreate_late_command() {
 		#funcChange_gdm3_configure() {
 		#	FUNC_NAME="funcChange_gdm3_configure"
 		#	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
-		#	if [ -f "${TGET_DIRS}/etc/gdm3/custom.conf" ]; then
+		#	if [ -e "${TGET_DIRS}/etc/gdm3/custom.conf" ]; then
 		#		sed -i.orig "${TGET_DIRS}/etc/gdm3/custom.conf" \
 		#		    -e '/WaylandEnable=false/ s/^#//'
 		#	fi
@@ -2797,14 +2861,23 @@ function funcCreate_copy_iso2hdd() {
 	declare -r    WORK_MNTP="${WORK_DIRS}/mnt"
 #	declare -r    WORK_IMGS="${WORK_DIRS}/img"
 #	declare -r    WORK_RAMS="${WORK_DIRS}/ram"
+#	declare -r -a RSYC_OPTN=("--archive" "--human-readable" "--update" "--delete")
+	declare -a    RSYC_OPTN=()
 	declare       DIRS_KRNL=""
 	declare       DIRS_IRAM=""
-#	declare       FILE_IRAM=""
+#	declare -r    CPIO_ERLY="$(mktemp "${TMPDIR:-/var/tmp}/${PROG_PROC}-ERLY_XXXXXX")" || exit 1
+#	declare -r    CPIO_MAIN="$(mktemp "${TMPDIR:-/var/tmp}/${PROG_PROC}-MAIN_XXXXXX")" || exit 1
+#	declare -r    CPIO_OLAY="$(mktemp "${TMPDIR:-/var/tmp}/${PROG_PROC}-OLAY_XXXXXX")" || exit 1
 #	declare -i    RET_CD=0
-	funcPrintf "        copy: ${TGET_LINE[4]}"
-	if [[ "${TGET_LINE[0]}" != "o" ]] || [[ ! -f "${FILE_PATH}" ]]; then
+	# shellcheck disable=SC2312
+	funcPrintf "---- ${TGET_LINE[4]} $(funcString "${COLS_SIZE}" '-')"
+	if [[ "${TGET_LINE[0]}" != "o" ]] || [[ ! -e "${FILE_PATH}" ]]; then
+		funcPrintf "        skip: ${TGET_LINE[4]}"
+		# shellcheck disable=SC2312
+		funcPrintf "---- ${TGET_LINE[4]} $(funcString "${COLS_SIZE}" '-')"
 		return
 	fi
+	funcPrintf "        copy: ${TGET_LINE[4]}"
 	# --- forced unmount ------------------------------------------------------
 	if [[ -d "${WORK_MNTP}/." ]]; then
 		set +e
@@ -2828,48 +2901,44 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${DEST_DIRS}"
 	mkdir -p "${BOOT_DIRS}"
 	# --- copy iso -> hdd -----------------------------------------------------
-	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
-#	touch -c "${DEST_DIRS}" 2>/dev/null
-#	RET_CD=$?
-#	if [[ "${RET_CD}" -eq 0 ]]; then
-	if touch -c "${DEST_DIRS}" 2>/dev/null; then
-		ionice -c "${IONICE_CLAS}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/." "${DEST_DIRS}/" 2>/dev/null || true
-		chmod -R +r "${DEST_DIRS}/" 2>/dev/null || true
-#	else
-#		funcPrintf "        skip: ${TGET_LINE[4]}"
+	case "${TGET_LINE[1]}" in
+		windows-* | \
+		winpe-*   | \
+		ati*      ) RSYC_OPTN=();;
+		*         ) RSYC_OPTN=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete");;
+	esac
+	if [[ -z "${RSYC_OPTN[*]}" ]]; then
+		funcPrintf "   skip copy: ${TGET_LINE[4]}"
+		# shellcheck disable=SC2312
+		funcPrintf "---- ${TGET_LINE[4]} $(funcString "${COLS_SIZE}" '-')"
+		return
 	fi
-	if [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" ]] && [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" ]]; then
-		DIRS_IRAM="${BOOT_DIRS}"
-		DIRS_KRNL="${BOOT_DIRS}"
-		if [[ "${TGET_LINE[6]%/*}" != "${TGET_LINE[6]##*/}" ]]; then
-			DIRS_IRAM="${BOOT_DIRS}/${TGET_LINE[6]%/*}"
-		fi
-		if [[ "${TGET_LINE[7]%/*}" != "${TGET_LINE[7]##*/}" ]]; then
-			DIRS_KRNL="${BOOT_DIRS}/${TGET_LINE[7]%/*}"
-		fi
+	mount -r "${FILE_PATH}" "${WORK_MNTP}"
+	ionice -c "${IONICE_CLAS}" rsync "${RSYC_OPTN[@]}" "${WORK_MNTP}/." "${DEST_DIRS}/" 2>/dev/null || true
+	umount "${WORK_MNTP}"
+	chmod -R +r "${DEST_DIRS}/" 2>/dev/null || true
+	# --- copy initramfs ------------------------------------------------------
+	DIRS_IRAM="${BOOT_DIRS}"
+	DIRS_KRNL="${BOOT_DIRS}"
+	if [[ "${TGET_LINE[6]%/*}" != "${TGET_LINE[6]##*/}" ]]; then
+		DIRS_IRAM="${BOOT_DIRS}/${TGET_LINE[6]%/*}"
+	fi
+	if [[ "${TGET_LINE[7]%/*}" != "${TGET_LINE[7]##*/}" ]]; then
+		DIRS_KRNL="${BOOT_DIRS}/${TGET_LINE[7]%/*}"
+	fi
+	if [[ -e "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" ]] && [[ -e "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" ]]; then
 		rm -rf "${DIRS_IRAM:?}/${TGET_LINE[6]##*/}" "${DIRS_KRNL:?}/${TGET_LINE[7]##*/}"
 		mkdir -p "${DIRS_IRAM}" "${DIRS_KRNL}"
-		ionice -c "${IONICE_CLAS}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
-		ionice -c "${IONICE_CLAS}" rsync --archive --human-readable --update --delete "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
+		ionice -c "${IONICE_CLAS}" rsync "${RSYC_OPTN[@]}" "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
+		ionice -c "${IONICE_CLAS}" rsync "${RSYC_OPTN[@]}" "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 		chmod -R +r "${DIRS_IRAM}/" 2>/dev/null || true
 		chmod -R +r "${DIRS_KRNL}/" 2>/dev/null || true
-#		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
-#		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 	fi
-	umount "${WORK_MNTP}"
-	# --- copy initrd -> hdd --------------------------------------------------
-#	if [[ "${TGET_LINE[1]}" =~ -mini- ]]; then
-#		funcPrintf "        copy: initrd"
-#		# shellcheck disable=SC2312
-#		while read -r FILE_IRAM
-#		do
-#			DIRS_IRAM="${WORK_RAMS}/${FILE_IRAM##*/}"
-#			mkdir -p "${DIRS_IRAM}"
-#			unmkinitramfs "${FILE_IRAM}" "${DIRS_IRAM}/" 2>/dev/null
-#		done < <(find "${WORK_IMGS}" -name 'initrd*' -type f)
-#	fi
 	# --- remove directory ----------------------------------------------------
 	rm -rf "${WORK_DIRS:?}"
+	funcPrintf "    complete: ${TGET_LINE[4]}"
+	# shellcheck disable=SC2312
+	funcPrintf "---- ${TGET_LINE[4]} $(funcString "${COLS_SIZE}" '-')"
 }
 
 # ----- create menu.cfg preseed -----------------------------------------------
@@ -2947,7 +3016,7 @@ function funcCreate_menu_cfg_preseed() {
 				for WORK_LINE in "${DIRS_CONF}/script/"live_*.{sh,conf} \
 				                 "${DIRS_IMGS}/${TGET_LINE[1]}/live/"{config.conf,{config.conf.d,boot,config-hooks,config-preseed}/*}
 				do
-					if [[ ! -f "${WORK_LINE}" ]]; then
+					if [[ ! -e "${WORK_LINE}" ]]; then
 						continue
 					fi
 					BOOT_HOOK+="${BOOT_HOOK:+"|"}${WORK_LINE/${DIRS_IMGS%/*}/${HTTP_ADDR}}"
@@ -3260,7 +3329,7 @@ function funcCreate_syslinux_cfg() {
 	fi
 	# --- create syslinux.cfg -------------------------------------------------
 	MENU_PATH="${MENU_DIRS}/${MENU_NAME[0]}"
-	if [[ ! -f "${MENU_PATH}" ]] \
+	if [[ ! -e "${MENU_PATH}" ]] \
 	|| [[ ! -s "${MENU_PATH}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${MENU_PATH}"
 			path ./
@@ -3316,7 +3385,7 @@ _EOT_
 			MENU_ENTR="$(printf "%-60.60s" "- ${TGET_INFO[2]//%20/ }")"
 			case "${TGET_INFO[1]}" in
 				windows-* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					if [[ "${MENU_PATH}" =~ bios ]]; then
@@ -3329,8 +3398,8 @@ _EOT_
 _EOT_
 					fi
 					;;
-				memtest86\+ )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+				memtest86*  )
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					if [[ "${MENU_PATH}" =~ bios ]]; then
@@ -3352,7 +3421,7 @@ _EOT_
 				winpe-*    | \
 				ati2020x64 | \
 				ati2020x86 )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					if [[ "${MENU_PATH}" =~ bios ]]; then
@@ -3379,7 +3448,7 @@ _EOT_
 _EOT_
 					;;
 				* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					MENU_ENTR="$(printf "%-60.60s%20.20s" "- ${TGET_INFO[2]//%20/ }" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
@@ -3417,7 +3486,7 @@ function funcCreate_grub_cfg() {
 	fi
 	# --- create grub.cfg -----------------------------------------------------
 	MENU_PATH="${MENU_DIRS}/${MENU_NAME[0]}"
-	if [[ ! -f "${MENU_PATH}" ]] \
+	if [[ ! -e "${MENU_PATH}" ]] \
 	|| [[ ! -s "${MENU_PATH}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${MENU_PATH}"
 			set default="0"
@@ -3527,7 +3596,7 @@ _EOT_
 			MENU_ENTR="$(printf "%-60.60s" "- ${TGET_INFO[2]//%20/ }")"
 			case "${TGET_INFO[1]}" in
 				windows-* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
@@ -3545,8 +3614,8 @@ _EOT_
 						fi
 _EOT_
 					;;
-				memtest86\+ )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+				memtest86*  )
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
@@ -3568,7 +3637,7 @@ _EOT_
 				winpe-*    | \
 				ati2020x64 | \
 				ati2020x86 )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
@@ -3591,7 +3660,7 @@ _EOT_
 				restart  )
 					;;
 				* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					MENU_ENTR="$(printf "%-60.60s%20.20s" "- ${TGET_INFO[2]//%20/ }" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
@@ -3652,7 +3721,7 @@ function funcCreate_autoexec_ipxe() {
 	fi
 	# --- create autoexec.ipxe ------------------------------------------------
 	MENU_PATH="${MENU_DIRS}/${MENU_NAME[0]}"
-	if [[ ! -f "${MENU_PATH}" ]] \
+	if [[ ! -e "${MENU_PATH}" ]] \
 	|| [[ ! -s "${MENU_PATH}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${MENU_PATH}"
 			#!ipxe
@@ -3715,7 +3784,7 @@ _EOT_
 			MENU_TEXT="$(printf "%-${MENU_SPCS}.${MENU_SPCS}s%s" "item -- ${TGET_INFO[1]}" "${MENU_ENTR}")"
 			case "${TGET_INFO[1]}" in
 				windows-* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
@@ -3746,7 +3815,7 @@ _EOT_
 				winpe-*    | \
 				ati2020x64 | \
 				ati2020x86 )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
@@ -3769,8 +3838,8 @@ _EOT_
 					)"
 					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_TEXT}"
 					;;
-				memtest86\+ )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+				memtest86*  )
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
@@ -3792,7 +3861,7 @@ _EOT_
 					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_TEXT}"
 					;;
 				* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					if [[ "${TGET_INFO[8]#*/}" = "-" ]]; then
@@ -3818,9 +3887,15 @@ _EOT_
 									isset \${next-server} && ${BOOT_OPTN[I]/${SRVR_ADDR}/\$\{next-server\}} ||
 _EOT_
 							else
-								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
-										${BOOT_OPTN[I]}
+								if [[ "${BOOT_OPTN[I]}" =~ set\ knladdr ]]; then
+									cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+											${BOOT_OPTN[I]/imgs/load}
 _EOT_
+								else
+									cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+											${BOOT_OPTN[I]}
+_EOT_
+								fi
 							fi
 						)"
 						if [[ -n "${MENU_TEXT##* }" ]]; then
@@ -3828,11 +3903,11 @@ _EOT_
 						fi
 					done
 					MENU_TEXT="$(
-						if [[ "${TGET_INFO[5]}" = "." ]]; then
+#						if [[ "${TGET_INFO[5]}" = "." ]]; then
 							WORK_STRS="\${knladdr}"
-						else
-							WORK_STRS="\${knladdr}/${TGET_INFO[5]}"
-						fi
+#						else
+#							WORK_STRS="\${knladdr}/${TGET_INFO[5]}"
+#						fi
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							form                                    Configure Boot Options
 							item options                            Boot Options
@@ -4064,11 +4139,14 @@ _EOT_
 	echo ""
 
 	# --- download ------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- download $(funcString "${COLS_SIZE}" '-')"
-	funcPrintf "--no-cutting" "funcCurl ${CURL_OPTN[*]}"
-	funcCurl "${CURL_OPTN[@]}"
-	echo ""
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'curl'); then
+		# shellcheck disable=SC2312
+		funcPrintf "---- download $(funcString "${COLS_SIZE}" '-')"
+		funcPrintf "--no-cutting" "funcCurl ${CURL_OPTN[*]}"
+		funcCurl "${CURL_OPTN[@]}"
+		echo ""
+	fi
 
 	# -------------------------------------------------------------------------
 	rm -f "${FILE_WRK1}" "${FILE_WRK2}"
@@ -4269,7 +4347,7 @@ function funcCall_create() {
 #							do
 #								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
 #							done
-							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/pxelinux.0" ]]; then
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -e "${MENU_DIRS}/pxelinux.0" ]]; then
 								if [[ -d /usr/lib/syslinux/modules/bios/. ]]; then
 									cp --archive --update /usr/lib/syslinux/memdisk         "${MENU_DIRS}/"
 									cp --archive --update /usr/lib/syslinux/modules/bios/.  "${MENU_DIRS}/"
@@ -4285,7 +4363,7 @@ function funcCall_create() {
 #							do
 #								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
 #							done
-							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -e "${MENU_DIRS}/syslinux.efi" ]]; then
 								if [[ -d /usr/lib/syslinux/modules/efi32/. ]]; then
 									cp --archive --update /usr/lib/syslinux/modules/efi32/. "${MENU_DIRS}/"
 									cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${MENU_DIRS}/"
@@ -4297,7 +4375,7 @@ function funcCall_create() {
 #							do
 #								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
 #							done
-							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -e "${MENU_DIRS}/syslinux.efi" ]]; then
 								if [[ -d /usr/lib/syslinux/modules/efi64/. ]]; then
 									cp --archive --update /usr/lib/syslinux/modules/efi64/. "${MENU_DIRS}/"
 									cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${MENU_DIRS}/"
@@ -4310,10 +4388,10 @@ function funcCall_create() {
 #								: > "${MENU_DIRS}/${MENU_GRUB[I]}"
 #							done
 							if [[ "${COMD_INST}" -ne 0 ]] \
-							|| [[ ! -f "${MENU_DIRS}/x86_64-efi/grub.cfg" ]] \
-							|| [[ ! -f "${MENU_DIRS}/i386-pc/grub.cfg"    ]]; then
+							|| [[ ! -e "${MENU_DIRS}/x86_64-efi/grub.cfg" ]] \
+							|| [[ ! -e "${MENU_DIRS}/i386-pc/grub.cfg"    ]]; then
 								mkdir -p "${DIRS_TFTP}/boot/grub/"{fonts,locale,i386-pc,x86_64-efi}
-								if [[ -f /usr/lib/syslinux/memdisk ]]; then
+								if [[ -e /usr/lib/syslinux/memdisk ]]; then
 									cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_TFTP}/"
 									cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_HTML}/"
 									grub-mknetdir --net-directory="${DIRS_TFTP}" --subdir="${DIRS_GRUB}"
@@ -4332,7 +4410,7 @@ function funcCall_create() {
 								set net_default_server="${HTTP_ADDR#*://}"
 _EOT_
 							# -------------------------------------------------
-							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}"  ]]; then
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -e "${MENU_DIRS}/${BOOT_PXE0}"  ]]; then
 								"${COMD_NAME}" \
 								    --directory=/usr/lib/grub/i386-pc \
 								    --format=i386-pc-pxe \
@@ -4343,7 +4421,7 @@ _EOT_
 								    "${MODU_LIST[@]}" cpuid play pxe vga
 							fi
 							# -------------------------------------------------
-							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -e "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
 								"${COMD_NAME}" \
 								    --directory=/usr/lib/grub/x86_64-efi \
 								    --format=x86_64-efi \
@@ -4360,8 +4438,8 @@ _EOT_
 #								: > "${MENU_DIRS}/${MENU_IPXE[I]}"
 #							done
 							if [[ "${COMD_INST}" -ne 0 ]] \
-							|| [[ ! -f "${MENU_DIRS}/undionly.kpxe" ]] \
-							|| [[ ! -f "${MENU_DIRS}/ipxe.efi"      ]]; then
+							|| [[ ! -e "${MENU_DIRS}/undionly.kpxe" ]] \
+							|| [[ ! -e "${MENU_DIRS}/ipxe.efi"      ]]; then
 								rm -f "${MENU_DIRS}/"{undionly.kpxe,ipxe.efi,wimboot}
 								mkdir -p "${DIRS_TEMP}"
 #								pushd "${DIRS_TEMP}" > /dev/null
@@ -4374,13 +4452,13 @@ _EOT_
 #									fi
 #								popd  > /dev/null
 							fi
-							if [[ ! -f "${MENU_DIRS}/undionly.kpxe" ]]; then
+							if [[ ! -e "${MENU_DIRS}/undionly.kpxe" ]]; then
 								curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://boot.ipxe.org/undionly.kpxe"
 							fi
-							if [[ ! -f "${MENU_DIRS}/ipxe.efi"      ]]; then
+							if [[ ! -e "${MENU_DIRS}/ipxe.efi"      ]]; then
 								curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://boot.ipxe.org/ipxe.efi"
 							fi
-							if [[ ! -f "${MENU_DIRS}/wimboot"       ]]; then
+							if [[ ! -e "${MENU_DIRS}/wimboot"       ]]; then
 								curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://github.com/ipxe/wimboot/releases/latest/download/wimboot"
 							fi
 							;;
@@ -4430,24 +4508,24 @@ _EOT_
 				done
 				# -------------------------------------------------------------
 				case "${2:-}" in
-					debian       | \
-					ubuntu       | \
-					fedora       | \
-					centos       | \
-					almalinux    | \
-					miraclelinux | \
-					rockylinux   | \
-					opensuse     | \
-					windows      | \
-					memtest86\+  | \
-					winpe        | \
-					ati2020x64   | \
-					ati2020x86   | \
-					live         ) 
+					debian-*       | \
+					ubuntu-*       | \
+					fedora-*       | \
+					centos-*       | \
+					almalinux-*    | \
+					miraclelinux-* | \
+					rockylinux-*   | \
+					opensuse-*     | \
+					windows-*      | \
+					memtest86*     | \
+					winpe          | \
+					ati2020x64     | \
+					ati2020x86     | \
+					live-*         ) 
 						for ((I=0; I<"${#DATA_LIST[@]}"; I++))
 						do
 							read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
-							if [[ "${DATA_LINE[0]}" != "o" ]] || [[ "${DATA_LINE[1]%%-*}" = "$2" ]]; then
+							if [[ "${DATA_LINE[0]}" != "o" ]] || [[ "${DATA_LINE[1]}" =~ ${2:-} ]]; then
 								continue
 							fi
 							DATA_LINE[0]="#"
@@ -4462,10 +4540,10 @@ _EOT_
 				do
 					read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
 					FILE_PATH="${DIRS_ISOS}/${DATA_LINE[4]}"
-					if [[ "${DATA_LINE[0]}" = "o" ]] && [[ ! -f "${FILE_PATH}" ]]; then
+					if [[ "${DATA_LINE[0]}" = "o" ]] && [[ ! -e "${FILE_PATH}" ]]; then
 						continue
 					fi
-					if [[ "${DATA_LINE[0]}" = "o" ]] && [[ -f "${FILE_PATH}" ]]; then
+					if [[ "${DATA_LINE[0]}" = "o" ]] && [[ -e "${FILE_PATH}" ]]; then
 						# --- copy iso contents to hdd ------------------------
 						funcCreate_copy_iso2hdd "${DATA_LINE[@]}"
 						# --- file information --------------------------------
@@ -4499,7 +4577,7 @@ _EOT_
 						rockylinux   ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_kickstart "${DATA_LINE[@]}");;
 						opensuse     ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_autoyast "${DATA_LINE[@]}");;
 						windows      ) ;;
-						memtest86\+  ) ;;
+						memtest86*   ) ;;
 						winpe        | \
 						ati2020x64   | \
 						ati2020x86   ) ;;
@@ -4629,6 +4707,18 @@ function funcMain() {
 		fi
 	done
 	if [[ "${#DIRS_LIST[@]}" -gt 0 ]]; then
+		for DIRS_NAME in "${DIRS_LIST[@]}"/*/mnt
+		do
+			set +e
+			if mountpoint -q "${DIRS_NAME}"; then
+				funcPrintf "unmount unnecessary temporary directories"
+				if [[ "${DIRS_NAME##*/}" = "dev" ]]; then
+					umount -q "${DIRS_NAME}/pts" || umount -q -lf "${DIRS_NAME}/pts"
+				fi
+				umount -q "${DIRS_NAME}" || umount -q -lf "${DIRS_NAME}"
+			fi
+			set -e
+		done
 		funcPrintf "remove unnecessary temporary directories"
 		rm -rf "${DIRS_LIST[@]}"
 	fi

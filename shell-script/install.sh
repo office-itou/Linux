@@ -18,6 +18,11 @@
 
 # *** initialization **********************************************************
 
+	case "${1:-}" in
+		-dbg) set -x; shift;;
+		*) ;;
+	esac
+
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -415,34 +420,34 @@
 
 # --- text color test ---------------------------------------------------------
 function funcColorTest() {
-	echo -e "${TXT_RESET} : TXT_RESET    : ${TXT_RESET}"
-	echo -e "${TXT_ULINE} : TXT_ULINE    : ${TXT_RESET}"
-	echo -e "${TXT_ULINERST} : TXT_ULINERST : ${TXT_RESET}"
-#	echo -e "${TXT_BLINK} : TXT_BLINK    : ${TXT_RESET}"
-#	echo -e "${TXT_BLINKRST} : TXT_BLINKRST : ${TXT_RESET}"
-	echo -e "${TXT_REV} : TXT_REV      : ${TXT_RESET}"
-	echo -e "${TXT_REVRST} : TXT_REVRST   : ${TXT_RESET}"
-	echo -e "${TXT_BLACK} : TXT_BLACK    : ${TXT_RESET}"
-	echo -e "${TXT_RED} : TXT_RED      : ${TXT_RESET}"
-	echo -e "${TXT_GREEN} : TXT_GREEN    : ${TXT_RESET}"
-	echo -e "${TXT_YELLOW} : TXT_YELLOW   : ${TXT_RESET}"
-	echo -e "${TXT_BLUE} : TXT_BLUE     : ${TXT_RESET}"
-	echo -e "${TXT_MAGENTA} : TXT_MAGENTA  : ${TXT_RESET}"
-	echo -e "${TXT_CYAN} : TXT_CYAN     : ${TXT_RESET}"
-	echo -e "${TXT_WHITE} : TXT_WHITE    : ${TXT_RESET}"
-	echo -e "${TXT_BBLACK} : TXT_BBLACK   : ${TXT_RESET}"
-	echo -e "${TXT_BRED} : TXT_BRED     : ${TXT_RESET}"
-	echo -e "${TXT_BGREEN} : TXT_BGREEN   : ${TXT_RESET}"
-	echo -e "${TXT_BYELLOW} : TXT_BYELLOW  : ${TXT_RESET}"
-	echo -e "${TXT_BBLUE} : TXT_BBLUE    : ${TXT_RESET}"
-	echo -e "${TXT_BMAGENTA} : TXT_BMAGENTA : ${TXT_RESET}"
-	echo -e "${TXT_BCYAN} : TXT_BCYAN    : ${TXT_RESET}"
-	echo -e "${TXT_BWHITE} : TXT_BWHITE   : ${TXT_RESET}"
+	printf "${TXT_RESET} : %-12.12s : ${TXT_RESET}\n" "TXT_RESET"
+	printf "${TXT_ULINE} : %-12.12s : ${TXT_RESET}\n" "TXT_ULINE"
+	printf "${TXT_ULINERST} : %-12.12s : ${TXT_RESET}\n" "TXT_ULINERST"
+#	printf "${TXT_BLINK} : %-12.12s : ${TXT_RESET}\n" "TXT_BLINK"
+#	printf "${TXT_BLINKRST} : %-12.12s : ${TXT_RESET}\n" "TXT_BLINKRST"
+	printf "${TXT_REV} : %-12.12s : ${TXT_RESET}\n" "TXT_REV"
+	printf "${TXT_REVRST} : %-12.12s : ${TXT_RESET}\n" "TXT_REVRST"
+	printf "${TXT_BLACK} : %-12.12s : ${TXT_RESET}\n" "TXT_BLACK"
+	printf "${TXT_RED} : %-12.12s : ${TXT_RESET}\n" "TXT_RED"
+	printf "${TXT_GREEN} : %-12.12s : ${TXT_RESET}\n" "TXT_GREEN"
+	printf "${TXT_YELLOW} : %-12.12s : ${TXT_RESET}\n" "TXT_YELLOW"
+	printf "${TXT_BLUE} : %-12.12s : ${TXT_RESET}\n" "TXT_BLUE"
+	printf "${TXT_MAGENTA} : %-12.12s : ${TXT_RESET}\n" "TXT_MAGENTA"
+	printf "${TXT_CYAN} : %-12.12s : ${TXT_RESET}\n" "TXT_CYAN"
+	printf "${TXT_WHITE} : %-12.12s : ${TXT_RESET}\n" "TXT_WHITE"
+	printf "${TXT_BBLACK} : %-12.12s : ${TXT_RESET}\n" "TXT_BBLACK"
+	printf "${TXT_BRED} : %-12.12s : ${TXT_RESET}\n" "TXT_BRED"
+	printf "${TXT_BGREEN} : %-12.12s : ${TXT_RESET}\n" "TXT_BGREEN"
+	printf "${TXT_BYELLOW} : %-12.12s : ${TXT_RESET}\n" "TXT_BYELLOW"
+	printf "${TXT_BBLUE} : %-12.12s : ${TXT_RESET}\n" "TXT_BBLUE"
+	printf "${TXT_BMAGENTA} : %-12.12s : ${TXT_RESET}\n" "TXT_BMAGENTA"
+	printf "${TXT_BCYAN} : %-12.12s : ${TXT_RESET}\n" "TXT_BCYAN"
+	printf "${TXT_BWHITE} : %-12.12s : ${TXT_RESET}\n" "TXT_BWHITE"
 }
 
 # --- diff --------------------------------------------------------------------
 function funcDiff() {
-	if [[ ! -f "$1" ]] || [[ ! -f "$2" ]]; then
+	if [[ ! -e "$1" ]] || [[ ! -e "$2" ]]; then
 		return
 	fi
 	funcPrintf "$3"
@@ -630,13 +635,20 @@ function funcCurl() {
 #	declare -r    OLD_IFS="${IFS}"
 	declare -i    RET_CD=0
 	declare -i    I
-	# shellcheck disable=SC2155
-	declare       INP_URL="$(echo "$@" | sed -ne 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
-	# shellcheck disable=SC2155
-	declare       OUT_DIR="$(echo "$@" | sed -ne 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
-	# shellcheck disable=SC2155
-	declare       OUT_FILE="$(echo "$@" | sed -ne 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
-	declare -a    ARY_HED=("")
+#	# shellcheck disable=SC2155
+#	declare       INP_URL="$(echo "$@" | sed -ne 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
+#	# shellcheck disable=SC2155
+#	declare       OUT_DIR="$(echo "$@" | sed -ne 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+#	# shellcheck disable=SC2155
+#	declare       OUT_FILE="$(echo "$@" | sed -ne 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+#	# shellcheck disable=SC2155
+#	declare       MSG_FLG="$(echo "$@" | sed -ne 's%^.* --silent *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
+	declare       INP_URL=""
+	declare       OUT_DIR=""
+	declare       OUT_FILE=""
+	declare       MSG_FLG=""
+	declare -a    OPT_PRM=()
+	declare -a    ARY_HED=()
 	declare       ERR_MSG=""
 	declare       WEB_SIZ=""
 	declare       WEB_TIM=""
@@ -658,10 +670,44 @@ function funcCurl() {
 #		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
 #		return "${RET_CD}"
 #	fi
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1:-}" in
+			http://* | https://* )
+				OPT_PRM+=("${1}")
+				INP_URL="${1}"
+				;;
+			--output-dir )
+				OPT_PRM+=("${1}")
+				shift
+				OPT_PRM+=("${1}")
+				OUT_DIR="${1}"
+				;;
+			--output )
+				OPT_PRM+=("${1}")
+				shift
+				OPT_PRM+=("${1}")
+				OUT_FILE="${1}"
+				;;
+			--quiet )
+				MSG_FLG="true"
+				;;
+			* )
+				OPT_PRM+=("${1}")
+				;;
+		esac
+		shift
+	done
+	if [[ -z "${OUT_FILE}" ]]; then
+		OUT_FILE="${INP_URL##*/}"
+	fi
 	if ! ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)"); then
 		RET_CD="$?"
 		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
-		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
+#		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
+		if [[ -z "${MSG_FLG}" ]]; then
+			printf "%s\n" "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
+		fi
 		return "${RET_CD}"
 	fi
 	WEB_SIZ=$(echo "${ARY_HED[@],,}" | sed -ne '/http\/.* 200/,/^$/ s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p')
@@ -671,15 +717,17 @@ function funcCurl() {
 	if [[ -n "${OUT_DIR}" ]] && [[ ! -d "${OUT_DIR}/." ]]; then
 		mkdir -p "${OUT_DIR}"
 	fi
-	if [[ -n "${OUT_FILE}" ]] && [[ -f "${OUT_FILE}" ]]; then
+	if [[ -n "${OUT_FILE}" ]] && [[ -e "${OUT_FILE}" ]]; then
 		WEB_FIL="${OUT_FILE}"
 	fi
-	if [[ -n "${WEB_FIL}" ]] && [[ -f "${WEB_FIL}" ]]; then
+	if [[ -n "${WEB_FIL}" ]] && [[ -e "${WEB_FIL}" ]]; then
 		LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${WEB_FIL}")
 		LOC_TIM=$(echo "${LOC_INF}" | awk '{print $6;}')
 		LOC_SIZ=$(echo "${LOC_INF}" | awk '{print $5;}')
 		if [[ "${WEB_TIM:-0}" -eq "${LOC_TIM:-0}" ]] && [[ "${WEB_SIZ:-0}" -eq "${LOC_SIZ:-0}" ]]; then
-			funcPrintf "same    file: ${WEB_FIL}"
+			if [[ -z "${MSG_FLG}" ]]; then
+				funcPrintf "same    file: ${WEB_FIL}"
+			fi
 			return
 		fi
 	fi
@@ -700,20 +748,27 @@ function funcCurl() {
 #		done
 #	fi
 
-	funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
-	if curl "$@"; then
+	if [[ -z "${MSG_FLG}" ]]; then
+		funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
+	fi
+	if curl "${OPT_PRM[@]}"; then
 		return $?
 	fi
 
 	for ((I=0; I<3; I++))
 	do
-		funcPrintf "retry  count: ${I}"
-		if curl --continue-at "$@"; then
+		if [[ -z "${MSG_FLG}" ]]; then
+			funcPrintf "retry  count: ${I}"
+		fi
+		if curl --continue-at "${OPT_PRM[@]}"; then
 			return "$?"
 		else
 			RET_CD="$?"
 		fi
 	done
+	if [[ "${RET_CD}" -ne 0 ]]; then
+		rm -f "${:?}"
+	fi
 	return "${RET_CD}"
 
 #	curl "$@"
@@ -1026,8 +1081,8 @@ function funcNetwork_nsswitch() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 		else
@@ -1054,8 +1109,8 @@ function funcNetwork_hosts() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# --- hosts ---------------------------------------------------------------
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 		else
@@ -1107,8 +1162,8 @@ function funcNetwork_hosts_allow_deny() {
 	FILE_PATH="/etc/hosts.allow"
 	FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 		else
@@ -1134,8 +1189,8 @@ function funcNetwork_hosts_allow_deny() {
 	FILE_PATH="/etc/hosts.deny"
 	FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 		else
@@ -1159,14 +1214,14 @@ function funcNetwork_dnsmasq() {
 	declare       FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	declare       SYSD_NAME="dnsmasq.service"
 	# -------------------------------------------------------------------------
-	if [[ ! -f "${FILE_PATH}" ]]; then
+	if [[ ! -e "${FILE_PATH}" ]]; then
 		return
 	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
 		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 	else
@@ -1217,8 +1272,8 @@ function funcNetwork_connmanctl() {
 	FILE_PATH="/etc/connman/main.conf"
 	FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 		else
@@ -1326,8 +1381,8 @@ function funcNetwork_netplan() {
 		fi
 	done < <(find "${FILE_PATH%/*}" \( -type f -o -type l \))
 	# -------------------------------------------------------------------------
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 		else
@@ -1377,7 +1432,7 @@ function funcNetwork_networkmanager() {
 		nmcli device disconnect "${ETHR_NAME[${I}]}"
 	done
 	# -------------------------------------------------------------------------
-#	if [[ -f /etc/dnsmasq.conf ]]; then
+#	if [[ -e /etc/dnsmasq.conf ]]; then
 #		SYSD_NAME="dnsmasq.service"
 #		FILE_PATH+="/dnsmasq.conf"
 #		CONF_PARM="[main]"$'\n'"systemd-resolved=false"$'\n'"dns=dnsmasq"
@@ -1397,8 +1452,8 @@ function funcNetwork_networkmanager() {
 	# -------------------------------------------------------------------------
 	FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 		else
@@ -1449,8 +1504,8 @@ function funcNetwork_resolv_conf() {
 #		funcPrintf "      ${MSGS_TITL}: rm -f ${FILE_PATH}"
 #		rm -f "${FILE_PATH}"
 	fi
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG}"
 		else
@@ -1489,8 +1544,8 @@ function funcNetwork_tftpd_hpa() {
 	funcPrintf "      ${MSGS_TITL}: ${TFTP_ROOT}"
 	mkdir -p "${TFTP_ROOT}/"{menu-{bios,efi64},boot/grub}
 	# -------------------------------------------------------------------------
-	if [[ -f "${CONF_PATH}" ]]; then
-		if [[ ! -f "${CONF_ORIG}" ]]; then
+	if [[ -e "${CONF_PATH}" ]]; then
+		if [[ ! -e "${CONF_ORIG}" ]]; then
 			mkdir -p "${CONF_ORIG%/*}"
 			cp --archive "${CONF_PATH}" "${CONF_ORIG}"
 		else
@@ -1538,7 +1593,7 @@ function funcNetwork_pxe_conf() {
 	mkdir -p "${DIRS_PATH}"
 	touch "${FILE_PATH}"
 	# -------------------------------------------------------------------------
-	if [[ -f /etc/selinux/config ]]; then
+	if [[ -e /etc/selinux/config ]]; then
 		funcPrintf "      ${MSGS_TITL}: setsebool"
 		setsebool -P httpd_enable_homedirs 1
 #		setsebool -P httpd_use_nfs 1
@@ -1547,8 +1602,8 @@ function funcNetwork_pxe_conf() {
 #		setsebool -P tftp_anon_write 1
 	fi
 	# -------------------------------------------------------------------------
-	if [[ -f "${CONF_PATH}" ]]; then
-		if [[ ! -f "${CONF_ORIG}" ]]; then
+	if [[ -e "${CONF_PATH}" ]]; then
+		if [[ ! -e "${CONF_ORIG}" ]]; then
 			mkdir -p "${CONF_ORIG%/*}"
 			cp --archive "${CONF_PATH}" "${CONF_ORIG}"
 		else
@@ -1561,8 +1616,8 @@ function funcNetwork_pxe_conf() {
 	sed -i "${CONF_PATH}"               \
 	    -e '/^bind-interfaces$/ s/^/#/'
 	# -------------------------------------------------------------------------
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG}"
 		else
@@ -1685,8 +1740,8 @@ function funcApplication_package_manager() {
 			FILE_PATH="/etc/apt/sources.list"
 			FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 			FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-			if [[ -f "${FILE_PATH}" ]]; then
-				if [[ ! -f "${FILE_ORIG}" ]]; then
+			if [[ -e "${FILE_PATH}" ]]; then
+				if [[ ! -e "${FILE_ORIG}" ]]; then
 					mkdir -p "${FILE_ORIG%/*}"
 					cp --archive "${FILE_PATH}" "${FILE_ORIG}"
 				else
@@ -1707,8 +1762,8 @@ function funcApplication_package_manager() {
 				FILE_PATH="/etc/apt/sources.list.d/backports.list"
 				FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 				FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-				if [[ -f "${FILE_PATH}" ]]; then
-					if [[ ! -f "${FILE_ORIG}" ]]; then
+				if [[ -e "${FILE_PATH}" ]]; then
+					if [[ ! -e "${FILE_ORIG}" ]]; then
 						mkdir -p "${FILE_ORIG%/*}"
 						cp --archive "${FILE_PATH}" "${FILE_ORIG}"
 					else
@@ -1895,13 +1950,13 @@ function funcApplication_system_shared_directory() {
 	funcPrintf "      ${MSGS_TITL}: create shared directory"
 	funcPrintf "      ${MSGS_TITL}: ${DIRS_SHAR}"
 	mkdir -p "${DIRS_SHAR}"/{cifs,data/{adm/{netlogon,profiles},arc,bak,pub,usr},dlna/{movies,others,photos,sounds}}
-	if [[ -f /etc/selinux/config ]]; then
+	if [[ -e /etc/selinux/config ]]; then
 		funcPrintf "      ${MSGS_TITL}: setsebool"
 		setsebool -P samba_enable_home_dirs 1
 		setsebool -P samba_export_all_ro 1
 		setsebool -P samba_export_all_rw 1
 	fi
-#	if [[ -f /etc/selinux/config ]]; then
+#	if [[ -e /etc/selinux/config ]]; then
 #		WORK_DIRS="${DIRS_SHAR/\./\\.}(/.*)?"
 #		WORK_TYPE="samba_share_t"
 #		# shellcheck disable=SC2312
@@ -1941,11 +1996,11 @@ function funcApplication_system_user_environment() {
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
 	FILE_PATH="/etc/locale.gen"
-	if [[ -f "${FILE_PATH}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
 		funcPrintf "      ${MSGS_TITL}: language setup"
 		FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 		FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 		else
@@ -1975,8 +2030,8 @@ function funcApplication_system_user_environment() {
 		FILE_PATH="${USER_HOME}/.bash_history"
 		FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 		FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-		if [[ -f "${FILE_PATH}" ]]; then
-			if [[ ! -f "${FILE_ORIG}" ]]; then
+		if [[ -e "${FILE_PATH}" ]]; then
+			if [[ ! -e "${FILE_ORIG}" ]]; then
 				mkdir -p "${FILE_ORIG%/*}"
 				cp --archive "${FILE_PATH}" "${FILE_ORIG}"
 			else
@@ -2003,8 +2058,8 @@ _EOT_
 			FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 			FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 			# --- .vimrc ------------------------------------------------------
-			if [[ -f "${FILE_PATH}" ]]; then
-				if [[ ! -f "${FILE_ORIG}" ]]; then
+			if [[ -e "${FILE_PATH}" ]]; then
+				if [[ ! -e "${FILE_ORIG}" ]]; then
 					mkdir -p "${FILE_ORIG%/*}"
 					cp --archive "${FILE_PATH}" "${FILE_ORIG}"
 				else
@@ -2027,7 +2082,7 @@ _EOT_
 _EOT_
 			chown "${USER_NAME}": "${FILE_PATH}"
 			# --- vi ----------------------------------------------------------
-			if [[ -f /etc/virc ]]; then
+			if [[ -e /etc/virc ]]; then
 				# --- .virc -------------------------------------------------------
 				if [[ ! -L "${LINK_PATH}" ]]; then
 					funcPrintf "      ${MSGS_TITL}: create config link"
@@ -2038,13 +2093,13 @@ _EOT_
 				# --- .bashrc -----------------------------------------------------
 				FILE_PATH="${USER_HOME}/.bashrc"
 				# shellcheck disable=SC2312
-#				if [[ -f "${FILE_PATH}" ]] && [[ -z "$(sed -n '/alias for vim/p' "${FILE_PATH}")" ]]; then
+#				if [[ -e "${FILE_PATH}" ]] && [[ -z "$(sed -n '/alias for vim/p' "${FILE_PATH}")" ]]; then
 				if [[ -n "${FILE_PATH}" ]] && [[ -z "$(sed -n '/user custom/p' "${FILE_PATH}")" ]]; then
 					funcPrintf "      ${MSGS_TITL}: alias for vim"
 					FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 					FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-					if [[ -f "${FILE_PATH}" ]]; then
-						if [[ ! -f "${FILE_ORIG}" ]]; then
+					if [[ -e "${FILE_PATH}" ]]; then
+						if [[ ! -e "${FILE_ORIG}" ]]; then
 							mkdir -p "${FILE_ORIG%/*}"
 							cp --archive "${FILE_PATH}" "${FILE_ORIG}"
 						else
@@ -2073,8 +2128,8 @@ _EOT_
 			FILE_PATH="${USER_HOME}/.curlrc"
 			FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 			FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-			if [[ -f "${FILE_PATH}" ]]; then
-				if [[ ! -f "${FILE_ORIG}" ]]; then
+			if [[ -e "${FILE_PATH}" ]]; then
+				if [[ ! -e "${FILE_ORIG}" ]]; then
 					mkdir -p "${FILE_ORIG%/*}"
 					cp --archive "${FILE_PATH}" "${FILE_ORIG}"
 				else
@@ -2093,9 +2148,9 @@ _EOT_
 			chown "${USER_NAME}": "${FILE_PATH}"
 		fi
 		# --- measures against garbled characters -----------------------------
-		if [[ -f "${USER_HOME}/.bashrc" ]]; then
+		if [[ -e "${USER_HOME}/.bashrc" ]]; then
 			FILE_PATH="${USER_HOME}/.bashrc"
-		elif [[ -f "${USER_HOME}/.i18n" ]]; then
+		elif [[ -e "${USER_HOME}/.i18n" ]]; then
 			FILE_PATH="${USER_HOME}/.i18n"
 		else
 			FILE_PATH=""
@@ -2105,8 +2160,8 @@ _EOT_
 			funcPrintf "      ${MSGS_TITL}: measures against garbled characters"
 			FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 			FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-			if [[ -f "${FILE_PATH}" ]]; then
-				if [[ ! -f "${FILE_ORIG}" ]]; then
+			if [[ -e "${FILE_PATH}" ]]; then
+				if [[ ! -e "${FILE_ORIG}" ]]; then
 					mkdir -p "${FILE_ORIG%/*}"
 					cp --archive "${FILE_PATH}" "${FILE_ORIG}"
 				else
@@ -2161,7 +2216,7 @@ function funcApplication_user_add() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ -f "${FILE_USER}" ]]; then
+	if [[ -e "${FILE_USER}" ]]; then
 		funcPrintf "      ${MSGS_TITL}: ${FILE_USER}"
 		mapfile USER_LIST < "${FILE_USER}"
 	fi
@@ -2304,7 +2359,7 @@ function funcApplication_clamav() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
 		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 	else
@@ -2338,14 +2393,14 @@ function funcApplication_ntp_chrony() {
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	declare       SYSD_NAME=""
 	# -------------------------------------------------------------------------
-	if [[ ! -f "${FILE_PATH}" ]]; then
+	if [[ ! -e "${FILE_PATH}" ]]; then
 		return
 	fi
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL}: chrony $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
 		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 	else
@@ -2390,8 +2445,8 @@ function funcApplication_ntp_timesyncd() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL}: timesyncd $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 		else
@@ -2440,8 +2495,8 @@ function funcApplication_openssh() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 		else
@@ -2510,7 +2565,7 @@ function funcApplication_dnsmasq() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
 		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 	else
@@ -2544,7 +2599,7 @@ function funcApplication_apache() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
 		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 	else
@@ -2591,7 +2646,7 @@ function funcApplication_samba() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
 		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 	else
@@ -2672,92 +2727,115 @@ function funcApplication_samba() {
 	>   "${FILE_TEMP}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${FILE_TEMP}"
 		[homes]
-		 	comment = Home Directories
-		 	valid users = %S
-		 	write list = @${SAMB_GRUP}
-		 	force user = ${SAMB_USER}
-		 	force group = ${SAMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+		        browseable = No
+		        comment = Home Directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        valid users = %S
+		        write list = @${SAMB_GRUP}
+		
+		
+		[printers]
+		        browseable = No
+		        comment = All Printers
+		        create mask = 0700
+		        path = /var/tmp
+		        printable = Yes
+		
+		
+		[print$]
+		        comment = Printer Drivers
+		        path = /var/lib/samba/printers
+		
 		
 		[netlogon]
-		 	comment = Network Logon Service
-		 	path = ${DIRS_SHAR}/data/adm/netlogon
-		 	valid users = @${SAMB_GRUP}
-		 	write list = @${SAMB_GADM}
-		 	force user = ${SAMB_USER}
-		 	force group = ${SAMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+		        browseable = No
+		        comment = Network Logon Service
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        path = ${DIRS_SHAR}/data/adm/netlogon
+		        valid users = @${SAMB_GRUP}
+		        write list = @${SAMB_GADM}
+		
 		
 		[profiles]
-		 	comment = User profiles
-		 	path = ${DIRS_SHAR}/data/adm/profiles
-		 	valid users = @${SAMB_GRUP}
-		 	write list = @${SAMB_GRUP}
-		#	profile acls = Yes
-		 	browseable = No
+		        browseable = No
+		        comment = User profiles
+		        path = ${DIRS_SHAR}/data/adm/profiles
+		        valid users = @${SAMB_GRUP}
+		        write list = @${SAMB_GRUP}
+		
 		
 		[share]
-		 	comment = Shared directories
-		 	path = ${DIRS_SHAR}
-		 	valid users = @${SAMB_GADM}
-		 	browseable = No
+		        browseable = No
+		        comment = Shared directories
+		        path = ${DIRS_SHAR}
+		        valid users = @${SAMB_GADM}
+		
 		
 		[cifs]
-		 	comment = CIFS directories
-		 	path = ${DIRS_SHAR}/cifs
-		 	valid users = @${SAMB_GADM}
-		 	write list = @${SAMB_GADM}
-		 	force user = ${SAMB_USER}
-		 	force group = ${SAMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+		        browseable = No
+		        comment = CIFS directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        path = ${DIRS_SHAR}/cifs
+		        valid users = @${SAMB_GADM}
+		        write list = @${SAMB_GADM}
+		
 		
 		[data]
-		 	comment = Data directories
-		 	path = ${DIRS_SHAR}/data
-		 	valid users = @${SAMB_GADM}
-		 	write list = @${SAMB_GADM}
-		 	force user = ${SAMB_USER}
-		 	force group = ${SAMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+		        browseable = No
+		        comment = Data directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        path = ${DIRS_SHAR}/data
+		        valid users = @${SAMB_GADM}
+		        write list = @${SAMB_GADM}
+		
 		
 		[dlna]
-		 	comment = DLNA directories
-		 	valid users = @${SAMB_GRUP}
-		 	path = ${DIRS_SHAR}/dlna
-		 	write list = @${SAMB_GRUP}
-		 	force user = ${SAMB_USER}
-		 	force group = ${SAMB_GRUP}
-		 	create mask = 0770
-		 	directory mask = 0770
-		 	browseable = No
+		        browseable = No
+		        comment = DLNA directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        path = ${DIRS_SHAR}/dlna
+		        valid users = @${SAMB_GRUP}
+		        write list = @${SAMB_GRUP}
+		
 		
 		[pub]
-		 	comment = Public directories
-		 	path = ${DIRS_SHAR}/data/pub
-		 	valid users = @${SAMB_GRUP}
+		        comment = Public directories
+		        path = ${DIRS_SHAR}/data/pub
+		        valid users = @${SAMB_GRUP}
 		
-		#[lusr]
-		#	comment = Linux /usr directories
-		#	path = /usr
-		#	valid users = @${SAMB_GRUP}
-		 
+		
 		[lhome]
-		 	comment = Linux /home directories
-		 	path = /home
-		 	valid users = @${SAMB_GRUP}
+		        comment = Linux /home directories
+		        path = /home
+		        valid users = @${SAMB_GRUP}
+		
 		
 		[pxe-share]
-		 	comment = Pxeboot Shared directories
-		 	guest ok = Yes
-		 	path = /var/lib/tftpboot/imgs
+		        comment = Pxeboot shared directories
+		        guest ok = Yes
+		        path = /var/lib/tftpboot/imgs
+		
+		
+		[pxe-conf]
+		        comment = Pxeboot configuration files directory
+		        guest ok = Yes
+		        path = /var/lib/tftpboot/conf
+		
 		
 _EOT_
 	testparm -s "${FILE_TEMP}" 2> /dev/null > "${FILE_PATH}"
@@ -2842,7 +2920,7 @@ function funcApplication_open_vm_tools() {
 		fi
 	fi
 	# -------------------------------------------------------------------------
-	if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
 		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 	else
@@ -2864,7 +2942,7 @@ function funcApplication_open_vm_tools() {
 	funcPrintf "      ${MSGS_TITL}: setup config file"
 	funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 	# shellcheck disable=SC2312
-	if [[ -f "${FILE_PATH}" ]] && [[ -z "$(sed -n "/${HGFS_FSYS}/p" "${FILE_PATH}")" ]]; then
+	if [[ -e "${FILE_PATH}" ]] && [[ -z "$(sed -n "/${HGFS_FSYS}/p" "${FILE_PATH}")" ]]; then
 		# depending on the os, "nofail" can be added as an option
 		# example: .host:/ /mnt/hgfs fuse.vmhgfs-fuse allow_other,auto_unmount,defaults,nofail 0 0
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${FILE_PATH}"
@@ -2899,7 +2977,7 @@ function funcApplication_grub() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
 		cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 	else
@@ -3037,8 +3115,8 @@ function funcApplication_sound_wireplumber() {
 	# shellcheck disable=SC2312
 	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
 	# -------------------------------------------------------------------------
-	if [[ -f "${FILE_PATH}" ]]; then
-		if [[ ! -f "${FILE_ORIG}" ]]; then
+	if [[ -e "${FILE_PATH}" ]]; then
+		if [[ ! -e "${FILE_ORIG}" ]]; then
 			mkdir -p "${FILE_ORIG%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_ORIG%/*}"
 		else
@@ -3128,11 +3206,11 @@ function funcRestore_settings() {
 		FILE_PATH="${FILE_LIST[I]}"
 		FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 		FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
-		if [[ -f "${FILE_PATH}" ]]; then
+		if [[ -e "${FILE_PATH}" ]]; then
 			funcPrintf "      ${MSGS_TITL}: ${FILE_PATH}"
 			mkdir -p "${FILE_BACK%/*}"
 			cp --archive "${FILE_PATH}" "${FILE_BACK}"
-			if [[ -f "${FILE_ORIG}" ]]; then
+			if [[ -e "${FILE_ORIG}" ]]; then
 				cp --archive "${FILE_ORIG}" "${FILE_PATH}"
 			fi
 		fi
