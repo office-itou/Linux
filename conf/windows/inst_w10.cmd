@@ -1,13 +1,12 @@
     @Echo Off
 Rem SetLocal
-    Wpeinit
-    Set ShareName=\\sv-server\pxe-share\windows-10
-Rem Echo Enter the name of the Windows shared folder where you extracted the installation media.
-Rem Echo %ShareName%
-Rem Set /P ShareName=
-    Net Use %ShareName%
-    Set SetupExe=%ShareName%\setup.exe
+    Set WindowsVer=10
+    Set ShareName=\\sv-server\pxe-share
+    Set SetupExe=%ShareName%\windows-%WindowsVer%\setup.exe
     Set AutoInst=%SystemDrive%\Windows\System32\unattend.xml
+    Echo Start the automatic installation of Windows %WindowsVer%
+    Wpeinit
+Rem Net Use %ShareName%
     If Exist %SetupExe% (
         If Exist %AutoInst% (
             Echo Run %SetupExe% with %AutoInst%
@@ -20,5 +19,6 @@ Rem Set /P ShareName=
         Echo Missing %SetupExe%
         cmd.exe
     )
+    Echo Ending the automatic installation of Windows %WindowsVer%
 Rem EndLocal
     Pause.
