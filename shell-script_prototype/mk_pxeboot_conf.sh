@@ -18,6 +18,11 @@
 
 # *** initialization **********************************************************
 
+	case "${1:-}" in
+		-dbg) set -x; shift;;
+		*) ;;
+	esac
+
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -392,7 +397,7 @@
 		"-  debian-netinst-14           Debian%2014                             debian              debian-14.0.0-amd64-netinst.iso                 install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"o  debian-netinst-testing      Debian%20testing                        debian              debian-testing-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                                " \
 		"x  fedora-netinst-38           Fedora%20Server%2038                    fedora              Fedora-Server-netinst-x86_64-38-1.6.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-[0-9.]*.iso                  " \
-		"o  fedora-netinst-39           Fedora%20Server%2039                    fedora              Fedora-Server-netinst-x86_64-39-1.5.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-netinst-x86_64-39-[0-9.]*.iso                  " \
+		"x  fedora-netinst-39           Fedora%20Server%2039                    fedora              Fedora-Server-netinst-x86_64-39-1.5.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-netinst-x86_64-39-[0-9.]*.iso                  " \
 		"o  fedora-netinst-40           Fedora%20Server%2040                    fedora              Fedora-Server-netinst-x86_64-40-1.14.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_net.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-netinst-x86_64-40-[0-9.]*.iso                  " \
 		"o  fedora-netinst-41           Fedora%20Server%2041                    fedora              Fedora-Server-netinst-x86_64-41-1.4.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_net.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41-[0-9.]*.iso                  " \
 		"x  fedora-netinst-41           Fedora%20Server%2041                    fedora              Fedora-Server-netinst-x86_64-41_Beta-1.2.iso    images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_net.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/test/41_Beta/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41_Beta-[0-9.]*.iso   " \
@@ -433,7 +438,7 @@
 		"-  ubuntu-live-24.10           Ubuntu%2024.10%20Live%20Server%20Beta   ubuntu              ubuntu-24.10-beta-live-server-amd64.iso         casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10-beta-live-server-amd64.iso                                                                   " \
 		"-  ubuntu-live-oracular        Ubuntu%20oracular%20Live%20Server       ubuntu              oracular-live-server-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/ubuntu-server/daily-live/current/oracular-live-server-amd64.iso                                                     " \
 		"x  fedora-38                   Fedora%20Server%2038                    fedora              Fedora-Server-dvd-x86_64-38-1.6.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                      " \
-		"o  fedora-39                   Fedora%20Server%2039                    fedora              Fedora-Server-dvd-x86_64-39-1.5.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-dvd-x86_64-39-[0-9.]*.iso                      " \
+		"x  fedora-39                   Fedora%20Server%2039                    fedora              Fedora-Server-dvd-x86_64-39-1.5.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-dvd-x86_64-39-[0-9.]*.iso                      " \
 		"o  fedora-40                   Fedora%20Server%2040                    fedora              Fedora-Server-dvd-x86_64-40-1.14.iso            images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-dvd-x86_64-40-[0-9.]*.iso                      " \
 		"o  fedora-41                   Fedora%20Server%2041                    fedora              Fedora-Server-dvd-x86_64-41-1.4.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_dvd.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-dvd-x86_64-41-[0-9.]*.iso                      " \
 		"x  fedora-41                   Fedora%20Server%2041                    fedora              Fedora-Server-dvd-x86_64-41_Beta-1.2.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_dvd.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/test/41_Beta/Server/x86_64/iso/Fedora-Server-dvd-x86_64-41_Beta-[0-9.]*.iso       " \
@@ -508,7 +513,8 @@
 # --- tool --------------------------------------------------------------------
 	declare -r -a DATA_LIST_TOOL=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
 		"m  menu-entry                  System%20tools                          -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-		"o  memtest86+                  Memtest86+                              memtest86+          mt86plus_7.00_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                                           " \
+		"x  memtest86plus               Memtest86+%207.00                       memtest86+          mt86plus_7.00_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                                           " \
+		"o  memtest86plus               Memtest86+%207.20                       memtest86+          mt86plus_7.20_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.20/mt86plus_7.20_64.grub.iso.zip                                                                           " \
 		"o  winpe-x64                   WinPE%20x64                             windows             WinPEx64.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"o  winpe-x86                   WinPE%20x86                             windows             WinPEx86.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"o  ati2020x64                  ATI2020x64                              windows             WinPE_ATI2020x64.iso                            .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
@@ -604,7 +610,7 @@ function funcColorTest() {
 
 # --- diff --------------------------------------------------------------------
 function funcDiff() {
-	if [[ ! -f "$1" ]] || [[ ! -f "$2" ]]; then
+	if [[ ! -e "$1" ]] || [[ ! -e "$2" ]]; then
 		return
 	fi
 	funcPrintf "$3"
@@ -874,10 +880,10 @@ function funcCurl() {
 	if [[ -n "${OUT_DIR}" ]] && [[ ! -d "${OUT_DIR}/." ]]; then
 		mkdir -p "${OUT_DIR}"
 	fi
-	if [[ -n "${OUT_FILE}" ]] && [[ -f "${OUT_FILE}" ]]; then
+	if [[ -n "${OUT_FILE}" ]] && [[ -e "${OUT_FILE}" ]]; then
 		WEB_FIL="${OUT_FILE}"
 	fi
-	if [[ -n "${WEB_FIL}" ]] && [[ -f "${WEB_FIL}" ]]; then
+	if [[ -n "${WEB_FIL}" ]] && [[ -e "${WEB_FIL}" ]]; then
 		LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${WEB_FIL}")
 		LOC_TIM=$(echo "${LOC_INF}" | awk '{print $6;}')
 		LOC_SIZ=$(echo "${LOC_INF}" | awk '{print $5;}')
@@ -1115,7 +1121,7 @@ function funcCreate_link() {
 			"${CONF_YAST}"
 		do
 			mkdir -p "${CONF_DIRS}"
-			if [[ -f "${FILE_NAME}" ]]; then
+			if [[ -e "${FILE_NAME}" ]]; then
 				funcPrintf "         file exist : ${FILE_NAME##*/}"
 			elif [[ -L "${FILE_NAME}" ]]; then
 				funcPrintf "symbolic link exist : ${FILE_NAME##*/}"
@@ -1129,7 +1135,7 @@ function funcCreate_link() {
 	for ((I=0; I<"${#DATA_LIST[@]}"; I++))
 	do
 		read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
-#		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${DATA_LINE[9]}/${DATA_LINE[4]}" ]]; then
+#		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -e "${DATA_LINE[9]}/${DATA_LINE[4]}" ]]; then
 		if [[ "${DATA_LINE[0]}" != "o" ]]; then
 			continue
 		fi
@@ -1209,7 +1215,7 @@ function funcCreate_late_command() {
 		 	readonly COMD_PARM="${PROG_DIRS}/${PROG_NAME%.*}.prm";
 		 	DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\1/ip' | tr '[:upper:]' '[:lower:]')"
 		 	readonly DIST_NAME
-		 	if [ -f "${COMD_PARM}" ]; then
+		 	if [ -e "${COMD_PARM}" ]; then
 		 		COMD_LINE="$(cat "${COMD_PARM}")"
 		 	else
 		 		COMD_LINE="$(cat /proc/cmdline)"
@@ -1437,7 +1443,7 @@ function funcCreate_late_command() {
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
 		 	#--------------------------------------------------------------------------
-		 	if [ ! -f "${SEED_FILE}" ]; then
+		 	if [ ! -e "${SEED_FILE}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${SEED_FILE}"
 		 		return
 		 	fi
@@ -1550,7 +1556,7 @@ function funcCreate_late_command() {
 		 	NIC_WGRP="${NIC_FQDN##*.}"
 		 	NMN_FLAG=""
 		 	#--- preseed parameter ----------------------------------------------------
-		 	if [ -f "${SEED_FILE}" ]; then
+		 	if [ -e "${SEED_FILE}" ]; then
 		 		# shellcheck disable=SC2312
 		 		funcGetNetwork_parameter_sub "$(cat "${SEED_FILE}")"
 		 		if [ -n "${NIC_WGRP}" ]; then
@@ -1621,7 +1627,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1648,7 +1654,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1681,7 +1687,7 @@ function funcCreate_late_command() {
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1689,7 +1695,7 @@ function funcCreate_late_command() {
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1732,7 +1738,7 @@ function funcCreate_late_command() {
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1768,7 +1774,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1795,7 +1801,7 @@ function funcCreate_late_command() {
 		 	fi
 		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
-		 	if [ -f "${FILE_NAME}" ]; then
+		 	if [ -e "${FILE_NAME}" ]; then
 		 		if [ ! -d "${BACK_DIRS}/." ]; then
 		 			mkdir -p "${BACK_DIRS}"
 		 		fi
@@ -1846,7 +1852,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1905,7 +1911,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1920,7 +1926,7 @@ function funcCreate_late_command() {
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
 		 	#--- systemctl ------------------------------------------------------------
-		 	if [ -f /lib/systemd/system/smbd.service ]; then
+		 	if [ -e /lib/systemd/system/smbd.service ]; then
 		 		SRVC_SMBD="smbd.service"
 		 		SRVC_NMBD="nmbd.service"
 		 	else
@@ -1960,7 +1966,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1974,7 +1980,7 @@ function funcCreate_late_command() {
 		 	fi
 		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
-		 	if [ -f "${FILE_NAME}" ]; then
+		 	if [ -e "${FILE_NAME}" ]; then
 		 		if [ ! -d "${BACK_DIRS}/." ]; then
 		 			mkdir -p "${BACK_DIRS}"
 		 		fi
@@ -2002,7 +2008,7 @@ function funcCreate_late_command() {
 		 	fi
 		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
-		 	if [ -f "${FILE_NAME}" ]; then
+		 	if [ -e "${FILE_NAME}" ]; then
 		 		if [ ! -d "${BACK_DIRS}/." ]; then
 		 			mkdir -p "${BACK_DIRS}"
 		 		fi
@@ -2110,7 +2116,7 @@ function funcCreate_late_command() {
 		 	fi
 		#	for FILE_NAME in "${FILE_DIRS}"/*.yaml
 		#	do
-		#		if [ ! -f "${FILE_NAME}" ]; then
+		#		if [ ! -e "${FILE_NAME}" ]; then
 		#			continue
 		#		fi
 		#		echo "${PROG_NAME}: ${FILE_NAME} moved"
@@ -2218,7 +2224,7 @@ function funcCreate_late_command() {
 		 		CONF_FILE="${TGET_DIRS}${CONF_FILE}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -2227,7 +2233,7 @@ function funcCreate_late_command() {
 		 		mkdir -p "${BACK_DIRS}/system-connections"
 		 	fi
 		 	echo "${PROG_NAME}: ${CONF_FILE}"
-		 	if [ -f "${CONF_FILE}" ]; then
+		 	if [ -e "${CONF_FILE}" ]; then
 		 		cp -a "${CONF_FILE}" "${BACK_DIRS}"
 		 	fi
 		 	find "${FILE_DIRS}/system-connections" -name '*.yaml' -type f | \
@@ -2275,7 +2281,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
 		 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
 		 		echo "${PROG_NAME}: ${FILE_NAME}"
-		 		if [ -f "${FILE_NAME}" ]; then
+		 		if [ -e "${FILE_NAME}" ]; then
 		 			nmcli connection delete "${FILE_NAME##*/}" || true
 		 		fi
 		 		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
@@ -2448,7 +2454,7 @@ function funcCreate_late_command() {
 		#funcChange_gdm3_configure() {
 		#	FUNC_NAME="funcChange_gdm3_configure"
 		#	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
-		#	if [ -f "${TGET_DIRS}/etc/gdm3/custom.conf" ]; then
+		#	if [ -e "${TGET_DIRS}/etc/gdm3/custom.conf" ]; then
 		#		sed -i.orig "${TGET_DIRS}/etc/gdm3/custom.conf" \
 		#		    -e '/WaylandEnable=false/ s/^#//'
 		#	fi
@@ -2856,7 +2862,7 @@ function funcCreate_copy_iso2hdd() {
 #	declare -r    WORK_IMGS="${WORK_DIRS}/img"
 #	declare -r    WORK_RAMS="${WORK_DIRS}/ram"
 #	declare -r -a RSYC_OPTN=("--archive" "--human-readable" "--update" "--delete")
-	declare -r -a RSYC_OPTN=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete")
+	declare -a    RSYC_OPTN=()
 	declare       DIRS_KRNL=""
 	declare       DIRS_IRAM=""
 #	declare -r    CPIO_ERLY="$(mktemp "${TMPDIR:-/var/tmp}/${PROG_PROC}-ERLY_XXXXXX")" || exit 1
@@ -2865,7 +2871,7 @@ function funcCreate_copy_iso2hdd() {
 #	declare -i    RET_CD=0
 	# shellcheck disable=SC2312
 	funcPrintf "---- ${TGET_LINE[4]} $(funcString "${COLS_SIZE}" '-')"
-	if [[ "${TGET_LINE[0]}" != "o" ]] || [[ ! -f "${FILE_PATH}" ]]; then
+	if [[ "${TGET_LINE[0]}" != "o" ]] || [[ ! -e "${FILE_PATH}" ]]; then
 		funcPrintf "        skip: ${TGET_LINE[4]}"
 		# shellcheck disable=SC2312
 		funcPrintf "---- ${TGET_LINE[4]} $(funcString "${COLS_SIZE}" '-')"
@@ -2895,16 +2901,22 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${DEST_DIRS}"
 	mkdir -p "${BOOT_DIRS}"
 	# --- copy iso -> hdd -----------------------------------------------------
-	mount -o ro,loop "${FILE_PATH}" "${WORK_MNTP}"
-#	touch -c "${DEST_DIRS}" 2>/dev/null
-#	RET_CD=$?
-#	if [[ "${RET_CD}" -eq 0 ]]; then
-	if touch -c "${DEST_DIRS}" 2>/dev/null; then
-		ionice -c "${IONICE_CLAS}" rsync "${RSYC_OPTN[@]}" "${WORK_MNTP}/." "${DEST_DIRS}/" 2>/dev/null || true
-		chmod -R +r "${DEST_DIRS}/" 2>/dev/null || true
-#	else
-#		funcPrintf "        skip: ${TGET_LINE[4]}"
+	case "${TGET_LINE[1]}" in
+		windows-* | \
+		winpe-*   | \
+		ati*      ) RSYC_OPTN=();;
+		*         ) RSYC_OPTN=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete");;
+	esac
+	if [[ -z "${RSYC_OPTN[*]}" ]]; then
+		funcPrintf "   skip copy: ${TGET_LINE[4]}"
+		# shellcheck disable=SC2312
+		funcPrintf "---- ${TGET_LINE[4]} $(funcString "${COLS_SIZE}" '-')"
+		return
 	fi
+	mount -r "${FILE_PATH}" "${WORK_MNTP}"
+	ionice -c "${IONICE_CLAS}" rsync "${RSYC_OPTN[@]}" "${WORK_MNTP}/." "${DEST_DIRS}/" 2>/dev/null || true
+	umount "${WORK_MNTP}"
+	chmod -R +r "${DEST_DIRS}/" 2>/dev/null || true
 	# --- copy initramfs ------------------------------------------------------
 	DIRS_IRAM="${BOOT_DIRS}"
 	DIRS_KRNL="${BOOT_DIRS}"
@@ -2914,17 +2926,14 @@ function funcCreate_copy_iso2hdd() {
 	if [[ "${TGET_LINE[7]%/*}" != "${TGET_LINE[7]##*/}" ]]; then
 		DIRS_KRNL="${BOOT_DIRS}/${TGET_LINE[7]%/*}"
 	fi
-	if [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" ]] && [[ -f "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" ]]; then
+	if [[ -e "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" ]] && [[ -e "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" ]]; then
 		rm -rf "${DIRS_IRAM:?}/${TGET_LINE[6]##*/}" "${DIRS_KRNL:?}/${TGET_LINE[7]##*/}"
 		mkdir -p "${DIRS_IRAM}" "${DIRS_KRNL}"
-		ionice -c "${IONICE_CLAS}" rsync "${RSYC_OPTN[@]}" "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
-		ionice -c "${IONICE_CLAS}" rsync "${RSYC_OPTN[@]}" "${WORK_MNTP}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
+		ionice -c "${IONICE_CLAS}" rsync "${RSYC_OPTN[@]}" "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
+		ionice -c "${IONICE_CLAS}" rsync "${RSYC_OPTN[@]}" "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 		chmod -R +r "${DIRS_IRAM}/" 2>/dev/null || true
 		chmod -R +r "${DIRS_KRNL}/" 2>/dev/null || true
-#		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[6]}" "${DIRS_IRAM}/"
-#		ln -s -r "${DEST_DIRS}/${TGET_LINE[5]}/${TGET_LINE[7]}" "${DIRS_KRNL}/"
 	fi
-	umount "${WORK_MNTP}"
 	# --- remove directory ----------------------------------------------------
 	rm -rf "${WORK_DIRS:?}"
 	funcPrintf "    complete: ${TGET_LINE[4]}"
@@ -3007,7 +3016,7 @@ function funcCreate_menu_cfg_preseed() {
 				for WORK_LINE in "${DIRS_CONF}/script/"live_*.{sh,conf} \
 				                 "${DIRS_IMGS}/${TGET_LINE[1]}/live/"{config.conf,{config.conf.d,boot,config-hooks,config-preseed}/*}
 				do
-					if [[ ! -f "${WORK_LINE}" ]]; then
+					if [[ ! -e "${WORK_LINE}" ]]; then
 						continue
 					fi
 					BOOT_HOOK+="${BOOT_HOOK:+"|"}${WORK_LINE/${DIRS_IMGS%/*}/${HTTP_ADDR}}"
@@ -3320,7 +3329,7 @@ function funcCreate_syslinux_cfg() {
 	fi
 	# --- create syslinux.cfg -------------------------------------------------
 	MENU_PATH="${MENU_DIRS}/${MENU_NAME[0]}"
-	if [[ ! -f "${MENU_PATH}" ]] \
+	if [[ ! -e "${MENU_PATH}" ]] \
 	|| [[ ! -s "${MENU_PATH}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${MENU_PATH}"
 			path ./
@@ -3376,7 +3385,7 @@ _EOT_
 			MENU_ENTR="$(printf "%-60.60s" "- ${TGET_INFO[2]//%20/ }")"
 			case "${TGET_INFO[1]}" in
 				windows-* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					if [[ "${MENU_PATH}" =~ bios ]]; then
@@ -3389,8 +3398,8 @@ _EOT_
 _EOT_
 					fi
 					;;
-				memtest86\+ )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+				memtest86*  )
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					if [[ "${MENU_PATH}" =~ bios ]]; then
@@ -3412,7 +3421,7 @@ _EOT_
 				winpe-*    | \
 				ati2020x64 | \
 				ati2020x86 )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					if [[ "${MENU_PATH}" =~ bios ]]; then
@@ -3439,7 +3448,7 @@ _EOT_
 _EOT_
 					;;
 				* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					MENU_ENTR="$(printf "%-60.60s%20.20s" "- ${TGET_INFO[2]//%20/ }" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
@@ -3477,7 +3486,7 @@ function funcCreate_grub_cfg() {
 	fi
 	# --- create grub.cfg -----------------------------------------------------
 	MENU_PATH="${MENU_DIRS}/${MENU_NAME[0]}"
-	if [[ ! -f "${MENU_PATH}" ]] \
+	if [[ ! -e "${MENU_PATH}" ]] \
 	|| [[ ! -s "${MENU_PATH}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${MENU_PATH}"
 			set default="0"
@@ -3587,7 +3596,7 @@ _EOT_
 			MENU_ENTR="$(printf "%-60.60s" "- ${TGET_INFO[2]//%20/ }")"
 			case "${TGET_INFO[1]}" in
 				windows-* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
@@ -3605,8 +3614,8 @@ _EOT_
 						fi
 _EOT_
 					;;
-				memtest86\+ )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+				memtest86*  )
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
@@ -3628,7 +3637,7 @@ _EOT_
 				winpe-*    | \
 				ati2020x64 | \
 				ati2020x86 )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${TABS_STRS}/g" >> "${MENU_PATH}"
@@ -3651,7 +3660,7 @@ _EOT_
 				restart  )
 					;;
 				* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					MENU_ENTR="$(printf "%-60.60s%20.20s" "- ${TGET_INFO[2]//%20/ }" "${TGET_INFO[10]} ${TGET_INFO[12]}")"
@@ -3712,7 +3721,7 @@ function funcCreate_autoexec_ipxe() {
 	fi
 	# --- create autoexec.ipxe ------------------------------------------------
 	MENU_PATH="${MENU_DIRS}/${MENU_NAME[0]}"
-	if [[ ! -f "${MENU_PATH}" ]] \
+	if [[ ! -e "${MENU_PATH}" ]] \
 	|| [[ ! -s "${MENU_PATH}" ]]; then
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${MENU_PATH}"
 			#!ipxe
@@ -3775,7 +3784,7 @@ _EOT_
 			MENU_TEXT="$(printf "%-${MENU_SPCS}.${MENU_SPCS}s%s" "item -- ${TGET_INFO[1]}" "${MENU_ENTR}")"
 			case "${TGET_INFO[1]}" in
 				windows-* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
@@ -3806,7 +3815,7 @@ _EOT_
 				winpe-*    | \
 				ati2020x64 | \
 				ati2020x86 )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
@@ -3829,8 +3838,8 @@ _EOT_
 					)"
 					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_TEXT}"
 					;;
-				memtest86\+ )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+				memtest86*  )
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					sed -i "${MENU_PATH}" -e "/\[ System command \]/i ${MENU_TEXT}"
@@ -3852,7 +3861,7 @@ _EOT_
 					sed -i "${MENU_PATH}" -e "/^:shell$/i ${MENU_TEXT}"
 					;;
 				* )
-					if [[ ! -f "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
+					if [[ ! -e "${DIRS_ISOS}/${TGET_INFO[4]}" ]]; then
 						return
 					fi
 					if [[ "${TGET_INFO[8]#*/}" = "-" ]]; then
@@ -4338,7 +4347,7 @@ function funcCall_create() {
 #							do
 #								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
 #							done
-							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/pxelinux.0" ]]; then
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -e "${MENU_DIRS}/pxelinux.0" ]]; then
 								if [[ -d /usr/lib/syslinux/modules/bios/. ]]; then
 									cp --archive --update /usr/lib/syslinux/memdisk         "${MENU_DIRS}/"
 									cp --archive --update /usr/lib/syslinux/modules/bios/.  "${MENU_DIRS}/"
@@ -4354,7 +4363,7 @@ function funcCall_create() {
 #							do
 #								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
 #							done
-							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -e "${MENU_DIRS}/syslinux.efi" ]]; then
 								if [[ -d /usr/lib/syslinux/modules/efi32/. ]]; then
 									cp --archive --update /usr/lib/syslinux/modules/efi32/. "${MENU_DIRS}/"
 									cp --archive --update /usr/lib/SYSLINUX.EFI/efi32/.     "${MENU_DIRS}/"
@@ -4366,7 +4375,7 @@ function funcCall_create() {
 #							do
 #								: > "${MENU_DIRS}/${MENU_SLNX[I]}"
 #							done
-							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/syslinux.efi" ]]; then
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -e "${MENU_DIRS}/syslinux.efi" ]]; then
 								if [[ -d /usr/lib/syslinux/modules/efi64/. ]]; then
 									cp --archive --update /usr/lib/syslinux/modules/efi64/. "${MENU_DIRS}/"
 									cp --archive --update /usr/lib/SYSLINUX.EFI/efi64/.     "${MENU_DIRS}/"
@@ -4379,10 +4388,10 @@ function funcCall_create() {
 #								: > "${MENU_DIRS}/${MENU_GRUB[I]}"
 #							done
 							if [[ "${COMD_INST}" -ne 0 ]] \
-							|| [[ ! -f "${MENU_DIRS}/x86_64-efi/grub.cfg" ]] \
-							|| [[ ! -f "${MENU_DIRS}/i386-pc/grub.cfg"    ]]; then
+							|| [[ ! -e "${MENU_DIRS}/x86_64-efi/grub.cfg" ]] \
+							|| [[ ! -e "${MENU_DIRS}/i386-pc/grub.cfg"    ]]; then
 								mkdir -p "${DIRS_TFTP}/boot/grub/"{fonts,locale,i386-pc,x86_64-efi}
-								if [[ -f /usr/lib/syslinux/memdisk ]]; then
+								if [[ -e /usr/lib/syslinux/memdisk ]]; then
 									cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_TFTP}/"
 									cp --archive --update /usr/lib/syslinux/memdisk "${DIRS_HTML}/"
 									grub-mknetdir --net-directory="${DIRS_TFTP}" --subdir="${DIRS_GRUB}"
@@ -4401,7 +4410,7 @@ function funcCall_create() {
 								set net_default_server="${HTTP_ADDR#*://}"
 _EOT_
 							# -------------------------------------------------
-							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/${BOOT_PXE0}"  ]]; then
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -e "${MENU_DIRS}/${BOOT_PXE0}"  ]]; then
 								"${COMD_NAME}" \
 								    --directory=/usr/lib/grub/i386-pc \
 								    --format=i386-pc-pxe \
@@ -4412,7 +4421,7 @@ _EOT_
 								    "${MODU_LIST[@]}" cpuid play pxe vga
 							fi
 							# -------------------------------------------------
-							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -f "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
+							if [[ "${COMD_INST}" -ne 0 ]] || [[ ! -e "${MENU_DIRS}/${BOOT_UEFI}" ]]; then
 								"${COMD_NAME}" \
 								    --directory=/usr/lib/grub/x86_64-efi \
 								    --format=x86_64-efi \
@@ -4429,8 +4438,8 @@ _EOT_
 #								: > "${MENU_DIRS}/${MENU_IPXE[I]}"
 #							done
 							if [[ "${COMD_INST}" -ne 0 ]] \
-							|| [[ ! -f "${MENU_DIRS}/undionly.kpxe" ]] \
-							|| [[ ! -f "${MENU_DIRS}/ipxe.efi"      ]]; then
+							|| [[ ! -e "${MENU_DIRS}/undionly.kpxe" ]] \
+							|| [[ ! -e "${MENU_DIRS}/ipxe.efi"      ]]; then
 								rm -f "${MENU_DIRS}/"{undionly.kpxe,ipxe.efi,wimboot}
 								mkdir -p "${DIRS_TEMP}"
 #								pushd "${DIRS_TEMP}" > /dev/null
@@ -4443,13 +4452,13 @@ _EOT_
 #									fi
 #								popd  > /dev/null
 							fi
-							if [[ ! -f "${MENU_DIRS}/undionly.kpxe" ]]; then
+							if [[ ! -e "${MENU_DIRS}/undionly.kpxe" ]]; then
 								curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://boot.ipxe.org/undionly.kpxe"
 							fi
-							if [[ ! -f "${MENU_DIRS}/ipxe.efi"      ]]; then
+							if [[ ! -e "${MENU_DIRS}/ipxe.efi"      ]]; then
 								curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://boot.ipxe.org/ipxe.efi"
 							fi
-							if [[ ! -f "${MENU_DIRS}/wimboot"       ]]; then
+							if [[ ! -e "${MENU_DIRS}/wimboot"       ]]; then
 								curl "${CURL_OPTN[@]}" --remote-name --create-dirs --output-dir "${MENU_DIRS}" "https://github.com/ipxe/wimboot/releases/latest/download/wimboot"
 							fi
 							;;
@@ -4508,7 +4517,7 @@ _EOT_
 					rockylinux-*   | \
 					opensuse-*     | \
 					windows-*      | \
-					memtest86\+    | \
+					memtest86*     | \
 					winpe          | \
 					ati2020x64     | \
 					ati2020x86     | \
@@ -4531,10 +4540,10 @@ _EOT_
 				do
 					read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
 					FILE_PATH="${DIRS_ISOS}/${DATA_LINE[4]}"
-					if [[ "${DATA_LINE[0]}" = "o" ]] && [[ ! -f "${FILE_PATH}" ]]; then
+					if [[ "${DATA_LINE[0]}" = "o" ]] && [[ ! -e "${FILE_PATH}" ]]; then
 						continue
 					fi
-					if [[ "${DATA_LINE[0]}" = "o" ]] && [[ -f "${FILE_PATH}" ]]; then
+					if [[ "${DATA_LINE[0]}" = "o" ]] && [[ -e "${FILE_PATH}" ]]; then
 						# --- copy iso contents to hdd ------------------------
 						funcCreate_copy_iso2hdd "${DATA_LINE[@]}"
 						# --- file information --------------------------------
@@ -4568,7 +4577,7 @@ _EOT_
 						rockylinux   ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_kickstart "${DATA_LINE[@]}");;
 						opensuse     ) while IFS='' read -r WORK_LINE; do BOOT_ARRY+=("${WORK_LINE}"); done < <(funcCreate_menu_cfg_autoyast "${DATA_LINE[@]}");;
 						windows      ) ;;
-						memtest86\+  ) ;;
+						memtest86*   ) ;;
 						winpe        | \
 						ati2020x64   | \
 						ati2020x86   ) ;;
@@ -4698,6 +4707,18 @@ function funcMain() {
 		fi
 	done
 	if [[ "${#DIRS_LIST[@]}" -gt 0 ]]; then
+		for DIRS_NAME in "${DIRS_LIST[@]}"/*/mnt
+		do
+			set +e
+			if mountpoint -q "${DIRS_NAME}"; then
+				funcPrintf "unmount unnecessary temporary directories"
+				if [[ "${DIRS_NAME##*/}" = "dev" ]]; then
+					umount -q "${DIRS_NAME}/pts" || umount -q -lf "${DIRS_NAME}/pts"
+				fi
+				umount -q "${DIRS_NAME}" || umount -q -lf "${DIRS_NAME}"
+			fi
+			set -e
+		done
 		funcPrintf "remove unnecessary temporary directories"
 		rm -rf "${DIRS_LIST[@]}"
 	fi

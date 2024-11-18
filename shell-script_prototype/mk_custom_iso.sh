@@ -18,6 +18,11 @@
 
 # *** initialization **********************************************************
 
+	case "${1:-}" in
+		-dbg) set -x; shift;;
+		*) ;;
+	esac
+
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -392,7 +397,7 @@
 		"-  debian-netinst-14           Debian%2014                             debian              debian-14.0.0-amd64-netinst.iso                 install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"o  debian-netinst-testing      Debian%20testing                        debian              debian-testing-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                                " \
 		"x  fedora-netinst-38           Fedora%20Server%2038                    fedora              Fedora-Server-netinst-x86_64-38-1.6.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-[0-9.]*.iso                  " \
-		"o  fedora-netinst-39           Fedora%20Server%2039                    fedora              Fedora-Server-netinst-x86_64-39-1.5.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-netinst-x86_64-39-[0-9.]*.iso                  " \
+		"x  fedora-netinst-39           Fedora%20Server%2039                    fedora              Fedora-Server-netinst-x86_64-39-1.5.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-netinst-x86_64-39-[0-9.]*.iso                  " \
 		"o  fedora-netinst-40           Fedora%20Server%2040                    fedora              Fedora-Server-netinst-x86_64-40-1.14.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_net.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-netinst-x86_64-40-[0-9.]*.iso                  " \
 		"o  fedora-netinst-41           Fedora%20Server%2041                    fedora              Fedora-Server-netinst-x86_64-41-1.4.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_net.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41-[0-9.]*.iso                  " \
 		"x  fedora-netinst-41           Fedora%20Server%2041                    fedora              Fedora-Server-netinst-x86_64-41_Beta-1.2.iso    images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_net.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/test/41_Beta/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41_Beta-[0-9.]*.iso   " \
@@ -433,7 +438,7 @@
 		"-  ubuntu-live-24.10           Ubuntu%2024.10%20Live%20Server%20Beta   ubuntu              ubuntu-24.10-beta-live-server-amd64.iso         casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10-beta-live-server-amd64.iso                                                                   " \
 		"-  ubuntu-live-oracular        Ubuntu%20oracular%20Live%20Server       ubuntu              oracular-live-server-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/ubuntu-server/daily-live/current/oracular-live-server-amd64.iso                                                     " \
 		"x  fedora-38                   Fedora%20Server%2038                    fedora              Fedora-Server-dvd-x86_64-38-1.6.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                      " \
-		"o  fedora-39                   Fedora%20Server%2039                    fedora              Fedora-Server-dvd-x86_64-39-1.5.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-dvd-x86_64-39-[0-9.]*.iso                      " \
+		"x  fedora-39                   Fedora%20Server%2039                    fedora              Fedora-Server-dvd-x86_64-39-1.5.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-dvd-x86_64-39-[0-9.]*.iso                      " \
 		"o  fedora-40                   Fedora%20Server%2040                    fedora              Fedora-Server-dvd-x86_64-40-1.14.iso            images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-dvd-x86_64-40-[0-9.]*.iso                      " \
 		"o  fedora-41                   Fedora%20Server%2041                    fedora              Fedora-Server-dvd-x86_64-41-1.4.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_dvd.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-dvd-x86_64-41-[0-9.]*.iso                      " \
 		"x  fedora-41                   Fedora%20Server%2041                    fedora              Fedora-Server-dvd-x86_64-41_Beta-1.2.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_dvd.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/test/41_Beta/Server/x86_64/iso/Fedora-Server-dvd-x86_64-41_Beta-[0-9.]*.iso       " \
@@ -508,7 +513,8 @@
 # --- tool --------------------------------------------------------------------
 	declare -r -a DATA_LIST_TOOL=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
 		"m  menu-entry                  System%20tools                          -                   -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-		"o  memtest86+                  Memtest86+                              memtest86+          mt86plus_7.00_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                                           " \
+		"x  memtest86plus               Memtest86+%207.00                       memtest86+          mt86plus_7.00_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                                           " \
+		"o  memtest86plus               Memtest86+%207.20                       memtest86+          mt86plus_7.20_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.20/mt86plus_7.20_64.grub.iso.zip                                                                           " \
 		"o  winpe-x64                   WinPE%20x64                             windows             WinPEx64.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"o  winpe-x86                   WinPE%20x86                             windows             WinPEx86.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"o  ati2020x64                  ATI2020x64                              windows             WinPE_ATI2020x64.iso                            .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
@@ -604,7 +610,7 @@ function funcColorTest() {
 
 # --- diff --------------------------------------------------------------------
 function funcDiff() {
-	if [[ ! -f "$1" ]] || [[ ! -f "$2" ]]; then
+	if [[ ! -e "$1" ]] || [[ ! -e "$2" ]]; then
 		return
 	fi
 	funcPrintf "$3"
@@ -874,10 +880,10 @@ function funcCurl() {
 	if [[ -n "${OUT_DIR}" ]] && [[ ! -d "${OUT_DIR}/." ]]; then
 		mkdir -p "${OUT_DIR}"
 	fi
-	if [[ -n "${OUT_FILE}" ]] && [[ -f "${OUT_FILE}" ]]; then
+	if [[ -n "${OUT_FILE}" ]] && [[ -e "${OUT_FILE}" ]]; then
 		WEB_FIL="${OUT_FILE}"
 	fi
-	if [[ -n "${WEB_FIL}" ]] && [[ -f "${WEB_FIL}" ]]; then
+	if [[ -n "${WEB_FIL}" ]] && [[ -e "${WEB_FIL}" ]]; then
 		LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${WEB_FIL}")
 		LOC_TIM=$(echo "${LOC_INF}" | awk '{print $6;}')
 		LOC_SIZ=$(echo "${LOC_INF}" | awk '{print $5;}')
@@ -1115,7 +1121,7 @@ function funcCreate_link() {
 			"${CONF_YAST}"
 		do
 			mkdir -p "${CONF_DIRS}"
-			if [[ -f "${FILE_NAME}" ]]; then
+			if [[ -e "${FILE_NAME}" ]]; then
 				funcPrintf "         file exist : ${FILE_NAME##*/}"
 			elif [[ -L "${FILE_NAME}" ]]; then
 				funcPrintf "symbolic link exist : ${FILE_NAME##*/}"
@@ -1129,7 +1135,7 @@ function funcCreate_link() {
 	for ((I=0; I<"${#DATA_LIST[@]}"; I++))
 	do
 		read -r -a DATA_LINE < <(echo "${DATA_LIST[I]}")
-#		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -f "${DATA_LINE[9]}/${DATA_LINE[4]}" ]]; then
+#		if [[ "${DATA_LINE[0]}" != "o" ]] || [[ ! -e "${DATA_LINE[9]}/${DATA_LINE[4]}" ]]; then
 		if [[ "${DATA_LINE[0]}" != "o" ]]; then
 			continue
 		fi
@@ -1209,7 +1215,7 @@ function funcCreate_late_command() {
 		 	readonly COMD_PARM="${PROG_DIRS}/${PROG_NAME%.*}.prm";
 		 	DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\1/ip' | tr '[:upper:]' '[:lower:]')"
 		 	readonly DIST_NAME
-		 	if [ -f "${COMD_PARM}" ]; then
+		 	if [ -e "${COMD_PARM}" ]; then
 		 		COMD_LINE="$(cat "${COMD_PARM}")"
 		 	else
 		 		COMD_LINE="$(cat /proc/cmdline)"
@@ -1437,7 +1443,7 @@ function funcCreate_late_command() {
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
 		 	#--------------------------------------------------------------------------
-		 	if [ ! -f "${SEED_FILE}" ]; then
+		 	if [ ! -e "${SEED_FILE}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${SEED_FILE}"
 		 		return
 		 	fi
@@ -1550,7 +1556,7 @@ function funcCreate_late_command() {
 		 	NIC_WGRP="${NIC_FQDN##*.}"
 		 	NMN_FLAG=""
 		 	#--- preseed parameter ----------------------------------------------------
-		 	if [ -f "${SEED_FILE}" ]; then
+		 	if [ -e "${SEED_FILE}" ]; then
 		 		# shellcheck disable=SC2312
 		 		funcGetNetwork_parameter_sub "$(cat "${SEED_FILE}")"
 		 		if [ -n "${NIC_WGRP}" ]; then
@@ -1621,7 +1627,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1648,7 +1654,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1681,7 +1687,7 @@ function funcCreate_late_command() {
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1689,7 +1695,7 @@ function funcCreate_late_command() {
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1732,7 +1738,7 @@ function funcCreate_late_command() {
 		 	if [ -d "${TGET_DIRS}/." ]; then
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1768,7 +1774,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1795,7 +1801,7 @@ function funcCreate_late_command() {
 		 	fi
 		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
-		 	if [ -f "${FILE_NAME}" ]; then
+		 	if [ -e "${FILE_NAME}" ]; then
 		 		if [ ! -d "${BACK_DIRS}/." ]; then
 		 			mkdir -p "${BACK_DIRS}"
 		 		fi
@@ -1846,7 +1852,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1905,7 +1911,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1920,7 +1926,7 @@ function funcCreate_late_command() {
 		 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 		 	cat "${FILE_NAME}"
 		 	#--- systemctl ------------------------------------------------------------
-		 	if [ -f /lib/systemd/system/smbd.service ]; then
+		 	if [ -e /lib/systemd/system/smbd.service ]; then
 		 		SRVC_SMBD="smbd.service"
 		 		SRVC_NMBD="nmbd.service"
 		 	else
@@ -1960,7 +1966,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -1974,7 +1980,7 @@ function funcCreate_late_command() {
 		 	fi
 		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
-		 	if [ -f "${FILE_NAME}" ]; then
+		 	if [ -e "${FILE_NAME}" ]; then
 		 		if [ ! -d "${BACK_DIRS}/." ]; then
 		 			mkdir -p "${BACK_DIRS}"
 		 		fi
@@ -2002,7 +2008,7 @@ function funcCreate_late_command() {
 		 	fi
 		 	# --- backup --------------------------------------------------------------
 		 	echo "${PROG_NAME}: ${FILE_NAME}"
-		 	if [ -f "${FILE_NAME}" ]; then
+		 	if [ -e "${FILE_NAME}" ]; then
 		 		if [ ! -d "${BACK_DIRS}/." ]; then
 		 			mkdir -p "${BACK_DIRS}"
 		 		fi
@@ -2110,7 +2116,7 @@ function funcCreate_late_command() {
 		 	fi
 		#	for FILE_NAME in "${FILE_DIRS}"/*.yaml
 		#	do
-		#		if [ ! -f "${FILE_NAME}" ]; then
+		#		if [ ! -e "${FILE_NAME}" ]; then
 		#			continue
 		#		fi
 		#		echo "${PROG_NAME}: ${FILE_NAME} moved"
@@ -2218,7 +2224,7 @@ function funcCreate_late_command() {
 		 		CONF_FILE="${TGET_DIRS}${CONF_FILE}"
 		 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 		 	fi
-		 	if [ ! -f "${FILE_NAME}" ]; then
+		 	if [ ! -e "${FILE_NAME}" ]; then
 		 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		 		return
 		 	fi
@@ -2227,7 +2233,7 @@ function funcCreate_late_command() {
 		 		mkdir -p "${BACK_DIRS}/system-connections"
 		 	fi
 		 	echo "${PROG_NAME}: ${CONF_FILE}"
-		 	if [ -f "${CONF_FILE}" ]; then
+		 	if [ -e "${CONF_FILE}" ]; then
 		 		cp -a "${CONF_FILE}" "${BACK_DIRS}"
 		 	fi
 		 	find "${FILE_DIRS}/system-connections" -name '*.yaml' -type f | \
@@ -2275,7 +2281,7 @@ function funcCreate_late_command() {
 		 		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
 		 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
 		 		echo "${PROG_NAME}: ${FILE_NAME}"
-		 		if [ -f "${FILE_NAME}" ]; then
+		 		if [ -e "${FILE_NAME}" ]; then
 		 			nmcli connection delete "${FILE_NAME##*/}" || true
 		 		fi
 		 		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
@@ -2448,7 +2454,7 @@ function funcCreate_late_command() {
 		#funcChange_gdm3_configure() {
 		#	FUNC_NAME="funcChange_gdm3_configure"
 		#	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
-		#	if [ -f "${TGET_DIRS}/etc/gdm3/custom.conf" ]; then
+		#	if [ -e "${TGET_DIRS}/etc/gdm3/custom.conf" ]; then
 		#		sed -i.orig "${TGET_DIRS}/etc/gdm3/custom.conf" \
 		#		    -e '/WaylandEnable=false/ s/^#//'
 		#	fi
@@ -2983,7 +2989,7 @@ function funcCreate_menu() {
 		DIRS_SECT="${DATA_LINE[8]%%/*}"
 		FILE_ISOS="${DIRS_ISOS}/${DATA_LINE[4]}"										# original file
 		FILE_RMAK="${DIRS_RMAK}/${DATA_LINE[4]%.*}_${DIRS_SECT}.${DATA_LINE[4]##*.}"	# custom file
-		if [[ ! -f "${FILE_ISOS}" ]]; then
+		if [[ ! -e "${FILE_ISOS}" ]]; then
 			if [[ "${TEXT_COLR}" != "${TXT_RED}" ]]; then
 				TEXT_COLR="${TXT_CYAN}"
 			fi
@@ -3008,7 +3014,7 @@ function funcCreate_menu() {
 			fi
 		fi
 		# --- local custom file information -----------------------------------
-		if [[ ! -f "${FILE_RMAK}" ]]; then
+		if [[ ! -e "${FILE_RMAK}" ]]; then
 			if [[ -z "${TEXT_COLR}" ]]; then
 				TEXT_COLR="${TXT_YELLOW}"
 			fi
@@ -3039,7 +3045,7 @@ function funcCreate_menu() {
 					fi
 				elif [[ "${DATA_LINE[8]%%/*}" = "nocloud" ]]; then
 					CONF_NAME="${DIRS_CONF}/${DATA_LINE[8]}/user-data"
-					if [[ -f "${CONF_NAME}" ]]; then
+					if [[ -e "${CONF_NAME}" ]]; then
 						# shellcheck disable=SC2312
 						read -r -a FILE_INFO < <(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${CONF_NAME}")
 						CONF_TIME="${FILE_INFO[5]}"
@@ -3063,7 +3069,7 @@ function funcCreate_menu() {
 		TEXT_LINE="$(printf "%2d:%-42.42s:%-10.10s:%-10.10s:%-$((COLS_SIZE-70)).$((COLS_SIZE-70))s" "${J}" "${DATA_LINE[4]}" "${DATA_LINE[10]}" "${DATA_LINE[11]}" "${DATA_LINE[2]//%20/ }[${DIRS_SECT}]")"
 		funcPrintf "${TXT_RESET}#${TEXT_COLR}${TEXT_LINE}${TXT_RESET}#"
 		# --- data restore ----------------------------------------------------
-		if [[ -f "${FILE_ISOS}" ]]; then
+		if [[ -e "${FILE_ISOS}" ]]; then
 			# shellcheck disable=SC2312
 			if [[ -n "$(command -v volname 2> /dev/null)" ]]; then
 				FILE_VLID="$(volname "${FILE_ISOS}")"
@@ -3162,7 +3168,7 @@ function funcCreate_remaster_download() {
 			;;
 	esac
 	# --- label set -----------------------------------------------------------
-	if [[ "${RET_CD}" -ne 0 ]] || [[ ! -f "${FILE_ISOS}" ]]; then
+	if [[ "${RET_CD}" -ne 0 ]] || [[ ! -e "${FILE_ISOS}" ]]; then
 		return
 	fi
 	# shellcheck disable=SC2312
@@ -3240,7 +3246,7 @@ function funcCreate_autoinst_cfg_syslinux() {
 	rm -f "${AUTO_PATH}"
 	for CONF_FILE in "${MENU_DIRS}/"{txt.cfg,gtk.cfg,install.cfg,isolinux.cfg}
 	do
-		if [[ ! -f "${CONF_FILE}" ]]; then
+		if [[ ! -e "${CONF_FILE}" ]]; then
 			continue
 		fi
 		# shellcheck disable=SC2312
@@ -3308,7 +3314,7 @@ function funcCreate_autoinst_cfg_syslinux() {
 				continue
 			fi
 			funcPrintf "      create: menu entry ${I}"
-			if [[ ! -f "${AUTO_PATH}" ]]; then
+			if [[ ! -e "${AUTO_PATH}" ]]; then
 				# --- standard installation mode ------------------------------
 				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${AUTO_PATH}"
 					menu resolution			${MENU_RESO/x/ }
@@ -3372,7 +3378,7 @@ function funcCreate_autoinst_cfg_grub() {
 	rm -f "${AUTO_PATH}"
 	for CONF_FILE in "${MENU_DIRS}/"{grub.cfg,install.cfg}
 	do
-		if [[ ! -f "${CONF_FILE}" ]]; then
+		if [[ ! -e "${CONF_FILE}" ]]; then
 			continue
 		fi
 		# shellcheck disable=SC2312
@@ -3443,11 +3449,11 @@ function funcCreate_autoinst_cfg_grub() {
 				continue
 			fi
 			funcPrintf "      create: menu entry ${I}"
-			if [[ ! -f "${AUTO_PATH}" ]]; then
+			if [[ ! -e "${AUTO_PATH}" ]]; then
 				# --- standard installation mode ------------------------------
 				# shellcheck disable=SC2128
 				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${AUTO_PATH}"
-					if [ -f ${FILE_FONT/${WORK_IMGS}/} ]; then
+					if [ -e ${FILE_FONT/${WORK_IMGS}/} ]; then
 					 	font=${FILE_FONT/${WORK_IMGS}/}
 					elif [ x\$feature_default_font_path = xy ]; then
 					 	font=unicode
@@ -3574,7 +3580,7 @@ _EOT_
 		do
 			IMGS_PATH="${WORK_IMGS}/${IMGS_FILE[I]#/}"
 			# shellcheck disable=SC2312
-			if [[ -f "${IMGS_PATH}" ]] \
+			if [[ -e "${IMGS_PATH}" ]] \
 			&& { { [[ "${IMGS_PATH##*.}" = "png" ]] && [[ "$(file "${IMGS_PATH}" | awk '{sub("-bit.*", "", $8 ); print  $8;}')" -ge 8 ]]; } \
 			||   { [[ "${IMGS_PATH##*.}" = "jpg" ]] && [[ "$(file "${IMGS_PATH}" | awk '{sub(",.*",    "", $17); print $17;}')" -ge 8 ]]; } }; then
 				# shellcheck disable=SC2128
@@ -4052,7 +4058,7 @@ function funcCreate_remaster() {
 			TGET_LIST[I-1]="${TGET_LINE[*]}"
 		fi
 		# --- skip check ------------------------------------------------------
-		if [[ ! -f "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
+		if [[ ! -e "${DIRS_ISOS}/${TGET_LINE[4]}" ]]; then
 			# shellcheck disable=SC2312
 			funcPrintf "===     ${TXT_RESET}${TXT_BYELLOW}skip: ${TGET_LINE[4]}${TXT_RESET} $(funcString "${COLS_SIZE}" '=')"
 			continue

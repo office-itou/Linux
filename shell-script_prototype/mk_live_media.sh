@@ -1,5 +1,10 @@
 #!/bin/bash
 
+	case "${1:-}" in
+		-dbg) set -x; shift;;
+		*) ;;
+	esac
+
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -312,8 +317,8 @@
 			FILE_CONF="${DIRS_TEMP}/${TGET_LINE[4]/.iso/}/${FILE_YAML##*/}"
 			# --- create cd/dvd image [ create squashfs file ] ----------------
 			if [[ "${FLAG_KEEP}" != "true" ]] \
-			|| [[ ! -f "${DIRS_TGET}/${SQFS_NAME}" ]] \
-			|| [[ ! -f "${DIRS_TGET}/manifest" ]] \
+			|| [[ ! -e "${DIRS_TGET}/${SQFS_NAME}" ]] \
+			|| [[ ! -e "${DIRS_TGET}/manifest" ]] \
 			|| [[ "${FILE_YAML}" -nt "${DIRS_TGET}/${SQFS_NAME}" ]]; then
 #			|| [[ "${PROG_PATH}" -nt "${DIRS_TGET}/${SQFS_NAME}" ]]; then
 				rm -rf "${DIRS_TGET:?}"
@@ -554,8 +559,8 @@
 					#	fi
 					#
 					# --- setup systemd-resolved.service ------------------------------------------
-					 	if [ -f /etc/systemd/resolved.conf ] \
-					 	&& [ -f /etc/dnsmasq.conf          ]; then
+					 	if [ -e /etc/systemd/resolved.conf ] \
+					 	&& [ -e /etc/dnsmasq.conf          ]; then
 					 		printf "\033[m\033[42m%s\033[m\n" "setup systemd-resolved.service"
 					 		_FILE_PATH="/etc/systemd/resolved.conf.d/resolved.conf"
 					 		mkdir -p "${_FILE_PATH%/*}"
@@ -959,7 +964,7 @@ _EOT_SH_
 				    --suite "${TGET_LINE[1]##*-}" \
 				    --target "${SQFS_NAME}" \
 				    || if [[ -n "${FLAG_CONT:-}" ]]; then continue; else exit 1; fi
-				if [[ -f "${FILE_CONF}" ]]; then
+				if [[ -e "${FILE_CONF}" ]]; then
 					cp -a "${FILE_CONF}" "${DIRS_TGET}"
 					chmod 644 "${DIRS_TGET}/${FILE_CONF##*/}"
 				fi
