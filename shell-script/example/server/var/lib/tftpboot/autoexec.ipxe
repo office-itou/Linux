@@ -14,76 +14,83 @@ isset ${menu-default} || set menu-default exit
 menu Select the OS type you want to boot
 item --gap --                           --------------------------------------------------------------------------
 item --gap --                           [ Auto install mini.iso ... ]
-item -- debian-mini-11                  - Debian 11 .......................................... 2024-06-24 17:01:08
-item -- debian-mini-12                  - Debian 12 .......................................... 2024-06-24 11:54:34
+item -- debian-mini-11                  - Debian 11 .......................................... 2024-08-27 06:14:31
+item -- debian-mini-12                  - Debian 12 .......................................... 2024-11-03 22:30:20
 item -- debian-mini-13                  - Debian 13 .......................................... 2023-06-07 01:01:56
-item -- debian-mini-testing             - Debian testing ..................................... 2024-06-29 00:02:26
+item -- debian-mini-testing             - Debian testing ..................................... 2024-11-29 00:02:21
 item -- ubuntu-mini-18.04               - Ubuntu 18.04 ....................................... 2021-09-15 15:14:00
 item -- ubuntu-mini-20.04               - Ubuntu 20.04 ....................................... 2023-03-14 22:28:31
 item --gap --                           [ Auto install Net install ... ]
-item -- debian-netinst-11               - Debian 11 .......................................... 2024-06-29 16:09:30
-item -- debian-netinst-12               - Debian 12 .......................................... 2024-06-29 11:56:31
-item -- debian-netinst-testing          - Debian testing ..................................... 2024-06-29 22:29:29
-item -- fedora-netinst-39               - Fedora Server 39 ................................... 2023-10-31 22:05:26
+item -- debian-netinst-11               - Debian 11 .......................................... 2024-08-31 16:11:10
+item -- debian-netinst-12               - Debian 12 .......................................... 2024-11-09 12:46:43
+item -- debian-netinst-testing          - Debian testing ..................................... 2024-11-29 15:20:30
 item -- fedora-netinst-40               - Fedora Server 40 ................................... 2024-04-14 18:30:19
-item -- centos-stream-netinst-9         - CentOS Stream 9 .................................... 2024-06-24 03:57:51
-item -- almalinux-netinst-9             - Alma Linux 9 ....................................... 2024-05-03 22:12:51
+item -- fedora-netinst-41               - Fedora Server 41 ................................... 2024-10-24 13:36:10
+item -- centos-stream-netinst-9         - CentOS Stream 9 .................................... 2024-11-25 03:58:30
+item -- centos-stream-netinst-10        - CentOS Stream 10 ................................... 2024-11-25 04:19:01
+item -- almalinux-netinst-9             - Alma Linux 9 ....................................... 2024-11-13 09:40:34
 item -- rockylinux-netinst-8            - Rocky Linux 8 ...................................... 2024-05-27 14:13:45
-item -- rockylinux-netinst-9            - Rocky Linux 9 ...................................... 2024-05-05 01:12:29
-item -- miraclelinux-netinst-8          - Miracle Linux 8 .................................... 2023-10-04 10:06:21
-item -- miraclelinux-netinst-9          - Miracle Linux 9 .................................... 2023-10-04 08:24:35
+item -- rockylinux-netinst-9            - Rocky Linux 9 ...................................... 2024-11-16 01:52:35
+item -- miraclelinux-netinst-8          - Miracle Linux 8 .................................... 2024-10-11 07:13:59
+item -- miraclelinux-netinst-9          - Miracle Linux 9 .................................... 2024-08-23 05:57:18
 item -- opensuse-leap-netinst-15.5      - openSUSE Leap 15.5 ................................. 2023-05-23 15:09:21
 item -- opensuse-leap-netinst-15.6      - openSUSE Leap 15.6 ................................. 2024-06-20 11:42:39
-item -- opensuse-tumbleweed-netinst     - openSUSE Tumbleweed ................................ 2024-06-28 17:16:06
+item -- opensuse-tumbleweed-netinst     - openSUSE Tumbleweed ................................ 2024-11-28 05:25:37
 item --gap --                           [ Auto install DVD media ... ]
-item -- debian-11                       - Debian 11 .......................................... 2024-06-29 16:10:15
-item -- debian-12                       - Debian 12 .......................................... 2024-06-29 11:57:27
-item -- debian-testing                  - Debian testing ..................................... 2024-06-24 04:56:14
+item -- debian-11                       - Debian 11 .......................................... 2024-08-31 16:11:53
+item -- debian-12                       - Debian 12 .......................................... 2024-11-09 12:47:35
+item -- debian-testing                  - Debian testing ..................................... 2024-11-25 04:56:08
 item -- ubuntu-server-18.04             - Ubuntu 18.04 Server ................................ 2021-09-16 00:01:34
 item -- ubuntu-live-18.04               - Ubuntu 18.04 Live Server ........................... 2021-09-15 20:42:12
 item -- ubuntu-live-20.04               - Ubuntu 20.04 Live Server ........................... 2023-03-14 23:02:35
-item -- ubuntu-live-22.04               - Ubuntu 22.04 Live Server ........................... 2024-02-16 23:52:36
-item -- ubuntu-live-23.10               - Ubuntu 23.10 Live Server ........................... 2023-10-11 04:52:01
-item -- ubuntu-live-24.04               - Ubuntu 24.04 Live Server ........................... 2024-04-23 12:46:14
-item -- ubuntu-live-oracular            - Ubuntu oracular Live Server ........................ 2024-06-27 08:31:59
-item -- fedora-39                       - Fedora Server 39 ................................... 2023-11-01 01:01:16
+item -- ubuntu-live-22.04               - Ubuntu 22.04 Live Server ........................... 2024-09-11 18:46:55
+item -- ubuntu-live-24.04               - Ubuntu 24.04 Live Server ........................... 2024-08-27 15:40:27
+item -- ubuntu-live-24.10               - Ubuntu 24.10 Live Server ........................... 2024-10-07 21:19:04
+item -- ubuntu-live-25.04               - Ubuntu 25.04 Live Server ........................... 2024-11-29 09:23:15
 item -- fedora-40                       - Fedora Server 40 ................................... 2024-04-14 22:54:06
-item -- centos-stream-9                 - CentOS Stream 9 .................................... 2024-06-24 04:11:56
-item -- almalinux-9                     - Alma Linux 9 ....................................... 2024-05-03 22:26:18
+item -- fedora-41                       - Fedora Server 41 ................................... 2024-10-24 14:48:35
+item -- centos-stream-9                 - CentOS Stream 9 .................................... 2024-11-25 04:13:14
+item -- centos-stream-10                - CentOS Stream 10 ................................... 2024-11-25 04:25:23
+item -- almalinux-9                     - Alma Linux 9 ....................................... 2024-11-13 09:59:46
 item -- rockylinux-8                    - Rocky Linux 8 ...................................... 2024-05-27 15:14:45
-item -- rockylinux-9                    - Rocky Linux 9 ...................................... 2024-05-05 22:41:50
-item -- miraclelinux-8                  - Miracle Linux 8 .................................... 2023-10-04 10:06:21
-item -- miraclelinux-9                  - Miracle Linux 9 .................................... 2023-10-04 09:37:20
+item -- rockylinux-9                    - Rocky Linux 9 ...................................... 2024-11-16 04:23:15
+item -- miraclelinux-8                  - Miracle Linux 8 .................................... 2024-10-17 03:23:34
+item -- miraclelinux-9                  - Miracle Linux 9 .................................... 2024-08-23 05:57:18
 item -- opensuse-leap-15.5              - openSUSE Leap 15.5 ................................. 2023-05-23 15:21:52
 item -- opensuse-leap-15.6              - openSUSE Leap 15.6 ................................. 2024-06-20 11:56:54
-item -- opensuse-tumbleweed             - openSUSE Tumbleweed ................................ 2024-06-28 17:18:52
+item -- opensuse-tumbleweed             - openSUSE Tumbleweed ................................ 2024-11-28 05:28:24
 item -- windows-10                      - Windows 10                                                
 item -- windows-11                      - Windows 11                                                
 item --gap --                           [ Live media Install mode ... ]
-item -- debian-live-11                  - Debian 11 Live ..................................... 2024-06-29 15:22:22
-item -- debian-live-12                  - Debian 12 Live ..................................... 2024-06-29 09:06:14
-item -- debian-live-testing             - Debian testing Live ................................ 2024-06-24 02:13:06
+item -- debian-live-11                  - Debian 11 Live ..................................... 2024-08-31 15:15:29
+item -- debian-live-12                  - Debian 12 Live ..................................... 2024-11-09 10:10:58
+item -- debian-live-testing             - Debian testing Live ................................ 2024-11-25 02:13:14
 item -- ubuntu-desktop-20.04            - Ubuntu 20.04 Desktop ............................... 2023-03-16 15:58:09
-item -- ubuntu-desktop-22.04            - Ubuntu 22.04 Desktop ............................... 2024-02-20 19:39:40
-item -- ubuntu-desktop-23.10            - Ubuntu 23.10 Desktop ............................... 2023-10-16 11:31:22
-item -- ubuntu-desktop-24.04            - Ubuntu 24.04 Desktop ............................... 2024-04-24 11:29:21
-item -- ubuntu-desktop-oracular         - Ubuntu oracular Desktop ............................ 2024-06-28 06:57:28
-item -- ubuntu-legacy-23.10             - Ubuntu 23.10 Legacy Desktop ........................ 2023-10-10 04:57:59
+item -- ubuntu-desktop-22.04            - Ubuntu 22.04 Desktop ............................... 2024-09-11 14:38:59
+item -- ubuntu-desktop-24.04            - Ubuntu 24.04 Desktop ............................... 2024-08-27 16:25:25
+item -- ubuntu-desktop-24.10            - Ubuntu 24.10 Desktop ............................... 2024-10-09 14:32:32
+item -- ubuntu-desktop-25.04            - Ubuntu 25.04 Desktop ............................... 2024-11-29 06:27:15
 item --gap --                           [ Live media Live mode ... ]
-item -- live-debian-live-11             - Debian 11 Live ..................................... 2024-06-29 15:22:22
-item -- live-debian-live-12             - Debian 12 Live ..................................... 2024-06-29 09:06:14
-item -- live-debian-live-testing        - Debian testing Live ................................ 2024-06-24 02:13:06
+item -- live-debian-live-11             - Debian 11 Live ..................................... 2024-08-31 15:15:29
+item -- live-debian-live-12             - Debian 12 Live ..................................... 2024-11-09 10:10:58
+item -- live-debian-live-testing        - Debian testing Live ................................ 2024-11-25 02:13:14
 item -- live-ubuntu-desktop-20.04       - Ubuntu 20.04 Desktop ............................... 2023-03-16 15:58:09
-item -- live-ubuntu-desktop-22.04       - Ubuntu 22.04 Desktop ............................... 2024-02-20 19:39:40
-item -- live-ubuntu-desktop-23.10       - Ubuntu 23.10 Desktop ............................... 2023-10-16 11:31:22
-item -- live-ubuntu-desktop-24.04       - Ubuntu 24.04 Desktop ............................... 2024-04-24 11:29:21
-item -- live-ubuntu-desktop-oracular    - Ubuntu oracular Desktop ............................ 2024-06-28 06:57:28
-item -- live-ubuntu-legacy-23.10        - Ubuntu 23.10 Legacy Desktop ........................ 2023-10-10 04:57:59
+item -- live-ubuntu-desktop-22.04       - Ubuntu 22.04 Desktop ............................... 2024-09-11 14:38:59
+item -- live-ubuntu-desktop-24.04       - Ubuntu 24.04 Desktop ............................... 2024-08-27 16:25:25
+item -- live-ubuntu-desktop-24.10       - Ubuntu 24.10 Desktop ............................... 2024-10-09 14:32:32
+item -- live-ubuntu-desktop-25.04       - Ubuntu 25.04 Desktop ............................... 2024-11-29 06:27:15
 item --gap --                           [ System tools ... ]
-item -- memtest86+                      - Memtest86+                                                
+item -- memtest86plus                   - Memtest86+ 7.20                                           
 item -- winpe-x64                       - WinPE x64                                                 
 item -- ati2020x64                      - ATI2020x64                                                
 item -- ati2020x86                      - ATI2020x86                                                
+item --gap --                           [ Custom Live Media ... ]
+item --gap --                           [ Custom Initramfs boot ... ]
+item -- netinst-debian-10               - Net Installer Debian 10 ............................ 2024-11-24 13:12:06
+item -- netinst-debian-11               - Net Installer Debian 11 ............................ 2024-11-24 13:17:18
+item -- netinst-debian-12               - Net Installer Debian 12 ............................ 2024-11-24 13:22:12
+item -- netinst-debian-13               - Net Installer Debian 13 ............................ 2024-11-23 04:58:33
+item -- netinst-debian-sid              - Net Installer Debian sid ........................... 2024-11-23 05:01:24
 item --gap --                           [ System command ]
 item -- shell                           - iPXE shell
 #item -- shutdown                       - System shutdown
@@ -95,16 +102,16 @@ goto ${selected}
 :debian-mini-11
 echo Loading Debian 11 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile mini-bullseye-amd64.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
+set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server_old.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-mini-11
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-mini-11
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
@@ -117,16 +124,16 @@ exit
 :debian-mini-12
 echo Loading Debian 12 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile mini-bookworm-amd64.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
 set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-mini-12
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-mini-12
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
@@ -139,16 +146,16 @@ exit
 :debian-mini-13
 echo Loading Debian 13 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile mini-trixie-amd64.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
 set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-mini-13
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-mini-13
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
@@ -161,16 +168,16 @@ exit
 :debian-mini-testing
 echo Loading Debian testing ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile mini-testing-amd64.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
 set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-mini-testing
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-mini-testing
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
@@ -183,17 +190,17 @@ exit
 :ubuntu-mini-18.04
 echo Loading Ubuntu 18.04 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile mini-bionic-amd64.iso
 set isoaddr iso-url=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_ubuntu_server_old.cfg
+set install auto=true url=http://${svraddr}/conf/preseed/ps_ubuntu_server_oldold.cfg
 set netname sv-ubuntu.workgroup
 set network sv-ubuntu.workgroup netcfg/target_network_config=NetworkManager
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-mini-18.04
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/ubuntu-mini-18.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
@@ -206,17 +213,17 @@ exit
 :ubuntu-mini-20.04
 echo Loading Ubuntu 20.04 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile mini-focal-amd64.iso
 set isoaddr iso-url=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_ubuntu_server_old.cfg
+set install auto=true url=http://${svraddr}/conf/preseed/ps_ubuntu_server_oldold.cfg
 set netname sv-ubuntu.workgroup
 set network sv-ubuntu.workgroup netcfg/target_network_config=NetworkManager
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-mini-20.04
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/ubuntu-mini-20.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
@@ -229,95 +236,73 @@ exit
 :debian-netinst-11
 echo Loading Debian 11 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-11.10.0-amd64-netinst.iso
+set isofile debian-11.11.0-amd64-netinst.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
+set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server_old.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-netinst-11
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-netinst-11
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
 
 :debian-netinst-12
 echo Loading Debian 12 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-12.6.0-amd64-netinst.iso
+set isofile debian-12.8.0-amd64-netinst.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
 set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-netinst-12
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-netinst-12
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
 
 :debian-netinst-testing
 echo Loading Debian testing ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile debian-testing-amd64-netinst.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
 set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-netinst-testing
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-netinst-testing
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
-boot || goto error
-exit
-
-:fedora-netinst-39
-echo Loading Fedora Server 39 ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile Fedora-Server-netinst-x86_64-39-1.5.iso
-set isoaddr inst.stage2=http://${svraddr}/imgs/fedora-netinst-39
-set install inst.ks=http://${svraddr}/conf/kickstart/ks_fedora-39_net.cfg
-set netname sv-fedora.workgroup
-set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
-set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/fedora-netinst-39
-form                                    Configure Boot Options
-item options                            Boot Options
-present ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
 
 :fedora-netinst-40
 echo Loading Fedora Server 40 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile Fedora-Server-netinst-x86_64-40-1.14.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/fedora-netinst-40
@@ -326,20 +311,42 @@ set netname sv-fedora.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/fedora-netinst-40
+set knladdr http://${svraddr}/load/fedora-netinst-40
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
+boot || goto error
+exit
+
+:fedora-netinst-41
+echo Loading Fedora Server 41 ...
+set root tftp
+set svraddr 192.168.1.12
+isset ${next-server} && set svraddr ${next-server}' ||
+set isofile Fedora-Server-netinst-x86_64-41-1.4.iso
+set isoaddr inst.stage2=http://${svraddr}/imgs/fedora-netinst-41
+set install inst.ks=http://${svraddr}/conf/kickstart/ks_fedora-41_net.cfg
+set netname sv-fedora.workgroup
+set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
+set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
+set knladdr http://${svraddr}/load/fedora-netinst-41
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
+echo Loading kernel and initrd ...
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :centos-stream-netinst-9
 echo Loading CentOS Stream 9 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile CentOS-Stream-9-latest-x86_64-boot.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/centos-stream-netinst-9
@@ -348,20 +355,42 @@ set netname sv-centos.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/centos-stream-netinst-9
+set knladdr http://${svraddr}/load/centos-stream-netinst-9
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
+boot || goto error
+exit
+
+:centos-stream-netinst-10
+echo Loading CentOS Stream 10 ...
+set root tftp
+set svraddr 192.168.1.12
+isset ${next-server} && set svraddr ${next-server}' ||
+set isofile CentOS-Stream-10-latest-x86_64-boot.iso
+set isoaddr inst.stage2=http://${svraddr}/imgs/centos-stream-netinst-10
+set install inst.ks=http://${svraddr}/conf/kickstart/ks_centos-stream-10_net.cfg
+set netname sv-centos.workgroup
+set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
+set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
+set knladdr http://${svraddr}/load/centos-stream-netinst-10
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
+echo Loading kernel and initrd ...
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :almalinux-netinst-9
 echo Loading Alma Linux 9 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile AlmaLinux-9-latest-x86_64-boot.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/almalinux-netinst-9
@@ -370,20 +399,20 @@ set netname sv-almalinux.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/almalinux-netinst-9
+set knladdr http://${svraddr}/load/almalinux-netinst-9
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :rockylinux-netinst-8
 echo Loading Rocky Linux 8 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile Rocky-8.10-x86_64-boot.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/rockylinux-netinst-8
@@ -392,20 +421,20 @@ set netname sv-rockylinux.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/rockylinux-netinst-8
+set knladdr http://${svraddr}/load/rockylinux-netinst-8
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :rockylinux-netinst-9
 echo Loading Rocky Linux 9 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile Rocky-9-latest-x86_64-boot.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/rockylinux-netinst-9
@@ -414,64 +443,64 @@ set netname sv-rockylinux.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/rockylinux-netinst-9
+set knladdr http://${svraddr}/load/rockylinux-netinst-9
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :miraclelinux-netinst-8
 echo Loading Miracle Linux 8 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile MIRACLELINUX-8.8-rtm-minimal-x86_64.iso
+set isofile MIRACLELINUX-8.10-rtm-minimal-x86_64.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/miraclelinux-netinst-8
 set install inst.ks=http://${svraddr}/conf/kickstart/ks_miraclelinux-8_net.cfg
 set netname sv-miraclelinux.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/miraclelinux-netinst-8
+set knladdr http://${svraddr}/load/miraclelinux-netinst-8
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :miraclelinux-netinst-9
 echo Loading Miracle Linux 9 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile MIRACLELINUX-9.2-rtm-minimal-x86_64.iso
+set isofile MIRACLELINUX-9.4-rtm-minimal-x86_64.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/miraclelinux-netinst-9
 set install inst.ks=http://${svraddr}/conf/kickstart/ks_miraclelinux-9_net.cfg
 set netname sv-miraclelinux.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/miraclelinux-netinst-9
+set knladdr http://${svraddr}/load/miraclelinux-netinst-9
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :opensuse-leap-netinst-15.5
 echo Loading openSUSE Leap 15.5 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile openSUSE-Leap-15.5-NET-x86_64-Media.iso
 set install autoyast=http://${svraddr}/conf/autoyast/autoinst_leap-15.5_net.xml
@@ -480,20 +509,20 @@ set network ifcfg=eth0=192.168.1.1/24,192.168.1.254,192.168.1.254,workgroup host
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/opensuse-leap-netinst-15.5
+set knladdr http://${svraddr}/load/opensuse-leap-netinst-15.5
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
-initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
+kernel ${knladdr}/linux ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :opensuse-leap-netinst-15.6
 echo Loading openSUSE Leap 15.6 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile openSUSE-Leap-15.6-NET-x86_64-Media.iso
 set install autoyast=http://${svraddr}/conf/autoyast/autoinst_leap-15.6_net.xml
@@ -502,20 +531,20 @@ set network ifcfg=eth0=192.168.1.1/24,192.168.1.254,192.168.1.254,workgroup host
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/opensuse-leap-netinst-15.6
+set knladdr http://${svraddr}/load/opensuse-leap-netinst-15.6
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
-initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
+kernel ${knladdr}/linux ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :opensuse-tumbleweed-netinst
 echo Loading openSUSE Tumbleweed ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile openSUSE-Tumbleweed-NET-x86_64-Current.iso
 set install autoyast=http://${svraddr}/conf/autoyast/autoinst_tumbleweed_net.xml
@@ -524,109 +553,109 @@ set network ifcfg=ens160=192.168.1.1/24,192.168.1.254,192.168.1.254,workgroup ho
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/opensuse-tumbleweed-netinst
+set knladdr http://${svraddr}/load/opensuse-tumbleweed-netinst
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
-initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
+kernel ${knladdr}/linux ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :debian-11
 echo Loading Debian 11 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-11.10.0-amd64-DVD-1.iso
+set isofile debian-11.11.0-amd64-DVD-1.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
+set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server_old.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-11
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-11
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
 
 :debian-12
 echo Loading Debian 12 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-12.6.0-amd64-DVD-1.iso
+set isofile debian-12.8.0-amd64-DVD-1.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
 set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-12
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-12
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
 
 :debian-testing
 echo Loading Debian testing ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile debian-testing-amd64-DVD-1.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
 set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-testing
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-testing
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
 
 :ubuntu-server-18.04
 echo Loading Ubuntu 18.04 Server ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile ubuntu-18.04.6-server-amd64.iso
 set isoaddr iso-url=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_ubuntu_server_old.cfg
+set install auto=true url=http://${svraddr}/conf/preseed/ps_ubuntu_server_oldold.cfg
 set netname sv-ubuntu.workgroup
 set network sv-ubuntu.workgroup netcfg/target_network_config=NetworkManager
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-server-18.04
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/ubuntu-server-18.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install/netboot/ubuntu-installer/amd64/linux ${options} --- || goto error
-initrd ${knladdr}/install/netboot/ubuntu-installer/amd64/initrd.gz || goto error
+kernel ${knladdr}/linux ${options} --- || goto error
+initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
 
 :ubuntu-live-18.04
 echo Loading Ubuntu 18.04 Live Server ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile ubuntu-18.04.6-live-server-amd64.iso
 set isoaddr url=http://${svraddr}/isos/${isofile}
@@ -636,20 +665,20 @@ set network ip=ens160,192.168.1.1,255.255.255.0,192.168.1.254 hostname=${netname
 set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-live-18.04
+set knladdr http://${svraddr}/load/ubuntu-live-18.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :ubuntu-live-20.04
 echo Loading Ubuntu 20.04 Live Server ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile ubuntu-20.04.6-live-server-amd64.iso
 set isoaddr url=http://${svraddr}/isos/${isofile}
@@ -659,22 +688,22 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0::ens160:static:192.168.1
 set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-live-20.04
+set knladdr http://${svraddr}/load/ubuntu-live-20.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :ubuntu-live-22.04
 echo Loading Ubuntu 22.04 Live Server ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile ubuntu-22.04.4-live-server-amd64.iso
+set isofile ubuntu-22.04.5-live-server-amd64.iso
 set isoaddr url=http://${svraddr}/isos/${isofile}
 set install automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=http://${svraddr}/conf/nocloud/ubuntu_server
 set netname sv-ubuntu.workgroup
@@ -682,45 +711,22 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0::ens160:static:192.168.1
 set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-live-22.04
+set knladdr http://${svraddr}/load/ubuntu-live-22.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
-boot || goto error
-exit
-
-:ubuntu-live-23.10
-echo Loading Ubuntu 23.10 Live Server ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile ubuntu-23.10-live-server-amd64.iso
-set isoaddr iso-url=http://${svraddr}/isos/${isofile}
-set install automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=http://${svraddr}/conf/nocloud/ubuntu_server
-set netname sv-ubuntu.workgroup
-set network ip=192.168.1.1::192.168.1.254:255.255.255.0::ens160:static:192.168.1.254 hostname=${netname}
-set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
-set ramdisk root=/dev/ram0 ramdisk_size=1500000
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-live-23.10
-form                                    Configure Boot Options
-item options                            Boot Options
-present ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :ubuntu-live-24.04
 echo Loading Ubuntu 24.04 Live Server ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile ubuntu-24.04-live-server-amd64.iso
+set isofile ubuntu-24.04.1-live-server-amd64.iso
 set isoaddr iso-url=http://${svraddr}/isos/${isofile}
 set install automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=http://${svraddr}/conf/nocloud/ubuntu_server
 set netname sv-ubuntu.workgroup
@@ -728,22 +734,22 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0::ens160:static:192.168.1
 set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-live-24.04
+set knladdr http://${svraddr}/load/ubuntu-live-24.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
-:ubuntu-live-oracular
-echo Loading Ubuntu oracular Live Server ...
+:ubuntu-live-24.10
+echo Loading Ubuntu 24.10 Live Server ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile oracular-live-server-amd64.iso
+set isofile ubuntu-24.10-live-server-amd64.iso
 set isoaddr iso-url=http://${svraddr}/isos/${isofile}
 set install automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=http://${svraddr}/conf/nocloud/ubuntu_server
 set netname sv-ubuntu.workgroup
@@ -751,42 +757,43 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0::ens160:static:192.168.1
 set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-live-oracular
+set knladdr http://${svraddr}/load/ubuntu-live-24.10
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
-:fedora-39
-echo Loading Fedora Server 39 ...
+:ubuntu-live-25.04
+echo Loading Ubuntu 25.04 Live Server ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile Fedora-Server-dvd-x86_64-39-1.5.iso
-set isoaddr inst.stage2=http://${svraddr}/imgs/fedora-39
-set install inst.ks=http://${svraddr}/conf/kickstart/ks_fedora-39_web.cfg
-set netname sv-fedora.workgroup
-set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
-set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set isofile plucky-live-server-amd64.iso
+set isoaddr iso-url=http://${svraddr}/isos/${isofile}
+set install automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=http://${svraddr}/conf/nocloud/ubuntu_server
+set netname sv-ubuntu.workgroup
+set network ip=192.168.1.1::192.168.1.254:255.255.255.0::ens160:static:192.168.1.254 hostname=${netname}
+set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/fedora-39
+set knladdr http://${svraddr}/load/ubuntu-live-25.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :fedora-40
 echo Loading Fedora Server 40 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile Fedora-Server-dvd-x86_64-40-1.14.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/fedora-40
@@ -795,20 +802,42 @@ set netname sv-fedora.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/fedora-40
+set knladdr http://${svraddr}/load/fedora-40
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
+boot || goto error
+exit
+
+:fedora-41
+echo Loading Fedora Server 41 ...
+set root tftp
+set svraddr 192.168.1.12
+isset ${next-server} && set svraddr ${next-server}' ||
+set isofile Fedora-Server-dvd-x86_64-41-1.4.iso
+set isoaddr inst.stage2=http://${svraddr}/imgs/fedora-41
+set install inst.ks=http://${svraddr}/conf/kickstart/ks_fedora-41_web.cfg
+set netname sv-fedora.workgroup
+set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
+set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
+set knladdr http://${svraddr}/load/fedora-41
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
+echo Loading kernel and initrd ...
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :centos-stream-9
 echo Loading CentOS Stream 9 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile CentOS-Stream-9-latest-x86_64-dvd1.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/centos-stream-9
@@ -817,20 +846,42 @@ set netname sv-centos.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/centos-stream-9
+set knladdr http://${svraddr}/load/centos-stream-9
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
+boot || goto error
+exit
+
+:centos-stream-10
+echo Loading CentOS Stream 10 ...
+set root tftp
+set svraddr 192.168.1.12
+isset ${next-server} && set svraddr ${next-server}' ||
+set isofile CentOS-Stream-10-latest-x86_64-dvd1.iso
+set isoaddr inst.stage2=http://${svraddr}/imgs/centos-stream-10
+set install inst.ks=http://${svraddr}/conf/kickstart/ks_centos-stream-10_web.cfg
+set netname sv-centos.workgroup
+set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
+set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
+set knladdr http://${svraddr}/load/centos-stream-10
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
+echo Loading kernel and initrd ...
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :almalinux-9
 echo Loading Alma Linux 9 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile AlmaLinux-9-latest-x86_64-dvd.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/almalinux-9
@@ -839,20 +890,20 @@ set netname sv-almalinux.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/almalinux-9
+set knladdr http://${svraddr}/load/almalinux-9
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :rockylinux-8
 echo Loading Rocky Linux 8 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile Rocky-8.10-x86_64-dvd1.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/rockylinux-8
@@ -861,20 +912,20 @@ set netname sv-rockylinux.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/rockylinux-8
+set knladdr http://${svraddr}/load/rockylinux-8
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :rockylinux-9
 echo Loading Rocky Linux 9 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile Rocky-9-latest-x86_64-dvd.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/rockylinux-9
@@ -883,64 +934,64 @@ set netname sv-rockylinux.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/rockylinux-9
+set knladdr http://${svraddr}/load/rockylinux-9
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :miraclelinux-8
 echo Loading Miracle Linux 8 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile MIRACLELINUX-8.8-rtm-x86_64.iso
+set isofile MIRACLELINUX-8.10-rtm-x86_64.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/miraclelinux-8
 set install inst.ks=http://${svraddr}/conf/kickstart/ks_miraclelinux-8_web.cfg
 set netname sv-miraclelinux.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/miraclelinux-8
+set knladdr http://${svraddr}/load/miraclelinux-8
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :miraclelinux-9
 echo Loading Miracle Linux 9 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile MIRACLELINUX-9.2-rtm-x86_64.iso
+set isofile MIRACLELINUX-9.4-rtm-x86_64.iso
 set isoaddr inst.stage2=http://${svraddr}/imgs/miraclelinux-9
 set install inst.ks=http://${svraddr}/conf/kickstart/ks_miraclelinux-9_web.cfg
 set netname sv-miraclelinux.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:none,auto6 nameserver=192.168.1.254
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/miraclelinux-9
+set knladdr http://${svraddr}/load/miraclelinux-9
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :opensuse-leap-15.5
 echo Loading openSUSE Leap 15.5 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile openSUSE-Leap-15.5-DVD-x86_64-Media.iso
 set isoaddr install=http://${svraddr}/imgs/opensuse-leap-15.5
@@ -950,20 +1001,20 @@ set network ifcfg=eth0=192.168.1.1/24,192.168.1.254,192.168.1.254,workgroup host
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/opensuse-leap-15.5
+set knladdr http://${svraddr}/load/opensuse-leap-15.5
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
-initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
+kernel ${knladdr}/linux ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :opensuse-leap-15.6
 echo Loading openSUSE Leap 15.6 ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile openSUSE-Leap-15.6-DVD-x86_64-Media.iso
 set isoaddr install=http://${svraddr}/imgs/opensuse-leap-15.6
@@ -973,20 +1024,20 @@ set network ifcfg=eth0=192.168.1.1/24,192.168.1.254,192.168.1.254,workgroup host
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/opensuse-leap-15.6
+set knladdr http://${svraddr}/load/opensuse-leap-15.6
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
-initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
+kernel ${knladdr}/linux ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :opensuse-tumbleweed
 echo Loading openSUSE Tumbleweed ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile openSUSE-Tumbleweed-DVD-x86_64-Current.iso
 set isoaddr install=http://${svraddr}/imgs/opensuse-tumbleweed
@@ -996,19 +1047,19 @@ set network ifcfg=ens160=192.168.1.1/24,192.168.1.254,192.168.1.254,workgroup ho
 set locales locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 load_ramdisk=1 showopts ramdisk_size=4096
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/opensuse-tumbleweed
+set knladdr http://${svraddr}/load/opensuse-tumbleweed
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
-initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
+kernel ${knladdr}/linux ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :windows-10
 echo Loading Windows 10 ...
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server} ||
 set cfgaddr http://${svraddr}/conf/windows
 set knladdr http://${svraddr}/imgs/windows-10
@@ -1026,7 +1077,7 @@ exit
 
 :windows-11
 echo Loading Windows 11 ...
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server} ||
 set cfgaddr http://${svraddr}/conf/windows
 set knladdr http://${svraddr}/imgs/windows-11
@@ -1045,73 +1096,73 @@ exit
 :debian-live-11
 echo Loading Debian 11 Live ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-live-11.10.0-amd64-lxde.iso
+set isofile debian-live-11.11.0-amd64-lxde.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
-set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_desktop.cfg
+set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_desktop_old.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-live-11
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-live-11
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/d-i/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/d-i/initrd.gz || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
 
 :debian-live-12
 echo Loading Debian 12 Live ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-live-12.6.0-amd64-lxde.iso
+set isofile debian-live-12.8.0-amd64-lxde.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
 set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_desktop.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-live-12
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-live-12
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install/initrd.gz || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
 
 :debian-live-testing
 echo Loading Debian testing Live ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile debian-live-testing-amd64-lxde.iso
 set isoaddr fetch=http://${svraddr}/isos/${isofile}
 set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_desktop.cfg
 set netname sv-debian.workgroup
 set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-live-testing
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/debian-live-testing
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install/initrd.gz || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
 
 :ubuntu-desktop-20.04
 echo Loading Ubuntu 20.04 Desktop ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile ubuntu-20.04.6-desktop-amd64.iso
 set isoaddr iso-url=http://${svraddr}/isos/${isofile}
@@ -1120,69 +1171,46 @@ set netname sv-ubuntu.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:static:192.168.1.254
 set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-desktop-20.04
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/ubuntu-desktop-20.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :ubuntu-desktop-22.04
 echo Loading Ubuntu 22.04 Desktop ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile ubuntu-22.04.4-desktop-amd64.iso
+set isofile ubuntu-22.04.5-desktop-amd64.iso
 set isoaddr iso-url=http://${svraddr}/isos/${isofile}
 set install automatic-ubiquity noprompt auto=true url=http://${svraddr}/conf/preseed/ps_ubiquity_desktop.cfg
 set netname sv-ubuntu.workgroup
 set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:static:192.168.1.254
 set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-desktop-22.04
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/ubuntu-desktop-22.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
-boot || goto error
-exit
-
-:ubuntu-desktop-23.10
-echo Loading Ubuntu 23.10 Desktop ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile ubuntu-23.10.1-desktop-amd64.iso
-set isoaddr iso-url=http://${svraddr}/isos/${isofile}
-set install automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=http://${svraddr}/conf/nocloud/ubuntu_desktop
-set netname sv-ubuntu.workgroup
-set network ip=192.168.1.1::192.168.1.254:255.255.255.0::ens160:static:192.168.1.254 hostname=${netname}
-set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
-set ramdisk root=/dev/ram0 ramdisk_size=1500000
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-desktop-23.10
-form                                    Configure Boot Options
-item options                            Boot Options
-present ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :ubuntu-desktop-24.04
 echo Loading Ubuntu 24.04 Desktop ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile ubuntu-24.04-desktop-amd64.iso
+set isofile ubuntu-24.04.1-desktop-amd64.iso
 set isoaddr iso-url=http://${svraddr}/isos/${isofile}
 set install automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=http://${svraddr}/conf/nocloud/ubuntu_desktop
 set netname sv-ubuntu.workgroup
@@ -1190,22 +1218,22 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0::ens160:static:192.168.1
 set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-desktop-24.04
+set knladdr http://${svraddr}/load/ubuntu-desktop-24.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
-:ubuntu-desktop-oracular
-echo Loading Ubuntu oracular Desktop ...
+:ubuntu-desktop-24.10
+echo Loading Ubuntu 24.10 Desktop ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile oracular-desktop-amd64.iso
+set isofile ubuntu-24.10-desktop-amd64.iso
 set isoaddr iso-url=http://${svraddr}/isos/${isofile}
 set install automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=http://${svraddr}/conf/nocloud/ubuntu_desktop
 set netname sv-ubuntu.workgroup
@@ -1213,230 +1241,209 @@ set network ip=192.168.1.1::192.168.1.254:255.255.255.0::ens160:static:192.168.1
 set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-desktop-oracular
+set knladdr http://${svraddr}/load/ubuntu-desktop-24.10
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
-:ubuntu-legacy-23.10
-echo Loading Ubuntu 23.10 Legacy Desktop ...
+:ubuntu-desktop-25.04
+echo Loading Ubuntu 25.04 Desktop ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile ubuntu-23.10-desktop-legacy-amd64.iso
+set isofile plucky-desktop-amd64.iso
 set isoaddr iso-url=http://${svraddr}/isos/${isofile}
-set install automatic-ubiquity noprompt auto=true url=http://${svraddr}/conf/preseed/ps_ubiquity_desktop.cfg
+set install automatic-ubiquity noprompt autoinstall ds=nocloud-net;s=http://${svraddr}/conf/nocloud/ubuntu_desktop
 set netname sv-ubuntu.workgroup
-set network ip=192.168.1.1::192.168.1.254:255.255.255.0:${netname}:ens160:static:192.168.1.254
-set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set network ip=192.168.1.1::192.168.1.254:255.255.255.0::ens160:static:192.168.1.254 hostname=${netname}
+set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-legacy-23.10
+set knladdr http://${svraddr}/load/ubuntu-desktop-25.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :live-debian-live-11
 echo Loading Debian 11 Live ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-live-11.10.0-amd64-lxde.iso
-set isoaddr boot=live components fetch=http://${svraddr}/imgs/debian-live-11/live/filesystem.squashfs
-set network ip=dhcp
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-live-11
+set isofile debian-live-11.11.0-amd64-lxde.iso
+set isoaddr boot=live fetch=http://${svraddr}/imgs/debian-live-11/live/filesystem.squashfs hooks=http://${svraddr}/conf/script/live_0000-user-conf-hook.sh
+set network dhcp ip=dhcp ip=ens160:192.168.1.200/24 hostname=live-debian.workgroup
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773 components overlay-size=90% xorg-resolution=1680x1050 debugout
+set knladdr http://${svraddr}/load/debian-live-11
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/live/vmlinuz-5.10.0-30-amd64 ${options} --- || goto error
-initrd ${knladdr}/live/initrd.img-5.10.0-30-amd64 || goto error
+kernel ${knladdr}/vmlinuz-5.10.0-32-amd64 ${options} --- || goto error
+initrd ${knladdr}/initrd.img-5.10.0-32-amd64 || goto error
 boot || goto error
 exit
 
 :live-debian-live-12
 echo Loading Debian 12 Live ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile debian-live-12.6.0-amd64-lxde.iso
-set isoaddr boot=live components fetch=http://${svraddr}/imgs/debian-live-12/live/filesystem.squashfs
-set network ip=dhcp
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-live-12
+set isofile debian-live-12.8.0-amd64-lxde.iso
+set isoaddr boot=live fetch=http://${svraddr}/imgs/debian-live-12/live/filesystem.squashfs hooks=http://${svraddr}/conf/script/live_0000-user-conf-hook.sh
+set network dhcp ip=dhcp ip=ens160:192.168.1.200/24 hostname=live-debian.workgroup
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773 components overlay-size=90% xorg-resolution=1680x1050 debugout
+set knladdr http://${svraddr}/load/debian-live-12
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/live/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/live/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :live-debian-live-testing
 echo Loading Debian testing Live ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile debian-live-testing-amd64-lxde.iso
-set isoaddr boot=live components fetch=http://${svraddr}/imgs/debian-live-testing/live/filesystem.squashfs
-set network ip=dhcp
-set locales locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/debian-live-testing
+set isoaddr boot=live fetch=http://${svraddr}/imgs/debian-live-testing/live/filesystem.squashfs hooks=http://${svraddr}/conf/script/live_0000-user-conf-hook.sh
+set network dhcp ip=dhcp ip=ens160:192.168.1.200/24 hostname=live-debian.workgroup
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773 components overlay-size=90% xorg-resolution=1680x1050 debugout
+set knladdr http://${svraddr}/load/debian-live-testing
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/live/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/live/initrd.img || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd.img || goto error
 boot || goto error
 exit
 
 :live-ubuntu-desktop-20.04
 echo Loading Ubuntu 20.04 Desktop ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
 set isofile ubuntu-20.04.6-desktop-amd64.iso
 set isoaddr boot=casper maybe-ubiquity iso-url=http://${svraddr}/isos/${isofile}
 set network ip=dhcp
 set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-desktop-20.04
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/ubuntu-desktop-20.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :live-ubuntu-desktop-22.04
 echo Loading Ubuntu 22.04 Desktop ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile ubuntu-22.04.4-desktop-amd64.iso
+set isofile ubuntu-22.04.5-desktop-amd64.iso
 set isoaddr boot=casper maybe-ubiquity iso-url=http://${svraddr}/isos/${isofile}
 set network ip=dhcp
 set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-desktop-22.04
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/ubuntu-desktop-22.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
-boot || goto error
-exit
-
-:live-ubuntu-desktop-23.10
-echo Loading Ubuntu 23.10 Desktop ...
-set root tftp
-set svraddr 192.168.1.10
-isset ${next-server} && set svraddr ${next-server}' ||
-set isofile ubuntu-23.10.1-desktop-amd64.iso
-set isoaddr boot=casper layerfs-path=minimal.standard.live.squashfs iso-url=http://${svraddr}/isos/${isofile}
-set network ip=dhcp
-set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
-set ramdisk root=/dev/ram0 ramdisk_size=1500000
-set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-desktop-23.10
-form                                    Configure Boot Options
-item options                            Boot Options
-present ||
-echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
 :live-ubuntu-desktop-24.04
 echo Loading Ubuntu 24.04 Desktop ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile ubuntu-24.04-desktop-amd64.iso
+set isofile ubuntu-24.04.1-desktop-amd64.iso
 set isoaddr boot=casper layerfs-path=minimal.standard.live.squashfs iso-url=http://${svraddr}/isos/${isofile}
 set network ip=dhcp
 set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-desktop-24.04
+set knladdr http://${svraddr}/load/ubuntu-desktop-24.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
-:live-ubuntu-desktop-oracular
-echo Loading Ubuntu oracular Desktop ...
+:live-ubuntu-desktop-24.10
+echo Loading Ubuntu 24.10 Desktop ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile oracular-desktop-amd64.iso
+set isofile ubuntu-24.10-desktop-amd64.iso
 set isoaddr boot=casper layerfs-path=minimal.standard.live.squashfs iso-url=http://${svraddr}/isos/${isofile}
 set network ip=dhcp
 set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-desktop-oracular
+set knladdr http://${svraddr}/load/ubuntu-desktop-24.10
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
-:live-ubuntu-legacy-23.10
-echo Loading Ubuntu 23.10 Legacy Desktop ...
+:live-ubuntu-desktop-25.04
+echo Loading Ubuntu 25.04 Desktop ...
 set root tftp
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server}' ||
-set isofile ubuntu-23.10-desktop-legacy-amd64.iso
-set isoaddr boot=casper maybe-ubiquity iso-url=http://${svraddr}/isos/${isofile}
+set isofile plucky-desktop-amd64.iso
+set isoaddr boot=casper layerfs-path=minimal.standard.live.squashfs iso-url=http://${svraddr}/isos/${isofile}
 set network ip=dhcp
-set locales debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set locales debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramdisk root=/dev/ram0 ramdisk_size=1500000
 set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip
-set knladdr http://${svraddr}/imgs/ubuntu-legacy-23.10
+set knladdr http://${svraddr}/load/ubuntu-desktop-25.04
 form                                    Configure Boot Options
 item options                            Boot Options
 present ||
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/casper/initrd || goto error
+kernel ${knladdr}/vmlinuz ${options} --- || goto error
+initrd ${knladdr}/initrd || goto error
 boot || goto error
 exit
 
-:memtest86+
-echo Loading Memtest86+ ...
-set svraddr 192.168.1.10
+:memtest86plus
+echo Loading Memtest86+ 7.20 ...
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server} ||
-set knladdr http://${svraddr}/imgs/memtest86+
+set knladdr http://${svraddr}/imgs/memtest86plus
 iseq ${platform} efi && set knlfile ${knladdr}/EFI/BOOT/memtest || set knlfile ${knladdr}/boot/memtest
 echo Loading kernel ...
 kernel ${knlfile} || goto error
@@ -1445,7 +1452,7 @@ exit
 
 :winpe-x64
 echo Loading WinPE x64 ...
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server} ||
 set knladdr http://${svraddr}/imgs/winpe-x64
 echo Loading kernel and initrd ...
@@ -1458,7 +1465,7 @@ exit
 
 :ati2020x64
 echo Loading ATI2020x64 ...
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server} ||
 set knladdr http://${svraddr}/imgs/ati2020x64
 echo Loading kernel and initrd ...
@@ -1471,7 +1478,7 @@ exit
 
 :ati2020x86
 echo Loading ATI2020x86 ...
-set svraddr 192.168.1.10
+set svraddr 192.168.1.12
 isset ${next-server} && set svraddr ${next-server} ||
 set knladdr http://${svraddr}/imgs/ati2020x86
 echo Loading kernel and initrd ...
@@ -1479,6 +1486,116 @@ kernel ipxe/wimboot
 initrd ${knladdr}/Boot/BCD                     BCD      || goto error
 initrd ${knladdr}/Boot/boot.sdi                boot.sdi || goto error
 initrd -n boot.wim ${knladdr}/sources/boot.wim boot.wim || goto error
+boot || goto error
+exit
+
+:netinst-debian-10
+echo Loading Net Installer Debian 10 ...
+set root tftp
+set svraddr 192.168.1.12
+isset ${next-server} && set svraddr ${next-server}' ||
+set isofile -
+set isoaddr fetch=http://${svraddr}/isos/${isofile}
+set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server_oldold.cfg
+set netname sv-debian.workgroup
+set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/bldr
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
+echo Loading kernel and initrd ...
+kernel ${knladdr}/linux_debian-10 ${options} --- || goto error
+initrd ${knladdr}/initrd.gz_debian-10 || goto error
+boot || goto error
+exit
+
+:netinst-debian-11
+echo Loading Net Installer Debian 11 ...
+set root tftp
+set svraddr 192.168.1.12
+isset ${next-server} && set svraddr ${next-server}' ||
+set isofile -
+set isoaddr fetch=http://${svraddr}/isos/${isofile}
+set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server_old.cfg
+set netname sv-debian.workgroup
+set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/bldr
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
+echo Loading kernel and initrd ...
+kernel ${knladdr}/linux_debian-11 ${options} --- || goto error
+initrd ${knladdr}/initrd.gz_debian-11 || goto error
+boot || goto error
+exit
+
+:netinst-debian-12
+echo Loading Net Installer Debian 12 ...
+set root tftp
+set svraddr 192.168.1.12
+isset ${next-server} && set svraddr ${next-server}' ||
+set isofile -
+set isoaddr fetch=http://${svraddr}/isos/${isofile}
+set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
+set netname sv-debian.workgroup
+set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/bldr
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
+echo Loading kernel and initrd ...
+kernel ${knladdr}/linux_debian-12 ${options} --- || goto error
+initrd ${knladdr}/initrd.gz_debian-12 || goto error
+boot || goto error
+exit
+
+:netinst-debian-13
+echo Loading Net Installer Debian 13 ...
+set root tftp
+set svraddr 192.168.1.12
+isset ${next-server} && set svraddr ${next-server}' ||
+set isofile -
+set isoaddr fetch=http://${svraddr}/isos/${isofile}
+set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
+set netname sv-debian.workgroup
+set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/bldr
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
+echo Loading kernel and initrd ...
+kernel ${knladdr}/linux_debian-13 ${options} --- || goto error
+initrd ${knladdr}/initrd.gz_debian-13 || goto error
+boot || goto error
+exit
+
+:netinst-debian-sid
+echo Loading Net Installer Debian sid ...
+set root tftp
+set svraddr 192.168.1.12
+isset ${next-server} && set svraddr ${next-server}' ||
+set isofile -
+set isoaddr fetch=http://${svraddr}/isos/${isofile}
+set install auto=true url=http://${svraddr}/conf/preseed/ps_debian_server.cfg
+set netname sv-debian.workgroup
+set network netcfg/disable_autoconfig=true netcfg/choose_interface=ens160 netcfg/get_hostname=${netname} netcfg/get_ipaddress=192.168.1.1 netcfg/get_netmask=255.255.255.0 netcfg/get_gateway=192.168.1.254 netcfg/get_nameservers=192.168.1.254
+set locales language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp
+set options ${isoaddr} ${install} ${network} ${locales} ${ramdisk} fsck.mode=skip overlay-size=90% vga=773
+set knladdr http://${svraddr}/load/bldr
+form                                    Configure Boot Options
+item options                            Boot Options
+present ||
+echo Loading kernel and initrd ...
+kernel ${knladdr}/linux_debian-sid ${options} --- || goto error
+initrd ${knladdr}/initrd.gz_debian-sid || goto error
 boot || goto error
 exit
 
