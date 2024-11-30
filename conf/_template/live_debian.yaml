@@ -609,7 +609,8 @@ mmdebstrap:
 #   - chroot "$1" sh -c 'echo "PasswordAuthentication yes\nPermitRootLogin no" > /etc/ssh/sshd_config.d/sshd.conf'
   cleanup-hooks:
     - rm -f "$1/etc/hostname" "$1/etc/hosts"
-    - P="$1"; for D in $(mount | awk '$3~"'$P'" { print $3;}' | sort -r); do umount "${D}" || umount --force "${D}" || umount --lazy "${D}"; done
+    - P="$1"; echo "<${P}>"; for D in $(awk '$2~"^'${P}'" {print $2;}' "${P}/proc/mounts" | sort -ru); do echo "umount ${D}"; umount "${D}" || umount --force "${D}" || umount --lazy "${D}"; done
+#   - P="$1"; for D in $(mount | awk '$3~"'$P'" { print $3;}' | sort -r); do umount "${D}" || umount --force "${D}" || umount --lazy "${D}"; done
 # suite:
 # target: filesystem.squashfs
 # variant: extract                      # Installs nothing by default (not even "Essential:yes" packages). Packages given by the "--include" option are extracted but will not be installed.
