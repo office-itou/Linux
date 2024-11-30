@@ -411,7 +411,7 @@ mmdebstrap:
     - unifont                                               # font with a glyph for each visible Unicode Plane 0 character
     - usb-modeswitch                                        # mode switching tool for controlling "flip flop" USB devices
     - usbutils                                              # Linux USB utilities
-    - usr-is-merged                                         # Transitional package to assert a merged-/usr system
+#   - usr-is-merged                                         # Transitional package to assert a merged-/usr system
     - vim-tiny                                              # Vi IMproved - enhanced vi editor - compact version
     - wamerican                                             # American English dictionary words for /usr/share/dict
     - wget                                                  # retrieves files from the web

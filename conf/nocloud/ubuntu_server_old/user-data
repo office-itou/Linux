@@ -225,7 +225,6 @@ autoinstall:
   package_upgrade: true
   packages:
   - ubuntu-standard
-  - apt-transport-https
   - firewalld
   - traceroute
   - network-manager
@@ -238,7 +237,7 @@ autoinstall:
   - openssh-server
   - dnsmasq
   - tftpd-hpa
-  - dnsutils
+  - bind9-dnsutils
   - apache2
   - samba
   - smbclient
@@ -276,8 +275,8 @@ autoinstall:
 # -----------------------------------------------------------------------------
 # - avahi-daemon
 # - bind9
-# - bind9utils
-# - dnsutils
+# - bind9-utils
+# - bind9-dnsutils
 # - resolvconf
 # - isc-dhcp-server
 # - minidlna

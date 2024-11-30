@@ -24,7 +24,7 @@
 	readonly COMD_PARM="${PROG_DIRS}/${PROG_NAME%.*}.prm";
 	DIST_NAME="$(uname -v | sed -ne 's/.*\(debian\|ubuntu\).*/\1/ip' | tr '[:upper:]' '[:lower:]')"
 	readonly DIST_NAME
-	if [ -f "${COMD_PARM}" ]; then
+	if [ -e "${COMD_PARM}" ]; then
 		COMD_LINE="$(cat "${COMD_PARM}")"
 	else
 		COMD_LINE="$(cat /proc/cmdline)"
@@ -252,7 +252,7 @@ funcInstallPackages() {
 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 	cat "${FILE_NAME}"
 	#--------------------------------------------------------------------------
-	if [ ! -f "${SEED_FILE}" ]; then
+	if [ ! -e "${SEED_FILE}" ]; then
 		echo "${PROG_NAME}: file does not exist ${SEED_FILE}"
 		return
 	fi
@@ -365,7 +365,7 @@ funcGetNetwork_parameter() {
 	NIC_WGRP="${NIC_FQDN##*.}"
 	NMN_FLAG=""
 	#--- preseed parameter ----------------------------------------------------
-	if [ -f "${SEED_FILE}" ]; then
+	if [ -e "${SEED_FILE}" ]; then
 		# shellcheck disable=SC2312
 		funcGetNetwork_parameter_sub "$(cat "${SEED_FILE}")"
 		if [ -n "${NIC_WGRP}" ]; then
@@ -436,7 +436,7 @@ funcSetupNetwork_hostname() {
 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
-	if [ ! -f "${FILE_NAME}" ]; then
+	if [ ! -e "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
@@ -463,7 +463,7 @@ funcSetupNetwork_hosts() {
 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
-	if [ ! -f "${FILE_NAME}" ]; then
+	if [ ! -e "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
@@ -496,7 +496,7 @@ funcSetupNetwork_firewalld() {
 	if [ -d "${TGET_DIRS}/." ]; then
 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 	fi
-	if [ ! -f "${FILE_NAME}" ]; then
+	if [ ! -e "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
@@ -504,7 +504,7 @@ funcSetupNetwork_firewalld() {
 	if [ -d "${TGET_DIRS}/." ]; then
 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 	fi
-	if [ ! -f "${FILE_NAME}" ]; then
+	if [ ! -e "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
@@ -547,7 +547,7 @@ funcSetupNetwork_avahi() {
 	if [ -d "${TGET_DIRS}/." ]; then
 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 	fi
-	if [ ! -f "${FILE_NAME}" ]; then
+	if [ ! -e "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
@@ -583,7 +583,7 @@ funcSetupNetwork_resolv() {
 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
-	if [ ! -f "${FILE_NAME}" ]; then
+	if [ ! -e "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
@@ -610,7 +610,7 @@ funcSetupNetwork_resolv() {
 	fi
 	# --- backup --------------------------------------------------------------
 	echo "${PROG_NAME}: ${FILE_NAME}"
-	if [ -f "${FILE_NAME}" ]; then
+	if [ -e "${FILE_NAME}" ]; then
 		if [ ! -d "${BACK_DIRS}/." ]; then
 			mkdir -p "${BACK_DIRS}"
 		fi
@@ -661,7 +661,7 @@ funcSetupNetwork_dnsmasq() {
 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
-	if [ ! -f "${FILE_NAME}" ]; then
+	if [ ! -e "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
@@ -720,7 +720,7 @@ funcSetupNetwork_samba() {
 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
-	if [ ! -f "${FILE_NAME}" ]; then
+	if [ ! -e "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
@@ -735,7 +735,7 @@ funcSetupNetwork_samba() {
 	echo "${PROG_NAME}: --- ${FILE_NAME} ---"
 	cat "${FILE_NAME}"
 	#--- systemctl ------------------------------------------------------------
-	if [ -f /lib/systemd/system/smbd.service ]; then
+	if [ -e /lib/systemd/system/smbd.service ]; then
 		SRVC_SMBD="smbd.service"
 		SRVC_NMBD="nmbd.service"
 	else
@@ -775,7 +775,7 @@ funcSetupNetwork_connman() {
 		FILE_NAME="${TGET_DIRS}${FILE_NAME}"
 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
-	if [ ! -f "${FILE_NAME}" ]; then
+	if [ ! -e "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
@@ -789,7 +789,7 @@ funcSetupNetwork_connman() {
 	fi
 	# --- backup --------------------------------------------------------------
 	echo "${PROG_NAME}: ${FILE_NAME}"
-	if [ -f "${FILE_NAME}" ]; then
+	if [ -e "${FILE_NAME}" ]; then
 		if [ ! -d "${BACK_DIRS}/." ]; then
 			mkdir -p "${BACK_DIRS}"
 		fi
@@ -817,7 +817,7 @@ _EOT_
 	fi
 	# --- backup --------------------------------------------------------------
 	echo "${PROG_NAME}: ${FILE_NAME}"
-	if [ -f "${FILE_NAME}" ]; then
+	if [ -e "${FILE_NAME}" ]; then
 		if [ ! -d "${BACK_DIRS}/." ]; then
 			mkdir -p "${BACK_DIRS}"
 		fi
@@ -925,7 +925,7 @@ funcSetupNetwork_netplan() {
 	fi
 #	for FILE_NAME in "${FILE_DIRS}"/*.yaml
 #	do
-#		if [ ! -f "${FILE_NAME}" ]; then
+#		if [ ! -e "${FILE_NAME}" ]; then
 #			continue
 #		fi
 #		echo "${PROG_NAME}: ${FILE_NAME} moved"
@@ -1033,7 +1033,7 @@ funcSetupNetwork_nmanagr() {
 		CONF_FILE="${TGET_DIRS}${CONF_FILE}"
 		BACK_DIRS="${TGET_DIRS}${BACK_DIRS}"
 	fi
-	if [ ! -f "${FILE_NAME}" ]; then
+	if [ ! -e "${FILE_NAME}" ]; then
 		echo "${PROG_NAME}: file does not exist ${FILE_NAME}"
 		return
 	fi
@@ -1042,7 +1042,7 @@ funcSetupNetwork_nmanagr() {
 		mkdir -p "${BACK_DIRS}/system-connections"
 	fi
 	echo "${PROG_NAME}: ${CONF_FILE}"
-	if [ -f "${CONF_FILE}" ]; then
+	if [ -e "${CONF_FILE}" ]; then
 		cp -a "${CONF_FILE}" "${BACK_DIRS}"
 	fi
 	find "${FILE_DIRS}/system-connections" -name '*.yaml' -type f | \
@@ -1090,7 +1090,7 @@ funcSetupNetwork_nmanagr() {
 		FILE_NAME="${FILE_DIRS}/system-connections/Wired connection ${I}"
 		MAC_ADDR="$(ip -4 -oneline link show dev "${NICS_NAME}" | sed -ne 's/^.*link\/ether[ \t]\+\(.*\)[ \t]\+brd.*$/\1/p')"
 		echo "${PROG_NAME}: ${FILE_NAME}"
-		if [ -f "${FILE_NAME}" ]; then
+		if [ -e "${FILE_NAME}" ]; then
 			nmcli connection delete "${FILE_NAME##*/}" || true
 		fi
 		if [ "${NICS_NAME}" = "${NIC_NAME}" ]; then
@@ -1263,7 +1263,7 @@ funcSetupService() {
 #funcChange_gdm3_configure() {
 #	FUNC_NAME="funcChange_gdm3_configure"
 #	echo "${PROG_NAME}: *** [${FUNC_NAME}] ***"
-#	if [ -f "${TGET_DIRS}/etc/gdm3/custom.conf" ]; then
+#	if [ -e "${TGET_DIRS}/etc/gdm3/custom.conf" ]; then
 #		sed -i.orig "${TGET_DIRS}/etc/gdm3/custom.conf" \
 #		    -e '/WaylandEnable=false/ s/^#//'
 #	fi

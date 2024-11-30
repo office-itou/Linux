@@ -225,7 +225,6 @@ autoinstall:
   package_upgrade: true
   packages:
   - ubuntu-standard
-  - apt-transport-https
   - firewalld
   - traceroute
   - network-manager
