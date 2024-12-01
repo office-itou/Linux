@@ -23,7 +23,9 @@
 	declare -r    TXT_BMAGENTA='\033[45m'					# text reverse purple
 	declare -r    TXT_BCYAN='\033[46m'						# text reverse light blue
 	declare -r    TXT_BWHITE='\033[47m'						# text reverse white
-
+```
+  
+``` bash:
 # --- text color test ---------------------------------------------------------
 function funcColorTest() {
 	printf "${TXT_RESET} : %-12.12s : ${TXT_RESET}\n" "TXT_RESET"
@@ -50,6 +52,5 @@ function funcColorTest() {
 	printf "${TXT_BCYAN} : %-12.12s : ${TXT_RESET}\n" "TXT_BCYAN"
 	printf "${TXT_BWHITE} : %-12.12s : ${TXT_RESET}\n" "TXT_BWHITE"
 }
-
 ```
   
