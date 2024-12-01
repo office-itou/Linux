@@ -10,7 +10,7 @@ indent_style = space
 [*.md]
 indent_size = 2
 
-[*.{txt,xml,sh,c,cpp,h,Makefile,Makefile.am,configure.ac,conf}]
+[*.{md,txt,xml,sh,c,cpp,h,Makefile,Makefile.am,configure.ac,conf}]
 indent_size = 4
 
 [*]
