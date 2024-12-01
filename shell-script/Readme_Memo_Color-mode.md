@@ -1,7 +1,8 @@
 # **Linux Color mode**  
   
+# ***set color  
+  
 ``` bash:
-# --- set color ---------------------------------------------------------------
 	declare -r    TXT_RESET='\033[m'						# reset all attributes
 	declare -r    TXT_ULINE='\033[4m'						# set underline
 	declare -r    TXT_ULINERST='\033[24m'					# reset underline
@@ -25,8 +26,9 @@
 	declare -r    TXT_BWHITE='\033[47m'						# text reverse white
 ```
   
+# ***text color test  
+  
 ``` bash:
-# --- text color test ---------------------------------------------------------
 function funcColorTest() {
 	printf "${TXT_RESET} : %-12.12s : ${TXT_RESET}\n" "TXT_RESET"
 	printf "${TXT_ULINE} : %-12.12s : ${TXT_RESET}\n" "TXT_ULINE"
