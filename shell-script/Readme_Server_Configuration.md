@@ -43,10 +43,10 @@
 | Intended use      | Item           | Detail                           |
 | ----------------- | -------------- | -------------------------------- |
 | Guest PC (Server) | Interface      | ens160                           |
-|                   | IP address     | 192.168.1.10                     |
+|                   | IP address     | 192.168.1.12                     |
 |                   | Netmask        | 24 (255.255.255.0)               |
 |                   | Router         | 192.168.1.254                    |
-|                   | DNS server     | 192.168.1.10,192.168.1.254       |
+|                   | DNS server     | 192.168.1.12,192.168.1.254       |
 |                   | Domain name    | workgroup                        |
 | Guest PC (Server) | Interface      | ens160                           |
 | Application Test  | IP address     | 192.168.1.12                     |
@@ -72,24 +72,42 @@ Required working space:
   
 * Estimated maximum size by directory
   
-| Dir  | Size   | Intended use                     |
-| ---- | -----: | -------------------------------- |
-| back |   1GiB | backup directory                 |
-| conf |   1GiB | configuration file               |
-| html |   1GiB | html contents                    |
-| imgs | 200GiB | iso file extraction destination  |
-| isos | 200GiB | iso file                         |
-| orig |   1GiB | backup directory (original file) |
-| rmak | 200GiB | remake file                      |
-| temp |   1GiB | temporary directory              |
-| tftp |  10GiB | tftp contents                    |
+| Dir  | Size   | Intended use                      |
+| ---- | -----: | --------------------------------- |
+| back |   1GiB | backup directory                  |
+| bldr |   1GiB | custom boot loader                |
+| chrt |   1GiB | change root directory             |
+| conf |   1GiB | configuration file                |
+| html |   1GiB | html contents                     |
+| imgs | 200GiB | iso file extraction destination   |
+| isos | 200GiB | iso file                          |
+| keys |   1GiB | keyring file                      |
+| live |  20GiB | live media file                   |
+| orig |   1GiB | backup directory (original file)  |
+| pkgs |   --   | package file's directory          |
+| rmak | 200GiB | remake file                       |
+| temp |   1GiB | temporary directory               |
+| tftp |  10GiB | tftp contents                     |
   
-## Tree diagram
+## Tree diagram (developed for debian)
+  
+``` bash:
+tree --charset C -n --filesfirst -d share/
+```
   
 ``` bash:
 ${HOME}/share
-|-- back ------------------------------ backup directory
-|-- conf ------------------------------ configuration file
+|-- back ------------------------------------------ backup directory
+|-- bldr ------------------------------------------ custom boot loader
+|-- chrt ------------------------------------------ change root directory
+|   `-- srv
+|       `-- user
+|           |-- install.sh ------------------------ initial configuration shell
+|           |-- mk_custom_iso.sh ------------------ custom iso image creation shell
+|           |-- mk_pxeboot_conf.sh ---------------- pxeboot configuration shell
+|           |-- mk_live_media.sh ------------------ custom live iso image creation shell
+|           `-- share <- ${HOME}/share
+|-- conf ------------------------------------------ configuration file
 |   |-- _template
 |   |   |-- kickstart_common.cfg
 |   |   |-- live_debian.yaml
@@ -104,9 +122,7 @@ ${HOME}/share
 |   |-- preseed
 |   |-- script
 |   |   |-- late_command.sh
-|   |   |-- live_0000-user-conf-param.sh
-|   |   |-- live_9999-user-conf-debug.sh
-|   |   `-- live_9999-user-conf-setup.sh
+|   |   `-- live_0000-user-conf-hook.sh
 |   `-- windows
 |       |-- bypass.cmd
 |       |-- inst_w10.cmd
@@ -115,53 +131,54 @@ ${HOME}/share
 |       |-- startnet.cmd
 |       |-- unattend.xml
 |       `-- winpeshl.ini
-|-- html <- /var/www/html ------------- html contents
+|-- html <- /var/www/html ------------------------- html contents
+|   |-- memdisk
 |   |-- conf -> ../conf
 |   |-- imgs -> ../imgs
 |   |-- isos -> ../isos
 |   |-- load -> ../tftp/load
-|   |-- pack -> ../pack
 |   `-- rmak -> ../rmak
-|-- imgs ------------------------------ iso file extraction destination
-|-- isos ------------------------------ iso file
-|-- keys ------------------------------ keyring file
-|-- live ------------------------------ live media file
-|-- orig ------------------------------ backup directory (original file)
-|-- pack
+|-- imgs ------------------------------------------ iso file extraction destination
+|-- isos ------------------------------------------ iso file
+|-- keys ------------------------------------------ keyring file
+|-- live ------------------------------------------ live media file
+|-- orig ------------------------------------------ backup directory (original file)
+|-- pkgs ------------------------------------------ package file's directory
 |   |-- debian
 |   `-- ubuntu
-|-- rmak ------------------------------ remake file
-|-- temp ------------------------------ temporary directory
-`-- tftp <- /var/lib/tftpboot --------- tftp contents
-    |-- autoexec.ipxe ----------------- ipxe script file (menu file)
-    |-- memdisk ----------------------- memdisk of syslinux
+|-- rmak ------------------------------------------ remake file
+|-- temp ------------------------------------------ temporary directory
+`-- tftp <- /var/lib/tftpboot --------------------- tftp contents
+    |-- autoexec.ipxe ----------------------------- ipxe script file (menu file)
+    |-- memdisk ----------------------------------- memdisk of syslinux
     |-- boot
     |   `-- grub
-    |       |-- bootx64.efi ----------- bootloader (i386-pc-pxe)
-    |       |-- grub.cfg -------------- menu base
-    |       |-- menu.cfg -------------- menu file
-    |       |-- pxelinux.0 ------------ bootloader (x86_64-efi)
+    |       |-- bootx64.efi ----------------------- bootloader (i386-pc-pxe)
+    |       |-- grub.cfg -------------------------- menu base
+    |       |-- menu.cfg -------------------------- menu file
+    |       |-- pxelinux.0 ------------------------ bootloader (x86_64-efi)
     |       |-- fonts
     |       |   `-- unicode.pf2
+    |       |-- i386-efi
     |       |-- i386-pc
     |       |-- locale
     |       `-- x86_64-efi
     |-- imgs -> ../imgs
-    |-- ipxe -------------------------- ipxe module
+    |-- ipxe -------------------------------------- ipxe module
     |   |-- ipxe.efi
     |   |-- undionly.kpxe
     |   `-- wimboot
     |-- isos -> ../isos
-    |-- load -------------------------- load module
+    |-- load -------------------------------------- load module
     |-- menu-bios
-    |   |-- syslinux.cfg -------------- syslinux configuration for mbr environment
+    |   |-- syslinux.cfg -------------------------- syslinux configuration for mbr environment
     |   |-- imgs -> ../../imgs
     |   |-- isos -> ../../isos
     |   |-- load -> ../load
     |   `-- pxelinux.cfg
     |       `-- default -> ../syslinux.cfg
     `-- menu-efi64
-        |-- syslinux.cfg -------------- syslinux configuration for uefi(x86_64) environment
+        |-- syslinux.cfg -------------------------- syslinux configuration for uefi(x86_64) environment
         |-- imgs -> ../../imgs
         |-- isos -> ../../isos
         |-- load -> ../load
@@ -175,7 +192,8 @@ ${HOME}/share
 `-- html -> ${HOME}/share/html
 
 /etc/dnsmasq.d/
-`-- pxe.conf -------------------------- pxeboot dnsmasq configuration file
+`-- pxe.conf -------------------------------------- pxeboot dnsmasq configuration file
+
 ```
   
 ## Reference  
