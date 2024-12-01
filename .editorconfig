@@ -8,9 +8,9 @@ insert_final_newline = true
 indent_style = space
 
 [*.md]
-indent_size = 2
+indent_size = 4
 
-[*.{md,txt,xml,sh,c,cpp,h,Makefile,Makefile.am,configure.ac,conf}]
+[*.{txt,xml,sh,c,cpp,h,Makefile,Makefile.am,configure.ac,conf}]
 indent_size = 4
 
 [*]
