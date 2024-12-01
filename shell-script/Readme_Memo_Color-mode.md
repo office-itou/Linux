@@ -1,6 +1,6 @@
 # **Linux Color mode**  
   
-# ***set color  
+## set color  
   
 ``` bash:
     declare -r    TXT_RESET='\033[m'                        # reset all attributes
@@ -26,7 +26,7 @@
     declare -r    TXT_BWHITE='\033[47m'                     # text reverse white
 ```
   
-# ***text color test  
+## text color test  
   
 ``` bash:
 function funcColorTest() {
