@@ -39,7 +39,7 @@
 | 3840x2400 |       |   ---   |   ---   |   ---   |   ---   |        | (16:10) |
 | 7680x4320 |       |   ---   |   ---   |   ---   |   ---   | 8K UHD | (16:9)  |
   
-# ***menu resolution  
+## menu resolution  
   
 ``` bash:
                                                             # resolution
@@ -76,7 +76,7 @@
 #   declare -r    MENU_DPTH="32"                            # 4.2 billion
 ```
   
-# ***screen mode (vga=nnn)  
+## screen mode (vga=nnn)  
   
 ``` bash:
 #                                                           # 7680x4320   : 8K UHD (16:9)
@@ -124,7 +124,7 @@
 #   declare -r    SCRN_MODE="809"                           #          x32
 ```
   
-# ***screen mode (vga=nnn) [ VMware ]  
+## screen mode (vga=nnn) [ VMware ]  
   
 ``` bash:
                                                             # Mode: Resolution:     Type
