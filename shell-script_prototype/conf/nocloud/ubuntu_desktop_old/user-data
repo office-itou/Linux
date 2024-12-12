@@ -1,0 +1,564 @@
+#cloud-config
+autoinstall:
+  version: 1
+# =============================================================================
+# debug:
+#   verbose: true
+#   output:
+# =============================================================================
+# refresh-installer:
+#   update: true
+#   channel: edge
+# =============================================================================
+# apt:
+#   disable_components: []
+#   fallback: abort
+#   geoip: true
+#   mirror-selection:
+#     primary:
+#     - country-mirror
+#     - arches:
+#       - amd64
+#       - i386
+#       uri: http://archive.ubuntu.com/ubuntu
+#     - arches:
+#       - s390x
+#       - arm64
+#       - armhf
+#       - powerpc
+#       - ppc64el
+#       - riscv64
+#       uri: http://ports.ubuntu.com/ubuntu-ports
+#   preserve_sources_list: false
+# =============================================================================
+  early-commands:
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="early-commands [ wipe partitions ]";
+      echo "### start ${FUNC_NAME} ###";
+      DEVICE="/dev/nvme0n1";
+      sfdisk --wipe always --wipe-partitions always --delete "${DEVICE}";
+      dd if=/dev/zero of="${DEVICE}" bs=1M count=10;
+      echo "### complete ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="early-commands [ resolv.conf ]";
+      echo "### start ${FUNC_NAME} ###";
+      {
+        echo "nameserver 8.8.8.8";
+        echo "nameserver 8.8.4.4";
+      } >  /etc/resolv.conf;
+      echo "### complete ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="early-commands [ wireplumber.conf ]";
+      echo "### start ${FUNC_NAME} ###";
+      FILE_NAME="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf";
+      mkdir -p "${FILE_NAME%/*}";
+      {
+        echo "monitor.alsa.rules = [";
+        echo "  {";
+        echo "    matches = [";
+        echo "      # This matches the value of the node.name property of the node.";
+        echo "      {";
+        echo "        node.name = \"~alsa_output.*\"";
+        echo "      }";
+        echo "    ]";
+        echo "    actions = {";
+        echo "      # Apply all the desired node specific settings here.";
+        echo "      update-props = {";
+        echo "        api.alsa.period-size   = 1024";
+        echo "        api.alsa.headroom      = 8192";
+        echo "        session.suspend-timeout-seconds = 0";
+        echo "      }";
+        echo "    }";
+        echo "  }";
+        echo "]";
+      } > "${FILE_NAME}";
+      export USER_NAME="$(who | awk "\$1!=\"root\" {print \$1;}" | sort -u)";
+      export USER_IDNO="$(id -u "${USER_NAME}")";
+      export XDG_RUNTIME_DIR="/run/user/${USER_IDNO}";
+      export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus";
+      echo "USER     =${USER}";
+      echo "USER_NAME=${USER_NAME}";
+      echo "USER_IDNO=${USER_IDNO}";
+      runuser "${USER_NAME}" --login --command "
+        echo \"XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}\";
+        echo \"DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS}\";
+        systemctl --user restart wireplumber.service || true";
+      echo "### complete ${FUNC_NAME} ###";' ]
+# =============================================================================
+  storage:
+    grub:
+      reorder_uefi: false
+    layout:
+      name: lvm
+      sizing-policy: all
+      match:
+        path: /dev/nvme0n1
+#       ssd: true
+    swap:
+      size: 0
+# -----------------------------------------------------------------------------
+# /dev/nvme0n1p1: 512MB: /boot/efi
+#      nvme0n1p2: 512MB: /boot
+#      nvme0n1p3:    -1: vg00
+# lv-root       :  100%: /
+# storage:
+#   config:
+#   - { type: disk, ptable: gpt, path: /dev/nvme0n1, wipe: superblock-recursive, preserve: false, name: '', grub_device: false, id: disk-nvme0n1 }
+#   - { type: partition, device: disk-nvme0n1, size: 512M, wipe: superblock, flag: boot, number: 1, preserve: false, grub_device: true, id: partition-0 }
+#   - { type: partition, device: disk-nvme0n1, size: 512M, wipe: superblock,             number: 2, preserve: false,                    id: partition-1 }
+#   - { type: partition, device: disk-nvme0n1, size:   -1, wipe: superblock,             number: 3, preserve: false,                    id: partition-2 }
+#   - { type: lvm_volgroup, devices: [partition-2], preserve: false, name: vg00, id: lvm_volgroup-0 }
+#   - { type: lvm_partition, volgroup: lvm_volgroup-0, size: 100%, wipe: superblock, preserve: false, name: lv-root, id: lvm_partition-0 }
+#   - { type: format, fstype: fat32, volume: partition-0,     preserve: false, id: format-0 }
+#   - { type: format, fstype: ext4,  volume: partition-1,     preserve: false, id: format-1 }
+#   - { type: format, fstype: ext4,  volume: lvm_partition-0, preserve: false, id: format-2 }
+#   - { type: mount, device: format-0, path: /boot/efi, id: mount-0 }
+#   - { type: mount, device: format-1, path: /boot    , id: mount-1 }
+#   - { type: mount, device: format-2, path: /        , id: mount-2 }
+# -----------------------------------------------------------------------------
+# /dev/nvme0n1p1: 512MB: /boot/efi
+#      nvme0n1p2: 512MB: /boot
+#      nvme0n1p3:    -1: vg00
+# /dev/sda1:         -1: vg01
+# lv-root       :  100%: /
+# lv-home       :  100%: /home
+# storage:
+#   config:
+#   - { type: disk, ptable: gpt, path: /dev/nvme0n1, wipe: superblock-recursive, preserve: false, name: '', grub_device: false, id: disk-nvme0n1 }
+#   - { type: partition, device: disk-nvme0n1, size: 512M, wipe: superblock, flag: boot, number: 1, preserve: false, grub_device: true, id: partition-0 }
+#   - { type: partition, device: disk-nvme0n1, size: 512M, wipe: superblock,             number: 2, preserve: false,                    id: partition-1 }
+#   - { type: partition, device: disk-nvme0n1, size:   -1, wipe: superblock,             number: 3, preserve: false,                    id: partition-2 }
+#   - { type: lvm_volgroup, devices: [partition-2], preserve: false, name: vg00, id: lvm_volgroup-0 }
+#   - { type: lvm_partition, volgroup: lvm_volgroup-0, size: 100%, wipe: superblock, preserve: false, name: lv-root, id: lvm_partition-0 }
+#   - { type: format, fstype: fat32, volume: partition-0,     preserve: false, id: format-0 }
+#   - { type: format, fstype: ext4,  volume: partition-1,     preserve: false, id: format-1 }
+#   - { type: format, fstype: ext4,  volume: lvm_partition-0, preserve: false, id: format-2 }
+#   - { type: mount, device: format-0, path: /boot/efi, id: mount-0 }
+#   - { type: mount, device: format-1, path: /boot    , id: mount-1 }
+#   - { type: mount, device: format-2, path: /        , id: mount-2 }
+#   - { type: disk, ptable: gpt, path: /dev/sda,     wipe: superblock-recursive, preserve: false, name: '', grub_device: false, id: disk-sda     }
+#   - { type: partition, device: disk-sda,     size:   -1, wipe: superblock,             number: 1, preserve: false,                    id: partition-3 }
+#   - { type: lvm_volgroup, devices: [partition-3], preserve: false, name: vg01, id: lvm_volgroup-1 }
+#   - { type: lvm_partition, volgroup: lvm_volgroup-1, size: 100%, wipe: superblock, preserve: false, name: lv-home, id: lvm_partition-1 }
+#   - { type: format, fstype: ext4,  volume: lvm_partition-1, preserve: false, id: format-3 }
+#   - { type: mount, device: format-3, path: /home    , id: mount-3 }
+# =============================================================================
+  identity:
+    hostname: sv-ubuntu.workgroup
+    realname: 'Master'
+    username: master
+    password: '$6$5RyzqnKMKDR7ue3k$1DvQQotQIhde..Z7XFkb3uz2QpgdNkPepBhroQxuhWzR9AnCz/tjryChFKMVClzWYqsuGZTKxRNbXVpE081Q70'
+#   plain_text_passwd: "master"
+#   echo "master" | openssl passwd -6 -stdin
+#   (run in an environment equivalent to the OS to be installed)
+# =============================================================================
+  locale: ja_JP.UTF-8
+  keyboard:
+    layout: jp
+  timezone: Asia/Tokyo
+# =============================================================================
+# network:
+#   version: 2
+#   ethernets: {}
+# -----------------------------------------------------------------------------
+# network:
+#   version: 2
+#   ethernets:
+#     any-ens:
+#       match:
+#         name: "en*"
+#       dhcp4: true
+#       dhcp6: true
+#       ipv6-privacy: true
+#     any-eth:
+#       match:
+#         name: "et*"
+#       dhcp4: true
+#       dhcp6: true
+#       ipv6-privacy: true
+# -----------------------------------------------------------------------------
+# network:
+#   version: 2
+#   ethernets:
+#     any:
+#       match:
+#         name: "en*"
+#       dhcp4: false
+#       addresses:
+#       - 192.168.1.1/24
+#       gateway4: 192.168.1.254
+#       nameservers:
+#         search:
+#         - workgroup
+#         addresses:
+#         - ::1
+#         - 127.0.0.1
+#         - 192.168.1.254
+#       dhcp6: true
+#       ipv6-privacy: true
+# =============================================================================
+# ssh:
+#   allow-pw: true
+#   authorized-keys: []
+#   install-server: true
+# =============================================================================
+# source:
+#   id: ubuntu-server
+#   search_drivers: true
+#   id: ubuntu-desktop
+#   search_drivers: true
+# -----------------------------------------------------------------------------
+# codecs:
+#   install: true
+# drivers:
+#   install: true
+# =============================================================================
+# updates: security
+  updates: all
+  package_update: true
+  package_upgrade: true
+  packages:
+  - ubuntu-standard
+  - firewalld
+  - traceroute
+  - network-manager
+  - bash-completion
+  - build-essential
+  - curl
+  - vim
+  - bc
+  - clamav
+  - openssh-server
+  - dnsmasq
+  - tftpd-hpa
+  - bind9-dnsutils
+  - apache2
+  - samba
+  - smbclient
+  - cifs-utils
+  - libnss-winbind
+  - ubuntu-desktop
+  - ubuntu-gnome-desktop
+  - language-pack-ja
+  - language-pack-gnome-ja
+  - fonts-noto
+  - im-config
+  - zenity
+  - fcitx5-mozc
+  - mozc-utils-gui
+  - gnome-shell-extensions
+  - libreoffice-l10n-ja
+  - libreoffice-help-ja
+  - firefox-locale-ja
+  - thunderbird
+  - thunderbird-locale-ja
+# -----------------------------------------------------------------------------
+# - kasumi
+# - ibus-anthy
+# - ibus-mozc
+# - mozc-utils-gui
+# -----------------------------------------------------------------------------
+# - openvswitch-switch
+# -----------------------------------------------------------------------------
+# - pxelinux
+# - syslinux-common
+# - syslinux-efi
+# -----------------------------------------------------------------------------
+# - hdparm
+# - nvme-cli
+# -----------------------------------------------------------------------------
+# - avahi-daemon
+# - bind9
+# - bind9-utils
+# - bind9-dnsutils
+# - resolvconf
+# - isc-dhcp-server
+# - minidlna
+# =============================================================================
+  user-data:
+    ntp:
+      servers:
+      - ntp.nict.jp
+    runcmd:
+    - [ sh, -c, '
+        exec 2>&1;
+        export LANG=C;
+        FUNC_NAME="user-data runcmd";
+        echo "### start ${FUNC_NAME} ###";' ]
+    - [ sh, -c, '
+        exec 2>&1;
+        export LANG=C;
+        FUNC_NAME="user-data runcmd <create link resolv.conf>";
+        echo "### start ${FUNC_NAME} ###";
+        TGET_ROOT="";
+        if [ -d "/target/." ]; then
+           TGET_ROOT="/target";
+        fi;
+        FILE_NAME="${TGET_ROOT}/etc/resolv.conf";
+        CONF_FILE="${FILE_NAME}.manually-configured";
+        if [ -f "${CONF_FILE}" ]; then
+            echo "rm -f \"${FILE_NAME}\"";
+            rm -f "${FILE_NAME}";
+            echo "cp -a \"${CONF_FILE}\" \"${FILE_NAME}\"";
+            cp -a "${CONF_FILE}" "${FILE_NAME}";
+        fi;
+        echo "### complete ${FUNC_NAME} ###";' ]
+    - [ sh, -c, '
+        exec 2>&1;
+        export LANG=C;
+        FUNC_NAME="user-data runcmd <enable firewalld.service>";
+        echo "### start ${FUNC_NAME} ###";
+        TGET_ROOT="";
+        if [ -d "/target/." ]; then
+           TGET_ROOT="/target";
+        fi;
+        SEED_TYPE="nocloud";
+        SRVC_NAME="firewalld.service";
+        PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
+        LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.current.log";
+        FILE_NAME="${TGET_ROOT}/lib/systemd/system/${SRVC_NAME}";
+        if [ -f "${FILE_NAME}" ]; then
+            echo "=== start ${FILE_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
+            if [ -n "${TGET_ROOT}" ]; then
+                if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
+                    curtin in-target --target=/target -- sh -c "systemctl enable firewalld.service; systemctl is-enabled firewalld.service;" 2>&1 | tee -a "${LOGS_NAME}";
+                else
+                    in-target --pass-stdout sh -c "systemctl enable firewalld.service; systemctl is-enabled firewalld.service;" 2>&1 | tee -a "${LOGS_NAME}";
+                fi;
+            else
+                systemctl enable firewalld.service; systemctl is-enabled firewalld.service 2>&1 | tee -a "${LOGS_NAME}";
+            fi;
+            echo "=== complete ${FILE_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
+        else
+            echo "not exist: ${FILE_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
+        fi;
+        echo "### complete ${FUNC_NAME} ###";' ]
+    - [ sh, -c, '
+        exec 2>&1;
+        export LANG=C;
+        FUNC_NAME="user-data runcmd <setup network>";
+        echo "### start ${FUNC_NAME} ###";
+        TGET_ROOT="";
+        if [ -d "/target/." ]; then
+            TGET_ROOT="/target";
+        fi;
+        SEED_TYPE="nocloud";
+        PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
+        LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.current.log";
+        echo "TGET_ROOT=${TGET_ROOT}" 2>&1 | tee -a "${LOGS_NAME}";
+        echo "SEED_TYPE=${SEED_TYPE}" 2>&1 | tee -a "${LOGS_NAME}";
+        echo "PROG_NAME=${PROG_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
+        echo "LOGS_NAME=${LOGS_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
+        if [ -n "${TGET_ROOT}${PROG_NAME:-}" ]; then
+            if [ -f "${TGET_ROOT}${PROG_NAME}" ]; then
+                echo "=== start ${TGET_ROOT}${PROG_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
+                if [ ! -x "${TGET_ROOT}${PROG_NAME}" ]; then
+                   chmod +x "${TGET_ROOT}${PROG_NAME}";
+                fi;
+                if [ -n "${TGET_ROOT}" ]; then
+                    if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
+                        curtin in-target --target=/target -- sh -c "${PROG_NAME} -n h -s; 2>&1" 2>&1 | tee -a "${LOGS_NAME}";
+                    else
+                        in-target --pass-stdout sh -c "${PROG_NAME} -n h -s; 2>&1" 2>&1 | tee -a "${LOGS_NAME}";
+                    fi;
+                else
+                    "${TGET_ROOT}${PROG_NAME}" -n h -s 2>&1 2>&1 | tee -a "${LOGS_NAME}";
+                fi;
+                echo "=== complete ${TGET_ROOT}${PROG_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
+            fi;
+        fi;
+        echo "### complete ${FUNC_NAME} ###";' ]
+    - [ sh, -c, '
+        exec 2>&1;
+        export LANG=C;
+        FUNC_NAME="user-data runcmd";
+        echo "### complete ${FUNC_NAME} ###";' ]
+#   timezone: Asia/Tokyo
+# =============================================================================
+# runcmd:
+# - export LANG=C;
+#   echo "=== start runcmd ===";
+#   echo "=== complete runcmd ===";
+#   ls -l /etc/resolv.conf*;
+#   rm /etc/resolv.conf;
+#   ln -s /etc/resolv.conf.manually-configured /etc/resolv.conf;
+#   ls -l /etc/resolv.conf*;
+# =============================================================================
+  power_state:
+    mode: reboot
+# =============================================================================
+  late-commands:
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="late-commands";
+      echo "### start ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="late-commands <setup network>";
+      echo "### start ${FUNC_NAME} ###";
+      TGET_ROOT="";
+      if [ -d "/target/." ]; then
+          TGET_ROOT="/target";
+      fi;
+      SEED_TYPE="nocloud";
+      PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
+      LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.targets.log";
+      COMD_PARM="${TGET_ROOT}${PROG_NAME%.*}.prm";
+      mkdir -p "${TGET_ROOT}${PROG_NAME%/*}";
+      echo "TGET_ROOT=${TGET_ROOT}" 2>&1 | tee -a "${LOGS_NAME}";
+      echo "SEED_TYPE=${SEED_TYPE}" 2>&1 | tee -a "${LOGS_NAME}";
+      echo "PROG_NAME=${PROG_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
+      echo "LOGS_NAME=${LOGS_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
+      echo "COMD_PARM=${COMD_PARM}" 2>&1 | tee -a "${LOGS_NAME}";
+      cat /proc/cmdline > "${COMD_PARM}";
+      cd "${TGET_ROOT}${PROG_NAME%/*}" || return 1;
+      if [ -f "/preseed.cfg" ]; then
+          cp "/preseed.cfg"                  ./;
+          cp "/${TGET_ROOT}${PROG_NAME##*/}" ./;
+      fi;
+      COMD_LINE="$(cat "${COMD_PARM}")";
+      echo "COMD_LINE=${COMD_LINE}" 2>&1 | tee -a "${LOGS_NAME}";
+      for LINE in ${COMD_LINE};
+      do
+          SEED_ADDR="";
+          case "${LINE}" in
+              iso-url=*.iso  | url=*.iso )                           ;;
+              preseed/file=* | file=*    ) SEED_ADDR="${LINE#*file=}";;
+              preseed/url=*  | url=*     ) SEED_ADDR="${LINE#*url=}" ;;
+              ds=nocloud*                ) SEED_ADDR="${LINE#*\;s*=}";;
+              *                          )                           ;;
+          esac;
+          echo "SEED_ADDR=${SEED_ADDR}" 2>&1 | tee -a "${LOGS_NAME}";
+          case "${SEED_ADDR}" in
+              http://* | https://* )
+                  case "${SEED_TYPE}" in
+                      preseed ) wget -O preseed.cfg "${SEED_ADDR}" 2>&1 | tee -a "${LOGS_NAME}";;
+                      nocloud ) wget "${SEED_ADDR}/user-data"      2>&1 | tee -a "${LOGS_NAME}";;
+                      *       )                                                           ;;
+                  esac;
+                  wget "${SEED_ADDR%/*}/${PROG_NAME##*/}" 2>&1 | tee -a "${LOGS_NAME}";
+                  ;;
+              file://* | /*        )
+                  SEED_FILE="${SEED_ADDR#*:/}";
+                  if [ -f "${TGET_ROOT}/media${SEED_FILE}" ]; then
+                      SEED_FILE="${TGET_ROOT}/media${SEED_FILE}";
+                  fi;
+                  echo "SEED_FILE=${SEED_FILE}" 2>&1 | tee -a "${LOGS_NAME}";
+                  case "${SEED_TYPE}" in
+                      preseed )
+                          cp "${SEED_FILE}"                     ./preseed.cfg 2>&1 | tee -a "${LOGS_NAME}";
+                          cp "${SEED_FILE%/*}/${PROG_NAME##*/}" ./            2>&1 | tee -a "${LOGS_NAME}";
+                          ;;
+                      nocloud )
+                          cp "${SEED_FILE}/user-data"           ./ 2>&1 | tee -a "${LOGS_NAME}";
+                          cp "${SEED_FILE%/*}/${PROG_NAME##*/}" ./ 2>&1 | tee -a "${LOGS_NAME}";
+                          ;;
+                      *       ) ;;
+                  esac;
+                  ;;
+              *                    ) ;;
+          esac;
+      done;
+      if [ -n "${TGET_ROOT}${PROG_NAME:-}" ]; then
+          if [ -f "${TGET_ROOT}${PROG_NAME}" ]; then
+              echo "=== start ${TGET_ROOT}${PROG_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
+              if [ ! -x "${TGET_ROOT}${PROG_NAME}" ]; then
+                 chmod +x "${TGET_ROOT}${PROG_NAME}";
+              fi;
+              if [ -n "${TGET_ROOT}" ]; then
+                  if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
+                      curtin in-target --target=/target -- sh -c "${PROG_NAME} -b -n s; 2>&1" 2>&1 | tee -a "${LOGS_NAME}";
+                  else
+                      in-target --pass-stdout sh -c "${PROG_NAME} -b -n s; 2>&1" 2>&1 | tee -a "${LOGS_NAME}";
+                  fi;
+              else
+                  "${TGET_ROOT}${PROG_NAME}" -b -n s 2>&1 2>&1 | tee -a "${LOGS_NAME}";
+              fi;
+              echo "=== complete ${TGET_ROOT}${PROG_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
+          fi;
+      fi;
+      echo "### complete ${FUNC_NAME} ###";' ]
+# - [ sh, -c, '
+#     exec 2>&1;
+#     export LANG=C;
+#     FUNC_NAME="late-commands <change root password>";
+#     echo "### start ${FUNC_NAME} ###";
+#     ROOT_USER="root:r00t";
+#     TGET_ROOT="";
+#     if [ -d "/target/." ]; then
+#         TGET_ROOT="/target";
+#     fi;
+#     if [ -n "${TGET_ROOT}" ]; then
+#         if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
+#             curtin in-target --target=/target -- sh -c "echo \"${ROOT_USER}\" | chpasswd;";
+#         else
+#             in-target --pass-stdout sh -c "echo \"${ROOT_USER}\" | chpasswd;";
+#         fi;
+#     else
+#         echo "${ROOT_USER}" | chpasswd;
+#     fi;
+#     echo "### complete ${FUNC_NAME} ###";' ]
+# - [ sh, -c, '
+#     exec 2>&1;
+#     export LANG=C;
+#     FUNC_NAME="late-commands <change ssh root login>";
+#     echo "### start ${FUNC_NAME} ###";
+#     TGET_ROOT="";
+#     if [ -d "/target/." ]; then
+#         TGET_ROOT="/target";
+#     fi;
+#     echo "PermitRootLogin yes" > "${TGET_ROOT}/etc/ssh/sshd_config.d/root_login.conf";
+#     echo "### complete ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="late-commands <disable firewalld.service>";
+      echo "### start ${FUNC_NAME} ###";
+      TGET_ROOT="";
+      if [ -d "/target/." ]; then
+         TGET_ROOT="/target";
+      fi;
+      SEED_TYPE="nocloud";
+      SRVC_NAME="firewalld.service";
+      PROG_NAME="/var/log/installer/${SEED_TYPE}/${SEED_TYPE}-late-commands.sh";
+      LOGS_NAME="${TGET_ROOT}${PROG_NAME%.*}.targets.log";
+      FILE_NAME="${TGET_ROOT}/lib/systemd/system/${SRVC_NAME}";
+      if [ -f "${FILE_NAME}" ]; then
+          echo "=== start ${FILE_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
+          if [ -n "${TGET_ROOT}" ]; then
+              if [ -n "${SUBIQUITY_ROOT:-}" ] && [ -n "$(command -v curtin 2> /dev/null)" ]; then
+                  curtin in-target --target=/target -- sh -c "systemctl disable firewalld.service; systemctl is-enabled firewalld.service;" 2>&1 | tee -a "${LOGS_NAME}";
+              else
+                  in-target --pass-stdout sh -c "systemctl disable firewalld.service; systemctl is-enabled firewalld.service;" 2>&1 | tee -a "${LOGS_NAME}";
+              fi;
+          else
+              systemctl disable firewalld.service; systemctl is-enabled firewalld.service 2>&1 | tee -a "${LOGS_NAME}";
+          fi;
+          echo "=== complete ${FILE_NAME} ===" 2>&1 | tee -a "${LOGS_NAME}";
+      else
+          echo "not exist: ${FILE_NAME}" 2>&1 | tee -a "${LOGS_NAME}";
+      fi;
+      echo "### complete ${FUNC_NAME} ###";' ]
+  - [ sh, -c, '
+      exec 2>&1;
+      export LANG=C;
+      FUNC_NAME="late-commands";
+      echo "### complete ${FUNC_NAME} ###";' ]
+# =============================================================================
+# memo:
+#   https://ubuntu.com/server/docs/install/autoinstall-reference
+#   https://github.com/canonical/cloud-init/
+#   https://cloudinit.readthedocs.io/
+#   https://curtin.readthedocs.io/
+#   https://github.com/canonical/curtin
+# =============================================================================
+# Created at 202x/xx/xx xx:xx:xx
+# === EOF =====================================================================

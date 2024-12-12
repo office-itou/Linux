@@ -34,6 +34,16 @@
 	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
 	# -------------------------------------------------------------------------
+	declare -r    CODE_NAME="$(sed -ne '/VERSION_CODENAME/ s/^.*=//p' /etc/os-release)"
+	if [[ ! -e "/var/lib/apt/lists/deb.debian.org_debian_dists_${CODE_NAME:-}_InRelease" ]]; then
+		echo "please execute apt-get update:"
+		if [[ "${0:-}" = "${SUDO_COMMAND:-}" ]]; then
+			echo -n "sudo "
+		fi
+		echo "apt-get update"
+		exit 1
+	fi
+	# -------------------------------------------------------------------------
 	declare -r -a APP_TGET=(\
 		"procps" \
 		"syslinux-common" \
@@ -411,6 +421,9 @@
 	declare -r    IPV4_GWAY="192.168.1.254"					# IPv4 gateway
 	declare -r    IPV4_NSVR="192.168.1.254"					# IPv4 nameserver
 
+#	declare -r -a CURL_OPTN=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
+#	declare -r -a WGET_OPTN=("--tries=3" "--timeout=10" "--no-verbose")
+
 	# === system ==============================================================
 
 	# --- tftp / web server address -------------------------------------------
@@ -502,6 +515,7 @@
 	# 15: volume id
 	# 16: status
 	# 17: download URL
+	# 18: time stamp of remastered image file
 
 #	declare -a    DATA_LIST=()
 
@@ -790,10 +804,7 @@ function funcIPv6GetFullAddr() {
 		OUT_TEMP="$(eval printf ':%.s' "{1..$((CNT_FSEP+2))}")"
 		INP_ADDR="${INP_ADDR/::/${OUT_TEMP}}"
 	fi
-	IFS=':'
-	# shellcheck disable=SC2206
-	OUT_ARRY=(${INP_ADDR/%:/::})
-	IFS=${OLD_IFS}
+	IFS= mapfile -d ':' -t OUT_ARRY < <(echo -n "${INP_ADDR/%:/::}")
 	OUT_TEMP="$(printf ':%04x' "${OUT_ARRY[@]/#/0x0}")"
 	echo "${OUT_TEMP:1}"
 }
@@ -937,6 +948,12 @@ function funcUnit_conversion() {
 		printf "%'d Byte" "$1"
 		return
 	fi
+
+	if command -v numfmt > /dev/null 2>&1; then
+		echo "$1" | numfmt --to=iec-i --suffix=B
+		return
+	fi
+
 	for ((I=3; I>0; I--))
 	do
 		CALC_UNIT=$((1024**I))
@@ -1059,14 +1076,10 @@ function funcCurl() {
 
 # --- service status ----------------------------------------------------------
 function funcServiceStatus() {
-#	declare -r    OLD_IFS="${IFS}"
-	# shellcheck disable=SC2155
-	declare       SRVC_STAT="$(systemctl is-enabled "$1" 2> /dev/null || true)"
+	declare       SRVC_STAT
 	# -------------------------------------------------------------------------
-	if [[ -z "${SRVC_STAT}" ]]; then
-		SRVC_STAT="not-found"
-	fi
-	case "${SRVC_STAT}" in
+	SRVC_STAT="$(systemctl is-enabled "$1" 2> /dev/null || true)"
+	case "${SRVC_STAT:-}" in
 		disabled        ) SRVC_STAT="disabled";;
 		enabled         | \
 		enabled-runtime ) SRVC_STAT="enabled";;
@@ -1083,7 +1096,7 @@ function funcServiceStatus() {
 		not-found       ) ;;
 		*               ) SRVC_STAT="undefined";;
 	esac
-	echo "${SRVC_STAT}"
+	echo "${SRVC_STAT:-"not-found"}"
 }
 
 # --- function is package -----------------------------------------------------
@@ -2893,12 +2906,10 @@ function funcCreate_copy_iso2hdd() {
 #	declare -r    CPIO_MAIN="$(mktemp "${TMPDIR:-/var/tmp}/${PROG_PROC}-MAIN_XXXXXX")" || exit 1
 #	declare -r    CPIO_OLAY="$(mktemp "${TMPDIR:-/var/tmp}/${PROG_PROC}-OLAY_XXXXXX")" || exit 1
 #	declare -i    RET_CD=0
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${TGET_LINE[5]} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${TGET_LINE[5]} ${TEXT_GAP1}"
 	if [[ "${TGET_LINE[0]}" != "o" ]] || [[ ! -e "${TGET_LINE[4]}/${TGET_LINE[5]}" ]]; then
 		funcPrintf "%20.20s: %s" "skip" "${TGET_LINE[5]}"
-		# shellcheck disable=SC2312
-		funcPrintf "---- ${TGET_LINE[5]} $(funcString "${COLS_SIZE}" '-')"
+		funcPrintf "---- ${TGET_LINE[5]} ${TEXT_GAP1}"
 		return
 	fi
 	funcPrintf "%20.20s: %s" "copy" "${TGET_LINE[5]}"
@@ -2919,8 +2930,7 @@ function funcCreate_copy_iso2hdd() {
 	esac
 	if [[ -z "${RSYC_OPTN[*]}" ]]; then
 		funcPrintf "%20.20s: %s" "skip copy" "${TGET_LINE[5]}"
-		# shellcheck disable=SC2312
-		funcPrintf "---- ${TGET_LINE[5]} $(funcString "${COLS_SIZE}" '-')"
+		funcPrintf "---- ${TGET_LINE[5]} ${TEXT_GAP1}"
 		return
 	fi
 	mount -r "${TGET_LINE[4]}/${TGET_LINE[5]}" "${WORK_MNTP}"
@@ -2947,8 +2957,7 @@ function funcCreate_copy_iso2hdd() {
 	# --- remove directory ----------------------------------------------------
 	rm -rf "${WORK_DIRS:?}"
 	funcPrintf "%20.20s: %s" "complete" "${TGET_LINE[5]}"
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${TGET_LINE[5]} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${TGET_LINE[5]} ${TEXT_GAP1}"
 }
 
 # ----- create menu.cfg preseed -----------------------------------------------
@@ -4010,8 +4019,7 @@ function funcCall_function() {
 	declare       H1=""
 	declare       H2=""
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${MSGS_TITL} ${TEXT_GAP1}"
 	mkdir -p "${FILE_WRK1%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_WRK1}"
 		line 00
@@ -4042,8 +4050,7 @@ _EOT_
 _EOT_
 
 	# --- text print test -----------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- text print test $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- text print test ${TEXT_GAP1}"
 	H1=""
 	H2=""
 	for ((I=1; I<="${COLS_SIZE}"+10; I++))
@@ -4064,15 +4071,13 @@ _EOT_
 	echo ""
 
 	# --- text color test -----------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- text color test $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- text color test ${TEXT_GAP1}"
 	funcPrintf "--no-cutting" "funcColorTest"
 	funcColorTest
 	echo ""
 
 	# --- printf --------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- printf $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- printf ${TEXT_GAP1}"
 	funcPrintf "--no-cutting" "funcPrintf"
 	funcPrintf "%s : %-12.12s : %s" "${TXT_RESET}"    "TXT_RESET"    "${TXT_RESET}"
 	funcPrintf "%s : %-12.12s : %s" "${TXT_ULINE}"    "TXT_ULINE"    "${TXT_RESET}"
@@ -4100,8 +4105,7 @@ _EOT_
 	echo ""
 
 	# --- diff ----------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- diff $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- diff ${TEXT_GAP1}"
 	funcPrintf "--no-cutting" "funcDiff \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
 	funcDiff "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" "function test"
 	funcPrintf "--no-cutting" "diff -y -W \"${COLS_SIZE}\" --suppress-common-lines \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
@@ -4113,8 +4117,7 @@ _EOT_
 	echo ""
 
 	# --- substr --------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- substr $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- substr ${TEXT_GAP1}"
 	TEST_PARM="0001:0002:0003:0004:0005:0006:0007:0008"
 	funcPrintf "--no-cutting" "funcSubstr \"${TEST_PARM}\" 1 19"
 	funcPrintf "--no-cutting" "         1         2         3         4"
@@ -4124,23 +4127,20 @@ _EOT_
 	echo ""
 
 	# --- service status ------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- service status $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- service status ${TEXT_GAP1}"
 	funcPrintf "--no-cutting" "funcServiceStatus \"sshd.service\""
 	funcServiceStatus "sshd.service"
 	echo ""
 
 	# --- IPv6 full address ---------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- IPv6 full address $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- IPv6 full address ${TEXT_GAP1}"
 	TEST_PARM="fe80::1"
 	funcPrintf "--no-cutting" "funcIPv6GetFullAddr \"${TEST_PARM}\""
 	funcIPv6GetFullAddr "${TEST_PARM}"
 	echo ""
 
 	# --- IPv6 reverse address ------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- IPv6 reverse address $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- IPv6 reverse address ${TEXT_GAP1}"
 	TEST_PARM="0001:0002:0003:0004:0005:0006:0007:0008"
 	funcPrintf "--no-cutting" "funcIPv6GetRevAddr \"${TEST_PARM}\""
 	funcIPv6GetRevAddr "${TEST_PARM}"
@@ -4148,8 +4148,7 @@ _EOT_
 	echo ""
 
 	# --- IPv4 netmask conversion ---------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- IPv4 netmask conversion $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- IPv4 netmask conversion ${TEXT_GAP1}"
 	TEST_PARM="24"
 	funcPrintf "--no-cutting" "funcIPv4GetNetmask \"${TEST_PARM}\""
 	funcIPv4GetNetmask "${TEST_PARM}"
@@ -4157,16 +4156,14 @@ _EOT_
 	echo ""
 
 	# --- IPv4 cidr conversion ------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- IPv4 cidr conversion $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- IPv4 cidr conversion ${TEXT_GAP1}"
 	TEST_PARM="255.255.255.0"
 	funcPrintf "--no-cutting" "funcIPv4GetNetCIDR \"${TEST_PARM}\""
 	funcIPv4GetNetCIDR "${TEST_PARM}"
 	echo ""
 
 	# --- is numeric ----------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- is numeric $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- is numeric ${TEXT_GAP1}"
 	TEST_PARM="123.456"
 	funcPrintf "--no-cutting" "funcIsNumeric \"${TEST_PARM}\""
 	funcIsNumeric "${TEST_PARM}"
@@ -4177,16 +4174,14 @@ _EOT_
 	echo ""
 
 	# --- string output -------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- string output $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- string output ${TEXT_GAP1}"
 	TEST_PARM="50"
 	funcPrintf "--no-cutting" "funcString \"${TEST_PARM}\" \"#\""
 	funcString "${TEST_PARM}" "#"
 	echo ""
 
 	# --- print with screen control -------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- print with screen control $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- print with screen control ${TEXT_GAP1}"
 	TEST_PARM="test"
 	funcPrintf "--no-cutting" "funcPrintf \"${TEST_PARM}\""
 	funcPrintf "${TEST_PARM}"
@@ -4195,8 +4190,7 @@ _EOT_
 	# --- download ------------------------------------------------------------
 	# shellcheck disable=SC2091,SC2310
 	if $(funcIsPackage 'curl'); then
-		# shellcheck disable=SC2312
-		funcPrintf "---- download $(funcString "${COLS_SIZE}" '-')"
+		funcPrintf "---- download ${TEXT_GAP1}"
 		funcPrintf "--no-cutting" "funcCurl ${CURL_OPTN[*]}"
 		funcCurl "${CURL_OPTN[@]}"
 		echo ""
@@ -4207,6 +4201,49 @@ _EOT_
 	ls -l "${DIRS_TEMP}"
 }
 
+# ---- debug parameter --------------------------------------------------------
+function funcDbg_parameter() {
+	echo "${!PROG_*}"
+	echo "${!DIRS_*}"
+
+	# --- working directory name ----------------------------------------------
+	printf "%s=[%s]\n"	"PROG_PATH"		"${PROG_PATH:-}"
+	printf "%s=[%s]\n"	"PROG_PARM"		"${PROG_PARM[@]:-}"
+	printf "%s=[%s]\n"	"PROG_DIRS"		"${PROG_DIRS:-}"
+	printf "%s=[%s]\n"	"PROG_NAME"		"${PROG_NAME:-}"
+	printf "%s=[%s]\n"	"PROG_PROC"		"${PROG_PROC:-}"
+	printf "%s=[%s]\n"	"DIRS_WORK"		"${DIRS_WORK:-}"
+	printf "%s=[%s]\n"	"DIRS_BACK"		"${DIRS_BACK:-}"
+	printf "%s=[%s]\n"	"DIRS_BLDR"		"${DIRS_BLDR:-}"
+	printf "%s=[%s]\n"	"DIRS_CHRT"		"${DIRS_CHRT:-}"
+	printf "%s=[%s]\n"	"DIRS_CONF"		"${DIRS_CONF:-}"
+	printf "%s=[%s]\n"	"DIRS_HTML"		"${DIRS_HTML:-}"
+	printf "%s=[%s]\n"	"DIRS_IMGS"		"${DIRS_IMGS:-}"
+	printf "%s=[%s]\n"	"DIRS_ISOS"		"${DIRS_ISOS:-}"
+	printf "%s=[%s]\n"	"DIRS_KEYS"		"${DIRS_KEYS:-}"
+	printf "%s=[%s]\n"	"DIRS_LIVE"		"${DIRS_LIVE:-}"
+	printf "%s=[%s]\n"	"DIRS_ORIG"		"${DIRS_ORIG:-}"
+	printf "%s=[%s]\n"	"DIRS_PKGS"		"${DIRS_PKGS:-}"
+	printf "%s=[%s]\n"	"DIRS_RMAK"		"${DIRS_RMAK:-}"
+	printf "%s=[%s]\n"	"DIRS_TEMP"		"${DIRS_TEMP:-}"
+	printf "%s=[%s]\n"	"DIRS_TFTP"		"${DIRS_TFTP:-}"
+
+	# --- server service ------------------------------------------------------
+	printf "%s=[%s]\n"	"HTML_ROOT"		"${HTML_ROOT:-}"
+	printf "%s=[%s]\n"	"TFTP_ROOT"		"${TFTP_ROOT:-}"
+
+	# --- work variables ------------------------------------------------------
+	printf "%s=[%s]\n"	"OLD_IFS"		"${OLD_IFS:-}"
+
+	# --- set minimum display size --------------------------------------------
+	printf "%s=[%4d]\n"	"ROWS_SIZE"		"${ROWS_SIZE:-}"
+	printf "%s=[%4d]\n"	"COLS_SIZE"		"${COLS_SIZE:-}"
+
+	# --- text gap ------------------------------------------------------------
+	printf "%s\n%s\n"	"TEXT_GAP1"		"${TEXT_GAP1:-}"
+	printf "%s\n%s\n"	"TEXT_GAP2"		"${TEXT_GAP2:-}"
+}
+
 # ---- debug ------------------------------------------------------------------
 function funcCall_debug() {
 #	declare -r    OLD_IFS="${IFS}"
@@ -4214,8 +4251,7 @@ function funcCall_debug() {
 	declare -n    COMD_RETN="$1"
 	declare -a    COMD_LIST=()
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	shift 2
 	while [[ -n "${1:-}" ]]
@@ -4228,6 +4264,9 @@ function funcCall_debug() {
 				;;
 			text )						# ===== text color test ===============
 				funcColorTest
+				;;
+			parm )						# ===== print parameter ===============
+				funcDbg_parameter
 				;;
 			-* )
 				break
@@ -4248,8 +4287,7 @@ function funcCall_config() {
 	declare -n    COMD_RETN="$1"
 	declare -a    COMD_LIST=()
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
@@ -4336,8 +4374,7 @@ function funcCall_create() {
 	declare -i    I=0
 #	declare -i    J=0
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${MSGS_TITL} ${TEXT_GAP1}"
 	funcPrintf "%20.20s: %s" "create" "syslinux /grub menu file"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
@@ -4548,12 +4585,10 @@ _EOT_
 						if [[ "${DATA_LINE[5]}" = "-" ]]; then
 							if [[ "${DATA_LINE[7]}" != "-" ]] && [[ ! -e "${DATA_LINE[4]}/${DATA_LINE[7]}" ]]; then exit; fi
 							if [[ "${DATA_LINE[8]}" != "-" ]] && [[ ! -e "${DATA_LINE[4]}/${DATA_LINE[8]}" ]]; then exit; fi
-							# shellcheck disable=SC2312
-							funcPrintf "---- ${DATA_LINE[6]} $(funcString "${COLS_SIZE}" '-')"
+							funcPrintf "---- ${DATA_LINE[6]} ${TEXT_GAP1}"
 							FILE_PATH="${DATA_LINE[4]}/${DATA_LINE[7]}"
 						elif [[ "${DATA_LINE[1]%%-*}" = "live" ]]; then
-							# shellcheck disable=SC2312
-							funcPrintf "---- ${DATA_LINE[5]} $(funcString "${COLS_SIZE}" '-')"
+							funcPrintf "---- ${DATA_LINE[5]} ${TEXT_GAP1}"
 						elif [[ -e "${FILE_PATH}" ]]; then
 							# --- copy iso contents to hdd ------------------------
 							funcCreate_copy_iso2hdd "${DATA_LINE[@]}"
@@ -4686,8 +4721,7 @@ function funcMain() {
 	fi
 
 	# --- initialization ------------------------------------------------------
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v tput 2> /dev/null)" ]]; then
+	if command -v tput > /dev/null 2>&1; then
 		ROWS_SIZE=$(tput lines)
 		COLS_SIZE=$(tput cols)
 	fi
@@ -4698,14 +4732,18 @@ function funcMain() {
 		COLS_SIZE=80
 	fi
 
+	TEXT_GAP1="$(funcString "${COLS_SIZE}" '-')"
+	TEXT_GAP2="$(funcString "${COLS_SIZE}" '=')"
+
+	readonly      TEXT_GAP1
+	readonly      TEXT_GAP2
+
 	# --- main ----------------------------------------------------------------
 	start_time=$(date +%s)
 	# shellcheck disable=SC2312
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing start${TXT_RESET}"
-	# shellcheck disable=SC2312
-	funcPrintf "--- start $(funcString "${COLS_SIZE}" '-')"
-	# shellcheck disable=SC2312
-	funcPrintf "--- main $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "--- start ${TEXT_GAP1}"
+	funcPrintf "--- main ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	renice -n "${NICE_VALU}"   -p "$$" > /dev/null
 	ionice -c "${IONICE_CLAS}" -p "$$"
@@ -4799,8 +4837,7 @@ function funcMain() {
 
 	rm -rf "${DIRS_TEMP:?}"
 	# ==== complete ===========================================================
-	# shellcheck disable=SC2312
-	funcPrintf "--- complete $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "--- complete ${TEXT_GAP1}"
 	# shellcheck disable=SC2312
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 	end_time=$(date +%s)

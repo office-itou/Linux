@@ -76,7 +76,7 @@
 	    "x  ubuntu-14.10    utopic      -                       EOL     2014-10-23  2015-07-23  -           -                                   "   \
 	    "x  ubuntu-15.04    vivid       -                       EOL     2015-04-23  2016-02-04  -           -                                   "   \
 	    "x  ubuntu-15.10    wily        -                       EOL     2015-10-22  2016-07-28  -           -                                   "   \
-	    "x  ubuntu-16.04    xenial      -                       LTS     2016-04-21  2021-04-30  2026-04-23  http://archive.ubuntu.com/ubuntu    "   \
+	    "o  ubuntu-16.04    xenial      -                       LTS     2016-04-21  2021-04-30  2026-04-23  http://archive.ubuntu.com/ubuntu    "   \
 	    "x  ubuntu-16.10    yakkety     -                       EOL     2016-10-13  2017-07-20  -           -                                   "   \
 	    "x  ubuntu-17.04    zesty       -                       EOL     2017-04-13  2018-01-13  -           -                                   "   \
 	    "x  ubuntu-17.10    artful      -                       EOL     2017-10-19  2018-07-19  -           -                                   "   \

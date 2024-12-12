@@ -56,6 +56,8 @@
 # --- set minimum display size ------------------------------------------------
 	declare -i    ROWS_SIZE=80
 	declare -i    COLS_SIZE=25
+	declare       TEXT_GAP1=""
+	declare       TEXT_GAP2=""
 
 # --- set parameters ----------------------------------------------------------
 
@@ -498,56 +500,58 @@
 	declare -r    DHCP_EADR="79"		# IPv4 DHCP end address
 	declare -r    DHCP_LEAS="12h"		# IPv4 DHCP lease time
 
-# --- set color ---------------------------------------------------------------
-	declare -r    TXT_RESET='\033[m'						# reset all attributes
-	declare -r    TXT_ULINE='\033[4m'						# set underline
-	declare -r    TXT_ULINERST='\033[24m'					# reset underline
-	declare -r    TXT_REV='\033[7m'							# set reverse display
-	declare -r    TXT_REVRST='\033[27m'						# reset reverse display
-	declare -r    TXT_BLACK='\033[90m'						# text black
-	declare -r    TXT_RED='\033[91m'						# text red
-	declare -r    TXT_GREEN='\033[92m'						# text green
-	declare -r    TXT_YELLOW='\033[93m'						# text yellow
-	declare -r    TXT_BLUE='\033[94m'						# text blue
-	declare -r    TXT_MAGENTA='\033[95m'					# text purple
-	declare -r    TXT_CYAN='\033[96m'						# text light blue
-	declare -r    TXT_WHITE='\033[97m'						# text white
-	declare -r    TXT_BBLACK='\033[40m'						# text reverse black
-	declare -r    TXT_BRED='\033[41m'						# text reverse red
-	declare -r    TXT_BGREEN='\033[42m'						# text reverse green
-	declare -r    TXT_BYELLOW='\033[43m'					# text reverse yellow
-	declare -r    TXT_BBLUE='\033[44m'						# text reverse blue
-	declare -r    TXT_BMAGENTA='\033[45m'					# text reverse purple
-	declare -r    TXT_BCYAN='\033[46m'						# text reverse light blue
-	declare -r    TXT_BWHITE='\033[47m'						# text reverse white
-
 # *** function section (common functions) *************************************
+
+# --- set color ---------------------------------------------------------------
+#	declare -r    ESC="$(printf '\033')"
+	declare -r    ESC=$'\033'
+	declare -r    TXT_RESET="${ESC}[m"						# reset all attributes
+	declare -r    TXT_ULINE="${ESC}[4m"						# set underline
+	declare -r    TXT_ULINERST="${ESC}[24m"					# reset underline
+	declare -r    TXT_REV="${ESC}[7m"						# set reverse display
+	declare -r    TXT_REVRST="${ESC}[27m"					# reset reverse display
+	declare -r    TXT_BLACK="${ESC}[90m"					# text black
+	declare -r    TXT_RED="${ESC}[91m"						# text red
+	declare -r    TXT_GREEN="${ESC}[92m"					# text green
+	declare -r    TXT_YELLOW="${ESC}[93m"					# text yellow
+	declare -r    TXT_BLUE="${ESC}[94m"						# text blue
+	declare -r    TXT_MAGENTA="${ESC}[95m"					# text purple
+	declare -r    TXT_CYAN="${ESC}[96m"						# text light blue
+	declare -r    TXT_WHITE="${ESC}[97m"					# text white
+	declare -r    TXT_BBLACK="${ESC}[40m"					# text reverse black
+	declare -r    TXT_BRED="${ESC}[41m"						# text reverse red
+	declare -r    TXT_BGREEN="${ESC}[42m"					# text reverse green
+	declare -r    TXT_BYELLOW="${ESC}[43m"					# text reverse yellow
+	declare -r    TXT_BBLUE="${ESC}[44m"					# text reverse blue
+	declare -r    TXT_BMAGENTA="${ESC}[45m"					# text reverse purple
+	declare -r    TXT_BCYAN="${ESC}[46m"					# text reverse light blue
+	declare -r    TXT_BWHITE="${ESC}[47m"					# text reverse white
 
 # --- text color test ---------------------------------------------------------
 function funcColorTest() {
-	printf "${TXT_RESET} : %-12.12s : ${TXT_RESET}\n" "TXT_RESET"
-	printf "${TXT_ULINE} : %-12.12s : ${TXT_RESET}\n" "TXT_ULINE"
-	printf "${TXT_ULINERST} : %-12.12s : ${TXT_RESET}\n" "TXT_ULINERST"
-#	printf "${TXT_BLINK} : %-12.12s : ${TXT_RESET}\n" "TXT_BLINK"
-#	printf "${TXT_BLINKRST} : %-12.12s : ${TXT_RESET}\n" "TXT_BLINKRST"
-	printf "${TXT_REV} : %-12.12s : ${TXT_RESET}\n" "TXT_REV"
-	printf "${TXT_REVRST} : %-12.12s : ${TXT_RESET}\n" "TXT_REVRST"
-	printf "${TXT_BLACK} : %-12.12s : ${TXT_RESET}\n" "TXT_BLACK"
-	printf "${TXT_RED} : %-12.12s : ${TXT_RESET}\n" "TXT_RED"
-	printf "${TXT_GREEN} : %-12.12s : ${TXT_RESET}\n" "TXT_GREEN"
-	printf "${TXT_YELLOW} : %-12.12s : ${TXT_RESET}\n" "TXT_YELLOW"
-	printf "${TXT_BLUE} : %-12.12s : ${TXT_RESET}\n" "TXT_BLUE"
-	printf "${TXT_MAGENTA} : %-12.12s : ${TXT_RESET}\n" "TXT_MAGENTA"
-	printf "${TXT_CYAN} : %-12.12s : ${TXT_RESET}\n" "TXT_CYAN"
-	printf "${TXT_WHITE} : %-12.12s : ${TXT_RESET}\n" "TXT_WHITE"
-	printf "${TXT_BBLACK} : %-12.12s : ${TXT_RESET}\n" "TXT_BBLACK"
-	printf "${TXT_BRED} : %-12.12s : ${TXT_RESET}\n" "TXT_BRED"
-	printf "${TXT_BGREEN} : %-12.12s : ${TXT_RESET}\n" "TXT_BGREEN"
-	printf "${TXT_BYELLOW} : %-12.12s : ${TXT_RESET}\n" "TXT_BYELLOW"
-	printf "${TXT_BBLUE} : %-12.12s : ${TXT_RESET}\n" "TXT_BBLUE"
-	printf "${TXT_BMAGENTA} : %-12.12s : ${TXT_RESET}\n" "TXT_BMAGENTA"
-	printf "${TXT_BCYAN} : %-12.12s : ${TXT_RESET}\n" "TXT_BCYAN"
-	printf "${TXT_BWHITE} : %-12.12s : ${TXT_RESET}\n" "TXT_BWHITE"
+	printf "%s : %-12.12s : %s\n" "${TXT_RESET}"    "TXT_RESET"    "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_ULINE}"    "TXT_ULINE"    "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_ULINERST}" "TXT_ULINERST" "${TXT_RESET}"
+#	printf "%s : %-12.12s : %s\n" "${TXT_BLINK}"    "TXT_BLINK"    "${TXT_RESET}"
+#	printf "%s : %-12.12s : %s\n" "${TXT_BLINKRST}" "TXT_BLINKRST" "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_REV}"      "TXT_REV"      "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_REVRST}"   "TXT_REVRST"   "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_BLACK}"    "TXT_BLACK"    "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_RED}"      "TXT_RED"      "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_GREEN}"    "TXT_GREEN"    "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_YELLOW}"   "TXT_YELLOW"   "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_BLUE}"     "TXT_BLUE"     "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_MAGENTA}"  "TXT_MAGENTA"  "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_CYAN}"     "TXT_CYAN"     "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_WHITE}"    "TXT_WHITE"    "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_BBLACK}"   "TXT_BBLACK"   "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_BRED}"     "TXT_BRED"     "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_BGREEN}"   "TXT_BGREEN"   "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_BYELLOW}"  "TXT_BYELLOW"  "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_BBLUE}"    "TXT_BBLUE"    "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_BMAGENTA}" "TXT_BMAGENTA" "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_BCYAN}"    "TXT_BCYAN"    "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_BWHITE}"   "TXT_BWHITE"   "${TXT_RESET}"
 }
 
 # --- diff --------------------------------------------------------------------
@@ -576,10 +580,7 @@ function funcIPv6GetFullAddr() {
 		OUT_TEMP="$(eval printf ':%.s' "{1..$((CNT_FSEP+2))}")"
 		INP_ADDR="${INP_ADDR/::/${OUT_TEMP}}"
 	fi
-	IFS=':'
-	# shellcheck disable=SC2206
-	OUT_ARRY=(${INP_ADDR/%:/::})
-	IFS=${OLD_IFS}
+	IFS= mapfile -d ':' -t OUT_ARRY < <(echo -n "${INP_ADDR/%:/::}")
 	OUT_TEMP="$(printf ':%04x' "${OUT_ARRY[@]/#/0x0}")"
 	echo "${OUT_TEMP:1}"
 }
@@ -723,6 +724,12 @@ function funcUnit_conversion() {
 		printf "%'d Byte" "$1"
 		return
 	fi
+
+	if command -v numfmt > /dev/null 2>&1; then
+		echo "$1" | numfmt --to=iec-i --suffix=B
+		return
+	fi
+
 	for ((I=3; I>0; I--))
 	do
 		CALC_UNIT=$((1024**I))
@@ -740,14 +747,6 @@ function funcCurl() {
 #	declare -r    OLD_IFS="${IFS}"
 	declare -i    RET_CD=0
 	declare -i    I
-#	# shellcheck disable=SC2155
-#	declare       INP_URL="$(echo "$@" | sed -ne 's%^.* \(\(http\|https\)://.*\)$%\1%p')"
-#	# shellcheck disable=SC2155
-#	declare       OUT_DIR="$(echo "$@" | sed -ne 's%^.* --output-dir *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
-#	# shellcheck disable=SC2155
-#	declare       OUT_FILE="$(echo "$@" | sed -ne 's%^.* --output *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
-#	# shellcheck disable=SC2155
-#	declare       MSG_FLG="$(echo "$@" | sed -ne 's%^.* --silent *\(.*\) .*$%\1%p' | sed -e 's%/$%%')"
 	declare       INP_URL=""
 	declare       OUT_DIR=""
 	declare       OUT_FILE=""
@@ -762,19 +761,7 @@ function funcCurl() {
 	declare       LOC_SIZ=""
 	declare       LOC_TIM=""
 	declare       TXT_SIZ=""
-#	declare -i    INT_SIZ
-#	declare -i    INT_UNT
-#	declare -a    TXT_UNT=("Byte" "KiB" "MiB" "GiB" "TiB")
-#	set +e
-#	ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${INP_URL}" 2> /dev/null)")
-#	RET_CD=$?
-#	set -e
-#	if [[ "${RET_CD}" -eq 6 ]] || [[ "${RET_CD}" -eq 18 ]] || [[ "${RET_CD}" -eq 22 ]] || [[ "${RET_CD}" -eq 28 ]] || [[ "${RET_CD}" -eq 35 ]] || [[ "${#WEBS_PAGE[@]}" -le 0 ]]; then
-#	if [[ "${RET_CD}" -ne 0 ]] || [[ "${#ARY_HED[@]}" -le 0 ]]; then
-#		ERR_MSG=$(echo "${ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
-#		echo -e "${ERR_MSG} [${RET_CD}]: ${INP_URL}"
-#		return "${RET_CD}"
-#	fi
+
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
@@ -838,20 +825,6 @@ function funcCurl() {
 	fi
 
 	TXT_SIZ="$(funcUnit_conversion "${WEB_SIZ}")"
-#	if [[ "${WEB_SIZ}" -lt 1024 ]]; then
-#		TXT_SIZ="$(printf "%'d Byte" "${WEB_SIZ}")"
-#	else
-#		for ((I=3; I>0; I--))
-#		do
-#			INT_UNT=$((1024**I))
-#			if [[ "${WEB_SIZ}" -ge "${INT_UNT}" ]]; then
-#				TXT_SIZ="$(echo "${WEB_SIZ}" "${INT_UNT}" | awk '{printf("%.1f", $1/$2)}') ${TXT_UNT[${I}]})"
-##				INT_SIZ="$(((WEB_SIZ*1000)/(1024**I)))"
-##				TXT_SIZ="$(printf "%'.1f ${TXT_UNT[${I}]}" "${INT_SIZ::${#INT_SIZ}-3}.${INT_SIZ:${#INT_SIZ}-3}")"
-#				break
-#			fi
-#		done
-#	fi
 
 	if [[ -z "${MSG_FLG}" ]]; then
 		funcPrintf "get     file: ${WEB_FIL} (${TXT_SIZ})"
@@ -875,33 +848,14 @@ function funcCurl() {
 		rm -f "${:?}"
 	fi
 	return "${RET_CD}"
-
-#	curl "$@"
-#	RET_CD=$?
-#	if [[ "${RET_CD}" -ne 0 ]]; then
-#		for ((I=0; I<3; I++))
-#		do
-#			funcPrintf "retry  count: ${I}"
-#			curl --continue-at "$@"
-#			RET_CD=$?
-#			if [[ "${RET_CD}" -eq 0 ]]; then
-#				break
-#			fi
-#		done
-#	fi
-#	return "${RET_CD}"
 }
 
 # --- service status ----------------------------------------------------------
 function funcServiceStatus() {
-#	declare -r    OLD_IFS="${IFS}"
-	# shellcheck disable=SC2155
-	declare       SRVC_STAT="$(systemctl is-enabled "$1" 2> /dev/null || true)"
+	declare       SRVC_STAT
 	# -------------------------------------------------------------------------
-	if [[ -z "${SRVC_STAT}" ]]; then
-		SRVC_STAT="not-found"
-	fi
-	case "${SRVC_STAT}" in
+	SRVC_STAT="$(systemctl is-enabled "$1" 2> /dev/null || true)"
+	case "${SRVC_STAT:-}" in
 		disabled        ) SRVC_STAT="disabled";;
 		enabled         | \
 		enabled-runtime ) SRVC_STAT="enabled";;
@@ -918,7 +872,7 @@ function funcServiceStatus() {
 		not-found       ) ;;
 		*               ) SRVC_STAT="undefined";;
 	esac
-	echo "${SRVC_STAT}"
+	echo "${SRVC_STAT:-"not-found"}"
 }
 
 # --- function is package -----------------------------------------------------
@@ -3753,8 +3707,7 @@ function funcCall_function() {
 	declare       H1=""
 	declare       H2=""
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${MSGS_TITL} ${TEXT_GAP1}"
 	mkdir -p "${FILE_WRK1%/*}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_WRK1}"
 		line 00
@@ -3785,8 +3738,7 @@ _EOT_
 _EOT_
 
 	# --- text print test -----------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- text print test $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- text print test ${TEXT_GAP1}"
 	H1=""
 	H2=""
 	for ((I=1; I<="${COLS_SIZE}"+10; I++))
@@ -3807,15 +3759,13 @@ _EOT_
 	echo ""
 
 	# --- text color test -----------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- text color test $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- text color test ${TEXT_GAP1}"
 	funcPrintf "--no-cutting" "funcColorTest"
 	funcColorTest
 	echo ""
 
 	# --- printf --------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- printf $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- printf ${TEXT_GAP1}"
 	funcPrintf "--no-cutting" "funcPrintf"
 	funcPrintf "%s : %-12.12s : %s" "${TXT_RESET}"    "TXT_RESET"    "${TXT_RESET}"
 	funcPrintf "%s : %-12.12s : %s" "${TXT_ULINE}"    "TXT_ULINE"    "${TXT_RESET}"
@@ -3843,8 +3793,7 @@ _EOT_
 	echo ""
 
 	# --- diff ----------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- diff $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- diff ${TEXT_GAP1}"
 	funcPrintf "--no-cutting" "funcDiff \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
 	funcDiff "${FILE_WRK1/${PWD}\//}" "${FILE_WRK2/${PWD}\//}" "function test"
 	funcPrintf "--no-cutting" "diff -y -W \"${COLS_SIZE}\" --suppress-common-lines \"${FILE_WRK1/${PWD}\//}\" \"${FILE_WRK2/${PWD}\//}\" \"function test\""
@@ -3856,8 +3805,7 @@ _EOT_
 	echo ""
 
 	# --- substr --------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- substr $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- substr ${TEXT_GAP1}"
 	TEST_PARM="0001:0002:0003:0004:0005:0006:0007:0008"
 	funcPrintf "--no-cutting" "funcSubstr \"${TEST_PARM}\" 1 19"
 	funcPrintf "--no-cutting" "         1         2         3         4"
@@ -3867,23 +3815,20 @@ _EOT_
 	echo ""
 
 	# --- service status ------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- service status $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- service status ${TEXT_GAP1}"
 	funcPrintf "--no-cutting" "funcServiceStatus \"sshd.service\""
 	funcServiceStatus "sshd.service"
 	echo ""
 
 	# --- IPv6 full address ---------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- IPv6 full address $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- IPv6 full address ${TEXT_GAP1}"
 	TEST_PARM="fe80::1"
 	funcPrintf "--no-cutting" "funcIPv6GetFullAddr \"${TEST_PARM}\""
 	funcIPv6GetFullAddr "${TEST_PARM}"
 	echo ""
 
 	# --- IPv6 reverse address ------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- IPv6 reverse address $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- IPv6 reverse address ${TEXT_GAP1}"
 	TEST_PARM="0001:0002:0003:0004:0005:0006:0007:0008"
 	funcPrintf "--no-cutting" "funcIPv6GetRevAddr \"${TEST_PARM}\""
 	funcIPv6GetRevAddr "${TEST_PARM}"
@@ -3891,8 +3836,7 @@ _EOT_
 	echo ""
 
 	# --- IPv4 netmask conversion ---------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- IPv4 netmask conversion $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- IPv4 netmask conversion ${TEXT_GAP1}"
 	TEST_PARM="24"
 	funcPrintf "--no-cutting" "funcIPv4GetNetmask \"${TEST_PARM}\""
 	funcIPv4GetNetmask "${TEST_PARM}"
@@ -3900,16 +3844,14 @@ _EOT_
 	echo ""
 
 	# --- IPv4 cidr conversion ------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- IPv4 cidr conversion $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- IPv4 cidr conversion ${TEXT_GAP1}"
 	TEST_PARM="255.255.255.0"
 	funcPrintf "--no-cutting" "funcIPv4GetNetCIDR \"${TEST_PARM}\""
 	funcIPv4GetNetCIDR "${TEST_PARM}"
 	echo ""
 
 	# --- is numeric ----------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- is numeric $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- is numeric ${TEXT_GAP1}"
 	TEST_PARM="123.456"
 	funcPrintf "--no-cutting" "funcIsNumeric \"${TEST_PARM}\""
 	funcIsNumeric "${TEST_PARM}"
@@ -3920,31 +3862,74 @@ _EOT_
 	echo ""
 
 	# --- string output -------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- string output $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- string output ${TEXT_GAP1}"
 	TEST_PARM="50"
 	funcPrintf "--no-cutting" "funcString \"${TEST_PARM}\" \"#\""
 	funcString "${TEST_PARM}" "#"
 	echo ""
 
 	# --- print with screen control -------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- print with screen control $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- print with screen control ${TEXT_GAP1}"
 	TEST_PARM="test"
 	funcPrintf "--no-cutting" "funcPrintf \"${TEST_PARM}\""
 	funcPrintf "${TEST_PARM}"
 	echo ""
 
 	# --- download ------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- download $(funcString "${COLS_SIZE}" '-')"
-	funcPrintf "--no-cutting" "funcCurl ${CURL_OPTN[*]}"
-	funcCurl "${CURL_OPTN[@]}"
-	echo ""
+	# shellcheck disable=SC2091,SC2310
+	if $(funcIsPackage 'curl'); then
+		funcPrintf "---- download ${TEXT_GAP1}"
+		funcPrintf "--no-cutting" "funcCurl ${CURL_OPTN[*]}"
+		funcCurl "${CURL_OPTN[@]}"
+		echo ""
+	fi
 
 	# -------------------------------------------------------------------------
 	rm -f "${FILE_WRK1}" "${FILE_WRK2}"
 	ls -l "${DIRS_TEMP}"
+}
+
+# ---- debug parameter --------------------------------------------------------
+function funcDbg_parameter() {
+	echo "${!PROG_*}"
+	echo "${!DIRS_*}"
+
+	# --- working directory name ----------------------------------------------
+	printf "%s=[%s]\n"	"PROG_PATH"		"${PROG_PATH:-}"
+	printf "%s=[%s]\n"	"PROG_PARM"		"${PROG_PARM[@]:-}"
+	printf "%s=[%s]\n"	"PROG_DIRS"		"${PROG_DIRS:-}"
+	printf "%s=[%s]\n"	"PROG_NAME"		"${PROG_NAME:-}"
+	printf "%s=[%s]\n"	"PROG_PROC"		"${PROG_PROC:-}"
+	printf "%s=[%s]\n"	"DIRS_WORK"		"${DIRS_WORK:-}"
+	printf "%s=[%s]\n"	"DIRS_BACK"		"${DIRS_BACK:-}"
+	printf "%s=[%s]\n"	"DIRS_BLDR"		"${DIRS_BLDR:-}"
+	printf "%s=[%s]\n"	"DIRS_CHRT"		"${DIRS_CHRT:-}"
+	printf "%s=[%s]\n"	"DIRS_CONF"		"${DIRS_CONF:-}"
+	printf "%s=[%s]\n"	"DIRS_HTML"		"${DIRS_HTML:-}"
+	printf "%s=[%s]\n"	"DIRS_IMGS"		"${DIRS_IMGS:-}"
+	printf "%s=[%s]\n"	"DIRS_ISOS"		"${DIRS_ISOS:-}"
+	printf "%s=[%s]\n"	"DIRS_KEYS"		"${DIRS_KEYS:-}"
+	printf "%s=[%s]\n"	"DIRS_LIVE"		"${DIRS_LIVE:-}"
+	printf "%s=[%s]\n"	"DIRS_ORIG"		"${DIRS_ORIG:-}"
+	printf "%s=[%s]\n"	"DIRS_PKGS"		"${DIRS_PKGS:-}"
+	printf "%s=[%s]\n"	"DIRS_RMAK"		"${DIRS_RMAK:-}"
+	printf "%s=[%s]\n"	"DIRS_TEMP"		"${DIRS_TEMP:-}"
+	printf "%s=[%s]\n"	"DIRS_TFTP"		"${DIRS_TFTP:-}"
+
+	# --- server service ------------------------------------------------------
+	printf "%s=[%s]\n"	"HTML_ROOT"		"${HTML_ROOT:-}"
+	printf "%s=[%s]\n"	"TFTP_ROOT"		"${TFTP_ROOT:-}"
+
+	# --- work variables ------------------------------------------------------
+	printf "%s=[%s]\n"	"OLD_IFS"		"${OLD_IFS:-}"
+
+	# --- set minimum display size --------------------------------------------
+	printf "%s=[%4d]\n"	"ROWS_SIZE"		"${ROWS_SIZE:-}"
+	printf "%s=[%4d]\n"	"COLS_SIZE"		"${COLS_SIZE:-}"
+
+	# --- text gap ------------------------------------------------------------
+	printf "%s\n%s\n"	"TEXT_GAP1"		"${TEXT_GAP1:-}"
+	printf "%s\n%s\n"	"TEXT_GAP2"		"${TEXT_GAP2:-}"
 }
 
 # ---- cleaning ---------------------------------------------------------------
@@ -3991,6 +3976,9 @@ function funcCall_debug() {
 				;;
 			text )						# ===== text color test ===============
 				funcColorTest
+				;;
+			parm )						# ===== print parameter ===============
+				funcDbg_parameter
 				;;
 			sys )						# ===== system ========================
 				funcDebug_system
@@ -4267,8 +4255,7 @@ function funcMain() {
 	fi
 
 	# --- initialization ------------------------------------------------------
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v tput 2> /dev/null)" ]]; then
+	if command -v tput > /dev/null 2>&1; then
 		ROWS_SIZE=$(tput lines)
 		COLS_SIZE=$(tput cols)
 	fi
@@ -4278,6 +4265,10 @@ function funcMain() {
 	if [[ "${COLS_SIZE}" -lt 80 ]]; then
 		COLS_SIZE=80
 	fi
+
+	TEXT_GAP1="$(funcString "${COLS_SIZE}" '-')"
+	TEXT_GAP2="$(funcString "${COLS_SIZE}" '=')"
+
 	# --- main ----------------------------------------------------------------
 	start_time=$(date +%s)
 	# shellcheck disable=SC2312
