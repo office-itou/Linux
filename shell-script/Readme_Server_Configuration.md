@@ -95,25 +95,23 @@ Required working space:
 tree --charset C -n --filesfirst -d share/
 ```
   
+### ${HOME}/share/ 
+  
 ``` bash:
-${HOME}/share
+${HOME}/share/
 |-- back ------------------------------------------ backup directory
 |-- bldr ------------------------------------------ custom boot loader
-|-- chrt ------------------------------------------ change root directory
-|   `-- srv
-|       `-- user
-|           |-- install.sh ------------------------ initial configuration shell
-|           |-- mk_custom_iso.sh ------------------ custom iso image creation shell
-|           |-- mk_pxeboot_conf.sh ---------------- pxeboot configuration shell
-|           |-- mk_live_media.sh ------------------ custom live iso image creation shell
-|           `-- share <- ${HOME}/share
 |-- conf ------------------------------------------ configuration file
 |   |-- _template
+|   |   |-- initrd_debian.yaml
+|   |   |-- initrd_ubuntu.yaml
 |   |   |-- kickstart_common.cfg
 |   |   |-- live_debian.yaml
 |   |   |-- live_ubuntu.yaml
 |   |   |-- nocloud-ubuntu-user-data
+|   |   |-- preseed_debian.BAK
 |   |   |-- preseed_debian.cfg
+|   |   |-- preseed_ubuntu.BAK
 |   |   |-- preseed_ubuntu.cfg
 |   |   `-- yast_opensuse.xml
 |   |-- autoyast
@@ -184,16 +182,42 @@ ${HOME}/share
         |-- load -> ../load
         `-- pxelinux.cfg
             `-- default -> ../syslinux.cfg
-
-/var/lib/
+```
+  
+### /var/lib/tftpboot/ 
+  
+``` bash:
+/var/lib/tftpboot/
 `-- tftpboot -> ${HOME}/share/tftp
-
+```
+  
+### /var/www/ 
+  
+``` bash:
 /var/www/
 `-- html -> ${HOME}/share/html
-
+```
+  
+### /etc/dnsmasq.d/ 
+  
+``` bash:
 /etc/dnsmasq.d/
 `-- pxe.conf -------------------------------------- pxeboot dnsmasq configuration file
-
+```
+  
+### ${HOME}/share_chrt/ 
+  
+``` bash:
+${HOME}/share_chrt/
+|-- mnt
+|   `-- hgfs
+`-- srv
+    `-- user
+        |-- install.sh ---------------------------- initial configuration shell
+        |-- mk_custom_iso.sh ---------------------- custom iso image creation shell
+        |-- mk_pxeboot_conf.sh -------------------- pxeboot configuration shell
+        |-- mk_live_media.sh ---------------------- custom live iso image creation shell
+        `-- share <- ${HOME}/share
 ```
   
 ## Reference  
