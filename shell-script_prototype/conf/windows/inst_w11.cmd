@@ -1,6 +1,6 @@
     @Echo Off
 Rem SetLocal
-    Set WindowsVer=10
+    Set WindowsVer=11
     Set ShareName=\\sv-server\pxe-share
     Set SetupExe=%ShareName%\windows-%WindowsVer%\setup.exe
     Set AutoInst=%SystemDrive%\Windows\System32\unattend.xml
