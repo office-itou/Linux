@@ -37,7 +37,8 @@
 	# -------------------------------------------------------------------------
 	CODE_NAME="$(sed -ne '/VERSION_CODENAME/ s/^.*=//p' /etc/os-release)"
 	declare -r    CODE_NAME
-	if [[ ! -e "/var/lib/apt/lists/deb.debian.org_debian_dists_${CODE_NAME:-}_InRelease" ]]; then
+	if [[ ! -e "/var/lib/apt/lists/deb.debian.org_debian_dists_${CODE_NAME:-}_InRelease"      ]] \
+	&& [[ ! -e "/var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_${CODE_NAME:-}_InRelease" ]]; then
 		echo "please execute apt-get update:"
 		if [[ "${0:-}" = "${SUDO_COMMAND:-}" ]]; then
 			echo -n "sudo "
@@ -274,8 +275,8 @@
 #	declare -r    MENU_RESO="640x480"						# VGA    (4:3)
 
 															# colors
-	declare -r    MENU_DPTH="8"								# 256
-#	declare -r    MENU_DPTH="16"							# 65536
+#	declare -r    MENU_DPTH="8"								# 256
+	declare -r    MENU_DPTH="16"							# 65536
 #	declare -r    MENU_DPTH="24"							# 16 million
 #	declare -r    MENU_DPTH="32"							# 4.2 billion
 
@@ -336,11 +337,11 @@
 #	declare -r    SCRN_MODE="768"							# 7	300	 640x 400x 8	VESA
 #	declare -r    SCRN_MODE="769"							# 8	301	 640x 480x 8	VESA
 #	declare -r    SCRN_MODE="771"							# 9	303	 800x 600x 8	VESA
-	declare -r    SCRN_MODE="773"							# a	305	1024x 768x 8	VESA
+#	declare -r    SCRN_MODE="773"							# a	305	1024x 768x 8	VESA
 #	declare -r    SCRN_MODE="782"							# b	30E	 320x 200x16	VESA
 #	declare -r    SCRN_MODE="785"							# c	311	 640x 480x16	VESA
 #	declare -r    SCRN_MODE="788"							# d	314	 800x 600x16	VESA
-#	declare -r    SCRN_MODE="791"							# e	317	1024x 768x16	VESA
+	declare -r    SCRN_MODE="791"							# e	317	1024x 768x16	VESA
 #	declare -r    SCRN_MODE="800"							# f	320	 320x 200x 8	VESA
 #	declare -r    SCRN_MODE="801"							# g	321	 320x 400x 8	VESA
 #	declare -r    SCRN_MODE="802"							# h	322	 640x 400x 8	VESA
@@ -3108,7 +3109,10 @@ function funcCreate_menu() {
 			if [[ "${DATA_LINE[13]}" -gt "${DATA_LINE[18]}" ]]; then
 				TEXT_COLR="${TEXT_COLR:-"${TXT_YELLOW}"}${TXT_REV}"
 			else
-				FILE_PATH="${DIRS_CONF}/${DATA_LINE[9]}"
+				case "${DATA_LINE[9]%%/*}" in
+					nocloud) FILE_PATH="${DIRS_CONF}/${DATA_LINE[9]}/user-data";;
+					*      ) FILE_PATH="${DIRS_CONF}/${DATA_LINE[9]}";;
+				esac
 				if [[ -e "${FILE_PATH}" ]]; then
 					IFS= mapfile -d ' ' -t FILE_INFO < <(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${FILE_PATH}" || true)
 					if [[ "${FILE_INFO[5]}" -gt "${DATA_LINE[18]}" ]]; then
@@ -3230,9 +3234,9 @@ function funcCreate_autoinst_cfg_syslinux() {
 		if [[ -z "${WORK_ARRY[*]:-}" ]]; then
 			continue
 		fi
-		IFS= mapfile -d $'\n' -t -O "${#FILE_VLNZ[@]}" FILE_VLNZ < <(printf "%s\n" "${WORK_ARRY[@]}" | sed -ne 's/^[ \t]*\(kernel\|linux\)[ \t]\+\([[:graph:]]\+\).*/\2/p'         || true)
-		IFS= mapfile -d $'\n' -t -O "${#FILE_IRAM[@]}" FILE_IRAM < <(printf "%s\n" "${WORK_ARRY[@]}" | sed -ne 's/^[ \t]*initrd[ \t]\+\([[:graph:]]\+\).*/\1/p'                    || true)
-		IFS= mapfile -d $'\n' -t -O "${#FILE_IRAM[@]}" FILE_IRAM < <(printf "%s\n" "${WORK_ARRY[@]}" | sed -ne 's/^[ \t]*append[ \t]\+[[:print:]]*initrd=\([[:graph:]]\+\).*/\1/p' || true)
+		IFS= mapfile -d $'\n' -t -O "${#FILE_VLNZ[@]}" FILE_VLNZ < <(printf "%s\n" "${WORK_ARRY[@]}" | sed -ne 's/^[ \t]*\([Kk]ernel\|[Ll]inux\|KERNEL\|LINUX\)[ \t]\+\([[:graph:]]\+\).*/\2/p'         || true)
+		IFS= mapfile -d $'\n' -t -O "${#FILE_IRAM[@]}" FILE_IRAM < <(printf "%s\n" "${WORK_ARRY[@]}" | sed -ne 's/^[ \t]*\([Ii]nitrd\|INITRD\)[ \t]\+\([[:graph:]]\+\).*/\1/p'                    || true)
+		IFS= mapfile -d $'\n' -t -O "${#FILE_IRAM[@]}" FILE_IRAM < <(printf "%s\n" "${WORK_ARRY[@]}" | sed -ne 's/^[ \t]*\([Aa]ppend\|APPEND\)[ \t]\+[[:print:]]*initrd=\([[:graph:]]\+\).*/\2/p' || true)
 		case "${FILE_PATH}" in
 			*-mini-*)
 				for I in "${!FILE_IRAM[@]}"
@@ -3247,6 +3251,7 @@ function funcCreate_autoinst_cfg_syslinux() {
 			*)	;;
 		esac
 	done < <(find "${AUTO_PATH%/*}/" \( -type f -o -type l \) \( -name 'isolinux.cfg' -o -name 'txt.cfg' -o -name 'gtk.cfg' -o -name 'install.cfg' -o -name 'menu.cfg' \) | sort -V || true)
+	# --- sort FILE_VLNZ ------------------------------------------------------
 	IFS= mapfile -d $'\n' -t FILE_VLNZ < <(printf "%s\n" "${FILE_VLNZ[@]}" | sort -Vu -t $'\n' || true)
 	WORK_AARY=()
 	for I in "${!FILE_VLNZ[@]}"
@@ -3257,10 +3262,11 @@ function funcCreate_autoinst_cfg_syslinux() {
 		WORK_AARY+=(["${WORK_TEXT:-"_"}"]="${FILE_VLNZ[I]:-}")
 	done
 	FILE_VLNZ=()
-	for WORK_TEXT in $(echo "${!WORK_AARY[@]}" | sort -Vu)
+	for WORK_TEXT in $(printf "%s\n" "${!WORK_AARY[@]}" | sort -Vu)
 	do
 		FILE_VLNZ+=("${WORK_AARY["${WORK_TEXT}"]}")
 	done
+	# --- sort FILE_IRAM ------------------------------------------------------
 	IFS= mapfile -d $'\n' -t FILE_IRAM < <(printf "%s\n" "${FILE_IRAM[@]}" | sort -Vu -t $'\n' || true)
 	WORK_AARY=()
 	for I in "${!FILE_IRAM[@]}"
@@ -3271,7 +3277,7 @@ function funcCreate_autoinst_cfg_syslinux() {
 		WORK_AARY+=(["${WORK_TEXT:-"_"}"]="${FILE_IRAM[I]:-}")
 	done
 	FILE_IRAM=()
-	for WORK_TEXT in $(echo "${!WORK_AARY[@]}" | sort -Vu)
+	for WORK_TEXT in $(printf "%s\n" "${!WORK_AARY[@]}" | sort -Vu)
 	do
 		FILE_IRAM+=("${WORK_AARY["${WORK_TEXT}"]}")
 	done
@@ -3359,7 +3365,7 @@ function funcCreate_autoinst_cfg_grub() {
 		WORK_AARY+=(["${WORK_TEXT:-"_"}"]="${FILE_VLNZ[I]:-}")
 	done
 	FILE_VLNZ=()
-	for WORK_TEXT in $(echo "${!WORK_AARY[@]}" | sort -Vu)
+	for WORK_TEXT in $(printf "%s\n" "${!WORK_AARY[@]}" | sort -Vu)
 	do
 		FILE_VLNZ+=("${WORK_AARY["${WORK_TEXT}"]}")
 	done
@@ -3373,7 +3379,7 @@ function funcCreate_autoinst_cfg_grub() {
 		WORK_AARY+=(["${WORK_TEXT:-"_"}"]="${FILE_IRAM[I]:-}")
 	done
 	FILE_IRAM=()
-	for WORK_TEXT in $(echo "${!WORK_AARY[@]}" | sort -Vu)
+	for WORK_TEXT in $(printf "%s\n" "${!WORK_AARY[@]}" | sort -Vu)
 	do
 		FILE_IRAM+=("${WORK_AARY["${WORK_TEXT}"]}")
 	done
@@ -3757,7 +3763,7 @@ function funcCreate_remaster_nocloud() {
 	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"
 	declare -r    WORK_DIRS="${DIRS_TEMP}/${TGET_LINE[1]}"
 	declare -r    WORK_IMGS="${WORK_DIRS}/img"
-	declare -r    WORK_CONF="${WORK_IMGS}/${TGET_LINE[8]%/*}"
+	declare -r    WORK_CONF="${WORK_IMGS}/${TGET_LINE[9]%/*}"
 	funcPrintf "%20.20s: %s" "create" "boot options for nocloud"
 	# --- boot option ---------------------------------------------------------
 	case "${TGET_LINE[1]}" in
@@ -4507,7 +4513,7 @@ function funcMedia_download() {
 	declare       WORK_ENUM=""
 	declare -i    I=0
 	declare -i    J=0
-	declare       FILE_VLID=""
+#	declare       FILE_VLID=""
 	# -------------------------------------------------------------------------
 	funcPrintf "---- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------

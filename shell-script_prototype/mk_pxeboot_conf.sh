@@ -35,7 +35,8 @@
 
 	# -------------------------------------------------------------------------
 	declare -r    CODE_NAME="$(sed -ne '/VERSION_CODENAME/ s/^.*=//p' /etc/os-release)"
-	if [[ ! -e "/var/lib/apt/lists/deb.debian.org_debian_dists_${CODE_NAME:-}_InRelease" ]]; then
+	if [[ ! -e "/var/lib/apt/lists/deb.debian.org_debian_dists_${CODE_NAME:-}_InRelease"      ]] \
+	&& [[ ! -e "/var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_${CODE_NAME:-}_InRelease" ]]; then
 		echo "please execute apt-get update:"
 		if [[ "${0:-}" = "${SUDO_COMMAND:-}" ]]; then
 			echo -n "sudo "
@@ -262,8 +263,8 @@
 #	declare -r    MENU_RESO="640x480"						# VGA    (4:3)
 
 															# colors
-	declare -r    MENU_DPTH="8"								# 256
-#	declare -r    MENU_DPTH="16"							# 65536
+#	declare -r    MENU_DPTH="8"								# 256
+	declare -r    MENU_DPTH="16"							# 65536
 #	declare -r    MENU_DPTH="24"							# 16 million
 #	declare -r    MENU_DPTH="32"							# 4.2 billion
 
@@ -324,11 +325,11 @@
 #	declare -r    SCRN_MODE="768"							# 7	300	 640x 400x 8	VESA
 #	declare -r    SCRN_MODE="769"							# 8	301	 640x 480x 8	VESA
 #	declare -r    SCRN_MODE="771"							# 9	303	 800x 600x 8	VESA
-	declare -r    SCRN_MODE="773"							# a	305	1024x 768x 8	VESA
+#	declare -r    SCRN_MODE="773"							# a	305	1024x 768x 8	VESA
 #	declare -r    SCRN_MODE="782"							# b	30E	 320x 200x16	VESA
 #	declare -r    SCRN_MODE="785"							# c	311	 640x 480x16	VESA
 #	declare -r    SCRN_MODE="788"							# d	314	 800x 600x16	VESA
-#	declare -r    SCRN_MODE="791"							# e	317	1024x 768x16	VESA
+	declare -r    SCRN_MODE="791"							# e	317	1024x 768x16	VESA
 #	declare -r    SCRN_MODE="800"							# f	320	 320x 200x 8	VESA
 #	declare -r    SCRN_MODE="801"							# g	321	 320x 400x 8	VESA
 #	declare -r    SCRN_MODE="802"							# h	322	 640x 400x 8	VESA

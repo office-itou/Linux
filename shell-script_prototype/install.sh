@@ -20,6 +20,7 @@
 
 	case "${1:-}" in
 		-dbg) set -x; shift;;
+		-dbgout) _DBGOUT="true"; shift;;
 		*) ;;
 	esac
 
@@ -32,6 +33,38 @@
 	set -o pipefail						# End with in pipe error
 
 	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
+
+	# -------------------------------------------------------------------------
+	CODE_NAME="$(sed -ne '/VERSION_CODENAME/ s/^.*=//p' /etc/os-release)"
+	declare -r    CODE_NAME
+	if [[ ! -e "/var/lib/apt/lists/deb.debian.org_debian_dists_${CODE_NAME:-}_InRelease"      ]] \
+	&& [[ ! -e "/var/lib/apt/lists/archive.ubuntu.com_ubuntu_dists_${CODE_NAME:-}_InRelease" ]]; then
+		echo "please execute apt-get update:"
+		if [[ "${0:-}" = "${SUDO_COMMAND:-}" ]]; then
+			echo -n "sudo "
+		fi
+		echo "apt-get update"
+		exit 1
+	fi
+	# -------------------------------------------------------------------------
+	declare -r -a APP_TGET=(\
+		"bind9-dnsutils" \
+		"samba-common-bin" \
+	)
+	declare -r -a APP_FIND=("$(LANG=C apt list "${APP_TGET[@]}" 2> /dev/null | sed -ne '/^[ \t]*$\|WARNING\|Listing\|installed/! s%/.*%%gp' | sed -z 's/[\r\n]\+/ /g')")
+	declare -a    APP_LIST=()
+	for I in  "${!APP_FIND[@]}"
+	do
+		APP_LIST+=("${APP_FIND[${I}]}")
+	done
+	if [[ -n "${APP_LIST[*]}" ]]; then
+		echo "please install these:"
+		if [[ "${0:-}" = "${SUDO_COMMAND:-}" ]]; then
+			echo -n "sudo "
+		fi
+		echo "apt-get install ${APP_LIST[*]}"
+		exit 1
+	fi
 
 # *** data section ************************************************************
 
