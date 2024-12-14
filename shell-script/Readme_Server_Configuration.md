@@ -109,9 +109,7 @@ ${HOME}/share/
 |   |   |-- live_debian.yaml
 |   |   |-- live_ubuntu.yaml
 |   |   |-- nocloud-ubuntu-user-data
-|   |   |-- preseed_debian.BAK
 |   |   |-- preseed_debian.cfg
-|   |   |-- preseed_ubuntu.BAK
 |   |   |-- preseed_ubuntu.cfg
 |   |   `-- yast_opensuse.xml
 |   |-- autoyast
