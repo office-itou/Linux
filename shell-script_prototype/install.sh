@@ -52,7 +52,11 @@
 			"bind9-dnsutils" \
 			"samba-common-bin" \
 		)
-		declare -r -a APP_FIND=("$(LANG=C apt list "${APP_TGET[@]}" 2> /dev/null | sed -ne '/^[ \t]*$\|WARNING\|Listing\|installed/! s%/.*%%gp' | sed -z 's/[\r\n]\+/ /g')")
+		case "$(arch)" in
+			x86_64) CPU_ARCH="amd64";;
+			*     ) CPU_ARCH="";;
+		esac
+		declare -r -a APP_FIND=("$(LANG=C apt list "${APP_TGET[@]}" 2> /dev/null | sed -ne '/'"${CPU_ARCH:-"amd64"}"'/{' -e '/^[ \t]*$\|WARNING\|Listing\|installed/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g')")
 		declare -a    APP_LIST=()
 		for I in  "${!APP_FIND[@]}"
 		do
@@ -326,7 +330,11 @@
 	declare -r    SAMB_GADM="sambaadmin"	# admin group
 
 	# --- open-vm-tools -------------------------------------------------------
-	declare -r    HGFS_DIRS="/mnt/hgfs"		# vmware shared directory
+	if [[ -d /srv/hgfs/. ]]; then
+		declare -r    HGFS_DIRS="/srv/hgfs"	# vmware shared directory
+	else
+		declare -r    HGFS_DIRS="/mnt/hgfs"	# vmware shared directory
+	fi
 
 	# --- tftp server ---------------------------------------------------------
 	# funcNetwork_pxe_conf creates directory
@@ -926,8 +934,7 @@ function funcSystem_control() {
 	declare -a    SYSD_NAME=()
 	declare -i    I=0
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: service"
 	for ((I=0; I<"${#SRVC_LIST[@]}"; I++))
@@ -984,8 +991,7 @@ function funcSystem_parameter() {
 	declare -r    MSGS_TITL="system parameter"
 	declare       PARM_LINE=""
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: os information"
 	while read -r PARM_LINE
@@ -1042,8 +1048,7 @@ function funcNetwork_parameter() {
 	declare       FILE_PATH=""
 	declare -i    I=0
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	IFS=$'\n'
 	# shellcheck disable=SC2207
@@ -1172,8 +1177,7 @@ function funcNetwork_nsswitch() {
 	declare -r    FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
 	declare -r    FILE_BACK="${DIRS_BACK}/${FILE_PATH}.${DATE_TIME}"
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ -e "${FILE_PATH}" ]]; then
 		if [[ ! -e "${FILE_ORIG}" ]]; then
@@ -1200,8 +1204,7 @@ function funcNetwork_hosts() {
 	declare -r    SYSD_NAME="dnsmasq.service"
 	declare -i    I=0
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# --- hosts ---------------------------------------------------------------
 	if [[ -e "${FILE_PATH}" ]]; then
 		if [[ ! -e "${FILE_ORIG}" ]]; then
@@ -1250,8 +1253,7 @@ function funcNetwork_hosts_allow_deny() {
 	declare       FILE_BACK=""
 	declare -i    I=0
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# --- hosts.allow ---------------------------------------------------------
 	FILE_PATH="/etc/hosts.allow"
 	FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
@@ -1312,8 +1314,7 @@ function funcNetwork_dnsmasq() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
@@ -1360,8 +1361,7 @@ function funcNetwork_connmanctl() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	FILE_PATH="/etc/connman/main.conf"
 	FILE_ORIG="${DIRS_ORIG}/${FILE_PATH}"
@@ -1456,8 +1456,7 @@ function funcNetwork_netplan() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	# shellcheck disable=SC2312
 	while read -r FILE_LINE
@@ -1518,8 +1517,7 @@ function funcNetwork_networkmanager() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	for ((I=1; I<"${#ETHR_NAME[@]}"; I++))
 	do
 		funcPrintf "      ${MSGS_TITL}: disconnect ${ETHR_NAME[${I}]}"
@@ -1579,8 +1577,7 @@ function funcNetwork_resolv_conf() {
 	declare -r    CONF_FILE="${FILE_PATH}.manually-configured"
 	declare -r    SYSD_NAME="systemd-resolved.service"
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ -h "${FILE_PATH}" ]]; then
 		# shellcheck disable=SC2312
@@ -1631,8 +1628,7 @@ function funcNetwork_tftpd_hpa() {
 	declare -r    CONF_BACK="${DIRS_BACK}/${CONF_PATH}.${DATE_TIME}"
 	declare       SYSD_NAME="tftp.socket"
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: create directory"
 	funcPrintf "      ${MSGS_TITL}: ${TFTP_ROOT}"
@@ -1679,8 +1675,7 @@ function funcNetwork_pxe_conf() {
 	declare       SYSD_NAME=""
 #	declare -a    SELX_OPTN=()
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: create directory"
 	funcPrintf "      ${MSGS_TITL}: ${DIRS_PATH}"
@@ -1816,8 +1811,7 @@ function funcApplication_package_manager() {
 	declare       DIST_DIRS=""
 	declare       BACK_PORT=""
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	case "${DIST_NAME}" in
 		debian       | \
@@ -1941,8 +1935,7 @@ function funcApplication_firewall() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	funcPrintf "      ${MSGS_TITL}: change default zone"
 	firewall-cmd --quiet --remove-service=ssh --permanent
@@ -2002,8 +1995,7 @@ function funcApplication_system_kernel() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	funcPrintf "      ${MSGS_TITL}: rmmod floppy"
 	rmmod floppy
 	funcPrintf "      ${MSGS_TITL}: create blacklist file"
@@ -2024,8 +2016,7 @@ function funcApplication_system_shared_directory() {
 #	declare       WORK_DIRS=""
 #	declare       WORK_TYPE=""
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# --- create system user id -----------------------------------------------
 	if [[ -n "${SAMB_USER}" ]] && [[ -n "${SAMB_GRUP}" ]] && [[ -z "$(id "${SAMB_USER}" 2> /dev/null || true)" ]]; then
 		# shellcheck disable=SC2312
@@ -2086,8 +2077,7 @@ function funcApplication_system_user_environment() {
 	declare       USER_NAME=""
 	declare       USER_HOME=""
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	FILE_PATH="/etc/locale.gen"
 	if [[ -e "${FILE_PATH}" ]]; then
@@ -2307,8 +2297,7 @@ function funcApplication_user_add() {
 		SAMB_PWDB="$(find /var/lib/samba/ -name 'passdb.tdb' \( -type f -o -type l \))"
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ -e "${FILE_USER}" ]]; then
 		funcPrintf "      ${MSGS_TITL}: ${FILE_USER}"
@@ -2403,8 +2392,7 @@ function funcApplication_user_export() {
 	declare -r    SAMB_TEMP="${DIRS_TEMP}/smbpasswd.list.${DATE_TIME}"
 	declare -r    PROG_PWDB="${DIRS_ARCH}/${FILE_USER##*/}.${DATE_TIME}"
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	rm -f "${PROG_PWDB}"
 	# shellcheck disable=SC2312
@@ -2450,8 +2438,7 @@ function funcApplication_clamav() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
@@ -2491,8 +2478,7 @@ function funcApplication_ntp_chrony() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL}: chrony $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL}: chrony ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
@@ -2536,8 +2522,7 @@ function funcApplication_ntp_timesyncd() {
 #		return
 #	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL}: timesyncd $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL}: timesyncd ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ -e "${FILE_PATH}" ]]; then
 		if [[ ! -e "${FILE_ORIG}" ]]; then
@@ -2586,8 +2571,7 @@ function funcApplication_openssh() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ -e "${FILE_PATH}" ]]; then
 		if [[ ! -e "${FILE_ORIG}" ]]; then
@@ -2656,8 +2640,7 @@ function funcApplication_dnsmasq() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
@@ -2690,8 +2673,7 @@ function funcApplication_apache() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
@@ -2737,8 +2719,7 @@ function funcApplication_samba() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
@@ -2975,8 +2956,7 @@ function funcApplication_open_vm_tools() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	case "${DIST_NAME}" in
 		debian       | \
@@ -3068,8 +3048,7 @@ function funcApplication_grub() {
 	declare       GRUB_COMD=""
 	declare       GRUB_CONF=""
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ ! -e "${FILE_ORIG}" ]]; then
 		mkdir -p "${FILE_ORIG%/*}"
@@ -3142,8 +3121,7 @@ function funcApplication_root_user() {
 	declare -i    RET_CD=0
 	declare -i    I=0
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ "${#USER_SUDO[@]}" -le 0 ]]; then
 		funcPrintf "      ${MSGS_TITL}: ${GRUP_SUDO} group has no users"
@@ -3206,8 +3184,7 @@ function funcApplication_sound_wireplumber() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	if [[ -e "${FILE_PATH}" ]]; then
 		if [[ ! -e "${FILE_ORIG}" ]]; then
@@ -3292,8 +3269,7 @@ function funcRestore_settings() {
 	)
 	declare -i    I=0
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	for ((I=0; I<"${#FILE_LIST[@]}"; I++))
 	do
@@ -3329,8 +3305,7 @@ function funcRestore_settings() {
 # ----- system ----------------------------------------------------------------
 function funcDebug_system() {
 	# --- os information ------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- os information $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- os information ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	funcPrintf "DIST_NAME=${DIST_NAME}"
 	funcPrintf "DIST_CODE=${DIST_CODE}"
@@ -3342,15 +3317,13 @@ function funcDebug_system() {
 function funcDebug_network() {
 	declare -i    I=0
 	# --- host name -----------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- host name $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- host name ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	funcPrintf "HOST_FQDN=${HOST_FQDN:-}"
 	funcPrintf "HOST_NAME=${HOST_NAME:-}"
 	funcPrintf "HOST_DMAN=${HOST_DMAN:-}"
 	# --- network parameter ---------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- network parameter $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- network parameter ${TEXT_GAP1}"
 	for ((I=0; I<"${#ETHR_NAME[@]}"; I++))
 	do
 		funcPrintf "ETHR_NAME=${ETHR_NAME[I]:-}"
@@ -3395,72 +3368,55 @@ function funcDebug_dns() {
 	declare -i    RET_CD=0
 	set +e
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ping check $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ping check ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v ping4 2> /dev/null)" ]]; then
+	if command -v ping4 > /dev/null 2>&1; then
 		ping4 -c 4 www.google.com
 	else
-		ping -4 -c 1 localhost &> /dev/null
-		RET_CD=$?
-		if [[ "${RET_CD}" -eq 0 ]]; then
+		if ping -4 -c 1 localhost > /dev/null 2>&1; then
 			ping -4 -c 4 www.google.com
 		else
 			ping -c 4 www.google.com
 		fi
 	fi
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v ping6 2> /dev/null)" ]]; then
+	if command -v ping6 > /dev/null 2>&1; then
 		# shellcheck disable=SC2312
 		funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 		ping6 -c 4 www.google.com
 	fi
-	# shellcheck disable=SC2312
-	funcPrintf "----- ping check $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- ping check ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- ss -tulpn | sed -n '/:53/p' $(funcString "${COLS_SIZE}" '-')"
-	ss -tulpn | sed -n '/:53/p'
-	RET_CD=$?
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	funcPrintf "----- ss -tulpn | sed -n '/:53/p' ${TEXT_GAP1}"
+	if ! ss -tulpn | sed -n '/:53/p'; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- nslookup ${HOST_FQDN} $(funcString "${COLS_SIZE}" '-')"
-	nslookup "${HOST_FQDN}"
-	RET_CD=$?
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	funcPrintf "----- nslookup ${HOST_FQDN} ${TEXT_GAP1}"
+	if ! nslookup "${HOST_FQDN}"; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- nslookup ${IPV4_ADDR[0]} $(funcString "${COLS_SIZE}" '-')"
-	nslookup "${IPV4_ADDR[0]}"
-	RET_CD=$?
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	funcPrintf "----- nslookup ${HOST_FQDN%.*}.local ${TEXT_GAP1}"
+	if ! nslookup "${HOST_FQDN%.*}.local"; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- nslookup ${IPV6_ADDR[0]} $(funcString "${COLS_SIZE}" '-')"
-	nslookup "${IPV6_ADDR[0]}"
-	RET_CD=$?
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	funcPrintf "----- nslookup ${IPV4_ADDR[0]} ${TEXT_GAP1}"
+	if ! nslookup "${IPV4_ADDR[0]}"; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- nslookup ${LINK_ADDR[0]} $(funcString "${COLS_SIZE}" '-')"
-	nslookup "${LINK_ADDR[0]}"
-	RET_CD=$?
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	funcPrintf "----- nslookup ${IPV6_ADDR[0]} ${TEXT_GAP1}"
+	if ! nslookup "${IPV6_ADDR[0]}"; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 	fi
 	# -------------------------------------------------------------------------
-#	# shellcheck disable=SC2312
-#	funcPrintf "----- dns check $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- nslookup ${LINK_ADDR[0]} ${TEXT_GAP1}"
+	if ! nslookup "${LINK_ADDR[0]}"; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+	fi
+	# -------------------------------------------------------------------------
+#	funcPrintf "----- dns check ${TEXT_GAP1}"
 #	dig @localhost "${IPV4_RADR[0]}.in-addr.arpa" DNSKEY +dnssec +multi
 	# -------------------------------------------------------------------------
 #	# shellcheck disable=SC2312
@@ -3479,44 +3435,46 @@ function funcDebug_dns() {
 #	funcPrintf "$(funcString "${COLS_SIZE}" '+')"
 #	dig @"${LINK_ADDR[0]}" "${HOST_DMAN}" axfr
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- dig ${HOST_FQDN} A +nostats +nocomments $(funcString "${COLS_SIZE}" '-')"
-	dig "${HOST_FQDN}" A +nostats +nocomments
-	RET_CD=$?
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	funcPrintf "----- dig ${HOST_FQDN} A +nostats +nocomments ${TEXT_GAP1}"
+	if ! dig "${HOST_FQDN}" A +nostats +nocomments; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- dig ${HOST_FQDN} AAAA +nostats +nocomments $(funcString "${COLS_SIZE}" '-')"
-	dig "${HOST_FQDN}" AAAA +nostats +nocomments
-	RET_CD=$?
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	funcPrintf "----- dig ${HOST_FQDN} AAAA +nostats +nocomments ${TEXT_GAP1}"
+	if ! dig "${HOST_FQDN}" AAAA +nostats +nocomments; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- dig -x ${IPV4_ADDR[0]} +nostats +nocomments $(funcString "${COLS_SIZE}" '-')"
-	dig -x "${IPV4_ADDR[0]}" +nostats +nocomments
-	RET_CD=$?
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	funcPrintf "----- dig ${HOST_FQDN%.*}.local A +nostats +nocomments ${TEXT_GAP1}"
+	if ! dig "${HOST_FQDN%.*}.local" A +nostats +nocomments; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- dig -x ${IPV6_ADDR[0]} +nostats +nocomments $(funcString "${COLS_SIZE}" '-')"
-	dig -x "${IPV6_ADDR[0]}" +nostats +nocomments
-	RET_CD=$?
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	funcPrintf "----- dig ${HOST_FQDN%.*}.local AAAA +nostats +nocomments ${TEXT_GAP1}"
+	if ! dig "${HOST_FQDN%.*}.local" AAAA +nostats +nocomments; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- dig -x ${LINK_ADDR[0]} +nostats +nocomments $(funcString "${COLS_SIZE}" '-')"
-	dig -x "${LINK_ADDR[0]}" +nostats +nocomments
-	RET_CD=$?
-	if [[ "${RET_CD}" -ne 0 ]]; then
-		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [${RET_CD}]${TXT_RESET}"
+	funcPrintf "----- dig -x ${IPV4_ADDR[0]} +nostats +nocomments ${TEXT_GAP1}"
+	if ! dig -x "${IPV4_ADDR[0]}" +nostats +nocomments; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+	fi
+	# -------------------------------------------------------------------------
+	funcPrintf "----- dig -x ${IPV6_ADDR[0]} +nostats +nocomments ${TEXT_GAP1}"
+	if ! dig -x "${IPV6_ADDR[0]}" +nostats +nocomments; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+	fi
+	# -------------------------------------------------------------------------
+	funcPrintf "----- dig -x ${LINK_ADDR[0]} +nostats +nocomments ${TEXT_GAP1}"
+	if ! dig -x "${LINK_ADDR[0]}" +nostats +nocomments; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+	fi
+	# -------------------------------------------------------------------------
+	if command -v getent > /dev/null 2>&1; then
+		funcPrintf "----- getent hosts ${HOST_FQDN%.*} ${TEXT_GAP1}"
+		if ! getent hosts "${HOST_FQDN%.*}"; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
 	fi
 	# -------------------------------------------------------------------------
 	set -e
@@ -3524,22 +3482,25 @@ function funcDebug_dns() {
 
 # ----- ntp -------------------------------------------------------------------
 function funcDebug_ntp() {
-	declare -r    FILE_NAME="/etc/systemd/timesyncd.conf"
-	declare -r    FILE_ORIG="${FILE_NAME}/.orig"
-	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcDiff "${FILE_ORIG}" "${FILE_NAME}" "----- diff ${FILE_NAME} $(funcString "${COLS_SIZE}" '-')"
-	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v timedatectl 2> /dev/null)" ]]; then
-		# shellcheck disable=SC2312
-		funcPrintf "----- timedatectl status $(funcString "${COLS_SIZE}" '-')"
-		timedatectl status
-		# shellcheck disable=SC2312
-		funcPrintf "----- timedatectl timesync-status $(funcString "${COLS_SIZE}" '-')"
-		set +e
-		timedatectl timesync-status 2> /dev/null
-		set -e
+	if command -v chronyc > /dev/null 2>&1; then
+		funcPrintf "----- chronyc sources ${TEXT_GAP1}"
+		if ! chronyc sources; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
+	elif command -v timedatectl > /dev/null 2>&1; then
+		declare -r    FILE_NAME="/etc/systemd/timesyncd.conf"
+		declare -r    FILE_ORIG="${FILE_NAME}/.orig"
+		# ---------------------------------------------------------------------
+		funcDiff "${FILE_ORIG}" "${FILE_NAME}" "----- diff ${FILE_NAME} ${TEXT_GAP1}"
+		# ---------------------------------------------------------------------
+		funcPrintf "----- timedatectl status ${TEXT_GAP1}"
+		if ! timedatectl status; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
+		funcPrintf "----- timedatectl timesync-status ${TEXT_GAP1}"
+		if ! timedatectl timesync-status > /dev/null 2>&1; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
 	fi
 }
 
@@ -3549,56 +3510,42 @@ function funcDebug_smb() {
 	declare -r    BRWS_NAME="$(nmblookup -A "${BRWS_ADDR}" | awk '$2=="<00>"&&$4!="<GROUP>" {print $1;}')"
 	declare -r    BRWS_WGRP="$(nmblookup -A "${BRWS_ADDR}" | awk '$2=="<00>"&&$4=="<GROUP>" {print $1;}')"
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- nmblookup -M -- - (master browser) $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- nmblookup -M -- - (master browser) ${TEXT_GAP1}"
 	funcPrintf "${BRWS_ADDR}"
-	# shellcheck disable=SC2312
-	funcPrintf "----- nmblookup -A ${BRWS_ADDR} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- nmblookup -A ${BRWS_ADDR} ${TEXT_GAP1}"
 	funcPrintf "${BRWS_NAME}"
 	funcPrintf "${BRWS_WGRP}"
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v traceroute 2> /dev/null)" ]]; then
-		funcPrintf "----- traceroute ${BRWS_NAME} $(funcString "${COLS_SIZE}" '-')"
-		traceroute -4 "${BRWS_NAME}"
-	fi
-#	# -------------------------------------------------------------------------
-#	# shellcheck disable=SC2312
-#	funcPrintf "----- ping check $(funcString "${COLS_SIZE}" '-')"
-#	# -------------------------------------------------------------------------
-#	# shellcheck disable=SC2312
-#	if [[ -n "$(command -v ping4 2> /dev/null)" ]]; then
-#		ping4 -c 4 "${BRWS_NAME}"
-#	else
-#		ping -4 -c 1 localhost &> /dev/null
-#		RET_CD=$?
-#		if [[ "${RET_CD}" -eq 0 ]]; then
-#			ping -4 -c 4 "${BRWS_NAME}"
-#		else
-#			ping -c 4 "${BRWS_NAME}"
-#		fi
-#	fi
-#	# shellcheck disable=SC2312
-#	if [[ -n "$(command -v ping6 2> /dev/null)" ]]; then
-#		# shellcheck disable=SC2312
-#		funcPrintf "$(funcString "${COLS_SIZE}" '+')"
-#		ping6 -c 4 "${BRWS_NAME}"
-#	fi
-#	# shellcheck disable=SC2312
-#	funcPrintf "----- ping check $(funcString "${COLS_SIZE}" '-')"
-	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v pdbedit 2> /dev/null)" ]]; then
-		# shellcheck disable=SC2312
-		funcPrintf "----- pdbedit -L $(funcString "${COLS_SIZE}" '-')"
-		pdbedit -L
+	if command -v getent > /dev/null 2>&1; then
+		funcPrintf "----- getent hosts ${BRWS_NAME,,} ${TEXT_GAP1}"
+		if ! getent hosts "${BRWS_NAME,,}"; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v smbclient 2> /dev/null)" ]]; then
-		# shellcheck disable=SC2312
-		funcPrintf "----- smbclient -N -L ${HOST_FQDN} $(funcString "${COLS_SIZE}" '-')"
-		smbclient -N -L "${HOST_FQDN}"
+	if command -v traceroute > /dev/null 2>&1; then
+		funcPrintf "----- traceroute ${BRWS_NAME} ${TEXT_GAP1}"
+		if ! traceroute -4 "${BRWS_NAME,,}"; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
+	fi
+	# -------------------------------------------------------------------------
+	if command -v pdbedit > /dev/null 2>&1; then
+		funcPrintf "----- pdbedit -L ${TEXT_GAP1}"
+		if ! pdbedit -L; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
+	fi
+	# -------------------------------------------------------------------------
+	if command -v smbclient > /dev/null 2>&1; then
+		funcPrintf "----- smbclient -N -L ${HOST_FQDN} ${TEXT_GAP1}"
+		if ! smbclient -N -L "${HOST_FQDN}"; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
+		funcPrintf "----- smbclient -N -L ${HOST_FQDN%.*}.local ${TEXT_GAP1}"
+		if ! smbclient -N -L "${HOST_FQDN%.*}.local"; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
 	fi
 }
 
@@ -3608,57 +3555,60 @@ function funcDebug_open_vm_tools() {
 		return
 	fi
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "----- df -h ${HGFS_DIRS} $(funcString "${COLS_SIZE}" '-')"
-	LANG=C df -h "${HGFS_DIRS}"
+	funcPrintf "----- df -h ${HGFS_DIRS} ${TEXT_GAP1}"
+	if ! LANG=C df -h "${HGFS_DIRS}"; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+	fi
 }
 
 # ----- lvm -------------------------------------------------------------------
 function funcDebug_lvm() {
-	# shellcheck disable=SC2312
-	funcPrintf "----- lsblk --nodeps --output NAME,TYPE,TRAN,SIZE,VENDOR,MODEL $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "----- lsblk --nodeps --output NAME,TYPE,TRAN,SIZE,VENDOR,MODEL ${TEXT_GAP1}"
 	lsblk --nodeps --output NAME,TYPE,TRAN,SIZE,VENDOR,MODEL
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v pvdisplay 2> /dev/null)" ]]; then
-		# shellcheck disable=SC2312
-		funcPrintf "----- pvdisplay $(funcString "${COLS_SIZE}" '-')"
-		pvdisplay
+	if command -v pvdisplay > /dev/null 2>&1; then
+		funcPrintf "----- pvdisplay ${TEXT_GAP1}"
+		if ! pvdisplay; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
 	fi
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v vgdisplay 2> /dev/null)" ]]; then
-		# shellcheck disable=SC2312
-		funcPrintf "----- vgdisplay $(funcString "${COLS_SIZE}" '-')"
-		vgdisplay
+	if command -v vgdisplay > /dev/null 2>&1; then
+		funcPrintf "----- vgdisplay ${TEXT_GAP1}"
+		if ! vgdisplay; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
 	fi
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v lvdisplay 2> /dev/null)" ]]; then
-		# shellcheck disable=SC2312
-		funcPrintf "----- lvdisplay $(funcString "${COLS_SIZE}" '-')"
-		lvdisplay
+	if command -v lvdisplay > /dev/null 2>&1; then
+		funcPrintf "----- lvdisplay ${TEXT_GAP1}"
+		if ! lvdisplay; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
 	fi
 }
 
 # ----- firewall --------------------------------------------------------------
 function funcDebug_firewall() {
-	# shellcheck disable=SC2312
-	if [[ -z "$(command -v firewall-cmd 2> /dev/null)" ]]; then
+	funcPrintf "----- firewall ${TEXT_GAP1}"
+	if ! command -v firewall-cmd > /dev/null 2>&1; then
 		return
 	fi
-	# shellcheck disable=SC2312
-	if [[ -n "$(command -v iptables 2> /dev/null)" ]]; then
-		# shellcheck disable=SC2312
-		funcPrintf "----- iptables --version $(funcString "${COLS_SIZE}" '-')"
-		iptables --version
+	if command -v iptables > /dev/null 2>&1; then
+		funcPrintf "----- iptables --version ${TEXT_GAP1}"
+		if ! iptables --version; then
+			funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+		fi
 	fi
-	# shellcheck disable=SC2312
-	funcPrintf "----- firewall-cmd --get-active-zones $(funcString "${COLS_SIZE}" '-')"
-	firewall-cmd --get-active-zones
-	# shellcheck disable=SC2312
-	funcPrintf "----- firewall-cmd --list-all --zone=${FWAL_ZONE} $(funcString "${COLS_SIZE}" '-')"
-	firewall-cmd --list-all --zone="${FWAL_ZONE}"
-	# shellcheck disable=SC2312
-	funcPrintf "----- firewall-cmd --list-all $(funcString "${COLS_SIZE}" '-')"
-	firewall-cmd --list-all
+	funcPrintf "----- firewall-cmd --get-active-zones ${TEXT_GAP1}"
+	if ! firewall-cmd --get-active-zones; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+	fi
+	funcPrintf "----- firewall-cmd --list-all --zone=${FWAL_ZONE} ${TEXT_GAP1}"
+	if ! firewall-cmd --list-all --zone="${FWAL_ZONE}"; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+	fi
+	funcPrintf "----- firewall-cmd --list-all ${TEXT_GAP1}"
+	if ! firewall-cmd --list-all; then
+		funcPrintf "${TXT_RED}${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+	fi
 }
 
 # === cleaning ================================================================
@@ -3710,8 +3660,7 @@ function funcCleaning() {
 	tar -czf "${FILE_BACK/${PWD}\//}" "${LIST_BACK[@]}"
 	funcPrintf "     ${MSGS_TITL}: list of files to delete"
 	rm -I "${LIST_BACK[@]}"
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${MSGS_TITL}: remaining files $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${MSGS_TITL}: remaining files ${TEXT_GAP1}"
 	find "${DIRS_BACK/${PWD}\//}" \( -type f -o -type l \) | sort
 }
 
@@ -3974,8 +3923,7 @@ function funcCall_cleaning() {
 	declare -n    COMD_RETN="$1"
 	declare -a    COMD_LIST=()
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	shift 2
 	COMD_LIST=("${@:-}")
@@ -3990,8 +3938,7 @@ function funcCall_debug() {
 	declare -n    COMD_RETN="$1"
 	declare -a    COMD_LIST=()
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
@@ -4055,8 +4002,7 @@ function funcCall_restore() {
 	declare -n    COMD_RETN="$1"
 	declare -a    COMD_LIST=()
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	shift 2
 	COMD_LIST=("${@:-}")
@@ -4071,8 +4017,7 @@ function funcCall_network() {
 	declare -n    COMD_RETN="$1"
 	declare -a    COMD_LIST=()
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
@@ -4143,8 +4088,7 @@ function funcCall_package() {
 	declare -n    COMD_RETN="$1"
 	declare -a    COMD_LIST=()
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- ${MSGS_TITL} $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- ${MSGS_TITL} ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
@@ -4236,8 +4180,7 @@ function funcCall_all() {
 	declare -n    COMD_RETN="$1"
 	declare -a    COMD_LIST=()
 	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2312
-	funcPrintf "---- call all process $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "---- call all process ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	shift 2
 	if [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
@@ -4304,14 +4247,15 @@ function funcMain() {
 	TEXT_GAP1="$(funcString "${COLS_SIZE}" '-')"
 	TEXT_GAP2="$(funcString "${COLS_SIZE}" '=')"
 
+	readonly TEXT_GAP1
+	readonly TEXT_GAP2
+
 	# --- main ----------------------------------------------------------------
 	start_time=$(date +%s)
 	# shellcheck disable=SC2312
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing start${TXT_RESET}"
-	# shellcheck disable=SC2312
-	funcPrintf "--- start $(funcString "${COLS_SIZE}" '-')"
-	# shellcheck disable=SC2312
-	funcPrintf "--- main $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "--- start ${TEXT_GAP1}"
+	funcPrintf "--- main ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
 	DIRS_LIST=()
 	for DIRS_NAME in "${DIRS_TEMP%.*}."*
@@ -4390,21 +4334,18 @@ function funcMain() {
 		chmod 700   "${DIRS_WORK}"
 
 		# --- setting default values ------------------------------------------
-		# shellcheck disable=SC2312
-		funcPrintf "---- parameter $(funcString "${COLS_SIZE}" '-')"
+		funcPrintf "---- parameter ${TEXT_GAP1}"
 		# ---------------------------------------------------------------------
 		funcSystem_parameter				# system parameter
 		# ---------------------------------------------------------------------
 		funcNetwork_parameter				# network parameter
 		# ---------------------------------------------------------------------
-		# shellcheck disable=SC2312
-		funcPrintf "---- system information $(funcString "${COLS_SIZE}" '-')"
+		funcPrintf "---- system information ${TEXT_GAP1}"
 		funcPrintf "     distribution name  : ${DIST_NAME:-}"
 		funcPrintf "     code name          : ${DIST_CODE:-}"
 		funcPrintf "     version name       : ${DIST_VERS:-}"
 		funcPrintf "     version number     : ${DIST_VRID:-}"
-		# shellcheck disable=SC2312
-		funcPrintf "---- network information $(funcString "${COLS_SIZE}" '-')"
+		funcPrintf "---- network information ${TEXT_GAP1}"
 		funcPrintf "     network device name: ${ETHR_NAME[0]:-}"
 		funcPrintf "     network mac address: ${ETHR_MADR[0]:-}"
 		funcPrintf "     IPv4 address       : ${IPV4_ADDR[0]:-}"
@@ -4467,8 +4408,7 @@ function funcMain() {
 	fi
 
 	# ==== complete ===========================================================
-	# shellcheck disable=SC2312
-	funcPrintf "--- complete $(funcString "${COLS_SIZE}" '-')"
+	funcPrintf "--- complete ${TEXT_GAP1}"
 	# shellcheck disable=SC2312
 	funcPrintf "${TXT_RESET}${TXT_BMAGENTA}$(date +"%Y/%m/%d %H:%M:%S") processing end${TXT_RESET}"
 	end_time=$(date +%s)
