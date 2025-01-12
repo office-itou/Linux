@@ -133,6 +133,7 @@
 	#	|   |       |-- i386-pc
 	#	|   |       |-- locale
 	#	|   |       `-- x86_64-efi
+	#	|   |-- conf -> /srv/user/share/conf
 	#	|   |-- imgs  -> /srv/user/share/imgs
 	#	|   |-- ipxe --------------------------------------- ipxe module
 	#	|   |   |-- ipxe.efi
@@ -147,13 +148,14 @@
 	#	|   |   |-- load -> ../load
 	#	|   |   `-- pxelinux.cfg
 	#	|   |       `-- default -> ../syslinux.cfg
-	#	|   `-- menu-efi64
-	#	|       |-- syslinux.cfg --------------------------- syslinux configuration for uefi(x86_64) environment
-	#	|       |-- imgs -> ../imgs
-	#	|       |-- isos -> ../isos
-	#	|       |-- load -> ../load
-	#	|       `-- pxelinux.cfg
-	#	|           `-- default -> ../syslinux.cfg
+	#	|   |-- menu-efi64
+	#	|   |   |-- syslinux.cfg --------------------------- syslinux configuration for uefi(x86_64) environment
+	#	|   |   |-- imgs -> ../imgs
+	#	|   |   |-- isos -> ../isos
+	#	|   |   |-- load -> ../load
+	#	|   |`-- pxelinux.cfg
+	#	|   |       `-- default -> ../syslinux.cfg
+	#	|   `-- rmak -> /srv/user/share/rmak
 	#	`-- user ------------------------------------------- user file
 	#	    |-- private ------------------------------------ personal use
 	#	    `-- share -------------------------------------- shared
@@ -1822,8 +1824,29 @@ function funcCreate_late_command() {
 		
 		 	# --- create shared directory ---------------------------------------------
 		 	mkdir -p "${DIRS_HGFS}"
+		
 		 	mkdir -p "${DIRS_HTML}"/html
-		 	mkdir -p "${DIRS_TFTP}"
+		 	touch -f "${DIRS_HTML}"/html/index.html
+		
+		 	mkdir -p "${DIRS_TFTP}"/boot/grub
+		 	mkdir -p "${DIRS_TFTP}"/ipxe
+		 	mkdir -p "${DIRS_TFTP}"/menu-bios/pxelinux.cfg
+		 	mkdir -p "${DIRS_TFTP}"/menu-efi64/pxelinux.cfg
+		 	touch -f "${DIRS_TFTP}"/menu-bios/syslinux.cfg
+		 	touch -f "${DIRS_TFTP}"/menu-efi64/syslinux.cfg
+		 	ln -s ../conf         "${DIRS_TFTP}"/menu-bios/
+		 	ln -s ../imgs         "${DIRS_TFTP}"/menu-bios/
+		 	ln -s ../isos         "${DIRS_TFTP}"/menu-bios/
+		 	ln -s ../load         "${DIRS_TFTP}"/menu-bios/
+		 	ln -s ../rmak         "${DIRS_TFTP}"/menu-bios/
+		 	ln -s ../syslinux.cfg "${DIRS_TFTP}"/menu-bios/pxelinux.cfg/default
+		 	ln -s ../conf         "${DIRS_TFTP}"/menu-efi64/
+		 	ln -s ../imgs         "${DIRS_TFTP}"/menu-efi64/
+		 	ln -s ../isos         "${DIRS_TFTP}"/menu-efi64/
+		 	ln -s ../load         "${DIRS_TFTP}"/menu-efi64/
+		 	ln -s ../rmak         "${DIRS_TFTP}"/menu-efi64/
+		 	ln -s ../syslinux.cfg "${DIRS_TFTP}"/menu-efi64/pxelinux.cfg/default
+		
 		 	mkdir -p "${DIRS_SAMB}"/cifs
 		 	mkdir -p "${DIRS_SAMB}"/data/adm/netlogon
 		 	mkdir -p "${DIRS_SAMB}"/data/adm/profiles
@@ -1835,25 +1858,81 @@ function funcCreate_late_command() {
 		 	mkdir -p "${DIRS_SAMB}"/dlna/others
 		 	mkdir -p "${DIRS_SAMB}"/dlna/photos
 		 	mkdir -p "${DIRS_SAMB}"/dlna/sounds
+		
 		 	mkdir -p "${DIRS_USER}"/private
 		 	mkdir -p "${DIRS_USER}"/share/conf
 		 	mkdir -p "${DIRS_USER}"/share/imgs
 		 	mkdir -p "${DIRS_USER}"/share/isos
 		 	mkdir -p "${DIRS_USER}"/share/load
 		 	mkdir -p "${DIRS_USER}"/share/rmak
+		
 		 	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/conf "${DIRS_HTML}"/html/
 		 	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/imgs "${DIRS_HTML}"/html/
 		 	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/isos "${DIRS_HTML}"/html/
 		 	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/load "${DIRS_HTML}"/html/
 		 	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/rmak "${DIRS_HTML}"/html/
+		
+		 	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/conf "${DIRS_TFTP}"/
+		 	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/imgs "${DIRS_TFTP}"/
+		 	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/isos "${DIRS_TFTP}"/
+		 	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/load "${DIRS_TFTP}"/
+		 	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/rmak "${DIRS_TFTP}"/
+		
+		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${DIRS_TFTP}/autoexec.ipxe"
+		 		#!ipxe
+		 		
+		 		cpuid --ext 29 && set arch amd64 || set arch x86
+		 		
+		 		dhcp
+		 		
+		 		set optn-timeout 3000
+		 		set menu-timeout 0
+		 		isset \${menu-default} || set menu-default exit
+		 		
+		 		:start
+		 		
+		 		:menu
+		 		menu Select the OS type you want to boot
+		 		item --gap --                           --------------------------------------------------------------------------
+		 		item --gap --                           [ System command ]
+		 		item -- shell                           - iPXE shell
+		 		#item -- shutdown                       - System shutdown
+		 		item -- restart                         - System reboot
+		 		item --gap --                           --------------------------------------------------------------------------
+		 		choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
+		 		goto \${selected}
+		 		
+		 		:shell
+		 		echo "Booting iPXE shell ..."
+		 		shell
+		 		goto start
+		 		
+		 		:shutdown
+		 		echo "System shutting down ..."
+		 		poweroff
+		 		exit
+		 		
+		 		:restart
+		 		echo "System rebooting ..."
+		 		reboot
+		 		exit
+		 		
+		 		:error
+		 		prompt Press any key to continue
+		 		exit
+		 		
+		 		:exit
+		 		exit
+		_EOT_
+		
 		 	if command -v setsebool > /dev/null 2>&1; then
 		 		setsebool -P httpd_use_fusefs 1
 		 		setsebool -P samba_enable_home_dirs 1
 		 		setsebool -P samba_export_all_ro 1
 		 		setsebool -P samba_export_all_rw 1
 		 	fi
-		 	touch -f "${DIRS_HTML}/html/index.html"
-		 	touch -f "${DIRS_SAMB}/data/adm/netlogon/logon.bat"
+		
+		 	touch -f "${DIRS_SAMB}"/data/adm/netlogon/logon.bat
 		 	chown -R "${SAMB_USER}":"${SAMB_GRUP}" "${DIRS_SAMB}/"*
 		 	chmod -R  770 "${DIRS_SAMB}/"*
 		 	chmod    1777 "${DIRS_SAMB}/data/adm/profiles"
@@ -2220,12 +2299,11 @@ function funcCreate_late_command() {
 		 	mkdir -p "${_FILE_PATH%/*}"
 		 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-		 		ALL : ${IPV4_LHST} : allow
-		 		ALL : ${IPV4_UADR}.0/${NICS_BIT4} : allow
-		 		ALL : [${LINK_UADR%%::}::%${NICS_NAME}]/10 : allow
-		 		ALL : [${LINK_UADR%%::}::]/10 : deny
-		 		ALL : [${IPV6_UADR%%::}::]/${IPV6_CIDR} : deny
-		 		ALL : [${IPV6_LHST}] : allow
+		 		ALL : ${IPV4_LHST}
+		 		ALL : [${IPV6_LHST}]
+		 		ALL : ${IPV4_UADR}.0/${NICS_BIT4}
+		 		ALL : [${LINK_UADR%%::}::%${NICS_NAME}]/10
+		 		#ALL : [${IPV6_UADR%%::}::]/${IPV6_CIDR}
 		_EOT_
 		
 		 	# --- debug out -----------------------------------------------------------
@@ -2429,46 +2507,46 @@ function funcCreate_late_command() {
 		 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
 		 		# --- log ---------------------------------------------------------------------
-		 		#log-queries												# dns query log output
-		 		#log-dhcp													# dhcp transaction log output
-		 		#log-facility=												# log output file name
+		 		#log-queries                                                # dns query log output
+		 		#log-dhcp                                                   # dhcp transaction log output
+		 		#log-facility=                                              # log output file name
 		 		
 		 		# --- dns ---------------------------------------------------------------------
-		 		port=0														# listening port
-		 		bogus-priv													# do not perform reverse lookup of private ip address on upstream server
-		 		domain-needed												# do not forward plain names
-		 		domain=${NICS_WGRP}											# local domain name
-		 		expand-hosts												# add domain name to host
-		 		filterwin2k													# filter for windows
-		 		#interface=${NICS_NAME}											# listen to interface
-		 		listen-address=${IPV4_LHST}									# listen to ip address
-		 		listen-address=${IPV6_LHST}											# listen to ip address
-		 		#listen-address=${NICS_IPV4}									# listen to ip address
-		 		#listen-address=${LINK_ADDR}					# listen to ip address
-		 		server=${NICS_DNS4}										# directly specify upstream server
-		 		#server=8.8.8.8												# directly specify upstream server
-		 		#server=8.8.4.4												# directly specify upstream server
-		 		#no-hosts													# don't read the hostnames in /etc/hosts
-		 		no-poll														# don't poll /etc/resolv.conf for changes
-		 		no-resolv													# don't read /etc/resolv.conf
-		 		#strict-order												# try in the registration order of /etc/resolv.conf
-		 		#bind-dynamic												# enable bind-interfaces and the default hybrid network mode
-		 		bind-interfaces												# enable multiple instances of dnsmasq
-		 		#conf-file=${_CONF_FILE}		# enable dnssec validation and caching
-		 		#dnssec														# "
+		 		port=0                                                      # listening port
+		 		#bogus-priv                                                 # do not perform reverse lookup of private ip address on upstream server
+		 		#domain-needed                                              # do not forward plain names
+		 		#domain=${NICS_WGRP}                                           # local domain name
+		 		#expand-hosts                                               # add domain name to host
+		 		#filterwin2k                                                # filter for windows
+		 		#interface=${NICS_NAME}                                           # listen to interface
+		 		#listen-address=${IPV4_LHST}                                   # listen to ip address
+		 		#listen-address=${IPV6_LHST}                                         # listen to ip address
+		 		#listen-address=${NICS_IPV4}                                 # listen to ip address
+		 		#listen-address=${LINK_ADDR}                    # listen to ip address
+		 		#server=${NICS_DNS4}                                       # directly specify upstream server
+		 		#server=8.8.8.8                                             # directly specify upstream server
+		 		#server=8.8.4.4                                             # directly specify upstream server
+		 		#no-hosts                                                   # don't read the hostnames in /etc/hosts
+		 		#no-poll                                                    # don't poll /etc/resolv.conf for changes
+		 		#no-resolv                                                  # don't read /etc/resolv.conf
+		 		#strict-order                                               # try in the registration order of /etc/resolv.conf
+		 		#bind-dynamic                                               # enable bind-interfaces and the default hybrid network mode
+		 		#bind-interfaces                                            # enable multiple instances of dnsmasq
+		 		#conf-file=${_CONF_FILE}       # enable dnssec validation and caching
+		 		#dnssec                                                     # "
 		 		
 		 		# --- dhcp --------------------------------------------------------------------
-		 		dhcp-range=${NICS_IPV4%.*}.0,proxy,24								# proxy dhcp
-		 		#dhcp-range=${NICS_IPV4%.*}.64,${NICS_IPV4%.*}.79,12h					# dhcp range
-		 		#dhcp-option=option:netmask,255.255.255.0					#  1 netmask
-		 		#dhcp-option=option:router,${NICS_GATE}					#  3 router
-		 		#dhcp-option=option:dns-server,${NICS_IPV4},${NICS_GATE}	#  6 dns-server
-		 		#dhcp-option=option:domain-name,${NICS_WGRP}					# 15 domain-name
-		 		#dhcp-option=option:28,${NICS_IPV4%.*}.255						# 28 broadcast
-		 		#dhcp-option=option:ntp-server,${NTPS_IPV4}				# 42 ntp-server
-		 		#dhcp-option=option:tftp-server,${NICS_IPV4}					# 66 tftp-server
-		 		#dhcp-option=option:bootfile-name,							# 67 bootfile-name
-		 		#dhcp-no-override											# disable re-use of the dhcp servername and filename fields as extra option space
+		 		dhcp-range=${NICS_IPV4%.*}.0,proxy,24                             # proxy dhcp
+		 		#dhcp-range=${NICS_IPV4%.*}.64,${NICS_IPV4%.*}.79,12h                   # dhcp range
+		 		#dhcp-option=option:netmask,255.255.255.0                   #  1 netmask
+		 		#dhcp-option=option:router,${NICS_GATE}                    #  3 router
+		 		#dhcp-option=option:dns-server,${NICS_IPV4},${NICS_GATE}    #  6 dns-server
+		 		#dhcp-option=option:domain-name,${NICS_WGRP}                   # 15 domain-name
+		 		#dhcp-option=option:28,${NICS_IPV4%.*}.255                        # 28 broadcast
+		 		#dhcp-option=option:ntp-server,${NTPS_IPV4}               # 42 ntp-server
+		 		#dhcp-option=option:tftp-server,${NICS_IPV4}                 # 66 tftp-server
+		 		#dhcp-option=option:bootfile-name,                          # 67 bootfile-name
+		 		dhcp-no-override                                            # disable re-use of the dhcp servername and filename fields as extra option space
 		 		
 		 		# --- dnsmasq manual page -----------------------------------------------------
 		 		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
@@ -2486,35 +2564,35 @@ function funcCreate_late_command() {
 		 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
 		 		# --- tftp --------------------------------------------------------------------
-		 		#enable-tftp=${NICS_NAME}											# enable tftp server
-		 		#tftp-root=${DIRS_TFTP}											# tftp root directory
-		 		#tftp-lowercase													# convert tftp request path to all lowercase
-		 		#tftp-no-blocksize												# stop negotiating "block size" option
-		 		#tftp-no-fail													# do not abort startup even if tftp directory is not accessible
-		 		#tftp-secure													# enable tftp secure mode
+		 		#enable-tftp=${NICS_NAME}                                         # enable tftp server
+		 		#tftp-root=${DIRS_TFTP}                                        # tftp root directory
+		 		#tftp-lowercase                                             # convert tftp request path to all lowercase
+		 		#tftp-no-blocksize                                          # stop negotiating "block size" option
+		 		#tftp-no-fail                                               # do not abort startup even if tftp directory is not accessible
+		 		#tftp-secure                                                # enable tftp secure mode
 		 		
 		 		# --- pxe boot ----------------------------------------------------------------
-		 		#pxe-prompt="Press F8 for boot menu", 0												# pxe boot prompt
-		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux		#  0 Intel x86PC
-		 		#pxe-service=PC98             , "PXEBoot-PC98"             ,						#  1 NEC/PC98
-		 		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,						#  2 EFI Itanium
-		 		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,						#  3 DEC Alpha
-		 		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,						#  4 Arc x86
-		 		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",						#  5 Intel Lean Client
-		 		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,						#  6 EFI IA32
-		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi	#  7 EFI BC
-		 		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,						#  8 EFI Xscale
-		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi	#  9 EFI x86-64
-		 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,						# 10 ARM 32bit
-		 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,						# 11 ARM 64bit
+		 		#pxe-prompt="Press F8 for boot menu", 0                                             # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux     #  0 Intel x86PC
+		 		#pxe-service=PC98             , "PXEBoot-PC98"             ,                        #  1 NEC/PC98
+		 		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                        #  2 EFI Itanium
+		 		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                        #  3 DEC Alpha
+		 		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                        #  4 Arc x86
+		 		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                        #  5 Intel Lean Client
+		 		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                        #  6 EFI IA32
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi  #  7 EFI BC
+		 		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                        #  8 EFI Xscale
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi  #  9 EFI x86-64
+		 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                        # 10 ARM 32bit
+		 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                        # 11 ARM 64bit
 		 		
 		 		# --- ipxe block --------------------------------------------------------------
-		 		#dhcp-match=set:iPXE,175															#
-		 		#pxe-prompt="Press F8 for boot menu", 0												# pxe boot prompt
-		 		#pxe-service=tag:iPXE ,x86PC     , "PXEBoot-x86PC"     , /autoexec.ipxe				#  0 Intel x86PC (iPXE)
-		 		#pxe-service=tag:!iPXE,x86PC     , "PXEBoot-x86PC"     , ipxe/undionly.kpxe			#  0 Intel x86PC
-		 		#pxe-service=tag:!iPXE,BC_EFI    , "PXEBoot-BC_EFI"    , ipxe/ipxe.efi				#  7 EFI BC
-		 		#pxe-service=tag:!iPXE,x86-64_EFI, "PXEBoot-x86-64_EFI", ipxe/ipxe.efi				#  9 EFI x86-64
+		 		#dhcp-match=set:iPXE,175                                                            #
+		 		#pxe-prompt="Press F8 for boot menu", 0                                             # pxe boot prompt
+		 		#pxe-service=tag:iPXE ,x86PC     , "PXEBoot-x86PC"     , /autoexec.ipxe             #  0 Intel x86PC (iPXE)
+		 		#pxe-service=tag:!iPXE,x86PC     , "PXEBoot-x86PC"     , ipxe/undionly.kpxe         #  0 Intel x86PC
+		 		#pxe-service=tag:!iPXE,BC_EFI    , "PXEBoot-BC_EFI"    , ipxe/ipxe.efi              #  7 EFI BC
+		 		#pxe-service=tag:!iPXE,x86-64_EFI, "PXEBoot-x86-64_EFI", ipxe/ipxe.efi              #  9 EFI x86-64
 		 		
 		 		# --- dnsmasq manual page -----------------------------------------------------
 		 		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
@@ -3635,7 +3713,7 @@ function funcCreate_menu() {
 			_WEBS_PATN="${_DATA_LINE[17]/"${_WEBS_ADDR}/"}"
 			_WEBS_PATN="${_WEBS_PATN%%/*}"
 			if ! _WORK_TEXT="$(LANG=C wget "${WGET_OPTN[@]}" --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
-				_WORK_TEXT="${_WORK_TEXT//$'\t'/ }"
+				_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
 				_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
 				_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
 				_MESG_TEXT="get pattern : error $?: ${_WORK_TEXT}"
@@ -3673,7 +3751,7 @@ function funcCreate_menu() {
 		# --- get and set server-side image file information ------------------
 		if [[ "${_TEXT_COLR}" != "${TXT_RED}" ]]; then
 			if ! _WORK_TEXT="$(LANG=C wget "${WGET_OPTN[@]}" --spider --server-response --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
-				_WORK_TEXT="${_WORK_TEXT//$'\t'/ }"
+				_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
 				_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
 				_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
 				_MESG_TEXT="get response: error $?: ${_WORK_TEXT}"
