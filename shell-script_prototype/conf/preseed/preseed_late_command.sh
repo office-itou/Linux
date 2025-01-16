@@ -534,20 +534,20 @@ funcFile_backup() {
 #		return
 	fi
 	# --- backup --------------------------------------------------------------
-	_FILE_PATH="${1}"
-	_BACK_PATH="${1#*"${DIRS_TGET:-}"}"
-	_BACK_PATH="${DIRS_ORIG}/${_BACK_PATH#/}"
-	mkdir -p "${_BACK_PATH%/*}"
-	if [ -e "${_BACK_PATH}" ]; then
-		_BACK_PATH="${_BACK_PATH}.$(date +"%Y%m%d%H%M%S")"
+	___FILE_PATH="${1}"
+	___BACK_PATH="${1#*"${DIRS_TGET:-}"}"
+	___BACK_PATH="${DIRS_ORIG}/${___BACK_PATH#/}"
+	mkdir -p "${___BACK_PATH%/*}"
+	if [ -e "${___BACK_PATH}" ]; then
+		___BACK_PATH="${___BACK_PATH}.$(date +"%Y%m%d%H%M%S")"
 	fi
 	if [ -n "${DBGS_FLAG:-}" ]; then
-		printf "\033[m${PROG_NAME}: %s\033[m\n" "backup: ${_FILE_PATH} -> ${_BACK_PATH}"
+		printf "\033[m${PROG_NAME}: %s\033[m\n" "backup: ${___FILE_PATH} -> ${___BACK_PATH}"
 	fi
 	if [ -f "$1" ]; then
-		cp -a "$1" "${_BACK_PATH}"
+		cp -a "$1" "${___BACK_PATH}"
 	else
-		mv "$1" "${_BACK_PATH}"
+		mv "$1" "${___BACK_PATH}"
 	fi
 
 	# --- complete ------------------------------------------------------------
