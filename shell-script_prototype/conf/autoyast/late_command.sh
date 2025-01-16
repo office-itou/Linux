@@ -26,7 +26,6 @@
 	readonly PROG_DIRS="${PROG_PATH%/*}"
 	readonly PROG_NAME="${PROG_PATH##*/}"
 	readonly PROG_PROC="${PROG_NAME}.$$"
-	readonly DIRS_WORK="${PWD%/}/${PROG_NAME%.*}"
 	#--- initial settings  ----------------------------------------------------
 	NTPS_ADDR="ntp.nict.jp"				# ntp server address
 	NTPS_IPV4="61.205.120.130"			# ntp server ipv4 address
@@ -58,14 +57,18 @@
 	DIST_VERS=""						# release version   (ex. 12)
 	DIST_CODE=""						# code name         (ex. bookworm)
 	DIRS_TGET=""
+	if command -v systemd-detect-virt > /dev/null 2>&1 \
+	&& systemd-detect-virt --chroot; then
+		CHGE_ROOT="true"
+	fi
 	if [ -d /target/. ]; then
 		DIRS_TGET="/target"
 	elif [ -d /mnt/sysimage/. ]; then
 		DIRS_TGET="/mnt/sysimage"
 	fi
 	if [ -n "${DIRS_TGET:-}" ] \
-	&& command -v systemd-detect-virt > /dev/null 2>&1 \
-	&& ! systemd-detect-virt --chroot; then
+	&& [ "${CHGE_ROOT:-}" = "true" ]; then
+		printf "\033[m${PROG_NAME}: \033[43m%s\033[m\n" "chroot start"
 		mount --rbind /dev  "${DIRS_TGET:-}"/dev
 		mount --rbind /proc "${DIRS_TGET:-}"/proc
 		mount --rbind /run  "${DIRS_TGET:-}"/run
@@ -74,11 +77,12 @@
 		mount --make-rslave "${DIRS_TGET:-}"/dev
 		mount --make-rslave "${DIRS_TGET:-}"/sys
 		systemctl daemon-reload
-		mkdir -p "${DIRS_TGET:?}/var/log/installer/${PROG_NAME:?}"
-		cp -a "${PROG_PATH:?}" "${DIRS_TGET:?}/var/log/installer/${PROG_NAME:?}"
-		chroot "${DIRS_TGET:-}"/ sh -c "/var/log/installer/${PROG_NAME:?}/${PROG_PATH##*/}"
+		mkdir -p "${DIRS_TGET:?}${PROG_DIRS}"
+		cp -a "${PROG_PATH:?}" "${DIRS_TGET:?}${PROG_DIRS}"
+		chroot "${DIRS_TGET:-}"/ sh -c "${PROG_DIRS}/${PROG_NAME}"
 		# shellcheck disable=SC2046
 		umount $(awk '{print $2;}' /proc/mounts | grep "${DIRS_TGET:-}" | sort -r || true)
+		printf "\033[m${PROG_NAME}: \033[43m%s\033[m\n" "chroot complete"
 	fi
 	ROWS_SIZE="25"						# screen size: rows
 	COLS_SIZE="80"						# screen size: columns
@@ -116,46 +120,46 @@
 	for LINE in ${COMD_LINE:-} ${PROG_PRAM:-}
 	do
 		case "${LINE}" in
-			debug | debugout | dbg         ) DBGS_FLAG="true"      ;;
-			target=*                       ) DIRS_TGET="${LINE#*=}";;
-			iso-url=*.iso  | url=*.iso     ) ISOS_FILE="${LINE#*=}";;
-			preseed/url=*  | url=*         ) SEED_FILE="${LINE#*=}";;
-			preseed/file=* | file=*        ) SEED_FILE="${LINE#*=}";;
-			ds=nocloud*                    ) SEED_FILE="${LINE#*=}";;
-			netcfg/target_network_config=* ) NMAN_FLAG="${LINE#*=}";;
-			netcfg/choose_interface=*      ) NICS_NAME="${LINE#*=}";;
-			netcfg/disable_dhcp=*          ) IPV4_DHCP="$([ "${LINE#*=}" = "true" ] && echo "false" || echo "true")";;
-			netcfg/disable_autoconfig=*    ) IPV4_DHCP="$([ "${LINE#*=}" = "true" ] && echo "false" || echo "true")";;
-			netcfg/get_ipaddress=*         ) NICS_IPV4="${LINE#*=}";;
-			netcfg/get_netmask=*           ) NICS_MASK="${LINE#*=}";;
-			netcfg/get_gateway=*           ) NICS_GATE="${LINE#*=}";;
-			netcfg/get_nameservers=*       ) NICS_DNS4="${LINE#*=}";;
-			netcfg/get_hostname=*          ) NICS_FQDN="${LINE#*=}";;
-			netcfg/get_domain=*            ) NICS_WGRP="${LINE#*=}";;
-			interface=*                    ) NICS_NAME="${LINE#*=}";;
-			hostname=*                     ) NICS_FQDN="${LINE#*=}";;
-			domain=*                       ) NICS_WGRP="${LINE#*=}";;
-			nameserver=*                   ) NICS_DNS4="${LINE#*=}";;
-			ip=dhcp | ip4=dhcp | ipv4=dhcp ) IPV4_DHCP="true"      ;;
+			debug | debugout | dbg         ) DBGS_FLAG="true";;
+			target=*                       ) DIRS_TGET="${LINE#*target=}";;
+			iso-url=*.iso  | url=*.iso     ) ISOS_FILE="${LINE#*url=}";;
+			preseed/url=*  | url=*         ) SEED_FILE="${LINE#*url=}";;
+			preseed/file=* | file=*        ) SEED_FILE="${LINE#*file=}";;
+			ds=nocloud*                    ) SEED_FILE="${LINE#*ds=nocloud*=}";;
+			netcfg/target_network_config=* ) NMAN_FLAG="${LINE#*target_network_config=}";;
+			netcfg/choose_interface=*      ) NICS_NAME="${LINE#*choose_interface=}";;
+			netcfg/disable_dhcp=*          ) IPV4_DHCP="$([ "${LINE#*disable_dhcp=}" = "true" ] && echo "false" || echo "true")";;
+			netcfg/disable_autoconfig=*    ) IPV4_DHCP="$([ "${LINE#*disable_autoconfig=}" = "true" ] && echo "false" || echo "true")";;
+			netcfg/get_ipaddress=*         ) NICS_IPV4="${LINE#*get_ipaddress=}";;
+			netcfg/get_netmask=*           ) NICS_MASK="${LINE#*get_netmask=}";;
+			netcfg/get_gateway=*           ) NICS_GATE="${LINE#*get_gateway=}";;
+			netcfg/get_nameservers=*       ) NICS_DNS4="${LINE#*get_nameservers=}";;
+			netcfg/get_hostname=*          ) NICS_FQDN="${LINE#*get_hostname=}";;
+			netcfg/get_domain=*            ) NICS_WGRP="${LINE#*get_domain=}";;
+			interface=*                    ) NICS_NAME="${LINE#*interface=}";;
+			hostname=*                     ) NICS_FQDN="${LINE#*hostname=}";;
+			domain=*                       ) NICS_WGRP="${LINE#*domain=}";;
+			nameserver=*                   ) NICS_DNS4="${LINE#*nameserver=}";;
+			ip=dhcp | ip4=dhcp | ipv4=dhcp ) IPV4_DHCP="true";;
 			ip=* | ip4=* | ipv4=*          ) IPV4_DHCP="false"
-			                                 NICS_IPV4="$(echo "${LINE#*=}" | cut -d ':' -f 1)"
-			                                 NICS_GATE="$(echo "${LINE#*=}" | cut -d ':' -f 3)"
-			                                 NICS_MASK="$(echo "${LINE#*=}" | cut -d ':' -f 4)"
-			                                 NICS_FQDN="$(echo "${LINE#*=}" | cut -d ':' -f 5)"
-			                                 NICS_NAME="$(echo "${LINE#*=}" | cut -d ':' -f 6)"
-			                                 NICS_DNS4="$(echo "${LINE#*=}" | cut -d ':' -f 8)"
+			                                 NICS_IPV4="$(echo "${LINE#*ip*=}" | cut -d ':' -f 1)"
+			                                 NICS_GATE="$(echo "${LINE#*ip*=}" | cut -d ':' -f 3)"
+			                                 NICS_MASK="$(echo "${LINE#*ip*=}" | cut -d ':' -f 4)"
+			                                 NICS_FQDN="$(echo "${LINE#*ip*=}" | cut -d ':' -f 5)"
+			                                 NICS_NAME="$(echo "${LINE#*ip*=}" | cut -d ':' -f 6)"
+			                                 NICS_DNS4="$(echo "${LINE#*ip*=}" | cut -d ':' -f 8)"
 			                                 ;;
 			*)  ;;
 		esac
 	done
 
 	# --- working directory name ----------------------------------------------
-	readonly DIRS_ORIG="${DIRS_TGET:-}/var/log/installer/${PROG_NAME}/orig"
-	readonly DIRS_LOGS="${DIRS_TGET:-}/var/log/installer/${PROG_NAME}/logs"
+	readonly DIRS_ORIG="${PROG_DIRS}/orig"
+	readonly DIRS_LOGS="${PROG_DIRS}/logs"
 
 	# --- log out -------------------------------------------------------------
 	if [ -n "${DBGS_FLAG:-}" ] \
-	&& command -v mkfifo; then
+	&& command -v mkfifo > /dev/null 2>&1; then
 		LOGS_NAME="${DIRS_LOGS}/${PROG_NAME%.*}.$(date +"%Y%m%d%H%M%S").log"
 		mkdir -p "${LOGS_NAME%/*}"
 		SOUT_PIPE="/tmp/${PROG_PROC}.stdout_pipe"
@@ -304,6 +308,14 @@ funcDebugout_parameter() {
 
 	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP2}"
 	printf "\033[m${PROG_NAME}: \033[42m%s\033[m\n" "--- debut out start ---"
+	# --- change root ---------------------------------------------------------
+	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "CHGE_ROOT" "${CHGE_ROOT:-}"
+	# --- screen parameter ----------------------------------------------------
+	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "TERM"      "${TERM:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "ROWS_SIZE" "${ROWS_SIZE:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "COLS_SIZE" "${COLS_SIZE:-}"
 	# --- working directory name ----------------------------------------------
 	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "PROG_PATH" "${PROG_PATH:-}"
@@ -311,7 +323,6 @@ funcDebugout_parameter() {
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "PROG_DIRS" "${PROG_DIRS:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "PROG_NAME" "${PROG_NAME:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "PROG_PROC" "${PROG_PROC:-}"
-	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_WORK" "${DIRS_WORK:-}"
 	# -------------------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_TGET" "${DIRS_TGET:-}"
@@ -409,7 +420,8 @@ funcInitialize() {
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	# --- set system parameter ------------------------------------------------
-	if command -v tput > /dev/null 2>&1; then
+	if [ -n "${TERM:-}" ] \
+	&& command -v tput > /dev/null 2>&1; then
 		ROWS_SIZE=$(tput lines)
 		COLS_SIZE=$(tput cols)
 	fi
@@ -914,7 +926,6 @@ funcSetupNetwork_nmanagr() {
 		[connection]
 		id=${_FILE_PATH##*/}
 		type=ethernet
-		uuid=
 		interface-name=${NICS_NAME}
 		autoconnect=true
 		zone=home
@@ -959,10 +970,17 @@ _EOT_
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-		[main]
-		dns=dnsmasq
+	if command -v resolvectl > /dev/null 2>&1; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			[main]
+			dns=systemd-resolved
 _EOT_
+	elif command -v dnsmasq > /dev/null 2>&1; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			[main]
+			dns=dnsmasq
+_EOT_
+	fi
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
@@ -1343,21 +1361,6 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
-
-	# --- dns.conf ------------------------------------------------------------
-	if command -v nmcli > /dev/null 2>&1; then
-		_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/conf.d/dns.conf"
-		funcFile_backup "${_FILE_PATH}"
-		mkdir -p "${_FILE_PATH%/*}"
-		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			[main]
-			dns=dnsmasq
-_EOT_
-
-		# --- debug out -------------------------------------------------------
-		funcDebugout_file "${_FILE_PATH}"
-	fi
 
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_NAME="dnsmasq.service"
@@ -1874,6 +1877,9 @@ _EOT_
 	for _DIRS_USER in "${DIRS_TGET:-}"/root \
 	                  "${DIRS_TGET:-}"/home/*
 	do
+		if [ ! -e "${_DIRS_USER}" ]; then
+			continue
+		fi
 		for _FILE_PATH in "${DIRS_TGET:-}/etc/skel/.bashrc"       \
 		                  "${DIRS_TGET:-}/etc/skel/.bash_history" \
 		                  "${DIRS_TGET:-}/etc/skel/.vimrc"        \
@@ -1922,13 +1928,99 @@ funcSetupConfig_sudo() {
 				sudo|wheel)
 					printf "%${_WORK_TEXT}\tALL=(ALL)\tALL" >> "${_FILE_PATH}"
 					chmod 0440 "${_FILE_PATH}"
-;;
-*) ;;
+					;;
+				*) ;;
 			esac
 		fi
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+	fi
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+}
+
+# --- blacklist settings ------------------------------------------------------
+funcSetupConfig_blacklist() {
+	__FUNC_NAME="funcSetupConfig_blacklist"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	# --- check load module ---------------------------------------------------
+	if ! lsmod | grep -q 'floppy'; then
+		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		return
+	fi
+
+	# --- blacklist-floppy.conf -----------------------------------------------
+	_FILE_PATH="${DIRS_TGET:-}/etc/modprobe.d/blacklist-floppy.conf"
+	funcFile_backup "${_FILE_PATH}"
+	mkdir -p "${_FILE_PATH%/*}"
+	echo 'blacklist floppy' > "${_FILE_PATH}"
+
+	# --- debug out -----------------------------------------------------------
+	funcDebugout_file "${_FILE_PATH}"
+
+	# --- update initramfs ----------------------------------------------------
+	if [ -z "${DIRS_TGET:-}" ]; then
+		rmmod floppy || true
+	fi
+	if command -v update-initramfs > /dev/null 2>&1; then
+		_REAL_PATH=""
+		_KNEL_VERS=""
+		_REAL_VLNZ=""
+		_REAL_IRAM=""
+		_WORK_TEXT="$(echo "${DIRS_TGET:-}" | sed -e 's%[^/]%%g')"
+
+		# --- initramfs -------------------------------------------------------
+		for _FILE_PATH in $(find "${DIRS_TGET:-}/" "${DIRS_TGET:-}/boot" -maxdepth 1 -name 'initrd*' | sort -uV -t '/' -k $((${#_WORK_TEXT}+3)) -k $((${#_WORK_TEXT}+2)))
+		do
+			_REAL_PATH="$(realpath "${_FILE_PATH}")"
+			if [ -e "${_REAL_PATH}" ]; then
+				_REAL_IRAM="${_REAL_PATH}"
+				_KNEL_VERS="${_REAL_IRAM##*/}"
+				_KNEL_VERS="${_KNEL_VERS#*-}"
+				_KNEL_VERS="${_KNEL_VERS%.img}"
+				break
+			fi
+		done
+
+		# --- vmlinuz ---------------------------------------------------------
+		if [ -z "${_KNEL_VERS:-}" ]; then
+			for _FILE_PATH in $(find "${DIRS_TGET:-}/" "${DIRS_TGET:-}/boot" -maxdepth 1 \( -name 'vmlinuz*' -o -name 'linux*' \) | sort -uV -t '/' -k $((${#_WORK_TEXT}+3)) -k $((${#_WORK_TEXT}+2)))
+			do
+				_REAL_PATH="$(realpath "${_FILE_PATH}")"
+				if [ -e "${_REAL_PATH}" ]; then
+					_REAL_VLNZ="${_REAL_PATH}"
+					_KNEL_VERS="$(file "${_REAL_VLNZ}")"
+					_KNEL_VERS="${_KNEL_VERS#*version }"
+					_KNEL_VERS="${_KNEL_VERS%% *}"
+					break
+				fi
+			done
+		fi
+
+		# --- uname -r --------------------------------------------------------
+		if [ -z "${_KNEL_VERS:-}" ]; then
+			_KNEL_VERS="$(uname -r)"
+		fi
+
+		# --- debug out -------------------------------------------------------
+		printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "version" "${_KNEL_VERS:-}"
+		printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "vmlinuz" "${_REAL_VLNZ:-}"
+		printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "initrd " "${_REAL_IRAM:-}"
+
+		# --- create initramfs ------------------------------------------------
+		if [ -n "${_KNEL_VERS:-}" ]; then
+			update-initramfs -c -b "${PROG_DIRS}/" -k "${_KNEL_VERS}"
+			for _FILE_PATH in $(find "${PROG_DIRS:-}/" -maxdepth 1 -name 'initrd*'"${_KNEL_VERS}"'*' | sort -uV -t '/' -k $((${#PROG_DIRS}+3)) -k $((${#PROG_DIRS}+2)))
+			do
+				printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "create " "${_FILE_PATH:-}"
+				funcFile_backup "${_REAL_IRAM}"
+				cp --preserve=timestamps "${_FILE_PATH}" "${_REAL_IRAM}"
+				break
+			done
+		fi
 	fi
 
 	# --- complete ------------------------------------------------------------
@@ -1975,6 +2067,9 @@ funcMain() {
 
 	# --- sudoers settings ----------------------------------------------------
 	funcSetupConfig_sudo
+
+	# --- blacklist settings --------------------------------------------------
+	funcSetupConfig_blacklist
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${_FUNC_NAME}] ---"
