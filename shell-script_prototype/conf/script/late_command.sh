@@ -285,7 +285,7 @@ funcServiceStatus() {
 # --- install package ---------------------------------------------------------
 funcInstallPackage() {
 	if command -v apt > /dev/null 2>&1; then
-		LANG=C apt list "${1:?}" 2> /dev/null | sed -ne '\%^'"$1"'/.*\[installed\]%p' || true
+		LANG=C apt list "${1:?}" 2> /dev/null | sed -ne '\%^'"$1"'/.*\[installed.*\]%p' || true
 	elif command -v yum > /dev/null 2>&1; then
 		LANG=C yum list --installed "${1:?}" 2> /dev/null | sed -ne '/^'"$1"'/p' || true
 	elif command -v dnf > /dev/null 2>&1; then
@@ -1094,6 +1094,17 @@ funcSetupNetwork_firewalld() {
 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
 		return
 	fi
+
+	# --- firewalld.service ---------------------------------------------------
+		_FILE_PATH="${DIRS_TGET:-}/lib/systemd/system/firewalld.service"
+		funcFile_backup "${_FILE_PATH}"
+		mkdir -p "${_FILE_PATH%/*}"
+		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+		sed -i "${_FILE_PATH}" \
+		    -e '/\[Unit\]/,/\[.*\]/                {' \
+		    -e '/^Before=network-pre.target$/ s/^/#/' \
+		    -e '/^Wants=network-pre.target$/  s/^/#/' \
+		    -e '                                   }'
 
 	# --- firewalld -----------------------------------------------------------
 	_FWAL_ZONE="home"
@@ -1914,6 +1925,7 @@ funcSetupConfig_sudo() {
 			_FILE_PATH="${DIRS_TGET:-}/etc/sudoers.d/default.conf"
 			funcFile_backup "${_FILE_PATH}"
 			mkdir -p "${_FILE_PATH%/*}"
+			cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 			printf "root\tALL=(ALL)\tALL" >> "${_FILE_PATH}"
 			chmod 0440 "${_FILE_PATH}"
 		fi
@@ -1923,6 +1935,7 @@ funcSetupConfig_sudo() {
 			_FILE_PATH="${DIRS_TGET:-}/etc/sudoers.d/00-local"
 			funcFile_backup "${_FILE_PATH}"
 			mkdir -p "${_FILE_PATH%/*}"
+			cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 			_WORK_TEXT="$(groups |  sed -ne 's/^.*\(sudo\|wheel\).*$/\1/p')"
 			case "${_WORK_TEXT:-}" in
 				sudo|wheel)
@@ -1956,15 +1969,16 @@ funcSetupConfig_blacklist() {
 	_FILE_PATH="${DIRS_TGET:-}/etc/modprobe.d/blacklist-floppy.conf"
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"
+	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 	echo 'blacklist floppy' > "${_FILE_PATH}"
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
 
 	# --- update initramfs ----------------------------------------------------
-	if [ -z "${DIRS_TGET:-}" ]; then
-		rmmod floppy || true
-	fi
+#	if [ -z "${DIRS_TGET:-}" ]; then
+#		rmmod floppy || true
+#	fi
 	if command -v update-initramfs > /dev/null 2>&1; then
 		_REAL_PATH=""
 		_KNEL_VERS=""
