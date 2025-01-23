@@ -309,7 +309,7 @@ exit 0</source>
         <source>#!/bin/sh
 echo "Running post scripts"
 if [ -e /var/adm/installer/autoyast/late_command.sh ]; then
-  /var/adm/installer/autoyast/late_command.sh 2$'\0x3e'&1 | tee -a /var/adm/installer/autoyast/late_command.sh.log
+  /var/adm/installer/autoyast/late_command.sh | tee -a /var/adm/installer/autoyast/late_command.sh.log
 fi
 echo "Complete post scripts"
 exit 0</source>
