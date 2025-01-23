@@ -35,6 +35,11 @@
 	OLDS_FQDN="$(cat /etc/hostname)"	# old hostname (fqdn)
 	OLDS_HOST="$(echo "${OLDS_FQDN}." | cut -d '.' -f 1)"	# old hostname (host name)
 	OLDS_WGRP="$(echo "${OLDS_FQDN}." | cut -d '.' -f 2)"	# old hostname (domain)
+	# --- firewalld -----------------------------------------------------------
+	FWAL_ZONE="home_use"				# firewalld zone
+										# firewalld service name
+	FWAL_NAME="dhcp dhcpv6 dhcpv6-client dns http https mdns nfs proxy-dhcp samba samba-client ssh tftp"
+	FWAL_PORT="30000-60000/udp"			# firewalld port
 	# --- command line parameter ----------------------------------------------
 	COMD_LINE="$(cat /proc/cmdline)"	# command line parameter
 	IPV4_DHCP=""						# true: dhcp, else: fixed address
@@ -148,6 +153,25 @@
 			                                 NICS_FQDN="$(echo "${LINE#*ip*=}" | cut -d ':' -f 5)"
 			                                 NICS_NAME="$(echo "${LINE#*ip*=}" | cut -d ':' -f 6)"
 			                                 NICS_DNS4="$(echo "${LINE#*ip*=}" | cut -d ':' -f 8)"
+			                                 ;;
+			ifcfg=*                        ) NICS_NAME="$(echo "${LINE#*ifcfg*=}"         | cut -d '=' -f 1)"
+			                                 NICS_IPV4="$(echo "${LINE#*"${NICS_NAME}"=}" | cut -d ',' -f 1)"
+			                                 case "${NICS_IPV4}" in
+			                                     dhcp)
+			                                         IPV4_DHCP="true"
+			                                         NICS_IPV4=""
+			                                         NICS_GATE=""
+			                                         NICS_DNS4=""
+			                                         NICS_WGRP=""
+			                                         ;;
+			                                     *)
+			                                         IPV4_DHCP="false"
+			                                         NICS_IPV4="$(echo "${LINE#*"${NICS_NAME}"=}" | cut -d ',' -f 1)"
+			                                         NICS_GATE="$(echo "${LINE#*"${NICS_NAME}"=}" | cut -d ',' -f 2)"
+			                                         NICS_DNS4="$(echo "${LINE#*"${NICS_NAME}"=}" | cut -d ',' -f 3)"
+			                                         NICS_WGRP="$(echo "${LINE#*"${NICS_NAME}"=}" | cut -d ',' -f 4)"
+			                                         ;;
+			                                 esac
 			                                 ;;
 			*)  ;;
 		esac
@@ -283,17 +307,17 @@ funcServiceStatus() {
 }
 
 # --- install package ---------------------------------------------------------
-funcInstallPackage() {
-	if command -v apt > /dev/null 2>&1; then
-		LANG=C apt list "${1:?}" 2> /dev/null | sed -ne '\%^'"$1"'/.*\[installed.*\]%p' || true
-	elif command -v yum > /dev/null 2>&1; then
-		LANG=C yum list --installed "${1:?}" 2> /dev/null | sed -ne '/^'"$1"'/p' || true
-	elif command -v dnf > /dev/null 2>&1; then
-		LANG=C dnf list --installed "${1:?}" 2> /dev/null | sed -ne '/^'"$1"'/p' || true
-	elif command -v zypper > /dev/null 2>&1; then
-		LANG=C zypper se -i "${1:?}" 2> /dev/null | sed -ne '/^'"$1"'/p' || true
-	fi
-}
+#funcInstallPackage() {
+#	if command -v apt > /dev/null 2>&1; then
+#		LANG=C apt list "${1:?}" 2> /dev/null | sed -ne '\%^'"$1"'/.*\[installed.*\]%p' || true
+#	elif command -v yum > /dev/null 2>&1; then
+#		LANG=C yum list --installed "${1:?}" 2> /dev/null | sed -ne '/^'"$1"'/p' || true
+#	elif command -v dnf > /dev/null 2>&1; then
+#		LANG=C dnf list --installed "${1:?}" 2> /dev/null | sed -ne '/^'"$1"'/p' || true
+#	elif command -v zypper > /dev/null 2>&1; then
+#		LANG=C zypper se -i "${1:?}" 2> /dev/null | sed -ne '/^[ \t]'"$1"'[ \t]/p' || true
+#	fi
+#}
 
 ### subroutine ################################################################
 
@@ -355,6 +379,10 @@ funcDebugout_parameter() {
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NMAN_FLAG" "${NMAN_FLAG:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "ISOS_FILE" "${ISOS_FILE:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "SEED_FILE" "${SEED_FILE:-}"
+	# --- firewalld -----------------------------------------------------------
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "FWAL_ZONE" "${FWAL_ZONE:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "FWAL_NAME" "${FWAL_NAME:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "FWAL_PORT" "${FWAL_PORT:-}"
 	# --- set system parameter ------------------------------------------------
 	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DBGS_FLAG" "${DBGS_FLAG:-}"
@@ -460,8 +488,12 @@ funcInitialize() {
 	NICS_NAME="${NICS_NAME:-"$(ip -4 -oneline address show primary | grep -E '^2:' | cut -d ' ' -f 2)"}"
 	NICS_NAME="${NICS_NAME:-"ens160"}"
 	if [ -z "${IPV4_DHCP:-}" ]; then
-		_WORK_TEXT="$(sed -ne '/iface[ \t]\+ens160[ \t]\+inet[ \t]\+/ s/^.*\(static\|dhcp\).*$/\1/p' /etc/network/interfaces)"
-		case "${_WORK_TEXT}" in
+		_FILE_PATH="${DIRS_TGET:-}/etc/network/interfaces"
+		_WORK_TEXT=""
+		if [ -e "${_FILE_PATH}" ]; then
+			_WORK_TEXT="$(sed -ne '/iface[ \t]\+ens160[ \t]\+inet[ \t]\+/ s/^.*\(static\|dhcp\).*$/\1/p' "${_FILE_PATH}")"
+		fi
+		case "${_WORK_TEXT:-}" in
 			static) IPV4_DHCP="false";;
 			dhcp  ) IPV4_DHCP="true" ;;
 			*     )
@@ -482,16 +514,16 @@ funcInitialize() {
 	else
 		NICS_MASK="$(funcIPv4GetNetmask "${NICS_BIT4:-"24"}")"
 	fi
-	if [ "${IPV4_DHCP}" = "true" ]; then
-		NICS_IPV4=""
-	fi
+#	if [ "${IPV4_DHCP}" = "true" ]; then
+#		NICS_IPV4=""
+#	fi
 	NICS_IPV4="${NICS_IPV4:-"${IPV4_DUMY}"}"
 	NICS_DNS4="${NICS_DNS4:-"$(sed -ne 's/^nameserver[ \]\+\([[:alnum:]:.]\+\)[ \t]*$/\1/p' /etc/resolv.conf | sed -e ':l; N; s/\n/,/; b l;')"}"
 	NICS_GATE="${NICS_GATE:-"$(ip -4 -oneline route list match default | cut -d ' ' -f 3)"}"
 	NICS_FQDN="${NICS_FQDN:-"$(cat "${DIRS_TGET:-}/etc/hostname")"}"
 	NICS_HOST="${NICS_WGRP:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 1)"}"
 	NICS_WGRP="${NICS_WGRP:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 2)"}"
-	NICS_WGRP="${NICS_WGRP:-"$(sed -ne 's/^search[ \t]\+\([[:alnum:]]\+\)[ \t]*/\1/p' "${DIRS_TGET:-}/etc/resolv.conf")"}"
+	NICS_WGRP="${NICS_WGRP:-"$(awk '$1=="search" {print $2;}' "${DIRS_TGET:-}/etc/resolv.conf")"}"
 	NICS_HOST="$(echo "${NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
 	NICS_WGRP="$(echo "${NICS_WGRP}" | tr '[:upper:]' '[:lower:]')"
 	if [ "${NICS_FQDN}" = "${NICS_HOST}" ] && [ -n "${NICS_WGRP}" ]; then
@@ -587,18 +619,18 @@ funcCreate_shared_env() {
 	mkdir -p "${DIRS_TFTP}"/menu-efi64/pxelinux.cfg
 	touch -f "${DIRS_TFTP}"/menu-bios/syslinux.cfg
 	touch -f "${DIRS_TFTP}"/menu-efi64/syslinux.cfg
-	ln -s ../conf         "${DIRS_TFTP}"/menu-bios/
-	ln -s ../imgs         "${DIRS_TFTP}"/menu-bios/
-	ln -s ../isos         "${DIRS_TFTP}"/menu-bios/
-	ln -s ../load         "${DIRS_TFTP}"/menu-bios/
-	ln -s ../rmak         "${DIRS_TFTP}"/menu-bios/
-	ln -s ../syslinux.cfg "${DIRS_TFTP}"/menu-bios/pxelinux.cfg/default
-	ln -s ../conf         "${DIRS_TFTP}"/menu-efi64/
-	ln -s ../imgs         "${DIRS_TFTP}"/menu-efi64/
-	ln -s ../isos         "${DIRS_TFTP}"/menu-efi64/
-	ln -s ../load         "${DIRS_TFTP}"/menu-efi64/
-	ln -s ../rmak         "${DIRS_TFTP}"/menu-efi64/
-	ln -s ../syslinux.cfg "${DIRS_TFTP}"/menu-efi64/pxelinux.cfg/default
+	ln -sf ../conf         "${DIRS_TFTP}"/menu-bios/
+	ln -sf ../imgs         "${DIRS_TFTP}"/menu-bios/
+	ln -sf ../isos         "${DIRS_TFTP}"/menu-bios/
+	ln -sf ../load         "${DIRS_TFTP}"/menu-bios/
+	ln -sf ../rmak         "${DIRS_TFTP}"/menu-bios/
+	ln -sf ../syslinux.cfg "${DIRS_TFTP}"/menu-bios/pxelinux.cfg/default
+	ln -sf ../conf         "${DIRS_TFTP}"/menu-efi64/
+	ln -sf ../imgs         "${DIRS_TFTP}"/menu-efi64/
+	ln -sf ../isos         "${DIRS_TFTP}"/menu-efi64/
+	ln -sf ../load         "${DIRS_TFTP}"/menu-efi64/
+	ln -sf ../rmak         "${DIRS_TFTP}"/menu-efi64/
+	ln -sf ../syslinux.cfg "${DIRS_TFTP}"/menu-efi64/pxelinux.cfg/default
 
 	mkdir -p "${DIRS_SAMB}"/cifs
 	mkdir -p "${DIRS_SAMB}"/data/adm/netlogon
@@ -619,17 +651,17 @@ funcCreate_shared_env() {
 	mkdir -p "${DIRS_USER}"/share/load
 	mkdir -p "${DIRS_USER}"/share/rmak
 
-	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/conf "${DIRS_HTML}"/html/
-	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/imgs "${DIRS_HTML}"/html/
-	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/isos "${DIRS_HTML}"/html/
-	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/load "${DIRS_HTML}"/html/
-	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/rmak "${DIRS_HTML}"/html/
+	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/conf "${DIRS_HTML}"/html/
+	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/imgs "${DIRS_HTML}"/html/
+	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/isos "${DIRS_HTML}"/html/
+	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/load "${DIRS_HTML}"/html/
+	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/rmak "${DIRS_HTML}"/html/
 
-	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/conf "${DIRS_TFTP}"/
-	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/imgs "${DIRS_TFTP}"/
-	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/isos "${DIRS_TFTP}"/
-	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/load "${DIRS_TFTP}"/
-	ln -s "${DIRS_USER#"${DIRS_TGET:-}"}"/share/rmak "${DIRS_TFTP}"/
+	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/conf "${DIRS_TFTP}"/
+	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/imgs "${DIRS_TFTP}"/
+	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/isos "${DIRS_TFTP}"/
+	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/load "${DIRS_TFTP}"/
+	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/rmak "${DIRS_TFTP}"/
 
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${DIRS_TFTP}/autoexec.ipxe"
 		#!ipxe
@@ -696,12 +728,12 @@ _EOT_
 	# --- symlink for html ----------------------------------------------------
 #	_WORK_PATH="${DIRS_TGET:-}/var/www/html"
 #	funcFile_backup "${_WORK_PATH}"
-#	ln -s "${DIRS_HTML#${DIRS_TGET:-}}" "${_WORK_PATH}"
+#	ln -sf "${DIRS_HTML#${DIRS_TGET:-}}" "${_WORK_PATH}"
 
 	# --- symlink for tftp ----------------------------------------------------
 #	_WORK_PATH="${DIRS_TGET:-}/var/lib/tftpboot"
 #	funcFile_backup "${_WORK_PATH}"
-#	ln -s "${DIRS_TFTP#${DIRS_TGET:-}}" "${_WORK_PATH}"
+#	ln -sf "${DIRS_TFTP#${DIRS_TGET:-}}" "${_WORK_PATH}"
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -1048,41 +1080,41 @@ _EOT_
 }
 
 # --- network setup hosts.allow/hosts.deny ------------------------------------
-funcSetupNetwork_hosts_access() {
-	__FUNC_NAME="funcSetupNetwork_hosts_access"
-	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
-
-	# --- hosts ---------------------------------------------------------------
-	_FILE_PATH="${DIRS_TGET:-}/etc/hosts.allow"
-	funcFile_backup "${_FILE_PATH}"
-	mkdir -p "${_FILE_PATH%/*}"
-	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-		ALL : ${IPV4_LHST}
-		ALL : [${IPV6_LHST}]
-		ALL : ${IPV4_UADR}.0/${NICS_BIT4}
-		ALL : [${LINK_UADR%%::}::%${NICS_NAME}]/10
-		#ALL : [${IPV6_UADR%%::}::]/${IPV6_CIDR}
-_EOT_
-
-	# --- debug out -----------------------------------------------------------
-	funcDebugout_file "${_FILE_PATH}"
-
-	# --- hosts ---------------------------------------------------------------
-	_FILE_PATH="${DIRS_TGET:-}/etc/hosts.deny"
-	funcFile_backup "${_FILE_PATH}"
-	mkdir -p "${_FILE_PATH%/*}"
-	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-		ALL : ALL
-_EOT_
-
-	# --- debug out -----------------------------------------------------------
-	funcDebugout_file "${_FILE_PATH}"
-
-	# --- complete ------------------------------------------------------------
-	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-}
+#funcSetupNetwork_hosts_access() {
+#	__FUNC_NAME="funcSetupNetwork_hosts_access"
+#	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+#
+#	# --- hosts ---------------------------------------------------------------
+#	_FILE_PATH="${DIRS_TGET:-}/etc/hosts.allow"
+#	funcFile_backup "${_FILE_PATH}"
+#	mkdir -p "${_FILE_PATH%/*}"
+#	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+#		ALL : ${IPV4_LHST}
+#		ALL : [${IPV6_LHST}]
+#		ALL : ${IPV4_UADR}.0/${NICS_BIT4}
+#		ALL : [${LINK_UADR%%::}::%${NICS_NAME}]/10
+#		#ALL : [${IPV6_UADR%%::}::]/${IPV6_CIDR}
+#_EOT_
+#
+#	# --- debug out -----------------------------------------------------------
+#	funcDebugout_file "${_FILE_PATH}"
+#
+#	# --- hosts ---------------------------------------------------------------
+#	_FILE_PATH="${DIRS_TGET:-}/etc/hosts.deny"
+#	funcFile_backup "${_FILE_PATH}"
+#	mkdir -p "${_FILE_PATH%/*}"
+#	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+#	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+#		ALL : ALL
+#_EOT_
+#
+#	# --- debug out -----------------------------------------------------------
+#	funcDebugout_file "${_FILE_PATH}"
+#
+#	# --- complete ------------------------------------------------------------
+#	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+#}
 
 # --- network setup firewalld -------------------------------------------------
 funcSetupNetwork_firewalld() {
@@ -1107,114 +1139,34 @@ funcSetupNetwork_firewalld() {
 		    -e '                                   }'
 
 	# --- firewalld -----------------------------------------------------------
-	_FWAL_ZONE="home"
-	_FWAL_PORT="$(printf -- "--add-port=%s " 30000-60000/udp)"
-	_FWAL_NAME="$(printf -- "--add-service=%s " dhcp dhcpv6 dhcpv6-client dns http https mdns nfs proxy-dhcp samba samba-client ssh tftp)"
-	_SRVC_NAME="firewalld.service"
+	cp "${DIRS_TGET:-}/usr/lib/firewalld/zones/drop.xml" "${DIRS_TGET:-}/etc/firewalld/zones/${FWAL_ZONE}.xml"
 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
 	if [ "${_SRVC_STAT}" = "active" ]; then
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service active: ${_SRVC_NAME}"
-		# shellcheck disable=SC2086
-		firewall-cmd --quiet --zone="${_FWAL_ZONE}" ${_FWAL_NAME} --permanent
-		# shellcheck disable=SC2086
-		firewall-cmd --quiet --zone="${_FWAL_ZONE}" ${_FWAL_PORT} --permanent
-		firewall-cmd --quiet --zone="${_FWAL_ZONE}" --change-interface="${NICS_NAME}" --permanent || true
-		firewall-cmd --set-default-zone="${_FWAL_ZONE}" || true
-		# --- systemctl -------------------------------------------------------
-		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
-		systemctl --quiet daemon-reload
-		systemctl --quiet restart "${_SRVC_NAME}"
+		firewall-cmd --quiet --set-default-zone="${FWAL_ZONE}" || true
+		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --change-interface="${NICS_NAME}" || true
+		for FWAL_NAME in ${FWAL_NAME}
+		do
+			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${IPV4_UADR}"'.0/'"${NICS_BIT4}"'" service name="'"${FWAL_NAME}"'" accept' || true
+			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="['"${LINK_UADR%%::}"']/10" service name="'"${FWAL_NAME}"'" accept' || true
+#			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="['"${IPV6_UADR%%::}"']/'"${IPV6_CIDR}"'" service name="'"${FWAL_NAME}"'" accept' || true
+		done
 		firewall-cmd --quiet --reload
 		firewall-cmd --get-zone-of-interface="${NICS_NAME}"
-		firewall-cmd --list-all --zone="${_FWAL_ZONE}"
+		firewall-cmd --list-all --zone="${FWAL_ZONE}"
 	else
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service inactive: ${_SRVC_NAME}"
-		# shellcheck disable=SC2086
-		firewall-offline-cmd --zone="${_FWAL_ZONE}" ${_FWAL_NAME}
-		# shellcheck disable=SC2086
-		firewall-offline-cmd --zone="${_FWAL_ZONE}" ${_FWAL_PORT}
-		firewall-offline-cmd --zone="${_FWAL_ZONE}" --change-interface="${NICS_NAME}" || true
-		firewall-offline-cmd --set-default-zone="${_FWAL_ZONE}" || true
+		firewall-offline-cmd --quiet --set-default-zone="${FWAL_ZONE}" || true
+		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --change-interface="${NICS_NAME}" || true
+		for FWAL_NAME in ${FWAL_NAME}
+		do
+			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${IPV4_UADR}"'.0/'"${NICS_BIT4}"'" service name="'"${FWAL_NAME}"'" accept' || true
+			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="['"${LINK_UADR%%::}"']/10" service name="'"${FWAL_NAME}"'" accept' || true
+#			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="['"${IPV6_UADR%%::}"']/'"${IPV6_CIDR}"'" service name="'"${FWAL_NAME}"'" accept' || true
+		done
+#		firewall-offline-cmd --quiet --reload
 		firewall-offline-cmd --get-zone-of-interface="${NICS_NAME}"
-		firewall-offline-cmd --list-all --zone="${_FWAL_ZONE}"
-	fi
-
-	# --- complete ------------------------------------------------------------
-	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-}
-
-# --- network setup resolv.conf -----------------------------------------------
-funcSetupNetwork_resolv() {
-	__FUNC_NAME="funcSetupNetwork_resolv"
-	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
-
-	# --- check command -------------------------------------------------------
-	if ! command -v resolvectl > /dev/null 2>&1; then
-		# --- resolv.conf -----------------------------------------------------
-		_FILE_PATH="${DIRS_TGET:-}/etc/resolv.conf"
-		funcFile_backup "${_FILE_PATH}"
-		mkdir -p "${_FILE_PATH%/*}"
-		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			# Generated by user script
-			search ${NICS_WGRP}
-			nameserver ${IPV6_LHST}
-			nameserver ${IPV4_LHST}
-_EOT_
-
-		# --- debug out -------------------------------------------------------
-		funcDebugout_file "${_FILE_PATH}"
-	else
-		# --- resolv.conf -> /run/systemd/resolve/stub-resolv.conf ------------
-		_FILE_PATH="${DIRS_TGET:-}/etc/resolv.conf"
-		funcFile_backup "${_FILE_PATH}"
-		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-		rm -f "${_FILE_PATH}"
-#		if [ -e "${DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf" ]; then
-			ln -sr /run/systemd/resolve/stub-resolv.conf "${_FILE_PATH}"
-#		else
-#			ln -sr /run/systemd/resolve/resolv.conf "${_FILE_PATH}"
-#		fi
-
-		# --- debug out -------------------------------------------------------
-		funcDebugout_file "${_FILE_PATH}"
-
-		# --- default.conf ----------------------------------------------------
-		_FILE_PATH="${DIRS_TGET:-}/etc/systemd/resolved.conf.d/default.conf"
-		funcFile_backup "${_FILE_PATH}"
-		mkdir -p "${_FILE_PATH%/*}"
-		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-			[Resolve]
-			DNS=${NICS_DNS4}
-			Domains=${NICS_WGRP}
-_EOT_
-#		_FILE_PATH="${DIRS_TGET:-}/etc/systemd/resolved.conf"
-#		if ! grep -qE '^DNS=' "${_FILE_PATH}"; then
-#			sed -i "${_FILE_PATH}"                       \
-#			    -e '/^\[Resolve\]$/a DNS='"${IPV4_LHST}"
-#		fi
-
-		# --- debug out -------------------------------------------------------
-		funcDebugout_file "${_FILE_PATH}"
-
-		# --- systemctl -------------------------------------------------------
-		_SRVC_NAME="systemd-resolved.service"
-		_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
-		case "${_SRVC_STAT}" in
-			disabled) systemctl --quiet enable "${_SRVC_NAME}";;
-#			masked  ) systemctl --quiet unmask "${_SRVC_NAME}"; systemctl --quiet enable "${_SRVC_NAME}";;
-			*) ;;
-		esac
-		_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
-		if [ "${_SRVC_STAT}" = "active" ]; then
-			printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
-			systemctl --quiet daemon-reload
-			systemctl --quiet restart "${_SRVC_NAME}"
-		fi
-		if [ -n "${DBGS_FLAG:-}" ]; then
-			resolvectl status
-		fi
+		firewall-offline-cmd --list-all --zone="${FWAL_ZONE}"
 	fi
 
 	# --- complete ------------------------------------------------------------
@@ -1269,7 +1221,7 @@ funcSetupNetwork_dnsmasq() {
 	fi
 
 	# --- default.conf --------------------------------------------------------
-	_CONF_FILE="$(find "${DIRS_TGET:-}/usr/share" -name 'trust-anchors.conf' -type f)"
+	_CONF_FILE="$(find "${DIRS_TGET:-}/etc/dnsmasq.d" "${DIRS_TGET:-}/usr/share" -name 'trust-anchors.conf' -type f)"
 	_CONF_FILE="${_CONF_FILE#"${DIRS_TGET:-}"}"
 	_FILE_PATH="${DIRS_TGET:-}/etc/dnsmasq.d/default.conf"
 	funcFile_backup "${_FILE_PATH}"
@@ -1386,6 +1338,84 @@ _EOT_
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
 }
 
+# --- network setup resolv.conf -----------------------------------------------
+funcSetupNetwork_resolv() {
+	__FUNC_NAME="funcSetupNetwork_resolv"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	# --- check command -------------------------------------------------------
+	if ! command -v resolvectl > /dev/null 2>&1; then
+		# --- resolv.conf -----------------------------------------------------
+		_FILE_PATH="${DIRS_TGET:-}/etc/resolv.conf"
+		funcFile_backup "${_FILE_PATH}"
+		mkdir -p "${_FILE_PATH%/*}"
+		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			# Generated by user script
+			search ${NICS_WGRP}
+			nameserver ${IPV6_LHST}
+			nameserver ${IPV4_LHST}
+_EOT_
+
+		# --- debug out -------------------------------------------------------
+		funcDebugout_file "${_FILE_PATH}"
+	else
+		# --- resolv.conf -> /run/systemd/resolve/stub-resolv.conf ------------
+		_FILE_PATH="${DIRS_TGET:-}/etc/resolv.conf"
+		funcFile_backup "${_FILE_PATH}"
+		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+		rm -f "${_FILE_PATH}"
+#		if [ -e "${DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf" ]; then
+			ln -sfr /run/systemd/resolve/stub-resolv.conf "${_FILE_PATH}"
+#		else
+#			ln -sfr /run/systemd/resolve/resolv.conf "${_FILE_PATH}"
+#		fi
+
+		# --- debug out -------------------------------------------------------
+		funcDebugout_file "${_FILE_PATH}"
+
+		# --- default.conf ----------------------------------------------------
+		_FILE_PATH="${DIRS_TGET:-}/etc/systemd/resolved.conf.d/default.conf"
+		funcFile_backup "${_FILE_PATH}"
+		mkdir -p "${_FILE_PATH%/*}"
+		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			[Resolve]
+			DNS=${NICS_DNS4}
+			Domains=${NICS_WGRP}
+_EOT_
+#		_FILE_PATH="${DIRS_TGET:-}/etc/systemd/resolved.conf"
+#		if ! grep -qE '^DNS=' "${_FILE_PATH}"; then
+#			sed -i "${_FILE_PATH}"                       \
+#			    -e '/^\[Resolve\]$/a DNS='"${IPV4_LHST}"
+#		fi
+
+		# --- debug out -------------------------------------------------------
+		funcDebugout_file "${_FILE_PATH}"
+
+		# --- systemctl -------------------------------------------------------
+		_SRVC_NAME="systemd-resolved.service"
+		_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
+		case "${_SRVC_STAT}" in
+			disabled) systemctl --quiet enable "${_SRVC_NAME}";;
+#			masked  ) systemctl --quiet unmask "${_SRVC_NAME}"; systemctl --quiet enable "${_SRVC_NAME}";;
+			*) ;;
+		esac
+		_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
+		if [ "${_SRVC_STAT}" = "active" ]; then
+			printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
+			systemctl --quiet daemon-reload
+			systemctl --quiet restart "${_SRVC_NAME}"
+		fi
+		if [ -n "${DBGS_FLAG:-}" ]; then
+			resolvectl status
+		fi
+	fi
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+}
+
 # --- network setup apache ----------------------------------------------------
 funcSetupNetwork_apache() {
 	__FUNC_NAME="funcSetupNetwork_apache"
@@ -1394,8 +1424,11 @@ funcSetupNetwork_apache() {
 	# --- check service -------------------------------------------------------
 	if [ -e "${DIRS_TGET:-}/lib/systemd/system/apache2.service" ]; then
 		_SRVC_NAME="apache2.service"
-	else
+	elif [ -e "${DIRS_TGET:-}/lib/systemd/system/httpd.service" ]; then
 		_SRVC_NAME="httpd.service"
+	else
+		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		return
 	fi
 	_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
 	if [ "${_SRVC_STAT}" = "not-found" ]; then
@@ -1465,12 +1498,21 @@ funcSetupNetwork_samba() {
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	# --- check service -------------------------------------------------------
-	if [ -e "${DIRS_TGET:-}/lib/systemd/system/smbd.service" ]; then
+	if   { [ -e "${DIRS_TGET:-}/lib/systemd/system/smbd.service"     ]    \
+	&&     [ -e "${DIRS_TGET:-}/lib/systemd/system/nmbd.service"     ]; } \
+	||   { [ -e "${DIRS_TGET:-}/usr/lib/systemd/system/smbd.service" ]    \
+	&&     [ -e "${DIRS_TGET:-}/usr/lib/systemd/system/nmbd.service" ]; }; then
 		_SRVC_SMBD="smbd.service"
 		_SRVC_NMBD="nmbd.service"
-	else
+	elif { [ -e "${DIRS_TGET:-}/lib/systemd/system/smb.service"     ]    \
+	&&     [ -e "${DIRS_TGET:-}/lib/systemd/system/nmb.service"     ]; } \
+	||   { [ -e "${DIRS_TGET:-}/usr/lib/systemd/system/smb.service" ]    \
+	&&     [ -e "${DIRS_TGET:-}/usr/lib/systemd/system/nmb.service" ]; }; then
 		_SRVC_SMBD="smb.service"
 		_SRVC_NMBD="nmb.service"
+	else
+		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		return
 	fi
 	_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_SMBD}")"
 	if [ "${_SRVC_STAT}" = "not-found" ]; then
@@ -1674,8 +1716,11 @@ funcSetupConfig_ssh() {
 	# --- check service -------------------------------------------------------
 	if [ -e "${DIRS_TGET:-}/lib/systemd/system/ssh.service" ]; then
 		_SRVC_NAME="ssh.service"
-	else
+	elif [ -e "${DIRS_TGET:-}/lib/systemd/system/sshd.service" ]; then
 		_SRVC_NAME="sshd.service"
+	else
+		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		return
 	fi
 	_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
 	if [ "${_SRVC_STAT}" = "not-found" ]; then
@@ -1777,13 +1822,17 @@ _EOT_
 		systemctl --quiet daemon-reload
 
 	# --- check mount ---------------------------------------------------------
-	if mount "${DIRS_HGFS}"; then
-		printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "vmware shared directory was mounted successfully"
-		LANG=C df -h "${DIRS_HGFS}"
+	if [ "${CHGE_ROOT:-}" = "true" ]; then
+		printf "\033[m${PROG_NAME}: \033[43m%s\033[m\n" "skip vmware mounts for chroot"
 	else
-		printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "error while mounting vmware shared directory"
-		sed -i "${_FILE_PATH}"      \
-		    -e '\%^.host:/% s%^%#%'
+		if mount "${DIRS_HGFS}"; then
+			printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "vmware shared directory was mounted successfully"
+			LANG=C df -h "${DIRS_HGFS}"
+		else
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "error while mounting vmware shared directory"
+			sed -i "${_FILE_PATH}"      \
+			    -e '\%^.host:/% s%^%#%'
+		fi
 	fi
 
 	# --- debug out -----------------------------------------------------------
@@ -1829,8 +1878,9 @@ _EOT_
 	fi
 
 	# --- .bash_history -------------------------------------------------------
-	_WORK_TEXT="$(funcInstallPackage "apt")"
-	if [ -n "${_WORK_TEXT}" ]; then
+#	_WORK_TEXT="$(funcInstallPackage "apt")"
+#	if [ -n "${_WORK_TEXT}" ]; then
+	if command -v apt-get > /dev/null 2>&1; then
 		_FILE_PATH="${DIRS_TGET:-}/etc/skel/.bash_history"
 		funcFile_backup "${_FILE_PATH}"
 		mkdir -p "${_FILE_PATH%/*}"
@@ -1844,8 +1894,12 @@ _EOT_
 	fi
 
 	# --- .vimrc --------------------------------------------------------------
-	_WORK_TEXT="$(funcInstallPackage "vim-common")"
-	if [ -n "${_WORK_TEXT}" ]; then
+#	_WORK_TEXT="$(funcInstallPackage "vim-common")"
+#	if [ -z "${_WORK_TEXT}" ]; then
+#		_WORK_TEXT="$(funcInstallPackage "vim")"
+#	fi
+#	if [ -n "${_WORK_TEXT}" ]; then
+	if command -v vim > /dev/null 2>&1; then
 		_FILE_PATH="${DIRS_TGET:-}/etc/skel/.vimrc"
 		funcFile_backup "${_FILE_PATH}"
 		mkdir -p "${_FILE_PATH%/*}"
@@ -1867,8 +1921,9 @@ _EOT_
 	fi
 
 	# --- .curlrc -------------------------------------------------------------
-	_WORK_TEXT="$(funcInstallPackage "curl")"
-	if [ -n "${_WORK_TEXT}" ]; then
+#	_WORK_TEXT="$(funcInstallPackage "curl")"
+#	if [ -n "${_WORK_TEXT}" ]; then
+	if command -v curl > /dev/null 2>&1; then
 		_FILE_PATH="${DIRS_TGET:-}/etc/skel/.curlrc"
 		funcFile_backup "${_FILE_PATH}"
 		mkdir -p "${_FILE_PATH%/*}"
@@ -1916,38 +1971,56 @@ funcSetupConfig_sudo() {
 	__FUNC_NAME="funcSetupConfig_sudo"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
-	# --- sudoers -------------------------------------------------------------
-	_WORK_TEXT="$(funcInstallPackage "sudo")"
-	if [ -n "${_WORK_TEXT}" ]; then
-		_WORK_TEXT="$(printf '\t')"
-		_FILE_PATH="${DIRS_TGET:-}/etc/sudoers"
-		if ! grep -qE '^root[ '"${_WORK_TEXT}"']+ALL=\(ALL\)[ '"${_WORK_TEXT}"']+ALL$' "${_FILE_PATH}"; then
-			_FILE_PATH="${DIRS_TGET:-}/etc/sudoers.d/default.conf"
-			funcFile_backup "${_FILE_PATH}"
-			mkdir -p "${_FILE_PATH%/*}"
-			cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-			printf "root\tALL=(ALL)\tALL" >> "${_FILE_PATH}"
-			chmod 0440 "${_FILE_PATH}"
-		fi
-		_WORK_TEXT="$(printf '\t')"
-		_FILE_PATH="${DIRS_TGET:-}/etc/sudoers"
-		if ! grep -qE '^%(sudo|wheel)[ '"${_WORK_TEXT}"']+ALL=\(ALL\)[ '"${_WORK_TEXT}"']+ALL$' "${_FILE_PATH}"; then
-			_FILE_PATH="${DIRS_TGET:-}/etc/sudoers.d/00-local"
-			funcFile_backup "${_FILE_PATH}"
-			mkdir -p "${_FILE_PATH%/*}"
-			cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-			_WORK_TEXT="$(groups |  sed -ne 's/^.*\(sudo\|wheel\).*$/\1/p')"
-			case "${_WORK_TEXT:-}" in
-				sudo|wheel)
-					printf "%${_WORK_TEXT}\tALL=(ALL)\tALL" >> "${_FILE_PATH}"
-					chmod 0440 "${_FILE_PATH}"
-					;;
-				*) ;;
-			esac
-		fi
+	# --- check command -------------------------------------------------------
+	if ! command -v sudo > /dev/null 2>&1; then
+		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		return
+	fi
 
-		# --- debug out -------------------------------------------------------
-		funcDebugout_file "${_FILE_PATH}"
+	# --- sudoers -------------------------------------------------------------
+	_WORK_PATH="${DIRS_TGET:-}/tmp/sudoers-local.work"
+	_WORK_TEXT="$(sed -ne 's/^.*\(sudo\|wheel\).*$/\1/p' "${DIRS_TGET:-}/etc/group")"
+	_WORK_TEXT="${_WORK_TEXT:+"%${_WORK_TEXT}$(funcString "$((6-${#_WORK_TEXT}))" " ")ALL=(ALL:ALL) ALL"}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_WORK_PATH}"
+		Defaults !targetpw
+		Defaults authenticate
+		root   ALL=(ALL:ALL) ALL
+		${_WORK_TEXT:-}
+_EOT_
+
+	# --- debug out -----------------------------------------------------------
+	funcDebugout_file "${_FILE_PATH}"
+
+	# --- sudoers-local -------------------------------------------------------
+	if visudo -q -c -f "${_WORK_PATH}"; then
+		_FILE_PATH="${DIRS_TGET:-}/etc/sudoers.d/sudoers-local"
+		funcFile_backup "${_FILE_PATH}"
+		mkdir -p "${_FILE_PATH%/*}"
+		cp -a "${_WORK_PATH}" "${_FILE_PATH}"
+		chown -c root:root "${_FILE_PATH}"
+		chmod -c 0440 "${_FILE_PATH}"
+		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "file creation successful"
+		# --- sudoers ---------------------------------------------------------
+		_FILE_PATH="${DIRS_TGET:-}/etc/sudoers"
+		_WORK_PATH="${DIRS_TGET:-}/tmp/sudoers.work"
+		funcFile_backup "${_FILE_PATH}"
+		mkdir -p "${_FILE_PATH%/*}"
+		sed "${_FILE_PATH}"                                              \
+		    -e '/^Defaults[ \t]\+targetpw[ \t]*/ s/^/#/'                 \
+		    -e '/^ALL[ \t]\+ALL=(ALL\(\|:ALL\))[ \t]\+ALL[ \t]*/ s/^/#/' \
+		> "${_WORK_PATH}"
+		if visudo -q -c -f "${_WORK_PATH}"; then
+			cp -a "${_WORK_PATH}" "${_FILE_PATH}"
+			chown -c root:root "${_FILE_PATH}"
+			chmod -c 0440 "${_FILE_PATH}"
+			printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "sudo -ll: list user's privileges or check a specific command"
+		else
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "file creation failure"
+			visudo -c -f "${_WORK_PATH}" || true
+		fi
+	else
+		printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "file creation failure"
+		visudo -c -f "${_WORK_PATH}" || true
 	fi
 
 	# --- complete ------------------------------------------------------------
@@ -2063,10 +2136,10 @@ funcMain() {
 	# --- network settings ----------------------------------------------------
 	funcSetupNetwork_hostname			# network setup hostname
 	funcSetupNetwork_hosts				# network setup hosts
-	funcSetupNetwork_hosts_access		# network setup hosts.allow/hosts.deny
+#	funcSetupNetwork_hosts_access		# network setup hosts.allow/hosts.deny
 	funcSetupNetwork_firewalld			# network setup firewalld
-	funcSetupNetwork_resolv				# network setup resolv.conf
 	funcSetupNetwork_dnsmasq			# network setup dnsmasq
+	funcSetupNetwork_resolv				# network setup resolv.conf
 	funcSetupNetwork_apache				# network setup apache
 	funcSetupNetwork_samba				# network setup samba
 
