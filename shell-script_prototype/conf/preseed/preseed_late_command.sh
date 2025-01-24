@@ -20,6 +20,10 @@
 	trap 'exit 1' 1 2 3 15
 	export LANG=C
 
+	if set -o | grep "^xtrace\s*on$"; then
+		exec 2>&1
+	fi
+
 	# --- working directory name ----------------------------------------------
 	readonly PROG_PATH="$0"
 	readonly PROG_PRAM="$*"
@@ -39,7 +43,7 @@
 	FWAL_ZONE="home_use"				# firewalld zone
 										# firewalld service name
 	FWAL_NAME="dhcp dhcpv6 dhcpv6-client dns http https mdns nfs proxy-dhcp samba samba-client ssh tftp"
-	FWAL_PORT="30000-60000/udp"			# firewalld port
+	FWAL_PORT="0-65535/tcp 0-65535/udp"	# firewalld port
 	# --- command line parameter ----------------------------------------------
 	COMD_LINE="$(cat /proc/cmdline)"	# command line parameter
 	IPV4_DHCP=""						# true: dhcp, else: fixed address
@@ -521,7 +525,7 @@ funcInitialize() {
 	NICS_DNS4="${NICS_DNS4:-"$(sed -ne 's/^nameserver[ \]\+\([[:alnum:]:.]\+\)[ \t]*$/\1/p' /etc/resolv.conf | sed -e ':l; N; s/\n/,/; b l;')"}"
 	NICS_GATE="${NICS_GATE:-"$(ip -4 -oneline route list match default | cut -d ' ' -f 3)"}"
 	NICS_FQDN="${NICS_FQDN:-"$(cat "${DIRS_TGET:-}/etc/hostname")"}"
-	NICS_HOST="${NICS_WGRP:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 1)"}"
+	NICS_HOST="${NICS_HOST:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 1)"}"
 	NICS_WGRP="${NICS_WGRP:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 2)"}"
 	NICS_WGRP="${NICS_WGRP:-"$(awk '$1=="search" {print $2;}' "${DIRS_TGET:-}/etc/resolv.conf")"}"
 	NICS_HOST="$(echo "${NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
@@ -960,7 +964,7 @@ funcSetupNetwork_nmanagr() {
 		type=ethernet
 		interface-name=${NICS_NAME}
 		autoconnect=true
-		zone=home
+		zone=${FWAL_ZONE}
 		
 		[ethernet]
 		wake-on-lan=0
@@ -1139,17 +1143,28 @@ funcSetupNetwork_firewalld() {
 		    -e '                                   }'
 
 	# --- firewalld -----------------------------------------------------------
+	# memo: firewall-cmd --set-log-denied=all
 	cp "${DIRS_TGET:-}/usr/lib/firewalld/zones/drop.xml" "${DIRS_TGET:-}/etc/firewalld/zones/${FWAL_ZONE}.xml"
+	_IPV4_ADDR="${IPV4_UADR}.0/${NICS_BIT4}"
+	_IPV6_ADDR="${IPV6_UADR%%::}::/${IPV6_CIDR}"
+	_LINK_ADDR="${LINK_UADR%%::}::/10"
+	_SRVC_NAME="firewalld.service"
 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
 	if [ "${_SRVC_STAT}" = "active" ]; then
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service active: ${_SRVC_NAME}"
 		firewall-cmd --quiet --set-default-zone="${FWAL_ZONE}" || true
 		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --change-interface="${NICS_NAME}" || true
-		for FWAL_NAME in ${FWAL_NAME}
+		for _FWAL_NAME in ${FWAL_NAME}
 		do
-			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${IPV4_UADR}"'.0/'"${NICS_BIT4}"'" service name="'"${FWAL_NAME}"'" accept' || true
-			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="['"${LINK_UADR%%::}"']/10" service name="'"${FWAL_NAME}"'" accept' || true
-#			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="['"${IPV6_UADR%%::}"']/'"${IPV6_CIDR}"'" service name="'"${FWAL_NAME}"'" accept' || true
+			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+#			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+		done
+		for _FWAL_PORT in ${FWAL_PORT}
+		do
+			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
+#			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
+			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 		done
 		firewall-cmd --quiet --reload
 		firewall-cmd --get-zone-of-interface="${NICS_NAME}"
@@ -1158,11 +1173,17 @@ funcSetupNetwork_firewalld() {
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service inactive: ${_SRVC_NAME}"
 		firewall-offline-cmd --quiet --set-default-zone="${FWAL_ZONE}" || true
 		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --change-interface="${NICS_NAME}" || true
-		for FWAL_NAME in ${FWAL_NAME}
+		for _FWAL_NAME in ${FWAL_NAME}
 		do
-			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${IPV4_UADR}"'.0/'"${NICS_BIT4}"'" service name="'"${FWAL_NAME}"'" accept' || true
-			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="['"${LINK_UADR%%::}"']/10" service name="'"${FWAL_NAME}"'" accept' || true
-#			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="['"${IPV6_UADR%%::}"']/'"${IPV6_CIDR}"'" service name="'"${FWAL_NAME}"'" accept' || true
+			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+#			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" service name="'"${_FWAL_NAME}"'" accept' || true
+		done
+		for _FWAL_PORT in ${FWAL_PORT}
+		do
+			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
+#			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
+			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 		done
 #		firewall-offline-cmd --quiet --reload
 		firewall-offline-cmd --get-zone-of-interface="${NICS_NAME}"
@@ -1422,9 +1443,11 @@ funcSetupNetwork_apache() {
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	# --- check service -------------------------------------------------------
-	if [ -e "${DIRS_TGET:-}/lib/systemd/system/apache2.service" ]; then
+	if   [ -e "${DIRS_TGET:-}/lib/systemd/system/apache2.service"     ] \
+	||   [ -e "${DIRS_TGET:-}/usr/lib/systemd/system/apache2.service" ]; then
 		_SRVC_NAME="apache2.service"
-	elif [ -e "${DIRS_TGET:-}/lib/systemd/system/httpd.service" ]; then
+	elif [ -e "${DIRS_TGET:-}/lib/systemd/system/httpd.service"       ] \
+	||   [ -e "${DIRS_TGET:-}/usr/lib/systemd/system/httpd.service"   ]; then
 		_SRVC_NAME="httpd.service"
 	else
 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"

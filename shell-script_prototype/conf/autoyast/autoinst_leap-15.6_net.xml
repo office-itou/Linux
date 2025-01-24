@@ -5,34 +5,34 @@
     <add_on_products t="list">
 <!-- leap -->
       <listentry t="map">
-        <media_url>http://download.opensuse.org/distribution/leap/15.6/repo/oss/</media_url>
+        <media_url>https://download.opensuse.org/distribution/leap/15.6/repo/oss/</media_url>
         <name>repo-oss</name>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>http://download.opensuse.org/update/leap/15.6/oss/</media_url>
+        <media_url>https://download.opensuse.org/update/leap/15.6/oss/</media_url>
         <name>repo-update</name>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>http://download.opensuse.org/update/leap/15.6/sle/</media_url>
+        <media_url>https://download.opensuse.org/update/leap/15.6/sle/</media_url>
         <name>repo-sle-update</name>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>http://download.opensuse.org/update/leap/15.6/backports/</media_url>
+        <media_url>https://download.opensuse.org/update/leap/15.6/backports/</media_url>
         <name>repo-backports-update</name>
         <product_dir>/</product_dir>
       </listentry>
 <!-- leap -->
 <!-- tumbleweed
       <listentry t="map">
-        <media_url>http://download.opensuse.org/tumbleweed/repo/oss/</media_url>
+        <media_url>https://download.opensuse.org/tumbleweed/repo/oss/</media_url>
         <name>repo-oss</name>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>http://download.opensuse.org/update/tumbleweed/</media_url>
+        <media_url>https://download.opensuse.org/update/tumbleweed/</media_url>
         <name>repo-update</name>
         <product_dir>/</product_dir>
       </listentry>
@@ -309,7 +309,7 @@ exit 0</source>
         <source>#!/bin/sh
 echo "Running post scripts"
 if [ -e /var/adm/installer/autoyast/late_command.sh ]; then
-  /var/adm/installer/autoyast/late_command.sh | tee -a /var/adm/installer/autoyast/late_command.sh.log
+  /var/adm/installer/autoyast/late_command.sh -dbg | tee -a /var/adm/installer/autoyast/late_command.sh.log
 fi
 echo "Complete post scripts"
 exit 0</source>
