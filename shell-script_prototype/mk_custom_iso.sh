@@ -2435,6 +2435,9 @@ function funcCreate_late_command() {
 		#			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 		 			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 		 		done
+		 		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp" accept'
+		#		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV6_ADDR}"'" protocol value="icmp" accept'
+		 		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_LINK_ADDR}"'" protocol value="icmp" accept'
 		 		firewall-cmd --quiet --reload
 		 		firewall-cmd --get-zone-of-interface="${NICS_NAME}"
 		 		firewall-cmd --list-all --zone="${FWAL_ZONE}"
@@ -2454,6 +2457,9 @@ function funcCreate_late_command() {
 		#			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 		 			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 		 		done
+		 		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp" accept'
+		#		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV6_ADDR}"'" protocol value="icmp" accept'
+		 		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_LINK_ADDR}"'" protocol value="icmp" accept'
 		#		firewall-offline-cmd --quiet --reload
 		 		firewall-offline-cmd --get-zone-of-interface="${NICS_NAME}"
 		 		firewall-offline-cmd --list-all --zone="${FWAL_ZONE}"

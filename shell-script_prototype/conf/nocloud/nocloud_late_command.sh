@@ -1144,6 +1144,7 @@ funcSetupNetwork_firewalld() {
 
 	# --- firewalld -----------------------------------------------------------
 	# memo: firewall-cmd --set-log-denied=all
+	#       firewall-cmd --list-all --zone=home_use
 	cp "${DIRS_TGET:-}/usr/lib/firewalld/zones/drop.xml" "${DIRS_TGET:-}/etc/firewalld/zones/${FWAL_ZONE}.xml"
 	_IPV4_ADDR="${IPV4_UADR}.0/${NICS_BIT4}"
 	_IPV6_ADDR="${IPV6_UADR%%::}::/${IPV6_CIDR}"
@@ -1166,6 +1167,9 @@ funcSetupNetwork_firewalld() {
 #			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 		done
+		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp" accept'
+#		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV6_ADDR}"'" protocol value="icmp" accept'
+		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_LINK_ADDR}"'" protocol value="icmp" accept'
 		firewall-cmd --quiet --reload
 		firewall-cmd --get-zone-of-interface="${NICS_NAME}"
 		firewall-cmd --list-all --zone="${FWAL_ZONE}"
@@ -1185,6 +1189,9 @@ funcSetupNetwork_firewalld() {
 #			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 		done
+		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp" accept'
+#		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV6_ADDR}"'" protocol value="icmp" accept'
+		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_LINK_ADDR}"'" protocol value="icmp" accept'
 #		firewall-offline-cmd --quiet --reload
 		firewall-offline-cmd --get-zone-of-interface="${NICS_NAME}"
 		firewall-offline-cmd --list-all --zone="${FWAL_ZONE}"
