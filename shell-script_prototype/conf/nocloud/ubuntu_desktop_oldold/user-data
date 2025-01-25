@@ -39,7 +39,7 @@ autoinstall:
     if [ -d "/target/." ]; then
         DIRS_TGET="/target";
     fi;
-    LOGS_NAME="${DIRS_TGET:-}/var/log/installer/${FUNC_NAME}.$(date +"%Y%m%d%H%M%S").log";
+    LOGS_NAME="${DIRS_TGET:-}/var/adm/installer/${FUNC_NAME}.$(date +"%Y%m%d%H%M%S").log";
     mkdir -p "${LOGS_NAME%/*}";
     echo "### start ${FUNC_NAME} ###" 2>&1 | tee -a "${LOGS_NAME}";
     COMD_LINE="$(cat /proc/cmdline)";
@@ -275,7 +275,7 @@ autoinstall:
       if [ -d "/target/." ]; then
           DIRS_TGET="/target";
       fi;
-      LOGS_NAME="${DIRS_TGET:-}/var/log/installer/${FUNC_NAME}.$(date +"%Y%m%d%H%M%S").log";
+      LOGS_NAME="${DIRS_TGET:-}/var/adm/installer/${FUNC_NAME}.$(date +"%Y%m%d%H%M%S").log";
       mkdir -p "${LOGS_NAME%/*}";
       echo "### start ${FUNC_NAME} ###" 2>&1 | tee -a "${LOGS_NAME}";
       echo "### complete ${FUNC_NAME} ###" 2>&1 | tee -a "${LOGS_NAME}";' ]
@@ -301,7 +301,7 @@ autoinstall:
     if [ -d "/target/." ]; then
         DIRS_TGET="/target";
     fi;
-    LOGS_NAME="${DIRS_TGET:-}/var/log/installer/${FUNC_NAME}.$(date +"%Y%m%d%H%M%S").log";
+    LOGS_NAME="${DIRS_TGET:-}/var/adm/installer/${FUNC_NAME}.$(date +"%Y%m%d%H%M%S").log";
     mkdir -p "${LOGS_NAME%/*}";
     echo "### start ${FUNC_NAME} ###" 2>&1 | tee -a "${LOGS_NAME}";
     SEED_FILE="/";
@@ -327,7 +327,7 @@ autoinstall:
     echo "### initialization ${FUNC_NAME} ###" 2>&1 | tee -a "${LOGS_NAME}";
     SHEL_NAME="nocloud_late_command.sh";
     SHEL_FILE="${SEED_FILE%/*}/${SHEL_NAME}";
-    SHEL_EXEC="/var/log/installer/nocloud/${SHEL_NAME}";
+    SHEL_EXEC="/var/adm/installer/nocloud/${SHEL_NAME}";
     mkdir -p "${DIRS_TGET:-}${SHEL_EXEC%/*}";
     echo "### get shell ${FUNC_NAME} [${SHEL_FILE}] ###" 2>&1 | tee -a "${LOGS_NAME}";
     case "${SHEL_FILE}" in
@@ -355,6 +355,7 @@ autoinstall:
       fi;
       echo "### complete shell ${FUNC_NAME} [${DIRS_TGET:-}${SHEL_EXEC}] ###" 2>&1 | tee -a "${LOGS_NAME}";
     fi;
+    eject --cdrom || true;
     echo "### complete ${FUNC_NAME} ###" 2>&1 | tee -a "${LOGS_NAME}";' ]
 # =============================================================================
 # memo:

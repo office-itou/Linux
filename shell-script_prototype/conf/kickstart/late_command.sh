@@ -65,7 +65,7 @@
 	DIST_NAME=""						# distribution name (ex. debian)
 	DIST_VERS=""						# release version   (ex. 12)
 	DIST_CODE=""						# code name         (ex. bookworm)
-	DIRS_TGET=""
+	DIRS_TGET=""						# target directory
 	if command -v systemd-detect-virt > /dev/null 2>&1 \
 	&& systemd-detect-virt --chroot; then
 		CHGE_ROOT="true"
@@ -75,6 +75,7 @@
 	elif [ -d /mnt/sysimage/. ]; then
 		DIRS_TGET="/mnt/sysimage"
 	fi
+	readonly DIRS_TGET
 	if [ -n "${DIRS_TGET:-}" ] \
 	&& [ "${CHGE_ROOT:-}" = "true" ]; then
 		printf "\033[m${PROG_NAME}: \033[43m%s\033[m\n" "chroot start"
@@ -467,7 +468,7 @@ funcInitialize() {
 	readonly ROWS_SIZE
 	readonly COLS_SIZE
 
-	TEXT_GAPS="$((COLS_SIZE-${#PROG_NAME}-2))"
+	TEXT_GAPS="$((COLS_SIZE-${#PROG_NAME}-2))"		# work
 	TEXT_GAP1="$(funcString "${TEXT_GAPS}" '-')"
 	TEXT_GAP2="$(funcString "${TEXT_GAPS}" '=')"
 
@@ -1132,20 +1133,28 @@ funcSetupNetwork_firewalld() {
 	fi
 
 	# --- firewalld.service ---------------------------------------------------
-		_FILE_PATH="${DIRS_TGET:-}/lib/systemd/system/firewalld.service"
-		funcFile_backup "${_FILE_PATH}"
-		mkdir -p "${_FILE_PATH%/*}"
-		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-		sed -i "${_FILE_PATH}" \
-		    -e '/\[Unit\]/,/\[.*\]/                {' \
-		    -e '/^Before=network-pre.target$/ s/^/#/' \
-		    -e '/^Wants=network-pre.target$/  s/^/#/' \
-		    -e '                                   }'
+	_FILE_PATH="${DIRS_TGET:-}/lib/systemd/system/firewalld.service"
+	if [ ! -e "${_FILE_PATH}" ]; then
+		_FILE_PATH="${DIRS_TGET:-}/usr/lib/systemd/system/firewalld.service"
+	fi
+	funcFile_backup "${_FILE_PATH}"
+	mkdir -p "${_FILE_PATH%/*}"
+	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+	sed -i "${_FILE_PATH}" \
+	    -e '/\[Unit\]/,/\[.*\]/                {' \
+	    -e '/^Before=network-pre.target$/ s/^/#/' \
+	    -e '/^Wants=network-pre.target$/  s/^/#/' \
+	    -e '                                   }'
 
 	# --- firewalld -----------------------------------------------------------
-	# memo: firewall-cmd --set-log-denied=all
-	#       firewall-cmd --list-all --zone=home_use
-	cp "${DIRS_TGET:-}/usr/lib/firewalld/zones/drop.xml" "${DIRS_TGET:-}/etc/firewalld/zones/${FWAL_ZONE}.xml"
+	# memo: log output settings : firewall-cmd --set-log-denied=all
+	#       service name output ; firewall-cmd --get-services
+	#       setting value output: firewall-cmd --list-all --zone=home_use
+	_FILE_PATH="${DIRS_TGET:-}/lib/firewalld/zones/drop.xml"
+	if [ ! -e "${_FILE_PATH}" ]; then
+		_FILE_PATH="${DIRS_TGET:-}/usr/lib/firewalld/zones/drop.xml"
+	fi
+	cp "${_FILE_PATH}" "${DIRS_TGET:-}/etc/firewalld/zones/${FWAL_ZONE}.xml"
 	_IPV4_ADDR="${IPV4_UADR}.0/${NICS_BIT4}"
 	_IPV6_ADDR="${IPV6_UADR%%::}::/${IPV6_CIDR}"
 	_LINK_ADDR="${LINK_UADR%%::}::/10"
@@ -1167,9 +1176,9 @@ funcSetupNetwork_firewalld() {
 #			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 			firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 		done
-		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp" accept'
-#		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV6_ADDR}"'" protocol value="icmp" accept'
-		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_LINK_ADDR}"'" protocol value="icmp" accept'
+		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp"      accept'
+#		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" protocol value="ipv6-icmp" accept'
+		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" protocol value="ipv6-icmp" accept'
 		firewall-cmd --quiet --reload
 		firewall-cmd --get-zone-of-interface="${NICS_NAME}"
 		firewall-cmd --list-all --zone="${FWAL_ZONE}"
@@ -1189,9 +1198,9 @@ funcSetupNetwork_firewalld() {
 #			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 			firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" port protocol="'"${_FWAL_PORT##*/}"'" port="'"${_FWAL_PORT%/*}"'" accept' || true
 		done
-		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp" accept'
-#		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV6_ADDR}"'" protocol value="icmp" accept'
-		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_LINK_ADDR}"'" protocol value="icmp" accept'
+		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp"      accept'
+#		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" protocol value="ipv6-icmp" accept'
+		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" protocol value="ipv6-icmp" accept'
 #		firewall-offline-cmd --quiet --reload
 		firewall-offline-cmd --get-zone-of-interface="${NICS_NAME}"
 		firewall-offline-cmd --list-all --zone="${FWAL_ZONE}"
@@ -1214,6 +1223,9 @@ funcSetupNetwork_dnsmasq() {
 
 	# --- dnsmasq.service -----------------------------------------------------
 	_FILE_PATH="${DIRS_TGET:-}/lib/systemd/system/dnsmasq.service"
+	if [ ! -e "${_FILE_PATH}" ]; then
+		_FILE_PATH="${DIRS_TGET:-}/usr/lib/systemd/system/dnsmasq.service"
+	fi
 	if [ -e "${_FILE_PATH}" ]; then
 		funcFile_backup "${_FILE_PATH}"
 		mkdir -p "${_FILE_PATH%/*}"
@@ -1714,13 +1726,6 @@ _EOT_
 	funcDebugout_file "${_FILE_PATH}"
 
 	# --- systemctl -----------------------------------------------------------
-	if [ -e "${DIRS_TGET:-}/lib/systemd/system/smbd.service" ]; then
-		_SRVC_SMBD="smbd.service"
-		_SRVC_NMBD="nmbd.service"
-	else
-		_SRVC_SMBD="smb.service"
-		_SRVC_NMBD="nmb.service"
-	fi
 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_SMBD}")"
 	if [ "${_SRVC_STAT}" = "active" ]; then
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_SMBD}"
@@ -1738,15 +1743,53 @@ _EOT_
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
 }
 
+# --- network setup timesyncd -------------------------------------------------
+funcSetupNetwork_timesyncd() {
+	__FUNC_NAME="funcSetupNetwork_timesyncd"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	# --- check service -------------------------------------------------------
+	_SRVC_NAME="systemd-timesyncd.service"
+	_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
+	if [ "${_SRVC_STAT}" = "not-found" ]; then
+		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		return
+	fi
+
+	# --- timesyncd.conf ------------------------------------------------------
+	_FILE_PATH="${DIRS_TGET:-}/etc/systemd/timesyncd.conf.d/local.conf"
+	funcFile_backup "${_FILE_PATH}"
+	mkdir -p "${_FILE_PATH%/*}"
+	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+		# --- user settings ---
+		
+		[Time]
+		NTP=${NTPS_ADDR}
+		FallbackNTP=ntp1.jst.mfeed.ad.jp ntp2.jst.mfeed.ad.jp ntp3.jst.mfeed.ad.jp
+		PollIntervalMinSec=1h
+		PollIntervalMaxSec=1d
+		SaveIntervalSec=infinity
+_EOT_
+
+	# --- debug out -----------------------------------------------------------
+	funcDebugout_file "${_FILE_PATH}"
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+}
+
 # --- openssh-server settings -------------------------------------------------
 funcSetupConfig_ssh() {
 	__FUNC_NAME="funcSetupConfig_ssh"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	# --- check service -------------------------------------------------------
-	if [ -e "${DIRS_TGET:-}/lib/systemd/system/ssh.service" ]; then
+	if   [ -e "${DIRS_TGET:-}/lib/systemd/system/ssh.service"      ] \
+	||   [ -e "${DIRS_TGET:-}/usr/lib/systemd/system/ssh.service"  ]; then
 		_SRVC_NAME="ssh.service"
-	elif [ -e "${DIRS_TGET:-}/lib/systemd/system/sshd.service" ]; then
+	elif [ -e "${DIRS_TGET:-}/lib/systemd/system/sshd.service"     ] \
+	||   [ -e "${DIRS_TGET:-}/usr/lib/systemd/system/sshd.service" ]; then
 		_SRVC_NAME="sshd.service"
 	else
 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
@@ -2172,6 +2215,7 @@ funcMain() {
 	funcSetupNetwork_resolv				# network setup resolv.conf
 	funcSetupNetwork_apache				# network setup apache
 	funcSetupNetwork_samba				# network setup samba
+	funcSetupNetwork_timesyncd			# network setup timesyncd
 
 	# --- openssh-server settings ---------------------------------------------
 	funcSetupConfig_ssh
