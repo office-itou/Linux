@@ -52,6 +52,10 @@
 			exit 1
 		fi
 		# ---------------------------------------------------------------------
+		MAIN_ARHC="$(dpkg --print-architecture)"
+		readonly      MAIN_ARHC
+		OTHR_ARCH="$(dpkg --print-foreign-architectures)"
+		readonly      OTHR_ARCH
 		declare -r -a PAKG_LIST=(\
 			"curl" \
 			"wget" \
@@ -71,7 +75,7 @@
 			"bzip2" \
 			"lzop" \
 		)
-		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]}" 2> /dev/null | sed -ne '/^[ \t]*$\|WARNING\|Listing\|installed/! s%/.*%%gp' | sed -z 's/[\r\n]\+/ /g')"
+		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]}" 2> /dev/null | sed -ne '/[ \t]'"${OTHR_ARCH:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g')"
 		readonly      PAKG_FIND
 		if [[ -n "${PAKG_FIND% *}" ]]; then
 			echo "please install these:"
@@ -1403,7 +1407,7 @@ function funcCreate_late_command() {
 		 			iso-url=*.iso  | url=*.iso     ) ISOS_FILE="${LINE#*url=}";;
 		 			preseed/url=*  | url=*         ) SEED_FILE="${LINE#*url=}";;
 		 			preseed/file=* | file=*        ) SEED_FILE="${LINE#*file=}";;
-		 			ds=nocloud*                    ) SEED_FILE="${LINE#*ds=nocloud*=}";;
+		 			ds=nocloud*                    ) SEED_FILE="${LINE#*ds=nocloud*=}";SEED_FILE="${SEED_FILE%%/}/user-data";;
 		 			netcfg/target_network_config=* ) NMAN_FLAG="${LINE#*target_network_config=}";;
 		 			netcfg/choose_interface=*      ) NICS_NAME="${LINE#*choose_interface=}";;
 		 			netcfg/disable_dhcp=*          ) IPV4_DHCP="$([ "${LINE#*disable_dhcp=}" = "true" ] && echo "false" || echo "true")";;
@@ -1859,6 +1863,82 @@ function funcCreate_late_command() {
 		 	if [ -n "${DBGS_FLAG:-}" ]; then
 		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${____FUNC_NAME}] ---"
 		 	fi
+		}
+		
+		# --- installing missing packages ---------------------------------------------
+		# only runs on debian and ubuntu on amd64
+		funcInstall_package() {
+		 	__FUNC_NAME="funcInstall_package"
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+		
+		 	# --- check command -------------------------------------------------------
+		 	if ! command -v dpkg > /dev/null 2>&1; then
+		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		 		return
+		 	fi
+		
+		 	# --- sources.list --------------------------------------------------------
+		 	_FILE_PATH="${DIRS_TGET:-}/etc/apt/sources.list"
+		 	if grep -q '^[ \t]*deb[ \t]\+cdrom:' "${_FILE_PATH}"; then
+		 		funcFile_backup "${_FILE_PATH}"
+		 		mkdir -p "${_FILE_PATH%/*}"
+		 		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+		 		sed -i "${_FILE_PATH}"                     \
+		 		    -e '/^[ \t]*deb[ \t]\+cdrom:/ s/^/#/g'
+		
+		 		# --- debug out -----------------------------------------------------------
+		 		funcDebugout_file "${_FILE_PATH}"
+		 	fi
+		
+		 	# --- get architecture ----------------------------------------------------
+		 	_MAIN_ARHC="$(dpkg --print-architecture)"
+		 	_OTHR_ARCH="$(dpkg --print-foreign-architectures)"
+		
+		 	# --- preseed or cloud-init -----------------------------------------------
+		 	_PAKG_LIST=""
+		 	if [ -n "${SEED_FILE:-}" ]; then
+		 		case "${SEED_FILE##*/}" in
+		 			user-data)	# cloud-init
+		 				_FILE_PATH="${PROG_DIRS}/user-data"
+		 				if [ -e "${_FILE_PATH}" ]; then
+		 					_PAKG_LIST="$( \
+		 						sed -ne '/^[ \t]*packages:$/,/^[ #]*[[:graph:]]\+:$/ {s/^[ \t]*-[ \t]\+//gp}' "${_FILE_PATH}" | \
+		 						sed -e  ':l; N; s/[\r\n]/ /; b l;'                                                            | \
+		 						sed -e  's/[ \t]\+/ /g')"
+		 				fi
+		 				;;
+		 			*)			# preseed
+		 				_FILE_PATH="${PROG_DIRS}/${SEED_FILE##*/}"
+		 				if [ -e "${_FILE_PATH}" ]; then
+		 					_PAKG_LIST="$( \
+		 						sed -ne '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+.*$%,\%[^\\]$% {s/\\//gp}' "${_FILE_PATH}" | \
+		 						sed -e  ':l; N; s/[\r\n]/ /; b l;'                                                          | \
+		 						sed -e  's/[ \t]\+/ /g'                                                                     | \
+		 						sed -e  's%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+[[:graph:]]\+[ \t]*%%')"
+		 				fi
+		 				;;
+		 		esac;
+		 	fi
+		
+		 	# --- get missing packages ------------------------------------------------
+		 	# shellcheck disable=SC2086
+		 	_PAKG_FIND="$(LANG=C apt list ${_PAKG_LIST:-"apt"} 2> /dev/null                | \
+		 		sed -ne '/[ \t]'"${_OTHR_ARCH:-"i386"}"'[ \t]*/!{'                           \
+		 		    -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | \
+		 		sed -z 's/[\r\n]\+/ /g')"
+		
+		 	# --- install missing packages --------------------------------------------
+		 	apt-get -qq update
+		 	if [ -n "${_PAKG_FIND:-}" ]; then
+		 		# shellcheck disable=SC2086
+		 		if ! apt-get -qq -y install ${_PAKG_FIND}; then
+		 			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "missing packages installation failure"
+		 			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "${_PAKG_FIND}"
+		 		fi
+		 	fi
+		
+		 	# --- complete ------------------------------------------------------------
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
 		}
 		
 		# --- creating a shared environment -------------------------------------------
@@ -2701,7 +2781,15 @@ function funcCreate_late_command() {
 		 		# --- debug out -------------------------------------------------------
 		 		funcDebugout_file "${_FILE_PATH}"
 		
-		 		# --- systemctl -------------------------------------------------------
+		 		# --- systemctl avahi-daemon.service ----------------------------------
+		 		_SRVC_NAME="avahi-daemon.service"
+		 		_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
+		 		if [ "${_SRVC_STAT}" = "enabled" ]; then
+		 			systemctl --quiet mask "${_SRVC_NAME}"
+		 			systemctl --quiet mask "${_SRVC_NAME%.*}.socket"
+		 		fi
+		
+		 		# --- systemctl systemd-resolved.service ------------------------------
 		 		_SRVC_NAME="systemd-resolved.service"
 		 		_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
 		 		case "${_SRVC_STAT}" in
@@ -2716,7 +2804,7 @@ function funcCreate_late_command() {
 		 			systemctl --quiet restart "${_SRVC_NAME}"
 		 		fi
 		 		if [ -n "${DBGS_FLAG:-}" ]; then
-		 			resolvectl status
+		 			resolvectl status || true
 		 		fi
 		 	fi
 		
@@ -3183,6 +3271,50 @@ function funcCreate_late_command() {
 		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
 		}
 		
+		# --- wireplumber settings ----------------------------------------------------
+		funcSetupConfig_wireplumber() {
+		 	__FUNC_NAME="funcSetupConfig_wireplumber"
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+		
+		 	# --- check command -------------------------------------------------------
+		 	if ! command -v wireplumber > /dev/null 2>&1; then
+		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		 		return
+		 	fi
+		
+		 	# --- 50-alsa-config.conf -------------------------------------------------
+		 	_FILE_PATH="${DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
+		 	funcFile_backup "${_FILE_PATH}"
+		 	mkdir -p "${_FILE_PATH%/*}"
+		 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+		 		monitor.alsa.rules = [
+		 		  {
+		 		    matches = [
+		 		      # This matches the value of the 'node.name' property of the node.
+		 		      {
+		 		        node.name = "~alsa_output.*"
+		 		      }
+		 		    ]
+		 		    actions = {
+		 		      # Apply all the desired node specific settings here.
+		 		      update-props = {
+		 		        api.alsa.period-size   = 1024
+		 		        api.alsa.headroom      = 8192
+		 		        session.suspend-timeout-seconds = 0
+		 		      }
+		 		    }
+		 		  }
+		 		]
+		_EOT_
+		
+		 	# --- debug out -----------------------------------------------------------
+		 	funcDebugout_file "${_FILE_PATH}"
+		
+		 	# --- complete ------------------------------------------------------------
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+		}
+		
 		# --- skeleton settings -------------------------------------------------------
 		funcSetupConfig_skel() {
 		 	__FUNC_NAME="funcSetupConfig_skel"
@@ -3455,6 +3587,63 @@ function funcCreate_late_command() {
 		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
 		}
 		
+		# --- grub menu settings ------------------------------------------------------
+		funcSetupConfig_grub_menu() {
+		 	__FUNC_NAME="funcSetupConfig_grub_menu"
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+		
+		 	# --- check command -------------------------------------------------------
+		 	if command -v grub-mkconfig > /dev/null 2>&1; then
+		 		_WORK_COMD="grub-mkconfig"
+		 	elif command -v grub2-mkconfig > /dev/null 2>&1; then
+		 		_WORK_COMD="grub2-mkconfig"
+		 	else
+		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		 		return
+		 	fi
+		
+		 	# --- check setup ---------------------------------------------------------
+		 	_TITL_TEXT="### User Custom ###"
+		 	_FILE_PATH="${DIRS_TGET:-}/etc/default/grub"
+		 	funcFile_backup "${_FILE_PATH}"
+		 	mkdir -p "${_FILE_PATH%/*}"
+		 	if grep -q "${_TITL_TEXT}" "${_FILE_PATH}"; then
+		 		printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "already setup"
+		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		 		return
+		 	fi
+		
+		 	# --- grub ----------------------------------------------------------------
+		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+		 		
+		 		${_TITL_TEXT}
+		 		GRUB_RECORDFAIL_TIMEOUT=10
+		 		GRUB_TIMEOUT=3
+		 		
+		_EOT_
+		
+		 	# --- debug out -----------------------------------------------------------
+		 	funcDebugout_file "${_FILE_PATH}"
+		
+		 	# --- create grub.cfg -----------------------------------------------------
+		 	_FILE_PATH="$(find "${DIRS_TGET:-}"/boot/ \( -path '/*/efi' -o -path '/*/EFI' \) -prune -o -type f -name 'grub.cfg' -print)"
+		 	if [ -n "${_FILE_PATH}" ]; then
+		 		_WORK_PATH="${DIRS_TGET:-}/tmp/grub.cfg.work"
+		 		if "${_WORK_COMD}" --output="${_WORK_PATH}"; then
+		 			if cp --preserve=timestamps "${_WORK_PATH}" "${_FILE_PATH}"; then
+		 				printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "success to create ${_FILE_PATH}"
+		 			else
+		 				printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to copy ${_FILE_PATH}"
+		 			fi
+		 		else
+		 			printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to create grub.cfg"
+		 		fi
+		 	fi
+		
+		 	# --- complete ------------------------------------------------------------
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+		}
+		
 		# --- main --------------------------------------------------------------------
 		funcMain() {
 		 	_FUNC_NAME="funcMain"
@@ -3465,6 +3654,9 @@ function funcCreate_late_command() {
 		
 		 	# --- debug out -----------------------------------------------------------
 		 	funcDebugout_parameter
+		
+			# --- installing missing packages -----------------------------------------
+			funcInstall_package
 		
 		 	# --- creating a shared environment ---------------------------------------
 		 	funcCreate_shared_env
@@ -3491,6 +3683,9 @@ function funcCreate_late_command() {
 		 	# --- vmware shared directory settings ------------------------------------
 		 	funcSetupConfig_vmware
 		
+		 	# --- wireplumber settings ------------------------------------------------
+		 	funcSetupConfig_wireplumber
+		
 		 	# --- skeleton settings ---------------------------------------------------
 		 	funcSetupConfig_skel
 		
@@ -3499,6 +3694,9 @@ function funcCreate_late_command() {
 		
 		 	# --- blacklist settings --------------------------------------------------
 		 	funcSetupConfig_blacklist
+		
+		 	# --- grub menu settings --------------------------------------------------
+		 	funcSetupConfig_grub_menu
 		
 		 	# --- complete ------------------------------------------------------------
 		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${_FUNC_NAME}] ---"
@@ -3613,6 +3811,8 @@ function funcCreate_preseed_cfg() {
 					sed -i "${_FILE_PATH}"                                    \
 					    -e "\%ubiquity/success_command%i \\${_INSR_STRS}"
 				fi
+				sed -i "${_FILE_PATH}"              \
+				    -e "\%ubiquity/reboot% s/^#/ /"
 				;;
 			*)
 				;;
@@ -4806,6 +5006,7 @@ function funcCreate_remaster_nocloud() {
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/${_TGET_LINE[9]%/*}"
+	declare       _WORK_LINK=""
 	funcPrintf "%20.20s: %s" "create" "boot options for nocloud"
 	# --- boot option ---------------------------------------------------------
 	case "${_TGET_LINE[1]}" in
@@ -4834,6 +5035,10 @@ function funcCreate_remaster_nocloud() {
 	mkdir -p "${_WORK_CONF}"
 	cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/nocloud_late_command.sh"          "${_WORK_CONF}"
 	cp -a "${DIRS_CONF}/${_TGET_LINE[9]%%_*}_"{server,desktop}{,_old,_oldold} "${_WORK_CONF}"
+	for _WORK_LINK in "${_WORK_CONF%/*}/${_TGET_LINE[9]%%_*}_"{server,desktop}{,_old,_oldold}
+	do
+		ln -sr "${_WORK_CONF}/nocloud_late_command.sh" "${_WORK_LINK}/"
+	done
 	chmod ugo-x "${_WORK_CONF}"/*/*
 }
 
