@@ -1240,7 +1240,14 @@ function funcCreate_preseed_kill_dhcp() {
 	cat <<- '_EOT_SH_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_NAME}"
 		#!/bin/sh
 		
-		### initialization ############################################################
+		# *** initialization **********************************************************
+		
+		 	case "${1:-}" in
+		 		-dbg) set -x; shift;;
+		 		-dbgout) _DBGOUT="true"; shift;;
+		 		*) ;;
+		 	esac
+		
 		#	set -n								# Check for syntax errors
 		#	set -x								# Show command and argument expansion
 		 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -1249,14 +1256,30 @@ function funcCreate_preseed_kill_dhcp() {
 		 	set -u								# End with undefined variable reference
 		#	set -o pipefail						# End with in pipe error
 		
+		#	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 		 	trap 'exit 1' 1 2 3 15
+		 	export LANG=C
 		
-		### Main ######################################################################
+		 	if set -o | grep "^xtrace\s*on$"; then
+		 		exec 2>&1
+		 	fi
+		
+		# *** main processing section *************************************************
+		 	# --- start ---------------------------------------------------------------
+		#	_start_time=$(date +%s)
+		#	_datetime="$(date +"%Y/%m/%d %H:%M:%S")"
+		#	printf "\033[m${PROG_NAME}: \033[45m%s\033[m\n" "${_datetime} processing start"
+		 	# --- main ----------------------------------------------------------------
 		 	/bin/kill-all-dhcp
 		 	/bin/netcfg
-		### Termination ###############################################################
+		 	# --- complete ------------------------------------------------------------
+		#	_end_time=$(date +%s)
+		#	_datetime="$(date +"%Y/%m/%d %H:%M:%S")"
+		#	printf "\033[m${PROG_NAME}: elapsed time: %dd%02dh%02dm%02ds\033[m\n" "$(((_end_time-_start_time)/86400))" "$(((_end_time-_start_time)%86400/3600))" "$(((_end_time-_start_time)%3600/60))" "$(((_end_time-_start_time)%60))"
+		#	printf "\033[m${PROG_NAME}: \033[45m%s\033[m\n" "${_datetime} processing complete"
 		 	exit 0
-		### EOF #######################################################################
+		
+		### eof #######################################################################
 _EOT_SH_
 	chmod ugo+x "${_FILE_NAME}"
 }
@@ -2063,12 +2086,12 @@ function funcCreate_late_command() {
 		 		exit
 		_EOT_
 		
-		 	if command -v setsebool > /dev/null 2>&1; then
-		 		setsebool -P httpd_use_fusefs 1
-		 		setsebool -P samba_enable_home_dirs 1
-		 		setsebool -P samba_export_all_ro 1
-		 		setsebool -P samba_export_all_rw 1
-		 	fi
+		#	if command -v setsebool > /dev/null 2>&1; then
+		#		setsebool -P httpd_use_fusefs 1
+		#		setsebool -P samba_enable_home_dirs 1
+		#		setsebool -P samba_export_all_ro 1
+		#		setsebool -P samba_export_all_rw 1
+		#	fi
 		
 		 	touch -f "${DIRS_SAMB}"/data/adm/netlogon/logon.bat
 		 	chown -R "${SAMB_USER}":"${SAMB_GRUP}" "${DIRS_SAMB}/"*
@@ -2087,6 +2110,72 @@ function funcCreate_late_command() {
 		#	_WORK_PATH="${DIRS_TGET:-}/var/lib/tftpboot"
 		#	funcFile_backup "${_WORK_PATH}"
 		#	ln -sf "${DIRS_TFTP#${DIRS_TGET:-}}" "${_WORK_PATH}"
+		
+		 	# --- complete ------------------------------------------------------------
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+		}
+		
+		# --- apparmor settings -------------------------------------------------------
+		funcSetupConfig_apparmor() {
+		 	__FUNC_NAME="funcSetupConfig_apparmor"
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+		
+		 	# --- check command -------------------------------------------------------
+		 	if ! command -v aa-enabled > /dev/null 2>&1; then
+		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		 		return
+		 	fi
+		
+		 	# --- systemctl -----------------------------------------------------------
+		 	_SRVC_NAME="apparmor.service"
+		 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
+		 	if [ "${_SRVC_STAT}" = "active" ]; then
+		 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
+		 		systemctl --quiet daemon-reload
+		 		systemctl --quiet restart "${_SRVC_NAME}"
+		 	fi
+		
+		 	# --- debug out -----------------------------------------------------------
+		#	aa-enabled
+		 	aa-status || true
+		
+		 	# --- complete ------------------------------------------------------------
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+		}
+		
+		# --- selinux settings --------------------------------------------------------
+		funcSetupConfig_selinux() {
+		 	__FUNC_NAME="funcSetupConfig_selinux"
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+		
+		 	# --- check command -------------------------------------------------------
+		 	if ! command -v semanage > /dev/null 2>&1; then
+		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		 		return
+		 	fi
+		
+		 	# --- httpd ---------------------------------------------------------------
+		 	semanage fcontext -a -t httpd_sys_content_t "${DIRS_HTML}(/.*)?"
+		 	restorecon -R -v "${DIRS_HTML}"
+		
+		 	# --- tftp ----------------------------------------------------------------
+		 	semanage fcontext -a -t tftpdir_t "${DIRS_TFTP}(/.*)?"
+		 	restorecon -R -v "${DIRS_TFTP}"
+		
+		 	# --- samba ---------------------------------------------------------------
+		 	semanage fcontext -a -t samba_share_t "${DIRS_SAMB}(/.*)?"
+		 	restorecon -R -v "${DIRS_SAMB}"
+		
+		 	# --- setsebool -----------------------------------------------------------
+		 	if command -v setsebool > /dev/null 2>&1; then
+		 		setsebool -P httpd_use_fusefs 1
+		#		setsebool -P samba_enable_home_dirs 1
+		 		setsebool -P samba_export_all_ro 1
+		#		setsebool -P samba_export_all_rw 1
+		 	fi
+		
+		 	# --- debug out -----------------------------------------------------------
+		 	getenforce
 		
 		 	# --- complete ------------------------------------------------------------
 		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -2527,6 +2616,8 @@ function funcCreate_late_command() {
 		 		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp"      accept'
 		#		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" protocol value="ipv6-icmp" accept'
 		 		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" protocol value="ipv6-icmp" accept'
+		 		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" service name="tftp" accept' || true
+		 		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" port protocol="udp" port="67-68" accept' || true
 		 		firewall-cmd --quiet --reload
 		 		firewall-cmd --get-zone-of-interface="${NICS_NAME}"
 		 		firewall-cmd --list-all --zone="${FWAL_ZONE}"
@@ -2549,6 +2640,8 @@ function funcCreate_late_command() {
 		 		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="'"${_IPV4_ADDR}"'" protocol value="icmp"      accept'
 		#		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_IPV6_ADDR}"'" protocol value="ipv6-icmp" accept'
 		 		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv6" source address="'"${_LINK_ADDR}"'" protocol value="ipv6-icmp" accept'
+		 		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" service name="tftp" accept' || true
+		 		firewall-offline-cmd --quiet --zone="${FWAL_ZONE}" --add-rich-rule='rule family="ipv4" source address="0.0.0.0" port protocol="udp" port="67-68" accept' || true
 		#		firewall-offline-cmd --quiet --reload
 		 		firewall-offline-cmd --get-zone-of-interface="${NICS_NAME}"
 		 		firewall-offline-cmd --list-all --zone="${FWAL_ZONE}"
@@ -2622,13 +2715,13 @@ function funcCreate_late_command() {
 		 		#log-facility=                                              # log output file name
 		 		
 		 		# --- dns ---------------------------------------------------------------------
-		 		port=0                                                      # listening port
+		 		#port=0                                                     # listening port
 		 		#bogus-priv                                                 # do not perform reverse lookup of private ip address on upstream server
 		 		#domain-needed                                              # do not forward plain names
 		 		#domain=${NICS_WGRP}                                           # local domain name
 		 		#expand-hosts                                               # add domain name to host
 		 		#filterwin2k                                                # filter for windows
-		 		#interface=${NICS_NAME}                                           # listen to interface
+		 		interface=${NICS_NAME}                                            # listen to interface
 		 		#listen-address=${IPV4_LHST}                                   # listen to ip address
 		 		#listen-address=${IPV6_LHST}                                         # listen to ip address
 		 		#listen-address=${NICS_IPV4}                                 # listen to ip address
@@ -2641,7 +2734,7 @@ function funcCreate_late_command() {
 		 		#no-resolv                                                  # don't read /etc/resolv.conf
 		 		#strict-order                                               # try in the registration order of /etc/resolv.conf
 		 		#bind-dynamic                                               # enable bind-interfaces and the default hybrid network mode
-		 		#bind-interfaces                                            # enable multiple instances of dnsmasq
+		 		bind-interfaces                                             # enable multiple instances of dnsmasq
 		 		#conf-file=${_CONF_FILE}       # enable dnssec validation and caching
 		 		#dnssec                                                     # "
 		 		
@@ -2923,6 +3016,16 @@ function funcCreate_late_command() {
 		 		return
 		 	fi
 		
+		 	# --- check command -------------------------------------------------------
+		 	if ! command -v pdbedit > /dev/null 2>&1; then
+		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		 		return
+		 	fi
+		
+		 	# --- create passdb.tdb ---------------------------------------------------
+		 	pdbedit -L > /dev/null
+		#	_SAMB_PWDB="$(find /var/lib/samba/ -name 'passdb.tdb' \( -type f -o -type l \))"
+		
 		 	# --- nsswitch.conf -------------------------------------------------------
 		 	_FILE_PATH="${DIRS_TGET:-}/etc/nsswitch.conf"
 		 	if [ -e "${_FILE_PATH}" ]; then
@@ -3130,6 +3233,47 @@ function funcCreate_late_command() {
 		
 		 	# --- debug out -----------------------------------------------------------
 		 	funcDebugout_file "${_FILE_PATH}"
+		
+		 	# --- systemctl -----------------------------------------------------------
+		 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
+		 	if [ "${_SRVC_STAT}" = "active" ]; then
+		 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
+		 		systemctl --quiet daemon-reload
+		 		systemctl --quiet restart "${_SRVC_NAME}"
+		 	fi
+		
+		 	# --- complete ------------------------------------------------------------
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+		}
+		
+		# --- network setup chronyd ---------------------------------------------------
+		funcSetupNetwork_chronyd() {
+		 	__FUNC_NAME="funcSetupNetwork_chronyd"
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+		
+		 	# --- check service -------------------------------------------------------
+		 	_SRVC_NAME="chronyd.service"
+		 	_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
+		 	if [ "${_SRVC_STAT}" = "not-found" ]; then
+		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		 		return
+		 	fi
+		
+		 	# --- check command -------------------------------------------------------
+		 	if ! command -v hwclock > /dev/null 2>&1; then
+		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		 		return
+		 	fi
+		
+		 	hwclock --systohc
+		
+		 	# --- systemctl -----------------------------------------------------------
+		 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
+		 	if [ "${_SRVC_STAT}" = "active" ]; then
+		 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
+		 		systemctl --quiet daemon-reload
+		 		systemctl --quiet restart "${_SRVC_NAME}"
+		 	fi
 		
 		 	# --- complete ------------------------------------------------------------
 		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -3644,6 +3788,96 @@ function funcCreate_late_command() {
 		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
 		}
 		
+		# --- ipxe module settings ----------------------------------------------------
+		funcSetupModule_ipxe() {
+		 	__FUNC_NAME="funcSetupModule_ipxe"
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+		
+		 	# --- check directory -----------------------------------------------------
+		 	if [ ! -e "${DIRS_TFTP}" ]; then
+		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
+		 		return
+		 	fi
+		
+		 	# --- get module ----------------------------------------------------------
+		#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/undionly.kpxe" "https://boot.ipxe.org/undionly.kpxe" || true
+		#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/ipxe.efi"      "https://boot.ipxe.org/ipxe.efi" || true
+		#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/wimboot"       "https://github.com/ipxe/wimboot/releases/latest/download/wimboot" || true
+		 	_FILE_PATH="${PROG_DIRS:?}/get_module_ipxe.sh"
+		 	mkdir -p "${_FILE_PATH%/*}"
+		 	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+		 		#!/bin/sh
+		 		
+		 		# *** initialization **********************************************************
+		 		
+		 		 	case "${1:-}" in
+		 		 		-dbg) set -x; shift;;
+		 		 		-dbgout) _DBGOUT="true"; shift;;
+		 		 		*) ;;
+		 		 	esac
+		 		
+		 		#	set -n								# Check for syntax errors
+		 		#	set -x								# Show command and argument expansion
+		 		 	set -o ignoreeof					# Do not exit with Ctrl+D
+		 		 	set +m								# Disable job control
+		 		 	set -e								# End with status other than 0
+		 		 	set -u								# End with undefined variable reference
+		 		#	set -o pipefail						# End with in pipe error
+		 		
+		 		#	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
+		 		 	trap 'exit 1' 1 2 3 15
+		 		 	export LANG=C
+		 		
+		 		 	if set -o | grep "^xtrace\s*on$"; then
+		 		 		exec 2>&1
+		 		 	fi
+		 		
+		 		 	# --- working directory name ----------------------------------------------
+		 		 	readonly PROG_PATH="$0"
+		 		#	readonly PROG_PRAM="$*"
+		 		#	readonly PROG_DIRS="${PROG_PATH%/*}"
+		 		 	readonly PROG_NAME="${PROG_PATH##*/}"
+		 		#	readonly PROG_PROC="${PROG_NAME}.$$"
+		 		
+		 		# *** main processing section *************************************************
+		 		 	# --- start ---------------------------------------------------------------
+		 		#	_start_time=$(date +%s)
+		 		#	_datetime="$(date +"%Y/%m/%d %H:%M:%S")"
+		 		#	printf "\033[m${PROG_NAME}: \033[45m%s\033[m\n" "${_datetime} processing start"
+		 		 	# --- main ----------------------------------------------------------------
+		_EOT_
+		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+		 		 	_DIRS_TFTP='${DIRS_TFTP}'
+		_EOT_
+		 	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+		 		 	for _WEBS_ADDR in \
+		 		 		https://boot.ipxe.org/undionly.kpxe \
+		 		 		https://boot.ipxe.org/ipxe.efi \
+		 		 		https://github.com/ipxe/wimboot/releases/latest/download/wimboot
+		 		 	do
+		 		 		if ! wget --tries=3 --timeout=10 --no-verbose --output-document="${_DIRS_TFTP}/ipxe/${_WEBS_ADDR##*/}" "${_WEBS_ADDR}"; then
+		 		 			printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to wget: ${_WEBS_ADDR}"
+		 		 		fi
+		 		 	done
+		 		 	# --- complete ------------------------------------------------------------
+		 		#	_end_time=$(date +%s)
+		 		#	_datetime="$(date +"%Y/%m/%d %H:%M:%S")"
+		 		#	printf "\033[m${PROG_NAME}: elapsed time: %dd%02dh%02dm%02ds\033[m\n" "$(((_end_time-_start_time)/86400))" "$(((_end_time-_start_time)%86400/3600))" "$(((_end_time-_start_time)%3600/60))" "$(((_end_time-_start_time)%60))"
+		 		#	printf "\033[m${PROG_NAME}: \033[45m%s\033[m\n" "${_datetime} processing complete"
+		 		 	exit 0
+		 		
+		 		### eof #######################################################################
+		_EOT_
+		 	chown -c root:root "${_FILE_PATH}"
+		 	chmod -c 0500 "${_FILE_PATH}"
+		
+		 	# --- debug out -----------------------------------------------------------
+		 	funcDebugout_file "${_FILE_PATH}"
+		
+		 	# --- complete ------------------------------------------------------------
+		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+		}
+		
 		# --- main --------------------------------------------------------------------
 		funcMain() {
 		 	_FUNC_NAME="funcMain"
@@ -3655,11 +3889,17 @@ function funcCreate_late_command() {
 		 	# --- debug out -----------------------------------------------------------
 		 	funcDebugout_parameter
 		
-			# --- installing missing packages -----------------------------------------
-			funcInstall_package
+		 	# --- installing missing packages -----------------------------------------
+		 	funcInstall_package
 		
 		 	# --- creating a shared environment ---------------------------------------
 		 	funcCreate_shared_env
+		
+		 	# --- apparmor settings -------------------------------------------------------
+		 	funcSetupConfig_apparmor
+		
+		 	# --- selinux settings ----------------------------------------------------
+		 	funcSetupConfig_selinux
 		
 		 	# --- network manager -----------------------------------------------------
 		 	funcSetupNetwork_connman			# network setup connman
@@ -3676,6 +3916,7 @@ function funcCreate_late_command() {
 		 	funcSetupNetwork_apache				# network setup apache
 		 	funcSetupNetwork_samba				# network setup samba
 		 	funcSetupNetwork_timesyncd			# network setup timesyncd
+		 	funcSetupNetwork_chronyd			# network setup chronyd
 		
 		 	# --- openssh-server settings ---------------------------------------------
 		 	funcSetupConfig_ssh
@@ -3697,6 +3938,9 @@ function funcCreate_late_command() {
 		
 		 	# --- grub menu settings --------------------------------------------------
 		 	funcSetupConfig_grub_menu
+		
+		 	# --- ipxe module settings ------------------------------------------------
+		 	funcSetupModule_ipxe
 		
 		 	# --- complete ------------------------------------------------------------
 		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${_FUNC_NAME}] ---"
@@ -3818,14 +4062,27 @@ function funcCreate_preseed_cfg() {
 				;;
 		esac
 		case "${_FILE_PATH}" in
-			*_ubuntu_server_old*   | \
-			*_ubiquity_desktop_old*)
+			*_debian_desktop_oldold* | *_debian_server_oldold* ) ;;	# debian-10(buster)
+			*_debian_desktop_old*    | *_debian_server_old*    ) ;;	# debian-11(bullseye)
+			*_debian_desktop*        | *_debian_server*        ) ;;	# debian-12(bookworm)/13(trixie)/14(forky)
+			*_ubuntu_server_oldold*                            )   	# ubuntu-server-14.04(trusty)/16.04(xenial)/18.04(bionic)/ubuntu-mini-18.04(bionic)
 				sed -i "${_FILE_PATH}"            \
 				    -e '/usr-is-merged/ s/^ /#/g' \
 				    -e '/usrmerge/      s/^ /#/g'
 				;;
-			*)
+			*_ubuntu_server_old*                               ) ;;	# ubuntu-mini-20.04(focal)
+			*_ubiquity_desktop_oldold*                         )   	# ubuntu-desktop-14.04(trusty)/16.04(xenial)/18.04(bionic)
+				sed -i "${_FILE_PATH}"            \
+				    -e '/usr-is-merged/ s/^ /#/g' \
+				    -e '/usrmerge/      s/^ /#/g'
 				;;
+			*_ubiquity_desktop_old*                            ) ;;	# ubuntu-desktop-20.04(focal)/22.04(jammy)
+			*_ubiquity_desktop*                                )   	# ubuntu-desktop-23.04(lunar)
+				sed -i "${_FILE_PATH}"            \
+				    -e '/usr-is-merged/ s/^ /#/g' \
+				    -e '/usrmerge/      s/^ /#/g'
+				;;
+			*)	;;
 		esac
 	done
 	# --- expert --------------------------------------------------------------
@@ -3872,9 +4129,9 @@ function funcCreate_nocloud() {
 		# ---------------------------------------------------------------------
 #		case "${FILE_PATH}" in
 #			*ubuntu_desktop/*      ) ;;	# ubuntu-desktop-23.10(mantic)/24.04(noble)/24.04(noble)/24.10(oracular)/25.04(plucky)
-#			*ubuntu_server/*       ) ;;	# ubuntu-live-23.04(lunar)/23.10(mantic)/24.04(noble)/24.10(oracular)/25.04(plucky)
-#			*ubuntu_server_old/*   ) ;;	# ubuntu-live-20.04(focal)/22.04(jammy)
 #			*ubuntu_server_oldold/*) ;;	# ubuntu-live-18.04(bionic)
+#			*ubuntu_server_old/*   ) ;;	# ubuntu-live-20.04(focal)/22.04(jammy)
+#			*ubuntu_server/*       ) ;;	# ubuntu-live-23.04(lunar)/23.10(mantic)/24.04(noble)/24.10(oracular)/25.04(plucky)
 #		esac
 		cp --backup "${CONF_CLUD}" "${FILE_PATH}"
 		case "${FILE_PATH}" in
@@ -3901,14 +4158,23 @@ function funcCreate_nocloud() {
 				;;
 		esac
 		case "${FILE_PATH}" in
-			*ubuntu_server/*       | \
-			*ubuntu_server_oldold/*)
+			*ubuntu_desktop/*      )   	# ubuntu-desktop-23.10(mantic)/24.04(noble)/24.04(noble)/24.10(oracular)/25.04(plucky)
 				sed -i "${FILE_PATH}"             \
 				    -e '/usr-is-merged/ s/^ /#/g' \
 				    -e '/usrmerge/      s/^ /#/g'
 				;;
-			*)
+			*ubuntu_server_oldold/*)   	# ubuntu-live-18.04(bionic)
+				sed -i "${FILE_PATH}"             \
+				    -e '/usr-is-merged/ s/^ /#/g' \
+				    -e '/usrmerge/      s/^ /#/g'
 				;;
+			*ubuntu_server_old/*   ) ;; # ubuntu-live-20.04(focal)/22.04(jammy)
+			*ubuntu_server/*       )   	# ubuntu-live-23.04(lunar)/23.10(mantic)/24.04(noble)/24.10(oracular)/25.04(plucky)
+				sed -i "${FILE_PATH}"             \
+				    -e '/usr-is-merged/ s/^ /#/g' \
+				    -e '/usrmerge/      s/^ /#/g'
+				;;
+			*)	;;
 		esac
 		touch "${_DIRS_NAME}/meta-data"      --reference "${_DIRS_NAME}/user-data"
 		touch "${_DIRS_NAME}/network-config" --reference "${_DIRS_NAME}/user-data"
@@ -4930,6 +5196,7 @@ function funcCreate_remaster_preseed() {
 	declare -r -a _TGET_LINE=("$@")
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
+	declare -r    _CONF_PATH="auto=true preseed/file=/cdrom/${_TGET_LINE[9]}"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
@@ -4937,11 +5204,12 @@ function funcCreate_remaster_preseed() {
 	declare       _DIRS_IRAM=""
 	funcPrintf "%20.20s: %s" "create" "boot options for preseed"
 	# --- boot option ---------------------------------------------------------
+	_BOOT_OPTN=""
 	case "${_TGET_LINE[1]}" in
 		ubuntu-desktop-* | \
-		ubuntu-legacy-*  ) _BOOT_OPTN="automatic-ubiquity noprompt auto=true preseed/file=/cdrom/${_TGET_LINE[9]}";;
-		*-mini-*         ) _BOOT_OPTN="auto=true";;
-		*                ) _BOOT_OPTN="auto=true preseed/file=/cdrom/${_TGET_LINE[9]}";;
+		ubuntu-legacy-*  ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}automatic-ubiquity noprompt ${_CONF_PATH}";;
+		*-mini-*         ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}auto=true";;
+		*                ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}${_CONF_PATH}";;
 	esac
 	case "${_TGET_LINE[1]}" in
 		ubuntu-*         ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/target_network_config=NetworkManager";;
@@ -5003,17 +5271,19 @@ function funcCreate_remaster_nocloud() {
 	declare -r -a _TGET_LINE=("$@")
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
+	declare -r    _CONF_PATH="autoinstall ds=nocloud\\;s=/cdrom/${_TGET_LINE[9]}"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/${_TGET_LINE[9]%/*}"
 	declare       _WORK_LINK=""
 	funcPrintf "%20.20s: %s" "create" "boot options for nocloud"
 	# --- boot option ---------------------------------------------------------
+	_BOOT_OPTN=""
 	case "${_TGET_LINE[1]}" in
-		ubuntu-live-18.*      ) _BOOT_OPTN="boot=casper";;
-		*                     ) _BOOT_OPTN=""           ;;
+		ubuntu-live-18.*      ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}boot=casper";;
+		*                     )                                            ;;
 	esac
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}automatic-ubiquity noprompt autoinstall ds=nocloud\\;s=/cdrom/${_TGET_LINE[9]}"
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}automatic-ubiquity noprompt ${_CONF_PATH}"
 	case "${_TGET_LINE[1]}" in
 		ubuntu-live-18.04)
 			_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${_HOST_NAME}.${WGRP_NAME}"
@@ -5047,12 +5317,13 @@ function funcCreate_remaster_kickstart() {
 	declare -r -a _TGET_LINE=("$@")
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
+	declare -r    _CONF_PATH="inst.ks=hd:sr0:/${_TGET_LINE[9]}"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/kickstart"
 	funcPrintf "%20.20s: %s" "create" "boot options for kickstart"
 	# --- boot option ---------------------------------------------------------
-	_BOOT_OPTN="inst.ks=hd:sr0:/${_TGET_LINE[9]}"
+	_BOOT_OPTN="${_CONF_PATH}"
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${_HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:none,auto6 nameserver=${IPV4_NSVR}"
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}fsck.mode=skip"
@@ -5072,6 +5343,7 @@ function funcCreate_remaster_autoyast() {
 	declare -r -a _TGET_LINE=("$@")
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
+	declare -r    _CONF_PATH="autoyast=cd:/${_TGET_LINE[9]}"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/autoyast"
@@ -5082,7 +5354,7 @@ function funcCreate_remaster_autoyast() {
 		*              ) ;;
 	esac
 	# --- boot option ---------------------------------------------------------
-	_BOOT_OPTN="autoyast=cd:/${_TGET_LINE[9]}"
+	_BOOT_OPTN="${_CONF_PATH}"
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}hostname=${_HOST_NAME}.${WGRP_NAME} ifcfg=${_WORK_ETHR}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME}"
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}fsck.mode=skip"
@@ -5107,6 +5379,7 @@ function funcCreate_remaster_iso_file() {
 #	declare -r    _WORK_MNTP="${_WORK_DIRS}/mnt"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
+#	declare       _WORK_PATH=""
 	declare       _DIRS_IRAM=""
 #	declare       _FILE_IRAM=""
 	declare       _FILE_HBRD=""
@@ -5123,15 +5396,13 @@ function funcCreate_remaster_iso_file() {
 	declare -i    _RET_CD=0
 	# --- create initrd file --------------------------------------------------
 	if [[ "${_TGET_LINE[1]}" =~ -mini- ]]; then
-		# shellcheck disable=SC2312
-		while read -r _DIRS_IRAM
+		find "${_WORK_RAMS}" -name 'initrd*' -type d | sort | sed -ne '\%\(initrd.*/initrd*\|/.*netboot/\)%!p' | while read -r _DIRS_IRAM
 		do
 			funcPrintf "%20.20s: %s" "create" "remaster ${MINI_IRAM}"
-#			_FILE_IRAM="${_WORK_IMGS}/${_DIRS_IRAM/${_WORK_RAMS}/}"
 			pushd "${_DIRS_IRAM}" > /dev/null
 				find . | cpio --format=newc --create --quiet | gzip > "${_WORK_IMGS}/${MINI_IRAM}"
 			popd > /dev/null
-		done < <(find "${_WORK_RAMS}" -name 'initrd*' -type d | sort | sed -ne '\%\(initrd.*/initrd*\|/.*netboot/\)%!p')
+		done
 	fi
 	# --- create iso file -----------------------------------------------------
 	funcPrintf "%20.20s: %s" "create" "remaster iso file"
@@ -5462,6 +5733,11 @@ _EOT_
 function funcDbg_parameter() {
 #	echo "${!PROG_*}"
 #	echo "${!DIRS_*}"
+
+	# --- machine information -------------------------------------------------
+	printf "%s=[%s]\n"	"CODE_NAME"		"${CODE_NAME:-}"
+	printf "%s=[%s]\n"	"MAIN_ARHC"		"${MAIN_ARHC:-}"
+	printf "%s=[%s]\n"	"OTHR_ARCH"		"${OTHR_ARCH:-}"
 
 	# --- working directory name ----------------------------------------------
 	printf "%s=[%s]\n"	"PROG_PATH"		"${PROG_PATH:-}"
@@ -5992,10 +6268,10 @@ function funcMain() {
 	# -------------------------------------------------------------------------
 	if [[ -z "${PROG_PARM[*]}" ]]; then
 		funcPrintf "sudo ./${PROG_NAME} [ options ]"
-		funcPrintf "debug print and test (empty is [ options ])"
 		funcPrintf "  -d | --debug [ options ]"
 		funcPrintf "    func    function test"
 		funcPrintf "    text    text color test"
+		funcPrintf "    parm    display of main internal parameters"
 		funcPrintf "create symbolic link"
 		funcPrintf "  -l | --link"
 		funcPrintf "create config files"

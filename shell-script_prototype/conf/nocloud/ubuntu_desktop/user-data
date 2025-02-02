@@ -70,7 +70,7 @@ autoinstall:
       mkdir -p /run/systemd/resolve 2>&1 | tee -a "${LOGS_NAME}";
       cp /etc/resolv.conf /run/systemd/resolve/stub-resolv.conf 2>&1 | tee -a "${LOGS_NAME}";
     fi;
-    if ! command -v wireplumber > /dev/null 2>&1; then
+    if command -v wireplumber > /dev/null 2>&1; then
       FILE_PATH="/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf";
       mkdir -p "${FILE_PATH%/*}";
       {
@@ -230,6 +230,8 @@ autoinstall:
   package_update: true
   package_upgrade: true
   packages:
+  - apparmor
+# - usrmerge
   - sudo
   - firewalld
   - traceroute
@@ -268,6 +270,7 @@ autoinstall:
   - thunderbird-locale-ja
   - rhythmbox
   - ffmpeg
+  - gstreamer1.0-libav
 # -----------------------------------------------------------------------------
 # - usrmerge
 # - tftpd-hpa
@@ -322,7 +325,11 @@ autoinstall:
 #   ls -l /etc/resolv.conf*;
 # =============================================================================
   power_state:
+    delay: now
     mode: reboot
+    message: Rebooting machine
+    timeout: 2
+    condition: true
 # =============================================================================
   late-commands:
   - [ sh, -c, '
@@ -393,7 +400,6 @@ autoinstall:
       fi;
       echo "### complete shell ${FUNC_NAME} [${DIRS_TGET:-}${SHEL_EXEC}] ###" 2>&1 | tee -a "${LOGS_NAME}";
     fi;
-    eject --cdrom || true;
     echo "### complete ${FUNC_NAME} ###" 2>&1 | tee -a "${LOGS_NAME}";' ]
 # =============================================================================
 # memo:
