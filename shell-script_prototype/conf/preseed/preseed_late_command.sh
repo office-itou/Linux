@@ -1797,6 +1797,7 @@ funcSetupNetwork_samba() {
 	# --- shared settings section ---------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_WORK_PATH}"
 		[homes]
+		        allow insecure wide links = Yes
 		        browseable = No
 		        comment = Home Directories
 		        create mask = 0770
@@ -1877,10 +1878,12 @@ funcSetupNetwork_samba() {
 		        comment = HTML shared directories
 		        guest ok = Yes
 		        path = ${DIRS_HTML}
+		        wide links = Yes
 		[tftp-share]
 		        comment = TFTP shared directories
 		        guest ok = Yes
 		        path = ${DIRS_TFTP}
+		        wide links = Yes
 _EOT_
 
 	# --- output --------------------------------------------------------------

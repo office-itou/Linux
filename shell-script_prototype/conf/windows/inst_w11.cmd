@@ -1,7 +1,7 @@
     @Echo Off
 Rem SetLocal
-    Set WindowsVer=10
-    Set ShareName=\\sv-server\pxe-share
+    Set WindowsVer=11
+    Set ShareName=\\sv-server\tftp-share\imgs
     Set ShareDrv=Z:
     Set SetupExe=%ShareDrv%\windows-%WindowsVer%\setup.exe
     Set AutoInst=%SystemDrive%\Windows\System32\unattend.xml

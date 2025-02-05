@@ -695,12 +695,12 @@
 	# --- tool ----------------------------------------------------------------
 	declare -r -a DATA_LIST_TOOL=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
 		"m  menu-entry                  System%20tools                          -                   -               -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-		"x  memtest86plus               Memtest86+%207.00                       memtest86+          ${DIRS_ISOS}    mt86plus_7.00_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                                           " \
-		"o  memtest86plus               Memtest86+%207.20                       memtest86+          ${DIRS_ISOS}    mt86plus_7.20_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.20/mt86plus_7.20_64.grub.iso.zip                                                                           " \
-		"o  winpe-x64                   WinPE%20x64                             windows             ${DIRS_ISOS}    WinPEx64.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  winpe-x86                   WinPE%20x86                             windows             ${DIRS_ISOS}    WinPEx86.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  ati2020x64                  ATI2020x64                              windows             ${DIRS_ISOS}    WinPE_ATI2020x64.iso                            .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  ati2020x86                  ATI2020x86                              windows             ${DIRS_ISOS}    WinPE_ATI2020x86.iso                            .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"x  memtest86plus               Memtest86+%207.00                       memtest86+          ${DIRS_ISOS}    mt86plus_7.00_64.grub.iso                       -                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                                           " \
+		"o  memtest86plus               Memtest86+%207.20                       memtest86+          ${DIRS_ISOS}    mt86plus_7.20_64.grub.iso                       -                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.20/mt86plus_7.20_64.grub.iso.zip                                                                           " \
+		"o  winpe-x64                   WinPE%20x64                             windows             ${DIRS_ISOS}    WinPEx64.iso                                    -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  winpe-x86                   WinPE%20x86                             windows             ${DIRS_ISOS}    WinPEx86.iso                                    -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  ati2020x64                  ATI2020x64                              windows             ${DIRS_ISOS}    WinPE_ATI2020x64.iso                            -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  ati2020x86                  ATI2020x86                              windows             ${DIRS_ISOS}    WinPE_ATI2020x86.iso                            -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"m  menu-entry                  -                                       -                   -               -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
 	) #  0  1                           2                                       3                   4               5                                               6                                       7                           8                       9                                       10                               11          12          13          14  15  16  17
 
@@ -3084,6 +3084,7 @@ function funcCreate_late_command() {
 		 	# --- shared settings section ---------------------------------------------
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_WORK_PATH}"
 		 		[homes]
+		 		        allow insecure wide links = Yes
 		 		        browseable = No
 		 		        comment = Home Directories
 		 		        create mask = 0770
@@ -3164,10 +3165,12 @@ function funcCreate_late_command() {
 		 		        comment = HTML shared directories
 		 		        guest ok = Yes
 		 		        path = ${DIRS_HTML}
+		 		        wide links = Yes
 		 		[tftp-share]
 		 		        comment = TFTP shared directories
 		 		        guest ok = Yes
 		 		        path = ${DIRS_TFTP}
+		 		        wide links = Yes
 		_EOT_
 		
 		 	# --- output --------------------------------------------------------------
@@ -4401,20 +4404,22 @@ function funcCreate_copy_iso2hdd() {
 	umount "${_WORK_DIRS}/mnt"
 	chmod -R +r "${_DEST_DIRS}/" 2>/dev/null || true
 	# --- copy initrd -> hdd --------------------------------------------------
-	_FILE_IRAM="${_DEST_DIRS}/${_TGET_LINE[6]}/${_TGET_LINE[7]}"
-	_FILE_VLNZ="${_DEST_DIRS}/${_TGET_LINE[6]}/${_TGET_LINE[8]}"
-	if [[ -e "${_FILE_IRAM}" ]] \
-	&& [[ -e "${_FILE_VLNZ}" ]]; then
-		_BOOT_IRAM="${_BOOT_DIRS}/${_TGET_LINE[6]}/${_TGET_LINE[7]}"
-		_BOOT_VLNZ="${_BOOT_DIRS}/${_TGET_LINE[6]}/${_TGET_LINE[8]}"
-		mkdir -p "${_BOOT_IRAM%/*}" \
-		         "${_BOOT_VLNZ%/*}"
-		funcPrintf "%20.20s: %s" "copy" "${_FILE_IRAM##*/}"
-		ionice -c "${IONICE_CLAS}" rsync "${_RSYC_OPTN[@]}" "${_FILE_IRAM}" "${_BOOT_IRAM}" 2>/dev/null || true
-		funcPrintf "%20.20s: %s" "copy" "${_FILE_VLNZ##*/}"
-		ionice -c "${IONICE_CLAS}" rsync "${_RSYC_OPTN[@]}" "${_FILE_VLNZ}" "${_BOOT_VLNZ}" 2>/dev/null || true
-		chmod -R +r "${_BOOT_IRAM}" \
-		            "${_BOOT_VLNZ}" 2>/dev/null || true
+	if [[ "${_TGET_LINE[6]}" != "-" ]]; then
+		_FILE_IRAM="${_DEST_DIRS}/${_TGET_LINE[6]}/${_TGET_LINE[7]}"
+		_FILE_VLNZ="${_DEST_DIRS}/${_TGET_LINE[6]}/${_TGET_LINE[8]}"
+		if [[ -e "${_FILE_IRAM}" ]] \
+		&& [[ -e "${_FILE_VLNZ}" ]]; then
+			_BOOT_IRAM="${_BOOT_DIRS}/${_TGET_LINE[6]}/${_TGET_LINE[7]}"
+			_BOOT_VLNZ="${_BOOT_DIRS}/${_TGET_LINE[6]}/${_TGET_LINE[8]}"
+			mkdir -p "${_BOOT_IRAM%/*}" \
+			         "${_BOOT_VLNZ%/*}"
+			funcPrintf "%20.20s: %s" "copy" "${_FILE_IRAM##*/}"
+			ionice -c "${IONICE_CLAS}" rsync "${_RSYC_OPTN[@]}" "${_FILE_IRAM}" "${_BOOT_IRAM}" 2>/dev/null || true
+			funcPrintf "%20.20s: %s" "copy" "${_FILE_VLNZ##*/}"
+			ionice -c "${IONICE_CLAS}" rsync "${_RSYC_OPTN[@]}" "${_FILE_VLNZ}" "${_BOOT_VLNZ}" 2>/dev/null || true
+			chmod -R +r "${_BOOT_IRAM}" \
+			            "${_BOOT_VLNZ}" 2>/dev/null || true
+		fi
 	fi
 }
 
@@ -4423,45 +4428,91 @@ function funcCreate_menu_preseed() {
 	declare -r -a _TGET_LINE=("$@")
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
-	declare -r    _CONF_PATH="auto=true url=${SRVR_ADDR}/conf/${_TGET_LINE[9]}"
+	declare       _CONF_PATH="auto=true url=http://\${srvraddr}/conf/${_TGET_LINE[9]}"
 	declare -r    _RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/preseed"
 	declare       _DIRS_IRAM=""
-	funcPrintf "%20.20s: %s" "create" "boot options for preseed"
+	declare       _NWRK_MANE=""
+#	declare       _NWRK_CONF=""
+	declare       _LANG_CONF="language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese"
+	declare       _ISOS_FILE="boot=live fetch=http://\${srvraddr}/isos/${_TGET_LINE[5]}"
+#	funcPrintf "%20.20s: %s" "create" "boot options for preseed"
 	# --- boot option ---------------------------------------------------------
-	_BOOT_OPTN="root=tftp"
+	_BOOT_OPTN=""
+	# --- autoinst ------------------------------------------------------------
 	case "${_TGET_LINE[1]}" in
 		ubuntu-desktop-* | \
-		ubuntu-legacy-*  ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}automatic-ubiquity noprompt ${_CONF_PATH}";;
-		*                ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}${_CONF_PATH}";;
-	esac
-	case "${_TGET_LINE[1]}" in
-		ubuntu-*         ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/target_network_config=NetworkManager";;
+		ubuntu-legacy-*  ) _CONF_PATH="automatic-ubiquity noprompt ${_CONF_PATH}";;
+#		*-mini-*         ) _CONF_PATH="auto=true";;
 		*                ) ;;
 	esac
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/disable_autoconfig=true"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/choose_interface=${ETHR_NAME}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_hostname=${_HOST_NAME}.${WGRP_NAME}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_ipaddress=${IPV4_ADDR}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_netmask=${IPV4_MASK}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_gateway=${IPV4_GWAY}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_nameservers=${IPV4_NSVR}"
-#	_BOOT_OPTN+="${_BOOT_OPTN:+" "}locales=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-layouts=jp keyboard-model=jp106"
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	# --- netcfg --------------------------------------------------------------
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=dhcp"
+	else
+		case "${_TGET_LINE[1]}" in
+			ubuntu-*         ) _NWRK_MANE="NetworkManager";;
+			*                ) ;;
+		esac
+		_BOOT_OPTN+="${_NWRK_MANE:+"${_BOOT_OPTN:+" "}netcfg/target_network_config=nwrkmane"}"
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/disable_autoconfig=true"
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/choose_interface=\${ethrname}"
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_hostname=\${hostname}"
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_ipaddress=\${ipv4addr}"
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_netmask=\${ipv4mask}"
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_gateway=\${ipv4gway}"
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_nameservers=\${ipv4nsvr}"
+	fi
+	# --- language ------------------------------------------------------------
 	case "${_TGET_LINE[1]}" in
 		ubuntu-desktop-* | \
-		ubuntu-legacy-*  ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
-		*                ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
+		ubuntu-legacy-*  ) _LANG_CONF="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		*                ) ;;
 	esac
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${language}"
+	# -------------------------------------------------------------------------
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}fsck.mode=skip"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}${_RAMS_DISK}"
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${ramsdisk}"
+	# --- isosfile ------------------------------------------------------------
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${isosfile}"
 	case "${_TGET_LINE[1]}" in
-		ubuntu-*         ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}iso-url=${SRVR_ADDR}/isos/${_TGET_LINE[5]}";;
-		*                ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}fetch=${SRVR_ADDR}/isos/${_TGET_LINE[5]}";;
+		ubuntu-desktop-18.* | \
+		ubuntu-desktop-20.* | \
+		ubuntu-desktop-22.* | \
+		ubuntu-legacy-*     ) _ISOS_FILE="boot=casper url=http://\${srvraddr}/isos/${_TGET_LINE[5]}";;
+		ubuntu-*            ) _ISOS_FILE="boot=casper iso-url=http://\${srvraddr}/isos/${_TGET_LINE[5]}";;
+		*                   ) ;;
 	esac
-	echo "${_BOOT_OPTN}"
+	# --- output --------------------------------------------------------------
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set srvraddr ${SRVR_ADDR:?}
+			set isosfile ${_ISOS_FILE:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	else
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
+			set ethrname ${ETHR_NAME:-"ens160"}
+			set ipv4addr ${IPV4_ADDR:-}
+			set ipv4mask ${IPV4_MASK:-}
+			set ipv4gway ${IPV4_GWAY:-}
+			set ipv4nsvr ${IPV4_NSVR:-}
+			set srvraddr ${SRVR_ADDR:?}
+			set nwrkmane ${_NWRK_MANE:-}
+			set isosfile ${_ISOS_FILE:-}
+			set autoinst ${_CONF_PATH:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	fi
 }
 
 # ----- create menu for nocloud -----------------------------------------------
@@ -4469,39 +4520,86 @@ function funcCreate_menu_nocloud() {
 	declare -r -a _TGET_LINE=("$@")
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
-	declare -r    _CONF_PATH="autoinstall ds=nocloud\\;s=/cdrom/${_TGET_LINE[9]}"
+	declare -r    _CONF_PATH="automatic-ubiquity noprompt autoinstall ds=nocloud\\;s=http://\${srvraddr}/conf/${_TGET_LINE[9]}"
 	declare -r    _RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
+	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/${_TGET_LINE[9]%/*}"
-	declare       _WORK_LINK=""
-	funcPrintf "%20.20s: %s" "create" "boot options for nocloud"
+#	declare       _DIRS_IRAM=""
+#	declare       _NWRK_MANE=""
+#	declare       _NWRK_CONF=""
+	declare       _LANG_CONF="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	declare       _ISOS_FILE="boot=live fetch=http://\${srvraddr}/isos/${_TGET_LINE[5]}"
+#	funcPrintf "%20.20s: %s" "create" "boot options for nocloud"
 	# --- boot option ---------------------------------------------------------
-	_BOOT_OPTN="root=tftp"
-	case "${_TGET_LINE[1]}" in
-		ubuntu-live-18.*      ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}boot=casper";;
-		*                     )                                            ;;
-	esac
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}automatic-ubiquity noprompt ${_CONF_PATH}"
-	case "${_TGET_LINE[1]}" in
-		ubuntu-live-18.04)
-			_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=${ETHR_NAME},${IPV4_ADDR},${IPV4_MASK},${IPV4_GWAY} hostname=${_HOST_NAME}.${WGRP_NAME}"
-			;;
-		*                )
-			_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}::${ETHR_NAME}:static:${IPV4_NSVR} hostname=${_HOST_NAME}.${WGRP_NAME}"
-#			_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${_HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:static:${IPV4_NSVR}"
-			;;
-	esac
-#	_BOOT_OPTN+="${_BOOT_OPTN:+" "}debian-installer/language=ja keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-#	_BOOT_OPTN+="${_BOOT_OPTN:+" "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	_BOOT_OPTN=""
+	# --- autoinst ------------------------------------------------------------
+#	case "${_TGET_LINE[1]}" in
+#		ubuntu-desktop-* | \
+#		ubuntu-legacy-*  ) _CONF_PATH="automatic-ubiquity noprompt ${_CONF_PATH}";;
+#		*-mini-*         ) _CONF_PATH="auto=true";;
+#		*                ) ;;
+#	esac
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	# --- netcfg --------------------------------------------------------------
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=dhcp"
+	else
+		case "${_TGET_LINE[1]}" in
+			ubuntu-live-18.04) _BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
+			*                ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}::\${ethrname}:static:\${ipv4nsvr} hostname=\${hostname}";;
+		esac
+#		case "${_TGET_LINE[1]}" in
+#			ubuntu-*         ) _NWRK_MANE="NetworkManager";;
+#			*                ) ;;
+#		esac
+	fi
+	# --- language ------------------------------------------------------------
+#	case "${_TGET_LINE[1]}" in
+#		ubuntu-desktop-* | \
+#		ubuntu-legacy-*  ) _LANG_CONF="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+#		*                ) ;;
+#	esac
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${language}"
+	# -------------------------------------------------------------------------
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}fsck.mode=skip"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}${_RAMS_DISK}"
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${ramsdisk}"
+	# --- isosfile ------------------------------------------------------------
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${isosfile}"
 	case "${_TGET_LINE[1]}" in
-		ubuntu-*         ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}iso-url=${SRVR_ADDR}/isos/${_TGET_LINE[5]}";;
-		*                ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}fetch=${SRVR_ADDR}/isos/${_TGET_LINE[5]}";;
+		ubuntu-desktop-18.* | \
+		ubuntu-desktop-20.* | \
+		ubuntu-desktop-22.* | \
+		ubuntu-legacy-*     ) _ISOS_FILE="boot=casper url=http://\${srvraddr}/isos/${_TGET_LINE[5]}";;
+		ubuntu-*            ) _ISOS_FILE="boot=casper iso-url=http://\${srvraddr}/isos/${_TGET_LINE[5]}";;
+		*                   ) ;;
 	esac
-	echo "${_BOOT_OPTN}"
+	# --- output --------------------------------------------------------------
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set srvraddr ${SRVR_ADDR:?}
+			set isosfile ${_ISOS_FILE:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	else
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
+			set ethrname ${ETHR_NAME:-"ens160"}
+			set ipv4addr ${IPV4_ADDR:-}
+			set ipv4mask ${IPV4_MASK:-}
+			set ipv4gway ${IPV4_GWAY:-}
+			set ipv4nsvr ${IPV4_NSVR:-}
+			set srvraddr ${SRVR_ADDR:?}
+			set isosfile ${_ISOS_FILE:-}
+			set autoinst ${_CONF_PATH:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	fi
 }
 
 # ----- create menu for kickstart ---------------------------------------------
@@ -4509,21 +4607,60 @@ function funcCreate_menu_kickstart() {
 	declare -r -a _TGET_LINE=("$@")
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
-	declare -r    _CONF_PATH="inst.ks=hd:sr0:/${_TGET_LINE[9]}"
+	declare -r    _CONF_PATH="inst.ks=http://\${srvraddr}/conf/${_TGET_LINE[9]}"
 	declare -r    _RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
+	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/kickstart"
-	funcPrintf "%20.20s: %s" "create" "boot options for kickstart"
+#	declare       _DIRS_IRAM=""
+#	declare       _NWRK_MANE=""
+#	declare       _NWRK_CONF=""
+	declare       _LANG_CONF="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	declare       _ISOS_FILE="inst.repo=http://\${srvraddr}/imgs/${_TGET_LINE[1]}"
+#	funcPrintf "%20.20s: %s" "create" "boot options for kickstart"
 	# --- boot option ---------------------------------------------------------
-	_BOOT_OPTN="${_CONF_PATH}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=${IPV4_ADDR}::${IPV4_GWAY}:${IPV4_MASK}:${_HOST_NAME}.${WGRP_NAME}:${ETHR_NAME}:none,auto6 nameserver=${IPV4_NSVR}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	_BOOT_OPTN=""
+	# --- autoinst ------------------------------------------------------------
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	# --- netcfg --------------------------------------------------------------
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=dhcp"
+	else
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=\${ipv4addr}::\${ipv4mask}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
+	fi
+	# --- language ------------------------------------------------------------
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${language}"
+	# -------------------------------------------------------------------------
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}fsck.mode=skip"
-#	_BOOT_OPTN+="${_BOOT_OPTN:+" "}inst.stage2=hd:LABEL=${_TGET_LINE[15]}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}inst.stage2=${SRVR_ADDR}/imgs/${_TGET_LINE[1]}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}${_RAMS_DISK}"
-	echo "${_BOOT_OPTN}"
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${ramsdisk}"
+	# --- isosfile ------------------------------------------------------------
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${isosfile}"
+	# --- output --------------------------------------------------------------
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set srvraddr ${SRVR_ADDR:?}
+			set isosfile ${_ISOS_FILE:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	else
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
+			set ethrname ${ETHR_NAME:-"ens160"}
+			set ipv4addr ${IPV4_ADDR:-}
+			set ipv4mask ${IPV4_MASK:-}
+			set ipv4gway ${IPV4_GWAY:-}
+			set ipv4nsvr ${IPV4_NSVR:-}
+			set srvraddr ${SRVR_ADDR:?}
+			set isosfile ${_ISOS_FILE:-}
+			set autoinst ${_CONF_PATH:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	fi
 }
 
 # ----- create menu for autoyast ----------------------------------------------
@@ -4531,25 +4668,65 @@ function funcCreate_menu_autoyast() {
 	declare -r -a _TGET_LINE=("$@")
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
-	declare -r    _CONF_PATH="autoyast=cd:/${_TGET_LINE[9]}"
+	declare -r    _CONF_PATH="autoyast=http://\${srvraddr}/conf/${_TGET_LINE[9]}"
 	declare -r    _RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
-	declare -r    _WORK_CONF="${_WORK_IMGS}/autoyast"
+	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
+	declare -r    _WORK_CONF="${_WORK_IMGS}/kickstart"
 	declare       _WORK_ETHR="${ETHR_NAME}"
-	funcPrintf "%20.20s: %s" "create" "boot options for autoyast"
-	case "${_TGET_LINE[1]}" in
-		opensuse-*-15* ) _WORK_ETHR="eth0";;
-		*              ) ;;
-	esac
+#	declare       _DIRS_IRAM=""
+#	declare       _NWRK_MANE=""
+#	declare       _NWRK_CONF=""
+	declare       _LANG_CONF="locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	declare       _ISOS_FILE="install=http://\${srvraddr}/imgs/${_TGET_LINE[1]}"
+#	funcPrintf "%20.20s: %s" "create" "boot options for kickstart"
 	# --- boot option ---------------------------------------------------------
-	_BOOT_OPTN="${_CONF_PATH}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}hostname=${_HOST_NAME}.${WGRP_NAME} ifcfg=${_WORK_ETHR}=${IPV4_ADDR}/${IPV4_CIDR},${IPV4_GWAY},${IPV4_NSVR},${WGRP_NAME}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	_BOOT_OPTN=""
+	# --- autoinst ------------------------------------------------------------
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	# --- netcfg --------------------------------------------------------------
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=dhcp"
+	else
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4mask},\${ipv4nsvr},${WGRP_NAME}"
+		case "${_TGET_LINE[1]}" in
+			opensuse-*-15* ) _WORK_ETHR="eth0";;
+			*              ) ;;
+		esac
+	fi
+	# --- language ------------------------------------------------------------
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${language}"
+	# -------------------------------------------------------------------------
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}fsck.mode=skip"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}install=${SRVR_ADDR}/imgs/${_TGET_LINE[1]}"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}${_RAMS_DISK}"
-	echo "${_BOOT_OPTN}"
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${ramsdisk}"
+	# --- isosfile ------------------------------------------------------------
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${isosfile}"
+	# --- output --------------------------------------------------------------
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set srvraddr ${SRVR_ADDR:?}
+			set isosfile ${_ISOS_FILE:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	else
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
+			set ethrname ${_WORK_ETHR:-"ens160"}
+			set ipv4addr ${IPV4_ADDR:-}
+			set ipv4mask ${IPV4_MASK:-}
+			set ipv4gway ${IPV4_GWAY:-}
+			set ipv4nsvr ${IPV4_NSVR:-}
+			set srvraddr ${SRVR_ADDR:?}
+			set isosfile ${_ISOS_FILE:-}
+			set autoinst ${_CONF_PATH:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	fi
 }
 
 # ----- create menu for ipxe script -------------------------------------------
@@ -4563,7 +4740,9 @@ function funcCreate_autoexec_ipxe() {
 	declare       _MENU_TEXT=""								# meny text
 	declare -r -i _MENU_SPCS=40
 	              _TEXT_GAPS="$(funcString 60 '.')"
-	readonly      _TEXT_GAPS
+#	readonly      _TEXT_GAPS
+	declare       _WORK_TEXT=""
+	declare -a    _WORK_ARRY=()
 	declare -i    I=0
 	# --- no display ----------------------------------------------------------
 	if [[ "${_TGET_LINE[2]}" = "-" ]]; then
@@ -4630,13 +4809,17 @@ _EOT_
 			if [[ ! -e "${_TGET_LINE[4]}/${_TGET_LINE[5]}" ]]; then
 				return
 			fi
-			if [[ "${_TGET_LINE[11]}" = "-" ]] \
-			|| [[ "${_TGET_LINE[13]}" = "-" ]]; then
+			if [[ "${_TGET_LINE[13]}" = "-" ]]; then
 				_MENU_ENTR="$(printf "%-60.60s" "- ${_TGET_LINE[2]//%20/ }")"
 			else
-				_MENU_ENTR="$(printf "%-54.54s%20.20s" "- ${_TGET_LINE[2]//%20/ } ${_TEXT_GAPS}" "${_TGET_LINE[11]} ${_TGET_LINE[13]}")"
+				_MENU_ENTR="$(printf "%-54.54s%20.20s" "- ${_TGET_LINE[2]//%20/ } ${_TEXT_GAPS}" "${_TGET_LINE[13]:0:4}-${_TGET_LINE[13]:4:2}-${_TGET_LINE[13]:6:2} ${_TGET_LINE[13]:8:2}:${_TGET_LINE[13]:10:2}:${_TGET_LINE[13]:12:2}")"
 			fi
-			_MENU_TEXT="$(printf "%-${_MENU_SPCS}.${_MENU_SPCS}s%s" "item -- ${_TGET_LINE[1]}" "${_MENU_ENTR}")"
+			_WORK_TEXT="${_TGET_LINE[1]}"
+			if [[ "${_TGET_LINE[6]}" != "-" ]] \
+			&& [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+				_WORK_TEXT="live-${_WORK_TEXT}"
+			fi
+			_MENU_TEXT="$(printf "%-${_MENU_SPCS}.${_MENU_SPCS}s%s" "item -- ${_WORK_TEXT}" "${_MENU_ENTR}")"
 			sed -i "${_MENU_PATH}" -e "/\[ System command \]/i ${_MENU_TEXT}"
 			case "${_TGET_LINE[1]}" in
 				windows-* )
@@ -4644,10 +4827,10 @@ _EOT_
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							:${_TGET_LINE[1]}
 							echo Loading ${_TGET_LINE[2]//%20/ } ...
-							set svraddr ${SRVR_ADDR}
-							isset \${next-server} && set svraddr \${next-server} ||
-							set knladdr http://\${svraddr}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}
-							set cfgaddr http://\${svraddr}/${DIRS_CONF##*/}/windows
+							set srvraddr ${SRVR_ADDR}
+							isset \${next-server} && set srvraddr \${next-server} ||
+							set knladdr http://\${srvraddr}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}
+							set cfgaddr http://\${srvraddr}/${DIRS_CONF##*/}/windows
 							echo Loading kernel and initrd ...
 							kernel ipxe/wimboot
 							initrd \${cfgaddr}/unattend.xml                 unattend.xml || goto error
@@ -4670,13 +4853,14 @@ _EOT_
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							:${_TGET_LINE[1]}
 							echo Loading ${_TGET_LINE[2]//%20/ } ...
-							set svraddr ${SRVR_ADDR}
-							isset \${next-server} && set svraddr \${next-server} ||
-							set knladdr http://\${svraddr}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}
+							set srvraddr ${SRVR_ADDR}
+							isset \${next-server} && set srvraddr \${next-server} ||
+							set knladdr http://\${srvraddr}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}
+							set cfgaddr http://\${srvraddr}/${DIRS_CONF##*/}/windows
 							echo Loading kernel and initrd ...
 							kernel ipxe/wimboot
-							initrd \${knladdr}/boot/bcd                     BCD          || goto error
-							initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+							initrd \${knladdr}/Boot/BCD                     BCD          || goto error
+							initrd \${knladdr}/Boot/boot.sdi                boot.sdi     || goto error
 							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
 							boot || goto error
 							exit
@@ -4689,9 +4873,9 @@ _EOT_
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							:${_TGET_LINE[1]}
 							echo Loading ${_TGET_LINE[2]//%20/ } ...
-							set svraddr ${SRVR_ADDR}
-							isset \${next-server} && set svraddr \${next-server} ||
-							set knladdr http://\${svraddr}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}
+							set srvraddr ${SRVR_ADDR}
+							isset \${next-server} && set srvraddr \${next-server} ||
+							set knladdr http://\${srvraddr}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}
 							iseq \${platform} efi && set knlfile \${knladdr}/${_TGET_LINE[7]} || set knlfile \${knladdr}/${_TGET_LINE[8]}
 							echo Loading kernel ...
 							kernel \${knlfile} || goto error
@@ -4702,20 +4886,58 @@ _EOT_
 					)"
 					;;
 				* )
+					IFS= mapfile -d $'\n' _WORK_ARRY < <(echo -n "${_BOOT_OPTN}")
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{hostname\}/${_WORK_ARRY[2]#set hostname }}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{nwrkmane\}/${_WORK_ARRY[3]#set nwrkmane }}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ethrname\}/${_WORK_ARRY[4]#set ethrname }}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4addr\}/${_WORK_ARRY[5]#set ipv4addr }}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4mask\}/${_WORK_ARRY[6]#set ipv4mask }}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4gway\}/${_WORK_ARRY[7]#set ipv4gway }}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4nsvr\}/${_WORK_ARRY[8]#set ipv4nsvr }}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{isosfile\}/${_WORK_ARRY[9]#set isosfile }}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{autoinst\}/${_WORK_ARRY[10]#set autoinst }}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{language\}/${_WORK_ARRY[11]#set language }}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ramsdisk\}/${_WORK_ARRY[12]#set ramsdisk }}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{srvraddr\}/${_WORK_ARRY[1]#set srvraddr }}"
 					_MENU_TEXT="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
-							:${_TGET_LINE[1]}
+							:${_WORK_TEXT}
 							echo Loading ${_TGET_LINE[2]//%20/ } ...
-							set svraddr ${SRVR_ADDR}
-							isset \${next-server} && set svraddr \${next-server} ||
-							set knladdr http://\${svraddr}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}
-							set options ${_BOOT_OPTN}
+							
+_EOT_
+					)"
+					_WORK_TEXT="$(echo -n "${_WORK_ARRY[0]}")"
+					unset '_WORK_ARRY[0]'
+					_WORK_ARRY=("$(echo -n "${_WORK_ARRY[@]}")")
+#					_WORK_ARRY=("${_WORK_ARRY[@]}")
+					_MENU_TEXT+="$(
+						printf "%s\n" "${_WORK_ARRY[@]}" | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+					)"
+					_MENU_TEXT+="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+							
+							isset \${next-server} && set srvraddr \${next-server} ||
 							form                                    Configure Boot Options
-							item options                            Boot Options
+							item hostname                           Hostname
+							item ethrname                           Interface
+							item ipv4addr                           IPv4 address
+							item ipv4mask                           IPv4 netmask
+							item ipv4gway                           IPv4 gateway
+							item ipv4nsvr                           IPv4 nameservers
 							present ||
+							form                                    Configure Boot Options
+							item srvraddr                           Server ip address
+							item nwrkmane                           Network manager
+							item isosfile                           ISO file
+							item autoinst                           Auto install
+							item language                           Language
+							item ramsdisk                           RAM disk
+							present ||
+							set knladdr http://\${srvraddr}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}
+							set options ${_WORK_TEXT}
 							echo Loading kernel and initrd ...
-							kernel \${knlfile}/${_TGET_LINE[8]} \${options} --- || goto error
-							initrd \${knlfile}/${_TGET_LINE[7]} || goto error
+							kernel \${knladdr}/${_TGET_LINE[6]}/${_TGET_LINE[8]} \${options} --- || goto error
+							initrd \${knladdr}/${_TGET_LINE[6]}/${_TGET_LINE[7]} || goto error
 							boot || goto error
 							exit
 							
@@ -5145,6 +5367,8 @@ function funcCall_create() {
 	declare -r -a _COMD_ENUM=("ipxe" "grub" "pxe")
 	declare -a    _COMD_LIST=()
 	declare -a    _TGET_LINE=()
+	declare       _FILE_PATH=""
+	declare -a    _FILE_INFO=()
 	declare       _MENU_PATH=""
 	declare -r    _MENU_GRUB="${DIRS_TFTP}/boot/grub/grub.cfg"
 	declare -r    _MENU_AUTO="${DIRS_TFTP}/boot/grub/autoinst.cfg"
@@ -5184,10 +5408,21 @@ function funcCall_create() {
 		esac
 		funcPrintf "%-3.3s%17.17s: %s %s" "===" "start" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
 		# --- skip check ------------------------------------------------------
-		if [[ ! -e "${_TGET_LINE[4]}/${_TGET_LINE[5]}" ]]; then
-			funcPrintf "%-3.3s${TXT_RESET}${TXT_BYELLOW}%17.17s: %s${TXT_RESET} %s" "===" "skip" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
+		_FILE_PATH="${_TGET_LINE[4]}/${_TGET_LINE[5]}"
+		if [[ ! -e "${_FILE_PATH}" ]]; then
+			funcPrintf "%-3.3s${TXT_RESET}${TXT_BYELLOW}%17.17s: %s${TXT_RESET} %s" "===" "skip" "${_FILE_PATH##*/}" "${TEXT_GAP2}"
 			continue
 		fi
+		# --- file information ------------------------------------------------
+		IFS= mapfile -d ' ' -t _FILE_INFO < <(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}" || true)
+		_TGET_LINE[11]="${_FILE_INFO[5]:0:4}-${_FILE_INFO[5]:4:2}-${_FILE_INFO[5]:6:2}"
+		_TGET_LINE[13]="${_FILE_INFO[5]}"
+		_TGET_LINE[14]="${_FILE_INFO[4]}"
+		_TGET_LINE[15]="$(LANG=C file -L "${_FILE_PATH}")"
+		_TGET_LINE[15]="${_TGET_LINE[15]#*\'}"
+		_TGET_LINE[15]="${_TGET_LINE[15]%\'*}"
+		_TGET_LINE[15]="${_TGET_LINE[15]// /%20}"
+		DATA_LIST[I]="${_TGET_LINE[*]}"
 		# --- copy iso contents to hdd ----------------------------------------
 		funcCreate_copy_iso2hdd "${_TGET_LINE[@]}"
 		# --- create boot options ---------------------------------------------
@@ -5224,6 +5459,7 @@ function funcCall_create() {
 				;;
 		esac
 		# --- create menu -----------------------------------------------------
+		_BOOT_OPTN="${SCRN_MODE:+"vga=${SCRN_MODE}"}${_BOOT_OPTN:+" ${_BOOT_OPTN}"}"
 		funcCreate_autoexec_ipxe "${_MENU_IPXE}" "${_TABS_CONT:-"0"}" "${_BOOT_OPTN}" "${_TGET_LINE[@]}"
 		funcPrintf "%-3.3s%17.17s: %s %s" "===" "complete" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
 	done

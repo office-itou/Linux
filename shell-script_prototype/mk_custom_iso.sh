@@ -703,12 +703,12 @@
 	# --- tool ----------------------------------------------------------------
 	declare -r -a DATA_LIST_TOOL=(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
 		"m  menu-entry                  System%20tools                          -                   -               -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
-		"x  memtest86plus               Memtest86+%207.00                       memtest86+          ${DIRS_ISOS}    mt86plus_7.00_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                                           " \
-		"o  memtest86plus               Memtest86+%207.20                       memtest86+          ${DIRS_ISOS}    mt86plus_7.20_64.grub.iso                       .                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.20/mt86plus_7.20_64.grub.iso.zip                                                                           " \
-		"o  winpe-x64                   WinPE%20x64                             windows             ${DIRS_ISOS}    WinPEx64.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  winpe-x86                   WinPE%20x86                             windows             ${DIRS_ISOS}    WinPEx86.iso                                    .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  ati2020x64                  ATI2020x64                              windows             ${DIRS_ISOS}    WinPE_ATI2020x64.iso                            .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
-		"o  ati2020x86                  ATI2020x86                              windows             ${DIRS_ISOS}    WinPE_ATI2020x86.iso                            .                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"x  memtest86plus               Memtest86+%207.00                       memtest86+          ${DIRS_ISOS}    mt86plus_7.00_64.grub.iso                       -                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.00/mt86plus_7.00_64.grub.iso.zip                                                                           " \
+		"o  memtest86plus               Memtest86+%207.20                       memtest86+          ${DIRS_ISOS}    mt86plus_7.20_64.grub.iso                       -                                       EFI/BOOT/memtest            boot/memtest            -                                       ${HGFS_DIRS}/linux/memtest86+    -           -           xx:xx:xx    0   -   -   https://www.memtest.org/download/v7.20/mt86plus_7.20_64.grub.iso.zip                                                                           " \
+		"o  winpe-x64                   WinPE%20x64                             windows             ${DIRS_ISOS}    WinPEx64.iso                                    -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  winpe-x86                   WinPE%20x86                             windows             ${DIRS_ISOS}    WinPEx86.iso                                    -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/WinPE       -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  ati2020x64                  ATI2020x64                              windows             ${DIRS_ISOS}    WinPE_ATI2020x64.iso                            -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
+		"o  ati2020x86                  ATI2020x86                              windows             ${DIRS_ISOS}    WinPE_ATI2020x86.iso                            -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/ati         -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"m  menu-entry                  -                                       -                   -               -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
 	) #  0  1                           2                                       3                   4               5                                               6                                       7                           8                       9                                       10                               11          12          13          14  15  16  17
 
@@ -1431,6 +1431,8 @@ function funcCreate_late_command() {
 		 			preseed/url=*  | url=*         ) SEED_FILE="${LINE#*url=}";;
 		 			preseed/file=* | file=*        ) SEED_FILE="${LINE#*file=}";;
 		 			ds=nocloud*                    ) SEED_FILE="${LINE#*ds=nocloud*=}";SEED_FILE="${SEED_FILE%%/}/user-data";;
+		 			inst.ks=*                      ) SEED_FILE="${LINE#*inst.ks=}";;
+		 			autoyast=*                     ) SEED_FILE="${LINE#*autoyast=}";;
 		 			netcfg/target_network_config=* ) NMAN_FLAG="${LINE#*target_network_config=}";;
 		 			netcfg/choose_interface=*      ) NICS_NAME="${LINE#*choose_interface=}";;
 		 			netcfg/disable_dhcp=*          ) IPV4_DHCP="$([ "${LINE#*disable_dhcp=}" = "true" ] && echo "false" || echo "true")";;
@@ -1921,7 +1923,9 @@ function funcCreate_late_command() {
 		 	_PAKG_LIST=""
 		 	if [ -n "${SEED_FILE:-}" ]; then
 		 		case "${SEED_FILE##*/}" in
-		 			user-data)	# cloud-init
+		 			auto*.xml)		;;	# autoyast
+		 			ks*.cfg) 		;;	# kickstart
+		 			user-data)			# nocloud
 		 				_FILE_PATH="${PROG_DIRS}/user-data"
 		 				if [ -e "${_FILE_PATH}" ]; then
 		 					_PAKG_LIST="$( \
@@ -1930,7 +1934,7 @@ function funcCreate_late_command() {
 		 						sed -e  's/[ \t]\+/ /g')"
 		 				fi
 		 				;;
-		 			*)			# preseed
+		 			ps*.cfg)			# preseed
 		 				_FILE_PATH="${PROG_DIRS}/${SEED_FILE##*/}"
 		 				if [ -e "${_FILE_PATH}" ]; then
 		 					_PAKG_LIST="$( \
@@ -1940,6 +1944,7 @@ function funcCreate_late_command() {
 		 						sed -e  's%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+[[:graph:]]\+[ \t]*%%')"
 		 				fi
 		 				;;
+		 			*)	;;
 		 		esac;
 		 	fi
 		
