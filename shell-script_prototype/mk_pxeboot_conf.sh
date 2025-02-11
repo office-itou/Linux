@@ -123,10 +123,9 @@
 	#	|   |-- memdisk ------------------------------------ memdisk of syslinux
 	#	|   |-- boot
 	#	|   |   `-- grub
-	#	|   |       |-- bootx64.efi ------------------------ bootloader (i386-pc-pxe)
+	#	|   |       |-- bootx64.efi ------------------------ bootloader (x86_64-efi)
 	#	|   |       |-- grub.cfg --------------------------- menu base
-	#	|   |       |-- menu.cfg --------------------------- menu file
-	#	|   |       |-- pxelinux.0 ------------------------- bootloader (x86_64-efi)
+	#	|   |       |-- pxelinux.0 ------------------------- bootloader (i386-pc-pxe)
 	#	|   |       |-- fonts
 	#	|   |       |   `-- unicode.pf2
 	#	|   |       |-- i386-efi
@@ -311,6 +310,8 @@
 	# --- tftp / web server address -------------------------------------------
 	              SRVR_ADDR="$(LANG=C ip -4 -oneline address show scope global | awk '{split($4,s,"/"); print s[1];}')"
 	readonly      SRVR_ADDR
+#	declare -r    SRVR_PROT="http"							# server connection protocol (http)
+	declare -r    SRVR_PROT="tftp"							# "                          (tftp)
 
 	# --- network parameter ---------------------------------------------------
 #	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"		# hostname
@@ -1423,6 +1424,8 @@ function funcCreate_late_command() {
 		 			preseed/url=*  | url=*         ) SEED_FILE="${LINE#*url=}";;
 		 			preseed/file=* | file=*        ) SEED_FILE="${LINE#*file=}";;
 		 			ds=nocloud*                    ) SEED_FILE="${LINE#*ds=nocloud*=}";SEED_FILE="${SEED_FILE%%/}/user-data";;
+		 			inst.ks=*                      ) SEED_FILE="${LINE#*inst.ks=}";;
+		 			autoyast=*                     ) SEED_FILE="${LINE#*autoyast=}";;
 		 			netcfg/target_network_config=* ) NMAN_FLAG="${LINE#*target_network_config=}";;
 		 			netcfg/choose_interface=*      ) NICS_NAME="${LINE#*choose_interface=}";;
 		 			netcfg/disable_dhcp=*          ) IPV4_DHCP="$([ "${LINE#*disable_dhcp=}" = "true" ] && echo "false" || echo "true")";;
@@ -1913,7 +1916,9 @@ function funcCreate_late_command() {
 		 	_PAKG_LIST=""
 		 	if [ -n "${SEED_FILE:-}" ]; then
 		 		case "${SEED_FILE##*/}" in
-		 			user-data)	# cloud-init
+		 			auto*.xml)		;;	# autoyast
+		 			ks*.cfg) 		;;	# kickstart
+		 			user-data)			# nocloud
 		 				_FILE_PATH="${PROG_DIRS}/user-data"
 		 				if [ -e "${_FILE_PATH}" ]; then
 		 					_PAKG_LIST="$( \
@@ -1922,7 +1927,7 @@ function funcCreate_late_command() {
 		 						sed -e  's/[ \t]\+/ /g')"
 		 				fi
 		 				;;
-		 			*)			# preseed
+		 			ps*.cfg)			# preseed
 		 				_FILE_PATH="${PROG_DIRS}/${SEED_FILE##*/}"
 		 				if [ -e "${_FILE_PATH}" ]; then
 		 					_PAKG_LIST="$( \
@@ -1932,6 +1937,7 @@ function funcCreate_late_command() {
 		 						sed -e  's%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+[[:graph:]]\+[ \t]*%%')"
 		 				fi
 		 				;;
+		 			*)	;;
 		 		esac;
 		 	fi
 		
@@ -2385,6 +2391,7 @@ function funcCreate_late_command() {
 		
 		 	# --- configures ----------------------------------------------------------
 		 	_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/Wired connection 1"
+		#	_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/${NICS_NAME}.nmconnection"
 		 	funcFile_backup "${_FILE_PATH}"
 		 	mkdir -p "${_FILE_PATH%/*}"
 		 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
@@ -2426,6 +2433,7 @@ function funcCreate_late_command() {
 		 			[proxy]
 		_EOT_
 		 	fi
+		 	chown root:root "${_FILE_PATH}"
 		 	chmod 600 "${_FILE_PATH}"
 		
 		 	# --- debug out -----------------------------------------------------------
@@ -2458,6 +2466,7 @@ function funcCreate_late_command() {
 		 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
 		 		systemctl --quiet daemon-reload
 		 		systemctl --quiet restart "${_SRVC_NAME}"
+		 		nmcli connection reload
 		 	fi
 		
 		 	# --- complete ------------------------------------------------------------
@@ -2766,28 +2775,37 @@ function funcCreate_late_command() {
 		 		#tftp-no-fail                                               # do not abort startup even if tftp directory is not accessible
 		 		#tftp-secure                                                # enable tftp secure mode
 		 		
-		 		# --- pxe boot ----------------------------------------------------------------
-		 		#pxe-prompt="Press F8 for boot menu", 0                                             # pxe boot prompt
-		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux     #  0 Intel x86PC
-		 		#pxe-service=PC98             , "PXEBoot-PC98"             ,                        #  1 NEC/PC98
-		 		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                        #  2 EFI Itanium
-		 		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                        #  3 DEC Alpha
-		 		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                        #  4 Arc x86
-		 		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                        #  5 Intel Lean Client
-		 		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                        #  6 EFI IA32
-		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi  #  7 EFI BC
-		 		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                        #  8 EFI Xscale
-		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi  #  9 EFI x86-64
-		 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                        # 10 ARM 32bit
-		 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                        # 11 ARM 64bit
+		 		# --- syslinux block ----------------------------------------------------------
+		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/pxelinux.0    #  0 Intel x86PC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi #  9 EFI x86-64
+		 		
+		 		# --- grub block --------------------------------------------------------------
+		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0    #  0 Intel x86PC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi   #  9 EFI x86-64
 		 		
 		 		# --- ipxe block --------------------------------------------------------------
-		 		#dhcp-match=set:iPXE,175                                                            #
-		 		#pxe-prompt="Press F8 for boot menu", 0                                             # pxe boot prompt
-		 		#pxe-service=tag:iPXE ,x86PC     , "PXEBoot-x86PC"     , /autoexec.ipxe             #  0 Intel x86PC (iPXE)
-		 		#pxe-service=tag:!iPXE,x86PC     , "PXEBoot-x86PC"     , ipxe/undionly.kpxe         #  0 Intel x86PC
-		 		#pxe-service=tag:!iPXE,BC_EFI    , "PXEBoot-BC_EFI"    , ipxe/ipxe.efi              #  7 EFI BC
-		 		#pxe-service=tag:!iPXE,x86-64_EFI, "PXEBoot-x86-64_EFI", ipxe/ipxe.efi              #  9 EFI x86-64
+		 		#dhcp-match=set:iPXE,175                                                             #
+		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		 		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe          #  0 Intel x86PC (iPXE)
+		 		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe      #  0 Intel x86PC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi           #  9 EFI x86-64
+		 		
+		 		# --- pxe boot ----------------------------------------------------------------
+		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            ,                         #  0 Intel x86PC
+		 		#pxe-service=PC98             , "PXEBoot-PC98"             ,                         #  1 NEC/PC98
+		 		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                         #  2 EFI Itanium
+		 		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                         #  3 DEC Alpha
+		 		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                         #  4 Arc x86
+		 		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                         #  5 Intel Lean Client
+		 		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                         #  6 EFI IA32
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           ,                         #  7 EFI BC
+		 		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                         #  8 EFI Xscale
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       ,                         #  9 EFI x86-64
+		 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                         # 10 ARM 32bit
+		 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                         # 11 ARM 64bit
 		 		
 		 		# --- dnsmasq manual page -----------------------------------------------------
 		 		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
@@ -3084,7 +3102,6 @@ function funcCreate_late_command() {
 		 	# --- shared settings section ---------------------------------------------
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_WORK_PATH}"
 		 		[homes]
-		 		        allow insecure wide links = Yes
 		 		        browseable = No
 		 		        comment = Home Directories
 		 		        create mask = 0770
@@ -3165,12 +3182,10 @@ function funcCreate_late_command() {
 		 		        comment = HTML shared directories
 		 		        guest ok = Yes
 		 		        path = ${DIRS_HTML}
-		 		        wide links = Yes
 		 		[tftp-share]
 		 		        comment = TFTP shared directories
 		 		        guest ok = Yes
 		 		        path = ${DIRS_TFTP}
-		 		        wide links = Yes
 		_EOT_
 		
 		 	# --- output --------------------------------------------------------------
@@ -3260,14 +3275,14 @@ function funcCreate_late_command() {
 		 		return
 		 	fi
 		
-		 	hwclock --systohc
-		
 		 	# --- systemctl -----------------------------------------------------------
 		 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
 		 	if [ "${_SRVC_STAT}" = "active" ]; then
 		 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
 		 		systemctl --quiet daemon-reload
 		 		systemctl --quiet restart "${_SRVC_NAME}"
+		 		hwclock --systohc
+		 		hwclock --test
 		 	fi
 		
 		 	# --- complete ------------------------------------------------------------
@@ -4050,8 +4065,10 @@ function funcCreate_preseed_cfg() {
 					sed -i "${_FILE_PATH}"                                    \
 					    -e "\%ubiquity/success_command%i \\${_INSR_STRS}"
 				fi
-				sed -i "${_FILE_PATH}"              \
-				    -e "\%ubiquity/reboot% s/^#/ /"
+				sed -i "${_FILE_PATH}"                        \
+				    -e "\%ubiquity/download_updates% s/^#/ /" \
+				    -e "\%ubiquity/use_nonfree%      s/^#/ /" \
+				    -e "\%ubiquity/reboot%           s/^#/ /"
 				;;
 			*)
 				;;
@@ -4443,13 +4460,17 @@ function funcCreate_menu_preseed() {
 	# --- boot option ---------------------------------------------------------
 	_BOOT_OPTN=""
 	# --- autoinst ------------------------------------------------------------
-	case "${_TGET_LINE[1]}" in
-		ubuntu-desktop-* | \
-		ubuntu-legacy-*  ) _CONF_PATH="automatic-ubiquity noprompt ${_CONF_PATH}";;
-#		*-mini-*         ) _CONF_PATH="auto=true";;
-		*                ) ;;
-	esac
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		:
+	else
+		case "${_TGET_LINE[1]}" in
+			ubuntu-desktop-* | \
+			ubuntu-legacy-*  ) _CONF_PATH="automatic-ubiquity noprompt ${_CONF_PATH}";;
+#			*-mini-*         ) _CONF_PATH="auto=true";;
+			*                ) ;;
+		esac
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	fi
 	# --- netcfg --------------------------------------------------------------
 	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
 		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=dhcp"
@@ -4458,14 +4479,23 @@ function funcCreate_menu_preseed() {
 			ubuntu-*         ) _NWRK_MANE="NetworkManager";;
 			*                ) ;;
 		esac
-		_BOOT_OPTN+="${_NWRK_MANE:+"${_BOOT_OPTN:+" "}netcfg/target_network_config=nwrkmane"}"
-		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/disable_autoconfig=true"
-		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/choose_interface=\${ethrname}"
-		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_hostname=\${hostname}"
-		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_ipaddress=\${ipv4addr}"
-		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_netmask=\${ipv4mask}"
-		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_gateway=\${ipv4gway}"
-		_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_nameservers=\${ipv4nsvr}"
+		_BOOT_OPTN+="${_NWRK_MANE:+"${_BOOT_OPTN:+" "}netcfg/target_network_config=wrkmane"}"
+		case "${_TGET_LINE[1]}" in
+			ubuntu-live-18.04) _BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
+			ubuntu-desktop-* | \
+			ubuntu-live-*    | \
+			ubuntu-server-*  | \
+			ubuntu-legacy-*  ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}::\${ethrname}:static:\${ipv4nsvr} hostname=\${hostname}";;
+			*)
+				_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/disable_autoconfig=true"
+				_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/choose_interface=\${ethrname}"
+				_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_hostname=\${hostname}"
+				_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_ipaddress=\${ipv4addr}"
+				_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_netmask=\${ipv4mask}"
+				_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_gateway=\${ipv4gway}"
+				_BOOT_OPTN+="${_BOOT_OPTN:+" "}netcfg/get_nameservers=\${ipv4nsvr}"
+				;;
+		esac
 	fi
 	# --- language ------------------------------------------------------------
 	case "${_TGET_LINE[1]}" in
@@ -4483,36 +4513,41 @@ function funcCreate_menu_preseed() {
 		ubuntu-desktop-18.* | \
 		ubuntu-desktop-20.* | \
 		ubuntu-desktop-22.* | \
+		ubuntu-live-18.*    | \
+		ubuntu-live-20.*    | \
+		ubuntu-live-22.*    | \
+		ubuntu-server-*     | \
 		ubuntu-legacy-*     ) _ISOS_FILE="boot=casper url=http://\${srvraddr}/isos/${_TGET_LINE[5]}";;
 		ubuntu-*            ) _ISOS_FILE="boot=casper iso-url=http://\${srvraddr}/isos/${_TGET_LINE[5]}";;
 		*                   ) ;;
 	esac
 	# --- output --------------------------------------------------------------
-	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
-		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-			${_BOOT_OPTN}
-			set srvraddr ${SRVR_ADDR:?}
-			set isosfile ${_ISOS_FILE:-}
-			set language ${_LANG_CONF:-}
-			set ramsdisk ${_RAMS_DISK:-}
-_EOT_
-	else
+#	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+#		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+#			${_BOOT_OPTN}
+#			set srvraddr ${SRVR_ADDR:?}
+#			isset \${next-server} && set srvraddr \${next-server} ||
+#			set isosfile ${_ISOS_FILE:-}
+#			set language ${_LANG_CONF:-}
+#			set ramsdisk ${_RAMS_DISK:-}
+#_EOT_
+#	else
 		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 			${_BOOT_OPTN}
 			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
-			set ethrname ${ETHR_NAME:-"ens160"}
+			set ethrname ${_WORK_ETHR:-"ens160"}
 			set ipv4addr ${IPV4_ADDR:-}
 			set ipv4mask ${IPV4_MASK:-}
 			set ipv4gway ${IPV4_GWAY:-}
 			set ipv4nsvr ${IPV4_NSVR:-}
 			set srvraddr ${SRVR_ADDR:?}
-			set nwrkmane ${_NWRK_MANE:-}
+			isset \${next-server} && set srvraddr \${next-server} ||
 			set isosfile ${_ISOS_FILE:-}
 			set autoinst ${_CONF_PATH:-}
 			set language ${_LANG_CONF:-}
 			set ramsdisk ${_RAMS_DISK:-}
 _EOT_
-	fi
+#	fi
 }
 
 # ----- create menu for nocloud -----------------------------------------------
@@ -4520,7 +4555,7 @@ function funcCreate_menu_nocloud() {
 	declare -r -a _TGET_LINE=("$@")
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
-	declare -r    _CONF_PATH="automatic-ubiquity noprompt autoinstall ds=nocloud\\;s=http://\${srvraddr}/conf/${_TGET_LINE[9]}"
+	declare -r    _CONF_PATH="automatic-ubiquity noprompt autoinstall ds=nocloud;s=http://\${srvraddr}/conf/${_TGET_LINE[9]}"
 	declare -r    _RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
@@ -4535,13 +4570,17 @@ function funcCreate_menu_nocloud() {
 	# --- boot option ---------------------------------------------------------
 	_BOOT_OPTN=""
 	# --- autoinst ------------------------------------------------------------
-#	case "${_TGET_LINE[1]}" in
-#		ubuntu-desktop-* | \
-#		ubuntu-legacy-*  ) _CONF_PATH="automatic-ubiquity noprompt ${_CONF_PATH}";;
-#		*-mini-*         ) _CONF_PATH="auto=true";;
-#		*                ) ;;
-#	esac
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		:
+	else
+#		case "${_TGET_LINE[1]}" in
+#			ubuntu-desktop-* | \
+#			ubuntu-legacy-*  ) _CONF_PATH="automatic-ubiquity noprompt ${_CONF_PATH}";;
+#			*-mini-*         ) _CONF_PATH="auto=true";;
+#			*                ) ;;
+#		esac
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	fi
 	# --- netcfg --------------------------------------------------------------
 	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
 		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=dhcp"
@@ -4571,35 +4610,40 @@ function funcCreate_menu_nocloud() {
 		ubuntu-desktop-18.* | \
 		ubuntu-desktop-20.* | \
 		ubuntu-desktop-22.* | \
+		ubuntu-live-18.*    | \
+		ubuntu-live-20.*    | \
+		ubuntu-live-22.*    | \
 		ubuntu-legacy-*     ) _ISOS_FILE="boot=casper url=http://\${srvraddr}/isos/${_TGET_LINE[5]}";;
 		ubuntu-*            ) _ISOS_FILE="boot=casper iso-url=http://\${srvraddr}/isos/${_TGET_LINE[5]}";;
 		*                   ) ;;
 	esac
 	# --- output --------------------------------------------------------------
-	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
-		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-			${_BOOT_OPTN}
-			set srvraddr ${SRVR_ADDR:?}
-			set isosfile ${_ISOS_FILE:-}
-			set language ${_LANG_CONF:-}
-			set ramsdisk ${_RAMS_DISK:-}
-_EOT_
-	else
+#	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+#		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+#			${_BOOT_OPTN}
+#			set srvraddr ${SRVR_ADDR:?}
+#			isset \${next-server} && set srvraddr \${next-server} ||
+#			set isosfile ${_ISOS_FILE:-}
+#			set language ${_LANG_CONF:-}
+#			set ramsdisk ${_RAMS_DISK:-}
+#_EOT_
+#	else
 		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 			${_BOOT_OPTN}
 			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
-			set ethrname ${ETHR_NAME:-"ens160"}
+			set ethrname ${_WORK_ETHR:-"ens160"}
 			set ipv4addr ${IPV4_ADDR:-}
 			set ipv4mask ${IPV4_MASK:-}
 			set ipv4gway ${IPV4_GWAY:-}
 			set ipv4nsvr ${IPV4_NSVR:-}
 			set srvraddr ${SRVR_ADDR:?}
+			isset \${next-server} && set srvraddr \${next-server} ||
 			set isosfile ${_ISOS_FILE:-}
 			set autoinst ${_CONF_PATH:-}
 			set language ${_LANG_CONF:-}
 			set ramsdisk ${_RAMS_DISK:-}
 _EOT_
-	fi
+#	fi
 }
 
 # ----- create menu for kickstart ---------------------------------------------
@@ -4608,7 +4652,7 @@ function funcCreate_menu_kickstart() {
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
 	declare -r    _CONF_PATH="inst.ks=http://\${srvraddr}/conf/${_TGET_LINE[9]}"
-	declare -r    _RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%"
+	declare -r    _RAMS_DISK="ramdisk_size=1500000 overlay-size=90%"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
@@ -4622,12 +4666,16 @@ function funcCreate_menu_kickstart() {
 	# --- boot option ---------------------------------------------------------
 	_BOOT_OPTN=""
 	# --- autoinst ------------------------------------------------------------
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		:
+	else
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	fi
 	# --- netcfg --------------------------------------------------------------
 	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
 		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=dhcp"
 	else
-		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=\${ipv4addr}::\${ipv4mask}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
 	fi
 	# --- language ------------------------------------------------------------
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${language}"
@@ -4637,30 +4685,32 @@ function funcCreate_menu_kickstart() {
 	# --- isosfile ------------------------------------------------------------
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${isosfile}"
 	# --- output --------------------------------------------------------------
-	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
-		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-			${_BOOT_OPTN}
-			set srvraddr ${SRVR_ADDR:?}
-			set isosfile ${_ISOS_FILE:-}
-			set language ${_LANG_CONF:-}
-			set ramsdisk ${_RAMS_DISK:-}
-_EOT_
-	else
+#	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+#		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+#			${_BOOT_OPTN}
+#			set srvraddr ${SRVR_ADDR:?}
+#			isset \${next-server} && set srvraddr \${next-server} ||
+#			set isosfile ${_ISOS_FILE:-}
+#			set language ${_LANG_CONF:-}
+#			set ramsdisk ${_RAMS_DISK:-}
+#_EOT_
+#	else
 		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 			${_BOOT_OPTN}
 			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
-			set ethrname ${ETHR_NAME:-"ens160"}
+			set ethrname ${_WORK_ETHR:-"ens160"}
 			set ipv4addr ${IPV4_ADDR:-}
 			set ipv4mask ${IPV4_MASK:-}
 			set ipv4gway ${IPV4_GWAY:-}
 			set ipv4nsvr ${IPV4_NSVR:-}
 			set srvraddr ${SRVR_ADDR:?}
+			isset \${next-server} && set srvraddr \${next-server} ||
 			set isosfile ${_ISOS_FILE:-}
 			set autoinst ${_CONF_PATH:-}
 			set language ${_LANG_CONF:-}
 			set ramsdisk ${_RAMS_DISK:-}
 _EOT_
-	fi
+#	fi
 }
 
 # ----- create menu for autoyast ----------------------------------------------
@@ -4669,7 +4719,7 @@ function funcCreate_menu_autoyast() {
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
 	declare -r    _CONF_PATH="autoyast=http://\${srvraddr}/conf/${_TGET_LINE[9]}"
-	declare -r    _RAMS_DISK="root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%"
+	declare -r    _RAMS_DISK="ramdisk_size=1500000 overlay-size=90%"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
@@ -4684,7 +4734,11 @@ function funcCreate_menu_autoyast() {
 	# --- boot option ---------------------------------------------------------
 	_BOOT_OPTN=""
 	# --- autoinst ------------------------------------------------------------
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		:
+	else
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+	fi
 	# --- netcfg --------------------------------------------------------------
 	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
 		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=dhcp"
@@ -4703,15 +4757,16 @@ function funcCreate_menu_autoyast() {
 	# --- isosfile ------------------------------------------------------------
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${isosfile}"
 	# --- output --------------------------------------------------------------
-	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
-		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-			${_BOOT_OPTN}
-			set srvraddr ${SRVR_ADDR:?}
-			set isosfile ${_ISOS_FILE:-}
-			set language ${_LANG_CONF:-}
-			set ramsdisk ${_RAMS_DISK:-}
-_EOT_
-	else
+#	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+#		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+#			${_BOOT_OPTN}
+#			set srvraddr ${SRVR_ADDR:?}
+#			isset \${next-server} && set srvraddr \${next-server} ||
+#			set isosfile ${_ISOS_FILE:-}
+#			set language ${_LANG_CONF:-}
+#			set ramsdisk ${_RAMS_DISK:-}
+#_EOT_
+#	else
 		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 			${_BOOT_OPTN}
 			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
@@ -4721,12 +4776,13 @@ _EOT_
 			set ipv4gway ${IPV4_GWAY:-}
 			set ipv4nsvr ${IPV4_NSVR:-}
 			set srvraddr ${SRVR_ADDR:?}
+			isset \${next-server} && set srvraddr \${next-server} ||
 			set isosfile ${_ISOS_FILE:-}
 			set autoinst ${_CONF_PATH:-}
 			set language ${_LANG_CONF:-}
 			set ramsdisk ${_RAMS_DISK:-}
 _EOT_
-	fi
+#	fi
 }
 
 # ----- create menu for ipxe script -------------------------------------------
@@ -4803,7 +4859,9 @@ _EOT_
 		m )								# menu
 			_MENU_ENTR="[ ${_TGET_LINE[2]//%20/ } ... ]"
 			_MENU_TEXT="$(printf "%-${_MENU_SPCS}.${_MENU_SPCS}s%s" "item --gap --" "${_MENU_ENTR}")"
-			sed -i "${_MENU_PATH}" -e "/\[ System command \]/i ${_MENU_TEXT}"
+			_MENU_TEXT="${_MENU_TEXT//\\/\\\\\\}"
+			_MENU_TEXT="${_MENU_TEXT//\\\\\\n/\\n}"
+			sed -i "${_MENU_PATH}" -e "/\[ System command \]/i \\${_MENU_TEXT}"
 			;;
 		o )								# output
 			if [[ ! -e "${_TGET_LINE[4]}/${_TGET_LINE[5]}" ]]; then
@@ -4820,11 +4878,13 @@ _EOT_
 				_WORK_TEXT="live-${_WORK_TEXT}"
 			fi
 			_MENU_TEXT="$(printf "%-${_MENU_SPCS}.${_MENU_SPCS}s%s" "item -- ${_WORK_TEXT}" "${_MENU_ENTR}")"
-			sed -i "${_MENU_PATH}" -e "/\[ System command \]/i ${_MENU_TEXT}"
+			_MENU_TEXT="${_MENU_TEXT//\\/\\\\\\}"
+			_MENU_TEXT="${_MENU_TEXT//\\\\\\n/\\n}"
+			sed -i "${_MENU_PATH}" -e "/\[ System command \]/i \\${_MENU_TEXT}"
 			case "${_TGET_LINE[1]}" in
 				windows-* )
 					_MENU_TEXT="$(
-						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							:${_TGET_LINE[1]}
 							echo Loading ${_TGET_LINE[2]//%20/ } ...
 							set srvraddr ${SRVR_ADDR}
@@ -4850,7 +4910,7 @@ _EOT_
 				ati*x64 | \
 				ati*x86 )
 					_MENU_TEXT="$(
-						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							:${_TGET_LINE[1]}
 							echo Loading ${_TGET_LINE[2]//%20/ } ...
 							set srvraddr ${SRVR_ADDR}
@@ -4870,7 +4930,7 @@ _EOT_
 					;;
 				memtest86* )
 					_MENU_TEXT="$(
-						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							:${_TGET_LINE[1]}
 							echo Loading ${_TGET_LINE[2]//%20/ } ...
 							set srvraddr ${SRVR_ADDR}
@@ -4886,21 +4946,9 @@ _EOT_
 					)"
 					;;
 				* )
-					IFS= mapfile -d $'\n' _WORK_ARRY < <(echo -n "${_BOOT_OPTN}")
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{hostname\}/${_WORK_ARRY[2]#set hostname }}"
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{nwrkmane\}/${_WORK_ARRY[3]#set nwrkmane }}"
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ethrname\}/${_WORK_ARRY[4]#set ethrname }}"
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4addr\}/${_WORK_ARRY[5]#set ipv4addr }}"
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4mask\}/${_WORK_ARRY[6]#set ipv4mask }}"
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4gway\}/${_WORK_ARRY[7]#set ipv4gway }}"
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4nsvr\}/${_WORK_ARRY[8]#set ipv4nsvr }}"
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{isosfile\}/${_WORK_ARRY[9]#set isosfile }}"
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{autoinst\}/${_WORK_ARRY[10]#set autoinst }}"
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{language\}/${_WORK_ARRY[11]#set language }}"
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ramsdisk\}/${_WORK_ARRY[12]#set ramsdisk }}"
-#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{srvraddr\}/${_WORK_ARRY[1]#set srvraddr }}"
+					IFS= mapfile -d $'\n' -t _WORK_ARRY < <(echo -n "${_BOOT_OPTN}")
 					_MENU_TEXT="$(
-						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							:${_WORK_TEXT}
 							echo Loading ${_TGET_LINE[2]//%20/ } ...
 							
@@ -4908,15 +4956,14 @@ _EOT_
 					)"
 					_WORK_TEXT="$(echo -n "${_WORK_ARRY[0]}")"
 					unset '_WORK_ARRY[0]'
-					_WORK_ARRY=("$(echo -n "${_WORK_ARRY[@]}")")
+					_WORK_ARRY=("$(printf "%s\n" "${_WORK_ARRY[@]}")")
 #					_WORK_ARRY=("${_WORK_ARRY[@]}")
 					_MENU_TEXT+="$(
-						printf "%s\n" "${_WORK_ARRY[@]}" | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+						printf "%s\n" "${_WORK_ARRY[@]}" | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 					)"
 					_MENU_TEXT+="$(
-						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e 's/=["'\'']/ /g' -e 's/["'\'']$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							
-							isset \${next-server} && set srvraddr \${next-server} ||
 							form                                    Configure Boot Options
 							item hostname                           Hostname
 							item ethrname                           Interface
@@ -4927,7 +4974,6 @@ _EOT_
 							present ||
 							form                                    Configure Boot Options
 							item srvraddr                           Server ip address
-							item nwrkmane                           Network manager
 							item isosfile                           ISO file
 							item autoinst                           Auto install
 							item language                           Language
@@ -4945,11 +4991,497 @@ _EOT_
 					)"
 					;;
 			esac
-			sed -i "${_MENU_PATH}" -e "/^:shell$/i ${_MENU_TEXT}"
+#			_MENU_TEXT="${_MENU_TEXT//\\/\\\\\\}"
+#			_MENU_TEXT="${_MENU_TEXT//\\\\\\n/\\n}"
+			sed -i "${_MENU_PATH}" -e "/^:shell$/i \\${_MENU_TEXT}"
 			;;
 		* )								# hidden
 			;;
 	esac
+}
+
+# ----- create menu for syslinux ----------------------------------------------
+function funcCreate_syslinux_cfg() {
+	declare -r    _MENU_PATH="$1"							# menu file path
+	declare -r -i _TABS_CONT="$2"							# tabs count
+	declare -r    _BOOT_OPTN="$3"							# boot option
+	shift 3
+	declare -r -a _TGET_LINE=("$@")
+	declare       _MENU_ENTR=""								# meny entry
+	declare       _MENU_TEXT=""								# meny text
+	declare -r -i _MENU_SPCS=40
+	              _TEXT_GAPS="$(funcString 60 '.')"
+#	readonly      _TEXT_GAPS
+	declare       _WORK_TEXT=""
+	declare -a    _WORK_ARRY=()
+	declare -i    I=0
+	# --- no display ----------------------------------------------------------
+	if [[ "${_TGET_LINE[2]}" = "-" ]]; then
+		return
+	fi
+	# --- create new ----------------------------------------------------------
+	if [[ ! -e "${_MENU_PATH}" ]] \
+	|| [[ ! -s "${_MENU_PATH}" ]]; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_MENU_PATH}"
+			path ./
+			prompt 0
+			timeout 0
+			default vesamenu.c32
+			
+			menu resolution ${MENU_RESO/x/ }
+			
+			menu color screen		* #ffffffff #ee000080 *
+			menu color title		* #ffffffff #ee000080 *
+			menu color border		* #ffffffff #ee000080 *
+			menu color sel			* #ffffffff #76a1d0ff *
+			menu color hotsel		* #ffffffff #76a1d0ff *
+			menu color unsel		* #ffffffff #ee000080 *
+			menu color hotkey		* #ffffffff #ee000080 *
+			menu color tabmsg		* #ffffffff #ee000080 *
+			menu color timeout_msg	* #ffffffff #ee000080 *
+			menu color timeout		* #ffffffff #ee000080 *
+			menu color disabled		* #ffffffff #ee000080 *
+			menu color cmdmark		* #ffffffff #ee000080 *
+			menu color cmdline		* #ffffffff #ee000080 *
+			menu color scrollbar	* #ffffffff #ee000080 *
+			menu color help			* #ffffffff #ee000080 *
+			
+			menu margin				4
+			menu vshift				5
+			menu rows				25
+			menu tabmsgrow			31
+			menu cmdlinerow			33
+			menu timeoutrow			33
+			menu helpmsgrow			37
+			menu hekomsgendrow		39
+			
+			menu title - Boot Menu -
+			menu tabmsg Press ENTER to boot or TAB to edit a menu entry
+			
+			label System-command
+			 	menu label ^[ System command ... ]
+			
+			label Hardware-info
+			 	menu label ^- Hardware info
+			 	com32 hdt.c32
+			
+			label System-shutdown
+			 	menu label ^- System shutdown
+			 	com32 poweroff.c32
+			
+			label System-restart
+			 	menu label ^- System restart
+			 	com32 reboot.c32
+			
+_EOT_
+	fi
+	# --- creating list data --------------------------------------------------
+	case "${_TGET_LINE[0]}" in
+		m )								# menu
+			_MENU_ENTR="[ ${_TGET_LINE[2]//%20/ } ... ]"
+			_MENU_TEXT="$(
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+					label ${_TGET_LINE[2]//%20/-}
+					 	menu label ^${_MENU_ENTR}
+					
+_EOT_
+			)"
+			_MENU_TEXT="${_MENU_TEXT//\\/\\\\\\}"
+			_MENU_TEXT="${_MENU_TEXT//\\\\\\n/\\n}"
+			sed -i "${_MENU_PATH}" -e "/label[ \t]\+System-command/i \\${_MENU_TEXT}"
+			;;
+		o )								# output
+			if [[ ! -e "${_TGET_LINE[4]}/${_TGET_LINE[5]}" ]]; then
+				return
+			fi
+			if [[ "${_TGET_LINE[13]}" = "-" ]]; then
+				_MENU_ENTR="$(printf "%-60.60s" "- ${_TGET_LINE[2]//%20/ }")"
+			else
+				_MENU_ENTR="$(printf "%-54.54s%20.20s" "- ${_TGET_LINE[2]//%20/ } ${_TEXT_GAPS}" "${_TGET_LINE[13]:0:4}-${_TGET_LINE[13]:4:2}-${_TGET_LINE[13]:6:2} ${_TGET_LINE[13]:8:2}:${_TGET_LINE[13]:10:2}:${_TGET_LINE[13]:12:2}")"
+			fi
+			case "${_TGET_LINE[1]}" in
+				windows-* )
+					case "${_MENU_PATH}" in
+						*bios*)
+							_MENU_TEXT="$(
+								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+									label ${_TGET_LINE[1]}
+									 	menu label ^${_MENU_ENTR}
+									 	kernel memdisk
+									 	append initrd=/${DIRS_ISOS##*/}/${_TGET_LINE[5]} iso raw
+									
+_EOT_
+							)"
+							;;
+						*)
+							_MENU_TEXT=""
+							;;
+					esac
+					;;
+				winpe-* | \
+				ati*x64 | \
+				ati*x86 )
+					case "${_MENU_PATH}" in
+						*bios*)
+							_MENU_TEXT="$(
+								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+									label ${_TGET_LINE[1]}
+									 	menu label ^${_MENU_ENTR}
+									 	kernel memdisk
+									 	append initrd=/${DIRS_ISOS##*/}/${_TGET_LINE[5]} iso raw
+									
+_EOT_
+							)"
+							;;
+						*)
+							_MENU_TEXT=""
+							;;
+					esac
+					;;
+				memtest86* )
+					case "${_MENU_PATH}" in
+						*bios*)
+							_MENU_TEXT="$(
+								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+									label ${_TGET_LINE[1]}
+									 	menu label ^${_MENU_ENTR}
+									 	kernel /${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[8]}
+									
+_EOT_
+							)"
+							;;
+						*)
+							_MENU_TEXT="$(
+								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+									label ${_TGET_LINE[1]}
+									 	menu label ^${_MENU_ENTR}
+									 	kernel /${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[7]}
+									
+_EOT_
+							)"
+							;;
+					esac
+					;;
+				* )
+					IFS= mapfile -d $'\n' -t _WORK_ARRY < <(echo -n "${_BOOT_OPTN}")
+					if [[ "${_TGET_LINE[9]##*/}" != "-" ]]; then
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{hostname\}/${_WORK_ARRY[1]:+${_WORK_ARRY[1]#set hostname }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ethrname\}/${_WORK_ARRY[2]:+${_WORK_ARRY[2]#set ethrname }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4addr\}/${_WORK_ARRY[3]:+${_WORK_ARRY[3]#set ipv4addr }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4mask\}/${_WORK_ARRY[4]:+${_WORK_ARRY[4]#set ipv4mask }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4gway\}/${_WORK_ARRY[5]:+${_WORK_ARRY[5]#set ipv4gway }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4nsvr\}/${_WORK_ARRY[6]:+${_WORK_ARRY[6]#set ipv4nsvr }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{isosfile\}/${_WORK_ARRY[9]:+${_WORK_ARRY[9]#set isosfile }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{autoinst\}/${_WORK_ARRY[10]:+${_WORK_ARRY[10]#set autoinst }}}"
+					fi
+					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{language\}/${_WORK_ARRY[11]:+${_WORK_ARRY[11]#set language }}}"
+					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ramsdisk\}/${_WORK_ARRY[12]:+${_WORK_ARRY[12]#set ramsdisk }}}"
+					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{srvraddr\}/${_WORK_ARRY[7]:+${_WORK_ARRY[7]#set srvraddr }}}"
+					_MENU_TEXT="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+							label ${_TGET_LINE[1]}
+							 	menu label ^${_MENU_ENTR}
+							 	kernel /${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[8]}
+							 	append initrd=/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[7]}${_WORK_ARRY[0]:+" ${_WORK_ARRY[0]}"}
+							
+_EOT_
+					)"
+					;;
+			esac
+#			_MENU_TEXT="${_MENU_TEXT//\\/\\\\\\}"
+#			_MENU_TEXT="${_MENU_TEXT//\\\\\\n/\\n}"
+			sed -i "${_MENU_PATH}" -e "/label[ \t]\+System-command/i \\${_MENU_TEXT}"
+			;;
+		* )								# hidden
+			;;
+	esac
+}
+
+# ----- create menu for grub --------------------------------------------------
+function funcCreate_grub_cfg() {
+	declare -r    _MENU_PATH="$1"							# menu file path
+	declare -r -i _TABS_CONT="$2"							# tabs count
+	declare       _TABS_STRS=""								# tabs string
+	declare -r    _BOOT_OPTN="$3"							# boot option
+	shift 3
+	declare -r -a _TGET_LINE=("$@")
+	declare       _MENU_ENTR=""								# meny entry
+	declare       _MENU_TEXT=""								# meny text
+	declare -r -i _MENU_SPCS=40
+	              _TEXT_GAPS="$(funcString 60 '.')"
+#	readonly      _TEXT_GAPS
+	declare       _WORK_STR0=""
+	declare       _WORK_STR1=""
+	declare       _WORK_STR2=""
+	declare       _WORK_STR3=""
+	declare       _WORK_TEXT=""
+	declare -a    _WORK_ARRY=()
+	declare -i    I=0
+	# --- no display ----------------------------------------------------------
+#	if [[ "${_TGET_LINE[2]}" = "-" ]]; then
+#		return
+#	fi
+	# --- tab string ----------------------------------------------------------
+	if [[ "${_TABS_CONT}" -gt 0 ]]; then
+		_TABS_STRS="$(funcString "${_TABS_CONT}" $'\t')"
+	else
+		_TABS_STRS=""
+	fi
+	# --- create new ----------------------------------------------------------
+	if [[ ! -e "${_MENU_PATH}" ]] \
+	|| [[ ! -s "${_MENU_PATH}" ]]; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_MENU_PATH}"
+			set default="0"
+			set timeout="-1"
+			
+			if [ "x\${feature_default_font_path}" = "xy" ] ; then
+			 	font="unicode"
+			else
+			 	font="\${prefix}/font.pf2"
+			fi
+			
+			if loadfont "\$font" ; then
+			#	set lang="ja_JP"
+			
+			#	set gfxmode="7680x4320" # 8K UHD (16:9)
+			#	set gfxmode="3840x2400" #        (16:10)
+			#	set gfxmode="3840x2160" # 4K UHD (16:9)
+			#	set gfxmode="2880x1800" #        (16:10)
+			#	set gfxmode="2560x1600" #        (16:10)
+			#	set gfxmode="2560x1440" # WQHD   (16:9)
+			#	set gfxmode="1920x1440" #        (4:3)
+			#	set gfxmode="1920x1200" # WUXGA  (16:10)
+			#	set gfxmode="1920x1080" # FHD    (16:9)
+			#	set gfxmode="1856x1392" #        (4:3)
+			#	set gfxmode="1792x1344" #        (4:3)
+			#	set gfxmode="1680x1050" # WSXGA+ (16:10)
+			#	set gfxmode="1600x1200" # UXGA   (4:3)
+			#	set gfxmode="1400x1050" #        (4:3)
+			#	set gfxmode="1440x900"  # WXGA+  (16:10)
+			#	set gfxmode="1360x768"  # HD     (16:9)
+			#	set gfxmode="1280x1024" # SXGA   (5:4)
+			#	set gfxmode="1280x960"  #        (4:3)
+			#	set gfxmode="1280x800"  #        (16:10)
+			#	set gfxmode="1280x768"  #        (4:3)
+			#	set gfxmode="1280x720"  # WXGA   (16:9)
+			#	set gfxmode="1152x864"  #        (4:3)
+			#	set gfxmode="1024x768"  # XGA    (4:3)
+			#	set gfxmode="800x600"   # SVGA   (4:3)
+			#	set gfxmode="640x480"   # VGA    (4:3)
+			#	set gfxmode="${MENU_RESO}"
+			 	set gfxmode=${MENU_RESO:+"${MENU_RESO}x${MENU_DPTH},"}auto
+			 	set gfxpayload="keep"
+			
+			 	if [ "\${grub_platform}" = "efi" ]; then
+			 		insmod efi_gop
+			 		insmod efi_uga
+			 	else
+			 		insmod vbe
+			 		insmod vga
+			 	fi
+			
+			 	insmod gfxterm
+			 	insmod gettext
+			 	terminal_output gfxterm
+			fi
+			
+			set menu_color_normal="cyan/blue"
+			set menu_color_highlight="white/blue"
+			
+			#export lang
+			export gfxmode
+			export gfxpayload
+			export menu_color_normal
+			export menu_color_highlight
+			
+			insmod play
+			play 960 440 1 0 4 440 1
+			
+			menuentry '[ System command ]' {
+			 	true
+			}
+			
+			menuentry '- System shutdown' {
+			 	echo "System shutting down ..."
+			 	halt
+			}
+			
+			menuentry '- System restart' {
+			 	echo "System rebooting ..."
+			 	reboot
+			}
+			
+			if [ "\${grub_platform}" = "efi" ]; then
+			 	menuentry '- Boot from next volume' {
+			 		exit 1
+			 	}
+			
+			 	menuentry '- UEFI Firmware Settings' {
+			 		fwsetup
+			 	}
+			fi
+_EOT_
+	fi
+	# --- creating list data --------------------------------------------------
+	case "${_TGET_LINE[0]}" in
+		m )								# menu
+			_MENU_ENTR="[ ${_TGET_LINE[2]//%20/ } ... ]"
+			case "${_TGET_LINE[2]}" in
+				System%20command ) return;;
+				-                ) _MENU_TEXT="}\n"                      ;;
+				*                ) _MENU_TEXT="submenu '${_MENU_ENTR}' {";;
+			esac
+			_MENU_TEXT="${_MENU_TEXT//\\/\\\\\\}"
+			_MENU_TEXT="${_MENU_TEXT//\\\\\\n/\\n}"
+			sed -i "${_MENU_PATH}" -e "/\[ System command \]/i \\${_MENU_TEXT}"
+			;;
+		o )								# output
+			if [[ ! -e "${_TGET_LINE[4]}/${_TGET_LINE[5]}" ]]; then
+				return
+			fi
+			if [[ "${_TGET_LINE[13]}" = "-" ]]; then
+				_MENU_ENTR="$(printf "%-60.60s" "- ${_TGET_LINE[2]//%20/ }")"
+			else
+				_MENU_ENTR="$(printf "%-54.54s%20.20s" "- ${_TGET_LINE[2]//%20/ } ${_TEXT_GAPS}" "${_TGET_LINE[13]:0:4}-${_TGET_LINE[13]:4:2}-${_TGET_LINE[13]:6:2} ${_TGET_LINE[13]:8:2}:${_TGET_LINE[13]:10:2}:${_TGET_LINE[13]:12:2}")"
+			fi
+			case "${_TGET_LINE[1]}" in
+				windows-* )
+					_MENU_TEXT="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
+							if [ "\${grub_platform}" = "pc" ]; then
+							 	menuentry '${_MENU_ENTR}' {
+							 		echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
+							 		insmod progress
+							 		set isofile="(http:,${SRVR_ADDR})/${DIRS_ISOS##*/}/${_TGET_LINE[5]}"
+							 		export isofile
+							 		echo 'Loading linux ...'
+							 		linux16 (${SRVR_PROT},${SRVR_ADDR})/memdisk iso raw
+							 		echo 'Loading initrd ...'
+							 		initrd16 "\$isofile"
+							 	}
+							fi
+_EOT_
+					)"
+					;;
+				winpe-* | \
+				ati*x64 | \
+				ati*x86 )
+					_MENU_TEXT="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
+							if [ "\${grub_platform}" = "pc" ]; then
+							 	menuentry '${_MENU_ENTR}' {
+							 		echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
+							 		insmod progress
+							 		set isofile="(http:,${SRVR_ADDR})/${DIRS_ISOS##*/}/${_TGET_LINE[5]}"
+							 		export isofile
+							 		echo 'Loading linux ...'
+							 		linux16 (${SRVR_PROT},${SRVR_ADDR})/memdisk iso raw
+							 		echo 'Loading initrd ...'
+							 		initrd16 "\$isofile"
+							 	}
+							fi
+_EOT_
+					)"
+					;;
+				memtest86* )
+					_MENU_TEXT="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
+							menuentry '${_MENU_ENTR}' {
+							 	echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
+							 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							 	insmod progress
+							 	echo 'Loading linux ...'
+							 	if [ "\${grub_platform}" = "pc" ]; then
+							 		linux (${SRVR_PROT},${SRVR_ADDR})/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[8]}
+							 	else
+							 		linux (${SRVR_PROT},${SRVR_ADDR})/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[7]}
+							 	fi
+							}
+_EOT_
+					)"
+					;;
+				* )
+					IFS= mapfile -d $'\n' -t _WORK_ARRY < <(echo -n "${_BOOT_OPTN}")
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{hostname\}/${_WORK_ARRY[1]:+${_WORK_ARRY[1]#set hostname }}}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ethrname\}/${_WORK_ARRY[2]:+${_WORK_ARRY[2]#set ethrname }}}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4addr\}/${_WORK_ARRY[3]:+${_WORK_ARRY[3]#set ipv4addr }}}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4mask\}/${_WORK_ARRY[4]:+${_WORK_ARRY[4]#set ipv4mask }}}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4gway\}/${_WORK_ARRY[5]:+${_WORK_ARRY[5]#set ipv4gway }}}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4nsvr\}/${_WORK_ARRY[6]:+${_WORK_ARRY[6]#set ipv4nsvr }}}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{isosfile\}/${_WORK_ARRY[9]:+${_WORK_ARRY[9]#set isosfile }}}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{autoinst\}/${_WORK_ARRY[10]:+${_WORK_ARRY[10]#set autoinst }}}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{language\}/${_WORK_ARRY[11]:+${_WORK_ARRY[11]#set language }}}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ramsdisk\}/${_WORK_ARRY[12]:+${_WORK_ARRY[12]#set ramsdisk }}}"
+#					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{srvraddr\}/${_WORK_ARRY[7]:+${_WORK_ARRY[7]#set srvraddr }}}"
+					_WORK_TEXT="${_WORK_ARRY[0]}"
+					unset '_WORK_ARRY[0]'
+					for I in "${!_WORK_ARRY[@]}"
+					do
+						case "${_WORK_ARRY[I]}" in
+							set\ *)
+								_WORK_STR0="${_WORK_ARRY[I]}"
+								_WORK_STR1="${_WORK_STR0%% *}"
+								_WORK_STR2="${_WORK_STR0#* }"
+								_WORK_STR2="${_WORK_STR2%% *}"
+								_WORK_STR3="${_WORK_STR0#*"${_WORK_STR2}" }"
+								_WORK_ARRY[I]="${_WORK_STR1} ${_WORK_STR2}=\"${_WORK_STR3}\""
+								;;
+							*     )
+								unset '_WORK_ARRY[I]'
+								;;
+						esac
+					done
+					_WORK_ARRY=("${_WORK_ARRY[@]}")
+					_WORK_ARRY+=("set options=\"${_WORK_TEXT}\"")
+					_MENU_TEXT="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
+							menuentry '${_MENU_ENTR}' {
+_EOT_
+					)"
+					_MENU_TEXT+="\n"
+					_MENU_TEXT+="$(
+						printf " \t%s\n" "${_WORK_ARRY[@]}" | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
+					)"
+					_MENU_TEXT+="\n"
+					_MENU_TEXT+="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
+							 	echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
+							 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							 	insmod progress
+							 	echo 'Loading linux ...'
+							 	linux  (${SRVR_PROT},${SRVR_ADDR})/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[8]} \${options} ---
+							 	echo 'Loading initrd ...'
+							 	initrd (${SRVR_PROT},${SRVR_ADDR})/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[7]}
+							}
+_EOT_
+					)"
+					;;
+			esac
+#			_MENU_TEXT="${_MENU_TEXT//\\/\\\\\\}"
+#			_MENU_TEXT="${_MENU_TEXT//\\\\\\n/\\n}"
+			sed -i "${_MENU_PATH}" -e "/\[ System command \]/i \\${_MENU_TEXT}"
+			;;
+		* )								# hidden
+			;;
+	esac
+
+# grub-mkimage \
+# --directory=/srv/tftp/boot/grub/x86_64-efi \
+# --format=x86_64-efi \
+# --output=/srv/tftp/boot/grub/bootx64.efi \
+# --prefix="(tftp,192.168.1.12)/boot/grub/" \
+# normal minicmd net http tftp chain reboot halt acpi \
+# test font video_fb gfxterm play echo progress linux \
+# tpm video efi_gop efi_uga relocator mmap
+# 
+# grub-mkimage \
+# --directory=/srv/tftp/boot/grub/i386-pc \
+# --format=i386-pc-pxe \
+# --output=/srv/tftp/boot/grub/pxelinux.0 \
+# --prefix="(tftp,192.168.1.12)/boot/grub/" \
+# normal minicmd net http tftp chain reboot halt acpi \
+# test font video_fb gfxterm play echo progress linux \
+# pxe vbe vga
 }
 
 # === call function ===========================================================
@@ -5222,6 +5754,7 @@ function funcDbg_parameter() {
 
 	# --- tftp / web server address -------------------------------------------
 	printf "%s=[%s]\n"	"SRVR_ADDR"		"${SRVR_ADDR:-}"
+	printf "%s=[%s]\n"	"SRVR_PROT"		"${SRVR_PROT:-}"
 
 	# --- network parameter ---------------------------------------------------
 #	printf "%s=[%s]\n"	"HOST_NAME"		"${HOST_NAME:-}"
@@ -5373,6 +5906,7 @@ function funcCall_create() {
 	declare -r    _MENU_GRUB="${DIRS_TFTP}/boot/grub/grub.cfg"
 	declare -r    _MENU_AUTO="${DIRS_TFTP}/boot/grub/autoinst.cfg"
 	declare -r    _MENU_SLNX="${DIRS_TFTP}/menu-bios/syslinux.cfg"
+	declare -r    _MENU_SE64="${DIRS_TFTP}/menu-efi64/syslinux.cfg"
 	declare -r    _MENU_IPXE="${DIRS_TFTP}/autoexec.ipxe"
 	declare -i    _TABS_CONT=0
 	declare       _BOOT_OPTN=""
@@ -5398,71 +5932,82 @@ function funcCall_create() {
 		case "${_TGET_LINE[0]}" in
 			m )								# menu
 				funcCreate_autoexec_ipxe "${_MENU_IPXE}" "${_TABS_CONT:-"0"}" "" "${_TGET_LINE[@]}"
-				continue
+				funcCreate_syslinux_cfg  "${_MENU_SLNX}" "${_TABS_CONT:-"0"}" "" "${_TGET_LINE[@]}"
+				funcCreate_grub_cfg      "${_MENU_GRUB}" "${_TABS_CONT:-"0"}" "" "${_TGET_LINE[@]}"
+				if [[ "${_TABS_CONT:-"0"}" -eq 0 ]]; then
+					_TABS_CONT=1
+				else
+					_TABS_CONT=0
+				fi
 				;;
 			o )								# output
+				funcPrintf "%-3.3s%17.17s: %s %s" "===" "start" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
+				# --- skip check ------------------------------------------------------
+				_FILE_PATH="${_TGET_LINE[4]}/${_TGET_LINE[5]}"
+				if [[ ! -e "${_FILE_PATH}" ]]; then
+					funcPrintf "%-3.3s${TXT_RESET}${TXT_BYELLOW}%17.17s: %s${TXT_RESET} %s" "===" "skip" "${_FILE_PATH##*/}" "${TEXT_GAP2}"
+					continue
+				fi
+				# --- file information ------------------------------------------------
+				IFS= mapfile -d ' ' -t _FILE_INFO < <(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}" || true)
+				_TGET_LINE[11]="${_FILE_INFO[5]:0:4}-${_FILE_INFO[5]:4:2}-${_FILE_INFO[5]:6:2}"
+				_TGET_LINE[13]="${_FILE_INFO[5]}"
+				_TGET_LINE[14]="${_FILE_INFO[4]}"
+				_TGET_LINE[15]="$(LANG=C file -L "${_FILE_PATH}")"
+				_TGET_LINE[15]="${_TGET_LINE[15]#*\'}"
+				_TGET_LINE[15]="${_TGET_LINE[15]%\'*}"
+				_TGET_LINE[15]="${_TGET_LINE[15]// /%20}"
+				DATA_LIST[I]="${_TGET_LINE[*]}"
+				# --- copy iso contents to hdd ----------------------------------------
+				funcCreate_copy_iso2hdd "${_TGET_LINE[@]}"
+				# --- create boot options ---------------------------------------------
+				_BOOT_OPTN=""
+				case "${_TGET_LINE[1]}" in
+					windows-*      ) ;;			# --- windows -------------------------
+					winpe-*        | \
+					ati*x64        | \
+					ati*x86        ) ;;			# --- winpe ---------------------------
+					memtest86*     ) ;;			# --- memtest86 -----------------------
+					live-*         ) ;;			# --- live media ----------------------
+					netinst-*      ) ;;			# --- net install media ---------------
+					debian-*       | \
+					ubuntu-*       )			# --- debian / ubuntu -----------------
+						case "${_TGET_LINE[9]%%/*}" in
+							preseed* ) _BOOT_OPTN="$(funcCreate_menu_preseed "${_TGET_LINE[@]}")";;
+							nocloud* ) _BOOT_OPTN="$(funcCreate_menu_nocloud "${_TGET_LINE[@]}")";;
+							*        ) funcPrintf "not supported on ${_TGET_LINE[1]}"; exit 1;;
+						esac
+						;;
+					fedora-*       | \
+					centos-*       | \
+					almalinux-*    | \
+					miraclelinux-* | \
+					rockylinux-*   )			# --- fedora / centos / ... -----------
+						_BOOT_OPTN="$(funcCreate_menu_kickstart "${_TGET_LINE[@]}")"
+						;;
+					opensuse-*     )			# --- opensuse ------------------------
+						_BOOT_OPTN="$(funcCreate_menu_autoyast "${_TGET_LINE[@]}")"
+						;;
+					*              )			# --- not supported -------------------
+						funcPrintf "not supported on ${_TGET_LINE[1]}"
+						exit 1
+						;;
+				esac
+				# --- create menu ---------------------------------------------
+				_BOOT_OPTN="${SCRN_MODE:+"vga=${SCRN_MODE}"}${_BOOT_OPTN:+" ${_BOOT_OPTN}"}"
+				funcCreate_autoexec_ipxe "${_MENU_IPXE}" "${_TABS_CONT:-"0"}" "${_BOOT_OPTN}" "${_TGET_LINE[@]}"
+				funcCreate_syslinux_cfg  "${_MENU_SLNX}" "${_TABS_CONT:-"0"}" "${_BOOT_OPTN}" "${_TGET_LINE[@]}"
+				funcCreate_grub_cfg      "${_MENU_GRUB}" "${_TABS_CONT:-"0"}" "${_BOOT_OPTN}" "${_TGET_LINE[@]}"
+				funcPrintf "%-3.3s%17.17s: %s %s" "===" "complete" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
 				;;
 			* )								# hidden
 				continue
 				;;
 		esac
-		funcPrintf "%-3.3s%17.17s: %s %s" "===" "start" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
-		# --- skip check ------------------------------------------------------
-		_FILE_PATH="${_TGET_LINE[4]}/${_TGET_LINE[5]}"
-		if [[ ! -e "${_FILE_PATH}" ]]; then
-			funcPrintf "%-3.3s${TXT_RESET}${TXT_BYELLOW}%17.17s: %s${TXT_RESET} %s" "===" "skip" "${_FILE_PATH##*/}" "${TEXT_GAP2}"
-			continue
-		fi
-		# --- file information ------------------------------------------------
-		IFS= mapfile -d ' ' -t _FILE_INFO < <(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}" || true)
-		_TGET_LINE[11]="${_FILE_INFO[5]:0:4}-${_FILE_INFO[5]:4:2}-${_FILE_INFO[5]:6:2}"
-		_TGET_LINE[13]="${_FILE_INFO[5]}"
-		_TGET_LINE[14]="${_FILE_INFO[4]}"
-		_TGET_LINE[15]="$(LANG=C file -L "${_FILE_PATH}")"
-		_TGET_LINE[15]="${_TGET_LINE[15]#*\'}"
-		_TGET_LINE[15]="${_TGET_LINE[15]%\'*}"
-		_TGET_LINE[15]="${_TGET_LINE[15]// /%20}"
-		DATA_LIST[I]="${_TGET_LINE[*]}"
-		# --- copy iso contents to hdd ----------------------------------------
-		funcCreate_copy_iso2hdd "${_TGET_LINE[@]}"
-		# --- create boot options ---------------------------------------------
-		_BOOT_OPTN=""
-		case "${_TGET_LINE[1]}" in
-			windows-*      ) ;;			# --- windows -------------------------
-			winpe-*        | \
-			ati*x64        | \
-			ati*x86        ) ;;			# --- winpe ---------------------------
-			memtest86*     ) ;;			# --- memtest86 -----------------------
-			live-*         ) ;;			# --- live media ----------------------
-			netinst-*      ) ;;			# --- net install media ---------------
-			debian-*       | \
-			ubuntu-*       )			# --- debian / ubuntu -----------------
-				case "${_TGET_LINE[9]%%/*}" in
-					preseed* ) _BOOT_OPTN="$(funcCreate_menu_preseed "${_TGET_LINE[@]}")";;
-					nocloud* ) _BOOT_OPTN="$(funcCreate_menu_nocloud "${_TGET_LINE[@]}")";;
-					*        ) funcPrintf "not supported on ${_TGET_LINE[1]}"; exit 1;;
-				esac
-				;;
-			fedora-*       | \
-			centos-*       | \
-			almalinux-*    | \
-			miraclelinux-* | \
-			rockylinux-*   )			# --- fedora / centos / ... -----------
-				_BOOT_OPTN="$(funcCreate_menu_kickstart "${_TGET_LINE[@]}")"
-				;;
-			opensuse-*     )			# --- opensuse ------------------------
-				_BOOT_OPTN="$(funcCreate_menu_autoyast "${_TGET_LINE[@]}")"
-				;;
-			*              )			# --- not supported -------------------
-				funcPrintf "not supported on ${_TGET_LINE[1]}"
-				exit 1
-				;;
-		esac
-		# --- create menu -----------------------------------------------------
-		_BOOT_OPTN="${SCRN_MODE:+"vga=${SCRN_MODE}"}${_BOOT_OPTN:+" ${_BOOT_OPTN}"}"
-		funcCreate_autoexec_ipxe "${_MENU_IPXE}" "${_TABS_CONT:-"0"}" "${_BOOT_OPTN}" "${_TGET_LINE[@]}"
-		funcPrintf "%-3.3s%17.17s: %s %s" "===" "complete" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
 	done
+	if [[ -e "${_MENU_SLNX:-}" ]]; then
+		cp -a "${_MENU_SLNX}" "${_MENU_SE64}"
+	fi
 	# -------------------------------------------------------------------------
 	rm -rf "${DIRS_TEMP:?}"
 	# -------------------------------------------------------------------------

@@ -131,10 +131,9 @@
 	#	|   |-- memdisk ------------------------------------ memdisk of syslinux
 	#	|   |-- boot
 	#	|   |   `-- grub
-	#	|   |       |-- bootx64.efi ------------------------ bootloader (i386-pc-pxe)
+	#	|   |       |-- bootx64.efi ------------------------ bootloader (x86_64-efi)
 	#	|   |       |-- grub.cfg --------------------------- menu base
-	#	|   |       |-- menu.cfg --------------------------- menu file
-	#	|   |       |-- pxelinux.0 ------------------------- bootloader (x86_64-efi)
+	#	|   |       |-- pxelinux.0 ------------------------- bootloader (i386-pc-pxe)
 	#	|   |       |-- fonts
 	#	|   |       |   `-- unicode.pf2
 	#	|   |       |-- i386-efi
@@ -319,6 +318,8 @@
 	# --- tftp / web server address -------------------------------------------
 	              SRVR_ADDR="$(LANG=C ip -4 -oneline address show scope global | awk '{split($4,s,"/"); print s[1];}')"
 	readonly      SRVR_ADDR
+	declare -r    SRVR_PROT="http"							# server connection protocol (http)
+#	declare -r    SRVR_PROT="tftp"							# "                          (tftp)
 
 	# --- network parameter ---------------------------------------------------
 #	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"		# hostname
@@ -2398,6 +2399,7 @@ function funcCreate_late_command() {
 		
 		 	# --- configures ----------------------------------------------------------
 		 	_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/Wired connection 1"
+		#	_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/${NICS_NAME}.nmconnection"
 		 	funcFile_backup "${_FILE_PATH}"
 		 	mkdir -p "${_FILE_PATH%/*}"
 		 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
@@ -2439,6 +2441,7 @@ function funcCreate_late_command() {
 		 			[proxy]
 		_EOT_
 		 	fi
+		 	chown root:root "${_FILE_PATH}"
 		 	chmod 600 "${_FILE_PATH}"
 		
 		 	# --- debug out -----------------------------------------------------------
@@ -2471,6 +2474,7 @@ function funcCreate_late_command() {
 		 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
 		 		systemctl --quiet daemon-reload
 		 		systemctl --quiet restart "${_SRVC_NAME}"
+		 		nmcli connection reload
 		 	fi
 		
 		 	# --- complete ------------------------------------------------------------
@@ -2779,28 +2783,37 @@ function funcCreate_late_command() {
 		 		#tftp-no-fail                                               # do not abort startup even if tftp directory is not accessible
 		 		#tftp-secure                                                # enable tftp secure mode
 		 		
-		 		# --- pxe boot ----------------------------------------------------------------
-		 		#pxe-prompt="Press F8 for boot menu", 0                                             # pxe boot prompt
-		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux     #  0 Intel x86PC
-		 		#pxe-service=PC98             , "PXEBoot-PC98"             ,                        #  1 NEC/PC98
-		 		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                        #  2 EFI Itanium
-		 		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                        #  3 DEC Alpha
-		 		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                        #  4 Arc x86
-		 		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                        #  5 Intel Lean Client
-		 		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                        #  6 EFI IA32
-		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi  #  7 EFI BC
-		 		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                        #  8 EFI Xscale
-		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi  #  9 EFI x86-64
-		 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                        # 10 ARM 32bit
-		 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                        # 11 ARM 64bit
+		 		# --- syslinux block ----------------------------------------------------------
+		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/pxelinux.0    #  0 Intel x86PC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi #  9 EFI x86-64
+		 		
+		 		# --- grub block --------------------------------------------------------------
+		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0    #  0 Intel x86PC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi   #  9 EFI x86-64
 		 		
 		 		# --- ipxe block --------------------------------------------------------------
-		 		#dhcp-match=set:iPXE,175                                                            #
-		 		#pxe-prompt="Press F8 for boot menu", 0                                             # pxe boot prompt
-		 		#pxe-service=tag:iPXE ,x86PC     , "PXEBoot-x86PC"     , /autoexec.ipxe             #  0 Intel x86PC (iPXE)
-		 		#pxe-service=tag:!iPXE,x86PC     , "PXEBoot-x86PC"     , ipxe/undionly.kpxe         #  0 Intel x86PC
-		 		#pxe-service=tag:!iPXE,BC_EFI    , "PXEBoot-BC_EFI"    , ipxe/ipxe.efi              #  7 EFI BC
-		 		#pxe-service=tag:!iPXE,x86-64_EFI, "PXEBoot-x86-64_EFI", ipxe/ipxe.efi              #  9 EFI x86-64
+		 		#dhcp-match=set:iPXE,175                                                             #
+		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		 		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe          #  0 Intel x86PC (iPXE)
+		 		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe      #  0 Intel x86PC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi           #  9 EFI x86-64
+		 		
+		 		# --- pxe boot ----------------------------------------------------------------
+		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            ,                         #  0 Intel x86PC
+		 		#pxe-service=PC98             , "PXEBoot-PC98"             ,                         #  1 NEC/PC98
+		 		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                         #  2 EFI Itanium
+		 		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                         #  3 DEC Alpha
+		 		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                         #  4 Arc x86
+		 		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                         #  5 Intel Lean Client
+		 		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                         #  6 EFI IA32
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           ,                         #  7 EFI BC
+		 		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                         #  8 EFI Xscale
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       ,                         #  9 EFI x86-64
+		 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                         # 10 ARM 32bit
+		 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                         # 11 ARM 64bit
 		 		
 		 		# --- dnsmasq manual page -----------------------------------------------------
 		 		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
@@ -3270,14 +3283,14 @@ function funcCreate_late_command() {
 		 		return
 		 	fi
 		
-		 	hwclock --systohc
-		
 		 	# --- systemctl -----------------------------------------------------------
 		 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
 		 	if [ "${_SRVC_STAT}" = "active" ]; then
 		 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
 		 		systemctl --quiet daemon-reload
 		 		systemctl --quiet restart "${_SRVC_NAME}"
+		 		hwclock --systohc
+		 		hwclock --test
 		 	fi
 		
 		 	# --- complete ------------------------------------------------------------
@@ -4060,8 +4073,10 @@ function funcCreate_preseed_cfg() {
 					sed -i "${_FILE_PATH}"                                    \
 					    -e "\%ubiquity/success_command%i \\${_INSR_STRS}"
 				fi
-				sed -i "${_FILE_PATH}"              \
-				    -e "\%ubiquity/reboot% s/^#/ /"
+				sed -i "${_FILE_PATH}"                        \
+				    -e "\%ubiquity/download_updates% s/^#/ /" \
+				    -e "\%ubiquity/use_nonfree%      s/^#/ /" \
+				    -e "\%ubiquity/reboot%           s/^#/ /"
 				;;
 			*)
 				;;
@@ -5276,7 +5291,7 @@ function funcCreate_remaster_nocloud() {
 	declare -r -a _TGET_LINE=("$@")
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
-	declare -r    _CONF_PATH="autoinstall ds=nocloud\\;s=/cdrom/${_TGET_LINE[9]}"
+	declare -r    _CONF_PATH="autoinstall ds='nocloud;s=/cdrom/${_TGET_LINE[9]}'"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/${_TGET_LINE[9]%/*}"
@@ -5795,6 +5810,7 @@ function funcDbg_parameter() {
 
 	# --- tftp / web server address -------------------------------------------
 	printf "%s=[%s]\n"	"SRVR_ADDR"		"${SRVR_ADDR:-}"
+	printf "%s=[%s]\n"	"SRVR_PROT"		"${SRVR_PROT:-}"
 
 	# --- network parameter ---------------------------------------------------
 #	printf "%s=[%s]\n"	"HOST_NAME"		"${HOST_NAME:-}"

@@ -136,6 +136,8 @@
 			preseed/url=*  | url=*         ) SEED_FILE="${LINE#*url=}";;
 			preseed/file=* | file=*        ) SEED_FILE="${LINE#*file=}";;
 			ds=nocloud*                    ) SEED_FILE="${LINE#*ds=nocloud*=}";SEED_FILE="${SEED_FILE%%/}/user-data";;
+			inst.ks=*                      ) SEED_FILE="${LINE#*inst.ks=}";;
+			autoyast=*                     ) SEED_FILE="${LINE#*autoyast=}";;
 			netcfg/target_network_config=* ) NMAN_FLAG="${LINE#*target_network_config=}";;
 			netcfg/choose_interface=*      ) NICS_NAME="${LINE#*choose_interface=}";;
 			netcfg/disable_dhcp=*          ) IPV4_DHCP="$([ "${LINE#*disable_dhcp=}" = "true" ] && echo "false" || echo "true")";;
@@ -626,7 +628,9 @@ funcInstall_package() {
 	_PAKG_LIST=""
 	if [ -n "${SEED_FILE:-}" ]; then
 		case "${SEED_FILE##*/}" in
-			user-data)	# cloud-init
+			auto*.xml)		;;	# autoyast
+			ks*.cfg) 		;;	# kickstart
+			user-data)			# nocloud
 				_FILE_PATH="${PROG_DIRS}/user-data"
 				if [ -e "${_FILE_PATH}" ]; then
 					_PAKG_LIST="$( \
@@ -635,7 +639,7 @@ funcInstall_package() {
 						sed -e  's/[ \t]\+/ /g')"
 				fi
 				;;
-			*)			# preseed
+			ps*.cfg)			# preseed
 				_FILE_PATH="${PROG_DIRS}/${SEED_FILE##*/}"
 				if [ -e "${_FILE_PATH}" ]; then
 					_PAKG_LIST="$( \
@@ -645,6 +649,7 @@ funcInstall_package() {
 						sed -e  's%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+[[:graph:]]\+[ \t]*%%')"
 				fi
 				;;
+			*)	;;
 		esac;
 	fi
 
@@ -1098,6 +1103,7 @@ funcSetupNetwork_nmanagr() {
 
 	# --- configures ----------------------------------------------------------
 	_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/Wired connection 1"
+#	_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/${NICS_NAME}.nmconnection"
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
@@ -1139,6 +1145,7 @@ _EOT_
 			[proxy]
 _EOT_
 	fi
+	chown root:root "${_FILE_PATH}"
 	chmod 600 "${_FILE_PATH}"
 
 	# --- debug out -----------------------------------------------------------
@@ -1171,6 +1178,7 @@ _EOT_
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
 		systemctl --quiet daemon-reload
 		systemctl --quiet restart "${_SRVC_NAME}"
+		nmcli connection reload
 	fi
 
 	# --- complete ------------------------------------------------------------
@@ -1479,28 +1487,37 @@ _EOT_
 		#tftp-no-fail                                               # do not abort startup even if tftp directory is not accessible
 		#tftp-secure                                                # enable tftp secure mode
 		
-		# --- pxe boot ----------------------------------------------------------------
-		#pxe-prompt="Press F8 for boot menu", 0                                             # pxe boot prompt
-		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux     #  0 Intel x86PC
-		#pxe-service=PC98             , "PXEBoot-PC98"             ,                        #  1 NEC/PC98
-		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                        #  2 EFI Itanium
-		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                        #  3 DEC Alpha
-		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                        #  4 Arc x86
-		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                        #  5 Intel Lean Client
-		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                        #  6 EFI IA32
-		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi  #  7 EFI BC
-		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                        #  8 EFI Xscale
-		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi  #  9 EFI x86-64
-		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                        # 10 ARM 32bit
-		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                        # 11 ARM 64bit
+		# --- syslinux block ----------------------------------------------------------
+		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/pxelinux.0    #  0 Intel x86PC
+		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi #  9 EFI x86-64
+		
+		# --- grub block --------------------------------------------------------------
+		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0    #  0 Intel x86PC
+		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi   #  9 EFI x86-64
 		
 		# --- ipxe block --------------------------------------------------------------
-		#dhcp-match=set:iPXE,175                                                            #
-		#pxe-prompt="Press F8 for boot menu", 0                                             # pxe boot prompt
-		#pxe-service=tag:iPXE ,x86PC     , "PXEBoot-x86PC"     , /autoexec.ipxe             #  0 Intel x86PC (iPXE)
-		#pxe-service=tag:!iPXE,x86PC     , "PXEBoot-x86PC"     , ipxe/undionly.kpxe         #  0 Intel x86PC
-		#pxe-service=tag:!iPXE,BC_EFI    , "PXEBoot-BC_EFI"    , ipxe/ipxe.efi              #  7 EFI BC
-		#pxe-service=tag:!iPXE,x86-64_EFI, "PXEBoot-x86-64_EFI", ipxe/ipxe.efi              #  9 EFI x86-64
+		#dhcp-match=set:iPXE,175                                                             #
+		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe          #  0 Intel x86PC (iPXE)
+		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe      #  0 Intel x86PC
+		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi           #  9 EFI x86-64
+		
+		# --- pxe boot ----------------------------------------------------------------
+		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
+		#pxe-service=x86PC            , "PXEBoot-x86PC"            ,                         #  0 Intel x86PC
+		#pxe-service=PC98             , "PXEBoot-PC98"             ,                         #  1 NEC/PC98
+		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                         #  2 EFI Itanium
+		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                         #  3 DEC Alpha
+		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                         #  4 Arc x86
+		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                         #  5 Intel Lean Client
+		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                         #  6 EFI IA32
+		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           ,                         #  7 EFI BC
+		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                         #  8 EFI Xscale
+		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       ,                         #  9 EFI x86-64
+		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                         # 10 ARM 32bit
+		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                         # 11 ARM 64bit
 		
 		# --- dnsmasq manual page -----------------------------------------------------
 		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
@@ -1797,7 +1814,6 @@ funcSetupNetwork_samba() {
 	# --- shared settings section ---------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_WORK_PATH}"
 		[homes]
-		        allow insecure wide links = Yes
 		        browseable = No
 		        comment = Home Directories
 		        create mask = 0770
@@ -1878,12 +1894,10 @@ funcSetupNetwork_samba() {
 		        comment = HTML shared directories
 		        guest ok = Yes
 		        path = ${DIRS_HTML}
-		        wide links = Yes
 		[tftp-share]
 		        comment = TFTP shared directories
 		        guest ok = Yes
 		        path = ${DIRS_TFTP}
-		        wide links = Yes
 _EOT_
 
 	# --- output --------------------------------------------------------------
@@ -1973,14 +1987,14 @@ funcSetupNetwork_chronyd() {
 		return
 	fi
 
-	hwclock --systohc
-
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
 	if [ "${_SRVC_STAT}" = "active" ]; then
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
 		systemctl --quiet daemon-reload
 		systemctl --quiet restart "${_SRVC_NAME}"
+		hwclock --systohc
+		hwclock --test
 	fi
 
 	# --- complete ------------------------------------------------------------

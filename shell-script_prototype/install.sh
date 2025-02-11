@@ -52,11 +52,11 @@
 			"bind9-dnsutils" \
 			"samba-common-bin" \
 		)
-		case "$(arch)" in
-			x86_64) CPU_ARCH="amd64";;
-			*     ) CPU_ARCH="";;
-		esac
-		declare -r -a APP_FIND=("$(LANG=C apt list "${APP_TGET[@]}" 2> /dev/null | sed -ne '/'"${CPU_ARCH:-"amd64"}"'/{' -e '/^[ \t]*$\|WARNING\|Listing\|installed/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g')")
+		MAIN_ARHC="$(dpkg --print-architecture)"
+		readonly      MAIN_ARHC
+		OTHR_ARCH="$(dpkg --print-foreign-architectures)"
+		readonly      OTHR_ARCH
+		declare -r -a APP_FIND=("$(LANG=C apt list "${APP_TGET[@]}" 2> /dev/null | sed -ne '/[ \t]'"${OTHR_ARCH:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g')")
 		declare -a    APP_LIST=()
 		for I in  "${!APP_FIND[@]}"
 		do
