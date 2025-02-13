@@ -352,6 +352,8 @@ exit 0</source>
       <package>curl</package>
       <package>vim</package>
       <package>bc</package>
+      <package>tree</package>
+      <package>shellcheck</package>
       <package>openssh-server</package>
       <package>systemd-network</package>
       <package>dnsmasq</package>

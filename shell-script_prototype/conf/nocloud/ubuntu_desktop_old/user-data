@@ -241,6 +241,8 @@ autoinstall:
   - curl
   - vim
   - bc
+  - tree
+  - shellcheck
   - clamav
   - openssh-server
   - systemd
@@ -260,6 +262,7 @@ autoinstall:
 # - fonts-noto
 # - im-config
 # - zenity
+# - ibus-mozc
 # - fcitx5-mozc
 # - mozc-utils-gui
 # - gnome-shell-extensions

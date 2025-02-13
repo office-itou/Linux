@@ -120,11 +120,12 @@
 	LGIN_SHEL="$(command -v nologin)"						# login shell (disallow system login to samba user)
 	readonly LGIN_SHEL
 	# --- directory parameter -------------------------------------------------
-	readonly DIRS_HGFS="${DIRS_TGET:-}/srv/hgfs"			# root of hgfs shared directory
-	readonly DIRS_HTML="${DIRS_TGET:-}/srv/http"			# root of html shared directory
-	readonly DIRS_TFTP="${DIRS_TGET:-}/srv/tftp"			# root of tftp shared directory
-	readonly DIRS_SAMB="${DIRS_TGET:-}/srv/samba"			# root of samba shared directory
-	readonly DIRS_USER="${DIRS_TGET:-}/srv/user"			# root of user shared directory
+	readonly DIRS_SRVR="${DIRS_TGET:-}/srv"					# root of shared directory
+	readonly DIRS_HGFS="${DIRS_TGET:-}${DIRS_SRVR}/hgfs"	# root of hgfs shared directory
+	readonly DIRS_HTML="${DIRS_TGET:-}${DIRS_SRVR}/http"	# root of html shared directory
+	readonly DIRS_TFTP="${DIRS_TGET:-}${DIRS_SRVR}/tftp"	# root of tftp shared directory
+	readonly DIRS_SAMB="${DIRS_TGET:-}${DIRS_SRVR}/samba"	# root of samba shared directory
+	readonly DIRS_USER="${DIRS_TGET:-}${DIRS_SRVR}/user"	# root of user shared directory
 
 	# --- set command line parameter ------------------------------------------
 	for LINE in ${COMD_LINE:-} ${PROG_PRAM:-}
@@ -185,8 +186,9 @@
 	done
 
 	# --- working directory name ----------------------------------------------
-	readonly DIRS_ORIG="${PROG_DIRS}/orig"
-	readonly DIRS_LOGS="${PROG_DIRS}/logs"
+	readonly DIRS_ORIG="${PROG_DIRS}/orig"			# original file directory
+	readonly DIRS_INIT="${PROG_DIRS}/init"			# initial file directory
+	readonly DIRS_LOGS="${PROG_DIRS}/logs"			# log file directory
 
 	# --- log out -------------------------------------------------------------
 	if [ -n "${DBGS_FLAG:-}" ] \
@@ -358,6 +360,7 @@ funcDebugout_parameter() {
 	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_TGET" "${DIRS_TGET:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_ORIG" "${DIRS_ORIG:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_INIT" "${DIRS_INIT:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_LOGS" "${DIRS_LOGS:-}"
 	#--- initial settings  ----------------------------------------------------
 	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
@@ -417,6 +420,7 @@ funcDebugout_parameter() {
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "SAMB_GADM" "${SAMB_GADM:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "LGIN_SHEL" "${LGIN_SHEL:-}"
 	# --- directory parameter -------------------------------------------------
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_SRVR" "${DIRS_SRVR:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_HTML" "${DIRS_HTML:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_TFTP" "${DIRS_TFTP:-}"
 	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_SHAR" "${DIRS_SHAR:-}"
@@ -575,7 +579,10 @@ funcFile_backup() {
 	# --- backup --------------------------------------------------------------
 	___FILE_PATH="${1}"
 	___BACK_PATH="${1#*"${DIRS_TGET:-}"}"
-	___BACK_PATH="${DIRS_ORIG}/${___BACK_PATH#/}"
+	case "${2:-}" in
+		init) ___BACK_PATH="${DIRS_INIT}/${___BACK_PATH#/}";;
+		*   ) ___BACK_PATH="${DIRS_ORIG}/${___BACK_PATH#/}";;
+	esac
 	mkdir -p "${___BACK_PATH%/*}"
 	if [ -e "${___BACK_PATH}" ]; then
 		___BACK_PATH="${___BACK_PATH}.$(date +"%Y%m%d%H%M%S")"
@@ -583,11 +590,11 @@ funcFile_backup() {
 	if [ -n "${DBGS_FLAG:-}" ]; then
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "backup: ${___FILE_PATH} -> ${___BACK_PATH}"
 	fi
-	if [ -f "$1" ]; then
+#	if [ -f "$1" ]; then
 		cp -a "$1" "${___BACK_PATH}"
-	else
-		mv "$1" "${___BACK_PATH}"
-	fi
+#	else
+#		mv "$1" "${___BACK_PATH}"
+#	fi
 
 	# --- complete ------------------------------------------------------------
 	if [ -n "${DBGS_FLAG:-}" ]; then
@@ -618,6 +625,7 @@ funcInstall_package() {
 
 		# --- debug out -----------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 	fi
 
 	# --- get architecture ----------------------------------------------------
@@ -821,6 +829,9 @@ _EOT_
 #	funcFile_backup "${_WORK_PATH}"
 #	ln -sf "${DIRS_TFTP#${DIRS_TGET:-}}" "${_WORK_PATH}"
 
+	# --- debug out -----------------------------------------------------------
+	funcFile_backup "${DIRS_SRVR:?}" "init"
+
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
 }
@@ -918,6 +929,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- disable_dns_proxy.conf ----------------------------------------------
 	_FILE_PATH="${DIRS_TGET:-}/etc/systemd/system/connman.service.d/disable_dns_proxy.conf"
@@ -932,7 +944,8 @@ _EOT_
 _EOT_
 
 	# --- debug out -----------------------------------------------------------
-#	funcDebugout_file "${_FILE_PATH}"
+	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- settings ------------------------------------------------------------
 #	_FILE_PATH="${DIRS_TGET:-}/var/lib/connman/settings"
@@ -950,6 +963,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 #	funcDebugout_file "${_FILE_PATH}"
+#	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- configures ----------------------------------------------------------
 	_WORK_TEXT="$(echo "${NICS_MADR}" | sed -e 's/://g')"
@@ -988,6 +1002,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_NAME="connman.service"
@@ -1029,6 +1044,7 @@ _EOT_
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 
 		# --- 99-disable-network-config.cfg -----------------------------------
 		_FILE_PATH="${DIRS_TGET:-}/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
@@ -1041,6 +1057,7 @@ _EOT_
 _EOT_
 			# --- debug out ---------------------------------------------------
 			funcDebugout_file "${_FILE_PATH}"
+			funcFile_backup   "${_FILE_PATH}" "init"
 		fi
 	else
 		_FILE_PATH="${DIRS_TGET:-}/etc/netplan/99-network-config-${NICS_NAME}.yaml"
@@ -1081,6 +1098,7 @@ _EOT_
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 	fi
 
 	# --- netplan -------------------------------------------------------------
@@ -1150,6 +1168,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- dns.conf ------------------------------------------------------------
 	_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/conf.d/dns.conf"
@@ -1170,6 +1189,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_NAME="NetworkManager.service"
@@ -1199,6 +1219,7 @@ funcSetupNetwork_hostname() {
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -1229,6 +1250,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -1254,6 +1276,7 @@ _EOT_
 #
 #	# --- debug out -----------------------------------------------------------
 #	funcDebugout_file "${_FILE_PATH}"
+#	funcFile_backup   "${_FILE_PATH}" "init"
 #
 #	# --- hosts ---------------------------------------------------------------
 #	_FILE_PATH="${DIRS_TGET:-}/etc/hosts.deny"
@@ -1266,6 +1289,7 @@ _EOT_
 #
 #	# --- debug out -----------------------------------------------------------
 #	funcDebugout_file "${_FILE_PATH}"
+#	funcFile_backup   "${_FILE_PATH}" "init"
 #
 #	# --- complete ------------------------------------------------------------
 #	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -1296,15 +1320,23 @@ funcSetupNetwork_firewalld() {
 	    -e '/^Wants=network-pre.target$/  s/^/#/' \
 	    -e '                                   }'
 
+	# --- debug out -----------------------------------------------------------
+	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
+
 	# --- firewalld -----------------------------------------------------------
 	# memo: log output settings : firewall-cmd --set-log-denied=all
 	#       service name output ; firewall-cmd --get-services
 	#       setting value output: firewall-cmd --list-all --zone=home_use
-	_FILE_PATH="${DIRS_TGET:-}/lib/firewalld/zones/drop.xml"
-	if [ ! -e "${_FILE_PATH}" ]; then
-		_FILE_PATH="${DIRS_TGET:-}/usr/lib/firewalld/zones/drop.xml"
+	_FILE_PATH="${DIRS_TGET:-}/etc/firewalld/zones/${FWAL_ZONE}.xml"
+	_WORK_PATH="${DIRS_TGET:-}/lib/firewalld/zones/drop.xml"
+	if [ ! -e "${_WORK_PATH}" ]; then
+		_WORK_PATH="${DIRS_TGET:-}/usr/lib/firewalld/zones/drop.xml"
 	fi
-	cp "${_FILE_PATH}" "${DIRS_TGET:-}/etc/firewalld/zones/${FWAL_ZONE}.xml"
+	cp -a "${_WORK_PATH}" "${_FILE_PATH}"
+	funcFile_backup "${_FILE_PATH}"
+	mkdir -p "${_FILE_PATH%/*}"
+	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 	_IPV4_ADDR="${IPV4_UADR}.0/${NICS_BIT4}"
 	_IPV6_ADDR="${IPV6_UADR%%::}::/${IPV6_CIDR}"
 	_LINK_ADDR="${LINK_UADR%%::}::/10"
@@ -1360,6 +1392,10 @@ funcSetupNetwork_firewalld() {
 		firewall-offline-cmd --list-all --zone="${FWAL_ZONE}"
 	fi
 
+	# --- debug out -----------------------------------------------------------
+	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
+
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
 }
@@ -1398,6 +1434,7 @@ funcSetupNetwork_dnsmasq() {
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 	fi
 
 	# --- dnsmasq -------------------------------------------------------------
@@ -1412,6 +1449,7 @@ funcSetupNetwork_dnsmasq() {
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 	fi
 
 	# --- default.conf --------------------------------------------------------
@@ -1472,6 +1510,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- pxeboot.conf --------------------------------------------------------
 	_FILE_PATH="${DIRS_TGET:-}/etc/dnsmasq.d/pxeboot.conf"
@@ -1527,6 +1566,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_NAME="dnsmasq.service"
@@ -1562,20 +1602,20 @@ _EOT_
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 	else
 		# --- resolv.conf -> /run/systemd/resolve/stub-resolv.conf ------------
 		_FILE_PATH="${DIRS_TGET:-}/etc/resolv.conf"
 		funcFile_backup "${_FILE_PATH}"
 		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 		rm -f "${_FILE_PATH}"
-#		if [ -e "${DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf" ]; then
-			ln -sfr /run/systemd/resolve/stub-resolv.conf "${_FILE_PATH}"
-#		else
-#			ln -sfr /run/systemd/resolve/resolv.conf "${_FILE_PATH}"
-#		fi
+		_WORK_PATH="${DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
+		ln -sfr "${_WORK_PATH}" "${_FILE_PATH}"
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
+		funcFile_backup   "${_WORK_PATH}" "init"
 
 		# --- default.conf ----------------------------------------------------
 		_FILE_PATH="${DIRS_TGET:-}/etc/systemd/resolved.conf.d/default.conf"
@@ -1595,6 +1635,7 @@ _EOT_
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 
 		# --- systemctl avahi-daemon.service ----------------------------------
 		_SRVC_NAME="avahi-daemon.service"
@@ -1668,6 +1709,7 @@ _EOT_
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 
 		# --- registration ----------------------------------------------------
 		a2dissite 000-default
@@ -1691,6 +1733,10 @@ _EOT_
 			 	Require all granted
 			</Directory>
 _EOT_
+
+		# --- debug out -------------------------------------------------------
+		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 	fi
 
 	# --- systemctl -----------------------------------------------------------
@@ -1762,6 +1808,7 @@ funcSetupNetwork_samba() {
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 	fi
 
 	# --- smb.conf ------------------------------------------------------------
@@ -1905,6 +1952,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_SMBD}")"
@@ -1955,6 +2003,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
@@ -2065,6 +2114,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
@@ -2132,6 +2182,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -2176,6 +2227,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -2214,6 +2266,7 @@ _EOT_
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 	fi
 
 	# --- .bash_history -------------------------------------------------------
@@ -2230,6 +2283,7 @@ _EOT_
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 	fi
 
 	# --- .vimrc --------------------------------------------------------------
@@ -2257,6 +2311,7 @@ _EOT_
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 	fi
 
 	# --- .curlrc -------------------------------------------------------------
@@ -2276,6 +2331,7 @@ _EOT_
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
+		funcFile_backup   "${_FILE_PATH}" "init"
 	fi
 
 	# --- distribute to existing users ----------------------------------------
@@ -2298,6 +2354,10 @@ _EOT_
 			mkdir -p "${_DIRS_DEST}"
 			cp -a "${_FILE_PATH}" "${_DIRS_DEST}"
 			chown "${_DIRS_USER##*/}": "${_DIRS_DEST}/${_FILE_PATH##*/}"
+
+			# --- debug out ---------------------------------------------------
+			funcDebugout_file "${_DIRS_DEST}/${_FILE_PATH##*/}"
+			funcFile_backup   "${_DIRS_DEST}/${_FILE_PATH##*/}" "init"
 		done
 	done
 
@@ -2329,6 +2389,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- sudoers-local -------------------------------------------------------
 	if visudo -q -c -f "${_WORK_PATH}"; then
@@ -2353,6 +2414,10 @@ _EOT_
 			chown -c root:root "${_FILE_PATH}"
 			chmod -c 0440 "${_FILE_PATH}"
 			printf "\033[m${PROG_NAME}: \033[93m%s\033[m\n" "sudo -ll: list user's privileges or check a specific command"
+
+			# --- debug out ---------------------------------------------------
+			funcDebugout_file "${_FILE_PATH}"
+			funcFile_backup   "${_FILE_PATH}" "init"
 		else
 			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "file creation failure"
 			visudo -c -f "${_WORK_PATH}" || true
@@ -2386,6 +2451,7 @@ funcSetupConfig_blacklist() {
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- update initramfs ----------------------------------------------------
 #	if [ -z "${DIRS_TGET:-}" ]; then
@@ -2446,6 +2512,8 @@ funcSetupConfig_blacklist() {
 				cp --preserve=timestamps "${_FILE_PATH}" "${_REAL_IRAM}"
 				break
 			done
+			funcFile_backup   "${_REAL_VLNZ}" "init"
+			funcFile_backup   "${_REAL_IRAM}" "init"
 		fi
 	fi
 
@@ -2490,6 +2558,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- create grub.cfg -----------------------------------------------------
 	_FILE_PATH="$(find "${DIRS_TGET:-}"/boot/ \( -path '/*/efi' -o -path '/*/EFI' \) -prune -o -type f -name 'grub.cfg' -print)"
@@ -2498,6 +2567,10 @@ _EOT_
 		if "${_WORK_COMD}" --output="${_WORK_PATH}"; then
 			if cp --preserve=timestamps "${_WORK_PATH}" "${_FILE_PATH}"; then
 				printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "success to create ${_FILE_PATH}"
+
+				# --- debug out -----------------------------------------------
+				funcDebugout_file "${_FILE_PATH}"
+				funcFile_backup   "${_FILE_PATH}" "init"
 			else
 				printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to copy ${_FILE_PATH}"
 			fi
@@ -2595,6 +2668,7 @@ _EOT_
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- complete ------------------------------------------------------------
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
@@ -2610,6 +2684,9 @@ funcMain() {
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_parameter
+	funcFile_backup "/proc/cmdline"
+	funcFile_backup "/proc/mounts"
+	funcFile_backup "/proc/self/mounts"
 
 	# --- installing missing packages -----------------------------------------
 	funcInstall_package
