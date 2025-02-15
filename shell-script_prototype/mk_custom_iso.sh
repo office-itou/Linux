@@ -89,7 +89,7 @@
 
 # *** data section ************************************************************
 
-	# --- server tree diagram (developed for debian) --------------------------
+	# --- main server tree diagram (developed for debian) ---------------------
 	#
 	#	[tree --charset C -n --filesfirst -d /srv/]
 	#
@@ -98,7 +98,6 @@
 	#	|-- http
 	#	|   `-- html---------------------------------------- html contents
 	#	|       |-- index.html
-	#	|       |-- memdisk
 	#	|       |-- conf -> /srv/user/share/conf
 	#	|       |-- imgs -> /srv/user/share/imgs
 	#	|       |-- isos -> /srv/user/share/isos
@@ -115,12 +114,6 @@
 	#	|   |   |-- bak
 	#	|   |   |-- pub
 	#	|   |   `-- usr
-	#	|   |       `-- administrator
-	#	|   |           |-- app
-	#	|   |           |-- dat
-	#	|   |           `-- web
-	#	|   |               `-- public_html
-	#	|   |                   `-- index.html
 	#	|   `-- dlna
 	#	|       |-- movies
 	#	|       |-- others
@@ -128,7 +121,6 @@
 	#	|       `-- sounds
 	#	|-- tftp ------------------------------------------- tftp contents
 	#	|   |-- autoexec.ipxe ------------------------------ ipxe script file (menu file)
-	#	|   |-- memdisk ------------------------------------ memdisk of syslinux
 	#	|   |-- boot
 	#	|   |   `-- grub
 	#	|   |       |-- bootx64.efi ------------------------ bootloader (x86_64-efi)
@@ -141,11 +133,8 @@
 	#	|   |       |-- locale
 	#	|   |       `-- x86_64-efi
 	#	|   |-- conf -> /srv/user/share/conf
-	#	|   |-- imgs  -> /srv/user/share/imgs
+	#	|   |-- imgs -> /srv/user/share/imgs
 	#	|   |-- ipxe --------------------------------------- ipxe module
-	#	|   |   |-- ipxe.efi
-	#	|   |   |-- undionly.kpxe
-	#	|   |   `-- wimboot
 	#	|   |-- isos -> /srv/user/share/isos
 	#	|   |-- load -> /srv/user/share/load
 	#	|   |-- menu-bios
@@ -173,63 +162,74 @@
 	#	        |-- conf ----------------------------------- configuration file
 	#	        |   |-- _keyring --------------------------- keyring file
 	#	        |   |-- _template -------------------------- templates for various configuration files
-	#	        |   |   |-- initrd_debian.yaml
-	#	        |   |   |-- initrd_ubuntu.yaml
-	#	        |   |   |-- kickstart_common.cfg
-	#	        |   |   |-- live_debian.yaml
-	#	        |   |   |-- live_ubuntu.yaml
-	#	        |   |   |-- nocloud-ubuntu-user-data
-	#	        |   |   |-- preseed_debian.cfg
-	#	        |   |   |-- preseed_ubuntu.cfg
-	#	        |   |   `-- yast_opensuse.xml
-	#	        |   |-- autoyast
-	#	        |   |-- kickstart
-	#	        |   |-- nocloud
-	#	        |   |-- preseed
-	#	        |   |-- script
-	#	        |   |   |-- late_command.sh
-	#	        |   |   `-- live_0000-user-conf-hook.sh
-	#	        |   `-- windows
-	#	        |       |-- WinREexpand.cmd
-	#	        |       |-- WinREexpand_bios.sub
-	#	        |       |-- WinREexpand_uefi.sub
-	#	        |       |-- bypass.cmd
-	#	        |       |-- inst_w10.cmd
-	#	        |       |-- inst_w11.cmd
-	#	        |       |-- shutdown.cmd
-	#	        |       |-- startnet.cmd
-	#	        |       |-- unattend.xml
+	#	        |   |   |-- kickstart_common.cfg ----------- template for auto-installation configuration file for rhel
+	#	        |   |   |-- nocloud-ubuntu-user-data ------- "                                                 for ubuntu cloud-init
+	#	        |   |   |-- preseed_debian.cfg ------------- "                                                 for debian
+	#	        |   |   |-- preseed_ubuntu.cfg ------------- "                                                 for ubuntu
+	#	        |   |   `-- yast_opensuse.xml -------------- "                                                 for opensuse
+	#	        |   |-- autoyast --------------------------- configuration files for opensuse
+	#	        |   |-- kickstart -------------------------- "                   for rhel
+	#	        |   |-- nocloud ---------------------------- "                   for ubuntu cloud-init
+	#	        |   |-- preseed ---------------------------- "                   for debian/ubuntu preseed
+	#	        |   |-- script ----------------------------- script files
+	#	        |   |   |-- late_command.sh ---------------- post-installation automatic configuration script file for linux (debian/ubuntu/rhel/opensuse)
+	#	        |   |   `-- live_0000-user-conf-hook.sh ---- live media script files
+	#	        |   `-- windows ---------------------------- configuration files for windows
+	#	        |       |-- WinREexpand.cmd ---------------- hotfix for windows 10
+	#	        |       |-- WinREexpand_bios.sub ----------- "
+	#	        |       |-- WinREexpand_uefi.sub ----------- "
+	#	        |       |-- bypass.cmd --------------------- installation restriction bypass command for windows 11
+	#	        |       |-- inst_w10.cmd ------------------- installation batch file for windows 10
+	#	        |       |-- inst_w11.cmd ------------------- "                       for windows 11
+	#	        |       |-- shutdown.cmd ------------------- shutdown command for winpe
+	#	        |       |-- startnet.cmd ------------------- startup command for winpe
+	#	        |       |-- unattend.xml ------------------- auto-installation configuration file for windows 10/11
 	#	        |       `-- winpeshl.ini
 	#	        |-- imgs ----------------------------------- iso file extraction destination
 	#	        |-- isos ----------------------------------- iso file
 	#	        |-- load ----------------------------------- load module
 	#	        `-- rmak ----------------------------------- remake file
 	#
-	#	/etc/ssh/
-	#	|-- ssh_config.d
-	#	`-- sshd_config.d
-	#	    `-- default.conf ------------------------------- ssh configuration file
-	#
-	#	/etc/samba/
-	#	|-- smb.conf --------------------------------------- samba dnsmasq configuration file
-	#	`-- tls
-	#
-	#	/etc/dnsmasq.d/
-	#	|-- default.conf
-	#	`-- pxeboot.conf ----------------------------------- pxeboot dnsmasq configuration file
-	#
-	#	/etc/apache2/
-	#	|-- conf-available
-	#	|-- conf-enabled
-	#	|-- mods-available
-	#	|-- mods-enabled
-	#	|-- sites-available
-	#	|   |-- 000-default.conf
-	#	|   |-- 999-site.conf ------------------------------ virtual host configuration file for users
-	#	|   `-- default-ssl.conf
-	#	`-- sites-enabled
-	#	    `-- 999-site.conf -> ../sites-available/999-site.conf
-	#
+	#	/etc/
+	#	|-- fstab
+	#	|-- hostname
+	#	|-- hosts
+	#	|-- nsswitch.conf
+	#	|-- resolv.conf -> ../run/systemd/resolve/stub-resolv.conf
+	#	|-- sudoers
+	#	|-- apache2
+	#	|   `-- sites-available
+	#	|       `-- 999-site.conf -------------------------- virtual host configuration file for users
+	#	|-- connman
+	#	|   `-- main.conf
+	#	|-- default
+	#	|   |-- dnsmasq
+	#	|   `-- grub
+	#	|-- dnsmasq.d
+	#	|   |-- default.conf ------------------------------- dnsmasq configuration file
+	#	|   `-- pxeboot.conf ------------------------------- pxeboot configuration file
+	#	|-- firewalld
+	#	|   `-- zones
+	#	|       `-- home_use.xml
+	#	|-- samba
+	#	|   `-- smb.conf ----------------------------------- samba configuration file
+	#	|-- skel
+	#	|   |-- .bash_history
+	#	|   |-- .bashrc
+	#	|   |-- .curlrc
+	#	|   `-- .vimrc
+	#	|-- ssh
+	#	|   `-- sshd_config.d
+	#	|       `-- default.conf --------------------------- ssh configuration file
+	#	`-- systemd
+	#	    |-- resolved.conf.d
+	#	    |   `-- default.conf
+	#	    |-- system
+	#	    |   `-- connman.service.d
+	#	    |       `-- disable_dns_proxy.conf
+	#	    `-- timesyncd.conf.d
+	#	        `-- local.conf
+	#	
 
 	# --- working directory name ----------------------------------------------
 	declare -r    PROG_PATH="$0"
@@ -2825,11 +2825,13 @@ function funcCreate_late_command() {
 		 		# --- syslinux block ----------------------------------------------------------
 		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
 		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/pxelinux.0    #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , menu-efi64/syslinux.efi #  7 EFI BC
 		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi #  9 EFI x86-64
 		 		
 		 		# --- grub block --------------------------------------------------------------
 		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
 		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0    #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi   #  7 EFI BC
 		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi   #  9 EFI x86-64
 		 		
 		 		# --- ipxe block --------------------------------------------------------------
@@ -2837,6 +2839,7 @@ function funcCreate_late_command() {
 		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
 		 		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe          #  0 Intel x86PC (iPXE)
 		 		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe      #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , ipxe/ipxe.efi           #  7 EFI BC
 		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi           #  9 EFI x86-64
 		 		
 		 		# --- pxe boot ----------------------------------------------------------------
@@ -3682,10 +3685,6 @@ function funcCreate_late_command() {
 		 		root   ALL=(ALL:ALL) ALL
 		 		${_WORK_TEXT:-}
 		_EOT_
-		
-		 	# --- debug out -----------------------------------------------------------
-		 	funcDebugout_file "${_FILE_PATH}"
-		 	funcFile_backup   "${_FILE_PATH}" "init"
 		
 		 	# --- sudoers-local -------------------------------------------------------
 		 	if visudo -q -c -f "${_WORK_PATH}"; then
@@ -5559,6 +5558,7 @@ function funcCreate_remaster() {
 #	declare -r    OLD_IFS="${IFS}"
 #	declare -r    MSGS_TITL="create target list"
 #	declare -r -a DATA_ARRY=("$@")
+	declare -r    _COMD_TYPE="${1:-}"
 	declare -a    _TGET_LINE=()
 #	declare -i    RET_CD=0
 	declare -i    I=0
@@ -5579,6 +5579,11 @@ function funcCreate_remaster() {
 #			_TGET_LINE[14]="${FILE_VLID// /%20}"
 #			TGET_LIST[I-1]="${_TGET_LINE[*]}"
 #		fi
+		# --- download only ---------------------------------------------------
+		case "${_COMD_TYPE}" in
+			--download ) continue;;
+			* ) ;;
+		esac
 		# --- skip check ------------------------------------------------------
 		if [[ ! -e "${_TGET_LINE[4]}/${_TGET_LINE[5]}" ]]; then
 			funcPrintf "%-3.3s${TXT_RESET}${TXT_BYELLOW}%17.17s: %s${TXT_RESET} %s" "===" "skip" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
@@ -6032,6 +6037,7 @@ function funcCall_create() {
 	declare -n    _COMD_RETN="$1"
 	declare -r -a _COMD_ENUM=("mini" "net" "dvd" "live")
 	declare -a    _COMD_LIST=()
+	declare -r    _COMD_TYPE="${2:-}"
 	declare -a    _DATA_ARRY=()
 	declare       _WORK_PARM=""
 	declare       _WORK_ENUM=""
@@ -6169,7 +6175,7 @@ function funcCall_create() {
 				esac
 			done
 			TGET_LIST=("${TGET_LIST[@]}")
-			funcCreate_remaster
+			funcCreate_remaster "${_COMD_TYPE}"
 		fi
 	done
 	# -------------------------------------------------------------------------
@@ -6180,111 +6186,111 @@ function funcCall_create() {
 }
 
 # ----- media download --------------------------------------------------------
-function funcMedia_download() {
-#	declare -r    OLD_IFS="${IFS}"
-	declare -r    _MSGS_TITL="call create"
-	declare -n    _COMD_RETN="$1"
-	declare -r -a _COMD_ENUM=("mini" "net" "dvd" "live")
-	declare -a    _COMD_LIST=()
-	declare -a    _DATA_ARRY=()
-	declare       _WORK_PARM=""
-	declare       _WORK_ENUM=""
-	declare -i    I=0
-	declare -i    J=0
-#	declare       FILE_VLID=""
-	# -------------------------------------------------------------------------
-	funcPrintf "---- ${_MSGS_TITL} ${TEXT_GAP1}"
-	# -------------------------------------------------------------------------
-	shift 2
-	if [[ "${1:-}" = "all" ]] || [[ "${1:-}" = "a" ]]; then
-		_COMD_LIST=()
-#		for ((I=0; I<"${#_COMD_ENUM[@]}"; I++))
-		for I in "${!_COMD_ENUM[@]}"
-		do
-			_COMD_LIST+=("${_COMD_ENUM[I]}" "all")
-		done
-	elif [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-		_COMD_LIST=("${_COMD_ENUM[@]}" "$@")
-	fi
-	if [[ -n "${_COMD_LIST[*]}" ]]; then
-		IFS=' =,'
-		set -f
-		set -- "${_COMD_LIST[@]:-}"
-		set +f
-		IFS=${OLD_IFS}
-	fi
-	while [[ -n "${1:-}" ]]
-	do
-		# shellcheck disable=SC2034
-		_COMD_LIST=("${@:-}")
-		_DATA_ARRY=()
-		case "${1:-}" in
-			mini ) _DATA_ARRY=("${DATA_LIST_MINI[@]}");;
-			net  ) _DATA_ARRY=("${DATA_LIST_NET[@]}") ;;
-			dvd  ) _DATA_ARRY=("${DATA_LIST_DVD[@]}") ;;
-			live ) _DATA_ARRY=("${DATA_LIST_INST[@]}");;
-#			live ) _DATA_ARRY=("${DATA_LIST_LIVE[@]}");;
-#			tool ) _DATA_ARRY=("${DATA_LIST_TOOL[@]}");;
-#			comd ) _DATA_ARRY=("${DATA_LIST_SCMD[@]}");;
-			-* )
-				break
-				;;
-			* )
-				;;
-		esac
-		if [[ "${#_DATA_ARRY[@]}" -gt 0 ]]; then
-#			for ((I=0, J=0; I<"${#_DATA_ARRY[@]}"; I++))
-			J=0
-			for I in "${!_DATA_ARRY[@]}"
-			do
-				read -r -a DATA_LINE < <(echo "${_DATA_ARRY[I]}")
-				if [[ "${DATA_LINE[0]}" != "o" ]] || { [[ ! "${DATA_LINE[17]}" =~ ^http://.*$ ]] && [[ ! "${DATA_LINE[17]}" =~ ^https://.*$ ]]; }; then
-					continue
-				fi
-				J+=1
-			done
-			TGET_INDX=""
-			case "${2:-}" in
-				a | all )
-					shift;
-					TGET_INDX="{1..${J}}"
-					;;
-				*       )
-					_WORK_ENUM="${_COMD_ENUM[*]}"
-					_WORK_ENUM="${_WORK_ENUM// /\\|}"
-					# shellcheck disable=SC2312
-					if [[ -n "${2:-}" ]] && [[ -z "$(echo "${2:-}" | sed -ne '/\('"${_WORK_ENUM}"'\)/p')" ]]; then
-						shift
-						_WORK_PARM="$*"
-						# shellcheck disable=SC2001
-						TGET_INDX="$(echo "${_WORK_PARM}" | sed -e 's/\('"${_WORK_ENUM}"'\).*//g')"
-					fi
-					;;
-			esac
-			TGET_INDX="$(eval echo "${TGET_INDX}")"
-			TGET_LIST=()
-			funcCreate_menu "${_DATA_ARRY[@]}"
-			if [[ -z "${TGET_INDX}" ]]; then
-				funcCreate_target_list
-			fi
-#			for ((I=0; I<"${#TGET_LIST[@]}"; I++))
-			for I in "${!TGET_LIST[@]}"
-			do
-				read -r -a TGET_LINE < <(echo "${TGET_LIST[I]}")
-				funcPrintf "===    start: ${TGET_LINE[4]} ${TEXT_GAP2}"
-				# --- download ------------------------------------------------
-				funcCreate_remaster_download "${TGET_LINE[@]}"
-				funcPrintf "=== complete: ${TGET_LINE[4]} ${TEXT_GAP2}"
-			done
-		fi
-		shift
-	done
-	# -------------------------------------------------------------------------
-	rm -rf "${DIRS_TEMP:?}"
-	# -------------------------------------------------------------------------
-	# shellcheck disable=SC2034
-	_COMD_RETN="${_COMD_LIST[*]:-}"
-}
+#function funcMedia_download() {
+##	declare -r    OLD_IFS="${IFS}"
+#	declare -r    _MSGS_TITL="call create"
+#	declare -n    _COMD_RETN="$1"
+#	declare -r -a _COMD_ENUM=("mini" "net" "dvd" "live")
+#	declare -a    _COMD_LIST=()
+#	declare -a    _DATA_ARRY=()
+#	declare       _WORK_PARM=""
+#	declare       _WORK_ENUM=""
+#	declare -i    I=0
+#	declare -i    J=0
+##	declare       FILE_VLID=""
+#	# -------------------------------------------------------------------------
+#	funcPrintf "---- ${_MSGS_TITL} ${TEXT_GAP1}"
+#	# -------------------------------------------------------------------------
+#	shift 2
+#	if [[ "${1:-}" = "all" ]] || [[ "${1:-}" = "a" ]]; then
+#		_COMD_LIST=()
+##		for ((I=0; I<"${#_COMD_ENUM[@]}"; I++))
+#		for I in "${!_COMD_ENUM[@]}"
+#		do
+#			_COMD_LIST+=("${_COMD_ENUM[I]}" "all")
+#		done
+#	elif [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
+#		_COMD_LIST=("${_COMD_ENUM[@]}" "$@")
+#	fi
+#	if [[ -n "${_COMD_LIST[*]}" ]]; then
+#		IFS=' =,'
+#		set -f
+#		set -- "${_COMD_LIST[@]:-}"
+#		set +f
+#		IFS=${OLD_IFS}
+#	fi
+#	while [[ -n "${1:-}" ]]
+#	do
+#		# shellcheck disable=SC2034
+#		_COMD_LIST=("${@:-}")
+#		_DATA_ARRY=()
+#		case "${1:-}" in
+#			mini ) _DATA_ARRY=("${DATA_LIST_MINI[@]}");;
+#			net  ) _DATA_ARRY=("${DATA_LIST_NET[@]}") ;;
+#			dvd  ) _DATA_ARRY=("${DATA_LIST_DVD[@]}") ;;
+#			live ) _DATA_ARRY=("${DATA_LIST_INST[@]}");;
+##			live ) _DATA_ARRY=("${DATA_LIST_LIVE[@]}");;
+##			tool ) _DATA_ARRY=("${DATA_LIST_TOOL[@]}");;
+##			comd ) _DATA_ARRY=("${DATA_LIST_SCMD[@]}");;
+#			-* )
+#				break
+#				;;
+#			* )
+#				;;
+#		esac
+#		if [[ "${#_DATA_ARRY[@]}" -gt 0 ]]; then
+##			for ((I=0, J=0; I<"${#_DATA_ARRY[@]}"; I++))
+#			J=0
+#			for I in "${!_DATA_ARRY[@]}"
+#			do
+#				read -r -a DATA_LINE < <(echo "${_DATA_ARRY[I]}")
+#				if [[ "${DATA_LINE[0]}" != "o" ]] || { [[ ! "${DATA_LINE[17]}" =~ ^http://.*$ ]] && [[ ! "${DATA_LINE[17]}" =~ ^https://.*$ ]]; }; then
+#					continue
+#				fi
+#				J+=1
+#			done
+#			TGET_INDX=""
+#			case "${2:-}" in
+#				a | all )
+#					shift;
+#					TGET_INDX="{1..${J}}"
+#					;;
+#				*       )
+#					_WORK_ENUM="${_COMD_ENUM[*]}"
+#					_WORK_ENUM="${_WORK_ENUM// /\\|}"
+#					# shellcheck disable=SC2312
+#					if [[ -n "${2:-}" ]] && [[ -z "$(echo "${2:-}" | sed -ne '/\('"${_WORK_ENUM}"'\)/p')" ]]; then
+#						shift
+#						_WORK_PARM="$*"
+#						# shellcheck disable=SC2001
+#						TGET_INDX="$(echo "${_WORK_PARM}" | sed -e 's/\('"${_WORK_ENUM}"'\).*//g')"
+#					fi
+#					;;
+#			esac
+#			TGET_INDX="$(eval echo "${TGET_INDX}")"
+#			TGET_LIST=()
+#			funcCreate_menu "${_DATA_ARRY[@]}"
+#			if [[ -z "${TGET_INDX}" ]]; then
+#				funcCreate_target_list
+#			fi
+##			for ((I=0; I<"${#TGET_LIST[@]}"; I++))
+#			for I in "${!TGET_LIST[@]}"
+#			do
+#				read -r -a TGET_LINE < <(echo "${TGET_LIST[I]}")
+#				funcPrintf "===    start: ${TGET_LINE[4]} ${TEXT_GAP2}"
+#				# --- download ------------------------------------------------
+#				funcCreate_remaster_download "${TGET_LINE[@]}"
+#				funcPrintf "=== complete: ${TGET_LINE[4]} ${TEXT_GAP2}"
+#			done
+#		fi
+#		shift
+#	done
+#	# -------------------------------------------------------------------------
+#	rm -rf "${DIRS_TEMP:?}"
+#	# -------------------------------------------------------------------------
+#	# shellcheck disable=SC2034
+#	_COMD_RETN="${_COMD_LIST[*]:-}"
+#}
 
 # === main ====================================================================
 
@@ -6419,12 +6425,13 @@ function funcMain() {
 				--conf )
 					funcCall_config _COMD_LINE "$@"
 					;;
-				--create )
+				--download | \
+				--create   )
 					funcCall_create _COMD_LINE "$@"
 					;;
-				--download )				# ==== media download =============
-					funcMedia_download _COMD_LINE "$@"
-					;;
+#				--download )				# ==== media download =============
+#					funcMedia_download _COMD_LINE "$@"
+#					;;
 				* )
 					shift
 					_COMD_LINE=("${@:-}")

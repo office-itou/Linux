@@ -1529,11 +1529,13 @@ _EOT_
 		# --- syslinux block ----------------------------------------------------------
 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/pxelinux.0    #  0 Intel x86PC
+		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , menu-efi64/syslinux.efi #  7 EFI BC
 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi #  9 EFI x86-64
 		
 		# --- grub block --------------------------------------------------------------
 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0    #  0 Intel x86PC
+		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi   #  7 EFI BC
 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi   #  9 EFI x86-64
 		
 		# --- ipxe block --------------------------------------------------------------
@@ -1541,6 +1543,7 @@ _EOT_
 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
 		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe          #  0 Intel x86PC (iPXE)
 		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe      #  0 Intel x86PC
+		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , ipxe/ipxe.efi           #  7 EFI BC
 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi           #  9 EFI x86-64
 		
 		# --- pxe boot ----------------------------------------------------------------
@@ -2387,10 +2390,6 @@ funcSetupConfig_sudo() {
 		${_WORK_TEXT:-}
 _EOT_
 
-	# --- debug out -----------------------------------------------------------
-	funcDebugout_file "${_FILE_PATH}"
-	funcFile_backup   "${_FILE_PATH}" "init"
-
 	# --- sudoers-local -------------------------------------------------------
 	if visudo -q -c -f "${_WORK_PATH}"; then
 		_FILE_PATH="${DIRS_TGET:-}/etc/sudoers.d/sudoers-local"
@@ -2512,7 +2511,7 @@ funcSetupConfig_blacklist() {
 				cp --preserve=timestamps "${_FILE_PATH}" "${_REAL_IRAM}"
 				break
 			done
-			funcFile_backup   "${_REAL_VLNZ}" "init"
+#			funcFile_backup   "${_REAL_VLNZ}" "init"
 			funcFile_backup   "${_REAL_IRAM}" "init"
 		fi
 	fi

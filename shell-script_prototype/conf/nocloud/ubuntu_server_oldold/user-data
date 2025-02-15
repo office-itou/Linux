@@ -6,9 +6,13 @@ autoinstall:
 #   verbose: true
 #   output:
 # =============================================================================
-# refresh-installer:
-#   update: true
-#   channel: edge
+  refresh-installer:
+    update: true
+    channel: latest/stable
+#   channel: stable/ubuntu-$REL
+#   channel: latest/edge
+#   channel: latest/beta
+# stable candidate edge beta
 # =============================================================================
 # apt:
 #   disable_components: []

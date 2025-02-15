@@ -81,7 +81,7 @@
 
 # *** data section ************************************************************
 
-	# --- server tree diagram (developed for debian) --------------------------
+	# --- main server tree diagram (developed for debian) ---------------------
 	#
 	#	[tree --charset C -n --filesfirst -d /srv/]
 	#
@@ -90,7 +90,6 @@
 	#	|-- http
 	#	|   `-- html---------------------------------------- html contents
 	#	|       |-- index.html
-	#	|       |-- memdisk
 	#	|       |-- conf -> /srv/user/share/conf
 	#	|       |-- imgs -> /srv/user/share/imgs
 	#	|       |-- isos -> /srv/user/share/isos
@@ -107,12 +106,6 @@
 	#	|   |   |-- bak
 	#	|   |   |-- pub
 	#	|   |   `-- usr
-	#	|   |       `-- administrator
-	#	|   |           |-- app
-	#	|   |           |-- dat
-	#	|   |           `-- web
-	#	|   |               `-- public_html
-	#	|   |                   `-- index.html
 	#	|   `-- dlna
 	#	|       |-- movies
 	#	|       |-- others
@@ -120,7 +113,6 @@
 	#	|       `-- sounds
 	#	|-- tftp ------------------------------------------- tftp contents
 	#	|   |-- autoexec.ipxe ------------------------------ ipxe script file (menu file)
-	#	|   |-- memdisk ------------------------------------ memdisk of syslinux
 	#	|   |-- boot
 	#	|   |   `-- grub
 	#	|   |       |-- bootx64.efi ------------------------ bootloader (x86_64-efi)
@@ -133,11 +125,8 @@
 	#	|   |       |-- locale
 	#	|   |       `-- x86_64-efi
 	#	|   |-- conf -> /srv/user/share/conf
-	#	|   |-- imgs  -> /srv/user/share/imgs
+	#	|   |-- imgs -> /srv/user/share/imgs
 	#	|   |-- ipxe --------------------------------------- ipxe module
-	#	|   |   |-- ipxe.efi
-	#	|   |   |-- undionly.kpxe
-	#	|   |   `-- wimboot
 	#	|   |-- isos -> /srv/user/share/isos
 	#	|   |-- load -> /srv/user/share/load
 	#	|   |-- menu-bios
@@ -165,63 +154,74 @@
 	#	        |-- conf ----------------------------------- configuration file
 	#	        |   |-- _keyring --------------------------- keyring file
 	#	        |   |-- _template -------------------------- templates for various configuration files
-	#	        |   |   |-- initrd_debian.yaml
-	#	        |   |   |-- initrd_ubuntu.yaml
-	#	        |   |   |-- kickstart_common.cfg
-	#	        |   |   |-- live_debian.yaml
-	#	        |   |   |-- live_ubuntu.yaml
-	#	        |   |   |-- nocloud-ubuntu-user-data
-	#	        |   |   |-- preseed_debian.cfg
-	#	        |   |   |-- preseed_ubuntu.cfg
-	#	        |   |   `-- yast_opensuse.xml
-	#	        |   |-- autoyast
-	#	        |   |-- kickstart
-	#	        |   |-- nocloud
-	#	        |   |-- preseed
-	#	        |   |-- script
-	#	        |   |   |-- late_command.sh
-	#	        |   |   `-- live_0000-user-conf-hook.sh
-	#	        |   `-- windows
-	#	        |       |-- WinREexpand.cmd
-	#	        |       |-- WinREexpand_bios.sub
-	#	        |       |-- WinREexpand_uefi.sub
-	#	        |       |-- bypass.cmd
-	#	        |       |-- inst_w10.cmd
-	#	        |       |-- inst_w11.cmd
-	#	        |       |-- shutdown.cmd
-	#	        |       |-- startnet.cmd
-	#	        |       |-- unattend.xml
+	#	        |   |   |-- kickstart_common.cfg ----------- template for auto-installation configuration file for rhel
+	#	        |   |   |-- nocloud-ubuntu-user-data ------- "                                                 for ubuntu cloud-init
+	#	        |   |   |-- preseed_debian.cfg ------------- "                                                 for debian
+	#	        |   |   |-- preseed_ubuntu.cfg ------------- "                                                 for ubuntu
+	#	        |   |   `-- yast_opensuse.xml -------------- "                                                 for opensuse
+	#	        |   |-- autoyast --------------------------- configuration files for opensuse
+	#	        |   |-- kickstart -------------------------- "                   for rhel
+	#	        |   |-- nocloud ---------------------------- "                   for ubuntu cloud-init
+	#	        |   |-- preseed ---------------------------- "                   for debian/ubuntu preseed
+	#	        |   |-- script ----------------------------- script files
+	#	        |   |   |-- late_command.sh ---------------- post-installation automatic configuration script file for linux (debian/ubuntu/rhel/opensuse)
+	#	        |   |   `-- live_0000-user-conf-hook.sh ---- live media script files
+	#	        |   `-- windows ---------------------------- configuration files for windows
+	#	        |       |-- WinREexpand.cmd ---------------- hotfix for windows 10
+	#	        |       |-- WinREexpand_bios.sub ----------- "
+	#	        |       |-- WinREexpand_uefi.sub ----------- "
+	#	        |       |-- bypass.cmd --------------------- installation restriction bypass command for windows 11
+	#	        |       |-- inst_w10.cmd ------------------- installation batch file for windows 10
+	#	        |       |-- inst_w11.cmd ------------------- "                       for windows 11
+	#	        |       |-- shutdown.cmd ------------------- shutdown command for winpe
+	#	        |       |-- startnet.cmd ------------------- startup command for winpe
+	#	        |       |-- unattend.xml ------------------- auto-installation configuration file for windows 10/11
 	#	        |       `-- winpeshl.ini
 	#	        |-- imgs ----------------------------------- iso file extraction destination
 	#	        |-- isos ----------------------------------- iso file
 	#	        |-- load ----------------------------------- load module
 	#	        `-- rmak ----------------------------------- remake file
 	#
-	#	/etc/ssh/
-	#	|-- ssh_config.d
-	#	`-- sshd_config.d
-	#	    `-- default.conf ------------------------------- ssh configuration file
-	#
-	#	/etc/samba/
-	#	|-- smb.conf --------------------------------------- samba dnsmasq configuration file
-	#	`-- tls
-	#
-	#	/etc/dnsmasq.d/
-	#	|-- default.conf
-	#	`-- pxeboot.conf ----------------------------------- pxeboot dnsmasq configuration file
-	#
-	#	/etc/apache2/
-	#	|-- conf-available
-	#	|-- conf-enabled
-	#	|-- mods-available
-	#	|-- mods-enabled
-	#	|-- sites-available
-	#	|   |-- 000-default.conf
-	#	|   |-- 999-site.conf ------------------------------ virtual host configuration file for users
-	#	|   `-- default-ssl.conf
-	#	`-- sites-enabled
-	#	    `-- 999-site.conf -> ../sites-available/999-site.conf
-	#
+	#	/etc/
+	#	|-- fstab
+	#	|-- hostname
+	#	|-- hosts
+	#	|-- nsswitch.conf
+	#	|-- resolv.conf -> ../run/systemd/resolve/stub-resolv.conf
+	#	|-- sudoers
+	#	|-- apache2
+	#	|   `-- sites-available
+	#	|       `-- 999-site.conf -------------------------- virtual host configuration file for users
+	#	|-- connman
+	#	|   `-- main.conf
+	#	|-- default
+	#	|   |-- dnsmasq
+	#	|   `-- grub
+	#	|-- dnsmasq.d
+	#	|   |-- default.conf ------------------------------- dnsmasq configuration file
+	#	|   `-- pxeboot.conf ------------------------------- pxeboot configuration file
+	#	|-- firewalld
+	#	|   `-- zones
+	#	|       `-- home_use.xml
+	#	|-- samba
+	#	|   `-- smb.conf ----------------------------------- samba configuration file
+	#	|-- skel
+	#	|   |-- .bash_history
+	#	|   |-- .bashrc
+	#	|   |-- .curlrc
+	#	|   `-- .vimrc
+	#	|-- ssh
+	#	|   `-- sshd_config.d
+	#	|       `-- default.conf --------------------------- ssh configuration file
+	#	`-- systemd
+	#	    |-- resolved.conf.d
+	#	    |   `-- default.conf
+	#	    |-- system
+	#	    |   `-- connman.service.d
+	#	    |       `-- disable_dns_proxy.conf
+	#	    `-- timesyncd.conf.d
+	#	        `-- local.conf
+	#	
 
 	# --- working directory name ----------------------------------------------
 	declare -r    PROG_PATH="$0"
@@ -2817,11 +2817,13 @@ function funcCreate_late_command() {
 		 		# --- syslinux block ----------------------------------------------------------
 		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
 		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/pxelinux.0    #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , menu-efi64/syslinux.efi #  7 EFI BC
 		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi #  9 EFI x86-64
 		 		
 		 		# --- grub block --------------------------------------------------------------
 		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
 		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0    #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi   #  7 EFI BC
 		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi   #  9 EFI x86-64
 		 		
 		 		# --- ipxe block --------------------------------------------------------------
@@ -2829,6 +2831,7 @@ function funcCreate_late_command() {
 		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
 		 		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe          #  0 Intel x86PC (iPXE)
 		 		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe      #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , ipxe/ipxe.efi           #  7 EFI BC
 		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi           #  9 EFI x86-64
 		 		
 		 		# --- pxe boot ----------------------------------------------------------------
@@ -3675,10 +3678,6 @@ function funcCreate_late_command() {
 		 		${_WORK_TEXT:-}
 		_EOT_
 		
-		 	# --- debug out -----------------------------------------------------------
-		 	funcDebugout_file "${_FILE_PATH}"
-		 	funcFile_backup   "${_FILE_PATH}" "init"
-		
 		 	# --- sudoers-local -------------------------------------------------------
 		 	if visudo -q -c -f "${_WORK_PATH}"; then
 		 		_FILE_PATH="${DIRS_TGET:-}/etc/sudoers.d/sudoers-local"
@@ -3800,7 +3799,7 @@ function funcCreate_late_command() {
 		 				cp --preserve=timestamps "${_FILE_PATH}" "${_REAL_IRAM}"
 		 				break
 		 			done
-		 			funcFile_backup   "${_REAL_VLNZ}" "init"
+		#			funcFile_backup   "${_REAL_VLNZ}" "init"
 		 			funcFile_backup   "${_REAL_IRAM}" "init"
 		 		fi
 		 	fi
@@ -5248,9 +5247,9 @@ _EOT_
 						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4mask\}/${_WORK_ARRY[4]:+${_WORK_ARRY[4]#set ipv4mask }}}"
 						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4gway\}/${_WORK_ARRY[5]:+${_WORK_ARRY[5]#set ipv4gway }}}"
 						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4nsvr\}/${_WORK_ARRY[6]:+${_WORK_ARRY[6]#set ipv4nsvr }}}"
-						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{isosfile\}/${_WORK_ARRY[9]:+${_WORK_ARRY[9]#set isosfile }}}"
 						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{autoinst\}/${_WORK_ARRY[10]:+${_WORK_ARRY[10]#set autoinst }}}"
 					fi
+					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{isosfile\}/${_WORK_ARRY[9]:+${_WORK_ARRY[9]#set isosfile }}}"
 					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{language\}/${_WORK_ARRY[11]:+${_WORK_ARRY[11]#set language }}}"
 					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ramsdisk\}/${_WORK_ARRY[12]:+${_WORK_ARRY[12]#set ramsdisk }}}"
 					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{srvraddr\}/${_WORK_ARRY[7]:+${_WORK_ARRY[7]#set srvraddr }}}"
