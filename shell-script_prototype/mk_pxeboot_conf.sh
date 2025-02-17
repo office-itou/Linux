@@ -24,6 +24,8 @@
 		*) ;;
 	esac
 
+	export LANG=C
+
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -115,7 +117,7 @@
 	#	|   |-- autoexec.ipxe ------------------------------ ipxe script file (menu file)
 	#	|   |-- boot
 	#	|   |   `-- grub
-	#	|   |       |-- bootx64.efi ------------------------ bootloader (x86_64-efi)
+	#	|   |       |-- bootnetx64.efi --------------------- bootloader (x86_64-efi)
 	#	|   |       |-- grub.cfg --------------------------- menu base
 	#	|   |       |-- pxelinux.0 ------------------------- bootloader (i386-pc-pxe)
 	#	|   |       |-- fonts
@@ -130,6 +132,7 @@
 	#	|   |-- isos -> /srv/user/share/isos
 	#	|   |-- load -> /srv/user/share/load
 	#	|   |-- menu-bios
+	#	|   |   |-- lpxelinux.0 ---------------------------- bootloader (i386-pc)
 	#	|   |   |-- syslinux.cfg --------------------------- syslinux configuration for mbr environment
 	#	|   |   |-- conf -> ../conf
 	#	|   |   |-- imgs -> ../imgs
@@ -140,6 +143,7 @@
 	#	|   |   `-- rmak -> ../rmak
 	#	|   |-- menu-efi64
 	#	|   |   |-- syslinux.cfg --------------------------- syslinux configuration for uefi(x86_64) environment
+	#	|   |   |-- syslinux.efi --------------------------- bootloader (x86_64-efi)
 	#	|   |   |-- conf -> ../conf
 	#	|   |   |-- imgs -> ../imgs
 	#	|   |   |-- isos -> ../isos
@@ -310,8 +314,8 @@
 	# --- tftp / web server address -------------------------------------------
 	              SRVR_ADDR="$(LANG=C ip -4 -oneline address show scope global | awk '{split($4,s,"/"); print s[1];}')"
 	readonly      SRVR_ADDR
-#	declare -r    SRVR_PROT="http"							# server connection protocol (http)
-	declare -r    SRVR_PROT="tftp"							# "                          (tftp)
+	declare -r    SRVR_PROT="http"							# server connection protocol (http)
+#	declare -r    SRVR_PROT="tftp"							# "                          (tftp)
 
 	# --- network parameter ---------------------------------------------------
 #	declare -r    HOST_NAME="sv-${TGET_LINE[1]%%-*}"		# hostname
@@ -784,6 +788,14 @@
 	declare -r    TXT_BMAGENTA="${ESC}[45m"					# text reverse purple
 	declare -r    TXT_BCYAN="${ESC}[46m"					# text reverse light blue
 	declare -r    TXT_BWHITE="${ESC}[47m"					# text reverse white
+	declare -r    TXT_DBLACK="${ESC}[30m"					# text dark black
+	declare -r    TXT_DRED="${ESC}[31m"						# text dark red
+	declare -r    TXT_DGREEN="${ESC}[32m"					# text dark green
+	declare -r    TXT_DYELLOW="${ESC}[33m"					# text dark yellow
+	declare -r    TXT_DBLUE="${ESC}[34m"					# text dark blue
+	declare -r    TXT_DMAGENTA="${ESC}[35m"					# text dark purple
+	declare -r    TXT_DCYAN="${ESC}[36m"					# text dark light blue
+	declare -r    TXT_DWHITE="${ESC}[37m"					# text dark white
 
 # --- text color test ---------------------------------------------------------
 function funcColorTest() {
@@ -810,6 +822,14 @@ function funcColorTest() {
 	printf "%s : %-12.12s : %s\n" "${TXT_BMAGENTA}" "TXT_BMAGENTA" "${TXT_RESET}"
 	printf "%s : %-12.12s : %s\n" "${TXT_BCYAN}"    "TXT_BCYAN"    "${TXT_RESET}"
 	printf "%s : %-12.12s : %s\n" "${TXT_BWHITE}"   "TXT_BWHITE"   "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DBLACK}"   "TXT_DBLACK"   "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DRED}"     "TXT_DRED"     "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DGREEN}"   "TXT_DGREEN"   "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DYELLOW}"  "TXT_DYELLOW"  "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DBLUE}"    "TXT_DBLUE"    "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DMAGENTA}" "TXT_DMAGENTA" "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DCYAN}"    "TXT_DCYAN"    "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DWHITE}"   "TXT_DWHITE"   "${TXT_RESET}"
 }
 
 # --- diff --------------------------------------------------------------------
@@ -817,7 +837,7 @@ function funcDiff() {
 	if [[ ! -e "$1" ]] || [[ ! -e "$2" ]]; then
 		return
 	fi
-	funcPrintf "$3"
+	printf "%s\n" "$3"
 	diff -y -W "${COLS_SIZE}" --suppress-common-lines "$1" "$2" || true
 }
 
@@ -971,7 +991,7 @@ function funcPrintf() {
 #	fi
 }
 
-# ----- unit conversion -------------------------------------------------------
+# --- unit conversion ---------------------------------------------------------
 function funcUnit_conversion() {
 #	declare -r    _OLD_IFS="${IFS}"
 	declare -r -a _TEXT_UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
@@ -1076,7 +1096,7 @@ function funcCurl() {
 		_LOC_SIZ=$(echo "${_LOC_INF}" | awk '{print $5;}')
 		if [[ "${_WEB_TIM:-0}" -eq "${_LOC_TIM:-0}" ]] && [[ "${_WEB_SIZ:-0}" -eq "${_LOC_SIZ:-0}" ]]; then
 			if [[ -z "${_MSG_FLG}" ]]; then
-				funcPrintf "same    file: ${_WEB_FIL}"
+				printf "%s\n" "same    file: ${_WEB_FIL}"
 			fi
 			return
 		fi
@@ -1085,7 +1105,7 @@ function funcCurl() {
 	_TXT_SIZ="$(funcUnit_conversion "${_WEB_SIZ}")"
 
 	if [[ -z "${_MSG_FLG}" ]]; then
-		funcPrintf "get     file: ${_WEB_FIL} (${_TXT_SIZ})"
+		printf "%s\n" "get     file: ${_WEB_FIL} (${_TXT_SIZ})"
 	fi
 	if curl "${_OPT_PRM[@]}"; then
 		return $?
@@ -1094,7 +1114,7 @@ function funcCurl() {
 	for ((I=0; I<3; I++))
 	do
 		if [[ -z "${_MSG_FLG}" ]]; then
-			funcPrintf "retry  count: ${I}"
+			printf "%s\n" "retry  count: ${I}"
 		fi
 		if curl --continue-at "${_OPT_PRM[@]}"; then
 			return "$?"
@@ -2806,6 +2826,10 @@ function funcCreate_late_command() {
 		 	mkdir -p "${_FILE_PATH%/*}"
 		 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+		 		#log-queries                                                # dns query log output
+		 		#log-dhcp                                                   # dhcp transaction log output
+		 		#log-facility=                                              # log output file name
+		 		
 		 		# --- tftp --------------------------------------------------------------------
 		 		#enable-tftp=${NICS_NAME}                                         # enable tftp server
 		 		#tftp-root=${DIRS_TFTP}                                        # tftp root directory
@@ -2815,39 +2839,39 @@ function funcCreate_late_command() {
 		 		#tftp-secure                                                # enable tftp secure mode
 		 		
 		 		# --- syslinux block ----------------------------------------------------------
-		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/pxelinux.0    #  0 Intel x86PC
-		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , menu-efi64/syslinux.efi #  7 EFI BC
-		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi #  9 EFI x86-64
+		 		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/lpxelinux.0       #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , menu-efi64/syslinux.efi     #  7 EFI BC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi     #  9 EFI x86-64
 		 		
 		 		# --- grub block --------------------------------------------------------------
-		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0    #  0 Intel x86PC
-		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi   #  7 EFI BC
-		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi   #  9 EFI x86-64
+		 		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0        #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootnetx64.efi    #  7 EFI BC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootnetx64.efi    #  9 EFI x86-64
 		 		
 		 		# --- ipxe block --------------------------------------------------------------
-		 		#dhcp-match=set:iPXE,175                                                             #
-		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		 		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe          #  0 Intel x86PC (iPXE)
-		 		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe      #  0 Intel x86PC
-		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , ipxe/ipxe.efi           #  7 EFI BC
-		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi           #  9 EFI x86-64
+		 		#dhcp-match=set:iPXE,175                                                                 #
+		 		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		 		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe              #  0 Intel x86PC (iPXE)
+		 		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe          #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , ipxe/ipxe.efi               #  7 EFI BC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi               #  9 EFI x86-64
 		 		
 		 		# --- pxe boot ----------------------------------------------------------------
-		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            ,                         #  0 Intel x86PC
-		 		#pxe-service=PC98             , "PXEBoot-PC98"             ,                         #  1 NEC/PC98
-		 		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                         #  2 EFI Itanium
-		 		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                         #  3 DEC Alpha
-		 		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                         #  4 Arc x86
-		 		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                         #  5 Intel Lean Client
-		 		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                         #  6 EFI IA32
-		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           ,                         #  7 EFI BC
-		 		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                         #  8 EFI Xscale
-		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       ,                         #  9 EFI x86-64
-		 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                         # 10 ARM 32bit
-		 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                         # 11 ARM 64bit
+		 		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            ,                             #  0 Intel x86PC
+		 		#pxe-service=PC98             , "PXEBoot-PC98"             ,                             #  1 NEC/PC98
+		 		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                             #  2 EFI Itanium
+		 		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                             #  3 DEC Alpha
+		 		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                             #  4 Arc x86
+		 		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                             #  5 Intel Lean Client
+		 		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                             #  6 EFI IA32
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           ,                             #  7 EFI BC
+		 		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                             #  8 EFI Xscale
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       ,                             #  9 EFI x86-64
+		 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                             # 10 ARM 32bit
+		 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                             # 11 ARM 64bit
 		 		
 		 		# --- dnsmasq manual page -----------------------------------------------------
 		 		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
@@ -5091,10 +5115,16 @@ function funcCreate_syslinux_cfg() {
 	declare       _WORK_TEXT=""
 	declare -a    _WORK_ARRY=()
 	declare -i    I=0
+	declare       _SRVR_ADDR=""
 	# --- no display ----------------------------------------------------------
 	if [[ "${_TGET_LINE[2]}" = "-" ]]; then
 		return
 	fi
+	# --- protocol - ----------------------------------------------------------
+	case "${SRVR_PROT:-}" in
+		http | https) _SRVR_ADDR="${SRVR_PROT:-}://${SRVR_ADDR}";;
+		*           ) ;;
+	esac
 	# --- create new ----------------------------------------------------------
 	if [[ ! -e "${_MENU_PATH}" ]] \
 	|| [[ ! -s "${_MENU_PATH}" ]]; then
@@ -5106,50 +5136,57 @@ function funcCreate_syslinux_cfg() {
 			
 			menu resolution ${MENU_RESO/x/ }
 			
-			menu color screen		* #ffffffff #ee000080 *
-			menu color title		* #ffffffff #ee000080 *
-			menu color border		* #ffffffff #ee000080 *
-			menu color sel			* #ffffffff #76a1d0ff *
-			menu color hotsel		* #ffffffff #76a1d0ff *
-			menu color unsel		* #ffffffff #ee000080 *
-			menu color hotkey		* #ffffffff #ee000080 *
-			menu color tabmsg		* #ffffffff #ee000080 *
-			menu color timeout_msg	* #ffffffff #ee000080 *
-			menu color timeout		* #ffffffff #ee000080 *
-			menu color disabled		* #ffffffff #ee000080 *
-			menu color cmdmark		* #ffffffff #ee000080 *
-			menu color cmdline		* #ffffffff #ee000080 *
-			menu color scrollbar	* #ffffffff #ee000080 *
-			menu color help			* #ffffffff #ee000080 *
+			menu color screen       * #ffffffff #ee000080 *
+			menu color title        * #ffffffff #ee000080 *
+			menu color border       * #ffffffff #ee000080 *
+			menu color sel          * #ffffffff #76a1d0ff *
+			menu color hotsel       * #ffffffff #76a1d0ff *
+			menu color unsel        * #ffffffff #ee000080 *
+			menu color hotkey       * #ffffffff #ee000080 *
+			menu color tabmsg       * #ffffffff #ee000080 *
+			menu color timeout_msg  * #ffffffff #ee000080 *
+			menu color timeout      * #ffffffff #ee000080 *
+			menu color disabled     * #ffffffff #ee000080 *
+			menu color cmdmark      * #ffffffff #ee000080 *
+			menu color cmdline      * #ffffffff #ee000080 *
+			menu color scrollbar    * #ffffffff #ee000080 *
+			menu color help         * #ffffffff #ee000080 *
 			
-			menu margin				4
-			menu vshift				5
-			menu rows				25
-			menu tabmsgrow			31
-			menu cmdlinerow			33
-			menu timeoutrow			33
-			menu helpmsgrow			37
-			menu hekomsgendrow		39
+			menu margin             4
+			menu vshift             5
+			menu rows               25
+			menu tabmsgrow          31
+			menu cmdlinerow         33
+			menu timeoutrow         33
+			menu helpmsgrow         37
+			menu hekomsgendrow      39
 			
 			menu title - Boot Menu -
 			menu tabmsg Press ENTER to boot or TAB to edit a menu entry
 			
 			label System-command
-			 	menu label ^[ System command ... ]
-			
-			label Hardware-info
-			 	menu label ^- Hardware info
-			 	com32 hdt.c32
-			
-			label System-shutdown
-			 	menu label ^- System shutdown
-			 	com32 poweroff.c32
-			
-			label System-restart
-			 	menu label ^- System restart
-			 	com32 reboot.c32
+			  menu label ^[ System command ... ]
 			
 _EOT_
+		case "${_MENU_PATH}" in
+			*bios*)
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_MENU_PATH}"
+					label Hardware-info
+					  menu label ^- Hardware info
+					  com32 hdt.c32
+					
+					label System-shutdown
+					  menu label ^- System shutdown
+					  com32 poweroff.c32
+					
+					label System-restart
+					  menu label ^- System restart
+					  com32 reboot.c32
+					
+_EOT_
+				;;
+			*)	;;
+		esac
 	fi
 	# --- creating list data --------------------------------------------------
 	case "${_TGET_LINE[0]}" in
@@ -5158,7 +5195,7 @@ _EOT_
 			_MENU_TEXT="$(
 				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 					label ${_TGET_LINE[2]//%20/-}
-					 	menu label ^${_MENU_ENTR}
+					  menu label ^${_MENU_ENTR}
 					
 _EOT_
 			)"
@@ -5182,9 +5219,10 @@ _EOT_
 							_MENU_TEXT="$(
 								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 									label ${_TGET_LINE[1]}
-									 	menu label ^${_MENU_ENTR}
-									 	kernel memdisk
-									 	append initrd=/${DIRS_ISOS##*/}/${_TGET_LINE[5]} iso raw
+									  menu label ^${_MENU_ENTR}
+									  linux  memdisk
+									  initrd ${_SRVR_ADDR}/${DIRS_ISOS##*/}/${_TGET_LINE[5]}
+									  append iso raw
 									
 _EOT_
 							)"
@@ -5202,9 +5240,10 @@ _EOT_
 							_MENU_TEXT="$(
 								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 									label ${_TGET_LINE[1]}
-									 	menu label ^${_MENU_ENTR}
-									 	kernel memdisk
-									 	append initrd=/${DIRS_ISOS##*/}/${_TGET_LINE[5]} iso raw
+									  menu label ^${_MENU_ENTR}
+									  linux  memdisk
+									  initrd ${_SRVR_ADDR}/${DIRS_ISOS##*/}/${_TGET_LINE[5]}
+									  append iso raw
 									
 _EOT_
 							)"
@@ -5220,8 +5259,8 @@ _EOT_
 							_MENU_TEXT="$(
 								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 									label ${_TGET_LINE[1]}
-									 	menu label ^${_MENU_ENTR}
-									 	kernel /${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[8]}
+									  menu label ^${_MENU_ENTR}
+									  linux  ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[8]}
 									
 _EOT_
 							)"
@@ -5230,8 +5269,8 @@ _EOT_
 							_MENU_TEXT="$(
 								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 									label ${_TGET_LINE[1]}
-									 	menu label ^${_MENU_ENTR}
-									 	kernel /${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[7]}
+									  menu label ^${_MENU_ENTR}
+									  linux  ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[7]}
 									
 _EOT_
 							)"
@@ -5256,9 +5295,10 @@ _EOT_
 					_MENU_TEXT="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							label ${_TGET_LINE[1]}
-							 	menu label ^${_MENU_ENTR}
-							 	kernel /${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[8]}
-							 	append initrd=/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[7]}${_WORK_ARRY[0]:+" ${_WORK_ARRY[0]}"}
+							  menu label ^${_MENU_ENTR}
+							  linux  ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[8]}
+							  initrd ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[7]}
+							  append ${_WORK_ARRY[0]}
 							
 _EOT_
 					)"
@@ -5293,16 +5333,24 @@ function funcCreate_grub_cfg() {
 	declare       _WORK_TEXT=""
 	declare -a    _WORK_ARRY=()
 	declare -i    I=0
+	declare       _SRVR_ADDR=""
 	# --- no display ----------------------------------------------------------
 #	if [[ "${_TGET_LINE[2]}" = "-" ]]; then
 #		return
 #	fi
 	# --- tab string ----------------------------------------------------------
 	if [[ "${_TABS_CONT}" -gt 0 ]]; then
-		_TABS_STRS="$(funcString "${_TABS_CONT}" $'\t')"
+#		_TABS_STRS="$(funcString "${_TABS_CONT}" $'\t')"
+		_TABS_STRS="$(funcString $(("${_TABS_CONT}" * 2)) ' ')"
 	else
 		_TABS_STRS=""
 	fi
+	# --- protocol - ----------------------------------------------------------
+	case "${SRVR_PROT:-}" in
+		http | https) _SRVR_ADDR="(${SRVR_PROT},${SRVR_ADDR})";;
+		tftp        ) _SRVR_ADDR="(${SRVR_PROT},${SRVR_ADDR})";;
+		*           ) ;;
+	esac
 	# --- create new ----------------------------------------------------------
 	if [[ ! -e "${_MENU_PATH}" ]] \
 	|| [[ ! -s "${_MENU_PATH}" ]]; then
@@ -5311,54 +5359,54 @@ function funcCreate_grub_cfg() {
 			set timeout="-1"
 			
 			if [ "x\${feature_default_font_path}" = "xy" ] ; then
-			 	font="unicode"
+			  font="unicode"
 			else
-			 	font="\${prefix}/font.pf2"
+			  font="\${prefix}/fonts/font.pf2"
 			fi
 			
 			if loadfont "\$font" ; then
-			#	set lang="ja_JP"
+			# set lang="ja_JP"
 			
-			#	set gfxmode="7680x4320" # 8K UHD (16:9)
-			#	set gfxmode="3840x2400" #        (16:10)
-			#	set gfxmode="3840x2160" # 4K UHD (16:9)
-			#	set gfxmode="2880x1800" #        (16:10)
-			#	set gfxmode="2560x1600" #        (16:10)
-			#	set gfxmode="2560x1440" # WQHD   (16:9)
-			#	set gfxmode="1920x1440" #        (4:3)
-			#	set gfxmode="1920x1200" # WUXGA  (16:10)
-			#	set gfxmode="1920x1080" # FHD    (16:9)
-			#	set gfxmode="1856x1392" #        (4:3)
-			#	set gfxmode="1792x1344" #        (4:3)
-			#	set gfxmode="1680x1050" # WSXGA+ (16:10)
-			#	set gfxmode="1600x1200" # UXGA   (4:3)
-			#	set gfxmode="1400x1050" #        (4:3)
-			#	set gfxmode="1440x900"  # WXGA+  (16:10)
-			#	set gfxmode="1360x768"  # HD     (16:9)
-			#	set gfxmode="1280x1024" # SXGA   (5:4)
-			#	set gfxmode="1280x960"  #        (4:3)
-			#	set gfxmode="1280x800"  #        (16:10)
-			#	set gfxmode="1280x768"  #        (4:3)
-			#	set gfxmode="1280x720"  # WXGA   (16:9)
-			#	set gfxmode="1152x864"  #        (4:3)
-			#	set gfxmode="1024x768"  # XGA    (4:3)
-			#	set gfxmode="800x600"   # SVGA   (4:3)
-			#	set gfxmode="640x480"   # VGA    (4:3)
-			#	set gfxmode="${MENU_RESO}"
-			 	set gfxmode=${MENU_RESO:+"${MENU_RESO}x${MENU_DPTH},"}auto
-			 	set gfxpayload="keep"
+			# set gfxmode="7680x4320" # 8K UHD (16:9)
+			# set gfxmode="3840x2400" #        (16:10)
+			# set gfxmode="3840x2160" # 4K UHD (16:9)
+			# set gfxmode="2880x1800" #        (16:10)
+			# set gfxmode="2560x1600" #        (16:10)
+			# set gfxmode="2560x1440" # WQHD   (16:9)
+			# set gfxmode="1920x1440" #        (4:3)
+			# set gfxmode="1920x1200" # WUXGA  (16:10)
+			# set gfxmode="1920x1080" # FHD    (16:9)
+			# set gfxmode="1856x1392" #        (4:3)
+			# set gfxmode="1792x1344" #        (4:3)
+			# set gfxmode="1680x1050" # WSXGA+ (16:10)
+			# set gfxmode="1600x1200" # UXGA   (4:3)
+			# set gfxmode="1400x1050" #        (4:3)
+			# set gfxmode="1440x900"  # WXGA+  (16:10)
+			# set gfxmode="1360x768"  # HD     (16:9)
+			# set gfxmode="1280x1024" # SXGA   (5:4)
+			# set gfxmode="1280x960"  #        (4:3)
+			# set gfxmode="1280x800"  #        (16:10)
+			# set gfxmode="1280x768"  #        (4:3)
+			# set gfxmode="1280x720"  # WXGA   (16:9)
+			# set gfxmode="1152x864"  #        (4:3)
+			# set gfxmode="1024x768"  # XGA    (4:3)
+			# set gfxmode="800x600"   # SVGA   (4:3)
+			# set gfxmode="640x480"   # VGA    (4:3)
+			# set gfxmode="${MENU_RESO}"
+			  set gfxmode=${MENU_RESO:+"${MENU_RESO}x${MENU_DPTH},"}auto
+			  set gfxpayload="keep"
 			
-			 	if [ "\${grub_platform}" = "efi" ]; then
-			 		insmod efi_gop
-			 		insmod efi_uga
-			 	else
-			 		insmod vbe
-			 		insmod vga
-			 	fi
+			  if [ "\${grub_platform}" = "efi" ]; then
+			    insmod efi_gop
+			    insmod efi_uga
+			  else
+			    insmod vbe
+			    insmod vga
+			  fi
 			
-			 	insmod gfxterm
-			 	insmod gettext
-			 	terminal_output gfxterm
+			  insmod gfxterm
+			  insmod gettext
+			  terminal_output gfxterm
 			fi
 			
 			set menu_color_normal="cyan/blue"
@@ -5374,27 +5422,27 @@ function funcCreate_grub_cfg() {
 			play 960 440 1 0 4 440 1
 			
 			menuentry '[ System command ]' {
-			 	true
+			  true
 			}
 			
 			menuentry '- System shutdown' {
-			 	echo "System shutting down ..."
-			 	halt
+			  echo "System shutting down ..."
+			  halt
 			}
 			
 			menuentry '- System restart' {
-			 	echo "System rebooting ..."
-			 	reboot
+			  echo "System rebooting ..."
+			  reboot
 			}
 			
 			if [ "\${grub_platform}" = "efi" ]; then
-			 	menuentry '- Boot from next volume' {
-			 		exit 1
-			 	}
-			
-			 	menuentry '- UEFI Firmware Settings' {
-			 		fwsetup
-			 	}
+			  menuentry '- Boot from next volume' {
+			    exit 1
+			  }
+
+			  menuentry '- UEFI Firmware Settings' {
+			    fwsetup
+			  }
 			fi
 _EOT_
 	fi
@@ -5425,16 +5473,16 @@ _EOT_
 					_MENU_TEXT="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
 							if [ "\${grub_platform}" = "pc" ]; then
-							 	menuentry '${_MENU_ENTR}' {
-							 		echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
-							 		insmod progress
-							 		set isofile="(http:,${SRVR_ADDR})/${DIRS_ISOS##*/}/${_TGET_LINE[5]}"
-							 		export isofile
-							 		echo 'Loading linux ...'
-							 		linux16 (${SRVR_PROT},${SRVR_ADDR})/memdisk iso raw
-							 		echo 'Loading initrd ...'
-							 		initrd16 "\$isofile"
-							 	}
+							  menuentry '${_MENU_ENTR}' {
+							    echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
+							    insmod progress
+							    set isofile="(http,${SRVR_ADDR})/${DIRS_ISOS##*/}/${_TGET_LINE[5]}"
+							    export isofile
+							    echo 'Loading linux ...'
+							    linux  memdisk iso raw
+							    echo 'Loading initrd ...'
+							    initrd \$isofile
+							  }
 							fi
 _EOT_
 					)"
@@ -5445,16 +5493,16 @@ _EOT_
 					_MENU_TEXT="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
 							if [ "\${grub_platform}" = "pc" ]; then
-							 	menuentry '${_MENU_ENTR}' {
-							 		echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
-							 		insmod progress
-							 		set isofile="(http:,${SRVR_ADDR})/${DIRS_ISOS##*/}/${_TGET_LINE[5]}"
-							 		export isofile
-							 		echo 'Loading linux ...'
-							 		linux16 (${SRVR_PROT},${SRVR_ADDR})/memdisk iso raw
-							 		echo 'Loading initrd ...'
-							 		initrd16 "\$isofile"
-							 	}
+							  menuentry '${_MENU_ENTR}' {
+							    echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
+							    insmod progress
+							    set isofile="(http,${SRVR_ADDR})/${DIRS_ISOS##*/}/${_TGET_LINE[5]}"
+							    export isofile
+							    echo 'Loading linux ...'
+							    linux  memdisk iso raw
+							    echo 'Loading initrd ...'
+							    initrd \$isofile
+							  }
 							fi
 _EOT_
 					)"
@@ -5463,15 +5511,15 @@ _EOT_
 					_MENU_TEXT="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
 							menuentry '${_MENU_ENTR}' {
-							 	echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
-							 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-							 	insmod progress
-							 	echo 'Loading linux ...'
-							 	if [ "\${grub_platform}" = "pc" ]; then
-							 		linux (${SRVR_PROT},${SRVR_ADDR})/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[8]}
-							 	else
-							 		linux (${SRVR_PROT},${SRVR_ADDR})/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[7]}
-							 	fi
+							  echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
+							  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							  insmod progress
+							  echo 'Loading linux ...'
+							  if [ "\${grub_platform}" = "pc" ]; then
+							    linux ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[8]}
+							  else
+							    linux ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[7]}
+							  fi
 							}
 _EOT_
 					)"
@@ -5516,18 +5564,18 @@ _EOT_
 					)"
 					_MENU_TEXT+="\n"
 					_MENU_TEXT+="$(
-						printf " \t%s\n" "${_WORK_ARRY[@]}" | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
+						printf "  %s\n" "${_WORK_ARRY[@]}" | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
 					)"
 					_MENU_TEXT+="\n"
 					_MENU_TEXT+="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
-							 	echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
-							 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-							 	insmod progress
-							 	echo 'Loading linux ...'
-							 	linux  (${SRVR_PROT},${SRVR_ADDR})/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[8]} \${options} ---
-							 	echo 'Loading initrd ...'
-							 	initrd (${SRVR_PROT},${SRVR_ADDR})/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[7]}
+							  echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
+							  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							  insmod progress
+							  echo 'Loading linux ...'
+							  linux  ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[8]} \${options} ---
+							  echo 'Loading initrd ...'
+							  initrd ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[7]}
 							}
 _EOT_
 					)"
@@ -5670,6 +5718,14 @@ _EOT_
 	funcPrintf "%s : %-12.12s : %s" "${TXT_BMAGENTA}" "TXT_BMAGENTA" "${TXT_RESET}"
 	funcPrintf "%s : %-12.12s : %s" "${TXT_BCYAN}"    "TXT_BCYAN"    "${TXT_RESET}"
 	funcPrintf "%s : %-12.12s : %s" "${TXT_BWHITE}"   "TXT_BWHITE"   "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DBLACK}"   "TXT_DBLACK"   "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DRED}"     "TXT_DRED"     "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DGREEN}"   "TXT_DGREEN"   "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DYELLOW}"  "TXT_DYELLOW"  "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DBLUE}"    "TXT_DBLUE"    "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DMAGENTA}" "TXT_DMAGENTA" "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DCYAN}"    "TXT_DCYAN"    "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DWHITE}"   "TXT_DWHITE"   "${TXT_RESET}"
 	echo ""
 
 	# --- diff ----------------------------------------------------------------
@@ -5996,6 +6052,7 @@ function funcCall_create() {
 	for _MENU_PATH in \
 		"${_MENU_GRUB}" \
 		"${_MENU_SLNX}" \
+		"${_MENU_SE64}" \
 		"${_MENU_IPXE}"
 	do
 		mkdir -p "${_MENU_PATH%/*}"
@@ -6008,6 +6065,7 @@ function funcCall_create() {
 			m )								# menu
 				funcCreate_autoexec_ipxe "${_MENU_IPXE}" "${_TABS_CONT:-"0"}" "" "${_TGET_LINE[@]}"
 				funcCreate_syslinux_cfg  "${_MENU_SLNX}" "${_TABS_CONT:-"0"}" "" "${_TGET_LINE[@]}"
+				funcCreate_syslinux_cfg  "${_MENU_SE64}" "${_TABS_CONT:-"0"}" "" "${_TGET_LINE[@]}"
 				funcCreate_grub_cfg      "${_MENU_GRUB}" "${_TABS_CONT:-"0"}" "" "${_TGET_LINE[@]}"
 				if [[ "${_TABS_CONT:-"0"}" -eq 0 ]]; then
 					_TABS_CONT=1
@@ -6072,6 +6130,7 @@ function funcCall_create() {
 				_BOOT_OPTN="${SCRN_MODE:+"vga=${SCRN_MODE}"}${_BOOT_OPTN:+" ${_BOOT_OPTN}"}"
 				funcCreate_autoexec_ipxe "${_MENU_IPXE}" "${_TABS_CONT:-"0"}" "${_BOOT_OPTN}" "${_TGET_LINE[@]}"
 				funcCreate_syslinux_cfg  "${_MENU_SLNX}" "${_TABS_CONT:-"0"}" "${_BOOT_OPTN}" "${_TGET_LINE[@]}"
+				funcCreate_syslinux_cfg  "${_MENU_SE64}" "${_TABS_CONT:-"0"}" "${_BOOT_OPTN}" "${_TGET_LINE[@]}"
 				funcCreate_grub_cfg      "${_MENU_GRUB}" "${_TABS_CONT:-"0"}" "${_BOOT_OPTN}" "${_TGET_LINE[@]}"
 				funcPrintf "%-3.3s%17.17s: %s %s" "===" "complete" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
 				;;
@@ -6080,9 +6139,6 @@ function funcCall_create() {
 				;;
 		esac
 	done
-	if [[ -e "${_MENU_SLNX:-}" ]]; then
-		cp -a "${_MENU_SLNX}" "${_MENU_SE64}"
-	fi
 	# -------------------------------------------------------------------------
 	rm -rf "${DIRS_TEMP:?}"
 	# -------------------------------------------------------------------------

@@ -1527,39 +1527,39 @@ _EOT_
 		#tftp-secure                                                # enable tftp secure mode
 		
 		# --- syslinux block ----------------------------------------------------------
-		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/pxelinux.0    #  0 Intel x86PC
-		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , menu-efi64/syslinux.efi #  7 EFI BC
-		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi #  9 EFI x86-64
+		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/pxelinux.0        #  0 Intel x86PC
+		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , menu-efi64/syslinux.efi     #  7 EFI BC
+		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi     #  9 EFI x86-64
 		
 		# --- grub block --------------------------------------------------------------
-		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0    #  0 Intel x86PC
-		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi   #  7 EFI BC
-		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi   #  9 EFI x86-64
+		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0        #  0 Intel x86PC
+		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootnetx64.efi    #  7 EFI BC
+		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootnetx64.efi    #  9 EFI x86-64
 		
 		# --- ipxe block --------------------------------------------------------------
-		#dhcp-match=set:iPXE,175                                                             #
-		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe          #  0 Intel x86PC (iPXE)
-		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe      #  0 Intel x86PC
-		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , ipxe/ipxe.efi           #  7 EFI BC
-		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi           #  9 EFI x86-64
+		#dhcp-match=set:iPXE,175                                                                 #
+		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe              #  0 Intel x86PC (iPXE)
+		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe          #  0 Intel x86PC
+		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , ipxe/ipxe.efi               #  7 EFI BC
+		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi               #  9 EFI x86-64
 		
 		# --- pxe boot ----------------------------------------------------------------
-		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		#pxe-service=x86PC            , "PXEBoot-x86PC"            ,                         #  0 Intel x86PC
-		#pxe-service=PC98             , "PXEBoot-PC98"             ,                         #  1 NEC/PC98
-		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                         #  2 EFI Itanium
-		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                         #  3 DEC Alpha
-		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                         #  4 Arc x86
-		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                         #  5 Intel Lean Client
-		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                         #  6 EFI IA32
-		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           ,                         #  7 EFI BC
-		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                         #  8 EFI Xscale
-		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       ,                         #  9 EFI x86-64
-		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                         # 10 ARM 32bit
-		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                         # 11 ARM 64bit
+		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		#pxe-service=x86PC            , "PXEBoot-x86PC"            ,                             #  0 Intel x86PC
+		#pxe-service=PC98             , "PXEBoot-PC98"             ,                             #  1 NEC/PC98
+		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                             #  2 EFI Itanium
+		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                             #  3 DEC Alpha
+		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                             #  4 Arc x86
+		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                             #  5 Intel Lean Client
+		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                             #  6 EFI IA32
+		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           ,                             #  7 EFI BC
+		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                             #  8 EFI Xscale
+		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       ,                             #  9 EFI x86-64
+		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                             # 10 ARM 32bit
+		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                             # 11 ARM 64bit
 		
 		# --- dnsmasq manual page -----------------------------------------------------
 		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html

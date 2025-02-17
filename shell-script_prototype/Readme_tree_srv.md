@@ -39,7 +39,7 @@ tree --charset C -n --filesfirst -d /srv/
 |   |-- autoexec.ipxe ------------------------------ ipxe script file (menu file)
 |   |-- boot
 |   |   `-- grub
-|   |       |-- bootx64.efi ------------------------ bootloader (x86_64-efi)
+|   |       |-- bootnetx64.efi --------------------- bootloader (x86_64-efi)
 |   |       |-- grub.cfg --------------------------- menu base
 |   |       |-- pxelinux.0 ------------------------- bootloader (i386-pc-pxe)
 |   |       |-- fonts
@@ -54,6 +54,7 @@ tree --charset C -n --filesfirst -d /srv/
 |   |-- isos -> /srv/user/share/isos
 |   |-- load -> /srv/user/share/load
 |   |-- menu-bios
+|   |   |-- lpxelinux.0 ---------------------------- bootloader (i386-pc)
 |   |   |-- syslinux.cfg --------------------------- syslinux configuration for mbr environment
 |   |   |-- conf -> ../conf
 |   |   |-- imgs -> ../imgs
@@ -64,6 +65,7 @@ tree --charset C -n --filesfirst -d /srv/
 |   |   `-- rmak -> ../rmak
 |   |-- menu-efi64
 |   |   |-- syslinux.cfg --------------------------- syslinux configuration for uefi(x86_64) environment
+|   |   |-- syslinux.efi --------------------------- bootloader (x86_64-efi)
 |   |   |-- conf -> ../conf
 |   |   |-- imgs -> ../imgs
 |   |   |-- isos -> ../isos

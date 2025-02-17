@@ -24,6 +24,8 @@
 		*) ;;
 	esac
 
+	export LANG=C
+
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -123,7 +125,7 @@
 	#	|   |-- autoexec.ipxe ------------------------------ ipxe script file (menu file)
 	#	|   |-- boot
 	#	|   |   `-- grub
-	#	|   |       |-- bootx64.efi ------------------------ bootloader (x86_64-efi)
+	#	|   |       |-- bootnetx64.efi --------------------- bootloader (x86_64-efi)
 	#	|   |       |-- grub.cfg --------------------------- menu base
 	#	|   |       |-- pxelinux.0 ------------------------- bootloader (i386-pc-pxe)
 	#	|   |       |-- fonts
@@ -138,6 +140,7 @@
 	#	|   |-- isos -> /srv/user/share/isos
 	#	|   |-- load -> /srv/user/share/load
 	#	|   |-- menu-bios
+	#	|   |   |-- lpxelinux.0 ---------------------------- bootloader (i386-pc)
 	#	|   |   |-- syslinux.cfg --------------------------- syslinux configuration for mbr environment
 	#	|   |   |-- conf -> ../conf
 	#	|   |   |-- imgs -> ../imgs
@@ -148,6 +151,7 @@
 	#	|   |   `-- rmak -> ../rmak
 	#	|   |-- menu-efi64
 	#	|   |   |-- syslinux.cfg --------------------------- syslinux configuration for uefi(x86_64) environment
+	#	|   |   |-- syslinux.efi --------------------------- bootloader (x86_64-efi)
 	#	|   |   |-- conf -> ../conf
 	#	|   |   |-- imgs -> ../imgs
 	#	|   |   |-- isos -> ../isos
@@ -792,6 +796,14 @@
 	declare -r    TXT_BMAGENTA="${ESC}[45m"					# text reverse purple
 	declare -r    TXT_BCYAN="${ESC}[46m"					# text reverse light blue
 	declare -r    TXT_BWHITE="${ESC}[47m"					# text reverse white
+	declare -r    TXT_DBLACK="${ESC}[30m"					# text dark black
+	declare -r    TXT_DRED="${ESC}[31m"						# text dark red
+	declare -r    TXT_DGREEN="${ESC}[32m"					# text dark green
+	declare -r    TXT_DYELLOW="${ESC}[33m"					# text dark yellow
+	declare -r    TXT_DBLUE="${ESC}[34m"					# text dark blue
+	declare -r    TXT_DMAGENTA="${ESC}[35m"					# text dark purple
+	declare -r    TXT_DCYAN="${ESC}[36m"					# text dark light blue
+	declare -r    TXT_DWHITE="${ESC}[37m"					# text dark white
 
 # --- text color test ---------------------------------------------------------
 function funcColorTest() {
@@ -818,6 +830,14 @@ function funcColorTest() {
 	printf "%s : %-12.12s : %s\n" "${TXT_BMAGENTA}" "TXT_BMAGENTA" "${TXT_RESET}"
 	printf "%s : %-12.12s : %s\n" "${TXT_BCYAN}"    "TXT_BCYAN"    "${TXT_RESET}"
 	printf "%s : %-12.12s : %s\n" "${TXT_BWHITE}"   "TXT_BWHITE"   "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DBLACK}"   "TXT_DBLACK"   "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DRED}"     "TXT_DRED"     "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DGREEN}"   "TXT_DGREEN"   "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DYELLOW}"  "TXT_DYELLOW"  "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DBLUE}"    "TXT_DBLUE"    "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DMAGENTA}" "TXT_DMAGENTA" "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DCYAN}"    "TXT_DCYAN"    "${TXT_RESET}"
+	printf "%s : %-12.12s : %s\n" "${TXT_DWHITE}"   "TXT_DWHITE"   "${TXT_RESET}"
 }
 
 # --- diff --------------------------------------------------------------------
@@ -825,7 +845,7 @@ function funcDiff() {
 	if [[ ! -e "$1" ]] || [[ ! -e "$2" ]]; then
 		return
 	fi
-	funcPrintf "$3"
+	printf "%s\n" "$3"
 	diff -y -W "${COLS_SIZE}" --suppress-common-lines "$1" "$2" || true
 }
 
@@ -979,7 +999,7 @@ function funcPrintf() {
 #	fi
 }
 
-# ----- unit conversion -------------------------------------------------------
+# --- unit conversion ---------------------------------------------------------
 function funcUnit_conversion() {
 #	declare -r    _OLD_IFS="${IFS}"
 	declare -r -a _TEXT_UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
@@ -1084,7 +1104,7 @@ function funcCurl() {
 		_LOC_SIZ=$(echo "${_LOC_INF}" | awk '{print $5;}')
 		if [[ "${_WEB_TIM:-0}" -eq "${_LOC_TIM:-0}" ]] && [[ "${_WEB_SIZ:-0}" -eq "${_LOC_SIZ:-0}" ]]; then
 			if [[ -z "${_MSG_FLG}" ]]; then
-				funcPrintf "same    file: ${_WEB_FIL}"
+				printf "%s\n" "same    file: ${_WEB_FIL}"
 			fi
 			return
 		fi
@@ -1093,7 +1113,7 @@ function funcCurl() {
 	_TXT_SIZ="$(funcUnit_conversion "${_WEB_SIZ}")"
 
 	if [[ -z "${_MSG_FLG}" ]]; then
-		funcPrintf "get     file: ${_WEB_FIL} (${_TXT_SIZ})"
+		printf "%s\n" "get     file: ${_WEB_FIL} (${_TXT_SIZ})"
 	fi
 	if curl "${_OPT_PRM[@]}"; then
 		return $?
@@ -1102,7 +1122,7 @@ function funcCurl() {
 	for ((I=0; I<3; I++))
 	do
 		if [[ -z "${_MSG_FLG}" ]]; then
-			funcPrintf "retry  count: ${I}"
+			printf "%s\n" "retry  count: ${I}"
 		fi
 		if curl --continue-at "${_OPT_PRM[@]}"; then
 			return "$?"
@@ -2814,6 +2834,10 @@ function funcCreate_late_command() {
 		 	mkdir -p "${_FILE_PATH%/*}"
 		 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+		 		#log-queries                                                # dns query log output
+		 		#log-dhcp                                                   # dhcp transaction log output
+		 		#log-facility=                                              # log output file name
+		 		
 		 		# --- tftp --------------------------------------------------------------------
 		 		#enable-tftp=${NICS_NAME}                                         # enable tftp server
 		 		#tftp-root=${DIRS_TFTP}                                        # tftp root directory
@@ -2823,39 +2847,39 @@ function funcCreate_late_command() {
 		 		#tftp-secure                                                # enable tftp secure mode
 		 		
 		 		# --- syslinux block ----------------------------------------------------------
-		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/pxelinux.0    #  0 Intel x86PC
-		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , menu-efi64/syslinux.efi #  7 EFI BC
-		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi #  9 EFI x86-64
+		 		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/lpxelinux.0       #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , menu-efi64/syslinux.efi     #  7 EFI BC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi     #  9 EFI x86-64
 		 		
 		 		# --- grub block --------------------------------------------------------------
-		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0    #  0 Intel x86PC
-		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootx64.efi   #  7 EFI BC
-		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootx64.efi   #  9 EFI x86-64
+		 		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            , boot/grub/pxelinux.0        #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , boot/grub/bootnetx64.efi    #  7 EFI BC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , boot/grub/bootnetx64.efi    #  9 EFI x86-64
 		 		
 		 		# --- ipxe block --------------------------------------------------------------
-		 		#dhcp-match=set:iPXE,175                                                             #
-		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		 		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe          #  0 Intel x86PC (iPXE)
-		 		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe      #  0 Intel x86PC
-		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , ipxe/ipxe.efi           #  7 EFI BC
-		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi           #  9 EFI x86-64
+		 		#dhcp-match=set:iPXE,175                                                                 #
+		 		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		 		#pxe-service=tag:iPXE ,x86PC  , "PXEBoot-x86PC"            , /autoexec.ipxe              #  0 Intel x86PC (iPXE)
+		 		#pxe-service=tag:!iPXE,x86PC  , "PXEBoot-x86PC"            , ipxe/undionly.kpxe          #  0 Intel x86PC
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , ipxe/ipxe.efi               #  7 EFI BC
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , ipxe/ipxe.efi               #  9 EFI x86-64
 		 		
 		 		# --- pxe boot ----------------------------------------------------------------
-		 		#pxe-prompt="Press F8 for boot menu", 0                                              # pxe boot prompt
-		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            ,                         #  0 Intel x86PC
-		 		#pxe-service=PC98             , "PXEBoot-PC98"             ,                         #  1 NEC/PC98
-		 		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                         #  2 EFI Itanium
-		 		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                         #  3 DEC Alpha
-		 		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                         #  4 Arc x86
-		 		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                         #  5 Intel Lean Client
-		 		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                         #  6 EFI IA32
-		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           ,                         #  7 EFI BC
-		 		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                         #  8 EFI Xscale
-		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       ,                         #  9 EFI x86-64
-		 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                         # 10 ARM 32bit
-		 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                         # 11 ARM 64bit
+		 		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
+		 		#pxe-service=x86PC            , "PXEBoot-x86PC"            ,                             #  0 Intel x86PC
+		 		#pxe-service=PC98             , "PXEBoot-PC98"             ,                             #  1 NEC/PC98
+		 		#pxe-service=IA64_EFI         , "PXEBoot-IA64_EFI"         ,                             #  2 EFI Itanium
+		 		#pxe-service=Alpha            , "PXEBoot-Alpha"            ,                             #  3 DEC Alpha
+		 		#pxe-service=Arc_x86          , "PXEBoot-Arc_x86"          ,                             #  4 Arc x86
+		 		#pxe-service=Intel_Lean_Client, "PXEBoot-Intel_Lean_Client",                             #  5 Intel Lean Client
+		 		#pxe-service=IA32_EFI         , "PXEBoot-IA32_EFI"         ,                             #  6 EFI IA32
+		 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           ,                             #  7 EFI BC
+		 		#pxe-service=Xscale_EFI       , "PXEBoot-Xscale_EFI"       ,                             #  8 EFI Xscale
+		 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       ,                             #  9 EFI x86-64
+		 		#pxe-service=ARM32_EFI        , "PXEBoot-ARM32_EFI"        ,                             # 10 ARM 32bit
+		 		#pxe-service=ARM64_EFI        , "PXEBoot-ARM64_EFI"        ,                             # 11 ARM 64bit
 		 		
 		 		# --- dnsmasq manual page -----------------------------------------------------
 		 		# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
@@ -5732,6 +5756,14 @@ _EOT_
 	funcPrintf "%s : %-12.12s : %s" "${TXT_BMAGENTA}" "TXT_BMAGENTA" "${TXT_RESET}"
 	funcPrintf "%s : %-12.12s : %s" "${TXT_BCYAN}"    "TXT_BCYAN"    "${TXT_RESET}"
 	funcPrintf "%s : %-12.12s : %s" "${TXT_BWHITE}"   "TXT_BWHITE"   "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DBLACK}"   "TXT_DBLACK"   "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DRED}"     "TXT_DRED"     "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DGREEN}"   "TXT_DGREEN"   "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DYELLOW}"  "TXT_DYELLOW"  "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DBLUE}"    "TXT_DBLUE"    "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DMAGENTA}" "TXT_DMAGENTA" "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DCYAN}"    "TXT_DCYAN"    "${TXT_RESET}"
+	funcPrintf "%s : %-12.12s : %s" "${TXT_DWHITE}"   "TXT_DWHITE"   "${TXT_RESET}"
 	echo ""
 
 	# --- diff ----------------------------------------------------------------
