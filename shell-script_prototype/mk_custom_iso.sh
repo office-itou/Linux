@@ -1889,6 +1889,10 @@ function funcCreate_late_command() {
 		 	if [ ! -e "${1:?}" ]; then
 		 		printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "** not exist: [$1] **"
 		 		mkdir -p "${1%/*}"
+		 		_REAL_PATH="$(realpath "${1}")"
+		 		if [ ! -e "${_REAL_PATH}" ]; then
+		 			mkdir -p "${_REAL_PATH%/*}"
+		 		fi
 		 		touch "$1"
 		#		return
 		 	fi
@@ -2934,6 +2938,10 @@ function funcCreate_late_command() {
 		 		rm -f "${_FILE_PATH}"
 		 		_WORK_PATH="${DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
 		 		ln -sfr "${_WORK_PATH}" "${_FILE_PATH}"
+		 		if [ ! -e "${_WORK_PATH}" ]; then
+		 			mkdir -p "${_WORK_PATH%/*}"
+		 			touch "${_WORK_PATH}"
+		 		fi
 		
 		 		# --- debug out -------------------------------------------------------
 		 		funcDebugout_file "${_FILE_PATH}"
@@ -3831,7 +3839,7 @@ function funcCreate_late_command() {
 		 				cp --preserve=timestamps "${_FILE_PATH}" "${_REAL_IRAM}"
 		 				break
 		 			done
-		 			funcFile_backup   "${_REAL_VLNZ}" "init"
+		#			funcFile_backup   "${_REAL_VLNZ}" "init"
 		 			funcFile_backup   "${_REAL_IRAM}" "init"
 		 		fi
 		 	fi

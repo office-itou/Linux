@@ -573,6 +573,10 @@ funcFile_backup() {
 	if [ ! -e "${1:?}" ]; then
 		printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "** not exist: [$1] **"
 		mkdir -p "${1%/*}"
+		_REAL_PATH="$(realpath "${1}")"
+		if [ ! -e "${_REAL_PATH}" ]; then
+			mkdir -p "${_REAL_PATH%/*}"
+		fi
 		touch "$1"
 #		return
 	fi
@@ -1518,6 +1522,10 @@ _EOT_
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+		#log-queries                                                # dns query log output
+		#log-dhcp                                                   # dhcp transaction log output
+		#log-facility=                                              # log output file name
+		
 		# --- tftp --------------------------------------------------------------------
 		#enable-tftp=${NICS_NAME}                                         # enable tftp server
 		#tftp-root=${DIRS_TFTP}                                        # tftp root directory
@@ -1528,7 +1536,7 @@ _EOT_
 		
 		# --- syslinux block ----------------------------------------------------------
 		#pxe-prompt="Press F8 for boot menu", 0                                                  # pxe boot prompt
-		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/pxelinux.0        #  0 Intel x86PC
+		#pxe-service=x86PC            , "PXEBoot-x86PC"            , menu-bios/lpxelinux.0       #  0 Intel x86PC
 		#pxe-service=BC_EFI           , "PXEBoot-BC_EFI"           , menu-efi64/syslinux.efi     #  7 EFI BC
 		#pxe-service=x86-64_EFI       , "PXEBoot-x86-64_EFI"       , menu-efi64/syslinux.efi     #  9 EFI x86-64
 		
@@ -1614,6 +1622,10 @@ _EOT_
 		rm -f "${_FILE_PATH}"
 		_WORK_PATH="${DIRS_TGET:-}/run/systemd/resolve/stub-resolv.conf"
 		ln -sfr "${_WORK_PATH}" "${_FILE_PATH}"
+		if [ ! -e "${_WORK_PATH}" ]; then
+			mkdir -p "${_WORK_PATH%/*}"
+			touch "${_WORK_PATH}"
+		fi
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
