@@ -4581,7 +4581,7 @@ function funcCreate_menu_preseed() {
 	fi
 	# --- netcfg --------------------------------------------------------------
 	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
-		_BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=dhcp"
+		_BOOT_OPTN+="${_BOOT_OPTN:+" "}noeject ip=dhcp"
 	else
 		case "${_TGET_LINE[1]}" in
 			ubuntu-*         ) _NWRK_MANE="NetworkManager";;
@@ -4607,6 +4607,9 @@ function funcCreate_menu_preseed() {
 	fi
 	# --- language ------------------------------------------------------------
 	case "${_TGET_LINE[1]}" in
+		live-debian-*    | \
+		live-ubuntu-*    | \
+		debian-live-*    ) _LANG_CONF="utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
 		ubuntu-desktop-* | \
 		ubuntu-legacy-*  ) _LANG_CONF="debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
 		*                ) ;;
@@ -4630,16 +4633,16 @@ function funcCreate_menu_preseed() {
 		*                   ) ;;
 	esac
 	# --- output --------------------------------------------------------------
-#	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
-#		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-#			${_BOOT_OPTN}
-#			set srvraddr ${SRVR_ADDR:?}
-#			isset \${next-server} && set srvraddr \${next-server} ||
-#			set isosfile ${_ISOS_FILE:-}
-#			set language ${_LANG_CONF:-}
-#			set ramsdisk ${_RAMS_DISK:-}
-#_EOT_
-#	else
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set srvraddr ${SRVR_ADDR:?}
+			isset \${next-server} && set srvraddr \${next-server} ||
+			set isosfile ${_ISOS_FILE:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	else
 		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 			${_BOOT_OPTN}
 			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
@@ -4655,7 +4658,7 @@ function funcCreate_menu_preseed() {
 			set language ${_LANG_CONF:-}
 			set ramsdisk ${_RAMS_DISK:-}
 _EOT_
-#	fi
+	fi
 }
 
 # ----- create menu for nocloud -----------------------------------------------
@@ -4726,16 +4729,16 @@ function funcCreate_menu_nocloud() {
 		*                   ) ;;
 	esac
 	# --- output --------------------------------------------------------------
-#	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
-#		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-#			${_BOOT_OPTN}
-#			set srvraddr ${SRVR_ADDR:?}
-#			isset \${next-server} && set srvraddr \${next-server} ||
-#			set isosfile ${_ISOS_FILE:-}
-#			set language ${_LANG_CONF:-}
-#			set ramsdisk ${_RAMS_DISK:-}
-#_EOT_
-#	else
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set srvraddr ${SRVR_ADDR:?}
+			isset \${next-server} && set srvraddr \${next-server} ||
+			set isosfile ${_ISOS_FILE:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	else
 		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 			${_BOOT_OPTN}
 			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
@@ -4751,7 +4754,7 @@ function funcCreate_menu_nocloud() {
 			set language ${_LANG_CONF:-}
 			set ramsdisk ${_RAMS_DISK:-}
 _EOT_
-#	fi
+	fi
 }
 
 # ----- create menu for kickstart ---------------------------------------------
@@ -4793,16 +4796,16 @@ function funcCreate_menu_kickstart() {
 	# --- isosfile ------------------------------------------------------------
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${isosfile}"
 	# --- output --------------------------------------------------------------
-#	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
-#		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-#			${_BOOT_OPTN}
-#			set srvraddr ${SRVR_ADDR:?}
-#			isset \${next-server} && set srvraddr \${next-server} ||
-#			set isosfile ${_ISOS_FILE:-}
-#			set language ${_LANG_CONF:-}
-#			set ramsdisk ${_RAMS_DISK:-}
-#_EOT_
-#	else
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set srvraddr ${SRVR_ADDR:?}
+			isset \${next-server} && set srvraddr \${next-server} ||
+			set isosfile ${_ISOS_FILE:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	else
 		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 			${_BOOT_OPTN}
 			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
@@ -4818,7 +4821,7 @@ function funcCreate_menu_kickstart() {
 			set language ${_LANG_CONF:-}
 			set ramsdisk ${_RAMS_DISK:-}
 _EOT_
-#	fi
+	fi
 }
 
 # ----- create menu for autoyast ----------------------------------------------
@@ -4865,16 +4868,16 @@ function funcCreate_menu_autoyast() {
 	# --- isosfile ------------------------------------------------------------
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${isosfile}"
 	# --- output --------------------------------------------------------------
-#	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
-#		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-#			${_BOOT_OPTN}
-#			set srvraddr ${SRVR_ADDR:?}
-#			isset \${next-server} && set srvraddr \${next-server} ||
-#			set isosfile ${_ISOS_FILE:-}
-#			set language ${_LANG_CONF:-}
-#			set ramsdisk ${_RAMS_DISK:-}
-#_EOT_
-#	else
+	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+			${_BOOT_OPTN}
+			set srvraddr ${SRVR_ADDR:?}
+			isset \${next-server} && set srvraddr \${next-server} ||
+			set isosfile ${_ISOS_FILE:-}
+			set language ${_LANG_CONF:-}
+			set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+	else
 		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 			${_BOOT_OPTN}
 			set hostname ${_HOST_NAME:-"sv-${_TGET_LINE[1]%%-*}"}${WGRP_NAME:+".${WGRP_NAME}"}
@@ -4890,7 +4893,7 @@ function funcCreate_menu_autoyast() {
 			set language ${_LANG_CONF:-}
 			set ramsdisk ${_RAMS_DISK:-}
 _EOT_
-#	fi
+	fi
 }
 
 # ----- create menu for ipxe script -------------------------------------------
@@ -5069,24 +5072,38 @@ _EOT_
 					_MENU_TEXT+="$(
 						printf "%s\n" "${_WORK_ARRY[@]}" | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 					)"
+					if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
+						_MENU_TEXT+="$(
+							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+								
+								
+_EOT_
+						)"
+					else
+						_MENU_TEXT+="$(
+							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
+								
+								form                                    Configure Boot Options
+								item hostname                           Hostname
+								item ethrname                           Interface
+								item ipv4addr                           IPv4 address
+								item ipv4mask                           IPv4 netmask
+								item ipv4gway                           IPv4 gateway
+								item ipv4nsvr                           IPv4 nameservers
+								present ||
+								form                                    Configure Boot Options
+								item srvraddr                           Server ip address
+								item isosfile                           ISO file
+								item autoinst                           Auto install
+								item language                           Language
+								item ramsdisk                           RAM disk
+								present ||
+								
+_EOT_
+						)"
+					fi
 					_MENU_TEXT+="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
-							
-							form                                    Configure Boot Options
-							item hostname                           Hostname
-							item ethrname                           Interface
-							item ipv4addr                           IPv4 address
-							item ipv4mask                           IPv4 netmask
-							item ipv4gway                           IPv4 gateway
-							item ipv4nsvr                           IPv4 nameservers
-							present ||
-							form                                    Configure Boot Options
-							item srvraddr                           Server ip address
-							item isosfile                           ISO file
-							item autoinst                           Auto install
-							item language                           Language
-							item ramsdisk                           RAM disk
-							present ||
 							set knladdr http://\${srvraddr}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}
 							set options ${_WORK_TEXT}
 							echo Loading kernel and initrd ...
@@ -5295,11 +5312,16 @@ _EOT_
 						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4gway\}/${_WORK_ARRY[5]:+${_WORK_ARRY[5]#set ipv4gway }}}"
 						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ipv4nsvr\}/${_WORK_ARRY[6]:+${_WORK_ARRY[6]#set ipv4nsvr }}}"
 						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{autoinst\}/${_WORK_ARRY[10]:+${_WORK_ARRY[10]#set autoinst }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{isosfile\}/${_WORK_ARRY[9]:+${_WORK_ARRY[9]#set isosfile }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{language\}/${_WORK_ARRY[11]:+${_WORK_ARRY[11]#set language }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ramsdisk\}/${_WORK_ARRY[12]:+${_WORK_ARRY[12]#set ramsdisk }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{srvraddr\}/${_WORK_ARRY[7]:+${_WORK_ARRY[7]#set srvraddr }}}"
+					else
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{isosfile\}/${_WORK_ARRY[3]:+${_WORK_ARRY[3]#set isosfile }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{language\}/${_WORK_ARRY[4]:+${_WORK_ARRY[4]#set language }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ramsdisk\}/${_WORK_ARRY[5]:+${_WORK_ARRY[5]#set ramsdisk }}}"
+						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{srvraddr\}/${_WORK_ARRY[1]:+${_WORK_ARRY[1]#set srvraddr }}}"
 					fi
-					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{isosfile\}/${_WORK_ARRY[9]:+${_WORK_ARRY[9]#set isosfile }}}"
-					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{language\}/${_WORK_ARRY[11]:+${_WORK_ARRY[11]#set language }}}"
-					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ramsdisk\}/${_WORK_ARRY[12]:+${_WORK_ARRY[12]#set ramsdisk }}}"
-					_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{srvraddr\}/${_WORK_ARRY[7]:+${_WORK_ARRY[7]#set srvraddr }}}"
 					_MENU_TEXT="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							label ${_TGET_LINE[1]}

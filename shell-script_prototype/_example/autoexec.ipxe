@@ -18,16 +18,16 @@ item -- debian-mini-11                  - Debian 11 ............................
 item -- debian-mini-12                  - Debian 12 .......................................... 2025-01-06 18:01:36
 item -- debian-mini-13                  - Debian 13 .......................................... 2024-12-27 09:14:03
 item -- debian-mini-testing             - Debian testing ..................................... 2024-12-27 09:14:03
-item -- debian-mini-testing-daily       - Debian testing daily ............................... 2025-02-15 00:02:25
+item -- debian-mini-testing-daily       - Debian testing daily ............................... 2025-02-18 00:02:24
 item -- ubuntu-mini-20.04               - Ubuntu 20.04 ....................................... 2023-03-14 22:28:31
 item --gap --                           [ Auto install Net install ... ]
 item -- debian-netinst-11               - Debian 11 .......................................... 2024-08-31 16:11:10
 item -- debian-netinst-12               - Debian 12 .......................................... 2025-01-11 12:53:04
-item -- debian-netinst-testing          - Debian testing ..................................... 2025-02-15 09:30:29
+item -- debian-netinst-testing          - Debian testing ..................................... 2025-02-18 15:25:32
 item -- fedora-netinst-40               - Fedora Server 40 ................................... 2024-04-14 18:30:19
 item -- fedora-netinst-41               - Fedora Server 41 ................................... 2024-10-24 13:36:10
 item -- centos-stream-netinst-9         - CentOS Stream 9 .................................... 2025-02-10 04:01:31
-item -- centos-stream-netinst-10        - CentOS Stream 10 ................................... 2025-02-10 05:04:13
+item -- centos-stream-netinst-10        - CentOS Stream 10 ................................... 2025-02-17 04:19:59
 item -- almalinux-netinst-9             - Alma Linux 9 ....................................... 2024-11-13 09:40:34
 item -- rockylinux-netinst-8            - Rocky Linux 8 ...................................... 2024-05-27 14:13:45
 item -- rockylinux-netinst-9            - Rocky Linux 9 ...................................... 2024-11-16 01:52:35
@@ -35,20 +35,20 @@ item -- miraclelinux-netinst-8          - Miracle Linux 8 ......................
 item -- miraclelinux-netinst-9          - Miracle Linux 9 .................................... 2024-08-23 05:57:18
 item -- opensuse-leap-netinst-15.5      - openSUSE Leap 15.5 ................................. 2023-05-23 15:09:21
 item -- opensuse-leap-netinst-15.6      - openSUSE Leap 15.6 ................................. 2024-06-20 11:42:39
-item -- opensuse-tumbleweed-netinst     - openSUSE Tumbleweed ................................ 2025-02-12 05:54:02
+item -- opensuse-tumbleweed-netinst     - openSUSE Tumbleweed ................................ 2025-02-17 03:25:25
 item --gap --                           [ Auto install DVD media ... ]
 item -- debian-11                       - Debian 11 .......................................... 2024-08-31 16:11:53
 item -- debian-12                       - Debian 12 .......................................... 2025-01-11 12:53:52
-item -- debian-testing                  - Debian testing ..................................... 2025-02-10 05:53:29
+item -- debian-testing                  - Debian testing ..................................... 2025-02-17 07:12:29
 item -- ubuntu-live-20.04               - Ubuntu 20.04 Live Server ........................... 2023-03-14 23:02:35
 item -- ubuntu-live-22.04               - Ubuntu 22.04 Live Server ........................... 2024-09-11 18:46:55
 item -- ubuntu-live-24.04               - Ubuntu 24.04 Live Server ........................... 2024-08-27 15:40:27
 item -- ubuntu-live-24.10               - Ubuntu 24.10 Live Server ........................... 2024-10-07 21:19:04
-item -- ubuntu-live-25.04               - Ubuntu 25.04 Live Server ........................... 2025-02-15 08:38:59
+item -- ubuntu-live-25.04               - Ubuntu 25.04 Live Server ........................... 2025-02-18 12:07:51
 item -- fedora-40                       - Fedora Server 40 ................................... 2024-04-14 22:54:06
 item -- fedora-41                       - Fedora Server 41 ................................... 2024-10-24 14:48:35
 item -- centos-stream-9                 - CentOS Stream 9 .................................... 2025-02-10 04:19:34
-item -- centos-stream-10                - CentOS Stream 10 ................................... 2025-02-10 05:08:22
+item -- centos-stream-10                - CentOS Stream 10 ................................... 2025-02-17 04:26:52
 item -- almalinux-9                     - Alma Linux 9 ....................................... 2024-11-13 09:59:46
 item -- rockylinux-8                    - Rocky Linux 8 ...................................... 2024-05-27 15:14:45
 item -- rockylinux-9                    - Rocky Linux 9 ...................................... 2024-11-16 04:23:15
@@ -56,27 +56,27 @@ item -- miraclelinux-8                  - Miracle Linux 8 ......................
 item -- miraclelinux-9                  - Miracle Linux 9 .................................... 2024-08-23 05:57:18
 item -- opensuse-leap-15.5              - openSUSE Leap 15.5 ................................. 2023-05-23 15:21:52
 item -- opensuse-leap-15.6              - openSUSE Leap 15.6 ................................. 2024-06-20 11:56:54
-item -- opensuse-tumbleweed             - openSUSE Tumbleweed ................................ 2025-02-12 05:52:18
+item -- opensuse-tumbleweed             - openSUSE Tumbleweed ................................ 2025-02-17 03:28:42
 item -- windows-10                      - Windows 10 ......................................... 2022-10-18 15:21:50
 item -- windows-11                      - Windows 11 ......................................... 2024-10-01 12:18:50
 item --gap --                           [ Live media Install mode ... ]
 item -- debian-live-11                  - Debian 11 Live ..................................... 2024-08-31 15:15:29
 item -- debian-live-12                  - Debian 12 Live ..................................... 2025-01-11 10:25:55
-item -- debian-live-testing             - Debian testing Live ................................ 2025-02-10 02:22:43
+item -- debian-live-testing             - Debian testing Live ................................ 2025-02-17 02:14:39
 item -- ubuntu-desktop-20.04            - Ubuntu 20.04 Desktop ............................... 2023-03-16 15:58:09
 item -- ubuntu-desktop-22.04            - Ubuntu 22.04 Desktop ............................... 2024-09-11 14:38:59
 item -- ubuntu-desktop-24.04            - Ubuntu 24.04 Desktop ............................... 2024-08-27 16:25:25
 item -- ubuntu-desktop-24.10            - Ubuntu 24.10 Desktop ............................... 2024-10-09 14:32:32
-item -- ubuntu-desktop-25.04            - Ubuntu 25.04 Desktop ............................... 2025-02-15 06:48:24
+item -- ubuntu-desktop-25.04            - Ubuntu 25.04 Desktop ............................... 2025-02-18 06:51:58
 item --gap --                           [ Live media Live mode ... ]
 item -- live-debian-live-11             - Debian 11 Live ..................................... 2024-08-31 15:15:29
 item -- live-debian-live-12             - Debian 12 Live ..................................... 2025-01-11 10:25:55
-item -- live-debian-live-testing        - Debian testing Live ................................ 2025-02-10 02:22:43
+item -- live-debian-live-testing        - Debian testing Live ................................ 2025-02-17 02:14:39
 item -- live-ubuntu-desktop-20.04       - Ubuntu 20.04 Desktop ............................... 2023-03-16 15:58:09
 item -- live-ubuntu-desktop-22.04       - Ubuntu 22.04 Desktop ............................... 2024-09-11 14:38:59
 item -- live-ubuntu-desktop-24.04       - Ubuntu 24.04 Desktop ............................... 2024-08-27 16:25:25
 item -- live-ubuntu-desktop-24.10       - Ubuntu 24.10 Desktop ............................... 2024-10-09 14:32:32
-item -- live-ubuntu-desktop-25.04       - Ubuntu 25.04 Desktop ............................... 2025-02-15 06:48:24
+item -- live-ubuntu-desktop-25.04       - Ubuntu 25.04 Desktop ............................... 2025-02-18 06:51:58
 item --gap --                           [ System tools ... ]
 item -- memtest86plus                   - Memtest86+ 7.20 .................................... 2024-11-11 09:15:12
 item -- winpe-x64                       - WinPE x64 .......................................... 2024-10-21 12:19:39
@@ -1657,7 +1657,7 @@ set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
 set isosfile boot=live fetch=http://${srvraddr}/isos/debian-live-11.11.0-amd64-lxde.iso
 set autoinst auto=true url=http://${srvraddr}/conf/preseed/ps_debian_desktop_old.cfg
-set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
+set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
 form                                    Configure Boot Options
 item hostname                           Hostname
@@ -1694,7 +1694,7 @@ set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
 set isosfile boot=live fetch=http://${srvraddr}/isos/debian-live-12.9.0-amd64-lxde.iso
 set autoinst auto=true url=http://${srvraddr}/conf/preseed/ps_debian_desktop.cfg
-set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
+set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
 form                                    Configure Boot Options
 item hostname                           Hostname
@@ -1731,7 +1731,7 @@ set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
 set isosfile boot=live fetch=http://${srvraddr}/isos/debian-live-testing-amd64-lxde.iso
 set autoinst auto=true url=http://${srvraddr}/conf/preseed/ps_debian_desktop.cfg
-set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
+set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
 form                                    Configure Boot Options
 item hostname                           Hostname
@@ -1943,35 +1943,13 @@ exit
 
 :live-debian-live-11
 echo Loading Debian 11 Live ...
-set hostname sv-debian.workgroup
-set ethrname ens160
-set ipv4addr 192.168.1.1
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
 set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
 set isosfile boot=live fetch=http://${srvraddr}/isos/debian-live-11.11.0-amd64-lxde.iso
-set autoinst auto=true url=http://${srvraddr}/conf/preseed/-
-set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
+set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
-form                                    Configure Boot Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address
-item ipv4mask                           IPv4 netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-present ||
-form                                    Configure Boot Options
-item srvraddr                           Server ip address
-item isosfile                           ISO file
-item autoinst                           Auto install
-item language                           Language
-item ramsdisk                           RAM disk
-present ||
 set knladdr http://${srvraddr}/imgs/debian-live-11
-set options vga=791 ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
+set options vga=791 noeject ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
 echo Loading kernel and initrd ...
 kernel ${knladdr}/live/vmlinuz-5.10.0-32-amd64 ${options} --- || goto error
 initrd ${knladdr}/live/initrd.img-5.10.0-32-amd64 || goto error
@@ -1980,35 +1958,13 @@ exit
 
 :live-debian-live-12
 echo Loading Debian 12 Live ...
-set hostname sv-debian.workgroup
-set ethrname ens160
-set ipv4addr 192.168.1.1
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
 set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
 set isosfile boot=live fetch=http://${srvraddr}/isos/debian-live-12.9.0-amd64-lxde.iso
-set autoinst auto=true url=http://${srvraddr}/conf/preseed/-
-set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
+set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
-form                                    Configure Boot Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address
-item ipv4mask                           IPv4 netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-present ||
-form                                    Configure Boot Options
-item srvraddr                           Server ip address
-item isosfile                           ISO file
-item autoinst                           Auto install
-item language                           Language
-item ramsdisk                           RAM disk
-present ||
 set knladdr http://${srvraddr}/imgs/debian-live-12
-set options vga=791 ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
+set options vga=791 noeject ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
 echo Loading kernel and initrd ...
 kernel ${knladdr}/live/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/live/initrd.img || goto error
@@ -2017,35 +1973,13 @@ exit
 
 :live-debian-live-testing
 echo Loading Debian testing Live ...
-set hostname sv-debian.workgroup
-set ethrname ens160
-set ipv4addr 192.168.1.1
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
 set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
 set isosfile boot=live fetch=http://${srvraddr}/isos/debian-live-testing-amd64-lxde.iso
-set autoinst auto=true url=http://${srvraddr}/conf/preseed/-
-set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
+set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
-form                                    Configure Boot Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address
-item ipv4mask                           IPv4 netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-present ||
-form                                    Configure Boot Options
-item srvraddr                           Server ip address
-item isosfile                           ISO file
-item autoinst                           Auto install
-item language                           Language
-item ramsdisk                           RAM disk
-present ||
 set knladdr http://${srvraddr}/imgs/debian-live-testing
-set options vga=791 ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
+set options vga=791 noeject ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
 echo Loading kernel and initrd ...
 kernel ${knladdr}/live/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/live/initrd.img || goto error
@@ -2054,35 +1988,13 @@ exit
 
 :live-ubuntu-desktop-20.04
 echo Loading Ubuntu 20.04 Desktop ...
-set hostname sv-ubuntu.workgroup
-set ethrname ens160
-set ipv4addr 192.168.1.1
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
 set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
 set isosfile boot=casper url=http://${srvraddr}/isos/ubuntu-20.04.6-desktop-amd64.iso
-set autoinst auto=true url=http://${srvraddr}/conf/preseed/-
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
-form                                    Configure Boot Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address
-item ipv4mask                           IPv4 netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-present ||
-form                                    Configure Boot Options
-item srvraddr                           Server ip address
-item isosfile                           ISO file
-item autoinst                           Auto install
-item language                           Language
-item ramsdisk                           RAM disk
-present ||
 set knladdr http://${srvraddr}/imgs/ubuntu-desktop-20.04
-set options vga=791 ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
+set options vga=791 noeject ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -2091,35 +2003,13 @@ exit
 
 :live-ubuntu-desktop-22.04
 echo Loading Ubuntu 22.04 Desktop ...
-set hostname sv-ubuntu.workgroup
-set ethrname ens160
-set ipv4addr 192.168.1.1
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
 set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
 set isosfile boot=casper url=http://${srvraddr}/isos/ubuntu-22.04.5-desktop-amd64.iso
-set autoinst auto=true url=http://${srvraddr}/conf/preseed/-
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
-form                                    Configure Boot Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address
-item ipv4mask                           IPv4 netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-present ||
-form                                    Configure Boot Options
-item srvraddr                           Server ip address
-item isosfile                           ISO file
-item autoinst                           Auto install
-item language                           Language
-item ramsdisk                           RAM disk
-present ||
 set knladdr http://${srvraddr}/imgs/ubuntu-desktop-22.04
-set options vga=791 ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
+set options vga=791 noeject ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
 echo Loading kernel and initrd ...
 kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
 initrd ${knladdr}/casper/initrd || goto error
@@ -2128,33 +2018,11 @@ exit
 
 :live-ubuntu-desktop-24.04
 echo Loading Ubuntu 24.04 Desktop ...
-set hostname sv-ubuntu.workgroup
-set ethrname ens160
-set ipv4addr 192.168.1.1
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
 set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
 set isosfile boot=casper iso-url=http://${srvraddr}/isos/ubuntu-24.04.1-desktop-amd64.iso
-set autoinst automatic-ubiquity noprompt autoinstall ds=nocloud;s=http://${srvraddr}/conf/nocloud/-
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
-form                                    Configure Boot Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address
-item ipv4mask                           IPv4 netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-present ||
-form                                    Configure Boot Options
-item srvraddr                           Server ip address
-item isosfile                           ISO file
-item autoinst                           Auto install
-item language                           Language
-item ramsdisk                           RAM disk
-present ||
 set knladdr http://${srvraddr}/imgs/ubuntu-desktop-24.04
 set options vga=791 ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
 echo Loading kernel and initrd ...
@@ -2165,33 +2033,11 @@ exit
 
 :live-ubuntu-desktop-24.10
 echo Loading Ubuntu 24.10 Desktop ...
-set hostname sv-ubuntu.workgroup
-set ethrname ens160
-set ipv4addr 192.168.1.1
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
 set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
 set isosfile boot=casper iso-url=http://${srvraddr}/isos/ubuntu-24.10-desktop-amd64.iso
-set autoinst automatic-ubiquity noprompt autoinstall ds=nocloud;s=http://${srvraddr}/conf/nocloud/-
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
-form                                    Configure Boot Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address
-item ipv4mask                           IPv4 netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-present ||
-form                                    Configure Boot Options
-item srvraddr                           Server ip address
-item isosfile                           ISO file
-item autoinst                           Auto install
-item language                           Language
-item ramsdisk                           RAM disk
-present ||
 set knladdr http://${srvraddr}/imgs/ubuntu-desktop-24.10
 set options vga=791 ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
 echo Loading kernel and initrd ...
@@ -2202,33 +2048,11 @@ exit
 
 :live-ubuntu-desktop-25.04
 echo Loading Ubuntu 25.04 Desktop ...
-set hostname sv-ubuntu.workgroup
-set ethrname ens160
-set ipv4addr 192.168.1.1
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
 set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
 set isosfile boot=casper iso-url=http://${srvraddr}/isos/plucky-desktop-amd64.iso
-set autoinst automatic-ubiquity noprompt autoinstall ds=nocloud;s=http://${srvraddr}/conf/nocloud/-
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
-form                                    Configure Boot Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address
-item ipv4mask                           IPv4 netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-present ||
-form                                    Configure Boot Options
-item srvraddr                           Server ip address
-item isosfile                           ISO file
-item autoinst                           Auto install
-item language                           Language
-item ramsdisk                           RAM disk
-present ||
 set knladdr http://${srvraddr}/imgs/ubuntu-desktop-25.04
 set options vga=791 ip=dhcp ${language} fsck.mode=skip ${ramsdisk} ${isosfile}
 echo Loading kernel and initrd ...
