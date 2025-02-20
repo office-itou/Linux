@@ -5614,6 +5614,14 @@ function funcCreate_remaster() {
 		# --- download only ---------------------------------------------------
 		case "${_COMD_TYPE}" in
 			--download ) continue;;
+			--update   )
+				case "${_TGET_LINE[16]}" in
+					*${TXT_CYAN}*   | \
+					*${TXT_GREEN}*  | \
+					*${TXT_YELLOW}* ) ;;
+					*               ) continue;;
+				esac
+				;;
 			* ) ;;
 		esac
 		# --- skip check ------------------------------------------------------
@@ -6412,39 +6420,28 @@ function funcMain() {
 	# -------------------------------------------------------------------------
 	if [[ -z "${PROG_PARM[*]}" ]]; then
 		funcPrintf "sudo ./${PROG_NAME} [ options ]"
-		funcPrintf "  -d | --debug [ options ]"
-		funcPrintf "    func    function test"
-		funcPrintf "    text    text color test"
-		funcPrintf "    parm    display of main internal parameters"
-		funcPrintf "create symbolic link"
-		funcPrintf "  -l | --link"
-		funcPrintf "create config files"
-		funcPrintf "  --conf [ options ]"
-		funcPrintf "    cmd         preseed kill dhcp / sub command"
-		funcPrintf "    preseed     preseed.cfg"
-		funcPrintf "    nocloud     nocloud"
-		funcPrintf "    kickstart   kickstart.cfg"
-		funcPrintf "    autoyast    autoyast.xml"
-		funcPrintf "create iso image files"
-		funcPrintf "  --create [ options ] [ empty | all | id number ]"
-		funcPrintf "    mini        mini.iso"
-		funcPrintf "    net         netint"
-		funcPrintf "    dvd         dvd image"
-		funcPrintf "    live        live image"
-#		funcPrintf "    tool        tool"
-		funcPrintf "    empty       waiting for input"
-		funcPrintf "    a | all     create all targets"
-		funcPrintf "    id number   create with selected target id"
-		funcPrintf "download iso image files"
-		funcPrintf "  --download [ options ] [ empty | all | id number ]"
-		funcPrintf "    mini        mini.iso"
-		funcPrintf "    net         netint"
-		funcPrintf "    dvd         dvd image"
-		funcPrintf "    live        live image"
-#		funcPrintf "    tool        tool"
-		funcPrintf "    empty       waiting for input"
-		funcPrintf "    a | all     create all targets"
-		funcPrintf "    id number   create with selected target id"
+		funcPrintf "  create symbolic link"
+		funcPrintf "    -l | --link"
+		funcPrintf "  create config files"
+		funcPrintf "    --conf [ options ]"
+		funcPrintf "      cmd         preseed kill dhcp / sub command"
+		funcPrintf "      preseed     preseed.cfg"
+		funcPrintf "      nocloud     nocloud"
+		funcPrintf "      kickstart   kickstart.cfg"
+		funcPrintf "      autoyast    autoyast.xml"
+		funcPrintf "  create / download / update iso image files"
+		funcPrintf "    --create / --download / --update [ options ] [ empty | all | id number ]"
+		funcPrintf "      mini / net / dvd / live"
+		funcPrintf "                  mini.iso / netinst / dvd image / live image"
+#		funcPrintf "      tool        tool"
+		funcPrintf "      empty       waiting for input"
+		funcPrintf "      a | all     create all targets"
+		funcPrintf "      id number   create with selected target id"
+		funcPrintf "  debug print and test"
+		funcPrintf "    -d | --debug [ options ]"
+		funcPrintf "      func    function test"
+		funcPrintf "      text    text color test"
+		funcPrintf "      parm    display of main internal parameters"
 	else
 		IFS=' =,'
 		set -f
@@ -6466,6 +6463,7 @@ function funcMain() {
 					funcCall_config _COMD_LINE "$@"
 					;;
 				--download | \
+				--update   | \
 				--create   )
 					funcCall_create _COMD_LINE "$@"
 					;;
