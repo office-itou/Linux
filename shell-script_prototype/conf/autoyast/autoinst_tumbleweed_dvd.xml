@@ -251,7 +251,7 @@ this feature is currently unavailable -->
     <chroot-scripts t="list">
       <script t="map">
         <chrooted t="boolean">false</chrooted>
-        <debug t="boolean">true</debug>
+        <debug t="boolean">false</debug>
         <feedback t="boolean">false</feedback>
         <feedback_type/>
         <filename>zzz_cmdline.sh</filename>
@@ -273,7 +273,8 @@ do
         device:*            ) ;; # //DEVICE/FILENAME
         cd:*                ) mount -r /dev/cdrom /media; _PATH="${_ADDR#cd:/}"; cp "/media/${_PATH%/*}/late_command.sh" /tmp/;;
         nfs:*               ) ;; # //SERVER/PATH
-        http:*|https:*|ftp:*) wget -O /tmp/late_command.sh "${_ADDR%/*}"/late_command.sh;; # //[user:password@]SERVER/PATH
+#       http:*|https:*|ftp:*) wget -O /tmp/late_command.sh "${_ADDR%/*}"/late_command.sh;; # //[user:password@]SERVER/PATH
+        http:*|https:*|ftp:*) curl -L -# -R -S -o /tmp/late_command.sh "${_ADDR%/*}"/late_command.sh;; # //[user:password@]SERVER/PATH
         tftp:*              ) ;; # //SERVER/PATH
         usb:*               ) ;; # ///PATH
         relurl:*            ) ;; # #//PATH
@@ -297,7 +298,7 @@ exit 0</source>
       </script>
       <script t="map">
         <chrooted t="boolean">true</chrooted>
-        <debug t="boolean">true</debug>
+        <debug t="boolean">false</debug>
         <feedback t="boolean">false</feedback>
         <feedback_type/>
         <filename>zzz_exec.sh</filename>

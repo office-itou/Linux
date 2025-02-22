@@ -1124,48 +1124,86 @@ funcSetupNetwork_nmanagr() {
 	fi
 
 	# --- configures ----------------------------------------------------------
-	_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/Wired connection 1"
-#	_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/${NICS_NAME}.nmconnection"
+	case "${DIST_NAME:-}" in
+		debian | ubuntu ) _FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/Wired connection 1";;
+		*               ) _FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/${NICS_NAME}.nmconnection";;
+	esac
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-		[connection]
-		id=${_FILE_PATH##*/}
-		type=ethernet
-		interface-name=${NICS_NAME}
-		autoconnect=true
-		zone=${FWAL_ZONE}
-		
-		[ethernet]
-		wake-on-lan=0
-		mac-address=${NICS_MADR}
-		
-_EOT_
 	if [ "${IPV4_DHCP}" = "true" ]; then
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-			[ipv4]
-			method=auto
-			
-			[ipv6]
-			method=auto
-			addr-gen-mode=default
-			
-			[proxy]
+		if ! nmcli --offline connection add type ethernet \
+			connection.id "${_FILE_PATH##*/}" \
+			connection.interface-name "${NICS_NAME}" \
+			connection.autoconnect true \
+			connection.zone "${FWAL_ZONE}" \
+			ethernet.wake-on-lan 0 \
+			ethernet.mac-address "${NICS_MADR}" \
+			ipv4.method auto \
+			ipv6.method auto \
+			ipv6.addr-gen-mode default \
+		> "${_FILE_PATH}"; then
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+				[connection]
+				id=${_FILE_PATH##*/}
+				type=ethernet
+				interface-name=${NICS_NAME}
+				autoconnect=true
+				zone=${FWAL_ZONE}
+				
+				[ethernet]
+				wake-on-lan=0
+				mac-address=${NICS_MADR}
+				
+				[ipv4]
+				method=auto
+				
+				[ipv6]
+				method=auto
+				addr-gen-mode=default
+				
+				[proxy]
 _EOT_
+		fi
 	else
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-			[ipv4]
-			method=manual
-			address1=${NICS_IPV4}/${NICS_BIT4},${NICS_GATE}
-			dns=${NICS_DNS4};
-			
-			[ipv6]
-			method=auto
-			addr-gen-mode=default
-			
-			[proxy]
+		if ! nmcli --offline connection add type ethernet \
+			connection.id "${_FILE_PATH##*/}" \
+			connection.interface-name "${NICS_NAME}" \
+			connection.autoconnect true \
+			connection.zone "${FWAL_ZONE}" \
+			ethernet.wake-on-lan 0 \
+			ethernet.mac-address "${NICS_MADR}" \
+			ipv4.method manual \
+			ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
+			ipv4.gateway "${NICS_GATE}" \
+			ipv4.dns "${NICS_DNS4}" \
+			ipv6.method auto \
+			ipv6.addr-gen-mode default \
+		> "${_FILE_PATH}"; then
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+				[connection]
+				id=${_FILE_PATH##*/}
+				type=ethernet
+				interface-name=${NICS_NAME}
+				autoconnect=true
+				zone=${FWAL_ZONE}
+				
+				[ethernet]
+				wake-on-lan=0
+				mac-address=${NICS_MADR}
+				
+				[ipv4]
+				method=manual
+				address1=${NICS_IPV4}/${NICS_BIT4},${NICS_GATE}
+				dns=${NICS_DNS4};
+				
+				[ipv6]
+				method=auto
+				addr-gen-mode=default
+				
+				[proxy]
 _EOT_
+		fi
 	fi
 	chown root:root "${_FILE_PATH}"
 	chmod 600 "${_FILE_PATH}"
