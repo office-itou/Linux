@@ -18,12 +18,12 @@ item -- debian-mini-11                  - Debian 11 ............................
 item -- debian-mini-12                  - Debian 12 .......................................... 2025-01-06 18:01:36
 item -- debian-mini-13                  - Debian 13 .......................................... 2024-12-27 09:14:03
 item -- debian-mini-testing             - Debian testing ..................................... 2024-12-27 09:14:03
-item -- debian-mini-testing-daily       - Debian testing daily ............................... 2025-02-18 00:02:24
+item -- debian-mini-testing-daily       - Debian testing daily ............................... 2025-02-20 00:02:31
 item -- ubuntu-mini-20.04               - Ubuntu 20.04 ....................................... 2023-03-14 22:28:31
 item --gap --                           [ Auto install Net install ... ]
 item -- debian-netinst-11               - Debian 11 .......................................... 2024-08-31 16:11:10
 item -- debian-netinst-12               - Debian 12 .......................................... 2025-01-11 12:53:04
-item -- debian-netinst-testing          - Debian testing ..................................... 2025-02-18 15:25:32
+item -- debian-netinst-testing          - Debian testing ..................................... 2025-02-20 15:30:50
 item -- fedora-netinst-40               - Fedora Server 40 ................................... 2024-04-14 18:30:19
 item -- fedora-netinst-41               - Fedora Server 41 ................................... 2024-10-24 13:36:10
 item -- centos-stream-netinst-9         - CentOS Stream 9 .................................... 2025-02-10 04:01:31
@@ -35,16 +35,16 @@ item -- miraclelinux-netinst-8          - Miracle Linux 8 ......................
 item -- miraclelinux-netinst-9          - Miracle Linux 9 .................................... 2024-08-23 05:57:18
 item -- opensuse-leap-netinst-15.5      - openSUSE Leap 15.5 ................................. 2023-05-23 15:09:21
 item -- opensuse-leap-netinst-15.6      - openSUSE Leap 15.6 ................................. 2024-06-20 11:42:39
-item -- opensuse-tumbleweed-netinst     - openSUSE Tumbleweed ................................ 2025-02-17 03:25:25
+item -- opensuse-tumbleweed-netinst     - openSUSE Tumbleweed ................................ 2025-02-19 19:23:08
 item --gap --                           [ Auto install DVD media ... ]
 item -- debian-11                       - Debian 11 .......................................... 2024-08-31 16:11:53
 item -- debian-12                       - Debian 12 .......................................... 2025-01-11 12:53:52
 item -- debian-testing                  - Debian testing ..................................... 2025-02-17 07:12:29
 item -- ubuntu-live-20.04               - Ubuntu 20.04 Live Server ........................... 2023-03-14 23:02:35
 item -- ubuntu-live-22.04               - Ubuntu 22.04 Live Server ........................... 2024-09-11 18:46:55
-item -- ubuntu-live-24.04               - Ubuntu 24.04 Live Server ........................... 2024-08-27 15:40:27
+item -- ubuntu-live-24.04               - Ubuntu 24.04 Live Server ........................... 2025-02-16 22:49:40
 item -- ubuntu-live-24.10               - Ubuntu 24.10 Live Server ........................... 2024-10-07 21:19:04
-item -- ubuntu-live-25.04               - Ubuntu 25.04 Live Server ........................... 2025-02-18 12:07:51
+item -- ubuntu-live-25.04               - Ubuntu 25.04 Live Server ........................... 2025-02-19 13:06:48
 item -- fedora-40                       - Fedora Server 40 ................................... 2024-04-14 22:54:06
 item -- fedora-41                       - Fedora Server 41 ................................... 2024-10-24 14:48:35
 item -- centos-stream-9                 - CentOS Stream 9 .................................... 2025-02-10 04:19:34
@@ -56,7 +56,7 @@ item -- miraclelinux-8                  - Miracle Linux 8 ......................
 item -- miraclelinux-9                  - Miracle Linux 9 .................................... 2024-08-23 05:57:18
 item -- opensuse-leap-15.5              - openSUSE Leap 15.5 ................................. 2023-05-23 15:21:52
 item -- opensuse-leap-15.6              - openSUSE Leap 15.6 ................................. 2024-06-20 11:56:54
-item -- opensuse-tumbleweed             - openSUSE Tumbleweed ................................ 2025-02-17 03:28:42
+item -- opensuse-tumbleweed             - openSUSE Tumbleweed ................................ 2025-02-19 19:26:57
 item -- windows-10                      - Windows 10 ......................................... 2022-10-18 15:21:50
 item -- windows-11                      - Windows 11 ......................................... 2024-10-01 12:18:50
 item --gap --                           [ Live media Install mode ... ]
@@ -65,7 +65,7 @@ item -- debian-live-12                  - Debian 12 Live .......................
 item -- debian-live-testing             - Debian testing Live ................................ 2025-02-17 02:14:39
 item -- ubuntu-desktop-20.04            - Ubuntu 20.04 Desktop ............................... 2023-03-16 15:58:09
 item -- ubuntu-desktop-22.04            - Ubuntu 22.04 Desktop ............................... 2024-09-11 14:38:59
-item -- ubuntu-desktop-24.04            - Ubuntu 24.04 Desktop ............................... 2024-08-27 16:25:25
+item -- ubuntu-desktop-24.04            - Ubuntu 24.04 Desktop ............................... 2025-02-15 09:16:38
 item -- ubuntu-desktop-24.10            - Ubuntu 24.10 Desktop ............................... 2024-10-09 14:32:32
 item -- ubuntu-desktop-25.04            - Ubuntu 25.04 Desktop ............................... 2025-02-18 06:51:58
 item --gap --                           [ Live media Live mode ... ]
@@ -74,7 +74,7 @@ item -- live-debian-live-12             - Debian 12 Live .......................
 item -- live-debian-live-testing        - Debian testing Live ................................ 2025-02-17 02:14:39
 item -- live-ubuntu-desktop-20.04       - Ubuntu 20.04 Desktop ............................... 2023-03-16 15:58:09
 item -- live-ubuntu-desktop-22.04       - Ubuntu 22.04 Desktop ............................... 2024-09-11 14:38:59
-item -- live-ubuntu-desktop-24.04       - Ubuntu 24.04 Desktop ............................... 2024-08-27 16:25:25
+item -- live-ubuntu-desktop-24.04       - Ubuntu 24.04 Desktop ............................... 2025-02-15 09:16:38
 item -- live-ubuntu-desktop-24.10       - Ubuntu 24.10 Desktop ............................... 2024-10-09 14:32:32
 item -- live-ubuntu-desktop-25.04       - Ubuntu 25.04 Desktop ............................... 2025-02-18 06:51:58
 item --gap --                           [ System tools ... ]
@@ -1064,7 +1064,7 @@ set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
-set isosfile boot=casper iso-url=http://${srvraddr}/isos/ubuntu-24.04.1-live-server-amd64.iso
+set isosfile boot=casper iso-url=http://${srvraddr}/isos/ubuntu-24.04.2-live-server-amd64.iso
 set autoinst automatic-ubiquity noprompt autoinstall ds=nocloud;s=http://${srvraddr}/conf/nocloud/ubuntu_server
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
@@ -1840,7 +1840,7 @@ set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
 set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
-set isosfile boot=casper iso-url=http://${srvraddr}/isos/ubuntu-24.04.1-desktop-amd64.iso
+set isosfile boot=casper iso-url=http://${srvraddr}/isos/ubuntu-24.04.2-desktop-amd64.iso
 set autoinst automatic-ubiquity noprompt autoinstall ds=nocloud;s=http://${srvraddr}/conf/nocloud/ubuntu_desktop
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
@@ -2020,7 +2020,7 @@ exit
 echo Loading Ubuntu 24.04 Desktop ...
 set srvraddr 192.168.1.12
 isset ${next-server} && set srvraddr ${next-server} ||
-set isosfile boot=casper iso-url=http://${srvraddr}/isos/ubuntu-24.04.1-desktop-amd64.iso
+set isosfile boot=casper iso-url=http://${srvraddr}/isos/ubuntu-24.04.2-desktop-amd64.iso
 set language debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 ramdisk_size=1500000 overlay-size=90%
 set knladdr http://${srvraddr}/imgs/ubuntu-desktop-24.04
