@@ -4635,7 +4635,7 @@ function funcCreate_menu() {
 			_WEBS_ADDR="${_WEBS_ADDR%/*}"
 			_WEBS_PATN="${_DATA_LINE[17]/"${_WEBS_ADDR}/"}"
 			_WEBS_PATN="${_WEBS_PATN%%/*}"
-			if ! _WORK_TEXT="$(LANG=C wget "${WGET_OPTN[@]}" --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
+			if ! _WORK_TEXT="$(LANG=C wget "${WGET_OPTN[@]}" --trust-server-names --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
 				_RET_CODE="$?"
 				_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
 				_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
@@ -4674,7 +4674,7 @@ function funcCreate_menu() {
 		fi
 		# --- get and set server-side image file information ------------------
 		if [[ "${_TEXT_COLR}" != "${TXT_RED}" ]]; then
-			if ! _WORK_TEXT="$(LANG=C wget "${WGET_OPTN[@]}" --spider --server-response --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
+			if ! _WORK_TEXT="$(LANG=C wget "${WGET_OPTN[@]}" --trust-server-names --spider --server-response --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
 				_RET_CODE="$?"
 				_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
 				_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
