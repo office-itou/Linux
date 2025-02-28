@@ -6,9 +6,9 @@ autoinstall:
 #   verbose: true
 #   output:
 # =============================================================================
-  refresh-installer:
-    update: true
-    channel: latest/stable
+# refresh-installer:
+#   update: true
+#   channel: latest/stable
 #   channel: stable/ubuntu-$REL
 #   channel: latest/edge
 #   channel: latest/beta
