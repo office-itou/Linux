@@ -235,6 +235,7 @@ autoinstall:
   package_upgrade: true
   packages:
   - apparmor
+  - apparmor-utils
 # - usrmerge
   - sudo
   - firewalld

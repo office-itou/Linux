@@ -1865,6 +1865,7 @@ funcSetupNetwork_samba() {
 	fi
 
 	# --- smb.conf ------------------------------------------------------------
+	# https://www.samba.gr.jp/project/translation/current/htmldocs/manpages/smb.conf.5.html
 	_WORK_PATH="${DIRS_TGET:-}/tmp/smb.conf.work"
 	_FILE_PATH="${DIRS_TGET:-}/etc/samba/smb.conf"
 	funcFile_backup "${_FILE_PATH}"
@@ -1912,8 +1913,11 @@ funcSetupNetwork_samba() {
 	> "${_WORK_PATH}"
 
 	# --- shared settings section ---------------------------------------------
+	# allow insecure wide links = Yes
+	# wide links = Yes
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_WORK_PATH}"
 		[homes]
+		        allow insecure wide links = Yes
 		        browseable = No
 		        comment = Home Directories
 		        create mask = 0770
@@ -1994,10 +1998,12 @@ funcSetupNetwork_samba() {
 		        comment = HTML shared directories
 		        guest ok = Yes
 		        path = ${DIRS_HTML}
+		        wide links = Yes
 		[tftp-share]
 		        comment = TFTP shared directories
 		        guest ok = Yes
 		        path = ${DIRS_TFTP}
+		        wide links = Yes
 _EOT_
 
 	# --- output --------------------------------------------------------------

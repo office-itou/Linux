@@ -1308,6 +1308,7 @@ funcMain() {
 	_datetime="$(date +"%Y/%m/%d %H:%M:%S")"
 	printf "${TXT_RESET}${PROG_NAME}: ${TXT_BMAGENTA}%s${TXT_RESET}\n" "${_datetime} processing start"
 	# --- main ----------------------------------------------------------------
+	trap 'rm -rf '"${DIRS_TEMP:?}"'' EXIT
 	funcMain
 	IFS="${OLD_IFS}"
 	# --- complete ------------------------------------------------------------

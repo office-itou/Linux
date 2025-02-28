@@ -589,9 +589,9 @@
 		"o  centos-stream-netinst-9         CentOS%20Stream%209                     centos              ${DIRS_ISOS}    CentOS-Stream-9-latest-x86_64-boot.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_net.cfg    ${HGFS_DIRS}/linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                                " \
 		"o  centos-stream-netinst-10        CentOS%20Stream%2010                    centos              ${DIRS_ISOS}    CentOS-Stream-10-latest-x86_64-boot.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-10_net.cfg   ${HGFS_DIRS}/linux/centos        2024-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-boot.iso                              " \
 		"o  almalinux-netinst-9             Alma%20Linux%209                        almalinux           ${DIRS_ISOS}    AlmaLinux-9-latest-x86_64-boot.iso              images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_net.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-boot.iso                                                   " \
-		"o  rockylinux-netinst-8            Rocky%20Linux%208                       Rocky               ${DIRS_ISOS}    Rocky-8.10-x86_64-boot.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-boot.iso                                                         " \
+		"x  rockylinux-netinst-8            Rocky%20Linux%208                       Rocky               ${DIRS_ISOS}    Rocky-8.10-x86_64-boot.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-boot.iso                                                         " \
 		"o  rockylinux-netinst-9            Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-boot.iso                  images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-boot.iso                                                  " \
-		"o  miraclelinux-netinst-8          Miracle%20Linux%208                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-8.10-rtm-minimal-x86_64.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                   " \
+		"x  miraclelinux-netinst-8          Miracle%20Linux%208                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-8.10-rtm-minimal-x86_64.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                   " \
 		"o  miraclelinux-netinst-9          Miracle%20Linux%209                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-9.4-rtm-minimal-x86_64.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso                   " \
 		"x  opensuse-leap-netinst-15.5      openSUSE%20Leap%2015.5                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.5-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_net.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-NET-x86_64-Media.iso                                         " \
 		"o  opensuse-leap-netinst-15.6      openSUSE%20Leap%2015.6                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.6-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_net.xml     ${HGFS_DIRS}/linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Media.iso                                         " \
@@ -633,9 +633,9 @@
 		"o  centos-stream-9                 CentOS%20Stream%209                     centos              ${DIRS_ISOS}    CentOS-Stream-9-latest-x86_64-dvd1.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_dvd.cfg    ${HGFS_DIRS}/linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                                " \
 		"o  centos-stream-10                CentOS%20Stream%2010                    centos              ${DIRS_ISOS}    CentOS-Stream-10-latest-x86_64-dvd1.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-10_dvd.cfg   ${HGFS_DIRS}/linux/centos        2024-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-dvd1.iso                              " \
 		"o  almalinux-9                     Alma%20Linux%209                        almalinux           ${DIRS_ISOS}    AlmaLinux-9-latest-x86_64-dvd.iso               images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_dvd.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-dvd.iso                                                    " \
-		"o  rockylinux-8                    Rocky%20Linux%208                       Rocky               ${DIRS_ISOS}    Rocky-8.10-x86_64-dvd1.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-dvd1.iso                                                         " \
+		"x  rockylinux-8                    Rocky%20Linux%208                       Rocky               ${DIRS_ISOS}    Rocky-8.10-x86_64-dvd1.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-dvd1.iso                                                         " \
 		"o  rockylinux-9                    Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-dvd.iso                   images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-dvd.iso                                                   " \
-		"o  miraclelinux-8                  Miracle%20Linux%208                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-8.10-rtm-x86_64.iso                images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                           " \
+		"x  miraclelinux-8                  Miracle%20Linux%208                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-8.10-rtm-x86_64.iso                images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                           " \
 		"o  miraclelinux-9                  Miracle%20Linux%209                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-9.4-rtm-x86_64.iso                 images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso                           " \
 		"x  opensuse-leap-15.5              openSUSE%20Leap%2015.5                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.5-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-DVD-x86_64-Media.iso                                         " \
 		"o  opensuse-leap-15.6              openSUSE%20Leap%2015.6                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.6-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso                                         " \
@@ -3175,6 +3175,7 @@ function funcCreate_late_command() {
 		 	fi
 		
 		 	# --- smb.conf ------------------------------------------------------------
+		 	# https://www.samba.gr.jp/project/translation/current/htmldocs/manpages/smb.conf.5.html
 		 	_WORK_PATH="${DIRS_TGET:-}/tmp/smb.conf.work"
 		 	_FILE_PATH="${DIRS_TGET:-}/etc/samba/smb.conf"
 		 	funcFile_backup "${_FILE_PATH}"
@@ -3222,8 +3223,11 @@ function funcCreate_late_command() {
 		 	> "${_WORK_PATH}"
 		
 		 	# --- shared settings section ---------------------------------------------
+		 	# allow insecure wide links = Yes
+		 	# wide links = Yes
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_WORK_PATH}"
 		 		[homes]
+		 		        allow insecure wide links = Yes
 		 		        browseable = No
 		 		        comment = Home Directories
 		 		        create mask = 0770
@@ -3304,10 +3308,12 @@ function funcCreate_late_command() {
 		 		        comment = HTML shared directories
 		 		        guest ok = Yes
 		 		        path = ${DIRS_HTML}
+		 		        wide links = Yes
 		 		[tftp-share]
 		 		        comment = TFTP shared directories
 		 		        guest ok = Yes
 		 		        path = ${DIRS_TFTP}
+		 		        wide links = Yes
 		_EOT_
 		
 		 	# --- output --------------------------------------------------------------
@@ -4620,11 +4626,13 @@ function funcCreate_menu_preseed() {
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/preseed"
+	declare       _WORK_ETHR="${ETHR_NAME}"
 	declare       _DIRS_IRAM=""
 	declare       _NWRK_MANE=""
 #	declare       _NWRK_CONF=""
 	declare       _LANG_CONF="language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese"
-	declare       _ISOS_FILE="boot=live fetch=http://\${srvraddr}/isos/${_TGET_LINE[5]}"
+	declare       _ISOS_FILE="fetch=http://\${srvraddr}/isos/${_TGET_LINE[5]}"
+	declare       _RAID_OPTN="raid=noautodetect"
 #	funcPrintf "%20.20s: %s" "create" "boot options for preseed"
 	# --- boot option ---------------------------------------------------------
 	_BOOT_OPTN=""
@@ -4643,12 +4651,13 @@ function funcCreate_menu_preseed() {
 	# --- netcfg --------------------------------------------------------------
 	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
 		_BOOT_OPTN+="${_BOOT_OPTN:+" "}noeject ip=dhcp"
+		_ISOS_FILE="boot=live${_ISOS_FILE:+" ${_ISOS_FILE}"}"
 	else
 		case "${_TGET_LINE[1]}" in
 			ubuntu-*         ) _NWRK_MANE="NetworkManager";;
 			*                ) ;;
 		esac
-		_BOOT_OPTN+="${_NWRK_MANE:+"${_BOOT_OPTN:+" "}netcfg/target_network_config=wrkmane"}"
+		_BOOT_OPTN+="${_NWRK_MANE:+"${_BOOT_OPTN:+" "}netcfg/target_network_config=${_NWRK_MANE}"}"
 		case "${_TGET_LINE[1]}" in
 			ubuntu-live-18.04) _BOOT_OPTN+="${_BOOT_OPTN:+" "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
 			ubuntu-desktop-* | \
@@ -4678,10 +4687,15 @@ function funcCreate_menu_preseed() {
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${language}"
 	# -------------------------------------------------------------------------
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}fsck.mode=skip"
-	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${ramsdisk}"
+	case "${_TGET_LINE[1]}" in
+		*-mini-*       ) ;;
+		*              ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}\${ramsdisk}";;
+	esac
 	# --- isosfile ------------------------------------------------------------
 	_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${isosfile}"
 	case "${_TGET_LINE[1]}" in
+		debian-mini-*       ) ;;
+		ubuntu-mini-*       ) _ISOS_FILE="initrd=${_TGET_LINE[7]} iso-url=http://\${srvraddr}/isos/${_TGET_LINE[5]}";;
 		ubuntu-desktop-18.* | \
 		ubuntu-desktop-20.* | \
 		ubuntu-desktop-22.* | \
@@ -4693,6 +4707,7 @@ function funcCreate_menu_preseed() {
 		ubuntu-*            ) _ISOS_FILE="boot=casper iso-url=http://\${srvraddr}/isos/${_TGET_LINE[5]}";;
 		*                   ) ;;
 	esac
+	_BOOT_OPTN+="${_BOOT_OPTN:+" "}${_RAID_OPTN}"
 	# --- output --------------------------------------------------------------
 	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
 		IFS= cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
@@ -4733,6 +4748,7 @@ function funcCreate_menu_nocloud() {
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/${_TGET_LINE[9]%/*}"
+	declare       _WORK_ETHR="${ETHR_NAME}"
 #	declare       _DIRS_IRAM=""
 #	declare       _NWRK_MANE=""
 #	declare       _NWRK_CONF=""
@@ -4823,12 +4839,13 @@ function funcCreate_menu_kickstart() {
 	declare -r -a _TGET_LINE=("$@")
 	declare       _BOOT_OPTN=""
 	declare -r    _HOST_NAME="sv-${_TGET_LINE[1]%%-*}"
-	declare -r    _CONF_PATH="inst.ks=http://\${srvraddr}/conf/${_TGET_LINE[9]}"
+	declare       _CONF_PATH="inst.ks=http://\${srvraddr}/conf/${_TGET_LINE[9]}"
 	declare -r    _RAMS_DISK="ramdisk_size=1500000 overlay-size=90%"
 	declare -r    _WORK_DIRS="${DIRS_TEMP}/${_TGET_LINE[1]}"
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/kickstart"
+	declare       _WORK_ETHR="${ETHR_NAME}"
 #	declare       _DIRS_IRAM=""
 #	declare       _NWRK_MANE=""
 #	declare       _NWRK_CONF=""
@@ -4842,6 +4859,10 @@ function funcCreate_menu_kickstart() {
 		:
 	else
 		_BOOT_OPTN+="${_BOOT_OPTN:+" "}\${autoinst}"
+		case "${_TGET_LINE[9]}" in
+			*_dvd.cfg) _CONF_PATH="${_CONF_PATH/_dvd./_web.}";;
+			*) ;;
+		esac
 	fi
 	# --- netcfg --------------------------------------------------------------
 	if [[ "${_TGET_LINE[9]##*/}" = "-" ]]; then
@@ -4897,8 +4918,7 @@ function funcCreate_menu_autoyast() {
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/kickstart"
-#	declare       _WORK_ETHR="${ETHR_NAME}"
-	declare       _WORK_ETHR="eth0"
+	declare       _WORK_ETHR="${ETHR_NAME}"
 #	declare       _DIRS_IRAM=""
 #	declare       _NWRK_MANE=""
 #	declare       _NWRK_CONF=""
@@ -4979,6 +4999,7 @@ function funcCreate_autoexec_ipxe() {
 	declare -r -i _MENU_SPCS=40
 	              _TEXT_GAPS="$(funcString 60 '.')"
 #	readonly      _TEXT_GAPS
+	declare       _DIRS_IRAM=""
 	declare       _WORK_TEXT=""
 	declare -a    _WORK_ARRY=()
 	declare -i    I=0
@@ -5173,13 +5194,16 @@ _EOT_
 _EOT_
 						)"
 					fi
+					if [[ "${_TGET_LINE[6]}" != "." ]]; then
+						_DIRS_IRAM="${_TGET_LINE[6]}/"
+					fi
 					_MENU_TEXT+="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							set knladdr http://\${srvraddr}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}
 							set options ${_WORK_TEXT}
 							echo Loading kernel and initrd ...
-							kernel \${knladdr}/${_TGET_LINE[6]}/${_TGET_LINE[8]} \${options} --- || goto error
-							initrd \${knladdr}/${_TGET_LINE[6]}/${_TGET_LINE[7]} || goto error
+							kernel \${knladdr}/${_DIRS_IRAM}${_TGET_LINE[8]} \${options} --- || goto error
+							initrd \${knladdr}/${_DIRS_IRAM}${_TGET_LINE[7]} || goto error
 							boot || goto error
 							exit
 							
@@ -5208,6 +5232,7 @@ function funcCreate_syslinux_cfg() {
 	declare -r -i _MENU_SPCS=40
 	              _TEXT_GAPS="$(funcString 60 '.')"
 #	readonly      _TEXT_GAPS
+	declare       _DIRS_IRAM=""
 	declare       _WORK_TEXT=""
 	declare -a    _WORK_ARRY=()
 	declare -i    I=0
@@ -5393,12 +5418,15 @@ _EOT_
 						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{ramsdisk\}/${_WORK_ARRY[5]:+${_WORK_ARRY[5]#set ramsdisk }}}"
 						_WORK_ARRY[0]="${_WORK_ARRY[0]//\$\{srvraddr\}/${_WORK_ARRY[1]:+${_WORK_ARRY[1]#set srvraddr }}}"
 					fi
+					if [[ "${_TGET_LINE[6]}" != "." ]]; then
+						_DIRS_IRAM="${_TGET_LINE[6]}/"
+					fi
 					_MENU_TEXT="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;'
 							label ${_TGET_LINE[1]}
 							  menu label ^${_MENU_ENTR}
-							  linux  ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[8]}
-							  initrd ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[7]}
+							  linux  ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_DIRS_IRAM}${_TGET_LINE[8]}
+							  initrd ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_DIRS_IRAM}${_TGET_LINE[7]}
 							  append ${_WORK_ARRY[0]}
 							
 _EOT_
@@ -5427,6 +5455,7 @@ function funcCreate_grub_cfg() {
 	declare -r -i _MENU_SPCS=40
 	              _TEXT_GAPS="$(funcString 60 '.')"
 #	readonly      _TEXT_GAPS
+	declare       _DIRS_IRAM=""
 	declare       _WORK_STR0=""
 	declare       _WORK_STR1=""
 	declare       _WORK_STR2=""
@@ -5668,15 +5697,18 @@ _EOT_
 						printf "  %s\n" "${_WORK_ARRY[@]}" | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
 					)"
 					_MENU_TEXT+="\n"
+					if [[ "${_TGET_LINE[6]}" != "." ]]; then
+						_DIRS_IRAM="${_TGET_LINE[6]}/"
+					fi
 					_MENU_TEXT+="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${_TABS_STRS}/g" | sed -e ':l; N; s/\n/\\n/; b l;'
 							  echo 'Loading ${_TGET_LINE[2]//%20/ } ...'
 							  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
 							  insmod progress
 							  echo 'Loading linux ...'
-							  linux  ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[8]} \${options} ---
+							  linux  ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_DIRS_IRAM}${_TGET_LINE[8]} \${options} ---
 							  echo 'Loading initrd ...'
-							  initrd ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_TGET_LINE[6]}/${_TGET_LINE[7]}
+							  initrd ${_SRVR_ADDR}/${DIRS_IMGS##*/}/${_TGET_LINE[1]}/${_DIRS_IRAM}${_TGET_LINE[7]}
 							}
 _EOT_
 					)"
@@ -6274,6 +6306,8 @@ function funcMain() {
 	fi
 
 	# --- initialization ------------------------------------------------------
+	trap 'rm -rf '"${DIRS_TEMP:?}"'' EXIT
+
 	if command -v tput > /dev/null 2>&1; then
 		ROWS_SIZE=$(tput lines)
 		COLS_SIZE=$(tput cols)
