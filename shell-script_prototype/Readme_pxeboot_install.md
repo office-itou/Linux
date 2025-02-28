@@ -10,6 +10,8 @@ VMware Workstation 16 Pro (16.2.5 build-20904516)
 | :-------- | :--------------------------- |
 | processor | 1processor / 2core (i7-6700) |
 | memory    | 4GiB                         |
+|     "     |  8GiB for Ubuntu live server |
+|     "     | 16GiB for Ubuntu desktop     |
 | storage   | NVMe 64GiB                   |
 | nic       | e1000e                       |
 | sound     | ES1371                       |
@@ -25,9 +27,9 @@ VMware Workstation 16 Pro (16.2.5 build-20904516)
 | debian-15                |  -  |  -  |  -  |  -  |  20xx-xx-xx  |  20xx-xx-xx  |  20xx-xx-xx  |       -      |         -        | debian-15      / duke                     | "                                                     |           -           |           -           |           -           |           -           |
 | debian-testing           |  o  |  x  |  x  |     |       -      |       -      |       -      |       -      |                  | debian-testing / testing daily or weekly  | "                                                     |  2025-02-24 00:02:47  |  2025-02-24 09:25:40  |  2025-02-24 05:38:23  |  2025-02-24 02:18:47  |
 | ubuntu-20.04             |  o  |  -  |  x  |     |  2020-04-23  |  2025-05-29  |  2030-04-23  |       -      | 5.4              | ubuntu-20.04.6 / focal                    | https://en.wikipedia.org/wiki/Ubuntu_version_history  |  2023-03-14 22:28:31  |           -           |  2023-03-14 23:02:35  |  2023-03-16 15:58:09  |
-| ubuntu-22.04             |  -  |  -  |     |     |  2022-04-21  |  2027-06-01  |  2032-04-21  |       -      | 5.15 or 5.17     | ubuntu-22.04.5 / jammy                    | "                                                     |           -           |           -           |  2024-09-11 18:46:55  |  2024-09-11 14:38:59  |
-| ubuntu-24.04             |  -  |  -  |     |     |  2024-04-25  |  2029-05-31  |  2034-04-25  |       -      | 6.8              | ubuntu-24.04.2 / noble                    | "                                                     |           -           |           -           |  2025-02-16 22:49:40  |  2025-02-15 09:16:38  |
-| ubuntu-24.10             |  -  |  -  |     |     |  2024-10-10  |  2025-07-xx  |              |       -      | 6.11             | ubuntu-24.10   / oracular                 | "                                                     |           -           |           -           |  2024-10-07 21:19:04  |  2024-10-09 14:32:32  |
+| ubuntu-22.04             |  -  |  -  |  o  |     |  2022-04-21  |  2027-06-01  |  2032-04-21  |       -      | 5.15 or 5.17     | ubuntu-22.04.5 / jammy                    | "                                                     |           -           |           -           |  2024-09-11 18:46:55  |  2024-09-11 14:38:59  |
+| ubuntu-24.04             |  -  |  -  |  o  |     |  2024-04-25  |  2029-05-31  |  2034-04-25  |       -      | 6.8              | ubuntu-24.04.2 / noble                    | "                                                     |           -           |           -           |  2025-02-16 22:49:40  |  2025-02-15 09:16:38  |
+| ubuntu-24.10             |  -  |  -  |  o  |     |  2024-10-10  |  2025-07-xx  |       -      |       -      | 6.11             | ubuntu-24.10   / oracular                 | "                                                     |           -           |           -           |  2024-10-07 21:19:04  |  2024-10-09 14:32:32  |
 | ubuntu-25.04             |  -  |  -  |     |     |  2025-04-17  |  2026-01-xx  |              |       -      |                  | ubuntu-25.04   / plucky                   | "                                                     |           -           |           -           |  2025-02-22 12:45:27  |  2025-02-23 06:48:23  |
 | Fedora-40                |  -  |  o  |  o  |  -  |  2024-04-23  |  2025-05-28  |       -      |       -      | 6.8              | Fedora-40-1.14                            | https://en.wikipedia.org/wiki/Fedora_Linux            |           -           |  2024-04-14 18:30:19  |  2024-04-14 22:54:06  |           -           |
 | Fedora-41                |  -  |  o  |  o  |  -  |  2024-10-29  |  2025-11-19  |       -      |       -      | 6.11             | Fedora-41-1.4                             | "                                                     |           -           |  2024-10-24 13:36:10  |  2024-10-24 14:48:35  |           -           |
@@ -69,4 +71,9 @@ note
 | dvd  | dvd media   | inlude: ubuntu-live-server              |
 | live | live media  | inlude: ubuntu-desktop                  |
   
-
+* debian-13 mini.iso  
+Aborted due to kernel version mismatch  
+  
+* WinPE_ATI2020x86  
+BIOS mode only  
+  
