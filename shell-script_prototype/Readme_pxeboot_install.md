@@ -78,7 +78,7 @@ Aborted due to kernel version mismatch
 * Other than debian mini.iso
 Aborted because installer was stuck on detecting ISO file  
   
-* ubuntu-25.04 desktop (plucky-desktop-amd64.iso)
+* ubuntu-25.04 desktop (plucky-desktop-amd64.iso)  
 No reboot after installation. An internal error occurs after logging in.  
   
 * openSUSE-Tumbleweed  
