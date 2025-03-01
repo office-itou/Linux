@@ -75,7 +75,7 @@ note
 * debian-13 mini.iso  
 Aborted due to kernel version mismatch  
   
-* Other than debian mini.iso
+* Other than debian mini.iso  
 Aborted because installer was stuck on detecting ISO file  
   
 * ubuntu-25.04 desktop (plucky-desktop-amd64.iso)  
