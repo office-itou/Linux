@@ -5312,7 +5312,7 @@ function funcCreate_syslinux_cfg() {
 				    -ne '/^[ \t]*menu[ \t]\+autoboot[ \t]\+.*[^[:graph:]]*$/p'          \
 				    -ne '/^[ \t]*menu[ \t]\+tabmsg[ \t]\+.*[^[:graph:]]*$/p'            \
 				    -ne '/^[ \t]*menu[ \t]\+resolution[ \t]\+.*[^[:graph:]]*$/p'        \
-				    -e  '/^[ \t]*default[ \t]\t/ {' -ne '/.*\.c32/!p}'                  \
+				    -e  '/^[ \t]*default[ \t]\+/ {' -ne '/.*\.c32/!p}'                  \
 				    "${_FILE_CONF}"
 			)
 			set -e
@@ -5325,23 +5325,23 @@ function funcCreate_syslinux_cfg() {
 				    -e '/^[ \t]*menu[ \t]\+autoboot[ \t]\+.*[^[:graph:]]*$/   s/^/#/g'  \
 				    -e '/^[ \t]*menu[ \t]\+tabmsg[ \t]\+.*[^[:graph:]]*$/     s/^/#/g'  \
 				    -e '/^[ \t]*menu[ \t]\+resolution[ \t]\+.*[^[:graph:]]*$/ s/^/#/g'  \
-				    -e '/^[ \t]*default[ \t]\t/ {' -e '/.*\.c32/!             s/^/#/g}'
+				    -e '/^[ \t]*default[ \t]\+/ {' -e '/.*\.c32/!             s/^/#/g}'
 			fi
 			# --- comment out "default" ---------------------------------------
 			set +e
 			read -r -a _WORK_ARRY < <(                                                  \
 				sed -e  '/^label[ \t]\+.*/,/\(^[ \t]*$\|^label[ \t]\+\)/ {'             \
-				    -ne '/^[ \t]*default[ \t]\+[[:graph:]]\+/p}'                        \
+				    -e  '/^[ \t]*default[ \t]\+/ {' -ne '/.*\.c32/!p}}'                 \
 				    "${_FILE_CONF}"
 			)
 			set -e
 			if [[ -n "${_WORK_ARRY[*]}" ]]; then
 				sed -i "${_FILE_CONF}"                                                  \
 				    -e '/^label[ \t]\+.*/,/\(^[ \t]*$\|^label[ \t]\+\)/ {'              \
-				    -e '/^[ \t]*default[ \t]\+[[:graph:]]\+/                  s/^/#/g}'
+				    -e '/^[ \t]*default[ \t]\+/ {' -e '/.*\.c32/!             s/^/#/g}'
 			fi
-			sed -i "${_FILE_CONF}"                                \
-			    -e '/^[ \t]*default[ \t]\+[[:graph:]]\+$/ s/^/#/'
+			sed -i "${_FILE_CONF}"                                      \
+			    -e '/^[ \t]*default[ \t]\+/ {' -e '/.*\.c32/! s/^/#/g}'
 			# --- insert "autoinst.cfg" ---------------------------------------
 			set +e
 			read -r -a _WORK_ARRY < <(                                  \
