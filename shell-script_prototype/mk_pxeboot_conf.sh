@@ -588,9 +588,9 @@
 		"x  centos-stream-netinst-8         CentOS%20Stream%208                     centos              ${DIRS_ISOS}    CentOS-Stream-8-x86_64-latest-boot.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-8_net.cfg    ${HGFS_DIRS}/linux/centos        20xx-xx-xx  2024-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso                                             " \
 		"o  centos-stream-netinst-9         CentOS%20Stream%209                     centos              ${DIRS_ISOS}    CentOS-Stream-9-latest-x86_64-boot.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_net.cfg    ${HGFS_DIRS}/linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                                " \
 		"o  centos-stream-netinst-10        CentOS%20Stream%2010                    centos              ${DIRS_ISOS}    CentOS-Stream-10-latest-x86_64-boot.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-10_net.cfg   ${HGFS_DIRS}/linux/centos        2024-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-boot.iso                              " \
-		"o  almalinux-netinst-9             Alma%20Linux%209                        almalinux           ${DIRS_ISOS}    AlmaLinux-9-latest-x86_64-boot.iso              images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_net.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-boot.iso                                                   " \
+		"o  almalinux-netinst-9             Alma%20Linux%209                        almalinux           ${DIRS_ISOS}    AlmaLinux-9-latest-x86_64-boot.iso              images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_net.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9-latest-x86_64-boot.iso                                                          " \
 		"x  rockylinux-netinst-8            Rocky%20Linux%208                       Rocky               ${DIRS_ISOS}    Rocky-8.10-x86_64-boot.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-boot.iso                                                         " \
-		"o  rockylinux-netinst-9            Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-boot.iso                  images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-boot.iso                                                  " \
+		"o  rockylinux-netinst-9            Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-boot.iso                  images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso                                                         " \
 		"x  miraclelinux-netinst-8          Miracle%20Linux%208                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-8.10-rtm-minimal-x86_64.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                   " \
 		"o  miraclelinux-netinst-9          Miracle%20Linux%209                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-9.4-rtm-minimal-x86_64.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso                   " \
 		"x  opensuse-leap-netinst-15.5      openSUSE%20Leap%2015.5                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.5-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_net.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-NET-x86_64-Media.iso                                         " \
@@ -632,9 +632,9 @@
 		"x  centos-stream-8                 CentOS%20Stream%208                     centos              ${DIRS_ISOS}    CentOS-Stream-8-x86_64-latest-dvd1.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-8_dvd.cfg    ${HGFS_DIRS}/linux/centos        2019-xx-xx  2024-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso                                             " \
 		"o  centos-stream-9                 CentOS%20Stream%209                     centos              ${DIRS_ISOS}    CentOS-Stream-9-latest-x86_64-dvd1.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_dvd.cfg    ${HGFS_DIRS}/linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                                " \
 		"o  centos-stream-10                CentOS%20Stream%2010                    centos              ${DIRS_ISOS}    CentOS-Stream-10-latest-x86_64-dvd1.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-10_dvd.cfg   ${HGFS_DIRS}/linux/centos        2024-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-dvd1.iso                              " \
-		"o  almalinux-9                     Alma%20Linux%209                        almalinux           ${DIRS_ISOS}    AlmaLinux-9-latest-x86_64-dvd.iso               images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_dvd.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9[0-9.]*-latest-x86_64-dvd.iso                                                    " \
+		"o  almalinux-9                     Alma%20Linux%209                        almalinux           ${DIRS_ISOS}    AlmaLinux-9-latest-x86_64-dvd.iso               images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_dvd.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9-latest-x86_64-dvd.iso                                                           " \
 		"x  rockylinux-8                    Rocky%20Linux%208                       Rocky               ${DIRS_ISOS}    Rocky-8.10-x86_64-dvd1.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-dvd1.iso                                                         " \
-		"o  rockylinux-9                    Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-dvd.iso                   images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9[0-9.]*-latest-x86_64-dvd.iso                                                   " \
+		"o  rockylinux-9                    Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-dvd.iso                   images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-dvd.iso                                                          " \
 		"x  miraclelinux-8                  Miracle%20Linux%208                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-8.10-rtm-x86_64.iso                images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                           " \
 		"o  miraclelinux-9                  Miracle%20Linux%209                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-9.4-rtm-x86_64.iso                 images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso                           " \
 		"x  opensuse-leap-15.5              openSUSE%20Leap%2015.5                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.5-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-DVD-x86_64-Media.iso                                         " \
@@ -1498,6 +1498,7 @@ function funcCreate_late_command() {
 		 	# --- working directory name ----------------------------------------------
 		 	readonly DIRS_ORIG="${PROG_DIRS}/orig"			# original file directory
 		 	readonly DIRS_INIT="${PROG_DIRS}/init"			# initial file directory
+		 	readonly DIRS_SAMP="${PROG_DIRS}/samp"			# sample file directory
 		 	readonly DIRS_LOGS="${PROG_DIRS}/logs"			# log file directory
 		
 		 	# --- log out -------------------------------------------------------------
@@ -1894,8 +1895,9 @@ function funcCreate_late_command() {
 		 	___FILE_PATH="${1}"
 		 	___BACK_PATH="${1#*"${DIRS_TGET:-}"}"
 		 	case "${2:-}" in
-		 		init) ___BACK_PATH="${DIRS_INIT}/${___BACK_PATH#/}";;
-		 		*   ) ___BACK_PATH="${DIRS_ORIG}/${___BACK_PATH#/}";;
+		 		samp) ___BACK_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_SAMP}/${___BACK_PATH#/}";;
+		 		init) ___BACK_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_INIT}/${___BACK_PATH#/}";;
+		 		*   ) ___BACK_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_ORIG}/${___BACK_PATH#/}";;
 		 	esac
 		 	mkdir -p "${___BACK_PATH%/*}"
 		 	if [ -e "${___BACK_PATH}" ]; then
@@ -2927,6 +2929,25 @@ function funcCreate_late_command() {
 		 	funcDebugout_file "${_FILE_PATH}"
 		 	funcFile_backup   "${_FILE_PATH}" "init"
 		
+		 	# --- create sample file --------------------------------------------------
+		 	for _WORK_TEXT in "syslinux block" "grub block" "ipxe block"
+		 	do
+		 		_FILE_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_SAMP}/etc/dnsmasq.d/pxeboot_${_WORK_TEXT%% *}.conf"
+		 		mkdir -p "${_FILE_PATH%/*}"
+		 		sed -ne '/^# --- tftp ---/,/^$/              {' \
+		 		    -ne '/^# ---/p'                             \
+		 		    -ne '/enable-tftp=/              s/^#//p'   \
+		 		    -ne '/tftp-root=/                s/^#//p }' \
+		 		    -ne '/^# --- '"${_WORK_TEXT}"' ---/,/^$/ {' \
+		 		    -ne '/^# ---/p'                             \
+		 		    -ne '/^# ---/!                   s/^#//gp}' \
+		 		    "${DIRS_TGET:-}/etc/dnsmasq.d/pxeboot.conf" \
+		 		> "${_FILE_PATH}"
+		
+		 		# --- debug out -------------------------------------------------------
+		 		funcDebugout_file "${_FILE_PATH}"
+		 	done
+		
 		 	# --- systemctl -----------------------------------------------------------
 		 	_SRVC_NAME="dnsmasq.service"
 		 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
@@ -3183,6 +3204,7 @@ function funcCreate_late_command() {
 		 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 		
 		 	# --- global settings section ---------------------------------------------
+		 	# allow insecure wide links = Yes
 		 	testparm -s -v                                                                  | \
 		 	sed -ne '/^\[global\]$/,/^[ \t]*$/                                             {' \
 		 	    -e  '/^[ \t]*acl check permissions[ \t]*=/        s/^/#/'                     \
@@ -3214,6 +3236,7 @@ function funcCreate_late_command() {
 		 	    -e  '/^[ \t]*syslog[ \t]*=/                       s/^/#/'                     \
 		 	    -e  '/^[ \t]*unicode[ \t]*=/                      s/^/#/'                     \
 		 	    -e  '/^[ \t]*winbind separator[ \t]*=/            s/^/#/'                     \
+		 	    -e  '/^[ \t]*allow insecure wide links[ \t]*=/    s/=.*$/= Yes/'              \
 		 	    -e  '/^[ \t]*dos charset[ \t]*=/                  s/=.*$/= CP932/'            \
 		 	    -e  '/^[ \t]*unix password sync[ \t]*=/           s/=.*$/= No/'               \
 		 	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${NICS_HOST}"'/' \
@@ -3223,11 +3246,9 @@ function funcCreate_late_command() {
 		 	> "${_WORK_PATH}"
 		
 		 	# --- shared settings section ---------------------------------------------
-		 	# allow insecure wide links = Yes
 		 	# wide links = Yes
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_WORK_PATH}"
 		 		[homes]
-		 		        allow insecure wide links = Yes
 		 		        browseable = No
 		 		        comment = Home Directories
 		 		        create mask = 0770

@@ -188,6 +188,7 @@
 	# --- working directory name ----------------------------------------------
 	readonly DIRS_ORIG="${PROG_DIRS}/orig"			# original file directory
 	readonly DIRS_INIT="${PROG_DIRS}/init"			# initial file directory
+	readonly DIRS_SAMP="${PROG_DIRS}/samp"			# sample file directory
 	readonly DIRS_LOGS="${PROG_DIRS}/logs"			# log file directory
 
 	# --- log out -------------------------------------------------------------
@@ -584,8 +585,9 @@ funcFile_backup() {
 	___FILE_PATH="${1}"
 	___BACK_PATH="${1#*"${DIRS_TGET:-}"}"
 	case "${2:-}" in
-		init) ___BACK_PATH="${DIRS_INIT}/${___BACK_PATH#/}";;
-		*   ) ___BACK_PATH="${DIRS_ORIG}/${___BACK_PATH#/}";;
+		samp) ___BACK_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_SAMP}/${___BACK_PATH#/}";;
+		init) ___BACK_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_INIT}/${___BACK_PATH#/}";;
+		*   ) ___BACK_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_ORIG}/${___BACK_PATH#/}";;
 	esac
 	mkdir -p "${___BACK_PATH%/*}"
 	if [ -e "${___BACK_PATH}" ]; then
@@ -1617,6 +1619,22 @@ _EOT_
 	funcDebugout_file "${_FILE_PATH}"
 	funcFile_backup   "${_FILE_PATH}" "init"
 
+	# --- create sample file --------------------------------------------------
+	for _WORK_TEXT in "syslinux block" "grub block" "ipxe block"
+	do
+		_FILE_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_SAMP}/etc/dnsmasq.d/pxeboot_${_WORK_TEXT%% *}.conf"
+		mkdir -p "${_FILE_PATH%/*}"
+		sed -ne '/^# --- tftp ---/,/^$/              {' \
+		    -ne '/^# ---/p'                             \
+		    -ne '/enable-tftp=/              s/^#//p'   \
+		    -ne '/tftp-root=/                s/^#//p }' \
+		    -ne '/^# --- '"${_WORK_TEXT}"' ---/,/^$/ {' \
+		    -ne '/^# ---/p'                             \
+		    -ne '/^# ---/!                   s/^#//gp}' \
+		    "${DIRS_TGET:-}/etc/dnsmasq.d/pxeboot.conf" \
+		> "${_FILE_PATH}"
+	done
+
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_NAME="dnsmasq.service"
 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
@@ -1873,6 +1891,7 @@ funcSetupNetwork_samba() {
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 
 	# --- global settings section ---------------------------------------------
+	# allow insecure wide links = Yes
 	testparm -s -v                                                                  | \
 	sed -ne '/^\[global\]$/,/^[ \t]*$/                                             {' \
 	    -e  '/^[ \t]*acl check permissions[ \t]*=/        s/^/#/'                     \
@@ -1904,6 +1923,7 @@ funcSetupNetwork_samba() {
 	    -e  '/^[ \t]*syslog[ \t]*=/                       s/^/#/'                     \
 	    -e  '/^[ \t]*unicode[ \t]*=/                      s/^/#/'                     \
 	    -e  '/^[ \t]*winbind separator[ \t]*=/            s/^/#/'                     \
+	    -e  '/^[ \t]*allow insecure wide links[ \t]*=/    s/=.*$/= Yes/'              \
 	    -e  '/^[ \t]*dos charset[ \t]*=/                  s/=.*$/= CP932/'            \
 	    -e  '/^[ \t]*unix password sync[ \t]*=/           s/=.*$/= No/'               \
 	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${NICS_HOST}"'/' \
@@ -1913,11 +1933,9 @@ funcSetupNetwork_samba() {
 	> "${_WORK_PATH}"
 
 	# --- shared settings section ---------------------------------------------
-	# allow insecure wide links = Yes
 	# wide links = Yes
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_WORK_PATH}"
 		[homes]
-		        allow insecure wide links = Yes
 		        browseable = No
 		        comment = Home Directories
 		        create mask = 0770

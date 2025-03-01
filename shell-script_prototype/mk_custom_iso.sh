@@ -1506,6 +1506,7 @@ function funcCreate_late_command() {
 		 	# --- working directory name ----------------------------------------------
 		 	readonly DIRS_ORIG="${PROG_DIRS}/orig"			# original file directory
 		 	readonly DIRS_INIT="${PROG_DIRS}/init"			# initial file directory
+		 	readonly DIRS_SAMP="${PROG_DIRS}/samp"			# sample file directory
 		 	readonly DIRS_LOGS="${PROG_DIRS}/logs"			# log file directory
 		
 		 	# --- log out -------------------------------------------------------------
@@ -1902,8 +1903,9 @@ function funcCreate_late_command() {
 		 	___FILE_PATH="${1}"
 		 	___BACK_PATH="${1#*"${DIRS_TGET:-}"}"
 		 	case "${2:-}" in
-		 		init) ___BACK_PATH="${DIRS_INIT}/${___BACK_PATH#/}";;
-		 		*   ) ___BACK_PATH="${DIRS_ORIG}/${___BACK_PATH#/}";;
+		 		samp) ___BACK_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_SAMP}/${___BACK_PATH#/}";;
+		 		init) ___BACK_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_INIT}/${___BACK_PATH#/}";;
+		 		*   ) ___BACK_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_ORIG}/${___BACK_PATH#/}";;
 		 	esac
 		 	mkdir -p "${___BACK_PATH%/*}"
 		 	if [ -e "${___BACK_PATH}" ]; then
@@ -2935,6 +2937,25 @@ function funcCreate_late_command() {
 		 	funcDebugout_file "${_FILE_PATH}"
 		 	funcFile_backup   "${_FILE_PATH}" "init"
 		
+		 	# --- create sample file --------------------------------------------------
+		 	for _WORK_TEXT in "syslinux block" "grub block" "ipxe block"
+		 	do
+		 		_FILE_PATH="${DIRS_TGET:+"${DIRS_TGET}/"}${DIRS_SAMP}/etc/dnsmasq.d/pxeboot_${_WORK_TEXT%% *}.conf"
+		 		mkdir -p "${_FILE_PATH%/*}"
+		 		sed -ne '/^# --- tftp ---/,/^$/              {' \
+		 		    -ne '/^# ---/p'                             \
+		 		    -ne '/enable-tftp=/              s/^#//p'   \
+		 		    -ne '/tftp-root=/                s/^#//p }' \
+		 		    -ne '/^# --- '"${_WORK_TEXT}"' ---/,/^$/ {' \
+		 		    -ne '/^# ---/p'                             \
+		 		    -ne '/^# ---/!                   s/^#//gp}' \
+		 		    "${DIRS_TGET:-}/etc/dnsmasq.d/pxeboot.conf" \
+		 		> "${_FILE_PATH}"
+		
+		 		# --- debug out -------------------------------------------------------
+		 		funcDebugout_file "${_FILE_PATH}"
+		 	done
+		
 		 	# --- systemctl -----------------------------------------------------------
 		 	_SRVC_NAME="dnsmasq.service"
 		 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
@@ -3191,6 +3212,7 @@ function funcCreate_late_command() {
 		 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 		
 		 	# --- global settings section ---------------------------------------------
+		 	# allow insecure wide links = Yes
 		 	testparm -s -v                                                                  | \
 		 	sed -ne '/^\[global\]$/,/^[ \t]*$/                                             {' \
 		 	    -e  '/^[ \t]*acl check permissions[ \t]*=/        s/^/#/'                     \
@@ -3222,6 +3244,7 @@ function funcCreate_late_command() {
 		 	    -e  '/^[ \t]*syslog[ \t]*=/                       s/^/#/'                     \
 		 	    -e  '/^[ \t]*unicode[ \t]*=/                      s/^/#/'                     \
 		 	    -e  '/^[ \t]*winbind separator[ \t]*=/            s/^/#/'                     \
+		 	    -e  '/^[ \t]*allow insecure wide links[ \t]*=/    s/=.*$/= Yes/'              \
 		 	    -e  '/^[ \t]*dos charset[ \t]*=/                  s/=.*$/= CP932/'            \
 		 	    -e  '/^[ \t]*unix password sync[ \t]*=/           s/=.*$/= No/'               \
 		 	    -e  '/^[ \t]*netbios name[ \t]*=/                 s/=.*$/= '"${NICS_HOST}"'/' \
@@ -3231,11 +3254,9 @@ function funcCreate_late_command() {
 		 	> "${_WORK_PATH}"
 		
 		 	# --- shared settings section ---------------------------------------------
-		 	# allow insecure wide links = Yes
 		 	# wide links = Yes
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_WORK_PATH}"
 		 		[homes]
-		 		        allow insecure wide links = Yes
 		 		        browseable = No
 		 		        comment = Home Directories
 		 		        create mask = 0770
@@ -5399,6 +5420,7 @@ function funcCreate_remaster_preseed() {
 	declare -r    _WORK_IMGS="${_WORK_DIRS}/img"
 	declare -r    _WORK_RAMS="${_WORK_DIRS}/ram"
 	declare -r    _WORK_CONF="${_WORK_IMGS}/preseed"
+	declare       _WORK_TYPE=""
 	declare       _DIRS_IRAM=""
 	funcPrintf "%20.20s: %s" "create" "boot options for preseed"
 	# --- boot option ---------------------------------------------------------
@@ -5406,7 +5428,7 @@ function funcCreate_remaster_preseed() {
 	case "${_TGET_LINE[1]}" in
 		ubuntu-desktop-* | \
 		ubuntu-legacy-*  ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}automatic-ubiquity noprompt ${_CONF_PATH}";;
-		*-mini-*         ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}auto=true";;
+		*-mini-*         ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}auto=true preseed/file=/${_TGET_LINE[9]##*/}";;
 		*                ) _BOOT_OPTN+="${_BOOT_OPTN:+" "}${_CONF_PATH}";;
 	esac
 	case "${_TGET_LINE[1]}" in
@@ -5432,6 +5454,9 @@ function funcCreate_remaster_preseed() {
 	# --- grub.cfg ------------------------------------------------------------
 	funcCreate_grub_cfg "${_BOOT_OPTN}" "${_TGET_LINE[@]}"
 	# --- copy the configuration file -----------------------------------------
+	_WORK_TYPE="${_TGET_LINE[9]##*/}"
+	_WORK_TYPE="${_WORK_TYPE#*_}"
+	_WORK_TYPE="${_WORK_TYPE%%_*}"
 	case "${_TGET_LINE[1]}" in
 		*-mini-*         )
 			# shellcheck disable=SC2312
@@ -5441,7 +5466,8 @@ function funcCreate_remaster_preseed() {
 				mkdir -p "${_DIRS_IRAM}"
 				cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/preseed_kill_dhcp.sh"    "${_DIRS_IRAM}"
 				cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/preseed_late_command.sh" "${_DIRS_IRAM}"
-				cp -a "${DIRS_CONF}/${_TGET_LINE[9]%_*}"*.cfg                    "${_DIRS_IRAM}"
+				cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/"*"${_WORK_TYPE}"*.cfg   "${_DIRS_IRAM}"
+#				cp -a "${DIRS_CONF}/${_TGET_LINE[9]%_*}"*.cfg                    "${_DIRS_IRAM}"
 				ln -s "${_TGET_LINE[9]##*/}"                                     "${_DIRS_IRAM}/preseed.cfg"
 			done < <(find "${_WORK_IMGS}" -name 'initrd*' -type f)
 			;;
@@ -5450,7 +5476,8 @@ function funcCreate_remaster_preseed() {
 			mkdir -p "${_WORK_CONF}"
 			cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/preseed_kill_dhcp.sh"    "${_WORK_CONF}"
 			cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/preseed_late_command.sh" "${_WORK_CONF}"
-			cp -a "${DIRS_CONF}/${_TGET_LINE[9]%_*}"*.cfg                    "${_WORK_CONF}"
+			cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/"*"${_WORK_TYPE}"*.cfg   "${_WORK_CONF}"
+#			cp -a "${DIRS_CONF}/${_TGET_LINE[9]%_*}"*.cfg                    "${_WORK_CONF}"
 			;;
 		ubuntu-live-*    ) ;;
 		ubuntu-desktop-* | \
@@ -5458,7 +5485,8 @@ function funcCreate_remaster_preseed() {
 			mkdir -p "${_WORK_CONF}"
 			cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/preseed_kill_dhcp.sh"    "${_WORK_CONF}"
 			cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/preseed_late_command.sh" "${_WORK_CONF}"
-			cp -a "${DIRS_CONF}/${_TGET_LINE[9]%_*}"*.cfg                    "${_WORK_CONF}"
+			cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/"*"${_WORK_TYPE}"*.cfg   "${_WORK_CONF}"
+#			cp -a "${DIRS_CONF}/${_TGET_LINE[9]%_*}"*.cfg                    "${_WORK_CONF}"
 			;;
 		*                ) ;;
 	esac
