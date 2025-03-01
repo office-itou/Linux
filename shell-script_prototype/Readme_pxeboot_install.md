@@ -11,7 +11,7 @@ VMware Workstation 16 Pro (16.2.5 build-20904516)
 | processor | 1processor / 2core | core i7-6700                  |
 | memory    | 4GiB               | Most distributions            |
 |     "     | 8GiB               | Ubuntu live server            |
-|     "     |   "                |    "   desktop 20.04/22.04    |
+|     "     |   "                | Ubuntu desktop 20.04/22.04    |
 |     "     | 16GiB              | Ubuntu desktop 24.04 or newer |
 | storage   | NVMe 64GiB         |                               |
 | nic       | e1000e             |                               |
