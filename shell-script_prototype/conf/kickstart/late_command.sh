@@ -1237,6 +1237,16 @@ _EOT_
 
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_NAME="NetworkManager.service"
+	_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
+	if [ "${_SRVC_STAT}" = "enabled" ]; then
+		_SRVC_OTHR="systemd-networkd.service"
+		_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_OTHR}")"
+		if [ "${_SRVC_STAT}" = "enabled" ]; then
+			printf "\033[m${PROG_NAME}: %s\033[m\n" "service mask   : ${_SRVC_OTHR}"
+			systemctl --quiet mask "${_SRVC_OTHR}"
+			systemctl --quiet mask "${_SRVC_OTHR%.*}.socket"
+		fi
+	fi
 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
 	if [ "${_SRVC_STAT}" = "active" ]; then
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
@@ -1633,6 +1643,9 @@ _EOT_
 		    -ne '/^# ---/!                   s/^#//gp}' \
 		    "${DIRS_TGET:-}/etc/dnsmasq.d/pxeboot.conf" \
 		> "${_FILE_PATH}"
+
+		# --- debug out -------------------------------------------------------
+		funcDebugout_file "${_FILE_PATH}"
 	done
 
 	# --- systemctl -----------------------------------------------------------

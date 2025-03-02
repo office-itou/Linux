@@ -2555,6 +2555,16 @@ function funcCreate_late_command() {
 		
 		 	# --- systemctl -----------------------------------------------------------
 		 	_SRVC_NAME="NetworkManager.service"
+		 	_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
+		 	if [ "${_SRVC_STAT}" = "enabled" ]; then
+		 		_SRVC_OTHR="systemd-networkd.service"
+		 		_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_OTHR}")"
+		 		if [ "${_SRVC_STAT}" = "enabled" ]; then
+		 			printf "\033[m${PROG_NAME}: %s\033[m\n" "service mask   : ${_SRVC_OTHR}"
+		 			systemctl --quiet mask "${_SRVC_OTHR}"
+		 			systemctl --quiet mask "${_SRVC_OTHR%.*}.socket"
+		 		fi
+		 	fi
 		 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
 		 	if [ "${_SRVC_STAT}" = "active" ]; then
 		 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
@@ -4993,7 +5003,7 @@ function funcCreate_autoinst_cfg_syslinux() {
 	do
 		_PATH_VLNZ="${_FILE_ARRY[I]%,*}"
 		_PATH_IRAM="${_FILE_ARRY[I]#*,}"
-		_WORK_TEXT="${_PATH_VLNZ%/*}_${_PATH_IRAM%/*}"
+		_WORK_TEXT="${_PATH_VLNZ%/*}%${_PATH_IRAM%/*}"
 		_WORK_TEXT="${_WORK_TEXT//\//_}"
 		_WORK_AARY+=(["${_WORK_TEXT}"]="${_FILE_ARRY[I]}")
 	done
@@ -5103,7 +5113,7 @@ function funcCreate_autoinst_cfg_grub() {
 	do
 		_PATH_VLNZ="${_FILE_ARRY[I]%,*}"
 		_PATH_IRAM="${_FILE_ARRY[I]#*,}"
-		_WORK_TEXT="${_PATH_VLNZ%/*}_${_PATH_IRAM%/*}"
+		_WORK_TEXT="${_PATH_VLNZ%/*}%${_PATH_IRAM%/*}"
 		_WORK_TEXT="${_WORK_TEXT//\//_}"
 		_WORK_AARY+=(["${_WORK_TEXT}"]="${_FILE_ARRY[I]}")
 	done
@@ -5304,61 +5314,61 @@ function funcCreate_syslinux_cfg() {
 		do
 			# --- comment out "timeout","menu default","ontimeout","menu tabmsg" ---
 			set +e
-			read -r -a _WORK_ARRY < <(                                                  \
-				sed -ne '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/p'                 \
-				    -ne '/^[ \t]*prompt[ \t]\+[0-9]\+[^[:graph:]]*$/p'                  \
-				    -ne '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/p'                    \
-				    -ne '/^[ \t]*ontimeout[ \t]\+.*[^[:graph:]]*$/p'                    \
-				    -ne '/^[ \t]*menu[ \t]\+autoboot[ \t]\+.*[^[:graph:]]*$/p'          \
-				    -ne '/^[ \t]*menu[ \t]\+tabmsg[ \t]\+.*[^[:graph:]]*$/p'            \
-				    -ne '/^[ \t]*menu[ \t]\+resolution[ \t]\+.*[^[:graph:]]*$/p'        \
-				    -e  '/^[ \t]*default[ \t]\+/ {' -ne '/.*\.c32/!p}'                  \
+			read -r -a _WORK_ARRY < <(                                                                           \
+				sed -ne '/^[ \t]*\([Tt]imeout\|TIMEOUT\)[ \t]\+[0-9]\+[^[:graph:]]*$/p'                          \
+				    -ne '/^[ \t]*\([Pp]rompt\|PROMPT\)[ \t]\+[0-9]\+[^[:graph:]]*$/p'                            \
+				    -ne '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Dd]efault\|DEFAULT\)[^[:graph:]]*$/p'                \
+				    -ne '/^[ \t]*\([Oo]ntimeout\|ONTIMEOUT\)[ \t]\+.*[^[:graph:]]*$/p'                           \
+				    -ne '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Aa]utoboot\|AUTOBOOT\)[ \t]\+.*[^[:graph:]]*$/p'     \
+				    -ne '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Tt]abmsg\|TABMSG\)[ \t]\+.*[^[:graph:]]*$/p'         \
+				    -ne '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Rr]esolution\|RESOLUTION\)[ \t]\+.*[^[:graph:]]*$/p' \
+				    -e  '/^[ \t]*\([Dd]efault\|DEFAULT\)[ \t]\+/ {' -ne '/.*\.c32/!p}'                           \
 				    "${_FILE_CONF}"
 			)
 			set -e
 			if [[ -n "${_WORK_ARRY[*]}" ]]; then
-				sed -i "${_FILE_CONF}"                                                  \
-				    -e '/^[ \t]*timeout[ \t]\+[0-9]\+[^[:graph:]]*$/          s/^/#/g'  \
-				    -e '/^[ \t]*prompt[ \t]\+[0-9]\+[^[:graph:]]*$/           s/^/#/g'  \
-				    -e '/^[ \t]*menu[ \t]\+default[^[:graph:]]*$/             s/^/#/g'  \
-				    -e '/^[ \t]*ontimeout[ \t]\+.*[^[:graph:]]*$/             s/^/#/g'  \
-				    -e '/^[ \t]*menu[ \t]\+autoboot[ \t]\+.*[^[:graph:]]*$/   s/^/#/g'  \
-				    -e '/^[ \t]*menu[ \t]\+tabmsg[ \t]\+.*[^[:graph:]]*$/     s/^/#/g'  \
-				    -e '/^[ \t]*menu[ \t]\+resolution[ \t]\+.*[^[:graph:]]*$/ s/^/#/g'  \
-				    -e '/^[ \t]*default[ \t]\+/ {' -e '/.*\.c32/!             s/^/#/g}'
+				sed -i "${_FILE_CONF}"                                                                                  \
+				    -e '/^[ \t]*\([Tt]imeout\|TIMEOUT\)[ \t]\+[0-9]\+[^[:graph:]]*$/                          s/^/#/g'  \
+				    -e '/^[ \t]*\([Pp]rompt\|PROMPT\)[ \t]\+[0-9]\+[^[:graph:]]*$/                            s/^/#/g'  \
+				    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Dd]efault\|DEFAULT\)[^[:graph:]]*$/                s/^/#/g'  \
+				    -e '/^[ \t]*\([Oo]ntimeout\|ONTIMEOUT\)[ \t]\+.*[^[:graph:]]*$/                           s/^/#/g'  \
+				    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Aa]utoboot\|AUTOBOOT\)[ \t]\+.*[^[:graph:]]*$/     s/^/#/g'  \
+				    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Tt]abmsg\|TABMSG\)[ \t]\+.*[^[:graph:]]*$/         s/^/#/g'  \
+				    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Rr]esolution\|RESOLUTION\)[ \t]\+.*[^[:graph:]]*$/ s/^/#/g'  \
+				    -e '/^[ \t]*\([Dd]efault\|DEFAULT\)[ \t]\+/ {' -e '/.*\.c32/!                              s/^/#/g}'
 			fi
 			# --- comment out "default" ---------------------------------------
 			set +e
-			read -r -a _WORK_ARRY < <(                                                  \
-				sed -e  '/^label[ \t]\+.*/,/\(^[ \t]*$\|^label[ \t]\+\)/ {'             \
-				    -e  '/^[ \t]*default[ \t]\+/ {' -ne '/.*\.c32/!p}}'                 \
+			read -r -a _WORK_ARRY < <(                                                                  \
+				sed -e  '/^\([Ll]abel\|LABEL\)[ \t]\+.*/,/\(^[ \t]*$\|^\([Ll]abel\|LABEL\)[ \t]\+\)/ {' \
+				    -e  '/^[ \t]*\([Dd]efault\|DEFAULT\)[ \t]\+/                 {' -ne '/.*\.c32/!p}}' \
 				    "${_FILE_CONF}"
 			)
 			set -e
 			if [[ -n "${_WORK_ARRY[*]}" ]]; then
-				sed -i "${_FILE_CONF}"                                                  \
-				    -e '/^label[ \t]\+.*/,/\(^[ \t]*$\|^label[ \t]\+\)/ {'              \
-				    -e '/^[ \t]*default[ \t]\+/ {' -e '/.*\.c32/!             s/^/#/g}'
+				sed -i "${_FILE_CONF}"                                                                 \
+				    -e '/^\([Ll]abel\|LABEL\)[ \t]\+.*/,/\(^[ \t]*$\|^\([Ll]abel\|LABEL\)[ \t]\+\)/ {' \
+				    -e '/^[ \t]*\([Dd]efault\|DEFAULT\)[ \t]\+/           {' -e '/.*\.c32/! s/^/#/g}}'
 			fi
-			sed -i "${_FILE_CONF}"                                      \
-			    -e '/^[ \t]*default[ \t]\+/ {' -e '/.*\.c32/! s/^/#/g}'
+			sed -i "${_FILE_CONF}"                                                      \
+			    -e '/^[ \t]*\([Dd]efault\|DEFAULT\)[ \t]\+/ {' -e '/.*\.c32/! s/^/#/g}'
 			# --- insert "autoinst.cfg" ---------------------------------------
 			set +e
-			read -r -a _WORK_ARRY < <(                                  \
-				sed -ne '/^include[ \t]\+.*stdmenu.cfg[^[:graph:]]*$/p' \
+			read -r -a _WORK_ARRY < <(                                                  \
+				sed -ne '/^\([Ii]nclude\|INCLUDE\)[ \t]\+.*stdmenu.cfg[^[:graph:]]*$/p' \
 				    "${_FILE_CONF}"
 			)
 			set -e
 			if [[ -n "${_WORK_ARRY[*]}" ]]; then
 				_AUTO_FLAG=1
-				_INSR_STRS="$(sed -ne '/^include[ \t]\+[^ \t]*stdmenu.cfg[^[:graph:]]*$/p' "${_FILE_CONF}")"
-				sed -i "${_FILE_CONF}"                                                                                      \
-				    -e '/^\(include[ \t]\+\)[^ \t]*stdmenu.cfg[^[:graph:]]*$/ a '"${_INSR_STRS/stdmenu.cfg/${AUTO_INST}}"''
+				_INSR_STRS="$(sed -ne '/^\([Ii]nclude\|INCLUDE\)[ \t]\+[^ \t]*stdmenu.cfg[^[:graph:]]*$/p' "${_FILE_CONF}")"
+				sed -i "${_FILE_CONF}"                                                                                                      \
+				    -e '/^\(\([Ii]nclude\|INCLUDE\)[ \t]\+\)[^ \t]*stdmenu.cfg[^[:graph:]]*$/ a '"${_INSR_STRS/stdmenu.cfg/${AUTO_INST}}"''
 			elif [[ "${_FILE_CONF##*/}" = "isolinux.cfg" ]]; then
 				_AUTO_FLAG=1
-				sed -i "${_FILE_CONF}"                       \
-				    -e '0,/label/ {'                         \
-				    -e '/label/i include '"${AUTO_INST}"'\n' \
+				sed -i "${_FILE_CONF}"                                     \
+				    -e '0,/\([Ll]abel\|LABEL\)/ {'                         \
+				    -e '/\([Ll]abel\|LABEL\)/i include '"${AUTO_INST}"'\n' \
 				    -e '}'
 			fi
 		done
