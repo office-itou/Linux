@@ -4977,7 +4977,7 @@ function funcCreate_autoinst_cfg_syslinux() {
 			continue
 		fi
 		IFS= mapfile -d $'\n' -t                        _FILE_VLNZ < <(printf "%s\n" "${_WORK_ARRY[@]}" | sed -ne 's/^[ \t]*\([Kk]ernel\|[Ll]inux\|KERNEL\|LINUX\)[ \t]\+\([[:graph:]]\+\).*/\2/p' || true)
-		IFS= mapfile -d $'\n' -t                        _FILE_IRAM < <(printf "%s\n" "${_WORK_ARRY[@]}" | sed -ne 's/^[ \t]*\([Ii]nitrd\|INITRD\)[ \t]\+\([[:graph:]]\+\).*/\1/p' || true)
+		IFS= mapfile -d $'\n' -t                        _FILE_IRAM < <(printf "%s\n" "${_WORK_ARRY[@]}" | sed -ne 's/^[ \t]*\([Ii]nitrd\|INITRD\)[ \t]\+\([[:graph:]]\+\).*/\2/p' || true)
 		IFS= mapfile -d $'\n' -t -O "${#_FILE_IRAM[@]}" _FILE_IRAM < <(printf "%s\n" "${_WORK_ARRY[@]}" | sed -ne 's/^[ \t]*\([Aa]ppend\|APPEND\)[ \t]\+[[:print:]]*initrd=\([[:graph:]]\+\).*/\2/p' || true)
 		case "${_FILE_PATH}" in
 			*-mini-*)
