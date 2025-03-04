@@ -1,4 +1,4 @@
-# **Possibility to install pxeboot**  
+# **Testing the installation from pxeboot**  
   
 ## **Machine specs**  
   
