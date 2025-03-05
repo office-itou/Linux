@@ -19,7 +19,7 @@ VMware Workstation 16 Pro (16.2.5 build-20904516)
   
 ## **iPXE**  
   
-|       distribution       | mini| net | dvd | live| release_date |end_of_support|long_term_supp| rhel_release |kernel_version_information|    various_information_from_the_media     |                       wiki_url                        |  mini.iso_time_stamp  |   netinst_time_stamp  |   dvd_iso_time_stamp  |  live_iso_time_stamp  |
+|       distribution       | mini| net | dvd | live| release_date |end_of_support|long_term_supp| rhel_release |kernel_version_information|    various_information_from_the_media     |                       wiki_url                        |  mini.iso_time_stamp  | netinstall_time_stamp | dvd_media_time_stamp  | live_media_time_stamp |
 | :----------------------- | :-: | :-: | :-: | :-: | :----------: | :----------: | :----------: | :----------: | :----------------------- | :---------------------------------------- | :---------------------------------------------------- | :-------------------: | :-------------------: | :-------------------: | :-------------------: |
 | debian-11                |  o  |  x  |  x  |  x  |  2021-08-14  |  2024-08-15  |  2026-08-31  |       -      | 5.10                     | debian-11.11.0 / bullseye / oldstable     | https://en.wikipedia.org/wiki/Debian_version_history  |  2024-08-27 06:14:31  |  2024-08-31 16:11:10  |  2024-08-31 16:11:53  |  2024-08-31 15:15:29  |
 | debian-12                |  o  |  x  |  x  |  x  |  2023-06-10  |  2026-06-xx  |  2028-06-xx  |       -      | 6.1                      | debian-12.9.0  / bookworm / stable        | "                                                     |  2025-01-06 18:01:36  |  2025-01-11 12:53:04  |  2025-01-11 12:53:52  |  2025-01-11 10:25:55  |
