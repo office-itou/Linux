@@ -2317,7 +2317,6 @@ function funcCreate_late_command() {
 		 			IPv6.method=auto
 		 			IPv6.privacy=prefered
 		 			Nameservers=${IPV6_LHST};${IPV4_LHST};${NICS_DNS4};
-		 			Timeservers=${NTPS_ADDR};
 		 			Domains=${NICS_WGRP};
 		 			IPv6.DHCP.DUID=
 		_EOT_
@@ -4636,8 +4635,9 @@ function funcCreate_menu() {
 	TGET_LIST=()
 	for I in "${!_DATA_ARRY[@]}"
 	do
-		_WORK_TEXT="$(echo -n "${_DATA_ARRY[I]}" | sed -e 's/\([ \t]\)\+/\1/g' -e 's/^[ \t]\+//g'  -e 's/[ \t]\+$//g')"
-		IFS=$'\n' mapfile -d ' ' -t _DATA_LINE < <(echo -n "${_WORK_TEXT}")
+#		_WORK_TEXT="$(echo -n "${_DATA_ARRY[I]}" | sed -e 's/\([ \t]\)\+/\1/g' -e 's/^[ \t]\+//g'  -e 's/[ \t]\+$//g')"
+#		IFS=$'\n' mapfile -d ' ' -t _DATA_LINE < <(echo -n "${_WORK_TEXT}")
+		read -r -a _DATA_LINE < <(echo "${_DATA_ARRY[I]}")
 		if [[ "${_DATA_LINE[0]}" != "o" ]] \
 		|| { [[ "${_DATA_LINE[17]%%//*}" != "http:" ]] && [[ "${_DATA_LINE[17]%%//*}" != "https:" ]]; }; then
 			continue

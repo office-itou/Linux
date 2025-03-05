@@ -2309,7 +2309,6 @@ function funcCreate_late_command() {
 		 			IPv6.method=auto
 		 			IPv6.privacy=prefered
 		 			Nameservers=${IPV6_LHST};${IPV4_LHST};${NICS_DNS4};
-		 			Timeservers=${NTPS_ADDR};
 		 			Domains=${NICS_WGRP};
 		 			IPv6.DHCP.DUID=
 		_EOT_
