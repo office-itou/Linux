@@ -562,22 +562,22 @@ sed -e '\%debian-installer/locale[ \t]\+string%              s/^#./  /'        \
       chmod 0600 "${LOGS_NAME%/*}"; \
       echo "### start ${FUNC_NAME} ###" >> "${LOGS_NAME}" 2>&1; \
       SEED_FILE="/"; \
+      if [ -f /var/lib/cdebconf/questions.dat ]; then \
+        SEED_FILE="$(awk '$1=="Name:"&&($2=="preseed/url"||$2=="preseed/file"),$1=="" {if ($1=="Value:") {print $2;}}' /var/lib/cdebconf/questions.dat)"; \
+      fi; \
       COMD_LINE="$(cat /proc/cmdline)"; \
       for LINE in ${COMD_LINE:-}; \
       do \
         case "${LINE}" in \
-          debug | debugout | dbg         ) DBGS_FLAG="true"                     ;; \
-          iso-url=*.iso  | url=*.iso     )                                      ;; \
-          preseed/url=*  | url=*         ) SEED_FILE="${LINE#*url=}"            ;; \
-          preseed/file=* | file=*        ) SEED_FILE="${LINE#*file=}"           ;; \
-          ds=nocloud*                    ) SEED_FILE="${LINE#*ds=nocloud*=}";      \
-                                           SEED_FILE="${SEED_FILE%%/}/user-data";; \
+          debug | debugout | dbg | dbgout) DBGS_FLAG="true"                                     ;; \
+          iso-url=*.iso  | url=*.iso     )                                                      ;; \
+          preseed/url=*  | url=*         ) SEED_FILE="${SEED_FILE:-"${LINE#*url=}"}"            ;; \
+          preseed/file=* | file=*        ) SEED_FILE="${SEED_FILE:-"${LINE#*file=}"}"           ;; \
+          ds=nocloud*                    ) SEED_FILE="${SEED_FILE:-"${LINE#*ds=nocloud*=}"}";      \
+                                           SEED_FILE="${SEED_FILE:-"${SEED_FILE%%/}/user-data"}";; \
           *)  ;; \
         esac; \
       done; \
-      if [ -f /var/lib/cdebconf/questions.dat ]; then \
-        SEED_FILE="$(awk '$1=="Name:"&&$2=="preseed/url",$1=="" {if ($1=="Value:") {print $2;}}' /var/lib/cdebconf/questions.dat)"; \
-      fi; \
       if [ "${DBGS_FLAG:-}" = "true" ]; then \
         set -x; \
         echo "### debug out ${FUNC_NAME} ###" >> "${LOGS_NAME}" 2>&1; \
