@@ -83,6 +83,8 @@ ls -l /mnt
   
 ## **For reference**  
   
+### **Editing the preseed file**  
+  
 * The following items should be effectively adapted to each environment.  
   
 ``` bash:
@@ -136,7 +138,7 @@ sed -e '\%debian-installer/locale[ \t]\+string%              s/^#./  /'        \
 >   preseed.cfg
 ```
   
-* Example of preseed file  
+### **Example of preseed file**  
   
 ``` bash:
 #_preseed_V1
