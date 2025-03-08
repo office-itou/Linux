@@ -63,92 +63,56 @@ ls -l /mnt
   
 ## **For reference**  
   
-``` bash: sed
-sed -e '\%debian-installer/locale[ \t]\+string%              s/^#./  /'         \
-    -e '\%debian-installer/language[ \t]\+string%            s/^#./  /'         \
-    -e '\%debian-installer/country[ \t]\+string%             s/^#./  /'         \
-    -e '\%localechooser/supported-locales[ \t]\+multiselect% s/^#./  /'         \
-    -e '\%keyboard-configuration/xkb-keymap[ \t]\+select%    s/^#./  /'         \
-    -e '\%keyboard-configuration/toggle[ \t]\+select%        s/^#./  /'         \
-    -e '\%netcfg/enable[ \t]\+boolean%                       s/^#./  /'         \
-    -e '\%netcfg/disable_autoconfig[ \t]\+boolean%           s/^#./  /'         \
-    -e '\%netcfg/dhcp_options[ \t]\+select%                  s/^#./  /'         \
-    -e '\%IPv4 example%,\%IPv6 example% {                             '         \
-    -e '\%netcfg/get_ipaddress[ \t]\+string%                 s/^#./  /'         \
-    -e '\%netcfg/get_netmask[ \t]\+string%                   s/^#./  /'         \
-    -e '\%netcfg/get_gateway[ \t]\+string%                   s/^#./  /'         \
-    -e '\%netcfg/get_nameservers[ \t]\+string%               s/^#./  /'         \
-    -e '\%netcfg/confirm_static[ \t]\+boolean%               s/^#./  /'         \
-    -e '}'                                                                      \
-    -e '\%netcfg/get_hostname[ \t]\+string%                  s/^#./  /'         \
-    -e '\%netcfg/get_domain[ \t]\+string%                    s/^#./  /'         \
-    -e '\%apt-setup/services-select[ \t]\+multiselect%       s/^#./  /'         \
-    -e '\%preseed/run[ \t]\+string%,\%[^\\]$%                s/^#./  /'         \
-    -e '\%apt-setup/services-select[ \t]\+multiselect%       s/$/, backports/p' \
+* The following items should be effectively adapted to each environment.  
+  
+``` bash:
+  d-i debian-installer/locale string ja_JP.UTF-8
+  d-i debian-installer/language string ja
+  d-i debian-installer/country string JP
+  d-i localechooser/supported-locales multiselect en_US.UTF-8, ja_JP.UTF-8
+  d-i keyboard-configuration/xkb-keymap select jp
+  d-i keyboard-configuration/toggle select No toggling
+  d-i netcfg/enable boolean true
+  d-i netcfg/disable_autoconfig boolean true
+  d-i netcfg/dhcp_options select Configure network manually
+  d-i netcfg/get_ipaddress string 192.168.1.1
+  d-i netcfg/get_netmask string 255.255.255.0
+  d-i netcfg/get_gateway string 192.168.1.254
+  d-i netcfg/get_nameservers string 192.168.1.254
+  d-i netcfg/confirm_static boolean true
+  d-i netcfg/get_hostname string sv-debian
+  d-i netcfg/get_domain string workgroup
+  d-i apt-setup/services-select multiselect security, updates, backports
+  d-i preseed/run string \
+      https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script_prototype/conf/preseed/preseed_kill_dhcp.sh
+```
+  
+* If you can use bash...  
+  
+``` bash:
+sed -e '\%debian-installer/locale[ \t]\+string%              s/^#./  /'        \
+    -e '\%debian-installer/language[ \t]\+string%            s/^#./  /'        \
+    -e '\%debian-installer/country[ \t]\+string%             s/^#./  /'        \
+    -e '\%localechooser/supported-locales[ \t]\+multiselect% s/^#./  /'        \
+    -e '\%keyboard-configuration/xkb-keymap[ \t]\+select%    s/^#./  /'        \
+    -e '\%keyboard-configuration/toggle[ \t]\+select%        s/^#./  /'        \
+    -e '\%netcfg/enable[ \t]\+boolean%                       s/^#./  /'        \
+    -e '\%netcfg/disable_autoconfig[ \t]\+boolean%           s/^#./  /'        \
+    -e '\%netcfg/dhcp_options[ \t]\+select%                  s/^#./  /'        \
+    -e '\%IPv4 example%,\%IPv6 example% {                             '        \
+    -e '\%netcfg/get_ipaddress[ \t]\+string%                 s/^#./  /'        \
+    -e '\%netcfg/get_netmask[ \t]\+string%                   s/^#./  /'        \
+    -e '\%netcfg/get_gateway[ \t]\+string%                   s/^#./  /'        \
+    -e '\%netcfg/get_nameservers[ \t]\+string%               s/^#./  /'        \
+    -e '\%netcfg/confirm_static[ \t]\+boolean%               s/^#./  /'        \
+    -e '}'                                                                     \
+    -e '\%netcfg/get_hostname[ \t]\+string%                  s/^#./  /'        \
+    -e '\%netcfg/get_domain[ \t]\+string%                    s/^#./  /'        \
+    -e '\%apt-setup/services-select[ \t]\+multiselect%       s/^#./  /'        \
+    -e '\%preseed/run[ \t]\+string%,\%[^\\]$%                s/^#./  /'        \
+    -e '\%apt-setup/services-select[ \t]\+multiselect%       s/$/, backports/' \
     -e '\%preseed/run[ \t]\+string%,\%[^\\]$%                s%http.:.*$%https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script_prototype/conf/preseed/preseed_kill_dhcp.sh%' \
     ps_debian_server.cfg \
 >   preseed.cfg
-```
-  
-``` bash: diff ps_debian_server.cfg preseed.cfg
-23,26c23,26
-< # d-i debian-installer/locale string ja_JP.UTF-8
-< # d-i debian-installer/language string ja
-< # d-i debian-installer/country string JP
-< # d-i localechooser/supported-locales multiselect en_US.UTF-8, ja_JP.UTF-8
----
->   d-i debian-installer/locale string ja_JP.UTF-8
->   d-i debian-installer/language string ja
->   d-i debian-installer/country string JP
->   d-i localechooser/supported-locales multiselect en_US.UTF-8, ja_JP.UTF-8
-30,31c30,31
-< # d-i keyboard-configuration/xkb-keymap select jp
-< # d-i keyboard-configuration/toggle select No toggling
----
->   d-i keyboard-configuration/xkb-keymap select jp
->   d-i keyboard-configuration/toggle select No toggling
-38c38
-< # d-i netcfg/enable boolean true
----
->   d-i netcfg/enable boolean true
-45c45
-< #*d-i netcfg/disable_autoconfig boolean true
----
->   d-i netcfg/disable_autoconfig boolean true
-48c48
-< #*d-i netcfg/dhcp_options select Configure network manually
----
->   d-i netcfg/dhcp_options select Configure network manually
-50,53c50,53
-< #*d-i netcfg/get_ipaddress string 192.168.1.1
-< #*d-i netcfg/get_netmask string 255.255.255.0
-< #*d-i netcfg/get_gateway string 192.168.1.254
-< #*d-i netcfg/get_nameservers string 192.168.1.254
----
->   d-i netcfg/get_ipaddress string 192.168.1.1
->   d-i netcfg/get_netmask string 255.255.255.0
->   d-i netcfg/get_gateway string 192.168.1.254
->   d-i netcfg/get_nameservers string 192.168.1.254
-58c58
-< # d-i netcfg/confirm_static boolean true
----
->   d-i netcfg/confirm_static boolean true
-66,67c66,67
-< #*d-i netcfg/get_hostname string sv-debian
-< #*d-i netcfg/get_domain string workgroup
----
->   d-i netcfg/get_hostname string sv-debian
->   d-i netcfg/get_domain string workgroup
-251c251,252
-<   d-i apt-setup/services-select multiselect security, updates
----
->   d-i apt-setup/services-select multiselect security, updates, backports
->   d-i apt-setup/services-select multiselect security, updates, backports
-343,344c344,345
-< #*d-i preseed/run string \
-< #*    https://raw.githubusercontent.com/office-itou/Linux/master/pxeboot/preseed/debian/preseed_kill_dhcp.sh
----
->   d-i preseed/run string \
->       https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script_prototype/conf/preseed/preseed_kill_dhcp.sh
 ```
   
