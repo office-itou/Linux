@@ -16,6 +16,11 @@ VMware Workstation 16 Pro (16.2.5 build-20904516)
   
 ## **Automatic installation**  
   
+### **Directory structure**  
+  
+* [Shared Directory](./Readme_tree_srv.md "/srv/")  
+* [Configuration files](./Readme_tree_etc.md "/etc/")  
+  
 ### **Download**  
   
 1. [mini.iso](https://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/mini.iso "debian stable mini.iso")  
