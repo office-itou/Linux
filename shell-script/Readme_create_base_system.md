@@ -24,9 +24,9 @@ VMware Workstation 16 Pro (16.2.5 build-20904516)
 ### **Download**  
   
 1. [mini.iso](https://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/mini.iso "debian stable mini.iso")  
-2. [preseed_kill_dhcp.sh](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script_prototype/conf/preseed/preseed_kill_dhcp.sh)  
-3. [preseed_late_command.sh](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script_prototype/conf/preseed/preseed_late_command.sh)  
-4. [ps_debian_server.cfg](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script_prototype/conf/preseed/ps_debian_server.cfg)  
+2. [preseed_kill_dhcp.sh](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/preseed/preseed_kill_dhcp.sh)  
+3. [preseed_late_command.sh](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/preseed/preseed_late_command.sh)  
+4. [ps_debian_server.cfg](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/preseed/ps_debian_server.cfg)  
 (There is a preseed file configuration example at the end of this page.)
   
 ### **Copy to USB stick**  
@@ -106,7 +106,7 @@ ls -l /mnt
   d-i netcfg/get_domain string workgroup
   d-i apt-setup/services-select multiselect security, updates, backports
   d-i preseed/run string \
-      https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script_prototype/conf/preseed/preseed_kill_dhcp.sh
+      https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/preseed/preseed_kill_dhcp.sh
 ```
   
 * If you can use bash...  
@@ -133,7 +133,7 @@ sed -e '\%debian-installer/locale[ \t]\+string%              s/^#./  /'        \
     -e '\%apt-setup/services-select[ \t]\+multiselect%       s/^#./  /'        \
     -e '\%preseed/run[ \t]\+string%,\%[^\\]$%                s/^#./  /'        \
     -e '\%apt-setup/services-select[ \t]\+multiselect%       s/$/, backports/' \
-    -e '\%preseed/run[ \t]\+string%,\%[^\\]$%                s%http.:.*$%https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script_prototype/conf/preseed/preseed_kill_dhcp.sh%' \
+    -e '\%preseed/run[ \t]\+string%,\%[^\\]$%                s%http.:.*$%https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/preseed/preseed_kill_dhcp.sh%' \
     ps_debian_server.cfg \
 >   preseed.cfg
 ```
@@ -484,7 +484,7 @@ sed -e '\%debian-installer/locale[ \t]\+string%              s/^#./  /'        \
 # d-i debian-installer/exit/poweroff boolean false
 # == Running custom commands during the installation ==========================
   d-i preseed/run string \
-      https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script_prototype/conf/preseed/preseed_kill_dhcp.sh
+      https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/preseed/preseed_kill_dhcp.sh
 # d-i preseed/early_command string \
 #     log-output dd if=/dev/zero of=/dev/nvme0n1 bs=1M count=100; \
 #     exit 0;
