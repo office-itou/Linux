@@ -33,6 +33,31 @@ VMware Workstation 16 Pro (16.2.5 build-20904516)
 | /srv/user/share/load/ |       5GiB | load module                     |
 | /srv/user/share/rmak/ |     140GiB | remake file                     |
   
+### **Install packages**  
+  
+|      package      |              debian / ubuntu                 | rhel (fedora,centos-stream,miraclelinux,...) |                   openSUSE                   |
+| :---------------- | :------------------------------------------- | :------------------------------------------- | :------------------------------------------- |
+| apparmor          | apparmor apparmor-utils                      |                                              |                                              |
+| usrmerge          | usrmerge                                     |                                              |                                              |
+| sudo              | sudo                                         | sudo                                         | sudo                                         |
+| firewalld         | firewalld                                    | firewalld                                    | firewalld                                    |
+| traceroute        | traceroute                                   | traceroute                                   | traceroute                                   |
+| network manager   | connman                                      | NetworkManager                               | NetworkManager                               |
+| bash-completion   | bash-completion                              | bash-completion                              | bash-completion                              |
+| build-essential   | build-essential                              |                                              |                                              |
+| curl              | curl                                         | curl                                         | curl                                         |
+| vim               | vim                                          | vim                                          | vim                                          |
+| bc                | bc                                           | bc                                           | bc                                           |
+| tree              | tree                                         | tree                                         | tree                                         |
+| shellcheck        | shellcheck                                   |                                              |                                              |
+| clamav            | clamav                                       |                                              | clamav                                       |
+| openssh-server    | openssh-server                               | openssh-server                               | openssh-server                               |
+| systemd-resolved  | systemd-resolved                             | systemd-resolved                             | systemd-network                              |
+| dnsmasq           | dnsmasq bind9-dnsutils                       | dnsmasq tftp-server bind-utils               | dnsmasq tftp bind-utils                      |
+| apache2           | apache2                                      | httpd                                        | apache2                                      |
+| samba             | samba smbclient cifs-utils libnss-winbind    | samba samba-client cifs-utils samba-winbind  | samba samba-client cifs-utils samba-winbind  |
+| open-vm-tools     | open-vm-tools open-vm-tools-desktop          | open-vm-tools open-vm-tools-desktop fuse     | open-vm-tools open-vm-tools-desktop fuse     |
+  
 ## **Automatic installation**  
   
 ### **Directory structure**  
