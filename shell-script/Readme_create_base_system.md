@@ -14,6 +14,25 @@ VMware Workstation 16 Pro (16.2.5 build-20904516)
 | nic       | e1000e             |                               |
 | sound     | ES1371             |                               |
   
+### **Storage usage**  
+  
+| directory name        |   usage    | contents                        |
+| :-------------------- | ---------: | :------------------------------ |
+| /                     |     500GiB | root directory                  |
+| /srv/                 |     480GiB | shared directory                |
+| /srv/hgfs/            | (external) | vmware shared directory         |
+| /srv/http/html/       |       1GiB | html contents                   |
+| /srv/samba/           |       1GiB | samba shared directory (empty)  |
+| /srv/tftp/            |       1GiB | tftp contents                   |
+| /srv/user/            |     450GiB | user file                       |
+| /srv/user/private/    |       1GiB | personal use                    |
+| /srv/user/share/      |     450GiB | shared                          |
+| /srv/user/share/conf/ |       1GiB | configuration file              |
+| /srv/user/share/imgs/ |     150GiB | iso file extraction destination |
+| /srv/user/share/isos/ |     150GiB | iso file                        |
+| /srv/user/share/load/ |       5GiB | load module                     |
+| /srv/user/share/rmak/ |     140GiB | remake file                     |
+  
 ## **Automatic installation**  
   
 ### **Directory structure**  
