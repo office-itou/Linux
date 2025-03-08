@@ -101,22 +101,28 @@
 	popd > /dev/null
 
 	# --- debian / ubuntu keyring ---------------------------------------------
-	echo "Get keyring files"
-	mkdir -p "${DIRS_KEYS:?}/_archive"
-	pushd "${DIRS_KEYS}/_archive" > /dev/null
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2024.09.22_all.deb
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1_all.deb
-		dpkg -x ./debian-keyring_2024.09.22_all.deb   "${DIRS_TEMP}/"
-		dpkg -x ./ubuntu-keyring_2023.11.28.1_all.deb "${DIRS_TEMP}/"
-		cp -a "${DIRS_TEMP}/usr/share/keyrings/debian-keyring.gpg"         "../"
-		cp -a "${DIRS_TEMP}/usr/share/keyrings/ubuntu-archive-keyring.gpg" "../"
-	popd > /dev/null
+	if command -v dpkg > /dev/null 2>&1; then
+		echo "Get keyring files"
+		mkdir -p "${DIRS_KEYS:?}/_archive"
+		pushd "${DIRS_KEYS}/_archive" > /dev/null
+			LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2024.09.22_all.deb
+			LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1_all.deb
+			dpkg -x ./debian-keyring_2024.09.22_all.deb   "${DIRS_TEMP}/"
+			dpkg -x ./ubuntu-keyring_2023.11.28.1_all.deb "${DIRS_TEMP}/"
+			cp -a "${DIRS_TEMP}/usr/share/keyrings/debian-keyring.gpg"         "../"
+			cp -a "${DIRS_TEMP}/usr/share/keyrings/ubuntu-archive-keyring.gpg" "../"
+		popd > /dev/null
+	fi
 
 	# --- dnsmasq -------------------------------------------------------------
 	echo "Get iPXE"
-	/var/adm/installer/preseed/get_module_ipxe.sh
+	/var/adm/installer/*/get_module_ipxe.sh
 	echo "Set dnsmasq"
-	cp -a /var/adm/installer/preseed/samp/etc/dnsmasq.d/pxeboot_ipxe.conf /etc/dnsmasq.d/
+	cp -a /var/adm/installer/*/samp/etc/dnsmasq.d/pxeboot_ipxe.conf /etc/dnsmasq.d/
+	if command -v semanage > /dev/null 2>&1; then
+		semanage fcontext -a -t dnsmasq_etc_t '/etc/dnsmasq.d/pxeboot_ipxe.conf'
+		restorecon -v '/etc/dnsmasq.d/pxeboot_ipxe.conf'
+	fi
 	systemctl restart dnsmasq.service
 
 	rm -rf "${DIRS_TEMP:?}"
