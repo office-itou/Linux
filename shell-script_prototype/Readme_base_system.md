@@ -1,5 +1,19 @@
 # **Create base system**  
   
+## **Machine specs**  
+  
+### **Virtual machine**
+  
+VMware Workstation 16 Pro (16.2.5 build-20904516)
+  
+| device    | specification      | note                          |
+| :-------- | :----------------- | :---------------------------- |
+| processor | 1processor / 2core | core i7-6700                  |
+| memory    | 4GiB               | Most distributions            |
+| storage   | NVMe 500GiB        |                               |
+| nic       | e1000e             |                               |
+| sound     | ES1371             |                               |
+  
 ## **Automatic installation**  
   
 ### **Download**  
