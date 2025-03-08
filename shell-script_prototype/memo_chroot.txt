@@ -1,0 +1,351 @@
+###############################################################################
+
+sudo bash -c '
+mv /srv/user/share/conf /srv/user/share/conf.back
+mv /srv/user/share/rmak /srv/user/share/rmak.back
+ln -s /srv/hgfs/workspace/Image/linux/bin/conf/ /srv/user/share/conf
+ln -s /srv/hgfs/workspace/Image/linux/bin/rmak/ /srv/user/share/rmak
+'
+
+# *****************************************************************************
+# * package installation                                                      *
+# *****************************************************************************
+sudo apt-get install mmdebstrap
+
+# *****************************************************************************
+# * create chroot environment                                                 *
+# *****************************************************************************
+# === debian bookworm =========================================================
+sudo umount $(awk '{print $2;}' /proc/mounts | grep './chroot/debian12/' | sort -r)
+sudo rm -rf --one-file-system ./chroot/debian12
+sudo mkdir -p ./chroot/debian12
+sudo mmdebstrap \
+--variant=minbase \
+--mode=sudo \
+--format=directory \
+--keyring=/srv/user/share/conf/_keyring/ \
+--include=" \
+  systemd \
+  fakechroot \
+  iproute2 \
+  iputils-ping \
+  gnupg \
+  apt-utils \
+  apt-listchanges \
+  bash-completion \
+  locales-all \
+  locales \
+  less \
+  vim \
+  shellcheck \
+  file \
+  tree \
+" \
+--components='main contrib non-free non-free-firmware' \
+bookworm \
+./chroot/debian12
+
+# === ubuntu plucky ===========================================================
+sudo umount $(awk '{print $2;}' /proc/mounts | grep './chroot/ubuntu2504/' | sort -r)
+sudo rm -rf --one-file-system ./chroot/ubuntu2504
+sudo mkdir -p ./chroot/ubuntu2504
+sudo mmdebstrap \
+--variant=minbase \
+--mode=sudo \
+--format=directory \
+--keyring=/srv/user/share/conf/_keyring/ \
+--include=" \
+  systemd \
+  fakechroot \
+  iproute2 \
+  iputils-ping \
+  gnupg \
+  apt-utils \
+  apt-listchanges \
+  bash-completion \
+  locales-all \
+  locales \
+  less \
+  vim \
+  shellcheck \
+  file \
+  tree \
+" \
+--components='main restricted universe multiverse' \
+plucky \
+./chroot/ubuntu2504
+
+# *****************************************************************************
+# * setting up your work environment                                          *
+# *****************************************************************************
+sudo sed -i ./chroot/debian12/root/.bashrc -e '/alias[ \t]\+ls=/ s/^#/ /' -e '/export LS_OPTIONS/ s/^#/ /'
+# -----------------------------------------------------------------------------
+cat <<- '_EOT_' | sudo tee ./chroot/debian12/root/.vimrc > /dev/null
+set number              " Print the line number in front of each line.
+set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+set nowrap              " This option changes how text is displayed.
+set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+set laststatus=2        " The value of this option influences when the last window will have a status line always.
+set mouse-=a            " Disable mouse usage
+syntax on               " Vim5 and later versions support syntax highlighting.
+_EOT_
+
+# *****************************************************************************
+# * mount work environment                                                    *
+# *****************************************************************************
+sudo mkdir -p ./chroot/debian12/srv
+sudo mount --rbind /srv/ ./chroot/debian12/srv/
+
+# *****************************************************************************
+# * mount system directory                                                    *
+# *****************************************************************************
+sudo mount --rbind /dev  ./chroot/debian12/dev
+sudo mount  --bind /proc ./chroot/debian12/proc
+sudo mount  --bind /run  ./chroot/debian12/run
+sudo mount --rbind /sys  ./chroot/debian12/sys
+sudo mount --rbind /tmp  ./chroot/debian12/tmp
+sudo mount --make-rslave ./chroot/debian12/dev
+sudo mount --make-rslave ./chroot/debian12/sys
+sudo systemctl daemon-reload
+
+# *****************************************************************************
+# * start the chroot environment                                              *
+# *****************************************************************************
+#sudo usermod -s /bin/bash root          # only if root login is prohibited
+# -----------------------------------------------------------------------------
+sudo chroot ./chroot/debian12/
+
+# *****************************************************************************
+# * working in a chroot environment                                           *
+# *****************************************************************************
+apt-get update
+apt-get -y install bzip2 cpio curl fdisk initramfs-tools-core isolinux isomd5sum lz4 lzop wget procps xorriso xxd xz-utils zstd
+apt-get -y install curl grub-common grub-efi-amd64-bin grub-pc-bin pxelinux rsync syslinux-common syslinux-efi
+mkdir -p /srv/user/private/
+ln -s /srv/hgfs/workspace/Image/linux/bin/{install.sh,mk_custom_iso.sh,mk_live_media.sh,mk_pxeboot_conf.sh,sv_check.sh} /srv/user/private/
+cd /srv/user/private/
+
+# *****************************************************************************
+# * exiting the chroot environment                                            *
+# *****************************************************************************
+sudo umount $(awk '{print $2;}' /proc/mounts | grep './chroot/debian12/' | sort -r)
+
+### eof #######################################################################
+
+sudo bash -c '
+mkdir -p /srv/tftp/ipxe
+cd /srv/tftp/ipxe
+'
+sudo bash -c '
+wget "https://boot.ipxe.org/undionly.kpxe"
+wget "https://boot.ipxe.org/ipxe.efi"
+wget "https://github.com/ipxe/wimboot/releases/latest/download/wimboot"
+'
+sudo bash -c '
+mv /srv/user/share/conf /srv/user/share/conf.back
+mv /srv/user/share/rmak /srv/user/share/rmak.back
+ln -s /srv/hgfs/workspace/Image/linux/bin/conf/ /srv/user/share/conf
+ln -s /srv/hgfs/workspace/Image/linux/bin/rmak/ /srv/user/share/rmak
+'
+sudo bash -c '
+mkdir -p /srv/user/share/{imgs,isos,load}
+ln -s /srv/hgfs/workspace/Image/linux/bin/{conf,rmak} /srv/user/share/
+ln -s /srv/user/share/{conf,imgs,isos,load,rmak} /srv/http/html/
+'
+ls -l /srv/{user/share,http/html}/
+
+
+
+### exec ###
+sudo mount --rbind /srv/ ./chroot/debian12/srv/
+sudo mount --rbind /dev  ./chroot/debian12/dev
+sudo mount  --bind /proc ./chroot/debian12/proc
+sudo mount  --bind /run  ./chroot/debian12/run
+sudo mount --rbind /sys  ./chroot/debian12/sys
+sudo mount --rbind /tmp  ./chroot/debian12/tmp
+sudo mount --make-rslave ./chroot/debian12/dev
+sudo mount --make-rslave ./chroot/debian12/sys
+sudo systemctl daemon-reload
+sudo chroot ./chroot/debian12/
+
+
+
+
+
+
+
+### rhel ######################################################################
+mkdir -p "${HOME}/repo"
+for _LIST in \
+  "fedora-40          Fedora-40-Base           https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-40&arch=x86_64&country=JP" \
+  "fedora-41          Fedora-41-Base           https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-41&arch=x86_64&country=JP" \
+  "centos-stream-9    CentOS-stream-9-Base     https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/" \
+  "centos-stream-10   CentOS-stream-10-Base    https://mirror.stream.centos.org/10-stream/BaseOS/x86_64/os/" \
+  "almalinux-8        AlmaLinux-8-Base         https://repo.almalinux.org/almalinux/8/BaseOS/x86_64/os/" \
+  "almalinux-9        AlmaLinux-9-Base         https://repo.almalinux.org/almalinux/9/BaseOS/x86_64/os/" \
+  "rockylinux-8       RockyLinux-8-Base        https://download.rockylinux.org/pub/rocky/8/BaseOS/x86_64/os/" \
+  "rockylinux-9       RockyLinux-9-Base        https://download.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os/" \
+  "miraclelinux-8     MiracleLinux-8-Base      https://repo.dist.miraclelinux.net/miraclelinux/8-latest/BaseOS/x86_64/os/" \
+  "miraclelinux-9     MiracleLinux-9-Base      https://repo.dist.miraclelinux.net/miraclelinux/9-latest/BaseOS/x86_64/os/"
+do
+  read -r -a _LINE < <(echo "${_LIST}")
+  printf "%-20.20s %-26.26s %s\n" "${_LINE[0]}" "${_LINE[1]}" "${_LINE[2]}"
+  cat <<- _EOT_ > "${HOME}/repo/${_LINE[0]}".repo
+	[${_LINE[0]}-chroot-base]
+	name=${_LINE[1]}
+	baseurl=${_LINE[2]}
+	gpgcheck=0
+_EOT_
+done
+
+# === chroot ==================================================================
+# --- create chroot environment -----------------------------------------------
+sudo umount $(awk '{print $2;}' /proc/mounts | grep "${HOME}/chroot/almalinux-9" | sort -r)
+sudo rm -rf "${HOME}/chroot/almalinux-9"
+mkdir -p "${HOME}/chroot/almalinux-9"
+sudo yum \
+  --assumeyes \
+  --config "${HOME}/repo/almalinux-9.repo" \
+  --disablerepo=* \
+  --enablerepo=almalinux-9-chroot-base \
+  --installroot="${HOME}/chroot/almalinux-9" \
+  --releasever=latest \
+  groups install 'Minimal Install' \
+  bash-completion \
+  vim \
+  tree
+sudo sed -i "${HOME}/chroot/almalinux-9/root/.bashrc" -e '/alias[ \t]\+ls=/ s/^#/ /' -e '/export LS_OPTIONS/ s/^#/ /'
+cat <<- '_EOT_' | sudo tee "${HOME}/chroot/almalinux-9/root/.vimrc" > /dev/null
+	set number              " Print the line number in front of each line.
+	set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+	set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+	set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+	set nowrap              " This option changes how text is displayed.
+	set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+	set laststatus=2        " The value of this option influences when the last window will have a status line always.
+	set mouse-=a            " Disable mouse usage
+	syntax on               " Vim5 and later versions support syntax highlighting.
+_EOT_
+# --- mount -------------------------------------------------------------------
+sudo mkdir -p "${HOME}/chroot/almalinux-9/srv"
+sudo mount --rbind /srv/ "${HOME}/chroot/almalinux-9/srv/"
+sudo mount --rbind /dev  "${HOME}/chroot/almalinux-9/dev"
+sudo mount  --bind /proc "${HOME}/chroot/almalinux-9/proc"
+sudo mount  --bind /run  "${HOME}/chroot/almalinux-9/run"
+sudo mount --rbind /sys  "${HOME}/chroot/almalinux-9/sys"
+sudo mount --rbind /tmp  "${HOME}/chroot/almalinux-9/tmp"
+sudo mount --make-rslave "${HOME}/chroot/almalinux-9/dev"
+sudo mount --make-rslave "${HOME}/chroot/almalinux-9/sys"
+sudo systemctl daemon-reload
+# --- chroot ------------------------------------------------------------------
+sudo chroot "${HOME}/chroot/almalinux-9"/
+# --- chroot environment ------------------------------------------------------
+mkdir -p /srv/user/private/
+ln -s /srv/hgfs/workspace/Image/linux/bin/{install.sh,mk_custom_iso.sh,mk_live_media.sh,mk_pxeboot_conf.sh} /srv/user/private/
+cd /srv/user/private/
+
+# === nfs =====================================================================
+# sudo apt-get install nfs-kernel-server    # for debian / ubuntu
+# sudo yum install nfs-utils                # for rhel
+sudo mount -t nfs 192.168.1.12:/srv/user/share/ /srv/user/share/
+# --- dnsmasq -----------------------------------------------------------------
+sudo scp master@192.168.1.12:/etc/dnsmasq.d/pxeboot-ipxe.conf /etc/dnsmasq.d/
+sudo restorecon -v /etc/dnsmasq.d/pxeboot-ipxe.conf
+sudo systemctl restart dnsmasq.service
+# --- selinux [ipxe] ----------------------------------------------------------
+sudo setsebool -P git_system_use_nfs 1
+sudo setsebool -P httpd_use_nfs 1
+
+# === shellcheck ==============================================================
+yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+yum -y install epel-release
+yum install ShellCheck
+
+
+
+
+
+
+
+
+
+
+	# --- debian keyring ------------------------------------------------------
+https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2019.02.25_all.deb
+https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2021.07.26_all.deb
+https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2022.12.24_all.deb
+https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2024.09.22_all.deb
+
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-archive-keyring_2018.09.18.1-5_all.deb
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-archive-keyring_2023.11.28.1-0.2_all.deb
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-archive-keyring_2023.11.28.1-0.2~bpo12+1_all.deb
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-cloud-keyring_2018.09.18.1-5_all.deb
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-cloud-keyring_2023.11.28.1-0.2_all.deb
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-cloud-keyring_2023.11.28.1-0.2~bpo12+1_all.deb
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-dbgsym-keyring_2018.09.18.1-5_all.deb
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-dbgsym-keyring_2023.11.28.1-0.2_all.deb
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-dbgsym-keyring_2023.11.28.1-0.2~bpo12+1_all.deb
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-keyring_2018.09.18.1-5.debian.tar.xz
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-keyring_2018.09.18.1-5_all.deb
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1-0.2.debian.tar.xz
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1-0.2_all.deb
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1-0.2~bpo12+1.debian.tar.xz
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1-0.2~bpo12+1_all.deb
+
+https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2019.02.25.tar.xz
+https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2021.07.26.tar.xz
+https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2022.12.24.tar.xz
+https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2024.09.22.tar.xz
+
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-keyring_2018.09.18.1-5.debian.tar.xz
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-keyring_2018.09.18.1.orig.tar.gz
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1-0.2.debian.tar.xz
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1-0.2~bpo12+1.debian.tar.xz
+https://deb.debian.org/debian/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1.orig.tar.xz
+
+	# --- ubuntu keyring ------------------------------------------------------
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-cloud-keyring_2018.02.28_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-cloud-keyring_2018.09.18.1~18.04.2_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-cloud-keyring_2020.02.11.2_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-cloud-keyring_2020.02.11.4_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-cloud-keyring_2021.03.26_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-cloud-keyring_2023.11.28.1_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-cloudimage-keyring_2018.02.28_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-dbgsym-keyring_2018.02.28_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-dbgsym-keyring_2020.02.11.2_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-dbgsym-keyring_2020.02.11.4_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-dbgsym-keyring_2021.03.26_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-dbgsym-keyring_2023.11.28.1_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring-udeb_2012.05.19.1_all.udeb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring-udeb_2012.05.19_all.udeb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring-udeb_2018.02.28_all.udeb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring-udeb_2018.09.18.1~18.04.2_all.udeb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring-udeb_2020.02.11.2_all.udeb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring-udeb_2020.02.11.4_all.udeb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2012.05.19.1_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2012.05.19_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2018.02.28_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2018.09.18.1~18.04.2_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2020.02.11.2_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2020.02.11.4_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2021.03.26_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-oem-keyring_2020.02.11.2_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-oem-keyring_2020.02.11.4_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-oem-keyring_2021.03.26_all.deb
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-oem-keyring_2023.11.28.1_all.deb
+
+
+
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2012.05.19.1.tar.gz
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2012.05.19.tar.gz
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2018.02.28.tar.gz
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2018.09.18.1~18.04.2.tar.gz
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2020.02.11.2.tar.gz
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2020.02.11.4.tar.gz
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2021.03.26.tar.gz
+https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1.tar.xz
+
+	exit
