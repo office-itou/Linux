@@ -561,12 +561,19 @@ function funcTest_network() {
 		NICS_MASK="$(funcIPv4GetNetmask "${NICS_BIT4:-"24"}")"
 	fi
 
-	NICS_DNS4="${NICS_DNS4:-"$(sed -ne 's/^nameserver[ \]\+\([[:alnum:]:.]\+\)[ \t]*$/\1/p' "${DIRS_TGET:-}/etc/resolv.conf" | sed -e ':l; N; s/\n/,/; b l;')"}"
 	NICS_GATE="${NICS_GATE:-"$(ip -4 -oneline route list match default | cut -d ' ' -f 3)"}"
 	NICS_FQDN="${NICS_FQDN:-"$(cat "${DIRS_TGET:-}/etc/hostname")"}"
 	NICS_HOST="${NICS_HOST:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 1)"}"
 	NICS_WGRP="${NICS_WGRP:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 2)"}"
+	if command -v resolvectl > /dev/null 2>&1; then
+		NICS_DNS4="${NICS_DNS4:-"$(resolvectl dns    | sed -ne '/^Global:/            s/^.* \([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\) *.*$/\1/p')"}"
+		NICS_DNS4="${NICS_DNS4:-"$(resolvectl dns    | sed -ne '/('"${NICS_NAME}"'):/ s/^.* \([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\) *.*$/\1/p')"}"
+		NICS_WGRP="${NICS_WGRP:-"$(resolvectl domain | sed -ne '/^Global:/            s/^.* \([[:graph:]]\+\) *.*$/\1/p')"}"
+		NICS_WGRP="${NICS_WGRP:-"$(resolvectl domain | sed -ne '/('"${NICS_NAME}"'):/ s/^.* \([[:graph:]]\+\) *.*$/\1/p')"}"
+	fi
+	NICS_DNS4="${NICS_DNS4:-"$(sed -ne 's/^nameserver[ \]\+\([[:alnum:]:.]\+\)[ \t]*$/\1/p' "${DIRS_TGET:-}/etc/resolv.conf" | sed -e ':l; N; s/\n/,/; b l;')"}"
 	NICS_WGRP="${NICS_WGRP:-"$(awk '$1=="search" {print $2;}' "${DIRS_TGET:-}/etc/resolv.conf")"}"
+
 	NICS_HOST="${NICS_HOST,,}"
 	NICS_WGRP="${NICS_WGRP,,}"
 	if [[ "${NICS_FQDN}" = "${NICS_HOST}" ]] && [[ -n "${NICS_WGRP}" ]]; then

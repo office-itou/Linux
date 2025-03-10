@@ -1848,12 +1848,20 @@ function funcCreate_late_command() {
 		#		NICS_IPV4=""
 		#	fi
 		 	NICS_IPV4="${NICS_IPV4:-"${IPV4_DUMY}"}"
-		 	NICS_DNS4="${NICS_DNS4:-"$(sed -ne 's/^nameserver[ \]\+\([[:alnum:]:.]\+\)[ \t]*$/\1/p' /etc/resolv.conf | sed -e ':l; N; s/\n/,/; b l;')"}"
 		 	NICS_GATE="${NICS_GATE:-"$(ip -4 -oneline route list match default | cut -d ' ' -f 3)"}"
 		 	NICS_FQDN="${NICS_FQDN:-"$(cat "${DIRS_TGET:-}/etc/hostname")"}"
 		 	NICS_HOST="${NICS_HOST:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 1)"}"
 		 	NICS_WGRP="${NICS_WGRP:-"$(echo "${NICS_FQDN}." | cut -d '.' -f 2)"}"
-		 	NICS_WGRP="${NICS_WGRP:-"$(awk '$1=="search" {print $2;}' "${DIRS_TGET:-}/etc/resolv.conf")"}"
+		 	if command -v resolvectl > /dev/null 2>&1; then
+		 		NICS_DNS4="${NICS_DNS4:-"$(resolvectl dns    | sed -ne '/^Global:/            s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+		 		NICS_DNS4="${NICS_DNS4:-"$(resolvectl dns    | sed -ne '/('"${NICS_NAME}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+		 		NICS_WGRP="${NICS_WGRP:-"$(resolvectl domain | sed -ne '/^Global:/            s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+		 		NICS_WGRP="${NICS_WGRP:-"$(resolvectl domain | sed -ne '/('"${NICS_NAME}"'):/ s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
+		 	fi
+		 	NICS_DNS4="${NICS_DNS4:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' "${DIRS_TGET:-}/etc/resolv.conf")"}"
+		 	NICS_WGRP="${NICS_WGRP:-"$(sed -ne '/^search/     s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p'                      "${DIRS_TGET:-}/etc/resolv.conf")"}"
+		#	NICS_DNS4="${NICS_DNS4:-"$(sed -ne 's/^nameserver[ \]\+\([[:alnum:]:.]\+\)[ \t]*$/\1/p' "${DIRS_TGET:-}/etc/resolv.conf" | sed -e ':l; N; s/\n/,/; b l;')"}"
+		#	NICS_WGRP="${NICS_WGRP:-"$(awk '$1=="search" {print $2;}' "${DIRS_TGET:-}/etc/resolv.conf")"}"
 		 	NICS_HOST="$(echo "${NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
 		 	NICS_WGRP="$(echo "${NICS_WGRP}" | tr '[:upper:]' '[:lower:]')"
 		 	if [ "${NICS_FQDN}" = "${NICS_HOST}" ] && [ -n "${NICS_WGRP}" ]; then
@@ -2316,7 +2324,7 @@ function funcCreate_late_command() {
 		 			IPv4.gateway=${NICS_GATE}
 		 			IPv6.method=auto
 		 			IPv6.privacy=prefered
-		 			Nameservers=${IPV6_LHST};${IPV4_LHST};${NICS_DNS4};
+		 			Nameservers=${NICS_DNS4};
 		 			Domains=${NICS_WGRP};
 		 			IPv6.DHCP.DUID=
 		_EOT_
@@ -3055,7 +3063,8 @@ function funcCreate_late_command() {
 		 			*) ;;
 		 		esac
 		 		_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
-		 		if [ "${_SRVC_STAT}" = "active" ]; then
+		 		if [ -z "${CHGE_ROOT:-}" ] \
+		 		|| [ "${_SRVC_STAT}" = "active" ]; then
 		 			printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
 		 			systemctl --quiet daemon-reload
 		 			systemctl --quiet restart "${_SRVC_NAME}"
@@ -4384,6 +4393,7 @@ function funcCreate_nocloud() {
 		touch "${_DIRS_NAME}/network-config" --reference "${_DIRS_NAME}/user-data"
 #		touch "${_DIRS_NAME}/user-data"      --reference "${_DIRS_NAME}/user-data"
 		touch "${_DIRS_NAME}/vendor-data"    --reference "${_DIRS_NAME}/user-data"
+		cp -a "${_DIRS_NAME}/../nocloud_late_command.sh" "${_DIRS_NAME}/"
 		chmod ugo-x "${_DIRS_NAME}/"*
 	done
 }
@@ -5539,12 +5549,12 @@ function funcCreate_remaster_nocloud() {
 	funcCreate_grub_cfg "${_BOOT_OPTN## }" "${_TGET_LINE[@]}"
 	# --- copy the configuration file -----------------------------------------
 	mkdir -p "${_WORK_CONF}"
-	cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/nocloud_late_command.sh"          "${_WORK_CONF}"
+#	cp -a "${DIRS_CONF}/${_TGET_LINE[9]%/*}/nocloud_late_command.sh"          "${_WORK_CONF}"
 	cp -a "${DIRS_CONF}/${_TGET_LINE[9]%%_*}_"{server,desktop}{,_old,_oldold} "${_WORK_CONF}"
-	for _WORK_LINK in "${_WORK_CONF%/*}/${_TGET_LINE[9]%%_*}_"{server,desktop}{,_old,_oldold}
-	do
-		ln -sr "${_WORK_CONF}/nocloud_late_command.sh" "${_WORK_LINK}/"
-	done
+#	for _WORK_LINK in "${_WORK_CONF%/*}/${_TGET_LINE[9]%%_*}_"{server,desktop}{,_old,_oldold}
+#	do
+#		ln -sr "${_WORK_CONF}/nocloud_late_command.sh" "${_WORK_LINK}/"
+#	done
 	chmod ugo-x "${_WORK_CONF}"/*/*
 }
 
