@@ -4,8 +4,8 @@
   
 ### **Directory structure**  
   
-* [Shared Directory](./Readme_tree_srv.md "/srv/")  
-* [Configuration files](./Readme_tree_etc.md "/etc/")  
+* [Shared Directory](../Readme_tree_srv.md "/srv/")  
+* [Configuration files](../Readme_tree_etc.md "/etc/")  
   
 ### **Download**  
   

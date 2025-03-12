@@ -4,18 +4,18 @@
   
 ### **Directory structure**  
   
-* [Shared Directory](./Readme_tree_srv.md "/srv/")  
-* [Configuration files](./Readme_tree_etc.md "/etc/")  
+* [Shared Directory](../Readme_tree_srv.md "/srv/")  
+* [Configuration files](../Readme_tree_etc.md "/etc/")  
   
 ### **Download**  
   
 1. [ubuntu-24.04.2-live-server-amd64.iso](https://releases.ubuntu.com/noble/ubuntu-24.04.2-live-server-amd64.iso "Ubuntu 24.04 (Noble Numbat)")  
-2. [meta-data](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/nocloud/ubuntu_server/meta-data)
-3. [network-config](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/nocloud/ubuntu_server/network-config)
-4. [nocloud_late_command.sh](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/nocloud/ubuntu_server/nocloud_late_command.sh)
-5. [vendor-data](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/nocloud/ubuntu_server/vendor-data)
-6. [user-data](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/Readme_create_base_system/Ubuntu_cloud-init/user-data)
-(There is a user-data file configuration example at the end of this page.)
+2. [meta-data (Empty file)](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/nocloud/ubuntu_server/meta-data)  
+3. [network-config (Empty file)](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/nocloud/ubuntu_server/network-config)  
+4. [nocloud_late_command.sh](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/nocloud/ubuntu_server/nocloud_late_command.sh)  
+5. [vendor-data (Empty file)](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/nocloud/ubuntu_server/vendor-data)  
+6. [user-data](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/Readme_create_base_system/Ubuntu_cloud-init/user-data)  
+(There is a user-data file configuration example at the end of this page.)  
   
 ### **Copy to USB stick**  
   
