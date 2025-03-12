@@ -176,7 +176,7 @@ autoinstall:
 # network:
 #   version: 2
 #   ethernets: {}
-# -----------------------------------------------------------------------------
+# --- ipv4: dhcp --------------------------------------------------------------
 # network:
 #   version: 2
 #   ethernets:
@@ -192,26 +192,26 @@ autoinstall:
 #       dhcp4: true
 #       dhcp6: true
 #       ipv6-privacy: true
-# -----------------------------------------------------------------------------
-# network:
-#   version: 2
-#   ethernets:
-#     any:
-#       match:
-#         name: "en*"
-#       dhcp4: false
-#       addresses:
-#       - 192.168.1.1/24
-#       gateway4: 192.168.1.254
-#       nameservers:
-#         search:
-#         - workgroup
-#         addresses:
-#         - ::1
-#         - 127.0.0.1
-#         - 192.168.1.254
-#       dhcp6: true
-#       ipv6-privacy: true
+# --- ipv4: static ------------------------------------------------------------
+  network:
+    version: 2
+    ethernets:
+      any:
+        match:
+          name: "en*"
+        dhcp4: false
+        addresses:
+        - 192.168.1.1/24
+        gateway4: 192.168.1.254
+        nameservers:
+          search:
+          - workgroup
+          addresses:
+          - ::1
+          - 127.0.0.1
+          - 192.168.1.254
+        dhcp6: true
+        ipv6-privacy: true
 # =============================================================================
 # ssh:
 #   allow-pw: true
