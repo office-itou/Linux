@@ -15,7 +15,6 @@
 4. [nocloud_late_command.sh](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/nocloud/ubuntu_server/nocloud_late_command.sh)  
 5. [vendor-data (Empty file)](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/nocloud/ubuntu_server/vendor-data)  
 6. [user-data](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/Readme_create_base_system/Ubuntu_cloud-init/user-data)  
-(There is a user-data file configuration example at the end of this page.)  
   
 ### **Copy to USB stick**  
   

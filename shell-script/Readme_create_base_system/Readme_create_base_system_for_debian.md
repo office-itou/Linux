@@ -13,7 +13,6 @@
 2. [preseed_kill_dhcp.sh](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/preseed/preseed_kill_dhcp.sh)  
 3. [preseed_late_command.sh](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/preseed/preseed_late_command.sh)  
 4. [preseed.cfg](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/Readme_create_base_system/Debian_preseed/preseed.cfg)  
-(There is a preseed file configuration example at the end of this page.)
   
 ### **Copy to USB stick**  
   
