@@ -1,4 +1,4 @@
-# **Testing the installation from pxeboot**  
+# **Testing the installation from PXEBoot**  
   
 ## **Machine specs**  
   

@@ -9,15 +9,15 @@
 * [Installation instructions for Debian](./Readme_create_base_system/Readme_create_base_system_for_debian.md)  
 * [Installation instructions for Ubuntu](./Readme_create_base_system/Readme_create_base_system_for_ubuntu.md)  
   
-### Tree diagram  
+### Tree diagram (developed for debian)  
   
-* [Linux server tree diagram /etc/ (developed for debian)](./Readme_specification/Readme_tree_etc.md)  
-* [Linux server tree diagram /srv/ (developed for debian)](./Readme_specification/Readme_tree_srv.md)  
+* [/etc/](./Readme_specification/Readme_tree_etc.md)  
+* [/srv/](./Readme_specification/Readme_tree_srv.md)  
   
 ### Installation results  
   
-* [Installation test results from DVD media](./Readme_test_results/Readme_test_media_install.md)  
-* [Installation test results from PXEBoot](./Readme_test_results/Readme_test_pxeboot_install.md)  
+* [from DVD media](./Readme_test_results/Readme_test_media_install.md)  
+* [from PXEBoot](./Readme_test_results/Readme_test_pxeboot_install.md)  
   
 ## **Configuration files**  
   
