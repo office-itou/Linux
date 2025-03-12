@@ -13,6 +13,6 @@
   
 ### Tree diagram  
   
-* [Readme_tree_etc.md](../Readme_specification/Readme_tree_etc.md "Linux server tree diagram /etc/ (developed for debian)")  
-* [Readme_tree_srv.md](../Readme_specification/Readme_tree_srv.md "Linux server tree diagram /srv/ (developed for debian)")  
+* [Linux server tree diagram /etc/ (developed for debian)](../Readme_specification/Readme_tree_etc.md)  
+* [Linux server tree diagram /srv/ (developed for debian)](../Readme_specification/Readme_tree_srv.md)  
   
