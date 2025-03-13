@@ -43,7 +43,7 @@
   
 * When the console screen appears waiting for input, press 'Alt+F2'.  
 * When the new screen opens, enter the following.  
-(Assume the usb stick is /deb/sda1)  
+(Assume the usb stick is /dev/sda1)  
 
   
 ``` bash:

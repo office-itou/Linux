@@ -4,7 +4,7 @@
   
 ### **Virtual machine**
   
-VMware Workstation 16 Pro (16.2.5 build-20904516)
+VMware Workstation 16 Pro (16.2.5 build-20904516) or later  
   
 | device    | specification      | note                          |
 | :-------- | :----------------- | :---------------------------- |
