@@ -5,35 +5,70 @@
     <add_on_products t="list">
 <!-- leap
       <listentry t="map">
-        <media_url>https://download.opensuse.org/distribution/leap/15.5/repo/oss/</media_url>
-        <name>repo-oss</name>
+        <alias>repo-oss</alias>
+        <media_url>http://download.opensuse.org/distribution/leap/15.6/repo/oss/</media_url>
+        <name>Main Repository</name>
+        <priority t="integer">99</priority>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>https://download.opensuse.org/update/leap/15.5/oss/</media_url>
-        <name>repo-update</name>
+        <alias>repo-update</alias>
+        <media_url>http://download.opensuse.org/update/leap/15.6/oss/</media_url>
+        <name>Main Update Repository</name>
+        <priority t="integer">99</priority>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>https://download.opensuse.org/update/leap/15.5/sle/</media_url>
-        <name>repo-sle-update</name>
+        <alias>repo-sle-update</alias>
+        <media_url>http://download.opensuse.org/update/leap/15.6/sle/</media_url>
+        <name>Update repository with updates from SUSE Linux Enterprise 15</name>
+        <priority t="integer">99</priority>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <media_url>https://download.opensuse.org/update/leap/15.5/backports/</media_url>
-        <name>repo-backports-update</name>
+        <alias>repo-backports-update</alias>
+        <media_url>http://download.opensuse.org/update/leap/15.6/backports/</media_url>
+        <name>Update repository of openSUSE Backports</name>
+        <priority t="integer">99</priority>
         <product_dir>/</product_dir>
       </listentry>
+<!-- leap non-oss
+      <listentry t="map">
+        <alias>repo-non-oss</alias>
+        <media_url>http://download.opensuse.org/distribution/leap/15.6/repo/non-oss/</media_url>
+        <name>Non-OSS Repository</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <alias>repo-update-non-oss</alias>
+        <media_url>http://download.opensuse.org/update/leap/15.6/non-oss/</media_url>
+        <name>Update Repository (Non-Oss)</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+      <listentry t="map">
+        <alias>repo-openh264</alias>
+        <media_url>http://codecs.opensuse.org/openh264/openSUSE_Leap/</media_url>
+        <name>Open H.264 Codec (openSUSE Leap)</name>
+        <priority t="integer">99</priority>
+        <product_dir>/</product_dir>
+      </listentry>
+leap non-oss -->
 leap -->
 <!-- tumbleweed -->
       <listentry t="map">
+        <alias>repo-oss</alias>
         <media_url>https://download.opensuse.org/tumbleweed/repo/oss/</media_url>
-        <name>repo-oss</name>
+        <name>Main Repository</name>
+        <priority t="integer">99</priority>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
+        <alias>repo-update</alias>
         <media_url>https://download.opensuse.org/update/tumbleweed/</media_url>
-        <name>repo-update</name>
+        <name>Main Update Repository</name>
+        <priority t="integer">99</priority>
         <product_dir>/</product_dir>
       </listentry>
 <!-- tumbleweed -->
@@ -44,22 +79,23 @@ leap -->
       <append>-B console=force-text</append>
       <cpu_mitigations>auto</cpu_mitigations>
     </global>
+    <loader_type>grub2-efi</loader_type>
   </bootloader>
   <deploy_image t="map">
     <image_installation t="boolean">false</image_installation>
   </deploy_image>
   <general t="map">
+    <self_update config:type="boolean">true</self_update>
+<!--
+    <semi-automatic config:type="list">
+      <semi-automatic_entry>networking</semi-automatic_entry>
+    </semi-automatic>
+-->
     <mode t="map">
       <confirm t="boolean">false</confirm>
       <second_stage t="boolean">false</second_stage>
     </mode>
   </general>
-  <groups t="list">
-    <group t="map">
-      <groupname>wheel</groupname>
-      <userlist>master</userlist>
-    </group>
-  </groups>
 <!-- fixed address
   <host t="map">
     <hosts t="list">
@@ -74,17 +110,22 @@ leap -->
 fixed address -->
   <language t="map">
     <language>ja_JP</language>
-    <languages>en_US,ja_JP</languages>
+    <languages>ja_JP</languages>
   </language>
+  <timezone t="map">
+    <hwclock>UTC</hwclock>
+    <timezone>Asia/Tokyo</timezone>
+  </timezone>
   <networking t="map">
-    <!-- wicked network_manager none -->
-    <backend>wicked</backend>
+    <backend>network_manager</backend>
 <!-- fixed address
     <dns t="map">
+      <dhcp_hostname t="boolean">false</dhcp_hostname>
       <hostname>sv-opensuse.workgroup</hostname>
       <nameservers t="list">
         <nameserver>192.168.1.254</nameserver>
       </nameservers>
+      <resolv_conf_policy>auto</resolv_conf_policy>
       <searchlist t="list">
         <search>workgroup</search>
       </searchlist>
@@ -93,18 +134,19 @@ fixed address -->
       <interface t="map">
         <bootproto>static</bootproto>
         <ipaddr>192.168.1.1</ipaddr>
-        <name>ens160</name>
+        <name>eth0</name>
         <prefixlen>24</prefixlen>
         <startmode>auto</startmode>
-        <zone>home</zone>
       </interface>
     </interfaces>
+    <ipv6 t="boolean">true</ipv6>
     <keep_install_network t="boolean">true</keep_install_network>
+    <managed t="boolean">true</managed>
     <routing t="map">
       <routes t="list">
         <route t="map">
           <destination>default</destination>
-          <device>ens160</device>
+          <device>eth0</device>
           <gateway>192.168.1.254</gateway>
           <netmask>-</netmask>
         </route>
@@ -117,15 +159,14 @@ fixed address -->
     <ntp_servers t="list">
       <ntp_server t="map">
         <address>ntp.nict.jp</address>
+        <iburst t="boolean">true</iburst>
+        <offline t="boolean">false</offline>
       </ntp_server>
     </ntp_servers>
     <ntp_sync>systemd</ntp_sync>
   </ntp-client>
   <partitioning t="list">
     <drive t="map">
-<!-- device
-      <device>/dev/sda</device>
-device -->
       <device>/dev/nvme0n1</device>
       <initialize t="boolean">true</initialize>
       <partitions t="list"/>
@@ -133,121 +174,70 @@ device -->
       <use>all</use>
     </drive>
   </partitioning>
+  <proxy t="map">
+    <enabled t="boolean">false</enabled>
+  </proxy>
 <!-- log's directory: /var/adm/autoinstall/logs/ -->
-<!-- this feature is currently unavailable
   <scripts t="map">
+    <pre-scripts t="list">
+      <script t="map">
+        <debug t="boolean">false</debug>
+        <feedback t="boolean">false</feedback>
+        <feedback_type/>
+        <filename>zzz_link_up.sh</filename>
+        <interpreter>shell</interpreter>
+        <location/>
+        <notification/>
+        <param-list t="list"/>
+        <rerun t="boolean">false</rerun>
+        <source>#!/bin/sh
+echo "Running pre scripts"
+ip link set eth0 up 
+echo "Complete pre scripts"
+exit 0</source>
+      </script>
+    </pre-scripts>
     <chroot-scripts t="list">
       <script t="map">
         <chrooted t="boolean">false</chrooted>
         <debug t="boolean">false</debug>
         <feedback t="boolean">false</feedback>
         <feedback_type/>
-        <filename>chroot-scripts-post-false.sh</filename>
+        <filename>zzz_cmdline.sh</filename>
         <interpreter>shell</interpreter>
         <location/>
         <notification/>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
         <source>#!/bin/sh
-echo "Testing chroot (no chrooted) scripts"
-grep sr0 /proc/mounts || true
-ls /
-mount | sort
+echo "Running chroot (no chrooted) scripts"
+if [ -e /var/log/YaST2/y2start.log ]; then
+  _AUTO_YAST="$(sed -ne '/declare -x AutoYaST=/p' /var/log/YaST2/y2start.log)"
+  _AUTO_YAST="${_AUTO_YAST#*\"}"
+  _AUTO_YAST="${_AUTO_YAST%\"*}"
+  _PROT_NAME="${_AUTO_YAST%%//*}"
+  _XMLS_PATH="${_AUTO_YAST#*//}"
+  _XMLS_DIRS="${_XMLS_PATH#*/*/*/}"
+  _XMLS_NAME="${_XMLS_DIRS##*/}"
+  _XMLS_DIRS="${_XMLS_DIRS%"${_XMLS_NAME:-}"}"
+  _XMLS_DIRS="${_XMLS_DIRS%/}"
+  _DEVS_PATH="${_XMLS_PATH%"${_XMLS_DIRS:+"/${_XMLS_DIRS}"}/${_XMLS_NAME:-}"}"
+  case "${_PROT_NAME:-}" in
+    device:     ) mkdir -p /media; mount -r "/dev/${_DEVS_PATH}" /media; cp "/media/${_XMLS_DIRS%/*}/late_command.sh" /tmp/; umount /media;;
+    http:|https:) curl -L -# -R -S -o /tmp/late_command.sh "${_AUTO_YAST%/*}"/late_command.sh;;
+    *           ) ;;
+  esac
+fi
+if [ -e /tmp/late_command.sh ]; then
+  mkdir -p /mnt/var/adm/installer/autoyast
+  chmod 0600 /mnt/var/adm/installer/autoyast
+  cp /tmp/late_command.sh /mnt/var/adm/installer/autoyast/
+  chmod +x /mnt/var/adm/installer/autoyast/late_command.sh
+fi
+echo "Complete chroot (no chrooted) scripts"
 exit 0</source>
       </script>
-      <script t="map">
-        <chrooted t="boolean">true</chrooted>
-        <debug t="boolean">false</debug>
-        <feedback t="boolean">false</feedback>
-        <feedback_type/>
-        <filename>chroot-scripts-post-true.sh</filename>
-        <interpreter>shell</interpreter>
-        <location/>
-        <notification/>
-        <param-list t="list"/>
-        <rerun t="boolean">false</rerun>
-        <source>#!/bin/sh
-echo "Testing chroot (chrooted) scripts"
-grep sr0 /proc/mounts || true
-ls /
-mount | sort
-exit 0</source>
-      </script>
-    </chroot-scripts>
-    <init-scripts t="list">
-      <script t="map">
-        <debug t="boolean">false</debug>
-        <filename>init-scripts.sh</filename>
-        <location/>
-        <source>#!/bin/sh
-echo "Testing chroot (no chrooted) scripts"
-grep sr0 /proc/mounts || true
-ls /
-mount | sort
-exit 0</source>
-      </script>
-    </init-scripts>
-    <post-scripts t="list">
-      <script t="map">
-        <debug t="boolean">false</debug>
-        <feedback t="boolean">false</feedback>
-        <feedback_type/>
-        <filename>post-scripts.sh</filename>
-        <interpreter>shell</interpreter>
-        <location/>
-        <notification/>
-        <param-list t="list"/>
-        <rerun t="boolean">false</rerun>
-        <source>#!/bin/sh
-echo "Testing post scripts"
-grep sr0 /proc/mounts || true
-ls /
-mount | sort
-exit 0</source>
-      </script>
-    </post-scripts>
-    <postpartitioning-scripts t="list">
-      <script t="map">
-        <debug t="boolean">false</debug>
-        <feedback t="boolean">false</feedback>
-        <feedback_type/>
-        <filename>postpart-scripts.sh</filename>
-        <interpreter>shell</interpreter>
-        <location/>
-        <notification/>
-        <param-list t="list"/>
-        <rerun t="boolean">false</rerun>
-        <source>#!/bin/sh
-echo "Testing postpartitioning scripts"
-grep sr0 /proc/mounts || true
-ls /
-mount | sort
-exit 0</source>
-      </script>
-    </postpartitioning-scripts>
-    <pre-scripts t="list">
-      <script t="map">
-        <debug t="boolean">false</debug>
-        <feedback t="boolean">false</feedback>
-        <feedback_type/>
-        <filename>pre-scripts.sh</filename>
-        <interpreter>shell</interpreter>
-        <location/>
-        <notification/>
-        <param-list t="list"/>
-        <rerun t="boolean">false</rerun>
-        <source>#!/bin/sh
-echo "Testing pre scripts"
-grep sr0 /proc/mounts || true
-ls /
-mount | sort
-exit 0</source>
-      </script>
-    </pre-scripts>
-  </scripts>
-this feature is currently unavailable -->
-<!-- this feature is currently unavailable -->
-  <scripts t="map">
+<!--
     <chroot-scripts t="list">
       <script t="map">
         <chrooted t="boolean">false</chrooted>
@@ -268,23 +258,28 @@ do
   case "${_LINE}" in
     autoyast=*)
       _ADDR="${_LINE#*=}"
-      case "${_ADDR}" in
-        file:*              ) _PATH="${_ADDR#file://}"; cp "${_PATH%/*}/late_command.sh" /tmp/;; # ///PATH
-        device:*            ) ;; # //DEVICE/FILENAME
-        cd:*                ) mount -r /dev/cdrom /media; _PATH="${_ADDR#cd:/}"; cp "/media/${_PATH%/*}/late_command.sh" /tmp/;;
-        nfs:*               ) ;; # //SERVER/PATH
-#       http:*|https:*|ftp:*) wget -O /tmp/late_command.sh "${_ADDR%/*}"/late_command.sh;; # //[user:password@]SERVER/PATH
-        http:*|https:*|ftp:*) curl -L -# -R -S -o /tmp/late_command.sh "${_ADDR%/*}"/late_command.sh;; # //[user:password@]SERVER/PATH
-        tftp:*              ) ;; # //SERVER/PATH
-        usb:*               ) ;; # ///PATH
-        relurl:*            ) ;; # #//PATH
-        repo:*              ) ;; # #/PATH
-        cifs:*              ) ;; # //SERVER/PATH
-        label:*             ) ;; # //LABEL/PATH
-        *) ;;
+      _PROT="${_ADDR%%/*}"
+      _WORK="${_ADDR#*:}"
+      _WORK="${_WORK%%[!/]*}"
+      _PATH="${_ADDR#"${_PROT}${_WORK%/}"}"
+      _SRVR="${_ADDR#*"${_WORK}"}"
+      _SRVR="${_SRVR%%/*}"
+      case "${_PROT:-}" in
+        device:       ) _PATH="${_PATH#"${_SRVR:+/${_SRVR}}"}"; _SRVR="${_SRVR:+"/dev/${_SRVR}"}"; mkdir -p /dev-media; mount -r "${_SRVR}" /dev-media; cp "/dev-media/${_PATH%/*}/late_command.sh" /tmp/; umount /dev-media;;
+        nfs:  | cifs: ) _PATH="${_PATH#"${_SRVR:+/${_SRVR}}"}"; _SRVR="${_SRVR:+"${_SRVR}@"}"    ; mkdir -p /net-media; mount -r "${_SRVR}" /net-media; cp "/net-media/${_PATH%/*}/late_command.sh" /tmp/; umount /net-media;;
+        http: | https:) curl -L -# -R -S -o /tmp/late_command.sh "${_ADDR%/*}"/late_command.sh;;
+        ftp:          ) curl -L -# -R -S -o /tmp/late_command.sh "${_ADDR%/*}"/late_command.sh;;
+        tftp:         ) ;;
+        label:        ) ;;
+        cd:           ) _SRVR="/dev/cdrom"; mkdir -p /dvd-media; mount -r "${_SRVR}" /dvd-media; cp "/dvd-media/${_PATH%/*}/late_command.sh" /tmp/; umount /dvd-media;;
+        usb:          ) _SRVR="/dev/sd?1" ; mkdir -p /usb-media; mount -r "${_SRVR}" /usb-media; cp "/usb-media/${_PATH%/*}/late_command.sh" /tmp/; umount /usb-media;;
+        relurl:       ) ;;
+        repo:         ) ;;
+        file:         ) cp "${_PATH%/*}/late_command.sh" /tmp/;;
+        *             ) cp "${_PATH%/*}/late_command.sh" /tmp/;;
       esac
       ;;
-    *) echo "${_LINE}";;
+    *) ;;
   esac
 done
 if [ -e /tmp/late_command.sh ]; then
@@ -296,6 +291,7 @@ fi
 echo "Complete chroot (no chrooted) scripts"
 exit 0</source>
       </script>
+-->
       <script t="map">
         <chrooted t="boolean">true</chrooted>
         <debug t="boolean">false</debug>
@@ -308,16 +304,15 @@ exit 0</source>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
         <source>#!/bin/sh
-echo "Running post scripts"
+echo "Running chroot (chrooted) scripts"
 if [ -e /var/adm/installer/autoyast/late_command.sh ]; then
-  /var/adm/installer/autoyast/late_command.sh -dbg | tee -a /var/adm/installer/autoyast/late_command.sh.log
+  /var/adm/installer/autoyast/late_command.sh | tee -a /var/adm/installer/autoyast/late_command.sh.log
 fi
-echo "Complete post scripts"
+echo "Complete chroot (chrooted) scripts"
 exit 0</source>
       </script>
     </chroot-scripts>
   </scripts>
-<!-- this feature is currently unavailable -->
   <services-manager t="map">
     <default_target>graphical</default_target>
     <services t="map">
@@ -334,13 +329,19 @@ exit 0</source>
         <service>winbind</service>
       </enable>
       <disable t="list">
+<!--
         <service>avahi-daemon</service>
+-->
         <service>wicked</service>
       </disable>
+      <on_demand t="list">
+<!--
+        <listentry>pcscd</listentry>
+-->
+      </on_demand>
     </services>
   </services-manager>
   <software t="map">
-    <do_online_update t="boolean">true</do_online_update>
     <install_recommended t="boolean">true</install_recommended>
     <instsource/>
     <packages t="list">
@@ -366,18 +367,20 @@ exit 0</source>
       <package>open-vm-tools</package>
       <package>open-vm-tools-desktop</package>
       <package>fuse</package>
-      <package>clamav</package>
       <package>glibc-i18ndata</package>
       <package>glibc-locale</package>
-      <package>ibus-anthy</package>
       <package>less</package>
       <package>wget</package>
       <package>which</package>
       <package>zypper</package>
     </packages>
     <patterns t="list">
+      <pattern>apparmor</pattern>
       <pattern>base</pattern>
-      <pattern>console</pattern>
+      <pattern>basesystem</pattern>
+      <pattern>documentation</pattern>
+      <pattern>enhanced_base</pattern>
+      <pattern>minimal_base</pattern>
 <!-- desktop lxde -->
       <pattern>lxde</pattern>
 <!-- desktop lxde -->
@@ -386,22 +389,26 @@ exit 0</source>
       <product>openSUSE</product>
     </products>
   </software>
-  <timezone t="map">
-    <hwclock>UTC</hwclock>
-    <timezone>Asia/Tokyo</timezone>
-  </timezone>
   <users t="list">
-    <user t="map">
-      <encrypted t="boolean">false</encrypted>
-      <fullname>Master</fullname>
-      <user_password>master</user_password>
-      <username>master</username>
-    </user>
     <user t="map">
       <encrypted t="boolean">false</encrypted>
       <fullname>root</fullname>
       <user_password>r00t</user_password>
       <username>root</username>
     </user>
+    <user t="map">
+      <encrypted t="boolean">false</encrypted>
+      <fullname>Master</fullname>
+      <user_password>master</user_password>
+      <username>master</username>
+    </user>
   </users>
+  <groups t="list">
+    <group t="map">
+      <groupname>wheel</groupname>
+      <userlist>master</userlist>
+    </group>
+  </groups>
 </profile>
+<!-- https://doc.opensuse.org/projects/autoyast/ -->
+<!-- https://doc.opensuse.org/documentation/leap/startup/html/book-startup/cha-boot-parameters.html -->

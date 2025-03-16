@@ -584,7 +584,7 @@
 		"m  menu-entry                      Auto%20install%20Net%20install          -                   -               -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
 		"x  debian-netinst-10               Debian%2010                             debian              ${DIRS_ISOS}    debian-10.13.0-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_oldold.cfg     ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-cd/debian-10.[0-9.]*-amd64-netinst.iso                                " \
 		"o  debian-netinst-11               Debian%2011                             debian              ${DIRS_ISOS}    debian-11.11.0-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_old.cfg        ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-cd/debian-11.[0-9.]*-amd64-netinst.iso                                   " \
-		"o  debian-netinst-12               Debian%2012                             debian              ${DIRS_ISOS}    debian-12.9.0-amd64-netinst.iso                 install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso                                            " \
+		"o  debian-netinst-12               Debian%2012                             debian              ${DIRS_ISOS}    debian-12.10.0-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-cd/debian-12.[0-9.]*-amd64-netinst.iso                                            " \
 		"o  debian-netinst-13               Debian%2013                             debian              ${DIRS_ISOS}    debian-13.0.0-amd64-netinst.iso                 install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"-  debian-netinst-14               Debian%2014                             debian              ${DIRS_ISOS}    debian-14.0.0-amd64-netinst.iso                 install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"o  debian-netinst-testing          Debian%20testing                        debian              ${DIRS_ISOS}    debian-testing-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                                " \
@@ -615,7 +615,7 @@
 		"m  menu-entry                      Auto%20install%20DVD%20media            -                   -               -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
 		"x  debian-10                       Debian%2010                             debian              ${DIRS_ISOS}    debian-10.13.0-amd64-DVD-1.iso                  install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_oldold.cfg     ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable/amd64/iso-dvd/debian-10.[0-9.]*-amd64-DVD-1.iso                                 " \
 		"o  debian-11                       Debian%2011                             debian              ${DIRS_ISOS}    debian-11.11.0-amd64-DVD-1.iso                  install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server_old.cfg        ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable/amd64/iso-dvd/debian-11.[0-9.]*-amd64-DVD-1.iso                                    " \
-		"o  debian-12                       Debian%2012                             debian              ${DIRS_ISOS}    debian-12.9.0-amd64-DVD-1.iso                   install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-12.[0-9.]*-amd64-DVD-1.iso                                             " \
+		"o  debian-12                       Debian%2012                             debian              ${DIRS_ISOS}    debian-12.10.0-amd64-DVD-1.iso                  install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current/amd64/iso-dvd/debian-12.[0-9.]*-amd64-DVD-1.iso                                             " \
 		"o  debian-13                       Debian%2013                             debian              ${DIRS_ISOS}    debian-13.0.0-amd64-DVD-1.iso                   install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"-  debian-14                       Debian%2014                             debian              ${DIRS_ISOS}    debian-14.0.0-amd64-DVD-1.iso                   install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"o  debian-testing                  Debian%20testing                        debian              ${DIRS_ISOS}    debian-testing-amd64-DVD-1.iso                  install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-dvd/debian-testing-amd64-DVD-1.iso                                                  " \
@@ -660,7 +660,7 @@
 		"m  menu-entry                      Live%20media%20Install%20mode           -                   -               -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
 		"x  debian-live-10                  Debian%2010%20Live                      debian              ${DIRS_ISOS}    debian-live-10.13.0-amd64-lxde.iso              d-i                                     initrd.gz                   vmlinuz                 preseed/ps_debian_desktop_oldold.cfg    ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso                     " \
 		"o  debian-live-11                  Debian%2011%20Live                      debian              ${DIRS_ISOS}    debian-live-11.11.0-amd64-lxde.iso              d-i                                     initrd.gz                   vmlinuz                 preseed/ps_debian_desktop_old.cfg       ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso                        " \
-		"o  debian-live-12                  Debian%2012%20Live                      debian              ${DIRS_ISOS}    debian-live-12.9.0-amd64-lxde.iso               install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                                 " \
+		"o  debian-live-12                  Debian%2012%20Live                      debian              ${DIRS_ISOS}    debian-live-12.10.0-amd64-lxde.iso              install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                                 " \
 		"o  debian-live-13                  Debian%2013%20Live                      debian              ${DIRS_ISOS}    debian-live-13.0.0-amd64-lxde.iso               install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"o  debian-live-testing             Debian%20testing%20Live                 debian              ${DIRS_ISOS}    debian-live-testing-amd64-lxde.iso              install                                 initrd.gz                   vmlinuz                 preseed/ps_debian_desktop.cfg           ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                      " \
 		"x  ubuntu-desktop-14.04            Ubuntu%2014.04%20Desktop                ubuntu              ${DIRS_ISOS}    ubuntu-14.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_oldold.cfg  ${HGFS_DIRS}/linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   -                                                                                                                                              " \
@@ -686,7 +686,7 @@
 		"m  menu-entry                      Live%20media%20Live%20mode              -                   -               -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
 		"x  debian-live-10                  Debian%2010%20Live                      debian              ${DIRS_ISOS}    debian-live-10.13.0-amd64-lxde.iso              live                                    initrd.img-4.19.0-21-amd64  vmlinuz-4.19.0-21-amd64 preseed/-                               ${HGFS_DIRS}/linux/debian        2019-07-06  2024-06-30  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldoldstable-live/amd64/iso-hybrid/debian-live-10.[0-9.]*-amd64-lxde.iso                     " \
 		"o  debian-live-11                  Debian%2011%20Live                      debian              ${DIRS_ISOS}    debian-live-11.11.0-amd64-lxde.iso              live                                    initrd.img-5.10.0-32-amd64  vmlinuz-5.10.0-32-amd64 preseed/-                               ${HGFS_DIRS}/linux/debian        2021-08-14  2026-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/archive/latest-oldstable-live/amd64/iso-hybrid/debian-live-11.[0-9.]*-amd64-lxde.iso                        " \
-		"o  debian-live-12                  Debian%2012%20Live                      debian              ${DIRS_ISOS}    debian-live-12.9.0-amd64-lxde.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                                 " \
+		"o  debian-live-12                  Debian%2012%20Live                      debian              ${DIRS_ISOS}    debian-live-12.10.0-amd64-lxde.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/debian        2023-06-10  2028-06-01  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/release/current-live/amd64/iso-hybrid/debian-live-12.[0-9.]*-amd64-lxde.iso                                 " \
 		"o  debian-live-13                  Debian%2013%20Live                      debian              ${DIRS_ISOS}    debian-live-13.0.0-amd64-lxde.iso               live                                    initrd.img                  vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/debian        202x-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"o  debian-live-testing             Debian%20testing%20Live                 debian              ${DIRS_ISOS}    debian-live-testing-amd64-lxde.iso              live                                    initrd.img                  vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/weekly-live-builds/amd64/iso-hybrid/debian-live-testing-amd64-lxde.iso                                      " \
 		"x  ubuntu-desktop-14.04            Ubuntu%2014.04%20Desktop                ubuntu              ${DIRS_ISOS}    ubuntu-14.04.6-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2014-04-17  2024-04-25  xx:xx:xx    0   -   -   -                                                                                                                                              " \
@@ -4732,15 +4732,16 @@ function funcCreate_menu() {
 			fi
 			_WORK_TEXT="$(echo -n "${_WORK_TEXT}" | sed -e 's/\([ \t]\)\+/\1/g' -e 's/^[ \t]\+//g'  -e 's/[ \t]\+$//g')"
 			IFS= mapfile -d $'\n' -t _WEBS_PAGE < <(echo -n "${_WORK_TEXT}")
+#			printf "[%s]\n" "${_WEBS_PAGE[@]}"
 			_WEBS_STAT=""
 			for J in "${!_WEBS_PAGE[@]}"
 			do
 				_WORK_LINE="${_WEBS_PAGE[J]}"
-				_WORK_TEXT="${_WORK_LINE,,}"
+				_WORK_TEXT="${_WORK_LINE}"
 				_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
 				_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
 				_WORK_TEXT="${_WORK_TEXT%% *}"
-				case "${_WORK_TEXT}" in
+				case "${_WORK_TEXT,,}" in
 					http/*)
 						_WORK_TEXT="${_WORK_LINE}"
 						_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
@@ -4806,37 +4807,69 @@ function funcCreate_menu() {
 								_MESG_TEXT="${_WORK_LINE}"
 #								printf "[%s]\n" "${_WEBS_PAGE[@]}"
 								_TEXT_COLR="${TXT_RED}"
-								break
+#								break
 								;;
 						esac
-						;;
-					content-length:)
-						if [[ "${_WEBS_STAT}" != "200" ]]; then
-							continue
-						fi
-						_WORK_TEXT="${_WORK_LINE#* }"
-						if [[ "${_DATA_LINE[14]}" != "${_WORK_TEXT}" ]]; then
-							_TEXT_COLR="${_TEXT_COLR:-"${TXT_GREEN}"}"
-						fi
-						_DATA_LINE[14]="${_WORK_TEXT}"
-#						_DATA_LINE[16]+="${_DATA_LINE[16]:+","}${_WORK_LINE%%:*}=${_WORK_TEXT}"
-						;;
-					last-modified:)
-						if [[ "${_WEBS_STAT}" != "200" ]]; then
-							continue
-						fi
-						_WORK_TEXT="$(TZ=UTC date -d "${_WORK_LINE#* }" "+%Y%m%d%H%M%S")"
-						if [[ "${_DATA_LINE[13]}" != "${_WORK_TEXT}" ]]; then
-							_TEXT_COLR="${_TEXT_COLR:-"${TXT_GREEN}"}"
-						fi
-						_DATA_LINE[11]="${_WORK_TEXT:0:4}-${_WORK_TEXT:4:2}-${_WORK_TEXT:6:2}"
-						_WORK_TEXT="$(TZ=UTC date -d "${_WORK_LINE#* }" "+%Y-%m-%d_%H:%M:%S")"
-#						_DATA_LINE[16]+="${_DATA_LINE[16]:+","}${_WORK_LINE%%:*}=${_WORK_TEXT}"
-						;;
-					*)
+						break
 						;;
 				esac
 			done
+			if [[ "${_TEXT_COLR}" != "${TXT_RED}" ]]; then
+				_WEBS_STAT=""
+				for J in "${!_WEBS_PAGE[@]}"
+				do
+					_WORK_LINE="${_WEBS_PAGE[J]}"
+					_WORK_TEXT="${_WORK_LINE}"
+					_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
+					_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
+					_WORK_TEXT="${_WORK_TEXT%% *}"
+					case "${_WORK_TEXT,,}" in
+						http/*)
+							_WORK_TEXT="${_WORK_LINE}"
+							_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
+							_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
+							_WORK_TEXT="${_WORK_TEXT#* }"
+							_WEBS_STAT="${_WORK_TEXT%% *}"
+							;;
+						location:)
+							if [[ "${_WEBS_STAT}" != "200" ]]; then
+								continue
+							fi
+							_WORK_TEXT="${_WORK_LINE#* }"
+							_WORK_TEXT="${_WORK_TEXT##*/}"
+							if [[ "${_DATA_LINE[5]}" != "${_WORK_TEXT}" ]]; then
+								_TEXT_COLR="${TXT_CYAN}"
+							fi
+							_DATA_LINE[5]="${_WORK_TEXT}"
+							;;
+						content-length:)
+							if [[ "${_WEBS_STAT}" != "200" ]]; then
+								continue
+							fi
+							_WORK_TEXT="${_WORK_LINE#* }"
+							if [[ "${_DATA_LINE[14]}" != "${_WORK_TEXT}" ]]; then
+								_TEXT_COLR="${_TEXT_COLR:-"${TXT_GREEN}"}"
+							fi
+							_DATA_LINE[14]="${_WORK_TEXT}"
+#							_DATA_LINE[16]+="${_DATA_LINE[16]:+","}${_WORK_LINE%%:*}=${_WORK_TEXT}"
+							;;
+						last-modified:)
+							if [[ "${_WEBS_STAT}" != "200" ]]; then
+								continue
+							fi
+							_WORK_TEXT="$(TZ=UTC date -d "${_WORK_LINE#* }" "+%Y%m%d%H%M%S")"
+							if [[ "${_DATA_LINE[13]}" != "${_WORK_TEXT}" ]]; then
+								_TEXT_COLR="${_TEXT_COLR:-"${TXT_GREEN}"}"
+							fi
+							_DATA_LINE[11]="${_WORK_TEXT:0:4}-${_WORK_TEXT:4:2}-${_WORK_TEXT:6:2}"
+							_WORK_TEXT="$(TZ=UTC date -d "${_WORK_LINE#* }" "+%Y-%m-%d_%H:%M:%S")"
+#							_DATA_LINE[16]+="${_DATA_LINE[16]:+","}${_WORK_LINE%%:*}=${_WORK_TEXT}"
+							;;
+						*)
+							;;
+					esac
+				done
+			fi
 		fi
 		# --- get remastered image file information ---------------------------
 		_FILE_PATH="${DIRS_RMAK}/${_DATA_LINE[5]%.*}_${_DATA_LINE[9]%%/*}.${_DATA_LINE[5]##*.}"
