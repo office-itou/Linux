@@ -1480,10 +1480,21 @@ function funcCreate_late_command() {
 		 			                                 NICS_NAME="$(echo "${LINE#*ip*=}" | cut -d ':' -f 6)"
 		 			                                 NICS_DNS4="$(echo "${LINE#*ip*=}" | cut -d ':' -f 8)"
 		 			                                 ;;
-		 			ifcfg=*                        ) NICS_NAME="$(echo "${LINE#*ifcfg*=}"         | cut -d '=' -f 1)"
-		 			                                 NICS_IPV4="$(echo "${LINE#*"${NICS_NAME}"=}" | cut -d ',' -f 1)"
-		 			                                 case "${NICS_IPV4}" in
-		 			                                     dhcp)
+		 			ifcfg=*                        ) LINE="ifcfg=${1:-"*"}=${2:-"dhcp6"}"
+		 			                                 NICS_NAME="$(echo "${LINE#*ifcfg*=}" | cut -d '=' -f 1)"
+		 			                                 if [ -z "${NICS_NAME#*"*"}" ]; then
+		 			                                     NICS_NAME="$(find /sys/devices/ -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${NICS_NAME}" | sort | head -n 1)"
+		 			                                 fi
+		 			                                 NICS_IPV4="$(echo "${LINE#*=*=}" | cut -d ',' -f 1)"
+		 			                                 case "${NICS_IPV4:-}" in
+		 			                                     dhcp6)
+		 			                                         IPV4_DHCP=""
+		 			                                         NICS_IPV4=""
+		 			                                         NICS_GATE=""
+		 			                                         NICS_DNS4=""
+		 			                                         NICS_WGRP=""
+		 			                                         ;;
+		 			                                     dhcp|dhcp4)
 		 			                                         IPV4_DHCP="true"
 		 			                                         NICS_IPV4=""
 		 			                                         NICS_GATE=""
@@ -1492,10 +1503,10 @@ function funcCreate_late_command() {
 		 			                                         ;;
 		 			                                     *)
 		 			                                         IPV4_DHCP="false"
-		 			                                         NICS_IPV4="$(echo "${LINE#*"${NICS_NAME}"=}" | cut -d ',' -f 1)"
-		 			                                         NICS_GATE="$(echo "${LINE#*"${NICS_NAME}"=}" | cut -d ',' -f 2)"
-		 			                                         NICS_DNS4="$(echo "${LINE#*"${NICS_NAME}"=}" | cut -d ',' -f 3)"
-		 			                                         NICS_WGRP="$(echo "${LINE#*"${NICS_NAME}"=}" | cut -d ',' -f 4)"
+		 			                                         NICS_IPV4="$(echo "${LINE#*=*=}," | cut -d ',' -f 1)"
+		 			                                         NICS_GATE="$(echo "${LINE#*=*=}," | cut -d ',' -f 2)"
+		 			                                         NICS_DNS4="$(echo "${LINE#*=*=}," | cut -d ',' -f 3)"
+		 			                                         NICS_WGRP="$(echo "${LINE#*=*=}," | cut -d ',' -f 4)"
 		 			                                         ;;
 		 			                                 esac
 		 			                                 ;;
