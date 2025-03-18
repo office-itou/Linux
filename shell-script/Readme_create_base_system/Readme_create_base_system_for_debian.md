@@ -12,7 +12,7 @@
 1. [mini.iso](https://deb.debian.org/debian/dists/stable/main/installer-amd64/current/images/netboot/mini.iso "debian stable mini.iso")  
 2. [preseed_kill_dhcp.sh](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/preseed/preseed_kill_dhcp.sh)  
 3. [preseed_late_command.sh](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/preseed/preseed_late_command.sh)  
-4. [preseed.cfg](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/Readme_create_base_system/Debian_preseed/preseed.cfg)  
+4. [preseed.cfg](https://raw.githubusercontent.com/office-itou/Linux/refs/heads/master/shell-script/conf/_fixed_address/preseed.cfg)  
   
 ### **Copy to USB stick**  
   
