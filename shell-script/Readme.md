@@ -6,6 +6,7 @@
   
 * [Create base system](./Readme_create_base_system/Readme.md)  
 * [Base system specifications](./Readme_create_base_system/Readme_base_system_specifications.md)  
+* [Installation instructions in Japanese](./Readme_create_base_system/Readme_create_base_system_%E6%97%A5%E6%9C%AC%E8%AA%9E%E7%89%88.md)  
 * [Installation instructions for Debian](./Readme_create_base_system/Readme_create_base_system_for_debian.md)  
 * [Installation instructions for Ubuntu](./Readme_create_base_system/Readme_create_base_system_for_ubuntu.md)  
   
