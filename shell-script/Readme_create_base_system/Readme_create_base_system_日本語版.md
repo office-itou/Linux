@@ -149,7 +149,7 @@ ls -l /mnt
 |                                                         ファイル名                                                                           | 用途                                         |
 | :------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------- |
 | [kickstart.cfg](https://github.com/office-itou/Linux/blob/master/shell-script/conf/_fixed_address/kickstart.cfg)                             | 事前設定ファイル                             |
-| [late_command.sh](https://github.com/office-itou/Linux/blob/master/shell-script/kickstart/late_command.sh)                                   | 初期設定用シェル(サンプルを実行する時に必要) |
+| [late_command.sh](https://github.com/office-itou/Linux/blob/master/shell-script/conf/kickstart/late_command.sh)                              | 初期設定用シェル(サンプルを実行する時に必要) |
   
 * ブートパラメーターの編集前までは”Debian preseed編”と同じ  
 (コピーするファイルはこちらの内容で)  
@@ -172,7 +172,7 @@ ls -l /mnt
 |                                                         ファイル名                                                                           | 用途                                         |
 | :------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------- |
 | [autoinst.xml](https://github.com/office-itou/Linux/blob/master/shell-script/conf/_fixed_address/autoinst.xml)                               | 事前設定ファイル                             |
-| [late_command.sh](https://github.com/office-itou/Linux/blob/master/shell-script/autoyast/late_command.sh)                                    | 初期設定用シェル(サンプルを実行する時に必要) |
+| [late_command.sh](https://github.com/office-itou/Linux/blob/master/shell-script/conf/autoyast/late_command.sh)                               | 初期設定用シェル(サンプルを実行する時に必要) |
   
 * ブートパラメーターの編集前までは”Debian preseed編”と同じ  
 (コピーするファイルはこちらの内容で)  
