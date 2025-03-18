@@ -32,6 +32,7 @@
         <priority t="integer">99</priority>
         <product_dir>/</product_dir>
       </listentry>
+leap -->
 <!-- leap non-oss
       <listentry t="map">
         <alias>repo-non-oss</alias>
@@ -55,7 +56,6 @@
         <product_dir>/</product_dir>
       </listentry>
 leap non-oss -->
-leap -->
 <!-- tumbleweed
       <listentry t="map">
         <alias>repo-oss</alias>
@@ -177,6 +177,13 @@ fixed address -->
   <proxy t="map">
     <enabled t="boolean">false</enabled>
   </proxy>
+<!--
+* pre-scripts (very early, before anything else really happens)
+* postpartitioning-scripts (after partitioning and mounting to /mnt but before RPM installation)
+* chroot-scripts (after the package installation, before the first boot)
+* post-scripts (during the first boot of the installed system, no services running)
+* init-scripts (during the first boot of the installed system, all services up and running)
+-->
 <!-- log's directory: /var/adm/autoinstall/logs/ -->
   <scripts t="map">
     <pre-scripts t="list">
@@ -190,11 +197,84 @@ fixed address -->
         <notification/>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
-        <source>#!/bin/sh
+        <source>
+<![CDATA[
+#!/bin/sh
 echo "Running pre scripts"
-ip link set eth0 up 
+if [ -e /tmp/profile/autoinst.xml ]; then
+  cp -a /tmp/profile/autoinst.xml /tmp/
+  _NICS_DNS4="$(
+    sed /tmp/autoinst.xml                                       \
+        -ne '/^[ ]\+<networking .*>$/,/[ ]\+<\/networking>$/ {' \
+        -e  '/<nameservers .*>/,/<\/nameservers>/            {' \
+        -e  's/\(^ \+\| \+$\)//g                              ' \
+        -e  '/^<nameserver>[0-9.]\+<\/nameserver>$/p        }}' \
+|   {
+      _WORK_DNS4=""
+      while IFS= read -r _LINE
+      do
+        _WORK_TEXT="${_LINE#*<nameserver>}"
+        _WORK_TEXT="${_WORK_TEXT%</nameserver>*}"
+        _WORK_DNS4="${_WORK_DNS4}${_WORK_DNS4:+ }${_WORK_TEXT}"
+      done
+      echo "${_WORK_DNS4}"
+    }
+  )"
+  if [ -n "${_NICS_DNS4:-}" ]; then
+    sed -i /etc/sysconfig/network/config                                 \
+        -e '/NETCONFIG_DNS_STATIC_SERVERS/ s/=.*$/="'"${_NICS_DNS4}"'"/'
+    netconfig -f update
+    cat /etc/resolv.conf
+  fi
+  sed /tmp/autoinst.xml                                       \
+      -ne '/^[ ]\+<networking .*>$/,/[ ]\+<\/networking>$/ {' \
+      -e  '/<interface .*>/,/<\/interface>/                {' \
+      -e  's/\(^ \+\| \+$\)//gp                           }}' \
+| sed -e  '{:l; N; s/[\r\n]/,/; b l;}'                        \
+| sed -e  's/\(<\/interface>\),/\1\n/g'                       \
+| while read -r _LINE
+  do
+    _NICS_MODE="${_LINE#*<startmode>}"
+    _NICS_MODE="${_NICS_MODE%</startmode>*}"
+    _NICS_NAME="${_LINE#*<name>}"
+    _NICS_NAME="${_NICS_NAME%</name>*}"
+    _IPV4_PROT="${_LINE#*<bootproto>}"
+    _IPV4_PROT="${_IPV4_PROT%</bootproto>*}"
+    _IPV4_ADDR=""
+    _IPV4_BITS=""
+    case "${_IPV4_PROT}" in
+      static)
+        _IPV4_ADDR="${_LINE#*<ipaddr>}"
+        _IPV4_ADDR="${_IPV4_ADDR%</ipaddr>*}"
+        _IPV4_BITS="${_LINE#*<prefixlen>}"
+        _IPV4_BITS="${_IPV4_BITS%</prefixlen>*}"
+        cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > /etc/sysconfig/network/ifcfg-"${_NICS_NAME}"
+BOOTPROTO='${_IPV4_PROT:-none}'
+STARTMODE='${_NICS_MODE:-none}'
+IPADDR=${_IPV4_ADDR:-}${_IPV4_BITS:+"/${_IPV4_BITS}"}
+_EOT_
+        ;;
+      *)
+        cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > /etc/sysconfig/network/ifcfg-"${_NICS_NAME}"
+BOOTPROTO='${_IPV4_PROT:-none}'
+STARTMODE='${_NICS_MODE:-none}'
+_EOT_
+        ;;
+    esac
+    echo "[${_NICS_NAME},${_IPV4_PROT},${_IPV4_ADDR},${_IPV4_BITS},${_NICS_MODE}]"
+    if [ "${_NICS_MODE}" != "none" ] && [ "${_IPV4_PROT}" != "none" ]; then
+      echo "set ${_NICS_NAME} link down"
+      ifdown "${_NICS_NAME}" || true && sleep 3
+      echo "set ${_NICS_NAME} link up"
+      ifup "${_NICS_NAME}" || true && sleep 3
+    fi
+  done
+fi
+ip address show
 echo "Complete pre scripts"
-exit 0</source>
+exit 0
+]]>
+        </source>
       </script>
     </pre-scripts>
     <chroot-scripts t="list">
@@ -209,7 +289,9 @@ exit 0</source>
         <notification/>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
-        <source>#!/bin/sh
+        <source>
+<![CDATA[
+#!/bin/sh
 echo "Running chroot (no chrooted) scripts"
 if [ -e /var/log/YaST2/y2start.log ]; then
   _AUTO_YAST="$(sed -ne '/declare -x AutoYaST=/p' /var/log/YaST2/y2start.log)"
@@ -228,70 +310,22 @@ if [ -e /var/log/YaST2/y2start.log ]; then
     *           ) ;;
   esac
 fi
+if [ -e /tmp/autoinst.xml ]; then
+  mkdir -p /mnt/var/adm/installer/autoyast
+  chmod 0600 /mnt/var/adm/installer/autoyast
+  cp -a /tmp/autoinst.xml /mnt/var/adm/installer/autoyast/
+fi
 if [ -e /tmp/late_command.sh ]; then
   mkdir -p /mnt/var/adm/installer/autoyast
   chmod 0600 /mnt/var/adm/installer/autoyast
-  cp /tmp/late_command.sh /mnt/var/adm/installer/autoyast/
+  cp -a /tmp/late_command.sh /mnt/var/adm/installer/autoyast/
   chmod +x /mnt/var/adm/installer/autoyast/late_command.sh
 fi
 echo "Complete chroot (no chrooted) scripts"
-exit 0</source>
+exit 0
+]]>
+        </source>
       </script>
-<!--
-    <chroot-scripts t="list">
-      <script t="map">
-        <chrooted t="boolean">false</chrooted>
-        <debug t="boolean">false</debug>
-        <feedback t="boolean">false</feedback>
-        <feedback_type/>
-        <filename>zzz_cmdline.sh</filename>
-        <interpreter>shell</interpreter>
-        <location/>
-        <notification/>
-        <param-list t="list"/>
-        <rerun t="boolean">false</rerun>
-        <source>#!/bin/sh
-echo "Running chroot (no chrooted) scripts"
-_COMD_LINE="$(cat /proc/cmdline)"
-for _LINE in ${_COMD_LINE:-}
-do
-  case "${_LINE}" in
-    autoyast=*)
-      _ADDR="${_LINE#*=}"
-      _PROT="${_ADDR%%/*}"
-      _WORK="${_ADDR#*:}"
-      _WORK="${_WORK%%[!/]*}"
-      _PATH="${_ADDR#"${_PROT}${_WORK%/}"}"
-      _SRVR="${_ADDR#*"${_WORK}"}"
-      _SRVR="${_SRVR%%/*}"
-      case "${_PROT:-}" in
-        device:       ) _PATH="${_PATH#"${_SRVR:+/${_SRVR}}"}"; _SRVR="${_SRVR:+"/dev/${_SRVR}"}"; mkdir -p /dev-media; mount -r "${_SRVR}" /dev-media; cp "/dev-media/${_PATH%/*}/late_command.sh" /tmp/; umount /dev-media;;
-        nfs:  | cifs: ) _PATH="${_PATH#"${_SRVR:+/${_SRVR}}"}"; _SRVR="${_SRVR:+"${_SRVR}@"}"    ; mkdir -p /net-media; mount -r "${_SRVR}" /net-media; cp "/net-media/${_PATH%/*}/late_command.sh" /tmp/; umount /net-media;;
-        http: | https:) curl -L -# -R -S -o /tmp/late_command.sh "${_ADDR%/*}"/late_command.sh;;
-        ftp:          ) curl -L -# -R -S -o /tmp/late_command.sh "${_ADDR%/*}"/late_command.sh;;
-        tftp:         ) ;;
-        label:        ) ;;
-        cd:           ) _SRVR="/dev/cdrom"; mkdir -p /dvd-media; mount -r "${_SRVR}" /dvd-media; cp "/dvd-media/${_PATH%/*}/late_command.sh" /tmp/; umount /dvd-media;;
-        usb:          ) _SRVR="/dev/sd?1" ; mkdir -p /usb-media; mount -r "${_SRVR}" /usb-media; cp "/usb-media/${_PATH%/*}/late_command.sh" /tmp/; umount /usb-media;;
-        relurl:       ) ;;
-        repo:         ) ;;
-        file:         ) cp "${_PATH%/*}/late_command.sh" /tmp/;;
-        *             ) cp "${_PATH%/*}/late_command.sh" /tmp/;;
-      esac
-      ;;
-    *) ;;
-  esac
-done
-if [ -e /tmp/late_command.sh ]; then
-  mkdir -p /mnt/var/adm/installer/autoyast
-  chmod 0600 /mnt/var/adm/installer/autoyast
-  cp /tmp/late_command.sh /mnt/var/adm/installer/autoyast/
-  chmod +x /mnt/var/adm/installer/autoyast/late_command.sh
-fi
-echo "Complete chroot (no chrooted) scripts"
-exit 0</source>
-      </script>
--->
       <script t="map">
         <chrooted t="boolean">true</chrooted>
         <debug t="boolean">false</debug>
@@ -303,13 +337,17 @@ exit 0</source>
         <notification/>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
-        <source>#!/bin/sh
+        <source>
+<![CDATA[
+#!/bin/sh
 echo "Running chroot (chrooted) scripts"
 if [ -e /var/adm/installer/autoyast/late_command.sh ]; then
   /var/adm/installer/autoyast/late_command.sh | tee -a /var/adm/installer/autoyast/late_command.sh.log
 fi
 echo "Complete chroot (chrooted) scripts"
-exit 0</source>
+exit 0
+]]>
+        </source>
       </script>
     </chroot-scripts>
   </scripts>
