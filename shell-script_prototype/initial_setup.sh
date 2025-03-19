@@ -45,7 +45,7 @@
 #	declare -r    DIRS_HGFS="${DIRS_TOPS}/hgfs"				# vmware shared
 #	declare -r    DIRS_HTML="${DIRS_TOPS}/http/html"		# html contents
 #	declare -r    DIRS_SAMB="${DIRS_TOPS}/samba"			# samba shared
-#	declare -r    DIRS_TFTP="${DIRS_TOPS}/tftp"				# tftp contents
+	declare -r    DIRS_TFTP="${DIRS_TOPS}/tftp"				# tftp contents
 	declare -r    DIRS_USER="${DIRS_TOPS}/user"				# user file
 
 	# --- shared of user file -------------------------------------------------
@@ -68,36 +68,54 @@
 	echo "Get Configuration files for Linux"
 	mkdir -p "${DIRS_TMPL:?}"
 	pushd "${DIRS_TMPL}" > /dev/null
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/_template/kickstart_common.cfg"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/_template/nocloud-ubuntu-user-data"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/_template/preseed_debian.cfg"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/_template/preseed_ubuntu.cfg"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/_template/yast_opensuse.xml"
+		for _WEBS_ADDR in \
+			"${ROOT_GHUB}/conf/_template/kickstart_common.cfg" \
+			"${ROOT_GHUB}/conf/_template/nocloud-ubuntu-user-data" \
+			"${ROOT_GHUB}/conf/_template/preseed_debian.cfg" \
+			"${ROOT_GHUB}/conf/_template/preseed_ubuntu.cfg" \
+			"${ROOT_GHUB}/conf/_template/yast_opensuse.xml"
+		do
+			if ! LANG=C wget "${WGET_OPTN[@]}" --continue "${_WEBS_ADDR}"; then
+				printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to wget: ${_WEBS_ADDR}"
+			fi
+		done
 	popd > /dev/null
 
 	# --- Configuration files for Windows -------------------------------------
 	echo "Get Configuration files for Windows"
 	mkdir -p "${DIRS_CONF:?}/windows"
 	pushd "${DIRS_CONF}/windows" > /dev/null
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/windows/WinREexpand.cmd"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/windows/WinREexpand_bios.sub"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/windows/WinREexpand_uefi.sub"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/windows/bypass.cmd"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/windows/inst_w10.cmd"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/windows/inst_w11.cmd"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/windows/shutdown.cmd"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/windows/startnet.cmd"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/windows/unattend.xml"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/conf/windows/winpeshl.ini"
+		for _WEBS_ADDR in \
+			"${ROOT_GHUB}/conf/windows/WinREexpand.cmd" \
+			"${ROOT_GHUB}/conf/windows/WinREexpand_bios.sub" \
+			"${ROOT_GHUB}/conf/windows/WinREexpand_uefi.sub" \
+			"${ROOT_GHUB}/conf/windows/bypass.cmd" \
+			"${ROOT_GHUB}/conf/windows/inst_w10.cmd" \
+			"${ROOT_GHUB}/conf/windows/inst_w11.cmd" \
+			"${ROOT_GHUB}/conf/windows/shutdown.cmd" \
+			"${ROOT_GHUB}/conf/windows/startnet.cmd" \
+			"${ROOT_GHUB}/conf/windows/unattend.xml" \
+			"${ROOT_GHUB}/conf/windows/winpeshl.ini"
+		do
+			if ! LANG=C wget "${WGET_OPTN[@]}" --continue "${_WEBS_ADDR}"; then
+				printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to wget: ${_WEBS_ADDR}"
+			fi
+		done
 	popd > /dev/null
 
 	# --- Shell script files --------------------------------------------------
 	echo "Get Shell script files"
 	mkdir -p "${DIRS_USER:?}/private"
 	pushd "${DIRS_USER}/private" > /dev/null
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/mk_custom_iso.sh"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/mk_pxeboot_conf.sh"
-		LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress "${ROOT_GHUB}/sv_check.sh"
+		for _WEBS_ADDR in \
+			"${ROOT_GHUB}/mk_custom_iso.sh" \
+			"${ROOT_GHUB}/mk_pxeboot_conf.sh" \
+			"${ROOT_GHUB}/sv_check.sh"
+		do
+			if ! LANG=C wget "${WGET_OPTN[@]}" --continue "${_WEBS_ADDR}"; then
+				printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to wget: ${_WEBS_ADDR}"
+			fi
+		done
 	popd > /dev/null
 
 	# --- debian / ubuntu keyring ---------------------------------------------
@@ -105,8 +123,14 @@
 		echo "Get keyring files"
 		mkdir -p "${DIRS_KEYS:?}/_archive"
 		pushd "${DIRS_KEYS}/_archive" > /dev/null
-			LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2024.09.22_all.deb
-			LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1_all.deb
+			for _WEBS_ADDR in \
+				https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2024.09.22_all.deb \
+				https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1_all.deb
+			do
+				if ! LANG=C wget "${WGET_OPTN[@]}" --continue "${_WEBS_ADDR}"; then
+					printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to wget: ${_WEBS_ADDR}"
+				fi
+			done
 			dpkg -x ./debian-keyring_2024.09.22_all.deb   "${DIRS_TEMP}/"
 			dpkg -x ./ubuntu-keyring_2023.11.28.1_all.deb "${DIRS_TEMP}/"
 			cp -a "${DIRS_TEMP}/usr/share/keyrings/debian-keyring.gpg"         "../"
@@ -114,17 +138,34 @@
 		popd > /dev/null
 	fi
 
-	# --- dnsmasq -------------------------------------------------------------
+	# --- iPXE ----------------------------------------------------------------
 	echo "Get iPXE"
-	/var/adm/installer/*/get_module_ipxe.sh
+#	https://github.com/ipxe/wimboot/releases/latest/download/wimboot
+#	https://raw.githubusercontent.com/ipxe/wimboot/refs/heads/master/wimboot
+#	/var/adm/installer/*/get_module_ipxe.sh
+	mkdir -p "${DIRS_TFTP:?}/ipxe"
+	pushd "${DIRS_TFTP}/ipxe" > /dev/null
+		for _WEBS_ADDR in \
+			https://boot.ipxe.org/undionly.kpxe \
+			https://boot.ipxe.org/ipxe.efi
+		do
+			if ! LANG=C wget "${WGET_OPTN[@]}" --continue "${_WEBS_ADDR}"; then
+				printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to wget: ${_WEBS_ADDR}"
+			fi
+		done
+	popd > /dev/null
+
+	# --- dnsmasq -------------------------------------------------------------
 	echo "Set dnsmasq"
-	cp -a /var/adm/installer/*/samp/etc/dnsmasq.d/pxeboot_ipxe.conf /etc/dnsmasq.d/
+#	cp -a /var/adm/installer/*/samp/etc/dnsmasq.d/pxeboot_ipxe.conf /etc/dnsmasq.d/
+	find /var/adm/installer/ -name 'pxeboot_ipxe.conf' -exec cp -a '{}' /etc/dnsmasq.d/ \;
 	if command -v semanage > /dev/null 2>&1; then
 		semanage fcontext -a -t dnsmasq_etc_t '/etc/dnsmasq.d/pxeboot_ipxe.conf'
 		restorecon -v '/etc/dnsmasq.d/pxeboot_ipxe.conf'
 	fi
 	systemctl restart dnsmasq.service
 
+	# --- exit ----------------------------------------------------------------
 	rm -rf "${DIRS_TEMP:?}"
 
 	echo "Complete"
