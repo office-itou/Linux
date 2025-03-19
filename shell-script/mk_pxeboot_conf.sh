@@ -1436,6 +1436,8 @@ function funcCreate_late_command() {
 		 	readonly DIRS_TFTP="${DIRS_TGET:-}${DIRS_SRVR}/tftp"	# root of tftp shared directory
 		 	readonly DIRS_SAMB="${DIRS_TGET:-}${DIRS_SRVR}/samba"	# root of samba shared directory
 		 	readonly DIRS_USER="${DIRS_TGET:-}${DIRS_SRVR}/user"	# root of user shared directory
+		 	readonly DIRS_PVAT="${DIRS_USER}/private"				# root of private contents directory
+		 	readonly DIRS_SHAR="${DIRS_USER}/share"					# root of public contents directory
 		
 		 	# --- set command line parameter ------------------------------------------
 		 	for LINE in ${COMD_LINE:-} ${PROG_PRAM:-}
@@ -1618,7 +1620,7 @@ function funcCreate_late_command() {
 		}
 		
 		# --- service status ----------------------------------------------------------
-		 funcServiceStatus() {
+		funcServiceStatus() {
 		 	_SRVC_STAT="$(systemctl "$@" 2> /dev/null || true)"
 		 	case "$?" in
 		 		4) _SRVC_STAT="not-found";;		# no such unit
@@ -2073,24 +2075,24 @@ function funcCreate_late_command() {
 		 	mkdir -p "${DIRS_SAMB}"/dlna/photos
 		 	mkdir -p "${DIRS_SAMB}"/dlna/sounds
 		
-		 	mkdir -p "${DIRS_USER}"/private
-		 	mkdir -p "${DIRS_USER}"/share/conf
-		 	mkdir -p "${DIRS_USER}"/share/imgs
-		 	mkdir -p "${DIRS_USER}"/share/isos
-		 	mkdir -p "${DIRS_USER}"/share/load
-		 	mkdir -p "${DIRS_USER}"/share/rmak
+		 	mkdir -p "${DIRS_PVAT}"
+		 	mkdir -p "${DIRS_SHAR}"/conf
+		 	mkdir -p "${DIRS_SHAR}"/imgs
+		 	mkdir -p "${DIRS_SHAR}"/isos
+		 	mkdir -p "${DIRS_SHAR}"/load
+		 	mkdir -p "${DIRS_SHAR}"/rmak
 		
-		 	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/conf "${DIRS_HTML}"/html/
-		 	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/imgs "${DIRS_HTML}"/html/
-		 	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/isos "${DIRS_HTML}"/html/
-		 	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/load "${DIRS_HTML}"/html/
-		 	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/rmak "${DIRS_HTML}"/html/
+		 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/conf "${DIRS_HTML}"/html/
+		 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/imgs "${DIRS_HTML}"/html/
+		 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/isos "${DIRS_HTML}"/html/
+		 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/load "${DIRS_HTML}"/html/
+		 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/rmak "${DIRS_HTML}"/html/
 		
-		 	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/conf "${DIRS_TFTP}"/
-		 	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/imgs "${DIRS_TFTP}"/
-		 	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/isos "${DIRS_TFTP}"/
-		 	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/load "${DIRS_TFTP}"/
-		 	ln -sf "${DIRS_USER#"${DIRS_TGET:-}"}"/share/rmak "${DIRS_TFTP}"/
+		 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/conf "${DIRS_TFTP}"/
+		 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/imgs "${DIRS_TFTP}"/
+		 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/isos "${DIRS_TFTP}"/
+		 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/load "${DIRS_TFTP}"/
+		 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/rmak "${DIRS_TFTP}"/
 		
 		 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${DIRS_TFTP}/autoexec.ipxe"
 		 		#!ipxe
@@ -2210,25 +2212,14 @@ function funcCreate_late_command() {
 		 		return
 		 	fi
 		
-		 	# --- httpd ---------------------------------------------------------------
-		 	semanage fcontext -a -t httpd_sys_content_t "${DIRS_HTML}(/.*)?"
-		 	restorecon -R -v "${DIRS_HTML}"
-		
-		 	# --- tftp ----------------------------------------------------------------
-		 	semanage fcontext -a -t tftpdir_t "${DIRS_TFTP}(/.*)?"
-		 	restorecon -R -v "${DIRS_TFTP}"
-		
-		 	# --- samba ---------------------------------------------------------------
-		 	semanage fcontext -a -t samba_share_t "${DIRS_SAMB}(/.*)?"
-		 	restorecon -R -v "${DIRS_SAMB}"
-		
-		 	# --- setsebool -----------------------------------------------------------
-		 	if command -v setsebool > /dev/null 2>&1; then
-		 		setsebool -P httpd_use_fusefs 1
-		#		setsebool -P samba_enable_home_dirs 1
-		 		setsebool -P samba_export_all_ro 1
-		#		setsebool -P samba_export_all_rw 1
-		 	fi
+		 	# --- set selinux ---------------------------------------------------------
+		 	semanage fcontext -a -t httpd_user_content_t "${DIRS_HTML}(/.*)?"
+		 	semanage fcontext -a -t tftpdir_t            "${DIRS_TFTP}(/.*)?"
+		 	semanage fcontext -a -t samba_share_t        "${DIRS_SAMB}(/.*)?"
+		 	semanage fcontext -a -t public_content_t     "${DIRS_SHAR}(/.*)?"
+		 	restorecon -R -v "${DIRS_SRVR}"
+		 	setsebool -P samba_export_all_rw 1
+		 	setsebool -P httpd_enable_homedirs 1
 		
 		 	# --- debug out -----------------------------------------------------------
 		 	getenforce
@@ -2681,7 +2672,7 @@ function funcCreate_late_command() {
 		funcSetupNetwork_firewalld() {
 		 	__FUNC_NAME="funcSetupNetwork_firewalld"
 		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
-		  
+		
 		 	# --- check command -------------------------------------------------------
 		 	if ! command -v firewall-cmd > /dev/null 2>&1; then
 		 		printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- exit    : [${__FUNC_NAME}] ---"
@@ -2987,7 +2978,7 @@ function funcCreate_late_command() {
 		
 		 	# --- complete ------------------------------------------------------------
 		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
-		 }
+		}
 		
 		# --- network setup resolv.conf -----------------------------------------------
 		funcSetupNetwork_resolv() {
@@ -4158,7 +4149,7 @@ function funcCreate_late_command() {
 		
 		 	# --- complete ------------------------------------------------------------
 		 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${_FUNC_NAME}] ---"
-		 }
+		}
 		
 		# *** main processing section *************************************************
 		 	# --- start ---------------------------------------------------------------
