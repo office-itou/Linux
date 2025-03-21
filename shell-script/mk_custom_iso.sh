@@ -4814,6 +4814,8 @@ function funcCreate_menu() {
 						esac
 						break
 						;;
+					*)
+						;;
 				esac
 			done
 			if [[ "${_TEXT_COLR}" != "${TXT_RED}" ]]; then
@@ -4964,6 +4966,127 @@ function funcCreate_remaster_download() {
 	esac
 }
 
+# --- unmkinitramfs -----------------------------------------------------------
+function funcXcpio() {
+	declare       _ARCHIVE="${1:?}"
+	declare       _DIR="${2:-}"
+	shift 2
+
+	  if gzip -t       "${_ARCHIVE}" > /dev/null 2>&1; then gzip -c -d    "${_ARCHIVE}"
+	elif zstd -q -c -t "${_ARCHIVE}" > /dev/null 2>&1; then zstd -q -c -d "${_ARCHIVE}"
+	elif xzcat -t      "${_ARCHIVE}" > /dev/null 2>&1; then xzcat         "${_ARCHIVE}"
+	elif lz4cat -t   < "${_ARCHIVE}" > /dev/null 2>&1; then lz4cat        "${_ARCHIVE}"
+	elif bzip2 -t      "${_ARCHIVE}" > /dev/null 2>&1; then bzip2 -c -d   "${_ARCHIVE}"
+	elif lzop -t       "${_ARCHIVE}" > /dev/null 2>&1; then lzop -c -d    "${_ARCHIVE}"
+	fi |
+	(
+		if [[ -n "${_DIR}" ]]; then
+			mkdir -p -- "${_DIR}"
+			cd -- "${_DIR}"
+		fi
+		cpio "$@"
+	) ||
+	case "$(kill -l "$?" 2> /dev/null)" in
+		PIPE) true;;
+		*   ) ;;
+	esac
+}
+
+function funcReadHex() {
+	declare       _RESULT=""
+	_RESULT="$(dd < "${1:?}" bs=1 skip="${2:?}" count="${3:?}" 2> /dev/null | LANG=C grep -E "^[0-9A-Fa-f]{$3}\$")"
+	echo "${_RESULT}"
+}
+
+function funcCheckZero() {
+	dd < "${1:?}" bs=1 skip="${2:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
+	echo "$?"
+}
+
+function funcSplitInitramfs() {
+	declare -r    _MESSAGE="${1:?}"
+	declare -r    _INITRAMFS="${2:?}"
+	declare -r    _DIR="${3:-}"
+	shift 3
+	declare -i    _COUNT=0
+	declare -i    _START=0
+	declare -i    _END=0
+	declare       _MAGIC=""
+	declare       _NAMESIZE=""
+	declare       _FILESIZE=""
+	declare -r    _SUBDIR=""
+	declare       _SUBARCHIVE="${DIRS_TEMP}/funcSplitInitramfs"
+	declare -i    _STATUS=0
+
+	while true
+	do
+		_END="${_START}"
+		while true
+		do
+			_STATUS="$(funcCheckZero "${_INITRAMFS}" "${_END}")"
+			if [[ "${_STATUS}" -eq 0 ]]; then
+				_END=$((_END + 4))
+				while true
+				do
+					_STATUS="$(funcCheckZero "${_INITRAMFS}" "${_END}")"
+					if [[ "${_STATUS}" -ne 0 ]]; then
+						break
+					fi
+					_END=$((_END + 4))
+				done
+				break
+			fi
+			_MAGIC="$(funcReadHex "${_INITRAMFS}" "${_END}" 6)"
+			if [[ -z "${_MAGIC}" ]]; then
+				break
+			fi
+			if [[ "${_MAGIC}" != "070701" ]] && [[ "${_MAGIC}" != "070702" ]]; then
+				break
+			fi
+			_NAMESIZE=0x$(funcReadHex "${_INITRAMFS}" $((_END + 94)) 8)
+			_FILESIZE=0x$(funcReadHex "${_INITRAMFS}" $((_END + 54)) 8)
+			_END=$(( _END + 110))
+			_END=$(((_END + _NAMESIZE + 3) & ~3))
+			_END=$(((_END + _FILESIZE + 3) & ~3))
+		done
+		if [[ "${_END}" -eq "${_START}" ]]; then
+			break
+		fi
+		_COUNT=$((_COUNT + 1))
+		_SUBDIR="${_DIR:+${_DIR}/early}"
+		if [[ "${_COUNT}" -gt 1 ]]; then
+			_SUBDIR+="${_COUNT}"
+		fi
+#		echo "${_SUBDIR}"
+		funcPrintf "%20.20s: %s" "unpack" "${_MESSAGE}: ${_SUBDIR##*/}"
+		dd < "${_INITRAMFS}" skip="${_START}" count=$((_END - _START)) iflag=skip_bytes status=none 2> /dev/null |
+		(
+			if [[ -n "${_DIR}" ]]; then
+				mkdir -p -- "${_SUBDIR}"
+				cd -- "${_SUBDIR}"
+			fi
+			cpio -i "$@"
+		) ||
+		case "$(kill -l "$?" 2> /dev/null)" in
+			PIPE) true;;
+			*   ) ;;
+		esac
+		_START="${_END}"
+	done
+	if [[ "${_END}" -gt 0 ]]; then
+		_SUBDIR="${_DIR:+${_DIR}/main}"
+#		echo "${_SUBDIR}"
+		funcPrintf "%20.20s: %s" "unpack" "${_MESSAGE}: ${_SUBDIR##*/}"
+		dd < "${_INITRAMFS}" skip="${_END}" iflag=skip_bytes 2> /dev/null > "${_SUBARCHIVE}"
+		funcXcpio "${_SUBARCHIVE}" "${_SUBDIR}" "-i" "$@"
+	else
+#		echo "${_DIR}"
+		funcPrintf "%20.20s: %s" "unpack" "${_MESSAGE}"
+		funcXcpio "${_INITRAMFS}" "${_DIR}" "-i" "$@"
+	fi
+	rm -rf "${_SUBARCHIVE:?}"
+}
+
 # ----- copy iso contents to hdd ----------------------------------------------
 function funcCreate_copy_iso2hdd() {
 	declare -r -a _TGET_LINE=("$@")
@@ -4981,14 +5104,20 @@ function funcCreate_copy_iso2hdd() {
 	mount -o ro,loop "${_FILE_PATH}" "${_WORK_DIRS}/mnt"
 	ionice -c "${IONICE_CLAS}" cp -a "${_WORK_DIRS}/mnt/." "${_WORK_DIRS}/img/"
 	umount "${_WORK_DIRS}/mnt"
+	# --- Check the edition and extract the initrd ----------------------------
+	case "${_TGET_LINE[1]}" in
+		*-mini-*         ) ;;			# proceed to extracting the initrd
+		*                ) return;;
+	esac
 	# --- copy initrd -> hdd --------------------------------------------------
 	find "${_WORK_DIRS}/img" \( -type f -o -type l \) \( -name 'initrd' -o -name 'initrd.*' -o -name 'initrd-[0-9]*' \) | sort -V | \
 	while read -r _FILE_IRAM
 	do
-		_DIRS_IRAM="${_WORK_DIRS}/ram/${_FILE_IRAM##*/}/"
-		funcPrintf "%20.20s: %s" "copy" "${_FILE_IRAM##*/}"
-		mkdir -p "${_DIRS_IRAM}"
-		unmkinitramfs "${_FILE_IRAM}" "${_DIRS_IRAM}" 2>/dev/null
+		_DIRS_IRAM="${_WORK_DIRS}/ram/${_FILE_IRAM#"${_WORK_DIRS}"/img/}"
+		funcPrintf "%20.20s: %s" "copy" "/${_DIRS_IRAM#"${_WORK_DIRS}"/ram/}"
+		funcSplitInitramfs "/${_DIRS_IRAM#"${_WORK_DIRS}"/ram/}" "${_FILE_IRAM}" "${_DIRS_IRAM}" --preserve-modification-time --no-absolute-filenames --quiet
+#		mkdir -p "${_DIRS_IRAM}"
+#		unmkinitramfs "${_FILE_IRAM}" "${_DIRS_IRAM}" 2>/dev/null
 	done
 }
 
