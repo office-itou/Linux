@@ -329,7 +329,14 @@
 
 	# --- curl / wget parameter -----------------------------------------------
 	declare -r -a CURL_OPTN=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
-	declare -r -a WGET_OPTN=("--tries=3" "--timeout=10" "--no-verbose")
+	declare -r -a WGET_OPTN=("--tries=3" "--timeout=10" "--quiet")
+	              WGET_VERS="$(wget --version | awk '$2~/Wget/ {print $3;}')"
+	              WGET_VERS="${WGET_VERS%%\.*}"
+	if command -v wget2 > /dev/null 2>&1 \
+	&& command -v curl  > /dev/null 2>&1; then
+		WGET_VERS="0"
+	fi
+	readonly      WGET_VERS
 
 	# --- work variables ------------------------------------------------------
 	declare -r    OLD_IFS="${IFS}"
@@ -998,7 +1005,14 @@ function funcUnit_conversion() {
 #	declare -r    _OLD_IFS="${IFS}"
 	declare -r -a _TEXT_UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	declare -i    _CALC_UNIT=0
+	declare       _WORK_TEXT=""
 	declare -i    I=0
+
+	_WORK_TEXT="$(funcIsNumeric "$1")"
+	if [[ "${_WORK_TEXT}" != "0" ]]; then
+		printf "%'s Byte" "?"
+		return
+	fi
 
 	if [[ "$1" -lt 1024 ]]; then
 		printf "%'d Byte" "$1"
@@ -4001,9 +4015,9 @@ function funcCreate_late_command() {
 		 	fi
 		
 		 	# --- get module ----------------------------------------------------------
-		#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/undionly.kpxe" "https://boot.ipxe.org/undionly.kpxe" || true
-		#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/ipxe.efi"      "https://boot.ipxe.org/ipxe.efi" || true
-		#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/wimboot"       "https://github.com/ipxe/wimboot/releases/latest/download/wimboot" || true
+		#	LANG=C wget --tries=3 --timeout=10 --quiet --output-document="${DIRS_TFTP}/ipxe/undionly.kpxe" "https://boot.ipxe.org/undionly.kpxe" || true
+		#	LANG=C wget --tries=3 --timeout=10 --quiet --output-document="${DIRS_TFTP}/ipxe/ipxe.efi"      "https://boot.ipxe.org/ipxe.efi" || true
+		#	LANG=C wget --tries=3 --timeout=10 --quiet --output-document="${DIRS_TFTP}/ipxe/wimboot"       "https://github.com/ipxe/wimboot/releases/latest/download/wimboot" || true
 		 	_FILE_PATH="${PROG_DIRS:?}/get_module_ipxe.sh"
 		 	mkdir -p "${_FILE_PATH%/*}"
 		 	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
@@ -4056,7 +4070,7 @@ function funcCreate_late_command() {
 		 		 		https://boot.ipxe.org/ipxe.efi \
 		 		 		https://github.com/ipxe/wimboot/releases/latest/download/wimboot
 		 		 	do
-		 		 		if ! wget --tries=3 --timeout=10 --no-verbose --output-document="${_DIRS_TFTP}/ipxe/${_WEBS_ADDR##*/}" "${_WEBS_ADDR}"; then
+		 		 		if ! wget --tries=3 --timeout=10 --quiet --output-document="${_DIRS_TFTP}/ipxe/${_WEBS_ADDR##*/}" "${_WEBS_ADDR}"; then
 		 		 			printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to wget: ${_WEBS_ADDR}"
 		 		 		fi
 		 		 	done
@@ -6076,6 +6090,7 @@ function funcDbg_parameter() {
 	# --- curl / wget parameter -----------------------------------------------
 	printf "%s=[%s]\n"	"CURL_OPTN"		"${CURL_OPTN[*]:-}"
 	printf "%s=[%s]\n"	"WGET_OPTN"		"${WGET_OPTN[*]:-}"
+	printf "%s=[%s]\n"	"WGET_VERS"		"${WGET_VERS:-}"
 
 	# --- work variables ------------------------------------------------------
 	printf "%s=[%s]\n"	"OLD_IFS"		"${OLD_IFS:-}"

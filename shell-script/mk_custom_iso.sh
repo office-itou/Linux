@@ -337,7 +337,14 @@
 
 	# --- curl / wget parameter -----------------------------------------------
 	declare -r -a CURL_OPTN=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
-	declare -r -a WGET_OPTN=("--tries=3" "--timeout=10" "--no-verbose")
+	declare -r -a WGET_OPTN=("--tries=3" "--timeout=10" "--quiet")
+	              WGET_VERS="$(wget --version | awk '$2~/Wget/ {print $3;}')"
+	              WGET_VERS="${WGET_VERS%%\.*}"
+	if command -v wget2 > /dev/null 2>&1 \
+	&& command -v curl  > /dev/null 2>&1; then
+		WGET_VERS="0"
+	fi
+	readonly      WGET_VERS
 
 	# --- work variables ------------------------------------------------------
 	declare -r    OLD_IFS="${IFS}"
@@ -1006,7 +1013,14 @@ function funcUnit_conversion() {
 #	declare -r    _OLD_IFS="${IFS}"
 	declare -r -a _TEXT_UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	declare -i    _CALC_UNIT=0
+	declare       _WORK_TEXT=""
 	declare -i    I=0
+
+	_WORK_TEXT="$(funcIsNumeric "$1")"
+	if [[ "${_WORK_TEXT}" != "0" ]]; then
+		printf "%'s Byte" "?"
+		return
+	fi
 
 	if [[ "$1" -lt 1024 ]]; then
 		printf "%'d Byte" "$1"
@@ -4009,9 +4023,9 @@ function funcCreate_late_command() {
 		 	fi
 		
 		 	# --- get module ----------------------------------------------------------
-		#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/undionly.kpxe" "https://boot.ipxe.org/undionly.kpxe" || true
-		#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/ipxe.efi"      "https://boot.ipxe.org/ipxe.efi" || true
-		#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/wimboot"       "https://github.com/ipxe/wimboot/releases/latest/download/wimboot" || true
+		#	LANG=C wget --tries=3 --timeout=10 --quiet --output-document="${DIRS_TFTP}/ipxe/undionly.kpxe" "https://boot.ipxe.org/undionly.kpxe" || true
+		#	LANG=C wget --tries=3 --timeout=10 --quiet --output-document="${DIRS_TFTP}/ipxe/ipxe.efi"      "https://boot.ipxe.org/ipxe.efi" || true
+		#	LANG=C wget --tries=3 --timeout=10 --quiet --output-document="${DIRS_TFTP}/ipxe/wimboot"       "https://github.com/ipxe/wimboot/releases/latest/download/wimboot" || true
 		 	_FILE_PATH="${PROG_DIRS:?}/get_module_ipxe.sh"
 		 	mkdir -p "${_FILE_PATH%/*}"
 		 	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
@@ -4064,7 +4078,7 @@ function funcCreate_late_command() {
 		 		 		https://boot.ipxe.org/ipxe.efi \
 		 		 		https://github.com/ipxe/wimboot/releases/latest/download/wimboot
 		 		 	do
-		 		 		if ! wget --tries=3 --timeout=10 --no-verbose --output-document="${_DIRS_TFTP}/ipxe/${_WEBS_ADDR##*/}" "${_WEBS_ADDR}"; then
+		 		 		if ! wget --tries=3 --timeout=10 --quiet --output-document="${_DIRS_TFTP}/ipxe/${_WEBS_ADDR##*/}" "${_WEBS_ADDR}"; then
 		 		 			printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to wget: ${_WEBS_ADDR}"
 		 		 		fi
 		 		 	done
@@ -4684,25 +4698,72 @@ function funcCreate_menu() {
 			_WEBS_ADDR="${_WEBS_ADDR%/*}"
 			_WEBS_PATN="${_DATA_LINE[17]/"${_WEBS_ADDR}/"}"
 			_WEBS_PATN="${_WEBS_PATN%%/*}"
-			if ! _WORK_TEXT="$(LANG=C wget "${WGET_OPTN[@]}" --trust-server-names --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
-				_RET_CODE="$?"
-				_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
-				_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
-				_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
-				_MESG_TEXT="get pattern : error ${_RET_CODE}: ${_WORK_TEXT}"
-#				printf "[%s]\n" "${_WORK_TEXT}"
-				_TEXT_COLR="${TXT_RED}"
-				break
-			fi
+			case "${WGET_VERS:-1}" in
+				1)	# wget
+					if ! _WORK_TEXT="$(LANG=C wget "${WGET_OPTN[@]}" --trust-server-names --server-response --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
+						_RET_CODE="$?"
+						_WEBS_STAT="$(echo "${_WORK_TEXT}" | sed -ne '\%HTTP/[0-9.]\+%p')"
+						_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
+						_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
+						_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
+						case "${_WEBS_STAT}" in
+							200) ;;
+							*)
+								_MESG_TEXT="get pattern : error ${_RET_CODE}: ${_WORK_TEXT}"
+#								printf "[%s]\n" "${_WORK_TEXT}"
+								_TEXT_COLR="${TXT_RED}"
+								break
+								;;
+						esac
+					fi
+					;;
+				2)	# wget2
+					if ! _WORK_TEXT="$(LANG=C wget2 "${WGET_OPTN[@]}" --trust-server-names --server-response --output-document=- --stats-site=csv:- "${_WEBS_ADDR}" 2>&1)"; then
+						_RET_CODE="$?"
+						_WEBS_STAT="$(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 4)"
+						_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
+						_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
+						_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
+						case "${_WEBS_STAT}" in
+							200) ;;
+							*)
+								_MESG_TEXT="get pattern : error ${_RET_CODE}: ${_WORK_TEXT}"
+#								printf "[%s]\n" "${_WORK_TEXT}"
+								_TEXT_COLR="${TXT_RED}"
+								break
+								;;
+						esac
+					fi
+					;;
+				*)	# unknown wget
+#					printf "[%s]\n" "aborting because wget version is ${WGET_VERS:-1}"
+					if ! _WORK_TEXT="$(LANG=C curl "${CURL_OPTN[@]}" --header --output "${_WEBS_ADDR}" 2>&1)"; then
+						_RET_CODE="$?"
+						_WEBS_STAT="$(echo "${_WORK_TEXT}" | sed -ne '\%HTTP/[0-9.]\+%p')"
+						_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
+						_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
+						_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
+						case "${_WEBS_STAT}" in
+							200) ;;
+							*)
+								_MESG_TEXT="get pattern : error ${_RET_CODE}: ${_WORK_TEXT}"
+#								printf "[%s]\n" "${_WORK_TEXT}"
+								_TEXT_COLR="${TXT_RED}"
+								break
+								;;
+						esac
+					fi
+					;;
+			esac
 			_WORK_ARRY=()
-			IFS= mapfile -d $'\n' _WEBS_PAGE < <(echo -n "${_WORK_TEXT}")
+			IFS= mapfile -d $'\n' _WEBS_PAGE < <(echo -n "${_WORK_TEXT//$'\r'/}")
 			if ! _WORK_TEXT="$(echo "${_WEBS_PAGE[@]}" | grep "<a href=\"${_WEBS_PATN}/*\">")"; then
 				continue
 			fi
-			IFS= mapfile -d $'\n' _WORK_ARRY < <(echo -n "${_WORK_TEXT}")
+			IFS= mapfile -d $'\n' _WORK_ARRY < <(echo -n "${_WORK_TEXT//$'\r'/}")
 			_WORK_ARRY=("$(echo "${_WORK_ARRY[@]}" | sed -ne 's/^.*\('"${_WEBS_PATN}"'\).*$/\1/p')")
 			_WORK_TEXT="$(printf "%s\n" "${_WORK_ARRY[@]}" | sort -rVu -t $'\n')"
-			IFS= mapfile -d $'\n' -t _WORK_ARRY < <(echo -n "${_WORK_TEXT}")
+			IFS= mapfile -d $'\n' -t _WORK_ARRY < <(echo -n "${_WORK_TEXT//$'\r'/}")
 			_WEBS_ADDR="${_DATA_LINE[17]/"${_WEBS_PATN}"/"${_WORK_ARRY[0]}"}"
 			_DATA_LINE[17]="${_WEBS_ADDR}"
 		done
@@ -4723,18 +4784,88 @@ function funcCreate_menu() {
 		fi
 		# --- get and set server-side image file information ------------------
 		if [[ "${_TEXT_COLR}" != "${TXT_RED}" ]]; then
-			if ! _WORK_TEXT="$(LANG=C wget "${WGET_OPTN[@]}" --trust-server-names --spider --server-response --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
-				_RET_CODE="$?"
-				_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
-				_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
-				_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
-				_MESG_TEXT="get response: error ${_RET_CODE}: ${_WORK_TEXT}"
-#				printf "[%s]\n" "${_WORK_TEXT}"
-				_TEXT_COLR="${TXT_RED}"
-			fi
+			case "${WGET_VERS:-1}" in
+				1)	# wget
+					if ! _WORK_TEXT="$(LANG=C wget "${WGET_OPTN[@]}" --trust-server-names --spider --server-response --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
+						_RET_CODE="$?"
+						_WEBS_STAT="$(echo "${_WORK_TEXT}" | sed -ne '\%HTTP/[0-9.]\+[ \t]\+200%p')"
+						_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
+						_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
+						_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
+						case "${_WEBS_STAT}" in
+							200) ;;
+							*)
+								_MESG_TEXT="get response: error ${_RET_CODE}: ${_WORK_TEXT}"
+#								printf "[%s]\n" "${_WORK_TEXT}"
+								_TEXT_COLR="${TXT_RED}"
+								;;
+						esac
+					fi
+					;;
+				2)	# wget2
+#					ID:               $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 1)
+#					ParentID:         $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 2)
+#					URL:              $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 3)
+#					Status:           $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 4)
+#					Link:             $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 5)
+#					Method:           $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 6)
+#					Size:             $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 7)
+#					SizeDecompressed: $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 8)
+#					TransferTime:     $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 9)
+#					ResponseTime:     $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 10)
+#					Encoding:         $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 11)
+#					Verification:     $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 12)
+#					Last-Modified:    $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 13)
+#					Content-Type:     $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 14)
+					_WORK_TEXT="$(LANG=C wget2 "${WGET_OPTN[@]}" --trust-server-names --spider --server-response --output-document=- --stats-site=csv:- "${_WEBS_ADDR}" 2>&1)"
+					_RET_CODE="$?"
+					_WEBS_STAT="$(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 4)"
+					_WORK_TEXT="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+							  HTTP/1.1 $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 4 || true) --
+							  Content-Length: $(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 7 || true)
+							  Last-Modified: @$(echo "${_WORK_TEXT}" | tail -n 1 | cut -d ',' -f 13 || true)
+_EOT_
+					)"
+					if [[ "${_RET_CODE}" -ne 0 ]]; then
+						_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
+						_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
+						_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
+						case "${_WEBS_STAT}" in
+							200) ;;
+							*)
+								_MESG_TEXT="get response: error ${_RET_CODE}: ${_WORK_TEXT}"
+#								printf "[%s]\n" "${_WORK_TEXT}"
+								_TEXT_COLR="${TXT_RED}"
+								;;
+						esac
+					fi
+					;;
+				*)	# unknown wget
+#					printf "[%s]\n" "aborting because wget version is ${WGET_VERS:-1}"
+					if ! _WORK_TEXT="$(LANG=C curl "${CURL_OPTN[@]}" --head "${_WEBS_ADDR}" 2>&1)"; then
+						_RET_CODE="$?"
+						_WEBS_STAT="$(echo "${_WORK_TEXT}" | sed -ne '\%HTTP/[0-9.]\+[ \t]\+200%p')"
+						_WORK_TEXT="${_WORK_TEXT//["$'\r'"]/}"
+						_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
+						_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
+						_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
+						case "${_WEBS_STAT}" in
+							200) ;;
+							*)
+								_MESG_TEXT="get response: error ${_RET_CODE}: ${_WORK_TEXT}"
+#								printf "[%s]\n" "${_WORK_TEXT}"
+								_TEXT_COLR="${TXT_RED}"
+								;;
+						esac
+					fi
+					;;
+			esac
 			_WORK_TEXT="$(echo -n "${_WORK_TEXT}" | sed -e 's/\([ \t]\)\+/\1/g' -e 's/^[ \t]\+//g'  -e 's/[ \t]\+$//g')"
-			IFS= mapfile -d $'\n' -t _WEBS_PAGE < <(echo -n "${_WORK_TEXT}")
-#			printf "[%s]\n" "${_WEBS_PAGE[@]}"
+			IFS= mapfile -d $'\n' -t _WEBS_PAGE < <(echo -n "${_WORK_TEXT//$'\r'/}")
+			if set -o | grep "^xtrace\s*on$"; then
+				printf "[%s]\n" "${_WEBS_PAGE[@]}"
+			fi
 			_WEBS_STAT=""
 			for J in "${!_WEBS_PAGE[@]}"
 			do
@@ -4941,25 +5072,51 @@ function funcCreate_target_list() {
 
 # ----- create remaster download-----------------------------------------------
 function funcCreate_remaster_download() {
-	declare -r -a _TGET_LINE=("$@")
-	declare -r    _FILE_PATH="${_TGET_LINE[4]}/${_TGET_LINE[5]}"
+	declare -a    _DATA_LINE=("$@")
+	declare -r    _FILE_PATH="${_DATA_LINE[4]}/${_DATA_LINE[5]}"
+	declare -a    _FILE_INFO=()
 	declare       _WORK_TEXT=""
 	# --- download ------------------------------------------------------------
-	case "${_TGET_LINE[16]}" in
+	case "${_DATA_LINE[16]}" in
 		*${TXT_CYAN}*  | \
 		*${TXT_GREEN}* )
-			_WORK_TEXT="$(funcUnit_conversion "${_TGET_LINE[14]}")"
-			funcPrintf "%20.20s: %s" "download" "${_TGET_LINE[5]} ${_WORK_TEXT}"
-			if ! LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress --output-document="${_FILE_PATH}.tmp" "${_TGET_LINE[17]}" 2>&1; then
-				funcPrintf "%20.20s: %s" "error" "${TXT_RED}Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
-			else
-				if [[ ! -e "${_FILE_PATH}" ]]; then
-					touch "${_FILE_PATH}"
-				fi
-				if cp --preserve=timestamps "${_FILE_PATH}.tmp" "${_FILE_PATH}"; then
-					rm "${_FILE_PATH}.tmp"
-					DATA_LINE[16]="$(LANG=C file -L "${_FILE_PATH}")"
-				fi
+			_WORK_TEXT="$(funcUnit_conversion "${_DATA_LINE[14]}")"
+			funcPrintf "%20.20s: %s" "download" "${_DATA_LINE[5]} ${_WORK_TEXT}"
+			case "${WGET_VERS:-1}" in
+				1)	# wget
+					if ! LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress --progress=bar --output-document="${_FILE_PATH}.tmp" "${_DATA_LINE[17]}" 2>&1; then
+						funcPrintf "%20.20s: %s" "error" "${TXT_RED}Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+						return
+					fi
+					;;
+				2)	# wget2
+					if ! LANG=C wget2 "${WGET_OPTN[@]}" --continue --force-progress --progress=bar --output-document="${_FILE_PATH}.tmp" "${_DATA_LINE[17]}" 2>&1; then
+						funcPrintf "%20.20s: %s" "error" "${TXT_RED}Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+						return
+					fi
+					;;
+				*)	# unknown wget
+#					printf "[%s]\n" "aborting because wget version is ${WGET_VERS:-1}"
+					if ! LANG=C curl "${CURL_OPTN[@]}" --progress-bar --continue-at - --create-dirs --output-dir "${_FILE_PATH%/*}" --output "${_FILE_PATH##*/}.tmp" "${_DATA_LINE[17]}" 2>&1; then
+						funcPrintf "%20.20s: %s" "error" "${TXT_RED}Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
+						return
+					fi
+					;;
+			esac
+			if [[ ! -e "${_FILE_PATH}" ]]; then
+				touch "${_FILE_PATH}"
+			fi
+			if cp --preserve=timestamps "${_FILE_PATH}.tmp" "${_FILE_PATH}"; then
+				rm "${_FILE_PATH}.tmp"
+				IFS= mapfile -d ' ' -t _FILE_INFO < <(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}" || true)
+				_DATA_LINE[11]="${_FILE_INFO[5]:0:4}-${_FILE_INFO[5]:4:2}-${_FILE_INFO[5]:6:2}"
+				_DATA_LINE[13]="${_FILE_INFO[5]}"
+				_DATA_LINE[14]="${_FILE_INFO[4]}"
+				_DATA_LINE[15]="$(LANG=C file -L "${_FILE_PATH}")"
+				_DATA_LINE[15]="${_DATA_LINE[15]#*\'}"
+				_DATA_LINE[15]="${_DATA_LINE[15]%\'*}"
+				_DATA_LINE[15]="${_DATA_LINE[15]// /%20}"
+				_DATA_LINE[16]="-"
 			fi
 			;;
 		*)	;;
@@ -6237,6 +6394,7 @@ function funcDbg_parameter() {
 	# --- curl / wget parameter -----------------------------------------------
 	printf "%s=[%s]\n"	"CURL_OPTN"		"${CURL_OPTN[*]:-}"
 	printf "%s=[%s]\n"	"WGET_OPTN"		"${WGET_OPTN[*]:-}"
+	printf "%s=[%s]\n"	"WGET_VERS"		"${WGET_VERS:-}"
 
 	# --- work variables ------------------------------------------------------
 	printf "%s=[%s]\n"	"OLD_IFS"		"${OLD_IFS:-}"
@@ -6369,6 +6527,7 @@ function funcCall_create() {
 	declare -a    _COMD_LIST=()
 	declare -r    _COMD_TYPE="${2:-}"
 	declare -a    _DATA_ARRY=()
+	declare -a    _DATA_LINE=()
 	declare       _WORK_PARM=""
 	declare       _WORK_ENUM=""
 	declare -a    _WORK_ARRY=()
@@ -6442,10 +6601,10 @@ function funcCall_create() {
 		for I in "${!_DATA_ARRY[@]}"
 		do
 			_WORK_TEXT="$(echo -n "${_DATA_ARRY[I]}" | sed -e 's/\([ \t]\)\+/\1/g' -e 's/^[ \t]\+//g'  -e 's/[ \t]\+$//g')"
-			IFS=$'\n' mapfile -d ' ' -t DATA_LINE < <(echo -n "${_WORK_TEXT}")
-			case "${DATA_LINE[0]}" in
+			IFS=$'\n' mapfile -d ' ' -t _DATA_LINE < <(echo -n "${_WORK_TEXT}")
+			case "${_DATA_LINE[0]}" in
 				o)
-					if [[ ! "${DATA_LINE[17]}" =~ ^http://.*$ ]] && [[ ! "${DATA_LINE[17]}" =~ ^https://.*$ ]]; then
+					if [[ ! "${_DATA_LINE[17]}" =~ ^http://.*$ ]] && [[ ! "${_DATA_LINE[17]}" =~ ^https://.*$ ]]; then
 						unset "_DATA_ARRY[I]"
 						continue
 					fi
@@ -6453,8 +6612,8 @@ function funcCall_create() {
 					_WORK_TEXT="${_WORK_ARRY[*]/\*/\.\*}"
 					_WORK_TEXT="${_WORK_TEXT// /\\|}"
 					if [[ -n "${_WORK_TEXT:-}" ]] && [[ -z "$(echo "${J}" | sed -ne '/^\('"${_WORK_TEXT}"'\)$/p' || true)" ]]; then
-						DATA_LINE[0]="s"
-						_DATA_ARRY[I]="${DATA_LINE[*]}"
+						_DATA_LINE[0]="s"
+						_DATA_ARRY[I]="${_DATA_LINE[*]}"
 					fi
 					;;
 				m)
@@ -6514,113 +6673,6 @@ function funcCall_create() {
 	# shellcheck disable=SC2034
 	_COMD_RETN="${_COMD_LIST[*]:-}"
 }
-
-# ----- media download --------------------------------------------------------
-#function funcMedia_download() {
-##	declare -r    OLD_IFS="${IFS}"
-#	declare -r    _MSGS_TITL="call create"
-#	declare -n    _COMD_RETN="$1"
-#	declare -r -a _COMD_ENUM=("mini" "net" "dvd" "live")
-#	declare -a    _COMD_LIST=()
-#	declare -a    _DATA_ARRY=()
-#	declare       _WORK_PARM=""
-#	declare       _WORK_ENUM=""
-#	declare -i    I=0
-#	declare -i    J=0
-##	declare       FILE_VLID=""
-#	# -------------------------------------------------------------------------
-#	funcPrintf "---- ${_MSGS_TITL} ${TEXT_GAP1}"
-#	# -------------------------------------------------------------------------
-#	shift 2
-#	if [[ "${1:-}" = "all" ]] || [[ "${1:-}" = "a" ]]; then
-#		_COMD_LIST=()
-##		for ((I=0; I<"${#_COMD_ENUM[@]}"; I++))
-#		for I in "${!_COMD_ENUM[@]}"
-#		do
-#			_COMD_LIST+=("${_COMD_ENUM[I]}" "all")
-#		done
-#	elif [[ -z "${1:-}" ]] || [[ "$1" =~ ^- ]]; then
-#		_COMD_LIST=("${_COMD_ENUM[@]}" "$@")
-#	fi
-#	if [[ -n "${_COMD_LIST[*]}" ]]; then
-#		IFS=' =,'
-#		set -f
-#		set -- "${_COMD_LIST[@]:-}"
-#		set +f
-#		IFS=${OLD_IFS}
-#	fi
-#	while [[ -n "${1:-}" ]]
-#	do
-#		# shellcheck disable=SC2034
-#		_COMD_LIST=("${@:-}")
-#		_DATA_ARRY=()
-#		case "${1:-}" in
-#			mini ) _DATA_ARRY=("${DATA_LIST_MINI[@]}");;
-#			net  ) _DATA_ARRY=("${DATA_LIST_NET[@]}") ;;
-#			dvd  ) _DATA_ARRY=("${DATA_LIST_DVD[@]}") ;;
-#			live ) _DATA_ARRY=("${DATA_LIST_INST[@]}");;
-##			live ) _DATA_ARRY=("${DATA_LIST_LIVE[@]}");;
-##			tool ) _DATA_ARRY=("${DATA_LIST_TOOL[@]}");;
-##			comd ) _DATA_ARRY=("${DATA_LIST_SCMD[@]}");;
-#			-* )
-#				break
-#				;;
-#			* )
-#				;;
-#		esac
-#		if [[ "${#_DATA_ARRY[@]}" -gt 0 ]]; then
-##			for ((I=0, J=0; I<"${#_DATA_ARRY[@]}"; I++))
-#			J=0
-#			for I in "${!_DATA_ARRY[@]}"
-#			do
-#				read -r -a DATA_LINE < <(echo "${_DATA_ARRY[I]}")
-#				if [[ "${DATA_LINE[0]}" != "o" ]] || { [[ ! "${DATA_LINE[17]}" =~ ^http://.*$ ]] && [[ ! "${DATA_LINE[17]}" =~ ^https://.*$ ]]; }; then
-#					continue
-#				fi
-#				J+=1
-#			done
-#			TGET_INDX=""
-#			case "${2:-}" in
-#				a | all )
-#					shift;
-#					TGET_INDX="{1..${J}}"
-#					;;
-#				*       )
-#					_WORK_ENUM="${_COMD_ENUM[*]}"
-#					_WORK_ENUM="${_WORK_ENUM// /\\|}"
-#					# shellcheck disable=SC2312
-#					if [[ -n "${2:-}" ]] && [[ -z "$(echo "${2:-}" | sed -ne '/\('"${_WORK_ENUM}"'\)/p')" ]]; then
-#						shift
-#						_WORK_PARM="$*"
-#						# shellcheck disable=SC2001
-#						TGET_INDX="$(echo "${_WORK_PARM}" | sed -e 's/\('"${_WORK_ENUM}"'\).*//g')"
-#					fi
-#					;;
-#			esac
-#			TGET_INDX="$(eval echo "${TGET_INDX}")"
-#			TGET_LIST=()
-#			funcCreate_menu "${_DATA_ARRY[@]}"
-#			if [[ -z "${TGET_INDX}" ]]; then
-#				funcCreate_target_list
-#			fi
-##			for ((I=0; I<"${#TGET_LIST[@]}"; I++))
-#			for I in "${!TGET_LIST[@]}"
-#			do
-#				read -r -a TGET_LINE < <(echo "${TGET_LIST[I]}")
-#				funcPrintf "===    start: ${TGET_LINE[4]} ${TEXT_GAP2}"
-#				# --- download ------------------------------------------------
-#				funcCreate_remaster_download "${TGET_LINE[@]}"
-#				funcPrintf "=== complete: ${TGET_LINE[4]} ${TEXT_GAP2}"
-#			done
-#		fi
-#		shift
-#	done
-#	# -------------------------------------------------------------------------
-#	rm -rf "${DIRS_TEMP:?}"
-#	# -------------------------------------------------------------------------
-#	# shellcheck disable=SC2034
-#	_COMD_RETN="${_COMD_LIST[*]:-}"
-#}
 
 # === main ====================================================================
 
