@@ -263,7 +263,7 @@
 	declare -r    DIRS_RMAK="${DIRS_SHAR}/rmak"				# remake file
 
 	# --- open-vm-tools -------------------------------------------------------
-	declare -r    HGFS_DIRS="${DIRS_HGFS}/workspace/Image"	# vmware shared directory
+	declare -r    HGFS_DIRS="${DIRS_HGFS}/workspace/image"	# vmware shared directory
 
 	# --- configuration file template -----------------------------------------
 	declare -r    CONF_DIRS="${DIRS_CONF}/_template"
@@ -604,8 +604,8 @@
 		"o  centos-stream-netinst-9         CentOS%20Stream%209                     centos              ${DIRS_ISOS}    CentOS-Stream-9-latest-x86_64-boot.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_net.cfg    ${HGFS_DIRS}/linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso                                " \
 		"o  centos-stream-netinst-10        CentOS%20Stream%2010                    centos              ${DIRS_ISOS}    CentOS-Stream-10-latest-x86_64-boot.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-10_net.cfg   ${HGFS_DIRS}/linux/centos        2024-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-boot.iso                              " \
 		"o  almalinux-netinst-9             Alma%20Linux%209                        almalinux           ${DIRS_ISOS}    AlmaLinux-9-latest-x86_64-boot.iso              images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_net.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9-latest-x86_64-boot.iso                                                          " \
-		"x  rockylinux-netinst-8            Rocky%20Linux%208                       Rocky               ${DIRS_ISOS}    Rocky-8.10-x86_64-boot.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-boot.iso                                                         " \
-		"o  rockylinux-netinst-9            Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-boot.iso                  images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_net.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso                                                         " \
+		"x  rockylinux-netinst-8            Rocky%20Linux%208                       Rocky               ${DIRS_ISOS}    Rocky-8.10-x86_64-boot.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_net.cfg       ${HGFS_DIRS}/linux/rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-boot.iso                                                         " \
+		"o  rockylinux-netinst-9            Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-boot.iso                  images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_net.cfg       ${HGFS_DIRS}/linux/rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso                                                         " \
 		"x  miraclelinux-netinst-8          Miracle%20Linux%208                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-8.10-rtm-minimal-x86_64.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                   " \
 		"o  miraclelinux-netinst-9          Miracle%20Linux%209                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-9.4-rtm-minimal-x86_64.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso                   " \
 		"x  opensuse-leap-netinst-15.5      openSUSE%20Leap%2015.5                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.5-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_net.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-NET-x86_64-Media.iso                                         " \
@@ -648,8 +648,8 @@
 		"o  centos-stream-9                 CentOS%20Stream%209                     centos              ${DIRS_ISOS}    CentOS-Stream-9-latest-x86_64-dvd1.iso          images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-9_dvd.cfg    ${HGFS_DIRS}/linux/centos        2021-xx-xx  2027-05-31  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso                                " \
 		"o  centos-stream-10                CentOS%20Stream%2010                    centos              ${DIRS_ISOS}    CentOS-Stream-10-latest-x86_64-dvd1.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_centos-stream-10_dvd.cfg   ${HGFS_DIRS}/linux/centos        2024-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.iij.ad.jp/pub/linux/centos-stream/10-stream/BaseOS/x86_64/iso/CentOS-Stream-10-latest-x86_64-dvd1.iso                              " \
 		"o  almalinux-9                     Alma%20Linux%209                        almalinux           ${DIRS_ISOS}    AlmaLinux-9-latest-x86_64-dvd.iso               images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_almalinux-9_dvd.cfg        ${HGFS_DIRS}/linux/almalinux     2022-05-26  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-9-latest-x86_64-dvd.iso                                                           " \
-		"x  rockylinux-8                    Rocky%20Linux%208                       Rocky               ${DIRS_ISOS}    Rocky-8.10-x86_64-dvd1.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-dvd1.iso                                                         " \
-		"o  rockylinux-9                    Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-dvd.iso                   images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_dvd.cfg       ${HGFS_DIRS}/linux/Rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-dvd.iso                                                          " \
+		"x  rockylinux-8                    Rocky%20Linux%208                       Rocky               ${DIRS_ISOS}    Rocky-8.10-x86_64-dvd1.iso                      images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-8_dvd.cfg       ${HGFS_DIRS}/linux/rocky         2022-11-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8[0-9.]*-x86_64-dvd1.iso                                                         " \
+		"o  rockylinux-9                    Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-dvd.iso                   images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_dvd.cfg       ${HGFS_DIRS}/linux/rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-dvd.iso                                                          " \
 		"x  miraclelinux-8                  Miracle%20Linux%208                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-8.10-rtm-x86_64.iso                images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                           " \
 		"o  miraclelinux-9                  Miracle%20Linux%209                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-9.4-rtm-x86_64.iso                 images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso                           " \
 		"x  opensuse-leap-15.5              openSUSE%20Leap%2015.5                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.5-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-DVD-x86_64-Media.iso                                         " \
@@ -4789,12 +4789,14 @@ function funcCreate_menu() {
 					if ! _WORK_TEXT="$(LANG=C wget "${WGET_OPTN[@]}" --trust-server-names --spider --server-response --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
 						_RET_CODE="$?"
 						_WEBS_STAT="$(echo "${_WORK_TEXT}" | sed -ne '\%HTTP/[0-9.]\+[ \t]\+200%p')"
-						_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
-						_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
-						_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
 						case "${_WEBS_STAT}" in
-							200) ;;
+							200)
+								_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
+								_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
+								_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
+								;;
 							*)
+								_WORK_TEXT="$(echo "${_WORK_TEXT}" | sed -ne '\%HTTP/[0-9.]\+[ \t]\+[0-9]\+%p')"
 								_MESG_TEXT="get response: error ${_RET_CODE}: ${_WORK_TEXT}"
 #								printf "[%s]\n" "${_WORK_TEXT}"
 								_TEXT_COLR="${TXT_RED}"
@@ -4846,13 +4848,15 @@ _EOT_
 					if ! _WORK_TEXT="$(LANG=C curl "${CURL_OPTN[@]}" --head "${_WEBS_ADDR}" 2>&1)"; then
 						_RET_CODE="$?"
 						_WEBS_STAT="$(echo "${_WORK_TEXT}" | sed -ne '\%HTTP/[0-9.]\+[ \t]\+200%p')"
-						_WORK_TEXT="${_WORK_TEXT//["$'\r'"]/}"
-						_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
-						_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
-						_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
 						case "${_WEBS_STAT}" in
-							200) ;;
+							200)
+								_WORK_TEXT="${_WORK_TEXT//["$'\r'"]/}"
+								_WORK_TEXT="${_WORK_TEXT//["${IFS}"]/ }"
+								_WORK_TEXT="${_WORK_TEXT#"${_WORK_TEXT%%[!"${IFS}"]*}"}"	# ltrim
+								_WORK_TEXT="${_WORK_TEXT%"${_WORK_TEXT##*[!"${IFS}"]}"}"	# rtrim
+								;;
 							*)
+								_WORK_TEXT="$(echo "${_WORK_TEXT}" | sed -ne '\%HTTP/[0-9.]\+[ \t]\+[0-9]\+%p')"
 								_MESG_TEXT="get response: error ${_RET_CODE}: ${_WORK_TEXT}"
 #								printf "[%s]\n" "${_WORK_TEXT}"
 								_TEXT_COLR="${TXT_RED}"
@@ -4998,6 +5002,7 @@ _EOT_
 							fi
 							_DATA_LINE[11]="${_WORK_TEXT:0:4}-${_WORK_TEXT:4:2}-${_WORK_TEXT:6:2}"
 							_WORK_TEXT="$(TZ=UTC date -d "${_WORK_LINE#* }" "+%Y-%m-%d_%H:%M:%S")"
+							_DATA_LINE[18]="$(TZ=UTC date -d "${_WORK_LINE#* }" "+%Y%m%d%H%M%S")"
 #							_DATA_LINE[16]+="${_DATA_LINE[16]:+","}${_WORK_LINE%%:*}=${_WORK_TEXT}"
 							;;
 						*)
@@ -5011,7 +5016,8 @@ _EOT_
 		if [[ ! -e "${_FILE_PATH}" ]]; then
 			_TEXT_COLR="${_TEXT_COLR:-"${TXT_YELLOW}"}${TXT_REV}"
 		else
-			IFS= mapfile -d ' ' -t _FILE_INFO < <(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}" || true)
+			_WORK_TEXT="$(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}")"
+			IFS= mapfile -d ' ' -t _FILE_INFO < <(echo -n "${_WORK_TEXT}")
 			_DATA_LINE+=("${_FILE_INFO[5]}")
 			if [[ "${_DATA_LINE[13]}" != "-" ]] \
 			&& [[ "${_DATA_LINE[18]}" != "-" ]] \
@@ -5023,8 +5029,9 @@ _EOT_
 					*      ) _FILE_PATH="${DIRS_CONF}/${_DATA_LINE[9]}";;
 				esac
 				if [[ -e "${_FILE_PATH}" ]]; then
-					IFS= mapfile -d ' ' -t _FILE_INFO < <(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}" || true)
-					if [[ "${_FILE_INFO[5]}" -gt "${_DATA_LINE[18]}" ]]; then
+					_WORK_TEXT="$(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}")"
+					IFS= mapfile -d ' ' -t _FILE_INFO < <(echo -n "${_WORK_TEXT}")
+					if [[ "${_FILE_INFO[5]}" -gt "${_DATA_LINE[19]}" ]]; then
 						_TEXT_COLR="${_TEXT_COLR:-"${TXT_YELLOW}"}${TXT_REV}"
 					fi
 				fi
@@ -5074,9 +5081,9 @@ function funcCreate_target_list() {
 function funcCreate_remaster_download() {
 	declare -a    _DATA_LINE=("$@")
 	declare -r    _FILE_PATH="${_DATA_LINE[4]}/${_DATA_LINE[5]}"
-	declare -a    _FILE_INFO=()
 	declare       _WORK_TEXT=""
 	# --- download ------------------------------------------------------------
+	trap 'rm -rf '"${_FILE_PATH}.tmp"'' EXIT
 	case "${_DATA_LINE[16]}" in
 		*${TXT_CYAN}*  | \
 		*${TXT_GREEN}* )
@@ -5085,12 +5092,14 @@ function funcCreate_remaster_download() {
 			case "${WGET_VERS:-1}" in
 				1)	# wget
 					if ! LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress --progress=bar --output-document="${_FILE_PATH}.tmp" "${_DATA_LINE[17]}" 2>&1; then
+						rm "${_FILE_PATH}.tmp"
 						funcPrintf "%20.20s: %s" "error" "${TXT_RED}Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 						return
 					fi
 					;;
 				2)	# wget2
 					if ! LANG=C wget2 "${WGET_OPTN[@]}" --continue --force-progress --progress=bar --output-document="${_FILE_PATH}.tmp" "${_DATA_LINE[17]}" 2>&1; then
+						rm "${_FILE_PATH}.tmp"
 						funcPrintf "%20.20s: %s" "error" "${TXT_RED}Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 						return
 					fi
@@ -5098,6 +5107,7 @@ function funcCreate_remaster_download() {
 				*)	# unknown wget
 #					printf "[%s]\n" "aborting because wget version is ${WGET_VERS:-1}"
 					if ! LANG=C curl "${CURL_OPTN[@]}" --progress-bar --continue-at - --create-dirs --output-dir "${_FILE_PATH%/*}" --output "${_FILE_PATH##*/}.tmp" "${_DATA_LINE[17]}" 2>&1; then
+						rm "${_FILE_PATH}.tmp"
 						funcPrintf "%20.20s: %s" "error" "${TXT_RED}Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
 						return
 					fi
@@ -5108,15 +5118,6 @@ function funcCreate_remaster_download() {
 			fi
 			if cp --preserve=timestamps "${_FILE_PATH}.tmp" "${_FILE_PATH}"; then
 				rm "${_FILE_PATH}.tmp"
-				IFS= mapfile -d ' ' -t _FILE_INFO < <(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}" || true)
-				_DATA_LINE[11]="${_FILE_INFO[5]:0:4}-${_FILE_INFO[5]:4:2}-${_FILE_INFO[5]:6:2}"
-				_DATA_LINE[13]="${_FILE_INFO[5]}"
-				_DATA_LINE[14]="${_FILE_INFO[4]}"
-				_DATA_LINE[15]="$(LANG=C file -L "${_FILE_PATH}")"
-				_DATA_LINE[15]="${_DATA_LINE[15]#*\'}"
-				_DATA_LINE[15]="${_DATA_LINE[15]%\'*}"
-				_DATA_LINE[15]="${_DATA_LINE[15]// /%20}"
-				_DATA_LINE[16]="-"
 			fi
 			;;
 		*)	;;
@@ -6031,6 +6032,9 @@ function funcCreate_remaster() {
 #	declare -r -a DATA_ARRY=("$@")
 	declare -r    _COMD_TYPE="${1:-}"
 	declare -a    _TGET_LINE=()
+	declare       _FILE_PATH=""
+	declare -a    _FILE_INFO=()
+	declare       _WORK_TEXT=""
 #	declare -i    RET_CD=0
 	declare -i    I=0
 #	declare -i    J=0
@@ -6044,6 +6048,26 @@ function funcCreate_remaster() {
 			continue
 		fi
 		funcPrintf "%-3.3s%17.17s: %s %s" "===" "start" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
+		# --- check already started -------------------------------------------
+		_FILE_PATH="${_TGET_LINE[4]}/${_TGET_LINE[5]}"
+		if [[ -e "${_FILE_PATH}.tmp" ]]; then
+			funcPrintf "%20.20s: %s" "skip" "${TXT_YELLOW}Download was skipped because already started${TXT_RESET}"
+			continue
+		fi
+		# --- check for new files ---------------------------------------------
+		if [[ -e "${_FILE_PATH}" ]]; then
+			if [[ "${_TGET_LINE[18]}" != "-" ]] && [[ "${_TGET_LINE[18]}" -ge "${_TGET_LINE[13]}" ]]; then
+				_FILE_PATH="${DIRS_RMAK}/${_TGET_LINE[5]%.*}_${_TGET_LINE[9]%%/*}.${_TGET_LINE[5]##*.}"
+				if [[ -e "${_FILE_PATH}" ]]; then
+					_WORK_TEXT="$(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}")"
+					IFS= mapfile -d ' ' -t _FILE_INFO < <(echo -n "${_WORK_TEXT}")
+					if [[ "${_FILE_INFO[5]}" -ge "${_TGET_LINE[18]}" ]]; then
+						funcPrintf "%20.20s: %s" "skip" "${TXT_YELLOW}Download skipped because newer file already exists${TXT_RESET}"
+						continue
+					fi
+				fi
+			fi
+		fi
 		# --- download --------------------------------------------------------
 		funcCreate_remaster_download "${_TGET_LINE[@]}"
 #		if [[ -n "${FILE_VLID}" ]]; then
