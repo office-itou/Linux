@@ -1,149 +1,160 @@
-###############################################################################
-
+# *** nfs *********************************************************************
+# --- server ------------------------------------------------------------------
 sudo bash -c '
-mv /srv/user/share/conf /srv/user/share/conf.back
-mv /srv/user/share/rmak /srv/user/share/rmak.back
-ln -s /srv/hgfs/workspace/Image/linux/bin/conf/ /srv/user/share/conf
-ln -s /srv/hgfs/workspace/Image/linux/bin/rmak/ /srv/user/share/rmak
+  apt-get -y install nfs-kernel-server
+  sed -i.orig /etc/exports -e '\''$ a /srv 192.168.1.0/24(rw,no_subtree_check,no_root_squash,no_wdelay)'\''
+  exportfs -ar
+  exportfs -v
 '
 
 sudo bash -c '
-mount --rbind /srv/ ./chroot/debian12/srv/
-mount --rbind /dev  ./chroot/debian12/dev
-mount  --bind /proc ./chroot/debian12/proc
-mount  --bind /run  ./chroot/debian12/run
-mount --rbind /sys  ./chroot/debian12/sys
-mount --rbind /tmp  ./chroot/debian12/tmp
-mount --make-rslave ./chroot/debian12/dev
-mount --make-rslave ./chroot/debian12/sys
-systemctl daemon-reload
-chroot ./chroot/debian12/
+  mount -t nfs 192.168.1.12:/srv/user/share/imgs /srv/user/share/imgs
+  mount -t nfs 192.168.1.12:/srv/user/share/isos /srv/user/share/isos
+  mount -t nfs 192.168.1.12:/srv/user/share/load /srv/user/share/load
 '
 
-# *****************************************************************************
-# * package installation                                                      *
-# *****************************************************************************
-sudo apt-get install mmdebstrap
+# ---client -------------------------------------------------------------------
+sudo bash -c '
+  apt-get -y install nfs-common nfs4-acl-tools
+  mount -t nfs 192.168.1.12:/srv /srv
+'
 
-# *****************************************************************************
-# * create chroot environment                                                 *
-# *****************************************************************************
+# *** pxeboot *****************************************************************
+sudo bash -c '
+  /var/adm/installer/preseed/get_module_ipxe.sh
+  cp -a /var/adm/installer/preseed/samp/etc/dnsmasq.d/pxeboot_ipxe.conf /etc/dnsmasq.d/
+  systemctl restart dnsmasq.service
+'
+
+# *** chroot ******************************************************************
+sudo bash -c '
+  mv /srv/user/share/conf /srv/user/share/conf.back
+  mv /srv/user/share/rmak /srv/user/share/rmak.back
+  rm -f /srv/user/share/conf
+  rm -f /srv/user/share/rmak
+  ln -fs /srv/hgfs/workspace/image/linux/bin/conf/ /srv/user/share/conf
+  ln -fs /srv/hgfs/workspace/image/linux/bin/rmak/ /srv/user/share/rmak
+'
+
+# *** package installation ****************************************************
+sudo apt-get -y install mmdebstrap
+
+# *** create chroot environment ***********************************************
 # === debian bookworm =========================================================
-sudo umount $(awk '{print $2;}' /proc/mounts | grep './chroot/debian12/' | sort -r)
-sudo rm -rf --one-file-system ./chroot/debian12
-sudo mkdir -p ./chroot/debian12
-sudo mmdebstrap \
---variant=minbase \
---mode=sudo \
---format=directory \
---keyring=/srv/user/share/conf/_keyring/ \
---include=" \
-  systemd \
-  fakechroot \
-  iproute2 \
-  iputils-ping \
-  gnupg \
-  apt-utils \
-  apt-listchanges \
-  bash-completion \
-  locales-all \
-  locales \
-  less \
-  vim \
-  shellcheck \
-  file \
-  tree \
-" \
---components='main contrib non-free non-free-firmware' \
-bookworm \
-./chroot/debian12
+sudo bash -c '
+  rm -rf /srv/user/share/chroot/debian12
+  mkdir -p /srv/user/share/chroot/debian12
+  mmdebstrap \
+  --variant=minbase \
+  --mode=sudo \
+  --format=directory \
+  --keyring=/srv/user/share/conf/_keyring/ \
+  --include=" \
+    systemd \
+    fakechroot \
+    iproute2 \
+    iputils-ping \
+    gnupg \
+    apt-utils \
+    apt-listchanges \
+    bash-completion \
+    locales-all \
+    locales \
+    less \
+    vim \
+    shellcheck \
+    file \
+    tree \
+    man \
+  " \
+  --components='\''main contrib non-free non-free-firmware'\'' \
+  bookworm \
+  /srv/user/share/chroot/debian12
+'
 
-# === ubuntu plucky ===========================================================
-sudo umount $(awk '{print $2;}' /proc/mounts | grep './chroot/ubuntu2504/' | sort -r)
-sudo rm -rf --one-file-system ./chroot/ubuntu2504
-sudo mkdir -p ./chroot/ubuntu2504
-sudo mmdebstrap \
---variant=minbase \
---mode=sudo \
---format=directory \
---keyring=/srv/user/share/conf/_keyring/ \
---include=" \
-  systemd \
-  fakechroot \
-  iproute2 \
-  iputils-ping \
-  gnupg \
-  apt-utils \
-  apt-listchanges \
-  bash-completion \
-  locales-all \
-  locales \
-  less \
-  vim \
-  shellcheck \
-  file \
-  tree \
-" \
---components='main restricted universe multiverse' \
-plucky \
-./chroot/ubuntu2504
-
-# *****************************************************************************
-# * setting up your work environment                                          *
-# *****************************************************************************
-sudo sed -i ./chroot/debian12/root/.bashrc -e '/alias[ \t]\+ls=/ s/^#/ /' -e '/export LS_OPTIONS/ s/^#/ /'
-# -----------------------------------------------------------------------------
-cat <<- '_EOT_' | sudo tee ./chroot/debian12/root/.vimrc > /dev/null
+# *** setting up your work environment ****************************************
+sudo bash -c '
+  sed -i /srv/user/share/chroot/debian12/root/.bashrc -e '\''/alias[ \t]\+ls=/ s/^#/ /'\'' -e '\''/export LS_OPTIONS/ s/^#/ /'\''
+  cat <<- '\''_EOT_'\'' > /srv/user/share/chroot/debian12/root/.vimrc
 set number              " Print the line number in front of each line.
 set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
 set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
-set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+set listchars=tab:>_    " Strings to use in '\''list'\'' mode and for the |:list| command.
 set nowrap              " This option changes how text is displayed.
 set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
 set laststatus=2        " The value of this option influences when the last window will have a status line always.
 set mouse-=a            " Disable mouse usage
 syntax on               " Vim5 and later versions support syntax highlighting.
 _EOT_
+'
 
-# *****************************************************************************
-# * mount work environment                                                    *
-# *****************************************************************************
-sudo mkdir -p ./chroot/debian12/srv
-sudo mount --rbind /srv/ ./chroot/debian12/srv/
-
-# *****************************************************************************
-# * mount system directory                                                    *
-# *****************************************************************************
-sudo mount --rbind /dev  ./chroot/debian12/dev
-sudo mount  --bind /proc ./chroot/debian12/proc
-sudo mount  --bind /run  ./chroot/debian12/run
-sudo mount --rbind /sys  ./chroot/debian12/sys
-sudo mount --rbind /tmp  ./chroot/debian12/tmp
-sudo mount --make-rslave ./chroot/debian12/dev
-sudo mount --make-rslave ./chroot/debian12/sys
-sudo systemctl daemon-reload
-
-# *****************************************************************************
-# * start the chroot environment                                              *
-# *****************************************************************************
-#sudo usermod -s /bin/bash root          # only if root login is prohibited
+# *** working in a chroot environment *****************************************
+sudo /srv/hgfs/workspace/image/linux/bin/run_chroot.sh /srv/user/share/chroot/debian12/
+sudo /srv/hgfs/workspace/image/linux/bin/run_chroot.sh /srv/user/share/chroot/ubuntu2504/
 # -----------------------------------------------------------------------------
-sudo chroot ./chroot/debian12/
-
-# *****************************************************************************
-# * working in a chroot environment                                           *
-# *****************************************************************************
 apt-get update
 apt-get -y install bzip2 cpio curl fdisk initramfs-tools-core isolinux isomd5sum lz4 lzop wget procps xorriso xxd xz-utils zstd
 apt-get -y install curl grub-common grub-efi-amd64-bin grub-pc-bin pxelinux rsync syslinux-common syslinux-efi
-mkdir -p /srv/user/private/
-ln -s /srv/hgfs/workspace/Image/linux/bin/{mk_custom_iso.sh,mk_live_media.sh,mk_pxeboot_conf.sh,sv_check.sh} /srv/user/private/
+ln -s /srv/hgfs/workspace/image/linux/bin/{mk_custom_iso.sh,mk_live_media.sh,mk_pxeboot_conf.sh,sv_check.sh} /srv/user/private/
 cd /srv/user/private/
 
-# *****************************************************************************
-# * exiting the chroot environment                                            *
-# *****************************************************************************
-sudo umount $(awk '{print $2;}' /proc/mounts | grep './chroot/debian12/' | sort -r)
+# *** exiting the chroot environment ******************************************
+sudo umount $(awk '{print $2;}' /proc/mounts | grep '/srv/user/share/chroot/debian12/' | sort -r)
+
+### eof #######################################################################
+
+# *** create chroot environment ***********************************************
+# === ubuntu plucky ===========================================================
+sudo bash -c '
+  rm -rf /srv/user/share/chroot/ubuntu2504
+  mkdir -p /srv/user/share/chroot/ubuntu2504
+  mmdebstrap \
+  --variant=minbase \
+  --mode=sudo \
+  --format=directory \
+  --keyring=/srv/user/share/conf/_keyring/ \
+  --include=" \
+    systemd \
+    fakechroot \
+    iproute2 \
+    iputils-ping \
+    gnupg \
+    apt-utils \
+    apt-listchanges \
+    bash-completion \
+    locales-all \
+    locales \
+    less \
+    vim \
+    shellcheck \
+    file \
+    tree \
+    man \
+  " \
+  --components='\''main restricted universe multiverse'\'' \
+  plucky \
+  /srv/user/share/chroot/ubuntu2504
+'
+
+### eof #######################################################################
+
+# *** create chroot environment ***********************************************
+# === rhel ====================================================================
+sudo bash -c '
+  echo "nameserver 192.168.1.254" > /srv/user/share/chroot/centos-stream-9/etc/resolv.conf
+  sed -i /srv/user/share/chroot/centos-stream-9/root/.bashrc -e '\''/alias[ \t]\+ls=/ s/^#/ /'\'' -e '\''/export LS_OPTIONS/ s/^#/ /'\''
+  cat <<- '\''_EOT_'\'' > /srv/user/share/chroot/centos-stream-9/root/.vimrc
+set number              " Print the line number in front of each line.
+set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+set listchars=tab:>_    " Strings to use in '\''list'\'' mode and for the |:list| command.
+set nowrap              " This option changes how text is displayed.
+set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+set laststatus=2        " The value of this option influences when the last window will have a status line always.
+set mouse-=a            " Disable mouse usage
+syntax on               " Vim5 and later versions support syntax highlighting.
+_EOT_
+'
 
 ### eof #######################################################################
 
@@ -156,223 +167,6 @@ wget "https://boot.ipxe.org/undionly.kpxe"
 wget "https://boot.ipxe.org/ipxe.efi"
 wget "https://github.com/ipxe/wimboot/releases/latest/download/wimboot"
 '
-sudo bash -c '
-mv /srv/user/share/conf /srv/user/share/conf.back
-mv /srv/user/share/rmak /srv/user/share/rmak.back
-ln -s /srv/hgfs/workspace/Image/linux/bin/conf/ /srv/user/share/conf
-ln -s /srv/hgfs/workspace/Image/linux/bin/rmak/ /srv/user/share/rmak
-'
-sudo bash -c '
-mkdir -p /srv/user/share/{imgs,isos,load}
-ln -s /srv/hgfs/workspace/Image/linux/bin/{conf,rmak} /srv/user/share/
-ln -s /srv/user/share/{conf,imgs,isos,load,rmak} /srv/http/html/
-'
-ls -l /srv/{user/share,http/html}/
-
-
-
-### exec ###
-sudo mount --rbind /srv/ ./chroot/debian12/srv/
-sudo mount --rbind /dev  ./chroot/debian12/dev
-sudo mount  --bind /proc ./chroot/debian12/proc
-sudo mount  --bind /run  ./chroot/debian12/run
-sudo mount --rbind /sys  ./chroot/debian12/sys
-sudo mount --rbind /tmp  ./chroot/debian12/tmp
-sudo mount --make-rslave ./chroot/debian12/dev
-sudo mount --make-rslave ./chroot/debian12/sys
-sudo systemctl daemon-reload
-sudo chroot ./chroot/debian12/
-
-### rhel ######################################################################
-rm -fr "${HOME}/repo"
-mkdir -p "${HOME}/repo"
-for _LIST in \
-  "o  fedora-40           Fedora-40           mirrorlist  https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-40&arch=x86_64&country=JP  " \
-  "o  fedora-41           Fedora-41           mirrorlist  https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-41&arch=x86_64&country=JP  " \
-  "o  centos-stream-9     CentOS-stream-9     baseurl     https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/                         " \
-  "o  centos-stream-10    CentOS-stream-10    baseurl     https://mirror.stream.centos.org/10-stream/BaseOS/x86_64/os/                        " \
-  "x  almalinux-8         AlmaLinux-8         mirrorlist  https://mirrors.almalinux.org/mirrorlist/8/baseos/                                  " \
-  "o  almalinux-9         AlmaLinux-9         mirrorlist  https://mirrors.almalinux.org/mirrorlist/9/baseos/                                  " \
-  "x  almalinux-8         AlmaLinux-8         baseurl     https://repo.almalinux.org/almalinux/8/BaseOS/x86_64/os/                            " \
-  "-  almalinux-9         AlmaLinux-9         baseurl     https://repo.almalinux.org/almalinux/9/BaseOS/x86_64/os/                            " \
-  "x  rockylinux-8        RockyLinux-8        baseurl     https://download.rockylinux.org/pub/rocky/8/BaseOS/x86_64/os/                       " \
-  "o  rockylinux-9        RockyLinux-9        baseurl     https://download.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os/                       " \
-  "x  miraclelinux-8      MiracleLinux-8      baseurl     https://repo.dist.miraclelinux.net/miraclelinux/8-latest/BaseOS/x86_64/os/          " \
-  "o  miraclelinux-9      MiracleLinux-9      baseurl     https://repo.dist.miraclelinux.net/miraclelinux/9-latest/BaseOS/x86_64/os/          "
-do
-  read -r -a _LINE < <(echo "${_LIST}")
-  if [[ "${_LINE[0]}" != "o" ]]; then
-    continue
-  fi
-  printf "%-20.20s %s\n" "${_LINE[1]}" "${_LINE[4]}"
-  case "${_LINE[3]}" in
-    mirrorlist)
-      case "${_LINE[1]%-*}" in
-        fedora)
-          cat <<- _EOT_ > "${HOME}/repo/${_LINE[1]}".repo
-			[${_LINE[1]}-chroot-BaseOS]
-			name=${_LINE[2]//-/ } - BaseOS
-			mirrorlist=${_LINE[4]}
-			enabled=1
-			gpgcheck=1
-			
-_EOT_
-          ;;
-        almalinux)
-          cat <<- _EOT_ > "${HOME}/repo/${_LINE[1]}".repo
-			[${_LINE[1]}-chroot-BaseOS]
-			name=${_LINE[2]//-/ } - BaseOS
-			mirrorlist=${_LINE[4]}
-			enabled=1
-			gpgcheck=1
-			
-			[${_LINE[1]}-chroot-AppStream]
-			name=${_LINE[2]//-/ } - AppStream
-			mirrorlist=${_LINE[4]/baseos/appstream}
-			enabled=1
-			gpgcheck=1
-			
-_EOT_
-          ;;
-        *)
-          ;;
-      esac
-    baseurl)
-      case "${_LINE[1]%-*}" in
-        fedora)
-          ;;
-        centos-stream)
-          cat <<- _EOT_ > "${HOME}/repo/${_LINE[1]}".repo
-			[${_LINE[1]}-chroot-BaseOS]
-			name=${_LINE[2]}-BaseOS
-			baseurl=${_LINE[4]}
-			gpgcheck=0
-			
-			[${_LINE[1]}-chroot-AppStream]
-			name=${_LINE[2]}-AppStream
-			baseurl=${_LINE[4]/BaseOS/AppStream}
-			gpgcheck=0
-			
-_EOT_
-          ;;
-        *)
-          cat <<- _EOT_ > "${HOME}/repo/${_LINE[1]}".repo
-			[${_LINE[1]}-chroot-BaseOS]
-			name=${_LINE[2]}-BaseOS
-			baseurl=${_LINE[4]}
-			gpgcheck=0
-			
-			[${_LINE[1]}-chroot-AppStream]
-			name=${_LINE[2]}-AppStream
-			baseurl=${_LINE[4]/BaseOS/AppStream}
-			gpgcheck=0
-			
-		[${_LINE[1]}-chroot-Extras]
-		name=${_LINE[2]}-Extras
-		baseurl=${_LINE[3]/BaseOS/extras}
-		gpgcheck=0
-		
-_EOT_
-          ;;
-      esac
-      ;;
-    *)
-      ;;
-  esac
-done
-
-# === chroot ==================================================================
-# --- create chroot environment -----------------------------------------------
-sudo umount $(awk '{print $2;}' /proc/mounts | grep "${HOME}/chroot/almalinux-9" | sort -r)
-sudo rm -rf "${HOME}/chroot/almalinux-9"
-sudo mkdir -p "${HOME}/chroot/almalinux-9"
-sudo yum \
-  --assumeyes \
-  --config "${HOME}/repo/almalinux-9.repo" \
-  --disablerepo=* \
-  --enablerepo=almalinux-9-chroot-BaseOS \
-  --enablerepo=almalinux-9-chroot-AppStream \
-  --enablerepo=almalinux-9-chroot-Extras \
-  --installroot="${HOME}/chroot/almalinux-9" \
-  --releasever=latest \
-  install '@Minimal Install' \
-  bash-completion \
-  vim \
-  tree \
-  wget \
-  rsync \
-  xorriso \
-  procps \
-  cpio \
-  curl \
-  isomd5sum \
-  bzip2 \
-  lz4 \
-  lzop \
-  zstd
-
-
-sudo sed -i "${HOME}/chroot/almalinux-9/root/.bashrc" -e '/alias[ \t]\+ls=/ s/^#/ /' -e '/export LS_OPTIONS/ s/^#/ /'
-cat <<- '_EOT_' | sudo tee "${HOME}/chroot/almalinux-9/root/.vimrc" > /dev/null
-	set number              " Print the line number in front of each line.
-	set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
-	set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
-	set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
-	set nowrap              " This option changes how text is displayed.
-	set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
-	set laststatus=2        " The value of this option influences when the last window will have a status line always.
-	set mouse-=a            " Disable mouse usage
-	syntax on               " Vim5 and later versions support syntax highlighting.
-_EOT_
-# --- mount -------------------------------------------------------------------
-sudo mkdir -p "${HOME}/chroot/almalinux-9/srv"
-sudo mount --rbind /srv/ "${HOME}/chroot/almalinux-9/srv/"
-sudo mount --rbind /dev  "${HOME}/chroot/almalinux-9/dev"
-sudo mount  --bind /proc "${HOME}/chroot/almalinux-9/proc"
-sudo mount  --bind /run  "${HOME}/chroot/almalinux-9/run"
-sudo mount --rbind /sys  "${HOME}/chroot/almalinux-9/sys"
-sudo mount --rbind /tmp  "${HOME}/chroot/almalinux-9/tmp"
-sudo mount --make-rslave "${HOME}/chroot/almalinux-9/dev"
-sudo mount --make-rslave "${HOME}/chroot/almalinux-9/sys"
-sudo systemctl daemon-reload
-# --- chroot ------------------------------------------------------------------
-sudo chroot "${HOME}/chroot/almalinux-9"/ cd /srv/user/private/
-# --- chroot environment ------------------------------------------------------
-cd /srv/user/private/
-chmod +x *.sh
-./mk_custom_iso.sh --conf
-./mk_custom_iso.sh --download mini a
-./mk_pxeboot_conf.sh --create
-
-
-# --- chroot environment ------------------------------------------------------
-mkdir -p /srv/user/private/
-ln -s /srv/hgfs/workspace/Image/linux/bin/{install.sh,mk_custom_iso.sh,mk_live_media.sh,mk_pxeboot_conf.sh} /srv/user/private/
-cd /srv/user/private/
-
-# === nfs =====================================================================
-# sudo apt-get install nfs-kernel-server    # for debian / ubuntu
-# sudo yum install nfs-utils                # for rhel
-sudo mount -t nfs 192.168.1.12:/srv/user/share/ /srv/user/share/
-# --- dnsmasq -----------------------------------------------------------------
-sudo scp master@192.168.1.12:/etc/dnsmasq.d/pxeboot-ipxe.conf /etc/dnsmasq.d/
-sudo restorecon -v /etc/dnsmasq.d/pxeboot-ipxe.conf
-sudo systemctl restart dnsmasq.service
-# --- selinux [ipxe] ----------------------------------------------------------
-sudo setsebool -P git_system_use_nfs 1
-sudo setsebool -P httpd_use_nfs 1
-
-# === shellcheck ==============================================================
-yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-yum -y install epel-release
-yum install ShellCheck
-
-
-
-
-
-
-
 
 
 
