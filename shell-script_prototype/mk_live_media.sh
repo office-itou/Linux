@@ -98,7 +98,7 @@
 															#   7: least favorable to the process
 
 #	sudo bash -c 'for D in share/{html,imgs,isos,rmak} ; do mv "${D}" "${D}.back"; ln -s "/mnt/share.nfs/master/share/${D##*/}" share; done'
-#	sudo ln -s /mnt/hgfs/workspace/Image/linux/bin/keyring share/keys
+#	sudo ln -s /mnt/hgfs/workspace/image/linux/bin/keyring share/keys
 
 # Debian  
 #	| Life  | Version. | Code name          | Release date |End of support|  Long term   | Kernel         | Note          | 
