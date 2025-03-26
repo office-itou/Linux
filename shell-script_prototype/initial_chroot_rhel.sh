@@ -58,7 +58,8 @@
 #	declare -r    DIRS_LOAD="${DIRS_SHAR}/load"				# load module
 #	declare -r    DIRS_RMAK="${DIRS_SHAR}/rmak"				# remake file
 
-	declare -r    DIRS_CHRT="/home/\${SUDO_USER}/chroot"	# chgroot file
+	declare -r    DIRS_CHRT="${DIRS_SHAR}/chroot"			# chgroot file
+#	declare -r    DIRS_CHRT="/home/\${SUDO_USER}/chroot"	# chgroot file
 	declare -r    DIRS_REPO="${DIRS_SHAR}/chroot/_repo"		# yum / dnf repository file
 	declare -r    DIRS_SHEL="${DIRS_SHAR}/chroot/_shell"	# shell file
 
