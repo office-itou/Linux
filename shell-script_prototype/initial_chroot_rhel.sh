@@ -59,7 +59,7 @@
 #	declare -r    DIRS_RMAK="${DIRS_SHAR}/rmak"				# remake file
 
 	declare -r    DIRS_CHRT="/home/\${SUDO_USER}/chroot"	# chgroot file
-	declare -r    DIRS_REPO="${DIRS_SHAR}/chroot/_repo"		# yum repository file
+	declare -r    DIRS_REPO="${DIRS_SHAR}/chroot/_repo"		# yum / dnf repository file
 	declare -r    DIRS_SHEL="${DIRS_SHAR}/chroot/_shell"	# shell file
 
 	rm -rf "${DIRS_REPO:?}"
@@ -128,7 +128,7 @@
 			 	mkdir -p "${DIRS_CHRT}/${_LINE[1]}"
 			
 			 	# --- create chgroot environment ------------------------------------------
-			 	yum \\
+			 	dnf \\
 			 		--assumeyes \\
 			 		--config "${DIRS_REPO}/${_LINE[3]}.repo" \\
 			 		--disablerepo=* \\
@@ -158,7 +158,6 @@ _EOT_
 			 			vim \\
 			 			tree \\
 			 			man \\
-			 			tput \\
 			 			wget \\
 			 			rsync \\
 			 			xorriso \\
@@ -174,7 +173,7 @@ _EOT_
 _EOT_
 		if [[ "${_LINE[1]%-*}" = "fedora" ]] && [[ "${_LINE[1]##*-}" -ge 41 ]]; then
 			sed -i "${DIRS_SHEL}/mk_${_LINE[1]}".sh     \
-			    -e '/yum/,/[^\]$/                    {' \
+			    -e '/dnf/,/[^\]$/                    {' \
 			    -e 's/@Minimal Install/@admin-tools/ }'
 		fi
 		chmod +x "${DIRS_SHEL}/mk_${_LINE[1]}".sh
