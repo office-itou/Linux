@@ -5031,7 +5031,7 @@ _EOT_
 				if [[ -e "${_FILE_PATH}" ]]; then
 					_WORK_TEXT="$(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}")"
 					IFS= mapfile -d ' ' -t _FILE_INFO < <(echo -n "${_WORK_TEXT}")
-					if [[ "${_FILE_INFO[5]}" -gt "${_DATA_LINE[19]}" ]]; then
+					if [[ "${_FILE_INFO[5]}" -gt "${_DATA_LINE[19]:-0}" ]]; then
 						_TEXT_COLR="${_TEXT_COLR:-"${TXT_YELLOW}"}${TXT_REV}"
 					fi
 				fi
