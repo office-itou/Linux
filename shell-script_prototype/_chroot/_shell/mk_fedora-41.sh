@@ -30,31 +30,33 @@
 	fi
 
 	# --- unmount -------------------------------------------------------------
-	if mount | grep -q "/home/${SUDO_USER}/chroot/fedora-41"; then
-		umount $(awk '{print $2;}' /proc/mounts | grep "/home/${SUDO_USER}/chroot/fedora-41" | sort -r)
+	if mount | grep -q "/srv/user/share/chroot/fedora-41"; then
+		umount $(awk '{print $2;}' /proc/mounts | grep "/srv/user/share/chroot/fedora-41" | sort -r)
 	fi
 
 	# --- create directory ----------------------------------------------------
-	rm -rf "/home/${SUDO_USER}/chroot/fedora-41"
-	mkdir -p "/home/${SUDO_USER}/chroot/fedora-41"
+	rm -rf "/srv/user/share/chroot/fedora-41"
+	mkdir -p "/srv/user/share/chroot/fedora-41"
 
 	# --- create chgroot environment ------------------------------------------
-	yum \
+	dnf \
 		--assumeyes \
 		--config "/srv/user/share/chroot/_repo/fedora.repo" \
 		--disablerepo=* \
 		--enablerepo=fedora-chroot-BaseOS \
-		--installroot="/home/${SUDO_USER}/chroot/fedora-41" \
+		--installroot="/srv/user/share/chroot/fedora-41" \
 		--releasever=41 \
 		install \
 			'@admin-tools' \
 			bash-completion \
 			vim \
 			tree \
+			man \
 			wget \
 			rsync \
 			xorriso \
 			procps \
+			tar \
 			cpio \
 			curl \
 			isomd5sum \

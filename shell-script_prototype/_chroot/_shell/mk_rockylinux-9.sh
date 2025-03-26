@@ -30,33 +30,35 @@
 	fi
 
 	# --- unmount -------------------------------------------------------------
-	if mount | grep -q "/home/${SUDO_USER}/chroot/rockylinux-9"; then
-		umount $(awk '{print $2;}' /proc/mounts | grep "/home/${SUDO_USER}/chroot/rockylinux-9" | sort -r)
+	if mount | grep -q "/srv/user/share/chroot/rockylinux-9"; then
+		umount $(awk '{print $2;}' /proc/mounts | grep "/srv/user/share/chroot/rockylinux-9" | sort -r)
 	fi
 
 	# --- create directory ----------------------------------------------------
-	rm -rf "/home/${SUDO_USER}/chroot/rockylinux-9"
-	mkdir -p "/home/${SUDO_USER}/chroot/rockylinux-9"
+	rm -rf "/srv/user/share/chroot/rockylinux-9"
+	mkdir -p "/srv/user/share/chroot/rockylinux-9"
 
 	# --- create chgroot environment ------------------------------------------
-	yum \
+	dnf \
 		--assumeyes \
 		--config "/srv/user/share/chroot/_repo/rockylinux.repo" \
 		--disablerepo=* \
 		--enablerepo=rockylinux-chroot-BaseOS \
 		--enablerepo=rockylinux-chroot-AppStream \
 		--enablerepo=rockylinux-chroot-Extras \
-		--installroot="/home/${SUDO_USER}/chroot/rockylinux-9" \
+		--installroot="/srv/user/share/chroot/rockylinux-9" \
 		--releasever=9 \
 		install \
 			'@Minimal Install' \
 			bash-completion \
 			vim \
 			tree \
+			man \
 			wget \
 			rsync \
 			xorriso \
 			procps \
+			tar \
 			cpio \
 			curl \
 			isomd5sum \
