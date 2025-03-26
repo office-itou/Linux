@@ -2691,9 +2691,9 @@ funcSetupModule_ipxe() {
 	fi
 
 	# --- get module ----------------------------------------------------------
-#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/undionly.kpxe" "https://boot.ipxe.org/undionly.kpxe" || true
-#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/ipxe.efi"      "https://boot.ipxe.org/ipxe.efi" || true
-#	LANG=C wget --tries=3 --timeout=10 --no-verbose --output-document="${DIRS_TFTP}/ipxe/wimboot"       "https://github.com/ipxe/wimboot/releases/latest/download/wimboot" || true
+#	LANG=C wget --tries=3 --timeout=10 --quiet --output-document="${DIRS_TFTP}/ipxe/undionly.kpxe" "https://boot.ipxe.org/undionly.kpxe" || true
+#	LANG=C wget --tries=3 --timeout=10 --quiet --output-document="${DIRS_TFTP}/ipxe/ipxe.efi"      "https://boot.ipxe.org/ipxe.efi" || true
+#	LANG=C wget --tries=3 --timeout=10 --quiet --output-document="${DIRS_TFTP}/ipxe/wimboot"       "https://github.com/ipxe/wimboot/releases/latest/download/wimboot" || true
 	_FILE_PATH="${PROG_DIRS:?}/get_module_ipxe.sh"
 	mkdir -p "${_FILE_PATH%/*}"
 	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
@@ -2746,7 +2746,7 @@ _EOT_
 		 		https://boot.ipxe.org/ipxe.efi \
 		 		https://github.com/ipxe/wimboot/releases/latest/download/wimboot
 		 	do
-		 		if ! wget --tries=3 --timeout=10 --no-verbose --output-document="${_DIRS_TFTP}/ipxe/${_WEBS_ADDR##*/}" "${_WEBS_ADDR}"; then
+		 		if ! wget --tries=3 --timeout=10 --quiet --output-document="${_DIRS_TFTP}/ipxe/${_WEBS_ADDR##*/}" "${_WEBS_ADDR}"; then
 		 			printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to wget: ${_WEBS_ADDR}"
 		 		fi
 		 	done
