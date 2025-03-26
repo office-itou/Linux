@@ -40,6 +40,8 @@
 #	declare -r    DIRS_LOAD="${DIRS_SHAR}/load"				# load module
 #	declare -r    DIRS_RMAK="${DIRS_SHAR}/rmak"				# remake file
 
+	mkdir -p "${DIRS_CONF}/_fixed_address"
+
 	# --- preseed -------------------------------------------------------------
 	sed -e '\%debian-installer/locale[ \t]\+string%              s/^#./  /' \
 	    -e '\%debian-installer/language[ \t]\+string%            s/^#./  /' \
