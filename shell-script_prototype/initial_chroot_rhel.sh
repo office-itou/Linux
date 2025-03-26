@@ -163,6 +163,7 @@ _EOT_
 			 			rsync \\
 			 			xorriso \\
 			 			procps \\
+			 			tar \\
 			 			cpio \\
 			 			curl \\
 			 			isomd5sum \\
