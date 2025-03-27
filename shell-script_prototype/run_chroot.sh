@@ -25,13 +25,13 @@
 	fi
 
 	# --- working directory name ----------------------------------------------
-#	declare -r    PROG_PATH="$0"
+	declare -r    PROG_PATH="$0"
 #	declare -r -a PROG_PARM=("${@:-}")
 #	declare -r    PROG_DIRS="${PROG_PATH%/*}"
-#	declare -r    PROG_NAME="${PROG_PATH##*/}"
-#	declare -r    PROG_PROC="${PROG_NAME}.$$"
-#	              DIRS_TEMP="$(mktemp -qtd "${PROG_PROC}.XXXXXX")"
-#	readonly      DIRS_TEMP
+	declare -r    PROG_NAME="${PROG_PATH##*/}"
+	declare -r    PROG_PROC="${PROG_NAME}.$$"
+	              DIRS_TEMP="$(mktemp -qtd "${PROG_PROC}.XXXXXX")"
+	readonly      DIRS_TEMP
 
 	# --- shared directory parameter ------------------------------------------
 	declare -r    DIRS_TOPS="/srv"							# top of shared directory
@@ -39,7 +39,7 @@
 #	declare -r    DIRS_HTML="${DIRS_TOPS}/http/html"		# html contents
 #	declare -r    DIRS_SAMB="${DIRS_TOPS}/samba"			# samba shared
 #	declare -r    DIRS_TFTP="${DIRS_TOPS}/tftp"				# tftp contents
-	declare -r    DIRS_USER="${DIRS_TOPS}/user"				# user file
+#	declare -r    DIRS_USER="${DIRS_TOPS}/user"				# user file
 
 	# --- shared of user file -------------------------------------------------
 #	declare -r    DIRS_SHAR="${DIRS_USER}/share"			# shared of user file
@@ -63,9 +63,13 @@
 #	declare -r    CONF_YAST="${CONF_DIRS}/yast_opensuse.xml"
 
 	# --- chgroot -------------------------------------------------------------
-	declare -r    DIRS_CHRT="${1:-}"
+	declare       FLAG_CHRT=""			# not empty: already running in chroot
+	declare -r    DIRS_CHRT="${1%/}"
+	shift
 
 #	mkdir -p "${DIRS_CHRT}"/srv/{hgfs,http,samba,tftp,user}
+
+	trap 'rm -rf '"${DIRS_TEMP:?}"'' EXIT
 
 	# --- check the execution user --------------------------------------------
 	# shellcheck disable=SC2312
@@ -74,33 +78,46 @@
 		exit 1
 	fi
 
-	# --- mount ---------------------------------------------------------------
-	mount  --bind "${DIRS_CHRT}" "${DIRS_CHRT}"             && mount --make-rprivate "${DIRS_CHRT}"
-	mount  --bind "${DIRS_TOPS}" "${DIRS_CHRT}${DIRS_TOPS}" && mount --make-rprivate "${DIRS_CHRT}${DIRS_TOPS}"
-	mount  --bind "${DIRS_HGFS}" "${DIRS_CHRT}${DIRS_HGFS}" && mount --make-rprivate "${DIRS_CHRT}${DIRS_HGFS}"
-	mount --rbind /dev           "${DIRS_CHRT}/dev/"        && mount --make-rslave   "${DIRS_CHRT}/dev/"
-	mount -t proc /proc          "${DIRS_CHRT}/proc/"
-	mount --rbind /sys           "${DIRS_CHRT}/sys/"        && mount --make-rslave   "${DIRS_CHRT}/sys/"
-	mount --rbind /tmp           "${DIRS_CHRT}/tmp/"
-	mount  --bind /run           "${DIRS_CHRT}/run/"
-
-	# --- daemon reload -------------------------------------------------------
-	systemctl daemon-reload
-
+	# --- mount and daemon reload ---------------------------------------------
+	FLAG_CHRT="$(find /tmp/ -type d \( -name "${PROG_NAME}.*" -a -not -name "${DIRS_TEMP##*/}" \) -exec find '{}' -type f -name "${DIRS_CHRT##*/}" \; 2> /dev/null || true)"
+	if [[ -z "${FLAG_CHRT}" ]]; then
+		rm -f "${DIRS_CHRT:?}"/etc/{passwd,shadow,group,resolv.conf}
+		cp -aH /etc/{passwd,shadow,group,resolv.conf} "${DIRS_CHRT:?}"/etc/
+		mount  --bind "${DIRS_CHRT}" "${DIRS_CHRT}"             && mount --make-rprivate "${DIRS_CHRT}"
+		mount  --bind "${DIRS_TOPS}" "${DIRS_CHRT}${DIRS_TOPS}" && mount --make-rprivate "${DIRS_CHRT}${DIRS_TOPS}"
+		mount  --bind "${DIRS_HGFS}" "${DIRS_CHRT}${DIRS_HGFS}" && mount --make-rprivate "${DIRS_CHRT}${DIRS_HGFS}"
+		mount --rbind /dev            "${DIRS_CHRT}/dev/"       && mount --make-rslave   "${DIRS_CHRT}/dev/"
+		mount -t proc /proc           "${DIRS_CHRT}/proc/"
+		mount --rbind /sys            "${DIRS_CHRT}/sys/"       && mount --make-rslave   "${DIRS_CHRT}/sys/"
+		mount  --bind /run            "${DIRS_CHRT}/run/"
+		mount --rbind /tmp            "${DIRS_CHRT}/tmp/"
+		mount  --bind /home           "${DIRS_CHRT}/home/"
+		systemctl daemon-reload
+	fi
 	# --- chroot --------------------------------------------------------------
-	chroot "${DIRS_CHRT}"
-
+	touch "${DIRS_TEMP:?}/${DIRS_CHRT##*/}"
+	chroot --userspec="${USER}" "$@" "${DIRS_CHRT}"
+	rm -rf "${DIRS_TEMP:?}/${DIRS_CHRT##*/}"
 	# --- umount --------------------------------------------------------------
-	umount             "${DIRS_CHRT}/run/"
-	umount --recursive "${DIRS_CHRT}/tmp/"
-	umount --recursive "${DIRS_CHRT}/sys/"
-	umount             "${DIRS_CHRT}/proc/"
-	umount --recursive "${DIRS_CHRT}/dev/"
-	umount             "${DIRS_CHRT}${DIRS_HGFS}"
-	umount             "${DIRS_CHRT}${DIRS_TOPS}"
-	umount             "${DIRS_CHRT}"
+	FLAG_CHRT="$(find /tmp/ -type d \( -name "${PROG_NAME}.*" -a -not -name "${DIRS_TEMP##*/}" \) -exec find '{}' -type f -name "${DIRS_CHRT##*/}" \; 2> /dev/null || true)"
+	if [[ -z "${FLAG_CHRT}" ]]; then
+		umount             "${DIRS_CHRT}/home/"
+		umount             "${DIRS_CHRT}/run/"
+		umount --recursive "${DIRS_CHRT}/tmp/"
+		umount --recursive "${DIRS_CHRT}/sys/"
+		umount             "${DIRS_CHRT}/proc/"
+		umount --recursive "${DIRS_CHRT}/dev/"
+		umount             "${DIRS_CHRT}${DIRS_HGFS}"
+		umount             "${DIRS_CHRT}${DIRS_TOPS}"
+		umount             "${DIRS_CHRT}"
+	fi
 
 	# --- exit ----------------------------------------------------------------
+	if set -o | grep "^xtrace\s*on$" \
+	|| [[ -n "${_DBGOUT:-}" ]]	; then
+		mount | sed -ne '\%/srv/% {' -e 's%^.* on %%g' -e 's% .*$%%g' -e 'p}' | sort
+	fi
+
 	exit 0
 
 ### eof #######################################################################
