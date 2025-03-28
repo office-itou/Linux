@@ -385,7 +385,7 @@ autoinstall:
       echo "### initialization ${FUNC_NAME} ###" 2>&1 | tee -a "${LOGS_NAME}";
       SHEL_DIRS="/var/adm/installer/nocloud"
       SHEL_NAME="nocloud_late_command.sh";
-      SHEL_FILE="${SEED_FILE%/*}/${SHEL_NAME}";
+      SHEL_FILE="${SEED_FILE}/${SHEL_NAME}";
       SHEL_EXEC="${SHEL_DIRS}/${SHEL_NAME}";
       SEED_PATH="${SHEL_DIRS}/${SEED_FILE##*/}";
       echo "### get seed  ${FUNC_NAME} [${SEED_FILE}] ###" 2>&1 | tee -a "${LOGS_NAME}";
