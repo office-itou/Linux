@@ -244,6 +244,22 @@
 	              DIRS_TEMP="$(mktemp -qtd "${PROG_PROC}.XXXXXX")"
 	readonly      DIRS_TEMP
 
+	# --- trap ----------------------------------------------------------------
+	declare -a    LIST_RMOV=()								# list remove directory / file
+	LIST_RMOV+=("${DIRS_TEMP:?}")
+
+# shellcheck disable=SC2317
+function funcTrap() {
+	declare -i    I=0
+
+	for I in "${!LIST_RMOV[@]}"
+	do
+		rm -rf "${LIST_RMOV[I]:?}"
+	done
+}
+
+	trap funcTrap EXIT
+
 	# --- shared directory parameter ------------------------------------------
 	declare -r    DIRS_TOPS="/srv"							# top of shared directory
 	declare -r    DIRS_HGFS="${DIRS_TOPS}/hgfs"				# vmware shared
@@ -608,12 +624,12 @@
 		"o  rockylinux-netinst-9            Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-boot.iso                  images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_net.cfg       ${HGFS_DIRS}/linux/rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso                                                         " \
 		"x  miraclelinux-netinst-8          Miracle%20Linux%208                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-8.10-rtm-minimal-x86_64.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-minimal-x86_64.iso                   " \
 		"o  miraclelinux-netinst-9          Miracle%20Linux%209                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-9.4-rtm-minimal-x86_64.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_net.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-minimal-x86_64.iso                   " \
-		"x  opensuse-leap-netinst-15.5      openSUSE%20Leap%2015.5                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.5-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_net.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-NET-x86_64-Media.iso                                         " \
-		"o  opensuse-leap-netinst-15.6      openSUSE%20Leap%2015.6                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.6-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_net.xml     ${HGFS_DIRS}/linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Media.iso                                         " \
-		"o  opensuse-leap-netinst-16.0      openSUSE%20Leap%2016.0                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-16.0-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_net.xml     ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/iso/openSUSE-Leap-16.0-NET-x86_64-Media.iso                                         " \
-		"o  opensuse-tumbleweed-netinst     openSUSE%20Tumbleweed                   openSUSE            ${DIRS_ISOS}    openSUSE-Tumbleweed-NET-x86_64-Current.iso      boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_net.xml    ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                  " \
-		"-  opensuse-leap-netinst-16.0      openSUSE%20Leap%2016.0                  openSUSE            ${DIRS_ISOS}    agama-installer-Leap.x86_64-Leap.iso            boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_net.xml     ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/installer/iso/agama-installer-Leap.x86_64-Leap.iso                                  " \
-		"-  opensuse-leap-netinst-pxe-16.0  openSUSE%20Leap%2016.0%20PXE            openSUSE            ${DIRS_ISOS}    agama-installer-Leap.x86_64-Leap-PXE.iso        boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_net.xml     ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/installer/iso/agama-installer-Leap.x86_64-Leap-PXE.iso                              " \
+		"x  opensuse-leap-netinst-15.5      openSUSE%20Leap%2015.5                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.5-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_net.xml     ${HGFS_DIRS}/linux/opensuse      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-NET-x86_64-Media.iso                                         " \
+		"o  opensuse-leap-netinst-15.6      openSUSE%20Leap%2015.6                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.6-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_net.xml     ${HGFS_DIRS}/linux/opensuse      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-NET-x86_64-Media.iso                                         " \
+		"o  opensuse-leap-netinst-16.0      openSUSE%20Leap%2016.0                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-16.0-NET-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_net.xml     ${HGFS_DIRS}/linux/opensuse      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/iso/openSUSE-Leap-16.0-NET-x86_64-Media.iso                                         " \
+		"o  opensuse-tumbleweed-netinst     openSUSE%20Tumbleweed                   openSUSE            ${DIRS_ISOS}    openSUSE-Tumbleweed-NET-x86_64-Current.iso      boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_net.xml    ${HGFS_DIRS}/linux/opensuse      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-NET-x86_64-Current.iso                                                  " \
+		"-  opensuse-leap-netinst-16.0      openSUSE%20Leap%2016.0                  openSUSE            ${DIRS_ISOS}    agama-installer-Leap.x86_64-Leap.iso            boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_net.xml     ${HGFS_DIRS}/linux/opensuse      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/installer/iso/agama-installer-Leap.x86_64-Leap.iso                                  " \
+		"-  opensuse-leap-netinst-pxe-16.0  openSUSE%20Leap%2016.0%20PXE            openSUSE            ${DIRS_ISOS}    agama-installer-Leap.x86_64-Leap-PXE.iso        boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_net.xml     ${HGFS_DIRS}/linux/opensuse      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/installer/iso/agama-installer-Leap.x86_64-Leap-PXE.iso                              " \
 		"m  menu-entry                      -                                       -                   -               -                                               -                                       -                           -                       -                                       -                                -           -           -           -   -   -   -                                                                                                                                              " \
 	) #  0  1                               2                                       3                   4               5                                               6                                       7                           8                       9                                       10                               11          12          13          14  15  16  17
 
@@ -636,7 +652,8 @@
 		"x  ubuntu-live-23.10               Ubuntu%2023.10%20Live%20Server          ubuntu              ${DIRS_ISOS}    ubuntu-23.10-live-server-amd64.iso              casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://releases.ubuntu.com/mantic/ubuntu-23.10[0-9.]*-live-server-amd64.iso                                                                   " \
 		"o  ubuntu-live-24.04               Ubuntu%2024.04%20Live%20Server          ubuntu              ${DIRS_ISOS}    ubuntu-24.04.2-live-server-amd64.iso            casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2034-04-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-live-server-amd64.iso                                                                    " \
 		"o  ubuntu-live-24.10               Ubuntu%2024.10%20Live%20Server          ubuntu              ${DIRS_ISOS}    ubuntu-24.10-live-server-amd64.iso              casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10[0-9.]*-live-server-amd64.iso                                                                 " \
-		"o  ubuntu-live-25.04               Ubuntu%2025.04%20Live%20Server          ubuntu              ${DIRS_ISOS}    plucky-live-server-amd64.iso                    casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2025-04-17  2026-01-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/ubuntu-server/daily-live/current/plucky-live-server-amd64.iso                                                       " \
+		"o  ubuntu-live-25.04               Ubuntu%2025.04%20Live%20Server          ubuntu              ${DIRS_ISOS}    ubuntu-25.04-beta-live-server-amd64.iso         casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2025-04-17  2026-01-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/plucky/ubuntu-25.04[0-9.]*-beta-live-server-amd64.iso                                                              " \
+		"-  ubuntu-live-25.04               Ubuntu%2025.04%20Live%20Server          ubuntu              ${DIRS_ISOS}    plucky-live-server-amd64.iso                    casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2025-04-17  2026-01-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/ubuntu-server/daily-live/current/plucky-live-server-amd64.iso                                                       " \
 		"-  ubuntu-live-24.10               Ubuntu%2024.10%20Live%20Server%20Beta   ubuntu              ${DIRS_ISOS}    ubuntu-24.10-beta-live-server-amd64.iso         casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10-beta-live-server-amd64.iso                                                                   " \
 		"-  ubuntu-live-oracular            Ubuntu%20oracular%20Live%20Server       ubuntu              ${DIRS_ISOS}    oracular-live-server-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/ubuntu-server/daily-live/current/oracular-live-server-amd64.iso                                                     " \
 		"x  fedora-38                       Fedora%20Server%2038                    fedora              ${DIRS_ISOS}    Fedora-Server-dvd-x86_64-38-1.6.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                      " \
@@ -652,10 +669,10 @@
 		"o  rockylinux-9                    Rocky%20Linux%209                       Rocky               ${DIRS_ISOS}    Rocky-9-latest-x86_64-dvd.iso                   images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_rockylinux-9_dvd.cfg       ${HGFS_DIRS}/linux/rocky         2022-07-14  20xx-xx-xx  xx:xx:xx    0   -   -   https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-dvd.iso                                                          " \
 		"x  miraclelinux-8                  Miracle%20Linux%208                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-8.10-rtm-x86_64.iso                images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-8_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/8.[0-9.]*-released/x86_64/MIRACLELINUX-8.[0-9.]*-rtm-x86_64.iso                           " \
 		"o  miraclelinux-9                  Miracle%20Linux%209                     miraclelinux        ${DIRS_ISOS}    MIRACLELINUX-9.4-rtm-x86_64.iso                 images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_miraclelinux-9_dvd.cfg     ${HGFS_DIRS}/linux/miraclelinux  2021-10-04  20xx-xx-xx  xx:xx:xx    0   -   -   https://repo.dist.miraclelinux.net/miraclelinux/isos/9.[0-9.]*-released/x86_64/MIRACLELINUX-9.[0-9.]*-rtm-x86_64.iso                           " \
-		"x  opensuse-leap-15.5              openSUSE%20Leap%2015.5                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.5-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-DVD-x86_64-Media.iso                                         " \
-		"o  opensuse-leap-15.6              openSUSE%20Leap%2015.6                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.6-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso                                         " \
-		"o  opensuse-leap-16.0              openSUSE%20Leap%2016.0                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-16.0-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_dvd.xml     ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/iso/openSUSE-Leap-16.0-DVD-x86_64-Media.iso                                         " \
-		"o  opensuse-tumbleweed             openSUSE%20Tumbleweed                   openSUSE            ${DIRS_ISOS}    openSUSE-Tumbleweed-DVD-x86_64-Current.iso      boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_dvd.xml    ${HGFS_DIRS}/linux/openSUSE      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                  " \
+		"x  opensuse-leap-15.5              openSUSE%20Leap%2015.5                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.5-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.5_dvd.xml     ${HGFS_DIRS}/linux/opensuse      2023-06-07  2024-12-31  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.5/iso/openSUSE-Leap-15.5-DVD-x86_64-Media.iso                                         " \
+		"o  opensuse-leap-15.6              openSUSE%20Leap%2015.6                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-15.6-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-15.6_dvd.xml     ${HGFS_DIRS}/linux/opensuse      2024-06-xx  2025-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/15.6/iso/openSUSE-Leap-15.6-DVD-x86_64-Media.iso                                         " \
+		"o  opensuse-leap-16.0              openSUSE%20Leap%2016.0                  openSUSE            ${DIRS_ISOS}    openSUSE-Leap-16.0-DVD-x86_64-Media.iso         boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_leap-16.0_dvd.xml     ${HGFS_DIRS}/linux/opensuse      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/distribution/leap/16.0/iso/openSUSE-Leap-16.0-DVD-x86_64-Media.iso                                         " \
+		"o  opensuse-tumbleweed             openSUSE%20Tumbleweed                   openSUSE            ${DIRS_ISOS}    openSUSE-Tumbleweed-DVD-x86_64-Current.iso      boot/x86_64/loader                      initrd                      linux                   autoyast/autoinst_tumbleweed_dvd.xml    ${HGFS_DIRS}/linux/opensuse      20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://ftp.riken.jp/Linux/opensuse/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso                                                  " \
 		"o  windows-10                      Windows%2010                            windows             ${DIRS_ISOS}    Win10_22H2_Japanese_x64.iso                     -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/Windows10   -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"o  windows-11                      Windows%2011                            windows             ${DIRS_ISOS}    Win11_24H2_Japanese_x64.iso                     -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/Windows11   -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
 		"-  windows-11                      Windows%2011%20custom                   windows             ${DIRS_ISOS}    Win11_24H2_Japanese_x64_custom.iso              -                                       -                           -                       -                                       ${HGFS_DIRS}/windows/Windows11   -           -           xx:xx:xx    0   -   -   -                                                                                                                                              " \
@@ -680,7 +697,8 @@
 		"o  ubuntu-desktop-24.04            Ubuntu%2024.04%20Desktop                ubuntu              ${DIRS_ISOS}    ubuntu-24.04.2-desktop-amd64.iso                casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2034-04-25  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-desktop-amd64.iso                                                                        " \
 		"o  ubuntu-desktop-24.10            Ubuntu%2024.10%20Desktop                ubuntu              ${DIRS_ISOS}    ubuntu-24.10-desktop-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10[0-9.]*-desktop-amd64.iso                                                                     " \
 		"-  ubuntu-desktop-24.10            Ubuntu%2024.10%20Desktop%20Beta         ubuntu              ${DIRS_ISOS}    ubuntu-24.10-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10-beta-desktop-amd64.iso                                                                       " \
-		"o  ubuntu-desktop-25.04            Ubuntu%2025.04%20Desktop                ubuntu              ${DIRS_ISOS}    plucky-desktop-amd64.iso                        casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2025-04-17  2026-01-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/plucky-desktop-amd64.iso                                                                         " \
+		"o  ubuntu-desktop-25.04            Ubuntu%2025.04%20Desktop                ubuntu              ${DIRS_ISOS}    ubuntu-25.04-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2025-04-17  2026-01-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/plucky/ubuntu-25.04[0-9.]*-beta-desktop-amd64.iso                                                                  " \
+		"-  ubuntu-desktop-25.04            Ubuntu%2025.04%20Desktop                ubuntu              ${DIRS_ISOS}    plucky-desktop-amd64.iso                        casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2025-04-17  2026-01-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/plucky-desktop-amd64.iso                                                                         " \
 		"x  ubuntu-desktop-24.04            Ubuntu%2024.04%20Desktop                ubuntu              ${DIRS_ISOS}    ubuntu-24.04-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2029-05-31  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-beta-desktop-amd64.iso                                                                   " \
 		"-  ubuntu-desktop-oracular         Ubuntu%20oracular%20Desktop             ubuntu              ${DIRS_ISOS}    oracular-desktop-amd64.iso                      casper                                  initrd                      vmlinuz                 nocloud/ubuntu_desktop                  ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/oracular-desktop-amd64.iso                                                                       " \
 		"x  ubuntu-legacy-23.04             Ubuntu%2023.04%20Legacy%20Desktop       ubuntu              ${DIRS_ISOS}    ubuntu-23.04-desktop-legacy-amd64.iso           casper                                  initrd                      vmlinuz                 preseed/ps_ubiquity_desktop_oldold.cfg  ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-amd64.iso                                                 " \
@@ -707,7 +725,8 @@
 		"o  ubuntu-desktop-24.10            Ubuntu%2024.10%20Desktop                ubuntu              ${DIRS_ISOS}    ubuntu-24.10-desktop-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10[0-9.]*-desktop-amd64.iso                                                                     " \
 		"-  ubuntu-desktop-24.10            Ubuntu%2024.10%20Desktop%20Beta         ubuntu              ${DIRS_ISOS}    ubuntu-24.10-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/oracular/ubuntu-24.10-beta-desktop-amd64.iso                                                                       " \
 		"x  ubuntu-desktop-24.04            Ubuntu%2024.04%20Desktop                ubuntu              ${DIRS_ISOS}    ubuntu-24.04-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-04-25  2029-05-31  xx:xx:xx    0   -   -   https://releases.ubuntu.com/noble/ubuntu-24.04[0-9.]*-beta-desktop-amd64.iso                                                                   " \
-		"o  ubuntu-desktop-25.04            Ubuntu%2025.04%20Desktop                ubuntu              ${DIRS_ISOS}    plucky-desktop-amd64.iso                        casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2025-04-17  2026-01-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/plucky-desktop-amd64.iso                                                                         " \
+		"o  ubuntu-desktop-25.04            Ubuntu%2025.04%20Desktop                ubuntu              ${DIRS_ISOS}    ubuntu-25.04-beta-desktop-amd64.iso             casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2025-04-17  2026-01-xx  xx:xx:xx    0   -   -   https://releases.ubuntu.com/plucky/ubuntu-25.04[0-9.]*-beta-desktop-amd64.iso                                                                  " \
+		"-  ubuntu-desktop-25.04            Ubuntu%2025.04%20Desktop                ubuntu              ${DIRS_ISOS}    plucky-desktop-amd64.iso                        casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2025-04-17  2026-01-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/plucky-desktop-amd64.iso                                                                         " \
 		"-  ubuntu-desktop-oracular         Ubuntu%20oracular%20Desktop             ubuntu              ${DIRS_ISOS}    oracular-desktop-amd64.iso                      casper                                  initrd                      vmlinuz                 nocloud/-                               ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/daily-live/current/oracular-desktop-amd64.iso                                                                       " \
 		"x  ubuntu-legacy-23.04             Ubuntu%2023.04%20Legacy%20Desktop       ubuntu              ${DIRS_ISOS}    ubuntu-23.04-desktop-legacy-amd64.iso           casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2023-04-20  2024-01-25  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/lunar/release/ubuntu-23.04[0-9.]*-desktop-legacy-amd64.iso                                                 " \
 		"x  ubuntu-legacy-23.10             Ubuntu%2023.10%20Legacy%20Desktop       ubuntu              ${DIRS_ISOS}    ubuntu-23.10-desktop-legacy-amd64.iso           casper                                  initrd                      vmlinuz                 preseed/-                               ${HGFS_DIRS}/linux/ubuntu        2023-10-12  2024-07-11  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/releases/mantic/release/ubuntu-23.10[0-9.]*-desktop-legacy-amd64.iso                                                " \
@@ -4652,6 +4671,9 @@ function funcCreate_menu() {
 	declare       _WORK_TEXT=""
 	declare -a    _WORK_ARRY=()
 	declare -i    _RET_CODE=0
+#	declare       _ERRS_COMD=""
+#	declare -i    _ERRS_MXCT=3
+#	declare -i    _ERRS_RTCD=0
 	declare -i    I=0
 	declare -i    J=0
 	# -------------------------------------------------------------------------
@@ -4990,7 +5012,6 @@ _EOT_
 								_TEXT_COLR="${_TEXT_COLR:-"${TXT_GREEN}"}"
 							fi
 							_DATA_LINE[14]="${_WORK_TEXT}"
-#							_DATA_LINE[16]+="${_DATA_LINE[16]:+","}${_WORK_LINE%%:*}=${_WORK_TEXT}"
 							;;
 						last-modified:)
 							if [[ "${_WEBS_STAT}" != "200" ]]; then
@@ -5001,9 +5022,7 @@ _EOT_
 								_TEXT_COLR="${_TEXT_COLR:-"${TXT_GREEN}"}"
 							fi
 							_DATA_LINE[11]="${_WORK_TEXT:0:4}-${_WORK_TEXT:4:2}-${_WORK_TEXT:6:2}"
-							_WORK_TEXT="$(TZ=UTC date -d "${_WORK_LINE#* }" "+%Y-%m-%d_%H:%M:%S")"
-							_DATA_LINE[18]="$(TZ=UTC date -d "${_WORK_LINE#* }" "+%Y%m%d%H%M%S")"
-#							_DATA_LINE[16]+="${_DATA_LINE[16]:+","}${_WORK_LINE%%:*}=${_WORK_TEXT}"
+							_DATA_LINE[18]="${_WORK_TEXT}"
 							;;
 						*)
 							;;
@@ -5019,9 +5038,13 @@ _EOT_
 			_WORK_TEXT="$(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}")"
 			IFS= mapfile -d ' ' -t _FILE_INFO < <(echo -n "${_WORK_TEXT}")
 			_DATA_LINE+=("${_FILE_INFO[5]}")
-			if [[ "${_DATA_LINE[13]}" != "-" ]] \
-			&& [[ "${_DATA_LINE[18]}" != "-" ]] \
+			if [[ "${_DATA_LINE[13]:--}" != "-" ]] \
+			&& [[ "${_DATA_LINE[18]:--}" != "-" ]] \
 			&& [[ "${_DATA_LINE[13]}" -gt "${_DATA_LINE[18]}" ]]; then
+				_TEXT_COLR="${_TEXT_COLR:-"${TXT_YELLOW}"}${TXT_REV}"
+			elif [[ "${_DATA_LINE[13]:--}" != "-" ]] \
+			&&   [[ "${_DATA_LINE[19]:--}" != "-" ]] \
+			&&   [[ "${_DATA_LINE[13]}" -gt "${_DATA_LINE[19]}" ]]; then
 				_TEXT_COLR="${_TEXT_COLR:-"${TXT_YELLOW}"}${TXT_REV}"
 			else
 				case "${_DATA_LINE[9]%%/*}" in
@@ -5081,44 +5104,58 @@ function funcCreate_target_list() {
 function funcCreate_remaster_download() {
 	declare -a    _DATA_LINE=("$@")
 	declare -r    _FILE_PATH="${_DATA_LINE[4]}/${_DATA_LINE[5]}"
+	declare -r    _FILE_TEMP="${_FILE_PATH}.tmp"
+	declare       _ERRS_COMD=""
+	declare -i    _ERRS_MXCT=3
+	declare -i    _ERRS_RTCD=0
 	declare       _WORK_TEXT=""
+	declare -i    I=0
 	# --- download ------------------------------------------------------------
-	trap 'rm -rf '"${_FILE_PATH}.tmp"'' EXIT
+#	trap 'rm -rf '"${_FILE_TEMP}"'' EXIT
+#	LIST_RMOV+=("${_FILE_TEMP:?}")
 	case "${_DATA_LINE[16]}" in
 		*${TXT_CYAN}*  | \
 		*${TXT_GREEN}* )
 			_WORK_TEXT="$(funcUnit_conversion "${_DATA_LINE[14]}")"
 			funcPrintf "%20.20s: %s" "download" "${_DATA_LINE[5]} ${_WORK_TEXT}"
-			case "${WGET_VERS:-1}" in
-				1)	# wget
-					if ! LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress --progress=bar --output-document="${_FILE_PATH}.tmp" "${_DATA_LINE[17]}" 2>&1; then
-						rm "${_FILE_PATH}.tmp"
-						funcPrintf "%20.20s: %s" "error" "${TXT_RED}Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
-						return
-					fi
-					;;
-				2)	# wget2
-					if ! LANG=C wget2 "${WGET_OPTN[@]}" --continue --force-progress --progress=bar --output-document="${_FILE_PATH}.tmp" "${_DATA_LINE[17]}" 2>&1; then
-						rm "${_FILE_PATH}.tmp"
-						funcPrintf "%20.20s: %s" "error" "${TXT_RED}Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
-						return
-					fi
-					;;
-				*)	# unknown wget
-#					printf "[%s]\n" "aborting because wget version is ${WGET_VERS:-1}"
-					if ! LANG=C curl "${CURL_OPTN[@]}" --progress-bar --continue-at - --create-dirs --output-dir "${_FILE_PATH%/*}" --output "${_FILE_PATH##*/}.tmp" "${_DATA_LINE[17]}" 2>&1; then
-						rm "${_FILE_PATH}.tmp"
-						funcPrintf "%20.20s: %s" "error" "${TXT_RED}Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [$?]${TXT_RESET}"
-						return
-					fi
-					;;
-			esac
-			if [[ ! -e "${_FILE_PATH}" ]]; then
-				touch "${_FILE_PATH}"
+			for ((I="${_ERRS_MXCT}"; I>0; I--))
+			do
+				_ERRS_RTCD=0
+				case "${WGET_VERS:-1}" in
+					1)	# wget
+						LANG=C wget "${WGET_OPTN[@]}" --continue --show-progress --progress=bar --output-document="${_FILE_TEMP}" "${_DATA_LINE[17]}" 2>&1
+						_ERRS_RTCD="$?"
+						_ERRS_COMD="wget"
+						;;
+					2)	# wget2
+						LANG=C wget2 "${WGET_OPTN[@]}" --continue --force-progress --progress=bar --output-document="${_FILE_TEMP}" "${_DATA_LINE[17]}" 2>&1
+						_ERRS_RTCD="$?"
+						_ERRS_COMD="wget2"
+						;;
+					*)	# unknown wget
+#						printf "[%s]\n" "aborting because wget version is ${WGET_VERS:-1}"
+						LANG=C curl "${CURL_OPTN[@]}" --progress-bar --continue-at - --create-dirs --output-dir "${_FILE_TEMP%/*}" --output "${_FILE_TEMP##*/}" "${_DATA_LINE[17]}" 2>&1
+						_ERRS_RTCD="$?"
+						_ERRS_COMD="curl"
+						;;
+				esac
+				if [[ "${_ERRS_RTCD}" -eq 0 ]]; then
+					break
+				fi
+			done
+			if [[ "${_ERRS_RTCD}" -ne 0 ]]; then
+				funcPrintf "%20.20s: %s" "error" "${TXT_RED}${_ERRS_COMD}:Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [${_ERRS_RTCD}]${TXT_RESET}"
+			else
+				if ! cp --preserve=timestamps "${_FILE_TEMP}" "${_FILE_PATH}"; then
+					funcPrintf "%20.20s: %s" "error" "${TXT_RED}Copy: Download was failed because an ${TXT_REV}error${TXT_REVRST} occurred [${_ERRS_RTCD}]${TXT_RESET}"
+				fi
 			fi
-			if cp --preserve=timestamps "${_FILE_PATH}.tmp" "${_FILE_PATH}"; then
-				rm "${_FILE_PATH}.tmp"
-			fi
+#			if [[ ! -e "${_FILE_PATH}" ]]; then
+#				touch "${_FILE_PATH}"
+#			fi
+#			if ! cp --preserve=timestamps "${_FILE_TEMP}" "${_FILE_PATH}"; then
+#				rm "${_FILE_TEMP}"
+#			fi
 			;;
 		*)	;;
 	esac
@@ -6033,6 +6070,7 @@ function funcCreate_remaster() {
 	declare -r    _COMD_TYPE="${1:-}"
 	declare -a    _TGET_LINE=()
 	declare       _FILE_PATH=""
+	declare       _FILE_TEMP=""
 	declare -a    _FILE_INFO=()
 	declare       _WORK_TEXT=""
 #	declare -i    RET_CD=0
@@ -6050,48 +6088,58 @@ function funcCreate_remaster() {
 		funcPrintf "%-3.3s%17.17s: %s %s" "===" "start" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
 		# --- check already started -------------------------------------------
 		_FILE_PATH="${_TGET_LINE[4]}/${_TGET_LINE[5]}"
-		if [[ -e "${_FILE_PATH}.tmp" ]]; then
-			funcPrintf "%20.20s: %s" "skip" "${TXT_YELLOW}Download was skipped because already started${TXT_RESET}"
+		_FILE_TEMP="${_FILE_PATH}.tmp"
+		if [[ -e "${_FILE_TEMP}" ]]; then
+			funcPrintf "%20.20s: %s" "skip" "${TXT_YELLOW}Download skipped because another process has already started${TXT_RESET}"
 			continue
 		fi
-		# --- check for new files ---------------------------------------------
-		if [[ -e "${_FILE_PATH}" ]]; then
-			if [[ "${_TGET_LINE[18]}" != "-" ]] && [[ "${_TGET_LINE[18]}" -ge "${_TGET_LINE[13]}" ]]; then
-				_FILE_PATH="${DIRS_RMAK}/${_TGET_LINE[5]%.*}_${_TGET_LINE[9]%%/*}.${_TGET_LINE[5]##*.}"
-				if [[ -e "${_FILE_PATH}" ]]; then
-					_WORK_TEXT="$(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}")"
-					IFS= mapfile -d ' ' -t _FILE_INFO < <(echo -n "${_WORK_TEXT}")
-					if [[ "${_FILE_INFO[5]}" -ge "${_TGET_LINE[18]}" ]]; then
-						funcPrintf "%20.20s: %s" "skip" "${TXT_YELLOW}Download skipped because newer file already exists${TXT_RESET}"
-						continue
-					fi
-				fi
+#		trap 'rm -rf '"${_FILE_TEMP:?}"'' EXIT
+		LIST_RMOV+=("${_FILE_TEMP:?}")
+		touch "${_FILE_TEMP}"
+		# --- download --------------------------------------------------------
+#		funcCreate_remaster_download "${_TGET_LINE[@]}"
+		if [[ ! -e "${_FILE_PATH}" ]]; then
+			funcCreate_remaster_download "${_TGET_LINE[@]}"
+		else
+			_WORK_TEXT="$(LANG=C TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_FILE_PATH}")"
+			IFS= mapfile -d ' ' -t _FILE_INFO < <(echo -n "${_WORK_TEXT}")
+			if { [[ "${_TGET_LINE[14]:--}" = "-" ]] || [[ "${_FILE_INFO[4]}" != "${_TGET_LINE[14]:-0}" ]]; } \
+			|| { [[ "${_TGET_LINE[13]:--}" = "-" ]] || [[ "${_FILE_INFO[5]}" != "${_TGET_LINE[13]:-0}" ]]; } \
+			|| { [[ "${_TGET_LINE[18]:--}" = "-" ]] || [[ "${_FILE_INFO[5]}" != "${_TGET_LINE[18]:-0}" ]]; }; then
+				funcCreate_remaster_download "${_TGET_LINE[@]}"
+			else
+				funcPrintf "%20.20s: %s" "skip" "${TXT_YELLOW}Download skipped because newer file exists${TXT_RESET}"
 			fi
 		fi
-		# --- download --------------------------------------------------------
-		funcCreate_remaster_download "${_TGET_LINE[@]}"
 #		if [[ -n "${FILE_VLID}" ]]; then
 #			_TGET_LINE[14]="${FILE_VLID// /%20}"
 #			TGET_LIST[I-1]="${_TGET_LINE[*]}"
 #		fi
-		# --- download only ---------------------------------------------------
-		case "${_COMD_TYPE}" in
-			--download ) continue;;
-			--update   )
-				case "${_TGET_LINE[16]}" in
-					*${TXT_CYAN}*   | \
-					*${TXT_GREEN}*  | \
-					*${TXT_YELLOW}* ) ;;
-					*               ) continue;;
-				esac
-				;;
-			* ) ;;
-		esac
 		# --- skip check ------------------------------------------------------
 		if [[ ! -e "${_TGET_LINE[4]}/${_TGET_LINE[5]}" ]]; then
 			funcPrintf "%-3.3s${TXT_RESET}${TXT_BYELLOW}%17.17s: %s${TXT_RESET} %s" "===" "skip" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
+			rm "${_FILE_TEMP:?}"
 			continue
 		fi
+		# --- download only ---------------------------------------------------
+		case "${_COMD_TYPE}" in
+			--download )					# download only
+				rm "${_FILE_TEMP:?}"
+				continue
+				;;
+			--update   )					# target update
+				case "${_TGET_LINE[16]}" in
+					*${TXT_CYAN}*   | \
+					*${TXT_GREEN}*  | \
+					*${TXT_YELLOW}* ) ;;	# success
+					*               )		# failure
+						rm "${_FILE_TEMP:?}"
+						continue
+						;;
+				esac
+				;;
+			* ) ;;							# target create
+		esac
 		# --- copy iso contents to hdd ----------------------------------------
 		funcCreate_copy_iso2hdd "${_TGET_LINE[@]}"
 		# --- rewriting syslinux.cfg and grub.cfg -----------------------------
@@ -6121,6 +6169,7 @@ function funcCreate_remaster() {
 		esac
 		# --- create iso file -------------------------------------------------
 		funcCreate_remaster_iso_file "${_TGET_LINE[@]}"
+		rm "${_FILE_TEMP:?}"
 		funcPrintf "%-3.3s%17.17s: %s %s" "===" "complete" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
 	done
 }
@@ -6720,7 +6769,8 @@ function funcMain() {
 	fi
 
 	# --- initialization ------------------------------------------------------
-	trap 'rm -rf '"${DIRS_TEMP:?}"'' EXIT
+#	trap 'rm -rf '"${DIRS_TEMP:?}"'' EXIT
+#	trap funcTrap EXIT
 
 	if command -v tput > /dev/null 2>&1; then
 		ROWS_SIZE=$(tput lines)
