@@ -1,4 +1,4 @@
-INSERT INTO public.distribution(version,name,version_id,code_name,life,release,support,long_term,rhel,kerne,note) VALUES 
+insert into public.distribution(version,name,version_id,code_name,life,release,support,long_term,rhel,kerne,note) values 
     ('debian-1.1','Debian','1.1','Buzz','EOL','1996-06-17','','','','','')
   , ('debian-1.2','Debian','1.2','Rex','EOL','1996-12-12','','','','','')
   , ('debian-1.3','Debian','1.3','Bo','EOL','1997-06-05','','','','','')
@@ -19,6 +19,8 @@ INSERT INTO public.distribution(version,name,version_id,code_name,life,release,s
   , ('debian-13.0','Debian','13.0','Trixie','','2025-xx-xx','20xx-xx-xx','20xx-xx-xx','','','testing')
   , ('debian-14.0','Debian','14.0','Forky','','2027-xx-xx','20xx-xx-xx','20xx-xx-xx','','','')
   , ('debian-15.0','Debian','15.0','Duke','','20xx-xx-xx','20xx-xx-xx','20xx-xx-xx','','','')
+  , ('debian-testing','Debian','xx.x','Testing','','20xx-xx-xx','20xx-xx-xx','20xx-xx-xx','','','testing')
+  , ('debian-sid','Debian','xx.x','SID','','20xx-xx-xx','20xx-xx-xx','20xx-xx-xx','','','sid')
   , ('ubuntu-4.10','Ubuntu','4.10','Warty Warthog','EOL','2004-10-20','2006-04-30','','','2.6.8','')
   , ('ubuntu-5.04','Ubuntu','5.04','Hoary Hedgehog','EOL','2005-04-08','2006-10-31','','','2.6.10','')
   , ('ubuntu-5.10','Ubuntu','5.10','Breezy Badger','EOL','2005-10-12','2007-04-13','','','2.6.12','')
@@ -124,8 +126,10 @@ INSERT INTO public.distribution(version,name,version_id,code_name,life,release,s
   , ('miraclelinux-8.4','Miracle Linux','8.4','','EOL','2021-10-04','','','2021-05-18','4.18.0-305.el8','')
   , ('miraclelinux-8.6','Miracle Linux','8.6','','EOL','2022-11-01','','','2022-05-10','4.18.0-372.el8','')
   , ('miraclelinux-8.8','Miracle Linux','8.8','','','2023-10-05','','','2023-05-16','4.18.0-477.el8','')
+  , ('miraclelinux-8.10','Miracle Linux','8.10','','','2024-10-17','','','2024-05-22','4.18.0-553.el8_10','')
   , ('miraclelinux-9.0','Miracle Linux','9.0','','EOL','2022-11-01','','','2022-05-17','5.14.0-70.el9','')
-  , ('miraclelinux-9.2','Miracle Linux','9.2','','','2023-10-05','','','2023-05-10','5.14.0-284.el9','')
+  , ('miraclelinux-9.2','Miracle Linux','9.2','','EOL','2023-10-05','','','2023-05-10','5.14.0-284.el9','')
+  , ('miraclelinux-9.4','Miracle Linux','9.4','','','2024-09-02','','','2024-04-30','5.14.0-427.13.1.el9_4','')
   , ('opensuse-leap-15.0','openSUSE','15.0','','EOL','2018-05-25','2019-12-03','','','4.12','')
   , ('opensuse-leap-15.1','openSUSE','15.1','','EOL','2019-05-22','2021-01-31','','','4.12','')
   , ('opensuse-leap-15.2','openSUSE','15.2','','EOL','2020-07-02','2021-12-31','','','5.3.18','')
