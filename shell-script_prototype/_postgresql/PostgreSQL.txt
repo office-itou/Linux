@@ -2,6 +2,7 @@
 
 https://www.postgresql.jp/document/16/html/
 https://www.postgresql.jp/document/16/html/reference.html
+https://www.postgresql.jp/document/16/html/sql.html
 https://wiki.postgresql.org/wiki/Main_Page/ja
 
 # === install =================================================================
@@ -47,7 +48,7 @@ sudo -u postgres psql -qtA --command="SELECT USENAME FROM pg_user;"
 sudo -u postgres psql -q   --command="CREATE DATABASE mydb OWNER master;"
 psql -qtA --command="SELECT datname FROM pg_database;"
 
- --- create tables -----------------------------------------------------------
+# --- create tables -----------------------------------------------------------
 psql -q   --dbname=mydb --command="DROP TABLE if exists distribution CASCADE;"
 psql -q   --dbname=mydb --command="CREATE TABLE distribution (
   version    TEXT           NOT NULL
@@ -239,4 +240,4 @@ FROM
             LIMIT
                 1
         )
-ORDER BY type,version1,entry_name
+ORDER BY type,latest,entry_name
