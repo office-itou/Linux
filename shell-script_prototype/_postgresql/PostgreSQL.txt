@@ -39,14 +39,16 @@ sudo systemctl start postgresql-17
 sudo -u postgres psql -q  --command="VACUUM FULL;"
 
 # --- create user -------------------------------------------------------------
-# sudo -u postgres psql -q   --command="DROP USER master;"
+# sudo -u postgres psql -q   --command="DROP OWNED BY master CASCADE;"
+# sudo -u postgres psql -q   --command="DROP DATABASE IF EXISTS mydb;"
+# sudo -u postgres psql -q   --command="DROP USER IF EXISTS master;"
 sudo -u postgres psql -q   --command="CREATE USER master PASSWORD 'master' CREATEDB;"
 sudo -u postgres psql -qtA --command="SELECT USENAME FROM pg_user;"
 
 # --- create database ---------------------------------------------------------
-# sudo -u postgres psql -q   --command="DROP DATABASE mydb;"
+# sudo -u postgres psql -q   --command="DROP DATABASE IF EXISTS mydb;"
 sudo -u postgres psql -q   --command="CREATE DATABASE mydb OWNER master;"
-psql -qtA --command="SELECT datname FROM pg_database;"
+sudo -u postgres psql -qtA --command="SELECT datname FROM pg_database;"
 
 # --- create tables -----------------------------------------------------------
 psql -q   --dbname=mydb --command="DROP TABLE if exists distribution CASCADE;"
@@ -94,6 +96,32 @@ psql -q   --dbname=mydb --command="CREATE TABLE media (
 , lnk_path   TEXT
 , CONSTRAINT media_PKC PRIMARY KEY (type,entry_flag,entry_name,entry_disp)
 );"
+
+#  0: type         14
+#  1: entry_flag   15
+#  2: entry_name   39
+#  3: entry_disp   39
+#  4: version      23
+#  5: latest       23
+#  6: release      15
+#  7: support      15
+#  8: web_url     143
+#  9: web_tstamp   23
+# 10: web_size     11
+# 11: web_status   15
+# 12: iso_path     63
+# 13: iso_tstamp   23
+# 14: iso_size     11
+# 15: iso_volume   15
+# 16: rmk_path     63
+# 17: rmk_tstamp   23
+# 18: rmk_size     11
+# 19: rmk_volume   15
+# 20: ldr_initrd   63
+# 21: ldr_kernel   63
+# 22: cfg_path     63
+# 23: cfg_tstamp   23
+# 24: lnk_path     63
 
 # *** unused ******************************************************************
 psql -q   --command="

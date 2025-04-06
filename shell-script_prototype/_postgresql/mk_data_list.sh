@@ -47,31 +47,31 @@ set -u
 #		 	# === system ==============================================================
 #		
 #		 	# --- media information ---------------------------------------------------
-#		 	#  0: type          media type
-#		 	#  1: entry_flag    [m] menu, [o] output, [else] hidden
-#		 	#  2: entry_name    entry name (unique)
-#		 	#  3: entry_disp    entry name for display
-#		 	#  4: version       version id
-#		 	#  5: latest        latest version
-#		 	#  6: release       release date
-#		 	#  7: support       support end date
-#		 	#  8: web_url       web file  url
-#		 	#  9: web_tstamp    "         time stamp
-#		 	# 10: web_size      "         file size
-#		 	# 11: web_status    "         download status
-#		 	# 12: iso_path      iso image file path
-#		 	# 13: iso_tstamp    "         time stamp
-#		 	# 14: iso_size      "         file size
-#		 	# 15: iso_volume    "         volume id
-#		 	# 16: rmk_path      remaster  file path
-#		 	# 17: rmk_tstamp    "         time stamp
-#		 	# 18: rmk_size      "         file size
-#		 	# 19: rmk_volume    "         volume id
-#		 	# 20: ldr_initrd    initrd    file path
-#		 	# 21: ldr_kernel    kernel    file path
-#		 	# 22: cfg_path      config    file path
-#		 	# 23: cfg_tstamp    "         time stamp
-#		 	# 24: lnk_path      symlink   directory or file path
+#		 	#  0: type          ( 14)   media type
+#		 	#  1: entry_flag    ( 15)   [m] menu, [o] output, [else] hidden
+#		 	#  2: entry_name    ( 39)   entry name (unique)
+#		 	#  3: entry_disp    ( 39)   entry name for display
+#		 	#  4: version       ( 23)   version id
+#		 	#  5: latest        ( 23)   latest version
+#		 	#  6: release       ( 15)   release date
+#		 	#  7: support       ( 15)   support end date
+#		 	#  8: web_url       (143)   web file  url
+#		 	#  9: web_tstamp    ( 23)   "         time stamp
+#		 	# 10: web_size      ( 11)   "         file size
+#		 	# 11: web_status    ( 15)   "         download status
+#		 	# 12: iso_path      ( 63)   iso image file path
+#		 	# 13: iso_tstamp    ( 23)   "         time stamp
+#		 	# 14: iso_size      ( 11)   "         file size
+#		 	# 15: iso_volume    ( 15)   "         volume id
+#		 	# 16: rmk_path      ( 63)   remaster  file path
+#		 	# 17: rmk_tstamp    ( 23)   "         time stamp
+#		 	# 18: rmk_size      ( 11)   "         file size
+#		 	# 19: rmk_volume    ( 15)   "         volume id
+#		 	# 20: ldr_initrd    ( 63)   initrd    file path
+#		 	# 21: ldr_kernel    ( 63)   kernel    file path
+#		 	# 22: cfg_path      ( 63)   config    file path
+#		 	# 23: cfg_tstamp    ( 23)   "         time stamp
+#		 	# 24: lnk_path      ( 63)   symlink   directory or file path
 #		
 #_EOT_
 
@@ -79,10 +79,11 @@ set -u
 
 	while IFS= read -r -d $'\n' _LINE
 	do
-		IFS= mapfile -d '|' -t _LIST < <(echo -n "${_LINE}")
+		IFS= mapfile -d '|' -t _LIST < <(echo -n "${_LINE// /%20}")
 #		if [[ "${_FLAG:-"${_LIST[0]:-}"}" != "${_LIST[0]:-}" ]]; then
 #			_FLAG=""
-#			printf "\t)  # %-14.14s %-15.15s %-39.39s %-39.39s %-19.19s %-19.19s %-11.11s %-11.11s %-143.143s %-23.23s %-11.11s %-15.15s %-59.59s %-23.23s %-11.11s %-15.15s %-11.11s %-23.23s %-11.11s %-15.15s %-63.63s %-63.63s %-51.51s %-23.23s %s\n\n" \
+##			printf "\t)  # %-14.14s %-15.15s %-39.39s %-39.39s %-23.23s %-23.23s %-15.15s %-15.15s %-143.143s %-23.23s %-11.11s %-15.15s %-63.63s %-23.23s %-11.11s %-15.15s %-63.63s %-23.23s %-11.11s %-15.15s %-63.63s %-63.63s %-63.63s %-23.23s %-63.63s\n\n" \
+#			printf "\t)  # %-14s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-23s %-11s %-15s %-63s %-23s %-11s %-15s %-63s %-23s %-11s %-15s %-63s %-63s %-63s %-23s %s\n\n" \
 #			"0:type"        \
 #			"1:entry_flag"  \
 #			"2:entry_name"  \
@@ -124,10 +125,11 @@ set -u
 #				*             ) _DATA_NAME=""              ; _DATA_NOTE="";;
 #			esac
 #			printf "\t%-75.75s\n" "# --- ${_DATA_NOTE:-} ${_WORK_GAPS}"
-#			printf "\tdeclare -r -a %-810.810s\\\\\n" "${_DATA_NAME:-}=("
+#			printf "\tdeclare -r -a %-894.894s\\\\\n" "${_DATA_NAME:-}=("
 #		fi
-#		printf "\t\t\"%-14.14s %-15.15s %-39.39s %-39.39s %-19.19s %-19.19s %-11.11s %-11.11s %-143.143s %-23.23s %-11.11s %-15.15s %-59.59s %-23.23s %-11.11s %-15.15s %-11.11s %-23.23s %-11.11s %-15.15s %-63.63s %-63.63s %-51.51s %-23.23s %-64.64s\"   \\\\\n" \
-		printf "%-14.14s %-15.15s %-39.39s %-39.39s %-19.19s %-19.19s %-11.11s %-11.11s %-143.143s %-23.23s %-11.11s %-15.15s %-59.59s %-23.23s %-11.11s %-15.15s %-11.11s %-23.23s %-11.11s %-15.15s %-63.63s %-63.63s %-51.51s %-23.23s %-64.64s\n" \
+#		printf "\t\t'%-14.14s %-15.15s %-39.39s %-39.39s %-23.23s %-23.23s %-15.15s %-15.15s %-143.143s %-23.23s %-11.11s %-15.15s %-63.63s %-23.23s %-11.11s %-15.15s %-63.63s %-23.23s %-11.11s %-15.15s %-63.63s %-63.63s %-63.63s %-23.23s %-63.63s'\t\\\\\n" \
+#		printf "\t\t'%-14s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-23s %-11s %-15s %-63s %-23s %-11s %-15s %-63s %-23s %-11s %-15s %-63s %-63s %-63s %-23s %-63s'\t\\\\\n" \
+		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-23s %-11s %-15s %-63s %-23s %-11s %-15s %-63s %-23s %-11s %-15s %-63s %-63s %-63s %-23s %-63s\n" \
 		"${_LIST[0]:--}" \
 		"${_LIST[1]:--}" \
 		"${_LIST[2]:--}" \
@@ -233,6 +235,7 @@ ORDER BY
     , LPAD(SPLIT_PART(SubString(regexp_replace(latest, '^[^0-9]+', ' ') FROM '[0-9.]+$'), '.', 3), 3, '0')
     , entry_name
 ;" || true)
+
 #	if [[ -n "${_FLAG:-}" ]]; then
 #		printf "\t)  # %-14.14s %-15.15s %-39.39s %-39.39s %-19.19s %-19.19s %-11.11s %-11.11s %-143.143s %-23.23s %-11.11s %-15.15s %-59.59s %-23.23s %-11.11s %-15.15s %-11.11s %-23.23s %-11.11s %-15.15s %-63.63s %-63.63s %-51.51s %-23.23s %s\n\n" \
 #		"0:type"        \
@@ -261,7 +264,7 @@ ORDER BY
 #		"23:cfg_tstamp" \
 #		"24:lnk_path"
 #	fi
-#
+
 #	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 #		 	# --- data list -----------------------------------------------------------
 #		 	declare -a    DATA_LIST=(  \
@@ -280,7 +283,7 @@ ORDER BY
 #		 	declare -a    TGET_LIST=()
 #		 	declare       TGET_INDX=""
 #_EOT_
-#
+
 #		if [[ -n "${_LIST[24]:-}" ]]; then
 #			_DATA_NAME="$(echo "${_LIST[24]:-}")"
 #			echo "1:${_LIST[24]/\$\{HGFS_DIRS\}/"${HGFS_DIRS:-}"}"

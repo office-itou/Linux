@@ -76,4 +76,4 @@ set -u
 			echo "[${_LINE}]"
 			exit 1
 		fi
-	done < <(cat "${1:?}")
+	done < "${1:?}"
