@@ -9,8 +9,8 @@
 | Debian-13.0              | Trixie            |      | 2025/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | testing      |
 | Debian-14.0              | Forky             |      | 2027/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       |              |
 | Debian-15.0              | Duke              |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       |              |
-| Debian-xx.x              | Testing           |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | testing      |
-| Debian-xx.x              | SID               |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | sid          |
+| Debian-testing           | Testing           |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | testing      |
+| Debian-sid               | SID               |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | sid          |
 | Ubuntu-16.04             | Xenial Xerus      | LTS  | 2016/04/21 | 2021/04/30 | 2026/04/23 |            | 4.4                   |              |
 | Ubuntu-18.04             | Bionic Beaver     | LTS  | 2018/04/26 | 2023/05/31 | 2028/04/26 |            | 4.15                  |              |
 | Ubuntu-20.04             | Focal Fossa       |      | 2020/04/23 | 2025/05/29 | 2030/04/23 |            | 5.4                   |              |
@@ -33,7 +33,7 @@
 | Miracle Linux-9.4        |                   |      | 2024/09/02 |            |            | 2024/04/30 | 5.14.0-427.13.1.el9_4 |              |
 | openSUSE-15.6            |                   |      | 2024/06/12 | 2025/12/31 |            |            | 6.4                   |              |
 | openSUSE-16.0            |                   |      | 2025/10/xx | 20xx/xx/xx |            |            |                       |              |
-| openSUSE-xx.x            |                   |      | 2014/11/xx | 20xx/xx/xx |            |            |                       |              |
+| openSUSE-tumbleweed      |                   |      | 2014/11/xx | 20xx/xx/xx |            |            |                       |              |
 
 ## WiKi  
 
