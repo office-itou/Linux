@@ -55,23 +55,24 @@ set -u
 		 	#  5: latest        ( 23)   latest version
 		 	#  6: release       ( 15)   release date
 		 	#  7: support       ( 15)   support end date
-		 	#  8: web_url       (143)   web file  url
-		 	#  9: web_tstamp    ( 23)   "         time stamp
-		 	# 10: web_size      ( 11)   "         file size
-		 	# 11: web_status    ( 15)   "         download status
-		 	# 12: iso_path      ( 63)   iso image file path
-		 	# 13: iso_tstamp    ( 23)   "         time stamp
-		 	# 14: iso_size      ( 11)   "         file size
-		 	# 15: iso_volume    ( 15)   "         volume id
-		 	# 16: rmk_path      ( 63)   remaster  file path
-		 	# 17: rmk_tstamp    ( 23)   "         time stamp
-		 	# 18: rmk_size      ( 11)   "         file size
-		 	# 19: rmk_volume    ( 15)   "         volume id
-		 	# 20: ldr_initrd    ( 63)   initrd    file path
-		 	# 21: ldr_kernel    ( 63)   kernel    file path
-		 	# 22: cfg_path      ( 63)   config    file path
-		 	# 23: cfg_tstamp    ( 23)   "         time stamp
-		 	# 24: lnk_path      ( 63)   symlink   directory or file path
+		 	#  8: web_regexp    (143)   web file  regexp
+		 	#  9: web_path      (143)   "         path
+		 	# 10: web_tstamp    ( 27)   "         time stamp
+		 	# 11: web_size      ( 15)   "         file size
+		 	# 12: web_status    ( 15)   "         download status
+		 	# 13: iso_path      ( 71)   iso image file path
+		 	# 14: iso_tstamp    ( 27)   "         time stamp
+		 	# 15: iso_size      ( 15)   "         file size
+		 	# 16: iso_volume    ( 43)   "         volume id
+		 	# 17: rmk_path      ( 71)   remaster  file path
+		 	# 18: rmk_tstamp    ( 27)   "         time stamp
+		 	# 19: rmk_size      ( 15)   "         file size
+		 	# 20: rmk_volume    ( 43)   "         volume id
+		 	# 21: ldr_initrd    ( 71)   initrd    file path
+		 	# 22: ldr_kernel    ( 71)   kernel    file path
+		 	# 23: cfg_path      ( 71)   config    file path
+		 	# 24: cfg_tstamp    ( 27)   "         time stamp
+		 	# 25: lnk_path      ( 71)   symlink   directory or file path
 		
 _EOT_
 
@@ -82,8 +83,7 @@ _EOT_
 		IFS= mapfile -d '|' -t _LIST < <(echo -n "${_LINE// /%20}")
 		if [[ "${_FLAG:-"${_LIST[0]:-}"}" != "${_LIST[0]:-}" ]]; then
 			_FLAG=""
-#			printf "\t)  # %-14.14s %-15.15s %-39.39s %-39.39s %-23.23s %-23.23s %-15.15s %-15.15s %-143.143s %-23.23s %-11.11s %-15.15s %-63.63s %-23.23s %-11.11s %-15.15s %-63.63s %-23.23s %-11.11s %-15.15s %-63.63s %-63.63s %-63.63s %-23.23s %-63.63s\n\n" \
-			printf "\t)  # %-14s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-23s %-11s %-15s %-63s %-23s %-11s %-15s %-63s %-23s %-11s %-15s %-63s %-63s %-63s %-23s %s\n\n" \
+			printf "\t)  # %-14s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-27s %-15s %-15s %-71s %-27s %-15s %-43s %-71s %-27s %-15s %-43s %-71s %-71s %-71s %-27s %s\n\n" \
 			"0:type"        \
 			"1:entry_flag"  \
 			"2:entry_name"  \
@@ -92,23 +92,24 @@ _EOT_
 			"5:latest"      \
 			"6:release"     \
 			"7:support"     \
-			"8:web_url"     \
-			"9:web_tstamp"  \
-			"10:web_size"   \
-			"11:web_status" \
-			"12:iso_path"   \
-			"13:iso_tstamp" \
-			"14:iso_size"   \
-			"15:iso_volume" \
-			"16:rmk_path"   \
-			"17:rmk_tstamp" \
-			"18:rmk_size"   \
-			"19:rmk_volume" \
-			"20:ldr_initrd" \
-			"21:ldr_kernel" \
-			"22:cfg_path"   \
-			"23:cfg_tstamp" \
-			"24:lnk_path"
+			"8:web_regexp"  \
+			"9:web_path"    \
+			"10:web_tstamp"  \
+			"11:web_size"   \
+			"12:web_status" \
+			"13:iso_path"   \
+			"14:iso_tstamp" \
+			"15:iso_size"   \
+			"16:iso_volume" \
+			"17:rmk_path"   \
+			"18:rmk_tstamp" \
+			"19:rmk_size"   \
+			"20:rmk_volume" \
+			"21:ldr_initrd" \
+			"22:ldr_kernel" \
+			"23:cfg_path"   \
+			"24:cfg_tstamp" \
+			"25:lnk_path"
 		fi
 		if [[ -z "${_FLAG:-}" ]]; then
 			_FLAG="${_LIST[0]:-}"
@@ -125,10 +126,9 @@ _EOT_
 				*             ) _DATA_NAME=""              ; _DATA_NOTE="";;
 			esac
 			printf "\t%-75.75s\n" "# --- ${_DATA_NOTE:-} ${_WORK_GAPS}"
-			printf "\tdeclare -r -a %-894.894s\\\\\n" "${_DATA_NAME:-}=("
+			printf "\tdeclare -r -a %-1166.1166s\t\\\\\n" "${_DATA_NAME:-}=("
 		fi
-#		printf "\t\t'%-14.14s %-15.15s %-39.39s %-39.39s %-23.23s %-23.23s %-15.15s %-15.15s %-143.143s %-23.23s %-11.11s %-15.15s %-63.63s %-23.23s %-11.11s %-15.15s %-63.63s %-23.23s %-11.11s %-15.15s %-63.63s %-63.63s %-63.63s %-23.23s %-63.63s'\t\\\\\n" \
-		printf "\t\t'%-14s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-23s %-11s %-15s %-63s %-23s %-11s %-15s %-63s %-23s %-11s %-15s %-63s %-63s %-63s %-23s %-63s'\t\\\\\n" \
+		printf "\t\t'%-14s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-27s %-15s %-15s %-71s %-27s %-15s %-43s %-71s %-27s %-15s %-43s %-71s %-71s %-71s %-27s %-71s'\t\\\\\n" \
 		"${_LIST[0]:--}" \
 		"${_LIST[1]:--}" \
 		"${_LIST[2]:--}" \
@@ -153,90 +153,78 @@ _EOT_
 		"${_LIST[21]:--}" \
 		"${_LIST[22]:--}" \
 		"${_LIST[23]:--}" \
-		"${_LIST[24]:--}"
+		"${_LIST[24]:--}" \
+		"${_LIST[25]:--}"
 	done < <(psql -qtAX --dbname=mydb --command="
 SELECT
-    m.type
-    , m.entry_flag
-    , m.entry_name
-    , m.entry_disp
-    , m.version
-    , d.version AS latest
-    , d.release
-    , d.support
-    , m.web_url
-    , m.web_tstamp
-    , m.web_size
-    , m.web_status
-    , m.iso_path
-    , m.iso_tstamp
-    , m.iso_size
-    , m.iso_volume
-    , m.rmk_path
-    , m.rmk_tstamp
-    , m.rmk_size
-    , m.rmk_volume
-    , m.ldr_initrd
-    , m.ldr_kernel
-    , m.cfg_path
-    , m.cfg_tstamp
-    , lnk_path
+    public.media.type
+    , public.media.entry_flag
+    , public.media.entry_name
+    , public.media.entry_disp
+    , public.media.version
+    , public.media.latest
+    , public.media.release
+    , public.media.support
+    , public.media.web_regexp
+    , public.media.web_path
+    , public.media.web_tstamp
+    , public.media.web_size
+    , public.media.web_status
+    , public.media.iso_path
+    , public.media.iso_tstamp
+    , public.media.iso_size
+    , public.media.iso_volume
+    , public.media.rmk_path
+    , public.media.rmk_tstamp
+    , public.media.rmk_size
+    , public.media.rmk_volume
+    , public.media.ldr_initrd
+    , public.media.ldr_kernel
+    , public.media.cfg_path
+    , public.media.cfg_tstamp
+    , public.media.lnk_path 
 FROM
-    media AS m
-    LEFT JOIN distribution AS d
-        ON d.version = (
-            SELECT
-                s.version
-            FROM
-                distribution AS s
-            WHERE LENGTH(m.version) > 0 AND
-                s.version SIMILAR TO '%' || m.version || '\.*.*%'
-            ORDER BY
-                LPAD(SPLIT_PART(SubString(regexp_replace(s.version, '^[^0-9]+', ' ') FROM '[0-9.]+$'), '.', 1), 3, '0') DESC
-              , LPAD(SPLIT_PART(SubString(regexp_replace(s.version, '^[^0-9]+', ' ') FROM '[0-9.]+$'), '.', 2), 3, '0') DESC
-              , LPAD(SPLIT_PART(SubString(regexp_replace(s.version, '^[^0-9]+', ' ') FROM '[0-9.]+$'), '.', 3), 3, '0') DESC
-            LIMIT
-                1
-        )
+    public.media 
+WHERE
+    public.media.entry_flag != 'x' 
+    AND public.media.entry_flag != 'd' 
+    AND public.media.entry_flag != 'b' 
 ORDER BY
-    type = 'mini.iso' DESC
-    , type = 'netinst' DESC
-    , type = 'dvd' DESC
-    , type = 'live_install' DESC
-    , type = 'live' DESC
-    , type = 'tool' DESC
-    , type = 'custom_live' DESC
-    , type = 'custom_netinst' DESC
-    , type = 'system' DESC
-    , entry_disp != '-' DESC
-    , entry_name = 'menu-entry' DESC
-    , entry_flag = 'b'
-    , entry_flag = 'd'
-    , latest ~ 'debian-*' DESC
-    , latest ~ 'ubuntu-*' DESC
-    , latest ~ 'fedora-*' DESC
-    , latest ~ 'centos-*' DESC
-    , latest ~ 'almalinux-*' DESC
-    , latest ~ 'rockylinux-*' DESC
-    , latest ~ 'miraclelinux-*' DESC
-    , latest ~ 'opensuse-*' DESC
-    , latest ~ 'windows-*' DESC
-    , latest ~ 'memtest86plus' DESC
-    , latest ~ 'winpe-x64' DESC
-    , latest ~ 'winpe-x86' DESC
-    , latest ~ 'ati2020x64' DESC
-    , latest ~ 'ati2020x86' DESC
-    , entry_name ~ 'ubuntu-legacy-*' DESC
-    , entry_name ~ 'ubuntu-server-*' DESC
-    , latest ~ regexp_replace(latest, '[0-9].*$', '') DESC
-    , LPAD(SPLIT_PART(SubString(regexp_replace(latest, '^[^0-9]+', ' ') FROM '[0-9.]+$'), '.', 1), 3, '0')
-    , LPAD(SPLIT_PART(SubString(regexp_replace(latest, '^[^0-9]+', ' ') FROM '[0-9.]+$'), '.', 2), 3, '0')
-    , LPAD(SPLIT_PART(SubString(regexp_replace(latest, '^[^0-9]+', ' ') FROM '[0-9.]+$'), '.', 3), 3, '0')
-    , entry_name
+    public.media.type = 'mini.iso' DESC
+    , public.media.type = 'netinst' DESC
+    , public.media.type = 'dvd' DESC
+    , public.media.type = 'live_install' DESC
+    , public.media.type = 'live' DESC
+    , public.media.type = 'tool' DESC
+    , public.media.type = 'custom_live' DESC
+    , public.media.type = 'custom_netinst' DESC
+    , public.media.type = 'system' DESC
+    , public.media.entry_disp != '-' DESC
+    , public.media.version = 'menu-entry' DESC
+    , public.media.version ~ 'debian-*' DESC
+    , public.media.version ~ 'ubuntu-*' DESC
+    , public.media.version ~ 'fedora-*' DESC
+    , public.media.version ~ 'centos-stream-*' DESC
+    , public.media.version ~ 'almalinux-*' DESC
+    , public.media.version ~ 'rockylinux-*' DESC
+    , public.media.version ~ 'miraclelinux-*' DESC
+    , public.media.version ~ 'opensuse-*' DESC
+    , public.media.version ~ 'windows-*' DESC
+    , public.media.version = 'memtest86plus' DESC
+    , public.media.version = 'winpe-x86' DESC
+    , public.media.version = 'winpe-x64' DESC
+    , public.media.version = 'ati2020x86' DESC
+    , public.media.version = 'ati2020x64' DESC
+    , public.media.version ~ '.*-sid'
+    , public.media.version ~ '.*-testing'
+    , public.media.version
+    , LPAD(SPLIT_PART(SubString(public.media.latest FROM '[0-9.]+$'), '.', 1), 3, '0')
+    , LPAD(SPLIT_PART(SubString(public.media.latest FROM '[0-9.]+$'), '.', 2), 3, '0')
+    , LPAD(SPLIT_PART(SubString(public.media.latest FROM '[0-9.]+$'), '.', 3), 3, '0')
 ;" || true)
 
 	if [[ -n "${_FLAG:-}" ]]; then
-		printf "\t)  # %-14.14s %-15.15s %-39.39s %-39.39s %-19.19s %-19.19s %-11.11s %-11.11s %-143.143s %-23.23s %-11.11s %-15.15s %-59.59s %-23.23s %-11.11s %-15.15s %-11.11s %-23.23s %-11.11s %-15.15s %-63.63s %-63.63s %-51.51s %-23.23s %s\n\n" \
+		printf "\t)  # %-14.14s %-15.15s %-39.39s %-39.39s %-23.23s %-23.23s %-15.15s %-15.15s %-143.143s %-143.143s %-27.27s %-15.15s %-15.15s %-71.71s %-27.27s %-15.15s %-43.43s %-71.71s %-27.27s %-15.15s %-43.43s %-71.71s %-71.71s %-71.71s %-27.27s %s\n\n" \
 		"0:type"        \
 		"1:entry_flag"  \
 		"2:entry_name"  \
@@ -245,23 +233,24 @@ ORDER BY
 		"5:latest"      \
 		"6:release"     \
 		"7:support"     \
-		"8:web_url"     \
-		"9:web_tstamp"  \
-		"10:web_size"   \
-		"11:web_status" \
-		"12:iso_path"   \
-		"13:iso_tstamp" \
-		"14:iso_size"   \
-		"15:iso_volume" \
-		"16:rmk_path"   \
-		"17:rmk_tstamp" \
-		"18:rmk_size"   \
-		"19:rmk_volume" \
-		"20:ldr_initrd" \
-		"21:ldr_kernel" \
-		"22:cfg_path"   \
-		"23:cfg_tstamp" \
-		"24:lnk_path"
+		"8:web_regexp"  \
+		"9:web_path"    \
+		"10:web_tstamp"  \
+		"11:web_size"   \
+		"12:web_status" \
+		"13:iso_path"   \
+		"14:iso_tstamp" \
+		"15:iso_size"   \
+		"16:iso_volume" \
+		"17:rmk_path"   \
+		"18:rmk_tstamp" \
+		"19:rmk_size"   \
+		"20:rmk_volume" \
+		"21:ldr_initrd" \
+		"22:ldr_kernel" \
+		"23:cfg_path"   \
+		"24:cfg_tstamp" \
+		"25:lnk_path"
 	fi
 
 	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
@@ -283,9 +272,4 @@ ORDER BY
 		 	declare       TGET_INDX=""
 _EOT_
 
-#		if [[ -n "${_LIST[24]:-}" ]]; then
-#			_DATA_NAME="$(echo "${_LIST[24]:-}")"
-#			echo "1:${_LIST[24]/\$\{HGFS_DIRS\}/"${HGFS_DIRS:-}"}"
-#			_DATA_NAME="$(eval echo "${_LIST[24]:-}")"
-#			echo "2:${_WORK:-}"
-#		fi
+	exit
