@@ -33,7 +33,7 @@
 	# === data section ========================================================
 
 	# --- debug parameter -----------------------------------------------------
-	_DBGS_FLAG=""						# debug flag (empty: normal, else: debug)
+	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
 
 	# --- working directory name ----------------------------------------------
 	declare -r    _PROG_PATH="$0"
@@ -41,6 +41,7 @@
 	declare -r    _PROG_DIRS="${_PROG_PATH%/*}"
 	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
 	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
+	declare       _DIRS_TEMP=""
 	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
 	readonly      _DIRS_TEMP
 
