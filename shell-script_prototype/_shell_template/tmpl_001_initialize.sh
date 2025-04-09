@@ -1,62 +1,67 @@
-#!/bin/bash
+	# -------------------------------------------------------------------------
+	declare       _CODE_NAME=""
+	              _CODE_NAME="$(sed -ne '/VERSION_CODENAME/ s/^.*=//p' /etc/os-release)"
+	readonly      _CODE_NAME
 
-###############################################################################
-##
-##	:_PROG_TITL_:
-##	  developed for debian
-##
-##	developer   : :_PROG_USER_:
-##	release     : :_PROG_RELS_:
-##
-##	history     :
-##	   data    version    developer    point
-##	---------- -------- -------------- ----------------------------------------
-##	yyyy/mm/dd 000.0000 xxxxxxxxxxxxxx first release
-##
-##	shellcheck -o all "filename"
-##
-###############################################################################
-
-# *** initialization **********************************************************
-	export LANG=C
-
-#	set -n								# Check for syntax errors
-#	set -x								# Show command and argument expansion
-	set -o ignoreeof					# Do not exit with Ctrl+D
-	set +m								# Disable job control
-	set -e								# End with status other than 0
-	set -u								# End with undefined variable reference
-	set -o pipefail						# End with in pipe error
-
-	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
-
-	# === data section ========================================================
-
-	# --- debug parameter -----------------------------------------------------
-	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
-
-	# --- working directory name ----------------------------------------------
-	declare -r    _PROG_PATH="$0"
-	declare -r -a _PROG_PARM=("${@:-}")
-	declare -r    _PROG_DIRS="${_PROG_PATH%/*}"
-	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
-	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
-	declare       _DIRS_TEMP=""
-	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
-	readonly      _DIRS_TEMP
-
-	# --- trap ----------------------------------------------------------------
-	declare -a    _LIST_RMOV=()			# list remove directory / file
-	              _LIST_RMOV+=("${_DIRS_TEMP:?}")
-
-# shellcheck disable=SC2317
-function funcTrap() {
-	declare -i    I=0
-
-	for I in "${!_LIST_RMOV[@]}"
-	do
-		rm -rf "${_LIST_RMOV[I]:?}"
-	done
-}
-
-	trap funcTrap EXIT
+	if command -v apt-get > /dev/null 2>&1; then
+		if ! ls /var/lib/apt/lists/*_"${_CODE_NAME:-}"_InRelease > /dev/null 2>&1; then
+			echo "please execute apt-get update:"
+			if [[ "${0:-}" = "${SUDO_COMMAND:-}" ]]; then
+				echo -n "sudo "
+			fi
+			echo "apt-get update" 1>&2
+			exit 1
+		fi
+		# ---------------------------------------------------------------------
+		declare       _MAIN_ARHC=""
+		              _MAIN_ARHC="$(dpkg --print-architecture)"
+		readonly      _MAIN_ARHC
+		declare       _OTHR_ARCH=""
+		              _OTHR_ARCH="$(dpkg --print-foreign-architectures)"
+		readonly      _OTHR_ARCH
+		declare -r -a PAKG_LIST=(\
+		)
+		# --- for custom iso --------------------------------------------------
+#		declare -r -a PAKG_LIST=(\
+#			"curl" \
+#			"wget" \
+#			"fdisk" \
+#			"file" \
+#			"initramfs-tools-core" \
+#			"isolinux" \
+#			"isomd5sum" \
+#			"procps" \
+#			"xorriso" \
+#			"xxd" \
+#			"cpio" \
+#			"gzip" \
+#			"zstd" \
+#			"xz-utils" \
+#			"lz4" \
+#			"bzip2" \
+#			"lzop" \
+#		)
+		# --- for pxeboot -----------------------------------------------------
+#		declare -r -a PAKG_LIST=(\
+#			"procps" \
+#			"syslinux-common" \
+#			"pxelinux" \
+#			"syslinux-efi" \
+#			"grub-common" \
+#			"grub-pc-bin" \
+#			"grub-efi-amd64-bin" \
+#			"curl" \
+#			"rsync" \
+#		)
+		# ---------------------------------------------------------------------
+		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]:-bash}" 2> /dev/null | sed -ne '/[ \t]'"${_OTHR_ARCH:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g')"
+		readonly      PAKG_FIND
+		if [[ -n "${PAKG_FIND% *}" ]]; then
+			echo "please install these:"
+			if [[ "${0:-}" = "${SUDO_COMMAND:-}" ]]; then
+				echo -n "sudo "
+			fi
+			echo "apt-get install ${PAKG_FIND% *}" 1&2
+			exit 1
+		fi
+	fi
