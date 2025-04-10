@@ -35,6 +35,13 @@
 	# --- debug parameter -----------------------------------------------------
 	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
 
+	# --- constant for control code -------------------------------------------
+	if [[ -z "${_CODE_ESCP+true}" ]]; then
+		declare   _CODE_ESCP=""
+		          _CODE_ESCP="$(printf '\033')"
+		readonly  _CODE_ESCP
+	fi
+
 	# --- working directory name ----------------------------------------------
 	declare -r    _PROG_PATH="$0"
 	declare -r -a _PROG_PARM=("${@:-}")
@@ -90,13 +97,13 @@ function funcMain() {
 
 	# --- check the execution user --------------------------------------------
 #	if [[ "$(whoami || true)" != "root" ]]; then
-#		printf "\033[m%s\033[m\n" "run as root user."
+#		printf "${_CODE_ESCP}[m%s${_CODE_ESCP}[m\n" "run as root user."
 #		exit 1
 #	fi
 
 	# --- start ---------------------------------------------------------------
 	_time_start=$(date +%s)
-	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- get command line ----------------------------------------------------
 	set -f -- "${_OPTN_PARM[@]:-}"
@@ -124,6 +131,7 @@ function funcMain() {
 	do
 		_RETN_PARM=()
 		case "${1%%=*}" in
+			--dbgprn) shift; funcCall_function;;
 			*       ) shift; _RETN_PARM=("$@");;
 		esac
 		IFS="${_COMD_IFS:-}"
@@ -135,7 +143,7 @@ function funcMain() {
 	_time_end=$(date +%s)
 	_time_elapsed=$((_time_end-_time_start))
 
-	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
 	printf "elapsed time: %dd%02dh%02dm%02ds\n" $((_time_elapsed/86400)) $((_time_elapsed%86400/3600)) $((_time_elapsed%3600/60)) $((_time_elapsed%60))
 }
 
