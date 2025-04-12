@@ -155,7 +155,7 @@ function funcIPv6GetFullAddr() {
 # --- IPv6 reverse address ----------------------------------------------------
 function funcIPv6GetRevAddr() {
 	declare -r    _INPT_ADDR="$1"
-	echo "${_INPT_ADDR//:/}"                  | \
+	echo "${_INPT_ADDR//:/}"                 | \
 	    awk '{for(i=length();i>1;i--)          \
 	        printf("%c.", substr($0,i,1));     \
 	        printf("%c" , substr($0,1,1));}'

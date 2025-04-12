@@ -76,7 +76,7 @@ function funcTrap() {
 	if command -v apt-get > /dev/null 2>&1; then
 		if ! ls /var/lib/apt/lists/*_"${_CODE_NAME:-}"_InRelease > /dev/null 2>&1; then
 			echo "please execute apt-get update:"
-			if [[ "${_USER_NAME}" != "root" ]]; then
+			if [[ -n "${SUDO_USER:-}" ]] || [[ "${_USER_NAME}" != "root" ]]; then
 				echo -n "sudo "
 			fi
 			echo "apt-get update" 1>&2
@@ -128,7 +128,7 @@ function funcTrap() {
 		readonly      PAKG_FIND
 		if [[ -n "${PAKG_FIND% *}" ]]; then
 			echo "please install these:"
-			if [[ "${_USER_NAME:}" != "root" ]]; then
+			if [[ "${_USER_NAME:-}" != "root" ]]; then
 				echo -n "sudo "
 			fi
 			echo "apt-get install ${PAKG_FIND% *}" 1&2
@@ -189,7 +189,7 @@ function funcTrap() {
 # --- tftp / web server network parameter -------------------------------------
 	declare       _SRVR_PROT="http"		# server connection protocol (http or tftp)
 	declare       _SRVR_NICS=""			# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
-	declare       _SRVR_MADR=""			# "              mac    (ex. 00:00:00:00:00:00)
+	declare       _SRVR_MADR=""			#                mac    (ex. 00:00:00:00:00:00)
 	declare       _SRVR_ADDR=""			# IPv4 address          (ex. 192.168.1.11)
 	declare       _SRVR_CIDR=""			# IPv4 cidr             (ex. 24)
 	declare       _SRVR_MASK=""			# IPv4 subnetmask       (ex. 255.255.255.0)
@@ -201,7 +201,7 @@ function funcTrap() {
 	declare       _NWRK_HOST=""			# hostname              (ex. sv-server)
 	declare       _NWRK_WGRP=""			# domain                (ex. workgroup)
 	declare       _NICS_NAME=""			# network device name   (ex. ens160)
-	declare       _NICS_MADR=""			# "              mac    (ex. 00:00:00:00:00:00)
+	declare       _NICS_MADR=""			#                mac    (ex. 00:00:00:00:00:00)
 	declare       _IPV4_ADDR=""			# IPv4 address          (ex. 192.168.1.1)   (empty to dhcp)
 	declare       _IPV4_CIDR=""			# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)
 	declare       _IPV4_MASK=""			# IPv4 subnetmask       (ex. 255.255.255.0) (empty to ipv4 cidr)
@@ -373,7 +373,7 @@ function funcIPv6GetFullAddr() {
 # --- IPv6 reverse address ----------------------------------------------------
 function funcIPv6GetRevAddr() {
 	declare -r    _INPT_ADDR="$1"
-	echo "${_INPT_ADDR//:/}"                  | \
+	echo "${_INPT_ADDR//:/}"                 | \
 	    awk '{for(i=length();i>1;i--)          \
 	        printf("%c.", substr($0,i,1));     \
 	        printf("%c" , substr($0,1,1));}'
@@ -1135,8 +1135,8 @@ function funcInitialization() {
 # --- debug out parameter -----------------------------------------------------
 funcDebug_parameter() {
 	declare       _VARS_CHAR="_"		# variable initial letter
-	declare       _VARS_NAME=""			# "        name
-	declare       _VARS_VALU=""			# "        value
+	declare       _VARS_NAME=""			#          name
+	declare       _VARS_VALU=""			#          value
 
 #	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 #		return
@@ -1209,7 +1209,6 @@ function funcMain() {
 	do
 		_RETN_PARM=()
 		case "${1:-}" in
-			--dbgprn) shift; funcDebug_function;;
 			create  ) ;;
 			update  ) ;;
 			download) ;;
@@ -1223,9 +1222,10 @@ function funcMain() {
 					parm) shift; funcDebug_parameter;;
 					*   ) ;;
 				esac
-					;;
-			*       ) shift; _RETN_PARM=("$@");;
+				;;
+			*       ) ;;
 		esac
+		_RETN_PARM=("$@")
 		IFS="${_COMD_IFS:-}"
 		set -f -- "${_RETN_PARM[@]:-}"
 		IFS="${_ORIG_IFS:-}"

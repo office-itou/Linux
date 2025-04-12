@@ -87,8 +87,8 @@ function funcInitialization() {
 # --- debug out parameter -----------------------------------------------------
 funcDebug_parameter() {
 	declare       _VARS_CHAR="_"		# variable initial letter
-	declare       _VARS_NAME=""			# "        name
-	declare       _VARS_VALU=""			# "        value
+	declare       _VARS_NAME=""			#          name
+	declare       _VARS_VALU=""			#          value
 
 #	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 #		return
@@ -161,7 +161,6 @@ function funcMain() {
 	do
 		_RETN_PARM=()
 		case "${1:-}" in
-			--dbgprn) shift; funcDebug_function;;
 			create  ) ;;
 			update  ) ;;
 			download) ;;
@@ -175,9 +174,10 @@ function funcMain() {
 					parm) shift; funcDebug_parameter;;
 					*   ) ;;
 				esac
-					;;
-			*       ) shift; _RETN_PARM=("$@");;
+				;;
+			*       ) ;;
 		esac
+		_RETN_PARM=("$@")
 		IFS="${_COMD_IFS:-}"
 		set -f -- "${_RETN_PARM[@]:-}"
 		IFS="${_ORIG_IFS:-}"

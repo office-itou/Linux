@@ -181,7 +181,7 @@ function funcMain() {
 	declare -a    _RETN_PARM=()			# name reference
 
 	# --- check the execution user --------------------------------------------
-#	if [[ "${_USER_NAME:}" != "root" ]]; then
+#	if [[ "${_USER_NAME:-}" != "root" ]]; then
 #		printf "${_CODE_ESCP}[m%s${_CODE_ESCP}[m\n" "run as root user."
 #		exit 1
 #	fi

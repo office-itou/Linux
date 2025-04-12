@@ -51,7 +51,7 @@
 # --- tftp / web server network parameter -------------------------------------
 	declare       _SRVR_PROT="http"		# server connection protocol (http or tftp)
 	declare       _SRVR_NICS=""			# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
-	declare       _SRVR_MADR=""			# "              mac    (ex. 00:00:00:00:00:00)
+	declare       _SRVR_MADR=""			#                mac    (ex. 00:00:00:00:00:00)
 	declare       _SRVR_ADDR=""			# IPv4 address          (ex. 192.168.1.11)
 	declare       _SRVR_CIDR=""			# IPv4 cidr             (ex. 24)
 	declare       _SRVR_MASK=""			# IPv4 subnetmask       (ex. 255.255.255.0)
@@ -63,7 +63,7 @@
 	declare       _NWRK_HOST=""			# hostname              (ex. sv-server)
 	declare       _NWRK_WGRP=""			# domain                (ex. workgroup)
 	declare       _NICS_NAME=""			# network device name   (ex. ens160)
-	declare       _NICS_MADR=""			# "              mac    (ex. 00:00:00:00:00:00)
+	declare       _NICS_MADR=""			#                mac    (ex. 00:00:00:00:00:00)
 	declare       _IPV4_ADDR=""			# IPv4 address          (ex. 192.168.1.1)   (empty to dhcp)
 	declare       _IPV4_CIDR=""			# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)
 	declare       _IPV4_MASK=""			# IPv4 subnetmask       (ex. 255.255.255.0) (empty to ipv4 cidr)

@@ -6,7 +6,7 @@
 	if command -v apt-get > /dev/null 2>&1; then
 		if ! ls /var/lib/apt/lists/*_"${_CODE_NAME:-}"_InRelease > /dev/null 2>&1; then
 			echo "please execute apt-get update:"
-			if [[ "${_USER_NAME}" != "root" ]]; then
+			if [[ -n "${SUDO_USER:-}" ]] || [[ "${_USER_NAME}" != "root" ]]; then
 				echo -n "sudo "
 			fi
 			echo "apt-get update" 1>&2
@@ -58,7 +58,7 @@
 		readonly      PAKG_FIND
 		if [[ -n "${PAKG_FIND% *}" ]]; then
 			echo "please install these:"
-			if [[ "${_USER_NAME:}" != "root" ]]; then
+			if [[ "${_USER_NAME:-}" != "root" ]]; then
 				echo -n "sudo "
 			fi
 			echo "apt-get install ${PAKG_FIND% *}" 1&2
