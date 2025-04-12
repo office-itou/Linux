@@ -35,6 +35,16 @@
 	# --- debug parameter -----------------------------------------------------
 	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
 
+	# --- constant for control code -------------------------------------------
+	if [[ -z "${_CODE_ESCP+true}" ]]; then
+		declare   _CODE_ESCP=""
+		          _CODE_ESCP="$(printf '\033')"
+		readonly  _CODE_ESCP
+	fi
+
+	# --- user name -----------------------------------------------------------
+	declare -r    _USER_NAME="${USER:-"$(whoami || true)"}"
+
 	# --- working directory name ----------------------------------------------
 	declare -r    _PROG_PATH="$0"
 	declare -r -a _PROG_PARM=("${@:-}")
@@ -74,7 +84,34 @@ function funcInitialization() {
 
 # --- debug out parameter -----------------------------------------------------
 function funcDebugout_parameter() {
-:
+	declare       _VARS_CHAR="_"		# variable initial letter
+	declare       _VARS_NAME=""			# "        name
+	declare       _VARS_VALU=""			# "        value
+
+	if [[ -z "${_DBGS_FLAG:-}" ]]; then
+		return
+	fi
+
+	# https://qiita.com/t_nakayama0714/items/80b4c94de43643f4be51#%E5%AD%A6%E3%81%B3%E3%81%AE%E6%88%90%E6%9E%9C%E3%82%92%E6%84%9F%E3%81%98%E3%82%8B%E3%83%AF%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%8A%E3%83%BC
+#	for _VARS_CHAR in {A..Z} {a..z} "_"
+#	do
+		for _VARS_NAME in $(eval echo \$\{\!"${_VARS_CHAR}"\@\})
+		do
+			_VARS_NAME="${_VARS_NAME#\'}"
+			_VARS_NAME="${_VARS_NAME%\'}"
+			if [[ -z "${_VARS_NAME}" ]]; then
+				continue
+			fi
+			case "${_VARS_NAME}" in
+				_VARS_CHAR | \
+				_VARS_NAME | \
+				_VARS_VALU ) continue;;
+				*) ;;
+			esac
+			_VARS_VALU="$(eval printf "%q" \$\{"${_VARS_NAME}":-\})"
+			printf "%s=[%s]\n" "${_VARS_NAME}" "${_VARS_VALU/#\'\'/}"
+		done
+#	done
 }
 
 # --- create ------------------------------------------------------------------
@@ -124,8 +161,9 @@ function funcCreate() {
 							echo "${_LINE}" >> "${_CRAT}"
 							;;
 					esac
-				done < <(sed -e '/^#.*initialization.*$/,/^$/d' -e '/^#.*debug out parameter.*$/,/^$/d' "${_SKEL}" || true)
+				done < <(sed -e '/^#.*initialization.*$/,/^$/d' "${_SKEL}" || true)
 				printf "\033[m%s\033[m\n" "create complete ${_CRAT}"
+				shellcheck -o all "${_CRAT}"
 				printf "\033[m%s\033[m\n" "create complete ${_SKEL}"
 				;;
 		esac
@@ -143,14 +181,14 @@ function funcMain() {
 	declare -a    _RETN_PARM=()			# name reference
 
 	# --- check the execution user --------------------------------------------
-#	if [[ "$(whoami || true)" != "root" ]]; then
-#		printf "\033[m%s\033[m\n" "run as root user."
+#	if [[ "${_USER_NAME:}" != "root" ]]; then
+#		printf "${_CODE_ESCP}[m%s${_CODE_ESCP}[m\n" "run as root user."
 #		exit 1
 #	fi
 
 	# --- start ---------------------------------------------------------------
 	_time_start=$(date +%s)
-	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- get command line ----------------------------------------------------
 	set -f -- "${_OPTN_PARM[@]:-}"
@@ -178,6 +216,7 @@ function funcMain() {
 	do
 		_RETN_PARM=()
 		case "${1%%=*}" in
+			--dbgprn) shift; funcDebug_function;;
 			--create) shift; funcCreate _RETN_PARM "$@";;
 			*       ) shift; _RETN_PARM=("$@");;
 		esac
@@ -190,7 +229,7 @@ function funcMain() {
 	_time_end=$(date +%s)
 	_time_elapsed=$((_time_end-_time_start))
 
-	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
 	printf "elapsed time: %dd%02dh%02dm%02ds\n" $((_time_elapsed/86400)) $((_time_elapsed%86400/3600)) $((_time_elapsed%3600/60)) $((_time_elapsed%60))
 }
 

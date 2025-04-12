@@ -1,0 +1,35 @@
+usage: [sudo] ${_PROG_PATH} [command (options)]
+  create / update / download iso image files
+    create|update|download [all|(mini|net|dvd|live {a|all|id})]
+      empty             : waiting for input
+      all               : all target
+      mini|net|dvd|live : each target
+        all             : all of each target
+        id number       : selected id
+  create symbolic link
+    link
+  create / update / download list files
+    list [create|update|download]
+      empty             : display of list data
+      create            : update / download list files
+  create config files
+    conf [all|(preseed|nocloudkickstart|autoyast)]
+      all               : all config files
+      preseed           : preseed.cfg
+      nocloud           : nocloud
+      kickstart         : kickstart.cfg
+      autoyast          : autoyast.xml
+  debug print and test
+    debug [func|text|parm]
+      func              : function test
+      text              : text color test
+      parm              : display of main internal parameters
+
+
+
+
+usage: [sudo] ${_PROG_PATH} [command]
+  create pxeboot menu files
+    create
+  create pxeboot menu files without copying iso image
+    update

@@ -1,25 +1,25 @@
 # *** function section (common functions) *************************************
 
 	# --- set minimum display size --------------------------------------------
-	declare -i    _ROWS_SIZE=25
-	declare -i    _COLS_SIZE=80
+	declare -i    _SIZE_ROWS=25
+	declare -i    _SIZE_COLS=80
 
 	if command -v tput > /dev/null 2>&1; then
-		_ROWS_SIZE=$(tput lines)
-		_COLS_SIZE=$(tput cols)
+		_SIZE_ROWS=$(tput lines)
+		_SIZE_COLS=$(tput cols)
 	fi
-	if [[ "${_ROWS_SIZE:-0}" -lt 25 ]]; then
-		_ROWS_SIZE=25
+	if [[ "${_SIZE_ROWS:-0}" -lt 25 ]]; then
+		_SIZE_ROWS=25
 	fi
-	if [[ "${_COLS_SIZE:-0}" -lt 80 ]]; then
-		_COLS_SIZE=80
+	if [[ "${_SIZE_COLS:-0}" -lt 80 ]]; then
+		_SIZE_COLS=80
 	fi
 
-	readonly      _ROWS_SIZE
-	readonly      _COLS_SIZE
+	readonly      _SIZE_ROWS
+	readonly      _SIZE_COLS
 
 	declare       _TEXT_SPCE=""
-	              _TEXT_SPCE="$(printf "%${_COLS_SIZE:-80}s" "")"
+	              _TEXT_SPCE="$(printf "%${_SIZE_COLS:-80}s" "")"
 	readonly      _TEXT_SPCE
 
 	declare -r    _TEXT_GAP1="${_TEXT_SPCE// /-}"
@@ -82,7 +82,7 @@
 	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			# 
 
 # --- text color test ---------------------------------------------------------
-function funcColorTest() {
+function funcDebug_color() {
 	printf "%s : %-22.22s : %s\n" "${_TEXT_RESET}"            "_TEXT_RESET"            "${_TEXT_RESET}"
 	printf "%s : %-22.22s : %s\n" "${_TEXT_BOLD}"             "_TEXT_BOLD"             "${_TEXT_RESET}"
 	printf "%s : %-22.22s : %s\n" "${_TEXT_FAINT}"            "_TEXT_FAINT"            "${_TEXT_RESET}"
@@ -137,7 +137,7 @@ function funcDiff() {
 		return
 	fi
 	printf "%s\n" "$3"
-	diff -y -W "${_COLS_SIZE}" --suppress-common-lines "$1" "$2" || true
+	diff -y -W "${_SIZE_COLS}" --suppress-common-lines "$1" "$2" || true
 }
 
 # --- IPv6 full address -------------------------------------------------------
@@ -220,7 +220,7 @@ function funcPrintf() {
 	declare       _TEXT_UTF8=""			# formatted utf8
 	declare       _TEXT_SJIS=""			# formatted sjis (cp932)
 	declare       _TEXT_PLIN=""			# formatted string without attributes
-	declare -i    _TEXT_CUTP="${_COLS_SIZE:-80}"
+	declare -i    _TEXT_CUTP="${_SIZE_COLS:-80}"
 	declare -i    _TEXT_CONT=0			# count of attributes
 	declare       _TEXT_WORK=""
 	# -------------------------------------------------------------------------
@@ -244,7 +244,7 @@ function funcPrintf() {
 					_TEXT_PLIN="$(echo -n "${_TEXT_UTF8:-}" | sed -e 's/'"${_CODE_ESCP}"'\[[0-9]*m//g' || true)"
 					if [[ ${#_TEXT_PLIN} -gt "${_TEXT_CUTP}" ]]; then
 						_TEXT_CONT="$((${#_TEXT_UTF8}-${#_TEXT_PLIN}))"
-						_TEXT_WORK="$(echo -n "${_TEXT_SJIS}" | cut -b $((_COLS_SIZE+_TEXT_CONT))-)"
+						_TEXT_WORK="$(echo -n "${_TEXT_SJIS}" | cut -b $((_SIZE_COLS+_TEXT_CONT))-)"
 						_TEXT_PLIN="$(echo -n "${_TEXT_WORK}" | sed -e 's/'"${_CODE_ESCP}"'\[[0-9]*m//g' || true)"
 						_TEXT_CUTP=$((_TEXT_CUTP+_TEXT_CONT-(${#_TEXT_WORK}-${#_TEXT_PLIN})))
 						if ! _TEXT_UTF8="$(echo -n "${_TEXT_SJIS}" | cut -b -"${_TEXT_CUTP}"   | iconv -f CP932 -t UTF-8 2> /dev/null || true)"; then
@@ -435,7 +435,7 @@ function funcIsPackage () {
 }
 
 # ---- function test ----------------------------------------------------------
-function funcCall_function() {
+function funcDebug_function() {
 	declare -r    _MSGS_TITL="call function test"
 	declare -r    _FILE_WRK1="${_DIRS_TEMP:-/tmp}/testfile1.txt"
 	declare -r    _FILE_WRK2="${_DIRS_TEMP:-/tmp}/testfile2.txt"
@@ -492,7 +492,7 @@ _EOT_
 	funcPrintf "---- text print test ${_TEXT_GAP1}"
 	H1=""
 	H2=""
-	for ((I=1; I<="${_COLS_SIZE}"+10; I++))
+	for ((I=1; I<="${_SIZE_COLS}"+10; I++))
 	do
 		if [[ $((I % 10)) -eq 0 ]]; then
 			H1+="         $((I%100/10))"
@@ -502,17 +502,17 @@ _EOT_
 	funcPrintf "${H1}"
 	funcPrintf "${H2}"
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${_COLS_SIZE}" '->')"
+	funcPrintf "$(funcString "${_SIZE_COLS}" '->')"
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${_COLS_SIZE}" '→')"
+	funcPrintf "$(funcString "${_SIZE_COLS}" '→')"
 	# shellcheck disable=SC2312
-	funcPrintf "_$(funcString "${_COLS_SIZE}" '→')_"
+	funcPrintf "_$(funcString "${_SIZE_COLS}" '→')_"
 	echo ""
 
 	# --- text color test -----------------------------------------------------
 	funcPrintf "---- text color test ${_TEXT_GAP1}"
-	funcPrintf "--no-cutting" "funcColorTest"
-	funcColorTest
+	funcPrintf "--no-cutting" "funcDebug_color"
+	funcDebug_color
 	echo ""
 
 	# --- printf --------------------------------------------------------------
@@ -570,12 +570,12 @@ _EOT_
 	funcPrintf "---- diff ${_TEXT_GAP1}"
 	funcPrintf "--no-cutting" "funcDiff \"${_FILE_WRK1/${PWD}\//}\" \"${_FILE_WRK2/${PWD}\//}\" \"function test\""
 	funcDiff "${_FILE_WRK1/${PWD}\//}" "${_FILE_WRK2/${PWD}\//}" "function test"
-	funcPrintf "--no-cutting" "diff -y -W \"${_COLS_SIZE}\" --suppress-common-lines \"${_FILE_WRK1/${PWD}\//}\" \"${_FILE_WRK2/${PWD}\//}\" \"function test\""
-	diff -y -W "${_COLS_SIZE}" --suppress-common-lines "${_FILE_WRK1/${PWD}\//}" "${_FILE_WRK2/${PWD}\//}" || true
-	funcPrintf "--no-cutting" "diff -y -W \"${_COLS_SIZE}\" \"${_FILE_WRK1/${PWD}\//}\" \"${_FILE_WRK2/${PWD}\//}\" \"function test\""
-	diff -y -W "${_COLS_SIZE}" "${_FILE_WRK1/${PWD}\//}" "${_FILE_WRK2/${PWD}\//}" || true
-	funcPrintf "--no-cutting" "diff --color=always -y -W \"${_COLS_SIZE}\" \"${_FILE_WRK1/${PWD}\//}\" \"${_FILE_WRK2/${PWD}\//}\" \"function test\""
-	diff --color=always -y -W "${_COLS_SIZE}" "${_FILE_WRK1/${PWD}\//}" "${_FILE_WRK2/${PWD}\//}" || true
+	funcPrintf "--no-cutting" "diff -y -W \"${_SIZE_COLS}\" --suppress-common-lines \"${_FILE_WRK1/${PWD}\//}\" \"${_FILE_WRK2/${PWD}\//}\" \"function test\""
+	diff -y -W "${_SIZE_COLS}" --suppress-common-lines "${_FILE_WRK1/${PWD}\//}" "${_FILE_WRK2/${PWD}\//}" || true
+	funcPrintf "--no-cutting" "diff -y -W \"${_SIZE_COLS}\" \"${_FILE_WRK1/${PWD}\//}\" \"${_FILE_WRK2/${PWD}\//}\" \"function test\""
+	diff -y -W "${_SIZE_COLS}" "${_FILE_WRK1/${PWD}\//}" "${_FILE_WRK2/${PWD}\//}" || true
+	funcPrintf "--no-cutting" "diff --color=always -y -W \"${_SIZE_COLS}\" \"${_FILE_WRK1/${PWD}\//}\" \"${_FILE_WRK2/${PWD}\//}\" \"function test\""
+	diff --color=always -y -W "${_SIZE_COLS}" "${_FILE_WRK1/${PWD}\//}" "${_FILE_WRK2/${PWD}\//}" || true
 	echo ""
 
 	# --- substr --------------------------------------------------------------

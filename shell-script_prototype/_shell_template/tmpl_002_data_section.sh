@@ -1,3 +1,16 @@
+	# --- common configuration file -------------------------------------------
+	declare       _CONF_COMN=""			# file name
+
+	declare       _PATH=""
+	for _PATH in "${PWD:+"${PWD}/common.cfg"}" /srv/user/share/conf/_data/common.cfg
+	do
+		if [[ -f "${_PATH}" ]]; then
+			_CONF_COMN="${_PATH}"
+			break
+		fi
+	done
+	unset         _PATH
+
 	# --- shared directory parameter ------------------------------------------
 	declare       _DIRS_TOPS=""			# top of shared directory
 	declare       _DIRS_HGFS=""			# vmware shared
@@ -35,23 +48,32 @@
 	declare       _SHEL_PART=""			# shell commands to run after partition
 	declare       _SHEL_RUNS=""			# shell commands to run preseed/run
 
-	# --- tftp / web server address -------------------------------------------
-	declare       _SRVR_PROT=""			# server connection protocol (http or tftp)
-	declare       _SRVR_ADDR=""			# tftp / web server address (empty to execution server address)
-	declare       _IPV4_UADR=""			# IPv4 address up (ex. 192.168.1)
+# --- tftp / web server network parameter -------------------------------------
+	declare       _SRVR_PROT="http"		# server connection protocol (http or tftp)
+	declare       _SRVR_NICS=""			# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
+	declare       _SRVR_MADR=""			# "              mac    (ex. 00:00:00:00:00:00)
+	declare       _SRVR_ADDR=""			# IPv4 address          (ex. 192.168.1.11)
+	declare       _SRVR_CIDR=""			# IPv4 cidr             (ex. 24)
+	declare       _SRVR_MASK=""			# IPv4 subnetmask       (ex. 255.255.255.0)
+	declare       _SRVR_GWAY=""			# IPv4 gateway          (ex. 192.168.1.254)
+	declare       _SRVR_NSVR=""			# IPv4 nameserver       (ex. 192.168.1.254)
+	declare       _SRVR_UADR=""			# IPv4 address up       (ex. 192.168.1)
 
 	# --- network parameter ---------------------------------------------------
-	declare       _HOST_NAME=""			# hostname
-	declare       _WGRP_NAME=""			# domain
-	declare       _ETHR_NAME=""			# network device name
-	declare       _IPV4_ADDR=""			# IPv4 address
-	declare       _IPV4_CIDR=""			# IPv4 cidr (empty to ipv4 subnetmask, if both to 24)
-	declare       _IPV4_MASK=""			# IPv4 subnetmask (empty to ipv4 cidr)
-	declare       _IPV4_GWAY=""			# IPv4 gateway
-	declare       _IPV4_NSVR=""			# IPv4 nameserver
+	declare       _NWRK_HOST=""			# hostname              (ex. sv-server)
+	declare       _NWRK_WGRP=""			# domain                (ex. workgroup)
+	declare       _NICS_NAME=""			# network device name   (ex. ens160)
+	declare       _NICS_MADR=""			# "              mac    (ex. 00:00:00:00:00:00)
+	declare       _IPV4_ADDR=""			# IPv4 address          (ex. 192.168.1.1)   (empty to dhcp)
+	declare       _IPV4_CIDR=""			# IPv4 cidr             (ex. 24)            (empty to ipv4 subnetmask, if both to 24)
+	declare       _IPV4_MASK=""			# IPv4 subnetmask       (ex. 255.255.255.0) (empty to ipv4 cidr)
+	declare       _IPV4_GWAY=""			# IPv4 gateway          (ex. 192.168.1.254)
+	declare       _IPV4_NSVR=""			# IPv4 nameserver       (ex. 192.168.1.254)
+#	declare       _IPV4_UADR=""			# IPv4 address up       (ex. 192.168.1)
+#	declare       _NMAN_NAME=""			# network manager name  (nm_config, ifupdown, loopback)
 
 	# --- menu parameter ------------------------------------------------------
 	declare       _MENU_TOUT=""			# timeout
 	declare       _MENU_RESO=""			# resolution
 	declare       _MENU_DPTH=""			# colors
-	declare       _SCRN_MODE=""			# screen mode (vga=nnn)
+	declare       _MENU_MODE=""			# screen mode (vga=nnn)
