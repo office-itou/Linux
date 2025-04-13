@@ -2,16 +2,16 @@
 
 ###############################################################################
 ##
-##	:_PROG_TITL_:
+##	pxeboot configuration shell
 ##	  developed for debian
 ##
-##	developer   : :_PROG_USER_:
-##	release     : :_PROG_RELS_:
+##	developer   : J.Itou
+##	release     : 2025/04/13
 ##
 ##	history     :
 ##	   data    version    developer    point
 ##	---------- -------- -------------- ----------------------------------------
-##	yyyy/mm/dd 000.0000 xxxxxxxxxxxxxx first release
+##	2025/04/13 000.0000 J.Itou         first release
 ##
 ##	shellcheck -o all "filename"
 ##
@@ -76,7 +76,7 @@ function funcTrap() {
 	if command -v apt-get > /dev/null 2>&1; then
 		if ! ls /var/lib/apt/lists/*_"${_CODE_NAME:-}"_InRelease > /dev/null 2>&1; then
 			echo "please execute apt-get update:"
-			if [[ -n "${SUDO_USER:-}" ]] || [[ "${_USER_NAME}" != "root" ]]; then
+			if [[ -n "${SUDO_USER:-}" ]] || { [[ -z "${SUDO_USER:-}" ]] && [[ "${_USER_NAME}" != "root" ]]; }; then
 				echo -n "sudo "
 			fi
 			echo "apt-get update" 1>&2
@@ -89,40 +89,26 @@ function funcTrap() {
 		declare       _ARCH_OTHR=""
 		              _ARCH_OTHR="$(dpkg --print-foreign-architectures)"
 		readonly      _ARCH_OTHR
-		declare -r -a PAKG_LIST=(\
-		)
 		# --- for custom iso --------------------------------------------------
-#		declare -r -a PAKG_LIST=(\
-#			"curl" \
-#			"wget" \
-#			"fdisk" \
-#			"file" \
-#			"initramfs-tools-core" \
-#			"isolinux" \
-#			"isomd5sum" \
-#			"procps" \
-#			"xorriso" \
-#			"xxd" \
-#			"cpio" \
-#			"gzip" \
-#			"zstd" \
-#			"xz-utils" \
-#			"lz4" \
-#			"bzip2" \
-#			"lzop" \
-#		)
-		# --- for pxeboot -----------------------------------------------------
-#		declare -r -a PAKG_LIST=(\
-#			"procps" \
-#			"syslinux-common" \
-#			"pxelinux" \
-#			"syslinux-efi" \
-#			"grub-common" \
-#			"grub-pc-bin" \
-#			"grub-efi-amd64-bin" \
-#			"curl" \
-#			"rsync" \
-#		)
+		declare -r -a PAKG_LIST=(\
+			"curl" \
+			"wget" \
+			"fdisk" \
+			"file" \
+			"initramfs-tools-core" \
+			"isolinux" \
+			"isomd5sum" \
+			"procps" \
+			"xorriso" \
+			"xxd" \
+			"cpio" \
+			"gzip" \
+			"zstd" \
+			"xz-utils" \
+			"lz4" \
+			"bzip2" \
+			"lzop" \
+		)
 		# ---------------------------------------------------------------------
 		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]:-bash}" 2> /dev/null | sed -ne '/[ \t]'"${_ARCH_OTHR:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g')"
 		readonly      PAKG_FIND
@@ -131,23 +117,10 @@ function funcTrap() {
 			if [[ "${_USER_NAME:-}" != "root" ]]; then
 				echo -n "sudo "
 			fi
-			echo "apt-get install ${PAKG_FIND% *}" 1&2
+			echo "apt-get install ${PAKG_FIND% *}" 1>&2
 			exit 1
 		fi
 	fi
-
-	# --- common configuration file -------------------------------------------
-	declare       _CONF_COMN=""			# file name
-
-	declare       _PATH=""
-	for _PATH in "${PWD:+"${PWD}/common.cfg"}" /srv/user/share/conf/_data/common.cfg
-	do
-		if [[ -f "${_PATH}" ]]; then
-			_CONF_COMN="${_PATH}"
-			break
-		fi
-	done
-	unset         _PATH
 
 	# --- shared directory parameter ------------------------------------------
 	declare       _DIRS_TOPS=""			# top of shared directory
@@ -170,7 +143,7 @@ function funcTrap() {
 	declare       _DIRS_RMAK=""			# remake file
 
 	# --- common data file ----------------------------------------------------
-	declare       _PATH_CONF=""			# common configuration file (thie file)
+	declare       _PATH_CONF=""			# common configuration file
 	declare       _PATH_MDIA=""			# media data file
 
 	# --- pre-configuration file templates ------------------------------------
@@ -899,9 +872,23 @@ _EOT_
 
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
+	declare       _PATH=""				# file name
 	declare       _LINE=""				# work variable
 	declare       _NAME=""				# variable name
 	declare       _VALU=""				# value
+
+	# --- common configuration file -------------------------------------------
+	              _PATH_CONF="/srv/user/share/conf/_data/common.cfg"
+	for _PATH in \
+		"${PWD:+"${PWD}/${_PATH_CONF##*/}"}" \
+		"${_PATH_CONF}"
+	do
+		if [[ -f "${_PATH}" ]]; then
+			_PATH_CONF="${_PATH}"
+			break
+		fi
+	done
+	readonly      _PATH_CONF
 
 	# --- default value when empty --------------------------------------------
 	_DIRS_TOPS="${_DIRS_TOPS:-/srv}"
@@ -920,7 +907,7 @@ function funcInitialization() {
 	_DIRS_ISOS="${_DIRS_ISOS:-:_DIRS_SHAR_:/isos}"
 	_DIRS_LOAD="${_DIRS_LOAD:-:_DIRS_SHAR_:/load}"
 	_DIRS_RMAK="${_DIRS_RMAK:-:_DIRS_SHAR_:/rmak}"
-	_PATH_CONF="${_PATH_CONF:-:_DIRS_DATA_:/common.cfg}"
+#	_PATH_CONF="${_PATH_CONF:-:_DIRS_DATA_:/common.cfg}"
 	_PATH_MDIA="${_PATH_MDIA:-:_DIRS_DATA_:/media.dat}"
 	_CONF_KICK="${_CONF_KICK:-:_DIRS_TMPL_:/kickstart_rhel.cfg}"
 	_CONF_CLUD="${_CONF_CLUD:-:_DIRS_TMPL_:/user-data_ubuntu}"
@@ -994,7 +981,7 @@ function funcInitialization() {
 			DIRS_ISOS) _DIRS_ISOS="${_VALU:-"${_DIRS_ISOS:-}"}";;
 			DIRS_LOAD) _DIRS_LOAD="${_VALU:-"${_DIRS_LOAD:-}"}";;
 			DIRS_RMAK) _DIRS_RMAK="${_VALU:-"${_DIRS_RMAK:-}"}";;
-			PATH_CONF) _PATH_CONF="${_VALU:-"${_PATH_CONF:-}"}";;
+#			PATH_CONF) _PATH_CONF="${_VALU:-"${_PATH_CONF:-}"}";;
 			PATH_MDIA) _PATH_MDIA="${_VALU:-"${_PATH_MDIA:-}"}";;
 			CONF_KICK) _CONF_KICK="${_VALU:-"${_CONF_KICK:-}"}";;
 			CONF_CLUD) _CONF_CLUD="${_VALU:-"${_CONF_CLUD:-}"}";;
@@ -1031,7 +1018,7 @@ function funcInitialization() {
 			MENU_MODE) _MENU_MODE="${_VALU:-"${_MENU_MODE:-}"}";;
 			*        ) ;;
 		esac
-	done < <(cat "${_CONF_COMN:-}" 2> /dev/null || true)
+	done < <(cat "${_PATH_CONF:-}" 2> /dev/null || true)
 
 	# --- variable substitution -----------------------------------------------
 	_DIRS_TOPS="${_DIRS_TOPS:?}"
@@ -1050,7 +1037,7 @@ function funcInitialization() {
 	_DIRS_ISOS="${_DIRS_ISOS//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
 	_DIRS_LOAD="${_DIRS_LOAD//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
 	_DIRS_RMAK="${_DIRS_RMAK//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
-	_PATH_CONF="${_PATH_CONF//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
+#	_PATH_CONF="${_PATH_CONF//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
 	_PATH_MDIA="${_PATH_MDIA//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
 	_CONF_KICK="${_CONF_KICK//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
 	_CONF_CLUD="${_CONF_CLUD//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
@@ -1102,7 +1089,7 @@ function funcInitialization() {
 	readonly      _DIRS_ISOS
 	readonly      _DIRS_LOAD
 	readonly      _DIRS_RMAK
-	readonly      _PATH_CONF
+#	readonly      _PATH_CONF
 	readonly      _PATH_MDIA
 	readonly      _CONF_KICK
 	readonly      _CONF_CLUD
@@ -1131,6 +1118,108 @@ function funcInitialization() {
 	readonly      _MENU_DPTH
 	readonly      _MENU_MODE
 }
+
+# --- create common configuration file ----------------------------------------
+function funcCreate_conf() {
+	declare -r    _TMPL="${_PATH_CONF:?}.template"
+	declare       _RNAM=""
+	declare       _PATH=""
+
+	# --- check file exists ---------------------------------------------------
+	if [[ -f "${_TMPL:?}" ]]; then
+		_RNAM="${_TMPL}.$(TZ=UTC find "${_TMPL}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
+		mv "${_TMPL}" "${_RNAM}"
+	fi
+
+	# --- delete old files ----------------------------------------------------
+	for _PATH in $(find "${_TMPL%/*}" -name "${_TMPL##*/}"\* | sort -r | tail -n +3)
+	do
+		rm -f "${_PATH:?}"
+	done
+
+	# --- exporting files -----------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_TMPL}"
+		###############################################################################
+		##
+		##	common configuration file
+		##
+		###############################################################################
+		
+		# === for server environments =================================================
+		
+		# --- shared directory parameter ----------------------------------------------
+		DIRS_TOPS="${_DIRS_TOPS:?}"						# top of shared directory
+		DIRS_HGFS="${_DIRS_HGFS//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# vmware shared
+		DIRS_HTML="${_DIRS_HTML//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"		# html contents
+		DIRS_SAMB="${_DIRS_SAMB//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# samba shared
+		DIRS_TFTP="${_DIRS_TFTP//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# tftp contents
+		DIRS_USER="${_DIRS_USER//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# user file
+		
+		# --- shared of user file -----------------------------------------------------
+		DIRS_SHAR="${_DIRS_SHAR//"${_DIRS_USER}"/:_DIRS_USER_:}"			# shared of user file
+		DIRS_CONF="${_DIRS_CONF//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# configuration file
+		DIRS_DATA="${_DIRS_DATA//"${_DIRS_CONF}"/:_DIRS_CONF_:}"			# data file
+		DIRS_KEYS="${_DIRS_KEYS//"${_DIRS_CONF}"/:_DIRS_CONF_:}"		# keyring file
+		DIRS_TMPL="${_DIRS_TMPL//"${_DIRS_CONF}"/:_DIRS_CONF_:}"		# templates for various configuration files
+		DIRS_SHEL="${_DIRS_SHEL//"${_DIRS_CONF}"/:_DIRS_CONF_:}"		# shell script file
+		DIRS_IMGS="${_DIRS_IMGS//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# iso file extraction destination
+		DIRS_ISOS="${_DIRS_ISOS//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# iso file
+		DIRS_LOAD="${_DIRS_LOAD//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# load module
+		DIRS_RMAK="${_DIRS_RMAK//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# remake file
+		
+		# --- common data file --------------------------------------------------------
+		#PATH_CONF="${_PATH_CONF//"${_DIRS_DATA}"/:_DIRS_DATA_:}"	# common configuration file (this file)
+		PATH_MDIA="${_PATH_MDIA//"${_DIRS_DATA}"/:_DIRS_DATA_:}"		# media data file
+		
+		# --- pre-configuration file templates ----------------------------------------
+		CONF_KICK="${_CONF_KICK//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for rhel
+		CONF_CLUD="${_CONF_CLUD//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for ubuntu cloud-init
+		CONF_SEDD="${_CONF_SEDD//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for debian
+		CONF_SEDU="${_CONF_SEDU//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for ubuntu
+		CONF_YAST="${_CONF_YAST//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for opensuse
+		
+		# --- shell script ------------------------------------------------------------
+		SHEL_ERLY="${_SHEL_ERLY//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run early
+		SHEL_LATE="${_SHEL_LATE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run late
+		SHEL_PART="${_SHEL_PART//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"		# run after partition
+		SHEL_RUNS="${_SHEL_RUNS//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run preseed/run
+		
+		# --- tftp / web server network parameter -------------------------------------
+		SRVR_PROT="${_SRVR_PROT:-}"						# server connection protocol (http or tftp)
+		SRVR_NICS="${_SRVR_NICS:-}"						# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
+		SRVR_MADR="${_SRVR_MADR:-}"			# "              mac    (ex. 00:00:00:00:00:00)
+		SRVR_ADDR="${_SRVR_ADDR:-}"				# IPv4 address          (ex. 192.168.1.11)
+		SRVR_CIDR="${_SRVR_CIDR:-}"							# IPv4 cidr             (ex. 24)
+		SRVR_MASK="${_SRVR_MASK:-}"				# IPv4 subnetmask       (ex. 255.255.255.0)
+		SRVR_GWAY="${_SRVR_GWAY:-}"				# IPv4 gateway          (ex. 192.168.1.254)
+		SRVR_NSVR="${_SRVR_NSVR:-}"				# IPv4 nameserver       (ex. 192.168.1.254)
+		
+		# === for creations ===========================================================
+		
+		# --- network parameter -------------------------------------------------------
+		NWRK_HOST="${_NWRK_HOST:-}"				# hostname
+		NWRK_WGRP="${_NWRK_WGRP:-}"					# domain
+		NICS_NAME="${_NICS_NAME:-}"						# network device name
+		IPV4_ADDR="${_IPV4_ADDR:-}"					# IPv4 address
+		IPV4_CIDR="${_IPV4_CIDR:-}"							# IPv4 cidr (empty to ipv4 subnetmask, if both to 24)
+		IPV4_MASK="${_IPV4_MASK:-}"				# IPv4 subnetmask (empty to ipv4 cidr)
+		IPV4_GWAY="${_IPV4_GWAY:-}"				# IPv4 gateway
+		IPV4_NSVR="${_IPV4_NSVR:-}"				# IPv4 nameserver
+		
+		# --- menu timeout ------------------------------------------------------------
+		MENU_TOUT="${_MENU_TOUT:-}"							# timeout [x100 m sec]
+		
+		# --- menu resolution ---------------------------------------------------------
+		MENU_RESO="${_MENU_RESO:-}"					# resolution ([width]x[height])
+		MENU_DPTH="${_MENU_DPTH:-}"							# colors
+		
+		# --- screen mode (vga=nnn) ---------------------------------------------------
+		MENU_MODE="${_MENU_MODE:-}"							# mode (vga=nnn)
+		
+		### eof #######################################################################
+_EOT_
+}
+
 
 # --- debug out parameter -----------------------------------------------------
 funcDebug_parameter() {
@@ -1165,6 +1254,44 @@ funcDebug_parameter() {
 #	done
 }
 
+# --- help --------------------------------------------------------------------
+function funcHelp() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+		usage: [sudo] ${_PROG_PATH} [command (options)]
+		
+		  create / update / download iso image files
+		    create|update|download [all|(mini|net|dvd|live {a|all|id})]
+		      empty             : waiting for input
+		      all               : all target
+		      mini|net|dvd|live : each target
+		        all             : all of each target
+		        id number       : selected id
+		
+		  create / update / download list files
+		    list [create|update|download]
+		      empty             : display of list data
+		      create            : update / download list files
+		
+		  create config files
+		    conf [create|all|(preseed|nocloudkickstart|autoyast)]
+		      create            : create common configuration file
+		      all               : all config files (without common config file
+		      preseed           : preseed.cfg
+		      nocloud           : nocloud
+		      kickstart         : kickstart.cfg
+		      autoyast          : autoyast.xml
+		
+		  create symbolic link
+		    link
+		
+		  debug print and test
+		    debug [func|text|parm]
+		      func              : function test
+		      text              : text color test
+		      parm              : display of main internal parameters
+_EOT_
+}
+
 # === main ====================================================================
 
 function funcMain() {
@@ -1180,10 +1307,6 @@ function funcMain() {
 		exit 1
 	fi
 
-	# --- start ---------------------------------------------------------------
-	_time_start=$(date +%s)
-	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
-
 	# --- get command line ----------------------------------------------------
 	set -f -- "${_OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
@@ -1192,6 +1315,7 @@ function funcMain() {
 			--debug | \
 			--dbg   ) shift; _DBGS_FLAG="true"; set -x;;
 			--dbgout) shift; _DBGS_FLAG="true";;
+			help    ) shift; funcHelp; exit 0;;
 			*       ) shift;;
 		esac
 	done
@@ -1200,6 +1324,10 @@ function funcMain() {
 		_DBGS_FLAG="true"
 		exec 2>&1
 	fi
+
+	# --- start ---------------------------------------------------------------
+	_time_start=$(date +%s)
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- main ----------------------------------------------------------------
 	funcInitialization					# initialization
@@ -1213,15 +1341,33 @@ function funcMain() {
 			update  ) ;;
 			download) ;;
 			link    ) ;;
-			conf    ) ;;
+			conf    )
+				shift
+				while [[ -n "${1:-}" ]]
+				do
+					case "${1:-}" in
+						create   ) shift; funcCreate_conf ;;
+						all      ) ;;
+						preseed  ) ;;
+						nocloud  ) ;;
+						kickstart) ;;
+						autoyast ) ;;
+						*        ) break;;
+					esac
+				done
+				;;
+			help    ) shift; funcHelp; break;;
 			debug   )
 				shift
-				case "${1:-}" in
-					func) shift; funcDebug_function;;
-					text) shift; funcDebug_color;;
-					parm) shift; funcDebug_parameter;;
-					*   ) ;;
-				esac
+				while [[ -n "${1:-}" ]]
+				do
+					case "${1:-}" in
+						func) shift; funcDebug_function;;
+						text) shift; funcDebug_color;;
+						parm) shift; funcDebug_parameter;;
+						*   ) break;;
+					esac
+				done
 				;;
 			*       ) ;;
 		esac

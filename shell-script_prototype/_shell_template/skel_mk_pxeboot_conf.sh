@@ -2,16 +2,16 @@
 
 ###############################################################################
 ##
-##	:_PROG_TITL_:
+##	pxeboot configuration shell
 ##	  developed for debian
 ##
-##	developer   : :_PROG_USER_:
-##	release     : :_PROG_RELS_:
+##	developer   : J.Itou
+##	release     : 2025/04/13
 ##
 ##	history     :
 ##	   data    version    developer    point
 ##	---------- -------- -------------- ----------------------------------------
-##	yyyy/mm/dd 000.0000 xxxxxxxxxxxxxx first release
+##	2025/04/13 000.0000 J.Itou         first release
 ##
 ##	shellcheck -o all "filename"
 ##
@@ -43,7 +43,7 @@
 	fi
 
 	# --- user name -----------------------------------------------------------
-	declare -r    _USER_NAME="${USER:-"$(whoami || true)"}"
+	declare       _USER_NAME="${USER:-"$(whoami || true)"}"
 
 	# --- working directory name ----------------------------------------------
 	declare -r    _PROG_PATH="$0"
@@ -71,11 +71,15 @@ function funcTrap() {
 
 	trap funcTrap EXIT
 
-	# --- work variables ------------------------------------------------------
-	declare -r    _ORIG_IFS="${IFS:-}"	# IFS backup
-	declare -r    _COMD_IFS=" =,"		# IFS for command line
+# :_tmpl_001_initialize_mk_pxeboot_conf.sh_:
 
-# *** function section (sub functions) ****************************************
+# :_tmpl_002_data_section.sh_:
+
+# :_tmpl_003_function_section_library.sh_:
+
+# :_tmpl_004_function_section_common.sh_:
+
+# :_tmpl_005_function_section_mk_pxeboot_conf.sh_:
 
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
@@ -83,19 +87,19 @@ function funcInitialization() {
 }
 
 # --- debug out parameter -----------------------------------------------------
-function funcDebugout_parameter() {
+funcDebug_parameter() {
 	declare       _VARS_CHAR="_"		# variable initial letter
-	declare       _VARS_NAME=""			# "        name
-	declare       _VARS_VALU=""			# "        value
+	declare       _VARS_NAME=""			#          name
+	declare       _VARS_VALU=""			#          value
 
-	if [[ -z "${_DBGS_FLAG:-}" ]]; then
-		return
-	fi
+#	if [[ -z "${_DBGS_FLAG:-}" ]]; then
+#		return
+#	fi
 
 	# https://qiita.com/t_nakayama0714/items/80b4c94de43643f4be51#%E5%AD%A6%E3%81%B3%E3%81%AE%E6%88%90%E6%9E%9C%E3%82%92%E6%84%9F%E3%81%98%E3%82%8B%E3%83%AF%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%8A%E3%83%BC
 #	for _VARS_CHAR in {A..Z} {a..z} "_"
 #	do
-		for _VARS_NAME in $(eval echo \$\{\!"${_VARS_CHAR}"\@\})
+		for _VARS_NAME in $(eval printf "%q\\\n"  \$\{\!"${_VARS_CHAR}"\@\})
 		do
 			_VARS_NAME="${_VARS_NAME#\'}"
 			_VARS_NAME="${_VARS_NAME%\'}"
@@ -103,6 +107,7 @@ function funcDebugout_parameter() {
 				continue
 			fi
 			case "${_VARS_NAME}" in
+				_TEXT_*    | \
 				_VARS_CHAR | \
 				_VARS_NAME | \
 				_VARS_VALU ) continue;;
@@ -114,72 +119,39 @@ function funcDebugout_parameter() {
 #	done
 }
 
-# --- create ------------------------------------------------------------------
-function funcCreate() {
-	declare -n    _NAME_REFS="$1"		# name reference
-	shift
-	declare -r -a _OPTN_PARM=("${@:-}")	# option parameter
-	declare       _LINE=""				# work variable
-	declare       _SKEL=""				# work variable (skeleton)
-	declare       _TMPL=""				# work variable (template)
-	declare       _CRAT=""				# work variable (created)
-	declare       _TEMP=""				# work variable (temporary)
-
-	set -f -- "${_OPTN_PARM[@]:-}"
-	while [[ -n "${1:-}" ]]
-	do
-		case "${1:-}" in
-			-*) break;;
-			* )
-				_SKEL="$1"
-				shift
-				if [[ ! -f "${_SKEL}" ]]; then
-					printf "\033[m\033[91m%s\033[m\n" "not exist ${_SKEL}"
-					continue
-				fi
-				_CRAT="${_SKEL##*/}"
-				_CRAT="${_CRAT#skel_}"
-				_CRAT="${_SKEL%/*}/${_CRAT}"
-				_TEMP="${_CRAT:?}.tmp"
-				if [[ "${_CRAT:?}" = "${_SKEL:?}" ]]; then
-					printf "%s\n" "abort because file name input and output are the same" 1>&2
-					printf "%s\n" "input : ${_SKEL}" 1>&2
-					printf "%s\n" "output: ${_CRAT}" 1>&2
-					exit 1
-				fi
-				printf "\033[m%s\033[m\n" "create start    ${_SKEL}"
-				printf "\033[m%s\033[m\n" "create start    ${_CRAT}"
-				rm -f "${_TEMP:?}"
-				while IFS= read -r _LINE
-				do
-					_TMPL="${_LINE#"${_LINE%%:*}"}"
-					_TMPL="${_TMPL%"${_TMPL##*:}"}"
-					case "${_TMPL}" in
-						:_tmpl_*.sh_:)
-							_TMPL="${_TMPL#:_}"
-							_TMPL="${_TMPL%_:}"
-							if [[ "${_TMPL##*/}" = "${_TMPL%/*}" ]]; then
-								_TMPL="${_SKEL%/*}/${_TMPL}"
-							fi
-							if [[ ! -f "${_TMPL}" ]]; then
-								printf "\033[m\033[91m%s\033[m\n" "not exist ${_TMPL}"
-								continue
-							fi
-							cat "${_TMPL}"  >> "${_TEMP}" || true
-							;;
-						*)
-							echo "${_LINE}" >> "${_TEMP}"
-							;;
-					esac
-				done < <(sed -e '/^#.*initialization.*$/,/^$/d' "${_SKEL}" || true)
-				mv --force "${_TEMP:?}" "${_CRAT:?}"
-				printf "\033[m%s\033[m\n" "create complete ${_CRAT}"
-				shellcheck -o all "${_CRAT}"
-				printf "\033[m%s\033[m\n" "create complete ${_SKEL}"
-				;;
-		esac
-	done
-	_NAME_REFS="${*:-}"
+# --- help --------------------------------------------------------------------
+function funcHelp() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+		usage: [sudo] ${_PROG_PATH} [command (options)]
+		
+		  create pxeboot menu files
+		    create
+		      empty             : mirroring copy by rsync
+		      update            : without copying iso image
+		
+		  create / update / download list files
+		    list [create|update|download]
+		      empty             : display of list data
+		      create            : update / download list files
+		
+		  create config files
+		    conf [create|all|(preseed|nocloudkickstart|autoyast)]
+		      create            : create common configuration file
+		      all               : all config files (without common config file
+		      preseed           : preseed.cfg
+		      nocloud           : nocloud
+		      kickstart         : kickstart.cfg
+		      autoyast          : autoyast.xml
+		
+		  create symbolic link
+		    link
+		
+		  debug print and test
+		    debug [func|text|parm]
+		      func              : function test
+		      text              : text color test
+		      parm              : display of main internal parameters
+_EOT_
 }
 
 # === main ====================================================================
@@ -192,14 +164,10 @@ function funcMain() {
 	declare -a    _RETN_PARM=()			# name reference
 
 	# --- check the execution user --------------------------------------------
-#	if [[ "${_USER_NAME:-}" != "root" ]]; then
-#		printf "${_CODE_ESCP}[m%s${_CODE_ESCP}[m\n" "run as root user."
-#		exit 1
-#	fi
-
-	# --- start ---------------------------------------------------------------
-	_time_start=$(date +%s)
-	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+	if [[ "${_USER_NAME}" != "root" ]]; then
+		printf "${_CODE_ESCP}[m%s${_CODE_ESCP}[m\n" "run as root user."
+		exit 1
+	fi
 
 	# --- get command line ----------------------------------------------------
 	set -f -- "${_OPTN_PARM[@]:-}"
@@ -209,6 +177,7 @@ function funcMain() {
 			--debug | \
 			--dbg   ) shift; _DBGS_FLAG="true"; set -x;;
 			--dbgout) shift; _DBGS_FLAG="true";;
+			help    ) shift; funcHelp; exit 0;;
 			*       ) shift;;
 		esac
 	done
@@ -218,19 +187,53 @@ function funcMain() {
 		exec 2>&1
 	fi
 
+	# --- start ---------------------------------------------------------------
+	_time_start=$(date +%s)
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+
 	# --- main ----------------------------------------------------------------
 	funcInitialization					# initialization
-	funcDebugout_parameter				# debug out parameter
 
 	set -f -- "${_OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
 	do
 		_RETN_PARM=()
-		case "${1%%=*}" in
-			--dbgprn) shift; funcDebug_function;;
-			--create) shift; funcCreate _RETN_PARM "$@";;
-			*       ) shift; _RETN_PARM=("$@");;
+		case "${1:-}" in
+			create  ) ;;
+			update  ) ;;
+			download) ;;
+			link    ) ;;
+			conf    )
+				shift
+				while [[ -n "${1:-}" ]]
+				do
+					case "${1:-}" in
+						create   ) shift; funcCreate_conf ;;
+						all      ) ;;
+						preseed  ) ;;
+						nocloud  ) ;;
+						kickstart) ;;
+						autoyast ) ;;
+						*        ) break;;
+					esac
+				done
+				;;
+			help    ) shift; funcHelp; break;;
+			debug   )
+				shift
+				while [[ -n "${1:-}" ]]
+				do
+					case "${1:-}" in
+						func) shift; funcDebug_function;;
+						text) shift; funcDebug_color;;
+						parm) shift; funcDebug_parameter;;
+						*   ) break;;
+					esac
+				done
+				;;
+			*       ) ;;
 		esac
+		_RETN_PARM=("$@")
 		IFS="${_COMD_IFS:-}"
 		set -f -- "${_RETN_PARM[@]:-}"
 		IFS="${_ORIG_IFS:-}"

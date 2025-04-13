@@ -1,16 +1,3 @@
-	# --- common configuration file -------------------------------------------
-	declare       _CONF_COMN=""			# file name
-
-	declare       _PATH=""
-	for _PATH in "${PWD:+"${PWD}/common.cfg"}" /srv/user/share/conf/_data/common.cfg
-	do
-		if [[ -f "${_PATH}" ]]; then
-			_CONF_COMN="${_PATH}"
-			break
-		fi
-	done
-	unset         _PATH
-
 	# --- shared directory parameter ------------------------------------------
 	declare       _DIRS_TOPS=""			# top of shared directory
 	declare       _DIRS_HGFS=""			# vmware shared
@@ -32,7 +19,7 @@
 	declare       _DIRS_RMAK=""			# remake file
 
 	# --- common data file ----------------------------------------------------
-	declare       _PATH_CONF=""			# common configuration file (thie file)
+	declare       _PATH_CONF=""			# common configuration file
 	declare       _PATH_MDIA=""			# media data file
 
 	# --- pre-configuration file templates ------------------------------------

@@ -19,40 +19,26 @@
 		declare       _ARCH_OTHR=""
 		              _ARCH_OTHR="$(dpkg --print-foreign-architectures)"
 		readonly      _ARCH_OTHR
-		declare -r -a PAKG_LIST=(\
-		)
 		# --- for custom iso --------------------------------------------------
-#		declare -r -a PAKG_LIST=(\
-#			"curl" \
-#			"wget" \
-#			"fdisk" \
-#			"file" \
-#			"initramfs-tools-core" \
-#			"isolinux" \
-#			"isomd5sum" \
-#			"procps" \
-#			"xorriso" \
-#			"xxd" \
-#			"cpio" \
-#			"gzip" \
-#			"zstd" \
-#			"xz-utils" \
-#			"lz4" \
-#			"bzip2" \
-#			"lzop" \
-#		)
-		# --- for pxeboot -----------------------------------------------------
-#		declare -r -a PAKG_LIST=(\
-#			"procps" \
-#			"syslinux-common" \
-#			"pxelinux" \
-#			"syslinux-efi" \
-#			"grub-common" \
-#			"grub-pc-bin" \
-#			"grub-efi-amd64-bin" \
-#			"curl" \
-#			"rsync" \
-#		)
+		declare -r -a PAKG_LIST=(\
+			"curl" \
+			"wget" \
+			"fdisk" \
+			"file" \
+			"initramfs-tools-core" \
+			"isolinux" \
+			"isomd5sum" \
+			"procps" \
+			"xorriso" \
+			"xxd" \
+			"cpio" \
+			"gzip" \
+			"zstd" \
+			"xz-utils" \
+			"lz4" \
+			"bzip2" \
+			"lzop" \
+		)
 		# ---------------------------------------------------------------------
 		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]:-bash}" 2> /dev/null | sed -ne '/[ \t]'"${_ARCH_OTHR:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g')"
 		readonly      PAKG_FIND
@@ -61,7 +47,7 @@
 			if [[ "${_USER_NAME:-}" != "root" ]]; then
 				echo -n "sudo "
 			fi
-			echo "apt-get install ${PAKG_FIND% *}" 1&2
+			echo "apt-get install ${PAKG_FIND% *}" 1>&2
 			exit 1
 		fi
 	fi

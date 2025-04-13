@@ -2,9 +2,23 @@
 
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
+	declare       _PATH=""				# file name
 	declare       _LINE=""				# work variable
 	declare       _NAME=""				# variable name
 	declare       _VALU=""				# value
+
+	# --- common configuration file -------------------------------------------
+	              _PATH_CONF="/srv/user/share/conf/_data/common.cfg"
+	for _PATH in \
+		"${PWD:+"${PWD}/${_PATH_CONF##*/}"}" \
+		"${_PATH_CONF}"
+	do
+		if [[ -f "${_PATH}" ]]; then
+			_PATH_CONF="${_PATH}"
+			break
+		fi
+	done
+	readonly      _PATH_CONF
 
 	# --- default value when empty --------------------------------------------
 	_DIRS_TOPS="${_DIRS_TOPS:-/srv}"
@@ -23,7 +37,7 @@ function funcInitialization() {
 	_DIRS_ISOS="${_DIRS_ISOS:-:_DIRS_SHAR_:/isos}"
 	_DIRS_LOAD="${_DIRS_LOAD:-:_DIRS_SHAR_:/load}"
 	_DIRS_RMAK="${_DIRS_RMAK:-:_DIRS_SHAR_:/rmak}"
-	_PATH_CONF="${_PATH_CONF:-:_DIRS_DATA_:/common.cfg}"
+#	_PATH_CONF="${_PATH_CONF:-:_DIRS_DATA_:/common.cfg}"
 	_PATH_MDIA="${_PATH_MDIA:-:_DIRS_DATA_:/media.dat}"
 	_CONF_KICK="${_CONF_KICK:-:_DIRS_TMPL_:/kickstart_rhel.cfg}"
 	_CONF_CLUD="${_CONF_CLUD:-:_DIRS_TMPL_:/user-data_ubuntu}"
@@ -97,7 +111,7 @@ function funcInitialization() {
 			DIRS_ISOS) _DIRS_ISOS="${_VALU:-"${_DIRS_ISOS:-}"}";;
 			DIRS_LOAD) _DIRS_LOAD="${_VALU:-"${_DIRS_LOAD:-}"}";;
 			DIRS_RMAK) _DIRS_RMAK="${_VALU:-"${_DIRS_RMAK:-}"}";;
-			PATH_CONF) _PATH_CONF="${_VALU:-"${_PATH_CONF:-}"}";;
+#			PATH_CONF) _PATH_CONF="${_VALU:-"${_PATH_CONF:-}"}";;
 			PATH_MDIA) _PATH_MDIA="${_VALU:-"${_PATH_MDIA:-}"}";;
 			CONF_KICK) _CONF_KICK="${_VALU:-"${_CONF_KICK:-}"}";;
 			CONF_CLUD) _CONF_CLUD="${_VALU:-"${_CONF_CLUD:-}"}";;
@@ -134,7 +148,7 @@ function funcInitialization() {
 			MENU_MODE) _MENU_MODE="${_VALU:-"${_MENU_MODE:-}"}";;
 			*        ) ;;
 		esac
-	done < <(cat "${_CONF_COMN:-}" 2> /dev/null || true)
+	done < <(cat "${_PATH_CONF:-}" 2> /dev/null || true)
 
 	# --- variable substitution -----------------------------------------------
 	_DIRS_TOPS="${_DIRS_TOPS:?}"
@@ -153,7 +167,7 @@ function funcInitialization() {
 	_DIRS_ISOS="${_DIRS_ISOS//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
 	_DIRS_LOAD="${_DIRS_LOAD//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
 	_DIRS_RMAK="${_DIRS_RMAK//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
-	_PATH_CONF="${_PATH_CONF//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
+#	_PATH_CONF="${_PATH_CONF//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
 	_PATH_MDIA="${_PATH_MDIA//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
 	_CONF_KICK="${_CONF_KICK//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
 	_CONF_CLUD="${_CONF_CLUD//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
@@ -205,7 +219,7 @@ function funcInitialization() {
 	readonly      _DIRS_ISOS
 	readonly      _DIRS_LOAD
 	readonly      _DIRS_RMAK
-	readonly      _PATH_CONF
+#	readonly      _PATH_CONF
 	readonly      _PATH_MDIA
 	readonly      _CONF_KICK
 	readonly      _CONF_CLUD
@@ -233,4 +247,105 @@ function funcInitialization() {
 	readonly      _MENU_RESO
 	readonly      _MENU_DPTH
 	readonly      _MENU_MODE
+}
+
+# --- create common configuration file ----------------------------------------
+function funcCreate_conf() {
+	declare -r    _TMPL="${_PATH_CONF:?}.template"
+	declare       _RNAM=""
+	declare       _PATH=""
+
+	# --- check file exists ---------------------------------------------------
+	if [[ -f "${_TMPL:?}" ]]; then
+		_RNAM="${_TMPL}.$(TZ=UTC find "${_TMPL}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
+		mv "${_TMPL}" "${_RNAM}"
+	fi
+
+	# --- delete old files ----------------------------------------------------
+	for _PATH in $(find "${_TMPL%/*}" -name "${_TMPL##*/}"\* | sort -r | tail -n +3)
+	do
+		rm -f "${_PATH:?}"
+	done
+
+	# --- exporting files -----------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_TMPL}"
+		###############################################################################
+		##
+		##	common configuration file
+		##
+		###############################################################################
+		
+		# === for server environments =================================================
+		
+		# --- shared directory parameter ----------------------------------------------
+		DIRS_TOPS="${_DIRS_TOPS:?}"						# top of shared directory
+		DIRS_HGFS="${_DIRS_HGFS//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# vmware shared
+		DIRS_HTML="${_DIRS_HTML//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"		# html contents
+		DIRS_SAMB="${_DIRS_SAMB//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# samba shared
+		DIRS_TFTP="${_DIRS_TFTP//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# tftp contents
+		DIRS_USER="${_DIRS_USER//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# user file
+		
+		# --- shared of user file -----------------------------------------------------
+		DIRS_SHAR="${_DIRS_SHAR//"${_DIRS_USER}"/:_DIRS_USER_:}"			# shared of user file
+		DIRS_CONF="${_DIRS_CONF//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# configuration file
+		DIRS_DATA="${_DIRS_DATA//"${_DIRS_CONF}"/:_DIRS_CONF_:}"			# data file
+		DIRS_KEYS="${_DIRS_KEYS//"${_DIRS_CONF}"/:_DIRS_CONF_:}"		# keyring file
+		DIRS_TMPL="${_DIRS_TMPL//"${_DIRS_CONF}"/:_DIRS_CONF_:}"		# templates for various configuration files
+		DIRS_SHEL="${_DIRS_SHEL//"${_DIRS_CONF}"/:_DIRS_CONF_:}"		# shell script file
+		DIRS_IMGS="${_DIRS_IMGS//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# iso file extraction destination
+		DIRS_ISOS="${_DIRS_ISOS//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# iso file
+		DIRS_LOAD="${_DIRS_LOAD//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# load module
+		DIRS_RMAK="${_DIRS_RMAK//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# remake file
+		
+		# --- common data file --------------------------------------------------------
+		#PATH_CONF="${_PATH_CONF//"${_DIRS_DATA}"/:_DIRS_DATA_:}"	# common configuration file (this file)
+		PATH_MDIA="${_PATH_MDIA//"${_DIRS_DATA}"/:_DIRS_DATA_:}"		# media data file
+		
+		# --- pre-configuration file templates ----------------------------------------
+		CONF_KICK="${_CONF_KICK//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for rhel
+		CONF_CLUD="${_CONF_CLUD//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for ubuntu cloud-init
+		CONF_SEDD="${_CONF_SEDD//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for debian
+		CONF_SEDU="${_CONF_SEDU//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for ubuntu
+		CONF_YAST="${_CONF_YAST//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for opensuse
+		
+		# --- shell script ------------------------------------------------------------
+		SHEL_ERLY="${_SHEL_ERLY//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run early
+		SHEL_LATE="${_SHEL_LATE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run late
+		SHEL_PART="${_SHEL_PART//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"		# run after partition
+		SHEL_RUNS="${_SHEL_RUNS//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run preseed/run
+		
+		# --- tftp / web server network parameter -------------------------------------
+		SRVR_PROT="${_SRVR_PROT:-}"						# server connection protocol (http or tftp)
+		SRVR_NICS="${_SRVR_NICS:-}"						# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
+		SRVR_MADR="${_SRVR_MADR:-}"			# "              mac    (ex. 00:00:00:00:00:00)
+		SRVR_ADDR="${_SRVR_ADDR:-}"				# IPv4 address          (ex. 192.168.1.11)
+		SRVR_CIDR="${_SRVR_CIDR:-}"							# IPv4 cidr             (ex. 24)
+		SRVR_MASK="${_SRVR_MASK:-}"				# IPv4 subnetmask       (ex. 255.255.255.0)
+		SRVR_GWAY="${_SRVR_GWAY:-}"				# IPv4 gateway          (ex. 192.168.1.254)
+		SRVR_NSVR="${_SRVR_NSVR:-}"				# IPv4 nameserver       (ex. 192.168.1.254)
+		
+		# === for creations ===========================================================
+		
+		# --- network parameter -------------------------------------------------------
+		NWRK_HOST="${_NWRK_HOST:-}"				# hostname
+		NWRK_WGRP="${_NWRK_WGRP:-}"					# domain
+		NICS_NAME="${_NICS_NAME:-}"						# network device name
+		IPV4_ADDR="${_IPV4_ADDR:-}"					# IPv4 address
+		IPV4_CIDR="${_IPV4_CIDR:-}"							# IPv4 cidr (empty to ipv4 subnetmask, if both to 24)
+		IPV4_MASK="${_IPV4_MASK:-}"				# IPv4 subnetmask (empty to ipv4 cidr)
+		IPV4_GWAY="${_IPV4_GWAY:-}"				# IPv4 gateway
+		IPV4_NSVR="${_IPV4_NSVR:-}"				# IPv4 nameserver
+		
+		# --- menu timeout ------------------------------------------------------------
+		MENU_TOUT="${_MENU_TOUT:-}"							# timeout [x100 m sec]
+		
+		# --- menu resolution ---------------------------------------------------------
+		MENU_RESO="${_MENU_RESO:-}"					# resolution ([width]x[height])
+		MENU_DPTH="${_MENU_DPTH:-}"							# colors
+		
+		# --- screen mode (vga=nnn) ---------------------------------------------------
+		MENU_MODE="${_MENU_MODE:-}"							# mode (vga=nnn)
+		
+		### eof #######################################################################
+_EOT_
 }

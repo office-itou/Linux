@@ -117,6 +117,19 @@ funcDebug_parameter() {
 #	done
 }
 
+# --- help --------------------------------------------------------------------
+function funcHelp() {
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
+		usage: [sudo] ${_PROG_PATH} [command (options)]
+		
+		  debug print and test
+		    debug [func|text|parm]
+		      func              : function test
+		      text              : text color test
+		      parm              : display of main internal parameters
+_EOT_
+}
+
 # === main ====================================================================
 
 function funcMain() {
@@ -132,10 +145,6 @@ function funcMain() {
 		exit 1
 	fi
 
-	# --- start ---------------------------------------------------------------
-	_time_start=$(date +%s)
-	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
-
 	# --- get command line ----------------------------------------------------
 	set -f -- "${_OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
@@ -144,6 +153,7 @@ function funcMain() {
 			--debug | \
 			--dbg   ) shift; _DBGS_FLAG="true"; set -x;;
 			--dbgout) shift; _DBGS_FLAG="true";;
+			help    ) shift; funcHelp; exit 0;;
 			*       ) shift;;
 		esac
 	done
@@ -152,6 +162,10 @@ function funcMain() {
 		_DBGS_FLAG="true"
 		exec 2>&1
 	fi
+
+	# --- start ---------------------------------------------------------------
+	_time_start=$(date +%s)
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- main ----------------------------------------------------------------
 	funcInitialization					# initialization
@@ -166,14 +180,18 @@ function funcMain() {
 			download) ;;
 			link    ) ;;
 			conf    ) ;;
+			help    ) shift; funcHelp; break;;
 			debug   )
 				shift
-				case "${1:-}" in
-					func) shift; funcDebug_function;;
-					text) shift; funcDebug_color;;
-					parm) shift; funcDebug_parameter;;
-					*   ) ;;
-				esac
+				while [[ -n "${1:-}" ]]
+				do
+					case "${1:-}" in
+						func) shift; funcDebug_function;;
+						text) shift; funcDebug_color;;
+						parm) shift; funcDebug_parameter;;
+						*   ) break;;
+					esac
+				done
 				;;
 			*       ) ;;
 		esac
