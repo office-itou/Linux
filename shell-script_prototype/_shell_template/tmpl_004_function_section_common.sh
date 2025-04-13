@@ -317,7 +317,7 @@ function funcCreate_conf() {
 		# --- tftp / web server network parameter -------------------------------------
 		SRVR_PROT="${_SRVR_PROT:-}"						# server connection protocol (http or tftp)
 		SRVR_NICS="${_SRVR_NICS:-}"						# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
-		SRVR_MADR="${_SRVR_MADR:-}"			# "              mac    (ex. 00:00:00:00:00:00)
+		SRVR_MADR="${_SRVR_MADR//[!:]/0}"			# "              mac    (ex. 00:00:00:00:00:00)
 		SRVR_ADDR="${_SRVR_ADDR:-}"				# IPv4 address          (ex. 192.168.1.11)
 		SRVR_CIDR="${_SRVR_CIDR:-}"							# IPv4 cidr             (ex. 24)
 		SRVR_MASK="${_SRVR_MASK:-}"				# IPv4 subnetmask       (ex. 255.255.255.0)
