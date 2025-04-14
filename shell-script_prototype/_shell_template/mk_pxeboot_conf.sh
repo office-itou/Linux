@@ -403,50 +403,63 @@ function funcPrintf() {
 	declare       _TEXT_UTF8=""			# formatted utf8
 	declare       _TEXT_SJIS=""			# formatted sjis (cp932)
 	declare       _TEXT_PLIN=""			# formatted string without attributes
-	declare -i    _TEXT_CUTP="${_SIZE_COLS:-80}"
-	declare -i    _TEXT_CONT=0			# count of attributes
-	declare       _TEXT_WORK=""
+	declare       _TEXT_WORK=""			# 
+	declare       _ESCP_FRNT=""			# escape characters front
 	# -------------------------------------------------------------------------
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 	# -------------------------------------------------------------------------
-	while [[ -n "${1:-}" ]]
-	do
-		# shellcheck disable=SC2001
-		case "$1" in
-			--no-cutting              ) _FLAG_NCUT="true"; shift;;
-			*%[0-9.-]*[diouxXfeEgGcs]*) _TEXT_FMAT="${_TEXT_FMAT:+"${_TEXT_FMAT} "}$(echo "$1" | sed -e 's/%\([0-9.-]*\)s/%\1b/g')"; shift;;
-			*)
-				# -------------------------------------------------------------
-				# shellcheck disable=SC2059
-				_TEXT_UTF8="$(printf "${_TEXT_FMAT:-%b}" "${@:-}")"
-				if [[ -z "${_FLAG_NCUT:-}" ]]; then
-					if ! _TEXT_SJIS="$(echo -n "${_TEXT_UTF8:-}" | iconv -f UTF-8 -t CP932 2> /dev/null || true)"; then
-						printf "%s" "utf8->sjis[${_TEXT_UTF8:-}]"
-						exit 1
-					fi
-					_TEXT_PLIN="$(echo -n "${_TEXT_UTF8:-}" | sed -e 's/'"${_CODE_ESCP}"'\[[0-9]*m//g' || true)"
-					if [[ ${#_TEXT_PLIN} -gt "${_TEXT_CUTP}" ]]; then
-						_TEXT_CONT="$((${#_TEXT_UTF8}-${#_TEXT_PLIN}))"
-						_TEXT_WORK="$(echo -n "${_TEXT_SJIS}" | cut -b $((_SIZE_COLS+_TEXT_CONT))-)"
-						_TEXT_PLIN="$(echo -n "${_TEXT_WORK}" | sed -e 's/'"${_CODE_ESCP}"'\[[0-9]*m//g' || true)"
-						_TEXT_CUTP=$((_TEXT_CUTP+_TEXT_CONT-(${#_TEXT_WORK}-${#_TEXT_PLIN})))
-						if ! _TEXT_UTF8="$(echo -n "${_TEXT_SJIS}" | cut -b -"${_TEXT_CUTP}"   | iconv -f CP932 -t UTF-8 2> /dev/null || true)"; then
-							if ! _TEXT_UTF8="$(echo -n "${_TEXT_SJIS}" | cut -b -$((_TEXT_CUTP-1)) | iconv -f CP932 -t UTF-8 2> /dev/null || true)"; then
-								printf "%s" "sjis->utf8[${_TEXT_UTF8:-}]"
-								exit 1
-							fi
-						fi
-					fi
+	case "$1" in
+		--no-cutting) _FLAG_NCUT="true"; shift;;
+		*           ) ;;
+	esac
+	# -------------------------------------------------------------------------
+	_TEXT_FMAT="${1:-}"
+	shift
+	# shellcheck disable=SC2059
+	printf -v _TEXT_UTF8 -- "${_TEXT_FMAT}" "${@:-}"
+	# -------------------------------------------------------------------------
+	if [[ -z "${_FLAG_NCUT:-}" ]]; then
+		_TEXT_SJIS="$(echo -n "${_TEXT_UTF8:-}" | iconv -f UTF-8 -t CP932 -c -s || true)"
+		_TEXT_PLIN="${_TEXT_SJIS//"${_CODE_ESCP}["[0-9]m/}"
+		_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+		_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+		if [[ "${#_TEXT_PLIN}" -gt "${_SIZE_COLS}" ]]; then
+			_TEXT_WORK="${_TEXT_SJIS}"
+			while true
+			do
+				case "${_TEXT_WORK}" in
+					"${_CODE_ESCP}"\[[0-9]*m*)
+						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9]m/}"
+						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9][0-9]m/}"
+						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+						;;
+					*) break;;
+				esac
+			done
+			_ESCP_FRNT="${_TEXT_SJIS%"${_TEXT_WORK}"}"
+			# -----------------------------------------------------------------
+			_TEXT_WORK="${_TEXT_SJIS:"${#_ESCP_FRNT}":"${_SIZE_COLS}"}"
+			while true
+			do
+				_TEXT_PLIN="${_TEXT_WORK//"${_CODE_ESCP}["[0-9]m/}"
+				_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+				_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+				_TEXT_PLIN="${_TEXT_PLIN%%"${_CODE_ESCP}"*}"
+				if [[ "${#_TEXT_PLIN}" -eq "${_SIZE_COLS}" ]]; then
+					break
 				fi
-				printf "%b\n" "${_TEXT_UTF8}"
-				# -------------------------------------------------------------
-				if [[ -n "${_FLAG_TRCE:-}" ]]; then
-					set -x
-				fi
-				return
-				;;
-		esac
-	done
+				_TEXT_WORK="${_TEXT_SJIS:"${#_ESCP_FRNT}":$(("${#_TEXT_WORK}"+"${_SIZE_COLS}"-"${#_TEXT_PLIN}"))}"
+			done
+			_TEXT_WORK="${_ESCP_FRNT}${_TEXT_WORK}"
+			_TEXT_UTF8="$(echo -n "${_TEXT_WORK}" | iconv -f CP932 -t UTF-8 -c -s 2> /dev/null || true)"
+		fi
+	fi
+	printf "%s%b%s\n" "${_TEXT_RESET}" "${_TEXT_UTF8}" "${_TEXT_RESET}"
+	if [[ -n "${_FLAG_TRCE:-}" ]]; then
+		set -x
+	else
+		set +x
+	fi
 }
 
 # --- unit conversion ---------------------------------------------------------
@@ -685,12 +698,26 @@ _EOT_
 	funcPrintf "${H1}"
 	funcPrintf "${H2}"
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${_SIZE_COLS}" '->')"
+	funcPrintf  "%s%s%s"  "${_TEXT_RESET}${_TEXT_BG_GREEN}"  "$(funcString "${_SIZE_COLS}" '->')" "${_TEXT_RESET}"
 	# shellcheck disable=SC2312
-	funcPrintf "$(funcString "${_SIZE_COLS}" '→')"
+	funcPrintf  "%s%s%s"  "${_TEXT_RESET}${_TEXT_BR_YELLOW}" "$(funcString "${_SIZE_COLS}" '→')" "${_TEXT_RESET}"
 	# shellcheck disable=SC2312
-	funcPrintf "_$(funcString "${_SIZE_COLS}" '→')_"
-	echo ""
+	funcPrintf "_%s%s%s_" "${_TEXT_RESET}${_TEXT_BG_CYAN}"   "$(funcString "${_SIZE_COLS}" '→')" "${_TEXT_RESET}"
+	# shellcheck disable=SC2312
+	funcPrintf  "%s%s%s"  "${_TEXT_RESET}${_TEXT_BG_GREEN}"  "$(funcString "${_SIZE_COLS}" '->')" "${_TEXT_RESET}${_TEXT_BR_YELLOW}" "===" "${_TEXT_BR_YELLOW}${_TEXT_RESET}"
+	# shellcheck disable=SC2312
+	funcPrintf  "%s%s%s"  "${_TEXT_RESET}${_TEXT_BG_YELLOW}" "===" "${_TEXT_RESET}${_TEXT_BG_GREEN}"  "$(funcString "${_SIZE_COLS}" '->')" "${_TEXT_RESET}${_TEXT_BG_GREEN}" "===" "${_TEXT_BR_YELLOW}${_TEXT_RESET}"
+	# shellcheck disable=SC2312
+	funcPrintf  "%s%s%s"  "${_TEXT_RESET}${_TEXT_BR_YELLOW}" "$(funcString "${_SIZE_COLS}" '→')" "${_TEXT_RESET}"
+	# shellcheck disable=SC2312
+	funcPrintf "_%s%s%s_" "${_TEXT_RESET}${_TEXT_BG_CYAN}"   "$(funcString "${_SIZE_COLS}" '→')" "${_TEXT_RESET}"
+	funcPrintf  "%s%s%s"  "${_TEXT_RESET}${_TEXT_BR_GREEN}"  "１２３４５６７８９０${_TEXT_BR_RED}１２３４５６７８９０${_TEXT_BR_BLUE}１２３４５６７８９０${_TEXT_RESET}１２３４５６７８９０${_TEXT_UNDERLINE}${_TEXT_BR_MAGENTA}１２３４５６７８９０${_TEXT_RESET}１２３４５${_TEXT_BG_YELLOW}６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０" "${_TEXT_RESET}"
+	funcPrintf "_%s%s%s_" "${_TEXT_RESET}${_TEXT_BR_CYAN}"   "１２３４５６７８９０${_TEXT_BR_RED}１２３４５６７８９０${_TEXT_BR_BLUE}１２３４５６７８９０${_TEXT_RESET}１２３４５６７８９０${_TEXT_UNDERLINE}${_TEXT_BR_MAGENTA}１２３４５６７８９０${_TEXT_RESET}１２３４５${_TEXT_BG_YELLOW}６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０" "${_TEXT_RESET}"
+	funcPrintf  "%s%s%s"  "${_TEXT_RESET}${_TEXT_BR_GREEN}"  "１２３４５６７８９０${_TEXT_BR_RED}１２３４５６７８９０${_TEXT_BR_BLUE}１２３４５６７８９０${_TEXT_RESET}１２３４５６７８９０${_TEXT_UNDERLINE}${_TEXT_BR_MAGENTA}１２３４５６７８９０${_TEXT_RESET}１２３４５${_TEXT_BG_YELLOW}６７８９${_TEXT_BG_RED}０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０" "${_TEXT_RESET}"
+	funcPrintf "_%s%s%s_" "${_TEXT_RESET}${_TEXT_BR_CYAN}"   "１２３４５６７８９０${_TEXT_BR_RED}１２３４５６７８９０${_TEXT_BR_BLUE}１２３４５６７８９０${_TEXT_RESET}１２３４５６７８９０${_TEXT_UNDERLINE}${_TEXT_BR_MAGENTA}１２３４５６７８９０${_TEXT_RESET}１２３４５${_TEXT_BG_YELLOW}６７８９${_TEXT_BG_RED}０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０" "${_TEXT_RESET}"
+	funcPrintf  "%s%s%s"  "${_TEXT_RESET}${_TEXT_BR_GREEN}"  "１２３４５６７８９０${_TEXT_BR_RED}１２３４５６７８９０${_TEXT_BR_BLUE}１２３４５６７８９０${_TEXT_RESET}１２３４５６７８９０${_TEXT_UNDERLINE}${_TEXT_BR_MAGENTA}１２３４５６７８９０${_TEXT_RESET}１２３４５${_TEXT_BG_YELLOW}６７８９０${_TEXT_BG_RED}１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０" "${_TEXT_RESET}"
+	funcPrintf "_%s%s%s_" "${_TEXT_RESET}${_TEXT_BR_CYAN}"   "１２３４５６７８９０${_TEXT_BR_RED}１２３４５６７８９０${_TEXT_BR_BLUE}１２３４５６７８９０${_TEXT_RESET}１２３４５６７８９０${_TEXT_UNDERLINE}${_TEXT_BR_MAGENTA}１２３４５６７８９０${_TEXT_RESET}１２３４５${_TEXT_BG_YELLOW}６７８９０${_TEXT_BG_RED}１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０" "${_TEXT_RESET}"
+#	echo ""
 
 	# --- text color test -----------------------------------------------------
 	funcPrintf "---- text color test ${_TEXT_GAP1}"
