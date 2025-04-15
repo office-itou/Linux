@@ -2,16 +2,16 @@
 
 ###############################################################################
 ##
-##	pxeboot configuration shell
+##	common functions test shell
 ##	  developed for debian
 ##
 ##	developer   : J.Itou
-##	release     : 2025/04/13
+##	release     : 2025/04/15
 ##
 ##	history     :
 ##	   data    version    developer    point
 ##	---------- -------- -------------- ----------------------------------------
-##	2025/04/13 000.0000 J.Itou         first release
+##	2025/04/15 000.0000 J.Itou         first release
 ##
 ##	shellcheck -o all "filename"
 ##
@@ -71,15 +71,13 @@ function funcTrap() {
 
 	trap funcTrap EXIT
 
-# :_tmpl_001_initialize_mk_custom_iso.sh_:
-
-# :_tmpl_002_data_section.sh_:
+# :_tmpl_001_initialize_test_function.sh_:
 
 # :_tmpl_003_function_section_library.sh_:
 
-# :_tmpl_004_function_section_common.sh_:
+# :_tmpl_004_function_section_template.sh_:
 
-# :_tmpl_005_function_section_mk_pxeboot_conf.sh_:
+# :_tmpl_005_function_section_test_function.sh_:
 
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
@@ -124,33 +122,10 @@ function funcHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ${_PROG_PATH} [command (options)]
 		
-		  create / update / download iso image files
-		    create|update|download [all|(mini|net|dvd|live {a|all|id})]
-		      empty             : waiting for input
-		      all               : all target
-		      mini|net|dvd|live : each target
-		        all             : all of each target
-		        id number       : selected id
-		
-		  create / update / download list files
-		    list [create|update|download]
-		      empty             : display of list data
-		      create            : update / download list files
-		
-		  create config files
-		    conf [create|all|(preseed|nocloudkickstart|autoyast)]
-		      create            : create common configuration file
-		      all               : all config files (without common config file
-		      preseed           : preseed.cfg
-		      nocloud           : nocloud
-		      kickstart         : kickstart.cfg
-		      autoyast          : autoyast.xml
-		
-		  create symbolic link
-		    link
-		
 		  debug print and test
 		    debug [func|text|parm]
+		      func              : function test
+		      text              : text color test
 		      parm              : display of main internal parameters
 _EOT_
 }
@@ -165,10 +140,10 @@ function funcMain() {
 	declare -a    _RETN_PARM=()			# name reference
 
 	# --- check the execution user --------------------------------------------
-	if [[ "${_USER_NAME}" != "root" ]]; then
-		printf "${_CODE_ESCP}[m%s${_CODE_ESCP}[m\n" "run as root user."
-		exit 1
-	fi
+#	if [[ "${_USER_NAME}" != "root" ]]; then
+#		printf "${_CODE_ESCP}[m%s${_CODE_ESCP}[m\n" "run as root user."
+#		exit 1
+#	fi
 
 	# --- get command line ----------------------------------------------------
 	set -f -- "${_OPTN_PARM[@]:-}"
@@ -200,31 +175,14 @@ function funcMain() {
 	do
 		_RETN_PARM=()
 		case "${1:-}" in
-			create  ) ;;
-			update  ) ;;
-			download) ;;
-			link    ) ;;
-			conf    )
-				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						create   ) shift; funcCreate_conf ;;
-						all      ) ;;
-						preseed  ) ;;
-						nocloud  ) ;;
-						kickstart) ;;
-						autoyast ) ;;
-						*        ) break;;
-					esac
-				done
-				;;
 			help    ) shift; funcHelp; break;;
 			debug   )
 				shift
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
+						func) shift; funcDebug_function;;
+						text) shift; funcDebug_color;;
 						parm) shift; funcDebug_parameter;;
 						*   ) break;;
 					esac

@@ -148,8 +148,6 @@ function funcHelp() {
 		
 		  debug print and test
 		    debug [func|text|parm]
-		      func              : function test
-		      text              : text color test
 		      parm              : display of main internal parameters
 _EOT_
 }
@@ -224,8 +222,6 @@ function funcMain() {
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						func) shift; funcDebug_function;;
-						text) shift; funcDebug_color;;
 						parm) shift; funcDebug_parameter;;
 						*   ) break;;
 					esac
