@@ -64,3 +64,18 @@
 	declare       _MENU_RESO=""			# resolution
 	declare       _MENU_DPTH=""			# colors
 	declare       _MENU_MODE=""			# screen mode (vga=nnn)
+
+	# --- directory list ------------------------------------------------------
+	declare -a    _LIST_DIRS=()
+
+	# --- symbolic link list --------------------------------------------------
+	declare -a    _LIST_LINK=()
+
+	# --- autoinstall configuration file --------------------------------------
+	declare       _AUTO_INST=""
+
+	# --- initial ram disk of mini.iso including preseed ----------------------
+	declare       _MINI_IRAM=""
+
+	# --- list data -----------------------------------------------------------
+	declare -a    _LIST_MDIA=()			# media information

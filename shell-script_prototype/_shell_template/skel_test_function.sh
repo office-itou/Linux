@@ -188,7 +188,7 @@ function funcMain() {
 					esac
 				done
 				;;
-			*       ) ;;
+			*       ) shift;;
 		esac
 		_RETN_PARM=("$@")
 		IFS="${_COMD_IFS:-}"

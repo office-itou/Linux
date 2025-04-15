@@ -203,7 +203,7 @@ function funcMain() {
 			create  ) ;;
 			update  ) ;;
 			download) ;;
-			link    ) ;;
+			link    ) shift; fncCreate_directory;;
 			conf    )
 				shift
 				while [[ -n "${1:-}" ]]
@@ -230,7 +230,7 @@ function funcMain() {
 					esac
 				done
 				;;
-			*       ) ;;
+			*       ) shift;;
 		esac
 		_RETN_PARM=("$@")
 		IFS="${_COMD_IFS:-}"

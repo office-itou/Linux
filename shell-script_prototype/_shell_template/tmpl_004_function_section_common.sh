@@ -247,6 +247,65 @@ function funcInitialization() {
 	readonly      _MENU_RESO
 	readonly      _MENU_DPTH
 	readonly      _MENU_MODE
+
+	# --- directory list ------------------------------------------------------
+	_LIST_DIRS=(                                                                                                        \
+		"${_DIRS_TOPS:?}"                                                                                               \
+		"${_DIRS_HGFS:?}"                                                                                               \
+		"${_DIRS_HTML:?}"                                                                                               \
+		"${_DIRS_SAMB:?}"/{cifs,data/{adm/{netlogon,profiles},arc,bak,pub,usr},dlna/{movies,others,photos,sounds}}      \
+		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,i386-{efi,pc},locale,x86_64-efi},ipxe,load,menu-{bios,efi64}/pxelinux.cfg}  \
+		"${_DIRS_USER:?}"                                                                                               \
+		"${_DIRS_SHAR:?}"                                                                                               \
+		"${_DIRS_CONF:?}"/{autoyast,kickstart,nocloud,preseed,windows}                                                  \
+		"${_DIRS_DATA:?}"                                                                                               \
+		"${_DIRS_KEYS:?}"                                                                                               \
+		"${_DIRS_TMPL:?}"                                                                                               \
+		"${_DIRS_SHEL:?}"                                                                                               \
+		"${_DIRS_IMGS:?}"                                                                                               \
+		"${_DIRS_ISOS:?}"                                                                                               \
+		"${_DIRS_LOAD:?}"                                                                                               \
+		"${_DIRS_RMAK:?}"                                                                                               \
+	)
+	readonly      _LIST_DIRS
+
+	# --- symbolic link list --------------------------------------------------
+	# 0: a:add, r:relative
+	# 1: target
+	# 2: symlink
+	_LIST_LINK=(                                                                                                        \
+		"a  ${_DIRS_CONF:?}                                     ${_DIRS_HTML:?}/"                                       \
+		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_HTML:?}/"                                       \
+		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_HTML:?}/"                                       \
+		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_HTML:?}/"                                       \
+		"a  ${_DIRS_RMAK:?}                                     ${_DIRS_HTML:?}/"                                       \
+		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_TFTP:?}/"                                       \
+		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_TFTP:?}/"                                       \
+		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_TFTP:?}/"                                       \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/:?}                 ${_DIRS_TFTP:?}/menu-bios/"                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/:?}                 ${_DIRS_TFTP:?}/menu-bios/"                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/:?}                 ${_DIRS_TFTP:?}/menu-bios/"                             \
+		"r  ${_DIRS_TFTP:?}/menu-bios/syslinux.cfg              ${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"         \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/:?}                 ${_DIRS_TFTP:?}/menu-efi64/"                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/:?}                 ${_DIRS_TFTP:?}/menu-efi64/"                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/:?}                 ${_DIRS_TFTP:?}/menu-efi64/"                            \
+		"r  ${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg             ${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"        \
+	)
+	readonly      _LIST_LINK
+
+	# --- autoinstall configuration file --------------------------------------
+	              _AUTO_INST="autoinst.cfg"
+	readonly      _AUTO_INST
+
+	# --- initial ram disk of mini.iso including preseed ----------------------
+	              _MINI_IRAM="initps.gz"
+	readonly      _MINI_IRAM
+
+	# --- list data -----------------------------------------------------------
+	IFS= mapfile -d $'\n' -t _LIST_MDIA < <(cat "${_PATH_MDIA:?}" 2> /dev/null || true)
+	if [[ -n "${_DBGS_FLAG:-}" ]]; then
+		printf "[%-$((${_SIZE_COLS:-80}-2)).$((${_SIZE_COLS:-80}-2))s]\n" "${_LIST_MDIA[@]}"
+	fi
 }
 
 # --- create common configuration file ----------------------------------------
@@ -348,4 +407,124 @@ function funcCreate_conf() {
 		
 		### eof #######################################################################
 _EOT_
+}
+
+function fncCreate_directory() {
+	declare -r    _DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare       _RTIV_FLAG=""			# add/relative flag
+	declare       _TGET_PATH=""			# taget path
+	declare       _LINK_PATH=""			# symlink path
+	declare       _BACK_PATH=""			# backup path
+	declare       _LINE
+	declare -i    I=0
+
+	# --- create directory ----------------------------------------------------
+	mkdir -p "${_LIST_DIRS[@:?]}"
+
+	# --- create symbolic link ------------------------------------------------
+	# 0: a:add, r:relative
+	# 1: target
+	# 2: symlink
+	for I in "${!_LIST_LINK[@]}"
+	do
+		read -r -a _LINE < <(echo "${_LIST_LINK[I]}")
+		case "${_LINE[0]}" in
+			a) ;;
+			r) ;;
+			*) continue;;
+		esac
+		_RTIV_FLAG="${_LINE[0]}"
+		_TGET_PATH="${_LINE[1]:-}"
+		_LINK_PATH="${_LINE[2]:-}"
+		_BACK_PATH="${_LINK_PATH}.back.${_DATE_TIME}"
+		# --- check target file path ------------------------------------------
+		if [[ -z "${_LINK_PATH##*/}" ]]; then
+			_LINK_PATH="${_LINK_PATH%/}/${_TGET_PATH##*/}"
+		fi
+		# --- check symbolic link ---------------------------------------------
+		if [[ -h "${_LINK_PATH}" ]]; then
+			funcPrintf "%20.20s: %s" "exist symlink" "${_LINK_PATH}"
+			continue
+		fi
+		# --- check directory -------------------------------------------------
+		if [[ -d "${_LINK_PATH}/." ]]; then
+			funcPrintf "%20.20s: %s" "exist directory" "${_LINK_PATH}"
+			funcPrintf "%20.20s: %s" "move directory" "${_LINK_PATH} -> ${_BACK_PATH}"
+			mv "${_LINK_PATH}" "${_BACK_PATH}"
+		fi
+		# --- create destination directory ------------------------------------
+		mkdir -p "${_LINK_PATH%/*}"
+		# --- create symbolic link --------------------------------------------
+		funcPrintf "%20.20s: %s" "create symlink" "${_TGET_PATH} -> ${_LINK_PATH}"
+		case "${_RTIV_FLAG}" in
+			r) ln -sr "${_TGET_PATH}" "${_LINK_PATH}";;
+			*) ln -s  "${_TGET_PATH}" "${_LINK_PATH}";;
+		esac
+	done
+
+	# --- create symbolic link of data list -----------------------------------
+	#  0: type         14
+	#  1: entry_flag   15
+	#  2: entry_name   39
+	#  3: entry_disp   39
+	#  4: version      23
+	#  5: latest       23
+	#  6: release      15
+	#  7: support      15
+	#  8: web_url     143
+	#  9: web_tstamp   23
+	# 10: web_size     11
+	# 11: web_status   15
+	# 12: iso_path     63
+	# 13: iso_tstamp   23
+	# 14: iso_size     11
+	# 15: iso_volume   15
+	# 16: rmk_path     63
+	# 17: rmk_tstamp   23
+	# 18: rmk_size     11
+	# 19: rmk_volume   15
+	# 20: ldr_initrd   63
+	# 21: ldr_kernel   63
+	# 22: cfg_path     63
+	# 23: cfg_tstamp   23
+	# 24: lnk_path     63
+	for I in "${!_LIST_MDIA[@]}"
+	do
+		read -r -a _LINE < <(echo "${_LIST_MDIA[I]}")
+		case "${_LINE[1]}" in
+			o) ;;
+			*) continue;;
+		esac
+		case "${_LINE[12]}" in
+			-) continue;;
+			*) ;;
+		esac
+		case "${_LINE[24]}" in
+			-) continue;;
+			*) ;;
+		esac
+		_TGET_PATH="${_LINE[24]}"
+		_LINK_PATH="${_LINE[12]}"
+		_BACK_PATH="${_LINK_PATH}.back.${_DATE_TIME}"
+		# --- check target file path ------------------------------------------
+		if [[ -z "${_LINK_PATH##*/}" ]]; then
+			_LINK_PATH="${_LINK_PATH%/}/${_TGET_PATH##*/}"
+		fi
+		# --- check symbolic link ---------------------------------------------
+		if [[ -h "${_LINK_PATH}" ]]; then
+			funcPrintf "%20.20s: %s" "exist symlink" "${_LINK_PATH}"
+			continue
+		fi
+		# --- check directory -------------------------------------------------
+		if [[ -d "${_LINK_PATH}/." ]]; then
+			funcPrintf "%20.20s: %s" "exist directory" "${_LINK_PATH}"
+			funcPrintf "%20.20s: %s" "move directory" "${_LINK_PATH} -> ${_BACK_PATH}"
+			mv "${_LINK_PATH}" "${_BACK_PATH}"
+		fi
+		# --- create destination directory ------------------------------------
+		mkdir -p "${_LINK_PATH%/*}"
+		# --- create symbolic link --------------------------------------------
+		funcPrintf "%20.20s: %s" "create symlink" "${_TGET_PATH} -> ${_LINK_PATH}"
+		ln -sr "${_TGET_PATH}" "${_LINK_PATH}"
+	done
 }
