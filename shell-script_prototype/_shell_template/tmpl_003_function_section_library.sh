@@ -81,6 +81,23 @@
 	declare -r    _TEXT_BR_WHITE="${_CODE_ESCP}[97m"			# text white
 	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			# 
 
+# --- is numeric --------------------------------------------------------------
+#function funcIsNumeric() {
+#	[[ ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
+#}
+
+# --- substr ------------------------------------------------------------------
+#function funcSubstr() {
+#	echo "${1:${2:-0}:${3:-${#1}}}"
+#}
+
+# --- string output -----------------------------------------------------------
+# shellcheck disable=SC2317
+funcString() {
+#	printf "%${1:-"${_SIZE_COLS}"}s" "" | tr ' ' "${2:- }"
+	echo "" | IFS= awk '{s=sprintf("%'"$1"'s"," "); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+}
+
 # --- print with screen control -----------------------------------------------
 # shellcheck disable=SC2317
 function funcPrintf() {

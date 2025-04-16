@@ -8,11 +8,6 @@ function funcSubstr() {
 	echo "${1:${2:-0}:${3:-${#1}}}"
 }
 
-# --- string output -----------------------------------------------------------
-function funcString() {
-	echo "" | IFS= awk '{s=sprintf("%'"$1"'s"," "); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
-}
-
 # --- service status ----------------------------------------------------------
 function funcServiceStatus() {
 	declare -i    _RET_CD=0

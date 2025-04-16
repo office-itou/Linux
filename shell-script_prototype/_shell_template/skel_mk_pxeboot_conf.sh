@@ -200,7 +200,19 @@ function funcMain() {
 			create  ) ;;
 			update  ) ;;
 			download) ;;
-			link    ) shift; fncCreate_directory;;
+			link    ) shift; fncCreate_directory; funcPut_media_data;;
+			list    )
+				shift
+				while [[ -n "${1:-}" ]]
+				do
+					case "${1:-}" in
+						create   ) shift; funcPut_media_data;;
+						update   ) ;;
+						download ) ;;
+						*        ) break;;
+					esac
+				done
+				;;
 			conf    )
 				shift
 				while [[ -n "${1:-}" ]]

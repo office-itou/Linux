@@ -254,7 +254,7 @@ function funcInitialization() {
 		"${_DIRS_HGFS:?}"                                                                                               \
 		"${_DIRS_HTML:?}"                                                                                               \
 		"${_DIRS_SAMB:?}"/{cifs,data/{adm/{netlogon,profiles},arc,bak,pub,usr},dlna/{movies,others,photos,sounds}}      \
-		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,i386-{efi,pc},locale,x86_64-efi},ipxe,load,menu-{bios,efi64}/pxelinux.cfg}  \
+		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,i386-{efi,pc},locale,x86_64-efi},ipxe,menu-{bios,efi64}/pxelinux.cfg}       \
 		"${_DIRS_USER:?}"                                                                                               \
 		"${_DIRS_SHAR:?}"                                                                                               \
 		"${_DIRS_CONF:?}"/{autoyast,kickstart,nocloud,preseed,windows}                                                  \
@@ -282,13 +282,13 @@ function funcInitialization() {
 		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_TFTP:?}/"                                       \
 		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_TFTP:?}/"                                       \
 		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_TFTP:?}/"                                       \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/:?}                 ${_DIRS_TFTP:?}/menu-bios/"                             \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/:?}                 ${_DIRS_TFTP:?}/menu-bios/"                             \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/:?}                 ${_DIRS_TFTP:?}/menu-bios/"                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                             \
 		"r  ${_DIRS_TFTP:?}/menu-bios/syslinux.cfg              ${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"         \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/:?}                 ${_DIRS_TFTP:?}/menu-efi64/"                            \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/:?}                 ${_DIRS_TFTP:?}/menu-efi64/"                            \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/:?}                 ${_DIRS_TFTP:?}/menu-efi64/"                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                            \
 		"r  ${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg             ${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"        \
 	)
 	readonly      _LIST_LINK
@@ -301,18 +301,15 @@ function funcInitialization() {
 	              _MINI_IRAM="initps.gz"
 	readonly      _MINI_IRAM
 
-	# --- list data -----------------------------------------------------------
-	IFS= mapfile -d $'\n' -t _LIST_MDIA < <(cat "${_PATH_MDIA:?}" 2> /dev/null || true)
-	if [[ -n "${_DBGS_FLAG:-}" ]]; then
-		printf "[%-$((${_SIZE_COLS:-80}-2)).$((${_SIZE_COLS:-80}-2))s]\n" "${_LIST_MDIA[@]}"
-	fi
+	# --- get media data ------------------------------------------------------
+	funcGet_media_data
 }
 
 # --- create common configuration file ----------------------------------------
 function funcCreate_conf() {
 	declare -r    _TMPL="${_PATH_CONF:?}.template"
-	declare       _RNAM=""
-	declare       _PATH=""
+	declare       _RNAM=""				# rename path
+	declare       _PATH=""				# file name
 
 	# --- check file exists ---------------------------------------------------
 	if [[ -f "${_TMPL:?}" ]]; then
@@ -409,17 +406,135 @@ function funcCreate_conf() {
 _EOT_
 }
 
+# --- get media data ----------------------------------------------------------
+function funcGet_media_data() {
+	declare       _PATH=""				# file name
+	declare       _LINE=""				# work variable
+
+	# --- list data -----------------------------------------------------------
+	_LIST_MDIA=()
+	for _PATH in \
+		"${PWD:+"${PWD}/${_PATH_MDIA##*/}"}" \
+		"${_PATH_MDIA}"
+	do
+		if [[ -f "${_PATH}" ]]; then
+			while IFS= read -r -d $'\n' _LINE
+			do
+				_LINE="${_LINE//:_DIRS_TOPS_:/"${_DIRS_TOPS}"}"
+				_LINE="${_LINE//:_DIRS_HGFS_:/"${_DIRS_HGFS}"}"
+				_LINE="${_LINE//:_DIRS_HTML_:/"${_DIRS_HTML}"}"
+				_LINE="${_LINE//:_DIRS_SAMB_:/"${_DIRS_SAMB}"}"
+				_LINE="${_LINE//:_DIRS_TFTP_:/"${_DIRS_TFTP}"}"
+				_LINE="${_LINE//:_DIRS_USER_:/"${_DIRS_USER}"}"
+				_LINE="${_LINE//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
+				_LINE="${_LINE//:_DIRS_CONF_:/"${_DIRS_CONF}"}"
+				_LINE="${_LINE//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
+				_LINE="${_LINE//:_DIRS_KEYS_:/"${_DIRS_KEYS}"}"
+				_LINE="${_LINE//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
+				_LINE="${_LINE//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
+				_LINE="${_LINE//:_DIRS_IMGS_:/"${_DIRS_IMGS}"}"
+				_LINE="${_LINE//:_DIRS_ISOS_:/"${_DIRS_ISOS}"}"
+				_LINE="${_LINE//:_DIRS_LOAD_:/"${_DIRS_LOAD}"}"
+				_LINE="${_LINE//:_DIRS_RMAK_:/"${_DIRS_RMAK}"}"
+				_LIST_MDIA+=("${_LINE}")
+			done < "${_PATH:?}"
+			if [[ -n "${_DBGS_FLAG:-}" ]]; then
+				printf "[%-$((${_SIZE_COLS:-80}-2)).$((${_SIZE_COLS:-80}-2))s]\n" "${_LIST_MDIA[@]}"
+			fi
+			break
+		fi
+	done
+}
+
+# --- put media data ----------------------------------------------------------
+function funcPut_media_data() {
+	declare       _RNAM=""				# rename path
+	declare       _LINE=""				# work variable
+	declare -a    _LIST=()				# work variable
+	declare -i    I=0
+	declare -i    J=0
+
+	# --- check file exists ---------------------------------------------------
+	if [[ -f "${_PATH_MDIA:?}" ]]; then
+		_RNAM="${_PATH_MDIA}.$(TZ=UTC find "${_PATH_MDIA}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
+		mv "${_PATH_MDIA}" "${_RNAM}"
+	fi
+
+	# --- delete old files ----------------------------------------------------
+	for _PATH in $(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r | tail -n +3)
+	do
+		rm -f "${_PATH:?}"
+	done
+
+	# --- list data -----------------------------------------------------------
+	for I in "${!_LIST_MDIA[@]}"
+	do
+		_LINE="${_LIST_MDIA[I]}"
+		_LINE="${_LINE//"${_DIRS_RMAK}"/:_DIRS_RMAK_:}"
+		_LINE="${_LINE//"${_DIRS_LOAD}"/:_DIRS_LOAD_:}"
+		_LINE="${_LINE//"${_DIRS_ISOS}"/:_DIRS_ISOS_:}"
+		_LINE="${_LINE//"${_DIRS_IMGS}"/:_DIRS_IMGS_:}"
+		_LINE="${_LINE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"
+		_LINE="${_LINE//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"
+		_LINE="${_LINE//"${_DIRS_KEYS}"/:_DIRS_KEYS_:}"
+		_LINE="${_LINE//"${_DIRS_DATA}"/:_DIRS_DATA_:}"
+		_LINE="${_LINE//"${_DIRS_CONF}"/:_DIRS_CONF_:}"
+		_LINE="${_LINE//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"
+		_LINE="${_LINE//"${_DIRS_USER}"/:_DIRS_USER_:}"
+		_LINE="${_LINE//"${_DIRS_TFTP}"/:_DIRS_TFTP_:}"
+		_LINE="${_LINE//"${_DIRS_SAMB}"/:_DIRS_SAMB_:}"
+		_LINE="${_LINE//"${_DIRS_HTML}"/:_DIRS_HTML_:}"
+		_LINE="${_LINE//"${_DIRS_HGFS}"/:_DIRS_HGFS_:}"
+		_LINE="${_LINE//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"
+		read -r -a _LIST < <(echo "${_LINE}")
+		for J in "${!_LIST[@]}"
+		do
+			_LIST[J]="${_LIST[J]:--}"						# null
+			_LIST[J]="${_LIST[J]// /%20}"					# blank
+		done
+		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-27s %-15s %-15s %-71s %-27s %-15s %-43s %-71s %-27s %-15s %-43s %-71s %-71s %-71s %-27s %-71s\n" \
+			"${_LIST[0]}" \
+			"${_LIST[1]}" \
+			"${_LIST[2]}" \
+			"${_LIST[3]}" \
+			"${_LIST[4]}" \
+			"${_LIST[5]}" \
+			"${_LIST[6]}" \
+			"${_LIST[7]}" \
+			"${_LIST[8]}" \
+			"${_LIST[9]}" \
+			"${_LIST[10]}" \
+			"${_LIST[11]}" \
+			"${_LIST[12]}" \
+			"${_LIST[13]}" \
+			"${_LIST[14]}" \
+			"${_LIST[15]}" \
+			"${_LIST[16]}" \
+			"${_LIST[17]}" \
+			"${_LIST[18]}" \
+			"${_LIST[19]}" \
+			"${_LIST[20]}" \
+			"${_LIST[21]}" \
+			"${_LIST[22]}" \
+			"${_LIST[23]}" \
+			"${_LIST[24]}" \
+			"${_LIST[25]}" \
+		>> "${_PATH_MDIA:?}"
+	done
+}
+
+# --- create_directory --------------------------------------------------------
 function fncCreate_directory() {
 	declare -r    _DATE_TIME="$(date +"%Y%m%d%H%M%S")"
 	declare       _RTIV_FLAG=""			# add/relative flag
 	declare       _TGET_PATH=""			# taget path
 	declare       _LINK_PATH=""			# symlink path
 	declare       _BACK_PATH=""			# backup path
-	declare       _LINE
+	declare       _LINE=""				# work variable
 	declare -i    I=0
 
 	# --- create directory ----------------------------------------------------
-	mkdir -p "${_LIST_DIRS[@:?]}"
+	mkdir -p "${_LIST_DIRS[@]:?}"
 
 	# --- create symbolic link ------------------------------------------------
 	# 0: a:add, r:relative
@@ -440,6 +555,10 @@ function fncCreate_directory() {
 		# --- check target file path ------------------------------------------
 		if [[ -z "${_LINK_PATH##*/}" ]]; then
 			_LINK_PATH="${_LINK_PATH%/}/${_TGET_PATH##*/}"
+		else
+			if [[ ! -f "${_TGET_PATH}" ]]; then
+				: > "${_TGET_PATH}"
+			fi
 		fi
 		# --- check symbolic link ---------------------------------------------
 		if [[ -h "${_LINK_PATH}" ]]; then
@@ -463,31 +582,33 @@ function fncCreate_directory() {
 	done
 
 	# --- create symbolic link of data list -----------------------------------
-	#  0: type         14
-	#  1: entry_flag   15
-	#  2: entry_name   39
-	#  3: entry_disp   39
-	#  4: version      23
-	#  5: latest       23
-	#  6: release      15
-	#  7: support      15
-	#  8: web_url     143
-	#  9: web_tstamp   23
-	# 10: web_size     11
-	# 11: web_status   15
-	# 12: iso_path     63
-	# 13: iso_tstamp   23
-	# 14: iso_size     11
-	# 15: iso_volume   15
-	# 16: rmk_path     63
-	# 17: rmk_tstamp   23
-	# 18: rmk_size     11
-	# 19: rmk_volume   15
-	# 20: ldr_initrd   63
-	# 21: ldr_kernel   63
-	# 22: cfg_path     63
-	# 23: cfg_tstamp   23
-	# 24: lnk_path     63
+	#  0: type          ( 14)   media type
+	#  1: entry_flag    ( 15)   [m] menu, [o] output, [else] hidden
+	#  2: entry_name    ( 39)   entry name (unique)
+	#  3: entry_disp    ( 39)   entry name for display
+	#  4: version       ( 23)   version id
+	#  5: latest        ( 23)   latest version
+	#  6: release       ( 15)   release date
+	#  7: support       ( 15)   support end date
+	#  8: web_regexp    (143)   web file  regexp
+	#  9: web_path      (143)   "         path
+	# 10: web_tstamp    ( 27)   "         time stamp
+	# 11: web_size      ( 15)   "         file size
+	# 12: web_status    ( 15)   "         download status
+	# 13: iso_path      ( 71)   iso image file path
+	# 14: iso_tstamp    ( 27)   "         time stamp
+	# 15: iso_size      ( 15)   "         file size
+	# 16: iso_volume    ( 43)   "         volume id
+	# 17: rmk_path      ( 71)   remaster  file path
+	# 18: rmk_tstamp    ( 27)   "         time stamp
+	# 19: rmk_size      ( 15)   "         file size
+	# 20: rmk_volume    ( 43)   "         volume id
+	# 21: ldr_initrd    ( 71)   initrd    file path
+	# 22: ldr_kernel    ( 71)   kernel    file path
+	# 23: cfg_path      ( 71)   config    file path
+	# 24: cfg_tstamp    ( 27)   "         time stamp
+	# 25: lnk_path      ( 71)   symlink   directory or file path
+
 	for I in "${!_LIST_MDIA[@]}"
 	do
 		read -r -a _LINE < <(echo "${_LIST_MDIA[I]}")
@@ -495,16 +616,16 @@ function fncCreate_directory() {
 			o) ;;
 			*) continue;;
 		esac
-		case "${_LINE[12]}" in
+		case "${_LINE[13]}" in
 			-) continue;;
 			*) ;;
 		esac
-		case "${_LINE[24]}" in
+		case "${_LINE[25]}" in
 			-) continue;;
 			*) ;;
 		esac
-		_TGET_PATH="${_LINE[24]}"
-		_LINK_PATH="${_LINE[12]}"
+		_TGET_PATH="${_LINE[25]}"
+		_LINK_PATH="${_LINE[13]}"
 		_BACK_PATH="${_LINK_PATH}.back.${_DATE_TIME}"
 		# --- check target file path ------------------------------------------
 		if [[ -z "${_LINK_PATH##*/}" ]]; then
@@ -525,6 +646,6 @@ function fncCreate_directory() {
 		mkdir -p "${_LINK_PATH%/*}"
 		# --- create symbolic link --------------------------------------------
 		funcPrintf "%20.20s: %s" "create symlink" "${_TGET_PATH} -> ${_LINK_PATH}"
-		ln -sr "${_TGET_PATH}" "${_LINK_PATH}"
+		ln -s "${_TGET_PATH}" "${_LINK_PATH}"
 	done
 }
