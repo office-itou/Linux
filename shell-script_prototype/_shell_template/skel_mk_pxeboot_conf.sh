@@ -122,7 +122,7 @@ funcDebug_parameter() {
 # --- help --------------------------------------------------------------------
 function funcHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-		usage: [sudo] ${_PROG_PATH} [command (options)]
+		usage: [sudo] ./${_PROG_PATH##*/} [command (options)]
 		
 		  pxeboot menu files:
 		    create
@@ -137,7 +137,7 @@ function funcHelp() {
 		  config files:
 		    conf [create|all|(preseed|nocloudkickstart|autoyast)|version]
 		      create            : create common configuration file
-		      all               : all config files (without common config file
+		      all               : all config files (without common config file)
 		      preseed           : preseed.cfg
 		      nocloud           : nocloud
 		      kickstart         : kickstart.cfg
