@@ -124,21 +124,21 @@ function funcHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ${_PROG_PATH} [command (options)]
 		
-		  create / update / download iso image files
-		    create|update|download [all|(mini|net|dvd|live {a|all|id})]
+		  iso image files:
+		    create|update|download [all|(mini|net|dvd|live {a|all|id})|version]
 		      empty             : waiting for input
 		      all               : all target
 		      mini|net|dvd|live : each target
 		        all             : all of each target
 		        id number       : selected id
 		
-		  create / update / download list files
+		  list files:
 		    list [create|update|download]
 		      empty             : display of list data
 		      create            : update / download list files
 		
-		  create config files
-		    conf [create|all|(preseed|nocloudkickstart|autoyast)]
+		  config files:
+		    conf [create|all|(preseed|nocloudkickstart|autoyast)|version]
 		      create            : create common configuration file
 		      all               : all config files (without common config file
 		      preseed           : preseed.cfg
@@ -146,8 +146,9 @@ function funcHelp() {
 		      kickstart         : kickstart.cfg
 		      autoyast          : autoyast.xml
 		
-		  create symbolic link
+		  symbolic link:
 		    link
+		      create            : create symbolic link
 		
 		  debug print and test
 		    debug [func|text|parm]
@@ -203,7 +204,18 @@ function funcMain() {
 			create  ) ;;
 			update  ) ;;
 			download) ;;
-			link    ) shift; fncCreate_directory; funcPut_media_data;;
+			link    )
+				shift
+				while [[ -n "${1:-}" ]]
+				do
+					case "${1:-}" in
+						create   ) shift; fncCreate_directory; funcPut_media_data;;
+						update   ) ;;
+						download ) ;;
+						*        ) break;;
+					esac
+				done
+				;;
 			list    )
 				shift
 				while [[ -n "${1:-}" ]]
