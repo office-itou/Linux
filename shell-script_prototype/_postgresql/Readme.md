@@ -26,7 +26,7 @@ psql (PostgreSQL) 17.4 (Debian 17.4-1.pgdg120+2)
 ### **debian / ubuntu aptの場合**  
   
 ``` bash:
-sudo apt-get -y install wget ca-certificates
+sudo apt-get -y install wget ca-certificates lsb-release
 sudo install -d /usr/share/postgresql-common/pgdg
 sudo wget --output-document=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
 sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt '"$(lsb_release -cs 2> /dev/null)"'-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
