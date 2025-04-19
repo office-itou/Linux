@@ -50,6 +50,7 @@ sudo bash -c '
   --format=directory \
   --keyring=/srv/user/share/conf/_keyring/ \
   --include=" \
+    lsb-release \
     systemd \
     fakechroot \
     iproute2 \
@@ -114,6 +115,7 @@ sudo bash -c '
   --format=directory \
   --keyring=/srv/user/share/conf/_keyring/ \
   --include=" \
+    lsb-release \
     systemd \
     fakechroot \
     iproute2 \
