@@ -13,7 +13,7 @@ CREATE TABLE distribution (
 , note       TEXT
 , CONSTRAINT distribution_PKC PRIMARY KEY (version)
 );
-INSERT INTO public.distribution(version,name,version_id,code_name,life,release,support,long_term,rhel,kerne,note) values 
+INSERT INTO public.distribution(version,name,version_id,code_name,life,release,support,long_term,rhel,kerne,note) VALUES 
     ('debian-1.1','Debian','1.1','Buzz','EOL','1996-06-17',NULL,NULL,NULL,NULL,NULL)
   , ('debian-1.2','Debian','1.2','Rex','EOL','1996-12-12',NULL,NULL,NULL,NULL,NULL)
   , ('debian-1.3','Debian','1.3','Bo','EOL','1997-06-05',NULL,NULL,NULL,NULL,NULL)
