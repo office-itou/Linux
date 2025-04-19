@@ -124,14 +124,14 @@
 		mkdir -p "${DIRS_KEYS:?}/_archive"
 		pushd "${DIRS_KEYS}/_archive" > /dev/null
 			for _WEBS_ADDR in \
-				https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2024.09.22_all.deb \
+				https://deb.debian.org/debian/pool/main/d/debian-keyring/debian-keyring_2025.03.23_all.deb \
 				https://archive.ubuntu.com/ubuntu/pool/main/u/ubuntu-keyring/ubuntu-keyring_2023.11.28.1_all.deb
 			do
 				if ! LANG=C wget "${WGET_OPTN[@]}" --continue "${_WEBS_ADDR}"; then
 					printf "\033[m${PROG_NAME}: \033[41m%s\033[m\n" "failed to wget: ${_WEBS_ADDR}"
 				fi
 			done
-			dpkg -x ./debian-keyring_2024.09.22_all.deb   "${DIRS_TEMP}/"
+			dpkg -x ./debian-keyring_2025.03.23_all.deb   "${DIRS_TEMP}/"
 			dpkg -x ./ubuntu-keyring_2023.11.28.1_all.deb "${DIRS_TEMP}/"
 			cp -a "${DIRS_TEMP}/usr/share/keyrings/debian-keyring.gpg"         "../"
 			cp -a "${DIRS_TEMP}/usr/share/keyrings/ubuntu-archive-keyring.gpg" "../"
