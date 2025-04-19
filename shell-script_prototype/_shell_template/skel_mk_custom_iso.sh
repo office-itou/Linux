@@ -80,7 +80,6 @@ function funcTrap() {
 # :_tmpl_004_function_section_common.sh_:
 
 # :_tmpl_005_function_section_mk_pxeboot_conf.sh_:
-
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
 :
