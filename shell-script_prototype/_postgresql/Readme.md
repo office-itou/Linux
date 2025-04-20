@@ -80,7 +80,7 @@ IPアドレスの範囲は各自の環境に合わせ変更の事
   
 ``` bash:
 sudo -u postgres psql -q   --command="CREATE ROLE master PASSWORD 'master' LOGIN CREATEDB;"
-sudo -u postgres psql -q   --command="CREATE ROLE dbuser PASSWORD 'dbuser';"
+sudo -u postgres psql -q   --command="CREATE ROLE dbuser PASSWORD 'dbuser' LOGIN;"
 sudo -u postgres psql -qtA --command="SELECT * FROM pg_user WHERE (usename = 'master') OR (usename = 'dbuser');"
 sudo -u postgres psql -qtA --command="SELECT * FROM pg_roles WHERE (rolname = 'master') OR (rolname = 'dbuser');"
 ```
