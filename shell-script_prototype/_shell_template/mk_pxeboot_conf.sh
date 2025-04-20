@@ -962,13 +962,26 @@ function funcPut_media_data() {
 
 # --- create_directory --------------------------------------------------------
 function fncCreate_directory() {
+	declare -n    _NAME_REFR="${1:-}"	# name reference
+	shift
 	declare -r    _DATE_TIME="$(date +"%Y%m%d%H%M%S")"
+	declare       _FORC_PRAM=""			# force parameter
 	declare       _RTIV_FLAG=""			# add/relative flag
 	declare       _TGET_PATH=""			# taget path
 	declare       _LINK_PATH=""			# symlink path
 	declare       _BACK_PATH=""			# backup path
 	declare       _LINE=""				# work variable
 	declare -i    I=0
+
+	# --- option parameter ----------------------------------------------------
+	_OPTN_PRAM=()
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1:-}" in
+			-f | --force) shift; _NAME_REFR="${*:-}"; _FORC_PRAM="true";;
+			*           )        _NAME_REFR="${*:-}"; break;;
+		esac
+	done
 
 	# --- create directory ----------------------------------------------------
 	mkdir -p "${_LIST_DIRS[@]:?}"
@@ -988,14 +1001,19 @@ function fncCreate_directory() {
 		_RTIV_FLAG="${_LINE[0]}"
 		_TGET_PATH="${_LINE[1]:-}"
 		_LINK_PATH="${_LINE[2]:-}"
-		_BACK_PATH="${_LINK_PATH}.back.${_DATE_TIME}"
 		# --- check target file path ------------------------------------------
 		if [[ -z "${_LINK_PATH##*/}" ]]; then
 			_LINK_PATH="${_LINK_PATH%/}/${_TGET_PATH##*/}"
-		else
-			if [[ ! -f "${_TGET_PATH}" ]]; then
-				: > "${_TGET_PATH}"
-			fi
+#		else
+#			if [[ ! -e "${_TGET_PATH}" ]]; then
+#				touch "${_TGET_PATH}"
+#			fi
+		fi
+		# --- force parameter -------------------------------------------------
+		_BACK_PATH="${_LINK_PATH}.back.${_DATE_TIME}"
+		if [[ -n "${_FORC_PRAM:-}" ]] && [[ -e "${_LINK_PATH}" ]] && [[ ! -e "${_BACK_PATH##*/}" ]]; then
+			funcPrintf "%20.20s: %s" "move symlink" "${_LINK_PATH} -> ${_BACK_PATH##*/}"
+			mv "${_LINK_PATH}" "${_BACK_PATH}"
 		fi
 		# --- check symbolic link ---------------------------------------------
 		if [[ -h "${_LINK_PATH}" ]]; then
@@ -1033,12 +1051,17 @@ function fncCreate_directory() {
 			-) continue;;
 			*) ;;
 		esac
-		_TGET_PATH="${_LINE[25]}"
+		_TGET_PATH="${_LINE[25]}/${_LINE[13]##*/}"
 		_LINK_PATH="${_LINE[13]}"
-		_BACK_PATH="${_LINK_PATH}.back.${_DATE_TIME}"
 		# --- check target file path ------------------------------------------
-		if [[ -z "${_LINK_PATH##*/}" ]]; then
-			_LINK_PATH="${_LINK_PATH%/}/${_TGET_PATH##*/}"
+#		if [[ ! -e "${_TGET_PATH}" ]]; then
+#			touch "${_TGET_PATH}"
+#		fi
+		# --- force parameter -------------------------------------------------
+		_BACK_PATH="${_LINK_PATH}.back.${_DATE_TIME}"
+		if [[ -n "${_FORC_PRAM:-}" ]] && [[ -e "${_LINK_PATH}" ]] && [[ ! -e "${_BACK_PATH##*/}" ]]; then
+			funcPrintf "%20.20s: %s" "move symlink" "${_LINK_PATH} -> ${_BACK_PATH##*/}"
+			mv "${_LINK_PATH}" "${_BACK_PATH}"
 		fi
 		# --- check symbolic link ---------------------------------------------
 		if [[ -h "${_LINK_PATH}" ]]; then
@@ -1208,7 +1231,7 @@ function funcMain() {
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						create   ) shift; fncCreate_directory; funcPut_media_data;;
+						create   ) shift; fncCreate_directory _RETN_PARM "${@:-}"; funcPut_media_data;;
 						update   ) ;;
 						download ) ;;
 						*        ) break;;

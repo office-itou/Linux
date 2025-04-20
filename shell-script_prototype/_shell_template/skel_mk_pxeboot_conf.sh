@@ -206,7 +206,7 @@ function funcMain() {
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						create   ) shift; fncCreate_directory; funcPut_media_data;;
+						create   ) shift; fncCreate_directory _RETN_PARM "${@:-}"; funcPut_media_data;;
 						update   ) ;;
 						download ) ;;
 						*        ) break;;
