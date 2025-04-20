@@ -80,6 +80,7 @@
 
 	# --- mount and daemon reload ---------------------------------------------
 	FLAG_CHRT="$(find /tmp/ -type d \( -name "${PROG_NAME}.*" -a -not -name "${DIRS_TEMP##*/}" \) -exec find '{}' -type f -name "${DIRS_CHRT##*/}" \; 2> /dev/null || true)"
+	touch "${DIRS_TEMP:?}/${DIRS_CHRT##*/}"
 	if [[ -z "${FLAG_CHRT}" ]]; then
 		rm -f "${DIRS_CHRT:?}"/etc/{passwd,shadow,group,resolv.conf}
 		cp -aH /etc/{passwd,shadow,group,resolv.conf} "${DIRS_CHRT:?}"/etc/
@@ -95,9 +96,7 @@
 		systemctl daemon-reload
 	fi
 	# --- chroot --------------------------------------------------------------
-	touch "${DIRS_TEMP:?}/${DIRS_CHRT##*/}"
 	chroot --userspec="${USER}" "$@" "${DIRS_CHRT}"
-	rm -rf "${DIRS_TEMP:?}/${DIRS_CHRT##*/}"
 	# --- umount --------------------------------------------------------------
 	FLAG_CHRT="$(find /tmp/ -type d \( -name "${PROG_NAME}.*" -a -not -name "${DIRS_TEMP##*/}" \) -exec find '{}' -type f -name "${DIRS_CHRT##*/}" \; 2> /dev/null || true)"
 	if [[ -z "${FLAG_CHRT}" ]]; then
@@ -111,6 +110,7 @@
 		umount             "${DIRS_CHRT}${DIRS_TOPS}"
 		umount             "${DIRS_CHRT}"
 	fi
+	rm -rf "${DIRS_TEMP:?}/${DIRS_CHRT##*/}"
 
 	# --- exit ----------------------------------------------------------------
 	if set -o | grep "^xtrace\s*on$" \
