@@ -35,19 +35,23 @@
 
 	# --- main ----------------------------------------------------------------
 	if command -v pvs > /dev/null 2>&1; then
-		for _VG_NAME in $(pvs --noheading | awk '$1~/'"${1:?}"'/&&($2~/lvm/||$3~/lvm/) {print $2;}' | sort -u)
+		for _LINE in $(pvs --noheading --separator '|' | cut -d '|' -f 1-2 | grep "${1:?}" | sort -u)
 		do
+			_VG_NAME="${_LINE#*\|}"
 			printf "%s\n" "${0##*/}: remove vg=[${_VG_NAME}]"
-			lvremove -q -y "${_VG_NAME}"
+			lvremove -q -y -ff "${_VG_NAME}"
 		done
-		for _PV_NAME in $(pvs --noheading | awk '$1~/'"${1:?}"'/&&($2~/lvm/||$3~/lvm/) {print $1;}' | sort -u)
+		for _LINE in $(pvs --noheading --separator '|' | cut -d '|' -f 1-2 | grep "${1:?}" | sort -u)
 		do
+			_PV_NAME="${_LINE%\|*}"
 			printf "%s\n" "${0##*/}: remove pv=[${_PV_NAME}]"
-			pvremove -q -y "${_PV_NAME}"
+			pvremove -q -y -ff "${_PV_NAME}"
 		done
 	fi
 	dd if=/dev/zero of="/dev/${1:?}" bs=1M count=10
-	umount /media || umount -l /media || true
+	if mount | grep -q '/media'; then
+		umount /media || umount -l /media || true
+	fi
 	# --- complete ------------------------------------------------------------
 #	_time_end=$(date +%s)
 #	_time_elapsed=$((_time_end-_time_start))
