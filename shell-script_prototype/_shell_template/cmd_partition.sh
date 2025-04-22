@@ -2,11 +2,15 @@
 
 # *** initialization **********************************************************
 
-	case "${1:-}" in
-		-dbg) set -x; shift;;
-		-dbgout) _DBGOUT="true"; shift;;
-		*) ;;
-	esac
+	_COMD_LINE="$(cat /proc/cmdline)"
+	for _LINE in ${_COMD_LINE:-} "${@:-}"
+	do
+		case "${_LINE}" in
+			debug              ) _FLAG_DBGS="true"; set -x;;
+			debugout|dbg|dbgout) _FLAG_DBGS="true";;
+			*) ;;
+		esac
+	done
 
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
@@ -30,17 +34,20 @@
 #	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- main ----------------------------------------------------------------
-	_LV_PATH="${1:?}"					# Logical Volume path
-	_DV_NAME="${2:?}"					# Device name
-	lvremove --select "${_LV_PATH:?}" -ff -y
-	vgremove --select "${_LV_PATH:?}" -ff -y
-	pvremove /dev/"${_DV_NAME:?}"* -ff -y
-	dd if=/dev/zero of=/dev/"${_DV_NAME:?}" bs=1M count=10
-	umount /media || umount -l /media || true
-	if [ ! -e /run/systemd/resolve/stub-resolv.conf ]; then
-		mkdir -p /run/systemd/resolve
-		cp /etc/resolv.conf /run/systemd/resolve/stub-resolv.conf
+	if command -v pvs > /dev/null 2>&1; then
+		for _VG_NAME in $(pvs --noheading | awk '$1~/'"${1:?}"'/&&($2~/lvm/||$3~/lvm/) {print $2;}' | sort -u)
+		do
+			printf "%s\n" "${0##*/}: remove vg=[${_VG_NAME}]"
+			lvremove -q -y "${_VG_NAME}"
+		done
+		for _PV_NAME in $(pvs --noheading | awk '$1~/'"${1:?}"'/&&($2~/lvm/||$3~/lvm/) {print $1;}' | sort -u)
+		do
+			printf "%s\n" "${0##*/}: remove pv=[${_PV_NAME}]"
+			pvremove -q -y "${_PV_NAME}"
+		done
 	fi
+	dd if=/dev/zero of="/dev/${1:?}" bs=1M count=10
+	umount /media || umount -l /media || true
 	# --- complete ------------------------------------------------------------
 #	_time_end=$(date +%s)
 #	_time_elapsed=$((_time_end-_time_start))

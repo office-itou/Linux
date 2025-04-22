@@ -2,11 +2,15 @@
 
 # *** initialization **********************************************************
 
-	case "${1:-}" in
-		-dbg) set -x; shift;;
-		-dbgout) _DBGOUT="true"; shift;;
-		*) ;;
-	esac
+	_COMD_LINE="$(cat /proc/cmdline)"
+	for _LINE in ${_COMD_LINE:-} "${@:-}"
+	do
+		case "${_LINE}" in
+			debug              ) _FLAG_DBGS="true"; set -x;;
+			debugout|dbg|dbgout) _FLAG_DBGS="true";;
+			*) ;;
+		esac
+	done
 
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion

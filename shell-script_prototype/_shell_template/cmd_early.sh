@@ -30,6 +30,8 @@
 #	printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- main ----------------------------------------------------------------
+	mkdir -p /run/systemd/resolve
+	cp /etc/resolv.conf /run/systemd/resolve/stub-resolv.conf
 	# --- complete ------------------------------------------------------------
 #	_time_end=$(date +%s)
 #	_time_elapsed=$((_time_end-_time_start))
