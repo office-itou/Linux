@@ -1,0 +1,647 @@
+mmdebstrap:
+# aptopts:
+#   - "Apt::Install-Recommends true"
+# architectures:
+#   - amd64
+  components:
+    - "main multiverse restricted universe"
+# dpkgopts:
+# hostname:
+# install-recommends:
+# keyrings:
+#   - /home/master/share/keys
+# mirrors:
+#   - http://archive.ubuntu.com/ubuntu
+  mode: sudo
+  packages:
+# --- live base ---------------------------------------------------------------
+    - live-boot                                             # Live System Boot Components
+    - live-config                                           # Live System Configuration Components
+    - live-tools                                            # Live System Extra Components
+#   - live-boot-doc                                         # Live System Boot Components (documentation)
+#   - live-task-non-free-firmware-pc                        # selection of oft-used non-free-firmware shipped on live systems
+#   - live-task-non-free-firmware-server                    # provides firmware for server network and storage devices
+# --- linux image -------------------------------------------------------------
+    - linux-headers-generic                                 # Generic Linux kernel headers
+    - linux-image-generic                                   # Generic Linux kernel image
+# --- firmware ----------------------------------------------------------------
+    - linux-firmware                                        # Firmware for Linux kernel drivers
+    - firmware-sof-signed                                   # Intel SOF firmware - signed
+    - alsa-firmware-loaders                                 # ALSA software loaders for specific hardware
+    - bluez-firmware                                        # Firmware for Bluetooth devices
+#   - firmware-realtek-rtl8723cs-bt                         # Bluetooth firmware for Realtek RTL8723CS
+# --- microcode ---------------------------------------------------------------
+    - amd64-microcode                                       # Processor microcode firmware for AMD CPUs
+    - intel-microcode                                       # Processor microcode firmware for Intel CPUs
+# --- driver ------------------------------------------------------------------
+    - i965-va-driver                                        # VAAPI driver for Intel G45 & HD Graphics family
+    - intel-media-va-driver                                 # VAAPI driver for the Intel GEN8+ Graphics family
+    - libindidriver1                                        # Instrument-Neutral Device Interface library -- driver library
+    - mesa-va-drivers                                       # Mesa VA-API video acceleration drivers
+    - mesa-vdpau-drivers                                    # Mesa VDPAU video acceleration drivers
+    - mesa-vulkan-drivers                                   # Mesa Vulkan graphics drivers
+    - va-driver-all                                         # Video Acceleration (VA) API -- driver metapackage
+    - vdpau-driver-all                                      # Video Decode and Presentation API for Unix (driver metapackage)
+# --- dosfstools --------------------------------------------------------------
+    - dosfstools                                            # utilities for making and checking MS-DOS FAT filesystems
+# --- exfat-fuse --------------------------------------------------------------
+    - exfat-fuse                                            # read and write exFAT driver for FUSE
+    - exfatprogs                                            # exFAT file system utilities
+# --- ntfs-3g -----------------------------------------------------------------
+    - ntfs-3g                                               # read/write NTFS driver for FUSE
+# --- lvm2 --------------------------------------------------------------------
+    - lvm2                                                  # Linux Logical Volume Manager
+#   - thin-provisioning-tools                               # Tools for handling thinly provisioned device-mapper meta-data
+# --- mdadm -------------------------------------------------------------------
+    - mdadm                                                 # tool for managing Linux MD devices (software RAID)
+#   - finalrd                                               # final runtime directory for shutdown
+# --- open-vm-tools -----------------------------------------------------------
+    - open-vm-tools                                         # Open VMware Tools for virtual machines hosted on VMware (CLI)
+    - open-vm-tools-desktop                                 # Open VMware Tools for virtual machines hosted on VMware (GUI)
+#   - fuse3                                                 # Filesystem in Userspace (3.x version)
+#   - xauth                                                 # X authentication utility
+#   - xdg-utils                                             # desktop integration utilities from freedesktop.org
+#   - cloud-init                                            # initialization and customization tool for cloud instances
+# --- base system -------------------------------------------------------------
+    - alsa-topology-conf                                    # ALSA topology configuration files
+    - alsa-ucm-conf                                         # ALSA Use Case Manager configuration files
+    - alsa-utils                                            # Utilities for configuring and using ALSA
+#   - apparmor                                              # user-space parser utility for AppArmor
+#   - apport                                                # automatically generate crash reports for debugging
+#   - appstream                                             # Software component metadata management
+    - apt-listchanges                                       # package change history notification tool
+    - apt-utils                                             # package management related utility programs
+    - arch-test                                             # detect architectures supported by your machine/kernel
+    - attr                                                  # utilities for manipulating filesystem extended attributes
+    - bdebstrap                                             # YAML config based multi-mirror Debian chroot creation tool
+    - bluetooth                                             # Bluetooth support (metapackage)
+    - bsdextrautils                                         # extra utilities from 4.4BSD-Lite
+    - busybox-static                                        # Standalone rescue shell with tons of builtin utilities
+    - ca-certificates                                       # Common CA certificates
+#   - cloud-init                                            # initialization and customization tool for cloud instances
+    - colord                                                # system service to manage device colour profiles -- system daemon
+    - command-not-found                                     # Suggest installation of packages in interactive bash sessions
+    - console-setup                                         # console font and keymap setup program
+    - console-setup-linux                                   # Linux specific part of console-setup
+    - cron                                                  # process scheduling daemon
+    - cron-daemon-common                                    # process scheduling daemon's configuration files
+    - cryptsetup                                            # disk encryption support - startup scripts
+    - cryptsetup-bin                                        # disk encryption support - command line tools
+    - cryptsetup-initramfs                                  # disk encryption support - initramfs integration
+    - cups                                                  # Common UNIX Printing System(tm) - PPD/driver support, web interface
+    - cups-backend-bjnp                                     # printer backend for Canon BJNP protocol
+    - cups-common                                           # Common UNIX Printing System(tm) - common files
+    - dbus                                                  # simple interprocess messaging system (system message bus)
+    - dbus-user-session                                     # simple interprocess messaging system (systemd --user integration)
+    - dbus-x11                                              # simple interprocess messaging system (X11 deps)
+    - dconf-cli                                             # simple configuration storage system - utilities
+#   - ddcutil                                               # Control monitor settings - Standalone command line application
+    - debconf-i18n                                          # full internationalization support for debconf
+    - debconf-utils                                         # debconf utilities
+    - debian-faq                                            # Debian Frequently Asked Questions
+    - default-jre                                           # Standard Java or Java compatible Runtime
+    - dirmngr                                               # GNU privacy guard - network certificate management service
+    - discover                                              # hardware identification system
+    - discover-data                                         # Data lists for Discover hardware detection system
+#   - distro-info                                           # provides information about the distributions' releases
+    - distro-info-data                                      # information about the distributions' releases (data files)
+    - dmidecode                                             # SMBIOS/DMI table decoder
+    - dns-root-data                                         # DNS root data including root zone and DNSSEC key
+    - doc-debian                                            # Debian Project documentation and other documents
+    - e2fsprogs-l10n                                        # ext2/ext3/ext4 file system utilities - translations
+#   - ed                                                    # classic UNIX line editor
+    - edid-decode                                           # decode the binary EDID information from monitors
+    - efibootmgr                                            # Interact with the EFI Boot Manager
+    - eject                                                 # ejects CDs and operates CD-Changers under Linux
+    - ethtool                                               # display or change Ethernet device settings
+    - fakechroot                                            # gives a fake chroot environment - utilities
+    - fakeroot                                              # tool for simulating superuser privileges
+    - fbterm                                                # fast framebuffer based terminal emulator for Linux
+    - fdisk                                                 # collection of partitioning utilities
+    - file                                                  # Recognize the type of data in a file using "magic" numbers
+    - fontconfig                                            # generic font configuration library - support binaries
+    - fontconfig-config                                     # generic font configuration library - configuration
+    - fonts-dejavu                                          # metapackage to pull in fonts-dejavu-core, -mono and -extra
+    - fonts-dejavu-core                                     # Vera font family derivate with additional characters
+    - fonts-dejavu-extra                                    # Vera font family derivate with additional characters (extra variants)
+    - fonts-freefont-ttf                                    # Freefont Serif, Sans and Mono Truetype fonts
+    - fonts-ipafont                                         # Japanese OpenType font set, all IPA Fonts
+    - fonts-ipafont-gothic                                  # Japanese OpenType font set, IPA Gothic and IPA P Gothic Fonts
+    - fonts-ipafont-mincho                                  # Japanese OpenType font set, IPA Mincho and IPA P Mincho Fonts
+    - fonts-noto                                            # metapackage to pull in all Noto fonts
+    - fonts-noto-cjk                                        # "No Tofu" font families with large Unicode coverage (CJK regular and bold)
+    - fonts-noto-cjk-extra                                  # "No Tofu" font families with large Unicode coverage (CJK all weight)
+    - fonts-noto-color-emoji                                # color emoji font from Google
+    - fonts-noto-core                                       # "No Tofu" font families with large Unicode coverage (core)
+    - fonts-noto-extra                                      # "No Tofu" font families with large Unicode coverage (extra)
+    - fonts-noto-mono                                       # "No Tofu" monospaced font family with large Unicode coverage
+    - fonts-noto-ui-core                                    # "No Tofu" font families with large Unicode coverage (UI core)
+    - fonts-noto-ui-extra                                   # "No Tofu" font families with large Unicode coverage (UI extra)
+    - fonts-noto-unhinted                                   # "No Tofu" font families with large Unicode coverage (unhinted)
+    - fonts-symbola                                         # symbolic font providing emoji characters from Unicode 9.0
+    - fonts-unifont                                         # OpenType version of GNU Unifont
+    - fonts-vlgothic                                        # Japanese TrueType font from Vine Linux
+#   - friendly-recovery                                     # Make recovery boot mode more user-friendly
+#   - git                                                   # fast, scalable, distributed revision control system
+    - gnupg                                                 # GNU privacy guard - a free PGP replacement
+    - gnupg-l10n                                            # GNU privacy guard - localization files
+    - gnupg-utils                                           # GNU privacy guard - utility programs
+    - gpg                                                   # GNU Privacy Guard -- minimalist public key operations
+    - gpg-agent                                             # GNU privacy guard - cryptographic agent
+    - gpg-wks-client                                        # GNU privacy guard - Web Key Service client
+    - gpg-wks-server                                        # GNU privacy guard - Web Key Service server
+    - gpgconf                                               # GNU privacy guard - core configuration utilities
+    - gpgsm                                                 # GNU privacy guard - S/MIME version
+    - groff-base                                            # GNU troff text-formatting system (base system components)
+    - grub-common                                           # GRand Unified Bootloader (common files)
+    - grub-efi-amd64                                        # GRand Unified Bootloader, version 2 (EFI-AMD64 version)
+    - grub-efi-amd64-bin                                    # GRand Unified Bootloader, version 2 (EFI-AMD64 modules)
+    - grub-efi-amd64-signed                                 # GRand Unified Bootloader, version 2 (EFI-AMD64 version, signed)
+    - grub-efi-ia32-bin                                     # GRand Unified Bootloader, version 2 (EFI-IA32 modules)
+    - grub-pc-bin                                           # GRand Unified Bootloader, version 2 (PC/BIOS modules)
+    - grub2-common                                          # GRand Unified Bootloader (common files for version 2)
+#   - hdfs-cli                                              # CLI client for HDFS, written in go
+#   - httpfs2                                               # FUSE filesystem for mounting files from http servers
+#   - hwdata                                                # hardware identification / configuration data
+#   - ibverbs-providers                                     # User space provider drivers for libibverbs
+    - ifupdown                                              # high level tools to configure network interfaces
+    - inetutils-telnet                                      # telnet client
+    - init                                                  # metapackage ensuring an init system is installed
+#   - install-info                                          # Manage installed documentation in info format
+#   - installation-report                                   #
+    - ipset                                                 # administration tool for kernel IP sets
+    - iputils-ping                                          # Tools to test the reachability of network hosts
+    - isc-dhcp-client                                       # DHCP client for automatically obtaining an IP address
+    - isc-dhcp-common                                       # common manpages relevant to all of the isc-dhcp packages
+    - iso-codes                                             # ISO language, territory, currency, script codes and their translations
+    - isolinux                                              # collection of bootloaders (ISO 9660 bootloader)
+    - isomd5sum                                             # ISO9660 checksum utilities
+    - jackd                                                 # JACK Audio Connection Kit (default server package)
+    - java-wrappers                                         # wrappers for java executables
+    - javascript-common                                     # Base support for JavaScript library packages
+    - keyutils                                              # Linux Key Management Utilities
+    - krb5-locales                                          # internationalization support for MIT Kerberos
+    - laptop-detect                                         # system chassis type checker
+    - less                                                  # pager program similar to more
+    - libalgorithm-diff-perl                                # module to find differences between files
+    - libalgorithm-diff-xs-perl                             # module to find differences between files (XS accelerated)
+    - libalgorithm-merge-perl                               # Perl module for three-way merge of textual data
+#   - libasound2-plugins                                    # ALSA library additional plugins
+#   - libboost-iostreams1.74.0                              # Boost.Iostreams Library
+#   - libboost-thread1.74.0                                 # portable C++ multi-threading
+    - libc-devtools                                         # GNU C Library: Development tools
+#   - libc-l10n                                             #
+#   - libcamera0.3                                          #
+    - libcephfs2                                            # Ceph distributed file system client library
+    - libdbus-1-3                                           # simple interprocess messaging system (library)
+    - libdiscover2                                          # hardware identification library
+    - libdistro-info-perl                                   # information about distributions' releases (Perl module)
+    - libfakechroot                                         # gives a fake chroot environment - runtime
+    - libfakeroot                                           # tool for simulating superuser privileges - shared libraries
+    - libfile-fcntllock-perl                                # Perl module for file locking with fcntl(2)
+#   - libfmt9                                               # fast type-safe C++ formatting library -- library
+#   - libgfapi0                                             # GlusterFS gfapi shared library
+#   - libgfrpc0                                             # GlusterFS libgfrpc shared library
+#   - libgfxdr0                                             # GlusterFS libgfxdr shared library
+    - libglib2.0-data                                       # Common files for GLib library
+#   - libglusterfs0                                         # GlusterFS shared library
+    - libgpg-error-l10n                                     # library of error values and messages in GnuPG (localization files)
+    - libgpgme11t64                                         # GPGME - GnuPG Made Easy (library)
+#   - libibverbs1                                           # Library for direct userspace use of RDMA (InfiniBand/iWARP)
+    - libipset13                                            # library for IP sets
+#   - libksba8                                              # X.509 and CMS support library
+    - libldap-common                                        # OpenLDAP common files for libraries
+    - liblockfile-bin                                       # support binaries for and cli utilities based on liblockfile
+#   - liblzo2-2                                             # data compression library
+#   - libnewt0.52                                           # Not Erik's Windowing Toolkit - text mode windowing with slang
+#   - libnl-3-200                                           # library for dealing with netlink sockets
+#   - libnl-genl-3-200                                      # library for dealing with netlink sockets - generic netlink
+#   - libnl-route-3-200                                     # library for dealing with netlink sockets - route interface
+#   - libnpth0                                              #
+    - libnss-systemd                                        # nss module providing dynamic user and group name resolution
+#   - libpipeline1                                          # Unix process pipeline manipulation library
+#   - libqrencode4                                          # QR Code encoding library
+    - librados2                                             # RADOS distributed object store client library
+#   - librdmacm1                                            #
+#   - libsasl2-modules                                      # Cyrus SASL - pluggable authentication modules
+#   - libslang2                                             # S-Lang programming library - runtime version
+    - libsox-fmt-all                                        # All SoX format libraries
+    - libspa-0.2-bluetooth                                  # libraries for the PipeWire multimedia server - bluetooth plugins
+    - libspa-0.2-jack                                       # libraries for the PipeWire multimedia server - JACK client
+#   - libsquashfs1                                          # New set of tools for working with SquashFS images - shared library
+#   - libsubid4                                             # subordinate id handling library -- shared library
+    - libtext-charwidth-perl                                # get display widths of characters on the terminal
+    - libtext-wrapi18n-perl                                 # internationalized substitute of Text::Wrap
+#   - libtss2-esys-3.0.2-0                                  #
+#   - libtss2-mu0                                           #
+#   - libuchardet0                                          # universal charset detection library - shared library
+#   - liburing2                                             # Linux kernel io_uring access library - shared library
+#   - libx86-1                                              # x86 real-mode library
+#   - libxmuu1                                              # X11 miscellaneous micro-utility library
+#   - libyaml-0-2                                           # Fast YAML 1.1 parser and emitter library
+    - lm-sensors                                            # utilities to read temperature/voltage/fan sensors
+    - locales                                               # GNU C Library: National Language (locale) data [support]
+    - lsb-base                                              # transitional package for Linux Standard Base init script functionality
+    - lsof                                                  # utility to list open files
+    - lv                                                    # Powerful Multilingual File Viewer
+    - lz4                                                   # Fast LZ compression algorithm library - tool
+    - lzop                                                  # fast compression program
+    - man-db                                                # tools for reading manual pages
+    - manpages                                              # Manual pages about using a GNU/Linux system
+    - manpages-dev                                          # Manual pages about using GNU/Linux for development
+    - manpages-ja                                           # Japanese version of the manual pages (for users)
+    - manpages-ja-dev                                       # Japanese version of the manual pages (for developers)
+#   - mime-support                                          #
+    - mmdebstrap                                            # create a Debian chroot
+    - mokutil                                               # tools for manipulating machine owner keys
+    - nano                                                  # small, friendly text editor inspired by Pico
+    - ncurses-term                                          # additional terminal type definitions
+    - needrestart                                           # check which daemons need to be restarted after library upgrades
+    - net-tools                                             # NET-3 networking toolkit
+    - netcat-traditional                                    # TCP/IP swiss army knife
+    - netplan.io                                            # Declarative network configuration for various backends
+    - nftables                                              # Program to control packet filtering rules by Netfilter project
+    - nkf                                                   # Network Kanji code conversion Filter
+    - ofono                                                 # Mobile telephony stack (daemon)
+    - open-iscsi                                            # iSCSI initiator tools
+    - os-prober                                             # utility to detect other OSes on a set of drives
+    - parted                                                # disk partition manipulator
+    - pinentry-curses                                       # curses-based PIN or pass-phrase entry dialog for GnuPG
+    - pinentry-gnome3                                       # GNOME 3 PIN or pass-phrase entry dialog for GnuPG
+    - pipewire                                              # audio and video processing engine multimedia server
+    - pipewire-alsa                                         # PipeWire ALSA plugin, for ALSA applications to output via PipeWire
+    - pipewire-audio                                        # recommended set of PipeWire packages for a standard audio desktop use
+    - pipewire-audio-client-libraries                       # transitional package for pipewire-alsa and pipewire-jack
+    - pipewire-doc                                          # libraries for the PipeWire multimedia server - documentation
+#   - pipewire-jack                                         # PipeWire JACK plugin, for JACK applications to output via PipeWire
+    - pipewire-libcamera                                    # transitional package for libspa-0.2-libcamera
+#   - pipewire-media-session                                #
+#   - pipewire-media-session-alsa                           #
+#   - pipewire-media-session-jack                           #
+#   - pipewire-media-session-pulseaudio                     #
+    - pipewire-pulse                                        # PipeWire PulseAudio daemon
+#   - pipewire-tests                                        # PipeWire multimedia server - tests and examples
+#   - pipewire-v4l2                                         # PipeWire V4L2 plugin
+    - plymouth                                              # boot animation, logger and I/O multiplexer
+    - plymouth-label                                        # boot animation, logger and I/O multiplexer - label control
+    - plymouth-theme-hamara                                 # boot animation, logger and I/O multiplexer - Hamara theme
+#   - plymouth-theme-mobian                                 # boot animation, logger and I/O multiplexer - Mobian theme
+    - plymouth-theme-spinner                                # boot animation, logger and I/O multiplexer - spinner theme
+    - plymouth-theme-ubuntu-text                            # boot animation, logger and I/O multiplexer - ubuntu text theme
+    - plymouth-themes                                       # boot animation, logger and I/O multiplexer - themes
+    - plymouth-x11                                          # boot animation, logger and I/O multiplexer - X11 renderer
+    - polkitd-pkla                                          # Legacy "local authority" (.pkla) backend for polkitd
+    - powermgmt-base                                        # common utils for power management
+#   - printer-driver-all                                    # printer drivers metapackage
+#   - printer-driver-all-enforce                            # printer drivers metapackage - enforcing version
+#   - printer-driver-brlaser                                # printer driver for (some) Brother laser printers
+#   - printer-driver-c2esp                                  # printer driver for Kodak ESP AiO color inkjet Series
+#   - printer-driver-c2050                                  # printer driver for Lexmark 2050 Color Jetprinter
+    - printer-driver-cjet                                   # printer driver for Canon LBP laser printers
+    - printer-driver-cups-pdf                               # printer driver for PDF writing via CUPS
+#   - printer-driver-dymo                                   # printer driver for DYMO label printers
+    - printer-driver-escpr                                  # printer driver for Epson Inkjet that use ESC/P-R
+#   - printer-driver-foo2zjs                                # printer driver for ZjStream-based printers
+#   - printer-driver-foo2zjs-common                         # printer driver for ZjStream-based printers - common files
+#   - printer-driver-fujixerox                              # printer driver for Fuji Xerox printers
+#   - printer-driver-gutenprint                             # printer drivers for CUPS
+#   - printer-driver-hpcups                                 # HP Linux Printing and Imaging - CUPS Raster driver (hpcups)
+#   - printer-driver-hpijs                                  # HP Linux Printing and Imaging - printer driver (hpijs)
+#   - printer-driver-indexbraille                           # CUPS printing to Index Braille printers
+#   - printer-driver-m2300w                                 # printer driver for Minolta magicolor 2300W/2400W color laser printers
+#   - printer-driver-min12xxw                               # printer driver for KonicaMinolta PagePro 1[234]xxW
+#   - printer-driver-oki                                    # printer driver for OKI Data printers
+#   - printer-driver-pnm2ppa                                # printer driver for HP-GDI printers
+#   - printer-driver-postscript-hp                          # HP Printers PostScript Descriptions
+#   - printer-driver-ptouch                                 # printer driver Brother P-touch label printers
+#   - printer-driver-pxljr                                  # printer driver for HP Color LaserJet 35xx/36xx
+#   - printer-driver-sag-gdi                                # printer driver for Ricoh Aficio SP 1000s/SP 1100s
+#   - printer-driver-splix                                  # Driver for Samsung and Xerox SPL2 and SPLc laser printers
+    - psf-unifont                                           # PSF (console) version of GNU Unifont with APL support
+    - psmisc                                                # utilities that use the proc file system
+    - publicsuffix                                          # accurate, machine-readable list of domain name suffixes
+#   - pulseaudio                                            # PulseAudio sound server
+#   - pulseaudio-module-bluetooth                           # Bluetooth module for PulseAudio sound server
+    - pxelinux                                              # collection of bootloaders (PXE network bootloader)
+    - python-apt-common                                     # Python interface to libapt-pkg (locales)
+    - python3-anyio                                         # Asynchronous compatibility layer (Python 3)
+    - python3-apt                                           # Python 3 interface to libapt-pkg
+    - python3-brotli                                        # lossless compression algorithm and format (Python 3 version)
+    - python3-cap-ng                                        # Python3 bindings for libcap-ng
+    - python3-certifi                                       # root certificates for validating SSL certs and verifying TLS hosts (python3)
+    - python3-chardet                                       # Universal Character Encoding Detector (Python3)
+    - python3-charset-normalizer                            # charset, encoding and language detection (Python 3)
+    - python3-click                                         # Wrapper around optparse for command line utilities - Python 3.x
+    - python3-colorama                                      # Cross-platform colored terminal text in Python - Python 3.x
+    - python3-dbus                                          # simple interprocess messaging system (Python 3 interface)
+    - python3-debconf                                       # interact with debconf from Python 3
+    - python3-debian                                        # Python 3 modules to work with Debian-related data formats
+    - python3-debianbts                                     # Python interface to Debian's Bug Tracking System
+    - python3-gpg                                           # Python interface to the GPGME GnuPG encryption library (Python 3)
+    - python3-h2                                            # Pure-Python3 HTTP/2 State-Machine based protocol implementation in Python
+    - python3-h11                                           # Pure-Python, bring-your-own-I/O implementation of HTTP/1.1 (Python 3)
+    - python3-hpack                                         # Pure-Python3 HTTP/2 header encoding (HPACK)
+    - python3-httpcore                                      # minimal low-level HTTP client
+    - python3-httplib2                                      # comprehensive HTTP client library written for Python3
+    - python3-httpx                                         # next generation HTTP client
+    - python3-hyperframe                                    # Pure-Python3 HTTP/2 framing code
+    - python3-idna                                          # Python IDNA2008 (RFC 5891) handling (Python 3)
+    - python3-json-pointer                                  # resolve JSON pointers - Python 3.x
+    - python3-markdown                                      # text-to-HTML conversion library/tool (Python 3 version)
+    - python3-markdown-it                                   # Python port of markdown-it and some its associated plugins
+    - python3-mdurl                                         # Python port of the JavaScript mdurl package
+    - python3-openssl                                       # Python 3 wrapper around the OpenSSL library
+    - python3-pkg-resources                                 # Package Discovery and Resource Access using pkg_resources
+    - python3-pycurl                                        # Python bindings to libcurl (Python 3)
+    - python3-pygments                                      # syntax highlighting package written in Python 3
+    - python3-pyparsing                                     # alternative to creating and executing simple grammars - Python 3.x
+    - python3-pysimplesoap                                  # simple and lightweight SOAP Library (Python 3)
+    - python3-reportbug                                     # Python modules for interacting with bug tracking systems
+    - python3-requests                                      # elegant and simple HTTP library for Python3, built for human beings
+    - python3-requests-toolbelt                             # Utility belt for advanced users of python3-requests
+    - python3-rfc3986                                       # validating URI references per RFC 3986 - Python 3.x
+    - python3-rfc3987                                       # Parsing and validation of URIs (RFC 3986) and IRIs (RFC 3987)
+    - python3-rich                                          # render rich text, tables, progress bars, syntax highlighting, markdown and more
+    - python3-ruamel.yaml                                   # roundtrip YAML parser/emitter (Python 3 module)
+    - python3-ruamel.yaml.clib                              # C version of reader, parser and emitter for ruamel.yaml
+    - python3-setuptools                                    # Python3 Distutils Enhancements
+    - python3-six                                           # Python 2 and 3 compatibility library
+    - python3-sniffio                                       # detect which async Python library is in use (Python3 version)
+    - python3-uritemplate                                   # implementation of RFC6570 - Python 3.x
+    - python3-urllib3                                       # HTTP library with thread-safe connection pooling for Python3
+    - python3-webcolors                                     # python3 library of color names and value formats
+    - python3-yaml                                          # YAML parser and emitter for Python3
+    - reportbug                                             # reports bugs in the Debian distribution
+#   - resolvconf                                            # name server information handler
+#   - rfkill                                                # tool for enabling and disabling wireless devices
+    - rsync                                                 # fast, versatile, remote (and local) file-copying tool
+    - samba-ad-provision                                    # Samba files needed for AD domain provision
+    - samba-dsdb-modules                                    # Samba Directory Services Database
+    - samba-vfs-modules                                     # Samba Virtual FileSystem plugins
+    - shellcheck                                            # lint tool for shell scripts
+#   - shim-helpers-amd64-signed                             #
+#   - shim-signed                                           # Secure Boot chain-loading bootloader (Microsoft-signed binary)
+#   - shim-signed-common                                    #
+#   - shim-unsigned                                         #
+    - snapd                                                 # Daemon and tooling that enable snap packages
+    - squashfs-tools-ng                                     # New set of tools for working with SquashFS images
+    - sudo                                                  # Provide limited super user privileges to specific users
+    - syslinux-common                                       # collection of bootloaders (common)
+    - syslinux-efi                                          # collection of bootloaders (UEFI bootloader)
+    - systemd-resolved                                      # systemd DNS resolver
+    - systemd-timesyncd                                     # minimalistic service to synchronize local time with NTP servers
+    - task-japanese                                         # Japanese environment
+    - tasksel                                               # tool for selecting tasks for installation on Debian systems
+    - tasksel-data                                          # official tasks used for installation of Debian systems
+    - telnet                                                # transitional dummy package for inetutils-telnet default switch
+#   - tpm2-tools                                            # TPM 2.0 utilities
+    - tree                                                  # displays an indented directory tree, in color
+#   - ufw                                                   # program for managing a Netfilter firewall
+    - uidmap                                                # programs to help use subuids
+    - unifont                                               # font with a glyph for each visible Unicode Plane 0 character
+    - usb-modeswitch                                        # mode switching tool for controlling "flip flop" USB devices
+    - usbutils                                              # Linux USB utilities
+#   - usr-is-merged                                         #
+    - vim-tiny                                              # Vi IMproved - enhanced vi editor - compact version
+    - wamerican                                             # American English dictionary words for /usr/share/dict
+    - wget                                                  # retrieves files from the web
+    - whiptail                                              # Displays user-friendly dialog boxes from shell scripts
+    - wireplumber                                           # modular session / policy manager for PipeWire
+    - wpasupplicant                                         # client support for WPA and WPA2 (IEEE 802.11i)
+    - xauth                                                 # X authentication utility
+#   - xcvt                                                  # VESA CVT standard timing modelines generator
+    - xdg-user-dirs                                         # tool to manage well known user directories
+    - xdg-utils                                             # desktop integration utilities from freedesktop.org
+    - xfonts-75dpi                                          # 75 dpi fonts for X
+    - xfonts-100dpi                                         # 100 dpi fonts for X
+    - xfonts-scalable                                       # scalable fonts for X
+    - xfonts-unifont                                        # PCF (bitmap) version of GNU Unifont
+    - xmlstarlet                                            # command line XML toolkit
+    - xorriso                                               # command line ISO-9660 and Rock Ridge manipulation tool
+    - xxd                                                   # tool to make (or reverse) a hex dump
+    - zerofree                                              # zero free blocks from ext2, ext3 and ext4 file-systems
+    - zstd                                                  # fast lossless compression algorithm -- CLI tool
+# --- server base [ installed ] -----------------------------------------------
+    - apt-transport-https                                   # transitional package for https support
+    - firewalld                                             # dynamically managed firewall with support for network zones
+    - traceroute                                            # Traces the route taken by packets over an IPv4/IPv6 network
+#   - connman                                               # Intel Connection Manager daemon
+    - network-manager                                       # network management framework (daemon and userspace tools)
+    - netplan.io                                            # Declarative network configuration for various backends
+    - bash-completion                                       # programmable completion for the bash shell
+    - build-essential                                       # Informational list of build-essential packages
+    - curl                                                  # command line tool for transferring data with URL syntax
+    - vim                                                   # Vi IMproved - enhanced vi editor
+    - bc                                                    # GNU bc arbitrary precision calculator language
+    - clamav                                                # anti-virus utility for Unix - command-line interface
+    - openssh-server                                        # secure shell (SSH) server, for secure access from remote machines
+    - dnsmasq                                               # Small caching DNS proxy and DHCP/TFTP server - system daemon
+    - tftpd-hpa                                             # HPA's tftp server
+    - bind9-dnsutils                                        # Clients provided with BIND 9
+    - apache2                                               # Apache HTTP Server
+    - samba                                                 # SMB/CIFS file, print, and login server for Unix
+    - smbclient                                             # command-line SMB/CIFS clients for Unix
+    - cifs-utils                                            # Common Internet File System utilities
+    - libnss-winbind                                        # Samba nameservice integration plugins
+# --- desktop base [ installed ] ----------------------------------------------
+    - ubuntu-desktop                                        # Ubuntu desktop system
+    - ubuntu-gnome-desktop                                  # The Ubuntu desktop system (transitional package)
+    - language-pack-ja                                      # translation updates for language Japanese
+    - language-pack-gnome-ja                                # GNOME translation updates for language Japanese
+    - fonts-noto                                            # metapackage to pull in all Noto fonts
+    - im-config                                             # Input method configuration framework
+    - zenity                                                # Display graphical dialog boxes from shell scripts
+    - fcitx5-mozc                                           # Mozc engine for fcitx5 - Client of the Mozc input method
+    - mozc-utils-gui                                        # GUI utilities of the Mozc input method
+    - gnome-shell-extensions                                # Extensions to extend functionality of GNOME Shell
+    - libreoffice-l10n-ja                                   # office productivity suite -- Japanese language package
+    - libreoffice-help-ja                                   # office productivity suite -- Japanese help
+    - firefox-locale-ja                                     # Transitional package - firefox-locale-ja -> firefox snap
+    - thunderbird                                           # Transitional package - thunderbird -> thunderbird snap
+    - thunderbird-locale-ja                                 # Transitional package - thunderbird-locale-ja -> thunderbird snap
+# --- desktop base [ depends ] ------------------------------------------------
+    - at-spi2-core                                          #
+    - blueman                                               # Graphical bluetooth manager
+    - bluemon                                               # Activate or deactivate programs based on Bluetooth link quality
+    - chrome-gnome-shell                                    # GNOME Shell integration for browsers - transitional package
+    - chromium-browser                                      # Transitional package - chromium-browser -> chromium snap
+    - chromium-browser-l10n                                 # Transitional package - chromium-browser-l10n -> chromium snap
+    - chromium-chromedriver                                 # Transitional package - chromium-chromedriver -> chromium snap
+#   - connman-gtk                                           # fully-featured GUI for ConnMan with systray support
+    - dconf-editor                                          # simple configuration storage system - graphical editor
+    - fcitx5-config-qt                                      # configuration tool for Fcitx5 (Qt version)
+    - fcitx5-frontend-all                                   # Fcitx Input Method Framework v5 (IM Module Metapackage)
+#   - fcitx5-frontend-fbterm                                # FbTerm frontend for fcitx5
+#   - fcitx5-frontend-gtk2                                  # GTK2 IM Module for fcitx5
+#   - fcitx5-frontend-gtk3                                  # GTK3 IM Module for fcitx5
+#   - fcitx5-frontend-gtk4                                  # GTK4 IM Module for fcitx5
+#   - fcitx5-frontend-qt5                                   # Qt5 IM module for fcitx5
+#   - fcitx5-frontend-qt6                                   # Qt6 IM module for fcitx5
+#   - fcitx5-frontend-tmux                                  # Tmux fcitx5 client
+    - ffmpeg                                                # Tools for transcoding, streaming and playing of multimedia files
+    - firefox                                               # Transitional package - firefox -> firefox snap
+    - gnome-accessibility-themes                            # High Contrast GTK 2 theme and icons
+#   - gnome-backgrounds                                     # Set of backgrounds packaged with the GNOME desktop
+#   - gnome-bluetooth-3-common                              # GNOME Bluetooth 3 common files
+#   - gnome-bluetooth-sendto                                # GNOME Bluetooth Send To app
+    - gnome-brave-icon-theme                                # blue variation of the GNOME-Colors icon theme
+    - gnome-browser-connector                               # GNOME Shell extensions integration for web browsers
+    - gnome-colors                                          # set of GNOME icon themes
+#   - gnome-colors-common                                   # common icons for all GNOME-Colors icon themes
+    - gnome-control-center                                  # utilities to configure the GNOME desktop
+    - gnome-control-center-data                             # configuration applets for GNOME - data files
+    - gnome-desktop3-data                                   # Common files for GNOME desktop apps
+    - gnome-disk-utility                                    # manage and configure disk drives and media
+    - gnome-font-viewer                                     # font viewer for GNOME
+    - gnome-dust-icon-theme                                 # chocolate variation of the GNOME-Colors icon theme
+    - gnome-human-icon-theme                                # orange variation of the GNOME-Colors icon theme
+    - gnome-icon-theme                                      # This package contains the default icon theme used by the GNOME
+    - gnome-illustrious-icon-theme                          # pink variation of the GNOME-Colors icon theme
+    - gnome-keyring                                         # GNOME keyring services (daemon and tools)
+#   - gnome-keyring-pkcs11                                  # GNOME keyring module for the PKCS#11 module loading library
+    - gnome-menus                                           # GNOME implementation of the freedesktop menu specification
+    - gnome-noble-icon-theme                                # purple variation of the GNOME-Colors icon theme
+#   - gnome-online-accounts                                 # service to manage online accounts for the GNOME desktop
+    - gnome-screenshot                                      # screenshot application for GNOME
+#   - gnome-session                                         # GNOME Session Manager - GNOME 3 session
+#   - gnome-session-bin                                     # GNOME Session Manager - Minimal runtime
+#   - gnome-session-canberra                                # GNOME session log in and log out sound events
+#   - gnome-session-common                                  # GNOME Session Manager - common files
+#   - gnome-settings-daemon                                 # daemon handling the GNOME session settings
+#   - gnome-settings-daemon-common                          # daemon handling the GNOME session settings - common files
+#   - gnome-shell                                           # graphical shell for the GNOME desktop
+#   - gnome-shell-common                                    # common files for the GNOME graphical shell
+#   - gnome-shell-extension-appindicator                    # AppIndicator, KStatusNotifierItem and tray support for GNOME Shell
+#   - gnome-shell-extension-desktop-icons-ng                # desktop icon support for GNOME Shell
+#   - gnome-shell-extension-prefs                           # tool to enable / disable GNOME Shell extensions
+#   - gnome-shell-extension-ubuntu-dock                     #
+#   - gnome-shell-extension-ubuntu-tiling-assistant         #
+#   - gnome-shell-extensions                                # Extensions to extend functionality of GNOME Shell
+#   - gnome-system-tools                                    # Cross-platform configuration utilities
+#   - gnome-terminal                                        # GNOME terminal emulator application
+#   - gnome-terminal-data                                   # Data files for the GNOME terminal emulator
+    - gnome-themes-extra                                    # Adwaita GTK 2 theme — engine
+    - gnome-themes-extra-data                               # Adwaita GTK 2 theme and Adwaita-dark GTK 3 theme — common files
+#   - gnome-user-docs                                       # GNOME Help
+#   - gnome-user-share                                      # User level public file sharing via WebDAV
+    - gnome-wine-icon-theme                                 # red variation of the GNOME-Colors icon theme
+    - gnome-wise-icon-theme                                 # green variation of the GNOME-Colors icon theme
+    - gnome-terminal                                        # GNOME terminal emulator application
+    - gnome-terminal-data                                   # Data files for the GNOME terminal emulator
+    - gstreamer1.0-alsa                                     # GStreamer plugin for ALSA
+    - gstreamer1.0-gl                                       # GStreamer plugins for GL
+    - gstreamer1.0-gtk3                                     # GStreamer plugin for GTK+3
+    - gstreamer1.0-libav                                    # ffmpeg plugin for GStreamer
+#   - gstreamer1.0-libcamera                                # complex camera support library (GStreamer plugin)
+    - gstreamer1.0-packagekit                               # GStreamer plugin to install codecs using PackageKit
+    - gstreamer1.0-pipewire                                 # GStreamer 1.0 plugin for the PipeWire multimedia server
+    - gstreamer1.0-plugins-base                             # GStreamer plugins from the "base" set
+    - gstreamer1.0-plugins-base-apps                        # GStreamer helper programs from the "base" set
+    - gstreamer1.0-plugins-good                             # GStreamer plugins from the "good" set
+    - gstreamer1.0-x                                        # GStreamer plugins for X11 and Pango
+    - gvfs-backends                                         # userspace virtual filesystem - backends
+    - gvfs-fuse                                             # userspace virtual filesystem - fuse server
+    - ipp-usb                                               # Daemon for IPP over USB printer support
+    - libcanberra-gtk3-module                               # translates GTK3 widgets signals to event sounds
+#   - libcanberra-pulse                                     # PulseAudio backend for libcanberra
+#   - libnss-mdns                                           # NSS module for Multicast DNS name resolution
+    - libreoffice                                           # office productivity suite (metapackage)
+    - network-manager-gnome                                 # network management framework (GNOME frontend)
+    - iw                                                    # tool for configuring Linux wireless devices
+    - pavucontrol                                           # PulseAudio Volume Control
+    - pulseaudio-utils                                      # Command line tools for the PulseAudio sound server
+    - realmd                                                # DBus service for configuring kerberos and other online identities
+    - rhythmbox                                             # music player and organizer for GNOME
+    - rhythmbox-plugin-alternative-toolbar                  # Enhanced play controls and interface for Rhythmbox
+    - rhythmbox-plugins                                     # plugins for rhythmbox music player
+#   - rtkit                                                 # Realtime Policy and Watchdog Daemon
+    - rtmpdump                                              # small dumper for media content streamed over the RTMP protocol
+    - rygel                                                 # GNOME UPnP/DLNA services
+    - usb.ids                                               # USB ID Repository
+#   - usbmuxd                                               # USB multiplexor daemon for iPhone and iPod Touch devices
+#   - xdg-utils                                             # desktop integration utilities from freedesktop.org
+    - xterm                                                 # X terminal emulator
+# --- desktop base [ ubuntu ] -------------------------------------------------
+#   - fonts-cantarell                                       # sans serif font family designed for on-screen readability
+#   - fonts-dejavu-mono                                     # Vera font family derivate with additional characters
+    - fonts-droid-fallback                                  # handheld device font with extensive style and language support (fallback)
+    - fonts-liberation                                      # fonts with the same metrics as Times, Arial and Courier
+    - fonts-liberation-sans-narrow                          # Sans-serif Narrow fonts to replace commonly used Arial Narrow
+#   - fonts-opensymbol                                      # OpenSymbol TrueType font
+    - fonts-ubuntu                                          # sans-serif font set from Ubuntu
+#   - fonts-urw-base35                                      # font set metric-compatible with the 35 PostScript Level 2 Base Fonts
+#   - ubuntu-advantage-desktop-daemon                       # Daemon to allow access to ubuntu-advantage via D-Bus
+#   - ubuntu-desktop                                        # Ubuntu desktop system
+#   - ubuntu-desktop-minimal                                # Ubuntu desktop minimal system
+    - ubuntu-docs                                           # Ubuntu Desktop Guide
+#   - ubuntu-drivers-common                                 # Detect and install additional Ubuntu driver packages
+#   - ubuntu-gnome-desktop                                  # The Ubuntu desktop system (transitional package)
+    - ubuntu-kernel-accessories                             # packages useful to install by default on systems with kernels
+#   - ubuntu-keyring                                        # GnuPG keys of the Ubuntu archive
+    - ubuntu-minimal                                        # Minimal core of Ubuntu
+#   - ubuntu-mono                                           # Ubuntu Mono Icon theme
+#   - ubuntu-pro-client                                     # Management tools for Ubuntu Pro
+    - ubuntu-pro-client-l10n                                # Translations for Ubuntu Pro Client
+#   - ubuntu-release-upgrader-core                          # manage release upgrades
+#   - ubuntu-release-upgrader-gtk                           # manage release upgrades
+    - ubuntu-report                                         # Report hardware and other collected metrics
+#   - ubuntu-session                                        # Ubuntu session with GNOME Shell
+#   - ubuntu-settings                                       # default settings for the Ubuntu desktop
+    - ubuntu-standard                                       # Ubuntu standard system
+#   - ubuntu-wallpapers                                     # Ubuntu Wallpapers
+#   - ubuntu-wallpapers-karmic                              # Ubuntu 9.10 Wallpapers
+#   - ubuntu-wallpapers-lucid                               # Ubuntu 10.04 Wallpapers
+#   - ubuntu-wallpapers-maverick                            # Ubuntu 10.10 Wallpapers
+#   - ubuntu-wallpapers-natty                               # Ubuntu 11.04 Wallpapers
+#   - ubuntu-wallpapers-oneiric                             # Ubuntu 11.10 Wallpapers
+#   - ubuntu-wallpapers-precise                             # Ubuntu 12.04 Wallpapers
+#   - ubuntu-wallpapers-quantal                             # Ubuntu 12.10 Wallpapers
+#   - ubuntu-wallpapers-raring                              # Ubuntu 13.04 Wallpapers
+#   - ubuntu-wallpapers-saucy                               # Ubuntu 13.10 Wallpapers
+#   - ubuntu-wallpapers-trusty                              # Ubuntu 14.04 Wallpapers
+#   - ubuntu-wallpapers-utopic                              # Ubuntu 14.10 Wallpapers
+#   - ubuntu-wallpapers-vivid                               # Ubuntu 15.04 Wallpapers
+#   - ubuntu-wallpapers-wily                                # Ubuntu 15.10 Wallpapers
+#   - ubuntu-wallpapers-xenial                              # Ubuntu 16.04 Wallpapers
+#   - ubuntu-wallpapers-yakkety                             # Ubuntu 16.10 Wallpapers
+#   - ubuntu-wallpapers-zesty                               # Ubuntu 17.04 Wallpapers
+#   - ubuntu-wallpapers-artful                              # Ubuntu 17.10 Wallpapers
+#   - ubuntu-wallpapers-bionic                              # Ubuntu 18.04 Wallpapers
+#   - ubuntu-wallpapers-cosmic                              # Ubuntu 18.10 Wallpapers
+#   - ubuntu-wallpapers-disco                               # Ubuntu 19.04 Wallpapers
+#   - ubuntu-wallpapers-eoan                                # Ubuntu 19.10 Wallpapers
+#   - ubuntu-wallpapers-focal                               # Ubuntu 20.04 Wallpapers
+#   - ubuntu-wallpapers-groovy                              # Ubuntu 20.10 Wallpapers
+#   - ubuntu-wallpapers-hirsute                             # Ubuntu 21.04 Wallpapers
+#   - ubuntu-wallpapers-impish                              # Ubuntu 21.10 Wallpapers
+#   - ubuntu-wallpapers-jammy                               # Ubuntu 22.04 Wallpapers
+#   - ubuntu-wallpapers-kinetic                             # Ubuntu 22.10 Wallpapers
+#   - ubuntu-wallpapers-lunar                               # Ubuntu 23.04 Wallpapers
+#   - ubuntu-wallpapers-mantic                              # Ubuntu 23.10 Wallpapers
+#   - ubuntu-wallpapers-noble                               # Ubuntu 24.04 Wallpapers
+    - yaru-theme-gtk                                        # Yaru GTK theme from the Ubuntu Community
+    - yaru-theme-icon                                       # Yaru icon theme from the Ubuntu Community
+    - yaru-theme-sound                                      # Yaru sound theme from the Ubuntu Community
+# setup-hooks:
+# essential-hooks:
+# customize-hooks:
+#   - chroot "$1" usermod --password "$(echo 'password' | openssl passwd -6 -stdin)" root
+#   - chroot "$1" passwd --delete root
+#   - chroot "$1" sh -c 'echo "PasswordAuthentication yes\nPermitRootLogin no" > /etc/ssh/sshd_config.d/sshd.conf'
+  cleanup-hooks:
+    - rm -f "$1/etc/hostname" "$1/etc/hosts"
+    - P="$1"; echo "<${P}>"; for D in $(awk '$2~"^'${P}'" {print $2;}' "${P}/proc/mounts" | sort -ru); do echo "umount ${D}"; umount "${D}" || umount --force "${D}" || umount --lazy "${D}"; done
+#   - P="$1"; for D in $(mount | awk '$3~"'$P'" { print $3;}' | sort -r); do umount "${D}" || umount --force "${D}" || umount --lazy "${D}"; done
+# suite:
+# target: filesystem.squashfs
+# variant: extract                      # Installs nothing by default (not even "Essential:yes" packages). Packages given by the "--include" option are extracted but will not be installed.
+# variant: custom                       # Installs nothing by default (not even "Essential:yes" packages). Packages given by the "--include" option will be installed.
+# variant: essential                    # "Essential:yes" packages.
+# variant: apt                          # The essential set plus apt.
+# variant: required                     # The essential set plus all packages with Priority:required and apt.
+  variant: minbase                      # "
+# variant: buildd                       # The minbase set plus build-essential.
+# variant: important                    # The required set plus all packages with Priority:important.
+# variant: debootstrap                  # "
+# variant: -                            # "
+# variant: standard                     # The important set plus all packages with Priority:standard.
