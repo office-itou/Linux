@@ -605,7 +605,7 @@ function funcTrap() {
 		"o  debian-netinst-testing          Debian%20testing                        debian              ${DIRS_ISOS}    debian-testing-amd64-netinst.iso                install.amd                             initrd.gz                   vmlinuz                 preseed/ps_debian_server.cfg            ${HGFS_DIRS}/linux/debian        20xx-xx-xx  20xx-xx-xx  xx:xx:xx    0   -   -   https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso                                " \
 		"x  fedora-netinst-38               Fedora%20Server%2038                    fedora              ${DIRS_ISOS}    Fedora-Server-netinst-x86_64-38-1.6.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-netinst-x86_64-38-[0-9.]*.iso                  " \
 		"x  fedora-netinst-39               Fedora%20Server%2039                    fedora              ${DIRS_ISOS}    Fedora-Server-netinst-x86_64-39-1.5.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_net.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-netinst-x86_64-39-[0-9.]*.iso                  " \
-		"o  fedora-netinst-40               Fedora%20Server%2040                    fedora              ${DIRS_ISOS}    Fedora-Server-netinst-x86_64-40-1.14.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_net.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-netinst-x86_64-40-[0-9.]*.iso                  " \
+		"x  fedora-netinst-40               Fedora%20Server%2040                    fedora              ${DIRS_ISOS}    Fedora-Server-netinst-x86_64-40-1.14.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_net.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-netinst-x86_64-40-[0-9.]*.iso                  " \
 		"o  fedora-netinst-41               Fedora%20Server%2041                    fedora              ${DIRS_ISOS}    Fedora-Server-netinst-x86_64-41-1.4.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_net.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41-[0-9.]*.iso                  " \
 		"o  fedora-netinst-42               Fedora%20Server%2042                    fedora              ${DIRS_ISOS}    Fedora-Server-netinst-x86_64-42-1.1.iso         images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-42_net.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/42/Server/x86_64/iso/Fedora-Server-netinst-x86_64-42-[0-9.]*.iso                  " \
 		"x  fedora-netinst-41               Fedora%20Server%2041                    fedora              ${DIRS_ISOS}    Fedora-Server-netinst-x86_64-41_Beta-1.2.iso    images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_net.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/test/41_Beta/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41_Beta-[0-9.]*.iso   " \
@@ -652,7 +652,7 @@ function funcTrap() {
 		"-  ubuntu-live-oracular            Ubuntu%20oracular%20Live%20Server       ubuntu              ${DIRS_ISOS}    oracular-live-server-amd64.iso                  casper                                  initrd                      vmlinuz                 nocloud/ubuntu_server                   ${HGFS_DIRS}/linux/ubuntu        2024-10-10  2025-07-xx  xx:xx:xx    0   -   -   https://cdimage.ubuntu.com/ubuntu-server/daily-live/current/oracular-live-server-amd64.iso                                                     " \
 		"x  fedora-38                       Fedora%20Server%2038                    fedora              ${DIRS_ISOS}    Fedora-Server-dvd-x86_64-38-1.6.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-38_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-04-18  2024-05-14  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/38/Server/x86_64/iso/Fedora-Server-dvd-x86_64-38-[0-9.]*.iso                      " \
 		"x  fedora-39                       Fedora%20Server%2039                    fedora              ${DIRS_ISOS}    Fedora-Server-dvd-x86_64-39-1.5.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-39_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2023-11-07  2024-11-12  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/39/Server/x86_64/iso/Fedora-Server-dvd-x86_64-39-[0-9.]*.iso                      " \
-		"o  fedora-40                       Fedora%20Server%2040                    fedora              ${DIRS_ISOS}    Fedora-Server-dvd-x86_64-40-1.14.iso            images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-dvd-x86_64-40-[0-9.]*.iso                      " \
+		"x  fedora-40                       Fedora%20Server%2040                    fedora              ${DIRS_ISOS}    Fedora-Server-dvd-x86_64-40-1.14.iso            images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-40_dvd.cfg          ${HGFS_DIRS}/linux/fedora        2024-04-16  2025-05-13  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/40/Server/x86_64/iso/Fedora-Server-dvd-x86_64-40-[0-9.]*.iso                      " \
 		"o  fedora-41                       Fedora%20Server%2041                    fedora              ${DIRS_ISOS}    Fedora-Server-dvd-x86_64-41-1.4.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_dvd.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-dvd-x86_64-41-[0-9.]*.iso                      " \
 		"o  fedora-42                       Fedora%20Server%2042                    fedora              ${DIRS_ISOS}    Fedora-Server-dvd-x86_64-42-1.1.iso             images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-42_dvd.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/42/Server/x86_64/iso/Fedora-Server-dvd-x86_64-42-[0-9.]*.iso                      " \
 		"x  fedora-41                       Fedora%20Server%2041                    fedora              ${DIRS_ISOS}    Fedora-Server-dvd-x86_64-41_Beta-1.2.iso        images/pxeboot                          initrd.img                  vmlinuz                 kickstart/ks_fedora-41_dvd.cfg          ${HGFS_DIRS}/linux/fedora        202x-xx-xx  202x-xx-xx  xx:xx:xx    0   -   -   https://download.fedoraproject.org/pub/fedora/linux/releases/test/41_Beta/Server/x86_64/iso/Fedora-Server-dvd-x86_64-41_Beta-[0-9.]*.iso       " \
@@ -4434,146 +4434,224 @@ function funcCreate_nocloud() {
 function funcCreate_kickstart() {
 	declare -r    _IMGS_ADDR="http://${SRVR_ADDR}/imgs"
 	declare -r    _DIRS_NAME="${DIRS_CONF}/kickstart"
-	declare       _FILE_PATH=""
-	declare       _DSTR_NAME=""
+	declare    -a _DATA_LINE=()
 	declare       _DSTR_NUMS=""
-	declare       _RLNX_NUMS=""
-	declare -r    _BASE_ARCH="x86_64"
+	declare       _DSTR_NAME=""
 	declare       _DSTR_SECT=""
+	declare       _FILE_PATH=""
+	declare       _WORK_TEXT=""
+	declare -r    _BASE_ARCH="x86_64"
 	declare -i    I=0
-	declare    -a _FILE_LIST=()
-	declare       _FILE_LINE=""
-	# -------------------------------------------------------------------------
-	_FILE_LIST=()
+#	# -------------------------------------------------------------------------
+	mkdir -p "${_DIRS_NAME}"
 	for I in "${!DATA_LIST[@]}"
 	do
-		_FILE_LINE="$(echo "${DATA_LIST[I]}" | awk '$1=="o"&&$10~/kickstart/ {split($10,s,"/"); print s[2];}')"
-		if [[ -z "${_FILE_LINE}" ]]; then
+		read -r -a _DATA_LINE < <(echo "${DATA_LIST[I]}")
+		if [[ "${_DATA_LINE[0]}" != "o" ]] || [[ "${_DATA_LINE[9]%%/*}" != "kickstart" ]]; then
 			continue
 		fi
-		_FILE_LIST+=("${_FILE_LINE}")
-		case "${_FILE_LINE}" in
-			*_dvd.cfg) _FILE_LIST+=("${_FILE_LINE/_dvd./_web.}");;
-			*) ;;
-		esac
-	done
-	# -------------------------------------------------------------------------
-	for I in "${!_FILE_LIST[@]}"
-	do
-		_FILE_PATH="${_DIRS_NAME}/${_FILE_LIST[I]}"
-		funcPrintf "%20.20s: %s" "create file" "${_FILE_PATH/${PWD}\/}"
-		mkdir -p "${_FILE_PATH%/*}"
 		# ---------------------------------------------------------------------
-		_DSTR_NAME="$(echo "${_FILE_LIST[I]}" | sed -ne 's%^.*_\(almalinux\|centos-stream\|fedora\|miraclelinux\|rockylinux\)-.*$%\1%p')"
-		_DSTR_NUMS="$(echo "${_FILE_LIST[I]}" | sed -ne 's%^.*'"${_DSTR_NAME}"'-\([0-9.]\+\)_.*$%\1%p')"
-		_DSTR_SECT="${_DSTR_NAME/-/ }"
-		_RLNX_NUMS="${_DSTR_NUMS}"
-		if [[ "${_DSTR_NAME}" = "fedora" ]] && [[ ${_DSTR_NUMS} -ge 38 ]] && [[ ${_DSTR_NUMS} -le 40 ]]; then
-			_RLNX_NUMS="9"
-		fi
-		# ---------------------------------------------------------------------
+		_FILE_PATH="${_DIRS_NAME}/${_DATA_LINE[9]##*/}"
+		funcPrintf "%20.20s: %s" "create file" "${_FILE_PATH}"
 		cp --backup "${CONF_KICK}" "${_FILE_PATH}"
-		if [[ "${_DSTR_NAME}" = "centos-stream" ]]; then
-			case "${_DSTR_NUMS}" in
-				8) _DSTR_SECT="${_DSTR_NAME/-/ }-${_DSTR_NUMS}";;
-				*) _DSTR_SECT="${_DSTR_NAME/-/ }-9"           ;;
-			esac
-		fi
+		# ---------------------------------------------------------------------
+		_DSTR_NUMS="${_DATA_LINE[1]##*-}"
+		_DSTR_NAME="${_DATA_LINE[1]%%-*}"
+		_WORK_TEXT="${_DATA_LINE[1]#*stream}"
+		_WORK_TEXT="${_DATA_LINE[1]%"${_WORK_TEXT}"*}"
+		_DSTR_NAME="${_WORK_TEXT:-"${_DSTR_NAME}"}"
+		_DSTR_SECT="${_DSTR_NAME/-/ }"
 		# --- cdrom, hostname, install repository -----------------------------
-		case "${_FILE_LIST[I]}" in
-			*_dvd* )	# --- cdrom install -----------------------------------
+		case "${_FILE_PATH##*/}" in
+			*_dvd*)	# --- cdrom install ---------------------------------------
 				sed -i "${_FILE_PATH}"                         \
-				    -e "/^#cdrom/ s/^#//                     " \
-				    -e "s/_HOSTNAME_/${_DSTR_NAME%%-*}/      " \
+				    -e "/^#cdrom$/ s/^#//                    " \
+				    -e "s/:_HOST_NAME_:/${_DSTR_NAME}/       " \
 				    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/      { " \
-				    -e '/_WEBADDR_/                        { ' \
-				    -e '/^url[ \t]\+/   s/^/#/g              ' \
-				    -e '/^repo[ \t]\+/  s/^/#/g            } ' \
-				    -e "/_WEBADDR_/!                       { " \
 				    -e "/^url[ \t]\+/   s/^/#/g              " \
 				    -e "/^repo[ \t]\+/  s/^/#/g              " \
 				    -e "s/\$releasever/${_DSTR_NUMS}/g       " \
-				    -e "s/\$basearch/${_BASE_ARCH}/g      }} "
+				    -e "s/\$basearch/${_BASE_ARCH}/g         " \
+				    -e "s/\$stream/${_DSTR_NUMS}-stream/g   } "
 				;;
-			*_web* )	# --- network install [ _WEBADDR_ ] -------------------
+			*_net*)	# --- network install -------------------------------------
 				sed -i "${_FILE_PATH}"                         \
-				    -e "/^cdrom/ s/^/#/                      " \
-				    -e "s/_HOSTNAME_/${_DSTR_NAME%%-*}/      " \
+				    -e "/^cdrom$/ s/^/#/                     " \
+				    -e "s/:_HOST_NAME_:/${_DSTR_NAME}/       " \
 				    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/      { " \
-				    -e '/_WEBADDR_/                        { ' \
-				    -e "/^#url[ \t]\+/  s/^#//g              " \
-				    -e "/^#repo[ \t]\+/ s/^#//g              " \
-				    -e "/_WEBADDR_/!                       { " \
-				    -e '/^url[ \t]\+/   s/^/#/g              ' \
-				    -e '/^repo[ \t]\+/  s/^/#/g            } ' \
-				    -e "s/\$releasever/${_DSTR_NUMS}/g       " \
-				    -e "s/\$basearch/${_BASE_ARCH}/g      }} "
-				;;
-			* )			# --- network install [ ! _WEBADDR_ ] -----------------
-				sed -i "${_FILE_PATH}"                         \
-				    -e "/^cdrom/ s/^/#/                      " \
-				    -e "s/_HOSTNAME_/${_DSTR_NAME%%-*}/      " \
-				    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/      { " \
-				    -e '/_WEBADDR_/                        { ' \
-				    -e '/^url[ \t]\+/   s/^/#/g              ' \
-				    -e '/^repo[ \t]\+/  s/^/#/g            } ' \
-				    -e "/_WEBADDR_/!                       { " \
 				    -e "/^#url[ \t]\+/  s/^#//g              " \
 				    -e "/^#repo[ \t]\+/ s/^#//g              " \
 				    -e "s/\$releasever/${_DSTR_NUMS}/g       " \
-				    -e "s/\$basearch/${_BASE_ARCH}/g      }} "
+				    -e "s/\$basearch/${_BASE_ARCH}/g         " \
+				    -e "s/\$stream/${_DSTR_NUMS}-stream/g   } "
+				# --- network install [ web address ] -------------------------
+				sed -e "/^#.*(${_DSTR_SECT}).*$/,/^$/      { " \
+				    -e "/^url[ \t]\+/   s/^/#/g              " \
+				    -e "/^repo[ \t]\+/  s/^/#/g            } " \
+				    -e "/^#.*(web address).*$/,/^$/        { " \
+				    -e "/^#url[ \t]\+/  s/^#//g              " \
+				    -e "/^#repo[ \t]\+/ s/^#//g              " \
+				    -e "s%:_WEBS_ADDR_:%${_IMGS_ADDR}%g      " \
+				    -e "s%:_DISTRO_:%${_DATA_LINE[1]}%g    } " \
+				    "${_FILE_PATH}"                            \
+				>   "${_FILE_PATH%_net.*}_web.${_FILE_PATH##*.}"
 				;;
+			*)	;;
 		esac
-		# --- post script -----------------------------------------------------
-		sed -i "${_FILE_PATH}"                         \
-		    -e "/%post/,/%end/                     { " \
-		    -e "s/\$releasever/${_RLNX_NUMS}/g       " \
-		    -e "s/\$basearch/${_BASE_ARCH}/g       } "
-		case "${_DSTR_NAME}" in
-			fedora        | \
-			centos-stream )
-				sed -i "${_FILE_PATH}"                         \
-				    -e "/%post/,/%end/                     { " \
-				    -e "/install repositories/ s/^/#/        " \
-				    -e "/epel-release/         s/^/#/        " \
-				    -e "/remi-release/         s/^/#/      } "
-				;;
-			* ) ;;
-		esac
-		# --- RHL ver <= 8, time zone & ntp server ----------------------------
-		if [[ ${_RLNX_NUMS} -le 8 ]]; then
-			sed -i "${_FILE_PATH}"                     \
-			    -e "/^timesource/             s/^/#/g" \
-			    -e "/^timezone/               s/^/#/g" \
-			    -e "/timezone.* --ntpservers/ s/^#//g"
-		fi
-		# --- fedora ----------------------------------------------------------
-		if [[ "${_DSTR_NAME}" = "fedora" ]]; then
-			sed -i "${_FILE_PATH}"                     \
-			    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/  { " \
-			    -e "/_WEBADDR_/                    { " \
-			    -e "/^repo[ \t]\+/  s/^/#/g        } " \
-			    -e "/_WEBADDR_/!                   { " \
-			    -e "/^#repo[ \t]\+/ s/^#//g       }} "
-		fi
-		case "${_FILE_LIST[I]}" in
-			*_web* )
-				sed -i "${_FILE_PATH}"                         \
-				    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/      { " \
-				    -e "s%_WEBADDR_%${_IMGS_ADDR}%g        } " \
-				;;
-			* )
-				;;
-		esac
-#		sed -i "${_FILE_PATH}"                         \
-#		    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/      { " \
-#		    -e "s%_WEBADDR_%${WEBS_ADDR}/imgs%g    } "
+	done
+	# --- desktop -------------------------------------------------------------
+	find "${_DIRS_NAME}" -type f ! -name '*_desktop.*' | \
+	while read -r _FILE_PATH
+	do
 		sed -e "/%packages/,/%end/ {"                  \
 		    -e "/desktop/ s/^-//g  }"                  \
 		    "${_FILE_PATH}"                            \
-		>   "${_FILE_PATH/\.cfg/_desktop\.cfg}"
+		>   "${_FILE_PATH%.*}_desktop.${_FILE_PATH##*.}"
 	done
 	chmod ugo-x "${_DIRS_NAME}/"*
+	# -------------------------------------------------------------------------
+#	declare -r    _IMGS_ADDR="http://${SRVR_ADDR}/imgs"
+#	declare -r    _DIRS_NAME="${DIRS_CONF}/kickstart"
+#	declare       _FILE_PATH=""
+#	declare       _DSTR_NAME=""
+#	declare       _DSTR_NUMS=""
+#	declare       _RLNX_NUMS=""
+#	declare -r    _BASE_ARCH="x86_64"
+#	declare       _DSTR_SECT=""
+#	declare -i    I=0
+#	declare    -a _FILE_LIST=()
+#	declare       _FILE_LINE=""
+#	# -------------------------------------------------------------------------
+	_FILE_LIST=()
+#	for I in "${!DATA_LIST[@]}"
+#	do
+#		_FILE_LINE="$(echo "${DATA_LIST[I]}" | awk '$1=="o"&&$10~/kickstart/ {split($10,s,"/"); print s[2];}')"
+#		if [[ -z "${_FILE_LINE}" ]]; then
+#			continue
+#		fi
+#		_FILE_LIST+=("${_FILE_LINE}")
+#		case "${_FILE_LINE}" in
+#			*_dvd.cfg) _FILE_LIST+=("${_FILE_LINE/_dvd./_web.}");;
+#			*) ;;
+#		esac
+#	done
+	# -------------------------------------------------------------------------
+#	for I in "${!_FILE_LIST[@]}"
+#	do
+#		_FILE_PATH="${_DIRS_NAME}/${_FILE_LIST[I]}"
+#		funcPrintf "%20.20s: %s" "create file" "${_FILE_PATH/${PWD}\/}"
+#		mkdir -p "${_FILE_PATH%/*}"
+		# ---------------------------------------------------------------------
+#		_DSTR_NAME="$(echo "${_FILE_LIST[I]}" | sed -ne 's%^.*_\(almalinux\|centos-stream\|fedora\|miraclelinux\|rockylinux\)-.*$%\1%p')"
+#		_DSTR_NUMS="$(echo "${_FILE_LIST[I]}" | sed -ne 's%^.*'"${_DSTR_NAME}"'-\([0-9.]\+\)_.*$%\1%p')"
+#		_DSTR_SECT="${_DSTR_NAME/-/ }"
+#		_RLNX_NUMS="${_DSTR_NUMS}"
+#		if [[ "${_DSTR_NAME}" = "fedora" ]] && [[ ${_DSTR_NUMS} -ge 38 ]] && [[ ${_DSTR_NUMS} -le 40 ]]; then
+#			_RLNX_NUMS="9"
+#		fi
+		# ---------------------------------------------------------------------
+#		cp --backup "${CONF_KICK}" "${_FILE_PATH}"
+#		if [[ "${_DSTR_NAME}" = "centos-stream" ]]; then
+#			case "${_DSTR_NUMS}" in
+#				8) _DSTR_SECT="${_DSTR_NAME/-/ }-${_DSTR_NUMS}";;
+#				*) _DSTR_SECT="${_DSTR_NAME/-/ }-9"           ;;
+#			esac
+#		fi
+		# --- cdrom, hostname, install repository -----------------------------
+#		case "${_FILE_LIST[I]}" in
+#			*_dvd* )	# --- cdrom install -----------------------------------
+#				sed -i "${_FILE_PATH}"                         \
+#				    -e "/^#cdrom/ s/^#//                     " \
+#				    -e "s/_HOSTNAME_/${_DSTR_NAME%%-*}/      " \
+#				    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/      { " \
+#				    -e '/_WEBADDR_/                        { ' \
+#				    -e '/^url[ \t]\+/   s/^/#/g              ' \
+#				    -e '/^repo[ \t]\+/  s/^/#/g            } ' \
+#				    -e "/_WEBADDR_/!                       { " \
+#				    -e "/^url[ \t]\+/   s/^/#/g              " \
+#				    -e "/^repo[ \t]\+/  s/^/#/g              " \
+#				    -e "s/\$releasever/${_DSTR_NUMS}/g       " \
+#				    -e "s/\$basearch/${_BASE_ARCH}/g      }} "
+#				;;
+#			*_web* )	# --- network install [ _WEBADDR_ ] -------------------
+#				sed -i "${_FILE_PATH}"                         \
+#				    -e "/^cdrom/ s/^/#/                      " \
+#				    -e "s/_HOSTNAME_/${_DSTR_NAME%%-*}/      " \
+#				    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/      { " \
+#				    -e '/_WEBADDR_/                        { ' \
+#				    -e "/^#url[ \t]\+/  s/^#//g              " \
+#				    -e "/^#repo[ \t]\+/ s/^#//g              " \
+#				    -e "/_WEBADDR_/!                       { " \
+#				    -e '/^url[ \t]\+/   s/^/#/g              ' \
+#				    -e '/^repo[ \t]\+/  s/^/#/g            } ' \
+#				    -e "s/\$releasever/${_DSTR_NUMS}/g       " \
+#				    -e "s/\$basearch/${_BASE_ARCH}/g      }} "
+#				;;
+#			* )			# --- network install [ ! _WEBADDR_ ] -----------------
+#				sed -i "${_FILE_PATH}"                         \
+#				    -e "/^cdrom/ s/^/#/                      " \
+#				    -e "s/_HOSTNAME_/${_DSTR_NAME%%-*}/      " \
+#				    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/      { " \
+#				    -e '/_WEBADDR_/                        { ' \
+#				    -e '/^url[ \t]\+/   s/^/#/g              ' \
+#				    -e '/^repo[ \t]\+/  s/^/#/g            } ' \
+#				    -e "/_WEBADDR_/!                       { " \
+#				    -e "/^#url[ \t]\+/  s/^#//g              " \
+#				    -e "/^#repo[ \t]\+/ s/^#//g              " \
+#				    -e "s/\$releasever/${_DSTR_NUMS}/g       " \
+#				    -e "s/\$basearch/${_BASE_ARCH}/g      }} "
+#				;;
+#		esac
+		# --- post script -----------------------------------------------------
+#		sed -i "${_FILE_PATH}"                         \
+#		    -e "/%post/,/%end/                     { " \
+#		    -e "s/\$releasever/${_RLNX_NUMS}/g       " \
+#		    -e "s/\$basearch/${_BASE_ARCH}/g       } "
+#		case "${_DSTR_NAME}" in
+#			fedora        | \
+#			centos-stream )
+#				sed -i "${_FILE_PATH}"                         \
+#				    -e "/%post/,/%end/                     { " \
+#				    -e "/install repositories/ s/^/#/        " \
+#				    -e "/epel-release/         s/^/#/        " \
+#				    -e "/remi-release/         s/^/#/      } "
+#				;;
+#			* ) ;;
+#		esac
+		# --- RHL ver <= 8, time zone & ntp server ----------------------------
+#		if [[ ${_RLNX_NUMS} -le 8 ]]; then
+#			sed -i "${_FILE_PATH}"                     \
+#			    -e "/^timesource/             s/^/#/g" \
+#			    -e "/^timezone/               s/^/#/g" \
+#			    -e "/timezone.* --ntpservers/ s/^#//g"
+#		fi
+		# --- fedora ----------------------------------------------------------
+#		if [[ "${_DSTR_NAME}" = "fedora" ]]; then
+#			sed -i "${_FILE_PATH}"                     \
+#			    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/  { " \
+#			    -e "/_WEBADDR_/                    { " \
+#			    -e "/^repo[ \t]\+/  s/^/#/g        } " \
+#			    -e "/_WEBADDR_/!                   { " \
+#			    -e "/^#repo[ \t]\+/ s/^#//g       }} "
+#		fi
+#		case "${_FILE_LIST[I]}" in
+#			*_web* )
+#				sed -i "${_FILE_PATH}"                         \
+#				    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/      { " \
+#				    -e "s%_WEBADDR_%${_IMGS_ADDR}%g        } " \
+#				;;
+#			* )
+#				;;
+#		esac
+##		sed -i "${_FILE_PATH}"                         \
+##		    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/      { " \
+##		    -e "s%_WEBADDR_%${WEBS_ADDR}/imgs%g    } "
+#		sed -e "/%packages/,/%end/ {"                  \
+#		    -e "/desktop/ s/^-//g  }"                  \
+#		    "${_FILE_PATH}"                            \
+#		>   "${_FILE_PATH/\.cfg/_desktop\.cfg}"
+#	done
+#	chmod ugo-x "${_DIRS_NAME}/"*
 }
 
 # ----- get leap versions -----------------------------------------------------
