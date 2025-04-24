@@ -137,7 +137,8 @@
 	for LINE in ${COMD_LINE:-} ${PROG_PRAM:-}
 	do
 		case "${LINE}" in
-			debug | debugout | dbg         ) DBGS_FLAG="true";;
+			debug | debugout               ) DBGS_FLAG="true"; set -x;;
+			dbg | dbgout                   ) DBGS_FLAG="true";;
 			target=*                       ) DIRS_TGET="${LINE#*target=}";;
 			iso-url=*.iso  | url=*.iso     ) ISOS_FILE="${LINE#*url=}";;
 			preseed/url=*  | url=*         ) SEED_FILE="${LINE#*url=}";;
@@ -217,7 +218,7 @@
 		SERR_PIPE="/tmp/${PROG_PROC}.stderr_pipe"
 		trap 'rm -f '"${SOUT_PIPE}"' '"${SERR_PIPE}"'' EXIT
 		mkfifo "${SOUT_PIPE}" "${SERR_PIPE}"
-		: > "${LOGS_NAME}"
+		touch  "${LOGS_NAME}"
 		tee -a "${LOGS_NAME}" < "${SOUT_PIPE}" &
 		tee -a "${LOGS_NAME}" < "${SERR_PIPE}" >&2 &
 		exec > "${SOUT_PIPE}" 2> "${SERR_PIPE}"
