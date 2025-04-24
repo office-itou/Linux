@@ -39,7 +39,7 @@ autoinstall:
   - [ sh, -c, '
       exec 2>&1;
       export LANG=C;
-      _FUNC_NAME="early-commands";
+      _FUNC_NAME="partman_early_command";
       _COMD_LINE="$(cat /proc/cmdline)";
       for _LINE in ${_COMD_LINE:-};
       do
@@ -50,7 +50,7 @@ autoinstall:
         esac;
       done;
       _DIRS_TGET="/target";
-      if [ ! -d "${_DIRS_TGET:-}/." ]; then
+      if [ -n "${_DIRS_TGET:-}" ] && [ ! -d "${_DIRS_TGET:-}/." ]; then
         _DIRS_TGET="";
       fi;
       _DIRS_INST="/var/adm/autoinst";
@@ -60,22 +60,47 @@ autoinstall:
       {
         _time_start=$(date +%s);
         printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start";
+        _PATH="/var/lib/cdebconf/questions.dat";
+        if [ -f "${_PATH}" ]; then
+          printf "### %s: %s ###\n" "${_FUNC_NAME}" "find ${_PATH##*/}";
+          _PATH_SEED="$(awk '$1=="Name:"&&($2=="preseed/url"||$2=="preseed/file"),$1=="" {if ($1=="Value:") {print $2;}}' "${_PATH}")";
+          _DIRS_COMD="${_PATH_SEED%/*}";
+          _DIRS_COMD="${_DIRS_COMD%/*}/autoinst";
+          cp -a "${_PATH}" "${_DIRS_TGET:-}${_DIRS_INST}/";
+        fi;
         for _LINE in ${_COMD_LINE:-};
         do
           case "${_LINE}" in
-            debug|debugout|dbg|dbgout) _FLAG_DBGS="true"                     ;;
-            iso-url=*.iso |url=*.iso )                                       ;;
-            preseed/url=* |url=*     ) _PATH_SEED="${_LINE#*url=}"           ;;
-            preseed/file=*|file=*    ) _PATH_SEED="${_LINE#*file=}"          ;;
+            debug|debugout|dbg|dbgout) _FLAG_DBGS="true"                            ;;
+            iso-url=*.iso |url=*.iso )                                              ;;
+            preseed/url=* |url=*     ) _PATH_SEED="${_LINE#*url=}";
+                                       _DIRS_COMD="${_PATH_SEED%/*}";
+                                       _DIRS_COMD="${_DIRS_COMD%/*}/autoinst";;
+            preseed/file=*|file=*    ) _PATH_SEED="${_LINE#*file=}";
+                                       _DIRS_COMD="${_PATH_SEED%/*}";
+                                       _DIRS_COMD="${_DIRS_COMD%/*}/autoinst";;
             ds=nocloud*              ) _PATH_SEED="${_LINE#*ds=nocloud*=}";
-                                       _PATH_SEED="${_PATH_SEED%/}/user-data";;
-            inst.ks=*                ) _PATH_SEED="${_LINE#*inst.ks=}"       ;;
-            autoyast=*               ) _PATH_SEED="${_LINE#*autoyast=}"      ;;
+                                       _PATH_SEED="${_PATH_SEED%/}/user-data";
+                                       _DIRS_COMD="${_PATH_SEED%/}";
+                                       _DIRS_COMD="${_DIRS_COMD%/nocloud*}/autoinst";;
+            inst.ks=*                ) _PATH_SEED="${_LINE#*inst.ks=}";
+                                       case "${_PATH_SEED}" in
+                                         http:*|https:*|ftp:*  )
+                                           _DIRS_COMD="${_PATH_SEED%/*}";
+                                           _DIRS_COMD="${_DIRS_COMD%/*}/autoinst";;
+                                         hd:sr0:*|cdrom|cdrom:*)
+                                           _PATH_SEED="/mnt/install/repo/${_PATH_SEED#*:*/}";
+                                           _DIRS_COMD="${_PATH_SEED%/*}";
+                                           _DIRS_COMD="${_DIRS_COMD%/*}/autoinst";;
+                                         nfs:*                 ) ;;
+                                         hd:*                  ) ;;
+                                         hmc                   ) ;;
+                                         *) ;;
+                                       esac;;
+            autoyast=*               ) _PATH_SEED="${_LINE#*autoyast=}"             ;;
             *) ;;
           esac;
         done;
-        _DIRS_COMD="${_PATH_SEED%/}";
-        _DIRS_COMD="${_DIRS_COMD%/nocloud*}/autoinst";
         if [ -n "${_FLAG_DBGS:-}" ]; then
           printf "### %s: %s ###\n" "${_FUNC_NAME}" "debug print";
           printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "LANG      " "${LANG:-}";
@@ -112,7 +137,7 @@ autoinstall:
             chmod 0700 "${_DIRS_TGET:-}${_DIRS_INST}/${_PATH##*/}";
           done;
         fi;
-        _PATH_EXEC="${_DIRS_TGET:-}${_DIRS_INST}/cmd_early.sh";
+        _PATH_EXEC="${_DIRS_TGET:-}${_DIRS_INST}/cmd_partition.sh";
         if [ -e "${_PATH_EXEC}" ]; then
           printf "### %s: %s ###\n" "${_FUNC_NAME}" "exec: ${_PATH_EXEC}";
           sh -c "${_PATH_EXEC} nvme0n1";
