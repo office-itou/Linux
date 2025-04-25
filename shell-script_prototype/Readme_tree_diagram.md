@@ -185,6 +185,7 @@ tree --charset C -n --filesfirst -d /srv/
 /root/
 |-- .bash_history
 |-- .bashrc
+|-- .curlrc
 |-- .pgpass
 `-- .vimrc
 ```
@@ -194,6 +195,7 @@ tree --charset C -n --filesfirst -d /srv/
 `-- master
     |-- .bash_history
     |-- .bashrc
+    |-- .curlrc
     |-- .pgpass
     `-- .vimrc
 ```
