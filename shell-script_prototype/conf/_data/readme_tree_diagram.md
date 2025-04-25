@@ -86,7 +86,7 @@ tree --charset C -n --filesfirst -d /srv/
         |   |   |-- common.cfg --------------------- configuration file of common
         |   |   |-- common.cfg.template
         |   |   |-- media.dat ---------------------- data file of media
-        |   |   `-- readme_tree_diagram.txt -------- this file
+        |   |   `-- readme_tree_diagram.md --------- this file
         |   |-- _fixed_address
         |   |   |-- autoinst.xml
         |   |   |-- kickstart.cfg
@@ -154,6 +154,11 @@ tree --charset C -n --filesfirst -d /srv/
 |-- firewalld
 |   `-- zones
 |       `-- home_use.xml
+|-- postgresql ------------------------------------- postgresql
+|   `-- 17
+|       `-- main
+|           |-- pg_hba.conf     -------------------- client authentication configuration file
+|           `-- postgresql.conf -------------------- postgresql configuration file
 |-- samba
 |   `-- smb.conf ----------------------------------- samba configuration file
 |-- skel
@@ -172,5 +177,24 @@ tree --charset C -n --filesfirst -d /srv/
     |       `-- disable_dns_proxy.conf
     `-- timesyncd.conf.d
         `-- local.conf
+```
+  
+## **root and user**  
+  
+``` bash:
+/root/
+|-- .bash_history
+|-- .bashrc
+|-- .pgpass
+`-- .vimrc
+```
+  
+``` bash:
+/home/
+`-- master
+    |-- .bash_history
+    |-- .bashrc
+    |-- .pgpass
+    `-- .vimrc
 ```
   
