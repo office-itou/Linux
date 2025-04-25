@@ -44,6 +44,9 @@
 #   |   |-- conf -> /srv/user/share/conf
 #   |   |-- imgs -> /srv/user/share/imgs
 #   |   |-- ipxe --------------------------------------- ipxe module
+#   |   |   |-- ipxe.efi ------------------------------- "           for efi boot mode
+#   |   |   |-- undionly.kpxe -------------------------- "           for mbr "
+#   |   |   `-- wimboot -------------------------------- "           for windows media
 #   |   |-- isos -> /srv/user/share/isos
 #   |   |-- load -> /srv/user/share/load
 #   |   |-- menu-bios
@@ -70,17 +73,34 @@
 #   `-- user ------------------------------------------- user file
 #       |-- private ------------------------------------ personal use
 #       `-- share -------------------------------------- shared
+#           |-- chroot --------------------------------- change route directory
+#           |   |-- debian12 --------------------------- "            debian 12    (some examples)
+#           |   `-- ubuntu2504 ------------------------- "            ubuntu 25.04 ("            )
 #           |-- conf ----------------------------------- configuration file
 #           |   |-- _data ------------------------------ common data files
 #           |   |   |-- common.cfg --------------------- configuration file of common
-#           |   |   `-- media.dat ---------------------- data file of media
+#           |   |   |-- common.cfg.template
+#           |   |   |-- media.dat ---------------------- data file of media
+#           |   |   `-- readme_tree_diagram.txt -------- this file
+#           |   |-- _fixed_address
+#           |   |   |-- autoinst.xml
+#           |   |   |-- kickstart.cfg
+#           |   |   |-- preseed.cfg
+#           |   |   `-- user-data
 #           |   |-- _keyring --------------------------- keyring file
+#           |   |   |-- debian-keyring.gpg ------------- "            for debian (some examples)
+#           |   |   `-- ubuntu-archive-keyring.gpg ----- "            for ubuntu ("            )
 #           |   |-- _template -------------------------- templates for various configuration files
 #           |   |   |-- kickstart_common.cfg ----------- template for auto-installation configuration file for rhel
 #           |   |   |-- nocloud-ubuntu-user-data ------- "                                                 for ubuntu cloud-init
 #           |   |   |-- preseed_debian.cfg ------------- "                                                 for debian
 #           |   |   |-- preseed_ubuntu.cfg ------------- "                                                 for ubuntu
 #           |   |   `-- yast_opensuse.xml -------------- "                                                 for opensuse
+#           |   |-- autoinst --------------------------- script files for auto install
+#           |   |   |-- cmd_early.sh ------------------- "            for early command
+#           |   |   |-- cmd_late.sh -------------------- "            for late command
+#           |   |   |-- cmd_partition.sh --------------- "            for early command after partman
+#           |   |   `-- cmd_run.sh --------------------- "            for preseed/run
 #           |   |-- autoyast --------------------------- configuration files for opensuse
 #           |   |-- kickstart -------------------------- "                   for rhel
 #           |   |-- nocloud ---------------------------- "                   for ubuntu cloud-init
