@@ -5188,6 +5188,7 @@ function funcCreate_remaster_download() {
 	declare -a    _DATA_LINE=("$@")
 	declare -r    _FILE_PATH="${_DATA_LINE[4]}/${_DATA_LINE[5]}"
 	declare -r    _FILE_TEMP="${_FILE_PATH}.tmp"
+	declare       _REAL_PATH=""
 	declare       _ERRS_COMD=""
 	declare -i    _ERRS_MXCT=3
 	declare -i    _ERRS_RTCD=0
@@ -5230,6 +5231,12 @@ function funcCreate_remaster_download() {
 				funcPrintf "%20.20s: %s" "error" "${TXT_RED}${_ERRS_COMD}:Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [${_ERRS_RTCD}]${TXT_RESET}"
 			else
 				if [[ ! -e "${_FILE_PATH}" ]]; then
+					_REAL_PATH="$(realpath --canonicalize-missing "${_FILE_PATH}")"
+					if [[ "${_REAL_PATH}" != "${_FILE_PATH}" ]]; then
+						mkdir -p "${_REAL_PATH%/*}"
+						touch "${_REAL_PATH}"
+					fi
+					mkdir -p "${_FILE_PATH%/*}"
 					touch "${_FILE_PATH}"
 				fi
 				if ! cp --preserve=timestamps "${_FILE_TEMP}" "${_FILE_PATH}"; then
@@ -6164,6 +6171,7 @@ function funcCreate_remaster() {
 	declare       _FILE_PATH=""
 	declare       _FILE_TEMP=""
 	declare -a    _FILE_INFO=()
+	declare       _REAL_PATH=""
 	declare       _WORK_TEXT=""
 #	declare -i    RET_CD=0
 	declare -i    I=0
@@ -6187,8 +6195,14 @@ function funcCreate_remaster() {
 		fi
 #		trap 'rm -rf '"${_FILE_TEMP:?}"'' EXIT
 		LIST_RMOV+=("${_FILE_TEMP:?}")
-		touch "${_FILE_TEMP}"
 		# --- download --------------------------------------------------------
+		_REAL_PATH="$(realpath --canonicalize-missing "${_FILE_PATH}")"
+		if [[ "${_REAL_PATH}" != "${_FILE_PATH}" ]]; then
+			mkdir -p "${_REAL_PATH%/*}"
+			touch "${_REAL_PATH}"
+		fi
+		mkdir -p "${_FILE_PATH%/*}"
+		touch "${_FILE_PATH}"
 #		funcCreate_remaster_download "${_TGET_LINE[@]}"
 		if [[ ! -e "${_FILE_PATH}" ]]; then
 			funcCreate_remaster_download "${_TGET_LINE[@]}"
