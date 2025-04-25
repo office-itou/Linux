@@ -5392,7 +5392,8 @@ function funcCreate_copy_iso2hdd() {
 	rm -rf "${_WORK_DIRS:?}"
 	mkdir -p "${_WORK_DIRS}/"{mnt,img,ram}
 	mount -o ro,loop "${_FILE_PATH}" "${_WORK_DIRS}/mnt"
-	ionice -c "${IONICE_CLAS}" cp -a "${_WORK_DIRS}/mnt/." "${_WORK_DIRS}/img/"
+#	ionice -c "${IONICE_CLAS}" cp -a "${_WORK_DIRS}/mnt/." "${_WORK_DIRS}/img/"
+	nice -n 19 cp -a "${_WORK_DIRS}/mnt/." "${_WORK_DIRS}/img/"
 	umount "${_WORK_DIRS}/mnt"
 	# --- Check the edition and extract the initrd ----------------------------
 	case "${_TGET_LINE[1]}" in
@@ -6145,7 +6146,8 @@ function funcCreate_remaster_iso_file() {
 		rm -f md5sum.txt
 		find . ! -name 'md5sum.txt' -type f -exec md5sum {} \; > md5sum.txt
 		chmod ugo-w md5sum.txt
-		ionice -c "${IONICE_CLAS}" xorriso -as mkisofs \
+#		ionice -c "${IONICE_CLAS}" xorriso -as mkisofs \
+		nice -n 19 xorriso -as mkisofs \
 		    -quiet \
 		    -volid "${_TGET_LINE[15]//%20/ }" \
 		    -eltorito-boot "${_FILE_IBIN}" \
@@ -6158,7 +6160,8 @@ function funcCreate_remaster_iso_file() {
 		    . > /dev/null 2>&1
 	popd > /dev/null
 	# --- copy iso image ------------------------------------------------------
-	ionice -c "${IONICE_CLAS}" cp -a "${_WORK_DIRS}/${_FILE_PATH##*/}" "${_FILE_PATH%/*}"
+#	ionice -c "${IONICE_CLAS}" cp -a "${_WORK_DIRS}/${_FILE_PATH##*/}" "${_FILE_PATH%/*}"
+	nice -n 19 cp -a "${_WORK_DIRS}/${_FILE_PATH##*/}" "${_FILE_PATH%/*}"
 	# --- remove directory ----------------------------------------------------
 	rm -rf "${_WORK_DIRS:?}"
 }
@@ -6908,8 +6911,8 @@ function funcMain() {
 	funcPrintf "--- start ${TEXT_GAP1}"
 	funcPrintf "--- main ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
-	renice -n "${NICE_VALU}"   -p "$$" > /dev/null
-	ionice -c "${IONICE_CLAS}" -p "$$"
+#	renice -n "${NICE_VALU}"   -p "$$" > /dev/null
+#	ionice -c "${IONICE_CLAS}" -p "$$"
 	# -------------------------------------------------------------------------
 	_DIRS_LIST=()
 	for _DIRS_NAME in "${DIRS_TEMP%.*.*}."*

@@ -4750,7 +4750,8 @@ function funcCreate_copy_iso2hdd() {
 	mkdir -p "${_WORK_DIRS}/"{mnt,img,ram}
 	mkdir -p "${_DEST_DIRS}"
 	mount -o ro,loop "${_FILE_PATH}" "${_WORK_DIRS}/mnt"
-	ionice -c "${IONICE_CLAS}" rsync "${_RSYC_OPTN[@]}" "${_WORK_DIRS}/mnt/." "${_DEST_DIRS}/" 2>/dev/null || true
+#	ionice -c "${IONICE_CLAS}" rsync "${_RSYC_OPTN[@]}" "${_WORK_DIRS}/mnt/." "${_DEST_DIRS}/" 2>/dev/null || true
+	nice -n 19 rsync "${_RSYC_OPTN[@]}" "${_WORK_DIRS}/mnt/." "${_DEST_DIRS}/" 2>/dev/null || true
 	umount "${_WORK_DIRS}/mnt"
 	chmod -R +r "${_DEST_DIRS}/" 2>/dev/null || true
 	# --- copy initrd -> hdd --------------------------------------------------
@@ -4764,9 +4765,11 @@ function funcCreate_copy_iso2hdd() {
 			mkdir -p "${_BOOT_IRAM%/*}" \
 			         "${_BOOT_VLNZ%/*}"
 			funcPrintf "%20.20s: %s" "copy" "${_FILE_IRAM##*/}"
-			ionice -c "${IONICE_CLAS}" rsync "${_RSYC_OPTN[@]}" "${_FILE_IRAM}" "${_BOOT_IRAM}" 2>/dev/null || true
+#			ionice -c "${IONICE_CLAS}" rsync "${_RSYC_OPTN[@]}" "${_FILE_IRAM}" "${_BOOT_IRAM}" 2>/dev/null || true
+			nice -n 19 rsync "${_RSYC_OPTN[@]}" "${_FILE_IRAM}" "${_BOOT_IRAM}" 2>/dev/null || true
 			funcPrintf "%20.20s: %s" "copy" "${_FILE_VLNZ##*/}"
-			ionice -c "${IONICE_CLAS}" rsync "${_RSYC_OPTN[@]}" "${_FILE_VLNZ}" "${_BOOT_VLNZ}" 2>/dev/null || true
+#			ionice -c "${IONICE_CLAS}" rsync "${_RSYC_OPTN[@]}" "${_FILE_VLNZ}" "${_BOOT_VLNZ}" 2>/dev/null || true
+			nice -n 19 rsync "${_RSYC_OPTN[@]}" "${_FILE_VLNZ}" "${_BOOT_VLNZ}" 2>/dev/null || true
 			chmod -R +r "${_BOOT_IRAM}" \
 			            "${_BOOT_VLNZ}" 2>/dev/null || true
 		fi
@@ -6492,8 +6495,8 @@ function funcMain() {
 	funcPrintf "--- start ${TEXT_GAP1}"
 	funcPrintf "--- main ${TEXT_GAP1}"
 	# -------------------------------------------------------------------------
-	renice -n "${NICE_VALU}"   -p "$$" > /dev/null
-	ionice -c "${IONICE_CLAS}" -p "$$"
+#	renice -n "${NICE_VALU}"   -p "$$" > /dev/null
+#	ionice -c "${IONICE_CLAS}" -p "$$"
 	# -------------------------------------------------------------------------
 	_DIRS_LIST=()
 	for _DIRS_NAME in "${DIRS_TEMP%.*.*}."*
