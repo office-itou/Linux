@@ -602,7 +602,7 @@ funcFile_backup() {
 	if [ ! -e "${1:?}" ]; then
 		printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "** not exist: [$1] **"
 		mkdir -p "${1%/*}"
-		_REAL_PATH="$(realpath "${1}")"
+		_REAL_PATH="$(realpath --canonicalize-missing "${1}")"
 		if [ ! -e "${_REAL_PATH}" ]; then
 			mkdir -p "${_REAL_PATH%/*}"
 		fi
@@ -2570,7 +2570,7 @@ funcSetupConfig_blacklist() {
 		# --- initramfs -------------------------------------------------------
 		for _FILE_PATH in $(find "${DIRS_TGET:-}/" "${DIRS_TGET:-}/boot" -maxdepth 1 -name 'initrd*' | sort -uV -t '/' -k $((${#_WORK_TEXT}+3)) -k $((${#_WORK_TEXT}+2)))
 		do
-			_REAL_PATH="$(realpath "${_FILE_PATH}")"
+			_REAL_PATH="$(realpath --canonicalize-missing "${_FILE_PATH}")"
 			if [ -e "${_REAL_PATH}" ]; then
 				_REAL_IRAM="${_REAL_PATH}"
 				_KNEL_VERS="${_REAL_IRAM##*/}"
@@ -2584,7 +2584,7 @@ funcSetupConfig_blacklist() {
 		if [ -z "${_KNEL_VERS:-}" ]; then
 			for _FILE_PATH in $(find "${DIRS_TGET:-}/" "${DIRS_TGET:-}/boot" -maxdepth 1 \( -name 'vmlinuz*' -o -name 'linux*' \) | sort -uV -t '/' -k $((${#_WORK_TEXT}+3)) -k $((${#_WORK_TEXT}+2)))
 			do
-				_REAL_PATH="$(realpath "${_FILE_PATH}")"
+				_REAL_PATH="$(realpath --canonicalize-missing "${_FILE_PATH}")"
 				if [ -e "${_REAL_PATH}" ]; then
 					_REAL_VLNZ="${_REAL_PATH}"
 					_KNEL_VERS="$(file "${_REAL_VLNZ}")"

@@ -111,11 +111,7 @@ autoinstall:
           printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_PATH_SEED" "${_PATH_SEED:-}";
           printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_DIRS_COMD" "${_DIRS_COMD:-}";
         fi;
-        {
-          echo "nameserver 8.8.8.8";
-          echo "nameserver 8.8.4.4";
-        } >  /etc/resolv.conf;
-        if [ -d /run/systemd/resolve/. ] && [ ! -e /run/systemd/resolve/stub-resolv.conf ]; then
+        if [ ! -e /run/systemd/resolve/stub-resolv.conf ]; then
           printf "### %s: %s ###\n" "${_FUNC_NAME}" "copy stub-resolv.conf";
           mkdir -p /run/systemd/resolve;
           cp -p /etc/resolv.conf /run/systemd/resolve/stub-resolv.conf;

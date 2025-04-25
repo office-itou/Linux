@@ -1233,7 +1233,7 @@ function funcCreate_directory() {
 			_LINK_PATH="${_LINK_PATH%/}/${_TGET_PATH##*/}"
 		fi
 		# --- check symbolic link ---------------------------------------------
-		if [[ -h "${_LINK_PATH}" ]]; then
+		if [[ -L "${_LINK_PATH}" ]]; then
 			funcPrintf "%20.20s: %s" "exist symlink" "${_LINK_PATH/${PWD}\//}"
 			continue
 		fi
@@ -1270,7 +1270,7 @@ function funcCreate_directory() {
 			_LINK_PATH="${_LINK_PATH%/}/${_TGET_PATH##*/}"
 		fi
 		# --- check symbolic link ---------------------------------------------
-		if [[ -h "${_LINK_PATH}" ]]; then
+		if [[ -L "${_LINK_PATH}" ]]; then
 			funcPrintf "%20.20s: %s" "exist symlink" "${_LINK_PATH/${PWD}\//}"
 			continue
 		fi
@@ -1955,7 +1955,7 @@ function funcCreate_directory() {
 #		 		if [ ! -e "${_REAL_PATH}" ]; then
 #		 			mkdir -p "${_REAL_PATH%/*}"
 #		 		fi
-#		 		touch "$1"
+#		 		touch -a "$1"
 #		#		return
 #		 	fi
 #		 	# --- backup --------------------------------------------------------------
@@ -3058,7 +3058,7 @@ function funcCreate_directory() {
 #		 		ln -sfr "${_WORK_PATH}" "${_FILE_PATH}"
 #		 		if [ ! -e "${_WORK_PATH}" ]; then
 #		 			mkdir -p "${_WORK_PATH%/*}"
-#		 			touch "${_WORK_PATH}"
+#		 			touch -a "${_WORK_PATH}"
 #		 		fi
 #		
 #		 		# --- debug out -------------------------------------------------------
@@ -4429,10 +4429,10 @@ function funcCreate_nocloud() {
 				;;
 			*)	;;
 		esac
-		touch "${_DIRS_NAME}/meta-data"      --reference "${_DIRS_NAME}/user-data"
-		touch "${_DIRS_NAME}/network-config" --reference "${_DIRS_NAME}/user-data"
-#		touch "${_DIRS_NAME}/user-data"      --reference "${_DIRS_NAME}/user-data"
-		touch "${_DIRS_NAME}/vendor-data"    --reference "${_DIRS_NAME}/user-data"
+		touch -a "${_DIRS_NAME}/meta-data"      --reference "${_DIRS_NAME}/user-data"
+		touch -a "${_DIRS_NAME}/network-config" --reference "${_DIRS_NAME}/user-data"
+#		touch -a "${_DIRS_NAME}/user-data"      --reference "${_DIRS_NAME}/user-data"
+		touch -a "${_DIRS_NAME}/vendor-data"    --reference "${_DIRS_NAME}/user-data"
 #		cp -a "${_DIRS_NAME}/../nocloud_late_command.sh" "${_DIRS_NAME}/"
 		chmod ugo-x "${_DIRS_NAME}/"*
 	done
@@ -5231,23 +5231,25 @@ function funcCreate_remaster_download() {
 				funcPrintf "%20.20s: %s" "error" "${TXT_RED}${_ERRS_COMD}:Download was skipped because an ${TXT_REV}error${TXT_REVRST} occurred [${_ERRS_RTCD}]${TXT_RESET}"
 			else
 				if [[ ! -e "${_FILE_PATH}" ]]; then
-					_REAL_PATH="$(realpath --canonicalize-missing "${_FILE_PATH}")"
-					if [[ "${_REAL_PATH}" != "${_FILE_PATH}" ]]; then
-						mkdir -p "${_REAL_PATH%/*}"
-						touch "${_REAL_PATH}"
+					if [[ -L "${_FILE_PATH}" ]]; then
+						_REAL_PATH="$(realpath --canonicalize-missing "${_FILE_PATH}")"
+						if [[ ! -e "${_REAL_PATH}" ]]; then
+							mkdir -p "${_REAL_PATH%/*}"
+							touch -a "${_REAL_PATH}"
+						fi
 					fi
 					mkdir -p "${_FILE_PATH%/*}"
-					touch "${_FILE_PATH}"
+					touch -a "${_FILE_PATH}"
 				fi
 				if ! cp --preserve=timestamps "${_FILE_TEMP}" "${_FILE_PATH}"; then
 					funcPrintf "%20.20s: %s" "error" "${TXT_RED}Copy: Download was failed because an ${TXT_REV}error${TXT_REVRST} occurred [${_ERRS_RTCD}]${TXT_RESET}"
 				fi
 			fi
 #			if [[ ! -e "${_FILE_PATH}" ]]; then
-#				touch "${_FILE_PATH}"
+#				touch -a "${_FILE_PATH}"
 #			fi
 #			if ! cp --preserve=timestamps "${_FILE_TEMP}" "${_FILE_PATH}"; then
-#				rm "${_FILE_TEMP}"
+#				rm -f "${_FILE_TEMP}"
 #			fi
 			;;
 		*)	;;
@@ -6196,13 +6198,17 @@ function funcCreate_remaster() {
 #		trap 'rm -rf '"${_FILE_TEMP:?}"'' EXIT
 		LIST_RMOV+=("${_FILE_TEMP:?}")
 		# --- download --------------------------------------------------------
-		_REAL_PATH="$(realpath --canonicalize-missing "${_FILE_PATH}")"
-		if [[ "${_REAL_PATH}" != "${_FILE_PATH}" ]]; then
-			mkdir -p "${_REAL_PATH%/*}"
-			touch "${_REAL_PATH}"
+		if [[ ! -e "${_FILE_PATH}" ]]; then
+			if [[ -L "${_FILE_PATH}" ]]; then
+				_REAL_PATH="$(realpath --canonicalize-missing "${_FILE_PATH}")"
+				if [[ ! -e "${_REAL_PATH}" ]]; then
+					mkdir -p "${_REAL_PATH%/*}"
+					touch -a "${_REAL_PATH}"
+				fi
+			fi
+			mkdir -p "${_FILE_PATH%/*}"
+			touch -a "${_FILE_PATH}"
 		fi
-		mkdir -p "${_FILE_PATH%/*}"
-		touch "${_FILE_PATH}"
 #		funcCreate_remaster_download "${_TGET_LINE[@]}"
 		if [[ ! -e "${_FILE_PATH}" ]]; then
 			funcCreate_remaster_download "${_TGET_LINE[@]}"
@@ -6224,13 +6230,13 @@ function funcCreate_remaster() {
 		# --- skip check ------------------------------------------------------
 		if [[ ! -s "${_TGET_LINE[4]}/${_TGET_LINE[5]}" ]]; then
 			funcPrintf "%-3.3s${TXT_RESET}${TXT_BYELLOW}%17.17s: %s${TXT_RESET} %s" "===" "skip" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
-			rm "${_FILE_TEMP:?}"
+			rm -f "${_FILE_TEMP:?}"
 			continue
 		fi
 		# --- download only ---------------------------------------------------
 		case "${_COMD_TYPE}" in
 			--download )					# download only
-				rm "${_FILE_TEMP:?}"
+				rm -f "${_FILE_TEMP:?}"
 				continue
 				;;
 			--update   )					# target update
@@ -6239,7 +6245,7 @@ function funcCreate_remaster() {
 					*${TXT_GREEN}*  | \
 					*${TXT_YELLOW}* ) ;;	# success
 					*               )		# failure
-						rm "${_FILE_TEMP:?}"
+						rm -f "${_FILE_TEMP:?}"
 						continue
 						;;
 				esac
@@ -6275,7 +6281,7 @@ function funcCreate_remaster() {
 		esac
 		# --- create iso file -------------------------------------------------
 		funcCreate_remaster_iso_file "${_TGET_LINE[@]}"
-		rm "${_FILE_TEMP:?}"
+		rm -f "${_FILE_TEMP:?}"
 		funcPrintf "%-3.3s%17.17s: %s %s" "===" "complete" "${_TGET_LINE[5]}" "${TEXT_GAP2}"
 	done
 }
