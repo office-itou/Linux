@@ -86,12 +86,12 @@
 	>   "${DIRS_CONF}/_fixed_address/autoinst.xml"
 
 	# --- shell ---------------------------------------------------------------
-	cp -a "${DIRS_CONF}/preseed/preseed_kill_dhcp.sh"         "${DIRS_CONF}/_fixed_address/"
-	cp -a "${DIRS_CONF}/preseed/preseed_late_command.sh"      "${DIRS_CONF}/_fixed_address/"
-	cp -a "${DIRS_CONF}/nocloud/nocloud_late_command.sh"      "${DIRS_CONF}/_fixed_address/"
-	cp -a "${DIRS_CONF}/nocloud/ubuntu_server/meta-data"      "${DIRS_CONF}/_fixed_address/"
-	cp -a "${DIRS_CONF}/nocloud/ubuntu_server/network-config" "${DIRS_CONF}/_fixed_address/"
-	cp -a "${DIRS_CONF}/nocloud/ubuntu_server/vendor-data"    "${DIRS_CONF}/_fixed_address/"
-	cp -a "${DIRS_CONF}/script/late_command.sh"               "${DIRS_CONF}/_fixed_address/"
+#	cp -a "${DIRS_CONF}/preseed/preseed_kill_dhcp.sh"         "${DIRS_CONF}/_fixed_address/"
+#	cp -a "${DIRS_CONF}/preseed/preseed_late_command.sh"      "${DIRS_CONF}/_fixed_address/"
+#	cp -a "${DIRS_CONF}/nocloud/nocloud_late_command.sh"      "${DIRS_CONF}/_fixed_address/"
+#	cp -a "${DIRS_CONF}/nocloud/ubuntu_server/meta-data"      "${DIRS_CONF}/_fixed_address/"
+#	cp -a "${DIRS_CONF}/nocloud/ubuntu_server/network-config" "${DIRS_CONF}/_fixed_address/"
+#	cp -a "${DIRS_CONF}/nocloud/ubuntu_server/vendor-data"    "${DIRS_CONF}/_fixed_address/"
+#	cp -a "${DIRS_CONF}/script/late_command.sh"               "${DIRS_CONF}/_fixed_address/"
 
 	exit 0
