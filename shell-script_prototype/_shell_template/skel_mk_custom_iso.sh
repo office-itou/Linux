@@ -137,9 +137,12 @@ function funcHelp() {
 		      create            : update / download list files
 		
 		  config files:
-		    conf [create|all|(preseed|nocloudkickstart|autoyast)|version]
+		    conf [create]
 		      create            : create common configuration file
-		      all               : all config files (without common config file)
+		
+		  pre-config files:
+		    preconf [all|(preseed|nocloudkickstart|autoyast)]
+		      all               : all pre-config files
 		      preseed           : preseed.cfg
 		      nocloud           : nocloud
 		      kickstart         : kickstart.cfg
@@ -229,18 +232,14 @@ function funcMain() {
 				;;
 			conf    )
 				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						create   ) shift; funcCreate_conf;;
-						all      ) ;;
-						preseed  ) ;;
-						nocloud  ) ;;
-						kickstart) ;;
-						autoyast ) ;;
-						*        ) break;;
-					esac
-				done
+				case "${1:-}" in
+					create   ) shift; funcCreate_conf;;
+					*        ) ;;
+				esac
+				;;
+			preconf )
+				shift
+				funcCreate_precon _RETN_PARM "${@:-}"
 				;;
 			help    ) shift; funcHelp; break;;
 			debug   )

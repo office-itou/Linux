@@ -514,10 +514,10 @@ function funcInitialization() {
 	_CONF_SEDD="${_CONF_SEDD:-:_DIRS_TMPL_:/preseed_debian.cfg}"
 	_CONF_SEDU="${_CONF_SEDU:-:_DIRS_TMPL_:/preseed_ubuntu.cfg}"
 	_CONF_YAST="${_CONF_YAST:-:_DIRS_TMPL_:/yast_opensuse.xml}"
-	_SHEL_ERLY="${_SHEL_ERLY:-:_DIRS_SHEL_:/cmd_early.sh}"
-	_SHEL_LATE="${_SHEL_LATE:-:_DIRS_SHEL_:/cmd_late.sh}"
-	_SHEL_PART="${_SHEL_PART:-:_DIRS_SHEL_:/cmd_partition.sh}"
-	_SHEL_RUNS="${_SHEL_RUNS:-:_DIRS_SHEL_:/cmd_run.sh}"
+	_SHEL_ERLY="${_SHEL_ERLY:-:_DIRS_SHEL_:/autoinst_cmd_early.sh}"
+	_SHEL_LATE="${_SHEL_LATE:-:_DIRS_SHEL_:/autoinst_cmd_late.sh}"
+	_SHEL_PART="${_SHEL_PART:-:_DIRS_SHEL_:/autoinst_cmd_part.sh}"
+	_SHEL_RUNS="${_SHEL_RUNS:-:_DIRS_SHEL_:/autoinst_cmd_run.sh}"
 	_SRVR_PROT="${_SRVR_PROT:-http}"
 	_SRVR_NICS="${_SRVR_NICS:-"$(LANG=C ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}')"}"
 	_SRVR_MADR="${_SRVR_MADR:-"$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {print $3;}')"}"
@@ -536,6 +536,9 @@ function funcInitialization() {
 		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/('"${_SRVR_NICS}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
 	fi
 	_SRVR_NSVR="${_SRVR_NSVR:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' /etc/resolv.conf)"}"
+	if [[ "${_SRVR_NSVR:-}" = "127.0.0.53" ]]; then
+		_SRVR_NSVR="$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' /run/systemd/resolve/resolv.conf)"
+	fi
 	_SRVR_UADR="${_SRVR_UADR:-"${_SRVR_ADDR%.*}"}"
 	_NWRK_HOST="${_NWRK_HOST:-sv-:_DISTRO_:}"
 	_NWRK_WGRP="${_NWRK_WGRP:-workgroup}"
@@ -835,10 +838,10 @@ function funcCreate_conf() {
 		CONF_YAST="${_CONF_YAST//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for opensuse
 		
 		# --- shell script ------------------------------------------------------------
-		SHEL_ERLY="${_SHEL_ERLY//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run early
-		SHEL_LATE="${_SHEL_LATE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run late
-		SHEL_PART="${_SHEL_PART//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"		# run after partition
-		SHEL_RUNS="${_SHEL_RUNS//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run preseed/run
+		SHEL_ERLY="${_SHEL_ERLY//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run early
+		SHEL_LATE="${_SHEL_LATE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run late
+		SHEL_PART="${_SHEL_PART//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run after partition
+		SHEL_RUNS="${_SHEL_RUNS//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run preseed/run
 		
 		# --- tftp / web server network parameter -------------------------------------
 		SRVR_PROT="${_SRVR_PROT:-}"						# server connection protocol (http or tftp)
@@ -982,7 +985,6 @@ function fncCreate_directory() {
 	declare -i    I=0
 
 	# --- option parameter ----------------------------------------------------
-	_OPTN_PRAM=()
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
@@ -1118,6 +1120,342 @@ function fncCreate_directory() {
 # 24: cfg_tstamp    ( 27)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 25: lnk_path      ( 85)   TEXT                        symlink   directory or file path
 
+# ----- create preseed.cfg ----------------------------------------------------
+function funcCreate_preseed() {
+	declare -r    _PATH="${1:?}"		# file name
+	declare -r    _DIRS="${_PATH%/*}"	# directory name
+	declare       _WORK=""				# work variables
+
+	# -------------------------------------------------------------------------
+	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	mkdir -p "${_DIRS}"
+	cp --backup "${_CONF_SEDD}" "${_PATH}"
+
+	# --- by generation -------------------------------------------------------
+	case "${_PATH}" in
+		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
+			sed -i "${_PATH}"                      \
+			    -e '/packages:/a \    usrmerge '\\
+			;;
+		*)	;;
+	esac
+	case "${_PATH}" in
+		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
+			sed -i "${_PATH}"                    \
+			    -e 's/bind9-utils/bind9utils/'   \
+			    -e 's/bind9-dnsutils/dnsutils/'  \
+			    -e 's/systemd-resolved/systemd/' \
+			    -e 's/fcitx5-mozc/fcitx-mozc/'
+			;;
+		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
+			sed -i "${_PATH}"                    \
+			    -e 's/systemd-resolved/systemd/' \
+			    -e 's/fcitx5-mozc/fcitx-mozc/'
+			;;
+		*)	;;
+	esac
+	# --- server or desktop ---------------------------------------------------
+	case "${_PATH}" in
+		*_desktop.*)
+			sed -i "${_PATH}"                                                   \
+			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
+			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \
+			    -e 's/^#/ /g                                                }'
+			;;
+		*)	;;
+	esac
+	# --- for ubiquity --------------------------------------------------------
+	case "${_PATH}" in
+		*_ubiquity_*)
+			IFS= _WORK=$(
+				sed -n '\%^[^#].*preseed/late_command%,\%[^\\]$%p' "${_PATH}" | \
+				sed -e 's/\\/\\\\/g'                                            \
+				    -e 's/d-i/ubiquity/'                                        \
+				    -e 's%preseed\/late_command%ubiquity\/success_command%'   | \
+				sed -e ':l; N; s/\n/\\n/; b l;'
+			)
+			if [[ -n "${_WORK}" ]]; then
+				sed -i "${_PATH}"                                        \
+				    -e '\%^[^#].*preseed/late_command%,\%[^\\]$%     { ' \
+				    -e 's/^/#/g                                        ' \
+				    -e 's/^#  /# /g                                  } ' \
+				    -e '\%^[^#].*ubiquity/success_command%,\%[^\\]$% { ' \
+				    -e 's/^/#/g                                        ' \
+				    -e 's/^#  /# /g                                  } '
+				sed -i "${_PATH}"                                    \
+				    -e "\%ubiquity/success_command%i \\${_WORK}"
+			fi
+			sed -i "${_PATH}"                             \
+			    -e "\%ubiquity/download_updates% s/^#/ /" \
+			    -e "\%ubiquity/use_nonfree%      s/^#/ /" \
+			    -e "\%ubiquity/reboot%           s/^#/ /"
+			;;
+		*)	;;
+	esac
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${_PATH}"
+}
+
+# ----- create nocloud --------------------------------------------------------
+function funcCreate_nocloud() {
+	declare -r    _PATH="${1:?}"		# file name
+	declare -r    _DIRS="${_PATH%/*}"	# directory name
+#	declare       _WORK=""				# work variables
+
+	# -------------------------------------------------------------------------
+	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	mkdir -p "${_DIRS}"
+	cp --backup "${_CONF_CLUD}" "${_PATH}"
+
+	# --- by generation -------------------------------------------------------
+	case "${_PATH}" in
+		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
+			sed -i "${_PATH}"                      \
+			    -e '/packages:/a \    usrmerge '\\
+			;;
+		*)	;;
+	esac
+	case "${_PATH}" in
+		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
+			sed -i "${_PATH}"                    \
+			    -e 's/bind9-utils/bind9utils/'   \
+			    -e 's/bind9-dnsutils/dnsutils/'  \
+			    -e 's/systemd-resolved/systemd/' \
+			    -e 's/fcitx5-mozc/fcitx-mozc/'
+			;;
+		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
+			sed -i "${_PATH}"                    \
+			    -e 's/systemd-resolved/systemd/' \
+			    -e 's/fcitx5-mozc/fcitx-mozc/'
+			;;
+		*)	;;
+	esac
+	# --- server or desktop ---------------------------------------------------
+	case "${_PATH}" in
+		*_desktop.*)
+			sed -i "${_PATH}"                                              \
+			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
+			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
+			;;
+		*)	;;
+	esac
+	# -------------------------------------------------------------------------
+	touch -m "${_DIRS}/meta-data"      --reference "${_PATH}"
+	touch -m "${_DIRS}/network-config" --reference "${_PATH}"
+#	touch -m "${_DIRS}/user-data"      --reference "${_PATH}"
+	touch -m "${_DIRS}/vendor-data"    --reference "${_PATH}"
+	# -------------------------------------------------------------------------
+	chmod --recursive ugo-x "${_DIRS}"
+}
+
+# ----- create kickstart.cfg --------------------------------------------------
+function funcCreate_kickstart() {
+	declare -r    _PATH="${1:?}"		# file name
+	declare -r    _DIRS="${_PATH%/*}"	# directory name
+#	declare       _WORK=""				# work variables
+	declare       _DSTR_VERS=""			# distribution version
+	declare       _DSTR_NUMS=""			# "            number
+	declare       _DSTR_NAME=""			# "            name
+	declare       _DSTR_SECT=""			# "            section
+	declare -r    _BASE_ARCH="x86_64"	# base architecture
+	declare -r    _WEBS_ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
+
+	# -------------------------------------------------------------------------
+	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	mkdir -p "${_DIRS}"
+	cp --backup "${_CONF_KICK}" "${_PATH}"
+
+	# -------------------------------------------------------------------------
+#	_DSTR_NUMS="\$releasever"
+	_DSTR_VERS="${_PATH#*_}"
+	_DSTR_VERS="${_DSTR_VERS%%_*}"
+	_DSTR_NUMS="${_DSTR_VERS##*-}"
+	_DSTR_NAME="${_DSTR_VERS%-*}"
+	_DSTR_SECT="${_DSTR_NAME/-/ }"
+
+	# --- initializing the settings -------------------------------------------
+	sed -i "${_PATH}"                                   \
+	    -e "/^cdrom$/      s/^/#/                     " \
+	    -e "/^url[ \t]\+/  s/^/#/g                    " \
+	    -e "/^repo[ \t]\+/ s/^/#/g                    " \
+	    -e "s/:_HOST_NAME_:/${_DSTR_NAME}/            " \
+	    -e "s%:_WEBS_ADDR_:%${_WEBS_ADDR}%g           " \
+	    -e "s%:_DISTRO_:%${_DSTR_NAME}-${_DSTR_NUMS}%g"
+	# --- cdrom, repository ---------------------------------------------------
+	case "${_PATH}" in
+		*_dvd*)		# --- cdrom install ---------------------------------------
+			sed -i "${_PATH}"                                   \
+			    -e "/^#cdrom$/ s/^#//                         "
+			;;
+		*_net*)		# --- network install -------------------------------------
+			sed -i "${_PATH}"                                   \
+			    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/           { " \
+			    -e "/^#url[ \t]\+/  s/^#//g                   " \
+			    -e "/^#repo[ \t]\+/ s/^#//g                 } "
+			;;
+		*_web*)		# --- network install [ for pxeboot ] ---------------------
+			sed -i "${_PATH}"                                   \
+			    -e "/^#.*(web address).*$/,/^$/             { " \
+			    -e "/^#url[ \t]\+/  s/^#//g                   " \
+			    -e "/^#repo[ \t]\+/ s/^#//g                   " \
+			    -e "s/\$releasever/${_DSTR_NUMS}/g            " \
+			    -e "s/\$basearch/${_BASE_ARCH}/g            } " \
+			;;
+		*)	;;
+	esac
+	# --- desktop -------------------------------------------------------------
+	sed -e "/%packages/,/%end/ {"                       \
+	    -e "/desktop/ s/^-//g  }"                       \
+	    "${_PATH}"                                      \
+	>   "${_PATH%.*}_desktop.${_PATH##*.}"
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${_PATH}" "${_PATH%.*}_desktop.${_PATH##*.}"
+}
+
+# ----- create autoyast.xml ---------------------------------------------------
+function funcCreate_autoyast() {
+	declare -r    _PATH="${1:?}"		# file name
+	declare -r    _DIRS="${_PATH%/*}"	# directory name
+#	declare       _WORK=""				# work variables
+	declare       _DSTR_VERS=""			# distribution version
+	declare       _DSTR_NUMS=""			# "            number
+
+	# -------------------------------------------------------------------------
+	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	mkdir -p "${_DIRS}"
+	cp --backup "${_CONF_YAST}" "${_PATH}"
+
+	# -------------------------------------------------------------------------
+	_DSTR_VERS="${_PATH#*_}"
+	_DSTR_VERS="${_DSTR_VERS%%_*}"
+	_DSTR_NUMS="${_DSTR_VERS##*-}"
+
+	# --- by media ------------------------------------------------------------
+	case "${_PATH}" in
+		*_dvd*)
+			sed -i "${_PATH}"                                         \
+			    -e '/<image_installation t="boolean">/ s/false/true/'
+			;;
+		*)
+			sed -i "${_PATH}"                                         \
+			    -e '/<image_installation t="boolean">/ s/true/false/'
+			;;
+	esac
+	# --- by version ----------------------------------------------------------
+	case "${_PATH}" in
+		*tumbleweed*)
+			sed -i "${_PATH}"                                          \
+			    -e '\%<add_on_products .*>%,\%<\/add_on_products>% { ' \
+			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
+			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
+			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
+			    -e 's%\(<product>\).*\(</product>\)%\1openSUSE\2%    '
+			;;
+		*           )
+			sed -i "${_PATH}"                                                    \
+			    -e '\%<add_on_products .*>%,\%</add_on_products>%            { ' \
+			    -e '/<!-- leap/,/leap -->/                                   { ' \
+			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${_DSTR_NUMS}/%g } " \
+			    -e '/<!-- leap$/ s/$/ -->/g                                    ' \
+			    -e '/^leap -->/  s/^/<!-- /g                                 } ' \
+			    -e 's%\(<product>\).*\(</product>\)%\1Leap\2%                  '
+			;;
+	esac
+	# --- desktop -------------------------------------------------------------
+	sed -e '/<!-- desktop lxde$/ s/$/ -->/g ' \
+	    -e '/^desktop lxde -->/  s/^/<!-- /g' \
+	    "${_PATH}"                            \
+	>   "${_PATH%.*}_desktop.${_PATH##*.}"
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${_PATH}"
+}
+
+# ----- create pre-configuration file templates -------------------------------
+function funcCreate_precon() {
+	declare -n    _NAME_REFR="${1:-}"	# name reference
+	shift
+	declare -a    _OPTN_PRAM=()			# option parameter
+	declare -a    _LIST=()				# data list
+	declare       _PATH=""				# file name
+	declare       _TYPE=""				# configuration type
+#	declare       _WORK=""				# work variables
+	declare -i    I=0					# work variables
+
+	# --- option parameter ----------------------------------------------------
+	_OPTN_PRAM=()
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1:-}" in
+			all      ) _OPTN_PRAM+=("preseed" "nocloud" "kickstart" "autoyast");;
+			preseed  | \
+			nocloud  | \
+			kickstart| \
+			autoyast ) _OPTN_PRAM+=("$1");;
+			*        ) break;;
+		esac
+		shift
+	done
+	_NAME_REFR="${*:-}"
+	if [[ -z "${_OPTN_PRAM[*]}" ]]; then
+		return
+	fi
+
+	# -------------------------------------------------------------------------
+	funcPrintf "%20.20s: %s" "create pre-conf file" ""
+
+	# -------------------------------------------------------------------------
+	_LIST=()
+	for I in "${!_LIST_MDIA[@]}"
+	do
+		read -r -a _LINE < <(echo "${_LIST_MDIA[I]}")
+		case "${_LINE[1]}" in			# entry_flag
+			o) ;;
+			*) continue;;
+		esac
+		case "${_LINE[23]}" in			# cfg_path
+			-) continue;;
+			*) ;;
+		esac
+		_PATH="${_LINE[23]}"
+		_TYPE="${_PATH%/*}"
+		_TYPE="${_TYPE##*/}"
+		if ! echo "${_OPTN_PRAM[*]}" | grep -q "${_TYPE}"; then
+			continue
+		fi
+		_LIST+=("${_PATH}")
+		case "${_PATH}" in
+			*dvd.*) _LIST+=("${_PATH/_dvd/_web}");;
+			*)	;;
+		esac
+	done
+	mapfile -d $'\n' -t _LIST < <(IFS=  printf "%s\n" "${_LIST[@]}" | sort -Vu || true)
+	# -------------------------------------------------------------------------
+	for _PATH in "${_LIST[@]}"
+	do
+		_TYPE="${_PATH%/*}"
+		_TYPE="${_TYPE##*/}"
+		case "${_TYPE}" in
+			preseed  ) funcCreate_preseed   "${_PATH}";;
+			nocloud  ) funcCreate_nocloud   "${_PATH}/user-data";;
+			kickstart) funcCreate_kickstart "${_PATH}";;
+			autoyast ) funcCreate_autoyast  "${_PATH}";;
+			*)	;;
+		esac
+	done
+
+	# -------------------------------------------------------------------------
+	# debian_*_oldold  : debian-10(buster)
+	# debian_*_old     : debian-11(bullseye)
+	# debian_*         : debian-12(bookworm)/13(trixie)/14(forky)/testing/sid/~
+	# ubuntu_*_oldold  : ubuntu-14.04(trusty)/16.04(xenial)/18.04(bionic)
+	# ubuntu_*_old     : ubuntu-20.04(focal)/22.04(jammy)
+	# ubuntu_*         : ubuntu-23.04(lunar)/~
+	# ubiquity_*_oldold: ubuntu-14.04(trusty)/16.04(xenial)/18.04(bionic)
+	# ubiquity_*_old   : ubuntu-20.04(focal)/22.04(jammy)
+	# ubiquity_*       : ubuntu-23.04(lunar)/~
+	# -------------------------------------------------------------------------
+}
+
 # --- debug out parameter -----------------------------------------------------
 funcDebug_parameter() {
 	declare       _VARS_CHAR="_"		# variable initial letter
@@ -1170,9 +1508,12 @@ function funcHelp() {
 		      create            : update / download list files
 		
 		  config files:
-		    conf [create|all|(preseed|nocloudkickstart|autoyast)|version]
+		    conf [create]
 		      create            : create common configuration file
-		      all               : all config files (without common config file)
+		
+		  pre-config files:
+		    preconf [all|(preseed|nocloudkickstart|autoyast)]
+		      all               : all pre-config files
 		      preseed           : preseed.cfg
 		      nocloud           : nocloud
 		      kickstart         : kickstart.cfg
@@ -1262,18 +1603,14 @@ function funcMain() {
 				;;
 			conf    )
 				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						create   ) shift; funcCreate_conf;;
-						all      ) ;;
-						preseed  ) ;;
-						nocloud  ) ;;
-						kickstart) ;;
-						autoyast ) ;;
-						*        ) break;;
-					esac
-				done
+				case "${1:-}" in
+					create   ) shift; funcCreate_conf;;
+					*        ) ;;
+				esac
+				;;
+			preconf )
+				shift
+				funcCreate_precon _RETN_PARM "${@:-}"
 				;;
 			help    ) shift; funcHelp; break;;
 			debug   )
