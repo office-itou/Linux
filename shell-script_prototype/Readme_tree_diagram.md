@@ -199,21 +199,20 @@ tree --charset C -n --filesfirst -d /srv/
         |   |   |-- debian-keyring.gpg
         |   |   `-- ubuntu-archive-keyring.gpg
         |   |-- _template ------------- templates for various configuration files
-        |   |   |-- kickstart_common.cfg ------ for rhel
-        |   |   |-- nocloud-ubuntu-user-data -- for ubuntu cloud-init
+        |   |   |-- kickstart_rhel.cfg -------- for rhel
         |   |   |-- preseed_debian.cfg -------- for debian
         |   |   |-- preseed_ubuntu.cfg -------- for ubuntu
+        |   |   |-- user-data_ubuntu ---------- for ubuntu cloud-init
         |   |   `-- yast_opensuse.xml --------- for opensuse
-        |   |-- autoinst -------------- script files for auto install
-        |   |   |-- cmd_early.sh -------------- for early command
-        |   |   |-- cmd_late.sh --------------- for late command
-        |   |   |-- cmd_partition.sh ---------- for early command after partman
-        |   |   `-- cmd_run.sh ---------------- for preseed/run
         |   |-- autoyast -------------- configuration files for opensuse
         |   |-- kickstart ------------- "                   for rhel
         |   |-- nocloud --------------- "                   for ubuntu cloud-init
         |   |-- preseed --------------- "                   for debian/ubuntu preseed
         |   |-- script ---------------- script files
+        |   |   |-- autoinst_cmd_early.sh ----- for auto install early command
+        |   |   |-- autoinst_cmd_late.sh ------ "                late command
+        |   |   |-- autoinst_cmd_part.sh ------ "                early command after partman
+        |   |   `-- autoinst_cmd_run.sh ------- "                preseed/run
         |   `-- windows --------------- configuration files for windows
         |       |-- WinREexpand.cmd ----------- hotfix for windows 10
         |       |-- WinREexpand_bios.sub ------ "
