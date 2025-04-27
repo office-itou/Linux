@@ -1332,6 +1332,7 @@ function funcCreate_autoyast() {
 
 	# --- by media ------------------------------------------------------------
 	case "${_PATH}" in
+		*_web*|\
 		*_dvd*)
 			sed -i "${_PATH}"                                         \
 			    -e '/<image_installation t="boolean">/ s/false/true/'
