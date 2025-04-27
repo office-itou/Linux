@@ -186,170 +186,395 @@ fixed address -->
 -->
 <!-- log's directory: /var/adm/autoinstall/logs/ -->
   <scripts t="map">
+    <!-- *** pre-scripts *************************************************** -->
     <pre-scripts t="list">
       <script t="map">
         <debug t="boolean">false</debug>
         <feedback t="boolean">false</feedback>
         <feedback_type/>
-        <filename>zzz_link_up.sh</filename>
+        <filename>zzz_pre-scripts.sh</filename>
         <interpreter>shell</interpreter>
         <location/>
         <notification/>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
-        <source>
-<![CDATA[
-#!/bin/sh
-echo "Running pre scripts"
-if [ -e /tmp/profile/autoinst.xml ]; then
-  cp -a /tmp/profile/autoinst.xml /tmp/
-  _NICS_DNS4="$(
-    sed /tmp/autoinst.xml                                       \
-        -ne '/^[ ]\+<networking .*>$/,/[ ]\+<\/networking>$/ {' \
-        -e  '/<nameservers .*>/,/<\/nameservers>/            {' \
-        -e  's/\(^ \+\| \+$\)//g                              ' \
-        -e  '/^<nameserver>[0-9.]\+<\/nameserver>$/p        }}' \
-|   {
-      _WORK_DNS4=""
-      while IFS= read -r _LINE
-      do
-        _WORK_TEXT="${_LINE#*<nameserver>}"
-        _WORK_TEXT="${_WORK_TEXT%</nameserver>*}"
-        _WORK_DNS4="${_WORK_DNS4}${_WORK_DNS4:+ }${_WORK_TEXT}"
-      done
-      echo "${_WORK_DNS4}"
-    }
-  )"
-  if [ -n "${_NICS_DNS4:-}" ]; then
-    sed -i /etc/sysconfig/network/config                                 \
-        -e '/NETCONFIG_DNS_STATIC_SERVERS/ s/=.*$/="'"${_NICS_DNS4}"'"/'
-    netconfig -f update
-    cat /etc/resolv.conf
-  fi
-  sed /tmp/autoinst.xml                                       \
-      -ne '/^[ ]\+<networking .*>$/,/[ ]\+<\/networking>$/ {' \
-      -e  '/<interface .*>/,/<\/interface>/                {' \
-      -e  's/\(^ \+\| \+$\)//gp                           }}' \
-| sed -e  '{:l; N; s/[\r\n]/,/; b l;}'                        \
-| sed -e  's/\(<\/interface>\),/\1\n/g'                       \
-| while read -r _LINE
+        <source><![CDATA[#!/bin/sh
+  set -eu
+  exec 2>&1
+  export LANG=C
+  _PROG_PATH="${0:-}"
+  _PROG_NAME="${_PROG_PATH##*/}"
+  _FUNC_NAME="${_PROG_NAME:-pre-scripts}"
+  _COMD_LINE="$(cat /proc/cmdline)"
+  for _LINE in ${_COMD_LINE}
   do
-    _NICS_MODE="${_LINE#*<startmode>}"
-    _NICS_MODE="${_NICS_MODE%</startmode>*}"
-    _NICS_NAME="${_LINE#*<name>}"
-    _NICS_NAME="${_NICS_NAME%</name>*}"
-    _IPV4_PROT="${_LINE#*<bootproto>}"
-    _IPV4_PROT="${_IPV4_PROT%</bootproto>*}"
-    _IPV4_ADDR=""
-    _IPV4_BITS=""
-    case "${_IPV4_PROT}" in
-      static)
-        _IPV4_ADDR="${_LINE#*<ipaddr>}"
-        _IPV4_ADDR="${_IPV4_ADDR%</ipaddr>*}"
-        _IPV4_BITS="${_LINE#*<prefixlen>}"
-        _IPV4_BITS="${_IPV4_BITS%</prefixlen>*}"
-        cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > /etc/sysconfig/network/ifcfg-"${_NICS_NAME}"
-BOOTPROTO='${_IPV4_PROT:-none}'
-STARTMODE='${_NICS_MODE:-none}'
-IPADDR=${_IPV4_ADDR:-}${_IPV4_BITS:+"/${_IPV4_BITS}"}
-_EOT_
-        ;;
-      *)
-        cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > /etc/sysconfig/network/ifcfg-"${_NICS_NAME}"
-BOOTPROTO='${_IPV4_PROT:-none}'
-STARTMODE='${_NICS_MODE:-none}'
-_EOT_
-        ;;
+    case "${_LINE}" in
+      debug              ) _FLAG_DBGS="true"; set -x;;
+      debugout|dbg|dbgout) _FLAG_DBGS="true";;
+      *) ;;
     esac
-    echo "[${_NICS_NAME},${_IPV4_PROT},${_IPV4_ADDR},${_IPV4_BITS},${_NICS_MODE}]"
-    if [ "${_NICS_MODE}" != "none" ] && [ "${_IPV4_PROT}" != "none" ]; then
-      echo "set ${_NICS_NAME} link down"
-      ifdown "${_NICS_NAME}" || true && sleep 3
-      echo "set ${_NICS_NAME} link up"
-      ifup "${_NICS_NAME}" || true && sleep 3
-    fi
   done
-fi
-ip address show
-echo "Complete pre scripts"
-exit 0
-]]>
-        </source>
+  _DIRS_TGET="/mnt"
+  if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
+    _DIRS_TGET=""
+  fi
+  _DIRS_INST="/var/adm/autoinst"
+  _PATH_LOGS="${_DIRS_TGET}${_DIRS_INST}/${_FUNC_NAME}.log"
+  mkdir -p "${_DIRS_TGET}${_DIRS_INST}"
+  chmod 0600 "${_DIRS_TGET}${_DIRS_INST}"
+  {
+    printf "\033[m\033[42m%s\033[m\n" "Running ${_PROG_NAME}"
+    _time_start=$(date +%s)
+    printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+    _PATH_SEED=""
+    _PATH="/var/lib/cdebconf/questions.dat"
+    if [ -f "${_PATH}" ]; then
+      printf "### %s: %s ###\n" "${_FUNC_NAME}" "find ${_PATH##*/}"
+      _PATH_SEED="$(awk '$1=="Name:"&&($2=="preseed/url"||$2=="preseed/file"),$1=="" {if ($1=="Value:") {print $2;}}' "${_PATH}")"
+      cp -a "${_PATH}" "${_DIRS_TGET}${_DIRS_INST}/"
+    fi
+    if [ -n "${AutoYaST:-}" ]; then
+      printf "### %s: %s ###\n" "${_FUNC_NAME}" "find AutoYaST=${AutoYaST}"
+      _PATH_DEVS="${Device:-}"
+      _PATH_SEED="${AutoYaST#*"${_PATH_DEVS}"}"
+    fi
+    _DIRS_COMD="${_PATH_SEED%/*}"
+    _DIRS_COMD="${_DIRS_COMD%/*}/script"
+    for _LINE in ${_COMD_LINE}
+    do
+      case "${_LINE}" in
+        debug|debugout|dbg|dbgout ) _FLAG_DBGS="true";;
+        iso-url=*.iso |url=*.iso  ) ;;
+        preseed/url=* |url=*      ) _PATH_SEED="${_LINE#*url=}"
+                                    _DIRS_COMD="${_PATH_SEED%/*}"
+                                    _DIRS_COMD="${_DIRS_COMD%/*}/script";;
+        preseed/file=*|file=*     ) _PATH_SEED="${_LINE#*file=}"
+                                    _DIRS_COMD="${_PATH_SEED%/*}"
+                                    _DIRS_COMD="${_DIRS_COMD%/*}/script";;
+        ds=nocloud*               ) _PATH_SEED="${_LINE#*ds=nocloud*=}"
+                                    _PATH_SEED="${_PATH_SEED%/}/user-data"
+                                    _DIRS_COMD="${_PATH_SEED%/}"
+                                    _DIRS_COMD="${_DIRS_COMD%/nocloud*}/script";;
+        inst.ks=*                 ) _PATH_SEED="${_LINE#*inst.ks=}"
+                                    case "${_PATH_SEED}" in
+                                      http:*|https:*|ftp:*|tftp:*)
+                                        _DIRS_COMD="${_PATH_SEED%/*}"
+                                        _DIRS_COMD="${_DIRS_COMD%/*}/script";;
+                                      hd:sr0:*|cdrom|cdrom:*)
+                                        _PATH_SEED="/mnt/install/repo/${_PATH_SEED#*:*/}"
+                                        _DIRS_COMD="${_PATH_SEED%/*}"
+                                        _DIRS_COMD="${_DIRS_COMD%/*}/script";;
+                                      nfs:*                 ) ;;
+                                      hd:*                  ) ;;
+                                      hmc                   ) ;;
+                                      *) ;;
+                                    esac;;
+        autoyast=*                ) if [ -z "${AutoYaST:-}" ]; then
+                                      _PATH_SEED="${_LINE#*autoyast=}"
+                                      _DIRS_COMD="${_PATH_SEED%/*}"
+                                      _DIRS_COMD="${_DIRS_COMD%/*}/script"
+                                    fi;;
+        *) ;;
+      esac
+    done
+    if [ -n "${_FLAG_DBGS:-}" ]; then
+      printf "### %s: %s ###\n" "${_FUNC_NAME}" "debug print"
+      printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "LANG      " "${LANG:-}"
+      printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_FUNC_NAME" "${_FUNC_NAME:-}"
+      printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_DIRS_TGET" "${_DIRS_TGET:-}"
+      printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_DIRS_INST" "${_DIRS_INST:-}"
+      printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_PATH_LOGS" "${_PATH_LOGS:-}"
+      printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_PATH_SEED" "${_PATH_SEED:-}"
+      printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_DIRS_COMD" "${_DIRS_COMD:-}"
+    fi
+    _PATH="/run/systemd/resolve/stub-resolv.conf"
+    if [ ! -e "${_PATH}" ]; then
+      printf "### %s: %s ###\n" "${_FUNC_NAME}" "copy ${_PATH##/*}"
+      mkdir -p /run/systemd/resolve
+      cp -p /etc/resolv.conf "${_PATH}"
+    fi
+    {
+      echo "nameserver 8.8.8.8"
+      echo "nameserver 8.8.4.4"
+    } >>  /etc/resolv.conf
+    if [ -n "${_PATH_SEED:-}" ]; then
+      if [ -n "${_PATH_DEVS:-}" ]; then
+        _PATH_DEVS="/dev/${_PATH_DEVS}"
+        if [ -e "${_PATH_DEVS}" ]; then
+          printf "### %s: %s ###\n" "${_FUNC_NAME}" "mount: [${_PATH_DEVS}]"
+          _MNTP="/tmp/autoinst-mnt"
+          mkdir -p "${_MNTP}"
+          mount -r "${_PATH_DEVS}" "${_MNTP}"
+          _PATH_SEED="${_MNTP}${_PATH_SEED}"
+          _DIRS_COMD="${_MNTP}${_DIRS_COMD}"
+        fi
+      fi
+      printf "### %s: %s ###\n" "${_FUNC_NAME}" "file copy"
+      for _PATH in "${_PATH_SEED}"                       \
+                   "${_DIRS_COMD}/autoinst_cmd_early.sh" \
+                   "${_DIRS_COMD}/autoinst_cmd_late.sh"  \
+                   "${_DIRS_COMD}/autoinst_cmd_part.sh"  \
+                   "${_DIRS_COMD}/autoinst_cmd_run.sh"
+      do
+        printf "### %s: %s ###\n" "${_FUNC_NAME}" "copy: [${_PATH}]"
+        case "${_PATH}" in
+          http:*|https:*|ftp:*|tftp:*)
+            if command -v wget > /dev/null 2>&1; then
+              wget --output-document "${_DIRS_TGET:-}${_DIRS_INST}/${_PATH##*/}" "${_PATH}" || true
+            else
+              curl --location --http1.1 --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --progress-bar --continue-at - --create-dirs --output-dir "${_DIRS_TGET}${_DIRS_INST}" --output "${_PATH##*/}" "${_PATH}" || true
+            fi;;
+          file:*|/*                  ) cp -a "${_PATH#*:*//}" "${_DIRS_TGET}${_DIRS_INST}/" || true;;
+          *) ;;
+        esac
+        if [ "${_PATH}" != "${_PATH_SEED}" ] && [ -e "${_DIRS_TGET}${_DIRS_INST}/${_PATH##*/}" ]; then
+          chmod 0700 "${_DIRS_TGET}${_DIRS_INST}/${_PATH##*/}"
+        fi
+      done
+      if [ -n "${_MNTP:-}" ]; then
+        printf "### %s: %s ###\n" "${_FUNC_NAME}" "umount: [${_PATH_DEVS}]"
+        umount "${_MNTP}"
+      fi
+    fi
+    _PATH_EXEC="${_DIRS_TGET}${_DIRS_INST}/autoinst_cmd_part.sh"
+    if [ -e "${_PATH_EXEC}" ]; then
+      printf "### %s: %s ###\n" "${_FUNC_NAME}" "exec: ${_PATH_EXEC}"
+      sh -c "${_PATH_EXEC} nvme0n1"
+      printf "### %s: %s ###\n" "${_FUNC_NAME}" "complete: ${_PATH_EXEC}"
+    fi
+    _time_end=$(date +%s)
+    _time_elapsed=$((_time_end-_time_start))
+    printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
+    printf "elapsed time: %dd%02dh%02dm%02ds\n" $((_time_elapsed/86400)) $((_time_elapsed%86400/3600)) $((_time_elapsed%3600/60)) $((_time_elapsed%60))
+    printf "\033[m\033[42m%s\033[m\n" "Complete ${_PROG_NAME}"
+  } >> "${_PATH_LOGS}" 2>&1
+  exit 0]]></source>
       </script>
     </pre-scripts>
+    <!-- *** postpartitioning-scripts ************************************** -->
+    <postpartitioning-scripts t="list">
+      <script t="map">
+        <debug t="boolean">false</debug>
+        <feedback t="boolean">false</feedback>
+        <feedback_type/>
+        <filename>zzz_postpartitioning-scripts.sh</filename>
+        <interpreter>shell</interpreter>
+        <location/>
+        <notification/>
+        <param-list t="list"/>
+        <rerun t="boolean">false</rerun>
+        <source><![CDATA[#!/bin/sh
+  set -eu
+  exec 2>&1
+  export LANG=C
+  _PROG_PATH="${0:-}"
+  _PROG_NAME="${_PROG_PATH##*/}"
+  _FUNC_NAME="${_PROG_NAME:-postpartitioning-scripts}"
+  _COMD_LINE="$(cat /proc/cmdline)"
+  for _LINE in ${_COMD_LINE}
+  do
+    case "${_LINE}" in
+      debug              ) _FLAG_DBGS="true"; set -x;;
+      debugout|dbg|dbgout) _FLAG_DBGS="true";;
+      *) ;;
+    esac
+  done
+  _DIRS_TGET="/mnt"
+  if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
+    _DIRS_TGET=""
+  fi
+  _DIRS_INST="/var/adm/autoinst"
+  _PATH_LOGS="${_DIRS_TGET}${_DIRS_INST}/${_FUNC_NAME}.log"
+  mkdir -p "${_DIRS_TGET}${_DIRS_INST}"
+  chmod 0600 "${_DIRS_TGET}${_DIRS_INST}"
+  {
+    printf "\033[m\033[42m%s\033[m\n" "Running ${_PROG_NAME}"
+    _time_start=$(date +%s)
+    printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+    _time_end=$(date +%s)
+    _time_elapsed=$((_time_end-_time_start))
+    printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
+    printf "elapsed time: %dd%02dh%02dm%02ds\n" $((_time_elapsed/86400)) $((_time_elapsed%86400/3600)) $((_time_elapsed%3600/60)) $((_time_elapsed%60))
+    printf "\033[m\033[42m%s\033[m\n" "Complete ${_PROG_NAME}"
+  } >> "${_PATH_LOGS}" 2>&1
+  exit 0]]></source>
+      </script>
+    </postpartitioning-scripts>
+    <!-- *** chroot-scripts ************************************************ -->
     <chroot-scripts t="list">
       <script t="map">
         <chrooted t="boolean">false</chrooted>
         <debug t="boolean">false</debug>
         <feedback t="boolean">false</feedback>
         <feedback_type/>
-        <filename>zzz_cmdline.sh</filename>
+        <filename>zzz_chroot-scripts.sh</filename>
         <interpreter>shell</interpreter>
         <location/>
         <notification/>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
-        <source>
-<![CDATA[
-#!/bin/sh
-echo "Running chroot (no chrooted) scripts"
-if [ -e /var/log/YaST2/y2start.log ]; then
-  _AUTO_YAST="$(sed -ne '/declare -x AutoYaST=/p' /var/log/YaST2/y2start.log)"
-  _AUTO_YAST="${_AUTO_YAST#*\"}"
-  _AUTO_YAST="${_AUTO_YAST%\"*}"
-  _PROT_NAME="${_AUTO_YAST%%//*}"
-  _XMLS_PATH="${_AUTO_YAST#*//}"
-  _XMLS_DIRS="${_XMLS_PATH#*/*/*/}"
-  _XMLS_NAME="${_XMLS_DIRS##*/}"
-  _XMLS_DIRS="${_XMLS_DIRS%"${_XMLS_NAME:-}"}"
-  _XMLS_DIRS="${_XMLS_DIRS%/}"
-  _DEVS_PATH="${_XMLS_PATH%"${_XMLS_DIRS:+"/${_XMLS_DIRS}"}/${_XMLS_NAME:-}"}"
-  case "${_PROT_NAME:-}" in
-    device:     ) mkdir -p /media; mount -r "/dev/${_DEVS_PATH}" /media; cp "/media/${_XMLS_DIRS%/*}/late_command.sh" /tmp/; umount /media;;
-    http:|https:) curl -L -# -R -S -o /tmp/late_command.sh "${_AUTO_YAST%/*}"/late_command.sh;;
-    *           ) ;;
-  esac
-fi
-if [ -e /tmp/autoinst.xml ]; then
-  mkdir -p /mnt/var/adm/installer/autoyast
-  chmod 0600 /mnt/var/adm/installer/autoyast
-  cp -a /tmp/autoinst.xml /mnt/var/adm/installer/autoyast/
-fi
-if [ -e /tmp/late_command.sh ]; then
-  mkdir -p /mnt/var/adm/installer/autoyast
-  chmod 0600 /mnt/var/adm/installer/autoyast
-  cp -a /tmp/late_command.sh /mnt/var/adm/installer/autoyast/
-  chmod +x /mnt/var/adm/installer/autoyast/late_command.sh
-fi
-echo "Complete chroot (no chrooted) scripts"
-exit 0
-]]>
-        </source>
+        <source><![CDATA[#!/bin/sh
+  set -eu
+  exec 2>&1
+  export LANG=C
+  _PROG_PATH="${0:-}"
+  _PROG_NAME="${_PROG_PATH##*/}"
+  _FUNC_NAME="${_PROG_NAME:-chroot-scripts}"
+  _COMD_LINE="$(cat /proc/cmdline)"
+  for _LINE in ${_COMD_LINE}
+  do
+    case "${_LINE}" in
+      debug              ) _FLAG_DBGS="true"; set -x;;
+      debugout|dbg|dbgout) _FLAG_DBGS="true";;
+      *) ;;
+    esac
+  done
+  _DIRS_TGET="/mnt"
+  if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
+    _DIRS_TGET=""
+  fi
+  _DIRS_INST="/var/adm/autoinst"
+  _PATH_LOGS="${_DIRS_TGET}${_DIRS_INST}/${_FUNC_NAME}.log"
+  mkdir -p "${_DIRS_TGET}${_DIRS_INST}"
+  chmod 0600 "${_DIRS_TGET}${_DIRS_INST}"
+  {
+    printf "\033[m\033[42m%s\033[m\n" "Running ${_PROG_NAME}"
+    _time_start=$(date +%s)
+    printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+    if [ -n "${_DIRS_TGET}" ] && [ -n "${_DIRS_INST}" ] && [ -d "${_DIRS_INST}"/. ]; then
+      printf "### %s: %s ###\n" "${_FUNC_NAME}" "file copy"
+      printf "### %s: %s ###\n" "${_FUNC_NAME}" "copy: ${_DIRS_INST}"
+      mkdir -p "${_DIRS_TGET}${_DIRS_INST}"
+      cp -a "${_DIRS_INST}"/. "${_DIRS_TGET}${_DIRS_INST}"
+    fi
+    _PATH_EXEC="${_DIRS_INST}/autoinst_cmd_late.sh"
+    if [ -e "${_DIRS_TGET}${_PATH_EXEC}" ]; then
+      printf "### %s: %s ###\n" "${_FUNC_NAME}" "exec: ${_PATH_EXEC}"
+      if [ -z "${_DIRS_TGET}" ]; then
+        if sh -c "${_PATH_EXEC}"; then
+          printf "### %s: %s ###\n" "${_FUNC_NAME}" "complete: ${_PATH_EXEC}"
+        else
+          printf "### %s: %s ###\n" "${_FUNC_NAME}" "failed: ${_PATH_EXEC}"
+        fi
+      else
+        mount --rbind /dev  "${_DIRS_TGET}"/dev
+        mount --rbind /proc "${_DIRS_TGET}"/proc
+        mount --rbind /run  "${_DIRS_TGET}"/run
+        mount --rbind /sys  "${_DIRS_TGET}"/sys
+        mount --rbind /tmp  "${_DIRS_TGET}"/tmp
+        mount --make-rslave "${_DIRS_TGET}"/dev
+        mount --make-rslave "${_DIRS_TGET}"/sys
+        systemctl daemon-reload
+        if chroot "${_DIRS_TGET}"/ sh -c "${_PATH_EXEC}"; then
+          printf "### %s: %s ###\n" "${_FUNC_NAME}" "complete: ${_PATH_EXEC}"
+        else
+          printf "### %s: %s ###\n" "${_FUNC_NAME}" "failed: ${_PATH_EXEC}"
+        fi
+        umount -R "${_DIRS_TGET}" || true
+      fi
+    fi
+    _time_end=$(date +%s)
+    _time_elapsed=$((_time_end-_time_start))
+    printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
+    printf "elapsed time: %dd%02dh%02dm%02ds\n" $((_time_elapsed/86400)) $((_time_elapsed%86400/3600)) $((_time_elapsed%3600/60)) $((_time_elapsed%60))
+    printf "\033[m\033[42m%s\033[m\n" "Complete ${_PROG_NAME}"
+  } >> "${_PATH_LOGS}" 2>&1
+  exit 0]]></source>
       </script>
+    </chroot-scripts>
+    <!-- *** post-scripts ************************************************** -->
+    <post-scripts t="list">
       <script t="map">
-        <chrooted t="boolean">true</chrooted>
         <debug t="boolean">false</debug>
         <feedback t="boolean">false</feedback>
         <feedback_type/>
-        <filename>zzz_exec.sh</filename>
+        <filename>zzz_post-scripts.sh</filename>
         <interpreter>shell</interpreter>
         <location/>
         <notification/>
         <param-list t="list"/>
         <rerun t="boolean">false</rerun>
-        <source>
-<![CDATA[
-#!/bin/sh
-echo "Running chroot (chrooted) scripts"
-if [ -e /var/adm/installer/autoyast/late_command.sh ]; then
-  /var/adm/installer/autoyast/late_command.sh | tee -a /var/adm/installer/autoyast/late_command.sh.log
-fi
-echo "Complete chroot (chrooted) scripts"
-exit 0
-]]>
-        </source>
+        <source><![CDATA[#!/bin/sh
+  set -eu
+  exec 2>&1
+  export LANG=C
+  _PROG_PATH="${0:-}"
+  _PROG_NAME="${_PROG_PATH##*/}"
+  _FUNC_NAME="${_PROG_NAME:-post-scripts}"
+  _COMD_LINE="$(cat /proc/cmdline)"
+  for _LINE in ${_COMD_LINE}
+  do
+    case "${_LINE}" in
+      debug              ) _FLAG_DBGS="true"; set -x;;
+      debugout|dbg|dbgout) _FLAG_DBGS="true";;
+      *) ;;
+    esac
+  done
+  _DIRS_TGET="/mnt"
+  if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
+    _DIRS_TGET=""
+  fi
+  _DIRS_INST="/var/adm/autoinst"
+  _PATH_LOGS="${_DIRS_TGET}${_DIRS_INST}/${_FUNC_NAME}.log"
+  mkdir -p "${_DIRS_TGET}${_DIRS_INST}"
+  chmod 0600 "${_DIRS_TGET}${_DIRS_INST}"
+  {
+    printf "\033[m\033[42m%s\033[m\n" "Running ${_PROG_NAME}"
+    _time_start=$(date +%s)
+    printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+    _time_end=$(date +%s)
+    _time_elapsed=$((_time_end-_time_start))
+    printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
+    printf "elapsed time: %dd%02dh%02dm%02ds\n" $((_time_elapsed/86400)) $((_time_elapsed%86400/3600)) $((_time_elapsed%3600/60)) $((_time_elapsed%60))
+    printf "\033[m\033[42m%s\033[m\n" "Complete ${_PROG_NAME}"
+  } >> "${_PATH_LOGS}" 2>&1
+  exit 0]]></source>
       </script>
-    </chroot-scripts>
+    </post-scripts>
+    <!-- *** init-scripts ************************************************** -->
+    <init-scripts t="list">
+      <script t="map">
+        <debug t="boolean">false</debug>
+        <filename>zzz_init-scripts.sh</filename>
+        <location/>
+        <source><![CDATA[#!/bin/sh
+  set -eu
+  exec 2>&1
+  export LANG=C
+  _PROG_PATH="${0:-}"
+  _PROG_NAME="${_PROG_PATH##*/}"
+  _FUNC_NAME="${_PROG_NAME:-init-scripts}"
+  _COMD_LINE="$(cat /proc/cmdline)"
+  for _LINE in ${_COMD_LINE}
+  do
+    case "${_LINE}" in
+      debug              ) _FLAG_DBGS="true"; set -x;;
+      debugout|dbg|dbgout) _FLAG_DBGS="true";;
+      *) ;;
+    esac
+  done
+  _DIRS_TGET="/mnt"
+  if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
+    _DIRS_TGET=""
+  fi
+  _DIRS_INST="/var/adm/autoinst"
+  _PATH_LOGS="${_DIRS_TGET}${_DIRS_INST}/${_FUNC_NAME}.log"
+  mkdir -p "${_DIRS_TGET}${_DIRS_INST}"
+  chmod 0600 "${_DIRS_TGET}${_DIRS_INST}"
+  {
+    printf "\033[m\033[42m%s\033[m\n" "Running ${_PROG_NAME}"
+    _time_start=$(date +%s)
+    printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+    _time_end=$(date +%s)
+    _time_elapsed=$((_time_end-_time_start))
+    printf "\033[m\033[45m%s\033[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
+    printf "elapsed time: %dd%02dh%02dm%02ds\n" $((_time_elapsed/86400)) $((_time_elapsed%86400/3600)) $((_time_elapsed%3600/60)) $((_time_elapsed%60))
+    printf "\033[m\033[42m%s\033[m\n" "Complete ${_PROG_NAME}"
+  } >> "${_PATH_LOGS}" 2>&1
+  exit 0]]></source>
+      </script>
+    </init-scripts>
+    <!-- *** scripts end *************************************************** -->
   </scripts>
   <services-manager t="map">
     <default_target>graphical</default_target>
