@@ -2,7 +2,7 @@
   
 **Updated: 2025/4/28**  
   
-|         version          | iso_mini| iso_net | iso_dvd | iso_live| pxe_mini| pxe_net | pxe_dvd | pxe_live|      code_name      | life |  release   |support_end | long_term  |    rhel    |         kerne         |     note     |
+|         version          | iso mini| iso net | iso dvd | iso live| pxe mini| pxe net | pxe dvd | pxe live|      code name      | life |  release   |support end | long term  |    rhel    |         kerne         |     note     |
 | :----------------------- | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :------------------ | :--: | :--------: | :--------: | :--------: | :--------: | :-------------------- | :----------- |
 | Debian-11.0              |         |         |         |         |         |    x    |    x    |    x    | Bullseye            | LTS  | 2021/08/14 | 2024/08/15 | 2026/08/31 |            | 5.10                  | oldstable    |
 | Debian-12.0              |         |         |         |         |         |    x    |    x    |    x    | Bookworm            |      | 2023/06/10 | 2026/06/xx | 2028/06/xx |            | 6.1                   | stable       |
