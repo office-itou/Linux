@@ -249,7 +249,7 @@ autoinstall:
       export LANG=C;
       _PROG_PATH="${0:-}";
       _PROG_NAME="${_PROG_PATH##*/}";
-      _FUNC_NAME="${_PROG_NAME:-runcmd}";
+      _FUNC_NAME="runcmd";
       _COMD_LINE="$(cat /proc/cmdline)";
       for _LINE in ${_COMD_LINE};
       do
@@ -259,7 +259,7 @@ autoinstall:
           *) ;;
         esac;
       done;
-      _DIRS_TGET="/mnt";
+      _DIRS_TGET="/target";
       if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
         _DIRS_TGET="";
       fi;
@@ -304,7 +304,7 @@ autoinstall:
       export LANG=C;
       _PROG_PATH="${0:-}";
       _PROG_NAME="${_PROG_PATH##*/}";
-      _FUNC_NAME="${_PROG_NAME:-early_command}";
+      _FUNC_NAME="early_command";
       _COMD_LINE="$(cat /proc/cmdline)";
       for _LINE in ${_COMD_LINE};
       do
@@ -314,7 +314,7 @@ autoinstall:
           *) ;;
         esac;
       done;
-      _DIRS_TGET="/mnt";
+      _DIRS_TGET="/target";
       if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
         _DIRS_TGET="";
       fi;
@@ -361,7 +361,7 @@ autoinstall:
                                             _DIRS_COMD="${_PATH_SEED%/*}";
                                             _DIRS_COMD="${_DIRS_COMD%/*}/script";;
                                           hd:sr0:*|cdrom|cdrom:*)
-                                            _PATH_SEED="/mnt/install/repo/${_PATH_SEED#*:*/}";
+                                            _PATH_SEED="/target/install/repo/${_PATH_SEED#*:*/}";
                                             _DIRS_COMD="${_PATH_SEED%/*}";
                                             _DIRS_COMD="${_DIRS_COMD%/*}/script";;
                                           nfs:*                 ) ;;
@@ -458,7 +458,7 @@ autoinstall:
       export LANG=C;
       _PROG_PATH="${0:-}";
       _PROG_NAME="${_PROG_PATH##*/}";
-      _FUNC_NAME="${_PROG_NAME:-late_command}";
+      _FUNC_NAME="late_command";
       _COMD_LINE="$(cat /proc/cmdline)";
       for _LINE in ${_COMD_LINE};
       do
@@ -468,7 +468,7 @@ autoinstall:
           *) ;;
         esac;
       done;
-      _DIRS_TGET="/mnt";
+      _DIRS_TGET="/target";
       if [ -n "${_DIRS_TGET}" ] && [ ! -d "${_DIRS_TGET}/root/." ]; then
         _DIRS_TGET="";
       fi;
