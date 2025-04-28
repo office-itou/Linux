@@ -330,7 +330,7 @@ autoinstall:
         _PATH="/var/lib/cdebconf/questions.dat";
         if [ -f "${_PATH}" ]; then
           printf "### %s: %s ###\n" "${_FUNC_NAME}" "find ${_PATH##*/}";
-          _PATH_SEED="$(awk '$1=="Name:"&&($2=="preseed/url"||$2=="preseed/file"),$1=="" {if ($1=="Value:") {print $2;}}' "${_PATH}")";
+          _PATH_SEED="$(awk ''''''$1=="Name:"&&($2=="preseed/url"||$2=="preseed/file"),$1=="" {if ($1=="Value:") {print $2;}}'''''' "${_PATH}")";
           cp -a "${_PATH}" "${_DIRS_TGET}${_DIRS_INST}/";
         fi;
         if [ -n "${AutoYaST:-}" ]; then
@@ -357,10 +357,10 @@ autoinstall:
                                         _DIRS_COMD="${_DIRS_COMD%/nocloud*}/script";;
             inst.ks=*                 ) _PATH_SEED="${_LINE#*inst.ks=}";
                                         case "${_PATH_SEED}" in
-                                          http:*|https:*|ftp:*|tftp:*);
+                                          http:*|https:*|ftp:*|tftp:*)
                                             _DIRS_COMD="${_PATH_SEED%/*}";
                                             _DIRS_COMD="${_DIRS_COMD%/*}/script";;
-                                          hd:sr0:*|cdrom|cdrom:*);
+                                          hd:sr0:*|cdrom|cdrom:*)
                                             _PATH_SEED="/mnt/install/repo/${_PATH_SEED#*:*/}";
                                             _DIRS_COMD="${_PATH_SEED%/*}";
                                             _DIRS_COMD="${_DIRS_COMD%/*}/script";;
@@ -420,7 +420,7 @@ autoinstall:
             case "${_PATH}" in
               http:*|https:*|ftp:*|tftp:*)
                 if command -v wget > /dev/null 2>&1; then
-                  wget --output-document "${_DIRS_TGET:-}${_DIRS_INST}/${_PATH##*/}" "${_PATH}" || true;
+                  wget --tries=3 --timeout=10 --quiet --continue --show-progress --progress=bar --output-document "${_DIRS_TGET:-}${_DIRS_INST}/${_PATH##*/}" "${_PATH}" || true;
                 else
                   curl --location --http1.1 --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --progress-bar --continue-at - --create-dirs --output-dir "${_DIRS_TGET}${_DIRS_INST}" --output "${_PATH##*/}" "${_PATH}" || true;
                 fi;;
