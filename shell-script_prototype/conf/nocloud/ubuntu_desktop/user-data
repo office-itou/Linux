@@ -490,7 +490,7 @@ autoinstall:
         if [ -e "${_DIRS_TGET}${_PATH_EXEC}" ]; then
           printf "### %s: %s ###\n" "${_FUNC_NAME}" "exec: ${_PATH_EXEC}";
           if [ -z "${_DIRS_TGET}" ]; then
-            if sh -c "${_PATH_EXEC}"; then;
+            if sh -c "${_PATH_EXEC}"; then
               printf "### %s: %s ###\n" "${_FUNC_NAME}" "complete: ${_PATH_EXEC}";
             else
               printf "### %s: %s ###\n" "${_FUNC_NAME}" "failed: ${_PATH_EXEC}";
@@ -500,7 +500,7 @@ autoinstall:
               printf "### %s: %s ###\n" "${_FUNC_NAME}" "exec: curtin: ${_PATH_EXEC}";
               if curtin in-target --target="${_DIRS_TGET}" -- sh -c "${_PATH_EXEC}"; then
                 printf "### %s: %s ###\n" "${_FUNC_NAME}" "complete: ${_PATH_EXEC}";
-              else;
+              else
                 printf "### %s: %s ###\n" "${_FUNC_NAME}" "failed: ${_PATH_EXEC}";
               fi;
             else
