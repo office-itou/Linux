@@ -69,7 +69,31 @@
 
 #	mkdir -p "${DIRS_CHRT}"/srv/{hgfs,http,samba,tftp,user}
 
-	trap 'rm -rf '"${DIRS_TEMP:?}"'' EXIT
+	# --- trap ----------------------------------------------------------------
+	declare -a    _LIST_RMOV=()			# list remove directory / file
+	              _LIST_RMOV+=("${DIRS_TEMP:?}")
+
+# shellcheck disable=SC2317
+function funcTrap() {
+	declare       _PATH=""
+	declare -i    I=0
+	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -Vr)
+	do
+		_PATH="${_LIST_RMOV[I]}"
+		if [[ -e "${_PATH}" ]] && mountpoint --quiet "${_PATH}"; then
+			printf "[%s]: umount \"%s\"\n" "${I}" "${_PATH}"
+			umount --quiet         --recursive "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force --recursive "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  --recursive "${_PATH}" || true
+		fi
+	done
+	if [[ -e "${DIRS_TEMP:?}" ]]; then
+		printf "%s: \"%s\"\n" "remove" "${DIRS_TEMP:?}"
+		rm -rf "${DIRS_TEMP:?}"
+	fi
+}
+
+	trap funcTrap EXIT
 
 	# --- check the execution user --------------------------------------------
 	# shellcheck disable=SC2312
@@ -78,46 +102,67 @@
 		exit 1
 	fi
 
+	# --- overlay -------------------------------------------------------------
+	declare -r    DIRS_OLAY="${PWD:?}/overlay/${DIRS_CHRT##*/}"
+
+function funcMount_overlay() {
+	# shellcheck disable=SC2140
+	mount -t overlay overlay -o lowerdir="${1:?}/",upperdir="${2:?}",workdir="${3:?}" "${4:?}" && _LIST_RMOV+=("${4:?}")
+}
+
 	# --- mount and daemon reload ---------------------------------------------
 	FLAG_CHRT="$(find /tmp/ -type d \( -name "${PROG_NAME}.*" -a -not -name "${DIRS_TEMP##*/}" \) -exec find '{}' -type f -name "${DIRS_CHRT##*/}" \; 2> /dev/null || true)"
 	touch "${DIRS_TEMP:?}/${DIRS_CHRT##*/}"
 	if [[ -z "${FLAG_CHRT}" ]]; then
-		rm -f "${DIRS_CHRT:?}"/etc/{passwd,shadow,group,resolv.conf}
-		cp -aH /etc/{passwd,shadow,group,resolv.conf} "${DIRS_CHRT:?}"/etc/
-		mount  --bind "${DIRS_CHRT}" "${DIRS_CHRT}"             && mount --make-rprivate "${DIRS_CHRT}"
-		mount  --bind "${DIRS_TOPS}" "${DIRS_CHRT}${DIRS_TOPS}" && mount --make-rprivate "${DIRS_CHRT}${DIRS_TOPS}"
-		mount  --bind "${DIRS_HGFS}" "${DIRS_CHRT}${DIRS_HGFS}" && mount --make-rprivate "${DIRS_CHRT}${DIRS_HGFS}"
-		mount --rbind /dev            "${DIRS_CHRT}/dev/"       && mount --make-rslave   "${DIRS_CHRT}/dev/"
-		mount -t proc /proc           "${DIRS_CHRT}/proc/"
-		mount --rbind /sys            "${DIRS_CHRT}/sys/"       && mount --make-rslave   "${DIRS_CHRT}/sys/"
-		mount  --bind /run            "${DIRS_CHRT}/run/"
-		mount --rbind /tmp            "${DIRS_CHRT}/tmp/"
-		mount  --bind /home           "${DIRS_CHRT}/home/"
-		systemctl daemon-reload
+		rm -rf   "${DIRS_OLAY:?}"/work
+		mkdir -p "${DIRS_OLAY}"/{upper,lower,work,merged}
+		mkdir -p "${DIRS_OLAY}"/upper/{root,home,"${DIRS_TOPS##/}","${DIRS_HGFS##/}"}
+		mkdir -p "${DIRS_OLAY}"/work/{_rootdir,root,home,"${DIRS_TOPS##/}","${DIRS_TOPS##/}"_"${DIRS_HGFS##*/}"}
+		# ---------------------------------------------------------------------
+		funcMount_overlay "${DIRS_CHRT:?}/" "${DIRS_OLAY}/upper/"                "${DIRS_OLAY}/work/_rootdir/"                          "${DIRS_OLAY}/merged/"
+		funcMount_overlay "/root/"          "${DIRS_OLAY}/upper/root/"           "${DIRS_OLAY}/work/root/"                              "${DIRS_OLAY}/merged/root/"
+		funcMount_overlay "/home/"          "${DIRS_OLAY}/upper/home/"           "${DIRS_OLAY}/work/home/"                              "${DIRS_OLAY}/merged/home/"
+		funcMount_overlay "${DIRS_TOPS}/"   "${DIRS_OLAY}/upper/${DIRS_TOPS##/}"/ "${DIRS_OLAY}/work/${DIRS_TOPS##/}/"                  "${DIRS_OLAY}/merged/${DIRS_TOPS##/}/"
+		funcMount_overlay "${DIRS_HGFS}/"   "${DIRS_OLAY}/upper/${DIRS_HGFS##/}"/ "${DIRS_OLAY}/work/${DIRS_TOPS##/}_${DIRS_HGFS##*/}/" "${DIRS_OLAY}/merged/${DIRS_HGFS##/}/"
+		# ---------------------------------------------------------------------
+#		mount  --bind "${DIRS_CONF}"       "${DIRS_OLAY}/merged/${DIRS_CONF##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_CONF##/}")
+#		mount  --bind "${DIRS_ISOS}"       "${DIRS_OLAY}/merged/${DIRS_ISOS##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_ISOS##/}")
+#		mount  --bind "${DIRS_RMAK}"       "${DIRS_OLAY}/merged/${DIRS_RMAK##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_RMAK##/}")
+		mount  --bind "${DIRS_HGFS}/linux" "${DIRS_OLAY}/merged/${DIRS_HGFS##/}/linux" && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_HGFS##/}/linux")
+		# ---------------------------------------------------------------------
+		mount --rbind /dev/          "${DIRS_OLAY}/merged/dev/"  && mount --make-rslave "${DIRS_OLAY}/merged/dev/"	&& _LIST_RMOV+=("${DIRS_OLAY}/merged/dev/")
+		mount -t proc /proc/         "${DIRS_OLAY}/merged/proc/"													&& _LIST_RMOV+=("${DIRS_OLAY}/merged/proc/")
+		mount --rbind /sys/          "${DIRS_OLAY}/merged/sys/"  && mount --make-rslave "${DIRS_OLAY}/merged/sys/"	&& _LIST_RMOV+=("${DIRS_OLAY}/merged/sys/")
+		mount  --bind /run/          "${DIRS_OLAY}/merged/run/"														&& _LIST_RMOV+=("${DIRS_OLAY}/merged/run/")
+		mount --rbind /tmp/          "${DIRS_OLAY}/merged/tmp/"  && mount --make-rslave "${DIRS_OLAY}/merged/tmp/"	&& _LIST_RMOV+=("${DIRS_OLAY}/merged/tmp/")
+		# ---------------------------------------------------------------------
+		cp -aH /etc/{passwd,shadow,group,resolv.conf} "${DIRS_OLAY}/merged/etc/"
 	fi
 	# --- chroot --------------------------------------------------------------
-	chroot --userspec="${USER}" "$@" "${DIRS_CHRT}"
+	chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/"
 	# --- umount --------------------------------------------------------------
 	FLAG_CHRT="$(find /tmp/ -type d \( -name "${PROG_NAME}.*" -a -not -name "${DIRS_TEMP##*/}" \) -exec find '{}' -type f -name "${DIRS_CHRT##*/}" \; 2> /dev/null || true)"
 	if [[ -z "${FLAG_CHRT}" ]]; then
-		umount             "${DIRS_CHRT}/home/"
-		umount             "${DIRS_CHRT}/run/"
-		umount --recursive "${DIRS_CHRT}/tmp/"
-		umount --recursive "${DIRS_CHRT}/sys/"
-		umount             "${DIRS_CHRT}/proc/"
-		umount --recursive "${DIRS_CHRT}/dev/"
-		umount             "${DIRS_CHRT}${DIRS_HGFS}"
-		umount             "${DIRS_CHRT}${DIRS_TOPS}"
-		umount             "${DIRS_CHRT}"
+		umount --recursive     "${DIRS_OLAY}/merged/tmp/"
+		umount                 "${DIRS_OLAY}/merged/run/"
+		umount --recursive     "${DIRS_OLAY}/merged/sys/"
+		umount                 "${DIRS_OLAY}/merged/proc/"
+		umount --recursive     "${DIRS_OLAY}/merged/dev/"
+		# ---------------------------------------------------------------------
+		umount                 "${DIRS_OLAY}/merged/${DIRS_HGFS##/}/linux"
+#		umount                 "${DIRS_OLAY}/merged/${DIRS_RMAK}"
+#		umount                 "${DIRS_OLAY}/merged/${DIRS_ISOS}"
+#		umount                 "${DIRS_OLAY}/merged/${DIRS_CONF}"
+		# ---------------------------------------------------------------------
+		umount                 "${DIRS_OLAY}/merged/srv/hgfs/"
+		umount                 "${DIRS_OLAY}/merged/srv"
+		umount                 "${DIRS_OLAY}/merged/home/"
+		umount                 "${DIRS_OLAY}/merged/root/"
+		umount                 "${DIRS_OLAY}/merged/"
 	fi
 	rm -rf "${DIRS_TEMP:?}/${DIRS_CHRT##*/}"
 
 	# --- exit ----------------------------------------------------------------
-	if set -o | grep "^xtrace\s*on$" \
-	|| [[ -n "${_DBGOUT:-}" ]]	; then
-		mount | sed -ne '\%/srv/% {' -e 's%^.* on %%g' -e 's% .*$%%g' -e 'p}' | sort
-	fi
-
 	exit 0
 
 ### eof #######################################################################
