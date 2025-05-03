@@ -287,16 +287,16 @@ fixed address -->
       printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_PATH_SEED" "${_PATH_SEED:-}"
       printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_DIRS_COMD" "${_DIRS_COMD:-}"
     fi
+    {
+      echo "nameserver 8.8.8.8"
+      echo "nameserver 8.8.4.4"
+    } >>  /etc/resolv.conf
     _PATH="/run/systemd/resolve/stub-resolv.conf"
     if [ ! -e "${_PATH}" ]; then
       printf "### %s: %s ###\n" "${_FUNC_NAME}" "copy ${_PATH##/*}"
       mkdir -p /run/systemd/resolve
       cp -p /etc/resolv.conf "${_PATH}"
     fi
-    {
-      echo "nameserver 8.8.8.8"
-      echo "nameserver 8.8.4.4"
-    } >>  /etc/resolv.conf
     if [ -n "${_PATH_SEED:-}" ]; then
       if [ -n "${_PATH_DEVS:-}" ]; then
         _PATH_DEVS="/dev/${_PATH_DEVS}"
