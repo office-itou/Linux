@@ -58,12 +58,29 @@
 
 # shellcheck disable=SC2317
 function funcTrap() {
+	declare       _PATH=""
 	declare -i    I=0
-
-	for I in "${!_LIST_RMOV[@]}"
+	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
 	do
-		rm -rf "${_LIST_RMOV[I]:?}"
+		_PATH="${_LIST_RMOV[I]}"
+		if [[ -e "${_PATH}" ]] && mountpoint --quiet "${_PATH}"; then
+			printf "[%s]: umount \"%s\"\n" "${I}" "${_PATH}" 1>&2
+			umount --quiet         --recursive "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force --recursive "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  --recursive "${_PATH}" || true
+		fi
 	done
+	if [[ -e "${_DIRS_TEMP:?}" ]]; then
+		printf "%s: \"%s\"\n" "remove" "${_DIRS_TEMP}" 1>&2
+		while read -r _PATH
+		do
+			printf "[%s]: umount \"%s\"\n" "-" "${_PATH}" 1>&2
+			umount --quiet         --recursive "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force --recursive "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  --recursive "${_PATH}" || true
+		done < <(grep "${_DIRS_TEMP:?}" /proc/mounts | cut -d ' ' -f 2 | sort -rV || true)
+		rm -rf "${_DIRS_TEMP:?}"
+	fi
 }
 
 	trap funcTrap EXIT
@@ -1122,42 +1139,42 @@ function fncCreate_directory() {
 
 # ----- create preseed.cfg ----------------------------------------------------
 function funcCreate_preseed() {
-	declare -r    _PATH="${1:?}"		# file name
-	declare -r    _DIRS="${_PATH%/*}"	# directory name
+	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
+	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
 	declare       _WORK=""				# work variables
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
 	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_SEDD}" "${_PATH}"
+	cp --backup "${_CONF_SEDD}" "${_TGET_PATH}"
 
 	# --- by generation -------------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_PATH}"                      \
+			sed -i "${_TGET_PATH}"               \
 			    -e '/packages:/a \    usrmerge '\\
 			;;
 		*)	;;
 	esac
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
-			sed -i "${_PATH}"                    \
+			sed -i "${_TGET_PATH}"               \
 			    -e 's/bind9-utils/bind9utils/'   \
 			    -e 's/bind9-dnsutils/dnsutils/'  \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_PATH}"                    \
+			sed -i "${_TGET_PATH}"               \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*)	;;
 	esac
 	# --- server or desktop ---------------------------------------------------
-	case "${_PATH}" in
-		*_desktop.*)
-			sed -i "${_PATH}"                                                   \
+	case "${_TGET_PATH}" in
+		*_desktop*)
+			sed -i "${_TGET_PATH}"                                              \
 			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
 			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \
 			    -e 's/^#/ /g                                                }'
@@ -1165,27 +1182,27 @@ function funcCreate_preseed() {
 		*)	;;
 	esac
 	# --- for ubiquity --------------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_ubiquity_*)
 			IFS= _WORK=$(
-				sed -n '\%^[^#].*preseed/late_command%,\%[^\\]$%p' "${_PATH}" | \
-				sed -e 's/\\/\\\\/g'                                            \
-				    -e 's/d-i/ubiquity/'                                        \
-				    -e 's%preseed\/late_command%ubiquity\/success_command%'   | \
+				sed -n '\%^[^#].*preseed/late_command%,\%[^\\]$%p' "${_TGET_PATH}" | \
+				sed -e 's/\\/\\\\/g'                                                 \
+				    -e 's/d-i/ubiquity/'                                             \
+				    -e 's%preseed\/late_command%ubiquity\/success_command%'        | \
 				sed -e ':l; N; s/\n/\\n/; b l;'
 			)
 			if [[ -n "${_WORK}" ]]; then
-				sed -i "${_PATH}"                                        \
+				sed -i "${_TGET_PATH}"                                   \
 				    -e '\%^[^#].*preseed/late_command%,\%[^\\]$%     { ' \
 				    -e 's/^/#/g                                        ' \
 				    -e 's/^#  /# /g                                  } ' \
 				    -e '\%^[^#].*ubiquity/success_command%,\%[^\\]$% { ' \
 				    -e 's/^/#/g                                        ' \
 				    -e 's/^#  /# /g                                  } '
-				sed -i "${_PATH}"                                    \
+				sed -i "${_TGET_PATH}"                                    \
 				    -e "\%ubiquity/success_command%i \\${_WORK}"
 			fi
-			sed -i "${_PATH}"                             \
+			sed -i "${_TGET_PATH}"                        \
 			    -e "\%ubiquity/download_updates% s/^#/ /" \
 			    -e "\%ubiquity/use_nonfree%      s/^#/ /" \
 			    -e "\%ubiquity/reboot%           s/^#/ /"
@@ -1193,65 +1210,65 @@ function funcCreate_preseed() {
 		*)	;;
 	esac
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${_PATH}"
+	chmod ugo-x "${_TGET_PATH}"
 }
 
 # ----- create nocloud --------------------------------------------------------
 function funcCreate_nocloud() {
-	declare -r    _PATH="${1:?}"		# file name
-	declare -r    _DIRS="${_PATH%/*}"	# directory name
+	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
+	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
 #	declare       _WORK=""				# work variables
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
 	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_CLUD}" "${_PATH}"
+	cp --backup "${_CONF_CLUD}" "${_TGET_PATH}"
 
 	# --- by generation -------------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_PATH}"                      \
+			sed -i "${_TGET_PATH}"               \
 			    -e '/packages:/a \    usrmerge '\\
 			;;
 		*)	;;
 	esac
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
-			sed -i "${_PATH}"                    \
+			sed -i "${_TGET_PATH}"               \
 			    -e 's/bind9-utils/bind9utils/'   \
 			    -e 's/bind9-dnsutils/dnsutils/'  \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_PATH}"                    \
+			sed -i "${_TGET_PATH}"               \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*)	;;
 	esac
 	# --- server or desktop ---------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_desktop.*)
-			sed -i "${_PATH}"                                              \
+			sed -i "${_TGET_PATH}"                                             \
 			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
 			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
 			;;
 		*)	;;
 	esac
 	# -------------------------------------------------------------------------
-	touch -m "${_DIRS}/meta-data"      --reference "${_PATH}"
-	touch -m "${_DIRS}/network-config" --reference "${_PATH}"
-#	touch -m "${_DIRS}/user-data"      --reference "${_PATH}"
-	touch -m "${_DIRS}/vendor-data"    --reference "${_PATH}"
+	touch -m "${_DIRS}/meta-data"      --reference "${_TGET_PATH}"
+	touch -m "${_DIRS}/network-config" --reference "${_TGET_PATH}"
+#	touch -m "${_DIRS}/user-data"      --reference "${_TGET_PATH}"
+	touch -m "${_DIRS}/vendor-data"    --reference "${_TGET_PATH}"
 	# -------------------------------------------------------------------------
 	chmod --recursive ugo-x "${_DIRS}"
 }
 
 # ----- create kickstart.cfg --------------------------------------------------
 function funcCreate_kickstart() {
-	declare -r    _PATH="${1:?}"		# file name
-	declare -r    _DIRS="${_PATH%/*}"	# directory name
+	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
+	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
 #	declare       _WORK=""				# work variables
 	declare       _DSTR_VERS=""			# distribution version
 	declare       _DSTR_NUMS=""			# "            number
@@ -1261,20 +1278,20 @@ function funcCreate_kickstart() {
 	declare -r    _WEBS_ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
 	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_KICK}" "${_PATH}"
+	cp --backup "${_CONF_KICK}" "${_TGET_PATH}"
 
 	# -------------------------------------------------------------------------
 #	_DSTR_NUMS="\$releasever"
-	_DSTR_VERS="${_PATH#*_}"
+	_DSTR_VERS="${_TGET_PATH#*_}"
 	_DSTR_VERS="${_DSTR_VERS%%_*}"
 	_DSTR_NUMS="${_DSTR_VERS##*-}"
 	_DSTR_NAME="${_DSTR_VERS%-*}"
 	_DSTR_SECT="${_DSTR_NAME/-/ }"
 
 	# --- initializing the settings -------------------------------------------
-	sed -i "${_PATH}"                                   \
+	sed -i "${_TGET_PATH}"                              \
 	    -e "/^cdrom$/      s/^/#/                     " \
 	    -e "/^url[ \t]\+/  s/^/#/g                    " \
 	    -e "/^repo[ \t]\+/ s/^/#/g                    " \
@@ -1282,19 +1299,19 @@ function funcCreate_kickstart() {
 	    -e "s%:_WEBS_ADDR_:%${_WEBS_ADDR}%g           " \
 	    -e "s%:_DISTRO_:%${_DSTR_NAME}-${_DSTR_NUMS}%g"
 	# --- cdrom, repository ---------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_dvd*)		# --- cdrom install ---------------------------------------
-			sed -i "${_PATH}"                                   \
+			sed -i "${_TGET_PATH}"                              \
 			    -e "/^#cdrom$/ s/^#//                         "
 			;;
 		*_net*)		# --- network install -------------------------------------
-			sed -i "${_PATH}"                                   \
+			sed -i "${_TGET_PATH}"                              \
 			    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/           { " \
 			    -e "/^#url[ \t]\+/  s/^#//g                   " \
 			    -e "/^#repo[ \t]\+/ s/^#//g                 } "
 			;;
 		*_web*)		# --- network install [ for pxeboot ] ---------------------
-			sed -i "${_PATH}"                                   \
+			sed -i "${_TGET_PATH}"                              \
 			    -e "/^#.*(web address).*$/,/^$/             { " \
 			    -e "/^#url[ \t]\+/  s/^#//g                   " \
 			    -e "/^#repo[ \t]\+/ s/^#//g                   " \
@@ -1306,46 +1323,46 @@ function funcCreate_kickstart() {
 	# --- desktop -------------------------------------------------------------
 	sed -e "/%packages/,/%end/ {"                       \
 	    -e "/desktop/ s/^-//g  }"                       \
-	    "${_PATH}"                                      \
-	>   "${_PATH%.*}_desktop.${_PATH##*.}"
+	    "${_TGET_PATH}"                                 \
+	>   "${_TGET_PATH%.*}_desktop.${_TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${_PATH}" "${_PATH%.*}_desktop.${_PATH##*.}"
+	chmod ugo-x "${_TGET_PATH}" "${_TGET_PATH%.*}_desktop.${_TGET_PATH##*.}"
 }
 
 # ----- create autoyast.xml ---------------------------------------------------
 function funcCreate_autoyast() {
-	declare -r    _PATH="${1:?}"		# file name
-	declare -r    _DIRS="${_PATH%/*}"	# directory name
+	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
+	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
 #	declare       _WORK=""				# work variables
 	declare       _DSTR_VERS=""			# distribution version
 	declare       _DSTR_NUMS=""			# "            number
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
 	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_YAST}" "${_PATH}"
+	cp --backup "${_CONF_YAST}" "${_TGET_PATH}"
 
 	# -------------------------------------------------------------------------
-	_DSTR_VERS="${_PATH#*_}"
+	_DSTR_VERS="${_TGET_PATH#*_}"
 	_DSTR_VERS="${_DSTR_VERS%%_*}"
 	_DSTR_NUMS="${_DSTR_VERS##*-}"
 
 	# --- by media ------------------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_web*|\
 		*_dvd*)
-			sed -i "${_PATH}"                                         \
+			sed -i "${_TGET_PATH}"                                    \
 			    -e '/<image_installation t="boolean">/ s/false/true/'
 			;;
 		*)
-			sed -i "${_PATH}"                                         \
+			sed -i "${_TGET_PATH}"                                    \
 			    -e '/<image_installation t="boolean">/ s/true/false/'
 			;;
 	esac
 	# --- by version ----------------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*tumbleweed*)
-			sed -i "${_PATH}"                                          \
+			sed -i "${_TGET_PATH}"                                     \
 			    -e '\%<add_on_products .*>%,\%<\/add_on_products>% { ' \
 			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
 			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
@@ -1353,7 +1370,7 @@ function funcCreate_autoyast() {
 			    -e 's%\(<product>\).*\(</product>\)%\1openSUSE\2%    '
 			;;
 		*           )
-			sed -i "${_PATH}"                                                    \
+			sed -i "${_TGET_PATH}"                                               \
 			    -e '\%<add_on_products .*>%,\%</add_on_products>%            { ' \
 			    -e '/<!-- leap/,/leap -->/                                   { ' \
 			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${_DSTR_NUMS}/%g } " \
@@ -1365,10 +1382,10 @@ function funcCreate_autoyast() {
 	# --- desktop -------------------------------------------------------------
 	sed -e '/<!-- desktop lxde$/ s/$/ -->/g ' \
 	    -e '/^desktop lxde -->/  s/^/<!-- /g' \
-	    "${_PATH}"                            \
-	>   "${_PATH%.*}_desktop.${_PATH##*.}"
+	    "${_TGET_PATH}"                            \
+	>   "${_TGET_PATH%.*}_desktop.${_TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${_PATH}"
+	chmod ugo-x "${_TGET_PATH}"
 }
 
 # ----- create pre-configuration file templates -------------------------------
@@ -1455,6 +1472,161 @@ function funcCreate_precon() {
 	# ubiquity_*_old   : ubuntu-20.04(focal)/22.04(jammy)
 	# ubiquity_*       : ubuntu-23.04(lunar)/~
 	# -------------------------------------------------------------------------
+}
+
+# --- Extract a compressed cpio _TGET_FILE ------------------------------------
+funcXcpio() {
+	declare -r    _TGET_FILE="${1:?}"	# target file
+	declare -r    _DIRS_DEST="${2:-}"	# destination _DIRS_DESTectory
+	shift 2
+
+	  if gzip -t       "${_TGET_FILE}" > /dev/null 2>&1 ; then gzip -c -d    "${_TGET_FILE}"
+	elif zstd -q -c -t "${_TGET_FILE}" > /dev/null 2>&1 ; then zstd -q -c -d "${_TGET_FILE}"
+	elif xzcat -t      "${_TGET_FILE}" > /dev/null 2>&1 ; then xzcat         "${_TGET_FILE}"
+	elif lz4cat -t <   "${_TGET_FILE}" > /dev/null 2>&1 ; then lz4cat        "${_TGET_FILE}"
+	elif bzip2 -t      "${_TGET_FILE}" > /dev/null 2>&1 ; then bzip2 -c -d   "${_TGET_FILE}"
+	elif lzop -t       "${_TGET_FILE}" > /dev/null 2>&1 ; then lzop -c -d    "${_TGET_FILE}"
+	fi | (
+		if [[ -n "${_DIRS_DEST}" ]]; then
+			mkdir -p -- "${_DIRS_DEST}"
+			cd -- "${_DIRS_DEST}"
+		fi
+		cpio "$@"
+	)
+}
+
+# --- Read bytes out of a file, checking that they are valid hex digits -------
+funcReadhex() {
+	dd < "${1:?}" bs=1 skip="${2:?}" count="${3:?}" 2> /dev/null | LANG=C grep -E "^[0-9A-Fa-f]{$3}\$"
+}
+
+# --- Check for a zero byte in a file -----------------------------------------
+funcCheckzero() {
+	dd < "${1:?}" bs=1 skip="${2:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
+}
+
+# --- Split an initramfs into _TGET_FILEs and call funcXcpio on each ----------
+funcSplitinitramfs() {
+	declare -r    _TGET_FILE="${1:?}"	# target file
+	declare -r    _DIRS_DEST="${2:-}"	# destination _DIRS_DESTectory
+	declare -r -a _OPTS=("--preserve-modification-time" "--no-absolute-filenames" "--quiet")
+	declare -i    _CONT=0				# count
+	declare -i    _PSTR=0				# start point
+	declare -i    _PEND=0				# end point
+	declare       _MGIC=""				# magic word
+	declare       _DSUB=""				# sub directory
+	declare       _SARC=""				# sub archive
+
+	while true
+	do
+		_PEND="${_PSTR}"
+		while true
+		do
+			if funcCheckzero "${_TGET_FILE}" "${_PEND}"; then
+				_PEND=$((_PEND + 4))
+				while funcCheckzero "${_TGET_FILE}" "${_PEND}"
+				do
+					_PEND=$((_PEND + 4))
+				done
+				break
+			fi
+			_MGIC="$(funcReadhex "${_TGET_FILE}" "${_PEND}" "6")" || break
+			test "${_MGIC}" = "070701" || test "${_MGIC}" = "070702" || break
+			_NSIZ=0x$(funcReadhex "${_TGET_FILE}" "$((_PEND + 94))" "8")
+			_FSIZ=0x$(funcReadhex "${_TGET_FILE}" "$((_PEND + 54))" "8")
+			_PEND=$((_PEND + 110))
+			_PEND=$(((_PEND + _NSIZ + 3) & ~3))
+			_PEND=$(((_PEND + _FSIZ + 3) & ~3))
+		done
+		if [[ "${_PEND}" -eq "${_PSTR}" ]]; then
+			break
+		fi
+		_CONT=$((_CONT + 1))
+		if [[ "${_CONT}" -eq 1 ]]; then
+			_DSUB="early"
+		else
+			_DSUB="early${_CONT}"
+		fi
+		dd < "${_TGET_FILE}" skip="${_PSTR}" count="$((_PEND - _PSTR))" iflag=skip_bytes 2 > /dev/null |
+		(
+			if [[ -n "${_DIRS_DEST}" ]]; then
+				mkdir -p -- "${_DIRS_DEST}/${_DSUB}"
+				cd -- "${_DIRS_DEST}/${_DSUB}"
+			fi
+			cpio -i "${_OPTS[@]}"
+		)
+		_PSTR="${_PEND}"
+	done
+	if [[ "${_PEND}" -gt 0 ]]; then
+		_SARC="${_DIRS_TEMP}/${FUNCNAME[0]}"
+		mkdir -p "${_SARC%/*}"
+		dd < "${_TGET_FILE}" skip="${_PEND}" iflag=skip_bytes 2 > /dev/null > "${_SARC}"
+		funcXcpio "${_SARC}" "${_DIRS_DEST:+${_DIRS_DEST}/main}" -i "${_OPTS[@]}"
+		rm -f "${_SARC:?}"
+	else
+		funcXcpio "${_TGET_FILE}" "${_DIRS_DEST}" -i "${_OPTS[@]}"
+	fi
+}
+
+# ----- copy iso contents to hdd ----------------------------------------------
+function funcCreate_copy_iso2hdd() {
+	declare -r -a _TGET_LIST=("$@")							# target data
+	declare -r    _DIMG="${_DIRS_IMGS}/${_TGET_LIST[2]}"	# iso file extraction destination (entry)
+	declare -r    _DWRK="${_DIRS_TEMP}/${_TGET_LIST[2]}"	# work directory
+	declare -r    _MNTP="${_DWRK}/mnt"						# mount point
+	declare -r    _FIMG="${_DWRK}/img"						# filesystem image
+	declare -r    _FRAM="${_DWRK}/ram"						# initrd filesystem image
+	declare       _WORK=""									# work variables
+	declare       _PATH=""									# file name
+	declare       _TGET=""									# target
+
+	# -------------------------------------------------------------------------
+	if [[ "${_TGET_LINE[13]}" = "-" ]] || [[ ! -e "${_TGET_LINE[13]}" ]]; then
+		funcPrintf "${_TEXT_BG_YELLOW}%20.20s: %s${_TEXT_RESET}" "not exist" "${_TGET_LINE[13]}"
+		return
+	fi
+
+	# -------------------------------------------------------------------------
+	_WORK="$(funcUnit_conversion "${_TGET_LINE[15]}")"
+	funcPrintf "%20.20s: %s" "copy" "${_TGET_LINE[13]} ${_WORK}"
+
+	# --- create directory ----------------------------------------------------
+	rm -rf "${_DWRK:?}"
+	mkdir -p "${_MNTP}" "${_FIMG}" "${_FRAM}"
+
+	# --- copy iso -> hdd -----------------------------------------------------
+	mount -o ro,loop "${_TGET_LINE[13]}" "${_MNTP}"
+	nice -n "${_NICE_VALU:-19}" rsync "${_RSYC_OPTN[@]}" "${_MNTP}/." "${_DIMG}/" 2>/dev/null || true
+	umount "${_MNTP}"
+	chmod -R +r "${_DIMG}/" 2>/dev/null || true
+
+	# --- copy boot loader -> hdd ---------------------------------------------
+	for _TGET in "${_TGET_LINE[21]}" "${_TGET_LINE[22]}"
+	do
+		if [[ "${_TGET}" = "-" ]] || [[ ! -e "${_TGET}" ]]; then
+			continue
+		fi
+		_PATH="${_DIMG}/${_TGET}"
+		mkdir -p "${_PATH%/*}"
+		funcPrintf "%20.20s: %s" "copy" "${_PATH##*/}"
+		nice -n "${_NICE_VALU:-19}" rsync "${_RSYC_OPTN[@]}" "${_TGET}" "${_PATH}" 2>/dev/null || true
+		chmod +r "${_PATH}" 2>/dev/null || true
+	done
+
+	# --- Check the edition and extract the initrd ----------------------------
+	case "${_TGET_LIST[2]}" in
+		*-mini-*) ;;					# proceed to extracting the initrd
+		*       ) return;;
+	esac
+
+	# --- copy initrd -> hdd --------------------------------------------------
+	find "${_DIMG}" \( -type f -o -type l \) \( -name 'initrd' -o -name 'initrd.*' -o -name 'initrd-[0-9]*' \) | sort -V | \
+	while read -r _PATH
+	do
+		_TGET="${_PATH#"${_DIMG%/}"/}"
+		funcPrintf "%20.20s: %s" "copy" "/${_TGET}"
+		funcSplitinitramfs "${_PATH}" "${_FRAM}/${_TGET}"
+	done
 }
 
 # --- debug out parameter -----------------------------------------------------

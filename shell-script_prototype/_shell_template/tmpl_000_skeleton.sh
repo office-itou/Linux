@@ -61,10 +61,18 @@
 
 # shellcheck disable=SC2317
 function funcTrap() {
+	declare       _PATH=""
 	declare -i    I=0
-
 	for I in "${!_LIST_RMOV[@]}"
 	do
+		awk '/'"${_LIST_RMOV[I]//\//\\\/}"'/ {print $2;}' /proc/mounts | sort -r | \
+		while read -r _PATH
+		do
+			echo "umount \"${_PATH}\""
+			umount --quiet         "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  "${_PATH}" || true
+		done
 		rm -rf "${_LIST_RMOV[I]:?}"
 	done
 }

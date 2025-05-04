@@ -652,42 +652,42 @@ function fncCreate_directory() {
 
 # ----- create preseed.cfg ----------------------------------------------------
 function funcCreate_preseed() {
-	declare -r    _PATH="${1:?}"		# file name
-	declare -r    _DIRS="${_PATH%/*}"	# directory name
+	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
+	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
 	declare       _WORK=""				# work variables
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
 	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_SEDD}" "${_PATH}"
+	cp --backup "${_CONF_SEDD}" "${_TGET_PATH}"
 
 	# --- by generation -------------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_PATH}"                      \
+			sed -i "${_TGET_PATH}"               \
 			    -e '/packages:/a \    usrmerge '\\
 			;;
 		*)	;;
 	esac
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
-			sed -i "${_PATH}"                    \
+			sed -i "${_TGET_PATH}"               \
 			    -e 's/bind9-utils/bind9utils/'   \
 			    -e 's/bind9-dnsutils/dnsutils/'  \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_PATH}"                    \
+			sed -i "${_TGET_PATH}"               \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*)	;;
 	esac
 	# --- server or desktop ---------------------------------------------------
-	case "${_PATH}" in
-		*_desktop.*)
-			sed -i "${_PATH}"                                                   \
+	case "${_TGET_PATH}" in
+		*_desktop*)
+			sed -i "${_TGET_PATH}"                                              \
 			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
 			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \
 			    -e 's/^#/ /g                                                }'
@@ -695,27 +695,27 @@ function funcCreate_preseed() {
 		*)	;;
 	esac
 	# --- for ubiquity --------------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_ubiquity_*)
 			IFS= _WORK=$(
-				sed -n '\%^[^#].*preseed/late_command%,\%[^\\]$%p' "${_PATH}" | \
-				sed -e 's/\\/\\\\/g'                                            \
-				    -e 's/d-i/ubiquity/'                                        \
-				    -e 's%preseed\/late_command%ubiquity\/success_command%'   | \
+				sed -n '\%^[^#].*preseed/late_command%,\%[^\\]$%p' "${_TGET_PATH}" | \
+				sed -e 's/\\/\\\\/g'                                                 \
+				    -e 's/d-i/ubiquity/'                                             \
+				    -e 's%preseed\/late_command%ubiquity\/success_command%'        | \
 				sed -e ':l; N; s/\n/\\n/; b l;'
 			)
 			if [[ -n "${_WORK}" ]]; then
-				sed -i "${_PATH}"                                        \
+				sed -i "${_TGET_PATH}"                                   \
 				    -e '\%^[^#].*preseed/late_command%,\%[^\\]$%     { ' \
 				    -e 's/^/#/g                                        ' \
 				    -e 's/^#  /# /g                                  } ' \
 				    -e '\%^[^#].*ubiquity/success_command%,\%[^\\]$% { ' \
 				    -e 's/^/#/g                                        ' \
 				    -e 's/^#  /# /g                                  } '
-				sed -i "${_PATH}"                                    \
+				sed -i "${_TGET_PATH}"                                    \
 				    -e "\%ubiquity/success_command%i \\${_WORK}"
 			fi
-			sed -i "${_PATH}"                             \
+			sed -i "${_TGET_PATH}"                        \
 			    -e "\%ubiquity/download_updates% s/^#/ /" \
 			    -e "\%ubiquity/use_nonfree%      s/^#/ /" \
 			    -e "\%ubiquity/reboot%           s/^#/ /"
@@ -723,65 +723,65 @@ function funcCreate_preseed() {
 		*)	;;
 	esac
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${_PATH}"
+	chmod ugo-x "${_TGET_PATH}"
 }
 
 # ----- create nocloud --------------------------------------------------------
 function funcCreate_nocloud() {
-	declare -r    _PATH="${1:?}"		# file name
-	declare -r    _DIRS="${_PATH%/*}"	# directory name
+	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
+	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
 #	declare       _WORK=""				# work variables
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
 	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_CLUD}" "${_PATH}"
+	cp --backup "${_CONF_CLUD}" "${_TGET_PATH}"
 
 	# --- by generation -------------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_PATH}"                      \
+			sed -i "${_TGET_PATH}"               \
 			    -e '/packages:/a \    usrmerge '\\
 			;;
 		*)	;;
 	esac
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
-			sed -i "${_PATH}"                    \
+			sed -i "${_TGET_PATH}"               \
 			    -e 's/bind9-utils/bind9utils/'   \
 			    -e 's/bind9-dnsutils/dnsutils/'  \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_PATH}"                    \
+			sed -i "${_TGET_PATH}"               \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*)	;;
 	esac
 	# --- server or desktop ---------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_desktop.*)
-			sed -i "${_PATH}"                                              \
+			sed -i "${_TGET_PATH}"                                             \
 			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
 			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
 			;;
 		*)	;;
 	esac
 	# -------------------------------------------------------------------------
-	touch -m "${_DIRS}/meta-data"      --reference "${_PATH}"
-	touch -m "${_DIRS}/network-config" --reference "${_PATH}"
-#	touch -m "${_DIRS}/user-data"      --reference "${_PATH}"
-	touch -m "${_DIRS}/vendor-data"    --reference "${_PATH}"
+	touch -m "${_DIRS}/meta-data"      --reference "${_TGET_PATH}"
+	touch -m "${_DIRS}/network-config" --reference "${_TGET_PATH}"
+#	touch -m "${_DIRS}/user-data"      --reference "${_TGET_PATH}"
+	touch -m "${_DIRS}/vendor-data"    --reference "${_TGET_PATH}"
 	# -------------------------------------------------------------------------
 	chmod --recursive ugo-x "${_DIRS}"
 }
 
 # ----- create kickstart.cfg --------------------------------------------------
 function funcCreate_kickstart() {
-	declare -r    _PATH="${1:?}"		# file name
-	declare -r    _DIRS="${_PATH%/*}"	# directory name
+	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
+	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
 #	declare       _WORK=""				# work variables
 	declare       _DSTR_VERS=""			# distribution version
 	declare       _DSTR_NUMS=""			# "            number
@@ -791,20 +791,20 @@ function funcCreate_kickstart() {
 	declare -r    _WEBS_ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
 	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_KICK}" "${_PATH}"
+	cp --backup "${_CONF_KICK}" "${_TGET_PATH}"
 
 	# -------------------------------------------------------------------------
 #	_DSTR_NUMS="\$releasever"
-	_DSTR_VERS="${_PATH#*_}"
+	_DSTR_VERS="${_TGET_PATH#*_}"
 	_DSTR_VERS="${_DSTR_VERS%%_*}"
 	_DSTR_NUMS="${_DSTR_VERS##*-}"
 	_DSTR_NAME="${_DSTR_VERS%-*}"
 	_DSTR_SECT="${_DSTR_NAME/-/ }"
 
 	# --- initializing the settings -------------------------------------------
-	sed -i "${_PATH}"                                   \
+	sed -i "${_TGET_PATH}"                              \
 	    -e "/^cdrom$/      s/^/#/                     " \
 	    -e "/^url[ \t]\+/  s/^/#/g                    " \
 	    -e "/^repo[ \t]\+/ s/^/#/g                    " \
@@ -812,19 +812,19 @@ function funcCreate_kickstart() {
 	    -e "s%:_WEBS_ADDR_:%${_WEBS_ADDR}%g           " \
 	    -e "s%:_DISTRO_:%${_DSTR_NAME}-${_DSTR_NUMS}%g"
 	# --- cdrom, repository ---------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_dvd*)		# --- cdrom install ---------------------------------------
-			sed -i "${_PATH}"                                   \
+			sed -i "${_TGET_PATH}"                              \
 			    -e "/^#cdrom$/ s/^#//                         "
 			;;
 		*_net*)		# --- network install -------------------------------------
-			sed -i "${_PATH}"                                   \
+			sed -i "${_TGET_PATH}"                              \
 			    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/           { " \
 			    -e "/^#url[ \t]\+/  s/^#//g                   " \
 			    -e "/^#repo[ \t]\+/ s/^#//g                 } "
 			;;
 		*_web*)		# --- network install [ for pxeboot ] ---------------------
-			sed -i "${_PATH}"                                   \
+			sed -i "${_TGET_PATH}"                              \
 			    -e "/^#.*(web address).*$/,/^$/             { " \
 			    -e "/^#url[ \t]\+/  s/^#//g                   " \
 			    -e "/^#repo[ \t]\+/ s/^#//g                   " \
@@ -836,46 +836,46 @@ function funcCreate_kickstart() {
 	# --- desktop -------------------------------------------------------------
 	sed -e "/%packages/,/%end/ {"                       \
 	    -e "/desktop/ s/^-//g  }"                       \
-	    "${_PATH}"                                      \
-	>   "${_PATH%.*}_desktop.${_PATH##*.}"
+	    "${_TGET_PATH}"                                 \
+	>   "${_TGET_PATH%.*}_desktop.${_TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${_PATH}" "${_PATH%.*}_desktop.${_PATH##*.}"
+	chmod ugo-x "${_TGET_PATH}" "${_TGET_PATH%.*}_desktop.${_TGET_PATH##*.}"
 }
 
 # ----- create autoyast.xml ---------------------------------------------------
 function funcCreate_autoyast() {
-	declare -r    _PATH="${1:?}"		# file name
-	declare -r    _DIRS="${_PATH%/*}"	# directory name
+	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
+	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
 #	declare       _WORK=""				# work variables
 	declare       _DSTR_VERS=""			# distribution version
 	declare       _DSTR_NUMS=""			# "            number
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
 	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_YAST}" "${_PATH}"
+	cp --backup "${_CONF_YAST}" "${_TGET_PATH}"
 
 	# -------------------------------------------------------------------------
-	_DSTR_VERS="${_PATH#*_}"
+	_DSTR_VERS="${_TGET_PATH#*_}"
 	_DSTR_VERS="${_DSTR_VERS%%_*}"
 	_DSTR_NUMS="${_DSTR_VERS##*-}"
 
 	# --- by media ------------------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*_web*|\
 		*_dvd*)
-			sed -i "${_PATH}"                                         \
+			sed -i "${_TGET_PATH}"                                    \
 			    -e '/<image_installation t="boolean">/ s/false/true/'
 			;;
 		*)
-			sed -i "${_PATH}"                                         \
+			sed -i "${_TGET_PATH}"                                    \
 			    -e '/<image_installation t="boolean">/ s/true/false/'
 			;;
 	esac
 	# --- by version ----------------------------------------------------------
-	case "${_PATH}" in
+	case "${_TGET_PATH}" in
 		*tumbleweed*)
-			sed -i "${_PATH}"                                          \
+			sed -i "${_TGET_PATH}"                                     \
 			    -e '\%<add_on_products .*>%,\%<\/add_on_products>% { ' \
 			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
 			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
@@ -883,7 +883,7 @@ function funcCreate_autoyast() {
 			    -e 's%\(<product>\).*\(</product>\)%\1openSUSE\2%    '
 			;;
 		*           )
-			sed -i "${_PATH}"                                                    \
+			sed -i "${_TGET_PATH}"                                               \
 			    -e '\%<add_on_products .*>%,\%</add_on_products>%            { ' \
 			    -e '/<!-- leap/,/leap -->/                                   { ' \
 			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${_DSTR_NUMS}/%g } " \
@@ -895,10 +895,10 @@ function funcCreate_autoyast() {
 	# --- desktop -------------------------------------------------------------
 	sed -e '/<!-- desktop lxde$/ s/$/ -->/g ' \
 	    -e '/^desktop lxde -->/  s/^/<!-- /g' \
-	    "${_PATH}"                            \
-	>   "${_PATH%.*}_desktop.${_PATH##*.}"
+	    "${_TGET_PATH}"                            \
+	>   "${_TGET_PATH%.*}_desktop.${_TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${_PATH}"
+	chmod ugo-x "${_TGET_PATH}"
 }
 
 # ----- create pre-configuration file templates -------------------------------
