@@ -175,33 +175,58 @@ function funcMain() {
 						o) ;;
 						*) continue;;
 					esac
-					# --- web original iso file -------------------------------
+					if [[ -z "${_LIST[3]##-}" ]]; then
+						continue
+					fi
+					if [[ -z "${_LIST[13]##-}" ]]; then
+						continue
+					fi
+#					sleep 1
+#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${_LIST[13]##*/}" 1>&2
+					# --- web original iso file -------------------
+#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "web original iso file" 1>&2
 					_WORK="$(funcGetWebinfo "${_LIST[9]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[10]="${_ARRY[1]:--}"				# web_tstamp
-					_LIST[11]="${_ARRY[2]:--}"				# web_size
-					_LIST[12]="${_ARRY[3]:--}"				# web_status
-					# --- local original iso file -----------------------------
+					_LIST[10]="${_ARRY[1]:--}"	# web_tstamp
+					_LIST[11]="${_ARRY[2]:--}"	# web_size
+					_LIST[12]="${_ARRY[3]:--}"	# web_status
+					# --- local original iso file -----------------
+#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local original iso file" 1>&2
 					_WORK="$(funcGetFileinfo "${_LIST[13]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[13]="${_ARRY[0]:--}"				# iso_path
-					_LIST[14]="${_ARRY[1]:--}"				# iso_tstamp
-					_LIST[15]="${_ARRY[2]:--}"				# iso_size
-					_LIST[16]="${_ARRY[3]:--}"				# iso_volume
-					# --- local remastering iso file --------------------------
+					_LIST[13]="${_ARRY[0]:--}"	# iso_path
+					_LIST[14]="${_ARRY[1]:--}"	# iso_tstamp
+					_LIST[15]="${_ARRY[2]:--}"	# iso_size
+					_LIST[16]="${_ARRY[3]:--}"	# iso_volume
+					# --- local remastering iso file --------------
+#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local remastering iso file" 1>&2
+					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[17]="${_ARRY[0]:--}"	# rmk_path
+					_LIST[18]="${_ARRY[1]:--}"	# rmk_tstamp
+					_LIST[19]="${_ARRY[2]:--}"	# rmk_size
+					_LIST[20]="${_ARRY[3]:--}"	# rmk_volume
+					# --- config file  ----------------------------
+#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "config file" 1>&2
+					_WORK="$(funcGetFileinfo "${_LIST[23]##-}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[23]="${_ARRY[0]:--}"	# cfg_path
+					_LIST[24]="${_ARRY[1]:--}"	# cfg_tstamp
+					# ---------------------------------------------------------
+					if [[ -z "${_LIST[23]##-}" ]] || [[ -z "${_LIST[24]##-}" ]]; then
+						continue
+					fi
+					funcRemastering "${_LIST[@]}"
+					# --- new local remaster iso files ------------------------
 					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
 					_LIST[17]="${_ARRY[0]:--}"				# rmk_path
 					_LIST[18]="${_ARRY[1]:--}"				# rmk_tstamp
 					_LIST[19]="${_ARRY[2]:--}"				# rmk_size
 					_LIST[20]="${_ARRY[3]:--}"				# rmk_volume
-					# --- config file  ----------------------------------------
-					_WORK="$(funcGetFileinfo "${_LIST[23]##-}")"
-					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[23]="${_ARRY[0]:--}"				# cfg_path
-					_LIST[24]="${_ARRY[1]:--}"				# cfg_tstamp
-					# ---------------------------------------------------------
-					funcRemastering "${_LIST[@]}"
+					# --- update media data record ----------------
+					_LIST_MDIA[I]="${_LIST[*]}"
+#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${_LIST[13]##*/}" 1>&2
 				done
 				funcPut_media_data
 				;;
@@ -214,32 +239,47 @@ function funcMain() {
 						o) ;;
 						*) continue;;
 					esac
-					# --- web original iso file -------------------------------
+					if [[ -z "${_LIST[3]##-}" ]]; then
+						continue
+					fi
+					if [[ -z "${_LIST[13]##-}" ]]; then
+						continue
+					fi
+#					sleep 1
+#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${_LIST[13]##*/}" 1>&2
+					# --- web original iso file -------------------
+#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "web original iso file" 1>&2
 					_WORK="$(funcGetWebinfo "${_LIST[9]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[10]="${_ARRY[1]:--}"				# web_tstamp
-					_LIST[11]="${_ARRY[2]:--}"				# web_size
-					_LIST[12]="${_ARRY[3]:--}"				# web_status
-					# --- local original iso file -----------------------------
+					_LIST[10]="${_ARRY[1]:--}"	# web_tstamp
+					_LIST[11]="${_ARRY[2]:--}"	# web_size
+					_LIST[12]="${_ARRY[3]:--}"	# web_status
+					# --- local original iso file -----------------
+#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local original iso file" 1>&2
 					_WORK="$(funcGetFileinfo "${_LIST[13]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[13]="${_ARRY[0]:--}"				# iso_path
-					_LIST[14]="${_ARRY[1]:--}"				# iso_tstamp
-					_LIST[15]="${_ARRY[2]:--}"				# iso_size
-					_LIST[16]="${_ARRY[3]:--}"				# iso_volume
-					# --- local remastering iso file --------------------------
+					_LIST[13]="${_ARRY[0]:--}"	# iso_path
+					_LIST[14]="${_ARRY[1]:--}"	# iso_tstamp
+					_LIST[15]="${_ARRY[2]:--}"	# iso_size
+					_LIST[16]="${_ARRY[3]:--}"	# iso_volume
+					# --- local remastering iso file --------------
+#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local remastering iso file" 1>&2
 					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[17]="${_ARRY[0]:--}"				# rmk_path
-					_LIST[18]="${_ARRY[1]:--}"				# rmk_tstamp
-					_LIST[19]="${_ARRY[2]:--}"				# rmk_size
-					_LIST[20]="${_ARRY[3]:--}"				# rmk_volume
-					# --- config file  ----------------------------------------
+					_LIST[17]="${_ARRY[0]:--}"	# rmk_path
+					_LIST[18]="${_ARRY[1]:--}"	# rmk_tstamp
+					_LIST[19]="${_ARRY[2]:--}"	# rmk_size
+					_LIST[20]="${_ARRY[3]:--}"	# rmk_volume
+					# --- config file  ----------------------------
+#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "config file" 1>&2
 					_WORK="$(funcGetFileinfo "${_LIST[23]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[23]="${_ARRY[0]:--}"				# cfg_path
-					_LIST[24]="${_ARRY[1]:--}"				# cfg_tstamp
+					_LIST[23]="${_ARRY[0]:--}"	# cfg_path
+					_LIST[24]="${_ARRY[1]:--}"	# cfg_tstamp
 					# ---------------------------------------------------------
+					if [[ -z "${_LIST[23]##-}" ]] || [[ -z "${_LIST[24]##-}" ]]; then
+						continue
+					fi
 					if [[ -n "${_LIST[13]##-}" ]] && [[ -n "${_LIST[14]##-}" ]] && [[ -n "${_LIST[15]##-}" ]]; then
 						if [[ -n  "${_LIST[9]##-}" ]] && [[ -n "${_LIST[10]##-}" ]] && [[ -n "${_LIST[11]##-}" ]]; then
 							if [[ -n "${_LIST[17]##-}" ]] && [[ -n "${_LIST[18]##-}" ]] && [[ -n "${_LIST[19]##-}" ]]; then
@@ -260,6 +300,16 @@ function funcMain() {
 						fi
 					fi
 					funcRemastering "${_LIST[@]}"
+					# --- new local remaster iso files ------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[17]="${_ARRY[0]:--}"				# rmk_path
+					_LIST[18]="${_ARRY[1]:--}"				# rmk_tstamp
+					_LIST[19]="${_ARRY[2]:--}"				# rmk_size
+					_LIST[20]="${_ARRY[3]:--}"				# rmk_volume
+					# --- update media data record ----------------
+					_LIST_MDIA[I]="${_LIST[*]}"
+#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${_LIST[13]##*/}" 1>&2
 				done
 				funcPut_media_data
 				;;
@@ -292,7 +342,59 @@ function funcMain() {
 				do
 					case "${1:-}" in
 						create   ) shift; funcPut_media_data;;
-						update   ) ;;
+						update   ) 
+							shift
+							for I in "${!_LIST_MDIA[@]}"
+							do
+								read -r -a _LIST < <(echo "${_LIST_MDIA[I]}")
+#								case "${_LIST[1]}" in
+#									o) ;;
+#									*) continue;;
+#								esac
+								if [[ -z "${_LIST[3]##-}" ]]; then
+									continue
+								fi
+								if [[ -z "${_LIST[13]##-}" ]]; then
+									continue
+								fi
+#								sleep 1
+								printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${_LIST[13]##*/}" 1>&2
+								# --- web original iso file -------------------
+#								printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "web original iso file" 1>&2
+								_WORK="$(funcGetWebinfo "${_LIST[9]##-}")"
+								read -r -a _ARRY < <(echo "${_WORK}")
+								_LIST[10]="${_ARRY[1]:--}"	# web_tstamp
+								_LIST[11]="${_ARRY[2]:--}"	# web_size
+								_LIST[12]="${_ARRY[3]:--}"	# web_status
+								# --- local original iso file -----------------
+#								printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local original iso file" 1>&2
+								_WORK="$(funcGetFileinfo "${_LIST[13]##-}")"
+								read -r -a _ARRY < <(echo "${_WORK}")
+								_LIST[13]="${_ARRY[0]:--}"	# iso_path
+								_LIST[14]="${_ARRY[1]:--}"	# iso_tstamp
+								_LIST[15]="${_ARRY[2]:--}"	# iso_size
+								_LIST[16]="${_ARRY[3]:--}"	# iso_volume
+								# --- local remastering iso file --------------
+#								printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local remastering iso file" 1>&2
+								_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
+								read -r -a _ARRY < <(echo "${_WORK}")
+								_LIST[17]="${_ARRY[0]:--}"	# rmk_path
+								_LIST[18]="${_ARRY[1]:--}"	# rmk_tstamp
+								_LIST[19]="${_ARRY[2]:--}"	# rmk_size
+								_LIST[20]="${_ARRY[3]:--}"	# rmk_volume
+								# --- config file  ----------------------------
+#								printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "config file" 1>&2
+								_WORK="$(funcGetFileinfo "${_LIST[23]##-}")"
+								read -r -a _ARRY < <(echo "${_WORK}")
+								_LIST[23]="${_ARRY[0]:--}"	# cfg_path
+								_LIST[24]="${_ARRY[1]:--}"	# cfg_tstamp
+								# --- update media data record ----------------
+								_LIST_MDIA[I]="${_LIST[*]}"
+#								printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${_LIST[13]##*/}" 1>&2
+							done
+							# -------------------------------------------------
+							funcPut_media_data
+							;;
 						download ) ;;
 						*        ) break;;
 					esac

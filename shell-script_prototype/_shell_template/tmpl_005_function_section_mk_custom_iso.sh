@@ -604,7 +604,7 @@ function funcRemastering_media() {
 	declare       _FCAT=""									# "         (boot.cat or boot.catalog)
 	declare       _FBIN=""									# "         (isolinux.bin or eltorito.img)
 	declare       _FHBR=""									# "         (isohdpfx.bin)
-	declare       _VLID=""									# 
+#	declare       _VLID=""									# 
 	declare -i    _SKIP=0									# 
 	declare -i    _SIZE=0									# 
 
@@ -612,7 +612,7 @@ function funcRemastering_media() {
 #	_PATH="${_DWRK}/${_TGET_LIST[17]##*/}.tmp"				# file path
 	_FCAT="$(find "${_DIRS_TGET}" \( -iname 'boot.cat'     -o -iname 'boot.catalog' \) -type f -printf "%P" || true)"
 	_FBIN="$(find "${_DIRS_TGET}" \( -iname 'isolinux.bin' -o -iname 'eltorito.img' \) -type f -printf "%P" || true)"
-	_VLID="$(funcGetVolID "${_TGET_LIST[13]}")"
+#	_VLID="$(funcGetVolID "${_TGET_LIST[13]}")"
 	_FEFI="$(funcDistro2efi "${_TGET_LIST[2]%%-*}")"
 	# --- create iso image file -----------------------------------------------
 	if [[ -e "${_DIRS_TGET}/${_FEFI}" ]]; then
@@ -620,7 +620,7 @@ function funcRemastering_media() {
 		_FHBR="$(find /usr/lib  -iname 'isohdpfx.bin' -type f || true)"
 		funcCreate_iso "${_DIRS_TGET}" "${_TGET_LIST[17]}" \
 			-quiet -rational-rock \
-			-volid "${_VLID}" \
+			-volid "${_TGET_LIST[16]//%20/ }" \
 			-joliet -joliet-long \
 			-cache-inodes \
 			${_FHBR:+-isohybrid-mbr "${_FHBR}"} \
@@ -644,7 +644,7 @@ function funcRemastering_media() {
 		# --- create iso image file -------------------------------------------
 		funcCreate_iso "${_DIRS_TGET}" "${_TGET_LIST[17]}" \
 			-quiet -rational-rock \
-			-volid "${_VLID}" \
+			-volid "${_TGET_LIST[16]//%20/ }" \
 			-joliet -joliet-long \
 			-full-iso9660-filenames -iso-level 3 \
 			-partition_offset 16 \

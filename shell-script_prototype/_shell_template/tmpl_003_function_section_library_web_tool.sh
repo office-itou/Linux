@@ -20,7 +20,7 @@ function funcGetWebinfo() {
 		_LMOD=""
 		for ((R=0; R<3; R++))
 		do
-			if ! _LINE="$(wget --trust-server-names --spider --server-response --output-document=- "$1" 2>&1)"; then
+			if ! _LINE="$(wget --tries=3 --timeout=10 --quiet --trust-server-names --spider --server-response --output-document=- "$1" 2>&1)"; then
 				continue
 			fi
 			IFS= mapfile -d $'\n' -t _LIST < <(echo "${_LINE}")
@@ -46,6 +46,7 @@ function funcGetWebinfo() {
 				5??) sleep 3; continue;;	# 5xx (Server Error) : The server failed to fulfill an apparently valid request
 				*  ) sleep 3; continue;;	#      Unknown Error
 			esac
+			echo "retry [${R}]" 1>&2
 		done
 		_ARRY=("$1" "${_LMOD}" "${_LENG}" "${_CODE}")
 	fi

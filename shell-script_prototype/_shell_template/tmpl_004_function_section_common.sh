@@ -499,7 +499,7 @@ function funcPut_media_data() {
 			_LIST[J]="${_LIST[J]:--}"						# null
 			_LIST[J]="${_LIST[J]// /%20}"					# blank
 		done
-		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-27s %-15s %-15s %-85s %-27s %-15s %-43s %-85s %-27s %-15s %-43s %-85s %-85s %-85s %-27s %-85s\n" \
+		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-31s %-15s %-15s %-85s %-31s %-15s %-43s %-85s %-31s %-15s %-43s %-85s %-85s %-85s %-31s %-85s\n" \
 			"${_LIST[@]}" \
 		>> "${_PATH_MDIA:?}"
 	done
@@ -637,21 +637,21 @@ function fncCreate_directory() {
 #  7: support       ( 15)   TEXT                        support end date
 #  8: web_regexp    (143)   TEXT                        web file  regexp
 #  9: web_path      (143)   TEXT                        "         path
-# 10: web_tstamp    ( 27)   TIMESTAMP WITH TIME ZONE    "         time stamp
+# 10: web_tstamp    ( 31)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 11: web_size      ( 15)   BIGINT                      "         file size
 # 12: web_status    ( 15)   TEXT                        "         download status
 # 13: iso_path      ( 85)   TEXT                        iso image file path
-# 14: iso_tstamp    ( 27)   TIMESTAMP WITH TIME ZONE    "         time stamp
+# 14: iso_tstamp    ( 31)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 15: iso_size      ( 15)   BIGINT          "           file size
 # 16: iso_volume    ( 43)   TEXT            "           volume id
 # 17: rmk_path      ( 85)   TEXT            remaster    file path
-# 18: rmk_tstamp    ( 27)   TIMESTAMP WITH TIME ZONE    "         time stamp
+# 18: rmk_tstamp    ( 31)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 19: rmk_size      ( 15)   BIGINT                      "         file size
 # 20: rmk_volume    ( 43)   TEXT                        "         volume id
 # 21: ldr_initrd    ( 85)   TEXT                        initrd    file path
 # 22: ldr_kernel    ( 85)   TEXT                        kernel    file path
 # 23: cfg_path      ( 85)   TEXT                        config    file path
-# 24: cfg_tstamp    ( 27)   TIMESTAMP WITH TIME ZONE    "         time stamp
+# 24: cfg_tstamp    ( 31)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 25: lnk_path      ( 85)   TEXT                        symlink   directory or file path
 
 # ----- create preseed.cfg ----------------------------------------------------
