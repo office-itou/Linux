@@ -175,9 +175,35 @@ function funcMain() {
 						o) ;;
 						*) continue;;
 					esac
+					# --- web original iso file -------------------------------
+					_WORK="$(funcGetWebinfo "${_LIST[9]##-}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[10]="${_ARRY[1]:--}"				# web_tstamp
+					_LIST[11]="${_ARRY[2]:--}"				# web_size
+					_LIST[12]="${_ARRY[3]:--}"				# web_status
+					# --- local original iso file -----------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[13]##-}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[13]="${_ARRY[0]:--}"				# iso_path
+					_LIST[14]="${_ARRY[1]:--}"				# iso_tstamp
+					_LIST[15]="${_ARRY[2]:--}"				# iso_size
+					_LIST[16]="${_ARRY[3]:--}"				# iso_volume
+					# --- local remastering iso file --------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[17]="${_ARRY[0]:--}"				# rmk_path
+					_LIST[18]="${_ARRY[1]:--}"				# rmk_tstamp
+					_LIST[19]="${_ARRY[2]:--}"				# rmk_size
+					_LIST[20]="${_ARRY[3]:--}"				# rmk_volume
+					# --- config file  ----------------------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[23]##-}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[23]="${_ARRY[0]:--}"				# cfg_path
+					_LIST[24]="${_ARRY[1]:--}"				# cfg_tstamp
+					# ---------------------------------------------------------
 					funcRemastering "${_LIST[@]}"
-					funcPut_media_data
 				done
+				funcPut_media_data
 				;;
 			update  )					# create new files only
 				shift
@@ -189,30 +215,30 @@ function funcMain() {
 						*) continue;;
 					esac
 					# --- web original iso file -------------------------------
-					_WORK="$(funcGetWebinfo "${_LIST[9]}")"
+					_WORK="$(funcGetWebinfo "${_LIST[9]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[10]="${_ARRY[1]}"					# web_tstamp
-					_LIST[11]="${_ARRY[2]}"					# web_size
-					_LIST[12]="${_ARRY[3]}"					# web_status
+					_LIST[10]="${_ARRY[1]:--}"				# web_tstamp
+					_LIST[11]="${_ARRY[2]:--}"				# web_size
+					_LIST[12]="${_ARRY[3]:--}"				# web_status
 					# --- local original iso file -----------------------------
-					_WORK="$(funcGetFileinfo "${_LIST[13]}")"
+					_WORK="$(funcGetFileinfo "${_LIST[13]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[13]="${_ARRY[0]}"					# iso_path
-					_LIST[14]="${_ARRY[1]}"					# iso_tstamp
-					_LIST[15]="${_ARRY[2]}"					# iso_size
-					_LIST[16]="${_ARRY[3]}"					# iso_volume
+					_LIST[13]="${_ARRY[0]:--}"				# iso_path
+					_LIST[14]="${_ARRY[1]:--}"				# iso_tstamp
+					_LIST[15]="${_ARRY[2]:--}"				# iso_size
+					_LIST[16]="${_ARRY[3]:--}"				# iso_volume
 					# --- local remastering iso file --------------------------
-					_WORK="$(funcGetFileinfo "${_LIST[17]}")"
+					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[17]="${_ARRY[0]}"					# rmk_path
-					_LIST[18]="${_ARRY[1]}"					# rmk_tstamp
-					_LIST[19]="${_ARRY[2]}"					# rmk_size
-					_LIST[20]="${_ARRY[3]}"					# rmk_volume
+					_LIST[17]="${_ARRY[0]:--}"				# rmk_path
+					_LIST[18]="${_ARRY[1]:--}"				# rmk_tstamp
+					_LIST[19]="${_ARRY[2]:--}"				# rmk_size
+					_LIST[20]="${_ARRY[3]:--}"				# rmk_volume
 					# --- config file  ----------------------------------------
-					_WORK="$(funcGetFileinfo "${_LIST[17]}")"
+					_WORK="$(funcGetFileinfo "${_LIST[23]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[23]="${_ARRY[0]}"					# cfg_path
-					_LIST[24]="${_ARRY[1]}"					# cfg_tstamp
+					_LIST[23]="${_ARRY[0]:--}"				# cfg_path
+					_LIST[24]="${_ARRY[1]:--}"				# cfg_tstamp
 					# ---------------------------------------------------------
 					if [[ -n "${_LIST[13]##-}" ]] && [[ -n "${_LIST[14]##-}" ]] && [[ -n "${_LIST[15]##-}" ]]; then
 						if [[ -n  "${_LIST[9]##-}" ]] && [[ -n "${_LIST[10]##-}" ]] && [[ -n "${_LIST[11]##-}" ]]; then
@@ -235,6 +261,7 @@ function funcMain() {
 					fi
 					funcRemastering "${_LIST[@]}"
 				done
+				funcPut_media_data
 				;;
 			download)					# download only
 				shift

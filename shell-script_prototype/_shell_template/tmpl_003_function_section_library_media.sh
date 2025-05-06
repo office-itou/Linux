@@ -61,7 +61,7 @@ function funcGetFileinfo() {
 	# -------------------------------------------------------------------------
 	_ARRY=()
 	if [[ -n "${1:-}" ]]; then
-		_WORK="$(realpath "${1:?}")"		# full path
+		_WORK="$(realpath "$1")"		# full path
 		_FNAM="${_WORK##*/}"
 		_DIRS="${_WORK%"${_FNAM}"}"
 		_WORK="$(LANG=C find "${_DIRS:-.}" -name "${_FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%S+%TZ %s")"

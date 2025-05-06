@@ -566,7 +566,7 @@ function funcGetFileinfo() {
 	# -------------------------------------------------------------------------
 	_ARRY=()
 	if [[ -n "${1:-}" ]]; then
-		_WORK="$(realpath "${1:?}")"		# full path
+		_WORK="$(realpath "$1")"		# full path
 		_FNAM="${_WORK##*/}"
 		_DIRS="${_WORK%"${_FNAM}"}"
 		_WORK="$(LANG=C find "${_DIRS:-.}" -name "${_FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%S+%TZ %s")"
@@ -752,7 +752,6 @@ function funcCreate_iso() {
 # --- get web information -----------------------------------------------------
 # shellcheck disable=SC2317
 function funcGetWebinfo() {
-	declare       _WEBS_ADDR="${1:?}"	# web address
 	declare       _FILD=""				# field name
 	declare       _VALU=""				# value
 	declare       _CODE=""				# status codes
@@ -760,41 +759,46 @@ function funcGetWebinfo() {
 	declare       _LMOD=""				# last-modified
 	declare       _LINE=""				# work variables
 	declare -a    _LIST=()				# work variables
+	declare -a    _ARRY=()				# work variables
 	declare -i    I=0					# work variables
 	declare -i    R=0					# work variables
 
-	_LENG=""
-	_LMOD=""
-	for ((R=0; R<3; R++))
-	do
-		if ! _LINE="$(wget --trust-server-names --spider --server-response --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
-			continue
-		fi
-		IFS= mapfile -d $'\n' -t _LIST < <(echo "${_LINE}")
-		for I in "${!_LIST[@]}"
+	_ARRY=()
+	if [[ -n "${1:-}" ]]; then
+		_LENG=""
+		_LMOD=""
+		for ((R=0; R<3; R++))
 		do
-			_LINE="${_LIST[I],,}"
-			_LINE="${_LINE#"${_LINE%%[!"${IFS}"]*}"}"	# ltrim
-			_LINE="${_LINE%"${_LINE##*[!"${IFS}"]}"}"	# rtrim
-			_FILD="${_LINE%% *}"
-			_VALU="${_LINE#* }"
-			case "${_FILD%% *}" in
-				http/*         ) _CODE="${_VALU%% *}";;
-				content-length:) _LENG="${_VALU}";;
-				last-modified: ) _LMOD="$(TZ=UTC date -d "${_VALU}" "+%Y/%m/%d%%20%H:%M:%S+%Z")";;
-				*) ;;
+			if ! _LINE="$(wget --trust-server-names --spider --server-response --output-document=- "$1" 2>&1)"; then
+				continue
+			fi
+			IFS= mapfile -d $'\n' -t _LIST < <(echo "${_LINE}")
+			for I in "${!_LIST[@]}"
+			do
+				_LINE="${_LIST[I],,}"
+				_LINE="${_LINE#"${_LINE%%[!"${IFS}"]*}"}"	# ltrim
+				_LINE="${_LINE%"${_LINE##*[!"${IFS}"]}"}"	# rtrim
+				_FILD="${_LINE%% *}"
+				_VALU="${_LINE#* }"
+				case "${_FILD%% *}" in
+					http/*         ) _CODE="${_VALU%% *}";;
+					content-length:) _LENG="${_VALU}";;
+					last-modified: ) _LMOD="$(TZ=UTC date -d "${_VALU}" "+%Y/%m/%d%%20%H:%M:%S+%Z")";;
+					*) ;;
+				esac
+			done
+			case "${_CODE}" in				# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+				1??) break            ;;	# 1xx (Informational): The request was received, continuing process
+				2??) break            ;;	# 2xx (Successful)   : The request was successfully received, understood, and accepted
+				3??) break            ;;	# 3xx (Redirection)  : Further action needs to be taken in order to complete the request
+				4??) sleep 3; continue;;	# 4xx (Client Error) : The request contains bad syntax or cannot be fulfilled
+				5??) sleep 3; continue;;	# 5xx (Server Error) : The server failed to fulfill an apparently valid request
+				*  ) sleep 3; continue;;	#      Unknown Error
 			esac
 		done
-		case "${_CODE}" in				# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
-			1??) break            ;;	# 1xx (Informational): The request was received, continuing process
-			2??) break            ;;	# 2xx (Successful)   : The request was successfully received, understood, and accepted
-			3??) break            ;;	# 3xx (Redirection)  : Further action needs to be taken in order to complete the request
-			4??) sleep 3; continue;;	# 4xx (Client Error) : The request contains bad syntax or cannot be fulfilled
-			5??) sleep 3; continue;;	# 5xx (Server Error) : The server failed to fulfill an apparently valid request
-			*  ) sleep 3; continue;;	#      Unknown Error
-		esac
-	done
-	echo -n "${_WEBS_ADDR##*/} ${_LMOD} ${_LENG} ${_CODE}"
+		_ARRY=("$1" "${_LMOD}" "${_LENG}" "${_CODE}")
+	fi
+	echo -n "${_ARRY[*]}"
 }
 
 # *** function section (sub functions) ****************************************
@@ -2657,9 +2661,35 @@ function funcMain() {
 						o) ;;
 						*) continue;;
 					esac
+					# --- web original iso file -------------------------------
+					_WORK="$(funcGetWebinfo "${_LIST[9]##-}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[10]="${_ARRY[1]:--}"				# web_tstamp
+					_LIST[11]="${_ARRY[2]:--}"				# web_size
+					_LIST[12]="${_ARRY[3]:--}"				# web_status
+					# --- local original iso file -----------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[13]##-}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[13]="${_ARRY[0]:--}"				# iso_path
+					_LIST[14]="${_ARRY[1]:--}"				# iso_tstamp
+					_LIST[15]="${_ARRY[2]:--}"				# iso_size
+					_LIST[16]="${_ARRY[3]:--}"				# iso_volume
+					# --- local remastering iso file --------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[17]="${_ARRY[0]:--}"				# rmk_path
+					_LIST[18]="${_ARRY[1]:--}"				# rmk_tstamp
+					_LIST[19]="${_ARRY[2]:--}"				# rmk_size
+					_LIST[20]="${_ARRY[3]:--}"				# rmk_volume
+					# --- config file  ----------------------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[23]##-}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[23]="${_ARRY[0]:--}"				# cfg_path
+					_LIST[24]="${_ARRY[1]:--}"				# cfg_tstamp
+					# ---------------------------------------------------------
 					funcRemastering "${_LIST[@]}"
-					funcPut_media_data
 				done
+				funcPut_media_data
 				;;
 			update  )					# create new files only
 				shift
@@ -2671,30 +2701,30 @@ function funcMain() {
 						*) continue;;
 					esac
 					# --- web original iso file -------------------------------
-					_WORK="$(funcGetWebinfo "${_LIST[9]}")"
+					_WORK="$(funcGetWebinfo "${_LIST[9]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[10]="${_ARRY[1]}"					# web_tstamp
-					_LIST[11]="${_ARRY[2]}"					# web_size
-					_LIST[12]="${_ARRY[3]}"					# web_status
+					_LIST[10]="${_ARRY[1]:--}"				# web_tstamp
+					_LIST[11]="${_ARRY[2]:--}"				# web_size
+					_LIST[12]="${_ARRY[3]:--}"				# web_status
 					# --- local original iso file -----------------------------
-					_WORK="$(funcGetFileinfo "${_LIST[13]}")"
+					_WORK="$(funcGetFileinfo "${_LIST[13]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[13]="${_ARRY[0]}"					# iso_path
-					_LIST[14]="${_ARRY[1]}"					# iso_tstamp
-					_LIST[15]="${_ARRY[2]}"					# iso_size
-					_LIST[16]="${_ARRY[3]}"					# iso_volume
+					_LIST[13]="${_ARRY[0]:--}"				# iso_path
+					_LIST[14]="${_ARRY[1]:--}"				# iso_tstamp
+					_LIST[15]="${_ARRY[2]:--}"				# iso_size
+					_LIST[16]="${_ARRY[3]:--}"				# iso_volume
 					# --- local remastering iso file --------------------------
-					_WORK="$(funcGetFileinfo "${_LIST[17]}")"
+					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[17]="${_ARRY[0]}"					# rmk_path
-					_LIST[18]="${_ARRY[1]}"					# rmk_tstamp
-					_LIST[19]="${_ARRY[2]}"					# rmk_size
-					_LIST[20]="${_ARRY[3]}"					# rmk_volume
+					_LIST[17]="${_ARRY[0]:--}"				# rmk_path
+					_LIST[18]="${_ARRY[1]:--}"				# rmk_tstamp
+					_LIST[19]="${_ARRY[2]:--}"				# rmk_size
+					_LIST[20]="${_ARRY[3]:--}"				# rmk_volume
 					# --- config file  ----------------------------------------
-					_WORK="$(funcGetFileinfo "${_LIST[17]}")"
+					_WORK="$(funcGetFileinfo "${_LIST[23]##-}")"
 					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[23]="${_ARRY[0]}"					# cfg_path
-					_LIST[24]="${_ARRY[1]}"					# cfg_tstamp
+					_LIST[23]="${_ARRY[0]:--}"				# cfg_path
+					_LIST[24]="${_ARRY[1]:--}"				# cfg_tstamp
 					# ---------------------------------------------------------
 					if [[ -n "${_LIST[13]##-}" ]] && [[ -n "${_LIST[14]##-}" ]] && [[ -n "${_LIST[15]##-}" ]]; then
 						if [[ -n  "${_LIST[9]##-}" ]] && [[ -n "${_LIST[10]##-}" ]] && [[ -n "${_LIST[11]##-}" ]]; then
@@ -2717,6 +2747,7 @@ function funcMain() {
 					fi
 					funcRemastering "${_LIST[@]}"
 				done
+				funcPut_media_data
 				;;
 			download)					# download only
 				shift
