@@ -33,7 +33,7 @@ function funcServiceStatus() {
 
 # --- function is package -----------------------------------------------------
 function funcIsPackage () {
-	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed'
+	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed' || true
 }
 
 # --- diff --------------------------------------------------------------------
@@ -97,13 +97,13 @@ function funcCurl() {
 	fi
 	if ! _ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${_INPT_URL}" 2> /dev/null)"); then
 		_RET_CD="$?"
-		_ERR_MSG=$(echo "${_ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
+		_ERR_MSG=$(echo "${_ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g' || true)
 		if [[ -z "${_MSG_FLG}" ]]; then
 			printf "%s\n" "${_ERR_MSG} [${_RET_CD}]: ${_INPT_URL}"
 		fi
 		return "${_RET_CD}"
 	fi
-	_WEB_SIZ=$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p')
+	_WEB_SIZ=$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p' || true)
 	# shellcheck disable=SC2312
 	_WEB_TIM=$(TZ=UTC date -d "$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
 	_WEB_FIL="${_OUTP_DIR:-.}/${_INPT_URL##*/}"
@@ -227,7 +227,7 @@ function funcDebug_function() {
 	# -------------------------------------------------------------------------
 	funcPrintf "---- ${_MSGS_TITL} ${_TEXT_GAP1}"
 	mkdir -p "${_FILE_WRK1%/*}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_WRK1}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_WRK1}" || true
 		line 00
 		line 01
 		line 02
@@ -241,7 +241,7 @@ function funcDebug_function() {
 		line 10
 _EOT_
 	mkdir -p "${_FILE_WRK2%/*}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_WRK2}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_WRK2}" || true
 		line 00
 		line 01
 		line 02

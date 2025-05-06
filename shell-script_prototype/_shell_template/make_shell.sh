@@ -119,6 +119,10 @@ function funcCreate() {
 	declare -n    _NAME_REFS="$1"		# name reference
 	shift
 	declare -r -a _OPTN_PARM=("${@:-}")	# option parameter
+	declare       _PATH=""				# path
+	declare       _DIRS=""				# directory
+	declare       _FNAM=""				# file name
+#	declare       _WORK=""				# work variable
 	declare       _LINE=""				# work variable
 	declare       _SKEL=""				# work variable (skeleton)
 	declare       _TMPL=""				# work variable (template)
@@ -134,12 +138,16 @@ function funcCreate() {
 				_SKEL="$1"
 				shift
 				if [[ ! -f "${_SKEL}" ]]; then
-					printf "\033[m\033[91m%s\033[m\n" "not exist ${_SKEL}"
+					printf "\033[m\033[91m%20.20s: %s\033[m\n" "not exist" "${_SKEL}"
 					continue
 				fi
-				_CRAT="${_SKEL##*/}"
-				_CRAT="${_CRAT#skel_}"
-				_CRAT="${_SKEL%/*}/${_CRAT}"
+				if file "${_SKEL}" | grep 'with CRLF'; then
+					printf "\033[m\033[91m%20.20s: %s\033[m\n" "with CRLF" "${_SKEL}"
+					exit 1
+				fi
+				_FNAM="${_SKEL##*/}"
+				_DIRS="${_SKEL%"${_FNAM}"}"
+				_CRAT="${_DIRS}${_FNAM#skel_}"
 				_TEMP="${_CRAT:?}.tmp"
 				if [[ "${_CRAT:?}" = "${_SKEL:?}" ]]; then
 					printf "%s\n" "abort because file name input and output are the same" 1>&2
@@ -159,7 +167,13 @@ function funcCreate() {
 							_TMPL="${_TMPL#:_}"
 							_TMPL="${_TMPL%_:}"
 							if [[ "${_TMPL##*/}" = "${_TMPL%/*}" ]]; then
-								_TMPL="${_SKEL%/*}/${_TMPL}"
+								_FNAM="${_SKEL##*/}"
+								_DIRS="${_SKEL%"${_FNAM}"}"
+								_TMPL="${_DIRS}${_TMPL}"
+								if file "${_TMPL}" | grep 'with CRLF'; then
+									printf "\033[m\033[91m%20.20s: %s\033[m\n" "with CRLF" "${_TMPL}"
+									exit 1
+								fi
 							fi
 							if [[ ! -f "${_TMPL}" ]]; then
 								printf "\033[m\033[91m%s\033[m\n" "not exist ${_TMPL}"

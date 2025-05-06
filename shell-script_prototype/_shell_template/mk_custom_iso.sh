@@ -17,6 +17,9 @@
 ##
 ###############################################################################
 
+# *** initialization **********************************************************
+	export LANG=C
+
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -51,6 +54,7 @@
 	declare       _DIRS_TEMP=""
 	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
 	readonly      _DIRS_TEMP
+	declare -r    TMPDIR="${_DIRS_TEMP:-?}"
 
 	# --- trap ----------------------------------------------------------------
 	declare -a    _LIST_RMOV=()			# list remove directory / file
@@ -93,7 +97,7 @@ function funcTrap() {
 	if command -v apt-get > /dev/null 2>&1; then
 		if ! ls /var/lib/apt/lists/*_"${_CODE_NAME:-}"_InRelease > /dev/null 2>&1; then
 			echo "please execute apt-get update:"
-			if [[ -n "${SUDO_USER:-}" ]] || { [[ -z "${SUDO_USER:-}" ]] && [[ "${_USER_NAME}" != "root" ]]; }; then
+			if [[ -n "${SUDO_USER:-}" ]] || { [[ -z "${SUDO_USER:-}" ]] && [[ "${_USER_NAME:-}" != "root" ]]; }; then
 				echo -n "sudo "
 			fi
 			echo "apt-get update" 1>&2
@@ -127,7 +131,7 @@ function funcTrap() {
 			"lzop" \
 		)
 		# ---------------------------------------------------------------------
-		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]:-bash}" 2> /dev/null | sed -ne '/[ \t]'"${_ARCH_OTHR:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g')"
+		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]:-bash}" 2> /dev/null | sed -ne '/[ \t]'"${_ARCH_OTHR:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g' || true)"
 		readonly      PAKG_FIND
 		if [[ -n "${PAKG_FIND% *}" ]]; then
 			echo "please install these:"
@@ -223,6 +227,8 @@ function funcTrap() {
 
 # *** function section (common functions) *************************************
 
+# === <common> ================================================================
+
 	# --- set minimum display size --------------------------------------------
 	declare -i    _SIZE_ROWS=25
 	declare -i    _SIZE_COLS=80
@@ -306,7 +312,7 @@ function funcTrap() {
 
 # --- is numeric --------------------------------------------------------------
 #function funcIsNumeric() {
-#	[[ ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
+#	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
 #}
 
 # --- substr ------------------------------------------------------------------
@@ -316,91 +322,199 @@ function funcTrap() {
 
 # --- string output -----------------------------------------------------------
 # shellcheck disable=SC2317
-funcString() {
+function funcString() {
 #	printf "%${1:-"${_SIZE_COLS}"}s" "" | tr ' ' "${2:- }"
 	echo "" | IFS= awk '{s=sprintf("%'"$1"'s"," "); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+}
+
+# --- date diff ---------------------------------------------------------------
+# shellcheck disable=SC2317
+function funcDateDiff() {
+	declare       _DAT1="${1:?}"		# date1
+	declare       _DAT2="${2:?}"		# date2
+	# -------------------------------------------------------------------------
+	#  0 : _DAT1 = _DAT2
+	#  1 : _DAT1 < _DAT2
+	# -1 : _DAT1 > _DAT2
+	# emp: error
+	_DAT1="$(TZ=UTC date -d "${_DAT1//%20/ }" "+%s" || exit $?)"
+	_DAT2="$(TZ=UTC date -d "${_DAT2//%20/ }" "+%s" || exit $?)"
+	  if [[ "${_DAT1}" -eq "${_DAT2}" ]]; then
+		echo "0"
+	elif [[ "${_DAT1}" -lt "${_DAT2}" ]]; then
+		echo "1"
+	elif [[ "${_DAT1}" -gt "${_DAT2}" ]]; then
+		echo "-1"
+	else
+		echo ""
+	fi
 }
 
 # --- print with screen control -----------------------------------------------
 # shellcheck disable=SC2317
 function funcPrintf() {
-	declare -r    _FLAG_TRCE="$(set -o | grep "^xtrace\s*on$")"
+	declare -r    _TRCE="$(set -o | grep "^xtrace\s*on$")"
 	set +x
 	# -------------------------------------------------------------------------
-	declare       _FLAG_NCUT=""			# no cutting flag
-	declare       _TEXT_FMAT=""			# format parameter
-	declare       _TEXT_UTF8=""			# formatted utf8
-	declare       _TEXT_SJIS=""			# formatted sjis (cp932)
-	declare       _TEXT_PLIN=""			# formatted string without attributes
-	declare       _TEXT_WORK=""			# 
-	declare       _ESCP_FRNT=""			# escape characters front
+	declare       _NCUT=""				# no cutting flag
+	declare       _FMAT=""				# format parameter
+	declare       _UTF8=""				# formatted utf8
+	declare       _SJIS=""				# formatted sjis (cp932)
+	declare       _PLIN=""				# formatted string without attributes
+	declare       _ESCF=""				# escape characters front
+	declare       _WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 	# -------------------------------------------------------------------------
-	case "$1" in
-		--no-cutting) _FLAG_NCUT="true"; shift;;
+	case "${1:?}" in
+		--no-cutting) _NCUT="true"; shift;;
 		*           ) ;;
 	esac
 	# -------------------------------------------------------------------------
-	_TEXT_FMAT="${1:-}"
+	_FMAT="${1}"
 	shift
 	# shellcheck disable=SC2059
-	printf -v _TEXT_UTF8 -- "${_TEXT_FMAT}" "${@:-}"
+	printf -v _UTF8 -- "${_FMAT}" "${@:-}"
 	# -------------------------------------------------------------------------
-	if [[ -z "${_FLAG_NCUT:-}" ]]; then
-		_TEXT_SJIS="$(echo -n "${_TEXT_UTF8:-}" | iconv -f UTF-8 -t CP932 -c -s || true)"
-		_TEXT_PLIN="${_TEXT_SJIS//"${_CODE_ESCP}["[0-9]m/}"
-		_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
-		_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
-		if [[ "${#_TEXT_PLIN}" -gt "${_SIZE_COLS}" ]]; then
-			_TEXT_WORK="${_TEXT_SJIS}"
+	if [[ -z "${_NCUT}" ]]; then
+		_SJIS="$(echo -n "${_UTF8}" | iconv -f UTF-8 -t CP932 -c -s || true)"
+		_PLIN="${_SJIS//"${_CODE_ESCP}["[0-9]m/}"
+		_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+		_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+		if [[ "${#_PLIN}" -gt "${_SIZE_COLS}" ]]; then
+			_WORK="${_SJIS}"
 			while true
 			do
-				case "${_TEXT_WORK}" in
+				case "${_WORK}" in
 					"${_CODE_ESCP}"\[[0-9]*m*)
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9]m/}"
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9][0-9]m/}"
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+						_WORK="${_WORK/#"${_CODE_ESCP}["[0-9]m/}"
+						_WORK="${_WORK/#"${_CODE_ESCP}["[0-9][0-9]m/}"
+						_WORK="${_WORK/#"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
 						;;
 					*) break;;
 				esac
 			done
-			_ESCP_FRNT="${_TEXT_SJIS%"${_TEXT_WORK}"}"
+			_ESCF="${_SJIS%"${_WORK}"}"
 			# -----------------------------------------------------------------
-			_TEXT_WORK="${_TEXT_SJIS:"${#_ESCP_FRNT}":"${_SIZE_COLS}"}"
+			_WORK="${_SJIS:"${#_ESCF}":"${_SIZE_COLS}"}"
 			while true
 			do
-				_TEXT_PLIN="${_TEXT_WORK//"${_CODE_ESCP}["[0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN%%"${_CODE_ESCP}"*}"
-				if [[ "${#_TEXT_PLIN}" -eq "${_SIZE_COLS}" ]]; then
+				_PLIN="${_WORK//"${_CODE_ESCP}["[0-9]m/}"
+				_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+				_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+				_PLIN="${_PLIN%%"${_CODE_ESCP}"*}"
+				if [[ "${#_PLIN}" -eq "${_SIZE_COLS}" ]]; then
 					break
 				fi
-				_TEXT_WORK="${_TEXT_SJIS:"${#_ESCP_FRNT}":$(("${#_TEXT_WORK}"+"${_SIZE_COLS}"-"${#_TEXT_PLIN}"))}"
+				_WORK="${_SJIS:"${#_ESCF}":$(("${#_WORK}"+"${_SIZE_COLS}"-"${#_PLIN}"))}"
 			done
-			_TEXT_WORK="${_ESCP_FRNT}${_TEXT_WORK}"
-			_TEXT_UTF8="$(echo -n "${_TEXT_WORK}" | iconv -f CP932 -t UTF-8 -c -s 2> /dev/null || true)"
+			_WORK="${_ESCF}${_WORK}"
+			_UTF8="$(echo -n "${_WORK}" | iconv -f CP932 -t UTF-8 -c -s 2> /dev/null || true)"
 		fi
 	fi
-	printf "%s%b%s\n" "${_TEXT_RESET}" "${_TEXT_UTF8}" "${_TEXT_RESET}"
-	if [[ -n "${_FLAG_TRCE:-}" ]]; then
+	printf "%s%b%s\n" "${_TEXT_RESET}" "${_UTF8}" "${_TEXT_RESET}"
+	if [[ -n "${_TRCE}" ]]; then
 		set -x
 	else
 		set +x
 	fi
 }
 
+# === <network> ===============================================================
+
+# --- private ip address ------------------------------------------------------
+# class | ipv4 address range            | subnet mask range
+#   a   | 10.0.0.0    - 10.255.255.255  | 255.0.0.0     - 255.255.255.255 (up to 16,777,214 devices can be connected)
+#   b   | 172.16.0.0  - 172.31.255.255  | 255.255.0.0   - 255.255.255.255 (up to     65,534 devices can be connected)
+#   c   | 192.168.0.0 - 192.168.255.255 | 255.255.255.0 - 255.255.255.255 (up to        254 devices can be connected)
+
+# --- IPv4 netmask conversion -------------------------------------------------
+# shellcheck disable=SC2317
+function funcIPv4GetNetmask() {
+	declare       _OCT1=""				# octets
+	declare       _OCT2=""				# "
+	declare       _OCT3=""				# "
+	declare       _OCT4=""				# "
+	declare -i    _LOOP=0				# work variables
+	declare -i    _CALC=0				# "
+	# -------------------------------------------------------------------------
+	_OCT1="$(echo "${1:?}." | cut -d '.' -f 1)"
+	_OCT2="$(echo "${1}."   | cut -d '.' -f 2)"
+	_OCT3="$(echo "${1}."   | cut -d '.' -f 3)"
+	_OCT4="$(echo "${1}."   | cut -d '.' -f 4)"
+	# -------------------------------------------------------------------------
+	if [[ -n "${_OCT1}" ]] && [[ -n "${_OCT2}" ]] && [[ -n "${_OCT3}" ]] && [[ -n "${_OCT4}" ]]; then
+		# --- netmask -> cidr -------------------------------------------------
+		_CALC=0
+		for _LOOP in "${_OCT1}" "${_OCT2}" "${_OCT3}" "${_OCT4}"
+		do
+			case "${_LOOP}" in
+				  0) _CALC=$((_CALC+0));;
+				128) _CALC=$((_CALC+1));;
+				192) _CALC=$((_CALC+2));;
+				224) _CALC=$((_CALC+3));;
+				240) _CALC=$((_CALC+4));;
+				248) _CALC=$((_CALC+5));;
+				252) _CALC=$((_CALC+6));;
+				254) _CALC=$((_CALC+7));;
+				255) _CALC=$((_CALC+8));;
+				*  )                 ;;
+			esac
+		done
+		printf '%d' "${_CALC}"
+	else
+		# --- cidr -> netmask -------------------------------------------------
+		_LOOP=$((32-${1:?}))
+		_CALC=1
+		while [[ "${_LOOP}" -gt 0 ]]
+		do
+			_LOOP=$((_LOOP-1))
+			_CALC=$((_CALC*2))
+		done
+		_CALC="$((0xFFFFFFFF ^ (_CALC-1)))"
+		printf '%d.%d.%d.%d'              \
+		    $(( _CALC >> 24        )) \
+		    $(((_CALC >> 16) & 0xFF)) \
+		    $(((_CALC >>  8) & 0xFF)) \
+		    $(( _CALC        & 0xFF))
+	fi
+}
+
+# --- IPv6 full address -------------------------------------------------------
+# shellcheck disable=SC2317
+function funcIPv6GetFullAddr() {
+	declare -r    _FSEP="${1//[^:]/}"
+	declare       _WORK=""				# work variables
+	declare -a    _ARRY=()				# work variables
+	# -------------------------------------------------------------------------
+	_WORK="$(printf "%$((7-${#_FSEP}))s" "")"
+	_WORK="${1/::/::${_WORK// /:}}"
+	IFS= mapfile -d ':' -t _ARRY < <(echo -n "${_WORK/%:/::}")
+	printf ':%04x' "${_ARRY[@]/#/0x0}" | cut -c 2-
+}
+
+# --- IPv6 reverse address ----------------------------------------------------
+# shellcheck disable=SC2317
+function funcIPv6GetRevAddr() {
+	echo "${1//:/}" | \
+	    awk '{
+	        for(i=length();i>1;i--)              \
+	            printf("%c.", substr($0,i,1));   \
+	            printf("%c" , substr($0,1,1));}'
+}
+
+# === <media> =================================================================
+
 # --- unit conversion ---------------------------------------------------------
 # shellcheck disable=SC2317
 function funcUnit_conversion() {
-	declare -r -a _TEXT_UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
-	declare -i    _CALC_UNIT=0
-	declare       _WORK_TEXT=""
+	declare -r -a _UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
+	declare -i    _CALC=0
+	declare       _WORK=""				# work variables
 	declare -i    I=0
 	# --- is numeric ----------------------------------------------------------
-	if [[ ! ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
-		printf "%'s Byte" "?"
+	if [[ ! ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
+		printf "Error [%s]" "$1"
 		return
 	fi
 	# --- Byte ----------------------------------------------------------------
@@ -416,80 +530,281 @@ function funcUnit_conversion() {
 	# --- calculate -----------------------------------------------------------
 	for ((I=3; I>0; I--))
 	do
-		_CALC_UNIT=$((1024**I))
-		if [[ "$1" -ge "${_CALC_UNIT}" ]]; then
-			_WORK_TEXT="$(echo "$1" "${_CALC_UNIT}" | awk '{printf("%.1f", $1/$2)}')"
-			printf "%s %s" "${_WORK_TEXT}" "${_TEXT_UNIT[I]}"
+		_CALC=$((1024**I))
+		if [[ "$1" -ge "${_CALC}" ]]; then
+			_WORK="$(echo "$1" "${_CALC}" | awk '{printf("%.1f", $1/$2)}')"
+			printf "%s %s" "${_WORK}" "${_UNIT[I]}"
 			return
 		fi
 	done
 	echo -n "$1"
 }
 
-# --- IPv4 netmask conversion -------------------------------------------------
+# --- get volume id -----------------------------------------------------------
 # shellcheck disable=SC2317
-function funcIPv4GetNetmask() {
-	declare -r    _INPT_ADDR="$1"
-	declare -i    _LOOP=$((32-_INPT_ADDR))
-	declare -i    _WORK=1
-	declare       _DEC_ADDR=""
-	while [[ "${_LOOP}" -gt 0 ]]
+function funcGetVolID() {
+	declare       _VLID=""				# volume id
+	declare       _WORK=""				# work variables
+	# -------------------------------------------------------------------------
+	_VLID="$(LANG=C file -L "${1:?}")"
+	_VLID="${_VLID#*: }"
+	_WORK="${_VLID%%\'*}"
+	_VLID="${_VLID#"${_WORK}"}"
+	_WORK="${_VLID##*\'}"
+	_VLID="${_VLID%"${_WORK}"}"
+	echo -n "${_WORK}"
+}
+
+# --- get file information ----------------------------------------------------
+# shellcheck disable=SC2317
+function funcGetFileinfo() {
+	declare       _DIRS=""				# directory
+	declare       _FNAM=""				# file name
+	declare       _VLID=""				# volume id
+	declare       _WORK=""				# work variables
+	declare -a    _ARRY=()				# work variables
+	# -------------------------------------------------------------------------
+	_ARRY=()
+	if [[ -n "${1:-}" ]]; then
+		_WORK="$(realpath "${1:?}")"		# full path
+		_FNAM="${_WORK##*/}"
+		_DIRS="${_WORK%"${_FNAM}"}"
+		_WORK="$(LANG=C find "${_DIRS:-.}" -name "${_FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%S+%TZ %s")"
+		if [[ -n "${_WORK}" ]]; then
+			read -r -a _ARRY < <(echo "${_WORK}")
+#			_ARRY[0]					# full path
+#			_ARRY[1]					# time stamp
+#			_ARRY[2]					# size
+			_VLID="$(funcGetVolID "${_ARRY[0]}")"
+			_ARRY+=("${_VLID:-''}")		# volume id
+		fi
+	fi
+	echo -n "${_ARRY[*]}"
+}
+
+# --- distro to efi image file name -------------------------------------------
+# shellcheck disable=SC2317
+function funcDistro2efi() {
+	declare       _WORK=""				# work variables
+	# -------------------------------------------------------------------------
+	case "${1:?}" in
+		debian      | \
+		ubuntu      ) _WORK="boot/grub/efi.img";;
+		fedora      | \
+		centos      | \
+		almalinux   | \
+		rockylinux  | \
+		miraclelinux) _WORK="images/efiboot.img";;
+		opensuse    ) _WORK="boot/x86_64/efi";;
+		*           ) ;;
+	esac
+	echo -n "${_WORK}"
+}
+
+# === <initrd> ================================================================
+
+# --- Extract a compressed cpio _TGET_FILE ------------------------------------
+# shellcheck disable=SC2317
+funcXcpio() {
+	declare -r    _TGET_FILE="${1:?}"	# target file
+	declare -r    _DIRS_DEST="${2:-}"	# destination directory
+	shift 2
+
+	# shellcheck disable=SC2312
+	  if gzip -t       "${_TGET_FILE}" > /dev/null 2>&1 ; then gzip -c -d    "${_TGET_FILE}"
+	elif zstd -q -c -t "${_TGET_FILE}" > /dev/null 2>&1 ; then zstd -q -c -d "${_TGET_FILE}"
+	elif xzcat -t      "${_TGET_FILE}" > /dev/null 2>&1 ; then xzcat         "${_TGET_FILE}"
+	elif lz4cat -t <   "${_TGET_FILE}" > /dev/null 2>&1 ; then lz4cat        "${_TGET_FILE}"
+	elif bzip2 -t      "${_TGET_FILE}" > /dev/null 2>&1 ; then bzip2 -c -d   "${_TGET_FILE}"
+	elif lzop -t       "${_TGET_FILE}" > /dev/null 2>&1 ; then lzop -c -d    "${_TGET_FILE}"
+	fi | (
+		if [[ -n "${_DIRS_DEST}" ]]; then
+			mkdir -p -- "${_DIRS_DEST}"
+			# shellcheck disable=SC2312
+			cd -- "${_DIRS_DEST}" || exit
+		fi
+		cpio "$@"
+	)
+}
+
+# --- Read bytes out of a file, checking that they are valid hex digits -------
+# shellcheck disable=SC2317
+funcReadhex() {
+	# shellcheck disable=SC2312
+	dd if="${1:?}" bs=1 skip="${2:?}" count="${3:?}" 2> /dev/null | LANG=C grep -E "^[0-9A-Fa-f]{$3}\$"
+}
+
+# --- Check for a zero byte in a file -----------------------------------------
+# shellcheck disable=SC2317
+funcCheckzero() {
+	# shellcheck disable=SC2312
+	dd if="${1:?}" bs=1 skip="${2:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
+}
+
+# --- Split an initramfs into _TGET_FILEs and call funcXcpio on each ----------
+# shellcheck disable=SC2317
+funcSplit_initramfs() {
+	declare -r    _TGET_FILE="${1:?}"	# target file
+	declare -r    _DIRS_DEST="${2:-}"	# destination directory
+	declare -r -a _OPTS=("--preserve-modification-time" "--no-absolute-filenames" "--quiet")
+	declare -i    _CONT=0				# count
+	declare -i    _PSTR=0				# start point
+	declare -i    _PEND=0				# end point
+	declare       _MGIC=""				# magic word
+	declare       _DSUB=""				# sub directory
+	declare       _SARC=""				# sub archive
+
+	while true
 	do
-		_LOOP=$((_LOOP-1))
-		_WORK=$((_WORK*2))
+		_PEND="${_PSTR}"
+		while true
+		do
+			# shellcheck disable=SC2310
+			if funcCheckzero "${_TGET_FILE}" "${_PEND}"; then
+				_PEND=$((_PEND + 4))
+				# shellcheck disable=SC2310
+				while funcCheckzero "${_TGET_FILE}" "${_PEND}"
+				do
+					_PEND=$((_PEND + 4))
+				done
+				break
+			fi
+			# shellcheck disable=SC2310
+			_MGIC="$(funcReadhex "${_TGET_FILE}" "${_PEND}" "6")" || break
+			test "${_MGIC}" = "070701" || test "${_MGIC}" = "070702" || break
+			_NSIZ=0x$(funcReadhex "${_TGET_FILE}" "$((_PEND + 94))" "8")
+			_FSIZ=0x$(funcReadhex "${_TGET_FILE}" "$((_PEND + 54))" "8")
+			_PEND=$((_PEND + 110))
+			_PEND=$(((_PEND + _NSIZ + 3) & ~3))
+			_PEND=$(((_PEND + _FSIZ + 3) & ~3))
+		done
+		if [[ "${_PEND}" -eq "${_PSTR}" ]]; then
+			break
+		fi
+		_CONT=$((_CONT + 1))
+		if [[ "${_CONT}" -eq 1 ]]; then
+			_DSUB="early"
+		else
+			_DSUB="early${_CONT}"
+		fi
+		# shellcheck disable=SC2312
+		dd if="${_TGET_FILE}" skip="${_PSTR}" count="$((_PEND - _PSTR))" iflag=skip_bytes 2> /dev/null |
+		(
+			if [[ -n "${_DIRS_DEST}" ]]; then
+				mkdir -p -- "${_DIRS_DEST}/${_DSUB}"
+				# shellcheck disable=SC2312
+				cd -- "${_DIRS_DEST}/${_DSUB}" || exit
+			fi
+			cpio -i "${_OPTS[@]}"
+		)
+		_PSTR="${_PEND}"
 	done
-	_DEC_ADDR="$((0xFFFFFFFF ^ (_WORK-1)))"
-	printf '%d.%d.%d.%d'              \
-	    $(( _DEC_ADDR >> 24        )) \
-	    $(((_DEC_ADDR >> 16) & 0xFF)) \
-	    $(((_DEC_ADDR >>  8) & 0xFF)) \
-	    $(( _DEC_ADDR        & 0xFF))
+	if [[ "${_PEND}" -gt 0 ]]; then
+		_SARC="${TMPDIR:-/tmp}/${FUNCNAME[0]}"
+		mkdir -p "${_SARC%/*}"
+		dd if="${_TGET_FILE}" skip="${_PEND}" iflag=skip_bytes 2> /dev/null > "${_SARC}"
+		funcXcpio "${_SARC}" "${_DIRS_DEST:+${_DIRS_DEST}/main}" -i "${_OPTS[@]}"
+		rm -f "${_SARC:?}"
+	else
+		funcXcpio "${_TGET_FILE}" "${_DIRS_DEST}" -i "${_OPTS[@]}"
+	fi
 }
 
-# --- IPv4 cidr conversion ----------------------------------------------------
+# === <mkiso> =================================================================
+
+# --- create iso image --------------------------------------------------------
 # shellcheck disable=SC2317
-function funcIPv4GetNetCIDR() {
-	declare -r    _INPT_ADDR="$1"
-	declare -a    _OCTETS=()
-	declare -i    _MASK=0
-	echo "${_INPT_ADDR}" | \
-	    awk -F '.' '{
-	        split($0, _OCTETS);
-	        for (I in _OCTETS) {
-	            _MASK += 8 - log(2^8 - _OCTETS[I])/log(2);
-	        }
-	        print _MASK
-	    }'
+function funcCreate_iso() {
+	declare -r    _DIRS_TGET="${1:?}"	# target directory
+	declare -r    _PATH_OUTP="${2:?}"	# output path
+	shift 2
+	declare -r -a _OPTN_XORR=("$@")		# xorrisofs options
+	declare -a    _LIST=()				# data list
+	declare       _PATH=""				# file name
+	              _PATH="$(mktemp -q "${TMPDIR:-/tmp}/${_PATH_OUTP##*/}.XXXXXX")"
+	readonly      _PATH
+
+	# --- constant for control code -------------------------------------------
+	if [[ -z "${_CODE_ESCP+true}" ]]; then
+		declare   _CODE_ESCP=""
+		          _CODE_ESCP="$(printf '\033')"
+		readonly  _CODE_ESCP
+	fi
+
+	# --- create iso image ----------------------------------------------------
+	pushd "${_DIRS_TGET}" > /dev/null || exit
+	if ! nice -n "${_NICE_VALU:-19}" xorrisofs "${_OPTN_XORR[@]}" -output "${_PATH}" . > /dev/null 2>&1; then
+		printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [xorriso]" "${_PATH_OUTP##*/}" 1>&2
+	else
+		if ! cp --preserve=timestamps "${_PATH}" "${_PATH_OUTP}"; then
+			printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [cp]" "${_PATH_OUTP##*/}" 1>&2
+		else
+			IFS= mapfile -d ' ' -t _LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "${_PATH_OUTP}" || true)
+			printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "complete" "${_PATH_OUTP##*/} (${_LIST[4]})" 1>&2
+		fi
+	fi
+	rm -f "${_PATH:?}"
+	popd > /dev/null || exit
 }
 
-# --- IPv6 full address -------------------------------------------------------
-# shellcheck disable=SC2317
-function funcIPv6GetFullAddr() {
-	declare       _INPT_ADDR="$1"
-	declare -r    _INPT_FSEP="${_INPT_ADDR//[^:]/}"
-	declare -r -i _CONT_FSEP=$((7-${#_INPT_FSEP}))
-	declare       _OUTP_TEMP=""
-	_OUTP_TEMP="$(printf "%${_CONT_FSEP}s" "")"
-	_INPT_ADDR="${_INPT_ADDR/::/::${_OUTP_TEMP// /:}}"
-	IFS= mapfile -d ':' -t _OUTP_ARRY < <(echo -n "${_INPT_ADDR/%:/::}")
-	printf ':%04x' "${_OUTP_ARRY[@]/#/0x0}" | cut -c 2-
-}
+# === <web_tools> =============================================================
 
-# --- IPv6 reverse address ----------------------------------------------------
+# --- get web information -----------------------------------------------------
 # shellcheck disable=SC2317
-function funcIPv6GetRevAddr() {
-	declare -r    _INPT_ADDR="$1"
-	echo "${_INPT_ADDR//:/}"                 | \
-	    awk '{for(i=length();i>1;i--)          \
-	        printf("%c.", substr($0,i,1));     \
-	        printf("%c" , substr($0,1,1));}'
+function funcGetWebinfo() {
+	declare       _WEBS_ADDR="${1:?}"	# web address
+	declare       _FILD=""				# field name
+	declare       _VALU=""				# value
+	declare       _CODE=""				# status codes
+	declare       _LENG=""				# content-length
+	declare       _LMOD=""				# last-modified
+	declare       _LINE=""				# work variables
+	declare -a    _LIST=()				# work variables
+	declare -i    I=0					# work variables
+	declare -i    R=0					# work variables
+
+	_LENG=""
+	_LMOD=""
+	for ((R=0; R<3; R++))
+	do
+		if ! _LINE="$(wget --trust-server-names --spider --server-response --output-document=- "${_WEBS_ADDR}" 2>&1)"; then
+			continue
+		fi
+		IFS= mapfile -d $'\n' -t _LIST < <(echo "${_LINE}")
+		for I in "${!_LIST[@]}"
+		do
+			_LINE="${_LIST[I],,}"
+			_LINE="${_LINE#"${_LINE%%[!"${IFS}"]*}"}"	# ltrim
+			_LINE="${_LINE%"${_LINE##*[!"${IFS}"]}"}"	# rtrim
+			_FILD="${_LINE%% *}"
+			_VALU="${_LINE#* }"
+			case "${_FILD%% *}" in
+				http/*         ) _CODE="${_VALU%% *}";;
+				content-length:) _LENG="${_VALU}";;
+				last-modified: ) _LMOD="$(TZ=UTC date -d "${_VALU}" "+%Y/%m/%d%%20%H:%M:%S+%Z")";;
+				*) ;;
+			esac
+		done
+		case "${_CODE}" in				# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+			1??) break            ;;	# 1xx (Informational): The request was received, continuing process
+			2??) break            ;;	# 2xx (Successful)   : The request was successfully received, understood, and accepted
+			3??) break            ;;	# 3xx (Redirection)  : Further action needs to be taken in order to complete the request
+			4??) sleep 3; continue;;	# 4xx (Client Error) : The request contains bad syntax or cannot be fulfilled
+			5??) sleep 3; continue;;	# 5xx (Server Error) : The server failed to fulfill an apparently valid request
+			*  ) sleep 3; continue;;	#      Unknown Error
+		esac
+	done
+	echo -n "${_WEBS_ADDR##*/} ${_LMOD} ${_LENG} ${_CODE}"
 }
 
 # *** function section (sub functions) ****************************************
 
+# === <common> ================================================================
+
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
 	declare       _PATH=""				# file name
+	declare       _WORK=""				# work variables
 	declare       _LINE=""				# work variable
 	declare       _NAME=""				# variable name
 	declare       _VALU=""				# value
@@ -536,21 +851,22 @@ function funcInitialization() {
 	_SHEL_PART="${_SHEL_PART:-:_DIRS_SHEL_:/autoinst_cmd_part.sh}"
 	_SHEL_RUNS="${_SHEL_RUNS:-:_DIRS_SHEL_:/autoinst_cmd_run.sh}"
 	_SRVR_PROT="${_SRVR_PROT:-http}"
-	_SRVR_NICS="${_SRVR_NICS:-"$(LANG=C ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}')"}"
-	_SRVR_MADR="${_SRVR_MADR:-"$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {print $3;}')"}"
+	_SRVR_NICS="${_SRVR_NICS:-"$(LANG=C ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}' || true)"}"
+	_SRVR_MADR="${_SRVR_MADR:-"$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {print $3;}' || true)"}"
 	if [[ -z "${_SRVR_ADDR:-}" ]]; then
-		_SRVR_ADDR="${_SRVR_ADDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[1];}')"}"
-		if ip -4 -oneline address show dev "${_SRVR_NICS}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]'; then
+		_SRVR_ADDR="${_SRVR_ADDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[1];}' || true)"}"
+		_WORK="$(ip -4 -oneline address show dev "${_SRVR_NICS}" 2> /dev/null)"
+		if echo "${_WORK}" | grep -qE '[ \t]dynamic[ \t]'; then
 			_SRVR_UADR="${_SRVR_UADR:-"${_SRVR_ADDR%.*}"}"
 			_SRVR_ADDR=""
 		fi
 	fi
-	_SRVR_CIDR="${_SRVR_CIDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[2];}')"}"
+	_SRVR_CIDR="${_SRVR_CIDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[2];}' || true)"}"
 	_SRVR_MASK="${_SRVR_MASK:-"$(funcIPv4GetNetmask "${_SRVR_CIDR}")"}"
-	_SRVR_GWAY="${_SRVR_GWAY:-"$(LANG=C ip -4 -brief route list match default | awk '{print $3;}')"}"
+	_SRVR_GWAY="${_SRVR_GWAY:-"$(LANG=C ip -4 -brief route list match default | awk '{print $3;}' || true)"}"
 	if command -v resolvectl > /dev/null 2>&1; then
-		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/^Global:/             s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
-		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/('"${_SRVR_NICS}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/^Global:/             s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' || true)"}"
+		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/('"${_SRVR_NICS}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' || true)"}"
 	fi
 	_SRVR_NSVR="${_SRVR_NSVR:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' /etc/resolv.conf)"}"
 	if [[ "${_SRVR_NSVR:-}" = "127.0.0.53" ]]; then
@@ -568,7 +884,7 @@ function funcInitialization() {
 	_IPV4_NSVR="${_IPV4_NSVR:-"${_SRVR_NSVR}"}"
 	_IPV4_UADR="${_IPV4_UADR:-"${_SRVR_UADR}"}"
 #	_NMAN_NAME="${_NMAN_NAME:-""}"
-	_MENU_TOUT="${_MENU_TOUT:-50}"
+	_MENU_TOUT="${_MENU_TOUT:-5}"
 	_MENU_RESO="${_MENU_RESO:-1024x768}"
 	_MENU_DPTH="${_MENU_DPTH:-16}"
 	_MENU_MODE="${_MENU_MODE:-791}"
@@ -808,13 +1124,13 @@ function funcCreate_conf() {
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	for _PATH in $(find "${_TMPL%/*}" -name "${_TMPL##*/}"\* | sort -r | tail -n +3)
+	for _PATH in $(find "${_TMPL%/*}" -name "${_TMPL##*/}"\* | sort -r | tail -n +3 || true)
 	do
 		rm -f "${_PATH:?}"
 	done
 
 	# --- exporting files -----------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_TMPL}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_TMPL}" || true
 		###############################################################################
 		##
 		##	common configuration file
@@ -883,7 +1199,7 @@ function funcCreate_conf() {
 		IPV4_NSVR="${_IPV4_NSVR:-}"				# IPv4 nameserver
 		
 		# --- menu timeout ------------------------------------------------------------
-		MENU_TOUT="${_MENU_TOUT:-}"							# timeout [x100 m sec]
+		MENU_TOUT="${_MENU_TOUT:-}"							# timeout [sec]
 		
 		# --- menu resolution ---------------------------------------------------------
 		MENU_RESO="${_MENU_RESO:-}"					# resolution ([width]x[height])
@@ -951,7 +1267,7 @@ function funcPut_media_data() {
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	for _PATH in $(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r | tail -n +3)
+	for _PATH in $(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r | tail -n +3 || true)
 	do
 		rm -f "${_PATH:?}"
 	done
@@ -1189,7 +1505,7 @@ function funcCreate_preseed() {
 				sed -e 's/\\/\\\\/g'                                                 \
 				    -e 's/d-i/ubiquity/'                                             \
 				    -e 's%preseed\/late_command%ubiquity\/success_command%'        | \
-				sed -e ':l; N; s/\n/\\n/; b l;'
+				sed -e ':l; N; s/\n/\\n/; b l;' || true
 			)
 			if [[ -n "${_WORK}" ]]; then
 				sed -i "${_TGET_PATH}"                                   \
@@ -1474,159 +1790,740 @@ function funcCreate_precon() {
 	# -------------------------------------------------------------------------
 }
 
-# --- Extract a compressed cpio _TGET_FILE ------------------------------------
-funcXcpio() {
-	declare -r    _TGET_FILE="${1:?}"	# target file
-	declare -r    _DIRS_DEST="${2:-}"	# destination _DIRS_DESTectory
-	shift 2
+# === <remastering> ===========================================================
 
-	  if gzip -t       "${_TGET_FILE}" > /dev/null 2>&1 ; then gzip -c -d    "${_TGET_FILE}"
-	elif zstd -q -c -t "${_TGET_FILE}" > /dev/null 2>&1 ; then zstd -q -c -d "${_TGET_FILE}"
-	elif xzcat -t      "${_TGET_FILE}" > /dev/null 2>&1 ; then xzcat         "${_TGET_FILE}"
-	elif lz4cat -t <   "${_TGET_FILE}" > /dev/null 2>&1 ; then lz4cat        "${_TGET_FILE}"
-	elif bzip2 -t      "${_TGET_FILE}" > /dev/null 2>&1 ; then bzip2 -c -d   "${_TGET_FILE}"
-	elif lzop -t       "${_TGET_FILE}" > /dev/null 2>&1 ; then lzop -c -d    "${_TGET_FILE}"
-	fi | (
-		if [[ -n "${_DIRS_DEST}" ]]; then
-			mkdir -p -- "${_DIRS_DEST}"
-			cd -- "${_DIRS_DEST}"
-		fi
-		cpio "$@"
-	)
+# --- create boot options for preseed -----------------------------------------
+function funcRemastering_preseed() {
+	declare -r -a _TGET_LIST=("$@")		# target data
+	declare       _WORK=""				# work variables
+	declare       _BOPT=""				# boot options
+	declare       _HOST=""				# host name
+
+	# --- boot option ---------------------------------------------------------
+	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+	_BOPT=""
+	_HOST="${_NWRK_HOST/:_DISTRO_:/"${_TGET_LIST[2]%%-*}"}"
+	# --- autoinstall ---------------------------------------------------------
+	if [[ -n "${_TGET_LIST[23]##-}" ]]; then
+		_WORK="auto=true preseed/file=/cdrom${_TGET_LIST[23]#"${_DIRS_CONF}"}"
+		case "${_TGET_LIST[2]}" in
+			ubuntu-desktop-* | \
+			ubuntu-legacy-*  ) _BOPT+="${_BOPT:+" "}automatic-ubiquity noprompt ${_WORK}";;
+			*-mini-*         ) _BOPT+="${_BOPT:+" "}${_WORK/\/cdrom/}";;
+			*                ) _BOPT+="${_BOPT:+" "}${_WORK}";;
+		esac
+	fi
+	# --- network -------------------------------------------------------------
+	case "${_TGET_LIST[2]}" in
+		ubuntu-*         ) _BOPT+="${_BOPT:+" "}netcfg/target_network_config=NetworkManager";;
+		*                ) ;;
+	esac
+	_BOPT+="${_BOPT:+" "}netcfg/disable_autoconfig=true"
+	_BOPT+="${_NICS_NAME:+"${_BOPT:+" "}netcfg/choose_interface=${_NICS_NAME}"}"
+	_BOPT+="${_NWRK_HOST:+"${_BOPT:+" "}netcfg/get_hostname=${_HOST}.${_NWRK_WGRP}"}"
+	_BOPT+="${_IPV4_ADDR:+"${_BOPT:+" "}netcfg/get_ipaddress=${_IPV4_ADDR}"}"
+	_BOPT+="${_IPV4_MASK:+"${_BOPT:+" "}netcfg/get_netmask=${_IPV4_MASK}"}"
+	_BOPT+="${_IPV4_GWAY:+"${_BOPT:+" "}netcfg/get_gateway=${_IPV4_GWAY}"}"
+	_BOPT+="${_IPV4_NSVR:+"${_BOPT:+" "}netcfg/get_nameservers=${_IPV4_NSVR}"}"
+	# --- locale --------------------------------------------------------------
+	case "${_TGET_LIST[2]}" in
+		ubuntu-desktop-* | \
+		ubuntu-legacy-*  ) _BOPT+="${_BOPT:+" "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		*                ) _BOPT+="${_BOPT:+" "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
+	esac
+	# --- finish --------------------------------------------------------------
+	echo -n "${_BOPT}"
 }
 
-# --- Read bytes out of a file, checking that they are valid hex digits -------
-funcReadhex() {
-	dd < "${1:?}" bs=1 skip="${2:?}" count="${3:?}" 2> /dev/null | LANG=C grep -E "^[0-9A-Fa-f]{$3}\$"
+# --- create boot options for nocloud -----------------------------------------
+function funcRemastering_nocloud() {
+	declare -r -a _TGET_LIST=("$@")		# target data
+	declare       _WORK=""				# work variables
+	declare       _BOPT=""				# boot options
+	declare       _HOST=""				# host name
+
+	# --- boot option ---------------------------------------------------------
+	printf "%20.20s: %s\n" "create" "boot options for nocloud" 1>&2
+	_BOPT=""
+	_HOST="${_NWRK_HOST/:_DISTRO_:/"${_TGET_LIST[2]%%-*}"}"
+	# --- autoinstall ---------------------------------------------------------
+	if [[ -n "${_TGET_LIST[23]##-}" ]]; then
+		_WORK="automatic-ubiquity noprompt autoinstall ds='nocloud;s=/cdrom${_TGET_LIST[23]#"${_DIRS_CONF}"}'"
+		case "${_TGET_LIST[2]}" in
+			ubuntu-live-18.* ) _BOPT+="${_BOPT:+" "}boot=casper ${_WORK}";;
+			*                ) _BOPT+="${_BOPT:+" "}${_WORK}";;
+		esac
+	fi
+	# --- network -------------------------------------------------------------
+	case "${_TGET_LIST[2]}" in
+		ubuntu-live-18.04) _BOPT+="${_BOPT:+" "}ip=${_NICS_NAME},${_IPV4_ADDR},${_IPV4_MASK},${_IPV4_GWAY} hostname=${_HOST}.${_NWRK_WGRP}";;
+		*                ) _BOPT+="${_BOPT:+" "}ip=${_IPV4_ADDR}::${_IPV4_GWAY}:${_IPV4_MASK}::${_NICS_NAME}:${_IPV4_ADDR:+static}:${_IPV4_NSVR} hostname=${_HOST}.${_NWRK_WGRP}";;
+	esac
+	# --- locale --------------------------------------------------------------
+	_BOPT+="${_BOPT:+" "}debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	# --- finish --------------------------------------------------------------
+	echo -n "${_BOPT}"
 }
 
-# --- Check for a zero byte in a file -----------------------------------------
-funcCheckzero() {
-	dd < "${1:?}" bs=1 skip="${2:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
+# --- create boot options for kickstart ---------------------------------------
+function funcRemastering_kickstart() {
+	declare -r -a _TGET_LIST=("$@")		# target data
+	declare       _WORK=""				# work variables
+	declare       _BOPT=""				# boot options
+	declare       _HOST=""				# host name
+
+	# --- boot option ---------------------------------------------------------
+	printf "%20.20s: %s\n" "create" "boot options for kickstart" 1>&2
+	_BOPT=""
+	_HOST="${_NWRK_HOST/:_DISTRO_:/"${_TGET_LIST[2]%%-*}"}"
+	# --- autoinstall ---------------------------------------------------------
+	if [[ -n "${_TGET_LIST[23]##-}" ]]; then
+		_BOPT+="${_BOPT:+" "}inst.ks=hd:sr0:${_TGET_LIST[23]#"${_DIRS_CONF}"}"
+		_BOPT+="${_TGET_LIST[16]:+"${_BOPT:+" "}${_TGET_LIST[16]:+inst.stage2=hd:LABEL="${_TGET_LIST[16]}"}"}"
+	fi
+	# --- network -------------------------------------------------------------
+	_BOPT+="${_BOPT:+" "}ip=${_IPV4_ADDR}::${_IPV4_GWAY}:${_IPV4_MASK}:${_HOST}.${_NWRK_WGRP}:${_NICS_NAME}:none,auto6 nameserver=${_IPV4_NSVR}"
+	# --- locale --------------------------------------------------------------
+	_BOPT+="${_BOPT:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	# --- finish --------------------------------------------------------------
+	echo -n "${_BOPT}"
 }
 
-# --- Split an initramfs into _TGET_FILEs and call funcXcpio on each ----------
-funcSplitinitramfs() {
-	declare -r    _TGET_FILE="${1:?}"	# target file
-	declare -r    _DIRS_DEST="${2:-}"	# destination _DIRS_DESTectory
-	declare -r -a _OPTS=("--preserve-modification-time" "--no-absolute-filenames" "--quiet")
-	declare -i    _CONT=0				# count
-	declare -i    _PSTR=0				# start point
-	declare -i    _PEND=0				# end point
-	declare       _MGIC=""				# magic word
-	declare       _DSUB=""				# sub directory
-	declare       _SARC=""				# sub archive
+# --- create boot options for autoyast ----------------------------------------
+function funcRemastering_autoyast() {
+	declare -r -a _TGET_LIST=("$@")		# target data
+	declare       _WORK=""				# work variables
+	declare       _BOPT=""				# boot options
+	declare       _HOST=""				# host name
 
-	while true
-	do
-		_PEND="${_PSTR}"
-		while true
+	# --- boot option ---------------------------------------------------------
+	printf "%20.20s: %s\n" "create" "boot options for autoyast" 1>&2
+	_BOPT=""
+	_HOST="${_NWRK_HOST/:_DISTRO_:/"${_TGET_LIST[2]%%-*}"}"
+	# --- autoinstall ---------------------------------------------------------
+	if [[ -n "${_TGET_LIST[23]##-}" ]]; then
+		_BOPT+="${_BOPT:+" "}inst.ks=hd:sr0:${_TGET_LIST[23]#"${_DIRS_CONF}"}"
+		_BOPT+="${_TGET_LIST[16]:+"${_BOPT:+" "}${_TGET_LIST[16]:+inst.stage2=hd:LABEL="${_TGET_LIST[16]}"}"}"
+	fi
+	# --- network -------------------------------------------------------------
+	case "${_TGET_LIST[2]}" in
+		opensuse-*-15* ) _WORK="eth0";;
+		*              ) _WORK="${_NICS_NAME}";;
+	esac
+	_BOPT+="${_BOPT:+" "}hostname=${_HOST}.${_NWRK_WGRP} ifcfg=${_WORK}=${_IPV4_ADDR}/${_IPV4_CIDR},${_IPV4_GWAY},${_IPV4_NSVR},${_NWRK_WGRP}"
+	# --- locale --------------------------------------------------------------
+	_BOPT+="${_BOPT:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	# --- finish --------------------------------------------------------------
+	echo -n "${_BOPT}"
+}
+
+# --- create boot options -----------------------------------------------------
+function funcRemastering_boot_options() {
+	declare -r -a _TGET_LIST=("$@")		# target data
+	declare       _WORK=""				# work variables
+
+	# --- create boot options -------------------------------------------------
+	case "${_TGET_LIST[2]%%-*}" in
+		debian       | \
+		ubuntu       )
+			case "${_TGET_LIST[23]}" in
+				*/preseed/* ) _WORK="$(funcRemastering_preseed "${_TGET_LIST[@]}")";;
+				*/nocloud/* ) _WORK="$(funcRemastering_nocloud "${_TGET_LIST[@]}")";;
+				*           ) ;;
+			esac
+			;;
+		fedora       | \
+		centos       | \
+		almalinux    | \
+		rockylinux   | \
+		miraclelinux ) _WORK="$(funcRemastering_kickstart "${_TGET_LIST[@]}")";;
+		opensuse     ) _WORK="$(funcRemastering_autoyast "${_TGET_LIST[@]}")";;
+		*            ) ;;
+	esac
+	_WORK+="${_MENU_MODE:+"${_WORK:+" "}vga=${_MENU_MODE}"}"
+	_WORK+="${_WORK:+" "}fsck.mode=skip"
+	echo -n "${_WORK}"
+}
+
+# --- create path for configuration file --------------------------------------
+function funcRemastering_path() {
+	declare -r    _PATH_TGET="${1:?}"	# target path
+	declare -r    _DIRS_TGET="${2:?}"	# directory
+	declare       _DIRS=""				# directory
+	declare       _FNAM=""				# file name
+
+	_FNAM="${_PATH_TGET##*/}"
+	_DIRS="${_PATH_TGET%"${_FNAM}"}"
+	_DIRS="${_DIRS#"${_DIRS_TGET}"}"
+	_DIRS="${_DIRS%%/}"
+	_DIRS="${_DIRS##/}"
+	echo -n "${_DIRS:+/"${_DIRS}"}/${_FNAM}"
+}
+
+# --- create autoinstall configuration file for isolinux ----------------------
+function funcRemastering_isolinux_autoinst_cfg() {
+	declare -r    _DIRS_TGET="${1:?}"	# target directory
+	declare -r    _PATH_MENU="${2:?}"	# file name (autoinst.cfg)
+	declare -r    _BOOT_OPTN="${3}"		# boot options
+	shift 3
+	declare -r -a _TGET_LIST=("$@")		# target data
+	declare       _WORK=""				# work variables
+	declare       _PATH=""				# full path
+	declare       _DIRS=""				# directory
+	declare       _FTHM=""				# theme.txt
+	declare       _FKNL=""				# kernel
+	declare       _FIRD=""				# initrd
+
+	# --- header section ------------------------------------------------------
+	_PATH="${_DIRS_TGET}${_PATH_MENU}"
+	_FTHM="${_PATH%/*}/theme.txt"
+	_WORK="$(date -d "${_TGET_LIST[18]//%20/ }" +"%Y/%m/%d %H:%M:%S")"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FTHM}" || true
+		menu resolution ${_MENU_RESO/x/ }
+		menu title Boot Menu: ${_TGET_LIST[17]##*/} ${_WORK}
+		menu background splash.png
+		menu color title	* #FFFFFFFF *
+		menu color border	* #00000000 #00000000 none
+		menu color sel		* #ffffffff #76a1d0ff *
+		menu color hotsel	1;7;37;40 #ffffffff #76a1d0ff *
+		menu color tabmsg	* #ffffffff #00000000 *
+		menu color help		37;40 #ffdddd00 #00000000 none
+		menu vshift 8
+		menu rows 32
+		menu helpmsgrow 34
+		menu cmdlinerow 36
+		menu timeoutrow 36
+		menu tabmsgrow 38
+		menu tabmsg Press ENTER to boot or TAB to edit a menu entry
+		timeout ${_MENU_TOUT:-5}0
+		default auto_install
+
+_EOT_
+	# --- standard installation mode ------------------------------------------
+	if [[ -n "${_TGET_LIST[22]#-}" ]]; then
+		_DIRS="${_DIRS_LOAD}/${_TGET_LIST[2]}"
+		_FKNL="${_TGET_LIST[22]#"${_DIRS}"}"				# kernel
+		_FIRD="${_TGET_LIST[21]#"${_DIRS}"}"				# initrd
+		case "${_TGET_LIST[2]}" in
+			*-mini-*         ) _FIRD="${_FIRD%/*}/${_MINI_IRAM}";;
+			*                ) ;;
+		esac
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_PATH}" || true
+		label auto_install
+		  menu label ^Automatic installation
+		  menu default
+		  kernel ${_FKNL}
+		  append${_FIRD:+" initrd=${_FIRD}"}${_BOOT_OPTN:+" "}${_BOOT_OPTN} ---
+		
+_EOT_
+		# --- graphical installation mode -------------------------------------
+		while read -r _DIRS
 		do
-			if funcCheckzero "${_TGET_FILE}" "${_PEND}"; then
-				_PEND=$((_PEND + 4))
-				while funcCheckzero "${_TGET_FILE}" "${_PEND}"
-				do
-					_PEND=$((_PEND + 4))
-				done
-				break
-			fi
-			_MGIC="$(funcReadhex "${_TGET_FILE}" "${_PEND}" "6")" || break
-			test "${_MGIC}" = "070701" || test "${_MGIC}" = "070702" || break
-			_NSIZ=0x$(funcReadhex "${_TGET_FILE}" "$((_PEND + 94))" "8")
-			_FSIZ=0x$(funcReadhex "${_TGET_FILE}" "$((_PEND + 54))" "8")
-			_PEND=$((_PEND + 110))
-			_PEND=$(((_PEND + _NSIZ + 3) & ~3))
-			_PEND=$(((_PEND + _FSIZ + 3) & ~3))
-		done
-		if [[ "${_PEND}" -eq "${_PSTR}" ]]; then
-			break
-		fi
-		_CONT=$((_CONT + 1))
-		if [[ "${_CONT}" -eq 1 ]]; then
-			_DSUB="early"
-		else
-			_DSUB="early${_CONT}"
-		fi
-		dd < "${_TGET_FILE}" skip="${_PSTR}" count="$((_PEND - _PSTR))" iflag=skip_bytes 2 > /dev/null |
-		(
-			if [[ -n "${_DIRS_DEST}" ]]; then
-				mkdir -p -- "${_DIRS_DEST}/${_DSUB}"
-				cd -- "${_DIRS_DEST}/${_DSUB}"
-			fi
-			cpio -i "${_OPTS[@]}"
-		)
-		_PSTR="${_PEND}"
-	done
-	if [[ "${_PEND}" -gt 0 ]]; then
-		_SARC="${_DIRS_TEMP}/${FUNCNAME[0]}"
-		mkdir -p "${_SARC%/*}"
-		dd < "${_TGET_FILE}" skip="${_PEND}" iflag=skip_bytes 2 > /dev/null > "${_SARC}"
-		funcXcpio "${_SARC}" "${_DIRS_DEST:+${_DIRS_DEST}/main}" -i "${_OPTS[@]}"
-		rm -f "${_SARC:?}"
-	else
-		funcXcpio "${_TGET_FILE}" "${_DIRS_DEST}" -i "${_OPTS[@]}"
+			_FKNL="${_DIRS:+/"${_DIRS}"}/${_TGET_LIST[22]##*/}"	# kernel
+			_FIRD="${_DIRS:+/"${_DIRS}"}/${_TGET_LIST[21]##*/}"	# initrd
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_PATH}" || true
+				label auto_install_gui
+				  menu label ^Automatic installation of gui
+				  kernel ${_FKNL}
+				  append${_FIRD:+" initrd=${_FIRD}"}${_BOOT_OPTN:+" "}${_BOOT_OPTN} ---
+			
+_EOT_
+		done < <(find "${_DIRS_TGET}" -name 'gtk' -type d -printf '%P\n' || true)
 	fi
 }
 
-# ----- copy iso contents to hdd ----------------------------------------------
-function funcCreate_copy_iso2hdd() {
-	declare -r -a _TGET_LIST=("$@")							# target data
-	declare -r    _DIMG="${_DIRS_IMGS}/${_TGET_LIST[2]}"	# iso file extraction destination (entry)
-	declare -r    _DWRK="${_DIRS_TEMP}/${_TGET_LIST[2]}"	# work directory
-	declare -r    _MNTP="${_DWRK}/mnt"						# mount point
-	declare -r    _FIMG="${_DWRK}/img"						# filesystem image
-	declare -r    _FRAM="${_DWRK}/ram"						# initrd filesystem image
-	declare       _WORK=""									# work variables
-	declare       _PATH=""									# file name
-	declare       _TGET=""									# target
+# --- editing isolinux for autoinstall ----------------------------------------
+function funcRemastering_isolinux() {
+	declare -r    _DIRS_TGET="${1:?}"	# target directory
+	declare -r    _BOOT_OPTN="${2}"		# boot options
+	shift 2
+	declare -r -a _TGET_LIST=("$@")		# target data
+	declare       _WORK=""				# work variables
+	declare       _PATH=""				# full path
+	declare       _DIRS=""				# directory
+	declare       _FTHM=""				# theme.txt
+	declare       _FNAM=""				# file name
+	declare       _FTMP=""				# file name (.tmp)
+	declare       _PAUT=""				# full path (autoinst.cfg)
+
+	# --- insert "autoinst.cfg" -----------------------------------------------
+	_PAUT=""
+	while read -r _PATH
+	do
+		_FNAM="$(funcRemastering_path "${_PATH}" "${_DIRS_TGET}")"				# isolinux.cfg
+		_PAUT="${_FNAM%/*}/${_AUTO_INST}"
+		_FTHM="${_FNAM%/*}/theme.txt"
+		_FTMP="${_PATH}.tmp"
+		if grep -qEi '^include[ \t]+menu.cfg[ \t]*.*$' "${_PATH}"; then
+			sed -e '/^\([Ii]nclude\|INCLUDE\)[ \t]\+menu.cfg[ \t]*.*$/i include '"${_PAUT}"'' \
+			    -e '/^\([Ii]nclude\|INCLUDE\)[ \t]\+menu.cfg[ \t]*.*$/a include '"${_FTHM}"'' \
+				"${_PATH}"                                                                    \
+			>	"${_FTMP}"
+		else
+			sed -e '0,/\([Ll]abel\|LABEL\)/ {'                     \
+				-e '/\([Ll]abel\|LABEL\)/i include '"${_PAUT}"'\n' \
+				-e '}'                                             \
+				"${_PATH}"                                         \
+			>	"${_FTMP}"
+		fi
+		if ! cmp --quiet "${_PATH}" "${_FTMP}"; then
+			cp -a "${_FTMP}" "${_PATH}"
+		fi
+		rm -f "${_FTMP:?}"
+		# --- create autoinstall configuration file for isolinux --------------
+		funcRemastering_isolinux_autoinst_cfg "${_DIRS_TGET}" "${_PAUT}" "${_BOOT_OPTN}" "${_TGET_LIST[@]}"
+	done < <(find "${_DIRS_TGET}" -name 'isolinux.cfg' -type f || true)
+	# --- comment out ---------------------------------------------------------
+	if [[ -z "${_PAUT}" ]]; then
+		return
+	fi
+	while read -r _PATH
+	do
+		_FTMP="${_PATH}.tmp"
+		sed -e '/^[ \t]*\([Dd]efault\|DEFAULT\)[ \t]*/ {/.*\.c32/!                   d}' \
+		    -e '/^[ \t]*\([Tt]imeout\|TIMEOUT\)[ \t]*/                               d'  \
+		    -e '/^[ \t]*\([Pp]rompt\|PROMPT\)[ \t]*/                                 d'  \
+		    -e '/^[ \t]*\([Oo]ntimeout\|ONTIMEOUT\)[ \t]*/                           d'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Dd]efault\|DEFAULT\)[ \t]*/       d'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Aa]utoboot\|AUTOBOOT\)[ \t]*/     d'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Tt]abmsg\|TABMSG\)[ \t]*/         d'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Rr]esolution\|RESOLUTION\)[ \t]*/ d'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Hh]shift\|HSHIFT\)[ \t]*/         d'  \
+		    -e '/^[ \t]*\([Mm]enu\|MENU\)[ \t]\+\([Ww]idth\|WIDTH\)[ \t]*/           d'  \
+			"${_PATH}"                                                                   \
+		>	"${_FTMP}"
+		if ! cmp --quiet "${_PATH}" "${_FTMP}"; then
+			cp -a "${_FTMP}" "${_PATH}"
+		fi
+		rm -f "${_FTMP:?}"
+	done < <(find "${_DIRS_TGET}" \( -name '*.cfg' -a ! -name "${_AUTO_INST##*/}" \) -type f || true)
+}
+
+# --- create autoinstall configuration file for grub --------------------------
+function funcRemastering_grub_autoinst_cfg() {
+	declare -r    _DIRS_TGET="${1:?}"	# target directory
+	declare -r    _PATH_MENU="${2:?}"	# file name (autoinst.cfg)
+	declare -r    _BOOT_OPTN="${3}"		# boot options
+	shift 3
+	declare -r -a _TGET_LIST=("$@")		# target data
+	declare       _WORK=""				# work variables
+	declare       _PATH=""				# full path
+	declare       _DIRS=""				# directory
+	declare       _FNAM=""				# file name
+	declare       _FKNL=""				# kernel
+	declare       _FIRD=""				# initrd
+	declare       _FTHM=""				# theme.txt
+	declare       _FPNG=""				# splash.png
+
+	# --- theme section -------------------------------------------------------
+	_PATH="${_DIRS_TGET}${_PATH_MENU}"
+	_FTHM="${_PATH%/*}/theme.txt"
+	_WORK="$(date -d "${_TGET_LIST[18]//%20/ }" +"%Y/%m/%d %H:%M:%S")"
+	for _DIRS in / /isolinux /boot/grub /boot/grub/theme
+	do
+		_FPNG="${_DIRS}/splash.png"
+		if [[ -e "${_DIRS_TGET}/${_FPNG}" ]]; then
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FTHM}" || true
+				desktop-image: "${_FPNG}"
+_EOT_
+			break
+		fi
+	done
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FTHM}" || true
+		desktop-color: "#000000"
+		title-color: "#ffffff"
+		title-font: "Unifont Regular 16"
+		title-text: "Boot Menu: ${_TGET_LIST[17]##*/} ${_WORK}"
+		message-font: "Unifont Regular 16"
+		terminal-font: "Unifont Regular 16"
+		terminal-border: "0"
+		
+		#help bar at the bottom
+		+ label {
+		  top = 100%-50
+		  left = 0
+		  width = 100%
+		  height = 20
+		  text = "@KEYMAP_SHORT@"
+		  align = "center"
+		  color = "#ffffff"
+		  font = "Unifont Regular 16"
+		}
+		
+		#boot menu
+		+ boot_menu {
+		  left = 10%
+		  width = 80%
+		  top = 20%
+		  height = 50%-80
+		  item_color = "#a8a8a8"
+		  item_font = "Unifont Regular 16"
+		  selected_item_color= "#ffffff"
+		  selected_item_font = "Unifont Regular 16"
+		  item_height = 16
+		  item_padding = 0
+		  item_spacing = 4
+		  icon_width = 0
+		  icon_heigh = 0
+		  item_icon_space = 0
+		}
+		
+		#progress bar
+		+ progress_bar {
+		  id = "__timeout__"
+		  left = 15%
+		  top = 100%-80
+		  height = 16
+		  width = 70%
+		  font = "Unifont Regular 16"
+		  text_color = "#000000"
+		  fg_color = "#ffffff"
+		  bg_color = "#a8a8a8"
+		  border_color = "#ffffff"
+		  text = "@TIMEOUT_NOTIFICATION_LONG@"
+		}
+_EOT_
+	# --- header section ------------------------------------------------------
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_PATH}" || true
+		#set gfxmode=${_MENU_RESO:+"${_MENU_RESO}${_MENU_DPTH:+x"${_MENU_DPTH}"},"}auto
+		#set default=0
+		set timeout=${_MENU_TOUT:-5}
+		set timeout_style=menu
+		set theme=${_FTHM#"${_DIRS_TGET}"}
+		export theme
+		
+_EOT_
+	# --- standard installation mode ------------------------------------------
+	if [[ -n "${_TGET_LIST[22]#-}" ]]; then
+		_DIRS="${_DIRS_LOAD}/${_TGET_LIST[2]}"
+		_FKNL="${_TGET_LIST[22]#"${_DIRS}"}"				# kernel
+		_FIRD="${_TGET_LIST[21]#"${_DIRS}"}"				# initrd
+		case "${_TGET_LIST[2]}" in
+			*-mini-*         ) _FIRD="${_FIRD%/*}/${_MINI_IRAM}";;
+			*                ) ;;
+		esac
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_PATH}" || true
+			menuentry 'Automatic installation' {
+			  set gfxpayload=keep
+			  set background_color=black
+			  echo 'Loading kernel ...'
+			  linux  ${_FKNL}${_BOOT_OPTN:+" ${_BOOT_OPTN}"} ---
+			  echo 'Loading initial ramdisk ...'
+			  initrd ${_FIRD}
+			}
+
+_EOT_
+	# --- graphical installation mode -----------------------------------------
+		while read -r _DIRS
+		do
+			_FKNL="${_DIRS:+/"${_DIRS}"}/${_TGET_LIST[22]##*/}"	# kernel
+			_FIRD="${_DIRS:+/"${_DIRS}"}/${_TGET_LIST[21]##*/}"	# initrd
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_PATH}" || true
+				menuentry 'Automatic installation of gui' {
+				  set gfxpayload=keep
+				  set background_color=black
+				  echo 'Loading kernel ...'
+				  linux  ${_FKNL}${_BOOT_OPTN:+" ${_BOOT_OPTN}"} ---
+				  echo 'Loading initial ramdisk ...'
+				  initrd ${_FIRD}
+				}
+				
+_EOT_
+		done < <(find "${_DIRS_TGET}" -name 'gtk' -type d -printf '%P\n' || true)
+	fi
+}
+
+# --- editing grub for autoinstall --------------------------------------------
+function funcRemastering_grub() {
+	declare -r    _DIRS_TGET="${1:?}"	# target directory
+	declare -r    _BOOT_OPTN="${2}"		# boot options
+	shift 2
+	declare -r -a _TGET_LIST=("$@")		# target data
+	declare       _WORK=""				# work variables
+	declare       _PATH=""				# full path
+	declare       _DIRS=""				# directory
+	declare       _FNAM=""				# file name
+	declare       _FTMP=""				# file name (.tmp)
+	declare       _PAUT=""				# full path (autoinst.cfg)
+
+	# --- insert "autoinst.cfg" -----------------------------------------------
+	_PAUT=""
+	while read -r _PATH
+	do
+		_FNAM="$(funcRemastering_path "${_PATH}" "${_DIRS_TGET}")"				# grub.cfg
+		_PAUT="${_FNAM%/*}/${_AUTO_INST}"
+		_FTMP="${_PATH}.tmp"
+		if ! grep -qEi '^menuentry[ \t]+.*$' "${_PATH}"; then
+			continue
+		fi
+		sed -e '0,/^menuentry/ {'                    \
+			-e '/^menuentry/i source '"${_PAUT}"'\n' \
+			-e '}'                                   \
+				"${_PATH}"                           \
+			>	"${_FTMP}"
+		if ! cmp --quiet "${_PATH}" "${_FTMP}"; then
+			cp -a "${_FTMP}" "${_PATH}"
+		fi
+		rm -f "${_FTMP:?}"
+		# --- create autoinstall configuration file for grub ------------------
+		funcRemastering_grub_autoinst_cfg "${_DIRS_TGET}" "${_PAUT}" "${_BOOT_OPTN}" "${_TGET_LIST[@]}"
+	done < <(find "${_DIRS_TGET}" -name 'grub.cfg' -type f || true)
+	# --- comment out ---------------------------------------------------------
+	if [[ -z "${_PAUT}" ]]; then
+		return
+	fi
+	while read -r _PATH
+	do
+		_FTMP="${_PATH}.tmp"
+		sed -e '/^[ \t]*\(\|set[ \t]\+\)default=/ d' \
+			-e '/^[ \t]*\(\|set[ \t]\+\)timeout=/ d' \
+			-e '/^[ \t]*\(\|set[ \t]\+\)gfxmode=/ d' \
+			-e '/^[ \t]*\(\|set[ \t]\+\)theme=/   d' \
+			"${_PATH}"                               \
+		>	"${_FTMP}"
+		if ! cmp --quiet "${_PATH}" "${_FTMP}"; then
+			cp -a "${_FTMP}" "${_PATH}"
+		fi
+		rm -f "${_FTMP:?}"
+	done < <(find "${_DIRS_TGET}" \( -name '*.cfg' -a ! -name "${_AUTO_INST##*/}" \) -type f || true)
+}
+
+# --- copy auto-install files -------------------------------------------------
+function funcRemastering_copy() {
+	declare -r    _DIRS_TGET="${1:?}"	# target directory
+	shift
+	declare -r -a _TGET_LIST=("$@")		# target data
+	declare       _WORK=""				# work variables
+	declare       _PATH=""				# file name
+	declare       _DIRS=""				# directory
+	declare       _FNAM=""				# file name
+	declare       _BASE=""				# base name
+	declare       _EXTN=""				# extension
 
 	# -------------------------------------------------------------------------
-	if [[ "${_TGET_LINE[13]}" = "-" ]] || [[ ! -e "${_TGET_LINE[13]}" ]]; then
-		funcPrintf "${_TEXT_BG_YELLOW}%20.20s: %s${_TEXT_RESET}" "not exist" "${_TGET_LINE[13]}"
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "copy" "auto-install files" 1>&2
+
+	# -------------------------------------------------------------------------
+	for _PATH in        \
+		"${_SHEL_ERLY}" \
+		"${_SHEL_LATE}" \
+		"${_SHEL_PART}" \
+		"${_SHEL_RUNS}" \
+		"${_TGET_LIST[23]}"
+	do
+		if [[ ! -e "${_PATH}" ]]; then
+			continue
+		fi
+		_DIRS="${_DIRS_TGET}${_PATH#"${_DIRS_CONF}"}"
+		_DIRS="${_DIRS%/*}"
+		mkdir -p "${_DIRS}"
+		case "${_PATH}" in
+			*/script/*   )
+				printf "%20.20s: %s\n" "copy" "${_PATH#"${_DIRS_CONF}"/}" 1>&2
+				cp -a "${_PATH}" "${_DIRS}"
+				chmod ugo+xr-w "${_DIRS}/${_PATH##*/}"
+				;;
+			*/autoyast/* | \
+			*/kickstart/*| \
+			*/nocloud/*  | \
+			*/preseed/*  )
+#				_SEED="${_PATH%/*}"
+#				_SEED="${_SEED##*/}"
+				_FNAM="${_PATH##*/}"
+				_WORK="${_FNAM%.*}"
+				_EXTN="${_FNAM#"${_WORK}"}"
+				_BASE="${_FNAM%"${_EXTN}"}"
+				_WORK="${_BASE#*_*_}"
+				_WORK="${_BASE%"${_WORK}"}"
+				_WORK="${_PATH#*"${_WORK:-${_BASE%%_*}}"}"
+				_WORK="${_PATH%"${_WORK}"*}"
+				printf "%20.20s: %s\n" "copy" "${_WORK#"${_DIRS_CONF}"/}*${_EXTN}" 1>&2
+				find "${_WORK%/*}" -name "${_WORK##*/}*${_EXTN}" -exec cp -a '{}' "${_DIRS}" \;
+				find "${_DIRS}" -exec chmod ugo+r-xw '{}' \;
+				;;
+			*/windows/*  ) ;;
+			*            ) ;;
+		esac
+	done
+}
+
+# --- remastering for initrd --------------------------------------------------
+function funcRemastering_initrd() {
+	declare -r    _DIRS_TGET="${1:?}"	# target directory
+	shift
+	declare -r -a _TGET_LIST=("$@")		# target data
+	declare       _FKNL=""				# kernel
+	declare       _FIRD=""				# initrd
+	declare       _DTMP=""				# directory (extract)
+	declare       _DTOP=""				# directory (main)
+	declare       _DIRS=""				# directory
+
+	# -------------------------------------------------------------------------
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "remake" "initrd" 1>&2
+
+	# -------------------------------------------------------------------------
+	_DIRS="${_DIRS_LOAD}/${_TGET_LIST[2]}"
+	_FKNL="${_TGET_LIST[22]#"${_DIRS}"}"					# kernel
+	_FIRD="${_TGET_LIST[21]#"${_DIRS}"}"					# initrd
+	_DTMP="$(mktemp -qd "${TMPDIR:-/tmp}/${_FIRD##*/}.XXXXXX")"
+
+	# --- extract -------------------------------------------------------------
+	funcSplit_initramfs "${_DIRS_TGET}${_FIRD}" "${_DTMP}"
+	_DTOP="${_DTMP}"
+	if [[ -d "${_DTOP}/main/." ]]; then
+		_DTOP+="/main"
+	fi
+	# --- copy auto-install files ---------------------------------------------
+	funcRemastering_copy "${_DTOP}" "${_TGET_LIST[@]}"
+#	ln -s "${_TGET_LIST[23]#"${_DIRS_CONF}"}" "${_DTOP}/preseed.cfg"
+	# --- repackaging ---------------------------------------------------------
+	pushd "${_DTOP}" > /dev/null || exit
+		find . | cpio --format=newc --create --quiet | gzip > "${_DIRS_TGET}${_FIRD%/*}/${_MINI_IRAM}" || true
+	popd > /dev/null || exit
+
+	rm -rf "${_DTMP:?}"
+}
+
+# --- remastering for media ---------------------------------------------------
+function funcRemastering_media() {
+	declare -r    _DIRS_TGET="${1:?}"						# target directory
+	shift
+	declare -r -a _TGET_LIST=("$@")							# target data
+	declare -r    _DWRK="${_DIRS_TEMP}/${_TGET_LIST[2]}"	# work directory
+#	declare       _PATH=""									# file name
+	declare       _FMBR=""									# "         (mbr.img)
+	declare       _FEFI=""									# "         (efi.img)
+	declare       _FCAT=""									# "         (boot.cat or boot.catalog)
+	declare       _FBIN=""									# "         (isolinux.bin or eltorito.img)
+	declare       _FHBR=""									# "         (isohdpfx.bin)
+	declare       _VLID=""									# 
+	declare -i    _SKIP=0									# 
+	declare -i    _SIZE=0									# 
+
+	# --- pre-processing ------------------------------------------------------
+#	_PATH="${_DWRK}/${_TGET_LIST[17]##*/}.tmp"				# file path
+	_FCAT="$(find "${_DIRS_TGET}" \( -iname 'boot.cat'     -o -iname 'boot.catalog' \) -type f -printf "%P" || true)"
+	_FBIN="$(find "${_DIRS_TGET}" \( -iname 'isolinux.bin' -o -iname 'eltorito.img' \) -type f -printf "%P" || true)"
+	_VLID="$(funcGetVolID "${_TGET_LIST[13]}")"
+	_FEFI="$(funcDistro2efi "${_TGET_LIST[2]%%-*}")"
+	# --- create iso image file -----------------------------------------------
+	if [[ -e "${_DIRS_TGET}/${_FEFI}" ]]; then
+		printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "info" "xorriso (hybrid)" 1>&2
+		_FHBR="$(find /usr/lib  -iname 'isohdpfx.bin' -type f || true)"
+		funcCreate_iso "${_DIRS_TGET}" "${_TGET_LIST[17]}" \
+			-quiet -rational-rock \
+			-volid "${_VLID}" \
+			-joliet -joliet-long \
+			-cache-inodes \
+			${_FHBR:+-isohybrid-mbr "${_FHBR}"} \
+			${_FBIN:+-eltorito-boot "${_FBIN}"} \
+			${_FCAT:+-eltorito-catalog "${_FCAT}"} \
+			-boot-load-size 4 -boot-info-table \
+			-no-emul-boot \
+			-eltorito-alt-boot ${_FEFI:+-e "${_FEFI}"} \
+			-no-emul-boot \
+			-isohybrid-gpt-basdat -isohybrid-apm-hfsplus
+	else
+		printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "info" "xorriso (grub2-mbr)" 1>&2
+		_FMBR="${_DWRK}/mbr.img"
+		_FEFI="${_DWRK}/efi.img"
+		# --- extract the mbr template ----------------------------------------
+		dd if="${_TGET_LIST[13]}" bs=1 count=446 of="${_FMBR}" > /dev/null 2>&1
+		# --- extract efi partition image -------------------------------------
+		_SKIP=$(fdisk -l "${_TGET_LIST[13]}" | awk '/.iso2/ {print $2;}' || true)
+		_SIZE=$(fdisk -l "${_TGET_LIST[13]}" | awk '/.iso2/ {print $4;}' || true)
+		dd if="${_TGET_LIST[13]}" bs=512 skip="${_SKIP}" count="${_SIZE}" of="${_FEFI}" > /dev/null 2>&1
+		# --- create iso image file -------------------------------------------
+		funcCreate_iso "${_DIRS_TGET}" "${_TGET_LIST[17]}" \
+			-quiet -rational-rock \
+			-volid "${_VLID}" \
+			-joliet -joliet-long \
+			-full-iso9660-filenames -iso-level 3 \
+			-partition_offset 16 \
+			${_FMBR:+--grub2-mbr "${_FMBR}"} \
+			--mbr-force-bootable \
+			${_FEFI:+-append_partition 2 0xEF "${_FEFI}"} \
+			-appended_part_as_gpt \
+			${_FCAT:+-eltorito-catalog "${_FCAT}"} \
+			${_FBIN:+-eltorito-boot "${_FBIN}"} \
+			-no-emul-boot \
+			-boot-load-size 4 -boot-info-table \
+			--grub2-boot-info \
+			-eltorito-alt-boot -e '--interval:appended_partition_2:all::' \
+			-no-emul-boot
+	fi
+}
+
+# --- remastering -------------------------------------------------------------
+function funcRemastering() {
+	declare -i    _time_start=0								# start of elapsed time
+	declare -i    _time_end=0								# end of elapsed time
+	declare -i    _time_elapsed=0							# result of elapsed time
+	declare -r -a _TGET_LIST=("$@")							# target data
+	declare -r    _DWRK="${_DIRS_TEMP}/${_TGET_LIST[2]}"	# work directory
+	declare -r    _DOVL="${_DWRK}/overlay"					# overlay
+	declare -r    _DUPR="${_DOVL}/upper"					# upperdir
+	declare -r    _DLOW="${_DOVL}/lower"					# lowerdir
+	declare -r    _DWKD="${_DOVL}/work"						# workdir
+	declare -r    _DMRG="${_DOVL}/merged"					# merged
+	declare       _PATH=""									# file name
+	declare       _FEFI=""									# "         (efiboot.img)
+	declare       _BOPT=""									# boot options
+	
+	# --- start ---------------------------------------------------------------
+	_time_start=$(date +%s)
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %-20.20s: %s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true)" "start" "${_TGET_LIST[13]##*/}" 1>&2
+
+	# --- pre-check -----------------------------------------------------------
+	_FEFI="$(funcDistro2efi "${_TGET_LIST[2]%%-*}")"
+	if [[ -z "${_FEFI}" ]]; then
+		printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "unknown target" "${_TGET_LIST[2]%%-*} [${_TGET_LIST[13]##*/}]" 1>&2
+		return
+	fi
+	if [[ ! -s "${_TGET_LIST[13]}" ]]; then
+		printf "${_CODE_ESCP}[m${_CODE_ESCP}[93m%20.20s: %s${_CODE_ESCP}[m\n" "not exist" "${_TGET_LIST[13]##*/}" 1>&2
+		return
+	fi
+	if mountpoint --quiet "${_DMRG}"; then
+		printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "already mounted" "${_DMRG#"${_DWRK}"/}" 1>&2
 		return
 	fi
 
-	# -------------------------------------------------------------------------
-	_WORK="$(funcUnit_conversion "${_TGET_LINE[15]}")"
-	funcPrintf "%20.20s: %s" "copy" "${_TGET_LINE[13]} ${_WORK}"
+	# --- pre-processing ------------------------------------------------------
+	printf "%20.20s: %s\n" "start" "${_DMRG#"${_DWRK}"/}" 1>&2
+	rm -rf "${_DOVL:?}"
+	mkdir -p "${_DUPR}" "${_DLOW}" "${_DWKD}" "${_DMRG}"
 
-	# --- create directory ----------------------------------------------------
-	rm -rf "${_DWRK:?}"
-	mkdir -p "${_MNTP}" "${_FIMG}" "${_FRAM}"
-
-	# --- copy iso -> hdd -----------------------------------------------------
-	mount -o ro,loop "${_TGET_LINE[13]}" "${_MNTP}"
-	nice -n "${_NICE_VALU:-19}" rsync "${_RSYC_OPTN[@]}" "${_MNTP}/." "${_DIMG}/" 2>/dev/null || true
-	umount "${_MNTP}"
-	chmod -R +r "${_DIMG}/" 2>/dev/null || true
-
-	# --- copy boot loader -> hdd ---------------------------------------------
-	for _TGET in "${_TGET_LINE[21]}" "${_TGET_LINE[22]}"
-	do
-		if [[ "${_TGET}" = "-" ]] || [[ ! -e "${_TGET}" ]]; then
-			continue
-		fi
-		_PATH="${_DIMG}/${_TGET}"
-		mkdir -p "${_PATH%/*}"
-		funcPrintf "%20.20s: %s" "copy" "${_PATH##*/}"
-		nice -n "${_NICE_VALU:-19}" rsync "${_RSYC_OPTN[@]}" "${_TGET}" "${_PATH}" 2>/dev/null || true
-		chmod +r "${_PATH}" 2>/dev/null || true
-	done
-
-	# --- Check the edition and extract the initrd ----------------------------
+	# --- main processing -----------------------------------------------------
+	mount -r "${_TGET_LIST[13]}" "${_DLOW}"
+	mount -t overlay overlay -o lowerdir="${_DLOW}",upperdir="${_DUPR}",workdir="${_DWKD}" "${_DMRG}"
+	# --- create boot options -------------------------------------------------
+	_BOPT="$(funcRemastering_boot_options "${_TGET_LIST[@]}")"
+	# --- create autoinstall configuration file for isolinux ------------------
+	funcRemastering_isolinux "${_DMRG}" "${_BOPT}" "${_TGET_LIST[@]}"
+	# --- create autoinstall configuration file for grub ----------------------
+	funcRemastering_grub "${_DMRG}" "${_BOPT}" "${_TGET_LIST[@]}"
+	# --- copy auto-install files ---------------------------------------------
+	funcRemastering_copy "${_DMRG}" "${_TGET_LIST[@]}"
+	# --- remastering for initrd ----------------------------------------------
 	case "${_TGET_LIST[2]}" in
-		*-mini-*) ;;					# proceed to extracting the initrd
-		*       ) return;;
+		*-mini-*         ) funcRemastering_initrd "${_DMRG}" "${_TGET_LIST[@]}";;
+		*                ) ;;
 	esac
+	# --- create iso image file -----------------------------------------------
+	funcRemastering_media "${_DMRG}" "${_TGET_LIST[@]}"
+	umount "${_DMRG}"
+	umount "${_DLOW}"
 
-	# --- copy initrd -> hdd --------------------------------------------------
-	find "${_DIMG}" \( -type f -o -type l \) \( -name 'initrd' -o -name 'initrd.*' -o -name 'initrd-[0-9]*' \) | sort -V | \
-	while read -r _PATH
-	do
-		_TGET="${_PATH#"${_DIMG%/}"/}"
-		funcPrintf "%20.20s: %s" "copy" "/${_TGET}"
-		funcSplitinitramfs "${_PATH}" "${_FRAM}/${_TGET}"
-	done
+	# --- post-processing -----------------------------------------------------
+	rm -rf "${_DOVL:?}"
+	printf "%20.20s: %s\n" "finish" "${_DMRG#"${_DWRK}"/}" 1>&2
+
+	# --- complete ------------------------------------------------------------
+	_time_end=$(date +%s)
+	_time_elapsed=$((_time_end-_time_start))
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %-20.20s: %s${_CODE_ESCP}[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true)" "finish" "${_TGET_LIST[13]##*/}" 1>&2
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP}[m\n" "$((_time_elapsed/86400))" "$((_time_elapsed%86400/3600))" "$((_time_elapsed%3600/60))" "$((_time_elapsed%60))" "elapsed" "${_TGET_LIST[13]##*/}" 1>&2
 }
 
 # --- debug out parameter -----------------------------------------------------
@@ -1710,6 +2607,10 @@ function funcMain() {
 	declare -i    _time_elapsed=0		# result of elapsed time
 	declare -r -a _OPTN_PARM=("${@:-}")	# option parameter
 	declare -a    _RETN_PARM=()			# name reference
+	declare       _WORK=""				# work variables
+	declare -a    _ARRY=()				# work variables
+	declare -a    _LIST=()				# work variables
+	declare -i    I=0					# work variables
 
 	# --- check the execution user --------------------------------------------
 	if [[ "${_USER_NAME}" != "root" ]]; then
@@ -1747,9 +2648,87 @@ function funcMain() {
 	do
 		_RETN_PARM=()
 		case "${1:-}" in
-			create  ) ;;
-			update  ) ;;
-			download) ;;
+			create  )					# force create
+				shift
+				for I in "${!_LIST_MDIA[@]}"
+				do
+					read -r -a _LIST < <(echo "${_LIST_MDIA[I]}")
+					case "${_LIST[1]}" in
+						o) ;;
+						*) continue;;
+					esac
+					funcRemastering "${_LIST[@]}"
+					funcPut_media_data
+				done
+				;;
+			update  )					# create new files only
+				shift
+				for I in "${!_LIST_MDIA[@]}"
+				do
+					read -r -a _LIST < <(echo "${_LIST_MDIA[I]}")
+					case "${_LIST[1]}" in
+						o) ;;
+						*) continue;;
+					esac
+					# --- web original iso file -------------------------------
+					_WORK="$(funcGetWebinfo "${_LIST[9]}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[10]="${_ARRY[1]}"					# web_tstamp
+					_LIST[11]="${_ARRY[2]}"					# web_size
+					_LIST[12]="${_ARRY[3]}"					# web_status
+					# --- local original iso file -----------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[13]}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[13]="${_ARRY[0]}"					# iso_path
+					_LIST[14]="${_ARRY[1]}"					# iso_tstamp
+					_LIST[15]="${_ARRY[2]}"					# iso_size
+					_LIST[16]="${_ARRY[3]}"					# iso_volume
+					# --- local remastering iso file --------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[17]}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[17]="${_ARRY[0]}"					# rmk_path
+					_LIST[18]="${_ARRY[1]}"					# rmk_tstamp
+					_LIST[19]="${_ARRY[2]}"					# rmk_size
+					_LIST[20]="${_ARRY[3]}"					# rmk_volume
+					# --- config file  ----------------------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[17]}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[23]="${_ARRY[0]}"					# cfg_path
+					_LIST[24]="${_ARRY[1]}"					# cfg_tstamp
+					# ---------------------------------------------------------
+					if [[ -n "${_LIST[13]##-}" ]] && [[ -n "${_LIST[14]##-}" ]] && [[ -n "${_LIST[15]##-}" ]]; then
+						if [[ -n  "${_LIST[9]##-}" ]] && [[ -n "${_LIST[10]##-}" ]] && [[ -n "${_LIST[11]##-}" ]]; then
+							if [[ -n "${_LIST[17]##-}" ]] && [[ -n "${_LIST[18]##-}" ]] && [[ -n "${_LIST[19]##-}" ]]; then
+								_WORK="$(funcDateDiff "${_LIST[14]}" "${_LIST[10]}")"
+								if [[ "${_WORK}" -eq 0 ]] && [[ "${_LIST[15]}" -ne "${_LIST[11]}" ]]; then
+									_WORK="$(funcDateDiff "${_LIST[14]}" "${_LIST[18]}")"
+									if [[ "${_WORK}" -lt 0 ]]; then
+										continue
+									fi
+									if [[ -n "${_LIST[23]##-}" ]] && [[ -n "${_LIST[24]##-}" ]]; then
+										_WORK="$(funcDateDiff "${_LIST[14]}" "${_LIST[24]}")"
+										if [[ "${_WORK}" -lt 0 ]]; then
+											continue
+										fi
+									fi
+								fi
+							fi
+						fi
+					fi
+					funcRemastering "${_LIST[@]}"
+				done
+				;;
+			download)					# download only
+				shift
+				for I in "${!_LIST_MDIA[@]}"
+				do
+					read -r -a _LIST < <(echo "${_LIST_MDIA[I]}")
+					case "${_LIST[1]}" in
+						o) ;;
+						*) continue;;
+					esac
+				done
+				;;
 			link    )
 				shift
 				while [[ -n "${1:-}" ]]

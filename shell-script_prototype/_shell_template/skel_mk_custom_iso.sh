@@ -17,76 +17,7 @@
 ##
 ###############################################################################
 
-# *** initialization **********************************************************
-	export LANG=C
-
-#	set -n								# Check for syntax errors
-#	set -x								# Show command and argument expansion
-	set -o ignoreeof					# Do not exit with Ctrl+D
-	set +m								# Disable job control
-	set -e								# End with status other than 0
-	set -u								# End with undefined variable reference
-	set -o pipefail						# End with in pipe error
-
-	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
-
-	# === data section ========================================================
-
-	# --- debug parameter -----------------------------------------------------
-	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
-
-	# --- constant for control code -------------------------------------------
-	if [[ -z "${_CODE_ESCP+true}" ]]; then
-		declare   _CODE_ESCP=""
-		          _CODE_ESCP="$(printf '\033')"
-		readonly  _CODE_ESCP
-	fi
-
-	# --- user name -----------------------------------------------------------
-	declare       _USER_NAME="${USER:-"$(whoami || true)"}"
-
-	# --- working directory name ----------------------------------------------
-	declare -r    _PROG_PATH="$0"
-	declare -r -a _PROG_PARM=("${@:-}")
-	declare -r    _PROG_DIRS="${_PROG_PATH%/*}"
-	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
-	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
-	declare       _DIRS_TEMP=""
-	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
-	readonly      _DIRS_TEMP
-
-	# --- trap ----------------------------------------------------------------
-	declare -a    _LIST_RMOV=()			# list remove directory / file
-	              _LIST_RMOV+=("${_DIRS_TEMP:?}")
-
-# shellcheck disable=SC2317
-function funcTrap() {
-	declare       _PATH=""
-	declare -i    I=0
-	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
-	do
-		_PATH="${_LIST_RMOV[I]}"
-		if [[ -e "${_PATH}" ]] && mountpoint --quiet "${_PATH}"; then
-			printf "[%s]: umount \"%s\"\n" "${I}" "${_PATH}" 1>&2
-			umount --quiet         --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --force --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --lazy  --recursive "${_PATH}" || true
-		fi
-	done
-	if [[ -e "${_DIRS_TEMP:?}" ]]; then
-		printf "%s: \"%s\"\n" "remove" "${_DIRS_TEMP}" 1>&2
-		while read -r _PATH
-		do
-			printf "[%s]: umount \"%s\"\n" "-" "${_PATH}" 1>&2
-			umount --quiet         --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --force --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --lazy  --recursive "${_PATH}" || true
-		done < <(grep "${_DIRS_TEMP:?}" /proc/mounts | cut -d ' ' -f 2 | sort -rV || true)
-		rm -rf "${_DIRS_TEMP:?}"
-	fi
-}
-
-	trap funcTrap EXIT
+# :_tmpl_001_initialize_common.sh_:
 
 # :_tmpl_001_initialize_mk_custom_iso.sh_:
 
@@ -94,9 +25,20 @@ function funcTrap() {
 
 # :_tmpl_003_function_section_library.sh_:
 
+# :_tmpl_003_function_section_library_network.sh_:
+
+# :_tmpl_003_function_section_library_media.sh_:
+
+# :_tmpl_003_function_section_library_initrd.sh_:
+
+# :_tmpl_003_function_section_library_mkiso.sh_:
+
+# :_tmpl_003_function_section_library_web_tool.sh_:
+
 # :_tmpl_004_function_section_common.sh_:
 
-# :_tmpl_005_function_section_mk_pxeboot_conf.sh_:
+# :_tmpl_005_function_section_mk_custom_iso.sh_:
+
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
 :
@@ -183,6 +125,10 @@ function funcMain() {
 	declare -i    _time_elapsed=0		# result of elapsed time
 	declare -r -a _OPTN_PARM=("${@:-}")	# option parameter
 	declare -a    _RETN_PARM=()			# name reference
+	declare       _WORK=""				# work variables
+	declare -a    _ARRY=()				# work variables
+	declare -a    _LIST=()				# work variables
+	declare -i    I=0					# work variables
 
 	# --- check the execution user --------------------------------------------
 	if [[ "${_USER_NAME}" != "root" ]]; then
@@ -220,9 +166,87 @@ function funcMain() {
 	do
 		_RETN_PARM=()
 		case "${1:-}" in
-			create  ) ;;
-			update  ) ;;
-			download) ;;
+			create  )					# force create
+				shift
+				for I in "${!_LIST_MDIA[@]}"
+				do
+					read -r -a _LIST < <(echo "${_LIST_MDIA[I]}")
+					case "${_LIST[1]}" in
+						o) ;;
+						*) continue;;
+					esac
+					funcRemastering "${_LIST[@]}"
+					funcPut_media_data
+				done
+				;;
+			update  )					# create new files only
+				shift
+				for I in "${!_LIST_MDIA[@]}"
+				do
+					read -r -a _LIST < <(echo "${_LIST_MDIA[I]}")
+					case "${_LIST[1]}" in
+						o) ;;
+						*) continue;;
+					esac
+					# --- web original iso file -------------------------------
+					_WORK="$(funcGetWebinfo "${_LIST[9]}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[10]="${_ARRY[1]}"					# web_tstamp
+					_LIST[11]="${_ARRY[2]}"					# web_size
+					_LIST[12]="${_ARRY[3]}"					# web_status
+					# --- local original iso file -----------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[13]}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[13]="${_ARRY[0]}"					# iso_path
+					_LIST[14]="${_ARRY[1]}"					# iso_tstamp
+					_LIST[15]="${_ARRY[2]}"					# iso_size
+					_LIST[16]="${_ARRY[3]}"					# iso_volume
+					# --- local remastering iso file --------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[17]}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[17]="${_ARRY[0]}"					# rmk_path
+					_LIST[18]="${_ARRY[1]}"					# rmk_tstamp
+					_LIST[19]="${_ARRY[2]}"					# rmk_size
+					_LIST[20]="${_ARRY[3]}"					# rmk_volume
+					# --- config file  ----------------------------------------
+					_WORK="$(funcGetFileinfo "${_LIST[17]}")"
+					read -r -a _ARRY < <(echo "${_WORK}")
+					_LIST[23]="${_ARRY[0]}"					# cfg_path
+					_LIST[24]="${_ARRY[1]}"					# cfg_tstamp
+					# ---------------------------------------------------------
+					if [[ -n "${_LIST[13]##-}" ]] && [[ -n "${_LIST[14]##-}" ]] && [[ -n "${_LIST[15]##-}" ]]; then
+						if [[ -n  "${_LIST[9]##-}" ]] && [[ -n "${_LIST[10]##-}" ]] && [[ -n "${_LIST[11]##-}" ]]; then
+							if [[ -n "${_LIST[17]##-}" ]] && [[ -n "${_LIST[18]##-}" ]] && [[ -n "${_LIST[19]##-}" ]]; then
+								_WORK="$(funcDateDiff "${_LIST[14]}" "${_LIST[10]}")"
+								if [[ "${_WORK}" -eq 0 ]] && [[ "${_LIST[15]}" -ne "${_LIST[11]}" ]]; then
+									_WORK="$(funcDateDiff "${_LIST[14]}" "${_LIST[18]}")"
+									if [[ "${_WORK}" -lt 0 ]]; then
+										continue
+									fi
+									if [[ -n "${_LIST[23]##-}" ]] && [[ -n "${_LIST[24]##-}" ]]; then
+										_WORK="$(funcDateDiff "${_LIST[14]}" "${_LIST[24]}")"
+										if [[ "${_WORK}" -lt 0 ]]; then
+											continue
+										fi
+									fi
+								fi
+							fi
+						fi
+					fi
+					funcRemastering "${_LIST[@]}"
+				done
+				;;
+			download)					# download only
+				shift
+				for I in "${!_LIST_MDIA[@]}"
+				do
+					read -r -a _LIST < <(echo "${_LIST_MDIA[I]}")
+					case "${_LIST[1]}" in
+						o) ;;
+						*) continue;;
+					esac
+				done
+				;;
 			link    )
 				shift
 				while [[ -n "${1:-}" ]]

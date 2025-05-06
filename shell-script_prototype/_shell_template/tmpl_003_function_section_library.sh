@@ -1,5 +1,7 @@
 # *** function section (common functions) *************************************
 
+# === <common> ================================================================
+
 	# --- set minimum display size --------------------------------------------
 	declare -i    _SIZE_ROWS=25
 	declare -i    _SIZE_COLS=80
@@ -83,7 +85,7 @@
 
 # --- is numeric --------------------------------------------------------------
 #function funcIsNumeric() {
-#	[[ ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
+#	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
 #}
 
 # --- substr ------------------------------------------------------------------
@@ -93,171 +95,100 @@
 
 # --- string output -----------------------------------------------------------
 # shellcheck disable=SC2317
-funcString() {
+function funcString() {
 #	printf "%${1:-"${_SIZE_COLS}"}s" "" | tr ' ' "${2:- }"
 	echo "" | IFS= awk '{s=sprintf("%'"$1"'s"," "); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+}
+
+# --- date diff ---------------------------------------------------------------
+# shellcheck disable=SC2317
+function funcDateDiff() {
+	declare       _DAT1="${1:?}"		# date1
+	declare       _DAT2="${2:?}"		# date2
+	# -------------------------------------------------------------------------
+	#  0 : _DAT1 = _DAT2
+	#  1 : _DAT1 < _DAT2
+	# -1 : _DAT1 > _DAT2
+	# emp: error
+	_DAT1="$(TZ=UTC date -d "${_DAT1//%20/ }" "+%s" || exit $?)"
+	_DAT2="$(TZ=UTC date -d "${_DAT2//%20/ }" "+%s" || exit $?)"
+	  if [[ "${_DAT1}" -eq "${_DAT2}" ]]; then
+		echo "0"
+	elif [[ "${_DAT1}" -lt "${_DAT2}" ]]; then
+		echo "1"
+	elif [[ "${_DAT1}" -gt "${_DAT2}" ]]; then
+		echo "-1"
+	else
+		echo ""
+	fi
 }
 
 # --- print with screen control -----------------------------------------------
 # shellcheck disable=SC2317
 function funcPrintf() {
-	declare -r    _FLAG_TRCE="$(set -o | grep "^xtrace\s*on$")"
+	declare -r    _TRCE="$(set -o | grep "^xtrace\s*on$")"
 	set +x
 	# -------------------------------------------------------------------------
-	declare       _FLAG_NCUT=""			# no cutting flag
-	declare       _TEXT_FMAT=""			# format parameter
-	declare       _TEXT_UTF8=""			# formatted utf8
-	declare       _TEXT_SJIS=""			# formatted sjis (cp932)
-	declare       _TEXT_PLIN=""			# formatted string without attributes
-	declare       _TEXT_WORK=""			# 
-	declare       _ESCP_FRNT=""			# escape characters front
+	declare       _NCUT=""				# no cutting flag
+	declare       _FMAT=""				# format parameter
+	declare       _UTF8=""				# formatted utf8
+	declare       _SJIS=""				# formatted sjis (cp932)
+	declare       _PLIN=""				# formatted string without attributes
+	declare       _ESCF=""				# escape characters front
+	declare       _WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 	# -------------------------------------------------------------------------
-	case "$1" in
-		--no-cutting) _FLAG_NCUT="true"; shift;;
+	case "${1:?}" in
+		--no-cutting) _NCUT="true"; shift;;
 		*           ) ;;
 	esac
 	# -------------------------------------------------------------------------
-	_TEXT_FMAT="${1:-}"
+	_FMAT="${1}"
 	shift
 	# shellcheck disable=SC2059
-	printf -v _TEXT_UTF8 -- "${_TEXT_FMAT}" "${@:-}"
+	printf -v _UTF8 -- "${_FMAT}" "${@:-}"
 	# -------------------------------------------------------------------------
-	if [[ -z "${_FLAG_NCUT:-}" ]]; then
-		_TEXT_SJIS="$(echo -n "${_TEXT_UTF8:-}" | iconv -f UTF-8 -t CP932 -c -s || true)"
-		_TEXT_PLIN="${_TEXT_SJIS//"${_CODE_ESCP}["[0-9]m/}"
-		_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
-		_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
-		if [[ "${#_TEXT_PLIN}" -gt "${_SIZE_COLS}" ]]; then
-			_TEXT_WORK="${_TEXT_SJIS}"
+	if [[ -z "${_NCUT}" ]]; then
+		_SJIS="$(echo -n "${_UTF8}" | iconv -f UTF-8 -t CP932 -c -s || true)"
+		_PLIN="${_SJIS//"${_CODE_ESCP}["[0-9]m/}"
+		_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+		_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+		if [[ "${#_PLIN}" -gt "${_SIZE_COLS}" ]]; then
+			_WORK="${_SJIS}"
 			while true
 			do
-				case "${_TEXT_WORK}" in
+				case "${_WORK}" in
 					"${_CODE_ESCP}"\[[0-9]*m*)
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9]m/}"
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9][0-9]m/}"
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+						_WORK="${_WORK/#"${_CODE_ESCP}["[0-9]m/}"
+						_WORK="${_WORK/#"${_CODE_ESCP}["[0-9][0-9]m/}"
+						_WORK="${_WORK/#"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
 						;;
 					*) break;;
 				esac
 			done
-			_ESCP_FRNT="${_TEXT_SJIS%"${_TEXT_WORK}"}"
+			_ESCF="${_SJIS%"${_WORK}"}"
 			# -----------------------------------------------------------------
-			_TEXT_WORK="${_TEXT_SJIS:"${#_ESCP_FRNT}":"${_SIZE_COLS}"}"
+			_WORK="${_SJIS:"${#_ESCF}":"${_SIZE_COLS}"}"
 			while true
 			do
-				_TEXT_PLIN="${_TEXT_WORK//"${_CODE_ESCP}["[0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN%%"${_CODE_ESCP}"*}"
-				if [[ "${#_TEXT_PLIN}" -eq "${_SIZE_COLS}" ]]; then
+				_PLIN="${_WORK//"${_CODE_ESCP}["[0-9]m/}"
+				_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+				_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+				_PLIN="${_PLIN%%"${_CODE_ESCP}"*}"
+				if [[ "${#_PLIN}" -eq "${_SIZE_COLS}" ]]; then
 					break
 				fi
-				_TEXT_WORK="${_TEXT_SJIS:"${#_ESCP_FRNT}":$(("${#_TEXT_WORK}"+"${_SIZE_COLS}"-"${#_TEXT_PLIN}"))}"
+				_WORK="${_SJIS:"${#_ESCF}":$(("${#_WORK}"+"${_SIZE_COLS}"-"${#_PLIN}"))}"
 			done
-			_TEXT_WORK="${_ESCP_FRNT}${_TEXT_WORK}"
-			_TEXT_UTF8="$(echo -n "${_TEXT_WORK}" | iconv -f CP932 -t UTF-8 -c -s 2> /dev/null || true)"
+			_WORK="${_ESCF}${_WORK}"
+			_UTF8="$(echo -n "${_WORK}" | iconv -f CP932 -t UTF-8 -c -s 2> /dev/null || true)"
 		fi
 	fi
-	printf "%s%b%s\n" "${_TEXT_RESET}" "${_TEXT_UTF8}" "${_TEXT_RESET}"
-	if [[ -n "${_FLAG_TRCE:-}" ]]; then
+	printf "%s%b%s\n" "${_TEXT_RESET}" "${_UTF8}" "${_TEXT_RESET}"
+	if [[ -n "${_TRCE}" ]]; then
 		set -x
 	else
 		set +x
 	fi
-}
-
-# --- unit conversion ---------------------------------------------------------
-# shellcheck disable=SC2317
-function funcUnit_conversion() {
-	declare -r -a _TEXT_UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
-	declare -i    _CALC_UNIT=0
-	declare       _WORK_TEXT=""
-	declare -i    I=0
-	# --- is numeric ----------------------------------------------------------
-	if [[ ! ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
-		printf "%'s Byte" "?"
-		return
-	fi
-	# --- Byte ----------------------------------------------------------------
-	if [[ "$1" -lt 1024 ]]; then
-		printf "%'d Byte" "$1"
-		return
-	fi
-	# --- numfmt --------------------------------------------------------------
-	if command -v numfmt > /dev/null 2>&1; then
-		echo -n "$1" | numfmt --to=iec-i --suffix=B
-		return
-	fi
-	# --- calculate -----------------------------------------------------------
-	for ((I=3; I>0; I--))
-	do
-		_CALC_UNIT=$((1024**I))
-		if [[ "$1" -ge "${_CALC_UNIT}" ]]; then
-			_WORK_TEXT="$(echo "$1" "${_CALC_UNIT}" | awk '{printf("%.1f", $1/$2)}')"
-			printf "%s %s" "${_WORK_TEXT}" "${_TEXT_UNIT[I]}"
-			return
-		fi
-	done
-	echo -n "$1"
-}
-
-# --- IPv4 netmask conversion -------------------------------------------------
-# shellcheck disable=SC2317
-function funcIPv4GetNetmask() {
-	declare -r    _INPT_ADDR="$1"
-	declare -i    _LOOP=$((32-_INPT_ADDR))
-	declare -i    _WORK=1
-	declare       _DEC_ADDR=""
-	while [[ "${_LOOP}" -gt 0 ]]
-	do
-		_LOOP=$((_LOOP-1))
-		_WORK=$((_WORK*2))
-	done
-	_DEC_ADDR="$((0xFFFFFFFF ^ (_WORK-1)))"
-	printf '%d.%d.%d.%d'              \
-	    $(( _DEC_ADDR >> 24        )) \
-	    $(((_DEC_ADDR >> 16) & 0xFF)) \
-	    $(((_DEC_ADDR >>  8) & 0xFF)) \
-	    $(( _DEC_ADDR        & 0xFF))
-}
-
-# --- IPv4 cidr conversion ----------------------------------------------------
-# shellcheck disable=SC2317
-function funcIPv4GetNetCIDR() {
-	declare -r    _INPT_ADDR="$1"
-	declare -a    _OCTETS=()
-	declare -i    _MASK=0
-	echo "${_INPT_ADDR}" | \
-	    awk -F '.' '{
-	        split($0, _OCTETS);
-	        for (I in _OCTETS) {
-	            _MASK += 8 - log(2^8 - _OCTETS[I])/log(2);
-	        }
-	        print _MASK
-	    }'
-}
-
-# --- IPv6 full address -------------------------------------------------------
-# shellcheck disable=SC2317
-function funcIPv6GetFullAddr() {
-	declare       _INPT_ADDR="$1"
-	declare -r    _INPT_FSEP="${_INPT_ADDR//[^:]/}"
-	declare -r -i _CONT_FSEP=$((7-${#_INPT_FSEP}))
-	declare       _OUTP_TEMP=""
-	_OUTP_TEMP="$(printf "%${_CONT_FSEP}s" "")"
-	_INPT_ADDR="${_INPT_ADDR/::/::${_OUTP_TEMP// /:}}"
-	IFS= mapfile -d ':' -t _OUTP_ARRY < <(echo -n "${_INPT_ADDR/%:/::}")
-	printf ':%04x' "${_OUTP_ARRY[@]/#/0x0}" | cut -c 2-
-}
-
-# --- IPv6 reverse address ----------------------------------------------------
-# shellcheck disable=SC2317
-function funcIPv6GetRevAddr() {
-	declare -r    _INPT_ADDR="$1"
-	echo "${_INPT_ADDR//:/}"                 | \
-	    awk '{for(i=length();i>1;i--)          \
-	        printf("%c.", substr($0,i,1));     \
-	        printf("%c" , substr($0,1,1));}'
 }

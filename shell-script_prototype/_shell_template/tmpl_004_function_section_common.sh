@@ -1,8 +1,11 @@
 # *** function section (sub functions) ****************************************
 
+# === <common> ================================================================
+
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
 	declare       _PATH=""				# file name
+	declare       _WORK=""				# work variables
 	declare       _LINE=""				# work variable
 	declare       _NAME=""				# variable name
 	declare       _VALU=""				# value
@@ -49,21 +52,22 @@ function funcInitialization() {
 	_SHEL_PART="${_SHEL_PART:-:_DIRS_SHEL_:/autoinst_cmd_part.sh}"
 	_SHEL_RUNS="${_SHEL_RUNS:-:_DIRS_SHEL_:/autoinst_cmd_run.sh}"
 	_SRVR_PROT="${_SRVR_PROT:-http}"
-	_SRVR_NICS="${_SRVR_NICS:-"$(LANG=C ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}')"}"
-	_SRVR_MADR="${_SRVR_MADR:-"$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {print $3;}')"}"
+	_SRVR_NICS="${_SRVR_NICS:-"$(LANG=C ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}' || true)"}"
+	_SRVR_MADR="${_SRVR_MADR:-"$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {print $3;}' || true)"}"
 	if [[ -z "${_SRVR_ADDR:-}" ]]; then
-		_SRVR_ADDR="${_SRVR_ADDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[1];}')"}"
-		if ip -4 -oneline address show dev "${_SRVR_NICS}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]'; then
+		_SRVR_ADDR="${_SRVR_ADDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[1];}' || true)"}"
+		_WORK="$(ip -4 -oneline address show dev "${_SRVR_NICS}" 2> /dev/null)"
+		if echo "${_WORK}" | grep -qE '[ \t]dynamic[ \t]'; then
 			_SRVR_UADR="${_SRVR_UADR:-"${_SRVR_ADDR%.*}"}"
 			_SRVR_ADDR=""
 		fi
 	fi
-	_SRVR_CIDR="${_SRVR_CIDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[2];}')"}"
+	_SRVR_CIDR="${_SRVR_CIDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[2];}' || true)"}"
 	_SRVR_MASK="${_SRVR_MASK:-"$(funcIPv4GetNetmask "${_SRVR_CIDR}")"}"
-	_SRVR_GWAY="${_SRVR_GWAY:-"$(LANG=C ip -4 -brief route list match default | awk '{print $3;}')"}"
+	_SRVR_GWAY="${_SRVR_GWAY:-"$(LANG=C ip -4 -brief route list match default | awk '{print $3;}' || true)"}"
 	if command -v resolvectl > /dev/null 2>&1; then
-		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/^Global:/             s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
-		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/('"${_SRVR_NICS}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/^Global:/             s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' || true)"}"
+		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/('"${_SRVR_NICS}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' || true)"}"
 	fi
 	_SRVR_NSVR="${_SRVR_NSVR:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' /etc/resolv.conf)"}"
 	if [[ "${_SRVR_NSVR:-}" = "127.0.0.53" ]]; then
@@ -81,7 +85,7 @@ function funcInitialization() {
 	_IPV4_NSVR="${_IPV4_NSVR:-"${_SRVR_NSVR}"}"
 	_IPV4_UADR="${_IPV4_UADR:-"${_SRVR_UADR}"}"
 #	_NMAN_NAME="${_NMAN_NAME:-""}"
-	_MENU_TOUT="${_MENU_TOUT:-50}"
+	_MENU_TOUT="${_MENU_TOUT:-5}"
 	_MENU_RESO="${_MENU_RESO:-1024x768}"
 	_MENU_DPTH="${_MENU_DPTH:-16}"
 	_MENU_MODE="${_MENU_MODE:-791}"
@@ -321,13 +325,13 @@ function funcCreate_conf() {
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	for _PATH in $(find "${_TMPL%/*}" -name "${_TMPL##*/}"\* | sort -r | tail -n +3)
+	for _PATH in $(find "${_TMPL%/*}" -name "${_TMPL##*/}"\* | sort -r | tail -n +3 || true)
 	do
 		rm -f "${_PATH:?}"
 	done
 
 	# --- exporting files -----------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_TMPL}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_TMPL}" || true
 		###############################################################################
 		##
 		##	common configuration file
@@ -396,7 +400,7 @@ function funcCreate_conf() {
 		IPV4_NSVR="${_IPV4_NSVR:-}"				# IPv4 nameserver
 		
 		# --- menu timeout ------------------------------------------------------------
-		MENU_TOUT="${_MENU_TOUT:-}"							# timeout [x100 m sec]
+		MENU_TOUT="${_MENU_TOUT:-}"							# timeout [sec]
 		
 		# --- menu resolution ---------------------------------------------------------
 		MENU_RESO="${_MENU_RESO:-}"					# resolution ([width]x[height])
@@ -464,7 +468,7 @@ function funcPut_media_data() {
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	for _PATH in $(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r | tail -n +3)
+	for _PATH in $(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r | tail -n +3 || true)
 	do
 		rm -f "${_PATH:?}"
 	done
@@ -702,7 +706,7 @@ function funcCreate_preseed() {
 				sed -e 's/\\/\\\\/g'                                                 \
 				    -e 's/d-i/ubiquity/'                                             \
 				    -e 's%preseed\/late_command%ubiquity\/success_command%'        | \
-				sed -e ':l; N; s/\n/\\n/; b l;'
+				sed -e ':l; N; s/\n/\\n/; b l;' || true
 			)
 			if [[ -n "${_WORK}" ]]; then
 				sed -i "${_TGET_PATH}"                                   \
