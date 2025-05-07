@@ -42,12 +42,16 @@ function funcGetVolID() {
 	declare       _WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	if [[ -n "${1:-}" ]] && [[ -s "${1:?}" ]]; then
-		_VLID="$(LANG=C file -L "$1")"
-		_VLID="${_VLID#*: }"
-		_WORK="${_VLID%%\'*}"
-		_VLID="${_VLID#"${_WORK}"}"
-		_WORK="${_VLID##*\'}"
-		_VLID="${_VLID%"${_WORK}"}"
+		if command -v blkid > /dev/null 2>&1; then
+			_VLID="$(blkid -s LABEL -o value "$1")"
+		else
+			_VLID="$(LANG=C file -L "$1")"
+			_VLID="${_VLID#*: }"
+			_WORK="${_VLID%%\'*}"
+			_VLID="${_VLID#"${_WORK}"}"
+			_WORK="${_VLID##*\'}"
+			_VLID="${_VLID%"${_WORK}"}"
+		fi
 	fi
 	echo -n "${_VLID}"
 }
@@ -66,14 +70,16 @@ function funcGetFileinfo() {
 		_WORK="$(realpath -s "$1")"		# full path
 		_FNAM="${_WORK##*/}"
 		_DIRS="${_WORK%"${_FNAM}"}"
-		_WORK="$(LANG=C find "${_DIRS:-.}" -name "${_FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%S+%TZ %s")"
+		_WORK="$(LANG=C find "${_DIRS:-.}" -name "${_FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%TS+%TZ %s")"
 		if [[ -n "${_WORK}" ]]; then
 			read -r -a _ARRY < <(echo "${_WORK}")
 #			_ARRY[0]					# full path
 #			_ARRY[1]					# time stamp
 #			_ARRY[2]					# size
 			_VLID="$(funcGetVolID "${_ARRY[0]}")"
-			_VLID="${_VLID:-''}"
+			_VLID="${_VLID#\'}"
+			_VLID="${_VLID%\'}"
+			_VLID="${_VLID:--}"
 			_ARRY+=("${_VLID// /%20}")	# volume id
 		fi
 	fi
