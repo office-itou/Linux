@@ -792,7 +792,7 @@ function funcGetWeb_command() {
 		__LINE="${__OPTN_WEBS[I]}"
 		case "${__LINE%%://*}" in
 			dict|file|ftp|ftps|gopher|gophers|http|https|imap|imaps|ldap|ldaps|mqtt|pop3|pop3s|rtmp|rtmps|rtsp|scp|sftp|smb|smbs|smtp|smtps|telnet|tftp|ws|wss)
-				__PATH="${__PATH:+,}${__LINE}";;
+				__PATH+="${__PATH:+,}${__LINE}";;
 			*) ;;
 		esac
 	done
@@ -2480,7 +2480,7 @@ function funcRemastering_copy() {
 	declare       __EXTN=""				# extension
 
 	# -------------------------------------------------------------------------
-	printf "${_CODE_:+"[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "copy" "auto-install files" 1>&2
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "copy" "auto-install files" 1>&2
 
 	# -------------------------------------------------------------------------
 	for __PATH in       \

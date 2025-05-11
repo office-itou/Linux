@@ -24,7 +24,7 @@ function funcGetWeb_command() {
 		__LINE="${__OPTN_WEBS[I]}"
 		case "${__LINE%%://*}" in
 			dict|file|ftp|ftps|gopher|gophers|http|https|imap|imaps|ldap|ldaps|mqtt|pop3|pop3s|rtmp|rtmps|rtsp|scp|sftp|smb|smbs|smtp|smtps|telnet|tftp|ws|wss)
-				__PATH="${__PATH:+,}${__LINE}";;
+				__PATH+="${__PATH:+,}${__LINE}";;
 			*) ;;
 		esac
 	done

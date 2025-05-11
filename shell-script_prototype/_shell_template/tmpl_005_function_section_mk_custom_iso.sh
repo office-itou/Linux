@@ -504,7 +504,7 @@ function funcRemastering_copy() {
 	declare       __EXTN=""				# extension
 
 	# -------------------------------------------------------------------------
-	printf "${_CODE_:+"[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "copy" "auto-install files" 1>&2
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "copy" "auto-install files" 1>&2
 
 	# -------------------------------------------------------------------------
 	for __PATH in       \
