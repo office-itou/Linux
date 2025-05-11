@@ -1451,7 +1451,6 @@ function funcPut_media_data() {
 	fi
 
 	# --- delete old files ----------------------------------------------------
-set -x
 	IFS= mapfile -d $'\n' -t __LIST < <(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3 || true)
 	if [[ "${#__LIST[@]}" -gt 3 ]]; then
 		for I in "${!__LIST[@]}"
@@ -1461,7 +1460,6 @@ set -x
 			rm -f "${__PATH:?}"
 		done
 	fi
-set +x
 	# --- list data -----------------------------------------------------------
 	for I in "${!_LIST_MDIA[@]}"
 	do
