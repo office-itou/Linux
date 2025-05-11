@@ -781,6 +781,7 @@ function funcPrint_menu() {
 	declare       __WORK=""				# work variables
 	declare -a    __LIST=()				# work variables
 	declare -i    I=0					# work variables
+	declare -i    J=0					# work variables
 
 	for I in "${!__TGET_LIST[@]}"
 	do
@@ -802,7 +803,7 @@ function funcPrint_menu() {
 							-) ;;
 							*)
 								__IDNO=1
-								printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#%-2.2s:%-42.42s:%-10.10s:%-10.10s:%-$((${_SIZE_COLS:-80}-70)).$((${_SIZE_COLS:-80}-70))s#${_CODE_ESCP:+"${_CODE_ESCP}[m"}" "ID" "Version" "ReleaseDay" "SupportEnd" "Memo" 1>&2
+								printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#%-2.2s:%-42.42s:%-10.10s:%-10.10s:%-$((${_SIZE_COLS:-80}-70)).$((${_SIZE_COLS:-80}-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "ID" "Version" "ReleaseDay" "SupportEnd" "Memo" 1>&2
 								;;
 						esac
 						continue
@@ -908,11 +909,15 @@ function funcPrint_menu() {
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#${__CLR0}%2d:%-42.42s:%-10.10s:%-10.10s:${__CLR1}%-$((_SIZE_COLS-70)).$((_SIZE_COLS-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "${__IDNO}" "${__LIST[13]##*/}" "${__LIST[10]:+"${__LIST[10]::10}"}${__LIST[14]:-"${__LIST[6]::10}"}" "${__LIST[7]::10}" "${__MESG:-"${__LIST[23]##*/}"}" 1>&2
 		((__IDNO+=1))
 		# --- update media data record ----------------------------------------
-		__LIST=("${__LIST[@]:--}")		# empty
-		__LIST=("${__LIST[@]// /%20}")	# space
+		for J in "${!__LIST[@]}"
+		do
+			__LIST[J]="${__LIST[J]:--}"		# empty
+			__LIST[J]="${__LIST[J]// /%20}"	# space
+		done
 		__TGET_LIST[I]="$( \
 			printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s" \
 				"${__LIST[@]}" \
 		)"
 	done
+	_RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
 }

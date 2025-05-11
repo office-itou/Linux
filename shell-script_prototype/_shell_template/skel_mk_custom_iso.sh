@@ -172,36 +172,35 @@ function funcMain() {
 #				__RSLT="$(set -e; funcPrint_menu "create" "${_LIST_MDIA[@]}")"
 				funcPrint_menu __RSLT "create" "${_LIST_MDIA[@]}"
 				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
-sleep 100
-				for I in "${!_LIST_MDIA[@]}"
-				do
-					read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
-					case "${__LIST[1]}" in
-						o) ;;
-						*) continue;;
-					esac
-					if [[ -z "${__LIST[3]##-}" ]]; then
-						continue
-					fi
-					if [[ -z "${__LIST[13]##-}" ]]; then
-						continue
-					fi
-					# ---------------------------------------------------------
-					if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
-						continue
-					fi
-					funcRemastering "${__LIST[@]}"
-					# --- new local remaster iso files ------------------------
-					__WORK="$(funcGetFileinfo "${__LIST[17]##-}")"
-					read -r -a __ARRY < <(echo "${__WORK}")
-#					__LIST[17]="${__ARRY[0]:--}"				# rmk_path
-					__LIST[18]="${__ARRY[1]:--}"				# rmk_tstamp
-					__LIST[19]="${__ARRY[2]:--}"				# rmk_size
-					__LIST[20]="${__ARRY[3]:--}"				# rmk_volume
-					# --- update media data record ----------------
-					_LIST_MDIA[I]="${__LIST[*]}"
-#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
-				done
+#				for I in "${!_LIST_MDIA[@]}"
+#				do
+#					read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+#					case "${__LIST[1]}" in
+#						o) ;;
+#						*) continue;;
+#					esac
+#					if [[ -z "${__LIST[3]##-}" ]]; then
+#						continue
+#					fi
+#					if [[ -z "${__LIST[13]##-}" ]]; then
+#						continue
+#					fi
+#					# ---------------------------------------------------------
+#					if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
+#						continue
+#					fi
+#					funcRemastering "${__LIST[@]}"
+#					# --- new local remaster iso files ------------------------
+#					__WORK="$(funcGetFileinfo "${__LIST[17]##-}")"
+#					read -r -a __ARRY < <(echo "${__WORK}")
+##					__LIST[17]="${__ARRY[0]:--}"				# rmk_path
+#					__LIST[18]="${__ARRY[1]:--}"				# rmk_tstamp
+#					__LIST[19]="${__ARRY[2]:--}"				# rmk_size
+#					__LIST[20]="${__ARRY[3]:--}"				# rmk_volume
+#					# --- update media data record ----------------
+#					_LIST_MDIA[I]="${__LIST[*]}"
+##					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
+#				done
 				funcPut_media_data
 				;;
 			update  )					# create new files only

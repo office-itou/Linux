@@ -453,7 +453,7 @@ function funcGet_media_data() {
 		break
 	done
 	if [[ -z "${_LIST_MDIA[*]}" ]]; then
-		printf "${_CODE_ESCP:+"m"}${_CODE_ESCP:+"91m"}%s${_CODE_ESCP:+"m"}\n" "data file not found: [${_PATH_MDIA}]" 1>&2
+		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[91m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "data file not found: [${_PATH_MDIA}]" 1>&2
 		exit 1
 	fi
 }
@@ -464,8 +464,7 @@ function funcPut_media_data() {
 	declare       __LINE=""				# work variable
 	declare -a    __LIST=()				# work variable
 	declare -i    I=0
-	declare -i    J=0
-
+#	declare -i    J=0
 	# --- check file exists ---------------------------------------------------
 	if [[ -f "${_PATH_MDIA:?}" ]]; then
 		__RNAM="${_PATH_MDIA}.$(TZ=UTC find "${_PATH_MDIA}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
@@ -473,10 +472,14 @@ function funcPut_media_data() {
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	for __PATH in $(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r | tail -n +3 || true)
-	do
-		rm -f "${__PATH:?}"
-	done
+	__LIST=("$(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r | tail -n +3 || true)")
+	if [[ "${#__LIST[@]}" -gt 4 ]]; then
+		for I in "${!__LIST[@]}"
+		do
+			_PATH="${__LIST[I]}"
+			rm -f "${__PATH:?}"
+		done
+	fi
 
 	# --- list data -----------------------------------------------------------
 	for I in "${!_LIST_MDIA[@]}"
@@ -499,11 +502,13 @@ function funcPut_media_data() {
 		__LINE="${__LINE//"${_DIRS_HGFS}"/:_DIRS_HGFS_:}"
 		__LINE="${__LINE//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"
 		read -r -a __LIST < <(echo "${__LINE}")
-		for J in "${!__LIST[@]}"
-		do
-			__LIST[J]="${__LIST[J]:--}"						# null
-			__LIST[J]="${__LIST[J]// /%20}"					# blank
-		done
+		__LIST=("${__LIST[@]:--}")		# empty
+		__LIST=("${__LIST[@]// /%20}")	# space
+#		for J in "${!__LIST[@]}"
+#		do
+#			__LIST[J]="${__LIST[J]:--}"						# null
+#			__LIST[J]="${__LIST[J]// /%20}"					# blank
+#		done
 		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s\n" \
 			"${__LIST[@]}" \
 		>> "${_PATH_MDIA:?}"
