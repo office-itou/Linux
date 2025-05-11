@@ -4,20 +4,20 @@
 
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
-	declare       _PATH=""				# file name
-	declare       _WORK=""				# work variables
-	declare       _LINE=""				# work variable
-	declare       _NAME=""				# variable name
-	declare       _VALU=""				# value
+	declare       __PATH=""				# file name
+	declare       __WORK=""				# work variables
+	declare       __LINE=""				# work variable
+	declare       __NAME=""				# variable name
+	declare       __VALU=""				# value
 
 	# --- common configuration file -------------------------------------------
 	              _PATH_CONF="/srv/user/share/conf/_data/common.cfg"
-	for _PATH in \
+	for __PATH in \
 		"${PWD:+"${PWD}/${_PATH_CONF##*/}"}" \
 		"${_PATH_CONF}"
 	do
-		if [[ -f "${_PATH}" ]]; then
-			_PATH_CONF="${_PATH}"
+		if [[ -f "${__PATH}" ]]; then
+			_PATH_CONF="${__PATH}"
 			break
 		fi
 	done
@@ -56,8 +56,8 @@ function funcInitialization() {
 	_SRVR_MADR="${_SRVR_MADR:-"$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {print $3;}' || true)"}"
 	if [[ -z "${_SRVR_ADDR:-}" ]]; then
 		_SRVR_ADDR="${_SRVR_ADDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[1];}' || true)"}"
-		_WORK="$(ip -4 -oneline address show dev "${_SRVR_NICS}" 2> /dev/null)"
-		if echo "${_WORK}" | grep -qE '[ \t]dynamic[ \t]'; then
+		__WORK="$(ip -4 -oneline address show dev "${_SRVR_NICS}" 2> /dev/null)"
+		if echo "${__WORK}" | grep -qE '[ \t]dynamic[ \t]'; then
 			_SRVR_UADR="${_SRVR_UADR:-"${_SRVR_ADDR%.*}"}"
 			_SRVR_ADDR=""
 		fi
@@ -91,68 +91,68 @@ function funcInitialization() {
 	_MENU_MODE="${_MENU_MODE:-791}"
 
 	# --- gets the setting value ----------------------------------------------
-	while read -r _LINE
+	while read -r __LINE
 	do
-		_LINE="${_LINE%%#*}"
-		_LINE="${_LINE//["${IFS}"]/ }"
-		_LINE="${_LINE#"${_LINE%%[!"${IFS}"]*}"}"	# ltrim
-		_LINE="${_LINE%"${_LINE##*[!"${IFS}"]}"}"	# rtrim
-		_NAME="${_LINE%%=*}"
-		_VALU="${_LINE#*=}"
-		_VALU="${_VALU#\"}"
-		_VALU="${_VALU%\"}"
-		case "${_NAME:-}" in
-			DIRS_TOPS) _DIRS_TOPS="${_VALU:-"${_DIRS_TOPS:-}"}";;
-			DIRS_HGFS) _DIRS_HGFS="${_VALU:-"${_DIRS_HGFS:-}"}";;
-			DIRS_HTML) _DIRS_HTML="${_VALU:-"${_DIRS_HTML:-}"}";;
-			DIRS_SAMB) _DIRS_SAMB="${_VALU:-"${_DIRS_SAMB:-}"}";;
-			DIRS_TFTP) _DIRS_TFTP="${_VALU:-"${_DIRS_TFTP:-}"}";;
-			DIRS_USER) _DIRS_USER="${_VALU:-"${_DIRS_USER:-}"}";;
-			DIRS_SHAR) _DIRS_SHAR="${_VALU:-"${_DIRS_SHAR:-}"}";;
-			DIRS_CONF) _DIRS_CONF="${_VALU:-"${_DIRS_CONF:-}"}";;
-			DIRS_DATA) _DIRS_DATA="${_VALU:-"${_DIRS_DATA:-}"}";;
-			DIRS_KEYS) _DIRS_KEYS="${_VALU:-"${_DIRS_KEYS:-}"}";;
-			DIRS_TMPL) _DIRS_TMPL="${_VALU:-"${_DIRS_TMPL:-}"}";;
-			DIRS_SHEL) _DIRS_SHEL="${_VALU:-"${_DIRS_SHEL:-}"}";;
-			DIRS_IMGS) _DIRS_IMGS="${_VALU:-"${_DIRS_IMGS:-}"}";;
-			DIRS_ISOS) _DIRS_ISOS="${_VALU:-"${_DIRS_ISOS:-}"}";;
-			DIRS_LOAD) _DIRS_LOAD="${_VALU:-"${_DIRS_LOAD:-}"}";;
-			DIRS_RMAK) _DIRS_RMAK="${_VALU:-"${_DIRS_RMAK:-}"}";;
-#			PATH_CONF) _PATH_CONF="${_VALU:-"${_PATH_CONF:-}"}";;
-			PATH_MDIA) _PATH_MDIA="${_VALU:-"${_PATH_MDIA:-}"}";;
-			CONF_KICK) _CONF_KICK="${_VALU:-"${_CONF_KICK:-}"}";;
-			CONF_CLUD) _CONF_CLUD="${_VALU:-"${_CONF_CLUD:-}"}";;
-			CONF_SEDD) _CONF_SEDD="${_VALU:-"${_CONF_SEDD:-}"}";;
-			CONF_SEDU) _CONF_SEDU="${_VALU:-"${_CONF_SEDU:-}"}";;
-			CONF_YAST) _CONF_YAST="${_VALU:-"${_CONF_YAST:-}"}";;
-			SHEL_ERLY) _SHEL_ERLY="${_VALU:-"${_SHEL_ERLY:-}"}";;
-			SHEL_LATE) _SHEL_LATE="${_VALU:-"${_SHEL_LATE:-}"}";;
-			SHEL_PART) _SHEL_PART="${_VALU:-"${_SHEL_PART:-}"}";;
-			SHEL_RUNS) _SHEL_RUNS="${_VALU:-"${_SHEL_RUNS:-}"}";;
-			SRVR_PROT) _SRVR_PROT="${_VALU:-"${_SRVR_PROT:-}"}";;
-			SRVR_NICS) _SRVR_NICS="${_VALU:-"${_SRVR_NICS:-}"}";;
-			SRVR_MADR) _SRVR_MADR="${_VALU:-"${_SRVR_MADR:-}"}";;
-			SRVR_ADDR) _SRVR_ADDR="${_VALU:-"${_SRVR_ADDR:-}"}";;
-			SRVR_CIDR) _SRVR_CIDR="${_VALU:-"${_SRVR_CIDR:-}"}";;
-			SRVR_MASK) _SRVR_MASK="${_VALU:-"${_SRVR_MASK:-}"}";;
-			SRVR_GWAY) _SRVR_GWAY="${_VALU:-"${_SRVR_GWAY:-}"}";;
-			SRVR_NSVR) _SRVR_NSVR="${_VALU:-"${_SRVR_NSVR:-}"}";;
-			SRVR_UADR) _SRVR_UADR="${_VALU:-"${_SRVR_UADR:-}"}";;
-			NWRK_HOST) _NWRK_HOST="${_VALU:-"${_NWRK_HOST:-}"}";;
-			NWRK_WGRP) _NWRK_WGRP="${_VALU:-"${_NWRK_WGRP:-}"}";;
-			NICS_NAME) _NICS_NAME="${_VALU:-"${_NICS_NAME:-}"}";;
-#			NICS_MADR) _NICS_MADR="${_VALU:-"${_NICS_MADR:-}"}";;
-			IPV4_ADDR) _IPV4_ADDR="${_VALU:-"${_IPV4_ADDR:-}"}";;
-			IPV4_CIDR) _IPV4_CIDR="${_VALU:-"${_IPV4_CIDR:-}"}";;
-			IPV4_MASK) _IPV4_MASK="${_VALU:-"${_IPV4_MASK:-}"}";;
-			IPV4_GWAY) _IPV4_GWAY="${_VALU:-"${_IPV4_GWAY:-}"}";;
-			IPV4_NSVR) _IPV4_NSVR="${_VALU:-"${_IPV4_NSVR:-}"}";;
-#			IPV4_UADR) _IPV4_UADR="${_VALU:-"${_IPV4_UADR:-}"}";;
-#			NMAN_NAME) _NMAN_NAME="${_VALU:-"${_NMAN_NAME:-}"}";;
-			MENU_TOUT) _MENU_TOUT="${_VALU:-"${_MENU_TOUT:-}"}";;
-			MENU_RESO) _MENU_RESO="${_VALU:-"${_MENU_RESO:-}"}";;
-			MENU_DPTH) _MENU_DPTH="${_VALU:-"${_MENU_DPTH:-}"}";;
-			MENU_MODE) _MENU_MODE="${_VALU:-"${_MENU_MODE:-}"}";;
+		__LINE="${__LINE%%#*}"
+		__LINE="${__LINE//["${IFS}"]/ }"
+		__LINE="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
+		__LINE="${__LINE%"${__LINE##*[!"${IFS}"]}"}"	# rtrim
+		__NAME="${__LINE%%=*}"
+		__VALU="${__LINE#*=}"
+		__VALU="${__VALU#\"}"
+		__VALU="${__VALU%\"}"
+		case "${__NAME:-}" in
+			DIRS_TOPS) _DIRS_TOPS="${__VALU:-"${_DIRS_TOPS:-}"}";;
+			DIRS_HGFS) _DIRS_HGFS="${__VALU:-"${_DIRS_HGFS:-}"}";;
+			DIRS_HTML) _DIRS_HTML="${__VALU:-"${_DIRS_HTML:-}"}";;
+			DIRS_SAMB) _DIRS_SAMB="${__VALU:-"${_DIRS_SAMB:-}"}";;
+			DIRS_TFTP) _DIRS_TFTP="${__VALU:-"${_DIRS_TFTP:-}"}";;
+			DIRS_USER) _DIRS_USER="${__VALU:-"${_DIRS_USER:-}"}";;
+			DIRS_SHAR) _DIRS_SHAR="${__VALU:-"${_DIRS_SHAR:-}"}";;
+			DIRS_CONF) _DIRS_CONF="${__VALU:-"${_DIRS_CONF:-}"}";;
+			DIRS_DATA) _DIRS_DATA="${__VALU:-"${_DIRS_DATA:-}"}";;
+			DIRS_KEYS) _DIRS_KEYS="${__VALU:-"${_DIRS_KEYS:-}"}";;
+			DIRS_TMPL) _DIRS_TMPL="${__VALU:-"${_DIRS_TMPL:-}"}";;
+			DIRS_SHEL) _DIRS_SHEL="${__VALU:-"${_DIRS_SHEL:-}"}";;
+			DIRS_IMGS) _DIRS_IMGS="${__VALU:-"${_DIRS_IMGS:-}"}";;
+			DIRS_ISOS) _DIRS_ISOS="${__VALU:-"${_DIRS_ISOS:-}"}";;
+			DIRS_LOAD) _DIRS_LOAD="${__VALU:-"${_DIRS_LOAD:-}"}";;
+			DIRS_RMAK) _DIRS_RMAK="${__VALU:-"${_DIRS_RMAK:-}"}";;
+#			PATH_CONF) _PATH_CONF="${__VALU:-"${_PATH_CONF:-}"}";;
+			PATH_MDIA) _PATH_MDIA="${__VALU:-"${_PATH_MDIA:-}"}";;
+			CONF_KICK) _CONF_KICK="${__VALU:-"${_CONF_KICK:-}"}";;
+			CONF_CLUD) _CONF_CLUD="${__VALU:-"${_CONF_CLUD:-}"}";;
+			CONF_SEDD) _CONF_SEDD="${__VALU:-"${_CONF_SEDD:-}"}";;
+			CONF_SEDU) _CONF_SEDU="${__VALU:-"${_CONF_SEDU:-}"}";;
+			CONF_YAST) _CONF_YAST="${__VALU:-"${_CONF_YAST:-}"}";;
+			SHEL_ERLY) _SHEL_ERLY="${__VALU:-"${_SHEL_ERLY:-}"}";;
+			SHEL_LATE) _SHEL_LATE="${__VALU:-"${_SHEL_LATE:-}"}";;
+			SHEL_PART) _SHEL_PART="${__VALU:-"${_SHEL_PART:-}"}";;
+			SHEL_RUNS) _SHEL_RUNS="${__VALU:-"${_SHEL_RUNS:-}"}";;
+			SRVR_PROT) _SRVR_PROT="${__VALU:-"${_SRVR_PROT:-}"}";;
+			SRVR_NICS) _SRVR_NICS="${__VALU:-"${_SRVR_NICS:-}"}";;
+			SRVR_MADR) _SRVR_MADR="${__VALU:-"${_SRVR_MADR:-}"}";;
+			SRVR_ADDR) _SRVR_ADDR="${__VALU:-"${_SRVR_ADDR:-}"}";;
+			SRVR_CIDR) _SRVR_CIDR="${__VALU:-"${_SRVR_CIDR:-}"}";;
+			SRVR_MASK) _SRVR_MASK="${__VALU:-"${_SRVR_MASK:-}"}";;
+			SRVR_GWAY) _SRVR_GWAY="${__VALU:-"${_SRVR_GWAY:-}"}";;
+			SRVR_NSVR) _SRVR_NSVR="${__VALU:-"${_SRVR_NSVR:-}"}";;
+			SRVR_UADR) _SRVR_UADR="${__VALU:-"${_SRVR_UADR:-}"}";;
+			NWRK_HOST) _NWRK_HOST="${__VALU:-"${_NWRK_HOST:-}"}";;
+			NWRK_WGRP) _NWRK_WGRP="${__VALU:-"${_NWRK_WGRP:-}"}";;
+			NICS_NAME) _NICS_NAME="${__VALU:-"${_NICS_NAME:-}"}";;
+#			NICS_MADR) _NICS_MADR="${__VALU:-"${_NICS_MADR:-}"}";;
+			IPV4_ADDR) _IPV4_ADDR="${__VALU:-"${_IPV4_ADDR:-}"}";;
+			IPV4_CIDR) _IPV4_CIDR="${__VALU:-"${_IPV4_CIDR:-}"}";;
+			IPV4_MASK) _IPV4_MASK="${__VALU:-"${_IPV4_MASK:-}"}";;
+			IPV4_GWAY) _IPV4_GWAY="${__VALU:-"${_IPV4_GWAY:-}"}";;
+			IPV4_NSVR) _IPV4_NSVR="${__VALU:-"${_IPV4_NSVR:-}"}";;
+#			IPV4_UADR) _IPV4_UADR="${__VALU:-"${_IPV4_UADR:-}"}";;
+#			NMAN_NAME) _NMAN_NAME="${__VALU:-"${_NMAN_NAME:-}"}";;
+			MENU_TOUT) _MENU_TOUT="${__VALU:-"${_MENU_TOUT:-}"}";;
+			MENU_RESO) _MENU_RESO="${__VALU:-"${_MENU_RESO:-}"}";;
+			MENU_DPTH) _MENU_DPTH="${__VALU:-"${_MENU_DPTH:-}"}";;
+			MENU_MODE) _MENU_MODE="${__VALU:-"${_MENU_MODE:-}"}";;
 			*        ) ;;
 		esac
 	done < <(cat "${_PATH_CONF:-}" 2> /dev/null || true)
@@ -314,24 +314,24 @@ function funcInitialization() {
 
 # --- create common configuration file ----------------------------------------
 function funcCreate_conf() {
-	declare -r    _TMPL="${_PATH_CONF:?}.template"
-	declare       _RNAM=""				# rename path
-	declare       _PATH=""				# file name
+	declare -r    __TMPL="${_PATH_CONF:?}.template"
+	declare       __RNAM=""				# rename path
+	declare       __PATH=""				# file name
 
 	# --- check file exists ---------------------------------------------------
-	if [[ -f "${_TMPL:?}" ]]; then
-		_RNAM="${_TMPL}.$(TZ=UTC find "${_TMPL}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
-		mv "${_TMPL}" "${_RNAM}"
+	if [[ -f "${__TMPL:?}" ]]; then
+		__RNAM="${__TMPL}.$(TZ=UTC find "${__TMPL}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
+		mv "${__TMPL}" "${__RNAM}"
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	for _PATH in $(find "${_TMPL%/*}" -name "${_TMPL##*/}"\* | sort -r | tail -n +3 || true)
+	for __PATH in $(find "${__TMPL%/*}" -name "${__TMPL##*/}"\* | sort -r | tail -n +3 || true)
 	do
-		rm -f "${_PATH:?}"
+		rm -f "${__PATH:?}"
 	done
 
 	# --- exporting files -----------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_TMPL}" || true
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__TMPL}" || true
 		###############################################################################
 		##
 		##	common configuration file
@@ -415,115 +415,120 @@ _EOT_
 
 # --- get media data ----------------------------------------------------------
 function funcGet_media_data() {
-	declare       _PATH=""				# file name
-	declare       _LINE=""				# work variable
+	declare       __PATH=""				# file name
+	declare       __LINE=""				# work variable
 
 	# --- list data -----------------------------------------------------------
 	_LIST_MDIA=()
-	for _PATH in \
+	for __PATH in \
 		"${PWD:+"${PWD}/${_PATH_MDIA##*/}"}" \
 		"${_PATH_MDIA}"
 	do
-		if [[ -f "${_PATH}" ]]; then
-			while IFS=$'\n' read -r _LINE
-			do
-				_LINE="${_LINE//:_DIRS_TOPS_:/"${_DIRS_TOPS}"}"
-				_LINE="${_LINE//:_DIRS_HGFS_:/"${_DIRS_HGFS}"}"
-				_LINE="${_LINE//:_DIRS_HTML_:/"${_DIRS_HTML}"}"
-				_LINE="${_LINE//:_DIRS_SAMB_:/"${_DIRS_SAMB}"}"
-				_LINE="${_LINE//:_DIRS_TFTP_:/"${_DIRS_TFTP}"}"
-				_LINE="${_LINE//:_DIRS_USER_:/"${_DIRS_USER}"}"
-				_LINE="${_LINE//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
-				_LINE="${_LINE//:_DIRS_CONF_:/"${_DIRS_CONF}"}"
-				_LINE="${_LINE//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
-				_LINE="${_LINE//:_DIRS_KEYS_:/"${_DIRS_KEYS}"}"
-				_LINE="${_LINE//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
-				_LINE="${_LINE//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
-				_LINE="${_LINE//:_DIRS_IMGS_:/"${_DIRS_IMGS}"}"
-				_LINE="${_LINE//:_DIRS_ISOS_:/"${_DIRS_ISOS}"}"
-				_LINE="${_LINE//:_DIRS_LOAD_:/"${_DIRS_LOAD}"}"
-				_LINE="${_LINE//:_DIRS_RMAK_:/"${_DIRS_RMAK}"}"
-				_LIST_MDIA+=("${_LINE}")
-			done < "${_PATH:?}"
-			if [[ -n "${_DBGS_FLAG:-}" ]]; then
-				printf "[%-$((${_SIZE_COLS:-80}-2)).$((${_SIZE_COLS:-80}-2))s]\n" "${_LIST_MDIA[@]}"
-			fi
-			break
+		if [[ ! -s "${__PATH}" ]]; then
+			continue
 		fi
+		while IFS=$'\n' read -r __LINE
+		do
+			__LINE="${__LINE//:_DIRS_TOPS_:/"${_DIRS_TOPS}"}"
+			__LINE="${__LINE//:_DIRS_HGFS_:/"${_DIRS_HGFS}"}"
+			__LINE="${__LINE//:_DIRS_HTML_:/"${_DIRS_HTML}"}"
+			__LINE="${__LINE//:_DIRS_SAMB_:/"${_DIRS_SAMB}"}"
+			__LINE="${__LINE//:_DIRS_TFTP_:/"${_DIRS_TFTP}"}"
+			__LINE="${__LINE//:_DIRS_USER_:/"${_DIRS_USER}"}"
+			__LINE="${__LINE//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
+			__LINE="${__LINE//:_DIRS_CONF_:/"${_DIRS_CONF}"}"
+			__LINE="${__LINE//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
+			__LINE="${__LINE//:_DIRS_KEYS_:/"${_DIRS_KEYS}"}"
+			__LINE="${__LINE//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
+			__LINE="${__LINE//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
+			__LINE="${__LINE//:_DIRS_IMGS_:/"${_DIRS_IMGS}"}"
+			__LINE="${__LINE//:_DIRS_ISOS_:/"${_DIRS_ISOS}"}"
+			__LINE="${__LINE//:_DIRS_LOAD_:/"${_DIRS_LOAD}"}"
+			__LINE="${__LINE//:_DIRS_RMAK_:/"${_DIRS_RMAK}"}"
+			_LIST_MDIA+=("${__LINE}")
+		done < "${__PATH:?}"
+		if [[ -n "${_DBGS_FLAG:-}" ]]; then
+			printf "[%-$((${_SIZE_COLS:-80}-2)).$((${_SIZE_COLS:-80}-2))s]\n" "${_LIST_MDIA[@]}" 1>&2
+		fi
+		break
 	done
+	if [[ -z "${_LIST_MDIA[*]}" ]]; then
+		printf "${_CODE_ESCP:+"m"}${_CODE_ESCP:+"91m"}%s${_CODE_ESCP:+"m"}\n" "data file not found: [${_PATH_MDIA}]" 1>&2
+		exit 1
+	fi
 }
 
 # --- put media data ----------------------------------------------------------
 function funcPut_media_data() {
-	declare       _RNAM=""				# rename path
-	declare       _LINE=""				# work variable
-	declare -a    _LIST=()				# work variable
+	declare       __RNAM=""				# rename path
+	declare       __LINE=""				# work variable
+	declare -a    __LIST=()				# work variable
 	declare -i    I=0
 	declare -i    J=0
 
 	# --- check file exists ---------------------------------------------------
 	if [[ -f "${_PATH_MDIA:?}" ]]; then
-		_RNAM="${_PATH_MDIA}.$(TZ=UTC find "${_PATH_MDIA}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
-		mv "${_PATH_MDIA}" "${_RNAM}"
+		__RNAM="${_PATH_MDIA}.$(TZ=UTC find "${_PATH_MDIA}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
+		mv "${_PATH_MDIA}" "${__RNAM}"
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	for _PATH in $(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r | tail -n +3 || true)
+	for __PATH in $(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r | tail -n +3 || true)
 	do
-		rm -f "${_PATH:?}"
+		rm -f "${__PATH:?}"
 	done
 
 	# --- list data -----------------------------------------------------------
 	for I in "${!_LIST_MDIA[@]}"
 	do
-		_LINE="${_LIST_MDIA[I]}"
-		_LINE="${_LINE//"${_DIRS_RMAK}"/:_DIRS_RMAK_:}"
-		_LINE="${_LINE//"${_DIRS_LOAD}"/:_DIRS_LOAD_:}"
-		_LINE="${_LINE//"${_DIRS_ISOS}"/:_DIRS_ISOS_:}"
-		_LINE="${_LINE//"${_DIRS_IMGS}"/:_DIRS_IMGS_:}"
-		_LINE="${_LINE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"
-		_LINE="${_LINE//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"
-		_LINE="${_LINE//"${_DIRS_KEYS}"/:_DIRS_KEYS_:}"
-		_LINE="${_LINE//"${_DIRS_DATA}"/:_DIRS_DATA_:}"
-		_LINE="${_LINE//"${_DIRS_CONF}"/:_DIRS_CONF_:}"
-		_LINE="${_LINE//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"
-		_LINE="${_LINE//"${_DIRS_USER}"/:_DIRS_USER_:}"
-		_LINE="${_LINE//"${_DIRS_TFTP}"/:_DIRS_TFTP_:}"
-		_LINE="${_LINE//"${_DIRS_SAMB}"/:_DIRS_SAMB_:}"
-		_LINE="${_LINE//"${_DIRS_HTML}"/:_DIRS_HTML_:}"
-		_LINE="${_LINE//"${_DIRS_HGFS}"/:_DIRS_HGFS_:}"
-		_LINE="${_LINE//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"
-		read -r -a _LIST < <(echo "${_LINE}")
-		for J in "${!_LIST[@]}"
+		__LINE="${_LIST_MDIA[I]}"
+		__LINE="${__LINE//"${_DIRS_RMAK}"/:_DIRS_RMAK_:}"
+		__LINE="${__LINE//"${_DIRS_LOAD}"/:_DIRS_LOAD_:}"
+		__LINE="${__LINE//"${_DIRS_ISOS}"/:_DIRS_ISOS_:}"
+		__LINE="${__LINE//"${_DIRS_IMGS}"/:_DIRS_IMGS_:}"
+		__LINE="${__LINE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"
+		__LINE="${__LINE//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"
+		__LINE="${__LINE//"${_DIRS_KEYS}"/:_DIRS_KEYS_:}"
+		__LINE="${__LINE//"${_DIRS_DATA}"/:_DIRS_DATA_:}"
+		__LINE="${__LINE//"${_DIRS_CONF}"/:_DIRS_CONF_:}"
+		__LINE="${__LINE//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"
+		__LINE="${__LINE//"${_DIRS_USER}"/:_DIRS_USER_:}"
+		__LINE="${__LINE//"${_DIRS_TFTP}"/:_DIRS_TFTP_:}"
+		__LINE="${__LINE//"${_DIRS_SAMB}"/:_DIRS_SAMB_:}"
+		__LINE="${__LINE//"${_DIRS_HTML}"/:_DIRS_HTML_:}"
+		__LINE="${__LINE//"${_DIRS_HGFS}"/:_DIRS_HGFS_:}"
+		__LINE="${__LINE//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"
+		read -r -a __LIST < <(echo "${__LINE}")
+		for J in "${!__LIST[@]}"
 		do
-			_LIST[J]="${_LIST[J]:--}"						# null
-			_LIST[J]="${_LIST[J]// /%20}"					# blank
+			__LIST[J]="${__LIST[J]:--}"						# null
+			__LIST[J]="${__LIST[J]// /%20}"					# blank
 		done
 		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s\n" \
-			"${_LIST[@]}" \
+			"${__LIST[@]}" \
 		>> "${_PATH_MDIA:?}"
 	done
 }
 
 # --- create_directory --------------------------------------------------------
 function fncCreate_directory() {
-	declare -n    _NAME_REFR="${1:-}"	# name reference
+	declare -n    __NAME_REFR="${1:?}"	# name reference
 	shift
-	declare -r    _DATE_TIME="$(date +"%Y%m%d%H%M%S")"
-	declare       _FORC_PRAM=""			# force parameter
-	declare       _RTIV_FLAG=""			# add/relative flag
-	declare       _TGET_PATH=""			# taget path
-	declare       _LINK_PATH=""			# symlink path
-	declare       _BACK_PATH=""			# backup path
-	declare       _LINE=""				# work variable
+	declare -r    __DATE="$(date +"%Y%m%d%H%M%S")"
+	declare       __FORC=""				# force parameter
+	declare       __RTIV=""				# add/relative flag
+	declare       __TGET=""				# taget path
+	declare       __LINK=""				# symlink path
+	declare       __BACK=""				# backup path
+	declare       __LINE=""				# work variable
 	declare -i    I=0
 
 	# --- option parameter ----------------------------------------------------
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
-			-f | --force) shift; _NAME_REFR="${*:-}"; _FORC_PRAM="true";;
-			*           )        _NAME_REFR="${*:-}"; break;;
+			-f | --force) shift; __NAME_REFR="${*:-}"; __FORC="true";;
+			*           )        __NAME_REFR="${*:-}"; break;;
 		esac
 	done
 
@@ -536,93 +541,93 @@ function fncCreate_directory() {
 	# 2: symlink
 	for I in "${!_LIST_LINK[@]}"
 	do
-		read -r -a _LINE < <(echo "${_LIST_LINK[I]}")
-		case "${_LINE[0]}" in
+		read -r -a __LINE < <(echo "${_LIST_LINK[I]}")
+		case "${__LINE[0]}" in
 			a) ;;
 			r) ;;
 			*) continue;;
 		esac
-		_RTIV_FLAG="${_LINE[0]}"
-		_TGET_PATH="${_LINE[1]:-}"
-		_LINK_PATH="${_LINE[2]:-}"
+		__RTIV="${__LINE[0]}"
+		__TGET="${__LINE[1]:-}"
+		__LINK="${__LINE[2]:-}"
 		# --- check target file path ------------------------------------------
-		if [[ -z "${_LINK_PATH##*/}" ]]; then
-			_LINK_PATH="${_LINK_PATH%/}/${_TGET_PATH##*/}"
+		if [[ -z "${__LINK##*/}" ]]; then
+			__LINK="${__LINK%/}/${__TGET##*/}"
 #		else
-#			if [[ ! -e "${_TGET_PATH}" ]]; then
-#				touch "${_TGET_PATH}"
+#			if [[ ! -e "${__TGET}" ]]; then
+#				touch "${__TGET}"
 #			fi
 		fi
 		# --- force parameter -------------------------------------------------
-		_BACK_PATH="${_LINK_PATH}.back.${_DATE_TIME}"
-		if [[ -n "${_FORC_PRAM:-}" ]] && [[ -e "${_LINK_PATH}" ]] && [[ ! -e "${_BACK_PATH##*/}" ]]; then
-			funcPrintf "%20.20s: %s" "move symlink" "${_LINK_PATH} -> ${_BACK_PATH##*/}"
-			mv "${_LINK_PATH}" "${_BACK_PATH}"
+		__BACK="${__LINK}.back.${__DATE}"
+		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
+			funcPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
+			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- check symbolic link ---------------------------------------------
-		if [[ -h "${_LINK_PATH}" ]]; then
-			funcPrintf "%20.20s: %s" "exist symlink" "${_LINK_PATH}"
+		if [[ -h "${__LINK}" ]]; then
+			funcPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
 			continue
 		fi
 		# --- check directory -------------------------------------------------
-		if [[ -d "${_LINK_PATH}/." ]]; then
-			funcPrintf "%20.20s: %s" "exist directory" "${_LINK_PATH}"
-			funcPrintf "%20.20s: %s" "move directory" "${_LINK_PATH} -> ${_BACK_PATH}"
-			mv "${_LINK_PATH}" "${_BACK_PATH}"
+		if [[ -d "${__LINK}/." ]]; then
+			funcPrintf "%20.20s: %s" "exist directory" "${__LINK}"
+			funcPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
+			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- create destination directory ------------------------------------
-		mkdir -p "${_LINK_PATH%/*}"
+		mkdir -p "${__LINK%/*}"
 		# --- create symbolic link --------------------------------------------
-		funcPrintf "%20.20s: %s" "create symlink" "${_TGET_PATH} -> ${_LINK_PATH}"
-		case "${_RTIV_FLAG}" in
-			r) ln -sr "${_TGET_PATH}" "${_LINK_PATH}";;
-			*) ln -s  "${_TGET_PATH}" "${_LINK_PATH}";;
+		funcPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
+		case "${__RTIV}" in
+			r) ln -sr "${__TGET}" "${__LINK}";;
+			*) ln -s  "${__TGET}" "${__LINK}";;
 		esac
 	done
 
 	for I in "${!_LIST_MDIA[@]}"
 	do
-		read -r -a _LINE < <(echo "${_LIST_MDIA[I]}")
-		case "${_LINE[1]}" in
+		read -r -a __LINE < <(echo "${_LIST_MDIA[I]}")
+		case "${__LINE[1]}" in
 			o) ;;
 			*) continue;;
 		esac
-		case "${_LINE[13]}" in
+		case "${__LINE[13]}" in
 			-) continue;;
 			*) ;;
 		esac
-		case "${_LINE[25]}" in
+		case "${__LINE[25]}" in
 			-) continue;;
 			*) ;;
 		esac
-		_TGET_PATH="${_LINE[25]}/${_LINE[13]##*/}"
-		_LINK_PATH="${_LINE[13]}"
+		__TGET="${__LINE[25]}/${__LINE[13]##*/}"
+		__LINK="${__LINE[13]}"
 		# --- check target file path ------------------------------------------
-#		if [[ ! -e "${_TGET_PATH}" ]]; then
-#			touch "${_TGET_PATH}"
+#		if [[ ! -e "${__TGET}" ]]; then
+#			touch "${__TGET}"
 #		fi
 		# --- force parameter -------------------------------------------------
-		_BACK_PATH="${_LINK_PATH}.back.${_DATE_TIME}"
-		if [[ -n "${_FORC_PRAM:-}" ]] && [[ -e "${_LINK_PATH}" ]] && [[ ! -e "${_BACK_PATH##*/}" ]]; then
-			funcPrintf "%20.20s: %s" "move symlink" "${_LINK_PATH} -> ${_BACK_PATH##*/}"
-			mv "${_LINK_PATH}" "${_BACK_PATH}"
+		__BACK="${__LINK}.back.${__DATE}"
+		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
+			funcPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
+			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- check symbolic link ---------------------------------------------
-		if [[ -h "${_LINK_PATH}" ]]; then
-			funcPrintf "%20.20s: %s" "exist symlink" "${_LINK_PATH}"
+		if [[ -h "${__LINK}" ]]; then
+			funcPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
 			continue
 		fi
 		# --- check directory -------------------------------------------------
-		if [[ -d "${_LINK_PATH}/." ]]; then
-			funcPrintf "%20.20s: %s" "exist directory" "${_LINK_PATH}"
-			funcPrintf "%20.20s: %s" "move directory" "${_LINK_PATH} -> ${_BACK_PATH}"
-			mv "${_LINK_PATH}" "${_BACK_PATH}"
+		if [[ -d "${__LINK}/." ]]; then
+			funcPrintf "%20.20s: %s" "exist directory" "${__LINK}"
+			funcPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
+			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- create destination directory ------------------------------------
-		mkdir -p "${_LINK_PATH%/*}"
+		mkdir -p "${__LINK%/*}"
 		# --- create symbolic link --------------------------------------------
-		funcPrintf "%20.20s: %s" "create symlink" "${_TGET_PATH} -> ${_LINK_PATH}"
-		ln -s "${_TGET_PATH}" "${_LINK_PATH}"
+		funcPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
+		ln -s "${__TGET}" "${__LINK}"
 	done
 }
 
@@ -656,42 +661,42 @@ function fncCreate_directory() {
 
 # ----- create preseed.cfg ----------------------------------------------------
 function funcCreate_preseed() {
-	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
-	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
-	declare       _WORK=""				# work variables
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
+	declare       __WORK=""				# work variables
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
-	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_SEDD}" "${_TGET_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	mkdir -p "${__DIRS}"
+	cp --backup "${_CONF_SEDD}" "${__TGET_PATH}"
 
 	# --- by generation -------------------------------------------------------
-	case "${_TGET_PATH}" in
+	case "${__TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_TGET_PATH}"               \
+			sed -i "${__TGET_PATH}"               \
 			    -e '/packages:/a \    usrmerge '\\
 			;;
 		*)	;;
 	esac
-	case "${_TGET_PATH}" in
+	case "${__TGET_PATH}" in
 		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
-			sed -i "${_TGET_PATH}"               \
+			sed -i "${__TGET_PATH}"               \
 			    -e 's/bind9-utils/bind9utils/'   \
 			    -e 's/bind9-dnsutils/dnsutils/'  \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_TGET_PATH}"               \
+			sed -i "${__TGET_PATH}"               \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*)	;;
 	esac
 	# --- server or desktop ---------------------------------------------------
-	case "${_TGET_PATH}" in
+	case "${__TGET_PATH}" in
 		*_desktop*)
-			sed -i "${_TGET_PATH}"                                              \
+			sed -i "${__TGET_PATH}"                                              \
 			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
 			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \
 			    -e 's/^#/ /g                                                }'
@@ -699,27 +704,27 @@ function funcCreate_preseed() {
 		*)	;;
 	esac
 	# --- for ubiquity --------------------------------------------------------
-	case "${_TGET_PATH}" in
+	case "${__TGET_PATH}" in
 		*_ubiquity_*)
-			IFS= _WORK=$(
-				sed -n '\%^[^#].*preseed/late_command%,\%[^\\]$%p' "${_TGET_PATH}" | \
-				sed -e 's/\\/\\\\/g'                                                 \
-				    -e 's/d-i/ubiquity/'                                             \
-				    -e 's%preseed\/late_command%ubiquity\/success_command%'        | \
+			IFS= __WORK=$(
+				sed -n '\%^[^#].*preseed/late_command%,\%[^\\]$%p' "${__TGET_PATH}" | \
+				sed -e 's/\\/\\\\/g'                                                  \
+				    -e 's/d-i/ubiquity/'                                              \
+				    -e 's%preseed\/late_command%ubiquity\/success_command%'         | \
 				sed -e ':l; N; s/\n/\\n/; b l;' || true
 			)
-			if [[ -n "${_WORK}" ]]; then
-				sed -i "${_TGET_PATH}"                                   \
+			if [[ -n "${__WORK}" ]]; then
+				sed -i "${__TGET_PATH}"                                  \
 				    -e '\%^[^#].*preseed/late_command%,\%[^\\]$%     { ' \
 				    -e 's/^/#/g                                        ' \
 				    -e 's/^#  /# /g                                  } ' \
 				    -e '\%^[^#].*ubiquity/success_command%,\%[^\\]$% { ' \
 				    -e 's/^/#/g                                        ' \
 				    -e 's/^#  /# /g                                  } '
-				sed -i "${_TGET_PATH}"                                    \
-				    -e "\%ubiquity/success_command%i \\${_WORK}"
+				sed -i "${__TGET_PATH}"                                  \
+				    -e "\%ubiquity/success_command%i \\${__WORK}"
 			fi
-			sed -i "${_TGET_PATH}"                        \
+			sed -i "${__TGET_PATH}"                       \
 			    -e "\%ubiquity/download_updates% s/^#/ /" \
 			    -e "\%ubiquity/use_nonfree%      s/^#/ /" \
 			    -e "\%ubiquity/reboot%           s/^#/ /"
@@ -727,159 +732,159 @@ function funcCreate_preseed() {
 		*)	;;
 	esac
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${_TGET_PATH}"
+	chmod ugo-x "${__TGET_PATH}"
 }
 
 # ----- create nocloud --------------------------------------------------------
 function funcCreate_nocloud() {
-	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
-	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
-#	declare       _WORK=""				# work variables
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
+#	declare       __WORK=""				# work variables
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
-	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_CLUD}" "${_TGET_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	mkdir -p "${__DIRS}"
+	cp --backup "${_CONF_CLUD}" "${__TGET_PATH}"
 
 	# --- by generation -------------------------------------------------------
-	case "${_TGET_PATH}" in
+	case "${__TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_TGET_PATH}"               \
-			    -e '/packages:/a \    usrmerge '\\
+			sed -i "${__TGET_PATH}"              \
+			    -e '/packages:/a \    usrmerge '
 			;;
 		*)	;;
 	esac
-	case "${_TGET_PATH}" in
+	case "${__TGET_PATH}" in
 		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
-			sed -i "${_TGET_PATH}"               \
+			sed -i "${__TGET_PATH}"              \
 			    -e 's/bind9-utils/bind9utils/'   \
 			    -e 's/bind9-dnsutils/dnsutils/'  \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${_TGET_PATH}"               \
+			sed -i "${__TGET_PATH}"              \
 			    -e 's/systemd-resolved/systemd/' \
 			    -e 's/fcitx5-mozc/fcitx-mozc/'
 			;;
 		*)	;;
 	esac
 	# --- server or desktop ---------------------------------------------------
-	case "${_TGET_PATH}" in
+	case "${__TGET_PATH}" in
 		*_desktop.*)
-			sed -i "${_TGET_PATH}"                                             \
+			sed -i "${__TGET_PATH}"                                            \
 			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
 			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
 			;;
 		*)	;;
 	esac
 	# -------------------------------------------------------------------------
-	touch -m "${_DIRS}/meta-data"      --reference "${_TGET_PATH}"
-	touch -m "${_DIRS}/network-config" --reference "${_TGET_PATH}"
-#	touch -m "${_DIRS}/user-data"      --reference "${_TGET_PATH}"
-	touch -m "${_DIRS}/vendor-data"    --reference "${_TGET_PATH}"
+	touch -m "${__DIRS}/meta-data"      --reference "${__TGET_PATH}"
+	touch -m "${__DIRS}/network-config" --reference "${__TGET_PATH}"
+#	touch -m "${__DIRS}/user-data"      --reference "${__TGET_PATH}"
+	touch -m "${__DIRS}/vendor-data"    --reference "${__TGET_PATH}"
 	# -------------------------------------------------------------------------
-	chmod --recursive ugo-x "${_DIRS}"
+	chmod --recursive ugo-x "${__DIRS}"
 }
 
 # ----- create kickstart.cfg --------------------------------------------------
 function funcCreate_kickstart() {
-	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
-	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
-#	declare       _WORK=""				# work variables
-	declare       _DSTR_VERS=""			# distribution version
-	declare       _DSTR_NUMS=""			# "            number
-	declare       _DSTR_NAME=""			# "            name
-	declare       _DSTR_SECT=""			# "            section
-	declare -r    _BASE_ARCH="x86_64"	# base architecture
-	declare -r    _WEBS_ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
+#	declare       __WORK=""				# work variables
+	declare       __VERS=""				# distribution version
+	declare       __NUMS=""				# "            number
+	declare       __NAME=""				# "            name
+	declare       __SECT=""				# "            section
+	declare -r    __ARCH="x86_64"		# base architecture
+	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
-	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_KICK}" "${_TGET_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	mkdir -p "${__DIRS}"
+	cp --backup "${_CONF_KICK}" "${__TGET_PATH}"
 
 	# -------------------------------------------------------------------------
-#	_DSTR_NUMS="\$releasever"
-	_DSTR_VERS="${_TGET_PATH#*_}"
-	_DSTR_VERS="${_DSTR_VERS%%_*}"
-	_DSTR_NUMS="${_DSTR_VERS##*-}"
-	_DSTR_NAME="${_DSTR_VERS%-*}"
-	_DSTR_SECT="${_DSTR_NAME/-/ }"
+#	__NUMS="\$releasever"
+	__VERS="${__TGET_PATH#*_}"
+	__VERS="${__VERS%%_*}"
+	__NUMS="${__VERS##*-}"
+	__NAME="${__VERS%-*}"
+	__SECT="${__NAME/-/ }"
 
 	# --- initializing the settings -------------------------------------------
-	sed -i "${_TGET_PATH}"                              \
-	    -e "/^cdrom$/      s/^/#/                     " \
-	    -e "/^url[ \t]\+/  s/^/#/g                    " \
-	    -e "/^repo[ \t]\+/ s/^/#/g                    " \
-	    -e "s/:_HOST_NAME_:/${_DSTR_NAME}/            " \
-	    -e "s%:_WEBS_ADDR_:%${_WEBS_ADDR}%g           " \
-	    -e "s%:_DISTRO_:%${_DSTR_NAME}-${_DSTR_NUMS}%g"
+	sed -i "${__TGET_PATH}"                     \
+	    -e "/^cdrom$/      s/^/#/             " \
+	    -e "/^url[ \t]\+/  s/^/#/g            " \
+	    -e "/^repo[ \t]\+/ s/^/#/g            " \
+	    -e "s/:_HOST_NAME_:/${__NAME}/        " \
+	    -e "s%:__ADDR_:%${__ADDR}%g           " \
+	    -e "s%:_DISTRO_:%${__NAME}-${__NUMS}%g"
 	# --- cdrom, repository ---------------------------------------------------
-	case "${_TGET_PATH}" in
+	case "${__TGET_PATH}" in
 		*_dvd*)		# --- cdrom install ---------------------------------------
-			sed -i "${_TGET_PATH}"                              \
-			    -e "/^#cdrom$/ s/^#//                         "
+			sed -i "${__TGET_PATH}"    \
+			    -e "/^#cdrom$/ s/^#//"
 			;;
 		*_net*)		# --- network install -------------------------------------
-			sed -i "${_TGET_PATH}"                              \
-			    -e "/^#.*(${_DSTR_SECT}).*$/,/^$/           { " \
-			    -e "/^#url[ \t]\+/  s/^#//g                   " \
-			    -e "/^#repo[ \t]\+/ s/^#//g                 } "
+			sed -i "${__TGET_PATH}"               \
+			    -e "/^#.*(${__SECT}).*$/,/^$/ { " \
+			    -e "/^#url[ \t]\+/  s/^#//g     " \
+			    -e "/^#repo[ \t]\+/ s/^#//g   } "
 			;;
 		*_web*)		# --- network install [ for pxeboot ] ---------------------
-			sed -i "${_TGET_PATH}"                              \
-			    -e "/^#.*(web address).*$/,/^$/             { " \
-			    -e "/^#url[ \t]\+/  s/^#//g                   " \
-			    -e "/^#repo[ \t]\+/ s/^#//g                   " \
-			    -e "s/\$releasever/${_DSTR_NUMS}/g            " \
-			    -e "s/\$basearch/${_BASE_ARCH}/g            } " \
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^#.*(web address).*$/,/^$/ { " \
+			    -e "/^#url[ \t]\+/  s/^#//g       " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g    } "
 			;;
 		*)	;;
 	esac
 	# --- desktop -------------------------------------------------------------
-	sed -e "/%packages/,/%end/ {"                       \
-	    -e "/desktop/ s/^-//g  }"                       \
-	    "${_TGET_PATH}"                                 \
-	>   "${_TGET_PATH%.*}_desktop.${_TGET_PATH##*.}"
+	sed -e "/%packages/,/%end/ {"                      \
+	    -e "/desktop/ s/^-//g  }"                      \
+	    "${__TGET_PATH}"                               \
+	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${_TGET_PATH}" "${_TGET_PATH%.*}_desktop.${_TGET_PATH##*.}"
+	chmod ugo-x "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 }
 
 # ----- create autoyast.xml ---------------------------------------------------
 function funcCreate_autoyast() {
-	declare -r    _TGET_TGET_PATH="${1:?}"	# file name
-	declare -r    _DIRS="${_TGET_PATH%/*}"	# directory name
-#	declare       _WORK=""				# work variables
-	declare       _DSTR_VERS=""			# distribution version
-	declare       _DSTR_NUMS=""			# "            number
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
+#	declare       __WORK=""				# work variables
+	declare       __VERS=""				# distribution version
+	declare       __NUMS=""				# "            number
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${_TGET_PATH}"
-	mkdir -p "${_DIRS}"
-	cp --backup "${_CONF_YAST}" "${_TGET_PATH}"
+	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	mkdir -p "${__DIRS}"
+	cp --backup "${_CONF_YAST}" "${__TGET_PATH}"
 
 	# -------------------------------------------------------------------------
-	_DSTR_VERS="${_TGET_PATH#*_}"
-	_DSTR_VERS="${_DSTR_VERS%%_*}"
-	_DSTR_NUMS="${_DSTR_VERS##*-}"
+	__VERS="${__TGET_PATH#*_}"
+	__VERS="${__VERS%%_*}"
+	__NUMS="${__VERS##*-}"
 
 	# --- by media ------------------------------------------------------------
-	case "${_TGET_PATH}" in
+	case "${__TGET_PATH}" in
 		*_web*|\
 		*_dvd*)
-			sed -i "${_TGET_PATH}"                                    \
+			sed -i "${__TGET_PATH}"                                   \
 			    -e '/<image_installation t="boolean">/ s/false/true/'
 			;;
 		*)
-			sed -i "${_TGET_PATH}"                                    \
+			sed -i "${__TGET_PATH}"                                   \
 			    -e '/<image_installation t="boolean">/ s/true/false/'
 			;;
 	esac
 	# --- by version ----------------------------------------------------------
-	case "${_TGET_PATH}" in
+	case "${__TGET_PATH}" in
 		*tumbleweed*)
-			sed -i "${_TGET_PATH}"                                     \
+			sed -i "${__TGET_PATH}"                                    \
 			    -e '\%<add_on_products .*>%,\%<\/add_on_products>% { ' \
 			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
 			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
@@ -887,51 +892,51 @@ function funcCreate_autoyast() {
 			    -e 's%\(<product>\).*\(</product>\)%\1openSUSE\2%    '
 			;;
 		*           )
-			sed -i "${_TGET_PATH}"                                               \
-			    -e '\%<add_on_products .*>%,\%</add_on_products>%            { ' \
-			    -e '/<!-- leap/,/leap -->/                                   { ' \
-			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${_DSTR_NUMS}/%g } " \
-			    -e '/<!-- leap$/ s/$/ -->/g                                    ' \
-			    -e '/^leap -->/  s/^/<!-- /g                                 } ' \
-			    -e 's%\(<product>\).*\(</product>\)%\1Leap\2%                  '
+			sed -i "${__TGET_PATH}"                                          \
+			    -e '\%<add_on_products .*>%,\%</add_on_products>%        { ' \
+			    -e '/<!-- leap/,/leap -->/                               { ' \
+			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${__NUMS}/%g } " \
+			    -e '/<!-- leap$/ s/$/ -->/g                                ' \
+			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
+			    -e 's%\(<product>\).*\(</product>\)%\1Leap\2%              '
 			;;
 	esac
 	# --- desktop -------------------------------------------------------------
-	sed -e '/<!-- desktop lxde$/ s/$/ -->/g ' \
-	    -e '/^desktop lxde -->/  s/^/<!-- /g' \
-	    "${_TGET_PATH}"                            \
-	>   "${_TGET_PATH%.*}_desktop.${_TGET_PATH##*.}"
+	sed -e '/<!-- desktop lxde$/ s/$/ -->/g '          \
+	    -e '/^desktop lxde -->/  s/^/<!-- /g'          \
+	    "${__TGET_PATH}"                               \
+	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
-	chmod ugo-x "${_TGET_PATH}"
+	chmod ugo-x "${__TGET_PATH}"
 }
 
 # ----- create pre-configuration file templates -------------------------------
 function funcCreate_precon() {
-	declare -n    _NAME_REFR="${1:-}"	# name reference
+	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
-	declare -a    _OPTN_PRAM=()			# option parameter
-	declare -a    _LIST=()				# data list
-	declare       _PATH=""				# file name
-	declare       _TYPE=""				# configuration type
-#	declare       _WORK=""				# work variables
+	declare -a    __OPTN=()				# option parameter
+	declare -a    __LIST=()				# data list
+	declare       __PATH=""				# file name
+	declare       __TYPE=""				# configuration type
+#	declare       __WORK=""				# work variables
 	declare -i    I=0					# work variables
 
 	# --- option parameter ----------------------------------------------------
-	_OPTN_PRAM=()
+	__OPTN=()
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
-			all      ) _OPTN_PRAM+=("preseed" "nocloud" "kickstart" "autoyast");;
+			all      ) __OPTN+=("preseed" "nocloud" "kickstart" "autoyast");;
 			preseed  | \
 			nocloud  | \
 			kickstart| \
-			autoyast ) _OPTN_PRAM+=("$1");;
+			autoyast ) __OPTN+=("$1");;
 			*        ) break;;
 		esac
 		shift
 	done
-	_NAME_REFR="${*:-}"
-	if [[ -z "${_OPTN_PRAM[*]}" ]]; then
+	__NAME_REFR="${*:-}"
+	if [[ -z "${__OPTN[*]}" ]]; then
 		return
 	fi
 
@@ -939,41 +944,41 @@ function funcCreate_precon() {
 	funcPrintf "%20.20s: %s" "create pre-conf file" ""
 
 	# -------------------------------------------------------------------------
-	_LIST=()
+	__LIST=()
 	for I in "${!_LIST_MDIA[@]}"
 	do
-		read -r -a _LINE < <(echo "${_LIST_MDIA[I]}")
-		case "${_LINE[1]}" in			# entry_flag
+		read -r -a __LINE < <(echo "${_LIST_MDIA[I]}")
+		case "${__LINE[1]}" in			# entry_flag
 			o) ;;
 			*) continue;;
 		esac
-		case "${_LINE[23]}" in			# cfg_path
+		case "${__LINE[23]}" in			# cfg_path
 			-) continue;;
 			*) ;;
 		esac
-		_PATH="${_LINE[23]}"
-		_TYPE="${_PATH%/*}"
-		_TYPE="${_TYPE##*/}"
-		if ! echo "${_OPTN_PRAM[*]}" | grep -q "${_TYPE}"; then
+		__PATH="${__LINE[23]}"
+		__TYPE="${__PATH%/*}"
+		__TYPE="${__TYPE##*/}"
+		if ! echo "${__OPTN[*]}" | grep -q "${__TYPE}"; then
 			continue
 		fi
-		_LIST+=("${_PATH}")
-		case "${_PATH}" in
-			*dvd.*) _LIST+=("${_PATH/_dvd/_web}");;
+		__LIST+=("${__PATH}")
+		case "${__PATH}" in
+			*dvd.*) __LIST+=("${__PATH/_dvd/_web}");;
 			*)	;;
 		esac
 	done
-	mapfile -d $'\n' -t _LIST < <(IFS=  printf "%s\n" "${_LIST[@]}" | sort -Vu || true)
+	mapfile -d $'\n' -t __LIST < <(IFS=  printf "%s\n" "${__LIST[@]}" | sort -Vu || true)
 	# -------------------------------------------------------------------------
-	for _PATH in "${_LIST[@]}"
+	for __PATH in "${__LIST[@]}"
 	do
-		_TYPE="${_PATH%/*}"
-		_TYPE="${_TYPE##*/}"
-		case "${_TYPE}" in
-			preseed  ) funcCreate_preseed   "${_PATH}";;
-			nocloud  ) funcCreate_nocloud   "${_PATH}/user-data";;
-			kickstart) funcCreate_kickstart "${_PATH}";;
-			autoyast ) funcCreate_autoyast  "${_PATH}";;
+		__TYPE="${__PATH%/*}"
+		__TYPE="${__TYPE##*/}"
+		case "${__TYPE}" in
+			preseed  ) funcCreate_preseed   "${__PATH}";;
+			nocloud  ) funcCreate_nocloud   "${__PATH}/user-data";;
+			kickstart) funcCreate_kickstart "${__PATH}";;
+			autoyast ) funcCreate_autoyast  "${__PATH}";;
 			*)	;;
 		esac
 	done

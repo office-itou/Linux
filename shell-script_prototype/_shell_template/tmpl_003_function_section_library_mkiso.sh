@@ -3,14 +3,13 @@
 # --- create iso image --------------------------------------------------------
 # shellcheck disable=SC2317
 function funcCreate_iso() {
-	declare -r    _DIRS_TGET="${1:?}"	# target directory
-	declare -r    _PATH_OUTP="${2:?}"	# output path
-	shift 2
-	declare -r -a _OPTN_XORR=("$@")		# xorrisofs options
-	declare -a    _LIST=()				# data list
-	declare       _PATH=""				# file name
-	              _PATH="$(mktemp -q "${TMPDIR:-/tmp}/${_PATH_OUTP##*/}.XXXXXX")"
-	readonly      _PATH
+	declare -r    __DIRS_TGET="${1:?}"	# target directory
+	declare -r    ___PATH_OUTP="${2:?}"	# output path
+	declare -r -a __OPTN_XORR=("$@:2")		# xorrisofs options
+	declare -a    __LIST=()				# data list
+	declare       __PATH=""				# file name
+	              __PATH="$(mktemp -q "${TMPDIR:-/tmp}/${___PATH_OUTP##*/}.XXXXXX")"
+	readonly      __PATH
 
 	# --- constant for control code -------------------------------------------
 	if [[ -z "${_CODE_ESCP+true}" ]]; then
@@ -20,17 +19,17 @@ function funcCreate_iso() {
 	fi
 
 	# --- create iso image ----------------------------------------------------
-	pushd "${_DIRS_TGET}" > /dev/null || exit
-	if ! nice -n "${_NICE_VALU:-19}" xorrisofs "${_OPTN_XORR[@]}" -output "${_PATH}" . > /dev/null 2>&1; then
-		printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [xorriso]" "${_PATH_OUTP##*/}" 1>&2
-	else
-		if ! cp --preserve=timestamps "${_PATH}" "${_PATH_OUTP}"; then
-			printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [cp]" "${_PATH_OUTP##*/}" 1>&2
+	pushd "${__DIRS_TGET}" > /dev/null || exit
+		if ! nice -n "${_NICE_VALU:-19}" xorrisofs "${__OPTN_XORR[@]}" -output "${__PATH}" . > /dev/null 2>&1; then
+			printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [xorriso]" "${___PATH_OUTP##*/}" 1>&2
 		else
-			IFS= mapfile -d ' ' -t _LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "${_PATH_OUTP}" || true)
-			printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "complete" "${_PATH_OUTP##*/} (${_LIST[4]})" 1>&2
+			if ! cp --preserve=timestamps "${__PATH}" "${___PATH_OUTP}"; then
+				printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [cp]" "${___PATH_OUTP##*/}" 1>&2
+			else
+				IFS= mapfile -d ' ' -t __LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "${___PATH_OUTP}" || true)
+				printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "complete" "${___PATH_OUTP##*/} (${__LIST[4]})" 1>&2
+			fi
 		fi
-	fi
-	rm -f "${_PATH:?}"
+		rm -f "${__PATH:?}"
 	popd > /dev/null || exit
 }

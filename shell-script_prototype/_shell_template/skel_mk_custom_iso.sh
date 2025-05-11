@@ -46,33 +46,33 @@ function funcInitialization() {
 
 # --- debug out parameter -----------------------------------------------------
 funcDebug_parameter() {
-	declare       _VARS_CHAR="_"		# variable initial letter
-	declare       _VARS_NAME=""			#          name
-	declare       _VARS_VALU=""			#          value
+	declare       __CHAR="_"			# variable initial letter
+	declare       __NAME=""				#          name
+	declare       __VALU=""				#          value
 
 #	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 #		return
 #	fi
 
 	# https://qiita.com/t_nakayama0714/items/80b4c94de43643f4be51#%E5%AD%A6%E3%81%B3%E3%81%AE%E6%88%90%E6%9E%9C%E3%82%92%E6%84%9F%E3%81%98%E3%82%8B%E3%83%AF%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%8A%E3%83%BC
-#	for _VARS_CHAR in {A..Z} {a..z} "_"
+#	for __CHAR in {A..Z} {a..z} "_"
 #	do
-		for _VARS_NAME in $(eval printf "%q\\\n"  \$\{\!"${_VARS_CHAR}"\@\})
+		for __NAME in $(eval printf "%q\\\n"  \$\{\!"${__CHAR}"\@\})
 		do
-			_VARS_NAME="${_VARS_NAME#\'}"
-			_VARS_NAME="${_VARS_NAME%\'}"
-			if [[ -z "${_VARS_NAME}" ]]; then
+			__NAME="${__NAME#\'}"
+			__NAME="${__NAME%\'}"
+			if [[ -z "${__NAME}" ]]; then
 				continue
 			fi
-			case "${_VARS_NAME}" in
-				_TEXT_*    | \
-				_VARS_CHAR | \
-				_VARS_NAME | \
-				_VARS_VALU ) continue;;
+			case "${__NAME}" in
+				_TEXT_*| \
+				__CHAR | \
+				__NAME | \
+				__VALU ) continue;;
 				*) ;;
 			esac
-			_VARS_VALU="$(eval printf "%q" \$\{"${_VARS_NAME}":-\})"
-			printf "%s=[%s]\n" "${_VARS_NAME}" "${_VARS_VALU/#\'\'/}"
+			__VALU="$(eval printf "%q" \$\{"${__NAME}":-\})"
+			printf "%s=[%s]\n" "${__NAME}" "${__VALU/#\'\'/}"
 		done
 #	done
 }
@@ -120,24 +120,25 @@ _EOT_
 # === main ====================================================================
 
 function funcMain() {
-	declare -i    _time_start=0			# start of elapsed time
-	declare -i    _time_end=0			# end of elapsed time
-	declare -i    _time_elapsed=0		# result of elapsed time
-	declare -r -a _OPTN_PARM=("${@:-}")	# option parameter
-	declare -a    _RETN_PARM=()			# name reference
-	declare       _WORK=""				# work variables
-	declare -a    _ARRY=()				# work variables
-	declare -a    _LIST=()				# work variables
+	declare -i    __time_start=0		# start of elapsed time
+	declare -i    __time_end=0			# end of elapsed time
+	declare -i    __time_elapsed=0		# result of elapsed time
+	declare -r -a __OPTN_PARM=("${@:-}") # option parameter
+	declare -a    __RETN_PARM=()		# name reference
+	declare       __RSLT=""				# result
+	declare       __WORK=""				# work variables
+	declare -a    __ARRY=()				# work variables
+	declare -a    __LIST=()				# work variables
 	declare -i    I=0					# work variables
 
 	# --- check the execution user --------------------------------------------
 	if [[ "${_USER_NAME}" != "root" ]]; then
-		printf "${_CODE_ESCP}[m%s${_CODE_ESCP}[m\n" "run as root user."
+		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[91m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "run as root user."
 		exit 1
 	fi
 
 	# --- get command line ----------------------------------------------------
-	set -f -- "${_OPTN_PARM[@]:-}"
+	set -f -- "${__OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1%%=*}" in
@@ -155,146 +156,88 @@ function funcMain() {
 	fi
 
 	# --- start ---------------------------------------------------------------
-	_time_start=$(date +%s)
-	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+	__time_start=$(date +%s)
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- main ----------------------------------------------------------------
 	funcInitialization					# initialization
 
-	set -f -- "${_OPTN_PARM[@]:-}"
+	set -f -- "${__OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
 	do
-		_RETN_PARM=()
+		__RETN_PARM=()
 		case "${1:-}" in
 			create  )					# force create
 				shift
+#				__RSLT="$(set -e; funcPrint_menu "create" "${_LIST_MDIA[@]}")"
+				funcPrint_menu __RSLT "create" "${_LIST_MDIA[@]}"
+				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
+sleep 100
 				for I in "${!_LIST_MDIA[@]}"
 				do
-					read -r -a _LIST < <(echo "${_LIST_MDIA[I]}")
-					case "${_LIST[1]}" in
+					read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+					case "${__LIST[1]}" in
 						o) ;;
 						*) continue;;
 					esac
-					if [[ -z "${_LIST[3]##-}" ]]; then
+					if [[ -z "${__LIST[3]##-}" ]]; then
 						continue
 					fi
-					if [[ -z "${_LIST[13]##-}" ]]; then
+					if [[ -z "${__LIST[13]##-}" ]]; then
 						continue
 					fi
-#					sleep 1
-#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${_LIST[13]##*/}" 1>&2
-					# --- web original iso file -------------------
-#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "web original iso file" 1>&2
-					_WORK="$(funcGetWebinfo "${_LIST[9]##-}")"
-					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[10]="${_ARRY[1]:--}"	# web_tstamp
-					_LIST[11]="${_ARRY[2]:--}"	# web_size
-					_LIST[12]="${_ARRY[3]:--}"	# web_status
-					# --- local original iso file -----------------
-#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local original iso file" 1>&2
-					_WORK="$(funcGetFileinfo "${_LIST[13]##-}")"
-					read -r -a _ARRY < <(echo "${_WORK}")
-#					_LIST[13]="${_ARRY[0]:--}"	# iso_path
-					_LIST[14]="${_ARRY[1]:--}"	# iso_tstamp
-					_LIST[15]="${_ARRY[2]:--}"	# iso_size
-					_LIST[16]="${_ARRY[3]:--}"	# iso_volume
-					# --- local remastering iso file --------------
-#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local remastering iso file" 1>&2
-					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
-					read -r -a _ARRY < <(echo "${_WORK}")
-#					_LIST[17]="${_ARRY[0]:--}"	# rmk_path
-					_LIST[18]="${_ARRY[1]:--}"	# rmk_tstamp
-					_LIST[19]="${_ARRY[2]:--}"	# rmk_size
-					_LIST[20]="${_ARRY[3]:--}"	# rmk_volume
-					# --- config file  ----------------------------
-					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "config file" 1>&2
-					_WORK="$(funcGetFileinfo "${_LIST[23]##-}")"
-					if [[ -n "${_LIST[23]##-}" ]] && [[ -d "${_LIST[23]}" ]]; then
-						_WORK="$(funcGetFileinfo "${_LIST[23]##-}/user-data")"
-					fi
-					read -r -a _ARRY < <(echo "${_WORK}")
-#					_LIST[23]="${_ARRY[0]:--}"	# cfg_path
-					_LIST[24]="${_ARRY[1]:--}"	# cfg_tstamp
 					# ---------------------------------------------------------
-					if [[ -z "${_LIST[23]##-}" ]] || [[ -z "${_LIST[24]##-}" ]]; then
+					if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
 						continue
 					fi
-					funcRemastering "${_LIST[@]}"
+					funcRemastering "${__LIST[@]}"
 					# --- new local remaster iso files ------------------------
-					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
-					read -r -a _ARRY < <(echo "${_WORK}")
-#					_LIST[17]="${_ARRY[0]:--}"				# rmk_path
-					_LIST[18]="${_ARRY[1]:--}"				# rmk_tstamp
-					_LIST[19]="${_ARRY[2]:--}"				# rmk_size
-					_LIST[20]="${_ARRY[3]:--}"				# rmk_volume
+					__WORK="$(funcGetFileinfo "${__LIST[17]##-}")"
+					read -r -a __ARRY < <(echo "${__WORK}")
+#					__LIST[17]="${__ARRY[0]:--}"				# rmk_path
+					__LIST[18]="${__ARRY[1]:--}"				# rmk_tstamp
+					__LIST[19]="${__ARRY[2]:--}"				# rmk_size
+					__LIST[20]="${__ARRY[3]:--}"				# rmk_volume
 					# --- update media data record ----------------
-					_LIST_MDIA[I]="${_LIST[*]}"
-#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${_LIST[13]##*/}" 1>&2
+					_LIST_MDIA[I]="${__LIST[*]}"
+#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
 				done
 				funcPut_media_data
 				;;
 			update  )					# create new files only
 				shift
+#				__RSLT="$(set -e; funcPrint_menu "update" "${_LIST_MDIA[@]}")"
+				funcPrint_menu __RSLT "update" "${_LIST_MDIA[@]}"
+				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
 				for I in "${!_LIST_MDIA[@]}"
 				do
-					read -r -a _LIST < <(echo "${_LIST_MDIA[I]}")
-					case "${_LIST[1]}" in
+					read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+					case "${__LIST[1]}" in
 						o) ;;
 						*) continue;;
 					esac
-					if [[ -z "${_LIST[3]##-}" ]]; then
+					if [[ -z "${__LIST[3]##-}" ]]; then
 						continue
 					fi
-					if [[ -z "${_LIST[13]##-}" ]]; then
+					if [[ -z "${__LIST[13]##-}" ]]; then
 						continue
 					fi
-#					sleep 1
-#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${_LIST[13]##*/}" 1>&2
-					# --- web original iso file -------------------
-#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "web original iso file" 1>&2
-					_WORK="$(funcGetWebinfo "${_LIST[9]##-}")"
-					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[10]="${_ARRY[1]:--}"	# web_tstamp
-					_LIST[11]="${_ARRY[2]:--}"	# web_size
-					_LIST[12]="${_ARRY[3]:--}"	# web_status
-					# --- local original iso file -----------------
-#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local original iso file" 1>&2
-					_WORK="$(funcGetFileinfo "${_LIST[13]##-}")"
-					read -r -a _ARRY < <(echo "${_WORK}")
-#					_LIST[13]="${_ARRY[0]:--}"	# iso_path
-					_LIST[14]="${_ARRY[1]:--}"	# iso_tstamp
-					_LIST[15]="${_ARRY[2]:--}"	# iso_size
-					_LIST[16]="${_ARRY[3]:--}"	# iso_volume
-					# --- local remastering iso file --------------
-#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local remastering iso file" 1>&2
-					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
-					read -r -a _ARRY < <(echo "${_WORK}")
-#					_LIST[17]="${_ARRY[0]:--}"	# rmk_path
-					_LIST[18]="${_ARRY[1]:--}"	# rmk_tstamp
-					_LIST[19]="${_ARRY[2]:--}"	# rmk_size
-					_LIST[20]="${_ARRY[3]:--}"	# rmk_volume
-					# --- config file  ----------------------------
-#					printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "config file" 1>&2
-					_WORK="$(funcGetFileinfo "${_LIST[23]##-}")"
-					read -r -a _ARRY < <(echo "${_WORK}")
-#					_LIST[23]="${_ARRY[0]:--}"	# cfg_path
-					_LIST[24]="${_ARRY[1]:--}"	# cfg_tstamp
 					# ---------------------------------------------------------
-					if [[ -z "${_LIST[23]##-}" ]] || [[ -z "${_LIST[24]##-}" ]]; then
+					if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
 						continue
 					fi
-					if [[ -n "${_LIST[13]##-}" ]] && [[ -n "${_LIST[14]##-}" ]] && [[ -n "${_LIST[15]##-}" ]]; then
-						if [[ -n  "${_LIST[9]##-}" ]] && [[ -n "${_LIST[10]##-}" ]] && [[ -n "${_LIST[11]##-}" ]]; then
-							if [[ -n "${_LIST[17]##-}" ]] && [[ -n "${_LIST[18]##-}" ]] && [[ -n "${_LIST[19]##-}" ]]; then
-								_WORK="$(funcDateDiff "${_LIST[14]}" "${_LIST[10]}")"
-								if [[ "${_WORK}" -eq 0 ]] && [[ "${_LIST[15]}" -ne "${_LIST[11]}" ]]; then
-									_WORK="$(funcDateDiff "${_LIST[14]}" "${_LIST[18]}")"
-									if [[ "${_WORK}" -lt 0 ]]; then
+					if [[ -n "${__LIST[13]##-}" ]] && [[ -n "${__LIST[14]##-}" ]] && [[ -n "${__LIST[15]##-}" ]]; then
+						if [[ -n  "${__LIST[9]##-}" ]] && [[ -n "${__LIST[10]##-}" ]] && [[ -n "${__LIST[11]##-}" ]]; then
+							if [[ -n "${__LIST[17]##-}" ]] && [[ -n "${__LIST[18]##-}" ]] && [[ -n "${__LIST[19]##-}" ]]; then
+								__WORK="$(funcDateDiff "${__LIST[14]}" "${__LIST[10]}")"
+								if [[ "${__WORK}" -eq 0 ]] && [[ "${__LIST[15]}" -ne "${__LIST[11]}" ]]; then
+									__WORK="$(funcDateDiff "${__LIST[14]}" "${__LIST[18]}")"
+									if [[ "${__WORK}" -lt 0 ]]; then
 										continue
 									fi
-									if [[ -n "${_LIST[23]##-}" ]] && [[ -n "${_LIST[24]##-}" ]]; then
-										_WORK="$(funcDateDiff "${_LIST[14]}" "${_LIST[24]}")"
-										if [[ "${_WORK}" -lt 0 ]]; then
+									if [[ -n "${__LIST[23]##-}" ]] && [[ -n "${__LIST[24]##-}" ]]; then
+										__WORK="$(funcDateDiff "${__LIST[14]}" "${__LIST[24]}")"
+										if [[ "${__WORK}" -lt 0 ]]; then
 											continue
 										fi
 									fi
@@ -302,26 +245,29 @@ function funcMain() {
 							fi
 						fi
 					fi
-					funcRemastering "${_LIST[@]}"
+					funcRemastering "${__LIST[@]}"
 					# --- new local remaster iso files ------------------------
-					_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
-					read -r -a _ARRY < <(echo "${_WORK}")
-					_LIST[17]="${_ARRY[0]:--}"				# rmk_path
-					_LIST[18]="${_ARRY[1]:--}"				# rmk_tstamp
-					_LIST[19]="${_ARRY[2]:--}"				# rmk_size
-					_LIST[20]="${_ARRY[3]:--}"				# rmk_volume
+					__WORK="$(funcGetFileinfo "${__LIST[17]##-}")"
+					read -r -a __ARRY < <(echo "${__WORK}")
+					__LIST[17]="${__ARRY[0]:--}"				# rmk_path
+					__LIST[18]="${__ARRY[1]:--}"				# rmk_tstamp
+					__LIST[19]="${__ARRY[2]:--}"				# rmk_size
+					__LIST[20]="${__ARRY[3]:--}"				# rmk_volume
 					# --- update media data record ----------------
-					_LIST_MDIA[I]="${_LIST[*]}"
-#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${_LIST[13]##*/}" 1>&2
+					_LIST_MDIA[I]="${__LIST[*]}"
+#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
 				done
 				funcPut_media_data
 				;;
 			download)					# download only
 				shift
+#				__RSLT="$(set -e; funcPrint_menu "download" "${_LIST_MDIA[@]}")"
+				funcPrint_menu __RSLT "download" "${_LIST_MDIA[@]}"
+				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
 				for I in "${!_LIST_MDIA[@]}"
 				do
-					read -r -a _LIST < <(echo "${_LIST_MDIA[I]}")
-					case "${_LIST[1]}" in
+					read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+					case "${__LIST[1]}" in
 						o) ;;
 						*) continue;;
 					esac
@@ -332,7 +278,7 @@ function funcMain() {
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						create   ) shift; fncCreate_directory _RETN_PARM "${@:-}"; funcPut_media_data;;
+						create   ) shift; fncCreate_directory __RETN_PARM "${@:-}"; funcPut_media_data;;
 						update   ) ;;
 						download ) ;;
 						*        ) break;;
@@ -347,57 +293,25 @@ function funcMain() {
 						create   ) shift; funcPut_media_data;;
 						update   ) 
 							shift
+#							__RSLT="$(set -e; funcPrint_menu "list" "${_LIST_MDIA[@]}")"
+							funcPrint_menu __RSLT "list" "${_LIST_MDIA[@]}"
+							IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
 							for I in "${!_LIST_MDIA[@]}"
 							do
-								read -r -a _LIST < <(echo "${_LIST_MDIA[I]}")
-#								case "${_LIST[1]}" in
+								read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+#								case "${__LIST[1]}" in
 #									o) ;;
 #									*) continue;;
 #								esac
-								if [[ -z "${_LIST[3]##-}" ]]; then
+								if [[ -z "${__LIST[3]##-}" ]]; then
 									continue
 								fi
-#								if [[ -z "${_LIST[13]##-}" ]]; then
+#								if [[ -z "${__LIST[13]##-}" ]]; then
 #									continue
 #								fi
-#								sleep 1
-								printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start: ${_LIST[2]//%20/ }" "${_LIST[13]##*/}" 1>&2
-								# --- web original iso file -------------------
-#								printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "web original iso file" 1>&2
-								_WORK="$(funcGetWebinfo "${_LIST[9]##-}")"
-								read -r -a _ARRY < <(echo "${_WORK}")
-								_LIST[10]="${_ARRY[1]:--}"	# web_tstamp
-								_LIST[11]="${_ARRY[2]:--}"	# web_size
-								_LIST[12]="${_ARRY[3]:--}"	# web_status
-								# --- local original iso file -----------------
-#								printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local original iso file" 1>&2
-								_WORK="$(funcGetFileinfo "${_LIST[13]##-}")"
-								read -r -a _ARRY < <(echo "${_WORK}")
-#								_LIST[13]="${_ARRY[0]:--}"	# iso_path
-								_LIST[14]="${_ARRY[1]:--}"	# iso_tstamp
-								_LIST[15]="${_ARRY[2]:--}"	# iso_size
-								_LIST[16]="${_ARRY[3]:--}"	# iso_volume
-								# --- local remastering iso file --------------
-#								printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "local remastering iso file" 1>&2
-								_WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
-								read -r -a _ARRY < <(echo "${_WORK}")
-#								_ARRY[3]="${_LIST[16]}"
-#								_LIST[17]="${_ARRY[0]:--}"	# rmk_path
-								_LIST[18]="${_ARRY[1]:--}"	# rmk_tstamp
-								_LIST[19]="${_ARRY[2]:--}"	# rmk_size
-								_LIST[20]="${_ARRY[3]:--}"	# rmk_volume
-								# --- config file  ----------------------------
-#								printf "%20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "config file" 1>&2
-								_WORK="$(funcGetFileinfo "${_LIST[23]##-}")"
-								if [[ -n "${_LIST[23]##-}" ]] && [[ -d "${_LIST[23]}" ]]; then
-									_WORK="$(funcGetFileinfo "${_LIST[23]##-}/user-data")"
-								fi
-								read -r -a _ARRY < <(echo "${_WORK}")
-#								_LIST[23]="${_ARRY[0]:--}"	# cfg_path
-								_LIST[24]="${_ARRY[1]:--}"	# cfg_tstamp
 								# --- update media data record ----------------
-								_LIST_MDIA[I]="${_LIST[*]}"
-#								printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${_LIST[13]##*/}" 1>&2
+								_LIST_MDIA[I]="${__LIST[*]}"
+#								printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
 							done
 							# -------------------------------------------------
 							funcPut_media_data
@@ -416,7 +330,7 @@ function funcMain() {
 				;;
 			preconf )
 				shift
-				funcCreate_precon _RETN_PARM "${@:-}"
+				funcCreate_precon __RETN_PARM "${@:-}"
 				;;
 			help    ) shift; funcHelp; break;;
 			debug   )
@@ -431,18 +345,18 @@ function funcMain() {
 				;;
 			*       ) shift;;
 		esac
-		_RETN_PARM=("${_RETN_PARM:-"${@:-}"}")
+		__RETN_PARM=("${__RETN_PARM:-"${@:-}"}")
 		IFS="${_COMD_IFS:-}"
-		set -f -- "${_RETN_PARM[@]:-}"
+		set -f -- "${__RETN_PARM[@]:-}"
 		IFS="${_ORIG_IFS:-}"
 	done
 
 	# --- complete ------------------------------------------------------------
-	_time_end=$(date +%s)
-	_time_elapsed=$((_time_end-_time_start))
+	__time_end=$(date +%s)
+	__time_elapsed=$((__time_end-__time_start))
 
-	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
-	printf "elapsed time: %dd%02dh%02dm%02ds\n" $((_time_elapsed/86400)) $((_time_elapsed%86400/3600)) $((_time_elapsed%3600/60)) $((_time_elapsed%60))
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
+	printf "elapsed time: %dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60))
 }
 
 # *** main processing section *************************************************

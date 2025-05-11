@@ -43,26 +43,26 @@
 
 # shellcheck disable=SC2317
 function funcTrap() {
-	declare       _PATH=""
+	declare       __PATH=""
 	declare -i    I=0
 	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
 	do
-		_PATH="${_LIST_RMOV[I]}"
-		if [[ -e "${_PATH}" ]] && mountpoint --quiet "${_PATH}"; then
-			printf "[%s]: umount \"%s\"\n" "${I}" "${_PATH}" 1>&2
-			umount --quiet         --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --force --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --lazy  --recursive "${_PATH}" || true
+		__PATH="${_LIST_RMOV[I]}"
+		if [[ -e "${__PATH}" ]] && mountpoint --quiet "${__PATH}"; then
+			printf "[%s]: umount \"%s\"\n" "${I}" "${__PATH}" 1>&2
+			umount --quiet         --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  --recursive "${__PATH}" || true
 		fi
 	done
 	if [[ -e "${_DIRS_TEMP:?}" ]]; then
 		printf "%s: \"%s\"\n" "remove" "${_DIRS_TEMP}" 1>&2
-		while read -r _PATH
+		while read -r __PATH
 		do
-			printf "[%s]: umount \"%s\"\n" "-" "${_PATH}" 1>&2
-			umount --quiet         --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --force --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --lazy  --recursive "${_PATH}" || true
+			printf "[%s]: umount \"%s\"\n" "-" "${__PATH}" 1>&2
+			umount --quiet         --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  --recursive "${__PATH}" || true
 		done < <(grep "${_DIRS_TEMP:?}" /proc/mounts | cut -d ' ' -f 2 | sort -rV || true)
 		rm -rf "${_DIRS_TEMP:?}"
 	fi

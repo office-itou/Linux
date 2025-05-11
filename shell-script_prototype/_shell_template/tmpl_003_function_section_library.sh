@@ -103,90 +103,94 @@ function funcString() {
 # --- date diff ---------------------------------------------------------------
 # shellcheck disable=SC2317
 function funcDateDiff() {
-	declare       _DAT1="${1:?}"		# date1
-	declare       _DAT2="${2:?}"		# date2
+	declare       __TGET_DAT1="${1:?}"	# date1
+	declare       __TGET_DAT2="${2:?}"	# date2
 	# -------------------------------------------------------------------------
-	#  0 : _DAT1 = _DAT2
-	#  1 : _DAT1 < _DAT2
-	# -1 : _DAT1 > _DAT2
+	#  0 : __TGET_DAT1 = __TGET_DAT2
+	#  1 : __TGET_DAT1 < __TGET_DAT2
+	# -1 : __TGET_DAT1 > __TGET_DAT2
 	# emp: error
-	_DAT1="$(TZ=UTC date -d "${_DAT1//%20/ }" "+%s" || exit $?)"
-	_DAT2="$(TZ=UTC date -d "${_DAT2//%20/ }" "+%s" || exit $?)"
-	  if [[ "${_DAT1}" -eq "${_DAT2}" ]]; then
-		echo "0"
-	elif [[ "${_DAT1}" -lt "${_DAT2}" ]]; then
-		echo "1"
-	elif [[ "${_DAT1}" -gt "${_DAT2}" ]]; then
-		echo "-1"
+	if __TGET_DAT1="$(TZ=UTC date -d "${__TGET_DAT1//%20/ }" "+%s")" \
+	&& __TGET_DAT2="$(TZ=UTC date -d "${__TGET_DAT2//%20/ }" "+%s")"; then
+		  if [[ "${__TGET_DAT1}" -eq "${__TGET_DAT2}" ]]; then
+			echo "0"
+		elif [[ "${__TGET_DAT1}" -lt "${__TGET_DAT2}" ]]; then
+			echo "1"
+		elif [[ "${__TGET_DAT1}" -gt "${__TGET_DAT2}" ]]; then
+			echo "-1"
+		else
+			echo ""
+		fi
 	else
-		echo ""
+		printf "%20.20s: %s\n" "failed" "${__TGET_DAT1}"
+		printf "%20.20s: %s\n" "failed" "${__TGET_DAT2}"
 	fi
 }
 
 # --- print with screen control -----------------------------------------------
 # shellcheck disable=SC2317
 function funcPrintf() {
-	declare -r    _TRCE="$(set -o | grep "^xtrace\s*on$")"
+	declare -r    __TRCE="$(set -o | grep "^xtrace\s*on$")"
 	set +x
 	# -------------------------------------------------------------------------
-	declare       _NCUT=""				# no cutting flag
-	declare       _FMAT=""				# format parameter
-	declare       _UTF8=""				# formatted utf8
-	declare       _SJIS=""				# formatted sjis (cp932)
-	declare       _PLIN=""				# formatted string without attributes
-	declare       _ESCF=""				# escape characters front
-	declare       _WORK=""				# work variables
+	declare       __NCUT=""				# no cutting flag
+	declare       __FMAT=""				# format parameter
+	declare       __UTF8=""				# formatted utf8
+	declare       __SJIS=""				# formatted sjis (cp932)
+	declare       __PLIN=""				# formatted string without attributes
+	declare       __ESCF=""				# escape characters front
+	declare       __WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 	# -------------------------------------------------------------------------
 	case "${1:?}" in
-		--no-cutting) _NCUT="true"; shift;;
+		--no-cutting) __NCUT="true"; shift;;
 		*           ) ;;
 	esac
 	# -------------------------------------------------------------------------
-	_FMAT="${1}"
+	__FMAT="${1}"
 	shift
 	# shellcheck disable=SC2059
-	printf -v _UTF8 -- "${_FMAT}" "${@:-}"
+	printf -v __UTF8 -- "${__FMAT}" "${@:-}"
 	# -------------------------------------------------------------------------
-	if [[ -z "${_NCUT}" ]]; then
-		_SJIS="$(echo -n "${_UTF8}" | iconv -f UTF-8 -t CP932 -c -s || true)"
-		_PLIN="${_SJIS//"${_CODE_ESCP}["[0-9]m/}"
-		_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
-		_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
-		if [[ "${#_PLIN}" -gt "${_SIZE_COLS}" ]]; then
-			_WORK="${_SJIS}"
+	if [[ -z "${__NCUT}" ]]; then
+		__SJIS="$(echo -n "${__UTF8}" | iconv -f UTF-8 -t CP932 -c -s || true)"
+		__PLIN="${__SJIS//"${_CODE_ESCP}["[0-9]m/}"
+		__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+		__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+		if [[ "${#__PLIN}" -gt "${_SIZE_COLS}" ]]; then
+			__WORK="${__SJIS}"
 			while true
 			do
-				case "${_WORK}" in
+				case "${__WORK}" in
 					"${_CODE_ESCP}"\[[0-9]*m*)
-						_WORK="${_WORK/#"${_CODE_ESCP}["[0-9]m/}"
-						_WORK="${_WORK/#"${_CODE_ESCP}["[0-9][0-9]m/}"
-						_WORK="${_WORK/#"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+						__WORK="${__WORK/#"${_CODE_ESCP}["[0-9]m/}"
+						__WORK="${__WORK/#"${_CODE_ESCP}["[0-9][0-9]m/}"
+						__WORK="${__WORK/#"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
 						;;
 					*) break;;
 				esac
 			done
-			_ESCF="${_SJIS%"${_WORK}"}"
+			__ESCF="${__SJIS%"${__WORK}"}"
 			# -----------------------------------------------------------------
-			_WORK="${_SJIS:"${#_ESCF}":"${_SIZE_COLS}"}"
+			__WORK="${__SJIS:"${#__ESCF}":"${_SIZE_COLS}"}"
 			while true
 			do
-				_PLIN="${_WORK//"${_CODE_ESCP}["[0-9]m/}"
-				_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
-				_PLIN="${_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
-				_PLIN="${_PLIN%%"${_CODE_ESCP}"*}"
-				if [[ "${#_PLIN}" -eq "${_SIZE_COLS}" ]]; then
+				__PLIN="${__WORK//"${_CODE_ESCP}["[0-9]m/}"
+				__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+				__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+				__PLIN="${__PLIN%%"${_CODE_ESCP}"*}"
+				if [[ "${#__PLIN}" -eq "${_SIZE_COLS}" ]]; then
 					break
 				fi
-				_WORK="${_SJIS:"${#_ESCF}":$(("${#_WORK}"+"${_SIZE_COLS}"-"${#_PLIN}"))}"
+				__WORK="${__SJIS:"${#__ESCF}":$(("${#__WORK}"+"${_SIZE_COLS}"-"${#__PLIN}"))}"
 			done
-			_WORK="${_ESCF}${_WORK}"
-			_UTF8="$(echo -n "${_WORK}" | iconv -f CP932 -t UTF-8 -c -s 2> /dev/null || true)"
+			__WORK="${__ESCF}${__WORK}"
+			__UTF8="$(echo -n "${__WORK}" | iconv -f CP932 -t UTF-8 -c -s 2> /dev/null || true)"
 		fi
 	fi
-	printf "%s%b%s\n" "${_TEXT_RESET}" "${_UTF8}" "${_TEXT_RESET}"
-	if [[ -n "${_TRCE}" ]]; then
+	printf "%s%b%s\n" "${_TEXT_RESET}" "${__UTF8}" "${_TEXT_RESET}"
+	if [[ -n "${__TRCE}" ]]; then
 		set -x
 	else
 		set +x
