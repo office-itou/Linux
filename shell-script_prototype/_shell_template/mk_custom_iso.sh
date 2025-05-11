@@ -1446,18 +1446,21 @@ function funcPut_media_data() {
 	# --- check file exists ---------------------------------------------------
 	if [[ -f "${_PATH_MDIA:?}" ]]; then
 		__RNAM="${_PATH_MDIA}.$(TZ=UTC find "${_PATH_MDIA}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
+		printf "%s: \"%s\"\n" "move" "${__RNAM}" 1>&2
 		mv "${_PATH_MDIA}" "${__RNAM}"
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	__LIST=("$(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r | tail -n +3 || true)")
-	if [[ "${#__LIST[@]}" -gt 4 ]]; then
-		for I in "${!__LIST[@]}"
-		do
-			_PATH="${__LIST[I]}"
-			rm -f "${__PATH:?}"
-		done
-	fi
+	__LIST=("$(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r || true)")
+	for I in "${!__LIST[@]}"
+	do
+		if [[ "${#__LIST[@]}" -le 3 ]]; then
+			break
+		fi
+		_PATH="${__LIST[I]}"
+		printf "%s: \"%s\"\n" "remove" "${_PATH}" 1>&2
+		rm -f "${__PATH:?}"
+	done
 
 	# --- list data -----------------------------------------------------------
 	for I in "${!_LIST_MDIA[@]}"
@@ -1480,13 +1483,11 @@ function funcPut_media_data() {
 		__LINE="${__LINE//"${_DIRS_HGFS}"/:_DIRS_HGFS_:}"
 		__LINE="${__LINE//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"
 		read -r -a __LIST < <(echo "${__LINE}")
-		__LIST=("${__LIST[@]:--}")		# empty
-		__LIST=("${__LIST[@]// /%20}")	# space
-#		for J in "${!__LIST[@]}"
-#		do
-#			__LIST[J]="${__LIST[J]:--}"						# null
-#			__LIST[J]="${__LIST[J]// /%20}"					# blank
-#		done
+		for J in "${!__LIST[@]}"
+		do
+			__LIST[J]="${__LIST[J]:--}"		# empty
+			__LIST[J]="${__LIST[J]// /%20}"	# space
+		done
 		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s\n" \
 			"${__LIST[@]}" \
 		>> "${_PATH_MDIA:?}"
