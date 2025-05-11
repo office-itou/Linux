@@ -1451,17 +1451,17 @@ function funcPut_media_data() {
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	__LIST=("$(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r || true)")
-	for I in "${!__LIST[@]}"
-	do
-		if [[ "${#__LIST[@]}" -le 3 ]]; then
-			break
-		fi
-		_PATH="${__LIST[I]}"
-		printf "%s: \"%s\"\n" "remove" "${_PATH}" 1>&2
-		rm -f "${__PATH:?}"
-	done
-
+set -x
+	IFS= mapfile -d $'\n' -t __LIST < <(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3 || true)
+	if [[ "${#__LIST[@]}" -gt 3 ]]; then
+		for I in "${!__LIST[@]}"
+		do
+			__PATH="${__LIST[I]}"
+			printf "%s: \"%s\"\n" "remove" "${__PATH}" 1>&2
+			rm -f "${__PATH:?}"
+		done
+	fi
+set +x
 	# --- list data -----------------------------------------------------------
 	for I in "${!_LIST_MDIA[@]}"
 	do
@@ -1952,7 +1952,7 @@ function funcCreate_precon() {
 			*)	;;
 		esac
 	done
-	mapfile -d $'\n' -t __LIST < <(IFS=  printf "%s\n" "${__LIST[@]}" | sort -Vu || true)
+	IFS= mapfile -d $'\n' -t __LIST < <(IFS=  printf "%s\n" "${__LIST[@]}" | sort -Vu || true)
 	# -------------------------------------------------------------------------
 	for __PATH in "${__LIST[@]}"
 	do
