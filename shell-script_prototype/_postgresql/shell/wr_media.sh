@@ -63,11 +63,12 @@ set -u
 		for J in "${!_LIST[@]}"
 		do
 			case "${J}" in
-				[0-3]      ) _LIST[J]="'${_LIST[J]:?}'";;																																								# NOT NULL
-				10|14|18|24) _LIST[J]="${_LIST[J]/#xx:xx:xx/-}"; _WORK="${_LIST[J]/#-/}"; _LIST[J]="${_WORK:+"'"}${_LIST[J]/#-/"NULL"}${_WORK:+"'"}"; _LIST[J]="${_LIST[J]//%20/ }"; _LIST[J]="${_LIST[J]//+UTC/}";;	# TIMESTAMP
-				11|15|19   ) _LIST[J]="${_LIST[J]/#0/-}"       ; _WORK="${_LIST[J]/#-/}"; _LIST[J]="${_WORK:+"'"}${_LIST[J]/#-/"NULL"}${_WORK:+"'"}"; _LIST[J]="${_LIST[J]//%20/ }";;									# BIGINT
-				*          ) _LIST[J]="'${_LIST[J]/#-/}'"; _LIST[J]="${_LIST[J]//%20/ }";;																																# TEXT
+				[0-3]      ) _LIST[J]="'${_LIST[J]:?}'";;																								# NOT NULL
+				10|14|18|24) _LIST[J]="${_LIST[J]/#xx:xx:xx/-}"; _WORK="${_LIST[J]/#-/}"; _LIST[J]="${_WORK:+"'"}${_LIST[J]/#-/"NULL"}${_WORK:+"'"}";;	# TIMESTAMP
+				11|15|19   ) _LIST[J]="${_LIST[J]/#0/-}"       ; _WORK="${_LIST[J]/#-/}"; _LIST[J]="${_WORK:+"'"}${_LIST[J]/#-/"NULL"}${_WORK:+"'"}";;	# BIGINT
+				*          ) _LIST[J]="'${_LIST[J]/#-/}'";;																								# TEXT
 			esac
+			_LIST[J]="${_LIST[J]//%20/ }"
 			_LINE+="${_LINE:+", "}${_LIST[J]:?}"
 		done
 		TABL_LIST[I]="${_LINE}"
