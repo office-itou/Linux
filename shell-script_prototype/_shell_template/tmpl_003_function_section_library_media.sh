@@ -73,7 +73,7 @@ function funcGetFileinfo() {
 		__WORK="$(realpath -s "$2")"	# full path
 		__FNAM="${__WORK##*/}"
 		__DIRS="${__WORK%"${__FNAM}"}"
-		__WORK="$(LANG=C find "${__DIRS:-.}" -name "${__FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%TS+%TZ %s")"
+		__WORK="$(LANG=C find "${__DIRS:-.}" -name "${__FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%TS%Tz %s")"
 		if [[ -n "${__WORK}" ]]; then
 			read -r -a __ARRY < <(echo "${__WORK}")
 			funcGetVolID __RSLT "${__ARRY[0]}"

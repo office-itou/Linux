@@ -54,7 +54,7 @@ function funcGetWeb_command() {
 			case "${__FILD%% *}" in
 				http/*         ) __CODE="${__VALU%% *}";;
 				content-length:) __LENG="${__VALU}";;
-				last-modified: ) __LMOD="$(TZ=UTC date -d "${__VALU}" "+%Y-%m-%d%%20%H:%M:%S+%Z")";;
+				last-modified: ) __LMOD="$(TZ=UTC date -d "${__VALU}" "+%Y-%m-%d%%20%H:%M:%S%z")";;
 				*              ) ;;
 			esac
 		done

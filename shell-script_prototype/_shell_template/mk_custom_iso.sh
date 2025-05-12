@@ -587,7 +587,7 @@ function funcGetFileinfo() {
 		__WORK="$(realpath -s "$2")"	# full path
 		__FNAM="${__WORK##*/}"
 		__DIRS="${__WORK%"${__FNAM}"}"
-		__WORK="$(LANG=C find "${__DIRS:-.}" -name "${__FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%TS+%TZ %s")"
+		__WORK="$(LANG=C find "${__DIRS:-.}" -name "${__FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%TS%Tz %s")"
 		if [[ -n "${__WORK}" ]]; then
 			read -r -a __ARRY < <(echo "${__WORK}")
 			funcGetVolID __RSLT "${__ARRY[0]}"
@@ -822,7 +822,7 @@ function funcGetWeb_command() {
 			case "${__FILD%% *}" in
 				http/*         ) __CODE="${__VALU%% *}";;
 				content-length:) __LENG="${__VALU}";;
-				last-modified: ) __LMOD="$(TZ=UTC date -d "${__VALU}" "+%Y-%m-%d%%20%H:%M:%S+%Z")";;
+				last-modified: ) __LMOD="$(TZ=UTC date -d "${__VALU}" "+%Y-%m-%d%%20%H:%M:%S%z")";;
 				*              ) ;;
 			esac
 		done
@@ -1432,7 +1432,7 @@ function funcGet_media_data() {
 	done
 	if [[ -z "${_LIST_MDIA[*]}" ]]; then
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[91m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "data file not found: [${_PATH_MDIA}]" 1>&2
-		exit 1
+#		exit 1
 	fi
 }
 
@@ -1446,20 +1446,16 @@ function funcPut_media_data() {
 	# --- check file exists ---------------------------------------------------
 	if [[ -f "${_PATH_MDIA:?}" ]]; then
 		__RNAM="${_PATH_MDIA}.$(TZ=UTC find "${_PATH_MDIA}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
-		printf "%s: \"%s\"\n" "move" "${__RNAM}" 1>&2
-		mv "${_PATH_MDIA}" "${__RNAM}"
+		printf "%s: \"%s\"\n" "backup" "${__RNAM}" 1>&2
+		cp -a "${_PATH_MDIA}" "${__RNAM}"
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	IFS= mapfile -d $'\n' -t __LIST < <(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3 || true)
-	if [[ "${#__LIST[@]}" -gt 3 ]]; then
-		for I in "${!__LIST[@]}"
-		do
-			__PATH="${__LIST[I]}"
-			printf "%s: \"%s\"\n" "remove" "${__PATH}" 1>&2
-			rm -f "${__PATH:?}"
-		done
-	fi
+	find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3 | while read -r __PATH
+	do
+		printf "%s: \"%s\"\n" "remove" "${__PATH}" 1>&2
+		rm -f "${__PATH:?}"
+	done
 	# --- list data -----------------------------------------------------------
 	for I in "${!_LIST_MDIA[@]}"
 	do
@@ -1487,9 +1483,8 @@ function funcPut_media_data() {
 			__LIST[J]="${__LIST[J]// /%20}"	# space
 		done
 		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s\n" \
-			"${__LIST[@]}" \
-		>> "${_PATH_MDIA:?}"
-	done
+			"${__LIST[@]}"
+	done > "${_PATH_MDIA:?}"
 }
 
 # --- create_directory --------------------------------------------------------
