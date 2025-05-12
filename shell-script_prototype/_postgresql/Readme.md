@@ -69,6 +69,7 @@ IPアドレスの範囲は各自の環境に合わせ変更の事
 ### **psqlで作成するユーザーとデーターベースの情報**  
   
 ``` bash:
+# host name      : sv-server
 # database       : mydb
 # user(owner)    : master
 # password       : master
@@ -106,20 +107,16 @@ sudo -u postgres psql -qtA --command="SELECT datname FROM pg_database  WHERE dat
 #### **SQLの実行**  
   
 以下のSQLファイルを使いテーブルの作成とデーター登録しdbuserにアクセス権を付与する  
-  
+(クライアント環境での作業を想定)  
+
 * [mydb_create_table_distribution.sql](./mydb_create_table_distribution.sql)
 * [mydb_create_table_media.sql](./mydb_create_table_media.sql)
   
 ``` bash:
-psql --username=master --dbname=mydb --file=./mydb_create_table_distribution.sql
-psql --username=master --dbname=mydb --file=./mydb_create_table_media.sql
-psql --username=master --dbname=mydb -qtA --command="SELECT tablename FROM pg_tables WHERE (tablename = 'distribution') OR (pg_catalog.pg_tables.tablename = 'media');"
-```
-  
-``` bash:
-psql --username=master --dbname=mydb --command="GRANT SELECT,INSERT,UPDATE,DELETE ON distribution TO dbuser;"
-psql --username=master --dbname=mydb --command="GRANT SELECT,INSERT,UPDATE,DELETE ON media TO dbuser;"
-psql --username=master --dbname=mydb -qtA --command="SELECT c.relname, c.relacl FROM pg_class c INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace WHERE (c.relname = 'distribution') OR (c.relname = 'media');"
+psql --username=master --host=sv-server --username=master --dbname=mydb --file=./mydb_create_table_distribution.sql
+psql --username=master --host=sv-server --username=master --dbname=mydb --file=./mydb_create_table_media.sql
+psql --username=master --host=sv-server --username=master --dbname=mydb -qtA --command="SELECT tablename FROM pg_tables WHERE (tablename = 'distribution') OR (pg_catalog.pg_tables.tablename = 'media');"
+psql --username=master --host=sv-server --username=master --dbname=mydb -qtA --command="SELECT c.relname, c.relacl FROM pg_class c INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace WHERE (c.relname = 'distribution') OR (c.relname = 'media');"
 ```
   
 #### **テーブルの仕様**  
@@ -129,8 +126,8 @@ psql --username=master --dbname=mydb -qtA --command="SELECT c.relname, c.relacl 
 | No. | フィールド名 |           属性           |                 内容                 |                                               登録例                                               |
 | :-: | :----------- | :----------------------- | :----------------------------------- | :------------------------------------------------------------------------------------------------- |
 |   1 | version      | TEXT           NOT NULL  | version                              | debian-12.0                                                                                        |
-|   2 | name         | TEXT           NOT NULL  | distribution name                    | Debian                                                                                             |
-|   3 | version_id   | TEXT           NOT NULL  | version id                           | 12.0                                                                                               |
+|   2 | name         | TEXT                     | distribution name                    | Debian                                                                                             |
+|   3 | version_id   | TEXT                     | version id                           | 12.0                                                                                               |
 |   4 | code_name    | TEXT                     | code name                            | Bookworm                                                                                           |
 |   5 | life         | TEXT                     | life                                 | EOL                                                                                                |
 |   6 | release      | TEXT                     | release date                         | 2023-06-10                                                                                         |
@@ -139,7 +136,7 @@ psql --username=master --dbname=mydb -qtA --command="SELECT c.relname, c.relacl 
 |   9 | rhel         | TEXT                     | later than rhel                      |                                                                                                    |
 |  10 | kerne        | TEXT                     | kernel version                       | 6.1                                                                                                |
 |  11 | note         | TEXT                     | note                                 | stable                                                                                             |
-  
+
 ##### テーブル: media  
   
 | No. | フィールド名 |           属性           |                 内容                 |                                               登録例                                               |
