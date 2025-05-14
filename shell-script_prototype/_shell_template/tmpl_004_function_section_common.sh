@@ -51,7 +51,8 @@ function funcInitialization() {
 	_SHEL_LATE="${_SHEL_LATE:-:_DIRS_SHEL_:/autoinst_cmd_late.sh}"
 	_SHEL_PART="${_SHEL_PART:-:_DIRS_SHEL_:/autoinst_cmd_part.sh}"
 	_SHEL_RUNS="${_SHEL_RUNS:-:_DIRS_SHEL_:/autoinst_cmd_run.sh}"
-	_SRVR_PROT="${_SRVR_PROT:-http}"
+	_SRVR_HTTP="${_SRVR_HTTP:-http}"
+	_SRVR_PROT="${_SRVR_PROT:-"${_SRVR_HTTP}"}"
 	_SRVR_NICS="${_SRVR_NICS:-"$(LANG=C ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}' || true)"}"
 	_SRVR_MADR="${_SRVR_MADR:-"$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {print $3;}' || true)"}"
 	if [[ -z "${_SRVR_ADDR:-}" ]]; then
@@ -129,6 +130,7 @@ function funcInitialization() {
 			SHEL_LATE) _SHEL_LATE="${__VALU:-"${_SHEL_LATE:-}"}";;
 			SHEL_PART) _SHEL_PART="${__VALU:-"${_SHEL_PART:-}"}";;
 			SHEL_RUNS) _SHEL_RUNS="${__VALU:-"${_SHEL_RUNS:-}"}";;
+			SRVR_HTTP) _SRVR_HTTP="${__VALU:-"${_SRVR_HTTP:-}"}";;
 			SRVR_PROT) _SRVR_PROT="${__VALU:-"${_SRVR_PROT:-}"}";;
 			SRVR_NICS) _SRVR_NICS="${__VALU:-"${_SRVR_NICS:-}"}";;
 			SRVR_MADR) _SRVR_MADR="${__VALU:-"${_SRVR_MADR:-}"}";;
@@ -185,6 +187,7 @@ function funcInitialization() {
 	_SHEL_LATE="${_SHEL_LATE//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
 	_SHEL_PART="${_SHEL_PART//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
 	_SHEL_RUNS="${_SHEL_RUNS//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
+#	_SRVR_HTTP="${_SRVR_HTTP:-}"
 #	_SRVR_PROT="${_SRVR_PROT:-}"
 #	_SRVR_NICS="${_SRVR_NICS:-}"
 #	_SRVR_MADR="${_SRVR_MADR:-}"
@@ -233,6 +236,7 @@ function funcInitialization() {
 	readonly      _CONF_SEDD
 	readonly      _CONF_SEDU
 	readonly      _CONF_YAST
+	readonly      _SRVR_HTTP
 	readonly      _SRVR_PROT
 	readonly      _SRVR_NICS
 	readonly      _SRVR_MADR
@@ -378,6 +382,7 @@ function funcCreate_conf() {
 		SHEL_RUNS="${_SHEL_RUNS//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run preseed/run
 		
 		# --- tftp / web server network parameter -------------------------------------
+		SRVR_HTTP="${_SRVR_HTTP:-}"						# server connection protocol (http or https)
 		SRVR_PROT="${_SRVR_PROT:-}"						# server connection protocol (http or tftp)
 		SRVR_NICS="${_SRVR_NICS:-}"						# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
 		SRVR_MADR="${_SRVR_MADR//[!:]/0}"			# "              mac    (ex. 00:00:00:00:00:00)

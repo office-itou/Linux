@@ -35,6 +35,9 @@ function funcRemastering_preseed() {
 	__BOPT+="${_IPV4_NSVR:+"${__BOPT:+" "}netcfg/get_nameservers=${_IPV4_NSVR}"}"
 	# --- locale --------------------------------------------------------------
 	case "${__TGET_LIST[2]}" in
+		live-debian-*    | \
+		live-ubuntu-*    | \
+		debian-live-*    ) __BOPT+="${__BOPT:+" "}"utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
 		ubuntu-desktop-* | \
 		ubuntu-legacy-*  ) __BOPT+="${__BOPT:+" "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
 		*                ) __BOPT+="${__BOPT:+" "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;

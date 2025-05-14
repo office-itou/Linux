@@ -36,6 +36,7 @@
 	declare       _SHEL_RUNS=""			# shell commands to run preseed/run
 
 # --- tftp / web server network parameter -------------------------------------
+	declare       _SRVR_HTTP="http"		# server connection protocol (http or https)
 	declare       _SRVR_PROT="http"		# server connection protocol (http or tftp)
 	declare       _SRVR_NICS=""			# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
 	declare       _SRVR_MADR=""			#                mac    (ex. 00:00:00:00:00:00)
@@ -90,3 +91,6 @@
 	if command -v wget2 > /dev/null 2>&1; then _COMD_WGET="ver2"; fi
 	readonly      _COMD_CURL
 	readonly      _COMD_WGET
+
+	# --- ram disk parameter --------------------------------------------------
+	declare -r -a _OPTN_RDSK=("root=/dev/ram0" "ramdisk_size=1500000" "overlay-size=90%")
