@@ -35,4 +35,3 @@
 * [mk_custom_iso.sh](./shell-script/mk_custom_iso.sh "custom iso image creation shell")  
 * [mk_pxeboot_conf.sh](./shell-script/mk_pxeboot_conf.sh "pxeboot configuration shell")  
 * [sv_check.sh](./shell-script/sv_check.sh "post-installation test shell")  
-  

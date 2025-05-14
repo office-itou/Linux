@@ -246,4 +246,3 @@ tree --charset C -n --filesfirst -d /srv/
         `-- ethernet_[mac address]_cable
             `-- settings
 ```
-  

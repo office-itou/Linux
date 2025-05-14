@@ -55,4 +55,3 @@
 |  x   | NG                           |
 |  -   | Excluded                     |
 |  *   | Depends on H/W configuration |
-  
