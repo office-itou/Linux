@@ -46,43 +46,43 @@
 
 ### Debian  
 
-* [https://en.wikipedia.org/wiki/Debian_version_history](https://en.wikipedia.org/wiki/Debian_version_history)  
-* [https://ja.wikipedia.org/wiki/Debian](https://ja.wikipedia.org/wiki/Debian])  
+* <https://en.wikipedia.org/wiki/Debian_version_history>  
+* <https://ja.wikipedia.org/wiki/Debian>  
 
 ### Ubuntu  
 
-* [https://en.wikipedia.org/wiki/Ubuntu_version_history](https://en.wikipedia.org/wiki/Ubuntu_version_history)  
-* [https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja](https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja)  
+* <https://en.wikipedia.org/wiki/Ubuntu_version_history>  
+* <https://wiki.ubuntu.com/FocalFossa/ReleaseNotes/Ja>  
 
 ### Fedora  
 
-* [https://en.wikipedia.org/wiki/Fedora_Linux](https://en.wikipedia.org/wiki/Fedora_Linux)  
-* [https://ja.wikipedia.org/wiki/Fedora](https://ja.wikipedia.org/wiki/Fedora)  
+* <https://en.wikipedia.org/wiki/Fedora_Linux>  
+* <https://ja.wikipedia.org/wiki/Fedora>  
 
 ### CentOS Stream  
 
-* [https://en.wikipedia.org/wiki/CentOS_Stream](https://en.wikipedia.org/wiki/CentOS_Stream)  
+* <https://en.wikipedia.org/wiki/CentOS_Stream>  
 
-### CentOS [ End of life ]  
+### CentOS  
 
-* [https://en.wikipedia.org/wiki/CentOS](https://en.wikipedia.org/wiki/CentOS)  
-* [https://ja.wikipedia.org/wiki/CentOS](https://ja.wikipedia.org/wiki/CentOS)  
+* <https://en.wikipedia.org/wiki/CentOS>  
+* <https://ja.wikipedia.org/wiki/CentOS>  
 
 ### AlmaLinux  
 
-* [https://en.wikipedia.org/wiki/AlmaLinux](https://en.wikipedia.org/wiki/AlmaLinux)  
+* <https://en.wikipedia.org/wiki/AlmaLinux>  
 
 ### Rocky Linux  
 
-* [https://en.wikipedia.org/wiki/Rocky_Linux](https://en.wikipedia.org/wiki/Rocky_Linux)  
-* [https://ja.wikipedia.org/wiki/Rocky_Linux](https://ja.wikipedia.org/wiki/Rocky_Linux)  
+* <https://en.wikipedia.org/wiki/Rocky_Linux>  
+* <https://ja.wikipedia.org/wiki/Rocky_Linux>  
 
 ### Miracle Linux
 
-* [https://en.wikipedia.org/wiki/Miracle_Linux](https://en.wikipedia.org/wiki/Miracle_Linux)  
-* [https://ja.wikipedia.org/wiki/MIRACLE_LINUX](https://ja.wikipedia.org/wiki/MIRACLE_LINUX)  
+* <https://en.wikipedia.org/wiki/Miracle_Linux>  
+* <https://ja.wikipedia.org/wiki/MIRACLE_LINUX>  
 
 ### openSUSE  
 
-* [https://en.wikipedia.org/wiki/OpenSUSE](https://en.wikipedia.org/wiki/OpenSUSE)  
-* [https://ja.wikipedia.org/wiki/OpenSUSE](https://ja.wikipedia.org/wiki/OpenSUSE)  
+* <https://en.wikipedia.org/wiki/OpenSUSE>  
+* <https://ja.wikipedia.org/wiki/OpenSUSE>  
