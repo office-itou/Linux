@@ -4,7 +4,7 @@
 
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
-	declare       __PATH=""				# file name
+	declare       __PATH=""				# full path
 	declare       __WORK=""				# work variables
 	declare       __LINE=""				# work variable
 	declare       __NAME=""				# variable name
@@ -312,6 +312,10 @@ function funcInitialization() {
 	              _MINI_IRAM="initps.gz"
 	readonly      _MINI_IRAM
 
+	# --- ipxe menu file ------------------------------------------------------
+	              _IPXE_MENU="${_DIRS_TFTP}/autoexec.ipxe"
+	readonly      _IPXE_MENU
+
 	# --- get media data ------------------------------------------------------
 	funcGet_media_data
 }
@@ -320,7 +324,7 @@ function funcInitialization() {
 function funcCreate_conf() {
 	declare -r    __TMPL="${_PATH_CONF:?}.template"
 	declare       __RNAM=""				# rename path
-	declare       __PATH=""				# file name
+	declare       __PATH=""				# full path
 
 	# --- check file exists ---------------------------------------------------
 	if [[ -f "${__TMPL:?}" ]]; then
@@ -420,7 +424,7 @@ _EOT_
 
 # --- get media data ----------------------------------------------------------
 function funcGet_media_data() {
-	declare       __PATH=""				# file name
+	declare       __PATH=""				# full path
 	declare       __LINE=""				# work variable
 
 	# --- list data -----------------------------------------------------------
@@ -524,7 +528,7 @@ function fncCreate_directory() {
 	declare       __TGET=""				# taget path
 	declare       __LINK=""				# symlink path
 	declare       __BACK=""				# backup path
-	declare       __LINE=""				# work variable
+	declare -a    __LIST=()				# work variable
 	declare -i    I=0
 
 	# --- option parameter ----------------------------------------------------
@@ -545,15 +549,15 @@ function fncCreate_directory() {
 	# 2: symlink
 	for I in "${!_LIST_LINK[@]}"
 	do
-		read -r -a __LINE < <(echo "${_LIST_LINK[I]}")
-		case "${__LINE[0]}" in
+		read -r -a __LIST < <(echo "${_LIST_LINK[I]}")
+		case "${__LIST[0]}" in
 			a) ;;
 			r) ;;
 			*) continue;;
 		esac
-		__RTIV="${__LINE[0]}"
-		__TGET="${__LINE[1]:-}"
-		__LINK="${__LINE[2]:-}"
+		__RTIV="${__LIST[0]}"
+		__TGET="${__LIST[1]:-}"
+		__LINK="${__LIST[2]:-}"
 		# --- check target file path ------------------------------------------
 		if [[ -z "${__LINK##*/}" ]]; then
 			__LINK="${__LINK%/}/${__TGET##*/}"
@@ -591,21 +595,21 @@ function fncCreate_directory() {
 
 	for I in "${!_LIST_MDIA[@]}"
 	do
-		read -r -a __LINE < <(echo "${_LIST_MDIA[I]}")
-		case "${__LINE[1]}" in
+		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+		case "${__LIST[1]}" in
 			o) ;;
 			*) continue;;
 		esac
-		case "${__LINE[13]}" in
+		case "${__LIST[13]}" in
 			-) continue;;
 			*) ;;
 		esac
-		case "${__LINE[25]}" in
+		case "${__LIST[25]}" in
 			-) continue;;
 			*) ;;
 		esac
-		__TGET="${__LINE[25]}/${__LINE[13]##*/}"
-		__LINK="${__LINE[13]}"
+		__TGET="${__LIST[25]}/${__LIST[13]##*/}"
+		__LINK="${__LIST[13]}"
 		# --- check target file path ------------------------------------------
 #		if [[ ! -e "${__TGET}" ]]; then
 #			touch "${__TGET}"
@@ -920,9 +924,10 @@ function funcCreate_precon() {
 	shift
 	declare -a    __OPTN=()				# option parameter
 	declare -a    __LIST=()				# data list
-	declare       __PATH=""				# file name
+	declare       __PATH=""				# full path
 	declare       __TYPE=""				# configuration type
 #	declare       __WORK=""				# work variables
+	declare -a    __LINE=()				# work variable
 	declare -i    I=0					# work variables
 
 	# --- option parameter ----------------------------------------------------

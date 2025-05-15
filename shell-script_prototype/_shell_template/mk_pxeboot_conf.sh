@@ -17,6 +17,9 @@
 ##
 ###############################################################################
 
+# *** initialization **********************************************************
+	export LANG=C
+
 #	set -n								# Check for syntax errors
 #	set -x								# Show command and argument expansion
 	set -o ignoreeof					# Do not exit with Ctrl+D
@@ -51,6 +54,7 @@
 	declare       _DIRS_TEMP=""
 	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
 	readonly      _DIRS_TEMP
+	declare -r    TMPDIR="${_DIRS_TEMP:-?}"
 
 	# --- trap ----------------------------------------------------------------
 	declare -a    _LIST_RMOV=()			# list remove directory / file
@@ -58,12 +62,29 @@
 
 # shellcheck disable=SC2317
 function funcTrap() {
+	declare       __PATH=""				# full path
 	declare -i    I=0
-
-	for I in "${!_LIST_RMOV[@]}"
+	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
 	do
-		rm -rf "${_LIST_RMOV[I]:?}"
+		__PATH="${_LIST_RMOV[I]}"
+		if [[ -e "${__PATH}" ]] && mountpoint --quiet "${__PATH}"; then
+			printf "[%s]: umount \"%s\"\n" "${I}" "${__PATH}" 1>&2
+			umount --quiet         --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  --recursive "${__PATH}" || true
+		fi
 	done
+	if [[ -e "${_DIRS_TEMP:?}" ]]; then
+		printf "%s: \"%s\"\n" "remove" "${_DIRS_TEMP}" 1>&2
+		while read -r __PATH
+		do
+			printf "[%s]: umount \"%s\"\n" "-" "${__PATH}" 1>&2
+			umount --quiet         --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force --recursive "${__PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  --recursive "${__PATH}" || true
+		done < <(grep "${_DIRS_TEMP:?}" /proc/mounts | cut -d ' ' -f 2 | sort -rV || true)
+		rm -rf "${_DIRS_TEMP:?}"
+	fi
 }
 
 	trap funcTrap EXIT
@@ -76,7 +97,7 @@ function funcTrap() {
 	if command -v apt-get > /dev/null 2>&1; then
 		if ! ls /var/lib/apt/lists/*_"${_CODE_NAME:-}"_InRelease > /dev/null 2>&1; then
 			echo "please execute apt-get update:"
-			if [[ -n "${SUDO_USER:-}" ]] || { [[ -z "${SUDO_USER:-}" ]] && [[ "${_USER_NAME}" != "root" ]]; }; then
+			if [[ -n "${SUDO_USER:-}" ]] || { [[ -z "${SUDO_USER:-}" ]] && [[ "${_USER_NAME:-}" != "root" ]]; }; then
 				echo -n "sudo "
 			fi
 			echo "apt-get update" 1>&2
@@ -102,7 +123,7 @@ function funcTrap() {
 			"rsync" \
 		)
 		# ---------------------------------------------------------------------
-		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]:-bash}" 2> /dev/null | sed -ne '/[ \t]'"${_ARCH_OTHR:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g')"
+		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]:-bash}" 2> /dev/null | sed -ne '/[ \t]'"${_ARCH_OTHR:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g' || true)"
 		readonly      PAKG_FIND
 		if [[ -n "${PAKG_FIND% *}" ]]; then
 			echo "please install these:"
@@ -151,7 +172,8 @@ function funcTrap() {
 	declare       _SHEL_PART=""			# shell commands to run after partition
 	declare       _SHEL_RUNS=""			# shell commands to run preseed/run
 
-# --- tftp / web server network parameter -------------------------------------
+	# --- tftp / web server network parameter ---------------------------------
+	declare       _SRVR_HTTP="http"		# server connection protocol (http or https)
 	declare       _SRVR_PROT="http"		# server connection protocol (http or tftp)
 	declare       _SRVR_NICS=""			# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
 	declare       _SRVR_MADR=""			#                mac    (ex. 00:00:00:00:00:00)
@@ -193,10 +215,32 @@ function funcTrap() {
 	# --- initial ram disk of mini.iso including preseed ----------------------
 	declare       _MINI_IRAM=""
 
+	# --- ipxe menu file ------------------------------------------------------
+	declare       _IPXE_MENU=""
+
 	# --- list data -----------------------------------------------------------
 	declare -a    _LIST_MDIA=()			# media information
 
+	# --- curl / wget parameter -----------------------------------------------
+	declare       _COMD_CURL=""
+	declare       _COMD_WGET=""
+	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
+	declare -r -a _OPTN_WGET=("--tries=3" "--timeout=10" "--quiet")
+	if command -v curl  > /dev/null 2>&1; then _COMD_CURL="true"; fi
+	if command -v wget  > /dev/null 2>&1; then _COMD_WGET="true"; fi
+	if command -v wget2 > /dev/null 2>&1; then _COMD_WGET="ver2"; fi
+	readonly      _COMD_CURL
+	readonly      _COMD_WGET
+
+	# --- rsync parameter -----------------------------------------------------
+	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete")
+
+	# --- ram disk parameter --------------------------------------------------
+	declare -r -a _OPTN_RDSK=("root=/dev/ram0" "load_ramdisk=1" "ramdisk_size=1024000" "overlay-size=80%")
+
 # *** function section (common functions) *************************************
+
+# === <common> ================================================================
 
 	# --- set minimum display size --------------------------------------------
 	declare -i    _SIZE_ROWS=25
@@ -281,7 +325,7 @@ function funcTrap() {
 
 # --- is numeric --------------------------------------------------------------
 #function funcIsNumeric() {
-#	[[ ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
+#	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
 #}
 
 # --- substr ------------------------------------------------------------------
@@ -291,192 +335,669 @@ function funcTrap() {
 
 # --- string output -----------------------------------------------------------
 # shellcheck disable=SC2317
-funcString() {
+function funcString() {
 #	printf "%${1:-"${_SIZE_COLS}"}s" "" | tr ' ' "${2:- }"
 	echo "" | IFS= awk '{s=sprintf("%'"$1"'s"," "); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+}
+
+# --- date diff ---------------------------------------------------------------
+# shellcheck disable=SC2317
+function funcDateDiff() {
+	declare       __TGET_DAT1="${1:?}"	# date1
+	declare       __TGET_DAT2="${2:?}"	# date2
+	# -------------------------------------------------------------------------
+	#  0 : __TGET_DAT1 = __TGET_DAT2
+	#  1 : __TGET_DAT1 < __TGET_DAT2
+	# -1 : __TGET_DAT1 > __TGET_DAT2
+	# emp: error
+	if __TGET_DAT1="$(TZ=UTC date -d "${__TGET_DAT1//%20/ }" "+%s")" \
+	&& __TGET_DAT2="$(TZ=UTC date -d "${__TGET_DAT2//%20/ }" "+%s")"; then
+		  if [[ "${__TGET_DAT1}" -eq "${__TGET_DAT2}" ]]; then
+			echo "0"
+		elif [[ "${__TGET_DAT1}" -lt "${__TGET_DAT2}" ]]; then
+			echo "1"
+		elif [[ "${__TGET_DAT1}" -gt "${__TGET_DAT2}" ]]; then
+			echo "-1"
+		else
+			echo ""
+		fi
+	else
+		printf "%20.20s: %s\n" "failed" "${__TGET_DAT1}"
+		printf "%20.20s: %s\n" "failed" "${__TGET_DAT2}"
+	fi
 }
 
 # --- print with screen control -----------------------------------------------
 # shellcheck disable=SC2317
 function funcPrintf() {
-	declare -r    _FLAG_TRCE="$(set -o | grep "^xtrace\s*on$")"
+	declare -r    __TRCE="$(set -o | grep "^xtrace\s*on$")"
 	set +x
 	# -------------------------------------------------------------------------
-	declare       _FLAG_NCUT=""			# no cutting flag
-	declare       _TEXT_FMAT=""			# format parameter
-	declare       _TEXT_UTF8=""			# formatted utf8
-	declare       _TEXT_SJIS=""			# formatted sjis (cp932)
-	declare       _TEXT_PLIN=""			# formatted string without attributes
-	declare       _TEXT_WORK=""			# 
-	declare       _ESCP_FRNT=""			# escape characters front
+	declare       __NCUT=""				# no cutting flag
+	declare       __FMAT=""				# format parameter
+	declare       __UTF8=""				# formatted utf8
+	declare       __SJIS=""				# formatted sjis (cp932)
+	declare       __PLIN=""				# formatted string without attributes
+	declare       __ESCF=""				# escape characters front
+	declare       __WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 	# -------------------------------------------------------------------------
-	case "$1" in
-		--no-cutting) _FLAG_NCUT="true"; shift;;
+	case "${1:?}" in
+		--no-cutting) __NCUT="true"; shift;;
 		*           ) ;;
 	esac
 	# -------------------------------------------------------------------------
-	_TEXT_FMAT="${1:-}"
+	__FMAT="${1}"
 	shift
 	# shellcheck disable=SC2059
-	printf -v _TEXT_UTF8 -- "${_TEXT_FMAT}" "${@:-}"
+	printf -v __UTF8 -- "${__FMAT}" "${@:-}"
 	# -------------------------------------------------------------------------
-	if [[ -z "${_FLAG_NCUT:-}" ]]; then
-		_TEXT_SJIS="$(echo -n "${_TEXT_UTF8:-}" | iconv -f UTF-8 -t CP932 -c -s || true)"
-		_TEXT_PLIN="${_TEXT_SJIS//"${_CODE_ESCP}["[0-9]m/}"
-		_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
-		_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
-		if [[ "${#_TEXT_PLIN}" -gt "${_SIZE_COLS}" ]]; then
-			_TEXT_WORK="${_TEXT_SJIS}"
+	if [[ -z "${__NCUT}" ]]; then
+		__SJIS="$(echo -n "${__UTF8}" | iconv -f UTF-8 -t CP932 -c -s || true)"
+		__PLIN="${__SJIS//"${_CODE_ESCP}["[0-9]m/}"
+		__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+		__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+		if [[ "${#__PLIN}" -gt "${_SIZE_COLS}" ]]; then
+			__WORK="${__SJIS}"
 			while true
 			do
-				case "${_TEXT_WORK}" in
+				case "${__WORK}" in
 					"${_CODE_ESCP}"\[[0-9]*m*)
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9]m/}"
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9][0-9]m/}"
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+						__WORK="${__WORK/#"${_CODE_ESCP}["[0-9]m/}"
+						__WORK="${__WORK/#"${_CODE_ESCP}["[0-9][0-9]m/}"
+						__WORK="${__WORK/#"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
 						;;
 					*) break;;
 				esac
 			done
-			_ESCP_FRNT="${_TEXT_SJIS%"${_TEXT_WORK}"}"
+			__ESCF="${__SJIS%"${__WORK}"}"
 			# -----------------------------------------------------------------
-			_TEXT_WORK="${_TEXT_SJIS:"${#_ESCP_FRNT}":"${_SIZE_COLS}"}"
+			__WORK="${__SJIS:"${#__ESCF}":"${_SIZE_COLS}"}"
 			while true
 			do
-				_TEXT_PLIN="${_TEXT_WORK//"${_CODE_ESCP}["[0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN%%"${_CODE_ESCP}"*}"
-				if [[ "${#_TEXT_PLIN}" -eq "${_SIZE_COLS}" ]]; then
+				__PLIN="${__WORK//"${_CODE_ESCP}["[0-9]m/}"
+				__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+				__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+				__PLIN="${__PLIN%%"${_CODE_ESCP}"*}"
+				if [[ "${#__PLIN}" -eq "${_SIZE_COLS}" ]]; then
 					break
 				fi
-				_TEXT_WORK="${_TEXT_SJIS:"${#_ESCP_FRNT}":$(("${#_TEXT_WORK}"+"${_SIZE_COLS}"-"${#_TEXT_PLIN}"))}"
+				__WORK="${__SJIS:"${#__ESCF}":$(("${#__WORK}"+"${_SIZE_COLS}"-"${#__PLIN}"))}"
 			done
-			_TEXT_WORK="${_ESCP_FRNT}${_TEXT_WORK}"
-			_TEXT_UTF8="$(echo -n "${_TEXT_WORK}" | iconv -f CP932 -t UTF-8 -c -s 2> /dev/null || true)"
+			__WORK="${__ESCF}${__WORK}"
+			__UTF8="$(echo -n "${__WORK}" | iconv -f CP932 -t UTF-8 -c -s 2> /dev/null || true)"
 		fi
 	fi
-	printf "%s%b%s\n" "${_TEXT_RESET}" "${_TEXT_UTF8}" "${_TEXT_RESET}"
-	if [[ -n "${_FLAG_TRCE:-}" ]]; then
+	printf "%s%b%s\n" "${_TEXT_RESET}" "${__UTF8}" "${_TEXT_RESET}"
+	if [[ -n "${__TRCE}" ]]; then
 		set -x
 	else
 		set +x
 	fi
 }
 
-# --- unit conversion ---------------------------------------------------------
-# shellcheck disable=SC2317
-function funcUnit_conversion() {
-	declare -r -a _TEXT_UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
-	declare -i    _CALC_UNIT=0
-	declare       _WORK_TEXT=""
-	declare -i    I=0
-	# --- is numeric ----------------------------------------------------------
-	if [[ ! ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
-		printf "%'s Byte" "?"
-		return
-	fi
-	# --- Byte ----------------------------------------------------------------
-	if [[ "$1" -lt 1024 ]]; then
-		printf "%'d Byte" "$1"
-		return
-	fi
-	# --- numfmt --------------------------------------------------------------
-	if command -v numfmt > /dev/null 2>&1; then
-		echo -n "$1" | numfmt --to=iec-i --suffix=B
-		return
-	fi
-	# --- calculate -----------------------------------------------------------
-	for ((I=3; I>0; I--))
-	do
-		_CALC_UNIT=$((1024**I))
-		if [[ "$1" -ge "${_CALC_UNIT}" ]]; then
-			_WORK_TEXT="$(echo "$1" "${_CALC_UNIT}" | awk '{printf("%.1f", $1/$2)}')"
-			printf "%s %s" "${_WORK_TEXT}" "${_TEXT_UNIT[I]}"
-			return
-		fi
-	done
-	echo -n "$1"
-}
+# === <network> ===============================================================
+
+# --- private ip address ------------------------------------------------------
+# class | ipv4 address range            | subnet mask range
+#   a   | 10.0.0.0    - 10.255.255.255  | 255.0.0.0     - 255.255.255.255 (up to 16,777,214 devices can be connected)
+#   b   | 172.16.0.0  - 172.31.255.255  | 255.255.0.0   - 255.255.255.255 (up to     65,534 devices can be connected)
+#   c   | 192.168.0.0 - 192.168.255.255 | 255.255.255.0 - 255.255.255.255 (up to        254 devices can be connected)
 
 # --- IPv4 netmask conversion -------------------------------------------------
 # shellcheck disable=SC2317
 function funcIPv4GetNetmask() {
-	declare -r    _INPT_ADDR="$1"
-	declare -i    _LOOP=$((32-_INPT_ADDR))
-	declare -i    _WORK=1
-	declare       _DEC_ADDR=""
-	while [[ "${_LOOP}" -gt 0 ]]
-	do
-		_LOOP=$((_LOOP-1))
-		_WORK=$((_WORK*2))
-	done
-	_DEC_ADDR="$((0xFFFFFFFF ^ (_WORK-1)))"
-	printf '%d.%d.%d.%d'              \
-	    $(( _DEC_ADDR >> 24        )) \
-	    $(((_DEC_ADDR >> 16) & 0xFF)) \
-	    $(((_DEC_ADDR >>  8) & 0xFF)) \
-	    $(( _DEC_ADDR        & 0xFF))
-}
-
-# --- IPv4 cidr conversion ----------------------------------------------------
-# shellcheck disable=SC2317
-function funcIPv4GetNetCIDR() {
-	declare -r    _INPT_ADDR="$1"
-	declare -a    _OCTETS=()
-	declare -i    _MASK=0
-	echo "${_INPT_ADDR}" | \
-	    awk -F '.' '{
-	        split($0, _OCTETS);
-	        for (I in _OCTETS) {
-	            _MASK += 8 - log(2^8 - _OCTETS[I])/log(2);
-	        }
-	        print _MASK
-	    }'
+	declare -a    __OCTS=()				# octets
+	declare -i    __LOOP=0				# work variables
+	declare -i    __CALC=0				# "
+	# -------------------------------------------------------------------------
+	IFS= mapfile -d ':' -t __OCTS < <(echo "${1:?}.")
+	# -------------------------------------------------------------------------
+	if [[ "${#__OCTS[@]}" -gt 1 ]]; then
+		# --- netmask -> cidr -------------------------------------------------
+		__CALC=0
+		while read -r __LOOP
+		do
+			case "${__LOOP}" in
+				  0) ((__CALC+=0));;
+				128) ((__CALC+=1));;
+				192) ((__CALC+=2));;
+				224) ((__CALC+=3));;
+				240) ((__CALC+=4));;
+				248) ((__CALC+=5));;
+				252) ((__CALC+=6));;
+				254) ((__CALC+=7));;
+				255) ((__CALC+=8));;
+				*  )              ;;
+			esac
+		done < <(printf "%s" "${__OCTS[@]}")
+		printf '%d' "${__CALC}"
+	else
+		# --- cidr -> netmask -------------------------------------------------
+		__LOOP=$((32-${1:?}))
+		__CALC=1
+		while [[ "${__LOOP}" -gt 0 ]]
+		do
+			__LOOP=$((__LOOP-1))
+			__CALC=$((__CALC*2))
+		done
+		__CALC="$((0xFFFFFFFF ^ (__CALC-1)))"
+		printf '%d.%d.%d.%d'              \
+		    $(( __CALC >> 24        )) \
+		    $(((__CALC >> 16) & 0xFF)) \
+		    $(((__CALC >>  8) & 0xFF)) \
+		    $(( __CALC        & 0xFF))
+	fi
 }
 
 # --- IPv6 full address -------------------------------------------------------
 # shellcheck disable=SC2317
 function funcIPv6GetFullAddr() {
-	declare       _INPT_ADDR="$1"
-	declare -r    _INPT_FSEP="${_INPT_ADDR//[^:]/}"
-	declare -r -i _CONT_FSEP=$((7-${#_INPT_FSEP}))
-	declare       _OUTP_TEMP=""
-	_OUTP_TEMP="$(printf "%${_CONT_FSEP}s" "")"
-	_INPT_ADDR="${_INPT_ADDR/::/::${_OUTP_TEMP// /:}}"
-	IFS= mapfile -d ':' -t _OUTP_ARRY < <(echo -n "${_INPT_ADDR/%:/::}")
-	printf ':%04x' "${_OUTP_ARRY[@]/#/0x0}" | cut -c 2-
+	declare -r    __FSEP="${1//[^:]/}"
+	declare       __WORK=""				# work variables
+	declare -a    __ARRY=()				# work variables
+	# -------------------------------------------------------------------------
+	__WORK="$(printf "%$((7-${#__FSEP}))s" "")"
+	__WORK="${1/::/::${__WORK// /:}}"
+	IFS= mapfile -d ':' -t __ARRY < <(echo -n "${__WORK/%:/::}")
+	printf ':%04x' "${__ARRY[@]/#/0x0}" | cut -c 2-
 }
 
 # --- IPv6 reverse address ----------------------------------------------------
 # shellcheck disable=SC2317
 function funcIPv6GetRevAddr() {
-	declare -r    _INPT_ADDR="$1"
-	echo "${_INPT_ADDR//:/}"                 | \
-	    awk '{for(i=length();i>1;i--)          \
-	        printf("%c.", substr($0,i,1));     \
-	        printf("%c" , substr($0,1,1));}'
+	echo "${1//:/}" | \
+	    awk '{
+	        for(i=length();i>1;i--)              \
+	            printf("%c.", substr($0,i,1));   \
+	            printf("%c" , substr($0,1,1));}'
+}
+
+# === <media> =================================================================
+
+# --- unit conversion ---------------------------------------------------------
+# shellcheck disable=SC2317
+function funcUnit_conversion() {
+	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare -r -a __UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
+	declare -i    __CALC=0
+	declare       __WORK=""				# work variables
+	declare -i    I=0
+	# --- is numeric ----------------------------------------------------------
+	if [[ ! ${2:?} =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
+		__RETN_VALU="$(printf "Error [%s]" "$2" || true)"
+		return
+	fi
+	# --- Byte ----------------------------------------------------------------
+	if [[ "$2" -lt 1024 ]]; then
+		__RETN_VALU="$(printf "%'d Byte" "$2" || true)"
+		return
+	fi
+	# --- numfmt --------------------------------------------------------------
+	if command -v numfmt > /dev/null 2>&1; then
+		__RETN_VALU="$(echo -n "$2" | numfmt --to=iec-i --suffix=B || true)"
+		return
+	fi
+	# --- calculate -----------------------------------------------------------
+	for ((I=3; I>0; I--))
+	do
+		__CALC=$((1024**I))
+		if [[ "$2" -ge "${__CALC}" ]]; then
+			__WORK="$(echo "$2" "${__CALC}" | awk '{printf("%.1f", $1/$2)}')"
+			__RETN_VALU="$(printf "%s %s" "${__WORK}" "${__UNIT[I]}" || true)"
+			return
+		fi
+	done
+}
+
+# --- get volume id -----------------------------------------------------------
+# shellcheck disable=SC2317
+function funcGetVolID() {
+	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare       __VLID=""				# volume id
+	declare       __WORK=""				# work variables
+	# -------------------------------------------------------------------------
+	if [[ -n "${2:-}" ]] && [[ -s "${2:?}" ]]; then
+		if command -v blkid > /dev/null 2>&1; then
+			__VLID="$(blkid -s LABEL -o value "$2" || true)"
+		else
+			__VLID="$(LANG=C file -L "$2")"
+			__VLID="${__VLID#*: }"
+			__WORK="${__VLID%%\'*}"
+			__VLID="${__VLID#"${__WORK}"}"
+			__WORK="${__VLID##*\'}"
+			__VLID="${__VLID%"${__WORK}"}"
+		fi
+	fi
+	__RETN_VALU="${__VLID:-}"
+}
+
+# --- get file information ----------------------------------------------------
+# shellcheck disable=SC2317
+function funcGetFileinfo() {
+	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare       __DIRS=""				# directory
+	declare       __FNAM=""				# file name
+	declare       __VLID=""				# volume id
+	declare       __RSLT=""				# result
+	declare       __WORK=""				# work variables
+	declare -a    __ARRY=()				# work variables
+	# -------------------------------------------------------------------------
+	__ARRY=()
+	if [[ -n "${2:-}" ]] && [[ -s "${2}" ]]; then
+		__WORK="$(realpath -s "$2")"	# full path
+		__FNAM="${__WORK##*/}"
+		__DIRS="${__WORK%"${__FNAM}"}"
+		__WORK="$(LANG=C find "${__DIRS:-.}" -name "${__FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%TS%Tz %s")"
+		if [[ -n "${__WORK}" ]]; then
+			read -r -a __ARRY < <(echo "${__WORK}")
+			funcGetVolID __RSLT "${__ARRY[0]}"
+			__VLID="${__RSLT#\'}"
+			__VLID="${__VLID%\'}"
+			__VLID="${__VLID:--}"
+			__ARRY+=("${__VLID// /%20}")	# volume id
+		fi
+	fi
+	__RETN_VALU="${__ARRY[*]}"
+}
+
+# --- distro to efi image file name -------------------------------------------
+# shellcheck disable=SC2317
+function funcDistro2efi() {
+	declare       __WORK=""				# work variables
+	# -------------------------------------------------------------------------
+	case "${1:?}" in
+		debian      | \
+		ubuntu      ) __WORK="boot/grub/efi.img";;
+		fedora      | \
+		centos      | \
+		almalinux   | \
+		rockylinux  | \
+		miraclelinux) __WORK="images/efiboot.img";;
+		opensuse    ) __WORK="boot/x86_64/efi";;
+		*           ) ;;
+	esac
+	echo -n "${__WORK}"
+}
+
+# === <initrd> ================================================================
+
+# --- Extract a compressed cpio _TGET_FILE ------------------------------------
+# shellcheck disable=SC2317
+funcXcpio() {
+	declare -r    __TGET_FILE="${1:?}"	# target file
+	declare -r    __DIRS_DEST="${2:-}"	# destination directory
+	shift 2
+
+	# shellcheck disable=SC2312
+	  if gzip -t       "${__TGET_FILE}" > /dev/null 2>&1 ; then gzip -c -d    "${__TGET_FILE}"
+	elif zstd -q -c -t "${__TGET_FILE}" > /dev/null 2>&1 ; then zstd -q -c -d "${__TGET_FILE}"
+	elif xzcat -t      "${__TGET_FILE}" > /dev/null 2>&1 ; then xzcat         "${__TGET_FILE}"
+	elif lz4cat -t <   "${__TGET_FILE}" > /dev/null 2>&1 ; then lz4cat        "${__TGET_FILE}"
+	elif bzip2 -t      "${__TGET_FILE}" > /dev/null 2>&1 ; then bzip2 -c -d   "${__TGET_FILE}"
+	elif lzop -t       "${__TGET_FILE}" > /dev/null 2>&1 ; then lzop -c -d    "${__TGET_FILE}"
+	fi | (
+		if [[ -n "${__DIRS_DEST}" ]]; then
+			mkdir -p -- "${__DIRS_DEST}"
+			# shellcheck disable=SC2312
+			cd -- "${__DIRS_DEST}" || exit
+		fi
+		cpio "$@"
+	)
+}
+
+# --- Read bytes out of a file, checking that they are valid hex digits -------
+# shellcheck disable=SC2317
+funcReadhex() {
+	# shellcheck disable=SC2312
+	dd if="${1:?}" bs=1 skip="${2:?}" count="${3:?}" 2> /dev/null | LANG=C grep -E "^[0-9A-Fa-f]{$3}\$"
+}
+
+# --- Check for a zero byte in a file -----------------------------------------
+# shellcheck disable=SC2317
+funcCheckzero() {
+	# shellcheck disable=SC2312
+	dd if="${1:?}" bs=1 skip="${2:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
+}
+
+# --- Split an initramfs into __TGET_FILEs and call funcXcpio on each ----------
+# shellcheck disable=SC2317
+funcSplit_initramfs() {
+	declare -r    __TGET_FILE="${1:?}"	# target file
+	declare -r    __DIRS_DEST="${2:-}"	# destination directory
+	declare -r -a __OPTS=("--preserve-modification-time" "--no-absolute-filenames" "--quiet")
+	declare -i    __CONT=0				# count
+	declare -i    __PSTR=0				# start point
+	declare -i    __PEND=0				# end point
+	declare       __MGIC=""				# magic word
+	declare -i    __NSIZ=0				# name size
+	declare -i    __FSIZ=0				# file size
+	declare       __DSUB=""				# sub directory
+	declare       __SARC=""				# sub archive
+
+	while true
+	do
+		__PEND="${__PSTR}"
+		while true
+		do
+			# shellcheck disable=SC2310
+			if funcCheckzero "${__TGET_FILE}" "${__PEND}"; then
+				__PEND=$((__PEND + 4))
+				# shellcheck disable=SC2310
+				while funcCheckzero "${__TGET_FILE}" "${__PEND}"
+				do
+					__PEND=$((__PEND + 4))
+				done
+				break
+			fi
+			# shellcheck disable=SC2310
+			__MGIC="$(funcReadhex "${__TGET_FILE}" "${__PEND}" "6")" || break
+			test "${__MGIC}" = "070701" || test "${__MGIC}" = "070702" || break
+			__NSIZ=0x$(funcReadhex "${__TGET_FILE}" "$((__PEND + 94))" "8")
+			__FSIZ=0x$(funcReadhex "${__TGET_FILE}" "$((__PEND + 54))" "8")
+			__PEND=$((__PEND + 110))
+			__PEND=$(((__PEND + __NSIZ + 3) & ~3))
+			__PEND=$(((__PEND + __FSIZ + 3) & ~3))
+		done
+		if [[ "${__PEND}" -eq "${__PSTR}" ]]; then
+			break
+		fi
+		((__CONT+=1))
+		if [[ "${__CONT}" -eq 1 ]]; then
+			__DSUB="early"
+		else
+			__DSUB="early${__CONT}"
+		fi
+		# shellcheck disable=SC2312
+		dd if="${__TGET_FILE}" skip="${__PSTR}" count="$((__PEND - __PSTR))" iflag=skip_bytes 2> /dev/null |
+		(
+			if [[ -n "${__DIRS_DEST}" ]]; then
+				mkdir -p -- "${__DIRS_DEST}/${__DSUB}"
+				# shellcheck disable=SC2312
+				cd -- "${__DIRS_DEST}/${__DSUB}" || exit
+			fi
+			cpio -i "${__OPTS[@]}"
+		)
+		__PSTR="${__PEND}"
+	done
+	if [[ "${__PEND}" -gt 0 ]]; then
+		__SARC="${TMPDIR:-/tmp}/${FUNCNAME[0]}"
+		mkdir -p "${__SARC%/*}"
+		dd if="${__TGET_FILE}" skip="${__PEND}" iflag=skip_bytes 2> /dev/null > "${__SARC}"
+		funcXcpio "${__SARC}" "${__DIRS_DEST:+${__DIRS_DEST}/main}" -i "${__OPTS[@]}"
+		rm -f "${__SARC:?}"
+	else
+		funcXcpio "${__TGET_FILE}" "${__DIRS_DEST}" -i "${__OPTS[@]}"
+	fi
+}
+
+# === <mkiso> =================================================================
+
+# --- create iso image --------------------------------------------------------
+# shellcheck disable=SC2317
+function funcCreate_iso() {
+	declare -r    __DIRS_TGET="${1:?}"	# target directory
+	declare -r    __PATH_OUTP="${2:?}"	# output path
+	declare -r -a __OPTN_XORR=("$@:2")	# xorrisofs options
+	declare -a    __LIST=()				# data list
+	declare       __PATH=""				# full path
+	              __PATH="$(mktemp -q "${TMPDIR:-/tmp}/${__PATH_OUTP##*/}.XXXXXX")"
+	readonly      __PATH
+
+	# --- constant for control code -------------------------------------------
+	if [[ -z "${_CODE_ESCP+true}" ]]; then
+		declare   _CODE_ESCP=""
+		          _CODE_ESCP="$(printf '\033')"
+		readonly  _CODE_ESCP
+	fi
+
+	# --- create iso image ----------------------------------------------------
+	pushd "${__DIRS_TGET}" > /dev/null || exit
+		if ! nice -n "${_NICE_VALU:-19}" xorrisofs "${__OPTN_XORR[@]}" -output "${__PATH}" . > /dev/null 2>&1; then
+			printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [xorriso]" "${__PATH_OUTP##*/}" 1>&2
+		else
+			if ! cp --preserve=timestamps "${__PATH}" "${__PATH_OUTP}"; then
+				printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [cp]" "${__PATH_OUTP##*/}" 1>&2
+			else
+				IFS= mapfile -d ' ' -t __LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "${__PATH_OUTP}" || true)
+				printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "complete" "${__PATH_OUTP##*/} (${__LIST[4]})" 1>&2
+			fi
+		fi
+		rm -f "${__PATH:?}"
+	popd > /dev/null || exit
+}
+
+# === <web_tools> =============================================================
+
+# --- get web command ---------------------------------------------------------
+# shellcheck disable=SC2317
+function funcGetWeb_command() {
+	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare -r -a __OPTN_WEBS=("${@:2}") # web file path
+	declare -i    __RTCD=0				# return code
+	declare       __PATH=""				# full path
+	declare       __LMOD=""				# last-modified
+	declare       __LENG=""				# content-length
+	declare       __CODE=""				# status codes
+	declare       __RSLT=""				# result
+	declare       __FILD=""				# field name
+	declare       __VALU=""				# value
+	declare       __LINE=""				# work variables
+	declare -a    __LIST=()				# work variables
+	declare -i    I=0					# work variables
+	declare -i    R=2					# retry
+	# -------------------------------------------------------------------------
+	__PATH=""
+	for I in "${!__OPTN_WEBS[@]}"
+	do
+		__LINE="${__OPTN_WEBS[I]}"
+		case "${__LINE%%://*}" in
+			dict|file|ftp|ftps|gopher|gophers|http|https|imap|imaps|ldap|ldaps|mqtt|pop3|pop3s|rtmp|rtmps|rtsp|scp|sftp|smb|smbs|smtp|smtps|telnet|tftp|ws|wss)
+				__PATH+="${__PATH:+,}${__LINE}";;
+			*) ;;
+		esac
+	done
+	# -------------------------------------------------------------------------
+	__LENG=""
+	__LMOD=""
+	for ((; R>=0; R--))
+	do
+		if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
+			__RSLT="$(LANG=C wget "${_OPTN_WGET[@]:-}" "${__OPTN_WEBS[@]}" 2>&1 || true)"
+			__RTCD="$?"
+		else
+			__RSLT="$(LANG=C curl "${_OPTN_CURL[@]:-}" "${__OPTN_WEBS[@]}" 2>&1 || true)"
+			__RTCD="$?"
+		fi
+		__RSLT="${__RSLT//$'\r\n'/$'\n'}"	# crlf -> lf
+		__RSLT="${__RSLT//$'\r'/$'\n'}"		# cr   -> lf
+		__RSLT="${__RSLT//></>\n<}"
+		IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
+		for I in "${!__LIST[@]}"
+		do
+			__LINE="${__LIST[I],,}"
+			__LINE="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
+			__LINE="${__LINE%"${__LINE##*[!"${IFS}"]}"}"	# rtrim
+			__FILD="${__LINE%% *}"
+			__VALU="${__LINE#* }"
+			case "${__FILD%% *}" in
+				http/*         ) __CODE="${__VALU%% *}";;
+				content-length:) __LENG="${__VALU}";;
+				last-modified: ) __LMOD="$(TZ=UTC date -d "${__VALU}" "+%Y-%m-%d%%20%H:%M:%S%z")";;
+				*              ) ;;
+			esac
+		done
+		case "${__CODE}" in				# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+			1??) break;;				# 1xx (Informational): The request was received, continuing process
+			2??) break;;				# 2xx (Successful)   : The request was successfully received, understood, and accepted
+			3??) break;;				# 3xx (Redirection)  : Further action needs to be taken in order to complete the request
+			4??) break;;				# 4xx (Client Error) : The request contains bad syntax or cannot be fulfilled
+			5??) break;;				# 5xx (Server Error) : The server failed to fulfill an apparently valid request
+			*  ) ;;						#      Unknown Error
+		esac
+		__RSLT="retry error: [${__PATH}]"
+		sleep 3
+	done
+	# -------------------------------------------------------------------------
+	__RETN_VALU="${__PATH// /%20} ${__LMOD:--} ${__LENG:--} ${__CODE:--} ${__RSLT// /%20}"
+}
+
+# --- get web information -----------------------------------------------------
+# shellcheck disable=SC2317
+function funcGetWeb_info_direct() {
+#	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare -r    __PATH_WEBS="${2:?}"	# web file path
+	declare -a    __OPTN=()				# options
+	declare       __PATH=""				# full path
+	# -------------------------------------------------------------------------
+	__PATH="${__PATH_WEBS}"
+	if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
+		__OPTN=("--spider" "--server-response" "--output-document=-" "${__PATH}")
+	else
+		__OPTN=("--header" "${__PATH}")
+	fi
+	funcGetWeb_command "${1}" "${__OPTN[@]}"
+}
+
+# --- get web address completion ----------------------------------------------
+# shellcheck disable=SC2317
+function funcGetWeb_address() {
+	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare -r    __PATH_WEBS="${2:?}"	# web file path
+	declare -a    __OPTN=()				# options
+	declare       __PATH=""				# full path
+	declare       __DIRS=""				# directory
+	declare       __FNAM=""				# file name
+	declare -r    __PATN='?*[]'			# web file regexp
+	declare       __MATC=""				# web file regexp match
+	declare       __DOCS=""				# output-document
+	declare -a    __LIST=()				# work variables
+	declare       __LINE=""				# work variables
+	# --- URL completion [dir name] -------------------------------------------
+	__PATH="${__PATH_WEBS}"
+	while [[ -n "${__PATH//[!"${__PATN}"]/}" ]]
+	do
+		__DIRS="${__PATH%%["${__PATN}"]*}"	# directory
+		__DIRS="${__DIRS%/*}"
+		__MATC="${__PATH#"${__DIRS}"/}"	# match
+		__MATC="${__MATC%%/*}"
+		__FNAM="${__PATH#*"${__MATC}"}"	# file name
+		__FNAM="${__FNAM#*/}"
+		__PATH="${__DIRS}"
+		if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
+			__OPTN=("--server-response" "--output-document=-" "${__PATH}")
+		else
+			__OPTN=("--header" "${__PATH}")
+		fi
+		funcGetWeb_command "__DOCS" "${__OPTN[@]}"
+		IFS= mapfile -d ' ' -t __LIST < <(echo -n "${__DOCS}")
+		case "${__LIST[3]}" in			# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+			2??)						# 2xx (Successful)   : The request was successfully received, understood, and accepted
+				IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__LIST[4]}")
+				__LINE="$(printf "%s\n" "${__LIST[@]//%20/ }" | sed -ne 's%^.*<a href="'"${__MATC}"'/*">\(.*\)</a>.*$%\1%gp' | sort -rVu | head -n 1 || true)"
+				__PATH="${__DIRS%%/}/${__LINE%%/}${__FNAM:+/"${__FNAM##/}"}"
+				;;
+			*)	break;;
+		esac
+	done
+	__RETN_VALU="${__PATH}"
+}
+
+# --- get web information -----------------------------------------------------
+# shellcheck disable=SC2317
+function funcGetWeb_info() {
+#	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare -r    __PATH_WEBS="${2:?}"	# web file path
+	declare       __PATH=""				# full path
+	declare       __WORK=""				# work variables
+	declare -a    __LIST=()				# work variables
+
+	__PATH="${__PATH_WEBS}"
+	funcGetWeb_address "__WORK" "${__PATH}"
+	IFS= mapfile -d ' ' -t __LIST < <(echo -n "${__WORK}")
+	funcGetWeb_info_direct "${1}" "${__LIST[0]}"
+}
+
+# --- get web status message --------------------------------------------------
+# shellcheck disable=SC2317
+function funcGetWeb_status() {
+	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+		100) echo -n "$1: Continue";;
+		101) echo -n "$1: Switching Protocols";;
+		1??) echo -n "$1: (Informational): The request was received, continuing process";;
+		200) echo -n "$1: OK";;
+		201) echo -n "$1: Created";;
+		202) echo -n "$1: Accepted";;
+		203) echo -n "$1: Non-Authoritative Information";;
+		204) echo -n "$1: No Content";;
+		205) echo -n "$1: Reset Content";;
+		206) echo -n "$1: Partial Content";;
+		2??) echo -n "$1: (Successful): The request was successfully received, understood, and accepted";;
+		300) echo -n "$1: Multiple Choices";;
+		301) echo -n "$1: Moved Permanently";;
+		302) echo -n "$1: Found";;
+		303) echo -n "$1: See Other";;
+		304) echo -n "$1: Not Modified";;
+		305) echo -n "$1: Use Proxy";;
+		306) echo -n "$1: (Unused)";;
+		307) echo -n "$1: Temporary Redirect";;
+		308) echo -n "$1: Permanent Redirect";;
+		3??) echo -n "$1: (Redirection): Further action needs to be taken in order to complete the request";;
+		400) echo -n "$1: Bad Request";;
+		401) echo -n "$1: Unauthorized";;
+		402) echo -n "$1: Payment Required";;
+		403) echo -n "$1: Forbidden";;
+		404) echo -n "$1: Not Found";;
+		405) echo -n "$1: Method Not Allowed";;
+		406) echo -n "$1: Not Acceptable";;
+		407) echo -n "$1: Proxy Authentication Required";;
+		408) echo -n "$1: Request Timeout";;
+		409) echo -n "$1: Conflict";;
+		410) echo -n "$1: Gone";;
+		411) echo -n "$1: Length Required";;
+		412) echo -n "$1: Precondition Failed";;
+		413) echo -n "$1: Content Too Large";;
+		414) echo -n "$1: URI Too Long";;
+		415) echo -n "$1: Unsupported Media Type";;
+		416) echo -n "$1: Range Not Satisfiable";;
+		417) echo -n "$1: Expectation Failed";;
+		418) echo -n "$1: (Unused)";;
+		421) echo -n "$1: Misdirected Request";;
+		422) echo -n "$1: Unprocessable Content";;
+		426) echo -n "$1: Upgrade Required";;
+		4??) echo -n "$1: (Client Error): The request contains bad syntax or cannot be fulfilled";;
+		500) echo -n "$1: Internal Server Error";;
+		501) echo -n "$1: Not Implemented";;
+		502) echo -n "$1: Bad Gateway";;
+		503) echo -n "$1: Service Unavailable";;
+		504) echo -n "$1: Gateway Timeout";;
+		505) echo -n "$1: HTTP Version Not Supported";;
+		5??) echo -n "$1: (Server Error): The server failed to fulfill an apparently valid request";;
+		*  ) echo -n "$1: (Unknown Code)";;
+	esac
 }
 
 # *** function section (sub functions) ****************************************
 
+# === <common> ================================================================
+
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
-	declare       _PATH=""				# file name
-	declare       _LINE=""				# work variable
-	declare       _NAME=""				# variable name
-	declare       _VALU=""				# value
+	declare       __PATH=""				# full path
+	declare       __WORK=""				# work variables
+	declare       __LINE=""				# work variable
+	declare       __NAME=""				# variable name
+	declare       __VALU=""				# value
 
 	# --- common configuration file -------------------------------------------
 	              _PATH_CONF="/srv/user/share/conf/_data/common.cfg"
-	for _PATH in \
+	for __PATH in \
 		"${PWD:+"${PWD}/${_PATH_CONF##*/}"}" \
 		"${_PATH_CONF}"
 	do
-		if [[ -f "${_PATH}" ]]; then
-			_PATH_CONF="${_PATH}"
+		if [[ -f "${__PATH}" ]]; then
+			_PATH_CONF="${__PATH}"
 			break
 		fi
 	done
@@ -506,28 +1027,33 @@ function funcInitialization() {
 	_CONF_SEDD="${_CONF_SEDD:-:_DIRS_TMPL_:/preseed_debian.cfg}"
 	_CONF_SEDU="${_CONF_SEDU:-:_DIRS_TMPL_:/preseed_ubuntu.cfg}"
 	_CONF_YAST="${_CONF_YAST:-:_DIRS_TMPL_:/yast_opensuse.xml}"
-	_SHEL_ERLY="${_SHEL_ERLY:-:_DIRS_SHEL_:/cmd_early.sh}"
-	_SHEL_LATE="${_SHEL_LATE:-:_DIRS_SHEL_:/cmd_late.sh}"
-	_SHEL_PART="${_SHEL_PART:-:_DIRS_SHEL_:/cmd_partition.sh}"
-	_SHEL_RUNS="${_SHEL_RUNS:-:_DIRS_SHEL_:/cmd_run.sh}"
-	_SRVR_PROT="${_SRVR_PROT:-http}"
-	_SRVR_NICS="${_SRVR_NICS:-"$(LANG=C ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}')"}"
-	_SRVR_MADR="${_SRVR_MADR:-"$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {print $3;}')"}"
+	_SHEL_ERLY="${_SHEL_ERLY:-:_DIRS_SHEL_:/autoinst_cmd_early.sh}"
+	_SHEL_LATE="${_SHEL_LATE:-:_DIRS_SHEL_:/autoinst_cmd_late.sh}"
+	_SHEL_PART="${_SHEL_PART:-:_DIRS_SHEL_:/autoinst_cmd_part.sh}"
+	_SHEL_RUNS="${_SHEL_RUNS:-:_DIRS_SHEL_:/autoinst_cmd_run.sh}"
+	_SRVR_HTTP="${_SRVR_HTTP:-http}"
+	_SRVR_PROT="${_SRVR_PROT:-"${_SRVR_HTTP}"}"
+	_SRVR_NICS="${_SRVR_NICS:-"$(LANG=C ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}' || true)"}"
+	_SRVR_MADR="${_SRVR_MADR:-"$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {print $3;}' || true)"}"
 	if [[ -z "${_SRVR_ADDR:-}" ]]; then
-		_SRVR_ADDR="${_SRVR_ADDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[1];}')"}"
-		if ip -4 -oneline address show dev "${_SRVR_NICS}" 2> /dev/null | grep -qE '[ \t]dynamic[ \t]'; then
+		_SRVR_ADDR="${_SRVR_ADDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[1];}' || true)"}"
+		__WORK="$(ip -4 -oneline address show dev "${_SRVR_NICS}" 2> /dev/null)"
+		if echo "${__WORK}" | grep -qE '[ \t]dynamic[ \t]'; then
 			_SRVR_UADR="${_SRVR_UADR:-"${_SRVR_ADDR%.*}"}"
 			_SRVR_ADDR=""
 		fi
 	fi
-	_SRVR_CIDR="${_SRVR_CIDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[2];}')"}"
+	_SRVR_CIDR="${_SRVR_CIDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[2];}' || true)"}"
 	_SRVR_MASK="${_SRVR_MASK:-"$(funcIPv4GetNetmask "${_SRVR_CIDR}")"}"
-	_SRVR_GWAY="${_SRVR_GWAY:-"$(LANG=C ip -4 -brief route list match default | awk '{print $3;}')"}"
+	_SRVR_GWAY="${_SRVR_GWAY:-"$(LANG=C ip -4 -brief route list match default | awk '{print $3;}' || true)"}"
 	if command -v resolvectl > /dev/null 2>&1; then
-		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/^Global:/             s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
-		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/('"${_SRVR_NICS}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p')"}"
+		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/^Global:/             s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' || true)"}"
+		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/('"${_SRVR_NICS}"'):/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' || true)"}"
 	fi
 	_SRVR_NSVR="${_SRVR_NSVR:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' /etc/resolv.conf)"}"
+	if [[ "${_SRVR_NSVR:-}" = "127.0.0.53" ]]; then
+		_SRVR_NSVR="$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' /run/systemd/resolve/resolv.conf)"
+	fi
 	_SRVR_UADR="${_SRVR_UADR:-"${_SRVR_ADDR%.*}"}"
 	_NWRK_HOST="${_NWRK_HOST:-sv-:_DISTRO_:}"
 	_NWRK_WGRP="${_NWRK_WGRP:-workgroup}"
@@ -540,74 +1066,75 @@ function funcInitialization() {
 	_IPV4_NSVR="${_IPV4_NSVR:-"${_SRVR_NSVR}"}"
 	_IPV4_UADR="${_IPV4_UADR:-"${_SRVR_UADR}"}"
 #	_NMAN_NAME="${_NMAN_NAME:-""}"
-	_MENU_TOUT="${_MENU_TOUT:-50}"
+	_MENU_TOUT="${_MENU_TOUT:-5}"
 	_MENU_RESO="${_MENU_RESO:-1024x768}"
 	_MENU_DPTH="${_MENU_DPTH:-16}"
 	_MENU_MODE="${_MENU_MODE:-791}"
 
 	# --- gets the setting value ----------------------------------------------
-	while read -r _LINE
+	while read -r __LINE
 	do
-		_LINE="${_LINE%%#*}"
-		_LINE="${_LINE//["${IFS}"]/ }"
-		_LINE="${_LINE#"${_LINE%%[!"${IFS}"]*}"}"	# ltrim
-		_LINE="${_LINE%"${_LINE##*[!"${IFS}"]}"}"	# rtrim
-		_NAME="${_LINE%%=*}"
-		_VALU="${_LINE#*=}"
-		_VALU="${_VALU#\"}"
-		_VALU="${_VALU%\"}"
-		case "${_NAME:-}" in
-			DIRS_TOPS) _DIRS_TOPS="${_VALU:-"${_DIRS_TOPS:-}"}";;
-			DIRS_HGFS) _DIRS_HGFS="${_VALU:-"${_DIRS_HGFS:-}"}";;
-			DIRS_HTML) _DIRS_HTML="${_VALU:-"${_DIRS_HTML:-}"}";;
-			DIRS_SAMB) _DIRS_SAMB="${_VALU:-"${_DIRS_SAMB:-}"}";;
-			DIRS_TFTP) _DIRS_TFTP="${_VALU:-"${_DIRS_TFTP:-}"}";;
-			DIRS_USER) _DIRS_USER="${_VALU:-"${_DIRS_USER:-}"}";;
-			DIRS_SHAR) _DIRS_SHAR="${_VALU:-"${_DIRS_SHAR:-}"}";;
-			DIRS_CONF) _DIRS_CONF="${_VALU:-"${_DIRS_CONF:-}"}";;
-			DIRS_DATA) _DIRS_DATA="${_VALU:-"${_DIRS_DATA:-}"}";;
-			DIRS_KEYS) _DIRS_KEYS="${_VALU:-"${_DIRS_KEYS:-}"}";;
-			DIRS_TMPL) _DIRS_TMPL="${_VALU:-"${_DIRS_TMPL:-}"}";;
-			DIRS_SHEL) _DIRS_SHEL="${_VALU:-"${_DIRS_SHEL:-}"}";;
-			DIRS_IMGS) _DIRS_IMGS="${_VALU:-"${_DIRS_IMGS:-}"}";;
-			DIRS_ISOS) _DIRS_ISOS="${_VALU:-"${_DIRS_ISOS:-}"}";;
-			DIRS_LOAD) _DIRS_LOAD="${_VALU:-"${_DIRS_LOAD:-}"}";;
-			DIRS_RMAK) _DIRS_RMAK="${_VALU:-"${_DIRS_RMAK:-}"}";;
-#			PATH_CONF) _PATH_CONF="${_VALU:-"${_PATH_CONF:-}"}";;
-			PATH_MDIA) _PATH_MDIA="${_VALU:-"${_PATH_MDIA:-}"}";;
-			CONF_KICK) _CONF_KICK="${_VALU:-"${_CONF_KICK:-}"}";;
-			CONF_CLUD) _CONF_CLUD="${_VALU:-"${_CONF_CLUD:-}"}";;
-			CONF_SEDD) _CONF_SEDD="${_VALU:-"${_CONF_SEDD:-}"}";;
-			CONF_SEDU) _CONF_SEDU="${_VALU:-"${_CONF_SEDU:-}"}";;
-			CONF_YAST) _CONF_YAST="${_VALU:-"${_CONF_YAST:-}"}";;
-			SHEL_ERLY) _SHEL_ERLY="${_VALU:-"${_SHEL_ERLY:-}"}";;
-			SHEL_LATE) _SHEL_LATE="${_VALU:-"${_SHEL_LATE:-}"}";;
-			SHEL_PART) _SHEL_PART="${_VALU:-"${_SHEL_PART:-}"}";;
-			SHEL_RUNS) _SHEL_RUNS="${_VALU:-"${_SHEL_RUNS:-}"}";;
-			SRVR_PROT) _SRVR_PROT="${_VALU:-"${_SRVR_PROT:-}"}";;
-			SRVR_NICS) _SRVR_NICS="${_VALU:-"${_SRVR_NICS:-}"}";;
-			SRVR_MADR) _SRVR_MADR="${_VALU:-"${_SRVR_MADR:-}"}";;
-			SRVR_ADDR) _SRVR_ADDR="${_VALU:-"${_SRVR_ADDR:-}"}";;
-			SRVR_CIDR) _SRVR_CIDR="${_VALU:-"${_SRVR_CIDR:-}"}";;
-			SRVR_MASK) _SRVR_MASK="${_VALU:-"${_SRVR_MASK:-}"}";;
-			SRVR_GWAY) _SRVR_GWAY="${_VALU:-"${_SRVR_GWAY:-}"}";;
-			SRVR_NSVR) _SRVR_NSVR="${_VALU:-"${_SRVR_NSVR:-}"}";;
-			SRVR_UADR) _SRVR_UADR="${_VALU:-"${_SRVR_UADR:-}"}";;
-			NWRK_HOST) _NWRK_HOST="${_VALU:-"${_NWRK_HOST:-}"}";;
-			NWRK_WGRP) _NWRK_WGRP="${_VALU:-"${_NWRK_WGRP:-}"}";;
-			NICS_NAME) _NICS_NAME="${_VALU:-"${_NICS_NAME:-}"}";;
-#			NICS_MADR) _NICS_MADR="${_VALU:-"${_NICS_MADR:-}"}";;
-			IPV4_ADDR) _IPV4_ADDR="${_VALU:-"${_IPV4_ADDR:-}"}";;
-			IPV4_CIDR) _IPV4_CIDR="${_VALU:-"${_IPV4_CIDR:-}"}";;
-			IPV4_MASK) _IPV4_MASK="${_VALU:-"${_IPV4_MASK:-}"}";;
-			IPV4_GWAY) _IPV4_GWAY="${_VALU:-"${_IPV4_GWAY:-}"}";;
-			IPV4_NSVR) _IPV4_NSVR="${_VALU:-"${_IPV4_NSVR:-}"}";;
-#			IPV4_UADR) _IPV4_UADR="${_VALU:-"${_IPV4_UADR:-}"}";;
-#			NMAN_NAME) _NMAN_NAME="${_VALU:-"${_NMAN_NAME:-}"}";;
-			MENU_TOUT) _MENU_TOUT="${_VALU:-"${_MENU_TOUT:-}"}";;
-			MENU_RESO) _MENU_RESO="${_VALU:-"${_MENU_RESO:-}"}";;
-			MENU_DPTH) _MENU_DPTH="${_VALU:-"${_MENU_DPTH:-}"}";;
-			MENU_MODE) _MENU_MODE="${_VALU:-"${_MENU_MODE:-}"}";;
+		__LINE="${__LINE%%#*}"
+		__LINE="${__LINE//["${IFS}"]/ }"
+		__LINE="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
+		__LINE="${__LINE%"${__LINE##*[!"${IFS}"]}"}"	# rtrim
+		__NAME="${__LINE%%=*}"
+		__VALU="${__LINE#*=}"
+		__VALU="${__VALU#\"}"
+		__VALU="${__VALU%\"}"
+		case "${__NAME:-}" in
+			DIRS_TOPS) _DIRS_TOPS="${__VALU:-"${_DIRS_TOPS:-}"}";;
+			DIRS_HGFS) _DIRS_HGFS="${__VALU:-"${_DIRS_HGFS:-}"}";;
+			DIRS_HTML) _DIRS_HTML="${__VALU:-"${_DIRS_HTML:-}"}";;
+			DIRS_SAMB) _DIRS_SAMB="${__VALU:-"${_DIRS_SAMB:-}"}";;
+			DIRS_TFTP) _DIRS_TFTP="${__VALU:-"${_DIRS_TFTP:-}"}";;
+			DIRS_USER) _DIRS_USER="${__VALU:-"${_DIRS_USER:-}"}";;
+			DIRS_SHAR) _DIRS_SHAR="${__VALU:-"${_DIRS_SHAR:-}"}";;
+			DIRS_CONF) _DIRS_CONF="${__VALU:-"${_DIRS_CONF:-}"}";;
+			DIRS_DATA) _DIRS_DATA="${__VALU:-"${_DIRS_DATA:-}"}";;
+			DIRS_KEYS) _DIRS_KEYS="${__VALU:-"${_DIRS_KEYS:-}"}";;
+			DIRS_TMPL) _DIRS_TMPL="${__VALU:-"${_DIRS_TMPL:-}"}";;
+			DIRS_SHEL) _DIRS_SHEL="${__VALU:-"${_DIRS_SHEL:-}"}";;
+			DIRS_IMGS) _DIRS_IMGS="${__VALU:-"${_DIRS_IMGS:-}"}";;
+			DIRS_ISOS) _DIRS_ISOS="${__VALU:-"${_DIRS_ISOS:-}"}";;
+			DIRS_LOAD) _DIRS_LOAD="${__VALU:-"${_DIRS_LOAD:-}"}";;
+			DIRS_RMAK) _DIRS_RMAK="${__VALU:-"${_DIRS_RMAK:-}"}";;
+#			PATH_CONF) _PATH_CONF="${__VALU:-"${_PATH_CONF:-}"}";;
+			PATH_MDIA) _PATH_MDIA="${__VALU:-"${_PATH_MDIA:-}"}";;
+			CONF_KICK) _CONF_KICK="${__VALU:-"${_CONF_KICK:-}"}";;
+			CONF_CLUD) _CONF_CLUD="${__VALU:-"${_CONF_CLUD:-}"}";;
+			CONF_SEDD) _CONF_SEDD="${__VALU:-"${_CONF_SEDD:-}"}";;
+			CONF_SEDU) _CONF_SEDU="${__VALU:-"${_CONF_SEDU:-}"}";;
+			CONF_YAST) _CONF_YAST="${__VALU:-"${_CONF_YAST:-}"}";;
+			SHEL_ERLY) _SHEL_ERLY="${__VALU:-"${_SHEL_ERLY:-}"}";;
+			SHEL_LATE) _SHEL_LATE="${__VALU:-"${_SHEL_LATE:-}"}";;
+			SHEL_PART) _SHEL_PART="${__VALU:-"${_SHEL_PART:-}"}";;
+			SHEL_RUNS) _SHEL_RUNS="${__VALU:-"${_SHEL_RUNS:-}"}";;
+			SRVR_HTTP) _SRVR_HTTP="${__VALU:-"${_SRVR_HTTP:-}"}";;
+			SRVR_PROT) _SRVR_PROT="${__VALU:-"${_SRVR_PROT:-}"}";;
+			SRVR_NICS) _SRVR_NICS="${__VALU:-"${_SRVR_NICS:-}"}";;
+			SRVR_MADR) _SRVR_MADR="${__VALU:-"${_SRVR_MADR:-}"}";;
+			SRVR_ADDR) _SRVR_ADDR="${__VALU:-"${_SRVR_ADDR:-}"}";;
+			SRVR_CIDR) _SRVR_CIDR="${__VALU:-"${_SRVR_CIDR:-}"}";;
+			SRVR_MASK) _SRVR_MASK="${__VALU:-"${_SRVR_MASK:-}"}";;
+			SRVR_GWAY) _SRVR_GWAY="${__VALU:-"${_SRVR_GWAY:-}"}";;
+			SRVR_NSVR) _SRVR_NSVR="${__VALU:-"${_SRVR_NSVR:-}"}";;
+			SRVR_UADR) _SRVR_UADR="${__VALU:-"${_SRVR_UADR:-}"}";;
+			NWRK_HOST) _NWRK_HOST="${__VALU:-"${_NWRK_HOST:-}"}";;
+			NWRK_WGRP) _NWRK_WGRP="${__VALU:-"${_NWRK_WGRP:-}"}";;
+			NICS_NAME) _NICS_NAME="${__VALU:-"${_NICS_NAME:-}"}";;
+#			NICS_MADR) _NICS_MADR="${__VALU:-"${_NICS_MADR:-}"}";;
+			IPV4_ADDR) _IPV4_ADDR="${__VALU:-"${_IPV4_ADDR:-}"}";;
+			IPV4_CIDR) _IPV4_CIDR="${__VALU:-"${_IPV4_CIDR:-}"}";;
+			IPV4_MASK) _IPV4_MASK="${__VALU:-"${_IPV4_MASK:-}"}";;
+			IPV4_GWAY) _IPV4_GWAY="${__VALU:-"${_IPV4_GWAY:-}"}";;
+			IPV4_NSVR) _IPV4_NSVR="${__VALU:-"${_IPV4_NSVR:-}"}";;
+#			IPV4_UADR) _IPV4_UADR="${__VALU:-"${_IPV4_UADR:-}"}";;
+#			NMAN_NAME) _NMAN_NAME="${__VALU:-"${_NMAN_NAME:-}"}";;
+			MENU_TOUT) _MENU_TOUT="${__VALU:-"${_MENU_TOUT:-}"}";;
+			MENU_RESO) _MENU_RESO="${__VALU:-"${_MENU_RESO:-}"}";;
+			MENU_DPTH) _MENU_DPTH="${__VALU:-"${_MENU_DPTH:-}"}";;
+			MENU_MODE) _MENU_MODE="${__VALU:-"${_MENU_MODE:-}"}";;
 			*        ) ;;
 		esac
 	done < <(cat "${_PATH_CONF:-}" 2> /dev/null || true)
@@ -640,6 +1167,7 @@ function funcInitialization() {
 	_SHEL_LATE="${_SHEL_LATE//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
 	_SHEL_PART="${_SHEL_PART//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
 	_SHEL_RUNS="${_SHEL_RUNS//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
+#	_SRVR_HTTP="${_SRVR_HTTP:-}"
 #	_SRVR_PROT="${_SRVR_PROT:-}"
 #	_SRVR_NICS="${_SRVR_NICS:-}"
 #	_SRVR_MADR="${_SRVR_MADR:-}"
@@ -688,6 +1216,7 @@ function funcInitialization() {
 	readonly      _CONF_SEDD
 	readonly      _CONF_SEDU
 	readonly      _CONF_YAST
+	readonly      _SRVR_HTTP
 	readonly      _SRVR_PROT
 	readonly      _SRVR_NICS
 	readonly      _SRVR_MADR
@@ -763,30 +1292,34 @@ function funcInitialization() {
 	              _MINI_IRAM="initps.gz"
 	readonly      _MINI_IRAM
 
+	# --- ipxe menu file ------------------------------------------------------
+	              _IPXE_MENU="${_DIRS_TFTP}/autoexec.ipxe"
+	readonly      _IPXE_MENU
+
 	# --- get media data ------------------------------------------------------
 	funcGet_media_data
 }
 
 # --- create common configuration file ----------------------------------------
 function funcCreate_conf() {
-	declare -r    _TMPL="${_PATH_CONF:?}.template"
-	declare       _RNAM=""				# rename path
-	declare       _PATH=""				# file name
+	declare -r    __TMPL="${_PATH_CONF:?}.template"
+	declare       __RNAM=""				# rename path
+	declare       __PATH=""				# full path
 
 	# --- check file exists ---------------------------------------------------
-	if [[ -f "${_TMPL:?}" ]]; then
-		_RNAM="${_TMPL}.$(TZ=UTC find "${_TMPL}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
-		mv "${_TMPL}" "${_RNAM}"
+	if [[ -f "${__TMPL:?}" ]]; then
+		__RNAM="${__TMPL}.$(TZ=UTC find "${__TMPL}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
+		mv "${__TMPL}" "${__RNAM}"
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	for _PATH in $(find "${_TMPL%/*}" -name "${_TMPL##*/}"\* | sort -r | tail -n +3)
+	for __PATH in $(find "${__TMPL%/*}" -name "${__TMPL##*/}"\* | sort -r | tail -n +3 || true)
 	do
-		rm -f "${_PATH:?}"
+		rm -f "${__PATH:?}"
 	done
 
 	# --- exporting files -----------------------------------------------------
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_TMPL}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__TMPL}" || true
 		###############################################################################
 		##
 		##	common configuration file
@@ -827,12 +1360,13 @@ function funcCreate_conf() {
 		CONF_YAST="${_CONF_YAST//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for opensuse
 		
 		# --- shell script ------------------------------------------------------------
-		SHEL_ERLY="${_SHEL_ERLY//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run early
-		SHEL_LATE="${_SHEL_LATE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run late
-		SHEL_PART="${_SHEL_PART//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"		# run after partition
-		SHEL_RUNS="${_SHEL_RUNS//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"			# run preseed/run
+		SHEL_ERLY="${_SHEL_ERLY//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run early
+		SHEL_LATE="${_SHEL_LATE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run late
+		SHEL_PART="${_SHEL_PART//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run after partition
+		SHEL_RUNS="${_SHEL_RUNS//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run preseed/run
 		
 		# --- tftp / web server network parameter -------------------------------------
+		SRVR_HTTP="${_SRVR_HTTP:-}"						# server connection protocol (http or https)
 		SRVR_PROT="${_SRVR_PROT:-}"						# server connection protocol (http or tftp)
 		SRVR_NICS="${_SRVR_NICS:-}"						# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
 		SRVR_MADR="${_SRVR_MADR//[!:]/0}"			# "              mac    (ex. 00:00:00:00:00:00)
@@ -855,7 +1389,7 @@ function funcCreate_conf() {
 		IPV4_NSVR="${_IPV4_NSVR:-}"				# IPv4 nameserver
 		
 		# --- menu timeout ------------------------------------------------------------
-		MENU_TOUT="${_MENU_TOUT:-}"							# timeout [x100 m sec]
+		MENU_TOUT="${_MENU_TOUT:-}"							# timeout [sec]
 		
 		# --- menu resolution ---------------------------------------------------------
 		MENU_RESO="${_MENU_RESO:-}"					# resolution ([width]x[height])
@@ -870,116 +1404,119 @@ _EOT_
 
 # --- get media data ----------------------------------------------------------
 function funcGet_media_data() {
-	declare       _PATH=""				# file name
-	declare       _LINE=""				# work variable
+	declare       __PATH=""				# full path
+	declare       __LINE=""				# work variable
 
 	# --- list data -----------------------------------------------------------
 	_LIST_MDIA=()
-	for _PATH in \
+	for __PATH in \
 		"${PWD:+"${PWD}/${_PATH_MDIA##*/}"}" \
 		"${_PATH_MDIA}"
 	do
-		if [[ -f "${_PATH}" ]]; then
-			while IFS= read -r -d $'\n' _LINE
-			do
-				_LINE="${_LINE//:_DIRS_TOPS_:/"${_DIRS_TOPS}"}"
-				_LINE="${_LINE//:_DIRS_HGFS_:/"${_DIRS_HGFS}"}"
-				_LINE="${_LINE//:_DIRS_HTML_:/"${_DIRS_HTML}"}"
-				_LINE="${_LINE//:_DIRS_SAMB_:/"${_DIRS_SAMB}"}"
-				_LINE="${_LINE//:_DIRS_TFTP_:/"${_DIRS_TFTP}"}"
-				_LINE="${_LINE//:_DIRS_USER_:/"${_DIRS_USER}"}"
-				_LINE="${_LINE//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
-				_LINE="${_LINE//:_DIRS_CONF_:/"${_DIRS_CONF}"}"
-				_LINE="${_LINE//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
-				_LINE="${_LINE//:_DIRS_KEYS_:/"${_DIRS_KEYS}"}"
-				_LINE="${_LINE//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
-				_LINE="${_LINE//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
-				_LINE="${_LINE//:_DIRS_IMGS_:/"${_DIRS_IMGS}"}"
-				_LINE="${_LINE//:_DIRS_ISOS_:/"${_DIRS_ISOS}"}"
-				_LINE="${_LINE//:_DIRS_LOAD_:/"${_DIRS_LOAD}"}"
-				_LINE="${_LINE//:_DIRS_RMAK_:/"${_DIRS_RMAK}"}"
-				_LIST_MDIA+=("${_LINE}")
-			done < "${_PATH:?}"
-			if [[ -n "${_DBGS_FLAG:-}" ]]; then
-				printf "[%-$((${_SIZE_COLS:-80}-2)).$((${_SIZE_COLS:-80}-2))s]\n" "${_LIST_MDIA[@]}"
-			fi
-			break
+		if [[ ! -s "${__PATH}" ]]; then
+			continue
 		fi
+		while IFS=$'\n' read -r __LINE
+		do
+			__LINE="${__LINE//:_DIRS_TOPS_:/"${_DIRS_TOPS}"}"
+			__LINE="${__LINE//:_DIRS_HGFS_:/"${_DIRS_HGFS}"}"
+			__LINE="${__LINE//:_DIRS_HTML_:/"${_DIRS_HTML}"}"
+			__LINE="${__LINE//:_DIRS_SAMB_:/"${_DIRS_SAMB}"}"
+			__LINE="${__LINE//:_DIRS_TFTP_:/"${_DIRS_TFTP}"}"
+			__LINE="${__LINE//:_DIRS_USER_:/"${_DIRS_USER}"}"
+			__LINE="${__LINE//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
+			__LINE="${__LINE//:_DIRS_CONF_:/"${_DIRS_CONF}"}"
+			__LINE="${__LINE//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
+			__LINE="${__LINE//:_DIRS_KEYS_:/"${_DIRS_KEYS}"}"
+			__LINE="${__LINE//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
+			__LINE="${__LINE//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
+			__LINE="${__LINE//:_DIRS_IMGS_:/"${_DIRS_IMGS}"}"
+			__LINE="${__LINE//:_DIRS_ISOS_:/"${_DIRS_ISOS}"}"
+			__LINE="${__LINE//:_DIRS_LOAD_:/"${_DIRS_LOAD}"}"
+			__LINE="${__LINE//:_DIRS_RMAK_:/"${_DIRS_RMAK}"}"
+			_LIST_MDIA+=("${__LINE}")
+		done < "${__PATH:?}"
+		if [[ -n "${_DBGS_FLAG:-}" ]]; then
+			printf "[%-$((${_SIZE_COLS:-80}-2)).$((${_SIZE_COLS:-80}-2))s]\n" "${_LIST_MDIA[@]}" 1>&2
+		fi
+		break
 	done
+	if [[ -z "${_LIST_MDIA[*]}" ]]; then
+		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[91m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "data file not found: [${_PATH_MDIA}]" 1>&2
+#		exit 1
+	fi
 }
 
 # --- put media data ----------------------------------------------------------
 function funcPut_media_data() {
-	declare       _RNAM=""				# rename path
-	declare       _LINE=""				# work variable
-	declare -a    _LIST=()				# work variable
+	declare       __RNAM=""				# rename path
+	declare       __LINE=""				# work variable
+	declare -a    __LIST=()				# work variable
 	declare -i    I=0
-	declare -i    J=0
-
+#	declare -i    J=0
 	# --- check file exists ---------------------------------------------------
 	if [[ -f "${_PATH_MDIA:?}" ]]; then
-		_RNAM="${_PATH_MDIA}.$(TZ=UTC find "${_PATH_MDIA}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
-		mv "${_PATH_MDIA}" "${_RNAM}"
+		__RNAM="${_PATH_MDIA}.$(TZ=UTC find "${_PATH_MDIA}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
+		printf "%s: \"%s\"\n" "backup" "${__RNAM}" 1>&2
+		cp -a "${_PATH_MDIA}" "${__RNAM}"
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	for _PATH in $(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}"\* | sort -r | tail -n +3)
+	find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3 | while read -r __PATH
 	do
-		rm -f "${_PATH:?}"
+		printf "%s: \"%s\"\n" "remove" "${__PATH}" 1>&2
+		rm -f "${__PATH:?}"
 	done
-
 	# --- list data -----------------------------------------------------------
 	for I in "${!_LIST_MDIA[@]}"
 	do
-		_LINE="${_LIST_MDIA[I]}"
-		_LINE="${_LINE//"${_DIRS_RMAK}"/:_DIRS_RMAK_:}"
-		_LINE="${_LINE//"${_DIRS_LOAD}"/:_DIRS_LOAD_:}"
-		_LINE="${_LINE//"${_DIRS_ISOS}"/:_DIRS_ISOS_:}"
-		_LINE="${_LINE//"${_DIRS_IMGS}"/:_DIRS_IMGS_:}"
-		_LINE="${_LINE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"
-		_LINE="${_LINE//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"
-		_LINE="${_LINE//"${_DIRS_KEYS}"/:_DIRS_KEYS_:}"
-		_LINE="${_LINE//"${_DIRS_DATA}"/:_DIRS_DATA_:}"
-		_LINE="${_LINE//"${_DIRS_CONF}"/:_DIRS_CONF_:}"
-		_LINE="${_LINE//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"
-		_LINE="${_LINE//"${_DIRS_USER}"/:_DIRS_USER_:}"
-		_LINE="${_LINE//"${_DIRS_TFTP}"/:_DIRS_TFTP_:}"
-		_LINE="${_LINE//"${_DIRS_SAMB}"/:_DIRS_SAMB_:}"
-		_LINE="${_LINE//"${_DIRS_HTML}"/:_DIRS_HTML_:}"
-		_LINE="${_LINE//"${_DIRS_HGFS}"/:_DIRS_HGFS_:}"
-		_LINE="${_LINE//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"
-		read -r -a _LIST < <(echo "${_LINE}")
-		for J in "${!_LIST[@]}"
+		__LINE="${_LIST_MDIA[I]}"
+		__LINE="${__LINE//"${_DIRS_RMAK}"/:_DIRS_RMAK_:}"
+		__LINE="${__LINE//"${_DIRS_LOAD}"/:_DIRS_LOAD_:}"
+		__LINE="${__LINE//"${_DIRS_ISOS}"/:_DIRS_ISOS_:}"
+		__LINE="${__LINE//"${_DIRS_IMGS}"/:_DIRS_IMGS_:}"
+		__LINE="${__LINE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"
+		__LINE="${__LINE//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"
+		__LINE="${__LINE//"${_DIRS_KEYS}"/:_DIRS_KEYS_:}"
+		__LINE="${__LINE//"${_DIRS_DATA}"/:_DIRS_DATA_:}"
+		__LINE="${__LINE//"${_DIRS_CONF}"/:_DIRS_CONF_:}"
+		__LINE="${__LINE//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"
+		__LINE="${__LINE//"${_DIRS_USER}"/:_DIRS_USER_:}"
+		__LINE="${__LINE//"${_DIRS_TFTP}"/:_DIRS_TFTP_:}"
+		__LINE="${__LINE//"${_DIRS_SAMB}"/:_DIRS_SAMB_:}"
+		__LINE="${__LINE//"${_DIRS_HTML}"/:_DIRS_HTML_:}"
+		__LINE="${__LINE//"${_DIRS_HGFS}"/:_DIRS_HGFS_:}"
+		__LINE="${__LINE//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"
+		read -r -a __LIST < <(echo "${__LINE}")
+		for J in "${!__LIST[@]}"
 		do
-			_LIST[J]="${_LIST[J]:--}"						# null
-			_LIST[J]="${_LIST[J]// /%20}"					# blank
+			__LIST[J]="${__LIST[J]:--}"		# empty
+			__LIST[J]="${__LIST[J]// /%20}"	# space
 		done
-		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-27s %-15s %-15s %-85s %-27s %-15s %-43s %-85s %-27s %-15s %-43s %-85s %-85s %-85s %-27s %-85s\n" \
-			"${_LIST[@]}" \
-		>> "${_PATH_MDIA:?}"
-	done
+		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s\n" \
+			"${__LIST[@]}"
+	done > "${_PATH_MDIA:?}"
 }
 
 # --- create_directory --------------------------------------------------------
 function fncCreate_directory() {
-	declare -n    _NAME_REFR="${1:-}"	# name reference
+	declare -n    __NAME_REFR="${1:?}"	# name reference
 	shift
-	declare -r    _DATE_TIME="$(date +"%Y%m%d%H%M%S")"
-	declare       _FORC_PRAM=""			# force parameter
-	declare       _RTIV_FLAG=""			# add/relative flag
-	declare       _TGET_PATH=""			# taget path
-	declare       _LINK_PATH=""			# symlink path
-	declare       _BACK_PATH=""			# backup path
-	declare       _LINE=""				# work variable
+	declare -r    __DATE="$(date +"%Y%m%d%H%M%S")"
+	declare       __FORC=""				# force parameter
+	declare       __RTIV=""				# add/relative flag
+	declare       __TGET=""				# taget path
+	declare       __LINK=""				# symlink path
+	declare       __BACK=""				# backup path
+	declare -a    __LIST=()				# work variable
 	declare -i    I=0
 
 	# --- option parameter ----------------------------------------------------
-	_OPTN_PRAM=()
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
-			-f | --force) shift; _NAME_REFR="${*:-}"; _FORC_PRAM="true";;
-			*           )        _NAME_REFR="${*:-}"; break;;
+			-f | --force) shift; __NAME_REFR="${*:-}"; __FORC="true";;
+			*           )        __NAME_REFR="${*:-}"; break;;
 		esac
 	done
 
@@ -992,93 +1529,93 @@ function fncCreate_directory() {
 	# 2: symlink
 	for I in "${!_LIST_LINK[@]}"
 	do
-		read -r -a _LINE < <(echo "${_LIST_LINK[I]}")
-		case "${_LINE[0]}" in
+		read -r -a __LIST < <(echo "${_LIST_LINK[I]}")
+		case "${__LIST[0]}" in
 			a) ;;
 			r) ;;
 			*) continue;;
 		esac
-		_RTIV_FLAG="${_LINE[0]}"
-		_TGET_PATH="${_LINE[1]:-}"
-		_LINK_PATH="${_LINE[2]:-}"
+		__RTIV="${__LIST[0]}"
+		__TGET="${__LIST[1]:-}"
+		__LINK="${__LIST[2]:-}"
 		# --- check target file path ------------------------------------------
-		if [[ -z "${_LINK_PATH##*/}" ]]; then
-			_LINK_PATH="${_LINK_PATH%/}/${_TGET_PATH##*/}"
+		if [[ -z "${__LINK##*/}" ]]; then
+			__LINK="${__LINK%/}/${__TGET##*/}"
 #		else
-#			if [[ ! -e "${_TGET_PATH}" ]]; then
-#				touch "${_TGET_PATH}"
+#			if [[ ! -e "${__TGET}" ]]; then
+#				touch "${__TGET}"
 #			fi
 		fi
 		# --- force parameter -------------------------------------------------
-		_BACK_PATH="${_LINK_PATH}.back.${_DATE_TIME}"
-		if [[ -n "${_FORC_PRAM:-}" ]] && [[ -e "${_LINK_PATH}" ]] && [[ ! -e "${_BACK_PATH##*/}" ]]; then
-			funcPrintf "%20.20s: %s" "move symlink" "${_LINK_PATH} -> ${_BACK_PATH##*/}"
-			mv "${_LINK_PATH}" "${_BACK_PATH}"
+		__BACK="${__LINK}.back.${__DATE}"
+		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
+			funcPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
+			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- check symbolic link ---------------------------------------------
-		if [[ -h "${_LINK_PATH}" ]]; then
-			funcPrintf "%20.20s: %s" "exist symlink" "${_LINK_PATH}"
+		if [[ -h "${__LINK}" ]]; then
+			funcPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
 			continue
 		fi
 		# --- check directory -------------------------------------------------
-		if [[ -d "${_LINK_PATH}/." ]]; then
-			funcPrintf "%20.20s: %s" "exist directory" "${_LINK_PATH}"
-			funcPrintf "%20.20s: %s" "move directory" "${_LINK_PATH} -> ${_BACK_PATH}"
-			mv "${_LINK_PATH}" "${_BACK_PATH}"
+		if [[ -d "${__LINK}/." ]]; then
+			funcPrintf "%20.20s: %s" "exist directory" "${__LINK}"
+			funcPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
+			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- create destination directory ------------------------------------
-		mkdir -p "${_LINK_PATH%/*}"
+		mkdir -p "${__LINK%/*}"
 		# --- create symbolic link --------------------------------------------
-		funcPrintf "%20.20s: %s" "create symlink" "${_TGET_PATH} -> ${_LINK_PATH}"
-		case "${_RTIV_FLAG}" in
-			r) ln -sr "${_TGET_PATH}" "${_LINK_PATH}";;
-			*) ln -s  "${_TGET_PATH}" "${_LINK_PATH}";;
+		funcPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
+		case "${__RTIV}" in
+			r) ln -sr "${__TGET}" "${__LINK}";;
+			*) ln -s  "${__TGET}" "${__LINK}";;
 		esac
 	done
 
 	for I in "${!_LIST_MDIA[@]}"
 	do
-		read -r -a _LINE < <(echo "${_LIST_MDIA[I]}")
-		case "${_LINE[1]}" in
+		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+		case "${__LIST[1]}" in
 			o) ;;
 			*) continue;;
 		esac
-		case "${_LINE[13]}" in
+		case "${__LIST[13]}" in
 			-) continue;;
 			*) ;;
 		esac
-		case "${_LINE[25]}" in
+		case "${__LIST[25]}" in
 			-) continue;;
 			*) ;;
 		esac
-		_TGET_PATH="${_LINE[25]}/${_LINE[13]##*/}"
-		_LINK_PATH="${_LINE[13]}"
+		__TGET="${__LIST[25]}/${__LIST[13]##*/}"
+		__LINK="${__LIST[13]}"
 		# --- check target file path ------------------------------------------
-#		if [[ ! -e "${_TGET_PATH}" ]]; then
-#			touch "${_TGET_PATH}"
+#		if [[ ! -e "${__TGET}" ]]; then
+#			touch "${__TGET}"
 #		fi
 		# --- force parameter -------------------------------------------------
-		_BACK_PATH="${_LINK_PATH}.back.${_DATE_TIME}"
-		if [[ -n "${_FORC_PRAM:-}" ]] && [[ -e "${_LINK_PATH}" ]] && [[ ! -e "${_BACK_PATH##*/}" ]]; then
-			funcPrintf "%20.20s: %s" "move symlink" "${_LINK_PATH} -> ${_BACK_PATH##*/}"
-			mv "${_LINK_PATH}" "${_BACK_PATH}"
+		__BACK="${__LINK}.back.${__DATE}"
+		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
+			funcPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
+			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- check symbolic link ---------------------------------------------
-		if [[ -h "${_LINK_PATH}" ]]; then
-			funcPrintf "%20.20s: %s" "exist symlink" "${_LINK_PATH}"
+		if [[ -h "${__LINK}" ]]; then
+			funcPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
 			continue
 		fi
 		# --- check directory -------------------------------------------------
-		if [[ -d "${_LINK_PATH}/." ]]; then
-			funcPrintf "%20.20s: %s" "exist directory" "${_LINK_PATH}"
-			funcPrintf "%20.20s: %s" "move directory" "${_LINK_PATH} -> ${_BACK_PATH}"
-			mv "${_LINK_PATH}" "${_BACK_PATH}"
+		if [[ -d "${__LINK}/." ]]; then
+			funcPrintf "%20.20s: %s" "exist directory" "${__LINK}"
+			funcPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
+			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- create destination directory ------------------------------------
-		mkdir -p "${_LINK_PATH%/*}"
+		mkdir -p "${__LINK%/*}"
 		# --- create symbolic link --------------------------------------------
-		funcPrintf "%20.20s: %s" "create symlink" "${_TGET_PATH} -> ${_LINK_PATH}"
-		ln -s "${_TGET_PATH}" "${_LINK_PATH}"
+		funcPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
+		ln -s "${__TGET}" "${__LINK}"
 	done
 }
 
@@ -1093,24 +1630,975 @@ function fncCreate_directory() {
 #  7: support       ( 15)   TEXT                        support end date
 #  8: web_regexp    (143)   TEXT                        web file  regexp
 #  9: web_path      (143)   TEXT                        "         path
-# 10: web_tstamp    ( 27)   TIMESTAMP WITH TIME ZONE    "         time stamp
+# 10: web_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 11: web_size      ( 15)   BIGINT                      "         file size
 # 12: web_status    ( 15)   TEXT                        "         download status
 # 13: iso_path      ( 85)   TEXT                        iso image file path
-# 14: iso_tstamp    ( 27)   TIMESTAMP WITH TIME ZONE    "         time stamp
+# 14: iso_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 15: iso_size      ( 15)   BIGINT          "           file size
 # 16: iso_volume    ( 43)   TEXT            "           volume id
 # 17: rmk_path      ( 85)   TEXT            remaster    file path
-# 18: rmk_tstamp    ( 27)   TIMESTAMP WITH TIME ZONE    "         time stamp
+# 18: rmk_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 19: rmk_size      ( 15)   BIGINT                      "         file size
 # 20: rmk_volume    ( 43)   TEXT                        "         volume id
 # 21: ldr_initrd    ( 85)   TEXT                        initrd    file path
 # 22: ldr_kernel    ( 85)   TEXT                        kernel    file path
 # 23: cfg_path      ( 85)   TEXT                        config    file path
-# 24: cfg_tstamp    ( 27)   TIMESTAMP WITH TIME ZONE    "         time stamp
+# 24: cfg_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 25: lnk_path      ( 85)   TEXT                        symlink   directory or file path
 
+# ----- create preseed.cfg ----------------------------------------------------
+function funcCreate_preseed() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
+	declare       __WORK=""				# work variables
 
+	# -------------------------------------------------------------------------
+	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	mkdir -p "${__DIRS}"
+	cp --backup "${_CONF_SEDD}" "${__TGET_PATH}"
+
+	# --- by generation -------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
+			sed -i "${__TGET_PATH}"               \
+			    -e '/packages:/a \    usrmerge '\\
+			;;
+		*)	;;
+	esac
+	case "${__TGET_PATH}" in
+		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
+			sed -i "${__TGET_PATH}"               \
+			    -e 's/bind9-utils/bind9utils/'   \
+			    -e 's/bind9-dnsutils/dnsutils/'  \
+			    -e 's/systemd-resolved/systemd/' \
+			    -e 's/fcitx5-mozc/fcitx-mozc/'
+			;;
+		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
+			sed -i "${__TGET_PATH}"               \
+			    -e 's/systemd-resolved/systemd/' \
+			    -e 's/fcitx5-mozc/fcitx-mozc/'
+			;;
+		*)	;;
+	esac
+	# --- server or desktop ---------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_desktop*)
+			sed -i "${__TGET_PATH}"                                              \
+			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
+			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \
+			    -e 's/^#/ /g                                                }'
+			;;
+		*)	;;
+	esac
+	# --- for ubiquity --------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_ubiquity_*)
+			IFS= __WORK=$(
+				sed -n '\%^[^#].*preseed/late_command%,\%[^\\]$%p' "${__TGET_PATH}" | \
+				sed -e 's/\\/\\\\/g'                                                  \
+				    -e 's/d-i/ubiquity/'                                              \
+				    -e 's%preseed\/late_command%ubiquity\/success_command%'         | \
+				sed -e ':l; N; s/\n/\\n/; b l;' || true
+			)
+			if [[ -n "${__WORK}" ]]; then
+				sed -i "${__TGET_PATH}"                                  \
+				    -e '\%^[^#].*preseed/late_command%,\%[^\\]$%     { ' \
+				    -e 's/^/#/g                                        ' \
+				    -e 's/^#  /# /g                                  } ' \
+				    -e '\%^[^#].*ubiquity/success_command%,\%[^\\]$% { ' \
+				    -e 's/^/#/g                                        ' \
+				    -e 's/^#  /# /g                                  } '
+				sed -i "${__TGET_PATH}"                                  \
+				    -e "\%ubiquity/success_command%i \\${__WORK}"
+			fi
+			sed -i "${__TGET_PATH}"                       \
+			    -e "\%ubiquity/download_updates% s/^#/ /" \
+			    -e "\%ubiquity/use_nonfree%      s/^#/ /" \
+			    -e "\%ubiquity/reboot%           s/^#/ /"
+			;;
+		*)	;;
+	esac
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${__TGET_PATH}"
+}
+
+# ----- create nocloud --------------------------------------------------------
+function funcCreate_nocloud() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
+#	declare       __WORK=""				# work variables
+
+	# -------------------------------------------------------------------------
+	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	mkdir -p "${__DIRS}"
+	cp --backup "${_CONF_CLUD}" "${__TGET_PATH}"
+
+	# --- by generation -------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
+			sed -i "${__TGET_PATH}"              \
+			    -e '/packages:/a \    usrmerge '
+			;;
+		*)	;;
+	esac
+	case "${__TGET_PATH}" in
+		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
+			sed -i "${__TGET_PATH}"              \
+			    -e 's/bind9-utils/bind9utils/'   \
+			    -e 's/bind9-dnsutils/dnsutils/'  \
+			    -e 's/systemd-resolved/systemd/' \
+			    -e 's/fcitx5-mozc/fcitx-mozc/'
+			;;
+		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
+			sed -i "${__TGET_PATH}"              \
+			    -e 's/systemd-resolved/systemd/' \
+			    -e 's/fcitx5-mozc/fcitx-mozc/'
+			;;
+		*)	;;
+	esac
+	# --- server or desktop ---------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_desktop.*)
+			sed -i "${__TGET_PATH}"                                            \
+			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
+			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
+			;;
+		*)	;;
+	esac
+	# -------------------------------------------------------------------------
+	touch -m "${__DIRS}/meta-data"      --reference "${__TGET_PATH}"
+	touch -m "${__DIRS}/network-config" --reference "${__TGET_PATH}"
+#	touch -m "${__DIRS}/user-data"      --reference "${__TGET_PATH}"
+	touch -m "${__DIRS}/vendor-data"    --reference "${__TGET_PATH}"
+	# -------------------------------------------------------------------------
+	chmod --recursive ugo-x "${__DIRS}"
+}
+
+# ----- create kickstart.cfg --------------------------------------------------
+function funcCreate_kickstart() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
+#	declare       __WORK=""				# work variables
+	declare       __VERS=""				# distribution version
+	declare       __NUMS=""				# "            number
+	declare       __NAME=""				# "            name
+	declare       __SECT=""				# "            section
+	declare -r    __ARCH="x86_64"		# base architecture
+	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
+
+	# -------------------------------------------------------------------------
+	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	mkdir -p "${__DIRS}"
+	cp --backup "${_CONF_KICK}" "${__TGET_PATH}"
+
+	# -------------------------------------------------------------------------
+#	__NUMS="\$releasever"
+	__VERS="${__TGET_PATH#*_}"
+	__VERS="${__VERS%%_*}"
+	__NUMS="${__VERS##*-}"
+	__NAME="${__VERS%-*}"
+	__SECT="${__NAME/-/ }"
+
+	# --- initializing the settings -------------------------------------------
+	sed -i "${__TGET_PATH}"                     \
+	    -e "/^cdrom$/      s/^/#/             " \
+	    -e "/^url[ \t]\+/  s/^/#/g            " \
+	    -e "/^repo[ \t]\+/ s/^/#/g            " \
+	    -e "s/:_HOST_NAME_:/${__NAME}/        " \
+	    -e "s%:__ADDR_:%${__ADDR}%g           " \
+	    -e "s%:_DISTRO_:%${__NAME}-${__NUMS}%g"
+	# --- cdrom, repository ---------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_dvd*)		# --- cdrom install ---------------------------------------
+			sed -i "${__TGET_PATH}"    \
+			    -e "/^#cdrom$/ s/^#//"
+			;;
+		*_net*)		# --- network install -------------------------------------
+			sed -i "${__TGET_PATH}"               \
+			    -e "/^#.*(${__SECT}).*$/,/^$/ { " \
+			    -e "/^#url[ \t]\+/  s/^#//g     " \
+			    -e "/^#repo[ \t]\+/ s/^#//g   } "
+			;;
+		*_web*)		# --- network install [ for pxeboot ] ---------------------
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^#.*(web address).*$/,/^$/ { " \
+			    -e "/^#url[ \t]\+/  s/^#//g       " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g    } "
+			;;
+		*)	;;
+	esac
+	# --- desktop -------------------------------------------------------------
+	sed -e "/%packages/,/%end/ {"                      \
+	    -e "/desktop/ s/^-//g  }"                      \
+	    "${__TGET_PATH}"                               \
+	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+}
+
+# ----- create autoyast.xml ---------------------------------------------------
+function funcCreate_autoyast() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
+#	declare       __WORK=""				# work variables
+	declare       __VERS=""				# distribution version
+	declare       __NUMS=""				# "            number
+
+	# -------------------------------------------------------------------------
+	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	mkdir -p "${__DIRS}"
+	cp --backup "${_CONF_YAST}" "${__TGET_PATH}"
+
+	# -------------------------------------------------------------------------
+	__VERS="${__TGET_PATH#*_}"
+	__VERS="${__VERS%%_*}"
+	__NUMS="${__VERS##*-}"
+
+	# --- by media ------------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_web*|\
+		*_dvd*)
+			sed -i "${__TGET_PATH}"                                   \
+			    -e '/<image_installation t="boolean">/ s/false/true/'
+			;;
+		*)
+			sed -i "${__TGET_PATH}"                                   \
+			    -e '/<image_installation t="boolean">/ s/true/false/'
+			;;
+	esac
+	# --- by version ----------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*tumbleweed*)
+			sed -i "${__TGET_PATH}"                                    \
+			    -e '\%<add_on_products .*>%,\%<\/add_on_products>% { ' \
+			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
+			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
+			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
+			    -e 's%\(<product>\).*\(</product>\)%\1openSUSE\2%    '
+			;;
+		*           )
+			sed -i "${__TGET_PATH}"                                          \
+			    -e '\%<add_on_products .*>%,\%</add_on_products>%        { ' \
+			    -e '/<!-- leap/,/leap -->/                               { ' \
+			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${__NUMS}/%g } " \
+			    -e '/<!-- leap$/ s/$/ -->/g                                ' \
+			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
+			    -e 's%\(<product>\).*\(</product>\)%\1Leap\2%              '
+			;;
+	esac
+	# --- desktop -------------------------------------------------------------
+	sed -e '/<!-- desktop lxde$/ s/$/ -->/g '          \
+	    -e '/^desktop lxde -->/  s/^/<!-- /g'          \
+	    "${__TGET_PATH}"                               \
+	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${__TGET_PATH}"
+}
+
+# ----- create pre-configuration file templates -------------------------------
+function funcCreate_precon() {
+	declare -n    __NAME_REFR="${1:-}"	# name reference
+	shift
+	declare -a    __OPTN=()				# option parameter
+	declare -a    __LIST=()				# data list
+	declare       __PATH=""				# full path
+	declare       __TYPE=""				# configuration type
+#	declare       __WORK=""				# work variables
+	declare -a    __LINE=()				# work variable
+	declare -i    I=0					# work variables
+
+	# --- option parameter ----------------------------------------------------
+	__OPTN=()
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1:-}" in
+			all      ) __OPTN+=("preseed" "nocloud" "kickstart" "autoyast");;
+			preseed  | \
+			nocloud  | \
+			kickstart| \
+			autoyast ) __OPTN+=("$1");;
+			*        ) break;;
+		esac
+		shift
+	done
+	__NAME_REFR="${*:-}"
+	if [[ -z "${__OPTN[*]}" ]]; then
+		return
+	fi
+
+	# -------------------------------------------------------------------------
+	funcPrintf "%20.20s: %s" "create pre-conf file" ""
+
+	# -------------------------------------------------------------------------
+	__LIST=()
+	for I in "${!_LIST_MDIA[@]}"
+	do
+		read -r -a __LINE < <(echo "${_LIST_MDIA[I]}")
+		case "${__LINE[1]}" in			# entry_flag
+			o) ;;
+			*) continue;;
+		esac
+		case "${__LINE[23]}" in			# cfg_path
+			-) continue;;
+			*) ;;
+		esac
+		__PATH="${__LINE[23]}"
+		__TYPE="${__PATH%/*}"
+		__TYPE="${__TYPE##*/}"
+		if ! echo "${__OPTN[*]}" | grep -q "${__TYPE}"; then
+			continue
+		fi
+		__LIST+=("${__PATH}")
+		case "${__PATH}" in
+			*dvd.*) __LIST+=("${__PATH/_dvd/_web}");;
+			*)	;;
+		esac
+	done
+	IFS= mapfile -d $'\n' -t __LIST < <(IFS=  printf "%s\n" "${__LIST[@]}" | sort -Vu || true)
+	# -------------------------------------------------------------------------
+	for __PATH in "${__LIST[@]}"
+	do
+		__TYPE="${__PATH%/*}"
+		__TYPE="${__TYPE##*/}"
+		case "${__TYPE}" in
+			preseed  ) funcCreate_preseed   "${__PATH}";;
+			nocloud  ) funcCreate_nocloud   "${__PATH}/user-data";;
+			kickstart) funcCreate_kickstart "${__PATH}";;
+			autoyast ) funcCreate_autoyast  "${__PATH}";;
+			*)	;;
+		esac
+	done
+
+	# -------------------------------------------------------------------------
+	# debian_*_oldold  : debian-10(buster)
+	# debian_*_old     : debian-11(bullseye)
+	# debian_*         : debian-12(bookworm)/13(trixie)/14(forky)/testing/sid/~
+	# ubuntu_*_oldold  : ubuntu-14.04(trusty)/16.04(xenial)/18.04(bionic)
+	# ubuntu_*_old     : ubuntu-20.04(focal)/22.04(jammy)
+	# ubuntu_*         : ubuntu-23.04(lunar)/~
+	# ubiquity_*_oldold: ubuntu-14.04(trusty)/16.04(xenial)/18.04(bionic)
+	# ubiquity_*_old   : ubuntu-20.04(focal)/22.04(jammy)
+	# ubiquity_*       : ubuntu-23.04(lunar)/~
+	# -------------------------------------------------------------------------
+}
+
+# === <pxeboot> ===============================================================
+
+# --- create boot options for preseed -----------------------------------------
+function funcPxeboot_preseed() {
+	declare -r -a __TGET_LIST=("$@")	# target data
+	declare       __WORK=""				# work variables
+	declare -a    __BOPT=()				# boot options
+	declare       __HOST=""				# host name
+	declare       __SRVR="" 			# server address
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+	declare       __ISOS=""				# iso file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
+
+	# --- boot option ---------------------------------------------------------
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+	__BOPT=()
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK="${__WORK:+" "}auto=true preseed/file=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK="${__CONF:+"${__WORK/file=\/cdrom/url=${__CONF}}"}"
+		case "${__TGET_LIST[2]}" in
+			ubuntu-desktop-*    | \
+			ubuntu-legacy-*     ) __WORK="automatic-ubiquity noprompt ${__WORK}";;
+			*-mini-*            ) __WORK="${__WORK/\/cdrom/}";;
+			*                   ) ;;
+		esac
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		case "${__TGET_LIST[2]}" in
+			ubuntu-*            ) __WORK+="${__WORK:+" "}netcfg/target_network_config=NetworkManager";;
+			*                   ) ;;
+		esac
+		__WORK+="${__WORK:+" "}netcfg/disable_autoconfig=true"
+		__WORK+="${__WORK:+" "}netcfg/choose_interface=\${ethrname}"
+		__WORK+="${__WORK:+" "}netcfg/get_hostname=\${hostname}"
+		__WORK+="${__WORK:+" "}netcfg/get_ipaddress=\${ipv4addr}"
+		__WORK+="${__WORK:+" "}netcfg/get_netmask=\${ipv4mask}"
+		__WORK+="${__WORK:+" "}netcfg/get_gateway=\${ipv4gway}"
+		__WORK+="${__WORK:+" "}netcfg/get_nameservers=\${ipv4nsvr}"
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
+	__WORK=""
+	case "${__TGET_LIST[2]}" in
+		live-debian-*       | \
+		live-ubuntu-*       | \
+		debian-live-*       ) __WORK+="${__WORK:+" "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
+		ubuntu-desktop-*    | \
+		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		*                   ) __WORK+="${__WORK:+" "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
+	esac
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]}"
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
+	__WORK=""
+	case "${__TGET_LIST[2]}" in
+#		debian-mini-*       ) ;;
+		ubuntu-mini-*       ) __WORK+="${__WORK:+" "}initrd=${__IMGS}/${__TGET_LIST[21]#"${_DIRS_LOAD}"} iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+		ubuntu-desktop-18.* | \
+		ubuntu-desktop-20.* | \
+		ubuntu-desktop-22.* | \
+		ubuntu-live-18.*    | \
+		ubuntu-live-20.*    | \
+		ubuntu-live-22.*    | \
+		ubuntu-server-*     | \
+		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}boot=casper url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+		ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+		*                   ) __WORK+="${__WORK:+" "}fetch=${__ISOS}/${__TGET_LIST[13]##*/}";;
+	esac
+	__BOPT+=("${__WORK}")
+	# --- finish --------------------------------------------------------------
+	printf "%s\n" "${__BOPT[@]:-}"
+}
+
+# --- create boot options for nocloud -----------------------------------------
+function funcPxeboot_nocloud() {
+	declare -r -a __TGET_LIST=("$@")	# target data
+	declare       __WORK=""				# work variables
+	declare -a    __BOPT=()				# boot options
+	declare       __HOST=""				# host name
+	declare       __SRVR="" 			# server address
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+	declare       __ISOS=""				# iso file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
+
+	# --- boot option ---------------------------------------------------------
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+	__BOPT=()
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK="${__WORK:+" "}automatic-ubiquity noprompt autoinstall ds=nocloud\;s=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK="${__CONF:+"${__WORK/\/cdrom/${__CONF}}"}"
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		case "${__TGET_LIST[2]}" in
+			ubuntu-live-18.04   ) __WORK+="${__WORK:+" "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
+			*                   ) __WORK+="${__WORK:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}::\${ethrname}:${_IPV4_ADDR:+static}:\${ipv4nsvr} hostname=\${hostname}";;
+		esac
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]}"
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
+	__WORK=""
+	case "${__TGET_LIST[2]}" in
+#		debian-mini-*       ) ;;
+		ubuntu-mini-*       ) __WORK+="${__WORK:+" "}initrd=${__IMGS}/${__TGET_LIST[21]#"${_DIRS_LOAD}"} iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+		ubuntu-desktop-18.* | \
+		ubuntu-desktop-20.* | \
+		ubuntu-desktop-22.* | \
+		ubuntu-live-18.*    | \
+		ubuntu-live-20.*    | \
+		ubuntu-live-22.*    | \
+		ubuntu-server-*     | \
+		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}boot=casper url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+		ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+		*                   ) __WORK+="${__WORK:+" "}fetch=${__ISOS}/${__TGET_LIST[13]##*/}";;
+	esac
+	__BOPT+=("${__WORK}")
+	# --- finish --------------------------------------------------------------
+	printf "%s\n" "${__BOPT[@]:-}"
+}
+
+# --- create boot options for kickstart ---------------------------------------
+function funcPxeboot_kickstart() {
+	declare -r -a __TGET_LIST=("$@")	# target data
+	declare       __WORK=""				# work variables
+	declare -a    __BOPT=()				# boot options
+	declare       __HOST=""				# host name
+	declare       __SRVR="" 			# server address
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+#	declare       __ISOS=""				# iso file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
+
+	# --- boot option ---------------------------------------------------------
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+	__BOPT=()
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+#	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK+="${__WORK:+" "}inst.ks=${__CONF}${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK="${__CONF:+"${__WORK/_dvd/_web}"}"
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		__WORK+="${__WORK:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]/root=\/dev\/ram*[0-9]/}"
+	__WORK="${__WORK#"${__WORK%%[!"${IFS}"]*}"}"	# ltrim
+	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}inst.repo=${__IMGS}/${__TGET_LIST[2]}"
+	__BOPT+=("${__WORK}")
+	# --- finish --------------------------------------------------------------
+	printf "%s\n" "${__BOPT[@]:-}"
+}
+
+# --- create boot options for autoyast ----------------------------------------
+function funcPxeboot_autoyast() {
+	declare -r -a __TGET_LIST=("$@")	# target data
+	declare       __WORK=""				# work variables
+	declare -a    __BOPT=()				# boot options
+	declare       __HOST=""				# host name
+	declare       __SRVR="" 			# server address
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+#	declare       __ISOS=""				# iso file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
+
+	# --- boot option ---------------------------------------------------------
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+	__BOPT=()
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+#	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK+="${__WORK:+" "}autoyast=${__CONF}${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK="${__CONF:+"${__WORK/_dvd/_web}"}"
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=${__WORK}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+		case "${__TGET_LIST[2]}" in
+			opensuse-*-15* ) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
+			*              ) ;;
+		esac
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]/root=\/dev\/ram*[0-9]/}"
+	__WORK="${__WORK#"${__WORK%%[!"${IFS}"]*}"}"	# ltrim
+	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
+	__WORK=""
+	case "${__TGET_LIST[2]}" in
+		opensuse-leap*netinst*      ) __WORK+="${__WORK:+" "}install=https://download.opensuse.org/distribution/leap/${__TGET_LIST[2]##*-}/repo/oss/";;
+		opensuse-tumbleweed*netinst*) __WORK+="${__WORK:+" "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
+		*                           ) __WORK+="${__WORK:+" "}install=${__IMGS}/${__TGET_LIST[2]}";;
+	esac
+	__BOPT+=("${__WORK}")
+	# --- finish --------------------------------------------------------------
+	printf "%s\n" "${__BOPT[@]:-}"
+}
+
+# --- create boot options -----------------------------------------------------
+function funcPxeboot_boot_options() {
+	declare -r -a __TGET_LIST=("$@")	# target data
+	declare -a    __LIST=()				# work variables
+	declare       __WORK=""				# work variables
+	declare -a    __BOPT=()				# boot options
+
+	# --- create boot options -------------------------------------------------
+	case "${__TGET_LIST[2]%%-*}" in
+		debian       | \
+		ubuntu       )
+			case "${__TGET_LIST[23]}" in
+				*/preseed/* ) __WORK="$(set -e; funcPxeboot_preseed "${__TGET_LIST[@]}")";;
+				*/nocloud/* ) __WORK="$(set -e; funcPxeboot_nocloud "${__TGET_LIST[@]}")";;
+				*           ) ;;
+			esac
+			;;
+		fedora       | \
+		centos       | \
+		almalinux    | \
+		rockylinux   | \
+		miraclelinux ) __WORK="$(set -e; funcPxeboot_kickstart "${__TGET_LIST[@]}")";;
+		opensuse     ) __WORK="$(set -e; funcPxeboot_autoyast "${__TGET_LIST[@]}")";;
+		*            ) ;;
+	esac
+	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+	__BOPT+=("fsck.mode=skip raid=noautodetect${_MENU_MODE:+" vga=${_MENU_MODE}"}")
+	# --- finish --------------------------------------------------------------
+	printf "%s\n" "${__BOPT[@]}"
+}
+
+# --- create autoexec.ipxe ----------------------------------------------------
+function funcPxeboot_autoexec_ipxe() {
+	declare -r -a __TGET_LIST=("$@")	# target data (list)
+	declare       __PATH=""				# full path
+	declare -a    __LIST=()				# work variables
+	declare       __WORK=""				# work variables
+	declare -a    __BOPT=()				# boot options
+	declare       __ENTR=""				# meny entry
+	declare       __HOST=""				# host name
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+	declare       __ISOS=""				# iso file
+	declare       __LOAD=""				# load module
+	declare       __RMAK=""				# remake file
+
+	# --- header/footer -------------------------------------------------------
+	if [[ ! -s "${_IPXE_MENU}" ]]; then
+#		rm -f "${_IPXE_MENU:?}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_IPXE_MENU}" || true
+			#!ipxe
+			
+			cpuid --ext 29 && set arch amd64 || set arch x86
+			
+			dhcp
+			
+			set optn-timeout 3000
+			set menu-timeout 0
+			isset \${menu-default} || set menu-default exit
+			
+			:start
+			
+			:menu
+			menu Select the OS type you want to boot
+			item --gap --                           --------------------------------------------------------------------------
+			item --gap --                           [ System command ]
+			item -- shell                           - iPXE shell
+			#item -- shutdown                       - System shutdown
+			item -- restart                         - System reboot
+			item --gap --                           --------------------------------------------------------------------------
+			choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
+			goto \${selected}
+			
+			:shell
+			echo "Booting iPXE shell ..."
+			shell
+			goto start
+			
+			:shutdown
+			echo "System shutting down ..."
+			poweroff
+			exit
+			
+			:restart
+			echo "System rebooting ..."
+			reboot
+			exit
+			
+			:error
+			prompt Press any key to continue
+			exit
+			
+			:exit
+			exit
+_EOT_
+	fi
+	# --- menu list -----------------------------------------------------------
+	case "${__TGET_LIST[1]}" in
+		m)								# (menu)
+			if [[ -z "${__TGET_LIST[3]##-}" ]]; then
+				return
+			fi
+			__WORK="$(printf "%-40.40s[ %s ]" "item --gap --" "${__TGET_LIST[3]//%20/ }")"
+			sed -i "${_IPXE_MENU}" -e "/\[ System command \]/i \\${__WORK}"
+			;;
+		o)								# (output)
+			if [[ ! -e "${_DIRS_IMGS}/${__TGET_LIST[2]}" ]]; then
+				return
+			fi
+			if [[ ! -s "${__TGET_LIST[13]}" ]]; then
+				return
+			fi
+			__ENTR="${__TGET_LIST[2]}"
+			case "${__TGET_LIST[0]}" in
+				tool          ) ;;							# tools
+				system        ) ;;							# system command
+				custom_live   ) ;;							# custom media live mode
+				custom_netinst) ;;							# custom media install mode
+				live          ) __ENTR="live-${__ENTR}";;	# original media live mode
+				*             ) ;;							# original media install mode
+			esac
+			__WORK="$(printf "%-40.40s%-60.60s%20.20s" "item -- ${__ENTR}" "- ${__TGET_LIST[3]//%20/ } ${_TEXT_SPCE// /.}" "${__TGET_LIST[14]//%20/ }")"
+			sed -i "${_IPXE_MENU}" -e "/\[ System command \]/i \\${__WORK}"
+			case "${__TGET_LIST[2]}" in
+				windows-* )				# (windows)
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							:${__ENTR}
+							echo Loading ${__TGET_LIST[3]//%20/ } ...
+							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+							isset \${next-server} && set srvraddr \${next-server} ||
+							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
+							set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
+							echo Loading boot files ...
+							kernel ipxe/wimboot
+							initrd \${cfgaddr}/unattend.xml                 unattend.xml || goto error
+							initrd \${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
+							initrd -n install.cmd \${cfgaddr}/inst_w${__TGET_LIST[2]##*-}.cmd  install.cmd  || goto error
+							initrd \${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
+							initrd \${knladdr}/boot/bcd                     BCD          || goto error
+							initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
+							boot || goto error
+							exit
+							
+_EOT_
+					)"
+					;;
+				winpe-* | \
+				ati*x64 | \
+				ati*x86 )				# (winpe/ati)
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							:${__ENTR}
+							echo Loading ${__TGET_LIST[3]//%20/ } ...
+							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+							isset \${next-server} && set srvraddr \${next-server} ||
+							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
+							echo Loading boot files ...
+							kernel ipxe/wimboot
+							initrd \${knladdr}/boot/bcd                     BCD          || goto error
+							initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
+							boot || goto error
+							exit
+							
+_EOT_
+					)"
+					;;
+				memtest86* )			# (memtest86)
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							:${__ENTR}
+							echo Loading ${__TGET_LIST[3]//%20/ } ...
+							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+							isset \${next-server} && set srvraddr \${next-server} ||
+							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
+							iseq \${platform} efi && set knlfile \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/} || set knlfile \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
+							echo Loading boot files ...
+							kernel \${knlfile} || goto error
+							boot || goto error
+							exit
+							
+_EOT_
+					)"
+					;;
+				*          )			# (linux)
+					__WORK="$(set -e; funcPxeboot_boot_options "${__TGET_LIST[@]}")"
+					IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							:${__ENTR}
+							echo Loading ${__TGET_LIST[3]//%20/ } ...
+							
+_EOT_
+					)"
+					if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+						__WORK+="$(
+							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+								set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+								set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+								set ethrname ${_NICS_NAME:-ens160}
+								set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
+								set ipv4mask ${_IPV4_MASK:-}
+								set ipv4gway ${_IPV4_GWAY:-}
+								set ipv4nsvr ${_IPV4_NSVR:-}
+								set autoinst ${__BOPT[1]:-}
+								set networks ${__BOPT[2]:-}
+								set language ${__BOPT[3]:-}
+								set ramsdisk ${__BOPT[4]:-}
+								set isosfile ${__BOPT[5]:-}
+								
+_EOT_
+						)"
+					else
+						__WORK+="$(
+							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+								set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+								set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+								form                                    Configure Boot Options
+								item hostname                           Hostname
+								item srvraddr                           Server ip address
+								present ||
+								set ethrname ${_NICS_NAME:-ens160}
+								set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
+								set ipv4mask ${_IPV4_MASK:-}
+								set ipv4gway ${_IPV4_GWAY:-}
+								set ipv4nsvr ${_IPV4_NSVR:-}
+								form                                    Configure Boot Options
+								item ethrname                           Interface
+								item ipv4addr                           IPv4 address
+								item ipv4mask                           IPv4 netmask
+								item ipv4gway                           IPv4 gateway
+								item ipv4nsvr                           IPv4 nameservers
+								present ||
+								set autoinst ${__BOPT[1]:-}
+								set networks ${__BOPT[2]:-}
+								set language ${__BOPT[3]:-}
+								set ramsdisk ${__BOPT[4]:-}
+								set isosfile ${__BOPT[5]:-}
+								form                                    Configure Boot Options
+								item autoinst                           Auto install
+								item networks                           Network
+								item language                           Language
+								item ramsdisk                           RAM disk
+								item isosfile                           ISO file
+								present ||
+								
+_EOT_
+						)"
+					fi
+					__WORK+="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
+							set options \${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}
+							echo Loading kernel and initrd ...
+							kernel \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} --- || goto error
+							initrd \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/} || goto error
+							boot || goto error
+							exit
+
+_EOT_
+					)"
+					;;
+			esac
+			sed -i "${_IPXE_MENU}" -e "/^:shell$/i \\${__WORK}"
+			;;
+		*)								# (hidden)
+			;;
+	esac
+}
+
+# --- file copy ---------------------------------------------------------------
+function funcPxeboot_copy() {
+	declare -r    __PATH_TGET="${1:?}"	# target file
+	declare -r    __DIRS_DEST="${2:?}"	# destination directory
+	declare       __MNTP=""				# mount point
+	declare       __PATH=""				# full path
+	              __PATH="$(mktemp -qd "${TMPDIR:-/tmp}/${__DIRS_DEST##*/}.XXXXXX")"
+	readonly      __PATH
+
+	if [[ ! -s "${__PATH_TGET}" ]]; then
+		return
+	fi
+	printf "%20.20s: %s\n" "copy" "${__PATH_TGET}" 1>&2
+	__MNTP="${__PATH}/mnt"
+	rm -rf "${__MNTP:?}"
+	mkdir -p "${__MNTP}" "${__DIRS_DEST}"
+	mount -o ro,loop "${__PATH_TGET}" "${__MNTP}"
+	nice -n "${_NICE_VALU:-19}" rsync "${_OPTN_RSYC[@]}" "${__MNTP}/." "${__DIRS_DEST}/" 2>/dev/null || true
+	umount "${__MNTP}"
+	chmod -R +r "${__DIRS_DEST}/" 2>/dev/null || true
+	rm -rf "${__MNTP:?}"
+}
+
+# --- create pxeboot menu -----------------------------------------------------
+function funcPxeboot() {
+	declare       __LIST=()				# work variable
+	declare -i    I=0					# work variables
+
+	rm -f "${_IPXE_MENU:?}"
+	for I in "${!_LIST_MDIA[@]}"
+	do
+		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+		# --- update ----------------------------------------------------------
+		case "${1:-}" in
+			update  ) ;;
+			*       ) funcPxeboot_copy "${__LIST[13]}" "${_DIRS_IMGS}/${__LIST[2]}";;
+		esac
+		# --- create pxeboot menu ---------------------------------------------
+		case "${1:-}" in
+			download) ;;
+			*       ) funcPxeboot_autoexec_ipxe "${__LIST[@]}";;
+		esac
+	done
+}
 # --- debug out parameter -----------------------------------------------------
 funcDebug_parameter() {
 	declare       _VARS_CHAR="_"		# variable initial letter
@@ -1223,7 +2711,7 @@ function funcMain() {
 	do
 		_RETN_PARM=()
 		case "${1:-}" in
-			create  ) ;;
+			create  ) funcPxeboot "${1:-}"; shift;;
 			update  ) ;;
 			download) ;;
 			link    )
@@ -1252,18 +2740,14 @@ function funcMain() {
 				;;
 			conf    )
 				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						create   ) shift; funcCreate_conf ;;
-						all      ) ;;
-						preseed  ) ;;
-						nocloud  ) ;;
-						kickstart) ;;
-						autoyast ) ;;
-						*        ) break;;
-					esac
-				done
+				case "${1:-}" in
+					create   ) shift; funcCreate_conf;;
+					*        ) ;;
+				esac
+				;;
+			preconf )
+				shift
+				funcCreate_precon __RETN_PARM "${@:-}"
 				;;
 			help    ) shift; funcHelp; break;;
 			debug   )

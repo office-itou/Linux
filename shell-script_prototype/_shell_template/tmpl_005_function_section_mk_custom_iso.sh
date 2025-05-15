@@ -500,7 +500,7 @@ function funcRemastering_copy() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
 	declare       __WORK=""				# work variables
-	declare       __PATH=""				# file name
+	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
 	declare       __FNAM=""				# file name
 	declare       __BASE=""				# base name
@@ -592,7 +592,7 @@ function funcRemastering_media() {
 	declare -r    __DIRS_TGET="${1:?}"						# target directory
 	declare -r -a __TGET_LIST=("${@:2}")					# target data
 	declare -r    __DWRK="${_DIRS_TEMP}/${__TGET_LIST[2]}"	# work directory
-#	declare       __PATH=""									# file name
+#	declare       __PATH=""									# full path
 	declare       __FMBR=""									# "         (mbr.img)
 	declare       __FEFI=""									# "         (efi.img)
 	declare       __FCAT=""									# "         (boot.cat or boot.catalog)
@@ -668,7 +668,7 @@ function funcRemastering() {
 	declare -r    __DLOW="${__DOVL}/lower"					# lowerdir
 	declare -r    __DWKD="${__DOVL}/work"					# workdir
 	declare -r    __DMRG="${__DOVL}/merged"					# merged
-	declare       __PATH=""									# file name
+	declare       __PATH=""									# full path
 	declare       __FEFI=""									# "         (efiboot.img)
 	declare       __BOPT=""									# boot options
 	

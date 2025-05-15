@@ -1,44 +1,8 @@
 # === <pxeboot> ===============================================================
 
-# --- get pxeboot server directory --------------------------------------------
-function funcPxeboot_directory() {
-	declare       __SRVR="" 			# server address
-	declare       __CONF=""				# configuration file
-	declare       __IMGS=""				# iso file extraction destination
-	declare       __ISOS=""				# iso file
-	declare       __LOAD=""				# load module
-	declare       __RMAK=""				# remake file
-	declare -a    __LIST=()				# work variables
-
-	# --- pxeboot server directory --------------------------------------------
-	case "${_SRVR_PROT:?}" in
-		http|https)
-			__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
-			__CONF="${__SRVR}/${_DIRS_CONF##*/}"
-			__IMGS="${__SRVR}/${_DIRS_IMGS##*/}"
-			__ISOS="${__SRVR}/${_DIRS_ISOS##*/}"
-			__LOAD="${__SRVR}/${_DIRS_LOAD##*/}"
-			__RMAK="${__SRVR}/${_DIRS_RMAK##*/}"
-			;;
-		tftp)
-			__SRVR="${_SRVR_HTTP:-http}://${_SRVR_ADDR:?}"	# http/https
-			__CONF="${__SRVR}/${_DIRS_CONF##*/}"
-			__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"		# tftp
-			__IMGS="${__SRVR}/${_DIRS_IMGS##*/}"
-			__ISOS="${__SRVR}/${_DIRS_ISOS##*/}"
-			__LOAD="${__SRVR}/${_DIRS_LOAD##*/}"
-			;;
-		*);;
-	esac
-	__LIST=("${__SRVR:-}" "${__CONF:-}" "${__IMGS:-}" "${__ISOS:-}" "${__LOAD:-}" "${__RMAK:-}")
-	# --- finish --------------------------------------------------------------
-	printf "%s\n" "${__LIST[@]}"
-}
-
 # --- create boot options for preseed -----------------------------------------
 function funcPxeboot_preseed() {
 	declare -r -a __TGET_LIST=("$@")	# target data
-	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
@@ -46,24 +10,26 @@ function funcPxeboot_preseed() {
 	declare       __CONF=""				# configuration file
 	declare       __IMGS=""				# iso file extraction destination
 	declare       __ISOS=""				# iso file
-	declare       __LOAD=""				# load module
-	declare       __RMAK=""				# remake file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
 
 	# --- boot option ---------------------------------------------------------
-	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
 	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
-	# --- server address ------------------------------------------------------
-	IFS= mapfile -d $'\n' -t __LIST < <(funcPxeboot_directory)
-	__SRVR="${_LIST[0]:-}"
-	__CONF="${_LIST[1]:-}"
-	__IMGS="${_LIST[2]:-}"
-	__ISOS="${_LIST[3]:-}"
-	__LOAD="${_LIST[4]:-}"
-	__RMAK="${_LIST[5]:-}"
-	# ---  0: autoinstall -----------------------------------------------------
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
 	__WORK=""
-	if [[ -n "${__TGET_LIST[23]##-}" ]]; then
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
 		__WORK="${__WORK:+" "}auto=true preseed/file=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
 		__WORK="${__CONF:+"${__WORK/file=\/cdrom/url=${__CONF}}"}"
 		case "${__TGET_LIST[2]}" in
@@ -73,44 +39,45 @@ function funcPxeboot_preseed() {
 			*                   ) ;;
 		esac
 	fi
-	__BOPT+=("${__WORK}");;
-	# ---  1: network ---------------------------------------------------------
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
 	__WORK=""
-	case "${__TGET_LIST[2]}" in
-		ubuntu-*            ) __WORK+="${__WORK:+" "}netcfg/target_network_config=NetworkManager";;
-		*                   ) ;;
-	esac
-	__WORK+="${__WORK:+" "}netcfg/disable_autoconfig=true"
-	__WORK+="${__WORK:+" "}netcfg/choose_interface=\${ethrname}"
-	__WORK+="${__WORK:+" "}netcfg/get_hostname=\${hostname}"
-	__WORK+="${__WORK:+" "}netcfg/get_ipaddress=\${ipv4addr}"
-	__WORK+="${__WORK:+" "}netcfg/get_netmask=\${ipv4mask}"
-	__WORK+="${__WORK:+" "}netcfg/get_gateway=\${ipv4gway}"
-	__WORK+="${__WORK:+" "}netcfg/get_nameservers=\${ipv4nsvr}"
-	__BOPT+=("${__WORK}");;
-	# ---  2: locale ----------------------------------------------------------
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		case "${__TGET_LIST[2]}" in
+			ubuntu-*            ) __WORK+="${__WORK:+" "}netcfg/target_network_config=NetworkManager";;
+			*                   ) ;;
+		esac
+		__WORK+="${__WORK:+" "}netcfg/disable_autoconfig=true"
+		__WORK+="${__WORK:+" "}netcfg/choose_interface=\${ethrname}"
+		__WORK+="${__WORK:+" "}netcfg/get_hostname=\${hostname}"
+		__WORK+="${__WORK:+" "}netcfg/get_ipaddress=\${ipv4addr}"
+		__WORK+="${__WORK:+" "}netcfg/get_netmask=\${ipv4mask}"
+		__WORK+="${__WORK:+" "}netcfg/get_gateway=\${ipv4gway}"
+		__WORK+="${__WORK:+" "}netcfg/get_nameservers=\${ipv4nsvr}"
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
 	__WORK=""
 	case "${__TGET_LIST[2]}" in
 		live-debian-*       | \
 		live-ubuntu-*       | \
-		debian-live-*       ) __WORK+="${__WORK:+" "}"utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
+		debian-live-*       ) __WORK+="${__WORK:+" "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
 		ubuntu-desktop-*    | \
 		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
 		*                   ) __WORK+="${__WORK:+" "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
 	esac
-	__BOPT+=("${__WORK}");;
-	# ---  3: ramdisk ---------------------------------------------------------
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]}"
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
 	__WORK=""
 	case "${__TGET_LIST[2]}" in
-		*-mini-*            ) ;;
-		*                   ) __WORK+="${__WORK:+" "}${_OPTN_RDSK}";;
-	esac
-	__BOPT+=("${__WORK}");;
-	# ---  4: isosfile --------------------------------------------------------
-	__WORK=""
-	case "${__TGET_LIST[2]}" in
-		debian-mini-*       ) ;;
-		ubuntu-mini-*       ) __WORK+="${__WORK:+" "}initrd=${__IMGS}/${__TGET_LIST[21]#"${_DIRS_LOAD}"} iso-url=\${isosfile}";;
+#		debian-mini-*       ) ;;
+		ubuntu-mini-*       ) __WORK+="${__WORK:+" "}initrd=${__IMGS}/${__TGET_LIST[21]#"${_DIRS_LOAD}"} iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
 		ubuntu-desktop-18.* | \
 		ubuntu-desktop-20.* | \
 		ubuntu-desktop-22.* | \
@@ -118,19 +85,18 @@ function funcPxeboot_preseed() {
 		ubuntu-live-20.*    | \
 		ubuntu-live-22.*    | \
 		ubuntu-server-*     | \
-		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}boot=casper url=\${isosfile}";;
-		ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=\${isosfile}";;
-		*                   ) __WORK+="${__WORK:+" "}fetch=\${isosfile}";;
+		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}boot=casper url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+		ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+		*                   ) __WORK+="${__WORK:+" "}fetch=${__ISOS}/${__TGET_LIST[13]##*/}";;
 	esac
-	__BOPT+=("${__WORK}");;
+	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]}"
+	printf "%s\n" "${__BOPT[@]:-}"
 }
 
 # --- create boot options for nocloud -----------------------------------------
 function funcPxeboot_nocloud() {
 	declare -r -a __TGET_LIST=("$@")	# target data
-	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
@@ -138,51 +104,54 @@ function funcPxeboot_nocloud() {
 	declare       __CONF=""				# configuration file
 	declare       __IMGS=""				# iso file extraction destination
 	declare       __ISOS=""				# iso file
-	declare       __LOAD=""				# load module
-	declare       __RMAK=""				# remake file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
 
 	# --- boot option ---------------------------------------------------------
-	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
 	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
-	# --- server address ------------------------------------------------------
-	IFS= mapfile -d $'\n' -t __LIST < <(funcPxeboot_directory)
-	__SRVR="${_LIST[0]:-}"
-	__CONF="${_LIST[1]:-}"
-	__IMGS="${_LIST[2]:-}"
-	__ISOS="${_LIST[3]:-}"
-	__LOAD="${_LIST[4]:-}"
-	__RMAK="${_LIST[5]:-}"
-	# ---  0: autoinstall -----------------------------------------------------
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
 	__WORK=""
-	if [[ -n "${__TGET_LIST[23]##-}" ]]; then
-		__WORK="${__WORK:+" "}automatic-ubiquity noprompt autoinstall ds='nocloud;s=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}'"
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK="${__WORK:+" "}automatic-ubiquity noprompt autoinstall ds=nocloud\;s=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
 		__WORK="${__CONF:+"${__WORK/\/cdrom/${__CONF}}"}"
 	fi
-	__BOPT+=("${__WORK}");;
-	# ---  1: network ---------------------------------------------------------
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
 	__WORK=""
-	case "${__TGET_LIST[2]}" in
-		ubuntu-live-18.04   ) __WORK+="${__WORK:+" "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
-		*                   ) __WORK+="${__WORK:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}::\${ethrname}:${_IPV4_ADDR:+static}:\${ipv4nsvr} hostname=\${hostname}";;
-	esac
-	__BOPT+=("${__WORK}");;
-	# ---  2: locale ----------------------------------------------------------
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		case "${__TGET_LIST[2]}" in
+			ubuntu-live-18.04   ) __WORK+="${__WORK:+" "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
+			*                   ) __WORK+="${__WORK:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}::\${ethrname}:${_IPV4_ADDR:+static}:\${ipv4nsvr} hostname=\${hostname}";;
+		esac
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
 	__WORK=""
 	__WORK+="${__WORK:+" "}debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	__BOPT+=("${__WORK}");;
-	# ---  3: ramdisk ---------------------------------------------------------
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]}"
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
 	__WORK=""
 	case "${__TGET_LIST[2]}" in
-		*-mini-*            ) ;;
-		*                   ) __WORK+="${__WORK:+" "}${_OPTN_RDSK}";;
-	esac
-	__BOPT+=("${__WORK}");;
-	# ---  4: isosfile --------------------------------------------------------
-	__WORK=""
-	case "${__TGET_LIST[2]}" in
-		debian-mini-*       ) ;;
-		ubuntu-mini-*       ) __WORK+="${__WORK:+" "}initrd=${__IMGS}/${__TGET_LIST[21]#"${_DIRS_LOAD}"} iso-url=\${isosfile}";;
+#		debian-mini-*       ) ;;
+		ubuntu-mini-*       ) __WORK+="${__WORK:+" "}initrd=${__IMGS}/${__TGET_LIST[21]#"${_DIRS_LOAD}"} iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
 		ubuntu-desktop-18.* | \
 		ubuntu-desktop-20.* | \
 		ubuntu-desktop-22.* | \
@@ -190,129 +159,141 @@ function funcPxeboot_nocloud() {
 		ubuntu-live-20.*    | \
 		ubuntu-live-22.*    | \
 		ubuntu-server-*     | \
-		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}boot=casper url=\${isosfile}";;
-		ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=\${isosfile}";;
-		*                   ) __WORK+="${__WORK:+" "}fetch=\${isosfile}";;
+		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}boot=casper url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+		ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+		*                   ) __WORK+="${__WORK:+" "}fetch=${__ISOS}/${__TGET_LIST[13]##*/}";;
 	esac
-	__BOPT+=("${__WORK}");;
+	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]}"
+	printf "%s\n" "${__BOPT[@]:-}"
 }
 
 # --- create boot options for kickstart ---------------------------------------
 function funcPxeboot_kickstart() {
 	declare -r -a __TGET_LIST=("$@")	# target data
-	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
 	declare       __SRVR="" 			# server address
 	declare       __CONF=""				# configuration file
 	declare       __IMGS=""				# iso file extraction destination
-	declare       __ISOS=""				# iso file
-	declare       __LOAD=""				# load module
-	declare       __RMAK=""				# remake file
+#	declare       __ISOS=""				# iso file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
 
 	# --- boot option ---------------------------------------------------------
-	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
 	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
-	# --- server address ------------------------------------------------------
-	IFS= mapfile -d $'\n' -t __LIST < <(funcPxeboot_directory)
-	__SRVR="${_LIST[0]:-}"
-	__CONF="${_LIST[1]:-}"
-	__IMGS="${_LIST[2]:-}"
-	__ISOS="${_LIST[3]:-}"
-	__LOAD="${_LIST[4]:-}"
-	__RMAK="${_LIST[5]:-}"
-	# ---  0: autoinstall -----------------------------------------------------
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+#	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
 	__WORK=""
-	if [[ -n "${__TGET_LIST[23]##-}" ]]; then
-		__WORK+="${__WORK:+" "}inst.ks=hd:sr0:${__TGET_LIST[23]#"${_DIRS_CONF}"}"
-		__WORK+="${__TGET_LIST[16]:+"${__WORK:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}"
-		__WORK="${__CONF:+"${__WORK/hd:sr0:/${__CONF}}"}"
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK+="${__WORK:+" "}inst.ks=${__CONF}${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK="${__CONF:+"${__WORK/_dvd/_web}"}"
 	fi
-	__BOPT+=("${__WORK}");;
-	# ---  1: network ---------------------------------------------------------
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
 	__WORK=""
-	__WORK+="${__WORK:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
-	__BOPT+=("${__WORK}");;
-	# ---  2: locale ----------------------------------------------------------
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		__WORK+="${__WORK:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
 	__WORK=""
 	__WORK+="${__WORK:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	__BOPT+=("${__WORK}");;
-	# ---  3: ramdisk ---------------------------------------------------------
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
 	__WORK=""
-	case "${__TGET_LIST[2]}" in
-		*-mini-*            ) ;;
-		*                   ) __WORK+="${__WORK:+" "}${_OPTN_RDSK}";;
-	esac
-	__BOPT+=("${__WORK}");;
-	# ---  4: isosfile --------------------------------------------------------
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]/root=\/dev\/ram*[0-9]/}"
+	__WORK="${__WORK#"${__WORK%%[!"${IFS}"]*}"}"	# ltrim
+	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
 	__WORK=""
-	__BOPT+=("${__WORK}");;
+	__WORK+="${__WORK:+" "}inst.repo=${__IMGS}/${__TGET_LIST[2]}"
+	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]}"
+	printf "%s\n" "${__BOPT[@]:-}"
 }
 
 # --- create boot options for autoyast ----------------------------------------
 function funcPxeboot_autoyast() {
 	declare -r -a __TGET_LIST=("$@")	# target data
-	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
 	declare       __SRVR="" 			# server address
 	declare       __CONF=""				# configuration file
 	declare       __IMGS=""				# iso file extraction destination
-	declare       __ISOS=""				# iso file
-	declare       __LOAD=""				# load module
-	declare       __RMAK=""				# remake file
+#	declare       __ISOS=""				# iso file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
 
 	# --- boot option ---------------------------------------------------------
-	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
 	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
-	# --- server address ------------------------------------------------------
-	IFS= mapfile -d $'\n' -t __LIST < <(funcPxeboot_directory)
-	__SRVR="${_LIST[0]:-}"
-	__CONF="${_LIST[1]:-}"
-	__IMGS="${_LIST[2]:-}"
-	__ISOS="${_LIST[3]:-}"
-	__LOAD="${_LIST[4]:-}"
-	__RMAK="${_LIST[5]:-}"
-	# ---  0: autoinstall -----------------------------------------------------
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+#	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
 	__WORK=""
-	if [[ -n "${__TGET_LIST[23]##-}" ]]; then
-		__WORK+="${__WORK:+" "}inst.ks=hd:sr0:${__TGET_LIST[23]#"${_DIRS_CONF}"}"
-		__WORK+="${__TGET_LIST[16]:+"${__WORK:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}"
-		__WORK="${__CONF:+"${__WORK/hd:sr0:/${__CONF}}"}"
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK+="${__WORK:+" "}autoyast=${__CONF}${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK="${__CONF:+"${__WORK/_dvd/_web}"}"
 	fi
-	__BOPT+=("${__WORK}");;
-	# ---  1: network ---------------------------------------------------------
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
 	__WORK=""
-	__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=${__WORK}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
-	case "${__TGET_LIST[2]}" in
-		opensuse-*-15* ) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"};;
-		*              ) ;;
-	esac
-	__BOPT+=("${__WORK}");;
-	# ---  2: locale ----------------------------------------------------------
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=${__WORK}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+		case "${__TGET_LIST[2]}" in
+			opensuse-*-15* ) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
+			*              ) ;;
+		esac
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
 	__WORK=""
 	__WORK+="${__WORK:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
-	__BOPT+=("${__WORK}");;
-	# ---  3: ramdisk ---------------------------------------------------------
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]/root=\/dev\/ram*[0-9]/}"
+	__WORK="${__WORK#"${__WORK%%[!"${IFS}"]*}"}"	# ltrim
+	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
 	__WORK=""
 	case "${__TGET_LIST[2]}" in
-		*-mini-*            ) ;;
-		*                   ) __WORK+="${__WORK:+" "}${_OPTN_RDSK}";;
+		opensuse-leap*netinst*      ) __WORK+="${__WORK:+" "}install=https://download.opensuse.org/distribution/leap/${__TGET_LIST[2]##*-}/repo/oss/";;
+		opensuse-tumbleweed*netinst*) __WORK+="${__WORK:+" "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
+		*                           ) __WORK+="${__WORK:+" "}install=${__IMGS}/${__TGET_LIST[2]}";;
 	esac
-	__BOPT+=("${__WORK}");;
-	# ---  4: isosfile --------------------------------------------------------
-	__WORK=""
-	__BOPT+=("${__WORK}");;
+	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]}"
+	printf "%s\n" "${__BOPT[@]:-}"
 }
 
 # --- create boot options -----------------------------------------------------
@@ -348,53 +329,286 @@ function funcPxeboot_boot_options() {
 
 # --- create autoexec.ipxe ----------------------------------------------------
 function funcPxeboot_autoexec_ipxe() {
-	declare -r -a __TGET_LIST=("$@")	# target data
+	declare -r -a __TGET_LIST=("$@")	# target data (list)
+	declare       __PATH=""				# full path
 	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
+	declare       __ENTR=""				# meny entry
+	declare       __HOST=""				# host name
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+	declare       __ISOS=""				# iso file
+	declare       __LOAD=""				# load module
+	declare       __RMAK=""				# remake file
 
-	__WORK="$(set -e; funcPxeboot_boot_options "${__TGET_LIST[@]}")"
-	IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__WORK}")
+	# --- header/footer -------------------------------------------------------
+	if [[ ! -s "${_IPXE_MENU}" ]]; then
+#		rm -f "${_IPXE_MENU:?}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_IPXE_MENU}" || true
+			#!ipxe
+			
+			cpuid --ext 29 && set arch amd64 || set arch x86
+			
+			dhcp
+			
+			set optn-timeout 3000
+			set menu-timeout 0
+			isset \${menu-default} || set menu-default exit
+			
+			:start
+			
+			:menu
+			menu Select the OS type you want to boot
+			item --gap --                           --------------------------------------------------------------------------
+			item --gap --                           [ System command ]
+			item -- shell                           - iPXE shell
+			#item -- shutdown                       - System shutdown
+			item -- restart                         - System reboot
+			item --gap --                           --------------------------------------------------------------------------
+			choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
+			goto \${selected}
+			
+			:shell
+			echo "Booting iPXE shell ..."
+			shell
+			goto start
+			
+			:shutdown
+			echo "System shutting down ..."
+			poweroff
+			exit
+			
+			:restart
+			echo "System rebooting ..."
+			reboot
+			exit
+			
+			:error
+			prompt Press any key to continue
+			exit
+			
+			:exit
+			exit
+_EOT_
+	fi
+	# --- menu list -----------------------------------------------------------
+	case "${__TGET_LIST[1]}" in
+		m)								# (menu)
+			if [[ -z "${__TGET_LIST[3]##-}" ]]; then
+				return
+			fi
+			__WORK="$(printf "%-40.40s[ %s ]" "item --gap --" "${__TGET_LIST[3]//%20/ }")"
+			sed -i "${_IPXE_MENU}" -e "/\[ System command \]/i \\${__WORK}"
+			;;
+		o)								# (output)
+			if [[ ! -e "${_DIRS_IMGS}/${__TGET_LIST[2]}" ]]; then
+				return
+			fi
+			if [[ ! -s "${__TGET_LIST[13]}" ]]; then
+				return
+			fi
+			__ENTR="${__TGET_LIST[2]}"
+			case "${__TGET_LIST[0]}" in
+				tool          ) ;;							# tools
+				system        ) ;;							# system command
+				custom_live   ) ;;							# custom media live mode
+				custom_netinst) ;;							# custom media install mode
+				live          ) __ENTR="live-${__ENTR}";;	# original media live mode
+				*             ) ;;							# original media install mode
+			esac
+			__WORK="$(printf "%-40.40s%-60.60s%20.20s" "item -- ${__ENTR}" "- ${__TGET_LIST[3]//%20/ } ${_TEXT_SPCE// /.}" "${__TGET_LIST[14]//%20/ }")"
+			sed -i "${_IPXE_MENU}" -e "/\[ System command \]/i \\${__WORK}"
+			case "${__TGET_LIST[2]}" in
+				windows-* )				# (windows)
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							:${__ENTR}
+							echo Loading ${__TGET_LIST[3]//%20/ } ...
+							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+							isset \${next-server} && set srvraddr \${next-server} ||
+							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
+							set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
+							echo Loading boot files ...
+							kernel ipxe/wimboot
+							initrd \${cfgaddr}/unattend.xml                 unattend.xml || goto error
+							initrd \${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
+							initrd -n install.cmd \${cfgaddr}/inst_w${__TGET_LIST[2]##*-}.cmd  install.cmd  || goto error
+							initrd \${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
+							initrd \${knladdr}/boot/bcd                     BCD          || goto error
+							initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
+							boot || goto error
+							exit
+							
+_EOT_
+					)"
+					;;
+				winpe-* | \
+				ati*x64 | \
+				ati*x86 )				# (winpe/ati)
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							:${__ENTR}
+							echo Loading ${__TGET_LIST[3]//%20/ } ...
+							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+							isset \${next-server} && set srvraddr \${next-server} ||
+							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
+							echo Loading boot files ...
+							kernel ipxe/wimboot
+							initrd \${knladdr}/boot/bcd                     BCD          || goto error
+							initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
+							boot || goto error
+							exit
+							
+_EOT_
+					)"
+					;;
+				memtest86* )			# (memtest86)
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							:${__ENTR}
+							echo Loading ${__TGET_LIST[3]//%20/ } ...
+							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+							isset \${next-server} && set srvraddr \${next-server} ||
+							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
+							iseq \${platform} efi && set knlfile \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/} || set knlfile \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
+							echo Loading boot files ...
+							kernel \${knlfile} || goto error
+							boot || goto error
+							exit
+							
+_EOT_
+					)"
+					;;
+				*          )			# (linux)
+					__WORK="$(set -e; funcPxeboot_boot_options "${__TGET_LIST[@]}")"
+					IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							:${__ENTR}
+							echo Loading ${__TGET_LIST[3]//%20/ } ...
+							
+_EOT_
+					)"
+					if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+						__WORK+="$(
+							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+								set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+								set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+								set ethrname ${_NICS_NAME:-ens160}
+								set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
+								set ipv4mask ${_IPV4_MASK:-}
+								set ipv4gway ${_IPV4_GWAY:-}
+								set ipv4nsvr ${_IPV4_NSVR:-}
+								set autoinst ${__BOPT[1]:-}
+								set networks ${__BOPT[2]:-}
+								set language ${__BOPT[3]:-}
+								set ramsdisk ${__BOPT[4]:-}
+								set isosfile ${__BOPT[5]:-}
+								
+_EOT_
+						)"
+					else
+						__WORK+="$(
+							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+								set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
+								set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+								form                                    Configure Boot Options
+								item hostname                           Hostname
+								item srvraddr                           Server ip address
+								present ||
+								set ethrname ${_NICS_NAME:-ens160}
+								set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
+								set ipv4mask ${_IPV4_MASK:-}
+								set ipv4gway ${_IPV4_GWAY:-}
+								set ipv4nsvr ${_IPV4_NSVR:-}
+								form                                    Configure Boot Options
+								item ethrname                           Interface
+								item ipv4addr                           IPv4 address
+								item ipv4mask                           IPv4 netmask
+								item ipv4gway                           IPv4 gateway
+								item ipv4nsvr                           IPv4 nameservers
+								present ||
+								set autoinst ${__BOPT[1]:-}
+								set networks ${__BOPT[2]:-}
+								set language ${__BOPT[3]:-}
+								set ramsdisk ${__BOPT[4]:-}
+								set isosfile ${__BOPT[5]:-}
+								form                                    Configure Boot Options
+								item autoinst                           Auto install
+								item networks                           Network
+								item language                           Language
+								item ramsdisk                           RAM disk
+								item isosfile                           ISO file
+								present ||
+								
+_EOT_
+						)"
+					fi
+					__WORK+="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
+							set options \${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}
+							echo Loading kernel and initrd ...
+							kernel \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} --- || goto error
+							initrd \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/} || goto error
+							boot || goto error
+							exit
 
-set srvraddr ${SRVR_ADDR:?}
-isset \${next-server} && set srvraddr \${next-server} ||
-set autoinst ${_CONF_PATH:-}
-set language ${_LANG_CONF:-}
-set ramsdisk ${_RAMS_DISK:-}
+_EOT_
+					)"
+					;;
+			esac
+			sed -i "${_IPXE_MENU}" -e "/^:shell$/i \\${__WORK}"
+			;;
+		*)								# (hidden)
+			;;
+	esac
+}
 
-:${__TGET_LIST[2]:?}
-echo Loading ${__TGET_LIST[3]:?} ...
-set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
-set ethrname ${_NICS_NAME:-ens160}
-set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
-set ipv4mask ${_IPV4_MASK:-}
-set ipv4gway ${_IPV4_GWAY:-}
-set ipv4nsvr ${_IPV4_NSVR:-}
-set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
-isset ${next-server} && set srvraddr ${next-server} ||
-set autoinst ${_LIST[0]:-}
-set language ${_LIST[2]:-}
-set ramsdisk ${_LIST[3]:-}
-set isosfile ${_LIST[4]:-}
-form                                    Configure Boot Options
-item hostname                           Hostname
-item ethrname                           Interface
-item ipv4addr                           IPv4 address
-item ipv4mask                           IPv4 netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-present ||
-form                                    Configure Boot Options
-item srvraddr                           Server ip address
-item autoinst                           Auto install
-item language                           Language
-item ramsdisk                           RAM disk
-item isosfile                           ISO file
-present ||
-set knladdr http://${srvraddr}/imgs/debian-mini-11
-set options vga=791 ${autoinst} netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr} ${language} fsck.mode=skip ${isosfile} raid=noautodetect
-echo Loading kernel and initrd ...
-kernel ${knladdr}/linux ${options} --- || goto error
-initrd ${knladdr}/initrd.gz || goto error
-boot || goto error
-exit
+# --- file copy ---------------------------------------------------------------
+function funcPxeboot_copy() {
+	declare -r    __PATH_TGET="${1:?}"	# target file
+	declare -r    __DIRS_DEST="${2:?}"	# destination directory
+	declare       __MNTP=""				# mount point
+	declare       __PATH=""				# full path
+	              __PATH="$(mktemp -qd "${TMPDIR:-/tmp}/${__DIRS_DEST##*/}.XXXXXX")"
+	readonly      __PATH
+
+	if [[ ! -s "${__PATH_TGET}" ]]; then
+		return
+	fi
+	printf "%20.20s: %s\n" "copy" "${__PATH_TGET}" 1>&2
+	__MNTP="${__PATH}/mnt"
+	rm -rf "${__MNTP:?}"
+	mkdir -p "${__MNTP}" "${__DIRS_DEST}"
+	mount -o ro,loop "${__PATH_TGET}" "${__MNTP}"
+	nice -n "${_NICE_VALU:-19}" rsync "${_OPTN_RSYC[@]}" "${__MNTP}/." "${__DIRS_DEST}/" 2>/dev/null || true
+	umount "${__MNTP}"
+	chmod -R +r "${__DIRS_DEST}/" 2>/dev/null || true
+	rm -rf "${__MNTP:?}"
+}
+
+# --- create pxeboot menu -----------------------------------------------------
+function funcPxeboot() {
+	declare       __LIST=()				# work variable
+	declare -i    I=0					# work variables
+
+	rm -f "${_IPXE_MENU:?}"
+	for I in "${!_LIST_MDIA[@]}"
+	do
+		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+		# --- update ----------------------------------------------------------
+		case "${1:-}" in
+			update  ) ;;
+			*       ) funcPxeboot_copy "${__LIST[13]}" "${_DIRS_IMGS}/${__LIST[2]}";;
+		esac
+		# --- create pxeboot menu ---------------------------------------------
+		case "${1:-}" in
+			download) ;;
+			*       ) funcPxeboot_autoexec_ipxe "${__LIST[@]}";;
+		esac
+	done
+}

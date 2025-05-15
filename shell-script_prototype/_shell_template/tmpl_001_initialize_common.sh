@@ -43,7 +43,7 @@
 
 # shellcheck disable=SC2317
 function funcTrap() {
-	declare       __PATH=""
+	declare       __PATH=""				# full path
 	declare -i    I=0
 	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
 	do

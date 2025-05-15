@@ -36,13 +36,13 @@
 	# --- shared directory parameter ------------------------------------------
 	declare -r    DIRS_TOPS="/srv"							# top of shared directory
 	declare -r    DIRS_HGFS="${DIRS_TOPS}/hgfs"				# vmware shared
-#	declare -r    DIRS_HTML="${DIRS_TOPS}/http/html"		# html contents
+	declare -r    DIRS_HTML="${DIRS_TOPS}/http/html"		# html contents
 #	declare -r    DIRS_SAMB="${DIRS_TOPS}/samba"			# samba shared
-#	declare -r    DIRS_TFTP="${DIRS_TOPS}/tftp"				# tftp contents
-#	declare -r    DIRS_USER="${DIRS_TOPS}/user"				# user file
+	declare -r    DIRS_TFTP="${DIRS_TOPS}/tftp"				# tftp contents
+	declare -r    DIRS_USER="${DIRS_TOPS}/user"				# user file
 
 	# --- shared of user file -------------------------------------------------
-#	declare -r    DIRS_SHAR="${DIRS_USER}/share"			# shared of user file
+	declare -r    DIRS_SHAR="${DIRS_USER}/share"			# shared of user file
 #	declare -r    DIRS_CONF="${DIRS_SHAR}/conf"				# configuration file
 #	declare -r    DIRS_KEYS="${DIRS_CONF}/_keyring"			# keyring file
 #	declare -r    DIRS_TMPL="${DIRS_CONF}/_template"		# templates for various configuration files
@@ -119,15 +119,18 @@ function funcMount_overlay() {
 		mkdir -p "${DIRS_OLAY}"/upper/{root,home,"${DIRS_TOPS##/}","${DIRS_HGFS##/}"}
 		mkdir -p "${DIRS_OLAY}"/work/{_rootdir,root,home,"${DIRS_TOPS##/}","${DIRS_TOPS##/}"_"${DIRS_HGFS##*/}"}
 		# ---------------------------------------------------------------------
-		funcMount_overlay "${DIRS_CHRT:?}/" "${DIRS_OLAY}/upper/"                "${DIRS_OLAY}/work/_rootdir/"                          "${DIRS_OLAY}/merged/"
-		funcMount_overlay "/root/"          "${DIRS_OLAY}/upper/root/"           "${DIRS_OLAY}/work/root/"                              "${DIRS_OLAY}/merged/root/"
-		funcMount_overlay "/home/"          "${DIRS_OLAY}/upper/home/"           "${DIRS_OLAY}/work/home/"                              "${DIRS_OLAY}/merged/home/"
+		funcMount_overlay "${DIRS_CHRT:?}/" "${DIRS_OLAY}/upper/"                 "${DIRS_OLAY}/work/_rootdir/"                         "${DIRS_OLAY}/merged/"
+		funcMount_overlay "/root/"          "${DIRS_OLAY}/upper/root/"            "${DIRS_OLAY}/work/root/"                             "${DIRS_OLAY}/merged/root/"
+		funcMount_overlay "/home/"          "${DIRS_OLAY}/upper/home/"            "${DIRS_OLAY}/work/home/"                             "${DIRS_OLAY}/merged/home/"
 		funcMount_overlay "${DIRS_TOPS}/"   "${DIRS_OLAY}/upper/${DIRS_TOPS##/}"/ "${DIRS_OLAY}/work/${DIRS_TOPS##/}/"                  "${DIRS_OLAY}/merged/${DIRS_TOPS##/}/"
 		funcMount_overlay "${DIRS_HGFS}/"   "${DIRS_OLAY}/upper/${DIRS_HGFS##/}"/ "${DIRS_OLAY}/work/${DIRS_TOPS##/}_${DIRS_HGFS##*/}/" "${DIRS_OLAY}/merged/${DIRS_HGFS##/}/"
 		# ---------------------------------------------------------------------
 #		mount  --bind "${DIRS_CONF}"       "${DIRS_OLAY}/merged/${DIRS_CONF##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_CONF##/}")
 #		mount  --bind "${DIRS_ISOS}"       "${DIRS_OLAY}/merged/${DIRS_ISOS##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_ISOS##/}")
 #		mount  --bind "${DIRS_RMAK}"       "${DIRS_OLAY}/merged/${DIRS_RMAK##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_RMAK##/}")
+		mount  --bind "${DIRS_SHAR}"       "${DIRS_OLAY}/merged/${DIRS_SHAR##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_SHAR##/}")
+		mount  --bind "${DIRS_HTML}"       "${DIRS_OLAY}/merged/${DIRS_HTML##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_HTML##/}")
+		mount  --bind "${DIRS_TFTP}"       "${DIRS_OLAY}/merged/${DIRS_TFTP##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_TFTP##/}")
 		mount  --bind "${DIRS_HGFS}/linux" "${DIRS_OLAY}/merged/${DIRS_HGFS##/}/linux" && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_HGFS##/}/linux")
 		# ---------------------------------------------------------------------
 		mount --rbind /dev/          "${DIRS_OLAY}/merged/dev/"  && mount --make-rslave "${DIRS_OLAY}/merged/dev/"	&& _LIST_RMOV+=("${DIRS_OLAY}/merged/dev/")
@@ -150,6 +153,9 @@ function funcMount_overlay() {
 		umount --recursive     "${DIRS_OLAY}/merged/dev/"
 		# ---------------------------------------------------------------------
 		umount                 "${DIRS_OLAY}/merged/${DIRS_HGFS##/}/linux"
+		umount                 "${DIRS_OLAY}/merged/${DIRS_TFTP##/}"
+		umount                 "${DIRS_OLAY}/merged/${DIRS_HTML##/}"
+		umount                 "${DIRS_OLAY}/merged/${DIRS_SHAR##/}"
 #		umount                 "${DIRS_OLAY}/merged/${DIRS_RMAK}"
 #		umount                 "${DIRS_OLAY}/merged/${DIRS_ISOS}"
 #		umount                 "${DIRS_OLAY}/merged/${DIRS_CONF}"

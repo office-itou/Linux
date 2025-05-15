@@ -35,7 +35,7 @@
 	declare       _SHEL_PART=""			# shell commands to run after partition
 	declare       _SHEL_RUNS=""			# shell commands to run preseed/run
 
-# --- tftp / web server network parameter -------------------------------------
+	# --- tftp / web server network parameter ---------------------------------
 	declare       _SRVR_HTTP="http"		# server connection protocol (http or https)
 	declare       _SRVR_PROT="http"		# server connection protocol (http or tftp)
 	declare       _SRVR_NICS=""			# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
@@ -78,6 +78,9 @@
 	# --- initial ram disk of mini.iso including preseed ----------------------
 	declare       _MINI_IRAM=""
 
+	# --- ipxe menu file ------------------------------------------------------
+	declare       _IPXE_MENU=""
+
 	# --- list data -----------------------------------------------------------
 	declare -a    _LIST_MDIA=()			# media information
 
@@ -92,5 +95,8 @@
 	readonly      _COMD_CURL
 	readonly      _COMD_WGET
 
+	# --- rsync parameter -----------------------------------------------------
+	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete")
+
 	# --- ram disk parameter --------------------------------------------------
-	declare -r -a _OPTN_RDSK=("root=/dev/ram0" "ramdisk_size=1500000" "overlay-size=90%")
+	declare -r -a _OPTN_RDSK=("root=/dev/ram0" "load_ramdisk=1" "ramdisk_size=1024000" "overlay-size=80%")
