@@ -14,61 +14,61 @@ isset ${menu-default} || set menu-default exit
 menu Select the OS type you want to boot
 item --gap --                           --------------------------------------------------------------------------
 item --gap --                           [ Auto install mini.iso ]
-item -- debian-mini-11                  - Debian 11 ................................................2024-08-27 06:14:31.
-item -- debian-mini-12                  - Debian 12 ................................................2025-03-10 12:28:07.
-item -- debian-mini-13                  - Debian 13 ................................................2024-12-27 09:14:03.
-item -- debian-mini-testing             - Debian testing ...........................................2024-12-27 09:14:03.
-item -- debian-mini-testing-daily       - Debian testing daily .....................................2025-05-07 00:02:25.
+item -- debian-mini-11                  - Debian 11 ...........................................2024-08-27 06:14:31
+item -- debian-mini-12                  - Debian 12 ...........................................2025-03-10 12:28:07
+item -- debian-mini-13                  - Debian 13 ...........................................2024-12-27 09:14:03
+item -- debian-mini-testing             - Debian testing ......................................2024-12-27 09:14:03
+item -- debian-mini-testing-daily       - Debian testing daily ................................2025-05-07 00:02:25
 item --gap --                           [ Auto install Net install ]
-item -- debian-netinst-11               - Debian 11 ................................................2024-08-31 16:11:10.
-item -- debian-netinst-12               - Debian 12 ................................................2025-03-15 12:03:05.
-item -- debian-netinst-testing          - Debian testing ...........................................2025-05-07 09:20:06.
-item -- fedora-netinst-41               - Fedora Server 41 .........................................2024-10-24 13:36:10.
-item -- fedora-netinst-42               - Fedora Server 42 .........................................2025-04-09 11:48:26.
-item -- centos-stream-netinst-9         - CentOS Stream 9 ..........................................2025-05-06 17:05:53.
-item -- centos-stream-netinst-10        - CentOS Stream 10 .........................................2025-05-06 08:45:01.
-item -- almalinux-netinst-9             - Alma Linux 9 .............................................2024-11-13 09:40:34.
-item -- rockylinux-netinst-9            - Rocky Linux 9 ............................................2024-11-16 01:52:35.
-item -- miraclelinux-netinst-9          - Miracle Linux 9 ..........................................2024-08-23 05:57:18.
-item -- opensuse-leap-netinst-15.6      - openSUSE Leap 15.6 .......................................2024-06-20 11:42:39.
-item -- opensuse-tumbleweed-netinst     - openSUSE Tumbleweed ......................................2025-05-04 13:27:58.
+item -- debian-netinst-11               - Debian 11 ...........................................2024-08-31 16:11:10
+item -- debian-netinst-12               - Debian 12 ...........................................2025-03-15 12:03:05
+item -- debian-netinst-testing          - Debian testing ......................................2025-05-07 09:20:06
+item -- fedora-netinst-41               - Fedora Server 41 ....................................2024-10-24 13:36:10
+item -- fedora-netinst-42               - Fedora Server 42 ....................................2025-04-09 11:48:26
+item -- centos-stream-netinst-9         - CentOS Stream 9 .....................................2025-05-06 17:05:53
+item -- centos-stream-netinst-10        - CentOS Stream 10 ....................................2025-05-06 08:45:01
+item -- almalinux-netinst-9             - Alma Linux 9 ........................................2024-11-13 09:40:34
+item -- rockylinux-netinst-9            - Rocky Linux 9 .......................................2024-11-16 01:52:35
+item -- miraclelinux-netinst-9          - Miracle Linux 9 .....................................2024-08-23 05:57:18
+item -- opensuse-leap-netinst-15.6      - openSUSE Leap 15.6 ..................................2024-06-20 11:42:39
+item -- opensuse-tumbleweed-netinst     - openSUSE Tumbleweed .................................2025-05-04 13:27:58
 item --gap --                           [ Auto install DVD media ]
-item -- debian-11                       - Debian 11 ................................................2024-08-31 16:11:53.
-item -- debian-12                       - Debian 12 ................................................2025-03-15 12:03:59.
-item -- debian-testing                  - Debian testing ...........................................2025-05-05 05:37:49.
-item -- ubuntu-live-24.04               - Ubuntu 24.04 Live Server .................................2025-02-16 22:49:40.
-item -- ubuntu-live-24.10               - Ubuntu 24.10 Live Server .................................2024-10-07 21:19:04.
-item -- ubuntu-live-25.04               - Ubuntu 25.04 Live Server .................................2025-04-15 22:38:47.
-item -- fedora-41                       - Fedora Server 41 .........................................2024-10-24 14:48:35.
-item -- fedora-42                       - Fedora Server 42 .........................................2025-04-09 12:01:30.
-item -- centos-stream-9                 - CentOS Stream 9 ..........................................2025-05-06 17:20:28.
-item -- centos-stream-10                - CentOS Stream 10 .........................................2025-05-06 08:51:53.
-item -- almalinux-9                     - Alma Linux 9 .............................................2024-11-13 09:59:46.
-item -- rockylinux-9                    - Rocky Linux 9 ............................................2024-11-16 04:23:15.
-item -- miraclelinux-9                  - Miracle Linux 9 ..........................................2024-08-23 05:57:18.
-item -- opensuse-leap-15.6              - openSUSE Leap 15.6 .......................................2024-06-20 11:56:54.
-item -- opensuse-tumbleweed             - openSUSE Tumbleweed ......................................2025-05-04 13:31:47.
-item -- windows-10                      - Windows 10 ...............................................2022-10-18 15:21:50.
-item -- windows-11                      - Windows 11 ...............................................2024-10-01 12:18:50.
+item -- debian-11                       - Debian 11 ...........................................2024-08-31 16:11:53
+item -- debian-12                       - Debian 12 ...........................................2025-03-15 12:03:59
+item -- debian-testing                  - Debian testing ......................................2025-05-05 05:37:49
+item -- ubuntu-live-24.04               - Ubuntu 24.04 Live Server ............................2025-02-16 22:49:40
+item -- ubuntu-live-24.10               - Ubuntu 24.10 Live Server ............................2024-10-07 21:19:04
+item -- ubuntu-live-25.04               - Ubuntu 25.04 Live Server ............................2025-04-15 22:38:47
+item -- fedora-41                       - Fedora Server 41 ....................................2024-10-24 14:48:35
+item -- fedora-42                       - Fedora Server 42 ....................................2025-04-09 12:01:30
+item -- centos-stream-9                 - CentOS Stream 9 .....................................2025-05-06 17:20:28
+item -- centos-stream-10                - CentOS Stream 10 ....................................2025-05-06 08:51:53
+item -- almalinux-9                     - Alma Linux 9 ........................................2024-11-13 09:59:46
+item -- rockylinux-9                    - Rocky Linux 9 .......................................2024-11-16 04:23:15
+item -- miraclelinux-9                  - Miracle Linux 9 .....................................2024-08-23 05:57:18
+item -- opensuse-leap-15.6              - openSUSE Leap 15.6 ..................................2024-06-20 11:56:54
+item -- opensuse-tumbleweed             - openSUSE Tumbleweed .................................2025-05-04 13:31:47
+item -- windows-10                      - Windows 10 ..........................................2022-10-18 15:21:50
+item -- windows-11                      - Windows 11 ..........................................2024-10-01 12:18:50
 item --gap --                           [ Live media Install mode ]
-item -- debian-live-11                  - Debian 11 Live ...........................................2024-08-31 15:15:29.
-item -- debian-live-12                  - Debian 12 Live ...........................................2025-03-15 09:09:36.
-item -- debian-live-testing             - Debian testing Live ......................................2025-05-05 02:14:51.
-item -- ubuntu-desktop-24.04            - Ubuntu 24.04 Desktop .....................................2025-02-15 09:16:38.
-item -- ubuntu-desktop-24.10            - Ubuntu 24.10 Desktop .....................................2024-10-09 14:32:32.
-item -- ubuntu-desktop-25.04            - Ubuntu 25.04 Desktop .....................................2025-04-15 18:47:56.
+item -- debian-live-11                  - Debian 11 Live ......................................2024-08-31 15:15:29
+item -- debian-live-12                  - Debian 12 Live ......................................2025-03-15 09:09:36
+item -- debian-live-testing             - Debian testing Live .................................2025-05-05 02:14:51
+item -- ubuntu-desktop-24.04            - Ubuntu 24.04 Desktop ................................2025-02-15 09:16:38
+item -- ubuntu-desktop-24.10            - Ubuntu 24.10 Desktop ................................2024-10-09 14:32:32
+item -- ubuntu-desktop-25.04            - Ubuntu 25.04 Desktop ................................2025-04-15 18:47:56
 item --gap --                           [ Live media Live mode ]
-item -- live-debian-live-11             - Debian 11 Live ...........................................2024-08-31 15:15:29.
-item -- live-debian-live-12             - Debian 12 Live ...........................................2025-03-15 09:09:36.
-item -- live-debian-live-testing        - Debian testing Live ......................................2025-05-05 02:14:51.
-item -- live-ubuntu-desktop-24.04       - Ubuntu 24.04 Desktop .....................................2025-02-15 09:16:38.
-item -- live-ubuntu-desktop-24.10       - Ubuntu 24.10 Desktop .....................................2024-10-09 14:32:32.
-item -- live-ubuntu-desktop-25.04       - Ubuntu 25.04 Desktop .....................................2025-04-15 18:47:56.
+item -- live-debian-live-11             - Debian 11 Live ......................................2024-08-31 15:15:29
+item -- live-debian-live-12             - Debian 12 Live ......................................2025-03-15 09:09:36
+item -- live-debian-live-testing        - Debian testing Live .................................2025-05-05 02:14:51
+item -- live-ubuntu-desktop-24.04       - Ubuntu 24.04 Desktop ................................2025-02-15 09:16:38
+item -- live-ubuntu-desktop-24.10       - Ubuntu 24.10 Desktop ................................2024-10-09 14:32:32
+item -- live-ubuntu-desktop-25.04       - Ubuntu 25.04 Desktop ................................2025-04-15 18:47:56
 item --gap --                           [ System tools ]
-item -- memtest86plus                   - Memtest86+ 7.20 ..........................................2024-11-11 09:15:12.
-item -- winpe-x64                       - WinPE x64 ................................................2024-10-21 12:19:39.
-item -- ati2020x86                      - ATI2020x86 ...............................................2022-01-28 13:07:12.
-item -- ati2020x64                      - ATI2020x64 ...............................................2022-01-28 13:12:34.
+item -- memtest86plus                   - Memtest86+ 7.20 .....................................2024-11-11 09:15:12
+item -- winpe-x64                       - WinPE x64 ...........................................2024-10-21 12:19:39
+item -- ati2020x86                      - ATI2020x86 ..........................................2022-01-28 13:07:12
+item -- ati2020x64                      - ATI2020x64 ..........................................2022-01-28 13:12:34
 item --gap --                           [ System command ]
 item -- shell                           - iPXE shell
 #item -- shutdown                       - System shutdown
