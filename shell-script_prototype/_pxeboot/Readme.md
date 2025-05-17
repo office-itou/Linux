@@ -44,9 +44,9 @@ There are the following types.
 |   |-- autoexec.ipxe ----------------- ipxe script file (menu file)
 |   |-- boot
 |   |   `-- grub
-|   |       |-- bootnetx64.efi -------- bootloader (x86_64-efi)
+|   |       |-- bootx64.efi ----------- bootloader (x86_64-efi)
 |   |       |-- grub.cfg -------------- menu base
-|   |       |-- pxelinux.0 ------------ bootloader (i386-pc-pxe)
+|   |       |-- pxegrub.0 ------------- bootloader (i386-pc-pxe)
 |   |       |-- fonts
 |   |       |   `-- unicode.pf2
 |   |       |-- i386-efi
