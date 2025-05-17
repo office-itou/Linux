@@ -58,12 +58,29 @@
 
 # shellcheck disable=SC2317
 function funcTrap() {
+	declare       _PATH=""
 	declare -i    I=0
-
-	for I in "${!_LIST_RMOV[@]}"
+	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
 	do
-		rm -rf "${_LIST_RMOV[I]:?}"
+		_PATH="${_LIST_RMOV[I]}"
+		if [[ -e "${_PATH}" ]] && mountpoint --quiet "${_PATH}"; then
+			printf "[%s]: umount \"%s\"\n" "${I}" "${_PATH}" 1>&2
+			umount --quiet         --recursive "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force --recursive "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  --recursive "${_PATH}" || true
+		fi
 	done
+	if [[ -e "${_DIRS_TEMP:?}" ]]; then
+		printf "%s: \"%s\"\n" "remove" "${_DIRS_TEMP}" 1>&2
+		while read -r _PATH
+		do
+			printf "[%s]: umount \"%s\"\n" "-" "${_PATH}" 1>&2
+			umount --quiet         --recursive "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --force --recursive "${_PATH}" > /dev/null 2>&1 || \
+			umount --quiet --lazy  --recursive "${_PATH}" || true
+		done < <(grep "${_DIRS_TEMP:?}" /proc/mounts | cut -d ' ' -f 2 | sort -rV || true)
+		rm -rf "${_DIRS_TEMP:?}"
+	fi
 }
 
 	trap funcTrap EXIT
@@ -76,7 +93,7 @@ function funcTrap() {
 	if command -v apt-get > /dev/null 2>&1; then
 		if ! ls /var/lib/apt/lists/*_"${_CODE_NAME:-}"_InRelease > /dev/null 2>&1; then
 			echo "please execute apt-get update:"
-			if [[ -n "${SUDO_USER:-}" ]] || { [[ -z "${SUDO_USER:-}" ]] && [[ "${_USER_NAME}" != "root" ]]; }; then
+			if [[ -n "${SUDO_USER:-}" ]] || { [[ -z "${SUDO_USER:-}" ]] && [[ "${_USER_NAME:-}" != "root" ]]; }; then
 				echo -n "sudo "
 			fi
 			echo "apt-get update" 1>&2
@@ -95,7 +112,7 @@ function funcTrap() {
 			"wget" \
 		)
 		# ---------------------------------------------------------------------
-		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]:-bash}" 2> /dev/null | sed -ne '/[ \t]'"${_ARCH_OTHR:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g')"
+		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]:-bash}" 2> /dev/null | sed -ne '/[ \t]'"${_ARCH_OTHR:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g' || true)"
 		readonly      PAKG_FIND
 		if [[ -n "${PAKG_FIND% *}" ]]; then
 			echo "please install these:"
@@ -108,6 +125,8 @@ function funcTrap() {
 	fi
 
 # *** function section (common functions) *************************************
+
+# === <common> ================================================================
 
 	# --- set minimum display size --------------------------------------------
 	declare -i    _SIZE_ROWS=25
@@ -192,7 +211,7 @@ function funcTrap() {
 
 # --- is numeric --------------------------------------------------------------
 #function funcIsNumeric() {
-#	[[ ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
+#	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
 #}
 
 # --- substr ------------------------------------------------------------------
@@ -202,173 +221,106 @@ function funcTrap() {
 
 # --- string output -----------------------------------------------------------
 # shellcheck disable=SC2317
-funcString() {
+function funcString() {
 #	printf "%${1:-"${_SIZE_COLS}"}s" "" | tr ' ' "${2:- }"
 	echo "" | IFS= awk '{s=sprintf("%'"$1"'s"," "); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+}
+
+# --- date diff ---------------------------------------------------------------
+# shellcheck disable=SC2317
+function funcDateDiff() {
+	declare       __TGET_DAT1="${1:?}"	# date1
+	declare       __TGET_DAT2="${2:?}"	# date2
+	# -------------------------------------------------------------------------
+	#  0 : __TGET_DAT1 = __TGET_DAT2
+	#  1 : __TGET_DAT1 < __TGET_DAT2
+	# -1 : __TGET_DAT1 > __TGET_DAT2
+	# emp: error
+	if __TGET_DAT1="$(TZ=UTC date -d "${__TGET_DAT1//%20/ }" "+%s")" \
+	&& __TGET_DAT2="$(TZ=UTC date -d "${__TGET_DAT2//%20/ }" "+%s")"; then
+		  if [[ "${__TGET_DAT1}" -eq "${__TGET_DAT2}" ]]; then
+			echo "0"
+		elif [[ "${__TGET_DAT1}" -lt "${__TGET_DAT2}" ]]; then
+			echo "1"
+		elif [[ "${__TGET_DAT1}" -gt "${__TGET_DAT2}" ]]; then
+			echo "-1"
+		else
+			echo ""
+		fi
+	else
+		printf "%20.20s: %s\n" "failed" "${__TGET_DAT1}"
+		printf "%20.20s: %s\n" "failed" "${__TGET_DAT2}"
+	fi
 }
 
 # --- print with screen control -----------------------------------------------
 # shellcheck disable=SC2317
 function funcPrintf() {
-	declare -r    _FLAG_TRCE="$(set -o | grep "^xtrace\s*on$")"
+	declare -r    __TRCE="$(set -o | grep "^xtrace\s*on$")"
 	set +x
 	# -------------------------------------------------------------------------
-	declare       _FLAG_NCUT=""			# no cutting flag
-	declare       _TEXT_FMAT=""			# format parameter
-	declare       _TEXT_UTF8=""			# formatted utf8
-	declare       _TEXT_SJIS=""			# formatted sjis (cp932)
-	declare       _TEXT_PLIN=""			# formatted string without attributes
-	declare       _TEXT_WORK=""			# 
-	declare       _ESCP_FRNT=""			# escape characters front
+	declare       __NCUT=""				# no cutting flag
+	declare       __FMAT=""				# format parameter
+	declare       __UTF8=""				# formatted utf8
+	declare       __SJIS=""				# formatted sjis (cp932)
+	declare       __PLIN=""				# formatted string without attributes
+	declare       __ESCF=""				# escape characters front
+	declare       __WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	# https://www.tohoho-web.com/ex/dash-tilde.html
 	# -------------------------------------------------------------------------
-	case "$1" in
-		--no-cutting) _FLAG_NCUT="true"; shift;;
+	case "${1:?}" in
+		--no-cutting) __NCUT="true"; shift;;
 		*           ) ;;
 	esac
 	# -------------------------------------------------------------------------
-	_TEXT_FMAT="${1:-}"
+	__FMAT="${1}"
 	shift
 	# shellcheck disable=SC2059
-	printf -v _TEXT_UTF8 -- "${_TEXT_FMAT}" "${@:-}"
+	printf -v __UTF8 -- "${__FMAT}" "${@:-}"
 	# -------------------------------------------------------------------------
-	if [[ -z "${_FLAG_NCUT:-}" ]]; then
-		_TEXT_SJIS="$(echo -n "${_TEXT_UTF8:-}" | iconv -f UTF-8 -t CP932 -c -s || true)"
-		_TEXT_PLIN="${_TEXT_SJIS//"${_CODE_ESCP}["[0-9]m/}"
-		_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
-		_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
-		if [[ "${#_TEXT_PLIN}" -gt "${_SIZE_COLS}" ]]; then
-			_TEXT_WORK="${_TEXT_SJIS}"
+	if [[ -z "${__NCUT}" ]]; then
+		__SJIS="$(echo -n "${__UTF8}" | iconv -f UTF-8 -t CP932 -c -s || true)"
+		__PLIN="${__SJIS//"${_CODE_ESCP}["[0-9]m/}"
+		__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+		__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+		if [[ "${#__PLIN}" -gt "${_SIZE_COLS}" ]]; then
+			__WORK="${__SJIS}"
 			while true
 			do
-				case "${_TEXT_WORK}" in
+				case "${__WORK}" in
 					"${_CODE_ESCP}"\[[0-9]*m*)
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9]m/}"
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9][0-9]m/}"
-						_TEXT_WORK="${_TEXT_WORK/#"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+						__WORK="${__WORK/#"${_CODE_ESCP}["[0-9]m/}"
+						__WORK="${__WORK/#"${_CODE_ESCP}["[0-9][0-9]m/}"
+						__WORK="${__WORK/#"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
 						;;
 					*) break;;
 				esac
 			done
-			_ESCP_FRNT="${_TEXT_SJIS%"${_TEXT_WORK}"}"
+			__ESCF="${__SJIS%"${__WORK}"}"
 			# -----------------------------------------------------------------
-			_TEXT_WORK="${_TEXT_SJIS:"${#_ESCP_FRNT}":"${_SIZE_COLS}"}"
+			__WORK="${__SJIS:"${#__ESCF}":"${_SIZE_COLS}"}"
 			while true
 			do
-				_TEXT_PLIN="${_TEXT_WORK//"${_CODE_ESCP}["[0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
-				_TEXT_PLIN="${_TEXT_PLIN%%"${_CODE_ESCP}"*}"
-				if [[ "${#_TEXT_PLIN}" -eq "${_SIZE_COLS}" ]]; then
+				__PLIN="${__WORK//"${_CODE_ESCP}["[0-9]m/}"
+				__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9]m/}"
+				__PLIN="${__PLIN//"${_CODE_ESCP}["[0-9][0-9][0-9]m/}"
+				__PLIN="${__PLIN%%"${_CODE_ESCP}"*}"
+				if [[ "${#__PLIN}" -eq "${_SIZE_COLS}" ]]; then
 					break
 				fi
-				_TEXT_WORK="${_TEXT_SJIS:"${#_ESCP_FRNT}":$(("${#_TEXT_WORK}"+"${_SIZE_COLS}"-"${#_TEXT_PLIN}"))}"
+				__WORK="${__SJIS:"${#__ESCF}":$(("${#__WORK}"+"${_SIZE_COLS}"-"${#__PLIN}"))}"
 			done
-			_TEXT_WORK="${_ESCP_FRNT}${_TEXT_WORK}"
-			_TEXT_UTF8="$(echo -n "${_TEXT_WORK}" | iconv -f CP932 -t UTF-8 -c -s 2> /dev/null || true)"
+			__WORK="${__ESCF}${__WORK}"
+			__UTF8="$(echo -n "${__WORK}" | iconv -f CP932 -t UTF-8 -c -s 2> /dev/null || true)"
 		fi
 	fi
-	printf "%s%b%s\n" "${_TEXT_RESET}" "${_TEXT_UTF8}" "${_TEXT_RESET}"
-	if [[ -n "${_FLAG_TRCE:-}" ]]; then
+	printf "%s%b%s\n" "${_TEXT_RESET}" "${__UTF8}" "${_TEXT_RESET}"
+	if [[ -n "${__TRCE}" ]]; then
 		set -x
 	else
 		set +x
 	fi
-}
-
-# --- unit conversion ---------------------------------------------------------
-# shellcheck disable=SC2317
-function funcUnit_conversion() {
-	declare -r -a _TEXT_UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
-	declare -i    _CALC_UNIT=0
-	declare       _WORK_TEXT=""
-	declare -i    I=0
-	# --- is numeric ----------------------------------------------------------
-	if [[ ! ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]]; then
-		printf "%'s Byte" "?"
-		return
-	fi
-	# --- Byte ----------------------------------------------------------------
-	if [[ "$1" -lt 1024 ]]; then
-		printf "%'d Byte" "$1"
-		return
-	fi
-	# --- numfmt --------------------------------------------------------------
-	if command -v numfmt > /dev/null 2>&1; then
-		echo -n "$1" | numfmt --to=iec-i --suffix=B
-		return
-	fi
-	# --- calculate -----------------------------------------------------------
-	for ((I=3; I>0; I--))
-	do
-		_CALC_UNIT=$((1024**I))
-		if [[ "$1" -ge "${_CALC_UNIT}" ]]; then
-			_WORK_TEXT="$(echo "$1" "${_CALC_UNIT}" | awk '{printf("%.1f", $1/$2)}')"
-			printf "%s %s" "${_WORK_TEXT}" "${_TEXT_UNIT[I]}"
-			return
-		fi
-	done
-	echo -n "$1"
-}
-
-# --- IPv4 netmask conversion -------------------------------------------------
-# shellcheck disable=SC2317
-function funcIPv4GetNetmask() {
-	declare -r    _INPT_ADDR="$1"
-	declare -i    _LOOP=$((32-_INPT_ADDR))
-	declare -i    _WORK=1
-	declare       _DEC_ADDR=""
-	while [[ "${_LOOP}" -gt 0 ]]
-	do
-		_LOOP=$((_LOOP-1))
-		_WORK=$((_WORK*2))
-	done
-	_DEC_ADDR="$((0xFFFFFFFF ^ (_WORK-1)))"
-	printf '%d.%d.%d.%d'              \
-	    $(( _DEC_ADDR >> 24        )) \
-	    $(((_DEC_ADDR >> 16) & 0xFF)) \
-	    $(((_DEC_ADDR >>  8) & 0xFF)) \
-	    $(( _DEC_ADDR        & 0xFF))
-}
-
-# --- IPv4 cidr conversion ----------------------------------------------------
-# shellcheck disable=SC2317
-function funcIPv4GetNetCIDR() {
-	declare -r    _INPT_ADDR="$1"
-	declare -a    _OCTETS=()
-	declare -i    _MASK=0
-	echo "${_INPT_ADDR}" | \
-	    awk -F '.' '{
-	        split($0, _OCTETS);
-	        for (I in _OCTETS) {
-	            _MASK += 8 - log(2^8 - _OCTETS[I])/log(2);
-	        }
-	        print _MASK
-	    }'
-}
-
-# --- IPv6 full address -------------------------------------------------------
-# shellcheck disable=SC2317
-function funcIPv6GetFullAddr() {
-	declare       _INPT_ADDR="$1"
-	declare -r    _INPT_FSEP="${_INPT_ADDR//[^:]/}"
-	declare -r -i _CONT_FSEP=$((7-${#_INPT_FSEP}))
-	declare       _OUTP_TEMP=""
-	_OUTP_TEMP="$(printf "%${_CONT_FSEP}s" "")"
-	_INPT_ADDR="${_INPT_ADDR/::/::${_OUTP_TEMP// /:}}"
-	IFS= mapfile -d ':' -t _OUTP_ARRY < <(echo -n "${_INPT_ADDR/%:/::}")
-	printf ':%04x' "${_OUTP_ARRY[@]/#/0x0}" | cut -c 2-
-}
-
-# --- IPv6 reverse address ----------------------------------------------------
-# shellcheck disable=SC2317
-function funcIPv6GetRevAddr() {
-	declare -r    _INPT_ADDR="$1"
-	echo "${_INPT_ADDR//:/}"                 | \
-	    awk '{for(i=length();i>1;i--)          \
-	        printf("%c.", substr($0,i,1));     \
-	        printf("%c" , substr($0,1,1));}'
 }
 
 # *** function section (sub functions) ****************************************
@@ -413,7 +365,7 @@ function funcServiceStatus() {
 
 # --- function is package -----------------------------------------------------
 function funcIsPackage () {
-	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed'
+	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed' || true
 }
 
 # --- diff --------------------------------------------------------------------
@@ -477,13 +429,13 @@ function funcCurl() {
 	fi
 	if ! _ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${_INPT_URL}" 2> /dev/null)"); then
 		_RET_CD="$?"
-		_ERR_MSG=$(echo "${_ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g')
+		_ERR_MSG=$(echo "${_ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g' || true)
 		if [[ -z "${_MSG_FLG}" ]]; then
 			printf "%s\n" "${_ERR_MSG} [${_RET_CD}]: ${_INPT_URL}"
 		fi
 		return "${_RET_CD}"
 	fi
-	_WEB_SIZ=$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p')
+	_WEB_SIZ=$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p' || true)
 	# shellcheck disable=SC2312
 	_WEB_TIM=$(TZ=UTC date -d "$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
 	_WEB_FIL="${_OUTP_DIR:-.}/${_INPT_URL##*/}"
@@ -607,7 +559,7 @@ function funcDebug_function() {
 	# -------------------------------------------------------------------------
 	funcPrintf "---- ${_MSGS_TITL} ${_TEXT_GAP1}"
 	mkdir -p "${_FILE_WRK1%/*}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_WRK1}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_WRK1}" || true
 		line 00
 		line 01
 		line 02
@@ -621,7 +573,7 @@ function funcDebug_function() {
 		line 10
 _EOT_
 	mkdir -p "${_FILE_WRK2%/*}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_WRK2}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_WRK2}" || true
 		line 00
 		line 01
 		line 02

@@ -156,17 +156,17 @@ function funcMain() {
 	do
 		_RETN_PARM=()
 		case "${1:-}" in
-			create  ) funcPxeboot "${1:-}"; shift;;
-			update  ) ;;
-			download) ;;
+			create  ) shift; funcPxeboot "create"  ;;
+			update  ) shift; funcPxeboot "update"  ;;
+			download) shift; funcPxeboot "download";;
 			link    )
 				shift
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
 						create   ) shift; fncCreate_directory _RETN_PARM "${@:-}"; funcPut_media_data;;
-						update   ) ;;
-						download ) ;;
+						update   ) shift;;
+						download ) shift;;
 						*        ) break;;
 					esac
 				done
@@ -177,8 +177,8 @@ function funcMain() {
 				do
 					case "${1:-}" in
 						create   ) shift; funcPut_media_data;;
-						update   ) ;;
-						download ) ;;
+						update   ) shift;;
+						download ) shift;;
 						*        ) break;;
 					esac
 				done

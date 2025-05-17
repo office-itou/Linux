@@ -5,7 +5,7 @@
 function funcCreate_iso() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_OUTP="${2:?}"	# output path
-	declare -r -a __OPTN_XORR=("$@:2")	# xorrisofs options
+	declare -r -a __OPTN_XORR=("${@:3}") # xorrisofs options
 	declare -a    __LIST=()				# data list
 	declare       __PATH=""				# full path
 	              __PATH="$(mktemp -q "${TMPDIR:-/tmp}/${__PATH_OUTP##*/}.XXXXXX")"

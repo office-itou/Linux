@@ -62,7 +62,7 @@
 
 # shellcheck disable=SC2317
 function funcTrap() {
-	declare       __PATH=""
+	declare       __PATH=""				# full path
 	declare -i    I=0
 	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
 	do
@@ -180,7 +180,8 @@ function funcTrap() {
 	declare       _SHEL_PART=""			# shell commands to run after partition
 	declare       _SHEL_RUNS=""			# shell commands to run preseed/run
 
-# --- tftp / web server network parameter -------------------------------------
+	# --- tftp / web server network parameter ---------------------------------
+	declare       _SRVR_HTTP="http"		# server connection protocol (http or https)
 	declare       _SRVR_PROT="http"		# server connection protocol (http or tftp)
 	declare       _SRVR_NICS=""			# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
 	declare       _SRVR_MADR=""			#                mac    (ex. 00:00:00:00:00:00)
@@ -222,6 +223,16 @@ function funcTrap() {
 	# --- initial ram disk of mini.iso including preseed ----------------------
 	declare       _MINI_IRAM=""
 
+	# --- ipxe menu file ------------------------------------------------------
+	declare       _MENU_IPXE=""
+
+	# --- grub menu file ------------------------------------------------------
+	declare       _MENU_GRUB=""
+
+	# --- syslinux menu file --------------------------------------------------
+	declare       _MENU_SLNX=""			# bios
+	declare       _MENU_UEFI=""			# uefi x86_64
+
 	# --- list data -----------------------------------------------------------
 	declare -a    _LIST_MDIA=()			# media information
 
@@ -235,6 +246,12 @@ function funcTrap() {
 	if command -v wget2 > /dev/null 2>&1; then _COMD_WGET="ver2"; fi
 	readonly      _COMD_CURL
 	readonly      _COMD_WGET
+
+	# --- rsync parameter -----------------------------------------------------
+	declare -r -a _OPTN_RSYC=("--recursive" "--links" "--perms" "--times" "--group" "--owner" "--devices" "--specials" "--hard-links" "--acls" "--xattrs" "--human-readable" "--update" "--delete")
+
+	# --- ram disk parameter --------------------------------------------------
+	declare -r -a _OPTN_RDSK=("root=/dev/ram0" "load_ramdisk=1" "ramdisk_size=1024000" "overlay-size=80%")
 
 # *** function section (common functions) *************************************
 
@@ -736,11 +753,11 @@ funcSplit_initramfs() {
 # shellcheck disable=SC2317
 function funcCreate_iso() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
-	declare -r    ___PATH_OUTP="${2:?}"	# output path
-	declare -r -a __OPTN_XORR=("$@:2")		# xorrisofs options
+	declare -r    __PATH_OUTP="${2:?}"	# output path
+	declare -r -a __OPTN_XORR=("${@:3}") # xorrisofs options
 	declare -a    __LIST=()				# data list
-	declare       __PATH=""				# file name
-	              __PATH="$(mktemp -q "${TMPDIR:-/tmp}/${___PATH_OUTP##*/}.XXXXXX")"
+	declare       __PATH=""				# full path
+	              __PATH="$(mktemp -q "${TMPDIR:-/tmp}/${__PATH_OUTP##*/}.XXXXXX")"
 	readonly      __PATH
 
 	# --- constant for control code -------------------------------------------
@@ -753,13 +770,13 @@ function funcCreate_iso() {
 	# --- create iso image ----------------------------------------------------
 	pushd "${__DIRS_TGET}" > /dev/null || exit
 		if ! nice -n "${_NICE_VALU:-19}" xorrisofs "${__OPTN_XORR[@]}" -output "${__PATH}" . > /dev/null 2>&1; then
-			printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [xorriso]" "${___PATH_OUTP##*/}" 1>&2
+			printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [xorriso]" "${__PATH_OUTP##*/}" 1>&2
 		else
-			if ! cp --preserve=timestamps "${__PATH}" "${___PATH_OUTP}"; then
-				printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [cp]" "${___PATH_OUTP##*/}" 1>&2
+			if ! cp --preserve=timestamps "${__PATH}" "${__PATH_OUTP}"; then
+				printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [cp]" "${__PATH_OUTP##*/}" 1>&2
 			else
-				IFS= mapfile -d ' ' -t __LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "${___PATH_OUTP}" || true)
-				printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "complete" "${___PATH_OUTP##*/} (${__LIST[4]})" 1>&2
+				IFS= mapfile -d ' ' -t __LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "${__PATH_OUTP}" || true)
+				printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "complete" "${__PATH_OUTP##*/} (${__LIST[4]})" 1>&2
 			fi
 		fi
 		rm -f "${__PATH:?}"
@@ -982,7 +999,7 @@ function funcGetWeb_status() {
 
 # --- initialization ----------------------------------------------------------
 function funcInitialization() {
-	declare       __PATH=""				# file name
+	declare       __PATH=""				# full path
 	declare       __WORK=""				# work variables
 	declare       __LINE=""				# work variable
 	declare       __NAME=""				# variable name
@@ -1029,7 +1046,8 @@ function funcInitialization() {
 	_SHEL_LATE="${_SHEL_LATE:-:_DIRS_SHEL_:/autoinst_cmd_late.sh}"
 	_SHEL_PART="${_SHEL_PART:-:_DIRS_SHEL_:/autoinst_cmd_part.sh}"
 	_SHEL_RUNS="${_SHEL_RUNS:-:_DIRS_SHEL_:/autoinst_cmd_run.sh}"
-	_SRVR_PROT="${_SRVR_PROT:-http}"
+	_SRVR_HTTP="${_SRVR_HTTP:-http}"
+	_SRVR_PROT="${_SRVR_PROT:-"${_SRVR_HTTP}"}"
 	_SRVR_NICS="${_SRVR_NICS:-"$(LANG=C ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}' || true)"}"
 	_SRVR_MADR="${_SRVR_MADR:-"$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {print $3;}' || true)"}"
 	if [[ -z "${_SRVR_ADDR:-}" ]]; then
@@ -1107,6 +1125,7 @@ function funcInitialization() {
 			SHEL_LATE) _SHEL_LATE="${__VALU:-"${_SHEL_LATE:-}"}";;
 			SHEL_PART) _SHEL_PART="${__VALU:-"${_SHEL_PART:-}"}";;
 			SHEL_RUNS) _SHEL_RUNS="${__VALU:-"${_SHEL_RUNS:-}"}";;
+			SRVR_HTTP) _SRVR_HTTP="${__VALU:-"${_SRVR_HTTP:-}"}";;
 			SRVR_PROT) _SRVR_PROT="${__VALU:-"${_SRVR_PROT:-}"}";;
 			SRVR_NICS) _SRVR_NICS="${__VALU:-"${_SRVR_NICS:-}"}";;
 			SRVR_MADR) _SRVR_MADR="${__VALU:-"${_SRVR_MADR:-}"}";;
@@ -1163,6 +1182,7 @@ function funcInitialization() {
 	_SHEL_LATE="${_SHEL_LATE//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
 	_SHEL_PART="${_SHEL_PART//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
 	_SHEL_RUNS="${_SHEL_RUNS//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
+#	_SRVR_HTTP="${_SRVR_HTTP:-}"
 #	_SRVR_PROT="${_SRVR_PROT:-}"
 #	_SRVR_NICS="${_SRVR_NICS:-}"
 #	_SRVR_MADR="${_SRVR_MADR:-}"
@@ -1211,6 +1231,7 @@ function funcInitialization() {
 	readonly      _CONF_SEDD
 	readonly      _CONF_SEDU
 	readonly      _CONF_YAST
+	readonly      _SRVR_HTTP
 	readonly      _SRVR_PROT
 	readonly      _SRVR_NICS
 	readonly      _SRVR_MADR
@@ -1286,6 +1307,21 @@ function funcInitialization() {
 	              _MINI_IRAM="initps.gz"
 	readonly      _MINI_IRAM
 
+	# --- ipxe menu file ------------------------------------------------------
+	              _MENU_IPXE="${_DIRS_TFTP}/autoexec.ipxe"
+	readonly      _MENU_IPXE
+
+	# --- grub menu file ------------------------------------------------------
+	              _MENU_GRUB="${_DIRS_TFTP}/boot/grub/grub.cfg"
+	readonly      _MENU_GRUB
+
+	# --- syslinux menu file --------------------------------------------------
+	              _MENU_SLNX="${_DIRS_TFTP}/menu-bios/syslinux.cfg"
+	readonly      _MENU_SLNX
+
+	              _MENU_UEFI="${_DIRS_TFTP}/menu-efi64/syslinux.cfg"
+	readonly      _MENU_UEFI
+
 	# --- get media data ------------------------------------------------------
 	funcGet_media_data
 }
@@ -1294,7 +1330,7 @@ function funcInitialization() {
 function funcCreate_conf() {
 	declare -r    __TMPL="${_PATH_CONF:?}.template"
 	declare       __RNAM=""				# rename path
-	declare       __PATH=""				# file name
+	declare       __PATH=""				# full path
 
 	# --- check file exists ---------------------------------------------------
 	if [[ -f "${__TMPL:?}" ]]; then
@@ -1356,6 +1392,7 @@ function funcCreate_conf() {
 		SHEL_RUNS="${_SHEL_RUNS//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run preseed/run
 		
 		# --- tftp / web server network parameter -------------------------------------
+		SRVR_HTTP="${_SRVR_HTTP:-}"						# server connection protocol (http or https)
 		SRVR_PROT="${_SRVR_PROT:-}"						# server connection protocol (http or tftp)
 		SRVR_NICS="${_SRVR_NICS:-}"						# network device name   (ex. ens160)            (Set execution server setting to empty variable.)
 		SRVR_MADR="${_SRVR_MADR//[!:]/0}"			# "              mac    (ex. 00:00:00:00:00:00)
@@ -1393,7 +1430,7 @@ _EOT_
 
 # --- get media data ----------------------------------------------------------
 function funcGet_media_data() {
-	declare       __PATH=""				# file name
+	declare       __PATH=""				# full path
 	declare       __LINE=""				# work variable
 
 	# --- list data -----------------------------------------------------------
@@ -1451,11 +1488,11 @@ function funcPut_media_data() {
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3 | while read -r __PATH
+	while read -r __PATH
 	do
 		printf "%s: \"%s\"\n" "remove" "${__PATH}" 1>&2
 		rm -f "${__PATH:?}"
-	done
+	done < <(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3  || true)
 	# --- list data -----------------------------------------------------------
 	for I in "${!_LIST_MDIA[@]}"
 	do
@@ -1497,7 +1534,7 @@ function fncCreate_directory() {
 	declare       __TGET=""				# taget path
 	declare       __LINK=""				# symlink path
 	declare       __BACK=""				# backup path
-	declare       __LINE=""				# work variable
+	declare -a    __LIST=()				# work variable
 	declare -i    I=0
 
 	# --- option parameter ----------------------------------------------------
@@ -1518,15 +1555,15 @@ function fncCreate_directory() {
 	# 2: symlink
 	for I in "${!_LIST_LINK[@]}"
 	do
-		read -r -a __LINE < <(echo "${_LIST_LINK[I]}")
-		case "${__LINE[0]}" in
+		read -r -a __LIST < <(echo "${_LIST_LINK[I]}")
+		case "${__LIST[0]}" in
 			a) ;;
 			r) ;;
 			*) continue;;
 		esac
-		__RTIV="${__LINE[0]}"
-		__TGET="${__LINE[1]:-}"
-		__LINK="${__LINE[2]:-}"
+		__RTIV="${__LIST[0]}"
+		__TGET="${__LIST[1]:-}"
+		__LINK="${__LIST[2]:-}"
 		# --- check target file path ------------------------------------------
 		if [[ -z "${__LINK##*/}" ]]; then
 			__LINK="${__LINK%/}/${__TGET##*/}"
@@ -1564,21 +1601,21 @@ function fncCreate_directory() {
 
 	for I in "${!_LIST_MDIA[@]}"
 	do
-		read -r -a __LINE < <(echo "${_LIST_MDIA[I]}")
-		case "${__LINE[1]}" in
+		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+		case "${__LIST[1]}" in
 			o) ;;
 			*) continue;;
 		esac
-		case "${__LINE[13]}" in
+		case "${__LIST[13]}" in
 			-) continue;;
 			*) ;;
 		esac
-		case "${__LINE[25]}" in
+		case "${__LIST[25]}" in
 			-) continue;;
 			*) ;;
 		esac
-		__TGET="${__LINE[25]}/${__LINE[13]##*/}"
-		__LINK="${__LINE[13]}"
+		__TGET="${__LIST[25]}/${__LIST[13]##*/}"
+		__LINK="${__LIST[13]}"
 		# --- check target file path ------------------------------------------
 #		if [[ ! -e "${__TGET}" ]]; then
 #			touch "${__TGET}"
@@ -1893,9 +1930,10 @@ function funcCreate_precon() {
 	shift
 	declare -a    __OPTN=()				# option parameter
 	declare -a    __LIST=()				# data list
-	declare       __PATH=""				# file name
+	declare       __PATH=""				# full path
 	declare       __TYPE=""				# configuration type
 #	declare       __WORK=""				# work variables
+	declare -a    __LINE=()				# work variable
 	declare -i    I=0					# work variables
 
 	# --- option parameter ----------------------------------------------------
@@ -1979,131 +2017,306 @@ function funcCreate_precon() {
 function funcRemastering_preseed() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
-	declare       __BOPT=""				# boot options
+	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
+	declare       __SRVR="" 			# server address
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+	declare       __ISOS=""				# iso file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
 
 	# --- boot option ---------------------------------------------------------
-	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
-	__BOPT=""
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+	__BOPT=()
 	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
-	# --- autoinstall ---------------------------------------------------------
-	if [[ -n "${__TGET_LIST[23]##-}" ]]; then
-		__WORK="auto=true preseed/file=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK="${__WORK:+" "}auto=true preseed/file=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+#		__WORK="${__CONF:+"${__WORK/file=\/cdrom/url=${__CONF}}"}"
 		case "${__TGET_LIST[2]}" in
-			ubuntu-desktop-* | \
-			ubuntu-legacy-*  ) __BOPT+="${__BOPT:+" "}automatic-ubiquity noprompt ${__WORK}";;
-			*-mini-*         ) __BOPT+="${__BOPT:+" "}${__WORK/\/cdrom/}";;
-			*                ) __BOPT+="${__BOPT:+" "}${__WORK}";;
+			ubuntu-desktop-*    | \
+			ubuntu-legacy-*     ) __WORK="automatic-ubiquity noprompt ${__WORK}";;
+			*-mini-*            ) __WORK="${__WORK/\/cdrom/}";;
+			*                   ) ;;
 		esac
 	fi
-	# --- network -------------------------------------------------------------
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		case "${__TGET_LIST[2]}" in
+			ubuntu-*            ) __WORK+="${__WORK:+" "}netcfg/target_network_config=NetworkManager";;
+			*                   ) ;;
+		esac
+		__WORK+="${__WORK:+" "}netcfg/disable_autoconfig=true"
+		__WORK+="${__WORK:+" "}netcfg/choose_interface=\${ethrname}"
+		__WORK+="${__WORK:+" "}netcfg/get_hostname=\${hostname}"
+		__WORK+="${__WORK:+" "}netcfg/get_ipaddress=\${ipv4addr}"
+		__WORK+="${__WORK:+" "}netcfg/get_netmask=\${ipv4mask}"
+		__WORK+="${__WORK:+" "}netcfg/get_gateway=\${ipv4gway}"
+		__WORK+="${__WORK:+" "}netcfg/get_nameservers=\${ipv4nsvr}"
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
+	__WORK=""
 	case "${__TGET_LIST[2]}" in
-		ubuntu-*         ) __BOPT+="${__BOPT:+" "}netcfg/target_network_config=NetworkManager";;
-		*                ) ;;
+		live-debian-*       | \
+		live-ubuntu-*       | \
+		debian-live-*       ) __WORK+="${__WORK:+" "}utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A";;
+		ubuntu-desktop-*    | \
+		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
+		*                   ) __WORK+="${__WORK:+" "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
 	esac
-	__BOPT+="${__BOPT:+" "}netcfg/disable_autoconfig=true"
-	__BOPT+="${_NICS_NAME:+"${__BOPT:+" "}netcfg/choose_interface=${_NICS_NAME}"}"
-	__BOPT+="${_NWRK_HOST:+"${__BOPT:+" "}netcfg/get_hostname=${__HOST}.${_NWRK_WGRP}"}"
-	__BOPT+="${_IPV4_ADDR:+"${__BOPT:+" "}netcfg/get_ipaddress=${_IPV4_ADDR}"}"
-	__BOPT+="${_IPV4_MASK:+"${__BOPT:+" "}netcfg/get_netmask=${_IPV4_MASK}"}"
-	__BOPT+="${_IPV4_GWAY:+"${__BOPT:+" "}netcfg/get_gateway=${_IPV4_GWAY}"}"
-	__BOPT+="${_IPV4_NSVR:+"${__BOPT:+" "}netcfg/get_nameservers=${_IPV4_NSVR}"}"
-	# --- locale --------------------------------------------------------------
-	case "${__TGET_LIST[2]}" in
-		ubuntu-desktop-* | \
-		ubuntu-legacy-*  ) __BOPT+="${__BOPT:+" "}debian-installer/locale=ja_JP.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106";;
-		*                ) __BOPT+="${__BOPT:+" "}language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese";;
-	esac
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]}"
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
+#	__WORK=""
+#	case "${__TGET_LIST[2]}" in
+##		debian-mini-*       ) ;;
+#		ubuntu-mini-*       ) __WORK+="${__WORK:+" "}initrd=${__IMGS}/${__TGET_LIST[21]#"${_DIRS_LOAD}"} iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+#		ubuntu-desktop-18.* | \
+#		ubuntu-desktop-20.* | \
+#		ubuntu-desktop-22.* | \
+#		ubuntu-live-18.*    | \
+#		ubuntu-live-20.*    | \
+#		ubuntu-live-22.*    | \
+#		ubuntu-server-*     | \
+#		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}boot=casper url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+#		ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+#		*                   ) __WORK+="${__WORK:+" "}fetch=${__ISOS}/${__TGET_LIST[13]##*/}";;
+#	esac
+#	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	echo -n "${__BOPT}"
+	printf "%s\n" "${__BOPT[@]:-}"
 }
 
 # --- create boot options for nocloud -----------------------------------------
 function funcRemastering_nocloud() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
-	declare       __BOPT=""				# boot options
+	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
+	declare       __SRVR="" 			# server address
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+	declare       __ISOS=""				# iso file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
 
 	# --- boot option ---------------------------------------------------------
-	printf "%20.20s: %s\n" "create" "boot options for nocloud" 1>&2
-	__BOPT=""
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+	__BOPT=()
 	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
-	# --- autoinstall ---------------------------------------------------------
-	if [[ -n "${__TGET_LIST[23]##-}" ]]; then
-		__WORK="automatic-ubiquity noprompt autoinstall ds='nocloud;s=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}'"
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK="${__WORK:+" "}automatic-ubiquity noprompt autoinstall ds=nocloud\;s=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+#		__WORK="${__CONF:+"${__WORK/\/cdrom/${__CONF}}"}"
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
 		case "${__TGET_LIST[2]}" in
-			ubuntu-live-18.* ) __BOPT+="${__BOPT:+" "}boot=casper ${__WORK}";;
-			*                ) __BOPT+="${__BOPT:+" "}${__WORK}";;
+			ubuntu-live-18.04   ) __WORK+="${__WORK:+" "}ip=\${ethrname},\${ipv4addr},\${ipv4mask},\${ipv4gway} hostname=\${hostname}";;
+			*                   ) __WORK+="${__WORK:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}::\${ethrname}:${_IPV4_ADDR:+static}:\${ipv4nsvr} hostname=\${hostname}";;
 		esac
 	fi
-	# --- network -------------------------------------------------------------
-	case "${__TGET_LIST[2]}" in
-		ubuntu-live-18.04) __BOPT+="${__BOPT:+" "}ip=${_NICS_NAME},${_IPV4_ADDR},${_IPV4_MASK},${_IPV4_GWAY} hostname=${__HOST}.${_NWRK_WGRP}";;
-		*                ) __BOPT+="${__BOPT:+" "}ip=${_IPV4_ADDR}::${_IPV4_GWAY}:${_IPV4_MASK}::${_NICS_NAME}:${_IPV4_ADDR:+static}:${_IPV4_NSVR} hostname=${__HOST}.${_NWRK_WGRP}";;
-	esac
-	# --- locale --------------------------------------------------------------
-	__BOPT+="${__BOPT:+" "}debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]}"
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
+#	__WORK=""
+#	case "${__TGET_LIST[2]}" in
+##		debian-mini-*       ) ;;
+#		ubuntu-mini-*       ) __WORK+="${__WORK:+" "}initrd=${__IMGS}/${__TGET_LIST[21]#"${_DIRS_LOAD}"} iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+#		ubuntu-desktop-18.* | \
+#		ubuntu-desktop-20.* | \
+#		ubuntu-desktop-22.* | \
+#		ubuntu-live-18.*    | \
+#		ubuntu-live-20.*    | \
+#		ubuntu-live-22.*    | \
+#		ubuntu-server-*     | \
+#		ubuntu-legacy-*     ) __WORK+="${__WORK:+" "}boot=casper url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+#		ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
+#		*                   ) __WORK+="${__WORK:+" "}fetch=${__ISOS}/${__TGET_LIST[13]##*/}";;
+#	esac
+#	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	echo -n "${__BOPT}"
+	printf "%s\n" "${__BOPT[@]:-}"
 }
 
 # --- create boot options for kickstart ---------------------------------------
 function funcRemastering_kickstart() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
-	declare       __BOPT=""				# boot options
+	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
+	declare       __SRVR="" 			# server address
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+#	declare       __ISOS=""				# iso file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
 
 	# --- boot option ---------------------------------------------------------
-	printf "%20.20s: %s\n" "create" "boot options for kickstart" 1>&2
-	__BOPT=""
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+	__BOPT=()
 	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
-	# --- autoinstall ---------------------------------------------------------
-	if [[ -n "${__TGET_LIST[23]##-}" ]]; then
-		__BOPT+="${__BOPT:+" "}inst.ks=hd:sr0:${__TGET_LIST[23]#"${_DIRS_CONF}"}"
-		__BOPT+="${__TGET_LIST[16]:+"${__BOPT:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}"
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+#	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK+="${__WORK:+" "}inst.ks=${__CONF}${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK+="${__TGET_LIST[16]:+"${__WORK:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}"
+#		__WORK="${__CONF:+"${__WORK/_dvd/_web}"}"
 	fi
-	# --- network -------------------------------------------------------------
-	__BOPT+="${__BOPT:+" "}ip=${_IPV4_ADDR}::${_IPV4_GWAY}:${_IPV4_MASK}:${__HOST}.${_NWRK_WGRP}:${_NICS_NAME}:none,auto6 nameserver=${_IPV4_NSVR}"
-	# --- locale --------------------------------------------------------------
-	__BOPT+="${__BOPT:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		__WORK+="${__WORK:+" "}ip=\${ipv4addr}::\${ipv4gway}:\${ipv4mask}:\${hostname}:\${ethrname}:none,auto6 nameserver=\${ipv4nsvr}"
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]/root=\/dev\/ram*[0-9]/}"
+	__WORK="${__WORK#"${__WORK%%[!"${IFS}"]*}"}"	# ltrim
+	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
+#	__WORK=""
+#	__WORK+="${__WORK:+" "}inst.repo=${__IMGS}/${__TGET_LIST[2]}"
+#	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	echo -n "${__BOPT}"
+	printf "%s\n" "${__BOPT[@]:-}"
 }
 
 # --- create boot options for autoyast ----------------------------------------
 function funcRemastering_autoyast() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
-	declare       __BOPT=""				# boot options
+	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
+	declare       __SRVR="" 			# server address
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+#	declare       __ISOS=""				# iso file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
 
 	# --- boot option ---------------------------------------------------------
-	printf "%20.20s: %s\n" "create" "boot options for autoyast" 1>&2
-	__BOPT=""
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+	__BOPT=()
 	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
-	# --- autoinstall ---------------------------------------------------------
-	if [[ -n "${__TGET_LIST[23]##-}" ]]; then
-		__BOPT+="${__BOPT:+" "}inst.ks=hd:sr0:${__TGET_LIST[23]#"${_DIRS_CONF}"}"
-		__BOPT+="${__TGET_LIST[16]:+"${__BOPT:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}"
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+#	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK+="${__WORK:+" "}autoyast=${__CONF}${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK+="${__TGET_LIST[16]:+"${__WORK:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}"
+#		__WORK="${__CONF:+"${__WORK/_dvd/_web}"}"
 	fi
-	# --- network -------------------------------------------------------------
-	case "${__TGET_LIST[2]}" in
-		opensuse-*-15* ) __WORK="eth0";;
-		*              ) __WORK="${_NICS_NAME}";;
-	esac
-	__BOPT+="${__BOPT:+" "}hostname=${__HOST}.${_NWRK_WGRP} ifcfg=${__WORK}=${_IPV4_ADDR}/${_IPV4_CIDR},${_IPV4_GWAY},${_IPV4_NSVR},${_NWRK_WGRP}"
-	# --- locale --------------------------------------------------------------
-	__BOPT+="${__BOPT:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+#		case "${__TGET_LIST[2]}" in
+#			opensuse-*-15* ) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
+#			*              ) ;;
+#		esac
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]/root=\/dev\/ram*[0-9]/}"
+	__WORK="${__WORK#"${__WORK%%[!"${IFS}"]*}"}"	# ltrim
+	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
+#	__WORK=""
+#	case "${__TGET_LIST[2]}" in
+#		opensuse-leap*netinst*      ) __WORK+="${__WORK:+" "}install=https://download.opensuse.org/distribution/leap/${__TGET_LIST[2]##*-}/repo/oss/";;
+#		opensuse-tumbleweed*netinst*) __WORK+="${__WORK:+" "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
+#		*                           ) __WORK+="${__WORK:+" "}install=${__IMGS}/${__TGET_LIST[2]}";;
+#	esac
+#	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	echo -n "${__BOPT}"
+	printf "%s\n" "${__BOPT[@]:-}"
 }
 
 # --- create boot options -----------------------------------------------------
 function funcRemastering_boot_options() {
 	declare -r -a __TGET_LIST=("$@")	# target data
+	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
+	declare -a    __BOPT=()				# boot options
 
 	# --- create boot options -------------------------------------------------
 	case "${__TGET_LIST[2]%%-*}" in
@@ -2123,9 +2336,10 @@ function funcRemastering_boot_options() {
 		opensuse     ) __WORK="$(set -e; funcRemastering_autoyast "${__TGET_LIST[@]}")";;
 		*            ) ;;
 	esac
-	__WORK+="${_MENU_MODE:+"${__WORK:+" "}vga=${_MENU_MODE}"}"
-	__WORK+="${__WORK:+" "}fsck.mode=skip"
-	echo -n "${__WORK}"
+	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+	__BOPT+=("fsck.mode=skip raid=noautodetect${_MENU_MODE:+" vga=${_MENU_MODE}"}")
+	# --- finish --------------------------------------------------------------
+	printf "%s\n" "${__BOPT[@]}"
 }
 
 # --- create path for configuration file --------------------------------------
@@ -2147,7 +2361,7 @@ function funcRemastering_path() {
 function funcRemastering_isolinux_autoinst_cfg() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
-	declare -r    __BOOT_OPTN="${3}"	# boot options
+	declare -r    __BOOT_OPTN="${3:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:4}") # target data
 	declare       __WORK=""				# work variables
 	declare       __PATH=""				# full path
@@ -2155,6 +2369,7 @@ function funcRemastering_isolinux_autoinst_cfg() {
 	declare       __FTHM=""				# theme.txt
 	declare       __FKNL=""				# kernel
 	declare       __FIRD=""				# initrd
+	declare -a    __BOPT=()				# boot options
 
 	# --- header section ------------------------------------------------------
 	__PATH="${__DIRS_TGET}${__PATH_MENU}"
@@ -2172,15 +2387,30 @@ function funcRemastering_isolinux_autoinst_cfg() {
 		menu color help		37;40 #ffdddd00 #00000000 none
 		menu vshift 8
 		menu rows 32
-		menu helpmsgrow 34
-		menu cmdlinerow 36
-		menu timeoutrow 36
+		menu helpmsgrow 38
+		menu cmdlinerow 32
+		menu timeoutrow 38
 		menu tabmsgrow 38
 		menu tabmsg Press ENTER to boot or TAB to edit a menu entry
 		timeout ${_MENU_TOUT:-5}0
 		default auto_install
 
 _EOT_
+	# --- boot options --------------------------------------------------------
+	__WORK="${__BOOT_OPTN:-}"
+	__WORK="${__WORK//\$\{hostname\}/"${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"}"
+	__WORK="${__WORK//\$\{srvraddr\}/"${_SRVR_PROT}://${_SRVR_ADDR:?}"}"
+	__WORK="${__WORK//\$\{ethrname\}/"${_NICS_NAME:-ens160}"}"
+	__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"}"
+	__WORK="${__WORK//\$\{ipv4mask\}/"${_IPV4_MASK:-}"}"
+	__WORK="${__WORK//\$\{ipv4gway\}/"${_IPV4_GWAY:-}"}"
+	__WORK="${__WORK//\$\{ipv4nsvr\}/"${_IPV4_NSVR:-}"}"
+#	__WORK="${_NICS_NAME:-ens160}"
+	case "${__TGET_LIST[2]}" in
+		opensuse-*-15* ) __WORK="${__WORK//ens160/eth0}";;
+		*              ) ;;
+	esac
+	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
 	# --- standard installation mode ------------------------------------------
 	if [[ -n "${__TGET_LIST[22]#-}" ]]; then
 		__DIRS="${_DIRS_LOAD}/${__TGET_LIST[2]}"
@@ -2194,8 +2424,9 @@ _EOT_
 		label auto_install
 		  menu label ^Automatic installation
 		  menu default
-		  kernel ${__FKNL}
-		  append${__FIRD:+" initrd=${__FIRD}"}${__BOOT_OPTN:+" "}${__BOOT_OPTN} ---
+		  linux  ${__FKNL}
+		  initrd ${__FIRD}
+		  append ${__BOPT[@]:1}
 		
 _EOT_
 		# --- graphical installation mode -------------------------------------
@@ -2206,9 +2437,10 @@ _EOT_
 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}" || true
 				label auto_install_gui
 				  menu label ^Automatic installation of gui
-				  kernel ${__FKNL}
-				  append${__FIRD:+" initrd=${__FIRD}"}${__BOOT_OPTN:+" "}${__BOOT_OPTN} ---
-			
+				  linux  ${__FKNL}
+				  initrd ${__FIRD}
+				  append ${__BOPT[@]:1}
+
 _EOT_
 		done < <(find "${__DIRS_TGET}" -name 'gtk' -type d -printf '%P\n' || true)
 	fi
@@ -2217,7 +2449,7 @@ _EOT_
 # --- editing isolinux for autoinstall ----------------------------------------
 function funcRemastering_isolinux() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
-	declare -r    __BOOT_OPTN="${2}"	# boot options
+	declare -r    __BOOT_OPTN="${2:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:3}") # target data
 	declare       __WORK=""				# work variables
 	declare       __PATH=""				# full path
@@ -2284,7 +2516,7 @@ function funcRemastering_isolinux() {
 function funcRemastering_grub_autoinst_cfg() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
-	declare -r    __BOOT_OPTN="${3}"	# boot options
+	declare -r    __BOOT_OPTN="${3:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:4}") # target data
 	declare       __WORK=""				# work variables
 	declare       __PATH=""				# full path
@@ -2294,6 +2526,7 @@ function funcRemastering_grub_autoinst_cfg() {
 	declare       __FIRD=""				# initrd
 	declare       __FTHM=""				# theme.txt
 	declare       __FPNG=""				# splash.png
+	declare -a    __BOPT=()				# boot options
 
 	# --- theme section -------------------------------------------------------
 	__PATH="${__DIRS_TGET}${__PATH_MENU}"
@@ -2373,6 +2606,21 @@ _EOT_
 		export theme
 		
 _EOT_
+	# --- boot options --------------------------------------------------------
+#	__WORK="${__BOOT_OPTN:-}"
+#	__WORK="${__WORK//\$\{hostname\}/"${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"}"
+#	__WORK="${__WORK//\$\{srvraddr\}/"${_SRVR_PROT}://${_SRVR_ADDR:?}"}"
+#	__WORK="${__WORK//\$\{ethrname\}/"${_NICS_NAME:-ens160}"}"
+#	__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"}"
+#	__WORK="${__WORK//\$\{ipv4mask\}/"${_IPV4_MASK:-}"}"
+#	__WORK="${__WORK//\$\{ipv4gway\}/"${_IPV4_GWAY:-}"}"
+#	__WORK="${__WORK//\$\{ipv4nsvr\}/"${_IPV4_NSVR:-}"}"
+	__WORK="${_NICS_NAME:-ens160}"
+	case "${__TGET_LIST[2]}" in
+		opensuse-*-15* ) __WORK="${__WORK//ens160/eth0}";;
+		*              ) ;;
+	esac
+	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__BOOT_OPTN:-}")
 	# --- standard installation mode ------------------------------------------
 	if [[ -n "${__TGET_LIST[22]#-}" ]]; then
 		__DIRS="${_DIRS_LOAD}/${__TGET_LIST[2]}"
@@ -2384,11 +2632,30 @@ _EOT_
 		esac
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}" || true
 			menuentry 'Automatic installation' {
+			  echo 'Loading ${__TGET_LIST[3]//%20/ } ...'
 			  set gfxpayload=keep
 			  set background_color=black
-			  echo 'Loading kernel ...'
-			  linux  ${__FKNL}${__BOOT_OPTN:+" ${__BOOT_OPTN}"} ---
-			  echo 'Loading initial ramdisk ...'
+			  set srvraddr="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+			  set hostname="${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+			  set ethrname="${__WORK}"
+			  set ipv4addr="${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"
+			  set ipv4mask="${_IPV4_MASK:-}"
+			  set ipv4gway="${_IPV4_GWAY:-}"
+			  set ipv4nsvr="${_IPV4_NSVR:-}"
+			  set autoinst="${__BOPT[1]:-}"
+			  set networks="${__BOPT[2]:-}"
+			  set language="${__BOPT[3]:-}"
+			  set ramsdisk="${__BOPT[4]:-}"
+			  set isosfile="${__BOPT[5]:-}"
+			  set knladdr="(tftp,${_SRVR_ADDR:?})/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}"
+			  set options="\${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}"
+			  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+			  insmod net
+			  insmod http
+			  insmod progress
+			  echo 'Loading linux ...'
+			  linux  ${__FKNL} \${options} ---
+			  echo 'Loading initrd ...'
 			  initrd ${__FIRD}
 			}
 
@@ -2400,11 +2667,31 @@ _EOT_
 			__FIRD="${__DIRS:+/"${__DIRS}"}/${__TGET_LIST[21]##*/}"	# initrd
 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}" || true
 				menuentry 'Automatic installation of gui' {
+			menuentry 'Automatic installation' {
+				  echo 'Loading ${__TGET_LIST[3]//%20/ } ...'
 				  set gfxpayload=keep
 				  set background_color=black
-				  echo 'Loading kernel ...'
-				  linux  ${__FKNL}${__BOOT_OPTN:+" ${__BOOT_OPTN}"} ---
-				  echo 'Loading initial ramdisk ...'
+				  set srvraddr="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+				  set hostname="${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+				  set ethrname="${__WORK}"
+				  set ipv4addr="${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"
+				  set ipv4mask="${_IPV4_MASK:-}"
+				  set ipv4gway="${_IPV4_GWAY:-}"
+				  set ipv4nsvr="${_IPV4_NSVR:-}"
+				  set autoinst="${__BOPT[1]:-}"
+				  set networks="${__BOPT[2]:-}"
+				  set language="${__BOPT[3]:-}"
+				  set ramsdisk="${__BOPT[4]:-}"
+				  set isosfile="${__BOPT[5]:-}"
+				  set knladdr="(tftp,${_SRVR_ADDR:?})/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}"
+				  set options="\${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}"
+				  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+				  insmod net
+				  insmod http
+				  insmod progress
+				  echo 'Loading linux ...'
+				  linux  ${__FKNL} \${options} ---
+				  echo 'Loading initrd ...'
 				  initrd ${__FIRD}
 				}
 				
@@ -2416,7 +2703,7 @@ _EOT_
 # --- editing grub for autoinstall --------------------------------------------
 function funcRemastering_grub() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
-	declare -r    __BOOT_OPTN="${2}"	# boot options
+	declare -r    __BOOT_OPTN="${2:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:3}") # target data
 	declare       __WORK=""				# work variables
 	declare       __PATH=""				# full path
@@ -2472,7 +2759,7 @@ function funcRemastering_copy() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
 	declare       __WORK=""				# work variables
-	declare       __PATH=""				# file name
+	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
 	declare       __FNAM=""				# file name
 	declare       __BASE=""				# base name
@@ -2564,7 +2851,7 @@ function funcRemastering_media() {
 	declare -r    __DIRS_TGET="${1:?}"						# target directory
 	declare -r -a __TGET_LIST=("${@:2}")					# target data
 	declare -r    __DWRK="${_DIRS_TEMP}/${__TGET_LIST[2]}"	# work directory
-#	declare       __PATH=""									# file name
+#	declare       __PATH=""									# full path
 	declare       __FMBR=""									# "         (mbr.img)
 	declare       __FEFI=""									# "         (efi.img)
 	declare       __FCAT=""									# "         (boot.cat or boot.catalog)
@@ -2640,9 +2927,9 @@ function funcRemastering() {
 	declare -r    __DLOW="${__DOVL}/lower"					# lowerdir
 	declare -r    __DWKD="${__DOVL}/work"					# workdir
 	declare -r    __DMRG="${__DOVL}/merged"					# merged
-	declare       __PATH=""									# file name
+	declare       __PATH=""									# full path
 	declare       __FEFI=""									# "         (efiboot.img)
-	declare       __BOPT=""									# boot options
+	declare       __WORK=""									# work variables
 	
 	# --- start ---------------------------------------------------------------
 	__time_start=$(date +%s)
@@ -2672,19 +2959,25 @@ function funcRemastering() {
 	mount -r "${__TGET_LIST[13]}" "${__DLOW}"
 	mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}"
 	# --- create boot options -------------------------------------------------
-	__BOPT="$(set -e; funcRemastering_boot_options "${__TGET_LIST[@]}")"
+	printf "%20.20s: %s\n" "start" "create boot options" 1>&2
+	__WORK="$(set -e; funcRemastering_boot_options "${__TGET_LIST[@]}")"
 	# --- create autoinstall configuration file for isolinux ------------------
-	funcRemastering_isolinux "${__DMRG}" "${__BOPT}" "${__TGET_LIST[@]}"
+	printf "%20.20s: %s\n" "start" "create autoinstall configuration file for isolinux" 1>&2
+	funcRemastering_isolinux "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
 	# --- create autoinstall configuration file for grub ----------------------
-	funcRemastering_grub "${__DMRG}" "${__BOPT}" "${__TGET_LIST[@]}"
+	printf "%20.20s: %s\n" "start" "create autoinstall configuration file for grub" 1>&2
+	funcRemastering_grub "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
 	# --- copy auto-install files ---------------------------------------------
+	printf "%20.20s: %s\n" "start" "copy auto-install files" 1>&2
 	funcRemastering_copy "${__DMRG}" "${__TGET_LIST[@]}"
 	# --- remastering for initrd ----------------------------------------------
+	printf "%20.20s: %s\n" "start" "remastering for initrd" 1>&2
 	case "${__TGET_LIST[2]}" in
 		*-mini-*         ) funcRemastering_initrd "${__DMRG}" "${__TGET_LIST[@]}";;
 		*                ) ;;
 	esac
 	# --- create iso image file -----------------------------------------------
+	printf "%20.20s: %s\n" "start" "create iso image file" 1>&2
 	funcRemastering_media "${__DMRG}" "${__TGET_LIST[@]}"
 	umount "${__DMRG}"
 	umount "${__DLOW}"
@@ -2978,6 +3271,7 @@ function funcMain() {
 	declare -i    __time_elapsed=0		# result of elapsed time
 	declare -r -a __OPTN_PARM=("${@:-}") # option parameter
 	declare -a    __RETN_PARM=()		# name reference
+	declare -a    __RANG=()				# range
 	declare       __RSLT=""				# result
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
@@ -3020,43 +3314,64 @@ function funcMain() {
 	do
 		__RETN_PARM=()
 		case "${1:-}" in
-			create  )					# force create
+			create  )					# (force create)
 				shift
-#				__RSLT="$(set -e; funcPrint_menu "create" "${_LIST_MDIA[@]}")"
-				funcPrint_menu __RSLT "create" "${_LIST_MDIA[@]}"
-				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
+#				funcPrint_menu __RSLT "create" "${_LIST_MDIA[@]}"
+#				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
 #				for I in "${!_LIST_MDIA[@]}"
 #				do
 #					read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
-#					case "${__LIST[1]}" in
-#						o) ;;
-#						*) continue;;
+#set -x
+#printf "%-100.100s\n" "${_LIST_MDIA[@]}"
+				IFS= mapfile -d $'\n' -t __RANG < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '/mini.iso/' || true)
+				funcPrint_menu __RSLT "create" "${__RANG[@]}"
+				IFS= mapfile -d $'\n' -t __RANG < <(echo -n "${__RSLT}")
+				for I in "${!__RANG[@]}"
+				do
+					read -r -a __LIST < <(echo "${__RANG[I]}")
+#					case "${__LIST[0]}" in
+#						mini.iso      ) ;;
+#						netinst       ) ;;
+#						dvd           ) ;;
+#						live_install  ) ;;
+#						live          ) continue;;
+#						tool          ) continue;;
+#						custom_live   ) continue;;
+#						custom_netinst) continue;;
+#						system        ) continue;;
+#						*             ) continue;;
 #					esac
-#					if [[ -z "${__LIST[3]##-}" ]]; then
-#						continue
-#					fi
-#					if [[ -z "${__LIST[13]##-}" ]]; then
-#						continue
-#					fi
-#					# ---------------------------------------------------------
-#					if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
-#						continue
-#					fi
-#					funcRemastering "${__LIST[@]}"
-#					# --- new local remaster iso files ------------------------
+					case "${__LIST[1]}" in
+						o) ;;
+						*) continue;;
+					esac
+					if [[ -z "${__LIST[3]##-}" ]]; then
+						continue
+					fi
+					if [[ -z "${__LIST[13]##-}" ]]; then
+						continue
+					fi
+					# ---------------------------------------------------------
+					if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
+						continue
+					fi
+#					funcPrint_menu __RSLT "create" "${__LIST[*]}"
+#					IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
+					funcRemastering "${__LIST[@]}"
+					# --- new local remaster iso files ------------------------
 #					__WORK="$(funcGetFileinfo "${__LIST[17]##-}")"
 #					read -r -a __ARRY < <(echo "${__WORK}")
 ##					__LIST[17]="${__ARRY[0]:--}"				# rmk_path
 #					__LIST[18]="${__ARRY[1]:--}"				# rmk_tstamp
 #					__LIST[19]="${__ARRY[2]:--}"				# rmk_size
 #					__LIST[20]="${__ARRY[3]:--}"				# rmk_volume
-#					# --- update media data record ----------------
+					# --- update media data record ----------------
 #					_LIST_MDIA[I]="${__LIST[*]}"
-##					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
-#				done
-				funcPut_media_data
+#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
+				done
+#				funcPut_media_data
 				;;
-			update  )					# create new files only
+			update  )					# (create new files only)
 				shift
 #				__RSLT="$(set -e; funcPrint_menu "update" "${_LIST_MDIA[@]}")"
 				funcPrint_menu __RSLT "update" "${_LIST_MDIA[@]}"
@@ -3111,7 +3426,7 @@ function funcMain() {
 				done
 				funcPut_media_data
 				;;
-			download)					# download only
+			download)					# (download only)
 				shift
 #				__RSLT="$(set -e; funcPrint_menu "download" "${_LIST_MDIA[@]}")"
 				funcPrint_menu __RSLT "download" "${_LIST_MDIA[@]}"
@@ -3131,8 +3446,8 @@ function funcMain() {
 				do
 					case "${1:-}" in
 						create   ) shift; fncCreate_directory __RETN_PARM "${@:-}"; funcPut_media_data;;
-						update   ) ;;
-						download ) ;;
+						update   ) shift;;
+						download ) shift;;
 						*        ) break;;
 					esac
 				done

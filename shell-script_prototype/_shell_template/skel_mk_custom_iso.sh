@@ -125,6 +125,7 @@ function funcMain() {
 	declare -i    __time_elapsed=0		# result of elapsed time
 	declare -r -a __OPTN_PARM=("${@:-}") # option parameter
 	declare -a    __RETN_PARM=()		# name reference
+	declare -a    __RANG=()				# range
 	declare       __RSLT=""				# result
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
@@ -167,43 +168,64 @@ function funcMain() {
 	do
 		__RETN_PARM=()
 		case "${1:-}" in
-			create  )					# force create
+			create  )					# (force create)
 				shift
-#				__RSLT="$(set -e; funcPrint_menu "create" "${_LIST_MDIA[@]}")"
-				funcPrint_menu __RSLT "create" "${_LIST_MDIA[@]}"
-				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
+#				funcPrint_menu __RSLT "create" "${_LIST_MDIA[@]}"
+#				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
 #				for I in "${!_LIST_MDIA[@]}"
 #				do
 #					read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
-#					case "${__LIST[1]}" in
-#						o) ;;
-#						*) continue;;
+#set -x
+#printf "%-100.100s\n" "${_LIST_MDIA[@]}"
+				IFS= mapfile -d $'\n' -t __RANG < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '/mini.iso/' || true)
+				funcPrint_menu __RSLT "create" "${__RANG[@]}"
+				IFS= mapfile -d $'\n' -t __RANG < <(echo -n "${__RSLT}")
+				for I in "${!__RANG[@]}"
+				do
+					read -r -a __LIST < <(echo "${__RANG[I]}")
+#					case "${__LIST[0]}" in
+#						mini.iso      ) ;;
+#						netinst       ) ;;
+#						dvd           ) ;;
+#						live_install  ) ;;
+#						live          ) continue;;
+#						tool          ) continue;;
+#						custom_live   ) continue;;
+#						custom_netinst) continue;;
+#						system        ) continue;;
+#						*             ) continue;;
 #					esac
-#					if [[ -z "${__LIST[3]##-}" ]]; then
-#						continue
-#					fi
-#					if [[ -z "${__LIST[13]##-}" ]]; then
-#						continue
-#					fi
-#					# ---------------------------------------------------------
-#					if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
-#						continue
-#					fi
-#					funcRemastering "${__LIST[@]}"
-#					# --- new local remaster iso files ------------------------
+					case "${__LIST[1]}" in
+						o) ;;
+						*) continue;;
+					esac
+					if [[ -z "${__LIST[3]##-}" ]]; then
+						continue
+					fi
+					if [[ -z "${__LIST[13]##-}" ]]; then
+						continue
+					fi
+					# ---------------------------------------------------------
+					if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
+						continue
+					fi
+#					funcPrint_menu __RSLT "create" "${__LIST[*]}"
+#					IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
+					funcRemastering "${__LIST[@]}"
+					# --- new local remaster iso files ------------------------
 #					__WORK="$(funcGetFileinfo "${__LIST[17]##-}")"
 #					read -r -a __ARRY < <(echo "${__WORK}")
 ##					__LIST[17]="${__ARRY[0]:--}"				# rmk_path
 #					__LIST[18]="${__ARRY[1]:--}"				# rmk_tstamp
 #					__LIST[19]="${__ARRY[2]:--}"				# rmk_size
 #					__LIST[20]="${__ARRY[3]:--}"				# rmk_volume
-#					# --- update media data record ----------------
+					# --- update media data record ----------------
 #					_LIST_MDIA[I]="${__LIST[*]}"
-##					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
-#				done
-				funcPut_media_data
+#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
+				done
+#				funcPut_media_data
 				;;
-			update  )					# create new files only
+			update  )					# (create new files only)
 				shift
 #				__RSLT="$(set -e; funcPrint_menu "update" "${_LIST_MDIA[@]}")"
 				funcPrint_menu __RSLT "update" "${_LIST_MDIA[@]}"
@@ -258,7 +280,7 @@ function funcMain() {
 				done
 				funcPut_media_data
 				;;
-			download)					# download only
+			download)					# (download only)
 				shift
 #				__RSLT="$(set -e; funcPrint_menu "download" "${_LIST_MDIA[@]}")"
 				funcPrint_menu __RSLT "download" "${_LIST_MDIA[@]}"
@@ -278,8 +300,8 @@ function funcMain() {
 				do
 					case "${1:-}" in
 						create   ) shift; fncCreate_directory __RETN_PARM "${@:-}"; funcPut_media_data;;
-						update   ) ;;
-						download ) ;;
+						update   ) shift;;
+						download ) shift;;
 						*        ) break;;
 					esac
 				done

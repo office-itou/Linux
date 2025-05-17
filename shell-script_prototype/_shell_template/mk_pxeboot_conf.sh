@@ -746,7 +746,7 @@ funcSplit_initramfs() {
 function funcCreate_iso() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_OUTP="${2:?}"	# output path
-	declare -r -a __OPTN_XORR=("$@:2")	# xorrisofs options
+	declare -r -a __OPTN_XORR=("${@:3}") # xorrisofs options
 	declare -a    __LIST=()				# data list
 	declare       __PATH=""				# full path
 	              __PATH="$(mktemp -q "${TMPDIR:-/tmp}/${__PATH_OUTP##*/}.XXXXXX")"
@@ -2295,11 +2295,11 @@ function funcPxeboot_autoyast() {
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__WORK="ip=dhcp"
 	else
-		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=${__WORK}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
-		case "${__TGET_LIST[2]}" in
-			opensuse-*-15* ) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
-			*              ) ;;
-		esac
+		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+#		case "${__TGET_LIST[2]}" in
+#			opensuse-*-15* ) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
+#			*              ) ;;
+#		esac
 	fi
 	__BOPT+=("${__WORK}")
 	# ---  3: locale ----------------------------------------------------------
@@ -2587,6 +2587,10 @@ _EOT_
 
 _EOT_
 					)"
+					case "${__TGET_LIST[2]}" in
+						opensuse-*-15* ) __WORK="${__WORK//ens160/eth0}";;
+						*              ) ;;
+					esac
 					;;
 			esac
 			if [[ -n "${__WORK:-}" ]]; then
@@ -2821,6 +2825,10 @@ _EOT_
 							}
 _EOT_
 					)"
+					case "${__TGET_LIST[2]}" in
+						opensuse-*-15* ) __WORK="${__WORK//ens160/eth0}";;
+						*              ) ;;
+					esac
 					;;
 			esac
 			if [[ -n "${__WORK:-}" ]]; then
@@ -3031,6 +3039,10 @@ _EOT_
 _EOT_
 						)"
 					fi
+					case "${__TGET_LIST[2]}" in
+						opensuse-*-15* ) __WORK="${__WORK//ens160/eth0}";;
+						*              ) ;;
+					esac
 					;;
 			esac
 			if [[ -n "${__WORK:-}" ]]; then
@@ -3055,6 +3067,7 @@ function funcPxeboot() {
 	for I in "${!_LIST_MDIA[@]}"
 	do
 		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
+		printf "%20.20s: %s\n" "start" "${__LIST[2]}" 1>&2
 		# --- update ----------------------------------------------------------
 		case "${1:-}" in
 			update  ) ;;
@@ -3195,17 +3208,17 @@ function funcMain() {
 	do
 		_RETN_PARM=()
 		case "${1:-}" in
-			create  ) funcPxeboot "${1:-}"; shift;;
-			update  ) ;;
-			download) ;;
+			create  ) shift; funcPxeboot "create"  ;;
+			update  ) shift; funcPxeboot "update"  ;;
+			download) shift; funcPxeboot "download";;
 			link    )
 				shift
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
 						create   ) shift; fncCreate_directory _RETN_PARM "${@:-}"; funcPut_media_data;;
-						update   ) ;;
-						download ) ;;
+						update   ) shift;;
+						download ) shift;;
 						*        ) break;;
 					esac
 				done
@@ -3216,8 +3229,8 @@ function funcMain() {
 				do
 					case "${1:-}" in
 						create   ) shift; funcPut_media_data;;
-						update   ) ;;
-						download ) ;;
+						update   ) shift;;
+						download ) shift;;
 						*        ) break;;
 					esac
 				done
