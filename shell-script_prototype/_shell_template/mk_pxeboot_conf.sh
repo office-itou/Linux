@@ -216,7 +216,14 @@ function funcTrap() {
 	declare       _MINI_IRAM=""
 
 	# --- ipxe menu file ------------------------------------------------------
-	declare       _IPXE_MENU=""
+	declare       _MENU_IPXE=""
+
+	# --- grub menu file ------------------------------------------------------
+	declare       _MENU_GRUB=""
+
+	# --- syslinux menu file --------------------------------------------------
+	declare       _MENU_SLNX=""			# bios
+	declare       _MENU_UEFI=""			# uefi x86_64
 
 	# --- list data -----------------------------------------------------------
 	declare -a    _LIST_MDIA=()			# media information
@@ -1293,8 +1300,19 @@ function funcInitialization() {
 	readonly      _MINI_IRAM
 
 	# --- ipxe menu file ------------------------------------------------------
-	              _IPXE_MENU="${_DIRS_TFTP}/autoexec.ipxe"
-	readonly      _IPXE_MENU
+	              _MENU_IPXE="${_DIRS_TFTP}/autoexec.ipxe"
+	readonly      _MENU_IPXE
+
+	# --- grub menu file ------------------------------------------------------
+	              _MENU_GRUB="${_DIRS_TFTP}/boot/grub/grub.cfg"
+	readonly      _MENU_GRUB
+
+	# --- syslinux menu file --------------------------------------------------
+	              _MENU_SLNX="${_DIRS_TFTP}/menu-bios/syslinux.cfg"
+	readonly      _MENU_SLNX
+
+	              _MENU_UEFI="${_DIRS_TFTP}/menu-efi64/syslinux.cfg"
+	readonly      _MENU_UEFI
 
 	# --- get media data ------------------------------------------------------
 	funcGet_media_data
@@ -1462,11 +1480,11 @@ function funcPut_media_data() {
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3 | while read -r __PATH
+	while read -r __PATH
 	do
 		printf "%s: \"%s\"\n" "remove" "${__PATH}" 1>&2
 		rm -f "${__PATH:?}"
-	done
+	done < <(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3  || true)
 	# --- list data -----------------------------------------------------------
 	for I in "${!_LIST_MDIA[@]}"
 	do
@@ -1987,6 +2005,29 @@ function funcCreate_precon() {
 
 # === <pxeboot> ===============================================================
 
+# --- file copy ---------------------------------------------------------------
+function funcPxeboot_copy() {
+	declare -r    __PATH_TGET="${1:?}"	# target file
+	declare -r    __DIRS_DEST="${2:?}"	# destination directory
+	declare       __MNTP=""				# mount point
+	declare       __PATH=""				# full path
+	              __PATH="$(mktemp -qd "${TMPDIR:-/tmp}/${__DIRS_DEST##*/}.XXXXXX")"
+	readonly      __PATH
+
+	if [[ ! -s "${__PATH_TGET}" ]]; then
+		return
+	fi
+	printf "%20.20s: %s\n" "copy" "${__PATH_TGET}" 1>&2
+	__MNTP="${__PATH}/mnt"
+	rm -rf "${__MNTP:?}"
+	mkdir -p "${__MNTP}" "${__DIRS_DEST}"
+	mount -o ro,loop "${__PATH_TGET}" "${__MNTP}"
+	nice -n "${_NICE_VALU:-19}" rsync "${_OPTN_RSYC[@]}" "${__MNTP}/." "${__DIRS_DEST}/" 2>/dev/null || true
+	umount "${__MNTP}"
+	chmod -R +r "${__DIRS_DEST}/" 2>/dev/null || true
+	rm -rf "${__MNTP:?}"
+}
+
 # --- create boot options for preseed -----------------------------------------
 function funcPxeboot_preseed() {
 	declare -r -a __TGET_LIST=("$@")	# target data
@@ -2315,8 +2356,10 @@ function funcPxeboot_boot_options() {
 }
 
 # --- create autoexec.ipxe ----------------------------------------------------
-function funcPxeboot_autoexec_ipxe() {
-	declare -r -a __TGET_LIST=("$@")	# target data (list)
+function funcPxeboot_ipxe() {
+	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
+	declare -r -i __CONT_TABS="${2:?}"	# tabs count
+	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
 	declare       __PATH=""				# full path
 	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
@@ -2330,9 +2373,9 @@ function funcPxeboot_autoexec_ipxe() {
 	declare       __RMAK=""				# remake file
 
 	# --- header/footer -------------------------------------------------------
-	if [[ ! -s "${_IPXE_MENU}" ]]; then
-#		rm -f "${_IPXE_MENU:?}"
-		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_IPXE_MENU}" || true
+	if [[ ! -s "${__PATH_TGET}" ]]; then
+#		rm -f "${__PATH_TGET:?}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH_TGET}" || true
 			#!ipxe
 			
 			cpuid --ext 29 && set arch amd64 || set arch x86
@@ -2386,7 +2429,7 @@ _EOT_
 				return
 			fi
 			__WORK="$(printf "%-40.40s[ %s ]" "item --gap --" "${__TGET_LIST[3]//%20/ }")"
-			sed -i "${_IPXE_MENU}" -e "/\[ System command \]/i \\${__WORK}"
+			sed -i "${__PATH_TGET}" -e "/\[ System command \]/i \\${__WORK}"
 			;;
 		o)								# (output)
 			if [[ ! -e "${_DIRS_IMGS}/${__TGET_LIST[2]}" ]]; then
@@ -2404,8 +2447,9 @@ _EOT_
 				live          ) __ENTR="live-${__ENTR}";;	# original media live mode
 				*             ) ;;							# original media install mode
 			esac
-			__WORK="$(printf "%-40.40s%-60.60s%20.20s" "item -- ${__ENTR}" "- ${__TGET_LIST[3]//%20/ } ${_TEXT_SPCE// /.}" "${__TGET_LIST[14]//%20/ }")"
-			sed -i "${_IPXE_MENU}" -e "/\[ System command \]/i \\${__WORK}"
+			__WORK="$(printf "%-40.40s%-55.55s%19.19s" "item -- ${__ENTR}" "- ${__TGET_LIST[3]//%20/ } ${_TEXT_SPCE// /.}" "${__TGET_LIST[14]//%20/ }")"
+			sed -i "${__PATH_TGET}" -e "/\[ System command \]/i \\${__WORK}"
+			__WORK=""
 			case "${__TGET_LIST[2]}" in
 				windows-* )				# (windows)
 					__WORK="$(
@@ -2472,16 +2516,11 @@ _EOT_
 				*          )			# (linux)
 					__WORK="$(set -e; funcPxeboot_boot_options "${__TGET_LIST[@]}")"
 					IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
-					__WORK="$(
-						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
-							:${__ENTR}
-							echo Loading ${__TGET_LIST[3]//%20/ } ...
-							
-_EOT_
-					)"
 					if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
-						__WORK+="$(
+						__WORK="$(
 							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+								:${__ENTR}
+								echo Loading ${__TGET_LIST[3]//%20/ } ...
 								set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
 								set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
 								set ethrname ${_NICS_NAME:-ens160}
@@ -2498,8 +2537,10 @@ _EOT_
 _EOT_
 						)"
 					else
-						__WORK+="$(
+						__WORK="$(
 							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+								:${__ENTR}
+								echo Loading ${__TGET_LIST[3]//%20/ } ...
 								set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
 								set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
 								form                                    Configure Boot Options
@@ -2548,42 +2589,469 @@ _EOT_
 					)"
 					;;
 			esac
-			sed -i "${_IPXE_MENU}" -e "/^:shell$/i \\${__WORK}"
+			if [[ -n "${__WORK:-}" ]]; then
+				sed -i "${__PATH_TGET}" -e "/^:shell$/i \\${__WORK}"
+			fi
 			;;
 		*)								# (hidden)
 			;;
 	esac
 }
 
-# --- file copy ---------------------------------------------------------------
-function funcPxeboot_copy() {
-	declare -r    __PATH_TGET="${1:?}"	# target file
-	declare -r    __DIRS_DEST="${2:?}"	# destination directory
-	declare       __MNTP=""				# mount point
+# --- create grub.cfg ---------------------------------------------------------
+function funcPxeboot_grub() {
+	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
+	declare -r -i __CONT_TABS="${2:?}"	# tabs count
+	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
 	declare       __PATH=""				# full path
-	              __PATH="$(mktemp -qd "${TMPDIR:-/tmp}/${__DIRS_DEST##*/}.XXXXXX")"
-	readonly      __PATH
+	declare -a    __LIST=()				# work variables
+	declare       __WORK=""				# work variables
+	declare -a    __BOPT=()				# boot options
+	declare       __ENTR=""				# meny entry
+	declare       __HOST=""				# host name
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+	declare       __ISOS=""				# iso file
+	declare       __LOAD=""				# load module
+	declare       __RMAK=""				# remake file
+	declare       __SPCS=""				# tabs string (space)
 
-	if [[ ! -s "${__PATH_TGET}" ]]; then
-		return
+	# --- tab string ----------------------------------------------------------
+	if [[ "${__CONT_TABS}" -gt 0 ]]; then
+		__SPCS="$(funcString $(("${__CONT_TABS}" * 2)) ' ')"
+	else
+		__SPCS=""
 	fi
-	printf "%20.20s: %s\n" "copy" "${__PATH_TGET}" 1>&2
-	__MNTP="${__PATH}/mnt"
-	rm -rf "${__MNTP:?}"
-	mkdir -p "${__MNTP}" "${__DIRS_DEST}"
-	mount -o ro,loop "${__PATH_TGET}" "${__MNTP}"
-	nice -n "${_NICE_VALU:-19}" rsync "${_OPTN_RSYC[@]}" "${__MNTP}/." "${__DIRS_DEST}/" 2>/dev/null || true
-	umount "${__MNTP}"
-	chmod -R +r "${__DIRS_DEST}/" 2>/dev/null || true
-	rm -rf "${__MNTP:?}"
+	# --- header/footer -------------------------------------------------------
+	if [[ ! -s "${__PATH_TGET}" ]]; then
+#		rm -f "${_MENU_GRUB:?}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH_TGET}" || true
+			set default="0"
+			set timeout="-1"
+			
+			if [ "x\${feature_default_font_path}" = "xy" ] ; then
+			  font="unicode"
+			else
+			  font="\${prefix}/fonts/font.pf2"
+			fi
+			
+			if loadfont "\$font" ; then
+			# set lang="ja_JP"
+			  set gfxmode=${_MENU_RESO:+"${_MENU_RESO}x${_MENU_DPTH},"}auto
+			  set gfxpayload="keep"
+			  if [ "\${grub_platform}" = "efi" ]; then
+			    insmod efi_gop
+			    insmod efi_uga
+			  else
+			    insmod vbe
+			    insmod vga
+			  fi
+			  insmod gfxterm
+			  insmod gettext
+			  terminal_output gfxterm
+			fi
+			
+			set menu_color_normal="cyan/blue"
+			set menu_color_highlight="white/blue"
+			
+			#export lang
+			export gfxmode
+			export gfxpayload
+			export menu_color_normal
+			export menu_color_highlight
+			
+			insmod play
+			play 960 440 1 0 4 440 1
+			
+			menuentry '[ System command ]' {
+			  true
+			}
+			
+			menuentry '- System shutdown' {
+			  echo "System shutting down ..."
+			  halt
+			}
+			
+			menuentry '- System restart' {
+			  echo "System rebooting ..."
+			  reboot
+			}
+			
+			if [ "\${grub_platform}" = "efi" ]; then
+			  menuentry '- Boot from next volume' {
+			    exit 1
+			  }
+
+			  menuentry '- UEFI Firmware Settings' {
+			    fwsetup
+			  }
+			fi
+_EOT_
+	fi
+	# --- menu list -----------------------------------------------------------
+	case "${__TGET_LIST[1]}" in
+		m)								# (menu)
+#			if [[ -z "${__TGET_LIST[3]##-}" ]]; then
+#				return
+#			fi
+			__WORK="[ ${__TGET_LIST[3]//%20/ } ... ]"
+			case "${__TGET_LIST[3]}" in
+				System%20command) return;;
+				-               ) __WORK="}\n"                  ;;
+				*               ) __WORK="submenu '${__WORK}' {";;
+			esac
+			sed -i "${__PATH_TGET}" -e "/\[ System command \]/i \\${__WORK}"
+			;;
+		o)								# (output)
+			if [[ ! -e "${_DIRS_IMGS}/${__TGET_LIST[2]}" ]]; then
+				return
+			fi
+			if [[ ! -s "${__TGET_LIST[13]}" ]]; then
+				return
+			fi
+			__ENTR="$(printf "%-55.55s%19.19s" "- ${__TGET_LIST[3]//%20/ }  ${_TEXT_SPCE// /.}" "${__TGET_LIST[14]//%20/ }")"
+			__WORK=""
+			case "${__TGET_LIST[2]}" in
+				windows-* )				# (windows)
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${__SPCS}/g" | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							if [ "\${grub_platform}" = "pc" ]; then
+							  menuentry '${__ENTR}' {
+							    echo 'Loading ${__TGET_LIST[3]//%20/ } ...'
+							    set isofile="(${_SRVR_PROT},${_SRVR_ADDR:?})/${_DIRS_ISOS##*/}/${__TGET_LIST[13]#*${_DIRS_ISOS##*/}/}"
+							    export isofile
+							    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							    insmod net
+							    insmod http
+							    insmod progress
+							    echo 'Loading linux ...'
+							    linux  memdisk iso raw
+							    echo 'Loading initrd ...'
+							    initrd \$isofile
+							  }
+							fi
+_EOT_
+					)"
+					;;
+				winpe-* | \
+				ati*x64 | \
+				ati*x86 )				# (winpe/ati)
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${__SPCS}/g" | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							if [ "\${grub_platform}" = "pc" ]; then
+							  menuentry '${__ENTR}' {
+							    echo 'Loading ${__TGET_LIST[3]//%20/ } ...'
+							    set isofile="(${_SRVR_PROT},${_SRVR_ADDR:?})/${_DIRS_ISOS##*/}/${__TGET_LIST[13]#*${_DIRS_ISOS##*/}/}"
+							    export isofile
+							    if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							    insmod net
+							    insmod http
+							    insmod progress
+							    echo 'Loading linux ...'
+							    linux  memdisk iso raw
+							    echo 'Loading initrd ...'
+							    initrd \$isofile
+							  }
+							fi
+_EOT_
+					)"
+					;;
+				memtest86* )			# (memtest86)
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${__SPCS}/g" | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							menuentry '${__ENTR}' {
+							  echo 'Loading ${__TGET_LIST[3]//%20/ } ...'
+							  set srvraddr="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+							  set knladdr="(tftp,${_SRVR_ADDR:?})/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}"
+							  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							  insmod net
+							  insmod http
+							  insmod progress
+							  echo 'Loading linux ...'
+							  if [ "\${grub_platform}" = "pc" ]; then
+							    linux \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
+							  else
+							    linux \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
+							  fi
+							}
+_EOT_
+					)"
+					;;
+				*          )			# (linux)
+					__WORK="$(set -e; funcPxeboot_boot_options "${__TGET_LIST[@]}")"
+					IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${__SPCS}/g" | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							menuentry '${__ENTR}' {
+							  echo 'Loading ${__TGET_LIST[3]//%20/ } ...'
+							  set srvraddr="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+_EOT_
+					)"
+					if [[ -n "${__TGET_LIST[23]##-}" ]] && [[ -n "${__TGET_LIST[23]##*/-}" ]]; then
+						__WORK+="$(
+							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${__SPCS}/g" | sed -e ':l; N; s/\n/\\n/; b l;' || true
+
+								  set hostname="${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
+								  set ethrname="${_NICS_NAME:-ens160}"
+								  set ipv4addr="${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"
+								  set ipv4mask="${_IPV4_MASK:-}"
+								  set ipv4gway="${_IPV4_GWAY:-}"
+								  set ipv4nsvr="${_IPV4_NSVR:-}"
+								  set autoinst="${__BOPT[1]:-}"
+_EOT_
+						)"
+					fi
+					__WORK+="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${__SPCS}/g" | sed -e ':l; N; s/\n/\\n/; b l;' || true
+
+							  set networks="${__BOPT[2]:-}"
+							  set language="${__BOPT[3]:-}"
+							  set ramsdisk="${__BOPT[4]:-}"
+							  set isosfile="${__BOPT[5]:-}"
+							  set knladdr="(tftp,${_SRVR_ADDR:?})/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}"
+							  set options="\${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}"
+							  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+							  insmod net
+							  insmod http
+							  insmod progress
+							  echo 'Loading linux ...'
+							  linux  \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} ---
+							  echo 'Loading initrd ...'
+							  initrd \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
+							}
+_EOT_
+					)"
+					;;
+			esac
+			if [[ -n "${__WORK:-}" ]]; then
+				sed -i "${__PATH_TGET}" -e "/\[ System command \]/i \\${__WORK}"
+			fi
+			;;
+		*)								# (hidden)
+			;;
+	esac
+}
+
+# --- create syslinux.cfg for bios mode ---------------------------------------
+function funcPxeboot_slnx() {
+	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
+	declare -r -i __CONT_TABS="${2:?}"	# tabs count
+	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
+	declare       __PATH=""				# full path
+	declare -a    __LIST=()				# work variables
+	declare       __WORK=""				# work variables
+	declare -a    __BOPT=()				# boot options
+	declare       __ENTR=""				# meny entry
+	declare       __HOST=""				# host name
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+	declare       __ISOS=""				# iso file
+	declare       __LOAD=""				# load module
+	declare       __RMAK=""				# remake file
+	declare -i    I=0					# work variables
+
+	# --- header/footer -------------------------------------------------------
+	if [[ ! -s "${__PATH_TGET}" ]]; then
+#		rm -f "${__PATH_TGET:?}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH_TGET}" || true
+			path ./
+			prompt 0
+			timeout 0
+			default vesamenu.c32
+			
+			menu resolution ${_MENU_RESO/x/ }
+			
+			menu color screen       * #ffffffff #ee000080 *
+			menu color title        * #ffffffff #ee000080 *
+			menu color border       * #ffffffff #ee000080 *
+			menu color sel          * #ffffffff #76a1d0ff *
+			menu color hotsel       * #ffffffff #76a1d0ff *
+			menu color unsel        * #ffffffff #ee000080 *
+			menu color hotkey       * #ffffffff #ee000080 *
+			menu color tabmsg       * #ffffffff #ee000080 *
+			menu color timeout_msg  * #ffffffff #ee000080 *
+			menu color timeout      * #ffffffff #ee000080 *
+			menu color disabled     * #ffffffff #ee000080 *
+			menu color cmdmark      * #ffffffff #ee000080 *
+			menu color cmdline      * #ffffffff #ee000080 *
+			menu color scrollbar    * #ffffffff #ee000080 *
+			menu color help         * #ffffffff #ee000080 *
+			
+			menu margin             4
+			menu vshift             5
+			menu rows               25
+			menu tabmsgrow          31
+			menu cmdlinerow         33
+			menu timeoutrow         33
+			menu helpmsgrow         37
+			menu hekomsgendrow      39
+			
+			menu title - Boot Menu -
+			menu tabmsg Press ENTER to boot or TAB to edit a menu entry
+			
+			label System-command
+			  menu label ^[ System command ... ]
+			
+_EOT_
+		case "${__PATH_TGET}" in
+			*/menu-bios/*)
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH_TGET}" || true
+					label Hardware-info
+					  menu label ^- Hardware info
+					  com32 hdt.c32
+
+					label System-shutdown
+					  menu label ^- System shutdown
+					  com32 poweroff.c32
+
+					label System-restart
+					  menu label ^- System restart
+					  com32 reboot.c32
+
+_EOT_
+			;;
+			*) ;;
+		esac
+	fi
+	# --- menu list -----------------------------------------------------------
+	case "${__TGET_LIST[1]}" in
+		m)								# (menu)
+			if [[ -z "${__TGET_LIST[3]##-}" ]]; then
+				return
+			fi
+			__WORK="$(
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+					label ${__TGET_LIST[3]//%20/-}
+					  menu label ^[ ${__TGET_LIST[3]//%20/ } ... ]
+					
+_EOT_
+			)"
+			sed -i "${__PATH_TGET}" -e "/^label[ \t]\+System-command$/i \\${__WORK}"
+			;;
+		o)								# (output)
+			if [[ ! -e "${_DIRS_IMGS}/${__TGET_LIST[2]}" ]]; then
+				return
+			fi
+			if [[ ! -s "${__TGET_LIST[13]}" ]]; then
+				return
+			fi
+			__ENTR="$(printf "%-55.55s%19.19s" "- ${__TGET_LIST[3]//%20/ }  ${_TEXT_SPCE// /.}" "${__TGET_LIST[14]//%20/ }")"
+			__WORK=""
+			case "${__TGET_LIST[2]}" in
+				windows-* )				# (windows)
+					case "${__PATH_TGET}" in
+						*/menu-bios/*)
+							__WORK="$(
+								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+									label ${__TGET_LIST[2]}
+									  menu label ^${__ENTR}
+									  linux  memdisk
+									  initrd ${_SRVR_PROT}://${_SRVR_ADDR:?}/${_DIRS_ISOS##*/}/${__TGET_LIST[13]#*${_DIRS_ISOS##*/}/}
+									  append iso raw
+
+_EOT_
+							)"
+							;;
+						*) ;;
+					esac
+					;;
+				winpe-* | \
+				ati*x64 | \
+				ati*x86 )				# (winpe/ati)
+					case "${__PATH_TGET}" in
+						*/menu-bios/*)
+							__WORK="$(
+								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+									label ${__TGET_LIST[2]}
+									  menu label ^${__ENTR}
+									  linux  memdisk
+									  initrd ${_SRVR_PROT}://${_SRVR_ADDR:?}/${_DIRS_ISOS##*/}/${__TGET_LIST[13]#*${_DIRS_ISOS##*/}/}
+									  append iso raw
+
+_EOT_
+							)"
+							;;
+						*) ;;
+					esac
+					;;
+				memtest86* )			# (memtest86)
+					case "${__PATH_TGET}" in
+						*/menu-bios/*)
+							__WORK="$(
+								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+									label ${__TGET_LIST[2]}
+									  menu label ^${__ENTR}
+									  linux /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
+									
+_EOT_
+							)"
+							;;
+						*)
+							__WORK="$(
+								cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+									label ${__TGET_LIST[2]}
+									  menu label ^${__ENTR}
+									  linux /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
+									
+_EOT_
+							)"
+							;;
+					esac
+					;;
+				*          )			# (linux)
+					__WORK="$(set -e; funcPxeboot_boot_options "${__TGET_LIST[@]}")"
+					__WORK="${__WORK//\$\{hostname\}/"${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"}"
+					__WORK="${__WORK//\$\{srvraddr\}/"${_SRVR_PROT}://${_SRVR_ADDR:?}"}"
+					__WORK="${__WORK//\$\{ethrname\}/"${_NICS_NAME:-ens160}"}"
+					__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"}"
+					__WORK="${__WORK//\$\{ipv4mask\}/"${_IPV4_MASK:-}"}"
+					__WORK="${__WORK//\$\{ipv4gway\}/"${_IPV4_GWAY:-}"}"
+					__WORK="${__WORK//\$\{ipv4nsvr\}/"${_IPV4_NSVR:-}"}"
+					IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+					if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+						__WORK="$(
+							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+								label ${__TGET_LIST[2]}
+								  menu label ^${__ENTR}
+								  linux  /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
+								  initrd /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
+								  append ${__BOPT[@]:3}
+								
+_EOT_
+						)"
+					else
+						__WORK="$(
+							cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+								label ${__TGET_LIST[2]}
+								  menu label ^${__ENTR}
+								  linux  /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
+								  initrd /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
+								  append ${__BOPT[@]}
+								
+_EOT_
+						)"
+					fi
+					;;
+			esac
+			if [[ -n "${__WORK:-}" ]]; then
+				sed -i "${__PATH_TGET}" -e "/^label[ \t]\+System-command$/i \\${__WORK}"
+			fi
+			;;
+		*)								# (hidden)
+			;;
+	esac
 }
 
 # --- create pxeboot menu -----------------------------------------------------
 function funcPxeboot() {
+	declare -i    __TABS=0				# tabs count
 	declare       __LIST=()				# work variable
 	declare -i    I=0					# work variables
 
-	rm -f "${_IPXE_MENU:?}"
+	rm -f "${_MENU_IPXE:?}" \
+	      "${_MENU_GRUB:?}" \
+		  "${_MENU_SLNX:?}" \
+		  "${_MENU_UEFI:?}"
 	for I in "${!_LIST_MDIA[@]}"
 	do
 		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
@@ -2595,7 +3063,23 @@ function funcPxeboot() {
 		# --- create pxeboot menu ---------------------------------------------
 		case "${1:-}" in
 			download) ;;
-			*       ) funcPxeboot_autoexec_ipxe "${__LIST[@]}";;
+			*       )
+				funcPxeboot_ipxe "${_MENU_IPXE}" "${__TABS:-"0"}" "${__LIST[@]}"
+				funcPxeboot_grub "${_MENU_GRUB}" "${__TABS:-"0"}" "${__LIST[@]}"
+				funcPxeboot_slnx "${_MENU_SLNX}" "${__TABS:-"0"}" "${__LIST[@]}"
+				funcPxeboot_slnx "${_MENU_UEFI}" "${__TABS:-"0"}" "${__LIST[@]}"
+				;;
+		esac
+		case "${__LIST[1]}" in
+			m)							# (menu)
+				if [[ "${__TABS:-"0"}" -eq 0 ]]; then
+					__TABS=1
+				else
+					__TABS=0
+				fi
+				;;
+			o) ;;						# (output)
+			*) ;;						# (hidden)
 		esac
 	done
 }

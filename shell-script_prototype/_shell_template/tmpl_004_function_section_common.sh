@@ -313,8 +313,19 @@ function funcInitialization() {
 	readonly      _MINI_IRAM
 
 	# --- ipxe menu file ------------------------------------------------------
-	              _IPXE_MENU="${_DIRS_TFTP}/autoexec.ipxe"
-	readonly      _IPXE_MENU
+	              _MENU_IPXE="${_DIRS_TFTP}/autoexec.ipxe"
+	readonly      _MENU_IPXE
+
+	# --- grub menu file ------------------------------------------------------
+	              _MENU_GRUB="${_DIRS_TFTP}/boot/grub/grub.cfg"
+	readonly      _MENU_GRUB
+
+	# --- syslinux menu file --------------------------------------------------
+	              _MENU_SLNX="${_DIRS_TFTP}/menu-bios/syslinux.cfg"
+	readonly      _MENU_SLNX
+
+	              _MENU_UEFI="${_DIRS_TFTP}/menu-efi64/syslinux.cfg"
+	readonly      _MENU_UEFI
 
 	# --- get media data ------------------------------------------------------
 	funcGet_media_data
@@ -482,11 +493,11 @@ function funcPut_media_data() {
 	fi
 
 	# --- delete old files ----------------------------------------------------
-	find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3 | while read -r __PATH
+	while read -r __PATH
 	do
 		printf "%s: \"%s\"\n" "remove" "${__PATH}" 1>&2
 		rm -f "${__PATH:?}"
-	done
+	done < <(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3  || true)
 	# --- list data -----------------------------------------------------------
 	for I in "${!_LIST_MDIA[@]}"
 	do

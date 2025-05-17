@@ -79,7 +79,14 @@
 	declare       _MINI_IRAM=""
 
 	# --- ipxe menu file ------------------------------------------------------
-	declare       _IPXE_MENU=""
+	declare       _MENU_IPXE=""
+
+	# --- grub menu file ------------------------------------------------------
+	declare       _MENU_GRUB=""
+
+	# --- syslinux menu file --------------------------------------------------
+	declare       _MENU_SLNX=""			# bios
+	declare       _MENU_UEFI=""			# uefi x86_64
 
 	# --- list data -----------------------------------------------------------
 	declare -a    _LIST_MDIA=()			# media information
