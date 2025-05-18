@@ -1008,11 +1008,11 @@ function funcRemastering() {
 #					funcRemastering "${_LIST[@]}"
 #					# --- new local remaster iso files ------------------------
 #					__WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
-#					read -r -a _ARRY < <(echo "${__WORK}")
-##					_LIST[17]="${_ARRY[0]:--}"		# rmk_path
-#					_LIST[18]="${_ARRY[1]:--}"		# rmk_tstamp
-#					_LIST[19]="${_ARRY[2]:--}"		# rmk_size
-#					_LIST[20]="${_ARRY[3]:--}"		# rmk_volume
+#					read -r -a __ARRY < <(echo "${__WORK}")
+##					_LIST[17]="${__ARRY[0]:--}"		# rmk_path
+#					_LIST[18]="${__ARRY[1]:--}"		# rmk_tstamp
+#					_LIST[19]="${__ARRY[2]:--}"		# rmk_size
+#					_LIST[20]="${__ARRY[3]:--}"		# rmk_volume
 #				fi
 #				;;
 #			*) ;;
@@ -1033,7 +1033,14 @@ function funcPrint_menu() {
 	declare       __CLR1=""				# message color (word)
 	declare       __MESG=""				# message text
 	declare       __RETN=""				# return value
+#	declare       __PATH=""				# full path
+	declare       __DIRS=""				# directory
+	declare       __FNAM=""				# file name
+	declare       __BASE=""				# base name
+	declare       __EXTN=""				# extension
+	declare       __SEED=""				# preseed
 	declare       __WORK=""				# work variables
+	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
 	declare -i    I=0					# work variables
 	declare -i    J=0					# work variables
@@ -1077,40 +1084,62 @@ function funcPrint_menu() {
 		__RETN=""
 		__MESG=""											# contents
 		if [[ -n "${__LIST[8]}" ]]; then
-			funcGetWeb_info __RETN "${__LIST[8]}"				# web_regexp
-			read -r -a _ARRY < <(echo "${__RETN:-"- - - -"}")
-			_ARRY=("${_ARRY[@]##-}")
-			if [[ -n "${_ARRY[0]}" ]]; then
-				__LIST[9]="${_ARRY[0]:-}"					# web_path
-				__LIST[10]="${_ARRY[1]:-}"					# web_tstamp
-				__LIST[11]="${_ARRY[2]:-}"					# web_size
-				__LIST[12]="${_ARRY[3]:-}"					# web_status
-			fi
-			__MESG="${_ARRY[4]:--}"		# contents
+			funcGetWeb_info __RETN "${__LIST[8]}"			# web_regexp
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+			case "${__ARRY[3]}" in
+				200)
+					__LIST[9]="${__ARRY[0]:-}"				# web_path
+					__LIST[10]="${__ARRY[1]:-}"				# web_tstamp
+					__LIST[11]="${__ARRY[2]:-}"				# web_size
+					__LIST[12]="${__ARRY[3]:-}"				# web_status
+					case "${__LIST[9]##*/}" in
+						mini.iso) ;;
+						*       )
+							__FNAM="${__LIST[9]##*/}"
+							__WORK="${__FNAM%.*}"
+							__EXTN="${__FNAM#"${__WORK}"}"
+							__BASE="${__FNAM%"${__EXTN}"}"
+															# iso_path
+							__LIST[13]="${__LIST[13]%/*}/${__FNAM}"
+															# lnk_path
+							if [[ -n "${__LIST[25]##-}" ]]; then
+								__LIST[25]="${__LIST[25]%/*}/${__FNAM}"
+							fi
+															# rmk_path
+							if [[ -n "${__LIST[17]##-}" ]]; then
+								__SEED="${__LIST[17]##*_}"
+								__WORK="${__SEED%.*}"
+								__WORK="${__SEED#"${__WORK}"}"
+								__SEED="${__SEED%"${__WORK}"}"
+								__LIST[17]="${__LIST[17]%/*}/${__BASE}${__SEED:+"_${__SEED}"}${__EXTN}"
+							fi
+							;;
+					esac
+					;;
+				*) ;;
+			esac
+			__MESG="${__ARRY[4]:--}"		# contents
 		fi
 		# --- local original iso file -----------------------------------------
 		if [[ -n "${__LIST[13]}" ]]; then
 			funcGetFileinfo __RETN "${__LIST[13]}"			# iso_path
-			read -r -a _ARRY < <(echo "${__RETN:-"- - - -"}")
-			_ARRY=("${_ARRY[@]##-}")
-			if [[ -n "${_ARRY[0]}" ]]; then
-#				__LIST[13]="${_ARRY[0]:-}"					# iso_path
-				__LIST[14]="${_ARRY[1]:-}"					# iso_tstamp
-				__LIST[15]="${_ARRY[2]:-}"					# iso_size
-				__LIST[16]="${_ARRY[3]:-}"					# iso_volume
-			fi
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+#			__LIST[13]="${__ARRY[0]:-}"						# iso_path
+			__LIST[14]="${__ARRY[1]:-}"						# iso_tstamp
+			__LIST[15]="${__ARRY[2]:-}"						# iso_size
+			__LIST[16]="${__ARRY[3]:-}"						# iso_volume
 		fi
 		# --- local remastering iso file --------------------------------------
 		if [[ -n "${__LIST[17]}" ]]; then
 			funcGetFileinfo __RETN "${__LIST[17]}"			# rmk_path
-			read -r -a _ARRY < <(echo "${__RETN:-"- - - -"}")
-			_ARRY=("${_ARRY[@]##-}")
-			if [[ -n "${_ARRY[0]}" ]]; then
-#				__LIST[17]="${_ARRY[0]:-}"					# rmk_path
-				__LIST[18]="${_ARRY[1]:-}"					# rmk_tstamp
-				__LIST[19]="${_ARRY[2]:-}"					# rmk_size
-				__LIST[20]="${_ARRY[3]:-}"					# rmk_volume
-			fi
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+#			__LIST[17]="${__ARRY[0]:-}"						# rmk_path
+			__LIST[18]="${__ARRY[1]:-}"						# rmk_tstamp
+			__LIST[19]="${__ARRY[2]:-}"						# rmk_size
+			__LIST[20]="${__ARRY[3]:-}"						# rmk_volume
 		fi
 		# --- config file  ----------------------------------------------------
 		if [[ -n "${__LIST[23]}" ]]; then
@@ -1119,12 +1148,9 @@ function funcPrint_menu() {
 			else											# cfg_path
 				funcGetFileinfo __RETN "${__LIST[23]}"
 			fi
-			read -r -a _ARRY < <(echo "${__RETN:-"- - - -"}")
-			_ARRY=("${_ARRY[@]##-}")
-			if [[ -n "${_ARRY[0]}" ]]; then
-#				__LIST[23]="${_ARRY[0]:-}"					# cfg_path
-				__LIST[24]="${_ARRY[1]:-}"					# cfg_tstamp
-			fi
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+#			__LIST[23]="${__ARRY[0]:-}"						# cfg_path
+			__LIST[24]="${__ARRY[1]:-}"						# cfg_tstamp
 		fi
 		# --- print out -------------------------------------------------------
 		# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
@@ -1136,7 +1162,11 @@ function funcPrint_menu() {
 		__MESG=""
 		__CLR0=""
 		__CLR1=""
-		if [[ -n "${__LIST[14]##-}" ]]; then
+		if [[ -z "${__LIST[8]##-}" ]] && [[ -z "${__LIST[14]##-}" ]]; then
+			__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[33m"}"		# unreleased
+		elif [[ -z "${__LIST[14]##-}" ]]; then
+			__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[46m"}"		# new file
+		else
 			if [[ -n "${__LIST[18]##-}" ]]; then
 				__WORK="$(funcDateDiff "${__LIST[18]}" "${__LIST[14]}")"
 				if [[ "${__WORK}" -gt 0 ]]; then

@@ -91,7 +91,8 @@ dbuserでSQL実行時にパスワードの入力を省略
 PostgreSQL 16.4文書 [34.16. パスワードファイル](https://www.postgresql.jp/document/16/html/libpq-pgpass.html)  
   
 ``` bash:
-echo "*:*:*:dbuser:dbuser" > ~/.pgpass
+echo "*:*:*:master:master" >  ~/.pgpass
+echo "*:*:*:dbuser:dbuser" >> ~/.pgpass
 chmod 0600 ~/.pgpass
 ```
   

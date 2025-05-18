@@ -119,11 +119,11 @@ function funcMount_overlay() {
 		mkdir -p "${DIRS_OLAY}"/upper/{root,home,"${DIRS_TOPS##/}","${DIRS_HGFS##/}"}
 		mkdir -p "${DIRS_OLAY}"/work/{_rootdir,root,home,"${DIRS_TOPS##/}","${DIRS_TOPS##/}"_"${DIRS_HGFS##*/}"}
 		# ---------------------------------------------------------------------
-		funcMount_overlay "${DIRS_CHRT:?}/" "${DIRS_OLAY}/upper/"                 "${DIRS_OLAY}/work/_rootdir/"                         "${DIRS_OLAY}/merged/"
-		funcMount_overlay "/root/"          "${DIRS_OLAY}/upper/root/"            "${DIRS_OLAY}/work/root/"                             "${DIRS_OLAY}/merged/root/"
-		funcMount_overlay "/home/"          "${DIRS_OLAY}/upper/home/"            "${DIRS_OLAY}/work/home/"                             "${DIRS_OLAY}/merged/home/"
-		funcMount_overlay "${DIRS_TOPS}/"   "${DIRS_OLAY}/upper/${DIRS_TOPS##/}"/ "${DIRS_OLAY}/work/${DIRS_TOPS##/}/"                  "${DIRS_OLAY}/merged/${DIRS_TOPS##/}/"
-		funcMount_overlay "${DIRS_HGFS}/"   "${DIRS_OLAY}/upper/${DIRS_HGFS##/}"/ "${DIRS_OLAY}/work/${DIRS_TOPS##/}_${DIRS_HGFS##*/}/" "${DIRS_OLAY}/merged/${DIRS_HGFS##/}/"
+		funcMount_overlay "${DIRS_CHRT:?}" "${DIRS_OLAY}/upper"                 "${DIRS_OLAY}/work/_rootdir"                         "${DIRS_OLAY}/merged"
+		funcMount_overlay "/root"          "${DIRS_OLAY}/upper/root"            "${DIRS_OLAY}/work/root"                             "${DIRS_OLAY}/merged/root"
+		funcMount_overlay "/home"          "${DIRS_OLAY}/upper/home"            "${DIRS_OLAY}/work/home"                             "${DIRS_OLAY}/merged/home"
+		funcMount_overlay "${DIRS_TOPS}"   "${DIRS_OLAY}/upper/${DIRS_TOPS##/}" "${DIRS_OLAY}/work/${DIRS_TOPS##/}"                  "${DIRS_OLAY}/merged/${DIRS_TOPS##/}"
+		funcMount_overlay "${DIRS_HGFS}"   "${DIRS_OLAY}/upper/${DIRS_HGFS##/}" "${DIRS_OLAY}/work/${DIRS_TOPS##/}_${DIRS_HGFS##*/}" "${DIRS_OLAY}/merged/${DIRS_HGFS##/}"
 		# ---------------------------------------------------------------------
 #		mount  --bind "${DIRS_CONF}"       "${DIRS_OLAY}/merged/${DIRS_CONF##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_CONF##/}")
 #		mount  --bind "${DIRS_ISOS}"       "${DIRS_OLAY}/merged/${DIRS_ISOS##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_ISOS##/}")

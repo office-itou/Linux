@@ -777,49 +777,135 @@ function funcCreate_iso() {
 
 # === <web_tools> =============================================================
 
-# --- get web command ---------------------------------------------------------
+# --- get web contents --------------------------------------------------------
 # shellcheck disable=SC2317
-function funcGetWeb_command() {
-	declare -n    __RETN_VALU="${1:?}"	# return value
-	declare -r -a __OPTN_WEBS=("${@:2}") # web file path
+function funcGetWeb_contents() {
+	declare -a    __OPTN=()				# options
 	declare -i    __RTCD=0				# return code
-	declare       __PATH=""				# full path
-	declare       __LMOD=""				# last-modified
-	declare       __LENG=""				# content-length
-	declare       __CODE=""				# status codes
+	declare -a    __LIST=()				# data list
+	declare       __TEMP=""				# temporary file
+	              __TEMP="$(mktemp -q "${TMPDIR:-/tmp}/${1##*/}.XXXXXX")"
+	readonly      __TEMP
+	# -------------------------------------------------------------------------
+	__RTCD=0
+	if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
+		__OPTN=("${_OPTN_WGET[@]}" "--continue" "--show-progress" "--progress=bar" "--output-document=${__TEMP:?}" "${2:?}")
+		LANG=C wget "${__OPTN[@]}" 2>&1 || __RTCD="$?"
+	else
+		__OPTN=("${_OPTN_CURL[@]}" "--progress-bar" "--continue-at" "-" "--create-dirs" "--output-dir" "${__TEMP%/*}" --output "${__TEMP##*/}" "${2:?}")
+		LANG=C curl "${__OPTN[@]}" 2>&1 || __RTCD="$?"
+	fi
+	# -------------------------------------------------------------------------
+	if [[ "${__RTCD}" -eq 0 ]]; then
+		mkdir -p "${1%/*}"
+		if ! cp --preserve=timestamps "${__TEMP}" "$1"; then
+			printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [cp]" "${1##*/}"
+		else
+			IFS= mapfile -d ' ' -t __LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "$1" || true)
+			printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "complete" "${1##*/} (${__LIST[4]})"
+		fi
+	fi
+	# -------------------------------------------------------------------------
+	rm -f "${__TEMP:?}"
+	return "${__RTCD}"
+}
+
+# --- get web header ----------------------------------------------------------
+# shellcheck disable=SC2317
+function funcGetWeb_header() {
+	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare -a    __OPTN=()				# options
+#	declare -i    __RTCD=0				# return code
 	declare       __RSLT=""				# result
 	declare       __FILD=""				# field name
 	declare       __VALU=""				# value
-	declare       __LINE=""				# work variables
+	declare       __CODE=""				# status codes
+	declare       __LENG=""				# content-length
+	declare       __LMOD=""				# last-modified
 	declare -a    __LIST=()				# work variables
-	declare -i    I=0					# work variables
-	declare -i    R=2					# retry
+	declare       __LINE=""				# work variables
 	# -------------------------------------------------------------------------
-	__PATH=""
-	for I in "${!__OPTN_WEBS[@]}"
+#	__RTCD=0
+	__RSLT=""
+	if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
+		__OPTN=("${_OPTN_WGET[@]}" "--spider" "--server-response" "--output-document=-" "${2:?}")
+		__RSLT="$(LANG=C wget "${__OPTN[@]}" 2>&1 || true)"
+	else
+		__OPTN=("${_OPTN_CURL[@]}" "--header" "${2:?}")
+		__RSLT="$(LANG=C curl "${__OPTN[@]}" 2>&1 || true)"
+	fi
+	# -------------------------------------------------------------------------
+	__RSLT="${__RSLT//$'\r\n'/$'\n'}"	# crlf -> lf
+	__RSLT="${__RSLT//$'\r'/$'\n'}"		# cr   -> lf
+	__RSLT="${__RSLT//></>\n<}"
+	__RSLT="${__RSLT#"${__RSLT%%[!"${IFS}"]*}"}"	# ltrim
+	__RSLT="${__RSLT%"${__RSLT##*[!"${IFS}"]}"}"	# rtrim
+	IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
+	for I in "${!__LIST[@]}"
 	do
-		__LINE="${__OPTN_WEBS[I]}"
-		case "${__LINE%%://*}" in
-			dict|file|ftp|ftps|gopher|gophers|http|https|imap|imaps|ldap|ldaps|mqtt|pop3|pop3s|rtmp|rtmps|rtsp|scp|sftp|smb|smbs|smtp|smtps|telnet|tftp|ws|wss)
-				__PATH+="${__PATH:+,}${__LINE}";;
-			*) ;;
+		__LINE="${__LIST[I],,}"
+		__LINE="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
+		__LINE="${__LINE%"${__LINE##*[!"${IFS}"]}"}"	# rtrim
+		__FILD="${__LINE%% *}"
+		__VALU="${__LINE#* }"
+		case "${__FILD%% *}" in
+			http/*         ) __CODE="${__VALU%% *}";;
+			content-length:) __LENG="${__VALU}";;
+			last-modified: ) __LMOD="$(TZ=UTC date -d "${__VALU}" "+%Y-%m-%d%%20%H:%M:%S%z")";;
+			*              ) ;;
 		esac
 	done
 	# -------------------------------------------------------------------------
-	__LENG=""
-	__LMOD=""
-	for ((; R>=0; R--))
+	__RETN_VALU="${2// /%20} ${__LMOD:--} ${__LENG:--} ${__CODE:--} ${__RSLT// /%20}"
+#	return "${__RTCD}"
+}
+
+# --- get web address completion ----------------------------------------------
+# shellcheck disable=SC2317
+function funcGetWeb_address() {
+	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare       __PATH=""				# full path
+	declare       __DIRS=""				# directory
+	declare       __FNAM=""				# file name
+	declare -r    __PATN='?*[]'			# web file regexp
+	declare       __MATC=""				# web file regexp match
+	declare -a    __OPTN=()				# options
+#	declare -i    __RTCD=0				# return code
+	declare       __RSLT=""				# result
+	declare       __FILD=""				# field name
+	declare       __VALU=""				# value
+	declare       __CODE=""				# status codes
+	declare       __LENG=""				# content-length
+	declare       __LMOD=""				# last-modified
+	declare -a    __LIST=()				# work variables
+	declare       __LINE=""				# work variables
+	# --- URL completion ------------------------------------------------------
+	__PATH="${2:?}"
+	while [[ -n "${__PATH//[!"${__PATN}"]/}" ]]
 	do
+		__DIRS="${__PATH%%["${__PATN}"]*}"	# directory
+		__DIRS="${__DIRS%/*}"
+		__MATC="${__PATH#"${__DIRS}"/}"	# match
+		__MATC="${__MATC%%/*}"
+		__FNAM="${__PATH#*"${__MATC}"}"	# file name
+		__FNAM="${__FNAM#*/}"
+		__PATH="${__DIRS}"
+		# ---------------------------------------------------------------------
+#		__RTCD=0
+		__RSLT=""
 		if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
-			__RSLT="$(LANG=C wget "${_OPTN_WGET[@]:-}" "${__OPTN_WEBS[@]}" 2>&1 || true)"
-			__RTCD="$?"
+			__OPTN=("${_OPTN_WGET[@]}" "--server-response" "--output-document=-" "${__PATH:?}")
+			__RSLT="$(LANG=C wget "${__OPTN[@]}" 2>&1 || true)"
 		else
-			__RSLT="$(LANG=C curl "${_OPTN_CURL[@]:-}" "${__OPTN_WEBS[@]}" 2>&1 || true)"
-			__RTCD="$?"
+			__OPTN=("${_OPTN_CURL[@]}" "--header" "${__PATH:?}")
+			__RSLT="$(LANG=C curl "${__OPTN[@]}" 2>&1 || true)"
 		fi
+		# ---------------------------------------------------------------------
 		__RSLT="${__RSLT//$'\r\n'/$'\n'}"	# crlf -> lf
 		__RSLT="${__RSLT//$'\r'/$'\n'}"		# cr   -> lf
 		__RSLT="${__RSLT//></>\n<}"
+		__RSLT="${__RSLT#"${__RSLT%%[!"${IFS}"]*}"}"	# ltrim
+		__RSLT="${__RSLT%"${__RSLT##*[!"${IFS}"]}"}"	# rtrim
 		IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
 		for I in "${!__LIST[@]}"
 		do
@@ -835,95 +921,29 @@ function funcGetWeb_command() {
 				*              ) ;;
 			esac
 		done
+		# ---------------------------------------------------------------------
 		case "${__CODE}" in				# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
-			1??) break;;				# 1xx (Informational): The request was received, continuing process
-			2??) break;;				# 2xx (Successful)   : The request was successfully received, understood, and accepted
-			3??) break;;				# 3xx (Redirection)  : Further action needs to be taken in order to complete the request
-			4??) break;;				# 4xx (Client Error) : The request contains bad syntax or cannot be fulfilled
-			5??) break;;				# 5xx (Server Error) : The server failed to fulfill an apparently valid request
-			*  ) ;;						#      Unknown Error
-		esac
-		__RSLT="retry error: [${__PATH}]"
-		sleep 3
-	done
-	# -------------------------------------------------------------------------
-	__RETN_VALU="${__PATH// /%20} ${__LMOD:--} ${__LENG:--} ${__CODE:--} ${__RSLT// /%20}"
-}
-
-# --- get web information -----------------------------------------------------
-# shellcheck disable=SC2317
-function funcGetWeb_info_direct() {
-#	declare -n    __RETN_VALU="${1:?}"	# return value
-	declare -r    __PATH_WEBS="${2:?}"	# web file path
-	declare -a    __OPTN=()				# options
-	declare       __PATH=""				# full path
-	# -------------------------------------------------------------------------
-	__PATH="${__PATH_WEBS}"
-	if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
-		__OPTN=("--spider" "--server-response" "--output-document=-" "${__PATH}")
-	else
-		__OPTN=("--header" "${__PATH}")
-	fi
-	funcGetWeb_command "${1}" "${__OPTN[@]}"
-}
-
-# --- get web address completion ----------------------------------------------
-# shellcheck disable=SC2317
-function funcGetWeb_address() {
-	declare -n    __RETN_VALU="${1:?}"	# return value
-	declare -r    __PATH_WEBS="${2:?}"	# web file path
-	declare -a    __OPTN=()				# options
-	declare       __PATH=""				# full path
-	declare       __DIRS=""				# directory
-	declare       __FNAM=""				# file name
-	declare -r    __PATN='?*[]'			# web file regexp
-	declare       __MATC=""				# web file regexp match
-	declare       __DOCS=""				# output-document
-	declare -a    __LIST=()				# work variables
-	declare       __LINE=""				# work variables
-	# --- URL completion [dir name] -------------------------------------------
-	__PATH="${__PATH_WEBS}"
-	while [[ -n "${__PATH//[!"${__PATN}"]/}" ]]
-	do
-		__DIRS="${__PATH%%["${__PATN}"]*}"	# directory
-		__DIRS="${__DIRS%/*}"
-		__MATC="${__PATH#"${__DIRS}"/}"	# match
-		__MATC="${__MATC%%/*}"
-		__FNAM="${__PATH#*"${__MATC}"}"	# file name
-		__FNAM="${__FNAM#*/}"
-		__PATH="${__DIRS}"
-		if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
-			__OPTN=("--server-response" "--output-document=-" "${__PATH}")
-		else
-			__OPTN=("--header" "${__PATH}")
-		fi
-		funcGetWeb_command "__DOCS" "${__OPTN[@]}"
-		IFS= mapfile -d ' ' -t __LIST < <(echo -n "${__DOCS}")
-		case "${__LIST[3]}" in			# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
-			2??)						# 2xx (Successful)   : The request was successfully received, understood, and accepted
-				IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__LIST[4]}")
-				__LINE="$(printf "%s\n" "${__LIST[@]//%20/ }" | sed -ne 's%^.*<a href="'"${__MATC}"'/*">\(.*\)</a>.*$%\1%gp' | sort -rVu | head -n 1 || true)"
-				__PATH="${__DIRS%%/}/${__LINE%%/}${__FNAM:+/"${__FNAM##/}"}"
+			2??)						# 2xx (Successful)
+				IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
+				__PATH="$(printf "%s\n" "${__LIST[@]//%20/ }" | sed -ne 's%^.*<a href="'"${__MATC}"'/*">\(.*\)</a>.*$%\1%gp' | sort -rVu | head -n 1 || true)"
+				__PATH="${__PATH:+"${__DIRS%%/}/${__PATH%%/}${__FNAM:+/"${__FNAM##/}"}"}"
 				;;
 			*)	break;;
 		esac
 	done
+	# -------------------------------------------------------------------------
 	__RETN_VALU="${__PATH}"
+#	return "${__RTCD}"
 }
 
 # --- get web information -----------------------------------------------------
 # shellcheck disable=SC2317
 function funcGetWeb_info() {
 #	declare -n    __RETN_VALU="${1:?}"	# return value
-	declare -r    __PATH_WEBS="${2:?}"	# web file path
-	declare       __PATH=""				# full path
 	declare       __WORK=""				# work variables
-	declare -a    __LIST=()				# work variables
 
-	__PATH="${__PATH_WEBS}"
-	funcGetWeb_address "__WORK" "${__PATH}"
-	IFS= mapfile -d ' ' -t __LIST < <(echo -n "${__WORK}")
-	funcGetWeb_info_direct "${1}" "${__LIST[0]}"
+	funcGetWeb_address "__WORK" "${2:?}"
+	funcGetWeb_header "${1}" "${__WORK}"
 }
 
 # --- get web status message --------------------------------------------------

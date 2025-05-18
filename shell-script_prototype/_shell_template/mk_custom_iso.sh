@@ -785,49 +785,135 @@ function funcCreate_iso() {
 
 # === <web_tools> =============================================================
 
-# --- get web command ---------------------------------------------------------
+# --- get web contents --------------------------------------------------------
 # shellcheck disable=SC2317
-function funcGetWeb_command() {
-	declare -n    __RETN_VALU="${1:?}"	# return value
-	declare -r -a __OPTN_WEBS=("${@:2}") # web file path
+function funcGetWeb_contents() {
+	declare -a    __OPTN=()				# options
 	declare -i    __RTCD=0				# return code
-	declare       __PATH=""				# full path
-	declare       __LMOD=""				# last-modified
-	declare       __LENG=""				# content-length
-	declare       __CODE=""				# status codes
+	declare -a    __LIST=()				# data list
+	declare       __TEMP=""				# temporary file
+	              __TEMP="$(mktemp -q "${TMPDIR:-/tmp}/${1##*/}.XXXXXX")"
+	readonly      __TEMP
+	# -------------------------------------------------------------------------
+	__RTCD=0
+	if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
+		__OPTN=("${_OPTN_WGET[@]}" "--continue" "--show-progress" "--progress=bar" "--output-document=${__TEMP:?}" "${2:?}")
+		LANG=C wget "${__OPTN[@]}" 2>&1 || __RTCD="$?"
+	else
+		__OPTN=("${_OPTN_CURL[@]}" "--progress-bar" "--continue-at" "-" "--create-dirs" "--output-dir" "${__TEMP%/*}" --output "${__TEMP##*/}" "${2:?}")
+		LANG=C curl "${__OPTN[@]}" 2>&1 || __RTCD="$?"
+	fi
+	# -------------------------------------------------------------------------
+	if [[ "${__RTCD}" -eq 0 ]]; then
+		mkdir -p "${1%/*}"
+		if ! cp --preserve=timestamps "${__TEMP}" "$1"; then
+			printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [cp]" "${1##*/}"
+		else
+			IFS= mapfile -d ' ' -t __LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "$1" || true)
+			printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "complete" "${1##*/} (${__LIST[4]})"
+		fi
+	fi
+	# -------------------------------------------------------------------------
+	rm -f "${__TEMP:?}"
+	return "${__RTCD}"
+}
+
+# --- get web header ----------------------------------------------------------
+# shellcheck disable=SC2317
+function funcGetWeb_header() {
+	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare -a    __OPTN=()				# options
+#	declare -i    __RTCD=0				# return code
 	declare       __RSLT=""				# result
 	declare       __FILD=""				# field name
 	declare       __VALU=""				# value
-	declare       __LINE=""				# work variables
+	declare       __CODE=""				# status codes
+	declare       __LENG=""				# content-length
+	declare       __LMOD=""				# last-modified
 	declare -a    __LIST=()				# work variables
-	declare -i    I=0					# work variables
-	declare -i    R=2					# retry
+	declare       __LINE=""				# work variables
 	# -------------------------------------------------------------------------
-	__PATH=""
-	for I in "${!__OPTN_WEBS[@]}"
+#	__RTCD=0
+	__RSLT=""
+	if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
+		__OPTN=("${_OPTN_WGET[@]}" "--spider" "--server-response" "--output-document=-" "${2:?}")
+		__RSLT="$(LANG=C wget "${__OPTN[@]}" 2>&1 || true)"
+	else
+		__OPTN=("${_OPTN_CURL[@]}" "--header" "${2:?}")
+		__RSLT="$(LANG=C curl "${__OPTN[@]}" 2>&1 || true)"
+	fi
+	# -------------------------------------------------------------------------
+	__RSLT="${__RSLT//$'\r\n'/$'\n'}"	# crlf -> lf
+	__RSLT="${__RSLT//$'\r'/$'\n'}"		# cr   -> lf
+	__RSLT="${__RSLT//></>\n<}"
+	__RSLT="${__RSLT#"${__RSLT%%[!"${IFS}"]*}"}"	# ltrim
+	__RSLT="${__RSLT%"${__RSLT##*[!"${IFS}"]}"}"	# rtrim
+	IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
+	for I in "${!__LIST[@]}"
 	do
-		__LINE="${__OPTN_WEBS[I]}"
-		case "${__LINE%%://*}" in
-			dict|file|ftp|ftps|gopher|gophers|http|https|imap|imaps|ldap|ldaps|mqtt|pop3|pop3s|rtmp|rtmps|rtsp|scp|sftp|smb|smbs|smtp|smtps|telnet|tftp|ws|wss)
-				__PATH+="${__PATH:+,}${__LINE}";;
-			*) ;;
+		__LINE="${__LIST[I],,}"
+		__LINE="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
+		__LINE="${__LINE%"${__LINE##*[!"${IFS}"]}"}"	# rtrim
+		__FILD="${__LINE%% *}"
+		__VALU="${__LINE#* }"
+		case "${__FILD%% *}" in
+			http/*         ) __CODE="${__VALU%% *}";;
+			content-length:) __LENG="${__VALU}";;
+			last-modified: ) __LMOD="$(TZ=UTC date -d "${__VALU}" "+%Y-%m-%d%%20%H:%M:%S%z")";;
+			*              ) ;;
 		esac
 	done
 	# -------------------------------------------------------------------------
-	__LENG=""
-	__LMOD=""
-	for ((; R>=0; R--))
+	__RETN_VALU="${2// /%20} ${__LMOD:--} ${__LENG:--} ${__CODE:--} ${__RSLT// /%20}"
+#	return "${__RTCD}"
+}
+
+# --- get web address completion ----------------------------------------------
+# shellcheck disable=SC2317
+function funcGetWeb_address() {
+	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare       __PATH=""				# full path
+	declare       __DIRS=""				# directory
+	declare       __FNAM=""				# file name
+	declare -r    __PATN='?*[]'			# web file regexp
+	declare       __MATC=""				# web file regexp match
+	declare -a    __OPTN=()				# options
+#	declare -i    __RTCD=0				# return code
+	declare       __RSLT=""				# result
+	declare       __FILD=""				# field name
+	declare       __VALU=""				# value
+	declare       __CODE=""				# status codes
+	declare       __LENG=""				# content-length
+	declare       __LMOD=""				# last-modified
+	declare -a    __LIST=()				# work variables
+	declare       __LINE=""				# work variables
+	# --- URL completion ------------------------------------------------------
+	__PATH="${2:?}"
+	while [[ -n "${__PATH//[!"${__PATN}"]/}" ]]
 	do
+		__DIRS="${__PATH%%["${__PATN}"]*}"	# directory
+		__DIRS="${__DIRS%/*}"
+		__MATC="${__PATH#"${__DIRS}"/}"	# match
+		__MATC="${__MATC%%/*}"
+		__FNAM="${__PATH#*"${__MATC}"}"	# file name
+		__FNAM="${__FNAM#*/}"
+		__PATH="${__DIRS}"
+		# ---------------------------------------------------------------------
+#		__RTCD=0
+		__RSLT=""
 		if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
-			__RSLT="$(LANG=C wget "${_OPTN_WGET[@]:-}" "${__OPTN_WEBS[@]}" 2>&1 || true)"
-			__RTCD="$?"
+			__OPTN=("${_OPTN_WGET[@]}" "--server-response" "--output-document=-" "${__PATH:?}")
+			__RSLT="$(LANG=C wget "${__OPTN[@]}" 2>&1 || true)"
 		else
-			__RSLT="$(LANG=C curl "${_OPTN_CURL[@]:-}" "${__OPTN_WEBS[@]}" 2>&1 || true)"
-			__RTCD="$?"
+			__OPTN=("${_OPTN_CURL[@]}" "--header" "${__PATH:?}")
+			__RSLT="$(LANG=C curl "${__OPTN[@]}" 2>&1 || true)"
 		fi
+		# ---------------------------------------------------------------------
 		__RSLT="${__RSLT//$'\r\n'/$'\n'}"	# crlf -> lf
 		__RSLT="${__RSLT//$'\r'/$'\n'}"		# cr   -> lf
 		__RSLT="${__RSLT//></>\n<}"
+		__RSLT="${__RSLT#"${__RSLT%%[!"${IFS}"]*}"}"	# ltrim
+		__RSLT="${__RSLT%"${__RSLT##*[!"${IFS}"]}"}"	# rtrim
 		IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
 		for I in "${!__LIST[@]}"
 		do
@@ -843,95 +929,29 @@ function funcGetWeb_command() {
 				*              ) ;;
 			esac
 		done
+		# ---------------------------------------------------------------------
 		case "${__CODE}" in				# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
-			1??) break;;				# 1xx (Informational): The request was received, continuing process
-			2??) break;;				# 2xx (Successful)   : The request was successfully received, understood, and accepted
-			3??) break;;				# 3xx (Redirection)  : Further action needs to be taken in order to complete the request
-			4??) break;;				# 4xx (Client Error) : The request contains bad syntax or cannot be fulfilled
-			5??) break;;				# 5xx (Server Error) : The server failed to fulfill an apparently valid request
-			*  ) ;;						#      Unknown Error
-		esac
-		__RSLT="retry error: [${__PATH}]"
-		sleep 3
-	done
-	# -------------------------------------------------------------------------
-	__RETN_VALU="${__PATH// /%20} ${__LMOD:--} ${__LENG:--} ${__CODE:--} ${__RSLT// /%20}"
-}
-
-# --- get web information -----------------------------------------------------
-# shellcheck disable=SC2317
-function funcGetWeb_info_direct() {
-#	declare -n    __RETN_VALU="${1:?}"	# return value
-	declare -r    __PATH_WEBS="${2:?}"	# web file path
-	declare -a    __OPTN=()				# options
-	declare       __PATH=""				# full path
-	# -------------------------------------------------------------------------
-	__PATH="${__PATH_WEBS}"
-	if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
-		__OPTN=("--spider" "--server-response" "--output-document=-" "${__PATH}")
-	else
-		__OPTN=("--header" "${__PATH}")
-	fi
-	funcGetWeb_command "${1}" "${__OPTN[@]}"
-}
-
-# --- get web address completion ----------------------------------------------
-# shellcheck disable=SC2317
-function funcGetWeb_address() {
-	declare -n    __RETN_VALU="${1:?}"	# return value
-	declare -r    __PATH_WEBS="${2:?}"	# web file path
-	declare -a    __OPTN=()				# options
-	declare       __PATH=""				# full path
-	declare       __DIRS=""				# directory
-	declare       __FNAM=""				# file name
-	declare -r    __PATN='?*[]'			# web file regexp
-	declare       __MATC=""				# web file regexp match
-	declare       __DOCS=""				# output-document
-	declare -a    __LIST=()				# work variables
-	declare       __LINE=""				# work variables
-	# --- URL completion [dir name] -------------------------------------------
-	__PATH="${__PATH_WEBS}"
-	while [[ -n "${__PATH//[!"${__PATN}"]/}" ]]
-	do
-		__DIRS="${__PATH%%["${__PATN}"]*}"	# directory
-		__DIRS="${__DIRS%/*}"
-		__MATC="${__PATH#"${__DIRS}"/}"	# match
-		__MATC="${__MATC%%/*}"
-		__FNAM="${__PATH#*"${__MATC}"}"	# file name
-		__FNAM="${__FNAM#*/}"
-		__PATH="${__DIRS}"
-		if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
-			__OPTN=("--server-response" "--output-document=-" "${__PATH}")
-		else
-			__OPTN=("--header" "${__PATH}")
-		fi
-		funcGetWeb_command "__DOCS" "${__OPTN[@]}"
-		IFS= mapfile -d ' ' -t __LIST < <(echo -n "${__DOCS}")
-		case "${__LIST[3]}" in			# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
-			2??)						# 2xx (Successful)   : The request was successfully received, understood, and accepted
-				IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__LIST[4]}")
-				__LINE="$(printf "%s\n" "${__LIST[@]//%20/ }" | sed -ne 's%^.*<a href="'"${__MATC}"'/*">\(.*\)</a>.*$%\1%gp' | sort -rVu | head -n 1 || true)"
-				__PATH="${__DIRS%%/}/${__LINE%%/}${__FNAM:+/"${__FNAM##/}"}"
+			2??)						# 2xx (Successful)
+				IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
+				__PATH="$(printf "%s\n" "${__LIST[@]//%20/ }" | sed -ne 's%^.*<a href="'"${__MATC}"'/*">\(.*\)</a>.*$%\1%gp' | sort -rVu | head -n 1 || true)"
+				__PATH="${__PATH:+"${__DIRS%%/}/${__PATH%%/}${__FNAM:+/"${__FNAM##/}"}"}"
 				;;
 			*)	break;;
 		esac
 	done
+	# -------------------------------------------------------------------------
 	__RETN_VALU="${__PATH}"
+#	return "${__RTCD}"
 }
 
 # --- get web information -----------------------------------------------------
 # shellcheck disable=SC2317
 function funcGetWeb_info() {
 #	declare -n    __RETN_VALU="${1:?}"	# return value
-	declare -r    __PATH_WEBS="${2:?}"	# web file path
-	declare       __PATH=""				# full path
 	declare       __WORK=""				# work variables
-	declare -a    __LIST=()				# work variables
 
-	__PATH="${__PATH_WEBS}"
-	funcGetWeb_address "__WORK" "${__PATH}"
-	IFS= mapfile -d ' ' -t __LIST < <(echo -n "${__WORK}")
-	funcGetWeb_info_direct "${1}" "${__LIST[0]}"
+	funcGetWeb_address "__WORK" "${2:?}"
+	funcGetWeb_header "${1}" "${__WORK}"
 }
 
 # --- get web status message --------------------------------------------------
@@ -3021,11 +3041,11 @@ function funcRemastering() {
 #					funcRemastering "${_LIST[@]}"
 #					# --- new local remaster iso files ------------------------
 #					__WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
-#					read -r -a _ARRY < <(echo "${__WORK}")
-##					_LIST[17]="${_ARRY[0]:--}"		# rmk_path
-#					_LIST[18]="${_ARRY[1]:--}"		# rmk_tstamp
-#					_LIST[19]="${_ARRY[2]:--}"		# rmk_size
-#					_LIST[20]="${_ARRY[3]:--}"		# rmk_volume
+#					read -r -a __ARRY < <(echo "${__WORK}")
+##					_LIST[17]="${__ARRY[0]:--}"		# rmk_path
+#					_LIST[18]="${__ARRY[1]:--}"		# rmk_tstamp
+#					_LIST[19]="${__ARRY[2]:--}"		# rmk_size
+#					_LIST[20]="${__ARRY[3]:--}"		# rmk_volume
 #				fi
 #				;;
 #			*) ;;
@@ -3046,7 +3066,14 @@ function funcPrint_menu() {
 	declare       __CLR1=""				# message color (word)
 	declare       __MESG=""				# message text
 	declare       __RETN=""				# return value
+#	declare       __PATH=""				# full path
+	declare       __DIRS=""				# directory
+	declare       __FNAM=""				# file name
+	declare       __BASE=""				# base name
+	declare       __EXTN=""				# extension
+	declare       __SEED=""				# preseed
 	declare       __WORK=""				# work variables
+	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
 	declare -i    I=0					# work variables
 	declare -i    J=0					# work variables
@@ -3090,40 +3117,62 @@ function funcPrint_menu() {
 		__RETN=""
 		__MESG=""											# contents
 		if [[ -n "${__LIST[8]}" ]]; then
-			funcGetWeb_info __RETN "${__LIST[8]}"				# web_regexp
-			read -r -a _ARRY < <(echo "${__RETN:-"- - - -"}")
-			_ARRY=("${_ARRY[@]##-}")
-			if [[ -n "${_ARRY[0]}" ]]; then
-				__LIST[9]="${_ARRY[0]:-}"					# web_path
-				__LIST[10]="${_ARRY[1]:-}"					# web_tstamp
-				__LIST[11]="${_ARRY[2]:-}"					# web_size
-				__LIST[12]="${_ARRY[3]:-}"					# web_status
-			fi
-			__MESG="${_ARRY[4]:--}"		# contents
+			funcGetWeb_info __RETN "${__LIST[8]}"			# web_regexp
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+			case "${__ARRY[3]}" in
+				200)
+					__LIST[9]="${__ARRY[0]:-}"				# web_path
+					__LIST[10]="${__ARRY[1]:-}"				# web_tstamp
+					__LIST[11]="${__ARRY[2]:-}"				# web_size
+					__LIST[12]="${__ARRY[3]:-}"				# web_status
+					case "${__LIST[9]##*/}" in
+						mini.iso) ;;
+						*       )
+							__FNAM="${__LIST[9]##*/}"
+							__WORK="${__FNAM%.*}"
+							__EXTN="${__FNAM#"${__WORK}"}"
+							__BASE="${__FNAM%"${__EXTN}"}"
+															# iso_path
+							__LIST[13]="${__LIST[13]%/*}/${__FNAM}"
+															# lnk_path
+							if [[ -n "${__LIST[25]##-}" ]]; then
+								__LIST[25]="${__LIST[25]%/*}/${__FNAM}"
+							fi
+															# rmk_path
+							if [[ -n "${__LIST[17]##-}" ]]; then
+								__SEED="${__LIST[17]##*_}"
+								__WORK="${__SEED%.*}"
+								__WORK="${__SEED#"${__WORK}"}"
+								__SEED="${__SEED%"${__WORK}"}"
+								__LIST[17]="${__LIST[17]%/*}/${__BASE}${__SEED:+"_${__SEED}"}${__EXTN}"
+							fi
+							;;
+					esac
+					;;
+				*) ;;
+			esac
+			__MESG="${__ARRY[4]:--}"		# contents
 		fi
 		# --- local original iso file -----------------------------------------
 		if [[ -n "${__LIST[13]}" ]]; then
 			funcGetFileinfo __RETN "${__LIST[13]}"			# iso_path
-			read -r -a _ARRY < <(echo "${__RETN:-"- - - -"}")
-			_ARRY=("${_ARRY[@]##-}")
-			if [[ -n "${_ARRY[0]}" ]]; then
-#				__LIST[13]="${_ARRY[0]:-}"					# iso_path
-				__LIST[14]="${_ARRY[1]:-}"					# iso_tstamp
-				__LIST[15]="${_ARRY[2]:-}"					# iso_size
-				__LIST[16]="${_ARRY[3]:-}"					# iso_volume
-			fi
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+#			__LIST[13]="${__ARRY[0]:-}"						# iso_path
+			__LIST[14]="${__ARRY[1]:-}"						# iso_tstamp
+			__LIST[15]="${__ARRY[2]:-}"						# iso_size
+			__LIST[16]="${__ARRY[3]:-}"						# iso_volume
 		fi
 		# --- local remastering iso file --------------------------------------
 		if [[ -n "${__LIST[17]}" ]]; then
 			funcGetFileinfo __RETN "${__LIST[17]}"			# rmk_path
-			read -r -a _ARRY < <(echo "${__RETN:-"- - - -"}")
-			_ARRY=("${_ARRY[@]##-}")
-			if [[ -n "${_ARRY[0]}" ]]; then
-#				__LIST[17]="${_ARRY[0]:-}"					# rmk_path
-				__LIST[18]="${_ARRY[1]:-}"					# rmk_tstamp
-				__LIST[19]="${_ARRY[2]:-}"					# rmk_size
-				__LIST[20]="${_ARRY[3]:-}"					# rmk_volume
-			fi
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+#			__LIST[17]="${__ARRY[0]:-}"						# rmk_path
+			__LIST[18]="${__ARRY[1]:-}"						# rmk_tstamp
+			__LIST[19]="${__ARRY[2]:-}"						# rmk_size
+			__LIST[20]="${__ARRY[3]:-}"						# rmk_volume
 		fi
 		# --- config file  ----------------------------------------------------
 		if [[ -n "${__LIST[23]}" ]]; then
@@ -3132,12 +3181,9 @@ function funcPrint_menu() {
 			else											# cfg_path
 				funcGetFileinfo __RETN "${__LIST[23]}"
 			fi
-			read -r -a _ARRY < <(echo "${__RETN:-"- - - -"}")
-			_ARRY=("${_ARRY[@]##-}")
-			if [[ -n "${_ARRY[0]}" ]]; then
-#				__LIST[23]="${_ARRY[0]:-}"					# cfg_path
-				__LIST[24]="${_ARRY[1]:-}"					# cfg_tstamp
-			fi
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+#			__LIST[23]="${__ARRY[0]:-}"						# cfg_path
+			__LIST[24]="${__ARRY[1]:-}"						# cfg_tstamp
 		fi
 		# --- print out -------------------------------------------------------
 		# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
@@ -3149,7 +3195,11 @@ function funcPrint_menu() {
 		__MESG=""
 		__CLR0=""
 		__CLR1=""
-		if [[ -n "${__LIST[14]##-}" ]]; then
+		if [[ -z "${__LIST[8]##-}" ]] && [[ -z "${__LIST[14]##-}" ]]; then
+			__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[33m"}"		# unreleased
+		elif [[ -z "${__LIST[14]##-}" ]]; then
+			__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[46m"}"		# new file
+		else
 			if [[ -n "${__LIST[18]##-}" ]]; then
 				__WORK="$(funcDateDiff "${__LIST[18]}" "${__LIST[14]}")"
 				if [[ "${__WORK}" -gt 0 ]]; then
@@ -3271,19 +3321,25 @@ function funcMain() {
 	declare -i    __time_elapsed=0		# result of elapsed time
 	declare -r -a __OPTN_PARM=("${@:-}") # option parameter
 	declare -a    __RETN_PARM=()		# name reference
-	declare -a    __RANG=()				# range
+	declare -a    __OPTN=()				# option parameter
+	declare       __TGET=""				# target
+	declare       __RANG=""				# range
 	declare       __RSLT=""				# result
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
 	declare -i    I=0					# work variables
 
+	# --- help ----------------------------------------------------------------
+	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then
+		funcHelp
+		exit 0
+	fi
 	# --- check the execution user --------------------------------------------
 	if [[ "${_USER_NAME}" != "root" ]]; then
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[91m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "run as root user."
 		exit 1
 	fi
-
 	# --- get command line ----------------------------------------------------
 	set -f -- "${__OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
@@ -3296,7 +3352,6 @@ function funcMain() {
 			*       ) shift;;
 		esac
 	done
-
 	if set -o | grep "^xtrace\s*on$"; then
 		_DBGS_FLAG="true"
 		exec 2>&1
@@ -3316,48 +3371,72 @@ function funcMain() {
 		case "${1:-}" in
 			create  )					# (force create)
 				shift
-#				funcPrint_menu __RSLT "create" "${_LIST_MDIA[@]}"
-#				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
-#				for I in "${!_LIST_MDIA[@]}"
-#				do
-#					read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
-#set -x
-#printf "%-100.100s\n" "${_LIST_MDIA[@]}"
-				IFS= mapfile -d $'\n' -t __RANG < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '/mini.iso/' || true)
-				funcPrint_menu __RSLT "create" "${__RANG[@]}"
-				IFS= mapfile -d $'\n' -t __RANG < <(echo -n "${__RSLT}")
-				for I in "${!__RANG[@]}"
+				__OPTN=("${@:-}")
+				case "${1:-}" in
+					a|all) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all" "${@:-}");;
+					*    ) ;;
+				esac
+				__TGET=""
+				set -f -- "${__OPTN[@]:-}"
+				while [[ -n "${1:-}" ]]
 				do
-					read -r -a __LIST < <(echo "${__RANG[I]}")
-#					case "${__LIST[0]}" in
-#						mini.iso      ) ;;
-#						netinst       ) ;;
-#						dvd           ) ;;
-#						live_install  ) ;;
-#						live          ) continue;;
-#						tool          ) continue;;
-#						custom_live   ) continue;;
-#						custom_netinst) continue;;
-#						system        ) continue;;
-#						*             ) continue;;
-#					esac
-					case "${__LIST[1]}" in
-						o) ;;
-						*) continue;;
+					case "${1:-}" in
+						mini    ) shift; __TGET="mini.iso";;
+						netinst ) shift; __TGET="netinst";;
+						dvd     ) shift; __TGET="dvd";;
+						liveinst) shift; __TGET="live_install";;
+#						live    ) shift; __TGET="live";;
+#						tool    ) shift; __TGET="tool";;
+#						clive   ) shift; __TGET="custom_live";;
+#						cnetinst) shift; __TGET="custom_netinst";;
+#						system  ) shift; __TGET="system";;
+						*       ) break;;
 					esac
-					if [[ -z "${__LIST[3]##-}" ]]; then
-						continue
-					fi
-					if [[ -z "${__LIST[13]##-}" ]]; then
-						continue
-					fi
-					# ---------------------------------------------------------
-					if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
-						continue
-					fi
+					__RANG=""
+					while [[ -n "${1:-}" ]]
+					do
+						case "${1:-}" in
+							a|all                           ) _RANG="*"; shift; break;;
+							[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) _RANG="${_RANG:+"${_RANG}\|"}$1"; shift;;
+							*                               ) break;;
+						esac
+					done
+					IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=="'"${__TGET}"'" {print $0;}' || true)
+					funcPrint_menu __RSLT "create" "${__LIST[@]}"
+					while read -r -a __LIST
+					do
+						case "${__LIST[1]}" in
+							o) ;;
+							*) continue;;
+						esac
+						if [[ -z "${__LIST[3]##-}" ]]; then
+							continue
+						fi
+						if [[ -z "${__LIST[13]##-}" ]]; then
+							continue
+						fi
+						# -----------------------------------------------------
+						if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
+							continue
+						fi
+						# --- lnk_path ----------------------------------------
+						if [[ -n "${__LIST[25]##-}" ]] && [[ ! -e "${__LIST[13]}" ]] && [[ ! -h "${__LIST[13]}" ]]; then
+							funcPrintf "%20.20s: %s" "create symlink" "${__LIST[25]} -> ${__LIST[13]}"
+							ln -s "${__LIST[25]}" "${__LIST[13]}"
+						fi
+						# --- download ----------------------------------------
+						if [[ -n "${__LIST[9]##-}" ]]; then
+							case "${__LIST[12]}" in
+								200) funcGetWeb_contents "${__LIST[13]}" "${__LIST[9]}";;
+								*  ) ;;
+							esac
+						fi
+						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
+					done < <(echo -n "${__RSLT}")
+				done
 #					funcPrint_menu __RSLT "create" "${__LIST[*]}"
 #					IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
-					funcRemastering "${__LIST[@]}"
+#					funcRemastering "${__LIST[@]}"
 					# --- new local remaster iso files ------------------------
 #					__WORK="$(funcGetFileinfo "${__LIST[17]##-}")"
 #					read -r -a __ARRY < <(echo "${__WORK}")
@@ -3368,7 +3447,7 @@ function funcMain() {
 					# --- update media data record ----------------
 #					_LIST_MDIA[I]="${__LIST[*]}"
 #					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
-				done
+#				done
 #				funcPut_media_data
 				;;
 			update  )					# (create new files only)

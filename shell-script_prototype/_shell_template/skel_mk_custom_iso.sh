@@ -125,19 +125,25 @@ function funcMain() {
 	declare -i    __time_elapsed=0		# result of elapsed time
 	declare -r -a __OPTN_PARM=("${@:-}") # option parameter
 	declare -a    __RETN_PARM=()		# name reference
-	declare -a    __RANG=()				# range
+	declare -a    __OPTN=()				# option parameter
+	declare       __TGET=""				# target
+	declare       __RANG=""				# range
 	declare       __RSLT=""				# result
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
 	declare -i    I=0					# work variables
 
+	# --- help ----------------------------------------------------------------
+	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then
+		funcHelp
+		exit 0
+	fi
 	# --- check the execution user --------------------------------------------
 	if [[ "${_USER_NAME}" != "root" ]]; then
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[91m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "run as root user."
 		exit 1
 	fi
-
 	# --- get command line ----------------------------------------------------
 	set -f -- "${__OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
@@ -150,7 +156,6 @@ function funcMain() {
 			*       ) shift;;
 		esac
 	done
-
 	if set -o | grep "^xtrace\s*on$"; then
 		_DBGS_FLAG="true"
 		exec 2>&1
@@ -170,48 +175,72 @@ function funcMain() {
 		case "${1:-}" in
 			create  )					# (force create)
 				shift
-#				funcPrint_menu __RSLT "create" "${_LIST_MDIA[@]}"
-#				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
-#				for I in "${!_LIST_MDIA[@]}"
-#				do
-#					read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
-#set -x
-#printf "%-100.100s\n" "${_LIST_MDIA[@]}"
-				IFS= mapfile -d $'\n' -t __RANG < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '/mini.iso/' || true)
-				funcPrint_menu __RSLT "create" "${__RANG[@]}"
-				IFS= mapfile -d $'\n' -t __RANG < <(echo -n "${__RSLT}")
-				for I in "${!__RANG[@]}"
+				__OPTN=("${@:-}")
+				case "${1:-}" in
+					a|all) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all" "${@:-}");;
+					*    ) ;;
+				esac
+				__TGET=""
+				set -f -- "${__OPTN[@]:-}"
+				while [[ -n "${1:-}" ]]
 				do
-					read -r -a __LIST < <(echo "${__RANG[I]}")
-#					case "${__LIST[0]}" in
-#						mini.iso      ) ;;
-#						netinst       ) ;;
-#						dvd           ) ;;
-#						live_install  ) ;;
-#						live          ) continue;;
-#						tool          ) continue;;
-#						custom_live   ) continue;;
-#						custom_netinst) continue;;
-#						system        ) continue;;
-#						*             ) continue;;
-#					esac
-					case "${__LIST[1]}" in
-						o) ;;
-						*) continue;;
+					case "${1:-}" in
+						mini    ) shift; __TGET="mini.iso";;
+						netinst ) shift; __TGET="netinst";;
+						dvd     ) shift; __TGET="dvd";;
+						liveinst) shift; __TGET="live_install";;
+#						live    ) shift; __TGET="live";;
+#						tool    ) shift; __TGET="tool";;
+#						clive   ) shift; __TGET="custom_live";;
+#						cnetinst) shift; __TGET="custom_netinst";;
+#						system  ) shift; __TGET="system";;
+						*       ) break;;
 					esac
-					if [[ -z "${__LIST[3]##-}" ]]; then
-						continue
-					fi
-					if [[ -z "${__LIST[13]##-}" ]]; then
-						continue
-					fi
-					# ---------------------------------------------------------
-					if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
-						continue
-					fi
+					__RANG=""
+					while [[ -n "${1:-}" ]]
+					do
+						case "${1:-}" in
+							a|all                           ) _RANG="*"; shift; break;;
+							[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) _RANG="${_RANG:+"${_RANG}\|"}$1"; shift;;
+							*                               ) break;;
+						esac
+					done
+					IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=="'"${__TGET}"'" {print $0;}' || true)
+					funcPrint_menu __RSLT "create" "${__LIST[@]}"
+					while read -r -a __LIST
+					do
+						case "${__LIST[1]}" in
+							o) ;;
+							*) continue;;
+						esac
+						if [[ -z "${__LIST[3]##-}" ]]; then
+							continue
+						fi
+						if [[ -z "${__LIST[13]##-}" ]]; then
+							continue
+						fi
+						# -----------------------------------------------------
+						if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
+							continue
+						fi
+						# --- lnk_path ----------------------------------------
+						if [[ -n "${__LIST[25]##-}" ]] && [[ ! -e "${__LIST[13]}" ]] && [[ ! -h "${__LIST[13]}" ]]; then
+							funcPrintf "%20.20s: %s" "create symlink" "${__LIST[25]} -> ${__LIST[13]}"
+							ln -s "${__LIST[25]}" "${__LIST[13]}"
+						fi
+						# --- download ----------------------------------------
+						if [[ -n "${__LIST[9]##-}" ]]; then
+							case "${__LIST[12]}" in
+								200) funcGetWeb_contents "${__LIST[13]}" "${__LIST[9]}";;
+								*  ) ;;
+							esac
+						fi
+						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
+					done < <(echo -n "${__RSLT}")
+				done
 #					funcPrint_menu __RSLT "create" "${__LIST[*]}"
 #					IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
-					funcRemastering "${__LIST[@]}"
+#					funcRemastering "${__LIST[@]}"
 					# --- new local remaster iso files ------------------------
 #					__WORK="$(funcGetFileinfo "${__LIST[17]##-}")"
 #					read -r -a __ARRY < <(echo "${__WORK}")
@@ -222,7 +251,7 @@ function funcMain() {
 					# --- update media data record ----------------
 #					_LIST_MDIA[I]="${__LIST[*]}"
 #					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
-				done
+#				done
 #				funcPut_media_data
 				;;
 			update  )					# (create new files only)
