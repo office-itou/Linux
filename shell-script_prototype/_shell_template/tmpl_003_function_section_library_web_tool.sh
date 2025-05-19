@@ -21,11 +21,14 @@ function funcGetWeb_contents() {
 	# -------------------------------------------------------------------------
 	if [[ "${__RTCD}" -eq 0 ]]; then
 		mkdir -p "${1%/*}"
+		if [[ ! -s "$1" ]]; then
+			: > "$1"
+		fi
 		if ! cp --preserve=timestamps "${__TEMP}" "$1"; then
-			printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [cp]" "${1##*/}"
+			printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[41m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "error [cp]" "${1##*/}"
 		else
 			IFS= mapfile -d ' ' -t __LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "$1" || true)
-			printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "complete" "${1##*/} (${__LIST[4]})"
+			printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "complete" "${1##*/} (${__LIST[4]})"
 		fi
 	fi
 	# -------------------------------------------------------------------------
@@ -47,6 +50,7 @@ function funcGetWeb_header() {
 	declare       __LMOD=""				# last-modified
 	declare -a    __LIST=()				# work variables
 	declare       __LINE=""				# work variables
+	declare -i    I=0					# work variables
 	# -------------------------------------------------------------------------
 #	__RTCD=0
 	__RSLT=""
@@ -102,6 +106,7 @@ function funcGetWeb_address() {
 	declare       __LMOD=""				# last-modified
 	declare -a    __LIST=()				# work variables
 	declare       __LINE=""				# work variables
+	declare -i    I=0					# work variables
 	# --- URL completion ------------------------------------------------------
 	__PATH="${2:?}"
 	while [[ -n "${__PATH//[!"${__PATN}"]/}" ]]

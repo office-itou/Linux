@@ -105,25 +105,26 @@ function funcString() {
 function funcDateDiff() {
 	declare       __TGET_DAT1="${1:?}"	# date1
 	declare       __TGET_DAT2="${2:?}"	# date2
+	declare -i    __RTCD=0				# return code
 	# -------------------------------------------------------------------------
 	#  0 : __TGET_DAT1 = __TGET_DAT2
 	#  1 : __TGET_DAT1 < __TGET_DAT2
 	# -1 : __TGET_DAT1 > __TGET_DAT2
 	# emp: error
-	if __TGET_DAT1="$(TZ=UTC date -d "${__TGET_DAT1//%20/ }" "+%s")" \
-	&& __TGET_DAT2="$(TZ=UTC date -d "${__TGET_DAT2//%20/ }" "+%s")"; then
-		  if [[ "${__TGET_DAT1}" -eq "${__TGET_DAT2}" ]]; then
-			echo "0"
-		elif [[ "${__TGET_DAT1}" -lt "${__TGET_DAT2}" ]]; then
-			echo "1"
-		elif [[ "${__TGET_DAT1}" -gt "${__TGET_DAT2}" ]]; then
-			echo "-1"
-		else
-			echo ""
-		fi
-	else
+	if ! __TGET_DAT1="$(TZ=UTC date -d "${__TGET_DAT1//%20/ }" "+%s")"; then
+		__RTCD="$?"
 		printf "%20.20s: %s\n" "failed" "${__TGET_DAT1}"
+		exit "${__RTCD}"
+	fi
+	if ! __TGET_DAT2="$(TZ=UTC date -d "${__TGET_DAT2//%20/ }" "+%s")"; then
+		__RTCD="$?"
 		printf "%20.20s: %s\n" "failed" "${__TGET_DAT2}"
+		exit "${__RTCD}"
+	fi
+	  if [[ "${__TGET_DAT1}" -eq "${__TGET_DAT2}" ]]; then echo "0"
+	elif [[ "${__TGET_DAT1}" -lt "${__TGET_DAT2}" ]]; then echo "1"
+	elif [[ "${__TGET_DAT1}" -gt "${__TGET_DAT2}" ]]; then echo "-1"
+	else                                                   echo ""
 	fi
 }
 

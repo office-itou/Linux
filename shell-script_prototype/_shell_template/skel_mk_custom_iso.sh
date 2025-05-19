@@ -80,7 +80,7 @@ funcDebug_parameter() {
 # --- help --------------------------------------------------------------------
 function funcHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-		usage: [sudo] ./${_PROG_PATH##*/} [command (options)]
+		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
 		
 		  iso image files:
 		    create|update|download [all|(mini|net|dvd|live {a|all|id})|version]
@@ -133,6 +133,7 @@ function funcMain() {
 	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
 	declare -i    I=0					# work variables
+	declare -i    J=0					# work variables
 
 	# --- help ----------------------------------------------------------------
 	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then
@@ -140,7 +141,7 @@ function funcMain() {
 		exit 0
 	fi
 	# --- check the execution user --------------------------------------------
-	if [[ "${_USER_NAME}" != "root" ]]; then
+	if [[ "${_USER_NAME:-"$(whoami || true)"}" != "root" ]]; then
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[91m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "run as root user."
 		exit 1
 	fi
@@ -206,9 +207,15 @@ function funcMain() {
 						esac
 					done
 					IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=="'"${__TGET}"'" {print $0;}' || true)
-					funcPrint_menu __RSLT "create" "${__LIST[@]}"
+					funcPrint_menu "__RSLT" "create" "${__LIST[@]}"
+#					IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${__RSLT[@]}" || true)
 					while read -r -a __LIST
 					do
+						for J in "${!__LIST[@]}"
+						do
+							__LIST[J]="${__LIST[J]##-}"		# empty
+							__LIST[J]="${__LIST[J]//%20/ }"	# space
+						done
 						case "${__LIST[1]}" in
 							o) ;;
 							*) continue;;
@@ -226,15 +233,25 @@ function funcMain() {
 						# --- lnk_path ----------------------------------------
 						if [[ -n "${__LIST[25]##-}" ]] && [[ ! -e "${__LIST[13]}" ]] && [[ ! -h "${__LIST[13]}" ]]; then
 							funcPrintf "%20.20s: %s" "create symlink" "${__LIST[25]} -> ${__LIST[13]}"
-							ln -s "${__LIST[25]}" "${__LIST[13]}"
+							ln -s "${__LIST[25]%%/}/${__LIST[13]##*/}" "${__LIST[13]}"
 						fi
 						# --- download ----------------------------------------
 						if [[ -n "${__LIST[9]##-}" ]]; then
 							case "${__LIST[12]}" in
-								200) funcGetWeb_contents "${__LIST[13]}" "${__LIST[9]}";;
+								200)
+									__RSLT="$(funcDateDiff "${__LIST[10]:-@0}" "${__LIST[14]:-@0}")"
+									if [[ "${__RSLT}" -lt 0 ]]; then
+										funcGetWeb_contents "${__LIST[13]}" "${__LIST[9]}"
+									fi
+									;;
 								*  ) ;;
 							esac
 						fi
+						for J in "${!__LIST[@]}"
+						do
+							__LIST[J]="${__LIST[J]:--}"		# empty
+							__LIST[J]="${__LIST[J]// /%20}"	# space
+						done
 						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
 					done < <(echo -n "${__RSLT}")
 				done

@@ -1048,7 +1048,12 @@ function funcPrint_menu() {
 	for I in "${!__TGET_LIST[@]}"
 	do
 		read -r -a __LIST < <(echo "${__TGET_LIST[I]}")
-		__LIST=("${__LIST[@]##-}")
+#		__LIST=("${__LIST[@]##-}")
+		for J in "${!__LIST[@]}"
+		do
+			__LIST[J]="${__LIST[J]##-}"		# empty
+#			__LIST[J]="${__LIST[J]//%20/ }"	# space
+		done
 		case "${__COMD_TYPE}" in
 			list)
 				case "${__LIST[1]:--}" in
@@ -1084,7 +1089,7 @@ function funcPrint_menu() {
 		__RETN=""
 		__MESG=""											# contents
 		if [[ -n "${__LIST[8]}" ]]; then
-			funcGetWeb_info __RETN "${__LIST[8]}"			# web_regexp
+			funcGetWeb_info "__RETN" "${__LIST[8]}"			# web_regexp
 			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
 			__ARRY=("${__ARRY[@]##-}")
 			case "${__ARRY[3]}" in
@@ -1102,10 +1107,6 @@ function funcPrint_menu() {
 							__BASE="${__FNAM%"${__EXTN}"}"
 															# iso_path
 							__LIST[13]="${__LIST[13]%/*}/${__FNAM}"
-															# lnk_path
-							if [[ -n "${__LIST[25]##-}" ]]; then
-								__LIST[25]="${__LIST[25]%/*}/${__FNAM}"
-							fi
 															# rmk_path
 							if [[ -n "${__LIST[17]##-}" ]]; then
 								__SEED="${__LIST[17]##*_}"
@@ -1199,10 +1200,11 @@ function funcPrint_menu() {
 			__LIST[J]="${__LIST[J]:--}"		# empty
 			__LIST[J]="${__LIST[J]// /%20}"	# space
 		done
-		__TGET_LIST[I]="$( \
+		__WORK="$( \
 			printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s" \
 				"${__LIST[@]}" \
 		)"
+		__TGET_LIST[I]="${__WORK}"
 	done
 	_RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
 }

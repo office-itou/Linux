@@ -799,10 +799,10 @@ function funcGetWeb_contents() {
 	if [[ "${__RTCD}" -eq 0 ]]; then
 		mkdir -p "${1%/*}"
 		if ! cp --preserve=timestamps "${__TEMP}" "$1"; then
-			printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [cp]" "${1##*/}"
+			printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[41m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "error [cp]" "${1##*/}"
 		else
 			IFS= mapfile -d ' ' -t __LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "$1" || true)
-			printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "complete" "${1##*/} (${__LIST[4]})"
+			printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "complete" "${1##*/} (${__LIST[4]})"
 		fi
 	fi
 	# -------------------------------------------------------------------------
@@ -3152,7 +3152,7 @@ funcDebug_parameter() {
 # --- help --------------------------------------------------------------------
 function funcHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-		usage: [sudo] ./${_PROG_PATH##*/} [command (options)]
+		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
 		
 		  pxeboot menu files:
 		    create
@@ -3192,14 +3192,18 @@ function funcMain() {
 	declare -r -a _OPTN_PARM=("${@:-}")	# option parameter
 	declare -a    _RETN_PARM=()			# name reference
 
+	# --- help ----------------------------------------------------------------
+	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then
+		funcHelp
+		exit 0
+	fi
 	# --- check the execution user --------------------------------------------
-	if [[ "${_USER_NAME}" != "root" ]]; then
-		printf "${_CODE_ESCP}[m%s${_CODE_ESCP}[m\n" "run as root user."
+	if [[ "${_USER_NAME:-"$(whoami || true)"}" != "root" ]]; then
+		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[91m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "run as root user."
 		exit 1
 	fi
-
 	# --- get command line ----------------------------------------------------
-	set -f -- "${_OPTN_PARM[@]:-}"
+	set -f -- "${__OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1%%=*}" in
@@ -3210,15 +3214,14 @@ function funcMain() {
 			*       ) shift;;
 		esac
 	done
-
 	if set -o | grep "^xtrace\s*on$"; then
 		_DBGS_FLAG="true"
 		exec 2>&1
 	fi
 
 	# --- start ---------------------------------------------------------------
-	_time_start=$(date +%s)
-	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
+	__time_start=$(date +%s)
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- main ----------------------------------------------------------------
 	funcInitialization					# initialization
@@ -3286,11 +3289,11 @@ function funcMain() {
 	done
 
 	# --- complete ------------------------------------------------------------
-	_time_end=$(date +%s)
-	_time_elapsed=$((_time_end-_time_start))
+	__time_end=$(date +%s)
+	__time_elapsed=$((__time_end-__time_start))
 
-	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
-	printf "elapsed time: %dd%02dh%02dm%02ds\n" $((_time_elapsed/86400)) $((_time_elapsed%86400/3600)) $((_time_elapsed%3600/60)) $((_time_elapsed%60))
+	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true) processing end"
+	printf "elapsed time: %dd%02dh%02dm%02ds\n" $((__time_elapsed/86400)) $((__time_elapsed%86400/3600)) $((__time_elapsed%3600/60)) $((__time_elapsed%60))
 }
 
 # *** main processing section *************************************************

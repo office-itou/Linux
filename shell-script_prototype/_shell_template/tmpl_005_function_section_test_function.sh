@@ -152,6 +152,7 @@ function funcCurl() {
 }
 
 # --- text color test ---------------------------------------------------------
+# shellcheck disable=SC2154
 function funcDebug_color() {
 	printf "%s : %-22.22s : %s\n" "${_TEXT_RESET}"            "_TEXT_RESET"            "${_TEXT_RESET}"
 	printf "%s : %-22.22s : %s\n" "${_TEXT_BOLD}"             "_TEXT_BOLD"             "${_TEXT_RESET}"

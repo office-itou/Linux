@@ -360,25 +360,26 @@ function funcString() {
 function funcDateDiff() {
 	declare       __TGET_DAT1="${1:?}"	# date1
 	declare       __TGET_DAT2="${2:?}"	# date2
+	declare -i    __RTCD=0				# return code
 	# -------------------------------------------------------------------------
 	#  0 : __TGET_DAT1 = __TGET_DAT2
 	#  1 : __TGET_DAT1 < __TGET_DAT2
 	# -1 : __TGET_DAT1 > __TGET_DAT2
 	# emp: error
-	if __TGET_DAT1="$(TZ=UTC date -d "${__TGET_DAT1//%20/ }" "+%s")" \
-	&& __TGET_DAT2="$(TZ=UTC date -d "${__TGET_DAT2//%20/ }" "+%s")"; then
-		  if [[ "${__TGET_DAT1}" -eq "${__TGET_DAT2}" ]]; then
-			echo "0"
-		elif [[ "${__TGET_DAT1}" -lt "${__TGET_DAT2}" ]]; then
-			echo "1"
-		elif [[ "${__TGET_DAT1}" -gt "${__TGET_DAT2}" ]]; then
-			echo "-1"
-		else
-			echo ""
-		fi
-	else
+	if ! __TGET_DAT1="$(TZ=UTC date -d "${__TGET_DAT1//%20/ }" "+%s")"; then
+		__RTCD="$?"
 		printf "%20.20s: %s\n" "failed" "${__TGET_DAT1}"
+		exit "${__RTCD}"
+	fi
+	if ! __TGET_DAT2="$(TZ=UTC date -d "${__TGET_DAT2//%20/ }" "+%s")"; then
+		__RTCD="$?"
 		printf "%20.20s: %s\n" "failed" "${__TGET_DAT2}"
+		exit "${__RTCD}"
+	fi
+	  if [[ "${__TGET_DAT1}" -eq "${__TGET_DAT2}" ]]; then echo "0"
+	elif [[ "${__TGET_DAT1}" -lt "${__TGET_DAT2}" ]]; then echo "1"
+	elif [[ "${__TGET_DAT1}" -gt "${__TGET_DAT2}" ]]; then echo "-1"
+	else                                                   echo ""
 	fi
 }
 
@@ -806,11 +807,14 @@ function funcGetWeb_contents() {
 	# -------------------------------------------------------------------------
 	if [[ "${__RTCD}" -eq 0 ]]; then
 		mkdir -p "${1%/*}"
+		if [[ ! -s "$1" ]]; then
+			: > "$1"
+		fi
 		if ! cp --preserve=timestamps "${__TEMP}" "$1"; then
-			printf "${_CODE_ESCP}[m${_CODE_ESCP}[41m%20.20s: %s${_CODE_ESCP}[m\n" "error [cp]" "${1##*/}"
+			printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[41m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "error [cp]" "${1##*/}"
 		else
 			IFS= mapfile -d ' ' -t __LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "$1" || true)
-			printf "${_CODE_ESCP}[m${_CODE_ESCP}[92m%20.20s: %s${_CODE_ESCP}[m\n" "complete" "${1##*/} (${__LIST[4]})"
+			printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "complete" "${1##*/} (${__LIST[4]})"
 		fi
 	fi
 	# -------------------------------------------------------------------------
@@ -832,6 +836,7 @@ function funcGetWeb_header() {
 	declare       __LMOD=""				# last-modified
 	declare -a    __LIST=()				# work variables
 	declare       __LINE=""				# work variables
+	declare -i    I=0					# work variables
 	# -------------------------------------------------------------------------
 #	__RTCD=0
 	__RSLT=""
@@ -887,6 +892,7 @@ function funcGetWeb_address() {
 	declare       __LMOD=""				# last-modified
 	declare -a    __LIST=()				# work variables
 	declare       __LINE=""				# work variables
+	declare -i    I=0					# work variables
 	# --- URL completion ------------------------------------------------------
 	__PATH="${2:?}"
 	while [[ -n "${__PATH//[!"${__PATN}"]/}" ]]
@@ -3081,7 +3087,12 @@ function funcPrint_menu() {
 	for I in "${!__TGET_LIST[@]}"
 	do
 		read -r -a __LIST < <(echo "${__TGET_LIST[I]}")
-		__LIST=("${__LIST[@]##-}")
+#		__LIST=("${__LIST[@]##-}")
+		for J in "${!__LIST[@]}"
+		do
+			__LIST[J]="${__LIST[J]##-}"		# empty
+#			__LIST[J]="${__LIST[J]//%20/ }"	# space
+		done
 		case "${__COMD_TYPE}" in
 			list)
 				case "${__LIST[1]:--}" in
@@ -3117,7 +3128,7 @@ function funcPrint_menu() {
 		__RETN=""
 		__MESG=""											# contents
 		if [[ -n "${__LIST[8]}" ]]; then
-			funcGetWeb_info __RETN "${__LIST[8]}"			# web_regexp
+			funcGetWeb_info "__RETN" "${__LIST[8]}"			# web_regexp
 			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
 			__ARRY=("${__ARRY[@]##-}")
 			case "${__ARRY[3]}" in
@@ -3135,10 +3146,6 @@ function funcPrint_menu() {
 							__BASE="${__FNAM%"${__EXTN}"}"
 															# iso_path
 							__LIST[13]="${__LIST[13]%/*}/${__FNAM}"
-															# lnk_path
-							if [[ -n "${__LIST[25]##-}" ]]; then
-								__LIST[25]="${__LIST[25]%/*}/${__FNAM}"
-							fi
 															# rmk_path
 							if [[ -n "${__LIST[17]##-}" ]]; then
 								__SEED="${__LIST[17]##*_}"
@@ -3232,10 +3239,11 @@ function funcPrint_menu() {
 			__LIST[J]="${__LIST[J]:--}"		# empty
 			__LIST[J]="${__LIST[J]// /%20}"	# space
 		done
-		__TGET_LIST[I]="$( \
+		__WORK="$( \
 			printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s" \
 				"${__LIST[@]}" \
 		)"
+		__TGET_LIST[I]="${__WORK}"
 	done
 	_RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
 }
@@ -3276,7 +3284,7 @@ funcDebug_parameter() {
 # --- help --------------------------------------------------------------------
 function funcHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-		usage: [sudo] ./${_PROG_PATH##*/} [command (options)]
+		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
 		
 		  iso image files:
 		    create|update|download [all|(mini|net|dvd|live {a|all|id})|version]
@@ -3329,6 +3337,7 @@ function funcMain() {
 	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
 	declare -i    I=0					# work variables
+	declare -i    J=0					# work variables
 
 	# --- help ----------------------------------------------------------------
 	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then
@@ -3336,7 +3345,7 @@ function funcMain() {
 		exit 0
 	fi
 	# --- check the execution user --------------------------------------------
-	if [[ "${_USER_NAME}" != "root" ]]; then
+	if [[ "${_USER_NAME:-"$(whoami || true)"}" != "root" ]]; then
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[91m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "run as root user."
 		exit 1
 	fi
@@ -3402,9 +3411,15 @@ function funcMain() {
 						esac
 					done
 					IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=="'"${__TGET}"'" {print $0;}' || true)
-					funcPrint_menu __RSLT "create" "${__LIST[@]}"
+					funcPrint_menu "__RSLT" "create" "${__LIST[@]}"
+#					IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${__RSLT[@]}" || true)
 					while read -r -a __LIST
 					do
+						for J in "${!__LIST[@]}"
+						do
+							__LIST[J]="${__LIST[J]##-}"		# empty
+							__LIST[J]="${__LIST[J]//%20/ }"	# space
+						done
 						case "${__LIST[1]}" in
 							o) ;;
 							*) continue;;
@@ -3422,15 +3437,25 @@ function funcMain() {
 						# --- lnk_path ----------------------------------------
 						if [[ -n "${__LIST[25]##-}" ]] && [[ ! -e "${__LIST[13]}" ]] && [[ ! -h "${__LIST[13]}" ]]; then
 							funcPrintf "%20.20s: %s" "create symlink" "${__LIST[25]} -> ${__LIST[13]}"
-							ln -s "${__LIST[25]}" "${__LIST[13]}"
+							ln -s "${__LIST[25]%%/}/${__LIST[13]##*/}" "${__LIST[13]}"
 						fi
 						# --- download ----------------------------------------
 						if [[ -n "${__LIST[9]##-}" ]]; then
 							case "${__LIST[12]}" in
-								200) funcGetWeb_contents "${__LIST[13]}" "${__LIST[9]}";;
+								200)
+									__RSLT="$(funcDateDiff "${__LIST[10]:-@0}" "${__LIST[14]:-@0}")"
+									if [[ "${__RSLT}" -lt 0 ]]; then
+										funcGetWeb_contents "${__LIST[13]}" "${__LIST[9]}"
+									fi
+									;;
 								*  ) ;;
 							esac
 						fi
+						for J in "${!__LIST[@]}"
+						do
+							__LIST[J]="${__LIST[J]:--}"		# empty
+							__LIST[J]="${__LIST[J]// /%20}"	# space
+						done
 						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
 					done < <(echo -n "${__RSLT}")
 				done
