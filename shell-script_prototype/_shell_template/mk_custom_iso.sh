@@ -3415,11 +3415,6 @@ function funcMain() {
 #					IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${__RSLT[@]}" || true)
 					while read -r -a __LIST
 					do
-						for J in "${!__LIST[@]}"
-						do
-							__LIST[J]="${__LIST[J]##-}"		# empty
-							__LIST[J]="${__LIST[J]//%20/ }"	# space
-						done
 						case "${__LIST[1]}" in
 							o) ;;
 							*) continue;;
@@ -3434,15 +3429,23 @@ function funcMain() {
 						if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
 							continue
 						fi
-						# --- lnk_path ----------------------------------------
-						if [[ -n "${__LIST[25]##-}" ]] && [[ ! -e "${__LIST[13]}" ]] && [[ ! -h "${__LIST[13]}" ]]; then
-							funcPrintf "%20.20s: %s" "create symlink" "${__LIST[25]} -> ${__LIST[13]}"
-							ln -s "${__LIST[25]%%/}/${__LIST[13]##*/}" "${__LIST[13]}"
-						fi
+						# --- start -------------------------------------------
+						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[17]##*/}" 1>&2
+						# --- conversion --------------------------------------
+						for J in "${!__LIST[@]}"
+						do
+							__LIST[J]="${__LIST[J]##-}"		# empty
+							__LIST[J]="${__LIST[J]//%20/ }"	# space
+						done
 						# --- download ----------------------------------------
 						if [[ -n "${__LIST[9]##-}" ]]; then
 							case "${__LIST[12]}" in
 								200)
+									# --- lnk_path ----------------------------
+									if [[ -n "${__LIST[25]##-}" ]] && [[ ! -e "${__LIST[13]}" ]] && [[ ! -h "${__LIST[13]}" ]]; then
+										funcPrintf "%20.20s: %s" "create symlink" "${__LIST[25]} -> ${__LIST[13]}"
+										ln -s "${__LIST[25]%%/}/${__LIST[13]##*/}" "${__LIST[13]}"
+									fi
 									__RSLT="$(funcDateDiff "${__LIST[10]:-@0}" "${__LIST[14]:-@0}")"
 									if [[ "${__RSLT}" -lt 0 ]]; then
 										funcGetWeb_contents "${__LIST[13]}" "${__LIST[9]}"
@@ -3451,29 +3454,30 @@ function funcMain() {
 								*  ) ;;
 							esac
 						fi
+						# --- remastering -------------------------------------
+						if [[ -s "${__LIST[13]}" ]]; then
+							funcRemastering "${__LIST[@]}"
+							# --- new local remaster iso files ----------------
+							funcGetFileinfo "__RSLT" "${__LIST[17]##-}"
+							read -r -a __ARRY < <(echo "${__RSLT}")
+#							__LIST[17]="${__ARRY[0]:--}"		# rmk_path
+							__LIST[18]="${__ARRY[1]:--}"		# rmk_tstamp
+							__LIST[19]="${__ARRY[2]:--}"		# rmk_size
+							__LIST[20]="${__ARRY[3]:--}"		# rmk_volume
+						fi
+						# --- conversion --------------------------------------
 						for J in "${!__LIST[@]}"
 						do
 							__LIST[J]="${__LIST[J]:--}"		# empty
 							__LIST[J]="${__LIST[J]// /%20}"	# space
 						done
+						# --- update media data record ------------------------
+						_LIST_MDIA[I]="${__LIST[*]}"
+						# --- complete ----------------------------------------
 						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
 					done < <(echo -n "${__RSLT}")
 				done
-#					funcPrint_menu __RSLT "create" "${__LIST[*]}"
-#					IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
-#					funcRemastering "${__LIST[@]}"
-					# --- new local remaster iso files ------------------------
-#					__WORK="$(funcGetFileinfo "${__LIST[17]##-}")"
-#					read -r -a __ARRY < <(echo "${__WORK}")
-##					__LIST[17]="${__ARRY[0]:--}"				# rmk_path
-#					__LIST[18]="${__ARRY[1]:--}"				# rmk_tstamp
-#					__LIST[19]="${__ARRY[2]:--}"				# rmk_size
-#					__LIST[20]="${__ARRY[3]:--}"				# rmk_volume
-					# --- update media data record ----------------
-#					_LIST_MDIA[I]="${__LIST[*]}"
-#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
-#				done
-#				funcPut_media_data
+				funcPut_media_data
 				;;
 			update  )					# (create new files only)
 				shift
