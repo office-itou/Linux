@@ -9,8 +9,8 @@
 | Debian-13.0              | Trixie            |      | 2025/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | testing      |
 | Debian-14.0              | Forky             |      | 2027/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       |              |
 | Debian-15.0              | Duke              |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       |              |
-| Debian-sid               | SID               |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | sid          |
 | Debian-testing           | Testing           |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | testing      |
+| Debian-sid               | SID               |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | sid          |
 | Ubuntu-16.04             | Xenial Xerus      | LTS  | 2016/04/21 | 2021/04/30 | 2026/04/23 |            | 4.4                   |              |
 | Ubuntu-18.04             | Bionic Beaver     | LTS  | 2018/04/26 | 2023/05/31 | 2028/04/26 |            | 4.15                  |              |
 | Ubuntu-20.04             | Focal Fossa       |      | 2020/04/23 | 2025/05/29 | 2030/04/23 |            | 5.4                   |              |
@@ -18,6 +18,7 @@
 | Ubuntu-24.04             | Noble Numbat      |      | 2024/04/25 | 2029/05/31 | 2034/04/25 |            | 6.8                   |              |
 | Ubuntu-24.10             | Oracular Oriole   |      | 2024/10/10 | 2025/07/xx |            |            | 6.11                  |              |
 | Ubuntu-25.04             | Plucky Puffin     |      | 2025/04/17 | 2026/01/xx |            |            | 6.14                  |              |
+| Ubuntu-25.10             | Questing Quokka   |      | 2025/10/09 | 2026/07/xx |            |            |                       |              |
 | Fedora-40                |                   |      | 2024/04/23 | 2025/05/28 |            |            | 6.8                   |              |
 | Fedora-41                |                   |      | 2024/10/29 | 2025/11/19 |            |            | 6.11                  |              |
 | Fedora-42                |                   |      | 2025/04/15 | 2026/05/13 |            |            | 6.14                  |              |
@@ -26,6 +27,7 @@
 | CentOS Stream-10         | Coughlan          |      | 2024/12/12 | 2030/01/01 |            |            | 6.12.0                |              |
 | AlmaLinux-8.10           | Cerulean Leopard  |      | 2024/05/28 |            |            | 2024/05/22 | 4.18.0-553            |              |
 | AlmaLinux-9.5            | Teal Serval       |      | 2024/11/18 |            |            | 2024/11/13 | 5.14.0-503.11.1       |              |
+| AlmaLinux-9.6            | Teal Serval       |      | 2024/11/18 |            |            | 2024/05/20 | 5.14.0-503.11.1       |              |
 | Rocky Linux-8.10         | Green Obsidian    |      | 2024/05/30 |            |            | 2024/05/22 | 4.18.0-553            |              |
 | Rocky Linux-9.5          | Blue Onyx         |      | 2024/11/19 |            |            | 2024/11/12 | 5.14.0-503.14.1       |              |
 | Miracle Linux-8.8        |                   |      | 2023/10/05 |            |            | 2023/05/16 | 4.18.0-477.el8        |              |
@@ -39,8 +41,8 @@
 | memtest86plus-7.20       |                   |      | 20xx/xx/xx | 20xx/xx/xx |            |            |                       |              |
 | winpe-x64                |                   |      | 20xx/xx/xx | 20xx/xx/xx |            |            |                       |              |
 | winpe-x86                |                   |      | 20xx/xx/xx | 20xx/xx/xx |            |            |                       |              |
-| ati2020x64-2020x64       |                   |      | 20xx/xx/xx | 20xx/xx/xx |            |            |                       |              |
-| ati2020x86-2020x86       |                   |      | 20xx/xx/xx | 20xx/xx/xx |            |            |                       |              |
+| ati2020x64               |                   |      | 20xx/xx/xx | 20xx/xx/xx |            |            |                       |              |
+| ati2020x86               |                   |      | 20xx/xx/xx | 20xx/xx/xx |            |            |                       |              |
 
 ## WiKi  
 
