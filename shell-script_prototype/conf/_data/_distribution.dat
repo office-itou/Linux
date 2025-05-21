@@ -63,6 +63,7 @@ ubuntu-23.10        Ubuntu          23.10           Mantic%20Minotaur   EOL     
 ubuntu-24.04        Ubuntu          24.04           Noble%20Numbat      -           2024-04-25  2029-05-31  2034-04-25  -           6.8                     -
 ubuntu-24.10        Ubuntu          24.10           Oracular%20Oriole   -           2024-10-10  2025-07-xx  -           -           6.11                    -
 ubuntu-25.04        Ubuntu          25.04           Plucky%20Puffin     -           2025-04-17  2026-01-xx  -           -           6.14                    -
+ubuntu-25.10        Ubuntu          25.10           Questing%20Quokka   -           2025-10-09  2026-07-xx  -           -           -                       -
 fedora-27           Fedora          27              -                   EOL         2017-11-14  2018-11-30  -           -           4.13                    -
 fedora-28           Fedora          28              -                   EOL         2018-05-01  2019-05-28  -           -           4.16                    -
 fedora-29           Fedora          29              -                   EOL         2018-10-30  2019-11-26  -           -           4.18                    -
@@ -109,6 +110,7 @@ almalinux-9.2       AlmaLinux       9.2             -                   EOL     
 almalinux-9.3       AlmaLinux       9.3             -                   EOL         2023-11-13  -           -           2023-11-07  5.14.0-362.8.1          -
 almalinux-9.4       AlmaLinux       9.4             -                   EOL         2024-05-06  -           -           2024-04-30  5.14.0-427.13.1         -
 almalinux-9.5       AlmaLinux       9.5             Teal%20Serval       -           2024-11-18  -           -           2024-11-13  5.14.0-503.11.1         -
+almalinux-9.6       AlmaLinux       9.6             Teal%20Serval       -           2024-11-18  -           -           2024-05-20  5.14.0-503.11.1         -
 rockylinux-8.3      Rocky%20Linux   8.3             -                   EOL         2021-05-01  -           -           2020-11-03  4.18.0-240              -
 rockylinux-8.4      Rocky%20Linux   8.4             -                   EOL         2021-06-21  -           -           2021-05-18  4.18.0-305              -
 rockylinux-8.5      Rocky%20Linux   8.5             -                   EOL         2021-11-15  -           -           2021-11-09  4.18.0-348              -
