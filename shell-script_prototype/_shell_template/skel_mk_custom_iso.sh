@@ -37,6 +37,8 @@
 
 # :_tmpl_004_function_section_common.sh_:
 
+# :_tmpl_005_function_section_common.sh_:
+
 # :_tmpl_005_function_section_mk_custom_iso.sh_:
 
 # --- initialization ----------------------------------------------------------
@@ -45,7 +47,7 @@ function funcInitialization() {
 }
 
 # --- debug out parameter -----------------------------------------------------
-funcDebug_parameter() {
+function funcDebug_parameter() {
 	declare       __CHAR="_"			# variable initial letter
 	declare       __NAME=""				#          name
 	declare       __VALU=""				#          value
@@ -129,6 +131,9 @@ function funcMain() {
 	declare       __TGET=""				# target
 	declare       __RANG=""				# range
 	declare       __RSLT=""				# result
+	declare       __RETN=""				# return value
+	declare -a    __MDIA=()				# selected media list by type
+	declare -i    __RNUM=0				# record number
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
@@ -200,29 +205,41 @@ function funcMain() {
 					__RANG=""
 					while [[ -n "${1:-}" ]]
 					do
-						case "${1:-}" in
-							a|all                           ) _RANG="*"; shift; break;;
-							[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) _RANG="${_RANG:+"${_RANG}\|"}$1"; shift;;
+						case "${1,,}" in
+							a|all                           ) __RANG="all"; shift; break;;
+							[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) __RANG="${__RANG:+"${__RANG} "}$1"; shift;;
 							*                               ) break;;
 						esac
 					done
-					IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=="'"${__TGET}"'" {print $0;}' || true)
-					funcPrint_menu "__RSLT" "create" "${__LIST[@]}"
-#					IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${__RSLT[@]}" || true)
-					while read -r -a __LIST
+					# --- selection by media type -----------------------------
+					funcPrint_menu "__RSLT" "create" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
+					IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${__RSLT[@]}" || true)
+					# --- select by input value -------------------------------
+					if [[ -z "${__RANG:-}" ]]; then
+						read -r -p "enter the number to create:" __RANG
+					fi
+					if [[ -z "${__RANG:-}" ]]; then
+						continue
+					fi
+					case "${__RANG,,}" in
+						a|all) __RANG="$(eval "echo {1..${#__MDIA[@]}}")";;
+						*    ) ;;
+					esac
+					# --- main loop -------------------------------------------
+					__RNUM=0
+					for I in "${!__MDIA[@]}"
 					do
+						read -r -a __LIST < <(echo "${__MDIA[I]}")
 						case "${__LIST[1]}" in
 							o) ;;
 							*) continue;;
 						esac
-						if [[ -z "${__LIST[3]##-}" ]]; then
+						if [[ -z "${__LIST[3]##-}"  ]] \
+						|| [[ -z "${__LIST[13]##-}" ]] \
+						|| [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
 							continue
 						fi
-						if [[ -z "${__LIST[13]##-}" ]]; then
-							continue
-						fi
-						# -----------------------------------------------------
-						if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
+						if ! echo "$((++__RNUM))" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
 							continue
 						fi
 						# --- start -------------------------------------------
@@ -246,6 +263,15 @@ function funcMain() {
 									if [[ "${__RSLT}" -lt 0 ]]; then
 										funcGetWeb_contents "${__LIST[13]}" "${__LIST[9]}"
 									fi
+									if [[ -n "${__LIST[13]}" ]]; then
+										funcGetFileinfo __RETN "${__LIST[13]}"			# iso_path
+										read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+										__ARRY=("${__ARRY[@]##-}")
+#										__LIST[13]="${__ARRY[0]:-}"						# iso_path
+										__LIST[14]="${__ARRY[1]:-}"						# iso_tstamp
+										__LIST[15]="${__ARRY[2]:-}"						# iso_size
+										__LIST[16]="${__ARRY[3]:-}"						# iso_volume
+									fi
 									;;
 								*  ) ;;
 							esac
@@ -254,8 +280,8 @@ function funcMain() {
 						if [[ -s "${__LIST[13]}" ]]; then
 							funcRemastering "${__LIST[@]}"
 							# --- new local remaster iso files ----------------
-							funcGetFileinfo "__RSLT" "${__LIST[17]##-}"
-							read -r -a __ARRY < <(echo "${__RSLT}")
+							funcGetFileinfo "__RETN" "${__LIST[17]##-}"
+							read -r -a __ARRY < <(echo "${__RETN}")
 #							__LIST[17]="${__ARRY[0]:--}"		# rmk_path
 							__LIST[18]="${__ARRY[1]:--}"		# rmk_tstamp
 							__LIST[19]="${__ARRY[2]:--}"		# rmk_size
@@ -268,10 +294,22 @@ function funcMain() {
 							__LIST[J]="${__LIST[J]// /%20}"	# space
 						done
 						# --- update media data record ------------------------
-						_LIST_MDIA[I]="${__LIST[*]}"
+						__MDIA[I]="${__LIST[*]}"
+						for J in "${!_LIST_MDIA[@]}"
+						do
+							read -r -a __ARRY < <(echo "${_LIST_MDIA[J]}")
+							if [[ "${__LIST[0]}" != "${__ARRY[0]}" ]] \
+							|| [[ "${__LIST[1]}" != "${__ARRY[1]}" ]] \
+							|| [[ "${__LIST[2]}" != "${__ARRY[2]}" ]] \
+							|| [[ "${__LIST[3]}" != "${__ARRY[3]}" ]]; then
+								continue
+							fi
+							_LIST_MDIA[J]="${__LIST[*]}"
+							break
+						done
 						# --- complete ----------------------------------------
 						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
-					done < <(echo -n "${__RSLT}")
+					done
 				done
 				funcPut_media_data
 				;;

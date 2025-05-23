@@ -937,12 +937,16 @@ function funcGetWeb_address() {
 		done
 		# ---------------------------------------------------------------------
 		case "${__CODE}" in				# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+			1??) ;;						# 1xx (Informational)
 			2??)						# 2xx (Successful)
 				IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
 				__PATH="$(printf "%s\n" "${__LIST[@]//%20/ }" | sed -ne 's%^.*<a href="'"${__MATC}"'/*">\(.*\)</a>.*$%\1%gp' | sort -rVu | head -n 1 || true)"
 				__PATH="${__PATH:+"${__DIRS%%/}/${__PATH%%/}${__FNAM:+/"${__FNAM##/}"}"}"
 				;;
-			*)	break;;
+			3??) ;;						# 3xx (Redirection)
+			4??) ;;						# 4xx (Client Error)
+			5??) ;;						# 5xx (Server Error)
+			*  ) ;;						# xxx (Unknown Code)
 		esac
 	done
 	# -------------------------------------------------------------------------
@@ -3019,54 +3023,14 @@ function funcRemastering() {
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$((__time_elapsed/86400))" "$((__time_elapsed%86400/3600))" "$((__time_elapsed%3600/60))" "$((__time_elapsed%60))" "elapsed" "${__TGET_LIST[13]##*/}" 1>&2
 }
 
-## --- remastering -------------------------------------------------------------
-#function funcRemastering() {
-#	declare -r    __COMD_TYPE="$1"		# command type
-#	shift
-#	declare -a    __TGET_LIST=("$@")		# target data
-#	declare -i    __IDNO=0				# id number (1..)
-#	declare       _COLR=""				# message color
-#	declare       __MESG=""				# message text
-#	declare       __WORK=""				# work variables
-#	declare -a    _LIST=()				# work variables
-#	declare -i    I=0					# work variables
-#
-#	for I in "${!__TGET_LIST[@]}"
-#	do
-#		read -r -a _LIST < <(echo "${__TGET_LIST[I]}")
-#		# --- remastering -----------------------------------------------------
-#		case "${__COMD_TYPE}" in
-#			create|update)
-#				if [[ -n "${_LIST[23]##-}" ]] && [[ -n "${_LIST[24]##-}" ]]; then
-#					case "${__COMD_TYPE}" in
-#						create)			# --- force create --------------------
-#							;;
-#						update)			# --- update --------------------------
-#							;;
-#					esac
-#					funcRemastering "${_LIST[@]}"
-#					# --- new local remaster iso files ------------------------
-#					__WORK="$(funcGetFileinfo "${_LIST[17]##-}")"
-#					read -r -a __ARRY < <(echo "${__WORK}")
-##					_LIST[17]="${__ARRY[0]:--}"		# rmk_path
-#					_LIST[18]="${__ARRY[1]:--}"		# rmk_tstamp
-#					_LIST[19]="${__ARRY[2]:--}"		# rmk_size
-#					_LIST[20]="${__ARRY[3]:--}"		# rmk_volume
-#				fi
-#				;;
-#			*) ;;
-#		esac
-#		# --- update media data record ----------------
-#		__TGET_LIST[I]="${_LIST[*]}"
-#	done
-#	funcPut_media_data
-#}
-#
 # --- print out of menu -------------------------------------------------------
 function funcPrint_menu() {
 	declare -n    _RETN_VALU="$1"		# return value
 	declare -r    __COMD_TYPE="$2"		# command type
-	declare -a    __TGET_LIST=("${@:3}") # target data
+	declare -r    __TGET_RANG="$3"		# target range
+	declare -a    __TGET_LIST=("${@:4}") # target data
+	declare       __RANG=""				# range
+#	declare -i    __RNUM=0				# record number
 	declare -i    __IDNO=0				# id number (1..)
 	declare       __CLR0=""				# message color (line)
 	declare       __CLR1=""				# message color (word)
@@ -3084,6 +3048,11 @@ function funcPrint_menu() {
 	declare -i    I=0					# work variables
 	declare -i    J=0					# work variables
 
+	case "${__TGET_RANG,,}" in
+		a|all) __RANG="$(eval "echo {1..${#__TGET_LIST[@]}}")";;
+		*    ) __RANG="${__TGET_RANG}";;
+	esac
+#	__RNUM=0
 	for I in "${!__TGET_LIST[@]}"
 	do
 		read -r -a __LIST < <(echo "${__TGET_LIST[I]}")
@@ -3093,6 +3062,9 @@ function funcPrint_menu() {
 			__LIST[J]="${__LIST[J]##-}"		# empty
 #			__LIST[J]="${__LIST[J]//%20/ }"	# space
 		done
+#		if ! echo "$((++__RNUM))" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
+#			continue
+#		fi
 		case "${__COMD_TYPE}" in
 			list)
 				case "${__LIST[1]:--}" in
@@ -3108,7 +3080,7 @@ function funcPrint_menu() {
 						case "${__LIST[3]:--}" in
 							-) ;;
 							*)
-								__IDNO=1
+								__IDNO=0
 								printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#%-2.2s:%-42.42s:%-10.10s:%-10.10s:%-$((${_SIZE_COLS:-80}-70)).$((${_SIZE_COLS:-80}-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "ID" "Version" "ReleaseDay" "SupportEnd" "Memo" 1>&2
 								;;
 						esac
@@ -3124,6 +3096,10 @@ function funcPrint_menu() {
 				fi
 				;;
 		esac
+		((++__IDNO))
+		if ! echo "${__IDNO}" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
+			continue
+		fi
 		# --- web original iso file -------------------------------------------
 		__RETN=""
 		__MESG=""											# contents
@@ -3232,7 +3208,7 @@ function funcPrint_menu() {
 		esac
 		__MESG="${__MESG//%20/ }"
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#${__CLR0}%2d:%-42.42s:%-10.10s:%-10.10s:${__CLR1}%-$((_SIZE_COLS-70)).$((_SIZE_COLS-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "${__IDNO}" "${__LIST[13]##*/}" "${__LIST[10]:+"${__LIST[10]::10}"}${__LIST[14]:-"${__LIST[6]::10}"}" "${__LIST[7]::10}" "${__MESG:-"${__LIST[23]##*/}"}" 1>&2
-		((__IDNO+=1))
+#		((__IDNO+=1))
 		# --- update media data record ----------------------------------------
 		for J in "${!__LIST[@]}"
 		do
@@ -3333,6 +3309,9 @@ function funcMain() {
 	declare       __TGET=""				# target
 	declare       __RANG=""				# range
 	declare       __RSLT=""				# result
+	declare       __RETN=""				# return value
+	declare -a    __MDIA=()				# selected media list by type
+	declare -i    __RNUM=0				# record number
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
@@ -3404,29 +3383,41 @@ function funcMain() {
 					__RANG=""
 					while [[ -n "${1:-}" ]]
 					do
-						case "${1:-}" in
-							a|all                           ) _RANG="*"; shift; break;;
-							[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) _RANG="${_RANG:+"${_RANG}\|"}$1"; shift;;
+						case "${1,,}" in
+							a|all                           ) __RANG="all"; shift; break;;
+							[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) __RANG="${__RANG:+"${__RANG} "}$1"; shift;;
 							*                               ) break;;
 						esac
 					done
-					IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=="'"${__TGET}"'" {print $0;}' || true)
-					funcPrint_menu "__RSLT" "create" "${__LIST[@]}"
-#					IFS= mapfile -d $'\n' -t __LIST < <(printf "%s\n" "${__RSLT[@]}" || true)
-					while read -r -a __LIST
+					# --- selection by media type -----------------------------
+					funcPrint_menu "__RSLT" "create" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
+					IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${__RSLT[@]}" || true)
+					# --- select by input value -------------------------------
+					if [[ -z "${__RANG:-}" ]]; then
+						read -r -p "enter the number to create:" __RANG
+					fi
+					if [[ -z "${__RANG:-}" ]]; then
+						continue
+					fi
+					case "${__RANG,,}" in
+						a|all) __RANG="$(eval "echo {1..${#__MDIA[@]}}")";;
+						*    ) ;;
+					esac
+					# --- main loop -------------------------------------------
+					__RNUM=0
+					for I in "${!__MDIA[@]}"
 					do
+						read -r -a __LIST < <(echo "${__MDIA[I]}")
 						case "${__LIST[1]}" in
 							o) ;;
 							*) continue;;
 						esac
-						if [[ -z "${__LIST[3]##-}" ]]; then
+						if [[ -z "${__LIST[3]##-}"  ]] \
+						|| [[ -z "${__LIST[13]##-}" ]] \
+						|| [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
 							continue
 						fi
-						if [[ -z "${__LIST[13]##-}" ]]; then
-							continue
-						fi
-						# -----------------------------------------------------
-						if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
+						if ! echo "$((++__RNUM))" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
 							continue
 						fi
 						# --- start -------------------------------------------
@@ -3450,6 +3441,15 @@ function funcMain() {
 									if [[ "${__RSLT}" -lt 0 ]]; then
 										funcGetWeb_contents "${__LIST[13]}" "${__LIST[9]}"
 									fi
+									if [[ -n "${__LIST[13]}" ]]; then
+										funcGetFileinfo __RETN "${__LIST[13]}"			# iso_path
+										read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+										__ARRY=("${__ARRY[@]##-}")
+#										__LIST[13]="${__ARRY[0]:-}"						# iso_path
+										__LIST[14]="${__ARRY[1]:-}"						# iso_tstamp
+										__LIST[15]="${__ARRY[2]:-}"						# iso_size
+										__LIST[16]="${__ARRY[3]:-}"						# iso_volume
+									fi
 									;;
 								*  ) ;;
 							esac
@@ -3458,8 +3458,8 @@ function funcMain() {
 						if [[ -s "${__LIST[13]}" ]]; then
 							funcRemastering "${__LIST[@]}"
 							# --- new local remaster iso files ----------------
-							funcGetFileinfo "__RSLT" "${__LIST[17]##-}"
-							read -r -a __ARRY < <(echo "${__RSLT}")
+							funcGetFileinfo "__RETN" "${__LIST[17]##-}"
+							read -r -a __ARRY < <(echo "${__RETN}")
 #							__LIST[17]="${__ARRY[0]:--}"		# rmk_path
 							__LIST[18]="${__ARRY[1]:--}"		# rmk_tstamp
 							__LIST[19]="${__ARRY[2]:--}"		# rmk_size
@@ -3472,10 +3472,22 @@ function funcMain() {
 							__LIST[J]="${__LIST[J]// /%20}"	# space
 						done
 						# --- update media data record ------------------------
-						_LIST_MDIA[I]="${__LIST[*]}"
+						__MDIA[I]="${__LIST[*]}"
+						for J in "${!_LIST_MDIA[@]}"
+						do
+							read -r -a __ARRY < <(echo "${_LIST_MDIA[J]}")
+							if [[ "${__LIST[0]}" != "${__ARRY[0]}" ]] \
+							|| [[ "${__LIST[1]}" != "${__ARRY[1]}" ]] \
+							|| [[ "${__LIST[2]}" != "${__ARRY[2]}" ]] \
+							|| [[ "${__LIST[3]}" != "${__ARRY[3]}" ]]; then
+								continue
+							fi
+							_LIST_MDIA[J]="${__LIST[*]}"
+							break
+						done
 						# --- complete ----------------------------------------
 						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
-					done < <(echo -n "${__RSLT}")
+					done
 				done
 				funcPut_media_data
 				;;

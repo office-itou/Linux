@@ -102,7 +102,7 @@ function funcInitialization() {
 }
 
 # --- debug out parameter -----------------------------------------------------
-funcDebug_parameter() {
+function funcDebug_parameter() {
 	declare       _VARS_CHAR="_"		# variable initial letter
 	declare       _VARS_NAME=""			#          name
 	declare       _VARS_VALU=""			#          value

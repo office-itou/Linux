@@ -151,12 +151,16 @@ function funcGetWeb_address() {
 		done
 		# ---------------------------------------------------------------------
 		case "${__CODE}" in				# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+			1??) ;;						# 1xx (Informational)
 			2??)						# 2xx (Successful)
 				IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
 				__PATH="$(printf "%s\n" "${__LIST[@]//%20/ }" | sed -ne 's%^.*<a href="'"${__MATC}"'/*">\(.*\)</a>.*$%\1%gp' | sort -rVu | head -n 1 || true)"
 				__PATH="${__PATH:+"${__DIRS%%/}/${__PATH%%/}${__FNAM:+/"${__FNAM##/}"}"}"
 				;;
-			*)	break;;
+			3??) ;;						# 3xx (Redirection)
+			4??) ;;						# 4xx (Client Error)
+			5??) ;;						# 5xx (Server Error)
+			*  ) ;;						# xxx (Unknown Code)
 		esac
 	done
 	# -------------------------------------------------------------------------
