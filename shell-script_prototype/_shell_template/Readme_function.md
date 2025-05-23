@@ -22,7 +22,7 @@ funcTrap
   
 | i/o | value  |      explanation      |
 | :-: | :----: | :-------------------- |
-| inp |   $1   | unused                |
+| inp |        | unused                |
 | out | stdout | unused                |
 | ret |        | unused                |
   
