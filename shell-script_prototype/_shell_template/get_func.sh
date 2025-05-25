@@ -49,18 +49,23 @@ function fnTableHeader() {
 		### **$1**  
 		  
 _EOT_
-	__ARRY=("$(fnCenter "97" "shell file name")" "$(fnCenter "97" "function name")" "$(fnCenter "97" "explanation")")
-	printf "| %-97s | %-97s | %-97s |\n" "${__ARRY[@]}"
-	__ARRY=(":$(fnString "$((97-1))" "-")" ":$(fnString "$((97-1))" "-")" ":$(fnString "$((97-1))" "-")")
-	printf "| %-97s | %-97s | %-97s |\n" "${__ARRY[@]}"
+	__ARRY=()
+	__ARRY+=("$(fnCenter  "97" "shell file name")")
+	__ARRY+=("$(fnCenter "117" "function name")")
+	__ARRY+=("$(fnCenter  "77" "explanation")")
+	printf "| %-97s | %-117s | %-77s |\n" "${__ARRY[@]}"
+	__ARRY=()
+	__ARRY+=(":$(fnString "$(( 97-1))" "-")")
+	__ARRY+=(":$(fnString "$((117-1))" "-")")
+	__ARRY+=(":$(fnString "$(( 77-1))" "-")")
+	printf "| %-97s | %-117s | %-77s |\n" "${__ARRY[@]}"
 }
 
-declare -a    __PAGE=()
 declare -a    __TBLE=()
 declare -a    __DTAL=()
 declare       __TYPE=""
 
-IFS= mapfile -d $'\n' -t __PAGE < <(
+IFS= mapfile -d $'\n' -t __TBLE < <(
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/{' -e 's/^ *//g' -e 's/^ \+$//g}' || true
 		# **function**  
 		  
@@ -68,19 +73,19 @@ IFS= mapfile -d $'\n' -t __PAGE < <(
 _EOT_
 )
 
-__TBLE=()
-
 IFS= mapfile -d $'\n' -t __DTAL < <(
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/{' -e 's/^ *//g' -e 's/^ \+$//g}' || true
 		## **explanation**  
 _EOT_
 )
-#__XCLD="$(printf "%q" '!@#$%^&*()+|~=\`[]{};'\'':",./<>?')"
-__XCLD='\!\@\#\$\%\^\&\*\(\)\+\|\~\=\\\`\[\]\{\}\;'\''\:\"\,\.\/\<\>\?'
 
+__SAME=""
 __DTAL=()
 while read -r __PATH
 do
+	if [[ "${__FILE:-}" != "${__PATH##*/}" ]]; then
+		__SAME=""
+	fi
 	__FILE="${__PATH##*/}"
 	case "${__FILE}" in
 		skel_*)
@@ -88,7 +93,7 @@ do
 				__TYPE="skeleton"
 				__WORK="$(fnTableHeader "${__TYPE}")"
 				IFS= mapfile -d $'\n' -t __ARRY < <(echo -n "${__WORK}")
-				__PAGE+=("${__ARRY[@]}")
+				__TBLE+=("${__ARRY[@]}")
 				IFS= mapfile -d $'\n' -t __DTAL < <(
 					cat <<- _EOT_ | sed -e '/^ [^ ]\+/{' -e 's/^ *//g' -e 's/^ \+$//g}' || true
 						  
@@ -102,7 +107,7 @@ _EOT_
 				__TYPE="template"
 				__WORK="$(fnTableHeader "${__TYPE}")"
 				IFS= mapfile -d $'\n' -t __ARRY < <(echo -n "${__WORK}")
-				__PAGE+=("${__ARRY[@]}")
+				__TBLE+=("${__ARRY[@]}")
 				IFS= mapfile -d $'\n' -t __DTAL < <(
 					cat <<- _EOT_ | sed -e '/^ [^ ]\+/{' -e 's/^ *//g' -e 's/^ \+$//g}' || true
 						  
@@ -138,13 +143,6 @@ _EOT_
 				__FUNC="${__FUNC%%(*}"
 				__FUNC="${__FUNC%% *}"
 				printf "%-50s: %-s\n" "${__FILE}" "${__FUNC}"
-				__TEXT="$(printf "%s\n" "${__LIST[@]}" | sed -ne 's/^#[ \t]*descript:[ \t]*\(.*\)$/\1/p')"
-				__LINK="$(echo -n "${__TEXT,,}" | awk -F '' '{gsub(/[\!\@\#\$\%\^\&\*\(\)\+\|\~\=\\\`\[\]\{\}\;'\''\:\"\,\.\/\<\>\?]/,""); print;}')"
-				__LINK="${__LINK// /-}"
-				if [[ -z "${__LINK}" ]]; then
-					__LINK="${__FUNC}"
-					continue
-				fi
 				# -------------------------------------------------------------
 				__OPTN=()
 				__TAIL=()
@@ -173,22 +171,44 @@ _EOT_
 					__WORK="${__WORK%% }"
 					__WORK="${__WORK//\$/\\\$}"
 				fi
-				__LINK="[${__FUNC}](#${__LINK})${__WORK:+" ${__WORK}"}"
-				__TBLE+=("$(printf "| %-97s | %-97s | %-97s |" "[${__FILE}](./${__FILE})" "${__LINK}" "${__TEXT}")")
+				__TEXT="$(printf "%s\n" "${__LIST[@]}" | sed -ne 's/^#[ \t]*descript:[ \t]*\(.*\)$/\1/p')"
+				__LINK="$(echo -n "${__TEXT,,}" | awk -F '' '{gsub(/[\!\@\#\$\%\^\&\*\(\)\+\|\~\=\\\`\[\]\{\}\;'\''\:\"\,\.\/\<\>\?]/,""); print;}')"
+				__LINK="${__LINK// /-}"
+				if [[ -z "${__LINK}" ]]; then
+					__LINK="${__FUNC}"
+				else
+					__LINK="[${__FUNC}](#${__LINK})${__WORK:+" ${__WORK}"}"
+				fi
+				if [[ -z "${__SAME:-}" ]]; then
+					__TBLE+=("$(printf "| %-97s | %-117s | %-77s |" "[${__FILE}](./${__FILE})" "${__LINK}" "${__TEXT}")")
+					__SAME="true"
+				else
+					__TBLE+=("$(printf "| %-97s | %-117s | %-77s |" "" "${__LINK}" "${__TEXT}")")
+				fi
 				IFS= mapfile -d $'\n' -t __ARRY < <(
 					cat <<- _EOT_ | sed -e '/^ [^ ]\+/{' -e 's/^ *//g' -e 's/^ \+$//g}' || true
 						  
-						#### ${__TEXT}  
+						* * *
 						  
-						${__FUNC}${__WORK:+" ${__WORK}"}  
+						#### ${__TEXT:-"no items"}  
+						  
+						*${__FUNC}${__WORK:+" ${__WORK}"}*  
 						  
 _EOT_
 				)
 				__DTAL+=("${__ARRY[@]}")
-				__ARRY=("$(fnCenter "6" "i/o")" "$(fnCenter "6" "value")" "$(fnCenter "22" "explanation")" "$(fnCenter "42" "note")")
+				__ARRY=()
+				__ARRY+=("$(fnCenter "6" "i/o")")
+				__ARRY+=("$(fnCenter "6" "value")")
+				__ARRY+=("$(fnCenter "22" "explanation")")
+				__ARRY+=("$(fnCenter "42" "note")")
 				__WORK="$(printf "| %-6s | %-6s | %-22s | %-42s |" "${__ARRY[@]}")"
 				__DTAL+=("${__WORK}")
-				__ARRY=(":$(fnString "$((6-2))" "-"):" ":$(fnString "$((6-2))" "-"):" ":$(fnString "$((22-1))" "-")" ":$(fnString "$((42-1))" "-")")
+				__ARRY=()
+				__ARRY+=(":$(fnString "$((6-2))" "-"):")
+				__ARRY+=(":$(fnString "$((6-2))" "-"):")
+				__ARRY+=(":$(fnString "$((22-1))" "-")")
+				__ARRY+=(":$(fnString "$((42-1))" "-")")
 				__WORK="$(printf "| %-6s | %-6s | %-22s | %-42s |" "${__ARRY[@]}")"
 				__DTAL+=("${__WORK}")
 				__DTAL+=("${__TAIL[@]}")
@@ -201,12 +221,16 @@ _EOT_
 		esac
 	done < "${__PATH}"
 	if [[ -z "${__FUNC}" ]] ;then
-		__TBLE+=("$(printf "| %-97s | %-97s | %-97s |\n" "[${__FILE}](./${__FILE})" "" "")")
+		if [[ -z "${__SAME:-}" ]]; then
+			__TBLE+=("$(printf "| %-97s | %-117s | %-77s |\n" "[${__FILE}](./${__FILE})" "" "")")
+			__SAME="true"
+		else
+			__TBLE+=("$(printf "| %-97s | %-117s | %-77s |\n" "" "" "")")
+		fi
 	fi
 done < <(find "${1:?}" -maxdepth 1 \( -name 'skel_*.sh' -o -name 'tmpl_*.sh' \) -type f | sort -V || true)
 
 {
-	printf "%s\n" "${__PAGE[@]}"
 	printf "%s\n" "${__TBLE[@]}"
 	printf "%s\n" "${__DTAL[@]}"
 } > "${2:?}"
