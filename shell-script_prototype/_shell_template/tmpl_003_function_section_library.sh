@@ -86,12 +86,12 @@
 # -----------------------------------------------------------------------------
 # descript: is numeric
 #   input :   $1   : input value
-#   output: stdout : unused
-#   return:        :             : =0 (numer)
+#   output: stdout :             : =0 (numer)
 #     "   :        :             : !0 (not number)
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcIsNumeric() {
-	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]]
+function fnIsNumeric() {
+	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo -n "0" || echo -n "1"
 }
 
 # -----------------------------------------------------------------------------
@@ -102,8 +102,8 @@ function funcIsNumeric() {
 #   output: stdout : output
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcSubstr() {
-	echo "${1:${2:-0}:${3:-${#1}}}"
+function fnSubstr() {
+	echo -n "${1:$((${2:-1}-1)):${3:-${#1}}}"
 }
 
 # -----------------------------------------------------------------------------
@@ -113,7 +113,7 @@ function funcSubstr() {
 #   output: stdout : output
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcString() {
+function fnString() {
 	echo "" | IFS= awk '{s=sprintf("%'"$1"'s",""); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
 }
 
@@ -127,7 +127,7 @@ function funcString() {
 #     "   :        :        : emp (error)
 #   return:        : status
 # shellcheck disable=SC2317
-function funcDateDiff() {
+function fnDateDiff() {
 	declare       __TGET_DAT1="${1:?}"	# date1
 	declare       __TGET_DAT2="${2:?}"	# date2
 	declare -i    __RTCD=0				# return code
@@ -146,10 +146,10 @@ function funcDateDiff() {
 		printf "%20.20s: %s\n" "failed" "${__TGET_DAT2}"
 		exit "${__RTCD}"
 	fi
-	  if [[ "${__TGET_DAT1}" -eq "${__TGET_DAT2}" ]]; then echo "0"
-	elif [[ "${__TGET_DAT1}" -lt "${__TGET_DAT2}" ]]; then echo "1"
-	elif [[ "${__TGET_DAT1}" -gt "${__TGET_DAT2}" ]]; then echo "-1"
-	else                                                   echo ""
+	  if [[ "${__TGET_DAT1}" -eq "${__TGET_DAT2}" ]]; then echo -n "0"
+	elif [[ "${__TGET_DAT1}" -lt "${__TGET_DAT2}" ]]; then echo -n "1"
+	elif [[ "${__TGET_DAT1}" -gt "${__TGET_DAT2}" ]]; then echo -n "-1"
+	else                                                   echo -n ""
 	fi
 }
 
@@ -159,7 +159,7 @@ function funcDateDiff() {
 #   output: stdout : output
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcPrintf() {
+function fnPrintf() {
 	declare -r    __TRCE="$(set -o | grep "^xtrace\s*on$")"
 	set +x
 	# -------------------------------------------------------------------------

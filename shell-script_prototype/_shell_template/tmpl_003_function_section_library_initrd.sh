@@ -8,7 +8,7 @@
 #   output: stdout : unused
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcXcpio() {
+function fnXcpio() {
 	declare -r    __TGET_FILE="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:-}"	# destination directory
 	shift 2
@@ -38,7 +38,7 @@ function funcXcpio() {
 #   output: stdout : result
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcReadhex() {
+function fnReadhex() {
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count="${3:?}" 2> /dev/null | LANG=C grep -E "^[0-9A-Fa-f]{$3}\$"
 }
@@ -50,7 +50,7 @@ function funcReadhex() {
 #   output: stdout : unused
 #   return:        : status
 # shellcheck disable=SC2317
-function funcCheckzero() {
+function fnCheckzero() {
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
 }
@@ -62,7 +62,7 @@ function funcCheckzero() {
 #   output: stdout : unused
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcSplit_initramfs() {
+function fnSplit_initramfs() {
 	declare -r    __TGET_FILE="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:-}"	# destination directory
 	declare -r -a __OPTS=("--preserve-modification-time" "--no-absolute-filenames" "--quiet")
@@ -81,20 +81,20 @@ function funcSplit_initramfs() {
 		while true
 		do
 			# shellcheck disable=SC2310
-			if funcCheckzero "${__TGET_FILE}" "${__PEND}"; then
+			if fnCheckzero "${__TGET_FILE}" "${__PEND}"; then
 				__PEND=$((__PEND + 4))
 				# shellcheck disable=SC2310
-				while funcCheckzero "${__TGET_FILE}" "${__PEND}"
+				while fnCheckzero "${__TGET_FILE}" "${__PEND}"
 				do
 					__PEND=$((__PEND + 4))
 				done
 				break
 			fi
 			# shellcheck disable=SC2310
-			__MGIC="$(funcReadhex "${__TGET_FILE}" "${__PEND}" "6")" || break
+			__MGIC="$(fnReadhex "${__TGET_FILE}" "${__PEND}" "6")" || break
 			test "${__MGIC}" = "070701" || test "${__MGIC}" = "070702" || break
-			__NSIZ=0x$(funcReadhex "${__TGET_FILE}" "$((__PEND + 94))" "8")
-			__FSIZ=0x$(funcReadhex "${__TGET_FILE}" "$((__PEND + 54))" "8")
+			__NSIZ=0x$(fnReadhex "${__TGET_FILE}" "$((__PEND + 94))" "8")
+			__FSIZ=0x$(fnReadhex "${__TGET_FILE}" "$((__PEND + 54))" "8")
 			__PEND=$((__PEND + 110))
 			__PEND=$(((__PEND + __NSIZ + 3) & ~3))
 			__PEND=$(((__PEND + __FSIZ + 3) & ~3))
@@ -124,9 +124,9 @@ function funcSplit_initramfs() {
 		__SARC="${TMPDIR:-/tmp}/${FUNCNAME[0]}"
 		mkdir -p "${__SARC%/*}"
 		dd if="${__TGET_FILE}" skip="${__PEND}" iflag=skip_bytes 2> /dev/null > "${__SARC}"
-		funcXcpio "${__SARC}" "${__DIRS_DEST:+${__DIRS_DEST}/main}" -i "${__OPTS[@]}"
+		fnXcpio "${__SARC}" "${__DIRS_DEST:+${__DIRS_DEST}/main}" -i "${__OPTS[@]}"
 		rm -f "${__SARC:?}"
 	else
-		funcXcpio "${__TGET_FILE}" "${__DIRS_DEST}" -i "${__OPTS[@]}"
+		fnXcpio "${__TGET_FILE}" "${__DIRS_DEST}" -i "${__OPTS[@]}"
 	fi
 }

@@ -47,7 +47,7 @@
 #   output: stdout : unused
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcTrap() {
+function fnTrap() {
 	declare       __PATH=""				# full path
 	declare -i    I=0
 	# --- unmount -------------------------------------------------------------
@@ -75,4 +75,4 @@ function funcTrap() {
 	fi
 }
 
-	trap funcTrap EXIT
+	trap fnTrap EXIT

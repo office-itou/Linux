@@ -7,7 +7,7 @@
 #   output: stdout : unused
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcUnit_conversion() {
+function fnUnit_conversion() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -r -a __UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	declare -i    __CALC=0
@@ -47,7 +47,7 @@ function funcUnit_conversion() {
 #   output: stdout : unused
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcGetVolID() {
+function fnGetVolID() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __VLID=""				# volume id
 	declare       __WORK=""				# work variables
@@ -74,7 +74,7 @@ function funcGetVolID() {
 #   output: stdout : unused
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcGetFileinfo() {
+function fnGetFileinfo() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __DIRS=""				# directory
 	declare       __FNAM=""				# file name
@@ -91,7 +91,7 @@ function funcGetFileinfo() {
 		__WORK="$(LANG=C find "${__DIRS:-.}" -name "${__FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%TS%Tz %s")"
 		if [[ -n "${__WORK}" ]]; then
 			read -r -a __ARRY < <(echo "${__WORK}")
-			funcGetVolID __RSLT "${__ARRY[0]}"
+			fnGetVolID __RSLT "${__ARRY[0]}"
 			__VLID="${__RSLT#\'}"
 			__VLID="${__VLID%\'}"
 			__VLID="${__VLID:--}"
@@ -107,7 +107,7 @@ function funcGetFileinfo() {
 #   output: stdout : output
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcDistro2efi() {
+function fnDistro2efi() {
 	declare       __WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	case "${1:?}" in

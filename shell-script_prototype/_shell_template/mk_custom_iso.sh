@@ -60,10 +60,16 @@
 	declare -a    _LIST_RMOV=()			# list remove directory / file
 	              _LIST_RMOV+=("${_DIRS_TEMP:?}")
 
+# -----------------------------------------------------------------------------
+# descript: trap
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcTrap() {
+function fnTrap() {
 	declare       __PATH=""				# full path
 	declare -i    I=0
+	# --- unmount -------------------------------------------------------------
 	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
 	do
 		__PATH="${_LIST_RMOV[I]}"
@@ -74,6 +80,7 @@ function funcTrap() {
 			umount --quiet --lazy  --recursive "${__PATH}" || true
 		fi
 	done
+	# --- remove temporary ----------------------------------------------------
 	if [[ -e "${_DIRS_TEMP:?}" ]]; then
 		printf "%s: \"%s\"\n" "remove" "${_DIRS_TEMP}" 1>&2
 		while read -r __PATH
@@ -87,7 +94,7 @@ function funcTrap() {
 	fi
 }
 
-	trap funcTrap EXIT
+	trap fnTrap EXIT
 
 	# -------------------------------------------------------------------------
 	declare       _CODE_NAME=""
@@ -338,26 +345,51 @@ function funcTrap() {
 	declare -r    _TEXT_BR_WHITE="${_CODE_ESCP}[97m"			# text white
 	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			# 
 
-# --- is numeric --------------------------------------------------------------
-#function funcIsNumeric() {
-#	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
-#}
-
-# --- substr ------------------------------------------------------------------
-#function funcSubstr() {
-#	echo "${1:${2:-0}:${3:-${#1}}}"
-#}
-
-# --- string output -----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: is numeric
+#   input :   $1   : input value
+#   output: stdout : unused
+#   return:        :             : =0 (numer)
+#     "   :        :             : !0 (not number)
 # shellcheck disable=SC2317
-function funcString() {
-#	printf "%${1:-"${_SIZE_COLS}"}s" "" | tr ' ' "${2:- }"
-	echo "" | IFS= awk '{s=sprintf("%'"$1"'s"," "); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+function fnIsNumeric() {
+	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]]
 }
 
-# --- date diff ---------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: substr
+#   input :   $1   : input value
+#   input :   $2   : starting position
+#   input :   $3   : number of characters
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcDateDiff() {
+function fnSubstr() {
+	echo "${1:${2:-0}:${3:-${#1}}}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: string output
+#   input :   $1   : number of characters
+#   input :   $2   : output character
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnString() {
+	echo "" | IFS= awk '{s=sprintf("%'"$1"'s",""); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+}
+
+# -----------------------------------------------------------------------------
+# descript: date diff
+#   input :   $1   : date 1
+#   input :   $2   : date 2
+#   output: stdout :        :   0 ($1 = $2)
+#     "   :        :        :   1 ($1 < $2)
+#     "   :        :        :  -1 ($1 > $2)
+#     "   :        :        : emp (error)
+#   return:        : status
+# shellcheck disable=SC2317
+function fnDateDiff() {
 	declare       __TGET_DAT1="${1:?}"	# date1
 	declare       __TGET_DAT2="${2:?}"	# date2
 	declare -i    __RTCD=0				# return code
@@ -383,9 +415,13 @@ function funcDateDiff() {
 	fi
 }
 
-# --- print with screen control -----------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: print with screen control
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcPrintf() {
+function fnPrintf() {
 	declare -r    __TRCE="$(set -o | grep "^xtrace\s*on$")"
 	set +x
 	# -------------------------------------------------------------------------
@@ -461,9 +497,13 @@ function funcPrintf() {
 #   b   | 172.16.0.0  - 172.31.255.255  | 255.255.0.0   - 255.255.255.255 (up to     65,534 devices can be connected)
 #   c   | 192.168.0.0 - 192.168.255.255 | 255.255.255.0 - 255.255.255.255 (up to        254 devices can be connected)
 
-# --- IPv4 netmask conversion -------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: IPv4 netmask conversion (netmask and cidr conversion)
+#   input :   $1   : input vale
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcIPv4GetNetmask() {
+function fnIPv4GetNetmask() {
 	declare -a    __OCTS=()				# octets
 	declare -i    __LOOP=0				# work variables
 	declare -i    __CALC=0				# "
@@ -507,9 +547,13 @@ function funcIPv4GetNetmask() {
 	fi
 }
 
-# --- IPv6 full address -------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: IPv6 full address
+#   input :   $1   : input vale
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcIPv6GetFullAddr() {
+function fnIPv6GetFullAddr() {
 	declare -r    __FSEP="${1//[^:]/}"
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
@@ -520,9 +564,13 @@ function funcIPv6GetFullAddr() {
 	printf ':%04x' "${__ARRY[@]/#/0x0}" | cut -c 2-
 }
 
-# --- IPv6 reverse address ----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: IPv6 reverse address
+#   input :   $1   : input vale
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcIPv6GetRevAddr() {
+function fnIPv6GetRevAddr() {
 	echo "${1//:/}" | \
 	    awk '{
 	        for(i=length();i>1;i--)              \
@@ -532,9 +580,14 @@ function funcIPv6GetRevAddr() {
 
 # === <media> =================================================================
 
-# --- unit conversion ---------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: unit conversion
+#   n-ref :   $1   : return value : value with units
+#   input :   $2   : input value
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcUnit_conversion() {
+function fnUnit_conversion() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -r -a __UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	declare -i    __CALC=0
@@ -567,9 +620,14 @@ function funcUnit_conversion() {
 	done
 }
 
-# --- get volume id -----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get volume id
+#   n-ref :   $1   : return value : volume id
+#   input :   $2   : input value
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcGetVolID() {
+function fnGetVolID() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __VLID=""				# volume id
 	declare       __WORK=""				# work variables
@@ -589,9 +647,14 @@ function funcGetVolID() {
 	__RETN_VALU="${__VLID:-}"
 }
 
-# --- get file information ----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get file information
+#   n-ref :   $1   : return value : path tmstamp size vol-id
+#   input :   $2   : input value
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcGetFileinfo() {
+function fnGetFileinfo() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __DIRS=""				# directory
 	declare       __FNAM=""				# file name
@@ -608,7 +671,7 @@ function funcGetFileinfo() {
 		__WORK="$(LANG=C find "${__DIRS:-.}" -name "${__FNAM}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%TS%Tz %s")"
 		if [[ -n "${__WORK}" ]]; then
 			read -r -a __ARRY < <(echo "${__WORK}")
-			funcGetVolID __RSLT "${__ARRY[0]}"
+			fnGetVolID __RSLT "${__ARRY[0]}"
 			__VLID="${__RSLT#\'}"
 			__VLID="${__VLID%\'}"
 			__VLID="${__VLID:--}"
@@ -618,9 +681,13 @@ function funcGetFileinfo() {
 	__RETN_VALU="${__ARRY[*]}"
 }
 
-# --- distro to efi image file name -------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: distro to efi image file name
+#   input :   $1   : input value
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcDistro2efi() {
+function fnDistro2efi() {
 	declare       __WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	case "${1:?}" in
@@ -639,9 +706,15 @@ function funcDistro2efi() {
 
 # === <initrd> ================================================================
 
-# --- Extract a compressed cpio _TGET_FILE ------------------------------------
+# -----------------------------------------------------------------------------
+# descript: extract a compressed cpio
+#   input :   $1   : target file
+#   input :   $2   : destination directory
+#   input :   $@   : cpio options
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
-funcXcpio() {
+function fnXcpio() {
 	declare -r    __TGET_FILE="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:-}"	# destination directory
 	shift 2
@@ -663,23 +736,39 @@ funcXcpio() {
 	)
 }
 
-# --- Read bytes out of a file, checking that they are valid hex digits -------
+# -----------------------------------------------------------------------------
+# descript: read bytes out of a file, checking that they are valid hex digits
+#   input :   $1   : target file
+#   input :   $2   : skip bytes
+#   input :   $3   : count bytes
+#   output: stdout : result
+#   return:        : unused
 # shellcheck disable=SC2317
-funcReadhex() {
+function fnReadhex() {
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count="${3:?}" 2> /dev/null | LANG=C grep -E "^[0-9A-Fa-f]{$3}\$"
 }
 
-# --- Check for a zero byte in a file -----------------------------------------
+# -----------------------------------------------------------------------------
+# descript: check for a zero byte in a file
+#   input :   $1   : target file
+#   input :   $2   : skip bytes
+#   output: stdout : unused
+#   return:        : status
 # shellcheck disable=SC2317
-funcCheckzero() {
+function fnCheckzero() {
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
 }
 
-# --- Split an initramfs into __TGET_FILEs and call funcXcpio on each ----------
+# -----------------------------------------------------------------------------
+# descript: split an initramfs into target files and call funcxcpio on each
+#   input :   $1   : target file
+#   input :   $2   : destination directory
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
-funcSplit_initramfs() {
+function fnSplit_initramfs() {
 	declare -r    __TGET_FILE="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:-}"	# destination directory
 	declare -r -a __OPTS=("--preserve-modification-time" "--no-absolute-filenames" "--quiet")
@@ -698,20 +787,20 @@ funcSplit_initramfs() {
 		while true
 		do
 			# shellcheck disable=SC2310
-			if funcCheckzero "${__TGET_FILE}" "${__PEND}"; then
+			if fnCheckzero "${__TGET_FILE}" "${__PEND}"; then
 				__PEND=$((__PEND + 4))
 				# shellcheck disable=SC2310
-				while funcCheckzero "${__TGET_FILE}" "${__PEND}"
+				while fnCheckzero "${__TGET_FILE}" "${__PEND}"
 				do
 					__PEND=$((__PEND + 4))
 				done
 				break
 			fi
 			# shellcheck disable=SC2310
-			__MGIC="$(funcReadhex "${__TGET_FILE}" "${__PEND}" "6")" || break
+			__MGIC="$(fnReadhex "${__TGET_FILE}" "${__PEND}" "6")" || break
 			test "${__MGIC}" = "070701" || test "${__MGIC}" = "070702" || break
-			__NSIZ=0x$(funcReadhex "${__TGET_FILE}" "$((__PEND + 94))" "8")
-			__FSIZ=0x$(funcReadhex "${__TGET_FILE}" "$((__PEND + 54))" "8")
+			__NSIZ=0x$(fnReadhex "${__TGET_FILE}" "$((__PEND + 94))" "8")
+			__FSIZ=0x$(fnReadhex "${__TGET_FILE}" "$((__PEND + 54))" "8")
 			__PEND=$((__PEND + 110))
 			__PEND=$(((__PEND + __NSIZ + 3) & ~3))
 			__PEND=$(((__PEND + __FSIZ + 3) & ~3))
@@ -741,18 +830,24 @@ funcSplit_initramfs() {
 		__SARC="${TMPDIR:-/tmp}/${FUNCNAME[0]}"
 		mkdir -p "${__SARC%/*}"
 		dd if="${__TGET_FILE}" skip="${__PEND}" iflag=skip_bytes 2> /dev/null > "${__SARC}"
-		funcXcpio "${__SARC}" "${__DIRS_DEST:+${__DIRS_DEST}/main}" -i "${__OPTS[@]}"
+		fnXcpio "${__SARC}" "${__DIRS_DEST:+${__DIRS_DEST}/main}" -i "${__OPTS[@]}"
 		rm -f "${__SARC:?}"
 	else
-		funcXcpio "${__TGET_FILE}" "${__DIRS_DEST}" -i "${__OPTS[@]}"
+		fnXcpio "${__TGET_FILE}" "${__DIRS_DEST}" -i "${__OPTS[@]}"
 	fi
 }
 
 # === <mkiso> =================================================================
 
-# --- create iso image --------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create iso image
+#   input :   $1   : target directory
+#   input :   $2   : output path
+#   input :   $@   : xorrisofs options
+#   output: stdout : message
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcCreate_iso() {
+function fnCreate_iso() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_OUTP="${2:?}"	# output path
 	declare -r -a __OPTN_XORR=("${@:3}") # xorrisofs options
@@ -760,14 +855,12 @@ function funcCreate_iso() {
 	declare       __PATH=""				# full path
 	              __PATH="$(mktemp -q "${TMPDIR:-/tmp}/${__PATH_OUTP##*/}.XXXXXX")"
 	readonly      __PATH
-
 	# --- constant for control code -------------------------------------------
 	if [[ -z "${_CODE_ESCP+true}" ]]; then
 		declare   _CODE_ESCP=""
 		          _CODE_ESCP="$(printf '\033')"
 		readonly  _CODE_ESCP
 	fi
-
 	# --- create iso image ----------------------------------------------------
 	pushd "${__DIRS_TGET}" > /dev/null || exit
 		if ! nice -n "${_NICE_VALU:-19}" xorrisofs "${__OPTN_XORR[@]}" -output "${__PATH}" . > /dev/null 2>&1; then
@@ -786,9 +879,14 @@ function funcCreate_iso() {
 
 # === <web_tools> =============================================================
 
-# --- get web contents --------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get web contents
+#   input :   $1   : output path
+#   input :   $2   : url
+#   output: stdout : message
+#   return:        : status
 # shellcheck disable=SC2317
-function funcGetWeb_contents() {
+function fnGetWeb_contents() {
 	declare -a    __OPTN=()				# options
 	declare -i    __RTCD=0				# return code
 	declare -a    __LIST=()				# data list
@@ -822,9 +920,14 @@ function funcGetWeb_contents() {
 	return "${__RTCD}"
 }
 
-# --- get web header ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get web header
+#   n-ref :   $1   : return value : path tmstamp size status contents
+#   input :   $2   : url
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcGetWeb_header() {
+function fnGetWeb_header() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -a    __OPTN=()				# options
 #	declare -i    __RTCD=0				# return code
@@ -873,9 +976,14 @@ function funcGetWeb_header() {
 #	return "${__RTCD}"
 }
 
-# --- get web address completion ----------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get web address completion
+#   n-ref :   $1   : return value : address completion path
+#   input :   $2   : input value
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcGetWeb_address() {
+function fnGetWeb_address() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
@@ -954,19 +1062,28 @@ function funcGetWeb_address() {
 #	return "${__RTCD}"
 }
 
-# --- get web information -----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get web information
+#   n-ref :   $1   : return value : path tmstamp size status contents
+#   input :   $2   : url
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcGetWeb_info() {
+function fnGetWeb_info() {
 #	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __WORK=""				# work variables
 
-	funcGetWeb_address "__WORK" "${2:?}"
-	funcGetWeb_header "${1}" "${__WORK}"
+	fnGetWeb_address "__WORK" "${2:?}"
+	fnGetWeb_header "${1}" "${__WORK}"
 }
 
-# --- get web status message --------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get web status message
+#   input :   $1   : input vale
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
-function funcGetWeb_status() {
+function fnGetWeb_status() {
 	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
 		100) echo -n "$1: Continue";;
 		101) echo -n "$1: Switching Protocols";;
@@ -1027,8 +1144,12 @@ function funcGetWeb_status() {
 
 # === <common> ================================================================
 
-# --- initialization ----------------------------------------------------------
-function funcInitialization() {
+# -----------------------------------------------------------------------------
+# descript: initialization
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
+function fnInitialization() {
 	declare       __PATH=""				# full path
 	declare       __WORK=""				# work variables
 	declare       __LINE=""				# work variable
@@ -1089,7 +1210,7 @@ function funcInitialization() {
 		fi
 	fi
 	_SRVR_CIDR="${_SRVR_CIDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[2];}' || true)"}"
-	_SRVR_MASK="${_SRVR_MASK:-"$(funcIPv4GetNetmask "${_SRVR_CIDR}")"}"
+	_SRVR_MASK="${_SRVR_MASK:-"$(fnIPv4GetNetmask "${_SRVR_CIDR}")"}"
 	_SRVR_GWAY="${_SRVR_GWAY:-"$(LANG=C ip -4 -brief route list match default | awk '{print $3;}' || true)"}"
 	if command -v resolvectl > /dev/null 2>&1; then
 		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/^Global:/             s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' || true)"}"
@@ -1106,7 +1227,7 @@ function funcInitialization() {
 	_NICS_MADR="${_NICS_MADR:-"${_SRVR_MADR}"}"
 	_IPV4_ADDR="${_IPV4_ADDR:-"${_SRVR_UADR}".1}"
 	_IPV4_CIDR="${_IPV4_CIDR:-"${_SRVR_CIDR}"}"
-	_IPV4_MASK="${_IPV4_MASK:-"$(funcIPv4GetNetmask "${_IPV4_CIDR}")"}"
+	_IPV4_MASK="${_IPV4_MASK:-"$(fnIPv4GetNetmask "${_IPV4_CIDR}")"}"
 	_IPV4_GWAY="${_IPV4_GWAY:-"${_SRVR_GWAY}"}"
 	_IPV4_NSVR="${_IPV4_NSVR:-"${_SRVR_NSVR}"}"
 	_IPV4_UADR="${_IPV4_UADR:-"${_SRVR_UADR}"}"
@@ -1353,11 +1474,15 @@ function funcInitialization() {
 	readonly      _MENU_UEFI
 
 	# --- get media data ------------------------------------------------------
-	funcGet_media_data
+	fnGet_media_data
 }
 
-# --- create common configuration file ----------------------------------------
-function funcCreate_conf() {
+# -----------------------------------------------------------------------------
+# descript: create common configuration file
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
+function fnCreate_conf() {
 	declare -r    __TMPL="${_PATH_CONF:?}.template"
 	declare       __RNAM=""				# rename path
 	declare       __PATH=""				# full path
@@ -1458,8 +1583,12 @@ function funcCreate_conf() {
 _EOT_
 }
 
-# --- get media data ----------------------------------------------------------
-function funcGet_media_data() {
+# -----------------------------------------------------------------------------
+# descript: get media data
+#   input :        : unused
+#   output: stdout : message
+#   return:        : unused
+function fnGet_media_data() {
 	declare       __PATH=""				# full path
 	declare       __LINE=""				# work variable
 
@@ -1503,8 +1632,12 @@ function funcGet_media_data() {
 	fi
 }
 
-# --- put media data ----------------------------------------------------------
-function funcPut_media_data() {
+# -----------------------------------------------------------------------------
+# descript: put media data
+#   input :        : unused
+#   output: stdout : message
+#   return:        : unused
+function fnPut_media_data() {
 	declare       __RNAM=""				# rename path
 	declare       __LINE=""				# work variable
 	declare -a    __LIST=()				# work variable
@@ -1554,8 +1687,13 @@ function funcPut_media_data() {
 	done > "${_PATH_MDIA:?}"
 }
 
-# --- create_directory --------------------------------------------------------
-function fncCreate_directory() {
+# -----------------------------------------------------------------------------
+# descript: create directory
+#   n-ref :   $1   : return value : options
+#   input :   $@   : input vale
+#   output: stdout : message
+#   return:        : unused
+function fnCreate_directory() {
 	declare -n    __NAME_REFR="${1:?}"	# name reference
 	shift
 	declare -r    __DATE="$(date +"%Y%m%d%H%M%S")"
@@ -1605,24 +1743,24 @@ function fncCreate_directory() {
 		# --- force parameter -------------------------------------------------
 		__BACK="${__LINK}.back.${__DATE}"
 		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
-			funcPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
+			fnPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
 			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- check symbolic link ---------------------------------------------
 		if [[ -h "${__LINK}" ]]; then
-			funcPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
+			fnPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
 			continue
 		fi
 		# --- check directory -------------------------------------------------
 		if [[ -d "${__LINK}/." ]]; then
-			funcPrintf "%20.20s: %s" "exist directory" "${__LINK}"
-			funcPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
+			fnPrintf "%20.20s: %s" "exist directory" "${__LINK}"
+			fnPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
 			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- create destination directory ------------------------------------
 		mkdir -p "${__LINK%/*}"
 		# --- create symbolic link --------------------------------------------
-		funcPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
+		fnPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
 		case "${__RTIV}" in
 			r) ln -sr "${__TGET}" "${__LINK}";;
 			*) ln -s  "${__TGET}" "${__LINK}";;
@@ -1653,24 +1791,24 @@ function fncCreate_directory() {
 		# --- force parameter -------------------------------------------------
 		__BACK="${__LINK}.back.${__DATE}"
 		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
-			funcPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
+			fnPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
 			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- check symbolic link ---------------------------------------------
 		if [[ -h "${__LINK}" ]]; then
-			funcPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
+			fnPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
 			continue
 		fi
 		# --- check directory -------------------------------------------------
 		if [[ -d "${__LINK}/." ]]; then
-			funcPrintf "%20.20s: %s" "exist directory" "${__LINK}"
-			funcPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
+			fnPrintf "%20.20s: %s" "exist directory" "${__LINK}"
+			fnPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
 			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- create destination directory ------------------------------------
 		mkdir -p "${__LINK%/*}"
 		# --- create symbolic link --------------------------------------------
-		funcPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
+		fnPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
 		ln -s "${__TGET}" "${__LINK}"
 	done
 }
@@ -1703,14 +1841,18 @@ function fncCreate_directory() {
 # 24: cfg_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 25: lnk_path      ( 85)   TEXT                        symlink   directory or file path
 
-# ----- create preseed.cfg ----------------------------------------------------
-function funcCreate_preseed() {
+# -----------------------------------------------------------------------------
+# descript: create preseed.cfg
+#   input :   $1   : input value
+#   output: stdout : message
+#   return:        : unused
+function fnCreate_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 	declare       __WORK=""				# work variables
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_SEDD}" "${__TGET_PATH}"
 
@@ -1779,14 +1921,18 @@ function funcCreate_preseed() {
 	chmod ugo-x "${__TGET_PATH}"
 }
 
-# ----- create nocloud --------------------------------------------------------
-function funcCreate_nocloud() {
+# -----------------------------------------------------------------------------
+# descript: create nocloud
+#   input :   $1   : input value
+#   output: stdout : message
+#   return:        : unused
+function fnCreate_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 #	declare       __WORK=""				# work variables
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_CLUD}" "${__TGET_PATH}"
 
@@ -1831,8 +1977,12 @@ function funcCreate_nocloud() {
 	chmod --recursive ugo-x "${__DIRS}"
 }
 
-# ----- create kickstart.cfg --------------------------------------------------
-function funcCreate_kickstart() {
+# -----------------------------------------------------------------------------
+# descript: create kickstart.cfg
+#   input :   $1   : input value
+#   output: stdout : message
+#   return:        : unused
+function fnCreate_kickstart() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 #	declare       __WORK=""				# work variables
@@ -1844,7 +1994,7 @@ function funcCreate_kickstart() {
 	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_KICK}" "${__TGET_PATH}"
 
@@ -1895,8 +2045,12 @@ function funcCreate_kickstart() {
 	chmod ugo-x "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 }
 
-# ----- create autoyast.xml ---------------------------------------------------
-function funcCreate_autoyast() {
+# -----------------------------------------------------------------------------
+# descript: create autoyast.xml
+#   input :   $1   : input value
+#   output: stdout : message
+#   return:        : unused
+function fnCreate_autoyast() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 #	declare       __WORK=""				# work variables
@@ -1904,7 +2058,7 @@ function funcCreate_autoyast() {
 	declare       __NUMS=""				# "            number
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_YAST}" "${__TGET_PATH}"
 
@@ -1954,8 +2108,13 @@ function funcCreate_autoyast() {
 	chmod ugo-x "${__TGET_PATH}"
 }
 
-# ----- create pre-configuration file templates -------------------------------
-function funcCreate_precon() {
+# -----------------------------------------------------------------------------
+# descript: create pre-configuration file templates
+#   n-ref :   $1   : return value : options
+#   input :   $@   : input value
+#   output: stdout : message
+#   return:        : unused
+function fnCreate_precon() {
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
 	declare -a    __OPTN=()				# option parameter
@@ -1986,7 +2145,7 @@ function funcCreate_precon() {
 	fi
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create pre-conf file" ""
+	fnPrintf "%20.20s: %s" "create pre-conf file" ""
 
 	# -------------------------------------------------------------------------
 	__LIST=()
@@ -2020,10 +2179,10 @@ function funcCreate_precon() {
 		__TYPE="${__PATH%/*}"
 		__TYPE="${__TYPE##*/}"
 		case "${__TYPE}" in
-			preseed  ) funcCreate_preseed   "${__PATH}";;
-			nocloud  ) funcCreate_nocloud   "${__PATH}/user-data";;
-			kickstart) funcCreate_kickstart "${__PATH}";;
-			autoyast ) funcCreate_autoyast  "${__PATH}";;
+			preseed  ) fnCreate_preseed   "${__PATH}";;
+			nocloud  ) fnCreate_nocloud   "${__PATH}/user-data";;
+			kickstart) fnCreate_kickstart "${__PATH}";;
+			autoyast ) fnCreate_autoyast  "${__PATH}";;
 			*)	;;
 		esac
 	done
@@ -2041,10 +2200,219 @@ function funcCreate_precon() {
 	# -------------------------------------------------------------------------
 }
 
+# === <interface> =============================================================
+
+# -----------------------------------------------------------------------------
+# descript: print out of menu
+#   n-ref :   $1   : return value : options
+#   input :   $2   : command type
+#   input :   $3   : target range
+#   input :   $@   : target data
+#   output: stdout : message
+#   return:        : unused
+function fnPrint_menu() {
+	declare -n    __RETN_VALU="$1"		# return value
+	declare -r    __COMD_TYPE="$2"		# command type
+	declare -r    __TGET_RANG="$3"		# target range
+	declare -a    __TGET_LIST=("${@:4}") # target data
+	declare       __RANG=""				# range
+	declare -i    __IDNO=0				# id number (1..)
+	declare       __CLR0=""				# message color (line)
+	declare       __CLR1=""				# message color (word)
+	declare       __MESG=""				# message text
+	declare       __RETN=""				# return value
+#	declare       __PATH=""				# full path
+	declare       __DIRS=""				# directory
+	declare       __FNAM=""				# file name
+	declare       __BASE=""				# base name
+	declare       __EXTN=""				# extension
+	declare       __SEED=""				# preseed
+	declare       __WORK=""				# work variables
+	declare -a    __ARRY=()				# work variables
+	declare -a    __LIST=()				# work variables
+	declare -i    I=0					# work variables
+	declare -i    J=0					# work variables
+
+	case "${__TGET_RANG,,}" in
+		a|all) __RANG="$(eval "echo {1..${#__TGET_LIST[@]}}")";;
+		*    ) __RANG="${__TGET_RANG}";;
+	esac
+	for I in "${!__TGET_LIST[@]}"
+	do
+		read -r -a __LIST < <(echo "${__TGET_LIST[I]}")
+#		__LIST=("${__LIST[@]##-}")
+		for J in "${!__LIST[@]}"
+		do
+			__LIST[J]="${__LIST[J]##-}"		# empty
+#			__LIST[J]="${__LIST[J]//%20/ }"	# space
+		done
+		case "${__COMD_TYPE}" in
+			list)
+				case "${__LIST[1]:--}" in
+					m) continue;;
+					*) ;;
+				esac
+				;;
+			*)
+				case "${__LIST[1]:--}" in
+					o) ;;
+					m)
+						printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "# ${_TEXT_GAP1:1:((${#_TEXT_GAP1}-4))} #" 1>&2
+						case "${__LIST[3]:--}" in
+							-) ;;
+							*)
+								__IDNO=0
+								printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#%-2.2s:%-42.42s:%-10.10s:%-10.10s:%-$((${_SIZE_COLS:-80}-70)).$((${_SIZE_COLS:-80}-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "ID" "Version" "ReleaseDay" "SupportEnd" "Memo" 1>&2
+								;;
+						esac
+						continue
+						;;
+					*) continue;;
+				esac
+				if [[ -z "${__LIST[3]}" ]]; then
+					continue
+				fi
+				if [[ -z "${__LIST[13]}" ]]; then
+					continue
+				fi
+				;;
+		esac
+		((++__IDNO))
+		if ! echo "${__IDNO}" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
+			continue
+		fi
+		# --- web original iso file -------------------------------------------
+		__RETN=""
+		__MESG=""											# contents
+		if [[ -n "${__LIST[8]}" ]]; then
+			fnGetWeb_info "__RETN" "${__LIST[8]}"			# web_regexp
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+			case "${__ARRY[3]}" in
+				200)
+					__LIST[9]="${__ARRY[0]:-}"				# web_path
+					__LIST[10]="${__ARRY[1]:-}"				# web_tstamp
+					__LIST[11]="${__ARRY[2]:-}"				# web_size
+					__LIST[12]="${__ARRY[3]:-}"				# web_status
+					case "${__LIST[9]##*/}" in
+						mini.iso) ;;
+						*       )
+							__FNAM="${__LIST[9]##*/}"
+							__WORK="${__FNAM%.*}"
+							__EXTN="${__FNAM#"${__WORK}"}"
+							__BASE="${__FNAM%"${__EXTN}"}"
+															# iso_path
+							__LIST[13]="${__LIST[13]%/*}/${__FNAM}"
+															# rmk_path
+							if [[ -n "${__LIST[17]##-}" ]]; then
+								__SEED="${__LIST[17]##*_}"
+								__WORK="${__SEED%.*}"
+								__WORK="${__SEED#"${__WORK}"}"
+								__SEED="${__SEED%"${__WORK}"}"
+								__LIST[17]="${__LIST[17]%/*}/${__BASE}${__SEED:+"_${__SEED}"}${__EXTN}"
+							fi
+							;;
+					esac
+					;;
+				*) ;;
+			esac
+			__MESG="${__ARRY[4]:--}"		# contents
+		fi
+		# --- local original iso file -----------------------------------------
+		if [[ -n "${__LIST[13]}" ]]; then
+			fnGetFileinfo __RETN "${__LIST[13]}"			# iso_path
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+#			__LIST[13]="${__ARRY[0]:-}"						# iso_path
+			__LIST[14]="${__ARRY[1]:-}"						# iso_tstamp
+			__LIST[15]="${__ARRY[2]:-}"						# iso_size
+			__LIST[16]="${__ARRY[3]:-}"						# iso_volume
+		fi
+		# --- local remastering iso file --------------------------------------
+		if [[ -n "${__LIST[17]}" ]]; then
+			fnGetFileinfo __RETN "${__LIST[17]}"			# rmk_path
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+#			__LIST[17]="${__ARRY[0]:-}"						# rmk_path
+			__LIST[18]="${__ARRY[1]:-}"						# rmk_tstamp
+			__LIST[19]="${__ARRY[2]:-}"						# rmk_size
+			__LIST[20]="${__ARRY[3]:-}"						# rmk_volume
+		fi
+		# --- config file  ----------------------------------------------------
+		if [[ -n "${__LIST[23]}" ]]; then
+			if [[ -d "${__LIST[23]}" ]]; then				# cfg_path: cloud-init
+				fnGetFileinfo __RETN "${__LIST[23]}/user-data"
+			else											# cfg_path
+				fnGetFileinfo __RETN "${__LIST[23]}"
+			fi
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+#			__LIST[23]="${__ARRY[0]:-}"						# cfg_path
+			__LIST[24]="${__ARRY[1]:-}"						# cfg_tstamp
+		fi
+		# --- print out -------------------------------------------------------
+		# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+		# 1xx (Informational): The request was received, continuing process
+		# 2xx (Successful)   : The request was successfully received, understood, and accepted
+		# 3xx (Redirection)  : Further action needs to be taken in order to complete the request
+		# 4xx (Client Error) : The request contains bad syntax or cannot be fulfilled
+		# 5xx (Server Error) : The server failed to fulfill an apparently valid request
+		__MESG=""
+		__CLR0=""
+		__CLR1=""
+		if [[ -z "${__LIST[8]##-}" ]] && [[ -z "${__LIST[14]##-}" ]]; then
+			__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[33m"}"		# unreleased
+		elif [[ -z "${__LIST[14]##-}" ]]; then
+			__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[46m"}"		# new file
+		else
+			if [[ -n "${__LIST[18]##-}" ]]; then
+				__WORK="$(fnDateDiff "${__LIST[18]}" "${__LIST[14]}")"
+				if [[ "${__WORK}" -gt 0 ]]; then
+					__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}"	# remaster < local
+				fi
+			fi
+			if [[ -n "${__LIST[10]##-}" ]]; then
+				__WORK="$(fnDateDiff "${__LIST[10]}" "${__LIST[14]}")"
+				if [[ "${__WORK}" -lt 0 ]]; then
+					__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[92m"}"	# web > local
+				fi
+			fi
+		fi
+		case "${__LIST[12]:--}" in
+			-  ) ;;
+			200) ;;
+			1??) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
+			2??) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
+			3??) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
+			4??) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
+			5??) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
+			*  ) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
+		esac
+		__MESG="${__MESG//%20/ }"
+		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#${__CLR0}%2d:%-42.42s:%-10.10s:%-10.10s:${__CLR1}%-$((_SIZE_COLS-70)).$((_SIZE_COLS-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "${__IDNO}" "${__LIST[13]##*/}" "${__LIST[10]:+"${__LIST[10]::10}"}${__LIST[14]:-"${__LIST[6]::10}"}" "${__LIST[7]::10}" "${__MESG:-"${__LIST[23]##*/}"}" 1>&2
+#		((__IDNO+=1))
+		# --- update media data record ----------------------------------------
+		for J in "${!__LIST[@]}"
+		do
+			__LIST[J]="${__LIST[J]:--}"		# empty
+			__LIST[J]="${__LIST[J]// /%20}"	# space
+		done
+		__WORK="$( \
+			printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s" \
+				"${__LIST[@]}" \
+		)"
+		__TGET_LIST[I]="${__WORK}"
+	done
+	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+}
+
 # === <remastering> ===========================================================
 
-# --- create boot options for preseed -----------------------------------------
-function funcRemastering_preseed() {
+# -----------------------------------------------------------------------------
+# descript: create a boot option for preseed of the remaster
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
+function fnRemastering_preseed() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2055,7 +2423,6 @@ function funcRemastering_preseed() {
 	declare       __ISOS=""				# iso file
 #	declare       __LOAD=""				# load module
 #	declare       __RMAK=""				# remake file
-
 	# --- boot option ---------------------------------------------------------
 #	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
@@ -2137,8 +2504,12 @@ function funcRemastering_preseed() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options for nocloud -----------------------------------------
-function funcRemastering_nocloud() {
+# -----------------------------------------------------------------------------
+# descript: create a boot option for nocloud of the remaster
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
+function fnRemastering_nocloud() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2149,7 +2520,6 @@ function funcRemastering_nocloud() {
 	declare       __ISOS=""				# iso file
 #	declare       __LOAD=""				# load module
 #	declare       __RMAK=""				# remake file
-
 	# --- boot option ---------------------------------------------------------
 #	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
@@ -2211,8 +2581,12 @@ function funcRemastering_nocloud() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options for kickstart ---------------------------------------
-function funcRemastering_kickstart() {
+# -----------------------------------------------------------------------------
+# descript: create a boot option for kickstart of the remaster
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
+function fnRemastering_kickstart() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2223,7 +2597,6 @@ function funcRemastering_kickstart() {
 #	declare       __ISOS=""				# iso file
 #	declare       __LOAD=""				# load module
 #	declare       __RMAK=""				# remake file
-
 	# --- boot option ---------------------------------------------------------
 #	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
@@ -2272,8 +2645,12 @@ function funcRemastering_kickstart() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options for autoyast ----------------------------------------
-function funcRemastering_autoyast() {
+# -----------------------------------------------------------------------------
+# descript: create a boot option for autoyast of the remaster
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
+function fnRemastering_autoyast() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2284,7 +2661,6 @@ function funcRemastering_autoyast() {
 #	declare       __ISOS=""				# iso file
 #	declare       __LOAD=""				# load module
 #	declare       __RMAK=""				# remake file
-
 	# --- boot option ---------------------------------------------------------
 #	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
@@ -2341,8 +2717,12 @@ function funcRemastering_autoyast() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options -----------------------------------------------------
-function funcRemastering_boot_options() {
+# -----------------------------------------------------------------------------
+# descript: create a boot option of the remaster
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
+function fnRemastering_boot_options() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
@@ -2353,8 +2733,8 @@ function funcRemastering_boot_options() {
 		debian       | \
 		ubuntu       )
 			case "${__TGET_LIST[23]}" in
-				*/preseed/* ) __WORK="$(set -e; funcRemastering_preseed "${__TGET_LIST[@]}")";;
-				*/nocloud/* ) __WORK="$(set -e; funcRemastering_nocloud "${__TGET_LIST[@]}")";;
+				*/preseed/* ) __WORK="$(set -e; fnRemastering_preseed "${__TGET_LIST[@]}")";;
+				*/nocloud/* ) __WORK="$(set -e; fnRemastering_nocloud "${__TGET_LIST[@]}")";;
 				*           ) ;;
 			esac
 			;;
@@ -2362,8 +2742,8 @@ function funcRemastering_boot_options() {
 		centos       | \
 		almalinux    | \
 		rockylinux   | \
-		miraclelinux ) __WORK="$(set -e; funcRemastering_kickstart "${__TGET_LIST[@]}")";;
-		opensuse     ) __WORK="$(set -e; funcRemastering_autoyast "${__TGET_LIST[@]}")";;
+		miraclelinux ) __WORK="$(set -e; fnRemastering_kickstart "${__TGET_LIST[@]}")";;
+		opensuse     ) __WORK="$(set -e; fnRemastering_autoyast "${__TGET_LIST[@]}")";;
 		*            ) ;;
 	esac
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
@@ -2372,8 +2752,13 @@ function funcRemastering_boot_options() {
 	printf "%s\n" "${__BOPT[@]}"
 }
 
-# --- create path for configuration file --------------------------------------
-function funcRemastering_path() {
+# -----------------------------------------------------------------------------
+# descript: create path for configuration file
+#   input :   $1   : target path
+#   input :   $2   : directory
+#   output: stdout : output
+#   return:        : unused
+function fnRemastering_path() {
 	declare -r    __PATH_TGET="${1:?}"	# target path
 	declare -r    __DIRS_TGET="${2:?}"	# directory
 	declare       __DIRS=""				# directory
@@ -2387,8 +2772,15 @@ function funcRemastering_path() {
 	echo -n "${__DIRS:+/"${__DIRS}"}/${__FNAM}"
 }
 
-# --- create autoinstall configuration file for isolinux ----------------------
-function funcRemastering_isolinux_autoinst_cfg() {
+# -----------------------------------------------------------------------------
+# descript: create autoinstall configuration file for isolinux
+#   input :   $1   : target directory
+#   input :   $2   : file name : autoinst.cfg
+#   input :   $3   : boot options
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
+function fnRemastering_isolinux_autoinst_cfg() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
 	declare -r    __BOOT_OPTN="${3:?}"	# boot options
@@ -2476,8 +2868,14 @@ _EOT_
 	fi
 }
 
-# --- editing isolinux for autoinstall ----------------------------------------
-function funcRemastering_isolinux() {
+# -----------------------------------------------------------------------------
+# descript: editing isolinux for autoinstall
+#   input :   $1   : target directory
+#   input :   $2   : boot options
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
+function fnRemastering_isolinux() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __BOOT_OPTN="${2:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:3}") # target data
@@ -2493,7 +2891,7 @@ function funcRemastering_isolinux() {
 	__PAUT=""
 	while read -r __PATH
 	do
-		__FNAM="$(set -e; funcRemastering_path "${__PATH}" "${__DIRS_TGET}")"	# isolinux.cfg
+		__FNAM="$(set -e; fnRemastering_path "${__PATH}" "${__DIRS_TGET}")"	# isolinux.cfg
 		__PAUT="${__FNAM%/*}/${_AUTO_INST}"
 		__FTHM="${__FNAM%/*}/theme.txt"
 		__FTMP="${__PATH}.tmp"
@@ -2514,7 +2912,7 @@ function funcRemastering_isolinux() {
 		fi
 		rm -f "${__FTMP:?}"
 		# --- create autoinstall configuration file for isolinux --------------
-		funcRemastering_isolinux_autoinst_cfg "${__DIRS_TGET}" "${__PAUT}" "${__BOOT_OPTN}" "${__TGET_LIST[@]}"
+		fnRemastering_isolinux_autoinst_cfg "${__DIRS_TGET}" "${__PAUT}" "${__BOOT_OPTN}" "${__TGET_LIST[@]}"
 	done < <(find "${__DIRS_TGET}" -name 'isolinux.cfg' -type f || true)
 	# --- comment out ---------------------------------------------------------
 	if [[ -z "${__PAUT}" ]]; then
@@ -2542,8 +2940,15 @@ function funcRemastering_isolinux() {
 	done < <(find "${__DIRS_TGET}" \( -name '*.cfg' -a ! -name "${_AUTO_INST##*/}" \) -type f || true)
 }
 
-# --- create autoinstall configuration file for grub --------------------------
-function funcRemastering_grub_autoinst_cfg() {
+# -----------------------------------------------------------------------------
+# descript: create autoinstall configuration file for grub
+#   input :   $1   : target directory
+#   input :   $2   : file name : autoinst.cfg
+#   input :   $3   : boot options
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
+function fnRemastering_grub_autoinst_cfg() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
 	declare -r    __BOOT_OPTN="${3:?}"	# boot options
@@ -2730,8 +3135,14 @@ _EOT_
 	fi
 }
 
-# --- editing grub for autoinstall --------------------------------------------
-function funcRemastering_grub() {
+# -----------------------------------------------------------------------------
+# descript: editing grub for autoinstall
+#   input :   $1   : target directory
+#   input :   $2   : boot options
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
+function fnRemastering_grub() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __BOOT_OPTN="${2:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:3}") # target data
@@ -2746,7 +3157,7 @@ function funcRemastering_grub() {
 	__PAUT=""
 	while read -r __PATH
 	do
-		__FNAM="$(set -e; funcRemastering_path "${__PATH}" "${__DIRS_TGET}")"	# grub.cfg
+		__FNAM="$(set -e; fnRemastering_path "${__PATH}" "${__DIRS_TGET}")"	# grub.cfg
 		__PAUT="${__FNAM%/*}/${_AUTO_INST}"
 		__FTMP="${__PATH}.tmp"
 		if ! grep -qEi '^menuentry[ \t]+.*$' "${__PATH}"; then
@@ -2762,7 +3173,7 @@ function funcRemastering_grub() {
 		fi
 		rm -f "${__FTMP:?}"
 		# --- create autoinstall configuration file for grub ------------------
-		funcRemastering_grub_autoinst_cfg "${__DIRS_TGET}" "${__PAUT}" "${__BOOT_OPTN}" "${__TGET_LIST[@]}"
+		fnRemastering_grub_autoinst_cfg "${__DIRS_TGET}" "${__PAUT}" "${__BOOT_OPTN}" "${__TGET_LIST[@]}"
 	done < <(find "${__DIRS_TGET}" -name 'grub.cfg' -type f || true)
 	# --- comment out ---------------------------------------------------------
 	if [[ -z "${__PAUT}" ]]; then
@@ -2784,8 +3195,13 @@ function funcRemastering_grub() {
 	done < <(find "${__DIRS_TGET}" \( -name '*.cfg' -a ! -name "${_AUTO_INST##*/}" \) -type f || true)
 }
 
-# --- copy auto-install files -------------------------------------------------
-function funcRemastering_copy() {
+# -----------------------------------------------------------------------------
+# descript: copy auto-install files
+#   input :   $1   : target directory
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
+function fnRemastering_copy() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
 	declare       __WORK=""				# work variables
@@ -2840,8 +3256,13 @@ function funcRemastering_copy() {
 	done
 }
 
-# --- remastering for initrd --------------------------------------------------
-function funcRemastering_initrd() {
+# -----------------------------------------------------------------------------
+# descript: remastering for initrd
+#   input :   $1   : target directory
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
+function fnRemastering_initrd() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
 	declare       __FKNL=""				# kernel
@@ -2860,13 +3281,13 @@ function funcRemastering_initrd() {
 	__DTMP="$(mktemp -qd "${TMPDIR:-/tmp}/${__FIRD##*/}.XXXXXX")"
 
 	# --- extract -------------------------------------------------------------
-	funcSplit_initramfs "${__DIRS_TGET}${__FIRD}" "${__DTMP}"
+	fnSplit_initramfs "${__DIRS_TGET}${__FIRD}" "${__DTMP}"
 	__DTOP="${__DTMP}"
 	if [[ -d "${__DTOP}/main/." ]]; then
 		__DTOP+="/main"
 	fi
 	# --- copy auto-install files ---------------------------------------------
-	funcRemastering_copy "${__DTOP}" "${__TGET_LIST[@]}"
+	fnRemastering_copy "${__DTOP}" "${__TGET_LIST[@]}"
 #	ln -s "${__TGET_LIST[23]#"${_DIRS_CONF}"}" "${__DTOP}/preseed.cfg"
 	# --- repackaging ---------------------------------------------------------
 	pushd "${__DTOP}" > /dev/null || exit
@@ -2876,8 +3297,13 @@ function funcRemastering_initrd() {
 	rm -rf "${__DTMP:?}"
 }
 
-# --- remastering for media ---------------------------------------------------
-function funcRemastering_media() {
+# -----------------------------------------------------------------------------
+# descript: remastering for media
+#   input :   $1   : target directory
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
+function fnRemastering_media() {
 	declare -r    __DIRS_TGET="${1:?}"						# target directory
 	declare -r -a __TGET_LIST=("${@:2}")					# target data
 	declare -r    __DWRK="${_DIRS_TEMP}/${__TGET_LIST[2]}"	# work directory
@@ -2895,13 +3321,13 @@ function funcRemastering_media() {
 #	__PATH="${__DWRK}/${__TGET_LIST[17]##*/}.tmp"				# file path
 	__FCAT="$(find "${__DIRS_TGET}" \( -iname 'boot.cat'     -o -iname 'boot.catalog' \) -type f -printf "%P" || true)"
 	__FBIN="$(find "${__DIRS_TGET}" \( -iname 'isolinux.bin' -o -iname 'eltorito.img' \) -type f -printf "%P" || true)"
-#	__VLID="$(funcGetVolID "${__TGET_LIST[13]}")"
-	__FEFI="$(funcDistro2efi "${__TGET_LIST[2]%%-*}")"
+#	__VLID="$(fnGetVolID "${__TGET_LIST[13]}")"
+	__FEFI="$(fnDistro2efi "${__TGET_LIST[2]%%-*}")"
 	# --- create iso image file -----------------------------------------------
 	if [[ -e "${__DIRS_TGET}/${__FEFI}" ]]; then
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "info" "xorriso (hybrid)" 1>&2
 		__FHBR="$(find /usr/lib  -iname 'isohdpfx.bin' -type f || true)"
-		funcCreate_iso "${__DIRS_TGET}" "${__TGET_LIST[17]}" \
+		fnCreate_iso "${__DIRS_TGET}" "${__TGET_LIST[17]}" \
 			-quiet -rational-rock \
 			-volid "${__TGET_LIST[16]//%20/ }" \
 			-joliet -joliet-long \
@@ -2925,7 +3351,7 @@ function funcRemastering_media() {
 		__SIZE=$(fdisk -l "${__TGET_LIST[13]}" | awk '/.iso2/ {print $4;}' || true)
 		dd if="${__TGET_LIST[13]}" bs=512 skip="${__SKIP}" count="${__SIZE}" of="${__FEFI}" > /dev/null 2>&1
 		# --- create iso image file -------------------------------------------
-		funcCreate_iso "${__DIRS_TGET}" "${__TGET_LIST[17]}" \
+		fnCreate_iso "${__DIRS_TGET}" "${__TGET_LIST[17]}" \
 			-quiet -rational-rock \
 			-volid "${__TGET_LIST[16]//%20/ }" \
 			-joliet -joliet-long \
@@ -2945,8 +3371,12 @@ function funcRemastering_media() {
 	fi
 }
 
-# --- remastering -------------------------------------------------------------
-function funcRemastering() {
+# -----------------------------------------------------------------------------
+# descript: remastering
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
+function fnRemastering() {
 	declare -i    __time_start=0							# start of elapsed time
 	declare -i    __time_end=0								# end of elapsed time
 	declare -i    __time_elapsed=0							# result of elapsed time
@@ -2966,7 +3396,7 @@ function funcRemastering() {
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__TGET_LIST[13]##*/}" 1>&2
 
 	# --- pre-check -----------------------------------------------------------
-	__FEFI="$(funcDistro2efi "${__TGET_LIST[2]%%-*}")"
+	__FEFI="$(fnDistro2efi "${__TGET_LIST[2]%%-*}")"
 	if [[ -z "${__FEFI}" ]]; then
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[41m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "unknown target" "${__TGET_LIST[2]%%-*} [${__TGET_LIST[13]##*/}]" 1>&2
 		return
@@ -2990,25 +3420,25 @@ function funcRemastering() {
 	mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}"
 	# --- create boot options -------------------------------------------------
 	printf "%20.20s: %s\n" "start" "create boot options" 1>&2
-	__WORK="$(set -e; funcRemastering_boot_options "${__TGET_LIST[@]}")"
+	__WORK="$(set -e; fnRemastering_boot_options "${__TGET_LIST[@]}")"
 	# --- create autoinstall configuration file for isolinux ------------------
 	printf "%20.20s: %s\n" "start" "create autoinstall configuration file for isolinux" 1>&2
-	funcRemastering_isolinux "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
+	fnRemastering_isolinux "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
 	# --- create autoinstall configuration file for grub ----------------------
 	printf "%20.20s: %s\n" "start" "create autoinstall configuration file for grub" 1>&2
-	funcRemastering_grub "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
+	fnRemastering_grub "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
 	# --- copy auto-install files ---------------------------------------------
 	printf "%20.20s: %s\n" "start" "copy auto-install files" 1>&2
-	funcRemastering_copy "${__DMRG}" "${__TGET_LIST[@]}"
+	fnRemastering_copy "${__DMRG}" "${__TGET_LIST[@]}"
 	# --- remastering for initrd ----------------------------------------------
 	printf "%20.20s: %s\n" "start" "remastering for initrd" 1>&2
 	case "${__TGET_LIST[2]}" in
-		*-mini-*         ) funcRemastering_initrd "${__DMRG}" "${__TGET_LIST[@]}";;
+		*-mini-*         ) fnRemastering_initrd "${__DMRG}" "${__TGET_LIST[@]}";;
 		*                ) ;;
 	esac
 	# --- create iso image file -----------------------------------------------
 	printf "%20.20s: %s\n" "start" "create iso image file" 1>&2
-	funcRemastering_media "${__DMRG}" "${__TGET_LIST[@]}"
+	fnRemastering_media "${__DMRG}" "${__TGET_LIST[@]}"
 	umount "${__DMRG}"
 	umount "${__DLOW}"
 
@@ -3023,25 +3453,101 @@ function funcRemastering() {
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$((__time_elapsed/86400))" "$((__time_elapsed%86400/3600))" "$((__time_elapsed%3600/60))" "$((__time_elapsed%60))" "elapsed" "${__TGET_LIST[13]##*/}" 1>&2
 }
 
-# --- print out of menu -------------------------------------------------------
-function funcPrint_menu() {
-	declare -n    _RETN_VALU="$1"		# return value
+# -----------------------------------------------------------------------------
+# descript: executing the download
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $@   : target data
+#   output: stdout : message
+#   return:        : unused
+function fnExec_download() {
+	declare -n    __RETN_VALU="$1"		# return value
+	declare -a    __TGET_LIST=("${@:2}") # target data
+	declare       __RSLT=""				# result
+	declare       __RETN=""				# return value
+	declare -a    __ARRY=()				# work variables
+
+	if [[ -z "${__TGET_LIST[9]##-}" ]]; then # web_path
+		return
+	fi
+	case "${__TGET_LIST[12]}" in		# web_status
+		200) ;;
+		*  ) return;;
+	esac
+	# --- lnk_path ------------------------------------------------------------
+	if [[ -n "${__TGET_LIST[25]##-}" ]] && [[ ! -e "${__TGET_LIST[13]}" ]] && [[ ! -h "${__TGET_LIST[13]}" ]]; then
+		fnPrintf "%20.20s: %s" "create symlink" "${__TGET_LIST[25]} -> ${__TGET_LIST[13]}"
+		ln -s "${__TGET_LIST[25]%%/}/${__TGET_LIST[13]##*/}" "${__TGET_LIST[13]}"
+	fi
+	# --- comparing web and local file timestamps -----------------------------
+	__RSLT="$(fnDateDiff "${__TGET_LIST[10]:-@0}" "${__TGET_LIST[14]:-@0}")"
+	if [[ "${__RSLT}" -ge 0 ]]; then
+		return
+	fi
+	# --- executing the download ----------------------------------------------
+	fnGetWeb_contents "${__TGET_LIST[13]}" "${__TGET_LIST[9]}"
+	# --- get file information ------------------------------------------------
+	fnGetFileinfo __RETN "${__TGET_LIST[13]}"
+	read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+	__ARRY=("${__ARRY[@]##-}")
+#	__TGET_LIST[13]="${__ARRY[0]:-}"	# iso_path
+	__TGET_LIST[14]="${__ARRY[1]:-}"	# iso_tstamp
+	__TGET_LIST[15]="${__ARRY[2]:-}"	# iso_size
+	__TGET_LIST[16]="${__ARRY[3]:-}"	# iso_volume
+	# --- finish --------------------------------------------------------------
+	__RETN_VALU="${__TGET_LIST[*]}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: executing the remastering
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $@   : target data
+#   output: stdout : message
+#   return:        : unused
+function fnExec_remastering() {
+	declare -n    __RETN_VALU="$1"		# return value
+	declare -a    __TGET_LIST=("${@:2}") # target data
+#	declare       __RSLT=""				# result
+	declare       __RETN=""				# return value
+	declare -a    __ARRY=()				# work variables
+
+	if [[ -n "${__LIST[13]##-}" ]] && [[ -s "${__LIST[13]}" ]]; then
+		return
+	fi
+	# --- comparing remaster and local file timestamps ------------------------
+	__RSLT="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
+	if [[ "${__RSLT}" -ge 0 ]]; then
+		return
+	fi
+	# --- executing the remastering -------------------------------------------
+	fnRemastering "${__TGET_LIST[@]}"
+	# --- new local remaster iso files ----------------------------------------
+	fnGetFileinfo "__RETN" "${__TGET_LIST[17]##-}"
+	read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+	__ARRY=("${__ARRY[@]##-}")
+#	__TGET_LIST[17]="${__ARRY[0]:--}"	# rmk_path
+	__TGET_LIST[18]="${__ARRY[1]:--}"	# rmk_tstamp
+	__TGET_LIST[19]="${__ARRY[2]:--}"	# rmk_size
+	__TGET_LIST[20]="${__ARRY[3]:--}"	# rmk_volume
+	# --- finish --------------------------------------------------------------
+	__RETN_VALU="${__TGET_LIST[*]}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: 
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $2   : command type
+#   input :   $3   : target range
+#   input :   $@   : target data
+#   output: stdout : message
+#   return:        : unused
+function fnXXX() {
+	declare -n    __RETN_VALU="$1"		# return value
 	declare -r    __COMD_TYPE="$2"		# command type
 	declare -r    __TGET_RANG="$3"		# target range
 	declare -a    __TGET_LIST=("${@:4}") # target data
 	declare       __RANG=""				# range
-#	declare -i    __RNUM=0				# record number
 	declare -i    __IDNO=0				# id number (1..)
-	declare       __CLR0=""				# message color (line)
-	declare       __CLR1=""				# message color (word)
-	declare       __MESG=""				# message text
-	declare       __RETN=""				# return value
-#	declare       __PATH=""				# full path
-	declare       __DIRS=""				# directory
-	declare       __FNAM=""				# file name
-	declare       __BASE=""				# base name
-	declare       __EXTN=""				# extension
-	declare       __SEED=""				# preseed
+	declare       __RSLT=""				# result
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
@@ -3052,180 +3558,75 @@ function funcPrint_menu() {
 		a|all) __RANG="$(eval "echo {1..${#__TGET_LIST[@]}}")";;
 		*    ) __RANG="${__TGET_RANG}";;
 	esac
-#	__RNUM=0
+	__IDNO=0
 	for I in "${!__TGET_LIST[@]}"
 	do
 		read -r -a __LIST < <(echo "${__TGET_LIST[I]}")
-#		__LIST=("${__LIST[@]##-}")
+		case "${__LIST[1]}" in
+			o) ;;
+			*) continue;;
+		esac
+		if [[ -z "${__LIST[3]##-}"  ]] \
+		|| [[ -z "${__LIST[13]##-}" ]] \
+		|| [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
+			continue
+		fi
+		if ! echo "$((++__IDNO))" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
+			continue
+		fi
+		# --- start -----------------------------------------------------------
+		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[17]##*/}" 1>&2
+		# --- conversion ------------------------------------------------------
 		for J in "${!__LIST[@]}"
 		do
 			__LIST[J]="${__LIST[J]##-}"		# empty
-#			__LIST[J]="${__LIST[J]//%20/ }"	# space
+			__LIST[J]="${__LIST[J]//%20/ }"	# space
 		done
-#		if ! echo "$((++__RNUM))" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
-#			continue
-#		fi
+		# --- command type ----------------------------------------------------
 		case "${__COMD_TYPE}" in
-			list)
-				case "${__LIST[1]:--}" in
-					m) continue;;
-					*) ;;
-				esac
-				;;
-			*)
-				case "${__LIST[1]:--}" in
-					o) ;;
-					m)
-						printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "# ${_TEXT_GAP1:1:((${#_TEXT_GAP1}-4))} #" 1>&2
-						case "${__LIST[3]:--}" in
-							-) ;;
-							*)
-								__IDNO=0
-								printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#%-2.2s:%-42.42s:%-10.10s:%-10.10s:%-$((${_SIZE_COLS:-80}-70)).$((${_SIZE_COLS:-80}-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "ID" "Version" "ReleaseDay" "SupportEnd" "Memo" 1>&2
-								;;
-						esac
-						continue
-						;;
-					*) continue;;
-				esac
-				if [[ -z "${__LIST[3]}" ]]; then
-					continue
-				fi
-				if [[ -z "${__LIST[13]}" ]]; then
-					continue
-				fi
-				;;
+			create  )
+			update  )
+			download)
+			*       ) ;;
 		esac
-		((++__IDNO))
-		if ! echo "${__IDNO}" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
-			continue
-		fi
-		# --- web original iso file -------------------------------------------
-		__RETN=""
-		__MESG=""											# contents
-		if [[ -n "${__LIST[8]}" ]]; then
-			funcGetWeb_info "__RETN" "${__LIST[8]}"			# web_regexp
-			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
-			__ARRY=("${__ARRY[@]##-}")
-			case "${__ARRY[3]}" in
-				200)
-					__LIST[9]="${__ARRY[0]:-}"				# web_path
-					__LIST[10]="${__ARRY[1]:-}"				# web_tstamp
-					__LIST[11]="${__ARRY[2]:-}"				# web_size
-					__LIST[12]="${__ARRY[3]:-}"				# web_status
-					case "${__LIST[9]##*/}" in
-						mini.iso) ;;
-						*       )
-							__FNAM="${__LIST[9]##*/}"
-							__WORK="${__FNAM%.*}"
-							__EXTN="${__FNAM#"${__WORK}"}"
-							__BASE="${__FNAM%"${__EXTN}"}"
-															# iso_path
-							__LIST[13]="${__LIST[13]%/*}/${__FNAM}"
-															# rmk_path
-							if [[ -n "${__LIST[17]##-}" ]]; then
-								__SEED="${__LIST[17]##*_}"
-								__WORK="${__SEED%.*}"
-								__WORK="${__SEED#"${__WORK}"}"
-								__SEED="${__SEED%"${__WORK}"}"
-								__LIST[17]="${__LIST[17]%/*}/${__BASE}${__SEED:+"_${__SEED}"}${__EXTN}"
-							fi
-							;;
-					esac
-					;;
-				*) ;;
-			esac
-			__MESG="${__ARRY[4]:--}"		# contents
-		fi
-		# --- local original iso file -----------------------------------------
-		if [[ -n "${__LIST[13]}" ]]; then
-			funcGetFileinfo __RETN "${__LIST[13]}"			# iso_path
-			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
-			__ARRY=("${__ARRY[@]##-}")
-#			__LIST[13]="${__ARRY[0]:-}"						# iso_path
-			__LIST[14]="${__ARRY[1]:-}"						# iso_tstamp
-			__LIST[15]="${__ARRY[2]:-}"						# iso_size
-			__LIST[16]="${__ARRY[3]:-}"						# iso_volume
-		fi
-		# --- local remastering iso file --------------------------------------
-		if [[ -n "${__LIST[17]}" ]]; then
-			funcGetFileinfo __RETN "${__LIST[17]}"			# rmk_path
-			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
-			__ARRY=("${__ARRY[@]##-}")
-#			__LIST[17]="${__ARRY[0]:-}"						# rmk_path
-			__LIST[18]="${__ARRY[1]:-}"						# rmk_tstamp
-			__LIST[19]="${__ARRY[2]:-}"						# rmk_size
-			__LIST[20]="${__ARRY[3]:-}"						# rmk_volume
-		fi
-		# --- config file  ----------------------------------------------------
-		if [[ -n "${__LIST[23]}" ]]; then
-			if [[ -d "${__LIST[23]}" ]]; then				# cfg_path: cloud-init
-				funcGetFileinfo __RETN "${__LIST[23]}/user-data"
-			else											# cfg_path
-				funcGetFileinfo __RETN "${__LIST[23]}"
-			fi
-			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
-#			__LIST[23]="${__ARRY[0]:-}"						# cfg_path
-			__LIST[24]="${__ARRY[1]:-}"						# cfg_tstamp
-		fi
-		# --- print out -------------------------------------------------------
-		# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
-		# 1xx (Informational): The request was received, continuing process
-		# 2xx (Successful)   : The request was successfully received, understood, and accepted
-		# 3xx (Redirection)  : Further action needs to be taken in order to complete the request
-		# 4xx (Client Error) : The request contains bad syntax or cannot be fulfilled
-		# 5xx (Server Error) : The server failed to fulfill an apparently valid request
-		__MESG=""
-		__CLR0=""
-		__CLR1=""
-		if [[ -z "${__LIST[8]##-}" ]] && [[ -z "${__LIST[14]##-}" ]]; then
-			__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[33m"}"		# unreleased
-		elif [[ -z "${__LIST[14]##-}" ]]; then
-			__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[46m"}"		# new file
-		else
-			if [[ -n "${__LIST[18]##-}" ]]; then
-				__WORK="$(funcDateDiff "${__LIST[18]}" "${__LIST[14]}")"
-				if [[ "${__WORK}" -gt 0 ]]; then
-					__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}"	# remaster < local
-				fi
-			fi
-			if [[ -n "${__LIST[10]##-}" ]]; then
-				__WORK="$(funcDateDiff "${__LIST[10]}" "${__LIST[14]}")"
-				if [[ "${__WORK}" -lt 0 ]]; then
-					__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[92m"}"	# web > local
-				fi
-			fi
-		fi
-		case "${__LIST[12]:--}" in
-			-  ) ;;
-			200) ;;
-			1??) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
-			2??) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
-			3??) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
-			4??) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
-			5??) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
-			*  ) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
+		# --- download --------------------------------------------------------
+		fnExec_download "__RETN" "${__LIST[@]}"
+		read -r -a __ARRY < <(echo "${__RETN:-}")
+		case "${__ARRY[12]}" in
+			200) __LIST=("${__ARRY[@]}");;
+			*  ) ;;
 		esac
-		__MESG="${__MESG//%20/ }"
-		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#${__CLR0}%2d:%-42.42s:%-10.10s:%-10.10s:${__CLR1}%-$((_SIZE_COLS-70)).$((_SIZE_COLS-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "${__IDNO}" "${__LIST[13]##*/}" "${__LIST[10]:+"${__LIST[10]::10}"}${__LIST[14]:-"${__LIST[6]::10}"}" "${__LIST[7]::10}" "${__MESG:-"${__LIST[23]##*/}"}" 1>&2
-#		((__IDNO+=1))
-		# --- update media data record ----------------------------------------
+		# --- remastering -----------------------------------------------------
+		fnExec_remastering "__RETN" "${__LIST[@]}"
+		read -r -a __ARRY < <(echo "${__RETN:-}")
+		__LIST=("${__ARRY[@]}")
+		# --- conversion ------------------------------------------------------
 		for J in "${!__LIST[@]}"
 		do
 			__LIST[J]="${__LIST[J]:--}"		# empty
 			__LIST[J]="${__LIST[J]// /%20}"	# space
 		done
-		__WORK="$( \
-			printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s" \
-				"${__LIST[@]}" \
-		)"
-		__TGET_LIST[I]="${__WORK}"
+		# --- update media data record ----------------------------------------
+		__MDIA[I]="${__LIST[*]}"
+		for J in "${!_LIST_MDIA[@]}"
+		do
+			read -r -a __ARRY < <(echo "${_LIST_MDIA[J]}")
+			if [[ "${__LIST[0]}" != "${__ARRY[0]}" ]] \
+			|| [[ "${__LIST[1]}" != "${__ARRY[1]}" ]] \
+			|| [[ "${__LIST[2]}" != "${__ARRY[2]}" ]] \
+			|| [[ "${__LIST[3]}" != "${__ARRY[3]}" ]]; then
+				continue
+			fi
+			_LIST_MDIA[J]="${__LIST[*]}"
+			break
+		done
+		# --- complete --------------------------------------------------------
+		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
 	done
-	_RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
 }
 
 # --- debug out parameter -----------------------------------------------------
-funcDebug_parameter() {
+function fnDebug_parameter() {
 	declare       __CHAR="_"			# variable initial letter
 	declare       __NAME=""				#          name
 	declare       __VALU=""				#          value
@@ -3258,7 +3659,7 @@ funcDebug_parameter() {
 }
 
 # --- help --------------------------------------------------------------------
-function funcHelp() {
+function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
 		
@@ -3299,7 +3700,7 @@ _EOT_
 
 # === main ====================================================================
 
-function funcMain() {
+function fnMain() {
 	declare -i    __time_start=0		# start of elapsed time
 	declare -i    __time_end=0			# end of elapsed time
 	declare -i    __time_elapsed=0		# result of elapsed time
@@ -3320,7 +3721,7 @@ function funcMain() {
 
 	# --- help ----------------------------------------------------------------
 	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then
-		funcHelp
+		fnHelp
 		exit 0
 	fi
 	# --- check the execution user --------------------------------------------
@@ -3336,7 +3737,7 @@ function funcMain() {
 			--debug | \
 			--dbg   ) shift; _DBGS_FLAG="true"; set -x;;
 			--dbgout) shift; _DBGS_FLAG="true";;
-			help    ) shift; funcHelp; exit 0;;
+			help    ) shift; fnHelp; exit 0;;
 			*       ) shift;;
 		esac
 	done
@@ -3350,7 +3751,7 @@ function funcMain() {
 	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- main ----------------------------------------------------------------
-	funcInitialization					# initialization
+	fnInitialization					# initialization
 
 	set -f -- "${__OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
@@ -3390,7 +3791,7 @@ function funcMain() {
 						esac
 					done
 					# --- selection by media type -----------------------------
-					funcPrint_menu "__RSLT" "create" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
+					fnPrint_menu "__RSLT" "create" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
 					IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${__RSLT[@]}" || true)
 					# --- select by input value -------------------------------
 					if [[ -z "${__RANG:-}" ]]; then
@@ -3434,15 +3835,15 @@ function funcMain() {
 								200)
 									# --- lnk_path ----------------------------
 									if [[ -n "${__LIST[25]##-}" ]] && [[ ! -e "${__LIST[13]}" ]] && [[ ! -h "${__LIST[13]}" ]]; then
-										funcPrintf "%20.20s: %s" "create symlink" "${__LIST[25]} -> ${__LIST[13]}"
+										fnPrintf "%20.20s: %s" "create symlink" "${__LIST[25]} -> ${__LIST[13]}"
 										ln -s "${__LIST[25]%%/}/${__LIST[13]##*/}" "${__LIST[13]}"
 									fi
-									__RSLT="$(funcDateDiff "${__LIST[10]:-@0}" "${__LIST[14]:-@0}")"
+									__RSLT="$(fnDateDiff "${__LIST[10]:-@0}" "${__LIST[14]:-@0}")"
 									if [[ "${__RSLT}" -lt 0 ]]; then
-										funcGetWeb_contents "${__LIST[13]}" "${__LIST[9]}"
+										fnGetWeb_contents "${__LIST[13]}" "${__LIST[9]}"
 									fi
 									if [[ -n "${__LIST[13]}" ]]; then
-										funcGetFileinfo __RETN "${__LIST[13]}"			# iso_path
+										fnGetFileinfo __RETN "${__LIST[13]}"			# iso_path
 										read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
 										__ARRY=("${__ARRY[@]##-}")
 #										__LIST[13]="${__ARRY[0]:-}"						# iso_path
@@ -3456,9 +3857,9 @@ function funcMain() {
 						fi
 						# --- remastering -------------------------------------
 						if [[ -s "${__LIST[13]}" ]]; then
-							funcRemastering "${__LIST[@]}"
+							fnRemastering "${__LIST[@]}"
 							# --- new local remaster iso files ----------------
-							funcGetFileinfo "__RETN" "${__LIST[17]##-}"
+							fnGetFileinfo "__RETN" "${__LIST[17]##-}"
 							read -r -a __ARRY < <(echo "${__RETN}")
 #							__LIST[17]="${__ARRY[0]:--}"		# rmk_path
 							__LIST[18]="${__ARRY[1]:--}"		# rmk_tstamp
@@ -3489,12 +3890,12 @@ function funcMain() {
 						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
 					done
 				done
-				funcPut_media_data
+				fnPut_media_data
 				;;
 			update  )					# (create new files only)
 				shift
-#				__RSLT="$(set -e; funcPrint_menu "update" "${_LIST_MDIA[@]}")"
-				funcPrint_menu __RSLT "update" "${_LIST_MDIA[@]}"
+#				__RSLT="$(set -e; fnPrint_menu "update" "${_LIST_MDIA[@]}")"
+				fnPrint_menu __RSLT "update" "${_LIST_MDIA[@]}"
 				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
 				for I in "${!_LIST_MDIA[@]}"
 				do
@@ -3516,14 +3917,14 @@ function funcMain() {
 					if [[ -n "${__LIST[13]##-}" ]] && [[ -n "${__LIST[14]##-}" ]] && [[ -n "${__LIST[15]##-}" ]]; then
 						if [[ -n  "${__LIST[9]##-}" ]] && [[ -n "${__LIST[10]##-}" ]] && [[ -n "${__LIST[11]##-}" ]]; then
 							if [[ -n "${__LIST[17]##-}" ]] && [[ -n "${__LIST[18]##-}" ]] && [[ -n "${__LIST[19]##-}" ]]; then
-								__WORK="$(funcDateDiff "${__LIST[14]}" "${__LIST[10]}")"
+								__WORK="$(fnDateDiff "${__LIST[14]}" "${__LIST[10]}")"
 								if [[ "${__WORK}" -eq 0 ]] && [[ "${__LIST[15]}" -ne "${__LIST[11]}" ]]; then
-									__WORK="$(funcDateDiff "${__LIST[14]}" "${__LIST[18]}")"
+									__WORK="$(fnDateDiff "${__LIST[14]}" "${__LIST[18]}")"
 									if [[ "${__WORK}" -lt 0 ]]; then
 										continue
 									fi
 									if [[ -n "${__LIST[23]##-}" ]] && [[ -n "${__LIST[24]##-}" ]]; then
-										__WORK="$(funcDateDiff "${__LIST[14]}" "${__LIST[24]}")"
+										__WORK="$(fnDateDiff "${__LIST[14]}" "${__LIST[24]}")"
 										if [[ "${__WORK}" -lt 0 ]]; then
 											continue
 										fi
@@ -3532,9 +3933,9 @@ function funcMain() {
 							fi
 						fi
 					fi
-					funcRemastering "${__LIST[@]}"
+					fnRemastering "${__LIST[@]}"
 					# --- new local remaster iso files ------------------------
-					__WORK="$(funcGetFileinfo "${__LIST[17]##-}")"
+					__WORK="$(fnGetFileinfo "${__LIST[17]##-}")"
 					read -r -a __ARRY < <(echo "${__WORK}")
 					__LIST[17]="${__ARRY[0]:--}"				# rmk_path
 					__LIST[18]="${__ARRY[1]:--}"				# rmk_tstamp
@@ -3544,12 +3945,12 @@ function funcMain() {
 					_LIST_MDIA[I]="${__LIST[*]}"
 #					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
 				done
-				funcPut_media_data
+				fnPut_media_data
 				;;
 			download)					# (download only)
 				shift
-#				__RSLT="$(set -e; funcPrint_menu "download" "${_LIST_MDIA[@]}")"
-				funcPrint_menu __RSLT "download" "${_LIST_MDIA[@]}"
+#				__RSLT="$(set -e; fnPrint_menu "download" "${_LIST_MDIA[@]}")"
+				fnPrint_menu __RSLT "download" "${_LIST_MDIA[@]}"
 				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
 				for I in "${!_LIST_MDIA[@]}"
 				do
@@ -3565,7 +3966,7 @@ function funcMain() {
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						create   ) shift; fncCreate_directory __RETN_PARM "${@:-}"; funcPut_media_data;;
+						create   ) shift; fnCreate_directory __RETN_PARM "${@:-}"; fnPut_media_data;;
 						update   ) shift;;
 						download ) shift;;
 						*        ) break;;
@@ -3577,11 +3978,11 @@ function funcMain() {
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						create   ) shift; funcPut_media_data;;
+						create   ) shift; fnPut_media_data;;
 						update   ) 
 							shift
-#							__RSLT="$(set -e; funcPrint_menu "list" "${_LIST_MDIA[@]}")"
-							funcPrint_menu __RSLT "list" "${_LIST_MDIA[@]}"
+#							__RSLT="$(set -e; fnPrint_menu "list" "${_LIST_MDIA[@]}")"
+							fnPrint_menu __RSLT "list" "${_LIST_MDIA[@]}"
 							IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
 							for I in "${!_LIST_MDIA[@]}"
 							do
@@ -3601,7 +4002,7 @@ function funcMain() {
 #								printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
 							done
 							# -------------------------------------------------
-							funcPut_media_data
+							fnPut_media_data
 							;;
 						download ) ;;
 						*        ) break;;
@@ -3611,21 +4012,21 @@ function funcMain() {
 			conf    )
 				shift
 				case "${1:-}" in
-					create   ) shift; funcCreate_conf;;
+					create   ) shift; fnCreate_conf;;
 					*        ) ;;
 				esac
 				;;
 			preconf )
 				shift
-				funcCreate_precon __RETN_PARM "${@:-}"
+				fnCreate_precon __RETN_PARM "${@:-}"
 				;;
-			help    ) shift; funcHelp; break;;
+			help    ) shift; fnHelp; break;;
 			debug   )
 				shift
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						parm) shift; funcDebug_parameter;;
+						parm) shift; fnDebug_parameter;;
 						*   ) break;;
 					esac
 				done
@@ -3647,7 +4048,7 @@ function funcMain() {
 }
 
 # *** main processing section *************************************************
-	funcMain "${_PROG_PARM[@]:-}"
+	fnMain "${_PROG_PARM[@]:-}"
 	exit 0
 
 ### eof #######################################################################

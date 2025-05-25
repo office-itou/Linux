@@ -8,7 +8,7 @@
 #   output: stdout : message
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcCreate_iso() {
+function fnCreate_iso() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_OUTP="${2:?}"	# output path
 	declare -r -a __OPTN_XORR=("${@:3}") # xorrisofs options

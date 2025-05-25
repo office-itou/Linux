@@ -8,7 +8,7 @@
 #   input :   $@   : target data
 #   output: stdout : message
 #   return:        : unused
-function funcPrint_menu() {
+function fnPrint_menu() {
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -r    __COMD_TYPE="$2"		# command type
 	declare -r    __TGET_RANG="$3"		# target range
@@ -83,7 +83,7 @@ function funcPrint_menu() {
 		__RETN=""
 		__MESG=""											# contents
 		if [[ -n "${__LIST[8]}" ]]; then
-			funcGetWeb_info "__RETN" "${__LIST[8]}"			# web_regexp
+			fnGetWeb_info "__RETN" "${__LIST[8]}"			# web_regexp
 			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
 			__ARRY=("${__ARRY[@]##-}")
 			case "${__ARRY[3]}" in
@@ -118,7 +118,7 @@ function funcPrint_menu() {
 		fi
 		# --- local original iso file -----------------------------------------
 		if [[ -n "${__LIST[13]}" ]]; then
-			funcGetFileinfo __RETN "${__LIST[13]}"			# iso_path
+			fnGetFileinfo __RETN "${__LIST[13]}"			# iso_path
 			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
 			__ARRY=("${__ARRY[@]##-}")
 #			__LIST[13]="${__ARRY[0]:-}"						# iso_path
@@ -128,7 +128,7 @@ function funcPrint_menu() {
 		fi
 		# --- local remastering iso file --------------------------------------
 		if [[ -n "${__LIST[17]}" ]]; then
-			funcGetFileinfo __RETN "${__LIST[17]}"			# rmk_path
+			fnGetFileinfo __RETN "${__LIST[17]}"			# rmk_path
 			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
 			__ARRY=("${__ARRY[@]##-}")
 #			__LIST[17]="${__ARRY[0]:-}"						# rmk_path
@@ -139,9 +139,9 @@ function funcPrint_menu() {
 		# --- config file  ----------------------------------------------------
 		if [[ -n "${__LIST[23]}" ]]; then
 			if [[ -d "${__LIST[23]}" ]]; then				# cfg_path: cloud-init
-				funcGetFileinfo __RETN "${__LIST[23]}/user-data"
+				fnGetFileinfo __RETN "${__LIST[23]}/user-data"
 			else											# cfg_path
-				funcGetFileinfo __RETN "${__LIST[23]}"
+				fnGetFileinfo __RETN "${__LIST[23]}"
 			fi
 			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
 #			__LIST[23]="${__ARRY[0]:-}"						# cfg_path
@@ -163,13 +163,13 @@ function funcPrint_menu() {
 			__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[46m"}"		# new file
 		else
 			if [[ -n "${__LIST[18]##-}" ]]; then
-				__WORK="$(funcDateDiff "${__LIST[18]}" "${__LIST[14]}")"
+				__WORK="$(fnDateDiff "${__LIST[18]}" "${__LIST[14]}")"
 				if [[ "${__WORK}" -gt 0 ]]; then
 					__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}"	# remaster < local
 				fi
 			fi
 			if [[ -n "${__LIST[10]##-}" ]]; then
-				__WORK="$(funcDateDiff "${__LIST[10]}" "${__LIST[14]}")"
+				__WORK="$(fnDateDiff "${__LIST[10]}" "${__LIST[14]}")"
 				if [[ "${__WORK}" -lt 0 ]]; then
 					__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[92m"}"	# web > local
 				fi
@@ -178,12 +178,12 @@ function funcPrint_menu() {
 		case "${__LIST[12]:--}" in
 			-  ) ;;
 			200) ;;
-			1??) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
-			2??) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
-			3??) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
-			4??) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
-			5??) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
-			*  ) __MESG="$(set -e; funcGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
+			1??) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
+			2??) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
+			3??) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR1="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}";;
+			4??) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
+			5??) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
+			*  ) __MESG="$(set -e; fnGetWeb_status "${__LIST[12]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}";;
 		esac
 		__MESG="${__MESG//%20/ }"
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#${__CLR0}%2d:%-42.42s:%-10.10s:%-10.10s:${__CLR1}%-$((_SIZE_COLS-70)).$((_SIZE_COLS-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "${__IDNO}" "${__LIST[13]##*/}" "${__LIST[10]:+"${__LIST[10]::10}"}${__LIST[14]:-"${__LIST[6]::10}"}" "${__LIST[7]::10}" "${__MESG:-"${__LIST[23]##*/}"}" 1>&2

@@ -40,12 +40,12 @@
 # :_tmpl_005_function_section_mk_pxeboot_conf.sh_:
 
 # --- initialization ----------------------------------------------------------
-function funcInitialization() {
+function fnInitialization() {
 :
 }
 
 # --- debug out parameter -----------------------------------------------------
-function funcDebug_parameter() {
+function fnDebug_parameter() {
 	declare       _VARS_CHAR="_"		# variable initial letter
 	declare       _VARS_NAME=""			#          name
 	declare       _VARS_VALU=""			#          value
@@ -78,7 +78,7 @@ function funcDebug_parameter() {
 }
 
 # --- help --------------------------------------------------------------------
-function funcHelp() {
+function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
 		
@@ -113,7 +113,7 @@ _EOT_
 
 # === main ====================================================================
 
-function funcMain() {
+function fnMain() {
 	declare -i    _time_start=0			# start of elapsed time
 	declare -i    _time_end=0			# end of elapsed time
 	declare -i    _time_elapsed=0		# result of elapsed time
@@ -122,7 +122,7 @@ function funcMain() {
 
 	# --- help ----------------------------------------------------------------
 	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then
-		funcHelp
+		fnHelp
 		exit 0
 	fi
 	# --- check the execution user --------------------------------------------
@@ -138,7 +138,7 @@ function funcMain() {
 			--debug | \
 			--dbg   ) shift; _DBGS_FLAG="true"; set -x;;
 			--dbgout) shift; _DBGS_FLAG="true";;
-			help    ) shift; funcHelp; exit 0;;
+			help    ) shift; fnHelp; exit 0;;
 			*       ) shift;;
 		esac
 	done
@@ -152,22 +152,22 @@ function funcMain() {
 	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- main ----------------------------------------------------------------
-	funcInitialization					# initialization
+	fnInitialization					# initialization
 
 	set -f -- "${_OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
 	do
 		_RETN_PARM=()
 		case "${1:-}" in
-			create  ) shift; funcPxeboot "create"  ;;
-			update  ) shift; funcPxeboot "update"  ;;
-			download) shift; funcPxeboot "download";;
+			create  ) shift; fnPxeboot "create"  ;;
+			update  ) shift; fnPxeboot "update"  ;;
+			download) shift; fnPxeboot "download";;
 			link    )
 				shift
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						create   ) shift; funcCreate_directory _RETN_PARM "${@:-}"; funcPut_media_data;;
+						create   ) shift; fnCreate_directory _RETN_PARM "${@:-}"; fnPut_media_data;;
 						update   ) shift;;
 						download ) shift;;
 						*        ) break;;
@@ -179,7 +179,7 @@ function funcMain() {
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						create   ) shift; funcPut_media_data;;
+						create   ) shift; fnPut_media_data;;
 						update   ) shift;;
 						download ) shift;;
 						*        ) break;;
@@ -189,21 +189,21 @@ function funcMain() {
 			conf    )
 				shift
 				case "${1:-}" in
-					create   ) shift; funcCreate_conf;;
+					create   ) shift; fnCreate_conf;;
 					*        ) ;;
 				esac
 				;;
 			preconf )
 				shift
-				funcCreate_precon __RETN_PARM "${@:-}"
+				fnCreate_precon __RETN_PARM "${@:-}"
 				;;
-			help    ) shift; funcHelp; break;;
+			help    ) shift; fnHelp; break;;
 			debug   )
 				shift
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						parm) shift; funcDebug_parameter;;
+						parm) shift; fnDebug_parameter;;
 						*   ) break;;
 					esac
 				done
@@ -225,7 +225,7 @@ function funcMain() {
 }
 
 # *** main processing section *************************************************
-	funcMain "${_PROG_PARM[@]:-}"
+	fnMain "${_PROG_PARM[@]:-}"
 	exit 0
 
 ### eof #######################################################################

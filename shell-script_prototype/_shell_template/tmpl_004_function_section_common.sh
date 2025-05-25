@@ -7,7 +7,7 @@
 #   input :        : unused
 #   output: stdout : unused
 #   return:        : unused
-function funcInitialization() {
+function fnInitialization() {
 	declare       __PATH=""				# full path
 	declare       __WORK=""				# work variables
 	declare       __LINE=""				# work variable
@@ -68,7 +68,7 @@ function funcInitialization() {
 		fi
 	fi
 	_SRVR_CIDR="${_SRVR_CIDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[2];}' || true)"}"
-	_SRVR_MASK="${_SRVR_MASK:-"$(funcIPv4GetNetmask "${_SRVR_CIDR}")"}"
+	_SRVR_MASK="${_SRVR_MASK:-"$(fnIPv4GetNetmask "${_SRVR_CIDR}")"}"
 	_SRVR_GWAY="${_SRVR_GWAY:-"$(LANG=C ip -4 -brief route list match default | awk '{print $3;}' || true)"}"
 	if command -v resolvectl > /dev/null 2>&1; then
 		_SRVR_NSVR="${_SRVR_NSVR:-"$(resolvectl dns    | sed -ne '/^Global:/             s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' || true)"}"
@@ -85,7 +85,7 @@ function funcInitialization() {
 	_NICS_MADR="${_NICS_MADR:-"${_SRVR_MADR}"}"
 	_IPV4_ADDR="${_IPV4_ADDR:-"${_SRVR_UADR}".1}"
 	_IPV4_CIDR="${_IPV4_CIDR:-"${_SRVR_CIDR}"}"
-	_IPV4_MASK="${_IPV4_MASK:-"$(funcIPv4GetNetmask "${_IPV4_CIDR}")"}"
+	_IPV4_MASK="${_IPV4_MASK:-"$(fnIPv4GetNetmask "${_IPV4_CIDR}")"}"
 	_IPV4_GWAY="${_IPV4_GWAY:-"${_SRVR_GWAY}"}"
 	_IPV4_NSVR="${_IPV4_NSVR:-"${_SRVR_NSVR}"}"
 	_IPV4_UADR="${_IPV4_UADR:-"${_SRVR_UADR}"}"
@@ -332,7 +332,7 @@ function funcInitialization() {
 	readonly      _MENU_UEFI
 
 	# --- get media data ------------------------------------------------------
-	funcGet_media_data
+	fnGet_media_data
 }
 
 # -----------------------------------------------------------------------------
@@ -340,7 +340,7 @@ function funcInitialization() {
 #   input :        : unused
 #   output: stdout : unused
 #   return:        : unused
-function funcCreate_conf() {
+function fnCreate_conf() {
 	declare -r    __TMPL="${_PATH_CONF:?}.template"
 	declare       __RNAM=""				# rename path
 	declare       __PATH=""				# full path
@@ -446,7 +446,7 @@ _EOT_
 #   input :        : unused
 #   output: stdout : message
 #   return:        : unused
-function funcGet_media_data() {
+function fnGet_media_data() {
 	declare       __PATH=""				# full path
 	declare       __LINE=""				# work variable
 
@@ -495,7 +495,7 @@ function funcGet_media_data() {
 #   input :        : unused
 #   output: stdout : message
 #   return:        : unused
-function funcPut_media_data() {
+function fnPut_media_data() {
 	declare       __RNAM=""				# rename path
 	declare       __LINE=""				# work variable
 	declare -a    __LIST=()				# work variable
@@ -551,7 +551,7 @@ function funcPut_media_data() {
 #   input :   $@   : input vale
 #   output: stdout : message
 #   return:        : unused
-function funcCreate_directory() {
+function fnCreate_directory() {
 	declare -n    __NAME_REFR="${1:?}"	# name reference
 	shift
 	declare -r    __DATE="$(date +"%Y%m%d%H%M%S")"
@@ -601,24 +601,24 @@ function funcCreate_directory() {
 		# --- force parameter -------------------------------------------------
 		__BACK="${__LINK}.back.${__DATE}"
 		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
-			funcPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
+			fnPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
 			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- check symbolic link ---------------------------------------------
 		if [[ -h "${__LINK}" ]]; then
-			funcPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
+			fnPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
 			continue
 		fi
 		# --- check directory -------------------------------------------------
 		if [[ -d "${__LINK}/." ]]; then
-			funcPrintf "%20.20s: %s" "exist directory" "${__LINK}"
-			funcPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
+			fnPrintf "%20.20s: %s" "exist directory" "${__LINK}"
+			fnPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
 			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- create destination directory ------------------------------------
 		mkdir -p "${__LINK%/*}"
 		# --- create symbolic link --------------------------------------------
-		funcPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
+		fnPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
 		case "${__RTIV}" in
 			r) ln -sr "${__TGET}" "${__LINK}";;
 			*) ln -s  "${__TGET}" "${__LINK}";;
@@ -649,24 +649,24 @@ function funcCreate_directory() {
 		# --- force parameter -------------------------------------------------
 		__BACK="${__LINK}.back.${__DATE}"
 		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
-			funcPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
+			fnPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
 			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- check symbolic link ---------------------------------------------
 		if [[ -h "${__LINK}" ]]; then
-			funcPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
+			fnPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
 			continue
 		fi
 		# --- check directory -------------------------------------------------
 		if [[ -d "${__LINK}/." ]]; then
-			funcPrintf "%20.20s: %s" "exist directory" "${__LINK}"
-			funcPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
+			fnPrintf "%20.20s: %s" "exist directory" "${__LINK}"
+			fnPrintf "%20.20s: %s" "move directory" "${__LINK} -> ${__BACK}"
 			mv "${__LINK}" "${__BACK}"
 		fi
 		# --- create destination directory ------------------------------------
 		mkdir -p "${__LINK%/*}"
 		# --- create symbolic link --------------------------------------------
-		funcPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
+		fnPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
 		ln -s "${__TGET}" "${__LINK}"
 	done
 }
@@ -704,13 +704,13 @@ function funcCreate_directory() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-function funcCreate_preseed() {
+function fnCreate_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 	declare       __WORK=""				# work variables
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_SEDD}" "${__TGET_PATH}"
 
@@ -784,13 +784,13 @@ function funcCreate_preseed() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-function funcCreate_nocloud() {
+function fnCreate_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 #	declare       __WORK=""				# work variables
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_CLUD}" "${__TGET_PATH}"
 
@@ -840,7 +840,7 @@ function funcCreate_nocloud() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-function funcCreate_kickstart() {
+function fnCreate_kickstart() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 #	declare       __WORK=""				# work variables
@@ -852,7 +852,7 @@ function funcCreate_kickstart() {
 	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_KICK}" "${__TGET_PATH}"
 
@@ -908,7 +908,7 @@ function funcCreate_kickstart() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-function funcCreate_autoyast() {
+function fnCreate_autoyast() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 #	declare       __WORK=""				# work variables
@@ -916,7 +916,7 @@ function funcCreate_autoyast() {
 	declare       __NUMS=""				# "            number
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_YAST}" "${__TGET_PATH}"
 
@@ -972,7 +972,7 @@ function funcCreate_autoyast() {
 #   input :   $@   : input value
 #   output: stdout : message
 #   return:        : unused
-function funcCreate_precon() {
+function fnCreate_precon() {
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
 	declare -a    __OPTN=()				# option parameter
@@ -1003,7 +1003,7 @@ function funcCreate_precon() {
 	fi
 
 	# -------------------------------------------------------------------------
-	funcPrintf "%20.20s: %s" "create pre-conf file" ""
+	fnPrintf "%20.20s: %s" "create pre-conf file" ""
 
 	# -------------------------------------------------------------------------
 	__LIST=()
@@ -1037,10 +1037,10 @@ function funcCreate_precon() {
 		__TYPE="${__PATH%/*}"
 		__TYPE="${__TYPE##*/}"
 		case "${__TYPE}" in
-			preseed  ) funcCreate_preseed   "${__PATH}";;
-			nocloud  ) funcCreate_nocloud   "${__PATH}/user-data";;
-			kickstart) funcCreate_kickstart "${__PATH}";;
-			autoyast ) funcCreate_autoyast  "${__PATH}";;
+			preseed  ) fnCreate_preseed   "${__PATH}";;
+			nocloud  ) fnCreate_nocloud   "${__PATH}/user-data";;
+			kickstart) fnCreate_kickstart "${__PATH}";;
+			autoyast ) fnCreate_autoyast  "${__PATH}";;
 			*)	;;
 		esac
 	done

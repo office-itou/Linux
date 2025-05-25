@@ -42,12 +42,12 @@
 # :_tmpl_005_function_section_mk_custom_iso.sh_:
 
 # --- initialization ----------------------------------------------------------
-function funcInitialization() {
+function fnInitialization() {
 :
 }
 
 # --- debug out parameter -----------------------------------------------------
-function funcDebug_parameter() {
+function fnDebug_parameter() {
 	declare       __CHAR="_"			# variable initial letter
 	declare       __NAME=""				#          name
 	declare       __VALU=""				#          value
@@ -80,7 +80,7 @@ function funcDebug_parameter() {
 }
 
 # --- help --------------------------------------------------------------------
-function funcHelp() {
+function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
 		
@@ -121,7 +121,7 @@ _EOT_
 
 # === main ====================================================================
 
-function funcMain() {
+function fnMain() {
 	declare -i    __time_start=0		# start of elapsed time
 	declare -i    __time_end=0			# end of elapsed time
 	declare -i    __time_elapsed=0		# result of elapsed time
@@ -142,7 +142,7 @@ function funcMain() {
 
 	# --- help ----------------------------------------------------------------
 	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then
-		funcHelp
+		fnHelp
 		exit 0
 	fi
 	# --- check the execution user --------------------------------------------
@@ -158,7 +158,7 @@ function funcMain() {
 			--debug | \
 			--dbg   ) shift; _DBGS_FLAG="true"; set -x;;
 			--dbgout) shift; _DBGS_FLAG="true";;
-			help    ) shift; funcHelp; exit 0;;
+			help    ) shift; fnHelp; exit 0;;
 			*       ) shift;;
 		esac
 	done
@@ -172,7 +172,7 @@ function funcMain() {
 	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- main ----------------------------------------------------------------
-	funcInitialization					# initialization
+	fnInitialization					# initialization
 
 	set -f -- "${__OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
@@ -212,7 +212,7 @@ function funcMain() {
 						esac
 					done
 					# --- selection by media type -----------------------------
-					funcPrint_menu "__RSLT" "create" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
+					fnPrint_menu "__RSLT" "create" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
 					IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${__RSLT[@]}" || true)
 					# --- select by input value -------------------------------
 					if [[ -z "${__RANG:-}" ]]; then
@@ -256,15 +256,15 @@ function funcMain() {
 								200)
 									# --- lnk_path ----------------------------
 									if [[ -n "${__LIST[25]##-}" ]] && [[ ! -e "${__LIST[13]}" ]] && [[ ! -h "${__LIST[13]}" ]]; then
-										funcPrintf "%20.20s: %s" "create symlink" "${__LIST[25]} -> ${__LIST[13]}"
+										fnPrintf "%20.20s: %s" "create symlink" "${__LIST[25]} -> ${__LIST[13]}"
 										ln -s "${__LIST[25]%%/}/${__LIST[13]##*/}" "${__LIST[13]}"
 									fi
-									__RSLT="$(funcDateDiff "${__LIST[10]:-@0}" "${__LIST[14]:-@0}")"
+									__RSLT="$(fnDateDiff "${__LIST[10]:-@0}" "${__LIST[14]:-@0}")"
 									if [[ "${__RSLT}" -lt 0 ]]; then
-										funcGetWeb_contents "${__LIST[13]}" "${__LIST[9]}"
+										fnGetWeb_contents "${__LIST[13]}" "${__LIST[9]}"
 									fi
 									if [[ -n "${__LIST[13]}" ]]; then
-										funcGetFileinfo __RETN "${__LIST[13]}"			# iso_path
+										fnGetFileinfo __RETN "${__LIST[13]}"			# iso_path
 										read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
 										__ARRY=("${__ARRY[@]##-}")
 #										__LIST[13]="${__ARRY[0]:-}"						# iso_path
@@ -278,9 +278,9 @@ function funcMain() {
 						fi
 						# --- remastering -------------------------------------
 						if [[ -s "${__LIST[13]}" ]]; then
-							funcRemastering "${__LIST[@]}"
+							fnRemastering "${__LIST[@]}"
 							# --- new local remaster iso files ----------------
-							funcGetFileinfo "__RETN" "${__LIST[17]##-}"
+							fnGetFileinfo "__RETN" "${__LIST[17]##-}"
 							read -r -a __ARRY < <(echo "${__RETN}")
 #							__LIST[17]="${__ARRY[0]:--}"		# rmk_path
 							__LIST[18]="${__ARRY[1]:--}"		# rmk_tstamp
@@ -311,12 +311,12 @@ function funcMain() {
 						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
 					done
 				done
-				funcPut_media_data
+				fnPut_media_data
 				;;
 			update  )					# (create new files only)
 				shift
-#				__RSLT="$(set -e; funcPrint_menu "update" "${_LIST_MDIA[@]}")"
-				funcPrint_menu __RSLT "update" "${_LIST_MDIA[@]}"
+#				__RSLT="$(set -e; fnPrint_menu "update" "${_LIST_MDIA[@]}")"
+				fnPrint_menu __RSLT "update" "${_LIST_MDIA[@]}"
 				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
 				for I in "${!_LIST_MDIA[@]}"
 				do
@@ -338,14 +338,14 @@ function funcMain() {
 					if [[ -n "${__LIST[13]##-}" ]] && [[ -n "${__LIST[14]##-}" ]] && [[ -n "${__LIST[15]##-}" ]]; then
 						if [[ -n  "${__LIST[9]##-}" ]] && [[ -n "${__LIST[10]##-}" ]] && [[ -n "${__LIST[11]##-}" ]]; then
 							if [[ -n "${__LIST[17]##-}" ]] && [[ -n "${__LIST[18]##-}" ]] && [[ -n "${__LIST[19]##-}" ]]; then
-								__WORK="$(funcDateDiff "${__LIST[14]}" "${__LIST[10]}")"
+								__WORK="$(fnDateDiff "${__LIST[14]}" "${__LIST[10]}")"
 								if [[ "${__WORK}" -eq 0 ]] && [[ "${__LIST[15]}" -ne "${__LIST[11]}" ]]; then
-									__WORK="$(funcDateDiff "${__LIST[14]}" "${__LIST[18]}")"
+									__WORK="$(fnDateDiff "${__LIST[14]}" "${__LIST[18]}")"
 									if [[ "${__WORK}" -lt 0 ]]; then
 										continue
 									fi
 									if [[ -n "${__LIST[23]##-}" ]] && [[ -n "${__LIST[24]##-}" ]]; then
-										__WORK="$(funcDateDiff "${__LIST[14]}" "${__LIST[24]}")"
+										__WORK="$(fnDateDiff "${__LIST[14]}" "${__LIST[24]}")"
 										if [[ "${__WORK}" -lt 0 ]]; then
 											continue
 										fi
@@ -354,9 +354,9 @@ function funcMain() {
 							fi
 						fi
 					fi
-					funcRemastering "${__LIST[@]}"
+					fnRemastering "${__LIST[@]}"
 					# --- new local remaster iso files ------------------------
-					__WORK="$(funcGetFileinfo "${__LIST[17]##-}")"
+					__WORK="$(fnGetFileinfo "${__LIST[17]##-}")"
 					read -r -a __ARRY < <(echo "${__WORK}")
 					__LIST[17]="${__ARRY[0]:--}"				# rmk_path
 					__LIST[18]="${__ARRY[1]:--}"				# rmk_tstamp
@@ -366,12 +366,12 @@ function funcMain() {
 					_LIST_MDIA[I]="${__LIST[*]}"
 #					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
 				done
-				funcPut_media_data
+				fnPut_media_data
 				;;
 			download)					# (download only)
 				shift
-#				__RSLT="$(set -e; funcPrint_menu "download" "${_LIST_MDIA[@]}")"
-				funcPrint_menu __RSLT "download" "${_LIST_MDIA[@]}"
+#				__RSLT="$(set -e; fnPrint_menu "download" "${_LIST_MDIA[@]}")"
+				fnPrint_menu __RSLT "download" "${_LIST_MDIA[@]}"
 				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
 				for I in "${!_LIST_MDIA[@]}"
 				do
@@ -387,7 +387,7 @@ function funcMain() {
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						create   ) shift; funcCreate_directory __RETN_PARM "${@:-}"; funcPut_media_data;;
+						create   ) shift; fnCreate_directory __RETN_PARM "${@:-}"; fnPut_media_data;;
 						update   ) shift;;
 						download ) shift;;
 						*        ) break;;
@@ -399,11 +399,11 @@ function funcMain() {
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						create   ) shift; funcPut_media_data;;
+						create   ) shift; fnPut_media_data;;
 						update   ) 
 							shift
-#							__RSLT="$(set -e; funcPrint_menu "list" "${_LIST_MDIA[@]}")"
-							funcPrint_menu __RSLT "list" "${_LIST_MDIA[@]}"
+#							__RSLT="$(set -e; fnPrint_menu "list" "${_LIST_MDIA[@]}")"
+							fnPrint_menu __RSLT "list" "${_LIST_MDIA[@]}"
 							IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
 							for I in "${!_LIST_MDIA[@]}"
 							do
@@ -423,7 +423,7 @@ function funcMain() {
 #								printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
 							done
 							# -------------------------------------------------
-							funcPut_media_data
+							fnPut_media_data
 							;;
 						download ) ;;
 						*        ) break;;
@@ -433,21 +433,21 @@ function funcMain() {
 			conf    )
 				shift
 				case "${1:-}" in
-					create   ) shift; funcCreate_conf;;
+					create   ) shift; fnCreate_conf;;
 					*        ) ;;
 				esac
 				;;
 			preconf )
 				shift
-				funcCreate_precon __RETN_PARM "${@:-}"
+				fnCreate_precon __RETN_PARM "${@:-}"
 				;;
-			help    ) shift; funcHelp; break;;
+			help    ) shift; fnHelp; break;;
 			debug   )
 				shift
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						parm) shift; funcDebug_parameter;;
+						parm) shift; fnDebug_parameter;;
 						*   ) break;;
 					esac
 				done
@@ -469,7 +469,7 @@ function funcMain() {
 }
 
 # *** main processing section *************************************************
-	funcMain "${_PROG_PARM[@]:-}"
+	fnMain "${_PROG_PARM[@]:-}"
 	exit 0
 
 ### eof #######################################################################

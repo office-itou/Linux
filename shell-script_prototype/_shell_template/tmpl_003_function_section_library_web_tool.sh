@@ -7,7 +7,7 @@
 #   output: stdout : message
 #   return:        : status
 # shellcheck disable=SC2317
-function funcGetWeb_contents() {
+function fnGetWeb_contents() {
 	declare -a    __OPTN=()				# options
 	declare -i    __RTCD=0				# return code
 	declare -a    __LIST=()				# data list
@@ -48,7 +48,7 @@ function funcGetWeb_contents() {
 #   output: stdout : unused
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcGetWeb_header() {
+function fnGetWeb_header() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -a    __OPTN=()				# options
 #	declare -i    __RTCD=0				# return code
@@ -104,7 +104,7 @@ function funcGetWeb_header() {
 #   output: stdout : unused
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcGetWeb_address() {
+function fnGetWeb_address() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
@@ -190,12 +190,12 @@ function funcGetWeb_address() {
 #   output: stdout : unused
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcGetWeb_info() {
+function fnGetWeb_info() {
 #	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __WORK=""				# work variables
 
-	funcGetWeb_address "__WORK" "${2:?}"
-	funcGetWeb_header "${1}" "${__WORK}"
+	fnGetWeb_address "__WORK" "${2:?}"
+	fnGetWeb_header "${1}" "${__WORK}"
 }
 
 # -----------------------------------------------------------------------------
@@ -204,7 +204,7 @@ function funcGetWeb_info() {
 #   output: stdout : output
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcGetWeb_status() {
+function fnGetWeb_status() {
 	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
 		100) echo -n "$1: Continue";;
 		101) echo -n "$1: Switching Protocols";;

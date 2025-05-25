@@ -6,7 +6,7 @@
 #   input :   $2   : destination directory
 #   output: stdout : output
 #   return:        : unused
-function funcPxeboot_copy() {
+function fnPxeboot_copy() {
 	declare -r    __PATH_TGET="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:?}"	# destination directory
 	declare       __MNTP=""				# mount point
@@ -33,7 +33,7 @@ function funcPxeboot_copy() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-function funcPxeboot_preseed() {
+function fnPxeboot_preseed() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -131,7 +131,7 @@ function funcPxeboot_preseed() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-function funcPxeboot_nocloud() {
+function fnPxeboot_nocloud() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -209,7 +209,7 @@ function funcPxeboot_nocloud() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-function funcPxeboot_kickstart() {
+function fnPxeboot_kickstart() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -273,7 +273,7 @@ function funcPxeboot_kickstart() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-function funcPxeboot_autoyast() {
+function fnPxeboot_autoyast() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -345,7 +345,7 @@ function funcPxeboot_autoyast() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-function funcPxeboot_boot_options() {
+function fnPxeboot_boot_options() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
@@ -356,8 +356,8 @@ function funcPxeboot_boot_options() {
 		debian       | \
 		ubuntu       )
 			case "${__TGET_LIST[23]}" in
-				*/preseed/* ) __WORK="$(set -e; funcPxeboot_preseed "${__TGET_LIST[@]}")";;
-				*/nocloud/* ) __WORK="$(set -e; funcPxeboot_nocloud "${__TGET_LIST[@]}")";;
+				*/preseed/* ) __WORK="$(set -e; fnPxeboot_preseed "${__TGET_LIST[@]}")";;
+				*/nocloud/* ) __WORK="$(set -e; fnPxeboot_nocloud "${__TGET_LIST[@]}")";;
 				*           ) ;;
 			esac
 			;;
@@ -365,8 +365,8 @@ function funcPxeboot_boot_options() {
 		centos       | \
 		almalinux    | \
 		rockylinux   | \
-		miraclelinux ) __WORK="$(set -e; funcPxeboot_kickstart "${__TGET_LIST[@]}")";;
-		opensuse     ) __WORK="$(set -e; funcPxeboot_autoyast "${__TGET_LIST[@]}")";;
+		miraclelinux ) __WORK="$(set -e; fnPxeboot_kickstart "${__TGET_LIST[@]}")";;
+		opensuse     ) __WORK="$(set -e; fnPxeboot_autoyast "${__TGET_LIST[@]}")";;
 		*            ) ;;
 	esac
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
@@ -382,7 +382,7 @@ function funcPxeboot_boot_options() {
 #   input :   $@   : target data (list)
 #   output: stdout : unused
 #   return:        : unused
-function funcPxeboot_ipxe() {
+function fnPxeboot_ipxe() {
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
 	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
@@ -540,7 +540,7 @@ _EOT_
 					)"
 					;;
 				*          )			# (linux)
-					__WORK="$(set -e; funcPxeboot_boot_options "${__TGET_LIST[@]}")"
+					__WORK="$(set -e; fnPxeboot_boot_options "${__TGET_LIST[@]}")"
 					IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
 					if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 						__WORK="$(
@@ -635,7 +635,7 @@ _EOT_
 #   input :   $@   : target data (list)
 #   output: stdout : unused
 #   return:        : unused
-function funcPxeboot_grub() {
+function fnPxeboot_grub() {
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
 	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
@@ -654,7 +654,7 @@ function funcPxeboot_grub() {
 
 	# --- tab string ----------------------------------------------------------
 	if [[ "${__CONT_TABS}" -gt 0 ]]; then
-		__SPCS="$(funcString $(("${__CONT_TABS}" * 2)) ' ')"
+		__SPCS="$(fnString $(("${__CONT_TABS}" * 2)) ' ')"
 	else
 		__SPCS=""
 	fi
@@ -814,7 +814,7 @@ _EOT_
 					)"
 					;;
 				*          )			# (linux)
-					__WORK="$(set -e; funcPxeboot_boot_options "${__TGET_LIST[@]}")"
+					__WORK="$(set -e; fnPxeboot_boot_options "${__TGET_LIST[@]}")"
 					IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
 					__WORK="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${__SPCS}/g" | sed -e ':l; N; s/\n/\\n/; b l;' || true
@@ -879,7 +879,7 @@ _EOT_
 #   input :   $@   : target data (list)
 #   output: stdout : unused
 #   return:        : unused
-function funcPxeboot_slnx() {
+function fnPxeboot_slnx() {
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
 	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
@@ -1045,7 +1045,7 @@ _EOT_
 					esac
 					;;
 				*          )			# (linux)
-					__WORK="$(set -e; funcPxeboot_boot_options "${__TGET_LIST[@]}")"
+					__WORK="$(set -e; fnPxeboot_boot_options "${__TGET_LIST[@]}")"
 					__WORK="${__WORK//\$\{hostname\}/"${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"}"
 					__WORK="${__WORK//\$\{srvraddr\}/"${_SRVR_PROT}://${_SRVR_ADDR:?}"}"
 					__WORK="${__WORK//\$\{ethrname\}/"${_NICS_NAME:-ens160}"}"
@@ -1098,7 +1098,7 @@ _EOT_
 #   output: stdout : message
 #   return:        : unused
 # --- create pxeboot menu -----------------------------------------------------
-function funcPxeboot() {
+function fnPxeboot() {
 	declare -i    __TABS=0				# tabs count
 	declare       __LIST=()				# work variable
 	declare -i    I=0					# work variables
@@ -1114,16 +1114,16 @@ function funcPxeboot() {
 		# --- update ----------------------------------------------------------
 		case "${1:-}" in
 			update  ) ;;
-			*       ) funcPxeboot_copy "${__LIST[13]}" "${_DIRS_IMGS}/${__LIST[2]}";;
+			*       ) fnPxeboot_copy "${__LIST[13]}" "${_DIRS_IMGS}/${__LIST[2]}";;
 		esac
 		# --- create pxeboot menu ---------------------------------------------
 		case "${1:-}" in
 			download) ;;
 			*       )
-				funcPxeboot_ipxe "${_MENU_IPXE}" "${__TABS:-"0"}" "${__LIST[@]}"
-				funcPxeboot_grub "${_MENU_GRUB}" "${__TABS:-"0"}" "${__LIST[@]}"
-				funcPxeboot_slnx "${_MENU_SLNX}" "${__TABS:-"0"}" "${__LIST[@]}"
-				funcPxeboot_slnx "${_MENU_UEFI}" "${__TABS:-"0"}" "${__LIST[@]}"
+				fnPxeboot_ipxe "${_MENU_IPXE}" "${__TABS:-"0"}" "${__LIST[@]}"
+				fnPxeboot_grub "${_MENU_GRUB}" "${__TABS:-"0"}" "${__LIST[@]}"
+				fnPxeboot_slnx "${_MENU_SLNX}" "${__TABS:-"0"}" "${__LIST[@]}"
+				fnPxeboot_slnx "${_MENU_UEFI}" "${__TABS:-"0"}" "${__LIST[@]}"
 				;;
 		esac
 		case "${__LIST[1]}" in

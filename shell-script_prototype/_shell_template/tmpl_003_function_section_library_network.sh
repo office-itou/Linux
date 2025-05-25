@@ -12,12 +12,12 @@
 #   output: stdout : output
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcIPv4GetNetmask() {
+function fnIPv4GetNetmask() {
 	declare -a    __OCTS=()				# octets
 	declare -i    __LOOP=0				# work variables
 	declare -i    __CALC=0				# "
 	# -------------------------------------------------------------------------
-	IFS= mapfile -d ':' -t __OCTS < <(echo "${1:?}.")
+	IFS= mapfile -d '.' -t __OCTS < <(echo -n "${1:?}.")
 	# -------------------------------------------------------------------------
 	if [[ "${#__OCTS[@]}" -gt 1 ]]; then
 		# --- netmask -> cidr -------------------------------------------------
@@ -36,7 +36,7 @@ function funcIPv4GetNetmask() {
 				255) ((__CALC+=8));;
 				*  )              ;;
 			esac
-		done < <(printf "%s" "${__OCTS[@]}")
+		done < <(printf "%s\n" "${__OCTS[@]}")
 		printf '%d' "${__CALC}"
 	else
 		# --- cidr -> netmask -------------------------------------------------
@@ -62,7 +62,7 @@ function funcIPv4GetNetmask() {
 #   output: stdout : output
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcIPv6GetFullAddr() {
+function fnIPv6GetFullAddr() {
 	declare -r    __FSEP="${1//[^:]/}"
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
@@ -79,7 +79,7 @@ function funcIPv6GetFullAddr() {
 #   output: stdout : output
 #   return:        : unused
 # shellcheck disable=SC2317
-function funcIPv6GetRevAddr() {
+function fnIPv6GetRevAddr() {
 	echo "${1//:/}" | \
 	    awk '{
 	        for(i=length();i>1;i--)              \

@@ -6,95 +6,95 @@
   
 |                                          shell file name                                          |                                                     function name                                                     |                                  explanation                                  |
 | :------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
-| [skel_mk_custom_iso.sh](./skel_mk_custom_iso.sh)                                                  | funcInitialization                                                                                                    |                                                                               |
-|                                                                                                   | funcDebug_parameter                                                                                                   |                                                                               |
-|                                                                                                   | funcHelp                                                                                                              |                                                                               |
-|                                                                                                   | funcMain                                                                                                              |                                                                               |
-| [skel_mk_pxeboot_conf.sh](./skel_mk_pxeboot_conf.sh)                                              | funcInitialization                                                                                                    |                                                                               |
-|                                                                                                   | funcDebug_parameter                                                                                                   |                                                                               |
-|                                                                                                   | funcHelp                                                                                                              |                                                                               |
-|                                                                                                   | funcMain                                                                                                              |                                                                               |
-| [skel_test_function.sh](./skel_test_function.sh)                                                  | funcTrap                                                                                                              |                                                                               |
-|                                                                                                   | funcInitialization                                                                                                    |                                                                               |
-|                                                                                                   | funcDebug_parameter                                                                                                   |                                                                               |
-|                                                                                                   | funcHelp                                                                                                              |                                                                               |
-|                                                                                                   | funcMain                                                                                                              |                                                                               |
+| [skel_mk_custom_iso.sh](./skel_mk_custom_iso.sh)                                                  | fnInitialization                                                                                                      |                                                                               |
+|                                                                                                   | fnDebug_parameter                                                                                                     |                                                                               |
+|                                                                                                   | fnHelp                                                                                                                |                                                                               |
+|                                                                                                   | fnMain                                                                                                                |                                                                               |
+| [skel_mk_pxeboot_conf.sh](./skel_mk_pxeboot_conf.sh)                                              | fnInitialization                                                                                                      |                                                                               |
+|                                                                                                   | fnDebug_parameter                                                                                                     |                                                                               |
+|                                                                                                   | fnHelp                                                                                                                |                                                                               |
+|                                                                                                   | fnMain                                                                                                                |                                                                               |
+| [skel_test_function.sh](./skel_test_function.sh)                                                  | fnInitialization                                                                                                      |                                                                               |
+|                                                                                                   | fnDebug_parameter                                                                                                     |                                                                               |
+|                                                                                                   | fnHelp                                                                                                                |                                                                               |
+|                                                                                                   | fnMain                                                                                                                |                                                                               |
   
 ### **template**  
   
 |                                          shell file name                                          |                                                     function name                                                     |                                  explanation                                  |
 | :------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
-| [tmpl_001_initialize_common.sh](./tmpl_001_initialize_common.sh)                                  | [funcTrap](#trap)                                                                                                     | trap                                                                          |
+| [tmpl_001_initialize_common.sh](./tmpl_001_initialize_common.sh)                                  | [fnTrap](#trap)                                                                                                       | trap                                                                          |
 | [tmpl_001_initialize_mk_custom_iso.sh](./tmpl_001_initialize_mk_custom_iso.sh)                    |                                                                                                                       |                                                                               |
 | [tmpl_001_initialize_mk_pxeboot_conf.sh](./tmpl_001_initialize_mk_pxeboot_conf.sh)                |                                                                                                                       |                                                                               |
 | [tmpl_001_initialize_test_function.sh](./tmpl_001_initialize_test_function.sh)                    |                                                                                                                       |                                                                               |
 | [tmpl_002_data_section.sh](./tmpl_002_data_section.sh)                                            |                                                                                                                       |                                                                               |
-| [tmpl_003_function_section_library.sh](./tmpl_003_function_section_library.sh)                    | [funcIsNumeric](#is-numeric) "\$1"                                                                                    | is numeric                                                                    |
-|                                                                                                   | [funcSubstr](#substr) "\$1" "\$2" "\$3"                                                                               | substr                                                                        |
-|                                                                                                   | [funcString](#string-output) "\$1" "\$2"                                                                              | string output                                                                 |
-|                                                                                                   | [funcDateDiff](#date-diff) "\$1" "\$2"                                                                                | date diff                                                                     |
-|                                                                                                   | [funcPrintf](#print-with-screen-control) "\$@"                                                                        | print with screen control                                                     |
-| [tmpl_003_function_section_library_initrd.sh](./tmpl_003_function_section_library_initrd.sh)      | [funcXcpio](#extract-a-compressed-cpio) "\$1" "\$2" "\$@"                                                             | extract a compressed cpio                                                     |
-|                                                                                                   | [funcReadhex](#read-bytes-out-of-a-file-checking-that-they-are-valid-hex-digits) "\$1" "\$2" "\$3"                    | read bytes out of a file, checking that they are valid hex digits             |
-|                                                                                                   | [funcCheckzero](#check-for-a-zero-byte-in-a-file) "\$1" "\$2"                                                         | check for a zero byte in a file                                               |
-|                                                                                                   | [funcSplit_initramfs](#split-an-initramfs-into-target-files-and-call-funcxcpio-on-each) "\$1" "\$2"                   | split an initramfs into target files and call funcxcpio on each               |
-| [tmpl_003_function_section_library_media.sh](./tmpl_003_function_section_library_media.sh)        | [funcUnit_conversion](#unit-conversion) "\$1" "\$2"                                                                   | unit conversion                                                               |
-|                                                                                                   | [funcGetVolID](#get-volume-id) "\$1" "\$2"                                                                            | get volume id                                                                 |
-|                                                                                                   | [funcGetFileinfo](#get-file-information) "\$1" "\$2"                                                                  | get file information                                                          |
-|                                                                                                   | [funcDistro2efi](#distro-to-efi-image-file-name) "\$1"                                                                | distro to efi image file name                                                 |
-| [tmpl_003_function_section_library_mkiso.sh](./tmpl_003_function_section_library_mkiso.sh)        | [funcCreate_iso](#create-iso-image) "\$1" "\$2" "\$@"                                                                 | create iso image                                                              |
-| [tmpl_003_function_section_library_network.sh](./tmpl_003_function_section_library_network.sh)    | [funcIPv4GetNetmask](#ipv4-netmask-conversion-netmask-and-cidr-conversion) "\$1"                                      | IPv4 netmask conversion (netmask and cidr conversion)                         |
-|                                                                                                   | [funcIPv6GetFullAddr](#ipv6-full-address) "\$1"                                                                       | IPv6 full address                                                             |
-|                                                                                                   | [funcIPv6GetRevAddr](#ipv6-reverse-address) "\$1"                                                                     | IPv6 reverse address                                                          |
-| [tmpl_003_function_section_library_web_tool.sh](./tmpl_003_function_section_library_web_tool.sh)  | [funcGetWeb_contents](#get-web-contents) "\$1" "\$2"                                                                  | get web contents                                                              |
-|                                                                                                   | [funcGetWeb_header](#get-web-header) "\$1" "\$2"                                                                      | get web header                                                                |
-|                                                                                                   | [funcGetWeb_address](#get-web-address-completion) "\$1" "\$2"                                                         | get web address completion                                                    |
-|                                                                                                   | [funcGetWeb_info](#get-web-information) "\$1" "\$2"                                                                   | get web information                                                           |
-|                                                                                                   | [funcGetWeb_status](#get-web-status-message) "\$1"                                                                    | get web status message                                                        |
-| [tmpl_004_function_section_common.sh](./tmpl_004_function_section_common.sh)                      | [funcInitialization](#initialization)                                                                                 | initialization                                                                |
-|                                                                                                   | [funcCreate_conf](#create-common-configuration-file)                                                                  | create common configuration file                                              |
-|                                                                                                   | [funcGet_media_data](#get-media-data)                                                                                 | get media data                                                                |
-|                                                                                                   | [funcPut_media_data](#put-media-data)                                                                                 | put media data                                                                |
-|                                                                                                   | [funcCreate_directory](#create-directory) "\$1" "\$@"                                                                 | create directory                                                              |
-|                                                                                                   | [funcCreate_preseed](#create-preseedcfg) "\$1"                                                                        | create preseed.cfg                                                            |
-|                                                                                                   | [funcCreate_nocloud](#create-nocloud) "\$1"                                                                           | create nocloud                                                                |
-|                                                                                                   | [funcCreate_kickstart](#create-kickstartcfg) "\$1"                                                                    | create kickstart.cfg                                                          |
-|                                                                                                   | [funcCreate_autoyast](#create-autoyastxml) "\$1"                                                                      | create autoyast.xml                                                           |
-|                                                                                                   | [funcCreate_precon](#create-pre-configuration-file-templates) "\$1" "\$@"                                             | create pre-configuration file templates                                       |
-| [tmpl_005_function_section_common.sh](./tmpl_005_function_section_common.sh)                      | [funcPrint_menu](#print-out-of-menu) "\$1" "\$2" "\$3" "\$@"                                                          | print out of menu                                                             |
-| [tmpl_005_function_section_mk_custom_iso.sh](./tmpl_005_function_section_mk_custom_iso.sh)        | [funcRemastering_preseed](#create-a-boot-option-for-preseed-of-the-remaster) "\$@"                                    | create a boot option for preseed of the remaster                              |
-|                                                                                                   | [funcRemastering_nocloud](#create-a-boot-option-for-nocloud-of-the-remaster) "\$@"                                    | create a boot option for nocloud of the remaster                              |
-|                                                                                                   | [funcRemastering_kickstart](#create-a-boot-option-for-kickstart-of-the-remaster) "\$@"                                | create a boot option for kickstart of the remaster                            |
-|                                                                                                   | [funcRemastering_autoyast](#create-a-boot-option-for-autoyast-of-the-remaster) "\$@"                                  | create a boot option for autoyast of the remaster                             |
-|                                                                                                   | [funcRemastering_boot_options](#create-a-boot-option-of-the-remaster) "\$@"                                           | create a boot option of the remaster                                          |
-|                                                                                                   | [funcRemastering_path](#create-path-for-configuration-file) "\$1" "\$2"                                               | create path for configuration file                                            |
-|                                                                                                   | [funcRemastering_isolinux_autoinst_cfg](#create-autoinstall-configuration-file-for-isolinux) "\$1" "\$2" "\$3" "\$@"  | create autoinstall configuration file for isolinux                            |
-|                                                                                                   | [funcRemastering_isolinux](#editing-isolinux-for-autoinstall) "\$1" "\$2" "\$@"                                       | editing isolinux for autoinstall                                              |
-|                                                                                                   | [funcRemastering_grub_autoinst_cfg](#create-autoinstall-configuration-file-for-grub) "\$1" "\$2" "\$3" "\$@"          | create autoinstall configuration file for grub                                |
-|                                                                                                   | [funcRemastering_grub](#editing-grub-for-autoinstall) "\$1" "\$2" "\$@"                                               | editing grub for autoinstall                                                  |
-|                                                                                                   | [funcRemastering_copy](#copy-auto-install-files) "\$1" "\$@"                                                          | copy auto-install files                                                       |
-|                                                                                                   | [funcRemastering_initrd](#remastering-for-initrd) "\$1" "\$@"                                                         | remastering for initrd                                                        |
-|                                                                                                   | [funcRemastering_media](#remastering-for-media) "\$1" "\$@"                                                           | remastering for media                                                         |
-|                                                                                                   | [funcRemastering](#remastering) "\$@"                                                                                 | remastering                                                                   |
-|                                                                                                   | [funcExec_download](#executing-the-download) "\$1" "\$@"                                                              | executing the download                                                        |
-|                                                                                                   | [funcExec_remastering](#executing-the-remastering) "\$1" "\$@"                                                        | executing the remastering                                                     |
-|                                                                                                   | funcXXX                                                                                                               |                                                                               |
-| [tmpl_005_function_section_mk_pxeboot_conf.sh](./tmpl_005_function_section_mk_pxeboot_conf.sh)    | [funcPxeboot_copy](#file-copy) "\$1" "\$2"                                                                            | file copy                                                                     |
-|                                                                                                   | [funcPxeboot_preseed](#create-a-boot-option-for-preseed-of-the-pxeboot) "\$@"                                         | create a boot option for preseed of the pxeboot                               |
-|                                                                                                   | [funcPxeboot_nocloud](#create-a-boot-option-for-nocloud-of-the-pxeboot) "\$@"                                         | create a boot option for nocloud of the pxeboot                               |
-|                                                                                                   | [funcPxeboot_kickstart](#create-a-boot-option-for-kickstart-of-the-pxeboot) "\$@"                                     | create a boot option for kickstart of the pxeboot                             |
-|                                                                                                   | [funcPxeboot_autoyast](#create-a-boot-option-for-autoyast-of-the-pxeboot) "\$@"                                       | create a boot option for autoyast of the pxeboot                              |
-|                                                                                                   | [funcPxeboot_boot_options](#create-a-boot-option-of-the-pxeboot) "\$@"                                                | create a boot option of the pxeboot                                           |
-|                                                                                                   | [funcPxeboot_ipxe](#create-autoexecipxe) "\$1" "\$2" "\$@"                                                            | create autoexec.ipxe                                                          |
-|                                                                                                   | [funcPxeboot_grub](#create-grubcfg) "\$1" "\$2" "\$@"                                                                 | create grub.cfg                                                               |
-|                                                                                                   | [funcPxeboot_slnx](#create-bios-mode) "\$1" "\$2" "\$@"                                                               | create bios mode                                                              |
-|                                                                                                   | [funcPxeboot](#create-pxeboot-menu)                                                                                   | create pxeboot menu                                                           |
-| [tmpl_005_function_section_test_function.sh](./tmpl_005_function_section_test_function.sh)        | funcServiceStatus                                                                                                     |                                                                               |
-|                                                                                                   | funcIsPackage                                                                                                         |                                                                               |
-|                                                                                                   | funcDiff                                                                                                              |                                                                               |
-|                                                                                                   | funcCurl                                                                                                              |                                                                               |
-|                                                                                                   | funcDebug_color                                                                                                       |                                                                               |
-|                                                                                                   | funcDebug_function                                                                                                    |                                                                               |
+| [tmpl_003_function_section_library.sh](./tmpl_003_function_section_library.sh)                    | [fnIsNumeric](#is-numeric) "\$1"                                                                                      | is numeric                                                                    |
+|                                                                                                   | [fnSubstr](#substr) "\$1" "\$2" "\$3"                                                                                 | substr                                                                        |
+|                                                                                                   | [fnString](#string-output) "\$1" "\$2"                                                                                | string output                                                                 |
+|                                                                                                   | [fnDateDiff](#date-diff) "\$1" "\$2"                                                                                  | date diff                                                                     |
+|                                                                                                   | [fnPrintf](#print-with-screen-control) "\$@"                                                                          | print with screen control                                                     |
+| [tmpl_003_function_section_library_initrd.sh](./tmpl_003_function_section_library_initrd.sh)      | [fnXcpio](#extract-a-compressed-cpio) "\$1" "\$2" "\$@"                                                               | extract a compressed cpio                                                     |
+|                                                                                                   | [fnReadhex](#read-bytes-out-of-a-file-checking-that-they-are-valid-hex-digits) "\$1" "\$2" "\$3"                      | read bytes out of a file, checking that they are valid hex digits             |
+|                                                                                                   | [fnCheckzero](#check-for-a-zero-byte-in-a-file) "\$1" "\$2"                                                           | check for a zero byte in a file                                               |
+|                                                                                                   | [fnSplit_initramfs](#split-an-initramfs-into-target-files-and-call-funcxcpio-on-each) "\$1" "\$2"                     | split an initramfs into target files and call funcxcpio on each               |
+| [tmpl_003_function_section_library_media.sh](./tmpl_003_function_section_library_media.sh)        | [fnUnit_conversion](#unit-conversion) "\$1" "\$2"                                                                     | unit conversion                                                               |
+|                                                                                                   | [fnGetVolID](#get-volume-id) "\$1" "\$2"                                                                              | get volume id                                                                 |
+|                                                                                                   | [fnGetFileinfo](#get-file-information) "\$1" "\$2"                                                                    | get file information                                                          |
+|                                                                                                   | [fnDistro2efi](#distro-to-efi-image-file-name) "\$1"                                                                  | distro to efi image file name                                                 |
+| [tmpl_003_function_section_library_mkiso.sh](./tmpl_003_function_section_library_mkiso.sh)        | [fnCreate_iso](#create-iso-image) "\$1" "\$2" "\$@"                                                                   | create iso image                                                              |
+| [tmpl_003_function_section_library_network.sh](./tmpl_003_function_section_library_network.sh)    | [fnIPv4GetNetmask](#ipv4-netmask-conversion-netmask-and-cidr-conversion) "\$1"                                        | IPv4 netmask conversion (netmask and cidr conversion)                         |
+|                                                                                                   | [fnIPv6GetFullAddr](#ipv6-full-address) "\$1"                                                                         | IPv6 full address                                                             |
+|                                                                                                   | [fnIPv6GetRevAddr](#ipv6-reverse-address) "\$1"                                                                       | IPv6 reverse address                                                          |
+| [tmpl_003_function_section_library_web_tool.sh](./tmpl_003_function_section_library_web_tool.sh)  | [fnGetWeb_contents](#get-web-contents) "\$1" "\$2"                                                                    | get web contents                                                              |
+|                                                                                                   | [fnGetWeb_header](#get-web-header) "\$1" "\$2"                                                                        | get web header                                                                |
+|                                                                                                   | [fnGetWeb_address](#get-web-address-completion) "\$1" "\$2"                                                           | get web address completion                                                    |
+|                                                                                                   | [fnGetWeb_info](#get-web-information) "\$1" "\$2"                                                                     | get web information                                                           |
+|                                                                                                   | [fnGetWeb_status](#get-web-status-message) "\$1"                                                                      | get web status message                                                        |
+| [tmpl_004_function_section_common.sh](./tmpl_004_function_section_common.sh)                      | [fnInitialization](#initialization)                                                                                   | initialization                                                                |
+|                                                                                                   | [fnCreate_conf](#create-common-configuration-file)                                                                    | create common configuration file                                              |
+|                                                                                                   | [fnGet_media_data](#get-media-data)                                                                                   | get media data                                                                |
+|                                                                                                   | [fnPut_media_data](#put-media-data)                                                                                   | put media data                                                                |
+|                                                                                                   | [fnCreate_directory](#create-directory) "\$1" "\$@"                                                                   | create directory                                                              |
+|                                                                                                   | [fnCreate_preseed](#create-preseedcfg) "\$1"                                                                          | create preseed.cfg                                                            |
+|                                                                                                   | [fnCreate_nocloud](#create-nocloud) "\$1"                                                                             | create nocloud                                                                |
+|                                                                                                   | [fnCreate_kickstart](#create-kickstartcfg) "\$1"                                                                      | create kickstart.cfg                                                          |
+|                                                                                                   | [fnCreate_autoyast](#create-autoyastxml) "\$1"                                                                        | create autoyast.xml                                                           |
+|                                                                                                   | [fnCreate_precon](#create-pre-configuration-file-templates) "\$1" "\$@"                                               | create pre-configuration file templates                                       |
+| [tmpl_004_function_section_template.sh](./tmpl_004_function_section_template.sh)                  | [fnInitialization](#initialization)                                                                                   | initialization                                                                |
+| [tmpl_005_function_section_common.sh](./tmpl_005_function_section_common.sh)                      | [fnPrint_menu](#print-out-of-menu) "\$1" "\$2" "\$3" "\$@"                                                            | print out of menu                                                             |
+| [tmpl_005_function_section_mk_custom_iso.sh](./tmpl_005_function_section_mk_custom_iso.sh)        | [fnRemastering_preseed](#create-a-boot-option-for-preseed-of-the-remaster) "\$@"                                      | create a boot option for preseed of the remaster                              |
+|                                                                                                   | [fnRemastering_nocloud](#create-a-boot-option-for-nocloud-of-the-remaster) "\$@"                                      | create a boot option for nocloud of the remaster                              |
+|                                                                                                   | [fnRemastering_kickstart](#create-a-boot-option-for-kickstart-of-the-remaster) "\$@"                                  | create a boot option for kickstart of the remaster                            |
+|                                                                                                   | [fnRemastering_autoyast](#create-a-boot-option-for-autoyast-of-the-remaster) "\$@"                                    | create a boot option for autoyast of the remaster                             |
+|                                                                                                   | [fnRemastering_boot_options](#create-a-boot-option-of-the-remaster) "\$@"                                             | create a boot option of the remaster                                          |
+|                                                                                                   | [fnRemastering_path](#create-path-for-configuration-file) "\$1" "\$2"                                                 | create path for configuration file                                            |
+|                                                                                                   | [fnRemastering_isolinux_autoinst_cfg](#create-autoinstall-configuration-file-for-isolinux) "\$1" "\$2" "\$3" "\$@"    | create autoinstall configuration file for isolinux                            |
+|                                                                                                   | [fnRemastering_isolinux](#editing-isolinux-for-autoinstall) "\$1" "\$2" "\$@"                                         | editing isolinux for autoinstall                                              |
+|                                                                                                   | [fnRemastering_grub_autoinst_cfg](#create-autoinstall-configuration-file-for-grub) "\$1" "\$2" "\$3" "\$@"            | create autoinstall configuration file for grub                                |
+|                                                                                                   | [fnRemastering_grub](#editing-grub-for-autoinstall) "\$1" "\$2" "\$@"                                                 | editing grub for autoinstall                                                  |
+|                                                                                                   | [fnRemastering_copy](#copy-auto-install-files) "\$1" "\$@"                                                            | copy auto-install files                                                       |
+|                                                                                                   | [fnRemastering_initrd](#remastering-for-initrd) "\$1" "\$@"                                                           | remastering for initrd                                                        |
+|                                                                                                   | [fnRemastering_media](#remastering-for-media) "\$1" "\$@"                                                             | remastering for media                                                         |
+|                                                                                                   | [fnRemastering](#remastering) "\$@"                                                                                   | remastering                                                                   |
+|                                                                                                   | [fnExec_download](#executing-the-download) "\$1" "\$@"                                                                | executing the download                                                        |
+|                                                                                                   | [fnExec_remastering](#executing-the-remastering) "\$1" "\$@"                                                          | executing the remastering                                                     |
+|                                                                                                   | fnXXX                                                                                                                 |                                                                               |
+| [tmpl_005_function_section_mk_pxeboot_conf.sh](./tmpl_005_function_section_mk_pxeboot_conf.sh)    | [fnPxeboot_copy](#file-copy) "\$1" "\$2"                                                                              | file copy                                                                     |
+|                                                                                                   | [fnPxeboot_preseed](#create-a-boot-option-for-preseed-of-the-pxeboot) "\$@"                                           | create a boot option for preseed of the pxeboot                               |
+|                                                                                                   | [fnPxeboot_nocloud](#create-a-boot-option-for-nocloud-of-the-pxeboot) "\$@"                                           | create a boot option for nocloud of the pxeboot                               |
+|                                                                                                   | [fnPxeboot_kickstart](#create-a-boot-option-for-kickstart-of-the-pxeboot) "\$@"                                       | create a boot option for kickstart of the pxeboot                             |
+|                                                                                                   | [fnPxeboot_autoyast](#create-a-boot-option-for-autoyast-of-the-pxeboot) "\$@"                                         | create a boot option for autoyast of the pxeboot                              |
+|                                                                                                   | [fnPxeboot_boot_options](#create-a-boot-option-of-the-pxeboot) "\$@"                                                  | create a boot option of the pxeboot                                           |
+|                                                                                                   | [fnPxeboot_ipxe](#create-autoexecipxe) "\$1" "\$2" "\$@"                                                              | create autoexec.ipxe                                                          |
+|                                                                                                   | [fnPxeboot_grub](#create-grubcfg) "\$1" "\$2" "\$@"                                                                   | create grub.cfg                                                               |
+|                                                                                                   | [fnPxeboot_slnx](#create-bios-mode) "\$1" "\$2" "\$@"                                                                 | create bios mode                                                              |
+|                                                                                                   | [fnPxeboot](#create-pxeboot-menu)                                                                                     | create pxeboot menu                                                           |
+| [tmpl_005_function_section_test_function.sh](./tmpl_005_function_section_test_function.sh)        | fnServiceStatus                                                                                                       |                                                                               |
+|                                                                                                   | fnIsPackage                                                                                                           |                                                                               |
+|                                                                                                   | fnDiff                                                                                                                |                                                                               |
+|                                                                                                   | fnCurl                                                                                                                |                                                                               |
+|                                                                                                   | fnDebug_color                                                                                                         |                                                                               |
+|                                                                                                   | fnDebug_function                                                                                                      |                                                                               |
   
 * * *
   
@@ -104,7 +104,7 @@
   
 #### no items  
   
-*funcInitialization*  
+*fnInitialization*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -113,7 +113,7 @@
   
 #### no items  
   
-*funcDebug_parameter*  
+*fnDebug_parameter*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -122,7 +122,7 @@
   
 #### no items  
   
-*funcHelp*  
+*fnHelp*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -131,7 +131,7 @@
   
 #### no items  
   
-*funcMain*  
+*fnMain*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -144,7 +144,7 @@
   
 #### no items  
   
-*funcInitialization*  
+*fnInitialization*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -153,7 +153,7 @@
   
 #### no items  
   
-*funcDebug_parameter*  
+*fnDebug_parameter*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -162,7 +162,7 @@
   
 #### no items  
   
-*funcHelp*  
+*fnHelp*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -171,7 +171,7 @@
   
 #### no items  
   
-*funcMain*  
+*fnMain*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -184,7 +184,7 @@
   
 #### no items  
   
-*funcTrap*  
+*fnInitialization*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -193,7 +193,7 @@
   
 #### no items  
   
-*funcInitialization*  
+*fnDebug_parameter*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -202,7 +202,7 @@
   
 #### no items  
   
-*funcDebug_parameter*  
+*fnHelp*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -211,16 +211,7 @@
   
 #### no items  
   
-*funcHelp*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-  
-* * *
-  
-#### no items  
-  
-*funcMain*  
+*fnMain*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -233,7 +224,7 @@
   
 #### trap  
   
-*funcTrap*  
+*fnTrap*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -265,20 +256,20 @@
   
 #### is numeric  
   
-*funcIsNumeric "\$1"*  
+*fnIsNumeric "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
 | input  | $1     | input value            |                                            |
-| output | stdout | unused                 |                                            |
-| return |        |                        | =0 (numer)                                 |
+| output | stdout |                        | =0 (numer)                                 |
 | "      |        |                        | !0 (not number)                            |
+| return |        | unused                 |                                            |
   
 * * *
   
 #### substr  
   
-*funcSubstr "\$1" "\$2" "\$3"*  
+*fnSubstr "\$1" "\$2" "\$3"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -292,7 +283,7 @@
   
 #### string output  
   
-*funcString "\$1" "\$2"*  
+*fnString "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -305,7 +296,7 @@
   
 #### date diff  
   
-*funcDateDiff "\$1" "\$2"*  
+*fnDateDiff "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -321,7 +312,7 @@
   
 #### print with screen control  
   
-*funcPrintf "\$@"*  
+*fnPrintf "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -337,7 +328,7 @@
   
 #### extract a compressed cpio  
   
-*funcXcpio "\$1" "\$2" "\$@"*  
+*fnXcpio "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -351,7 +342,7 @@
   
 #### read bytes out of a file, checking that they are valid hex digits  
   
-*funcReadhex "\$1" "\$2" "\$3"*  
+*fnReadhex "\$1" "\$2" "\$3"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -365,7 +356,7 @@
   
 #### check for a zero byte in a file  
   
-*funcCheckzero "\$1" "\$2"*  
+*fnCheckzero "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -378,7 +369,7 @@
   
 #### split an initramfs into target files and call funcxcpio on each  
   
-*funcSplit_initramfs "\$1" "\$2"*  
+*fnSplit_initramfs "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -395,7 +386,7 @@
   
 #### unit conversion  
   
-*funcUnit_conversion "\$1" "\$2"*  
+*fnUnit_conversion "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -408,7 +399,7 @@
   
 #### get volume id  
   
-*funcGetVolID "\$1" "\$2"*  
+*fnGetVolID "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -421,7 +412,7 @@
   
 #### get file information  
   
-*funcGetFileinfo "\$1" "\$2"*  
+*fnGetFileinfo "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -434,7 +425,7 @@
   
 #### distro to efi image file name  
   
-*funcDistro2efi "\$1"*  
+*fnDistro2efi "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -450,7 +441,7 @@
   
 #### create iso image  
   
-*funcCreate_iso "\$1" "\$2" "\$@"*  
+*fnCreate_iso "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -468,7 +459,7 @@
   
 #### IPv4 netmask conversion (netmask and cidr conversion)  
   
-*funcIPv4GetNetmask "\$1"*  
+*fnIPv4GetNetmask "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -480,7 +471,7 @@
   
 #### IPv6 full address  
   
-*funcIPv6GetFullAddr "\$1"*  
+*fnIPv6GetFullAddr "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -492,7 +483,7 @@
   
 #### IPv6 reverse address  
   
-*funcIPv6GetRevAddr "\$1"*  
+*fnIPv6GetRevAddr "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -508,7 +499,7 @@
   
 #### get web contents  
   
-*funcGetWeb_contents "\$1" "\$2"*  
+*fnGetWeb_contents "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -521,7 +512,7 @@
   
 #### get web header  
   
-*funcGetWeb_header "\$1" "\$2"*  
+*fnGetWeb_header "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -534,7 +525,7 @@
   
 #### get web address completion  
   
-*funcGetWeb_address "\$1" "\$2"*  
+*fnGetWeb_address "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -547,7 +538,7 @@
   
 #### get web information  
   
-*funcGetWeb_info "\$1" "\$2"*  
+*fnGetWeb_info "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -560,7 +551,7 @@
   
 #### get web status message  
   
-*funcGetWeb_status "\$1"*  
+*fnGetWeb_status "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -576,7 +567,7 @@
   
 #### initialization  
   
-*funcInitialization*  
+*fnInitialization*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -588,7 +579,7 @@
   
 #### create common configuration file  
   
-*funcCreate_conf*  
+*fnCreate_conf*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -600,7 +591,7 @@
   
 #### get media data  
   
-*funcGet_media_data*  
+*fnGet_media_data*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -612,7 +603,7 @@
   
 #### put media data  
   
-*funcPut_media_data*  
+*fnPut_media_data*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -624,7 +615,7 @@
   
 #### create directory  
   
-*funcCreate_directory "\$1" "\$@"*  
+*fnCreate_directory "\$1" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -637,7 +628,7 @@
   
 #### create preseed.cfg  
   
-*funcCreate_preseed "\$1"*  
+*fnCreate_preseed "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -649,7 +640,7 @@
   
 #### create nocloud  
   
-*funcCreate_nocloud "\$1"*  
+*fnCreate_nocloud "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -661,7 +652,7 @@
   
 #### create kickstart.cfg  
   
-*funcCreate_kickstart "\$1"*  
+*fnCreate_kickstart "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -673,7 +664,7 @@
   
 #### create autoyast.xml  
   
-*funcCreate_autoyast "\$1"*  
+*fnCreate_autoyast "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -685,7 +676,7 @@
   
 #### create pre-configuration file templates  
   
-*funcCreate_precon "\$1" "\$@"*  
+*fnCreate_precon "\$1" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -696,13 +687,29 @@
   
 * * *
   
+### **tmpl_004_function_section_template.sh**  
+  
+* * *
+  
+#### initialization  
+  
+*fnInitialization*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
 ### **tmpl_005_function_section_common.sh**  
   
 * * *
   
 #### print out of menu  
   
-*funcPrint_menu "\$1" "\$2" "\$3" "\$@"*  
+*fnPrint_menu "\$1" "\$2" "\$3" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -721,7 +728,7 @@
   
 #### create a boot option for preseed of the remaster  
   
-*funcRemastering_preseed "\$@"*  
+*fnRemastering_preseed "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -733,7 +740,7 @@
   
 #### create a boot option for nocloud of the remaster  
   
-*funcRemastering_nocloud "\$@"*  
+*fnRemastering_nocloud "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -745,7 +752,7 @@
   
 #### create a boot option for kickstart of the remaster  
   
-*funcRemastering_kickstart "\$@"*  
+*fnRemastering_kickstart "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -757,7 +764,7 @@
   
 #### create a boot option for autoyast of the remaster  
   
-*funcRemastering_autoyast "\$@"*  
+*fnRemastering_autoyast "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -769,7 +776,7 @@
   
 #### create a boot option of the remaster  
   
-*funcRemastering_boot_options "\$@"*  
+*fnRemastering_boot_options "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -781,7 +788,7 @@
   
 #### create path for configuration file  
   
-*funcRemastering_path "\$1" "\$2"*  
+*fnRemastering_path "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -794,7 +801,7 @@
   
 #### create autoinstall configuration file for isolinux  
   
-*funcRemastering_isolinux_autoinst_cfg "\$1" "\$2" "\$3" "\$@"*  
+*fnRemastering_isolinux_autoinst_cfg "\$1" "\$2" "\$3" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -809,7 +816,7 @@
   
 #### editing isolinux for autoinstall  
   
-*funcRemastering_isolinux "\$1" "\$2" "\$@"*  
+*fnRemastering_isolinux "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -823,7 +830,7 @@
   
 #### create autoinstall configuration file for grub  
   
-*funcRemastering_grub_autoinst_cfg "\$1" "\$2" "\$3" "\$@"*  
+*fnRemastering_grub_autoinst_cfg "\$1" "\$2" "\$3" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -838,7 +845,7 @@
   
 #### editing grub for autoinstall  
   
-*funcRemastering_grub "\$1" "\$2" "\$@"*  
+*fnRemastering_grub "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -852,7 +859,7 @@
   
 #### copy auto-install files  
   
-*funcRemastering_copy "\$1" "\$@"*  
+*fnRemastering_copy "\$1" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -865,7 +872,7 @@
   
 #### remastering for initrd  
   
-*funcRemastering_initrd "\$1" "\$@"*  
+*fnRemastering_initrd "\$1" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -878,7 +885,7 @@
   
 #### remastering for media  
   
-*funcRemastering_media "\$1" "\$@"*  
+*fnRemastering_media "\$1" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -891,7 +898,7 @@
   
 #### remastering  
   
-*funcRemastering "\$@"*  
+*fnRemastering "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -903,7 +910,7 @@
   
 #### executing the download  
   
-*funcExec_download "\$1" "\$@"*  
+*fnExec_download "\$1" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -916,7 +923,7 @@
   
 #### executing the remastering  
   
-*funcExec_remastering "\$1" "\$@"*  
+*fnExec_remastering "\$1" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -929,7 +936,7 @@
   
 #### no items  
   
-*funcXXX "\$1" "\$2" "\$3" "\$@"*  
+*fnXXX "\$1" "\$2" "\$3" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -948,7 +955,7 @@
   
 #### file copy  
   
-*funcPxeboot_copy "\$1" "\$2"*  
+*fnPxeboot_copy "\$1" "\$2"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -961,7 +968,7 @@
   
 #### create a boot option for preseed of the pxeboot  
   
-*funcPxeboot_preseed "\$@"*  
+*fnPxeboot_preseed "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -973,7 +980,7 @@
   
 #### create a boot option for nocloud of the pxeboot  
   
-*funcPxeboot_nocloud "\$@"*  
+*fnPxeboot_nocloud "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -985,7 +992,7 @@
   
 #### create a boot option for kickstart of the pxeboot  
   
-*funcPxeboot_kickstart "\$@"*  
+*fnPxeboot_kickstart "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -997,7 +1004,7 @@
   
 #### create a boot option for autoyast of the pxeboot  
   
-*funcPxeboot_autoyast "\$@"*  
+*fnPxeboot_autoyast "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1009,7 +1016,7 @@
   
 #### create a boot option of the pxeboot  
   
-*funcPxeboot_boot_options "\$@"*  
+*fnPxeboot_boot_options "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1021,7 +1028,7 @@
   
 #### create autoexec.ipxe  
   
-*funcPxeboot_ipxe "\$1" "\$2" "\$@"*  
+*fnPxeboot_ipxe "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1035,7 +1042,7 @@
   
 #### create grub.cfg  
   
-*funcPxeboot_grub "\$1" "\$2" "\$@"*  
+*fnPxeboot_grub "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1049,7 +1056,7 @@
   
 #### create bios mode  
   
-*funcPxeboot_slnx "\$1" "\$2" "\$@"*  
+*fnPxeboot_slnx "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1063,7 +1070,7 @@
   
 #### create pxeboot menu  
   
-*funcPxeboot*  
+*fnPxeboot*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1079,7 +1086,7 @@
   
 #### no items  
   
-*funcServiceStatus*  
+*fnServiceStatus*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1088,7 +1095,7 @@
   
 #### no items  
   
-*funcIsPackage*  
+*fnIsPackage*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1097,7 +1104,7 @@
   
 #### no items  
   
-*funcDiff*  
+*fnDiff*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1106,7 +1113,7 @@
   
 #### no items  
   
-*funcCurl*  
+*fnCurl*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1115,7 +1122,7 @@
   
 #### no items  
   
-*funcDebug_color*  
+*fnDebug_color*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1124,7 +1131,7 @@
   
 #### no items  
   
-*funcDebug_function*  
+*fnDebug_function*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |

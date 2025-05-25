@@ -17,92 +17,27 @@
 ##
 ###############################################################################
 
-# *** initialization **********************************************************
-	export LANG=C
-
-#	set -n								# Check for syntax errors
-#	set -x								# Show command and argument expansion
-	set -o ignoreeof					# Do not exit with Ctrl+D
-	set +m								# Disable job control
-	set -e								# End with status other than 0
-	set -u								# End with undefined variable reference
-	set -o pipefail						# End with in pipe error
-
-	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
-
-	# === data section ========================================================
-
-	# --- debug parameter -----------------------------------------------------
-	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
-
-	# --- constant for control code -------------------------------------------
-	if [[ -z "${_CODE_ESCP+true}" ]]; then
-		declare   _CODE_ESCP=""
-		          _CODE_ESCP="$(printf '\033')"
-		readonly  _CODE_ESCP
-	fi
-
-	# --- user name -----------------------------------------------------------
-	declare       _USER_NAME="${USER:-"$(whoami || true)"}"
-
-	# --- working directory name ----------------------------------------------
-	declare -r    _PROG_PATH="$0"
-	declare -r -a _PROG_PARM=("${@:-}")
-	declare -r    _PROG_DIRS="${_PROG_PATH%/*}"
-	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
-	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
-	declare       _DIRS_TEMP=""
-	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
-	readonly      _DIRS_TEMP
-
-	# --- trap ----------------------------------------------------------------
-	declare -a    _LIST_RMOV=()			# list remove directory / file
-	              _LIST_RMOV+=("${_DIRS_TEMP:?}")
-
-# shellcheck disable=SC2317
-function funcTrap() {
-	declare       _PATH=""
-	declare -i    I=0
-	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
-	do
-		_PATH="${_LIST_RMOV[I]}"
-		if [[ -e "${_PATH}" ]] && mountpoint --quiet "${_PATH}"; then
-			printf "[%s]: umount \"%s\"\n" "${I}" "${_PATH}" 1>&2
-			umount --quiet         --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --force --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --lazy  --recursive "${_PATH}" || true
-		fi
-	done
-	if [[ -e "${_DIRS_TEMP:?}" ]]; then
-		printf "%s: \"%s\"\n" "remove" "${_DIRS_TEMP}" 1>&2
-		while read -r _PATH
-		do
-			printf "[%s]: umount \"%s\"\n" "-" "${_PATH}" 1>&2
-			umount --quiet         --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --force --recursive "${_PATH}" > /dev/null 2>&1 || \
-			umount --quiet --lazy  --recursive "${_PATH}" || true
-		done < <(grep "${_DIRS_TEMP:?}" /proc/mounts | cut -d ' ' -f 2 | sort -rV || true)
-		rm -rf "${_DIRS_TEMP:?}"
-	fi
-}
-
-	trap funcTrap EXIT
+# :_tmpl_001_initialize_common.sh_:
 
 # :_tmpl_001_initialize_test_function.sh_:
 
 # :_tmpl_003_function_section_library.sh_:
+
+# :_tmpl_003_function_section_library_network.sh_:
+
+# :_tmpl_003_function_section_library_media.sh_:
 
 # :_tmpl_004_function_section_template.sh_:
 
 # :_tmpl_005_function_section_test_function.sh_:
 
 # --- initialization ----------------------------------------------------------
-function funcInitialization() {
+function fnInitialization() {
 :
 }
 
 # --- debug out parameter -----------------------------------------------------
-function funcDebug_parameter() {
+function fnDebug_parameter() {
 	declare       _VARS_CHAR="_"		# variable initial letter
 	declare       _VARS_NAME=""			#          name
 	declare       _VARS_VALU=""			#          value
@@ -135,7 +70,7 @@ function funcDebug_parameter() {
 }
 
 # --- help --------------------------------------------------------------------
-function funcHelp() {
+function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ${_PROG_PATH} [command (options)]
 		
@@ -149,7 +84,7 @@ _EOT_
 
 # === main ====================================================================
 
-function funcMain() {
+function fnMain() {
 	declare -i    _time_start=0			# start of elapsed time
 	declare -i    _time_end=0			# end of elapsed time
 	declare -i    _time_elapsed=0		# result of elapsed time
@@ -170,7 +105,7 @@ function funcMain() {
 			--debug | \
 			--dbg   ) shift; _DBGS_FLAG="true"; set -x;;
 			--dbgout) shift; _DBGS_FLAG="true";;
-			help    ) shift; funcHelp; exit 0;;
+			help    ) shift; fnHelp; exit 0;;
 			*       ) shift;;
 		esac
 	done
@@ -185,22 +120,22 @@ function funcMain() {
 	printf "${_CODE_ESCP}[m${_CODE_ESCP}[45m%s${_CODE_ESCP}[m\n" "$(date -d "@${_time_start}" +"%Y/%m/%d %H:%M:%S" || true) processing start"
 
 	# --- main ----------------------------------------------------------------
-	funcInitialization					# initialization
+	fnInitialization					# initialization
 
 	set -f -- "${_OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
 	do
 		_RETN_PARM=()
 		case "${1:-}" in
-			help    ) shift; funcHelp; break;;
+			help    ) shift; fnHelp; break;;
 			debug   )
 				shift
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						func) shift; funcDebug_function;;
-						text) shift; funcDebug_color;;
-						parm) shift; funcDebug_parameter;;
+						func) shift; fnDebug_function;;
+						text) shift; fnDebug_color;;
+						parm) shift; fnDebug_parameter;;
 						*   ) break;;
 					esac
 				done
@@ -222,7 +157,7 @@ function funcMain() {
 }
 
 # *** main processing section *************************************************
-	funcMain "${_PROG_PARM[@]:-}"
+	fnMain "${_PROG_PARM[@]:-}"
 	exit 0
 
 ### eof #######################################################################

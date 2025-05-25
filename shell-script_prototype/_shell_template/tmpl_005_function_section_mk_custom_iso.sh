@@ -5,7 +5,7 @@
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-function funcRemastering_preseed() {
+function fnRemastering_preseed() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -102,7 +102,7 @@ function funcRemastering_preseed() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-function funcRemastering_nocloud() {
+function fnRemastering_nocloud() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -179,7 +179,7 @@ function funcRemastering_nocloud() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-function funcRemastering_kickstart() {
+function fnRemastering_kickstart() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -243,7 +243,7 @@ function funcRemastering_kickstart() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-function funcRemastering_autoyast() {
+function fnRemastering_autoyast() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -315,7 +315,7 @@ function funcRemastering_autoyast() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-function funcRemastering_boot_options() {
+function fnRemastering_boot_options() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
@@ -326,8 +326,8 @@ function funcRemastering_boot_options() {
 		debian       | \
 		ubuntu       )
 			case "${__TGET_LIST[23]}" in
-				*/preseed/* ) __WORK="$(set -e; funcRemastering_preseed "${__TGET_LIST[@]}")";;
-				*/nocloud/* ) __WORK="$(set -e; funcRemastering_nocloud "${__TGET_LIST[@]}")";;
+				*/preseed/* ) __WORK="$(set -e; fnRemastering_preseed "${__TGET_LIST[@]}")";;
+				*/nocloud/* ) __WORK="$(set -e; fnRemastering_nocloud "${__TGET_LIST[@]}")";;
 				*           ) ;;
 			esac
 			;;
@@ -335,8 +335,8 @@ function funcRemastering_boot_options() {
 		centos       | \
 		almalinux    | \
 		rockylinux   | \
-		miraclelinux ) __WORK="$(set -e; funcRemastering_kickstart "${__TGET_LIST[@]}")";;
-		opensuse     ) __WORK="$(set -e; funcRemastering_autoyast "${__TGET_LIST[@]}")";;
+		miraclelinux ) __WORK="$(set -e; fnRemastering_kickstart "${__TGET_LIST[@]}")";;
+		opensuse     ) __WORK="$(set -e; fnRemastering_autoyast "${__TGET_LIST[@]}")";;
 		*            ) ;;
 	esac
 	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
@@ -351,7 +351,7 @@ function funcRemastering_boot_options() {
 #   input :   $2   : directory
 #   output: stdout : output
 #   return:        : unused
-function funcRemastering_path() {
+function fnRemastering_path() {
 	declare -r    __PATH_TGET="${1:?}"	# target path
 	declare -r    __DIRS_TGET="${2:?}"	# directory
 	declare       __DIRS=""				# directory
@@ -373,7 +373,7 @@ function funcRemastering_path() {
 #   input :   $@   : target data
 #   output: stdout : unused
 #   return:        : unused
-function funcRemastering_isolinux_autoinst_cfg() {
+function fnRemastering_isolinux_autoinst_cfg() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
 	declare -r    __BOOT_OPTN="${3:?}"	# boot options
@@ -468,7 +468,7 @@ _EOT_
 #   input :   $@   : target data
 #   output: stdout : unused
 #   return:        : unused
-function funcRemastering_isolinux() {
+function fnRemastering_isolinux() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __BOOT_OPTN="${2:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:3}") # target data
@@ -484,7 +484,7 @@ function funcRemastering_isolinux() {
 	__PAUT=""
 	while read -r __PATH
 	do
-		__FNAM="$(set -e; funcRemastering_path "${__PATH}" "${__DIRS_TGET}")"	# isolinux.cfg
+		__FNAM="$(set -e; fnRemastering_path "${__PATH}" "${__DIRS_TGET}")"	# isolinux.cfg
 		__PAUT="${__FNAM%/*}/${_AUTO_INST}"
 		__FTHM="${__FNAM%/*}/theme.txt"
 		__FTMP="${__PATH}.tmp"
@@ -505,7 +505,7 @@ function funcRemastering_isolinux() {
 		fi
 		rm -f "${__FTMP:?}"
 		# --- create autoinstall configuration file for isolinux --------------
-		funcRemastering_isolinux_autoinst_cfg "${__DIRS_TGET}" "${__PAUT}" "${__BOOT_OPTN}" "${__TGET_LIST[@]}"
+		fnRemastering_isolinux_autoinst_cfg "${__DIRS_TGET}" "${__PAUT}" "${__BOOT_OPTN}" "${__TGET_LIST[@]}"
 	done < <(find "${__DIRS_TGET}" -name 'isolinux.cfg' -type f || true)
 	# --- comment out ---------------------------------------------------------
 	if [[ -z "${__PAUT}" ]]; then
@@ -541,7 +541,7 @@ function funcRemastering_isolinux() {
 #   input :   $@   : target data
 #   output: stdout : unused
 #   return:        : unused
-function funcRemastering_grub_autoinst_cfg() {
+function fnRemastering_grub_autoinst_cfg() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
 	declare -r    __BOOT_OPTN="${3:?}"	# boot options
@@ -735,7 +735,7 @@ _EOT_
 #   input :   $@   : target data
 #   output: stdout : unused
 #   return:        : unused
-function funcRemastering_grub() {
+function fnRemastering_grub() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __BOOT_OPTN="${2:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:3}") # target data
@@ -750,7 +750,7 @@ function funcRemastering_grub() {
 	__PAUT=""
 	while read -r __PATH
 	do
-		__FNAM="$(set -e; funcRemastering_path "${__PATH}" "${__DIRS_TGET}")"	# grub.cfg
+		__FNAM="$(set -e; fnRemastering_path "${__PATH}" "${__DIRS_TGET}")"	# grub.cfg
 		__PAUT="${__FNAM%/*}/${_AUTO_INST}"
 		__FTMP="${__PATH}.tmp"
 		if ! grep -qEi '^menuentry[ \t]+.*$' "${__PATH}"; then
@@ -766,7 +766,7 @@ function funcRemastering_grub() {
 		fi
 		rm -f "${__FTMP:?}"
 		# --- create autoinstall configuration file for grub ------------------
-		funcRemastering_grub_autoinst_cfg "${__DIRS_TGET}" "${__PAUT}" "${__BOOT_OPTN}" "${__TGET_LIST[@]}"
+		fnRemastering_grub_autoinst_cfg "${__DIRS_TGET}" "${__PAUT}" "${__BOOT_OPTN}" "${__TGET_LIST[@]}"
 	done < <(find "${__DIRS_TGET}" -name 'grub.cfg' -type f || true)
 	# --- comment out ---------------------------------------------------------
 	if [[ -z "${__PAUT}" ]]; then
@@ -794,7 +794,7 @@ function funcRemastering_grub() {
 #   input :   $@   : target data
 #   output: stdout : unused
 #   return:        : unused
-function funcRemastering_copy() {
+function fnRemastering_copy() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
 	declare       __WORK=""				# work variables
@@ -855,7 +855,7 @@ function funcRemastering_copy() {
 #   input :   $@   : target data
 #   output: stdout : unused
 #   return:        : unused
-function funcRemastering_initrd() {
+function fnRemastering_initrd() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
 	declare       __FKNL=""				# kernel
@@ -874,13 +874,13 @@ function funcRemastering_initrd() {
 	__DTMP="$(mktemp -qd "${TMPDIR:-/tmp}/${__FIRD##*/}.XXXXXX")"
 
 	# --- extract -------------------------------------------------------------
-	funcSplit_initramfs "${__DIRS_TGET}${__FIRD}" "${__DTMP}"
+	fnSplit_initramfs "${__DIRS_TGET}${__FIRD}" "${__DTMP}"
 	__DTOP="${__DTMP}"
 	if [[ -d "${__DTOP}/main/." ]]; then
 		__DTOP+="/main"
 	fi
 	# --- copy auto-install files ---------------------------------------------
-	funcRemastering_copy "${__DTOP}" "${__TGET_LIST[@]}"
+	fnRemastering_copy "${__DTOP}" "${__TGET_LIST[@]}"
 #	ln -s "${__TGET_LIST[23]#"${_DIRS_CONF}"}" "${__DTOP}/preseed.cfg"
 	# --- repackaging ---------------------------------------------------------
 	pushd "${__DTOP}" > /dev/null || exit
@@ -896,7 +896,7 @@ function funcRemastering_initrd() {
 #   input :   $@   : target data
 #   output: stdout : unused
 #   return:        : unused
-function funcRemastering_media() {
+function fnRemastering_media() {
 	declare -r    __DIRS_TGET="${1:?}"						# target directory
 	declare -r -a __TGET_LIST=("${@:2}")					# target data
 	declare -r    __DWRK="${_DIRS_TEMP}/${__TGET_LIST[2]}"	# work directory
@@ -914,13 +914,13 @@ function funcRemastering_media() {
 #	__PATH="${__DWRK}/${__TGET_LIST[17]##*/}.tmp"				# file path
 	__FCAT="$(find "${__DIRS_TGET}" \( -iname 'boot.cat'     -o -iname 'boot.catalog' \) -type f -printf "%P" || true)"
 	__FBIN="$(find "${__DIRS_TGET}" \( -iname 'isolinux.bin' -o -iname 'eltorito.img' \) -type f -printf "%P" || true)"
-#	__VLID="$(funcGetVolID "${__TGET_LIST[13]}")"
-	__FEFI="$(funcDistro2efi "${__TGET_LIST[2]%%-*}")"
+#	__VLID="$(fnGetVolID "${__TGET_LIST[13]}")"
+	__FEFI="$(fnDistro2efi "${__TGET_LIST[2]%%-*}")"
 	# --- create iso image file -----------------------------------------------
 	if [[ -e "${__DIRS_TGET}/${__FEFI}" ]]; then
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "info" "xorriso (hybrid)" 1>&2
 		__FHBR="$(find /usr/lib  -iname 'isohdpfx.bin' -type f || true)"
-		funcCreate_iso "${__DIRS_TGET}" "${__TGET_LIST[17]}" \
+		fnCreate_iso "${__DIRS_TGET}" "${__TGET_LIST[17]}" \
 			-quiet -rational-rock \
 			-volid "${__TGET_LIST[16]//%20/ }" \
 			-joliet -joliet-long \
@@ -944,7 +944,7 @@ function funcRemastering_media() {
 		__SIZE=$(fdisk -l "${__TGET_LIST[13]}" | awk '/.iso2/ {print $4;}' || true)
 		dd if="${__TGET_LIST[13]}" bs=512 skip="${__SKIP}" count="${__SIZE}" of="${__FEFI}" > /dev/null 2>&1
 		# --- create iso image file -------------------------------------------
-		funcCreate_iso "${__DIRS_TGET}" "${__TGET_LIST[17]}" \
+		fnCreate_iso "${__DIRS_TGET}" "${__TGET_LIST[17]}" \
 			-quiet -rational-rock \
 			-volid "${__TGET_LIST[16]//%20/ }" \
 			-joliet -joliet-long \
@@ -969,7 +969,7 @@ function funcRemastering_media() {
 #   input :   $@   : target data
 #   output: stdout : unused
 #   return:        : unused
-function funcRemastering() {
+function fnRemastering() {
 	declare -i    __time_start=0							# start of elapsed time
 	declare -i    __time_end=0								# end of elapsed time
 	declare -i    __time_elapsed=0							# result of elapsed time
@@ -989,7 +989,7 @@ function funcRemastering() {
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__TGET_LIST[13]##*/}" 1>&2
 
 	# --- pre-check -----------------------------------------------------------
-	__FEFI="$(funcDistro2efi "${__TGET_LIST[2]%%-*}")"
+	__FEFI="$(fnDistro2efi "${__TGET_LIST[2]%%-*}")"
 	if [[ -z "${__FEFI}" ]]; then
 		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[41m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "unknown target" "${__TGET_LIST[2]%%-*} [${__TGET_LIST[13]##*/}]" 1>&2
 		return
@@ -1013,25 +1013,25 @@ function funcRemastering() {
 	mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}"
 	# --- create boot options -------------------------------------------------
 	printf "%20.20s: %s\n" "start" "create boot options" 1>&2
-	__WORK="$(set -e; funcRemastering_boot_options "${__TGET_LIST[@]}")"
+	__WORK="$(set -e; fnRemastering_boot_options "${__TGET_LIST[@]}")"
 	# --- create autoinstall configuration file for isolinux ------------------
 	printf "%20.20s: %s\n" "start" "create autoinstall configuration file for isolinux" 1>&2
-	funcRemastering_isolinux "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
+	fnRemastering_isolinux "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
 	# --- create autoinstall configuration file for grub ----------------------
 	printf "%20.20s: %s\n" "start" "create autoinstall configuration file for grub" 1>&2
-	funcRemastering_grub "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
+	fnRemastering_grub "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
 	# --- copy auto-install files ---------------------------------------------
 	printf "%20.20s: %s\n" "start" "copy auto-install files" 1>&2
-	funcRemastering_copy "${__DMRG}" "${__TGET_LIST[@]}"
+	fnRemastering_copy "${__DMRG}" "${__TGET_LIST[@]}"
 	# --- remastering for initrd ----------------------------------------------
 	printf "%20.20s: %s\n" "start" "remastering for initrd" 1>&2
 	case "${__TGET_LIST[2]}" in
-		*-mini-*         ) funcRemastering_initrd "${__DMRG}" "${__TGET_LIST[@]}";;
+		*-mini-*         ) fnRemastering_initrd "${__DMRG}" "${__TGET_LIST[@]}";;
 		*                ) ;;
 	esac
 	# --- create iso image file -----------------------------------------------
 	printf "%20.20s: %s\n" "start" "create iso image file" 1>&2
-	funcRemastering_media "${__DMRG}" "${__TGET_LIST[@]}"
+	fnRemastering_media "${__DMRG}" "${__TGET_LIST[@]}"
 	umount "${__DMRG}"
 	umount "${__DLOW}"
 
@@ -1052,7 +1052,7 @@ function funcRemastering() {
 #   input :   $@   : target data
 #   output: stdout : message
 #   return:        : unused
-function funcExec_download() {
+function fnExec_download() {
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -a    __TGET_LIST=("${@:2}") # target data
 	declare       __RSLT=""				# result
@@ -1068,18 +1068,18 @@ function funcExec_download() {
 	esac
 	# --- lnk_path ------------------------------------------------------------
 	if [[ -n "${__TGET_LIST[25]##-}" ]] && [[ ! -e "${__TGET_LIST[13]}" ]] && [[ ! -h "${__TGET_LIST[13]}" ]]; then
-		funcPrintf "%20.20s: %s" "create symlink" "${__TGET_LIST[25]} -> ${__TGET_LIST[13]}"
+		fnPrintf "%20.20s: %s" "create symlink" "${__TGET_LIST[25]} -> ${__TGET_LIST[13]}"
 		ln -s "${__TGET_LIST[25]%%/}/${__TGET_LIST[13]##*/}" "${__TGET_LIST[13]}"
 	fi
 	# --- comparing web and local file timestamps -----------------------------
-	__RSLT="$(funcDateDiff "${__TGET_LIST[10]:-@0}" "${__TGET_LIST[14]:-@0}")"
+	__RSLT="$(fnDateDiff "${__TGET_LIST[10]:-@0}" "${__TGET_LIST[14]:-@0}")"
 	if [[ "${__RSLT}" -ge 0 ]]; then
 		return
 	fi
 	# --- executing the download ----------------------------------------------
-	funcGetWeb_contents "${__TGET_LIST[13]}" "${__TGET_LIST[9]}"
+	fnGetWeb_contents "${__TGET_LIST[13]}" "${__TGET_LIST[9]}"
 	# --- get file information ------------------------------------------------
-	funcGetFileinfo __RETN "${__TGET_LIST[13]}"
+	fnGetFileinfo __RETN "${__TGET_LIST[13]}"
 	read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
 	__ARRY=("${__ARRY[@]##-}")
 #	__TGET_LIST[13]="${__ARRY[0]:-}"	# iso_path
@@ -1096,7 +1096,7 @@ function funcExec_download() {
 #   input :   $@   : target data
 #   output: stdout : message
 #   return:        : unused
-function funcExec_remastering() {
+function fnExec_remastering() {
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -a    __TGET_LIST=("${@:2}") # target data
 #	declare       __RSLT=""				# result
@@ -1107,14 +1107,14 @@ function funcExec_remastering() {
 		return
 	fi
 	# --- comparing remaster and local file timestamps ------------------------
-	__RSLT="$(funcDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
+	__RSLT="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
 	if [[ "${__RSLT}" -ge 0 ]]; then
 		return
 	fi
 	# --- executing the remastering -------------------------------------------
-	funcRemastering "${__TGET_LIST[@]}"
+	fnRemastering "${__TGET_LIST[@]}"
 	# --- new local remaster iso files ----------------------------------------
-	funcGetFileinfo "__RETN" "${__TGET_LIST[17]##-}"
+	fnGetFileinfo "__RETN" "${__TGET_LIST[17]##-}"
 	read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
 	__ARRY=("${__ARRY[@]##-}")
 #	__TGET_LIST[17]="${__ARRY[0]:--}"	# rmk_path
@@ -1133,7 +1133,7 @@ function funcExec_remastering() {
 #   input :   $@   : target data
 #   output: stdout : message
 #   return:        : unused
-function funcXXX() {
+function fnXXX() {
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -r    __COMD_TYPE="$2"		# command type
 	declare -r    __TGET_RANG="$3"		# target range
@@ -1183,14 +1183,14 @@ function funcXXX() {
 			*       ) ;;
 		esac
 		# --- download --------------------------------------------------------
-		funcExec_download "__RETN" "${__LIST[@]}"
+		fnExec_download "__RETN" "${__LIST[@]}"
 		read -r -a __ARRY < <(echo "${__RETN:-}")
 		case "${__ARRY[12]}" in
 			200) __LIST=("${__ARRY[@]}");;
 			*  ) ;;
 		esac
 		# --- remastering -----------------------------------------------------
-		funcExec_remastering "__RETN" "${__LIST[@]}"
+		fnExec_remastering "__RETN" "${__LIST[@]}"
 		read -r -a __ARRY < <(echo "${__RETN:-}")
 		__LIST=("${__ARRY[@]}")
 		# --- conversion ------------------------------------------------------
