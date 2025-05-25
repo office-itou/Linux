@@ -96,6 +96,137 @@
 |                                                                                                   | funcDebug_color                                                                                                       |                                                                               |
 |                                                                                                   | funcDebug_function                                                                                                    |                                                                               |
   
+* * *
+  
+### **skel_mk_custom_iso.sh**  
+  
+* * *
+  
+#### no items  
+  
+*funcInitialization*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+#### no items  
+  
+*funcDebug_parameter*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+#### no items  
+  
+*funcHelp*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+#### no items  
+  
+*funcMain*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+### **skel_mk_pxeboot_conf.sh**  
+  
+* * *
+  
+#### no items  
+  
+*funcInitialization*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+#### no items  
+  
+*funcDebug_parameter*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+#### no items  
+  
+*funcHelp*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+#### no items  
+  
+*funcMain*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+### **skel_test_function.sh**  
+  
+* * *
+  
+#### no items  
+  
+*funcTrap*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+#### no items  
+  
+*funcInitialization*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+#### no items  
+  
+*funcDebug_parameter*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+#### no items  
+  
+*funcHelp*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
+#### no items  
+  
+*funcMain*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+  
+* * *
+  
 ### **tmpl_001_initialize_common.sh**  
   
 * * *
@@ -109,6 +240,26 @@
 | input  |        | unused                 |                                            |
 | output | stdout | unused                 |                                            |
 | return |        | unused                 |                                            |
+  
+* * *
+  
+### **tmpl_001_initialize_mk_custom_iso.sh**  
+  
+* * *
+  
+### **tmpl_001_initialize_mk_pxeboot_conf.sh**  
+  
+* * *
+  
+### **tmpl_001_initialize_test_function.sh**  
+  
+* * *
+  
+### **tmpl_002_data_section.sh**  
+  
+* * *
+  
+### **tmpl_003_function_section_library.sh**  
   
 * * *
   
@@ -180,6 +331,10 @@
   
 * * *
   
+### **tmpl_003_function_section_library_initrd.sh**  
+  
+* * *
+  
 #### extract a compressed cpio  
   
 *funcXcpio "\$1" "\$2" "\$@"*  
@@ -234,6 +389,10 @@
   
 * * *
   
+### **tmpl_003_function_section_library_media.sh**  
+  
+* * *
+  
 #### unit conversion  
   
 *funcUnit_conversion "\$1" "\$2"*  
@@ -285,6 +444,10 @@
   
 * * *
   
+### **tmpl_003_function_section_library_mkiso.sh**  
+  
+* * *
+  
 #### create iso image  
   
 *funcCreate_iso "\$1" "\$2" "\$@"*  
@@ -296,6 +459,10 @@
 | input  | $@     | xorrisofs options      |                                            |
 | output | stdout | message                |                                            |
 | return |        | unused                 |                                            |
+  
+* * *
+  
+### **tmpl_003_function_section_library_network.sh**  
   
 * * *
   
@@ -332,6 +499,10 @@
 | input  | $1     | input vale             |                                            |
 | output | stdout | output                 |                                            |
 | return |        | unused                 |                                            |
+  
+* * *
+  
+### **tmpl_003_function_section_library_web_tool.sh**  
   
 * * *
   
@@ -396,6 +567,10 @@
 | input  | $1     | input vale             |                                            |
 | output | stdout | output                 |                                            |
 | return |        | unused                 |                                            |
+  
+* * *
+  
+### **tmpl_004_function_section_common.sh**  
   
 * * *
   
@@ -521,6 +696,10 @@
   
 * * *
   
+### **tmpl_005_function_section_common.sh**  
+  
+* * *
+  
 #### print out of menu  
   
 *funcPrint_menu "\$1" "\$2" "\$3" "\$@"*  
@@ -533,6 +712,10 @@
 | input  | $@     | target data            |                                            |
 | output | stdout | message                |                                            |
 | return |        | unused                 |                                            |
+  
+* * *
+  
+### **tmpl_005_function_section_mk_custom_iso.sh**  
   
 * * *
   
@@ -759,6 +942,10 @@
   
 * * *
   
+### **tmpl_005_function_section_mk_pxeboot_conf.sh**  
+  
+* * *
+  
 #### file copy  
   
 *funcPxeboot_copy "\$1" "\$2"*  
@@ -883,6 +1070,10 @@
 | input  |        | unused                 |                                            |
 | output | stdout | message                |                                            |
 | return |        | unused                 |                                            |
+  
+* * *
+  
+### **tmpl_005_function_section_test_function.sh**  
   
 * * *
   
