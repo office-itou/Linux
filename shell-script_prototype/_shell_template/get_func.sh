@@ -79,14 +79,25 @@ IFS= mapfile -d $'\n' -t __DTAL < <(
 _EOT_
 )
 
+__FILE=""
 __SAME=""
 __DTAL=()
 while read -r __PATH
 do
 	if [[ "${__FILE:-}" != "${__PATH##*/}" ]]; then
+		__FILE="${__PATH##*/}"
+		IFS= mapfile -d $'\n' -t __ARRY < <(
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/{' -e 's/^ *//g' -e 's/^ \+$//g}' || true
+				  
+				* * *
+				  
+				### **${__FILE}**  
+_EOT_
+		)
+		__DTAL+=("${__ARRY[@]}")
 		__SAME=""
 	fi
-	__FILE="${__PATH##*/}"
+#	__FILE="${__PATH##*/}"
 	case "${__FILE}" in
 		skel_*)
 			if [[ "${__TYPE}" != "skeleton" ]]; then
@@ -94,12 +105,6 @@ do
 				__WORK="$(fnTableHeader "${__TYPE}")"
 				IFS= mapfile -d $'\n' -t __ARRY < <(echo -n "${__WORK}")
 				__TBLE+=("${__ARRY[@]}")
-				IFS= mapfile -d $'\n' -t __DTAL < <(
-					cat <<- _EOT_ | sed -e '/^ [^ ]\+/{' -e 's/^ *//g' -e 's/^ \+$//g}' || true
-						  
-						### **${__FILE}**  
-_EOT_
-				)
 			fi
 			;;
 		tmpl_*)
@@ -108,12 +113,6 @@ _EOT_
 				__WORK="$(fnTableHeader "${__TYPE}")"
 				IFS= mapfile -d $'\n' -t __ARRY < <(echo -n "${__WORK}")
 				__TBLE+=("${__ARRY[@]}")
-				IFS= mapfile -d $'\n' -t __DTAL < <(
-					cat <<- _EOT_ | sed -e '/^ [^ ]\+/{' -e 's/^ *//g' -e 's/^ \+$//g}' || true
-						  
-						### **${__FILE}**  
-_EOT_
-				)
 			fi
 			;;
 		*     ) ;;
