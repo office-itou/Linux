@@ -6,7 +6,11 @@
 #   b   | 172.16.0.0  - 172.31.255.255  | 255.255.0.0   - 255.255.255.255 (up to     65,534 devices can be connected)
 #   c   | 192.168.0.0 - 192.168.255.255 | 255.255.255.0 - 255.255.255.255 (up to        254 devices can be connected)
 
-# --- IPv4 netmask conversion -------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: IPv4 netmask conversion (netmask and cidr conversion)
+#   input :   $1   : input vale
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcIPv4GetNetmask() {
 	declare -a    __OCTS=()				# octets
@@ -52,7 +56,11 @@ function funcIPv4GetNetmask() {
 	fi
 }
 
-# --- IPv6 full address -------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: IPv6 full address
+#   input :   $1   : input vale
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcIPv6GetFullAddr() {
 	declare -r    __FSEP="${1//[^:]/}"
@@ -65,7 +73,11 @@ function funcIPv6GetFullAddr() {
 	printf ':%04x' "${__ARRY[@]/#/0x0}" | cut -c 2-
 }
 
-# --- IPv6 reverse address ----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: IPv6 reverse address
+#   input :   $1   : input vale
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcIPv6GetRevAddr() {
 	echo "${1//:/}" | \

@@ -1,6 +1,12 @@
 # === <mkiso> =================================================================
 
-# --- create iso image --------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create iso image
+#   input :   $1   : target directory
+#   input :   $2   : output path
+#   input :   $@   : xorrisofs options
+#   output: stdout : message
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcCreate_iso() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
@@ -10,14 +16,12 @@ function funcCreate_iso() {
 	declare       __PATH=""				# full path
 	              __PATH="$(mktemp -q "${TMPDIR:-/tmp}/${__PATH_OUTP##*/}.XXXXXX")"
 	readonly      __PATH
-
 	# --- constant for control code -------------------------------------------
 	if [[ -z "${_CODE_ESCP+true}" ]]; then
 		declare   _CODE_ESCP=""
 		          _CODE_ESCP="$(printf '\033')"
 		readonly  _CODE_ESCP
 	fi
-
 	# --- create iso image ----------------------------------------------------
 	pushd "${__DIRS_TGET}" > /dev/null || exit
 		if ! nice -n "${_NICE_VALU:-19}" xorrisofs "${__OPTN_XORR[@]}" -output "${__PATH}" . > /dev/null 2>&1; then

@@ -83,24 +83,49 @@
 	declare -r    _TEXT_BR_WHITE="${_CODE_ESCP}[97m"			# text white
 	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			# 
 
-# --- is numeric --------------------------------------------------------------
-#function funcIsNumeric() {
-#	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
-#}
-
-# --- substr ------------------------------------------------------------------
-#function funcSubstr() {
-#	echo "${1:${2:-0}:${3:-${#1}}}"
-#}
-
-# --- string output -----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: is numeric
+#   input :   $1   : input value
+#   output: stdout : unused
+#   return:        :             : =0 (numer)
+#     "   :        :             : !0 (not number)
 # shellcheck disable=SC2317
-function funcString() {
-#	printf "%${1:-"${_SIZE_COLS}"}s" "" | tr ' ' "${2:- }"
-	echo "" | IFS= awk '{s=sprintf("%'"$1"'s"," "); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+function funcIsNumeric() {
+	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]]
 }
 
-# --- date diff ---------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: substr
+#   input :   $1   : input value
+#   input :   $2   : starting position
+#   input :   $3   : number of characters
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function funcSubstr() {
+	echo "${1:${2:-0}:${3:-${#1}}}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: string output
+#   input :   $1   : number of characters
+#   input :   $2   : output character
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function funcString() {
+	echo "" | IFS= awk '{s=sprintf("%'"$1"'s",""); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+}
+
+# -----------------------------------------------------------------------------
+# descript: date diff
+#   input :   $1   : date 1
+#   input :   $2   : date 2
+#   output: stdout :        :   0 ($1 = $2)
+#     "   :        :        :   1 ($1 < $2)
+#     "   :        :        :  -1 ($1 > $2)
+#     "   :        :        : emp (error)
+#   return:        : status
 # shellcheck disable=SC2317
 function funcDateDiff() {
 	declare       __TGET_DAT1="${1:?}"	# date1
@@ -128,7 +153,11 @@ function funcDateDiff() {
 	fi
 }
 
-# --- print with screen control -----------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: print with screen control
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcPrintf() {
 	declare -r    __TRCE="$(set -o | grep "^xtrace\s*on$")"

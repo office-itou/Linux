@@ -1,6 +1,13 @@
 # === <interface> =============================================================
 
-# --- print out of menu -------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: print out of menu
+#   n-ref :   $1   : return value : options
+#   input :   $2   : command type
+#   input :   $3   : target range
+#   input :   $@   : target data
+#   output: stdout : message
+#   return:        : unused
 function funcPrint_menu() {
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -r    __COMD_TYPE="$2"		# command type

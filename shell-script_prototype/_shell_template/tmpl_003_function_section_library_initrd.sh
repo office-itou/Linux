@@ -1,6 +1,12 @@
 # === <initrd> ================================================================
 
-# --- Extract a compressed cpio _TGET_FILE ------------------------------------
+# -----------------------------------------------------------------------------
+# descript: extract a compressed cpio
+#   input :   $1   : target file
+#   input :   $2   : destination directory
+#   input :   $@   : cpio options
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcXcpio() {
 	declare -r    __TGET_FILE="${1:?}"	# target file
@@ -24,21 +30,37 @@ function funcXcpio() {
 	)
 }
 
-# --- Read bytes out of a file, checking that they are valid hex digits -------
+# -----------------------------------------------------------------------------
+# descript: read bytes out of a file, checking that they are valid hex digits
+#   input :   $1   : target file
+#   input :   $2   : skip bytes
+#   input :   $3   : count bytes
+#   output: stdout : result
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcReadhex() {
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count="${3:?}" 2> /dev/null | LANG=C grep -E "^[0-9A-Fa-f]{$3}\$"
 }
 
-# --- Check for a zero byte in a file -----------------------------------------
+# -----------------------------------------------------------------------------
+# descript: check for a zero byte in a file
+#   input :   $1   : target file
+#   input :   $2   : skip bytes
+#   output: stdout : unused
+#   return:        : status
 # shellcheck disable=SC2317
 function funcCheckzero() {
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
 }
 
-# --- Split an initramfs into __TGET_FILEs and call funcXcpio on each ----------
+# -----------------------------------------------------------------------------
+# descript: split an initramfs into target files and call funcxcpio on each
+#   input :   $1   : target file
+#   input :   $2   : destination directory
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcSplit_initramfs() {
 	declare -r    __TGET_FILE="${1:?}"	# target file

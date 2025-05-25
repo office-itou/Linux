@@ -2,7 +2,11 @@
 
 # === <common> ================================================================
 
-# --- initialization ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: initialization
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function funcInitialization() {
 	declare       __PATH=""				# full path
 	declare       __WORK=""				# work variables
@@ -331,7 +335,11 @@ function funcInitialization() {
 	funcGet_media_data
 }
 
-# --- create common configuration file ----------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create common configuration file
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function funcCreate_conf() {
 	declare -r    __TMPL="${_PATH_CONF:?}.template"
 	declare       __RNAM=""				# rename path
@@ -433,7 +441,11 @@ function funcCreate_conf() {
 _EOT_
 }
 
-# --- get media data ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get media data
+#   input :        : unused
+#   output: stdout : message
+#   return:        : unused
 function funcGet_media_data() {
 	declare       __PATH=""				# full path
 	declare       __LINE=""				# work variable
@@ -478,7 +490,11 @@ function funcGet_media_data() {
 	fi
 }
 
-# --- put media data ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: put media data
+#   input :        : unused
+#   output: stdout : message
+#   return:        : unused
 function funcPut_media_data() {
 	declare       __RNAM=""				# rename path
 	declare       __LINE=""				# work variable
@@ -529,8 +545,13 @@ function funcPut_media_data() {
 	done > "${_PATH_MDIA:?}"
 }
 
-# --- create_directory --------------------------------------------------------
-function fncCreate_directory() {
+# -----------------------------------------------------------------------------
+# descript: create directory
+#   n-ref :   $1   : return value : options
+#   input :   $@   : input vale
+#   output: stdout : message
+#   return:        : unused
+function funcCreate_directory() {
 	declare -n    __NAME_REFR="${1:?}"	# name reference
 	shift
 	declare -r    __DATE="$(date +"%Y%m%d%H%M%S")"
@@ -678,7 +699,11 @@ function fncCreate_directory() {
 # 24: cfg_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 25: lnk_path      ( 85)   TEXT                        symlink   directory or file path
 
-# ----- create preseed.cfg ----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create preseed.cfg
+#   input :   $1   : input value
+#   output: stdout : message
+#   return:        : unused
 function funcCreate_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -754,7 +779,11 @@ function funcCreate_preseed() {
 	chmod ugo-x "${__TGET_PATH}"
 }
 
-# ----- create nocloud --------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create nocloud
+#   input :   $1   : input value
+#   output: stdout : message
+#   return:        : unused
 function funcCreate_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -806,7 +835,11 @@ function funcCreate_nocloud() {
 	chmod --recursive ugo-x "${__DIRS}"
 }
 
-# ----- create kickstart.cfg --------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create kickstart.cfg
+#   input :   $1   : input value
+#   output: stdout : message
+#   return:        : unused
 function funcCreate_kickstart() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -870,7 +903,11 @@ function funcCreate_kickstart() {
 	chmod ugo-x "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 }
 
-# ----- create autoyast.xml ---------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create autoyast.xml
+#   input :   $1   : input value
+#   output: stdout : message
+#   return:        : unused
 function funcCreate_autoyast() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -929,7 +966,12 @@ function funcCreate_autoyast() {
 	chmod ugo-x "${__TGET_PATH}"
 }
 
-# ----- create pre-configuration file templates -------------------------------
+# -----------------------------------------------------------------------------
+# descript: create pre-configuration file templates
+#   n-ref :   $1   : return value : options
+#   input :   $@   : input value
+#   output: stdout : message
+#   return:        : unused
 function funcCreate_precon() {
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift

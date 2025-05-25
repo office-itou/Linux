@@ -1,6 +1,11 @@
 # === <media> =================================================================
 
-# --- unit conversion ---------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: unit conversion
+#   n-ref :   $1   : return value : value with units
+#   input :   $2   : input value
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcUnit_conversion() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -35,7 +40,12 @@ function funcUnit_conversion() {
 	done
 }
 
-# --- get volume id -----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get volume id
+#   n-ref :   $1   : return value : volume id
+#   input :   $2   : input value
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcGetVolID() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -57,7 +67,12 @@ function funcGetVolID() {
 	__RETN_VALU="${__VLID:-}"
 }
 
-# --- get file information ----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get file information
+#   n-ref :   $1   : return value : path tmstamp size vol-id
+#   input :   $2   : input value
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcGetFileinfo() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -86,7 +101,11 @@ function funcGetFileinfo() {
 	__RETN_VALU="${__ARRY[*]}"
 }
 
-# --- distro to efi image file name -------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: distro to efi image file name
+#   input :   $1   : input value
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcDistro2efi() {
 	declare       __WORK=""				# work variables

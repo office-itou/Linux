@@ -41,10 +41,16 @@
 	declare -a    _LIST_RMOV=()			# list remove directory / file
 	              _LIST_RMOV+=("${_DIRS_TEMP:?}")
 
+# -----------------------------------------------------------------------------
+# descript: trap
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcTrap() {
 	declare       __PATH=""				# full path
 	declare -i    I=0
+	# --- unmount -------------------------------------------------------------
 	for I in $(printf "%s\n" "${!_LIST_RMOV[@]}" | sort -rV)
 	do
 		__PATH="${_LIST_RMOV[I]}"
@@ -55,6 +61,7 @@ function funcTrap() {
 			umount --quiet --lazy  --recursive "${__PATH}" || true
 		fi
 	done
+	# --- remove temporary ----------------------------------------------------
 	if [[ -e "${_DIRS_TEMP:?}" ]]; then
 		printf "%s: \"%s\"\n" "remove" "${_DIRS_TEMP}" 1>&2
 		while read -r __PATH

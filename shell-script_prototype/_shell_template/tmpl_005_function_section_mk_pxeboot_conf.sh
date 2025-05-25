@@ -1,6 +1,11 @@
 # === <pxeboot> ===============================================================
 
-# --- file copy ---------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: file copy
+#   input :   $1   : target file
+#   input :   $2   : destination directory
+#   output: stdout : output
+#   return:        : unused
 function funcPxeboot_copy() {
 	declare -r    __PATH_TGET="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:?}"	# destination directory
@@ -23,7 +28,11 @@ function funcPxeboot_copy() {
 	rm -rf "${__MNTP:?}"
 }
 
-# --- create boot options for preseed -----------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create a boot option for preseed of the pxeboot
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 function funcPxeboot_preseed() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
@@ -117,7 +126,11 @@ function funcPxeboot_preseed() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options for nocloud -----------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create a boot option for nocloud of the pxeboot
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 function funcPxeboot_nocloud() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
@@ -191,7 +204,11 @@ function funcPxeboot_nocloud() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options for kickstart ---------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create a boot option for kickstart of the pxeboot
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 function funcPxeboot_kickstart() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
@@ -251,7 +268,11 @@ function funcPxeboot_kickstart() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options for autoyast ----------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create a boot option for autoyast of the pxeboot
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 function funcPxeboot_autoyast() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
@@ -319,7 +340,11 @@ function funcPxeboot_autoyast() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options -----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create a boot option of the pxeboot
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 function funcPxeboot_boot_options() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare -a    __LIST=()				# work variables
@@ -350,7 +375,13 @@ function funcPxeboot_boot_options() {
 	printf "%s\n" "${__BOPT[@]}"
 }
 
-# --- create autoexec.ipxe ----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create autoexec.ipxe
+#   input :   $1   : target file (menu)
+#   input :   $2   : tabs count
+#   input :   $@   : target data (list)
+#   output: stdout : unused
+#   return:        : unused
 function funcPxeboot_ipxe() {
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
@@ -597,7 +628,13 @@ _EOT_
 	esac
 }
 
-# --- create grub.cfg ---------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create grub.cfg
+#   input :   $1   : target file (menu)
+#   input :   $2   : tabs count
+#   input :   $@   : target data (list)
+#   output: stdout : unused
+#   return:        : unused
 function funcPxeboot_grub() {
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
@@ -835,7 +872,13 @@ _EOT_
 	esac
 }
 
-# --- create syslinux.cfg for bios mode ---------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create bios mode
+#   input :   $1   : target file (menu)
+#   input :   $2   : tabs count
+#   input :   $@   : target data (list)
+#   output: stdout : unused
+#   return:        : unused
 function funcPxeboot_slnx() {
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
@@ -1049,6 +1092,11 @@ _EOT_
 	esac
 }
 
+# -----------------------------------------------------------------------------
+# descript: create pxeboot menu
+#   input :        : unused
+#   output: stdout : message
+#   return:        : unused
 # --- create pxeboot menu -----------------------------------------------------
 function funcPxeboot() {
 	declare -i    __TABS=0				# tabs count

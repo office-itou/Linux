@@ -1,6 +1,11 @@
 # === <web_tools> =============================================================
 
-# --- get web contents --------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get web contents
+#   input :   $1   : output path
+#   input :   $2   : url
+#   output: stdout : message
+#   return:        : status
 # shellcheck disable=SC2317
 function funcGetWeb_contents() {
 	declare -a    __OPTN=()				# options
@@ -36,7 +41,12 @@ function funcGetWeb_contents() {
 	return "${__RTCD}"
 }
 
-# --- get web header ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get web header
+#   n-ref :   $1   : return value : path tmstamp size status contents
+#   input :   $2   : url
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcGetWeb_header() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -87,7 +97,12 @@ function funcGetWeb_header() {
 #	return "${__RTCD}"
 }
 
-# --- get web address completion ----------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get web address completion
+#   n-ref :   $1   : return value : address completion path
+#   input :   $2   : input value
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcGetWeb_address() {
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -168,7 +183,12 @@ function funcGetWeb_address() {
 #	return "${__RTCD}"
 }
 
-# --- get web information -----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get web information
+#   n-ref :   $1   : return value : path tmstamp size status contents
+#   input :   $2   : url
+#   output: stdout : unused
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcGetWeb_info() {
 #	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -178,7 +198,11 @@ function funcGetWeb_info() {
 	funcGetWeb_header "${1}" "${__WORK}"
 }
 
-# --- get web status message --------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: get web status message
+#   input :   $1   : input vale
+#   output: stdout : output
+#   return:        : unused
 # shellcheck disable=SC2317
 function funcGetWeb_status() {
 	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes

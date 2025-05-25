@@ -1,6 +1,10 @@
 # === <remastering> ===========================================================
 
-# --- create boot options for preseed -----------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create a boot option for preseed of the remaster
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 function funcRemastering_preseed() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
@@ -12,7 +16,6 @@ function funcRemastering_preseed() {
 	declare       __ISOS=""				# iso file
 #	declare       __LOAD=""				# load module
 #	declare       __RMAK=""				# remake file
-
 	# --- boot option ---------------------------------------------------------
 #	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
@@ -94,7 +97,11 @@ function funcRemastering_preseed() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options for nocloud -----------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create a boot option for nocloud of the remaster
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 function funcRemastering_nocloud() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
@@ -106,7 +113,6 @@ function funcRemastering_nocloud() {
 	declare       __ISOS=""				# iso file
 #	declare       __LOAD=""				# load module
 #	declare       __RMAK=""				# remake file
-
 	# --- boot option ---------------------------------------------------------
 #	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
@@ -168,7 +174,11 @@ function funcRemastering_nocloud() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options for kickstart ---------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create a boot option for kickstart of the remaster
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 function funcRemastering_kickstart() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
@@ -180,7 +190,6 @@ function funcRemastering_kickstart() {
 #	declare       __ISOS=""				# iso file
 #	declare       __LOAD=""				# load module
 #	declare       __RMAK=""				# remake file
-
 	# --- boot option ---------------------------------------------------------
 #	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
@@ -229,7 +238,11 @@ function funcRemastering_kickstart() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options for autoyast ----------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create a boot option for autoyast of the remaster
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 function funcRemastering_autoyast() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
@@ -241,7 +254,6 @@ function funcRemastering_autoyast() {
 #	declare       __ISOS=""				# iso file
 #	declare       __LOAD=""				# load module
 #	declare       __RMAK=""				# remake file
-
 	# --- boot option ---------------------------------------------------------
 #	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
@@ -298,7 +310,11 @@ function funcRemastering_autoyast() {
 	printf "%s\n" "${__BOPT[@]:-}"
 }
 
-# --- create boot options -----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create a boot option of the remaster
+#   input :   $@   : input value
+#   output: stdout : output
+#   return:        : unused
 function funcRemastering_boot_options() {
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare -a    __LIST=()				# work variables
@@ -329,7 +345,12 @@ function funcRemastering_boot_options() {
 	printf "%s\n" "${__BOPT[@]}"
 }
 
-# --- create path for configuration file --------------------------------------
+# -----------------------------------------------------------------------------
+# descript: create path for configuration file
+#   input :   $1   : target path
+#   input :   $2   : directory
+#   output: stdout : output
+#   return:        : unused
 function funcRemastering_path() {
 	declare -r    __PATH_TGET="${1:?}"	# target path
 	declare -r    __DIRS_TGET="${2:?}"	# directory
@@ -344,7 +365,14 @@ function funcRemastering_path() {
 	echo -n "${__DIRS:+/"${__DIRS}"}/${__FNAM}"
 }
 
-# --- create autoinstall configuration file for isolinux ----------------------
+# -----------------------------------------------------------------------------
+# descript: create autoinstall configuration file for isolinux
+#   input :   $1   : target directory
+#   input :   $2   : file name : autoinst.cfg
+#   input :   $3   : boot options
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
 function funcRemastering_isolinux_autoinst_cfg() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
@@ -433,7 +461,13 @@ _EOT_
 	fi
 }
 
-# --- editing isolinux for autoinstall ----------------------------------------
+# -----------------------------------------------------------------------------
+# descript: editing isolinux for autoinstall
+#   input :   $1   : target directory
+#   input :   $2   : boot options
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
 function funcRemastering_isolinux() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __BOOT_OPTN="${2:?}"	# boot options
@@ -499,7 +533,14 @@ function funcRemastering_isolinux() {
 	done < <(find "${__DIRS_TGET}" \( -name '*.cfg' -a ! -name "${_AUTO_INST##*/}" \) -type f || true)
 }
 
-# --- create autoinstall configuration file for grub --------------------------
+# -----------------------------------------------------------------------------
+# descript: create autoinstall configuration file for grub
+#   input :   $1   : target directory
+#   input :   $2   : file name : autoinst.cfg
+#   input :   $3   : boot options
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
 function funcRemastering_grub_autoinst_cfg() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
@@ -687,7 +728,13 @@ _EOT_
 	fi
 }
 
-# --- editing grub for autoinstall --------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: editing grub for autoinstall
+#   input :   $1   : target directory
+#   input :   $2   : boot options
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
 function funcRemastering_grub() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __BOOT_OPTN="${2:?}"	# boot options
@@ -741,7 +788,12 @@ function funcRemastering_grub() {
 	done < <(find "${__DIRS_TGET}" \( -name '*.cfg' -a ! -name "${_AUTO_INST##*/}" \) -type f || true)
 }
 
-# --- copy auto-install files -------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: copy auto-install files
+#   input :   $1   : target directory
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
 function funcRemastering_copy() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
@@ -797,7 +849,12 @@ function funcRemastering_copy() {
 	done
 }
 
-# --- remastering for initrd --------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: remastering for initrd
+#   input :   $1   : target directory
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
 function funcRemastering_initrd() {
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
@@ -833,7 +890,12 @@ function funcRemastering_initrd() {
 	rm -rf "${__DTMP:?}"
 }
 
-# --- remastering for media ---------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: remastering for media
+#   input :   $1   : target directory
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
 function funcRemastering_media() {
 	declare -r    __DIRS_TGET="${1:?}"						# target directory
 	declare -r -a __TGET_LIST=("${@:2}")					# target data
@@ -902,7 +964,11 @@ function funcRemastering_media() {
 	fi
 }
 
-# --- remastering -------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: remastering
+#   input :   $@   : target data
+#   output: stdout : unused
+#   return:        : unused
 function funcRemastering() {
 	declare -i    __time_start=0							# start of elapsed time
 	declare -i    __time_end=0								# end of elapsed time
@@ -980,7 +1046,12 @@ function funcRemastering() {
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$((__time_elapsed/86400))" "$((__time_elapsed%86400/3600))" "$((__time_elapsed%3600/60))" "$((__time_elapsed%60))" "elapsed" "${__TGET_LIST[13]##*/}" 1>&2
 }
 
-# --- executing the download --------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: executing the download
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $@   : target data
+#   output: stdout : message
+#   return:        : unused
 function funcExec_download() {
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -a    __TGET_LIST=("${@:2}") # target data
@@ -1019,7 +1090,12 @@ function funcExec_download() {
 	__RETN_VALU="${__TGET_LIST[*]}"
 }
 
-# --- executing the remastering -----------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: executing the remastering
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $@   : target data
+#   output: stdout : message
+#   return:        : unused
 function funcExec_remastering() {
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -a    __TGET_LIST=("${@:2}") # target data
@@ -1049,7 +1125,14 @@ function funcExec_remastering() {
 	__RETN_VALU="${__TGET_LIST[*]}"
 }
 
-# --- -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: 
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $2   : command type
+#   input :   $3   : target range
+#   input :   $@   : target data
+#   output: stdout : message
+#   return:        : unused
 function funcXXX() {
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -r    __COMD_TYPE="$2"		# command type
@@ -1134,4 +1217,3 @@ function funcXXX() {
 		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
 	done
 }
-
