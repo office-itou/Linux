@@ -31,7 +31,11 @@
 | [tmpl_003_function_section_library.sh](./tmpl_003_function_section_library.sh)                    | [fnIsNumeric](#is-numeric) "\$1"                                                                                      | is numeric                                                                    |
 |                                                                                                   | [fnSubstr](#substr) "\$1" "\$2" "\$3"                                                                                 | substr                                                                        |
 |                                                                                                   | [fnString](#string-output) "\$1" "\$2"                                                                                | string output                                                                 |
+|                                                                                                   | [fnLtrim](#ltrim) "\$1"                                                                                               | ltrim                                                                         |
+|                                                                                                   | [fnRtrim](#rtrim) "\$1"                                                                                               | rtrim                                                                         |
+|                                                                                                   | [fnTrim](#trim) "\$1"                                                                                                 | trim                                                                          |
 |                                                                                                   | [fnDateDiff](#date-diff) "\$1" "\$2"                                                                                  | date diff                                                                     |
+|                                                                                                   | [fnCenter](#print-with-centering) "\$1" "\$2"                                                                         | print with centering                                                          |
 |                                                                                                   | [fnPrintf](#print-with-screen-control) "\$@"                                                                          | print with screen control                                                     |
 | [tmpl_003_function_section_library_initrd.sh](./tmpl_003_function_section_library_initrd.sh)      | [fnXcpio](#extract-a-compressed-cpio) "\$1" "\$2" "\$@"                                                               | extract a compressed cpio                                                     |
 |                                                                                                   | [fnReadhex](#read-bytes-out-of-a-file-checking-that-they-are-valid-hex-digits) "\$1" "\$2" "\$3"                      | read bytes out of a file, checking that they are valid hex digits             |
@@ -92,7 +96,6 @@
 | [tmpl_005_function_section_test_function.sh](./tmpl_005_function_section_test_function.sh)        | fnServiceStatus                                                                                                       |                                                                               |
 |                                                                                                   | fnIsPackage                                                                                                           |                                                                               |
 |                                                                                                   | fnDiff                                                                                                                |                                                                               |
-|                                                                                                   | fnCurl                                                                                                                |                                                                               |
 |                                                                                                   | fnDebug_color                                                                                                         |                                                                               |
 |                                                                                                   | fnDebug_function                                                                                                      |                                                                               |
   
@@ -294,6 +297,42 @@
   
 * * *
   
+#### ltrim  
+  
+*fnLtrim "\$1"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $1     | input                  |                                            |
+| output | stdout | output                 |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
+#### rtrim  
+  
+*fnRtrim "\$1"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $1     | input                  |                                            |
+| output | stdout | output                 |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
+#### trim  
+  
+*fnTrim "\$1"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $1     | input                  |                                            |
+| output | stdout | output                 |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
 #### date diff  
   
 *fnDateDiff "\$1" "\$2"*  
@@ -307,6 +346,19 @@
 | "      |        |                        |  -1 ($1 > $2)                              |
 | "      |        |                        | emp (error)                                |
 | return |        | status                 |                                            |
+  
+* * *
+  
+#### print with centering  
+  
+*fnCenter "\$1" "\$2"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $1     | print width            |                                            |
+| input  | $2     | input value            |                                            |
+| output | stdout | output                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
@@ -1105,15 +1157,6 @@
 #### no items  
   
 *fnDiff*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-  
-* * *
-  
-#### no items  
-  
-*fnCurl*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
