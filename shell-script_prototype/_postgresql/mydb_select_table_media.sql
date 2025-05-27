@@ -27,39 +27,34 @@ SELECT
     , public.media.lnk_path 
 FROM
     public.media 
-WHERE
-    public.media.entry_flag != 'x' 
-    AND public.media.entry_flag != 'd' 
-    AND public.media.entry_flag != 'b' 
 ORDER BY
-    public.media.type = 'mini.iso' DESC
+    public.media.type = 'mini' DESC
     , public.media.type = 'netinst' DESC
     , public.media.type = 'dvd' DESC
-    , public.media.type = 'live_install' DESC
+    , public.media.type = 'liveinst' DESC
     , public.media.type = 'live' DESC
     , public.media.type = 'tool' DESC
-    , public.media.type = 'custom_live' DESC
-    , public.media.type = 'custom_netinst' DESC
+    , public.media.type = 'clive' DESC
+    , public.media.type = 'cnetinst' DESC
     , public.media.type = 'system' DESC
     , public.media.entry_disp != '-' DESC
-    , public.media.version = 'menu-entry' DESC
-    , public.media.version ~ 'debian-*' DESC
-    , public.media.version ~ 'ubuntu-*' DESC
-    , public.media.version ~ 'fedora-*' DESC
-    , public.media.version ~ 'centos-stream-*' DESC
-    , public.media.version ~ 'almalinux-*' DESC
-    , public.media.version ~ 'rockylinux-*' DESC
-    , public.media.version ~ 'miraclelinux-*' DESC
-    , public.media.version ~ 'opensuse-*' DESC
-    , public.media.version ~ 'windows-*' DESC
-    , public.media.version = 'memtest86plus' DESC
-    , public.media.version = 'winpe-x86' DESC
-    , public.media.version = 'winpe-x64' DESC
-    , public.media.version = 'ati2020x86' DESC
-    , public.media.version = 'ati2020x64' DESC
-    , public.media.version ~ '.*-sid'
-    , public.media.version ~ '.*-testing'
-    , public.media.version
+    , public.media.entry_name = 'menu-entry' DESC
+    , public.media.entry_name ~ 'debian-*' DESC
+    , public.media.entry_name ~ 'ubuntu-*' DESC
+    , public.media.entry_name ~ 'fedora-*' DESC
+    , public.media.entry_name ~ 'centos-stream-*' DESC
+    , public.media.entry_name ~ 'almalinux-*' DESC
+    , public.media.entry_name ~ 'rockylinux-*' DESC
+    , public.media.entry_name ~ 'miraclelinux-*' DESC
+    , public.media.entry_name ~ 'opensuse-*' DESC
+    , public.media.entry_name ~ 'windows-*' DESC
+    , public.media.entry_name = 'memtest86plus' DESC
+    , public.media.entry_name = 'winpe-x86' DESC
+    , public.media.entry_name = 'winpe-x64' DESC
+    , public.media.entry_name = 'ati2020x86' DESC
+    , public.media.entry_name = 'ati2020x64' DESC
+    , public.media.entry_name ~ '.*-sid'
+    , public.media.entry_name ~ '.*-testing'
     , LPAD(SPLIT_PART(SubString(public.media.latest FROM '[0-9.]+$'), '.', 1), 3, '0')
     , LPAD(SPLIT_PART(SubString(public.media.latest FROM '[0-9.]+$'), '.', 2), 3, '0')
     , LPAD(SPLIT_PART(SubString(public.media.latest FROM '[0-9.]+$'), '.', 3), 3, '0')
