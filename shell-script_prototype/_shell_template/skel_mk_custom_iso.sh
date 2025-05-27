@@ -126,7 +126,8 @@ function fnMain() {
 	declare -i    __time_end=0			# end of elapsed time
 	declare -i    __time_elapsed=0		# result of elapsed time
 	declare -r -a __OPTN_PARM=("${@:-}") # option parameter
-	declare -a    __RETN_PARM=()		# name reference
+#	declare -a    __RETN_PARM=()		# name reference
+	declare       __COMD=""				# command type
 	declare -a    __OPTN=()				# option parameter
 	declare       __TGET=""				# target
 	declare       __RANG=""				# range
@@ -177,43 +178,58 @@ function fnMain() {
 	set -f -- "${__OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
 	do
-		__RETN_PARM=()
+		__OPTN=()
 		case "${1:-}" in
-			create  )					# (force create)
+#			list    ) ;;				# (print out media list)
+#			create  ) ;;				# (force create)
+#			update  ) ;;				# (create new files only)
+#			download) ;;				# (download only)
+			list    | \
+			create  | \
+			update  | \
+			download)
+				__COMD="$1"
 				shift
+				# --- processing by media type --------------------------------
 				__OPTN=("${@:-}")
 				case "${1:-}" in
 					a|all) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all" "${@:-}");;
 					*    ) ;;
 				esac
-				__TGET=""
 				set -f -- "${__OPTN[@]:-}"
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1:-}" in
-						mini    ) shift; __TGET="mini.iso";;
-						netinst ) shift; __TGET="netinst";;
-						dvd     ) shift; __TGET="dvd";;
-						liveinst) shift; __TGET="live_install";;
-#						live    ) shift; __TGET="live";;
-#						tool    ) shift; __TGET="tool";;
-#						clive   ) shift; __TGET="custom_live";;
-#						cnetinst) shift; __TGET="custom_netinst";;
-#						system  ) shift; __TGET="system";;
+						mini    ) ;;
+						netinst ) ;;
+						dvd     ) ;;
+						liveinst) ;;
+#						live    ) ;;
+#						tool    ) ;;
+#						clive   ) ;;
+#						cnetinst) ;;
+#						system  ) ;;
 						*       ) break;;
 					esac
+					__TGET="$1"
+					shift
 					__RANG=""
 					while [[ -n "${1:-}" ]]
 					do
 						case "${1,,}" in
 							a|all                           ) __RANG="all"; shift; break;;
-							[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) __RANG="${__RANG:+"${__RANG} "}$1"; shift;;
+							[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) __RANG="${__RANG:+"${__RANG} "}$1";;
 							*                               ) break;;
 						esac
+						shift
 					done
 					# --- selection by media type -----------------------------
-					fnPrint_menu "__RSLT" "create" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
-					IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${__RSLT[@]}" || true)
+					IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=='"${__TGET}"'{print $0;}')
+
+
+
+					fnPrint_menu "__RSLT" "${__COMD}" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
+					IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RSLT}")
 					# --- select by input value -------------------------------
 					if [[ -z "${__RANG:-}" ]]; then
 						read -r -p "enter the number to create:" __RANG
@@ -226,161 +242,10 @@ function fnMain() {
 						*    ) ;;
 					esac
 					# --- main loop -------------------------------------------
-					__RNUM=0
-					for I in "${!__MDIA[@]}"
-					do
-						read -r -a __LIST < <(echo "${__MDIA[I]}")
-						case "${__LIST[1]}" in
-							o) ;;
-							*) continue;;
-						esac
-						if [[ -z "${__LIST[3]##-}"  ]] \
-						|| [[ -z "${__LIST[13]##-}" ]] \
-						|| [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
-							continue
-						fi
-						if ! echo "$((++__RNUM))" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
-							continue
-						fi
-						# --- start -------------------------------------------
-						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[17]##*/}" 1>&2
-						# --- conversion --------------------------------------
-						for J in "${!__LIST[@]}"
-						do
-							__LIST[J]="${__LIST[J]##-}"		# empty
-							__LIST[J]="${__LIST[J]//%20/ }"	# space
-						done
-						# --- download ----------------------------------------
-						if [[ -n "${__LIST[9]##-}" ]]; then
-							case "${__LIST[12]}" in
-								200)
-									# --- lnk_path ----------------------------
-									if [[ -n "${__LIST[25]##-}" ]] && [[ ! -e "${__LIST[13]}" ]] && [[ ! -h "${__LIST[13]}" ]]; then
-										fnPrintf "%20.20s: %s" "create symlink" "${__LIST[25]} -> ${__LIST[13]}"
-										ln -s "${__LIST[25]%%/}/${__LIST[13]##*/}" "${__LIST[13]}"
-									fi
-									__RSLT="$(fnDateDiff "${__LIST[10]:-@0}" "${__LIST[14]:-@0}")"
-									if [[ "${__RSLT}" -lt 0 ]]; then
-										fnGetWeb_contents "${__LIST[13]}" "${__LIST[9]}"
-									fi
-									if [[ -n "${__LIST[13]}" ]]; then
-										fnGetFileinfo __RETN "${__LIST[13]}"			# iso_path
-										read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
-										__ARRY=("${__ARRY[@]##-}")
-#										__LIST[13]="${__ARRY[0]:-}"						# iso_path
-										__LIST[14]="${__ARRY[1]:-}"						# iso_tstamp
-										__LIST[15]="${__ARRY[2]:-}"						# iso_size
-										__LIST[16]="${__ARRY[3]:-}"						# iso_volume
-									fi
-									;;
-								*  ) ;;
-							esac
-						fi
-						# --- remastering -------------------------------------
-						if [[ -s "${__LIST[13]}" ]]; then
-							fnRemastering "${__LIST[@]}"
-							# --- new local remaster iso files ----------------
-							fnGetFileinfo "__RETN" "${__LIST[17]##-}"
-							read -r -a __ARRY < <(echo "${__RETN}")
-#							__LIST[17]="${__ARRY[0]:--}"		# rmk_path
-							__LIST[18]="${__ARRY[1]:--}"		# rmk_tstamp
-							__LIST[19]="${__ARRY[2]:--}"		# rmk_size
-							__LIST[20]="${__ARRY[3]:--}"		# rmk_volume
-						fi
-						# --- conversion --------------------------------------
-						for J in "${!__LIST[@]}"
-						do
-							__LIST[J]="${__LIST[J]:--}"		# empty
-							__LIST[J]="${__LIST[J]// /%20}"	# space
-						done
-						# --- update media data record ------------------------
-						__MDIA[I]="${__LIST[*]}"
-						for J in "${!_LIST_MDIA[@]}"
-						do
-							read -r -a __ARRY < <(echo "${_LIST_MDIA[J]}")
-							if [[ "${__LIST[0]}" != "${__ARRY[0]}" ]] \
-							|| [[ "${__LIST[1]}" != "${__ARRY[1]}" ]] \
-							|| [[ "${__LIST[2]}" != "${__ARRY[2]}" ]] \
-							|| [[ "${__LIST[3]}" != "${__ARRY[3]}" ]]; then
-								continue
-							fi
-							_LIST_MDIA[J]="${__LIST[*]}"
-							break
-						done
-						# --- complete ----------------------------------------
-						printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
-					done
+					fnExec "__RSLT" "create" "${__RANG}" "${__MDIA[@]}"
 				done
 				fnPut_media_data
-				;;
-			update  )					# (create new files only)
-				shift
-#				__RSLT="$(set -e; fnPrint_menu "update" "${_LIST_MDIA[@]}")"
-				fnPrint_menu __RSLT "update" "${_LIST_MDIA[@]}"
-				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
-				for I in "${!_LIST_MDIA[@]}"
-				do
-					read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
-					case "${__LIST[1]}" in
-						o) ;;
-						*) continue;;
-					esac
-					if [[ -z "${__LIST[3]##-}" ]]; then
-						continue
-					fi
-					if [[ -z "${__LIST[13]##-}" ]]; then
-						continue
-					fi
-					# ---------------------------------------------------------
-					if [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
-						continue
-					fi
-					if [[ -n "${__LIST[13]##-}" ]] && [[ -n "${__LIST[14]##-}" ]] && [[ -n "${__LIST[15]##-}" ]]; then
-						if [[ -n  "${__LIST[9]##-}" ]] && [[ -n "${__LIST[10]##-}" ]] && [[ -n "${__LIST[11]##-}" ]]; then
-							if [[ -n "${__LIST[17]##-}" ]] && [[ -n "${__LIST[18]##-}" ]] && [[ -n "${__LIST[19]##-}" ]]; then
-								__WORK="$(fnDateDiff "${__LIST[14]}" "${__LIST[10]}")"
-								if [[ "${__WORK}" -eq 0 ]] && [[ "${__LIST[15]}" -ne "${__LIST[11]}" ]]; then
-									__WORK="$(fnDateDiff "${__LIST[14]}" "${__LIST[18]}")"
-									if [[ "${__WORK}" -lt 0 ]]; then
-										continue
-									fi
-									if [[ -n "${__LIST[23]##-}" ]] && [[ -n "${__LIST[24]##-}" ]]; then
-										__WORK="$(fnDateDiff "${__LIST[14]}" "${__LIST[24]}")"
-										if [[ "${__WORK}" -lt 0 ]]; then
-											continue
-										fi
-									fi
-								fi
-							fi
-						fi
-					fi
-					fnRemastering "${__LIST[@]}"
-					# --- new local remaster iso files ------------------------
-					__WORK="$(fnGetFileinfo "${__LIST[17]##-}")"
-					read -r -a __ARRY < <(echo "${__WORK}")
-					__LIST[17]="${__ARRY[0]:--}"				# rmk_path
-					__LIST[18]="${__ARRY[1]:--}"				# rmk_tstamp
-					__LIST[19]="${__ARRY[2]:--}"				# rmk_size
-					__LIST[20]="${__ARRY[3]:--}"				# rmk_volume
-					# --- update media data record ----------------
-					_LIST_MDIA[I]="${__LIST[*]}"
-#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
-				done
-				fnPut_media_data
-				;;
-			download)					# (download only)
-				shift
-#				__RSLT="$(set -e; fnPrint_menu "download" "${_LIST_MDIA[@]}")"
-				fnPrint_menu __RSLT "download" "${_LIST_MDIA[@]}"
-				IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
-				for I in "${!_LIST_MDIA[@]}"
-				do
-					read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
-					case "${__LIST[1]}" in
-						o) ;;
-						*) continue;;
-					esac
-				done
+				__OPTN=("${@:-}")
 				;;
 			link    )
 				shift
@@ -390,42 +255,6 @@ function fnMain() {
 						create   ) shift; fnCreate_directory __RETN_PARM "${@:-}"; fnPut_media_data;;
 						update   ) shift;;
 						download ) shift;;
-						*        ) break;;
-					esac
-				done
-				;;
-			list    )
-				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						create   ) shift; fnPut_media_data;;
-						update   ) 
-							shift
-#							__RSLT="$(set -e; fnPrint_menu "list" "${_LIST_MDIA[@]}")"
-							fnPrint_menu __RSLT "list" "${_LIST_MDIA[@]}"
-							IFS= mapfile -d $'\n' -t _LIST_MDIA < <(echo -n "${__RSLT}")
-							for I in "${!_LIST_MDIA[@]}"
-							do
-								read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
-#								case "${__LIST[1]}" in
-#									o) ;;
-#									*) continue;;
-#								esac
-								if [[ -z "${__LIST[3]##-}" ]]; then
-									continue
-								fi
-#								if [[ -z "${__LIST[13]##-}" ]]; then
-#									continue
-#								fi
-								# --- update media data record ----------------
-								_LIST_MDIA[I]="${__LIST[*]}"
-#								printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}" 1>&2
-							done
-							# -------------------------------------------------
-							fnPut_media_data
-							;;
-						download ) ;;
 						*        ) break;;
 					esac
 				done
@@ -454,10 +283,7 @@ function fnMain() {
 				;;
 			*       ) shift;;
 		esac
-		__RETN_PARM=("${__RETN_PARM:-"${@:-}"}")
-		IFS="${_COMD_IFS:-}"
-		set -f -- "${__RETN_PARM[@]:-}"
-		IFS="${_ORIG_IFS:-}"
+		set -f -- "${__OPTN[@]:-"${@:-}"}"
 	done
 
 	# --- complete ------------------------------------------------------------

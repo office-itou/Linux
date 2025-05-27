@@ -135,6 +135,17 @@ function fnTrap() {
 		fi
 	fi
 
+	# --- curl / wget parameter -----------------------------------------------
+	declare       _COMD_CURL=""
+	declare       _COMD_WGET=""
+	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
+	declare -r -a _OPTN_WGET=("--tries=3" "--timeout=10" "--quiet")
+	if command -v curl  > /dev/null 2>&1; then _COMD_CURL="true"; fi
+	if command -v wget  > /dev/null 2>&1; then _COMD_WGET="true"; fi
+	if command -v wget2 > /dev/null 2>&1; then _COMD_WGET="ver2"; fi
+	readonly      _COMD_CURL
+	readonly      _COMD_WGET
+
 # *** function section (common functions) *************************************
 
 # === <common> ================================================================
@@ -251,7 +262,39 @@ function fnSubstr() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnString() {
-	echo "" | IFS= awk '{s=sprintf("%'"$1"'s",""); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+	echo "" | IFS= awk '{s=sprintf("%'"${1:?}"'s",""); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+}
+
+# -----------------------------------------------------------------------------
+# descript: ltrim
+#   input :   $1   : input
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnLtrim() {
+	echo -n "${1#"${1%%[!"${IFS}"]*}"}"	# ltrim
+}
+
+# -----------------------------------------------------------------------------
+# descript: rtrim
+#   input :   $1   : input
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnRtrim() {
+	echo -n "${1%"${1##*[!"${IFS}"]}"}"	# rtrim
+}
+
+# -----------------------------------------------------------------------------
+# descript: trim
+#   input :   $1   : input
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnTrim() {
+	declare       __WORK=""
+	__WORK="$(fnLtrim "$1")"
+	fnRtrim "${__WORK}"
 }
 
 # -----------------------------------------------------------------------------
@@ -268,11 +311,7 @@ function fnDateDiff() {
 	declare       __TGET_DAT1="${1:?}"	# date1
 	declare       __TGET_DAT2="${2:?}"	# date2
 	declare -i    __RTCD=0				# return code
-	# -------------------------------------------------------------------------
-	#  0 : __TGET_DAT1 = __TGET_DAT2
-	#  1 : __TGET_DAT1 < __TGET_DAT2
-	# -1 : __TGET_DAT1 > __TGET_DAT2
-	# emp: error
+
 	if ! __TGET_DAT1="$(TZ=UTC date -d "${__TGET_DAT1//%20/ }" "+%s")"; then
 		__RTCD="$?"
 		printf "%20.20s: %s\n" "failed" "${__TGET_DAT1}"
@@ -288,6 +327,24 @@ function fnDateDiff() {
 	elif [[ "${__TGET_DAT1}" -gt "${__TGET_DAT2}" ]]; then echo -n "-1"
 	else                                                   echo -n ""
 	fi
+}
+
+# -----------------------------------------------------------------------------
+# descript: print with centering
+#   input :   $1   : print width
+#   input :   $2   : input value
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnCenter() {
+	declare       __TEXT=""				# trimmed string
+	declare -i    __LEFT=0				# count of space on left
+	declare -i    __RIGT=0				# count of space on right
+
+	__TEXT="$(fnTrim "${2:-}")"
+	__LEFT=$(((${1:?} - "${#__TEXT}") / 2))
+	__RIGT=$((${1:?} - "${__LEFT}" - "${#__TEXT}"))
+	printf "%${__LEFT}s%-s%${__RIGT}s" "" "${__TEXT}" ""
 }
 
 # -----------------------------------------------------------------------------
@@ -579,6 +636,269 @@ function fnDistro2efi() {
 	echo -n "${__WORK}"
 }
 
+# === <web_tools> =============================================================
+
+# -----------------------------------------------------------------------------
+# descript: get web contents
+#   input :   $1   : output path
+#   input :   $2   : url
+#   output: stdout : message
+#   return:        : status
+# shellcheck disable=SC2317
+function fnGetWeb_contents() {
+	declare -a    __OPTN=()				# options
+	declare -i    __RTCD=0				# return code
+	declare -a    __LIST=()				# data list
+	declare       __TEMP=""				# temporary file
+	              __TEMP="$(mktemp -q "${TMPDIR:-/tmp}/${1##*/}.XXXXXX")"
+	readonly      __TEMP
+	# -------------------------------------------------------------------------
+	__RTCD=0
+	if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
+		__OPTN=("${_OPTN_WGET[@]}" "--continue" "--show-progress" "--progress=bar" "--output-document=${__TEMP:?}" "${2:?}")
+		LANG=C wget "${__OPTN[@]}" 2>&1 || __RTCD="$?"
+	else
+		__OPTN=("${_OPTN_CURL[@]}" "--progress-bar" "--continue-at" "-" "--create-dirs" "--output-dir" "${__TEMP%/*}" --output "${__TEMP##*/}" "${2:?}")
+		LANG=C curl "${__OPTN[@]}" 2>&1 || __RTCD="$?"
+	fi
+	# -------------------------------------------------------------------------
+	if [[ "${__RTCD}" -eq 0 ]]; then
+		mkdir -p "${1%/*}"
+		if [[ ! -s "$1" ]]; then
+			: > "$1"
+		fi
+		if ! cp --preserve=timestamps "${__TEMP}" "$1"; then
+			printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[41m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "error [cp]" "${1##*/}"
+		else
+			IFS= mapfile -d ' ' -t __LIST < <(LANG=C TZ=UTC ls -lLh --time-style="+%Y-%m-%d %H:%M:%S" "$1" || true)
+			printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "complete" "${1##*/} (${__LIST[4]})"
+		fi
+	fi
+	# -------------------------------------------------------------------------
+	rm -f "${__TEMP:?}"
+	return "${__RTCD}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: get web header
+#   n-ref :   $1   : return value : path tmstamp size status contents
+#   input :   $2   : url
+#   output: stdout : unused
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnGetWeb_header() {
+	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare -a    __OPTN=()				# options
+#	declare -i    __RTCD=0				# return code
+	declare       __RSLT=""				# result
+	declare       __FILD=""				# field name
+	declare       __VALU=""				# value
+	declare       __CODE=""				# status codes
+	declare       __LENG=""				# content-length
+	declare       __LMOD=""				# last-modified
+	declare -a    __LIST=()				# work variables
+	declare       __LINE=""				# work variables
+	declare -i    I=0					# work variables
+	# -------------------------------------------------------------------------
+#	__RTCD=0
+	__RSLT=""
+	if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
+		__OPTN=("${_OPTN_WGET[@]}" "--spider" "--server-response" "--output-document=-" "${2:?}")
+		__RSLT="$(LANG=C wget "${__OPTN[@]}" 2>&1 || true)"
+	else
+		__OPTN=("${_OPTN_CURL[@]}" "--header" "${2:?}")
+		__RSLT="$(LANG=C curl "${__OPTN[@]}" 2>&1 || true)"
+	fi
+	# -------------------------------------------------------------------------
+	__RSLT="${__RSLT//$'\r\n'/$'\n'}"	# crlf -> lf
+	__RSLT="${__RSLT//$'\r'/$'\n'}"		# cr   -> lf
+	__RSLT="${__RSLT//></>\n<}"
+	__RSLT="${__RSLT#"${__RSLT%%[!"${IFS}"]*}"}"	# ltrim
+	__RSLT="${__RSLT%"${__RSLT##*[!"${IFS}"]}"}"	# rtrim
+	IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
+	for I in "${!__LIST[@]}"
+	do
+		__LINE="${__LIST[I],,}"
+		__LINE="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
+		__LINE="${__LINE%"${__LINE##*[!"${IFS}"]}"}"	# rtrim
+		__FILD="${__LINE%% *}"
+		__VALU="${__LINE#* }"
+		case "${__FILD%% *}" in
+			http/*         ) __CODE="${__VALU%% *}";;
+			content-length:) __LENG="${__VALU}";;
+			last-modified: ) __LMOD="$(TZ=UTC date -d "${__VALU}" "+%Y-%m-%d%%20%H:%M:%S%z")";;
+			*              ) ;;
+		esac
+	done
+	# -------------------------------------------------------------------------
+	__RETN_VALU="${2// /%20} ${__LMOD:--} ${__LENG:--} ${__CODE:--} ${__RSLT// /%20}"
+#	return "${__RTCD}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: get web address completion
+#   n-ref :   $1   : return value : address completion path
+#   input :   $2   : input value
+#   output: stdout : unused
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnGetWeb_address() {
+	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare       __PATH=""				# full path
+	declare       __DIRS=""				# directory
+	declare       __FNAM=""				# file name
+	declare -r    __PATN='?*[]'			# web file regexp
+	declare       __MATC=""				# web file regexp match
+	declare -a    __OPTN=()				# options
+#	declare -i    __RTCD=0				# return code
+	declare       __RSLT=""				# result
+	declare       __FILD=""				# field name
+	declare       __VALU=""				# value
+	declare       __CODE=""				# status codes
+	declare       __LENG=""				# content-length
+	declare       __LMOD=""				# last-modified
+	declare -a    __LIST=()				# work variables
+	declare       __LINE=""				# work variables
+	declare -i    I=0					# work variables
+	# --- URL completion ------------------------------------------------------
+	__PATH="${2:?}"
+	while [[ -n "${__PATH//[!"${__PATN}"]/}" ]]
+	do
+		__DIRS="${__PATH%%["${__PATN}"]*}"	# directory
+		__DIRS="${__DIRS%/*}"
+		__MATC="${__PATH#"${__DIRS}"/}"	# match
+		__MATC="${__MATC%%/*}"
+		__FNAM="${__PATH#*"${__MATC}"}"	# file name
+		__FNAM="${__FNAM#*/}"
+		__PATH="${__DIRS}"
+		# ---------------------------------------------------------------------
+#		__RTCD=0
+		__RSLT=""
+		if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
+			__OPTN=("${_OPTN_WGET[@]}" "--server-response" "--output-document=-" "${__PATH:?}")
+			__RSLT="$(LANG=C wget "${__OPTN[@]}" 2>&1 || true)"
+		else
+			__OPTN=("${_OPTN_CURL[@]}" "--header" "${__PATH:?}")
+			__RSLT="$(LANG=C curl "${__OPTN[@]}" 2>&1 || true)"
+		fi
+		# ---------------------------------------------------------------------
+		__RSLT="${__RSLT//$'\r\n'/$'\n'}"	# crlf -> lf
+		__RSLT="${__RSLT//$'\r'/$'\n'}"		# cr   -> lf
+		__RSLT="${__RSLT//></>\n<}"
+		__RSLT="${__RSLT#"${__RSLT%%[!"${IFS}"]*}"}"	# ltrim
+		__RSLT="${__RSLT%"${__RSLT##*[!"${IFS}"]}"}"	# rtrim
+		IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
+		for I in "${!__LIST[@]}"
+		do
+			__LINE="${__LIST[I],,}"
+			__LINE="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
+			__LINE="${__LINE%"${__LINE##*[!"${IFS}"]}"}"	# rtrim
+			__FILD="${__LINE%% *}"
+			__VALU="${__LINE#* }"
+			case "${__FILD%% *}" in
+				http/*         ) __CODE="${__VALU%% *}";;
+				content-length:) __LENG="${__VALU}";;
+				last-modified: ) __LMOD="$(TZ=UTC date -d "${__VALU}" "+%Y-%m-%d%%20%H:%M:%S%z")";;
+				*              ) ;;
+			esac
+		done
+		# ---------------------------------------------------------------------
+		case "${__CODE}" in				# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+			1??) ;;						# 1xx (Informational)
+			2??)						# 2xx (Successful)
+				IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
+				__PATH="$(printf "%s\n" "${__LIST[@]//%20/ }" | sed -ne 's%^.*<a href="'"${__MATC}"'/*">\(.*\)</a>.*$%\1%gp' | sort -rVu | head -n 1 || true)"
+				__PATH="${__PATH:+"${__DIRS%%/}/${__PATH%%/}${__FNAM:+/"${__FNAM##/}"}"}"
+				;;
+			3??) ;;						# 3xx (Redirection)
+			4??) ;;						# 4xx (Client Error)
+			5??) ;;						# 5xx (Server Error)
+			*  ) ;;						# xxx (Unknown Code)
+		esac
+	done
+	# -------------------------------------------------------------------------
+	__RETN_VALU="${__PATH}"
+#	return "${__RTCD}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: get web information
+#   n-ref :   $1   : return value : path tmstamp size status contents
+#   input :   $2   : url
+#   output: stdout : unused
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnGetWeb_info() {
+#	declare -n    __RETN_VALU="${1:?}"	# return value
+	declare       __WORK=""				# work variables
+
+	fnGetWeb_address "__WORK" "${2:?}"
+	fnGetWeb_header "${1}" "${__WORK}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: get web status message
+#   input :   $1   : input vale
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnGetWeb_status() {
+	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+		100) echo -n "$1: Continue";;
+		101) echo -n "$1: Switching Protocols";;
+		1??) echo -n "$1: (Informational): The request was received, continuing process";;
+		200) echo -n "$1: OK";;
+		201) echo -n "$1: Created";;
+		202) echo -n "$1: Accepted";;
+		203) echo -n "$1: Non-Authoritative Information";;
+		204) echo -n "$1: No Content";;
+		205) echo -n "$1: Reset Content";;
+		206) echo -n "$1: Partial Content";;
+		2??) echo -n "$1: (Successful): The request was successfully received, understood, and accepted";;
+		300) echo -n "$1: Multiple Choices";;
+		301) echo -n "$1: Moved Permanently";;
+		302) echo -n "$1: Found";;
+		303) echo -n "$1: See Other";;
+		304) echo -n "$1: Not Modified";;
+		305) echo -n "$1: Use Proxy";;
+		306) echo -n "$1: (Unused)";;
+		307) echo -n "$1: Temporary Redirect";;
+		308) echo -n "$1: Permanent Redirect";;
+		3??) echo -n "$1: (Redirection): Further action needs to be taken in order to complete the request";;
+		400) echo -n "$1: Bad Request";;
+		401) echo -n "$1: Unauthorized";;
+		402) echo -n "$1: Payment Required";;
+		403) echo -n "$1: Forbidden";;
+		404) echo -n "$1: Not Found";;
+		405) echo -n "$1: Method Not Allowed";;
+		406) echo -n "$1: Not Acceptable";;
+		407) echo -n "$1: Proxy Authentication Required";;
+		408) echo -n "$1: Request Timeout";;
+		409) echo -n "$1: Conflict";;
+		410) echo -n "$1: Gone";;
+		411) echo -n "$1: Length Required";;
+		412) echo -n "$1: Precondition Failed";;
+		413) echo -n "$1: Content Too Large";;
+		414) echo -n "$1: URI Too Long";;
+		415) echo -n "$1: Unsupported Media Type";;
+		416) echo -n "$1: Range Not Satisfiable";;
+		417) echo -n "$1: Expectation Failed";;
+		418) echo -n "$1: (Unused)";;
+		421) echo -n "$1: Misdirected Request";;
+		422) echo -n "$1: Unprocessable Content";;
+		426) echo -n "$1: Upgrade Required";;
+		4??) echo -n "$1: (Client Error): The request contains bad syntax or cannot be fulfilled";;
+		500) echo -n "$1: Internal Server Error";;
+		501) echo -n "$1: Not Implemented";;
+		502) echo -n "$1: Bad Gateway";;
+		503) echo -n "$1: Service Unavailable";;
+		504) echo -n "$1: Gateway Timeout";;
+		505) echo -n "$1: HTTP Version Not Supported";;
+		5??) echo -n "$1: (Server Error): The server failed to fulfill an apparently valid request";;
+		*  ) echo -n "$1: (Unknown Code)";;
+	esac
+}
+
 # *** function section (sub functions) ****************************************
 
 # -----------------------------------------------------------------------------
@@ -589,16 +909,6 @@ function fnDistro2efi() {
 function fnInitialization() {
 :
 }
-
-# --- is numeric --------------------------------------------------------------
-#function fnIsNumeric() {
-#	[[ ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
-#}
-
-# --- substr ------------------------------------------------------------------
-#function fnSubstr() {
-#	echo "${1:${2:-0}:${3:-${#1}}}"
-#}
 
 # --- service status ----------------------------------------------------------
 function fnServiceStatus() {
@@ -638,110 +948,110 @@ function fnDiff() {
 }
 
 # --- download ----------------------------------------------------------------
-function fnCurl() {
-	declare -i    _RET_CD=0
-	declare -i    I
-	declare       _INPT_URL=""
-	declare       _OUTP_DIR=""
-	declare       _OUTP_FILE=""
-	declare       _MSG_FLG=""
-	declare -a    _OPT_PRM=()
-	declare -a    _ARY_HED=()
-	declare       _ERR_MSG=""
-	declare       _WEB_SIZ=""
-	declare       _WEB_TIM=""
-	declare       _WEB_FIL=""
-	declare       _LOC_INF=""
-	declare       _LOC_SIZ=""
-	declare       _LOC_TIM=""
-	declare       __TEXT_SIZ=""
-
-	while [[ -n "${1:-}" ]]
-	do
-		case "${1:-}" in
-			http://* | https://* )
-				_OPT_PRM+=("${1}")
-				_INPT_URL="${1}"
-				;;
-			--output-dir )
-				_OPT_PRM+=("${1}")
-				shift
-				_OPT_PRM+=("${1}")
-				_OUTP_DIR="${1}"
-				;;
-			--output )
-				_OPT_PRM+=("${1}")
-				shift
-				_OPT_PRM+=("${1}")
-				_OUTP_FILE="${1}"
-				;;
-			--quiet )
-				_MSG_FLG="true"
-				;;
-			* )
-				_OPT_PRM+=("${1}")
-				;;
-		esac
-		shift
-	done
-	if [[ -z "${_OUTP_FILE}" ]]; then
-		_OUTP_FILE="${_INPT_URL##*/}"
-	fi
-	if ! _ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${_INPT_URL}" 2> /dev/null)"); then
-		_RET_CD="$?"
-		_ERR_MSG=$(echo "${_ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g' || true)
-		if [[ -z "${_MSG_FLG}" ]]; then
-			printf "%s\n" "${_ERR_MSG} [${_RET_CD}]: ${_INPT_URL}"
-		fi
-		return "${_RET_CD}"
-	fi
-	_WEB_SIZ=$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p' || true)
-	# shellcheck disable=SC2312
-	_WEB_TIM=$(TZ=UTC date -d "$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
-	_WEB_FIL="${_OUTP_DIR:-.}/${_INPT_URL##*/}"
-	if [[ -n "${_OUTP_DIR}" ]] && [[ ! -d "${_OUTP_DIR}/." ]]; then
-		mkdir -p "${_OUTP_DIR}"
-	fi
-	if [[ -n "${_OUTP_FILE}" ]] && [[ -e "${_OUTP_FILE}" ]]; then
-		_WEB_FIL="${_OUTP_FILE}"
-	fi
-	if [[ -n "${_WEB_FIL}" ]] && [[ -e "${_WEB_FIL}" ]]; then
-		_LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_WEB_FIL}")
-		_LOC_TIM=$(echo "${_LOC_INF}" | awk '{print $6;}')
-		_LOC_SIZ=$(echo "${_LOC_INF}" | awk '{print $5;}')
-		if [[ "${_WEB_TIM:-0}" -eq "${_LOC_TIM:-0}" ]] && [[ "${_WEB_SIZ:-0}" -eq "${_LOC_SIZ:-0}" ]]; then
-			if [[ -z "${_MSG_FLG}" ]]; then
-				printf "%s\n" "same    file: ${_WEB_FIL}"
-			fi
-			return
-		fi
-	fi
-
-	fnUnit_conversion "__TEXT_SIZ" "${_WEB_SIZ}"
-
-	if [[ -z "${_MSG_FLG}" ]]; then
-		printf "%s\n" "get     file: ${_WEB_FIL} (${__TEXT_SIZ})"
-	fi
-	if curl "${_OPT_PRM[@]}"; then
-		return $?
-	fi
-
-	for ((I=0; I<3; I++))
-	do
-		if [[ -z "${_MSG_FLG}" ]]; then
-			printf "%s\n" "retry  count: ${I}"
-		fi
-		if curl --continue-at "${_OPT_PRM[@]}"; then
-			return "$?"
-		else
-			_RET_CD="$?"
-		fi
-	done
-	if [[ "${_RET_CD}" -ne 0 ]]; then
-		rm -f "${:?}"
-	fi
-	return "${_RET_CD}"
-}
+#function fnCurl() {
+#	declare -i    _RET_CD=0
+#	declare -i    I
+#	declare       _INPT_URL=""
+#	declare       _OUTP_DIR=""
+#	declare       _OUTP_FILE=""
+#	declare       _MSG_FLG=""
+#	declare -a    _OPT_PRM=()
+#	declare -a    _ARY_HED=()
+#	declare       _ERR_MSG=""
+#	declare       _WEB_SIZ=""
+#	declare       _WEB_TIM=""
+#	declare       _WEB_FIL=""
+#	declare       _LOC_INF=""
+#	declare       _LOC_SIZ=""
+#	declare       _LOC_TIM=""
+#	declare       __TEXT_SIZ=""
+#
+#	while [[ -n "${1:-}" ]]
+#	do
+#		case "${1:-}" in
+#			http://* | https://* )
+#				_OPT_PRM+=("${1}")
+#				_INPT_URL="${1}"
+#				;;
+#			--output-dir )
+#				_OPT_PRM+=("${1}")
+#				shift
+#				_OPT_PRM+=("${1}")
+#				_OUTP_DIR="${1}"
+#				;;
+#			--output )
+#				_OPT_PRM+=("${1}")
+#				shift
+#				_OPT_PRM+=("${1}")
+#				_OUTP_FILE="${1}"
+#				;;
+#			--quiet )
+#				_MSG_FLG="true"
+#				;;
+#			* )
+#				_OPT_PRM+=("${1}")
+#				;;
+#		esac
+#		shift
+#	done
+#	if [[ -z "${_OUTP_FILE}" ]]; then
+#		_OUTP_FILE="${_INPT_URL##*/}"
+#	fi
+#	if ! _ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${_INPT_URL}" 2> /dev/null)"); then
+#		_RET_CD="$?"
+#		_ERR_MSG=$(echo "${_ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g' || true)
+#		if [[ -z "${_MSG_FLG}" ]]; then
+#			printf "%s\n" "${_ERR_MSG} [${_RET_CD}]: ${_INPT_URL}"
+#		fi
+#		return "${_RET_CD}"
+#	fi
+#	_WEB_SIZ=$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p' || true)
+#	# shellcheck disable=SC2312
+#	_WEB_TIM=$(TZ=UTC date -d "$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
+#	_WEB_FIL="${_OUTP_DIR:-.}/${_INPT_URL##*/}"
+#	if [[ -n "${_OUTP_DIR}" ]] && [[ ! -d "${_OUTP_DIR}/." ]]; then
+#		mkdir -p "${_OUTP_DIR}"
+#	fi
+#	if [[ -n "${_OUTP_FILE}" ]] && [[ -e "${_OUTP_FILE}" ]]; then
+#		_WEB_FIL="${_OUTP_FILE}"
+#	fi
+#	if [[ -n "${_WEB_FIL}" ]] && [[ -e "${_WEB_FIL}" ]]; then
+#		_LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_WEB_FIL}")
+#		_LOC_TIM=$(echo "${_LOC_INF}" | awk '{print $6;}')
+#		_LOC_SIZ=$(echo "${_LOC_INF}" | awk '{print $5;}')
+#		if [[ "${_WEB_TIM:-0}" -eq "${_LOC_TIM:-0}" ]] && [[ "${_WEB_SIZ:-0}" -eq "${_LOC_SIZ:-0}" ]]; then
+#			if [[ -z "${_MSG_FLG}" ]]; then
+#				printf "%s\n" "same    file: ${_WEB_FIL}"
+#			fi
+#			return
+#		fi
+#	fi
+#
+#	fnUnit_conversion "__TEXT_SIZ" "${_WEB_SIZ}"
+#
+#	if [[ -z "${_MSG_FLG}" ]]; then
+#		printf "%s\n" "get     file: ${_WEB_FIL} (${__TEXT_SIZ})"
+#	fi
+#	if curl "${_OPT_PRM[@]}"; then
+#		return $?
+#	fi
+#
+#	for ((I=0; I<3; I++))
+#	do
+#		if [[ -z "${_MSG_FLG}" ]]; then
+#			printf "%s\n" "retry  count: ${I}"
+#		fi
+#		if curl --continue-at "${_OPT_PRM[@]}"; then
+#			return "$?"
+#		else
+#			_RET_CD="$?"
+#		fi
+#	done
+#	if [[ "${_RET_CD}" -ne 0 ]]; then
+#		rm -f "${:?}"
+#	fi
+#	return "${_RET_CD}"
+#}
 
 # --- text color test ---------------------------------------------------------
 # shellcheck disable=SC2154
@@ -800,19 +1110,19 @@ function fnDebug_function() {
 	declare -r    _FILE_WRK1="${_DIRS_TEMP:-/tmp}/testfile1.txt"
 	declare -r    _FILE_WRK2="${_DIRS_TEMP:-/tmp}/testfile2.txt"
 	declare -r    _TEST_ADDR="https://raw.githubusercontent.com/office-itou/Linux/master/Readme.md"
-	declare -r -a _CURL_OPTN=(               \
-		"--location"                         \
-		"--progress-bar"                     \
-		"--remote-name"                      \
-		"--remote-time"                      \
-		"--show-error"                       \
-		"--fail"                             \
-		"--retry-max-time" "3"               \
-		"--retry" "3"                        \
-		"--create-dirs"                      \
-		"--output-dir" "${_DIRS_TEMP:-/tmp}" \
-		"${_TEST_ADDR}"                      \
-	)
+#	declare -r -a _CURL_OPTN=(               \
+#		"--location"                         \
+#		"--progress-bar"                     \
+#		"--remote-name"                      \
+#		"--remote-time"                      \
+#		"--show-error"                       \
+#		"--fail"                             \
+#		"--retry-max-time" "3"               \
+#		"--retry" "3"                        \
+#		"--create-dirs"                      \
+#		"--output-dir" "${_DIRS_TEMP:-/tmp}" \
+#		"${_TEST_ADDR}"                      \
+#	)
 	declare       _TEST_PARM=""
 	declare       _RETN_VALU=""
 	declare -i    I=0
@@ -1041,13 +1351,19 @@ _EOT_
 	done
 
 	# --- download ------------------------------------------------------------
-	# shellcheck disable=SC2091,SC2310
-	if $(fnIsPackage 'curl'); then
-		fnPrintf "---- download ${_TEXT_GAP1}"
-		fnPrintf "--no-cutting" "fnCurl ${_CURL_OPTN[*]}"
-		fnCurl "${_CURL_OPTN[@]}"
-		echo ""
-	fi
+	fnPrintf "---- download ${_TEXT_GAP1}"
+	_PATH="${_DIRS_TEMP:-/tmp}/download/${_TEST_ADDR##*/}"
+	fnPrintf "--no-cutting" "fnGetWeb_contents \"${_PATH}\" \"${_TEST_ADDR:?}\""
+	fnGetWeb_contents "${_PATH}" "${_TEST_ADDR}"
+	LANG=C find "${_PATH%/*}" -name "${_PATH##*/}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%TS%Tz %s"
+	echo ""
+#	# shellcheck disable=SC2091,SC2310
+#	if $(fnIsPackage 'curl'); then
+#		fnPrintf "---- download ${_TEXT_GAP1}"
+#		fnPrintf "--no-cutting" "fnCurl ${_CURL_OPTN[*]}"
+#		fnCurl "${_CURL_OPTN[@]}"
+#		echo ""
+#	fi
 
 	# -------------------------------------------------------------------------
 	rm -f "${_FILE_WRK1}" "${_FILE_WRK2}"

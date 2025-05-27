@@ -1,13 +1,3 @@
-# --- is numeric --------------------------------------------------------------
-#function fnIsNumeric() {
-#	[[ ${1:-} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo 0 || echo 1
-#}
-
-# --- substr ------------------------------------------------------------------
-#function fnSubstr() {
-#	echo "${1:${2:-0}:${3:-${#1}}}"
-#}
-
 # --- service status ----------------------------------------------------------
 function fnServiceStatus() {
 	declare -i    _RET_CD=0
@@ -46,110 +36,110 @@ function fnDiff() {
 }
 
 # --- download ----------------------------------------------------------------
-function fnCurl() {
-	declare -i    _RET_CD=0
-	declare -i    I
-	declare       _INPT_URL=""
-	declare       _OUTP_DIR=""
-	declare       _OUTP_FILE=""
-	declare       _MSG_FLG=""
-	declare -a    _OPT_PRM=()
-	declare -a    _ARY_HED=()
-	declare       _ERR_MSG=""
-	declare       _WEB_SIZ=""
-	declare       _WEB_TIM=""
-	declare       _WEB_FIL=""
-	declare       _LOC_INF=""
-	declare       _LOC_SIZ=""
-	declare       _LOC_TIM=""
-	declare       __TEXT_SIZ=""
-
-	while [[ -n "${1:-}" ]]
-	do
-		case "${1:-}" in
-			http://* | https://* )
-				_OPT_PRM+=("${1}")
-				_INPT_URL="${1}"
-				;;
-			--output-dir )
-				_OPT_PRM+=("${1}")
-				shift
-				_OPT_PRM+=("${1}")
-				_OUTP_DIR="${1}"
-				;;
-			--output )
-				_OPT_PRM+=("${1}")
-				shift
-				_OPT_PRM+=("${1}")
-				_OUTP_FILE="${1}"
-				;;
-			--quiet )
-				_MSG_FLG="true"
-				;;
-			* )
-				_OPT_PRM+=("${1}")
-				;;
-		esac
-		shift
-	done
-	if [[ -z "${_OUTP_FILE}" ]]; then
-		_OUTP_FILE="${_INPT_URL##*/}"
-	fi
-	if ! _ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${_INPT_URL}" 2> /dev/null)"); then
-		_RET_CD="$?"
-		_ERR_MSG=$(echo "${_ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g' || true)
-		if [[ -z "${_MSG_FLG}" ]]; then
-			printf "%s\n" "${_ERR_MSG} [${_RET_CD}]: ${_INPT_URL}"
-		fi
-		return "${_RET_CD}"
-	fi
-	_WEB_SIZ=$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p' || true)
-	# shellcheck disable=SC2312
-	_WEB_TIM=$(TZ=UTC date -d "$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
-	_WEB_FIL="${_OUTP_DIR:-.}/${_INPT_URL##*/}"
-	if [[ -n "${_OUTP_DIR}" ]] && [[ ! -d "${_OUTP_DIR}/." ]]; then
-		mkdir -p "${_OUTP_DIR}"
-	fi
-	if [[ -n "${_OUTP_FILE}" ]] && [[ -e "${_OUTP_FILE}" ]]; then
-		_WEB_FIL="${_OUTP_FILE}"
-	fi
-	if [[ -n "${_WEB_FIL}" ]] && [[ -e "${_WEB_FIL}" ]]; then
-		_LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_WEB_FIL}")
-		_LOC_TIM=$(echo "${_LOC_INF}" | awk '{print $6;}')
-		_LOC_SIZ=$(echo "${_LOC_INF}" | awk '{print $5;}')
-		if [[ "${_WEB_TIM:-0}" -eq "${_LOC_TIM:-0}" ]] && [[ "${_WEB_SIZ:-0}" -eq "${_LOC_SIZ:-0}" ]]; then
-			if [[ -z "${_MSG_FLG}" ]]; then
-				printf "%s\n" "same    file: ${_WEB_FIL}"
-			fi
-			return
-		fi
-	fi
-
-	fnUnit_conversion "__TEXT_SIZ" "${_WEB_SIZ}"
-
-	if [[ -z "${_MSG_FLG}" ]]; then
-		printf "%s\n" "get     file: ${_WEB_FIL} (${__TEXT_SIZ})"
-	fi
-	if curl "${_OPT_PRM[@]}"; then
-		return $?
-	fi
-
-	for ((I=0; I<3; I++))
-	do
-		if [[ -z "${_MSG_FLG}" ]]; then
-			printf "%s\n" "retry  count: ${I}"
-		fi
-		if curl --continue-at "${_OPT_PRM[@]}"; then
-			return "$?"
-		else
-			_RET_CD="$?"
-		fi
-	done
-	if [[ "${_RET_CD}" -ne 0 ]]; then
-		rm -f "${:?}"
-	fi
-	return "${_RET_CD}"
-}
+#function fnCurl() {
+#	declare -i    _RET_CD=0
+#	declare -i    I
+#	declare       _INPT_URL=""
+#	declare       _OUTP_DIR=""
+#	declare       _OUTP_FILE=""
+#	declare       _MSG_FLG=""
+#	declare -a    _OPT_PRM=()
+#	declare -a    _ARY_HED=()
+#	declare       _ERR_MSG=""
+#	declare       _WEB_SIZ=""
+#	declare       _WEB_TIM=""
+#	declare       _WEB_FIL=""
+#	declare       _LOC_INF=""
+#	declare       _LOC_SIZ=""
+#	declare       _LOC_TIM=""
+#	declare       __TEXT_SIZ=""
+#
+#	while [[ -n "${1:-}" ]]
+#	do
+#		case "${1:-}" in
+#			http://* | https://* )
+#				_OPT_PRM+=("${1}")
+#				_INPT_URL="${1}"
+#				;;
+#			--output-dir )
+#				_OPT_PRM+=("${1}")
+#				shift
+#				_OPT_PRM+=("${1}")
+#				_OUTP_DIR="${1}"
+#				;;
+#			--output )
+#				_OPT_PRM+=("${1}")
+#				shift
+#				_OPT_PRM+=("${1}")
+#				_OUTP_FILE="${1}"
+#				;;
+#			--quiet )
+#				_MSG_FLG="true"
+#				;;
+#			* )
+#				_OPT_PRM+=("${1}")
+#				;;
+#		esac
+#		shift
+#	done
+#	if [[ -z "${_OUTP_FILE}" ]]; then
+#		_OUTP_FILE="${_INPT_URL##*/}"
+#	fi
+#	if ! _ARY_HED=("$(curl --location --http1.1 --no-progress-bar --head --remote-time --show-error --silent --fail --retry-max-time 3 --retry 3 "${_INPT_URL}" 2> /dev/null)"); then
+#		_RET_CD="$?"
+#		_ERR_MSG=$(echo "${_ARY_HED[@]}" | sed -ne '/^HTTP/p' | sed -e 's/\r\n*/\n/g' -ze 's/\n//g' || true)
+#		if [[ -z "${_MSG_FLG}" ]]; then
+#			printf "%s\n" "${_ERR_MSG} [${_RET_CD}]: ${_INPT_URL}"
+#		fi
+#		return "${_RET_CD}"
+#	fi
+#	_WEB_SIZ=$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/content-length:/ s/.*: //p' || true)
+#	# shellcheck disable=SC2312
+#	_WEB_TIM=$(TZ=UTC date -d "$(echo "${_ARY_HED[@],,}" | sed -ne '\%http/.* 200%,\%^$% s/'$'\r''//gp' | sed -ne '/last-modified:/ s/.*: //p')" "+%Y%m%d%H%M%S")
+#	_WEB_FIL="${_OUTP_DIR:-.}/${_INPT_URL##*/}"
+#	if [[ -n "${_OUTP_DIR}" ]] && [[ ! -d "${_OUTP_DIR}/." ]]; then
+#		mkdir -p "${_OUTP_DIR}"
+#	fi
+#	if [[ -n "${_OUTP_FILE}" ]] && [[ -e "${_OUTP_FILE}" ]]; then
+#		_WEB_FIL="${_OUTP_FILE}"
+#	fi
+#	if [[ -n "${_WEB_FIL}" ]] && [[ -e "${_WEB_FIL}" ]]; then
+#		_LOC_INF=$(TZ=UTC ls -lL --time-style="+%Y%m%d%H%M%S" "${_WEB_FIL}")
+#		_LOC_TIM=$(echo "${_LOC_INF}" | awk '{print $6;}')
+#		_LOC_SIZ=$(echo "${_LOC_INF}" | awk '{print $5;}')
+#		if [[ "${_WEB_TIM:-0}" -eq "${_LOC_TIM:-0}" ]] && [[ "${_WEB_SIZ:-0}" -eq "${_LOC_SIZ:-0}" ]]; then
+#			if [[ -z "${_MSG_FLG}" ]]; then
+#				printf "%s\n" "same    file: ${_WEB_FIL}"
+#			fi
+#			return
+#		fi
+#	fi
+#
+#	fnUnit_conversion "__TEXT_SIZ" "${_WEB_SIZ}"
+#
+#	if [[ -z "${_MSG_FLG}" ]]; then
+#		printf "%s\n" "get     file: ${_WEB_FIL} (${__TEXT_SIZ})"
+#	fi
+#	if curl "${_OPT_PRM[@]}"; then
+#		return $?
+#	fi
+#
+#	for ((I=0; I<3; I++))
+#	do
+#		if [[ -z "${_MSG_FLG}" ]]; then
+#			printf "%s\n" "retry  count: ${I}"
+#		fi
+#		if curl --continue-at "${_OPT_PRM[@]}"; then
+#			return "$?"
+#		else
+#			_RET_CD="$?"
+#		fi
+#	done
+#	if [[ "${_RET_CD}" -ne 0 ]]; then
+#		rm -f "${:?}"
+#	fi
+#	return "${_RET_CD}"
+#}
 
 # --- text color test ---------------------------------------------------------
 # shellcheck disable=SC2154
@@ -208,19 +198,19 @@ function fnDebug_function() {
 	declare -r    _FILE_WRK1="${_DIRS_TEMP:-/tmp}/testfile1.txt"
 	declare -r    _FILE_WRK2="${_DIRS_TEMP:-/tmp}/testfile2.txt"
 	declare -r    _TEST_ADDR="https://raw.githubusercontent.com/office-itou/Linux/master/Readme.md"
-	declare -r -a _CURL_OPTN=(               \
-		"--location"                         \
-		"--progress-bar"                     \
-		"--remote-name"                      \
-		"--remote-time"                      \
-		"--show-error"                       \
-		"--fail"                             \
-		"--retry-max-time" "3"               \
-		"--retry" "3"                        \
-		"--create-dirs"                      \
-		"--output-dir" "${_DIRS_TEMP:-/tmp}" \
-		"${_TEST_ADDR}"                      \
-	)
+#	declare -r -a _CURL_OPTN=(               \
+#		"--location"                         \
+#		"--progress-bar"                     \
+#		"--remote-name"                      \
+#		"--remote-time"                      \
+#		"--show-error"                       \
+#		"--fail"                             \
+#		"--retry-max-time" "3"               \
+#		"--retry" "3"                        \
+#		"--create-dirs"                      \
+#		"--output-dir" "${_DIRS_TEMP:-/tmp}" \
+#		"${_TEST_ADDR}"                      \
+#	)
 	declare       _TEST_PARM=""
 	declare       _RETN_VALU=""
 	declare -i    I=0
@@ -449,13 +439,19 @@ _EOT_
 	done
 
 	# --- download ------------------------------------------------------------
-	# shellcheck disable=SC2091,SC2310
-	if $(fnIsPackage 'curl'); then
-		fnPrintf "---- download ${_TEXT_GAP1}"
-		fnPrintf "--no-cutting" "fnCurl ${_CURL_OPTN[*]}"
-		fnCurl "${_CURL_OPTN[@]}"
-		echo ""
-	fi
+	fnPrintf "---- download ${_TEXT_GAP1}"
+	_PATH="${_DIRS_TEMP:-/tmp}/download/${_TEST_ADDR##*/}"
+	fnPrintf "--no-cutting" "fnGetWeb_contents \"${_PATH}\" \"${_TEST_ADDR:?}\""
+	fnGetWeb_contents "${_PATH}" "${_TEST_ADDR}"
+	LANG=C find "${_PATH%/*}" -name "${_PATH##*/}" -follow -printf "%p %TY-%Tm-%Td%%20%TH:%TM:%TS%Tz %s"
+	echo ""
+#	# shellcheck disable=SC2091,SC2310
+#	if $(fnIsPackage 'curl'); then
+#		fnPrintf "---- download ${_TEXT_GAP1}"
+#		fnPrintf "--no-cutting" "fnCurl ${_CURL_OPTN[*]}"
+#		fnCurl "${_CURL_OPTN[@]}"
+#		echo ""
+#	fi
 
 	# -------------------------------------------------------------------------
 	rm -f "${_FILE_WRK1}" "${_FILE_WRK2}"

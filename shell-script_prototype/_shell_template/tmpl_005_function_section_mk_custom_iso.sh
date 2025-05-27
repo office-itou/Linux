@@ -1126,14 +1126,14 @@ function fnExec_remastering() {
 }
 
 # -----------------------------------------------------------------------------
-# descript: 
+# descript: executing the action
 #   n-ref :   $1   : return value : serialized target data
 #   input :   $2   : command type
 #   input :   $3   : target range
 #   input :   $@   : target data
 #   output: stdout : message
 #   return:        : unused
-function fnXXX() {
+function fnExec() {
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -r    __COMD_TYPE="$2"		# command type
 	declare -r    __TGET_RANG="$3"		# target range

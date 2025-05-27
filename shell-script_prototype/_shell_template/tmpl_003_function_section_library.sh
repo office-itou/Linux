@@ -114,7 +114,39 @@ function fnSubstr() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnString() {
-	echo "" | IFS= awk '{s=sprintf("%'"$1"'s",""); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+	echo "" | IFS= awk '{s=sprintf("%'"${1:?}"'s",""); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
+}
+
+# -----------------------------------------------------------------------------
+# descript: ltrim
+#   input :   $1   : input
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnLtrim() {
+	echo -n "${1#"${1%%[!"${IFS}"]*}"}"	# ltrim
+}
+
+# -----------------------------------------------------------------------------
+# descript: rtrim
+#   input :   $1   : input
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnRtrim() {
+	echo -n "${1%"${1##*[!"${IFS}"]}"}"	# rtrim
+}
+
+# -----------------------------------------------------------------------------
+# descript: trim
+#   input :   $1   : input
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnTrim() {
+	declare       __WORK=""
+	__WORK="$(fnLtrim "$1")"
+	fnRtrim "${__WORK}"
 }
 
 # -----------------------------------------------------------------------------
@@ -131,11 +163,7 @@ function fnDateDiff() {
 	declare       __TGET_DAT1="${1:?}"	# date1
 	declare       __TGET_DAT2="${2:?}"	# date2
 	declare -i    __RTCD=0				# return code
-	# -------------------------------------------------------------------------
-	#  0 : __TGET_DAT1 = __TGET_DAT2
-	#  1 : __TGET_DAT1 < __TGET_DAT2
-	# -1 : __TGET_DAT1 > __TGET_DAT2
-	# emp: error
+
 	if ! __TGET_DAT1="$(TZ=UTC date -d "${__TGET_DAT1//%20/ }" "+%s")"; then
 		__RTCD="$?"
 		printf "%20.20s: %s\n" "failed" "${__TGET_DAT1}"
@@ -151,6 +179,24 @@ function fnDateDiff() {
 	elif [[ "${__TGET_DAT1}" -gt "${__TGET_DAT2}" ]]; then echo -n "-1"
 	else                                                   echo -n ""
 	fi
+}
+
+# -----------------------------------------------------------------------------
+# descript: print with centering
+#   input :   $1   : print width
+#   input :   $2   : input value
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnCenter() {
+	declare       __TEXT=""				# trimmed string
+	declare -i    __LEFT=0				# count of space on left
+	declare -i    __RIGT=0				# count of space on right
+
+	__TEXT="$(fnTrim "${2:-}")"
+	__LEFT=$(((${1:?} - "${#__TEXT}") / 2))
+	__RIGT=$((${1:?} - "${__LEFT}" - "${#__TEXT}"))
+	printf "%${__LEFT}s%-s%${__RIGT}s" "" "${__TEXT}" ""
 }
 
 # -----------------------------------------------------------------------------
