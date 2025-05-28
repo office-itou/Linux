@@ -364,9 +364,9 @@ function fnCreate_conf() {
 		##	common configuration file
 		##
 		###############################################################################
-		
+
 		# === for server environments =================================================
-		
+
 		# --- shared directory parameter ----------------------------------------------
 		DIRS_TOPS="${_DIRS_TOPS:?}"						# top of shared directory
 		DIRS_HGFS="${_DIRS_HGFS//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# vmware shared
@@ -374,7 +374,7 @@ function fnCreate_conf() {
 		DIRS_SAMB="${_DIRS_SAMB//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# samba shared
 		DIRS_TFTP="${_DIRS_TFTP//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# tftp contents
 		DIRS_USER="${_DIRS_USER//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"			# user file
-		
+
 		# --- shared of user file -----------------------------------------------------
 		DIRS_SHAR="${_DIRS_SHAR//"${_DIRS_USER}"/:_DIRS_USER_:}"			# shared of user file
 		DIRS_CONF="${_DIRS_CONF//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# configuration file
@@ -386,24 +386,24 @@ function fnCreate_conf() {
 		DIRS_ISOS="${_DIRS_ISOS//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# iso file
 		DIRS_LOAD="${_DIRS_LOAD//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# load module
 		DIRS_RMAK="${_DIRS_RMAK//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# remake file
-		
+
 		# --- common data file --------------------------------------------------------
 		#PATH_CONF="${_PATH_CONF//"${_DIRS_DATA}"/:_DIRS_DATA_:}"	# common configuration file (this file)
 		PATH_MDIA="${_PATH_MDIA//"${_DIRS_DATA}"/:_DIRS_DATA_:}"		# media data file
-		
+
 		# --- pre-configuration file templates ----------------------------------------
 		CONF_KICK="${_CONF_KICK//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for rhel
 		CONF_CLUD="${_CONF_CLUD//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for ubuntu cloud-init
 		CONF_SEDD="${_CONF_SEDD//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for debian
 		CONF_SEDU="${_CONF_SEDU//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for ubuntu
 		CONF_YAST="${_CONF_YAST//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for opensuse
-		
+
 		# --- shell script ------------------------------------------------------------
 		SHEL_ERLY="${_SHEL_ERLY//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run early
 		SHEL_LATE="${_SHEL_LATE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run late
 		SHEL_PART="${_SHEL_PART//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run after partition
 		SHEL_RUNS="${_SHEL_RUNS//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run preseed/run
-		
+
 		# --- tftp / web server network parameter -------------------------------------
 		SRVR_HTTP="${_SRVR_HTTP:-}"						# server connection protocol (http or https)
 		SRVR_PROT="${_SRVR_PROT:-}"						# server connection protocol (http or tftp)
@@ -414,9 +414,9 @@ function fnCreate_conf() {
 		SRVR_MASK="${_SRVR_MASK:-}"				# IPv4 subnetmask       (ex. 255.255.255.0)
 		SRVR_GWAY="${_SRVR_GWAY:-}"				# IPv4 gateway          (ex. 192.168.1.254)
 		SRVR_NSVR="${_SRVR_NSVR:-}"				# IPv4 nameserver       (ex. 192.168.1.254)
-		
+
 		# === for creations ===========================================================
-		
+
 		# --- network parameter -------------------------------------------------------
 		NWRK_HOST="${_NWRK_HOST:-}"				# hostname
 		NWRK_WGRP="${_NWRK_WGRP:-}"					# domain
@@ -426,17 +426,17 @@ function fnCreate_conf() {
 		IPV4_MASK="${_IPV4_MASK:-}"				# IPv4 subnetmask (empty to ipv4 cidr)
 		IPV4_GWAY="${_IPV4_GWAY:-}"				# IPv4 gateway
 		IPV4_NSVR="${_IPV4_NSVR:-}"				# IPv4 nameserver
-		
+
 		# --- menu timeout ------------------------------------------------------------
 		MENU_TOUT="${_MENU_TOUT:-}"							# timeout [sec]
-		
+
 		# --- menu resolution ---------------------------------------------------------
 		MENU_RESO="${_MENU_RESO:-}"					# resolution ([width]x[height])
 		MENU_DPTH="${_MENU_DPTH:-}"							# colors
-		
+
 		# --- screen mode (vga=nnn) ---------------------------------------------------
 		MENU_MODE="${_MENU_MODE:-}"							# mode (vga=nnn)
-		
+
 		### eof #######################################################################
 _EOT_
 }
@@ -535,11 +535,11 @@ function fnPut_media_data() {
 		__LINE="${__LINE//"${_DIRS_HGFS}"/:_DIRS_HGFS_:}"
 		__LINE="${__LINE//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"
 		read -r -a __LIST < <(echo "${__LINE}")
-		for J in "${!__LIST[@]}"
-		do
-			__LIST[J]="${__LIST[J]:--}"		# empty
-			__LIST[J]="${__LIST[J]// /%20}"	# space
-		done
+#		for J in "${!__LIST[@]}"
+#		do
+#			__LIST[J]="${__LIST[J]:--}"		# empty
+#			__LIST[J]="${__LIST[J]// /%20}"	# space
+#		done
 		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s\n" \
 			"${__LIST[@]}"
 	done > "${_PATH_MDIA:?}"

@@ -83,7 +83,7 @@ function fnDebug_parameter() {
 function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
-		
+
 		  iso image files:
 		    create|update|download [all|(mini|net|dvd|live {a|all|id})|version]
 		      empty             : waiting for input
@@ -91,16 +91,16 @@ function fnHelp() {
 		      mini|net|dvd|live : each target
 		        all             : all of each target
 		        id number       : selected id
-		
+
 		  list files:
 		    list [create|update|download]
 		      empty             : display of list data
 		      create            : update / download list files
-		
+
 		  config files:
 		    conf [create]
 		      create            : create common configuration file
-		
+
 		  pre-config files:
 		    preconf [all|(preseed|nocloudkickstart|autoyast)]
 		      all               : all pre-config files
@@ -108,11 +108,11 @@ function fnHelp() {
 		      nocloud           : nocloud
 		      kickstart         : kickstart.cfg
 		      autoyast          : autoyast.xml
-		
+
 		  symbolic link:
 		    link
 		      create            : create symbolic link
-		
+
 		  debug print and test
 		    debug [func|text|parm]
 		      parm              : display of main internal parameters
@@ -192,9 +192,35 @@ function fnMain() {
 				shift
 				# --- processing by media type --------------------------------
 				__OPTN=("${@:-}")
-				case "${1:-}" in
-					a|all) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all" "${@:-}");;
-					*    ) ;;
+				case "${__COMD:-}" in
+					list    | \
+					create  | \
+					update  | \
+					download)
+						case "${1:-}" in
+							a|all   )
+								shift
+								case "${__COMD}" in
+									list    ) __OPTN=("mini"       "netinst"       "dvd"       "liveinst"       "${@:-}");;
+									create  | \
+									update  | \
+									download) __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all" "${@:-}");;
+									*       ) ;;
+								esac
+								;;
+							mini    ) ;;
+							netinst ) ;;
+							dvd     ) ;;
+							liveinst) ;;
+#							live    ) ;;
+#							tool    ) ;;
+#							clive   ) ;;
+#							cnetinst) ;;
+#							system  ) ;;
+							*       ) __OPTN=("mini" "netinst" "dvd" "liveinst" "${@:-}");;
+						esac
+						;;
+					*       ) ;;
 				esac
 				set -f -- "${__OPTN[@]:-}"
 				while [[ -n "${1:-}" ]]
@@ -223,26 +249,31 @@ function fnMain() {
 						esac
 						shift
 					done
+					# --- print out of menu -----------------------------------
+					fnPrint_menu "__RSLT" "${__COMD}" "${__TGET}" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
 					# --- selection by media type -----------------------------
-					IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=='"${__TGET}"'{print $0;}')
-
-
-
-					fnPrint_menu "__RSLT" "${__COMD}" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
 					IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RSLT}")
-					# --- select by input value -------------------------------
-					if [[ -z "${__RANG:-}" ]]; then
-						read -r -p "enter the number to create:" __RANG
-					fi
-					if [[ -z "${__RANG:-}" ]]; then
-						continue
-					fi
-					case "${__RANG,,}" in
-						a|all) __RANG="$(eval "echo {1..${#__MDIA[@]}}")";;
-						*    ) ;;
-					esac
-					# --- main loop -------------------------------------------
-					fnExec "__RSLT" "create" "${__RANG}" "${__MDIA[@]}"
+					# --- descript: executing the action ----------------------
+					fnExec "__RSLT" "${__COMD}" "${__RANG}" "${__MDIA[@]}"
+					# --- set execution result --------------------------------
+					IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RSLT}")
+					# --- update media data record ----------------------------
+					for I in "${!__MDIA[@]}"
+					do
+						read -r -a __LIST < <(echo "${__MDIA[I]}")
+						for J in "${!_LIST_MDIA[@]}"
+						do
+							read -r -a __ARRY < <(echo "${_LIST_MDIA[J]}")
+							if [[ "${__LIST[0]}" != "${__ARRY[0]}" ]] \
+							|| [[ "${__LIST[1]}" != "${__ARRY[1]}" ]] \
+							|| [[ "${__LIST[2]}" != "${__ARRY[2]}" ]] \
+							|| [[ "${__LIST[3]}" != "${__ARRY[3]}" ]]; then
+								continue
+							fi
+							_LIST_MDIA[J]="${__LIST[*]}"
+							break
+						done
+					done
 				done
 				fnPut_media_data
 				__OPTN=("${@:-}")

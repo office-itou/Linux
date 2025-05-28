@@ -442,7 +442,7 @@ _EOT_
 		  linux  ${__FKNL}
 		  initrd ${__FIRD}
 		  append ${__BOPT[@]:1}
-		
+
 _EOT_
 		# --- graphical installation mode -------------------------------------
 		while read -r __DIRS
@@ -578,7 +578,7 @@ _EOT_
 		message-font: "Unifont Regular 16"
 		terminal-font: "Unifont Regular 16"
 		terminal-border: "0"
-		
+
 		#help bar at the bottom
 		+ label {
 		  top = 100%-50
@@ -590,7 +590,7 @@ _EOT_
 		  color = "#ffffff"
 		  font = "Unifont Regular 16"
 		}
-		
+
 		#boot menu
 		+ boot_menu {
 		  left = 10%
@@ -608,7 +608,7 @@ _EOT_
 		  icon_heigh = 0
 		  item_icon_space = 0
 		}
-		
+
 		#progress bar
 		+ progress_bar {
 		  id = "__timeout__"
@@ -632,7 +632,7 @@ _EOT_
 		set timeout_style=menu
 		set theme=${__FTHM#"${__DIRS_TGET}"}
 		export theme
-		
+
 _EOT_
 	# --- boot options --------------------------------------------------------
 #	__WORK="${__BOOT_OPTN:-}"
@@ -722,7 +722,7 @@ _EOT_
 				  echo 'Loading initrd ...'
 				  initrd ${__FIRD}
 				}
-				
+
 _EOT_
 		done < <(find "${__DIRS_TGET}" -name 'gtk' -type d -printf '%P\n' || true)
 	fi
@@ -906,9 +906,9 @@ function fnRemastering_media() {
 	declare       __FCAT=""									# "         (boot.cat or boot.catalog)
 	declare       __FBIN=""									# "         (isolinux.bin or eltorito.img)
 	declare       __FHBR=""									# "         (isohdpfx.bin)
-#	declare       __VLID=""									# 
-	declare -i    __SKIP=0									# 
-	declare -i    __SIZE=0									# 
+#	declare       __VLID=""									#
+	declare -i    __SKIP=0									#
+	declare -i    __SIZE=0									#
 
 	# --- pre-processing ------------------------------------------------------
 #	__PATH="${__DWRK}/${__TGET_LIST[17]##*/}.tmp"				# file path
@@ -983,7 +983,7 @@ function fnRemastering() {
 	declare       __PATH=""									# full path
 	declare       __FEFI=""									# "         (efiboot.img)
 	declare       __WORK=""									# work variables
-	
+
 	# --- start ---------------------------------------------------------------
 	__time_start=$(date +%s)
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__TGET_LIST[13]##*/}" 1>&2
@@ -1087,7 +1087,7 @@ function fnExec_download() {
 	__TGET_LIST[15]="${__ARRY[2]:-}"	# iso_size
 	__TGET_LIST[16]="${__ARRY[3]:-}"	# iso_volume
 	# --- finish --------------------------------------------------------------
-	__RETN_VALU="${__TGET_LIST[*]}"
+	__RETN_VALU="$(printf "%s\n" "${__MDIA[@]}")"
 }
 
 # -----------------------------------------------------------------------------
@@ -1098,18 +1098,28 @@ function fnExec_download() {
 #   return:        : unused
 function fnExec_remastering() {
 	declare -n    __RETN_VALU="$1"		# return value
-	declare -a    __TGET_LIST=("${@:2}") # target data
+	declare -r    __COMD_TYPE="$2"		# command type
+	declare -a    __TGET_LIST=("${@:3}") # target data
 #	declare       __RSLT=""				# result
+	declare       __FORC=""				# force parameter
 	declare       __RETN=""				# return value
 	declare -a    __ARRY=()				# work variables
 
+	case "${__COMD_TYPE}" in
+		create  ) __FORC="true";;
+		update  ) __FORC="";;
+		download) return;;
+		*       ) return;;
+	esac
 	if [[ -n "${__LIST[13]##-}" ]] && [[ -s "${__LIST[13]}" ]]; then
 		return
 	fi
 	# --- comparing remaster and local file timestamps ------------------------
-	__RSLT="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
-	if [[ "${__RSLT}" -ge 0 ]]; then
-		return
+	if [[ -z "${__FORC:-}" ]]; then
+		__RSLT="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
+		if [[ "${__RSLT}" -ge 0 ]]; then
+			return
+		fi
 	fi
 	# --- executing the remastering -------------------------------------------
 	fnRemastering "${__TGET_LIST[@]}"
@@ -1122,7 +1132,7 @@ function fnExec_remastering() {
 	__TGET_LIST[19]="${__ARRY[2]:--}"	# rmk_size
 	__TGET_LIST[20]="${__ARRY[3]:--}"	# rmk_volume
 	# --- finish --------------------------------------------------------------
-	__RETN_VALU="${__TGET_LIST[*]}"
+	__RETN_VALU="$(printf "%s\n" "${__MDIA[@]}")"
 }
 
 # -----------------------------------------------------------------------------
@@ -1146,11 +1156,27 @@ function fnExec() {
 	declare -a    __LIST=()				# work variables
 	declare -i    I=0					# work variables
 	declare -i    J=0					# work variables
-
-	case "${__TGET_RANG,,}" in
-		a|all) __RANG="$(eval "echo {1..${#__TGET_LIST[@]}}")";;
-		*    ) __RANG="${__TGET_RANG}";;
+	# --- processing by command -----------------------------------------------
+	case "${__COMD_TYPE}" in
+		list    ) return;;			# (print out media list)
+		create  ) ;;				# (force create)
+		update  ) ;;				# (create new files only)
+		download) ;;				# (download only)
+		*       ) return;;
 	esac
+	# --- select by input value -----------------------------------------------
+	__RANG="${__TGET_RANG:-}"
+	if [[ -z "${__RANG:-}" ]]; then
+		read -r -p "enter the number to create:" __RANG
+	fi
+	if [[ -z "${__RANG:-}" ]]; then
+		return
+	fi
+	case "${__RANG,,}" in
+		a|all) __RANG="$(eval "echo {1..${#__TGET_LIST[@]}}")";;
+		*    ) __RANG="$(eval "echo ${__RANG}")";;
+	esac
+	# ---
 	__IDNO=0
 	for I in "${!__TGET_LIST[@]}"
 	do
@@ -1175,24 +1201,31 @@ function fnExec() {
 			__LIST[J]="${__LIST[J]##-}"		# empty
 			__LIST[J]="${__LIST[J]//%20/ }"	# space
 		done
-		# --- command type ----------------------------------------------------
+		# --- download --------------------------------------------------------
 		case "${__COMD_TYPE}" in
-			create  )
-			update  )
+			create  | \
+			update  | \
 			download)
+				fnExec_download "__RETN" "${__LIST[@]}"
+				read -r -a __ARRY < <(echo "${__RETN:-}")
+				case "${__ARRY[12]:-}" in
+					200) __LIST=("${__ARRY[@]}");;
+					*  ) ;;
+				esac
+				;;
 			*       ) ;;
 		esac
-		# --- download --------------------------------------------------------
-		fnExec_download "__RETN" "${__LIST[@]}"
-		read -r -a __ARRY < <(echo "${__RETN:-}")
-		case "${__ARRY[12]}" in
-			200) __LIST=("${__ARRY[@]}");;
-			*  ) ;;
-		esac
 		# --- remastering -----------------------------------------------------
-		fnExec_remastering "__RETN" "${__LIST[@]}"
-		read -r -a __ARRY < <(echo "${__RETN:-}")
-		__LIST=("${__ARRY[@]}")
+		case "${__COMD_TYPE}" in
+			create  | \
+			update  )
+				fnExec_remastering "__RETN" "${__COMD_TYPE}" "${__LIST[@]}"
+				read -r -a __ARRY < <(echo "${__RETN:-}")
+				__LIST=("${__ARRY[@]}")
+				;;
+			download) ;;
+			*       ) ;;
+		esac
 		# --- conversion ------------------------------------------------------
 		for J in "${!__LIST[@]}"
 		do
@@ -1201,19 +1234,8 @@ function fnExec() {
 		done
 		# --- update media data record ----------------------------------------
 		__MDIA[I]="${__LIST[*]}"
-		for J in "${!_LIST_MDIA[@]}"
-		do
-			read -r -a __ARRY < <(echo "${_LIST_MDIA[J]}")
-			if [[ "${__LIST[0]}" != "${__ARRY[0]}" ]] \
-			|| [[ "${__LIST[1]}" != "${__ARRY[1]}" ]] \
-			|| [[ "${__LIST[2]}" != "${__ARRY[2]}" ]] \
-			|| [[ "${__LIST[3]}" != "${__ARRY[3]}" ]]; then
-				continue
-			fi
-			_LIST_MDIA[J]="${__LIST[*]}"
-			break
-		done
 		# --- complete --------------------------------------------------------
 		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
 	done
+	__RETN_VALU="$(printf "%s\n" "${__MDIA[@]}")"
 }
