@@ -13,6 +13,7 @@
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv4GetNetmask() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -a    __OCTS=()				# octets
 	declare -i    __LOOP=0				# work variables
 	declare -i    __CALC=0				# "
@@ -63,6 +64,7 @@ function fnIPv4GetNetmask() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv6GetFullAddr() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __FSEP="${1//[^:]/}"
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
@@ -80,6 +82,7 @@ function fnIPv6GetFullAddr() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv6GetRevAddr() {
+	fnDebugout "${FUNCNAME[0]}"
 	echo "${1//:/}" | \
 	    awk '{
 	        for(i=length();i>1;i--)              \

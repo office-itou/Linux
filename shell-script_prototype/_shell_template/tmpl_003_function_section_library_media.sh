@@ -8,6 +8,7 @@
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnUnit_conversion() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -r -a __UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	declare -i    __CALC=0
@@ -48,6 +49,7 @@ function fnUnit_conversion() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetVolID() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __VLID=""				# volume id
 	declare       __WORK=""				# work variables
@@ -75,6 +77,7 @@ function fnGetVolID() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetFileinfo() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __DIRS=""				# directory
 	declare       __FNAM=""				# file name
@@ -108,6 +111,7 @@ function fnGetFileinfo() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnDistro2efi() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare       __WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	case "${1:?}" in

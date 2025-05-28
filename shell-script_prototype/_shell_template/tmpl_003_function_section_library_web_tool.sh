@@ -8,6 +8,7 @@
 #   return:        : status
 # shellcheck disable=SC2317
 function fnGetWeb_contents() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -a    __OPTN=()				# options
 	declare -i    __RTCD=0				# return code
 	declare -a    __LIST=()				# data list
@@ -49,6 +50,7 @@ function fnGetWeb_contents() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_header() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -a    __OPTN=()				# options
 #	declare -i    __RTCD=0				# return code
@@ -105,6 +107,7 @@ function fnGetWeb_header() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_address() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
@@ -191,6 +194,7 @@ function fnGetWeb_address() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_info() {
+	fnDebugout "${FUNCNAME[0]}"
 #	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __WORK=""				# work variables
 
@@ -205,6 +209,7 @@ function fnGetWeb_info() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_status() {
+	fnDebugout "${FUNCNAME[0]}"
 	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
 		100) echo -n "$1: Continue";;
 		101) echo -n "$1: Switching Protocols";;

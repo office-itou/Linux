@@ -37,24 +37,24 @@
 	# --- constant for colors -------------------------------------------------
 	# https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
 	declare -r    _TEXT_RESET="${_CODE_ESCP}[0m"				# reset all attributes
-	declare -r    _TEXT_BOLD="${_CODE_ESCP}[1m"					# 
-	declare -r    _TEXT_FAINT="${_CODE_ESCP}[2m"				# 
-	declare -r    _TEXT_ITALIC="${_CODE_ESCP}[3m"				# 
+	declare -r    _TEXT_BOLD="${_CODE_ESCP}[1m"					#
+	declare -r    _TEXT_FAINT="${_CODE_ESCP}[2m"				#
+	declare -r    _TEXT_ITALIC="${_CODE_ESCP}[3m"				#
 	declare -r    _TEXT_UNDERLINE="${_CODE_ESCP}[4m"			# set underline
-	declare -r    _TEXT_BLINK="${_CODE_ESCP}[5m"				# 
-	declare -r    _TEXT_FAST_BLINK="${_CODE_ESCP}[6m"			# 
+	declare -r    _TEXT_BLINK="${_CODE_ESCP}[5m"				#
+	declare -r    _TEXT_FAST_BLINK="${_CODE_ESCP}[6m"			#
 	declare -r    _TEXT_REVERSE="${_CODE_ESCP}[7m"				# set reverse display
-	declare -r    _TEXT_CONCEAL="${_CODE_ESCP}[8m"				# 
-	declare -r    _TEXT_STRIKE="${_CODE_ESCP}[9m"				# 
-	declare -r    _TEXT_GOTHIC="${_CODE_ESCP}[20m"				# 
-	declare -r    _TEXT_DOUBLE_UNDERLINE="${_CODE_ESCP}[21m"	# 
-	declare -r    _TEXT_NORMAL="${_CODE_ESCP}[22m"				# 
-	declare -r    _TEXT_NO_ITALIC="${_CODE_ESCP}[23m"			# 
+	declare -r    _TEXT_CONCEAL="${_CODE_ESCP}[8m"				#
+	declare -r    _TEXT_STRIKE="${_CODE_ESCP}[9m"				#
+	declare -r    _TEXT_GOTHIC="${_CODE_ESCP}[20m"				#
+	declare -r    _TEXT_DOUBLE_UNDERLINE="${_CODE_ESCP}[21m"	#
+	declare -r    _TEXT_NORMAL="${_CODE_ESCP}[22m"				#
+	declare -r    _TEXT_NO_ITALIC="${_CODE_ESCP}[23m"			#
 	declare -r    _TEXT_NO_UNDERLINE="${_CODE_ESCP}[24m"		# reset underline
-	declare -r    _TEXT_NO_BLINK="${_CODE_ESCP}[25m"			# 
+	declare -r    _TEXT_NO_BLINK="${_CODE_ESCP}[25m"			#
 	declare -r    _TEXT_NO_REVERSE="${_CODE_ESCP}[27m"			# reset reverse display
-	declare -r    _TEXT_NO_CONCEAL="${_CODE_ESCP}[28m"			# 
-	declare -r    _TEXT_NO_STRIKE="${_CODE_ESCP}[29m"			# 
+	declare -r    _TEXT_NO_CONCEAL="${_CODE_ESCP}[28m"			#
+	declare -r    _TEXT_NO_STRIKE="${_CODE_ESCP}[29m"			#
 	declare -r    _TEXT_BLACK="${_CODE_ESCP}[30m"				# text dark black
 	declare -r    _TEXT_RED="${_CODE_ESCP}[31m"					# text dark red
 	declare -r    _TEXT_GREEN="${_CODE_ESCP}[32m"				# text dark green
@@ -63,7 +63,7 @@
 	declare -r    _TEXT_MAGENTA="${_CODE_ESCP}[35m"				# text dark purple
 	declare -r    _TEXT_CYAN="${_CODE_ESCP}[36m"				# text dark light blue
 	declare -r    _TEXT_WHITE="${_CODE_ESCP}[37m"				# text dark white
-	declare -r    _TEXT_DEFAULT="${_CODE_ESCP}[39m"				# 
+	declare -r    _TEXT_DEFAULT="${_CODE_ESCP}[39m"				#
 	declare -r    _TEXT_BG_BLACK="${_CODE_ESCP}[40m"			# text reverse black
 	declare -r    _TEXT_BG_RED="${_CODE_ESCP}[41m"				# text reverse red
 	declare -r    _TEXT_BG_GREEN="${_CODE_ESCP}[42m"			# text reverse green
@@ -72,7 +72,7 @@
 	declare -r    _TEXT_BG_MAGENTA="${_CODE_ESCP}[45m"			# text reverse purple
 	declare -r    _TEXT_BG_CYAN="${_CODE_ESCP}[46m"				# text reverse light blue
 	declare -r    _TEXT_BG_WHITE="${_CODE_ESCP}[47m"			# text reverse white
-	declare -r    _TEXT_BG_DEFAULT="${_CODE_ESCP}[49m"			# 
+	declare -r    _TEXT_BG_DEFAULT="${_CODE_ESCP}[49m"			#
 	declare -r    _TEXT_BR_BLACK="${_CODE_ESCP}[90m"			# text black
 	declare -r    _TEXT_BR_RED="${_CODE_ESCP}[91m"				# text red
 	declare -r    _TEXT_BR_GREEN="${_CODE_ESCP}[92m"			# text green
@@ -81,7 +81,20 @@
 	declare -r    _TEXT_BR_MAGENTA="${_CODE_ESCP}[95m"			# text purple
 	declare -r    _TEXT_BR_CYAN="${_CODE_ESCP}[96m"				# text light blue
 	declare -r    _TEXT_BR_WHITE="${_CODE_ESCP}[97m"			# text white
-	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			# 
+	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			#
+
+# -----------------------------------------------------------------------------
+# descript: debug print
+#   input :   $1   : input value
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnDebugout() {
+	if ! set -o | grep -qE "^xtrace\s*on$"; then
+		return
+	fi
+	printf "%s\n" "${*:-}" 1>&2
+}
 
 # -----------------------------------------------------------------------------
 # descript: is numeric
@@ -206,7 +219,7 @@ function fnCenter() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnPrintf() {
-	declare -r    __TRCE="$(set -o | grep "^xtrace\s*on$")"
+	declare -r    __TRCE="$(set -o | grep -E "^xtrace\s*on$")"
 	set +x
 	# -------------------------------------------------------------------------
 	declare       __NCUT=""				# no cutting flag

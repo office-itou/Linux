@@ -299,24 +299,24 @@ function fnTrap() {
 	# --- constant for colors -------------------------------------------------
 	# https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
 	declare -r    _TEXT_RESET="${_CODE_ESCP}[0m"				# reset all attributes
-	declare -r    _TEXT_BOLD="${_CODE_ESCP}[1m"					# 
-	declare -r    _TEXT_FAINT="${_CODE_ESCP}[2m"				# 
-	declare -r    _TEXT_ITALIC="${_CODE_ESCP}[3m"				# 
+	declare -r    _TEXT_BOLD="${_CODE_ESCP}[1m"					#
+	declare -r    _TEXT_FAINT="${_CODE_ESCP}[2m"				#
+	declare -r    _TEXT_ITALIC="${_CODE_ESCP}[3m"				#
 	declare -r    _TEXT_UNDERLINE="${_CODE_ESCP}[4m"			# set underline
-	declare -r    _TEXT_BLINK="${_CODE_ESCP}[5m"				# 
-	declare -r    _TEXT_FAST_BLINK="${_CODE_ESCP}[6m"			# 
+	declare -r    _TEXT_BLINK="${_CODE_ESCP}[5m"				#
+	declare -r    _TEXT_FAST_BLINK="${_CODE_ESCP}[6m"			#
 	declare -r    _TEXT_REVERSE="${_CODE_ESCP}[7m"				# set reverse display
-	declare -r    _TEXT_CONCEAL="${_CODE_ESCP}[8m"				# 
-	declare -r    _TEXT_STRIKE="${_CODE_ESCP}[9m"				# 
-	declare -r    _TEXT_GOTHIC="${_CODE_ESCP}[20m"				# 
-	declare -r    _TEXT_DOUBLE_UNDERLINE="${_CODE_ESCP}[21m"	# 
-	declare -r    _TEXT_NORMAL="${_CODE_ESCP}[22m"				# 
-	declare -r    _TEXT_NO_ITALIC="${_CODE_ESCP}[23m"			# 
+	declare -r    _TEXT_CONCEAL="${_CODE_ESCP}[8m"				#
+	declare -r    _TEXT_STRIKE="${_CODE_ESCP}[9m"				#
+	declare -r    _TEXT_GOTHIC="${_CODE_ESCP}[20m"				#
+	declare -r    _TEXT_DOUBLE_UNDERLINE="${_CODE_ESCP}[21m"	#
+	declare -r    _TEXT_NORMAL="${_CODE_ESCP}[22m"				#
+	declare -r    _TEXT_NO_ITALIC="${_CODE_ESCP}[23m"			#
 	declare -r    _TEXT_NO_UNDERLINE="${_CODE_ESCP}[24m"		# reset underline
-	declare -r    _TEXT_NO_BLINK="${_CODE_ESCP}[25m"			# 
+	declare -r    _TEXT_NO_BLINK="${_CODE_ESCP}[25m"			#
 	declare -r    _TEXT_NO_REVERSE="${_CODE_ESCP}[27m"			# reset reverse display
-	declare -r    _TEXT_NO_CONCEAL="${_CODE_ESCP}[28m"			# 
-	declare -r    _TEXT_NO_STRIKE="${_CODE_ESCP}[29m"			# 
+	declare -r    _TEXT_NO_CONCEAL="${_CODE_ESCP}[28m"			#
+	declare -r    _TEXT_NO_STRIKE="${_CODE_ESCP}[29m"			#
 	declare -r    _TEXT_BLACK="${_CODE_ESCP}[30m"				# text dark black
 	declare -r    _TEXT_RED="${_CODE_ESCP}[31m"					# text dark red
 	declare -r    _TEXT_GREEN="${_CODE_ESCP}[32m"				# text dark green
@@ -325,7 +325,7 @@ function fnTrap() {
 	declare -r    _TEXT_MAGENTA="${_CODE_ESCP}[35m"				# text dark purple
 	declare -r    _TEXT_CYAN="${_CODE_ESCP}[36m"				# text dark light blue
 	declare -r    _TEXT_WHITE="${_CODE_ESCP}[37m"				# text dark white
-	declare -r    _TEXT_DEFAULT="${_CODE_ESCP}[39m"				# 
+	declare -r    _TEXT_DEFAULT="${_CODE_ESCP}[39m"				#
 	declare -r    _TEXT_BG_BLACK="${_CODE_ESCP}[40m"			# text reverse black
 	declare -r    _TEXT_BG_RED="${_CODE_ESCP}[41m"				# text reverse red
 	declare -r    _TEXT_BG_GREEN="${_CODE_ESCP}[42m"			# text reverse green
@@ -334,7 +334,7 @@ function fnTrap() {
 	declare -r    _TEXT_BG_MAGENTA="${_CODE_ESCP}[45m"			# text reverse purple
 	declare -r    _TEXT_BG_CYAN="${_CODE_ESCP}[46m"				# text reverse light blue
 	declare -r    _TEXT_BG_WHITE="${_CODE_ESCP}[47m"			# text reverse white
-	declare -r    _TEXT_BG_DEFAULT="${_CODE_ESCP}[49m"			# 
+	declare -r    _TEXT_BG_DEFAULT="${_CODE_ESCP}[49m"			#
 	declare -r    _TEXT_BR_BLACK="${_CODE_ESCP}[90m"			# text black
 	declare -r    _TEXT_BR_RED="${_CODE_ESCP}[91m"				# text red
 	declare -r    _TEXT_BR_GREEN="${_CODE_ESCP}[92m"			# text green
@@ -343,7 +343,20 @@ function fnTrap() {
 	declare -r    _TEXT_BR_MAGENTA="${_CODE_ESCP}[95m"			# text purple
 	declare -r    _TEXT_BR_CYAN="${_CODE_ESCP}[96m"				# text light blue
 	declare -r    _TEXT_BR_WHITE="${_CODE_ESCP}[97m"			# text white
-	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			# 
+	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			#
+
+# -----------------------------------------------------------------------------
+# descript: debug print
+#   input :   $1   : input value
+#   output: stdout : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnDebugout() {
+	if ! set -o | grep -qE "^xtrace\s*on$"; then
+		return
+	fi
+	printf "%s\n" "${*:-}" 1>&2
+}
 
 # -----------------------------------------------------------------------------
 # descript: is numeric
@@ -468,7 +481,7 @@ function fnCenter() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnPrintf() {
-	declare -r    __TRCE="$(set -o | grep "^xtrace\s*on$")"
+	declare -r    __TRCE="$(set -o | grep -E "^xtrace\s*on$")"
 	set +x
 	# -------------------------------------------------------------------------
 	declare       __NCUT=""				# no cutting flag
@@ -550,6 +563,7 @@ function fnPrintf() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv4GetNetmask() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -a    __OCTS=()				# octets
 	declare -i    __LOOP=0				# work variables
 	declare -i    __CALC=0				# "
@@ -600,6 +614,7 @@ function fnIPv4GetNetmask() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv6GetFullAddr() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __FSEP="${1//[^:]/}"
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
@@ -617,6 +632,7 @@ function fnIPv6GetFullAddr() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv6GetRevAddr() {
+	fnDebugout "${FUNCNAME[0]}"
 	echo "${1//:/}" | \
 	    awk '{
 	        for(i=length();i>1;i--)              \
@@ -634,6 +650,7 @@ function fnIPv6GetRevAddr() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnUnit_conversion() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -r -a __UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	declare -i    __CALC=0
@@ -674,6 +691,7 @@ function fnUnit_conversion() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetVolID() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __VLID=""				# volume id
 	declare       __WORK=""				# work variables
@@ -701,6 +719,7 @@ function fnGetVolID() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetFileinfo() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __DIRS=""				# directory
 	declare       __FNAM=""				# file name
@@ -734,6 +753,7 @@ function fnGetFileinfo() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnDistro2efi() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare       __WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	case "${1:?}" in
@@ -761,6 +781,7 @@ function fnDistro2efi() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnXcpio() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __TGET_FILE="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:-}"	# destination directory
 	shift 2
@@ -791,6 +812,7 @@ function fnXcpio() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnReadhex() {
+	fnDebugout "${FUNCNAME[0]}"
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count="${3:?}" 2> /dev/null | LANG=C grep -E "^[0-9A-Fa-f]{$3}\$"
 }
@@ -803,6 +825,7 @@ function fnReadhex() {
 #   return:        : status
 # shellcheck disable=SC2317
 function fnCheckzero() {
+	fnDebugout "${FUNCNAME[0]}"
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
 }
@@ -815,6 +838,7 @@ function fnCheckzero() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnSplit_initramfs() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __TGET_FILE="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:-}"	# destination directory
 	declare -r -a __OPTS=("--preserve-modification-time" "--no-absolute-filenames" "--quiet")
@@ -894,6 +918,7 @@ function fnSplit_initramfs() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnCreate_iso() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_OUTP="${2:?}"	# output path
 	declare -r -a __OPTN_XORR=("${@:3}") # xorrisofs options
@@ -933,6 +958,7 @@ function fnCreate_iso() {
 #   return:        : status
 # shellcheck disable=SC2317
 function fnGetWeb_contents() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -a    __OPTN=()				# options
 	declare -i    __RTCD=0				# return code
 	declare -a    __LIST=()				# data list
@@ -974,6 +1000,7 @@ function fnGetWeb_contents() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_header() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -a    __OPTN=()				# options
 #	declare -i    __RTCD=0				# return code
@@ -1030,6 +1057,7 @@ function fnGetWeb_header() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_address() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
@@ -1116,6 +1144,7 @@ function fnGetWeb_address() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_info() {
+	fnDebugout "${FUNCNAME[0]}"
 #	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __WORK=""				# work variables
 
@@ -1130,6 +1159,7 @@ function fnGetWeb_info() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_status() {
+	fnDebugout "${FUNCNAME[0]}"
 	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
 		100) echo -n "$1: Continue";;
 		101) echo -n "$1: Switching Protocols";;
@@ -2437,6 +2467,7 @@ function fnPrint_menu() {
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_preseed() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2534,6 +2565,7 @@ function fnRemastering_preseed() {
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_nocloud() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2611,6 +2643,7 @@ function fnRemastering_nocloud() {
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_kickstart() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2675,6 +2708,7 @@ function fnRemastering_kickstart() {
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_autoyast() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2747,6 +2781,7 @@ function fnRemastering_autoyast() {
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_boot_options() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
@@ -2783,6 +2818,7 @@ function fnRemastering_boot_options() {
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_path() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __PATH_TGET="${1:?}"	# target path
 	declare -r    __DIRS_TGET="${2:?}"	# directory
 	declare       __DIRS=""				# directory
@@ -2805,6 +2841,7 @@ function fnRemastering_path() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_isolinux_autoinst_cfg() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
 	declare -r    __BOOT_OPTN="${3:?}"	# boot options
@@ -2900,6 +2937,7 @@ _EOT_
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_isolinux() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __BOOT_OPTN="${2:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:3}") # target data
@@ -2973,6 +3011,7 @@ function fnRemastering_isolinux() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_grub_autoinst_cfg() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
 	declare -r    __BOOT_OPTN="${3:?}"	# boot options
@@ -3167,6 +3206,7 @@ _EOT_
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_grub() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __BOOT_OPTN="${2:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:3}") # target data
@@ -3226,6 +3266,7 @@ function fnRemastering_grub() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_copy() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
 	declare       __WORK=""				# work variables
@@ -3287,6 +3328,7 @@ function fnRemastering_copy() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_initrd() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
 	declare       __FKNL=""				# kernel
@@ -3328,6 +3370,7 @@ function fnRemastering_initrd() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_media() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -r    __DIRS_TGET="${1:?}"						# target directory
 	declare -r -a __TGET_LIST=("${@:2}")					# target data
 	declare -r    __DWRK="${_DIRS_TEMP}/${__TGET_LIST[2]}"	# work directory
@@ -3401,6 +3444,7 @@ function fnRemastering_media() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -i    __time_start=0							# start of elapsed time
 	declare -i    __time_end=0								# end of elapsed time
 	declare -i    __time_elapsed=0							# result of elapsed time
@@ -3484,6 +3528,7 @@ function fnRemastering() {
 #   output: stdout : message
 #   return:        : unused
 function fnExec_download() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -a    __TGET_LIST=("${@:2}") # target data
 	declare       __RSLT=""				# result
@@ -3518,7 +3563,7 @@ function fnExec_download() {
 	__TGET_LIST[15]="${__ARRY[2]:-}"	# iso_size
 	__TGET_LIST[16]="${__ARRY[3]:-}"	# iso_volume
 	# --- finish --------------------------------------------------------------
-	__RETN_VALU="$(printf "%s\n" "${__MDIA[@]}")"
+	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
 }
 
 # -----------------------------------------------------------------------------
@@ -3528,6 +3573,7 @@ function fnExec_download() {
 #   output: stdout : message
 #   return:        : unused
 function fnExec_remastering() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -r    __COMD_TYPE="$2"		# command type
 	declare -a    __TGET_LIST=("${@:3}") # target data
@@ -3542,7 +3588,7 @@ function fnExec_remastering() {
 		download) return;;
 		*       ) return;;
 	esac
-	if [[ -n "${__LIST[13]##-}" ]] && [[ -s "${__LIST[13]}" ]]; then
+	if [[ -n "${__LIST[13]##-}" ]] && [[ ! -s "${__LIST[13]}" ]]; then
 		return
 	fi
 	# --- comparing remaster and local file timestamps ------------------------
@@ -3563,7 +3609,7 @@ function fnExec_remastering() {
 	__TGET_LIST[19]="${__ARRY[2]:--}"	# rmk_size
 	__TGET_LIST[20]="${__ARRY[3]:--}"	# rmk_volume
 	# --- finish --------------------------------------------------------------
-	__RETN_VALU="$(printf "%s\n" "${__MDIA[@]}")"
+	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
 }
 
 # -----------------------------------------------------------------------------
@@ -3575,6 +3621,7 @@ function fnExec_remastering() {
 #   output: stdout : message
 #   return:        : unused
 function fnExec() {
+	fnDebugout "${FUNCNAME[0]}"
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -r    __COMD_TYPE="$2"		# command type
 	declare -r    __TGET_RANG="$3"		# target range
@@ -3639,10 +3686,12 @@ function fnExec() {
 			download)
 				fnExec_download "__RETN" "${__LIST[@]}"
 				read -r -a __ARRY < <(echo "${__RETN:-}")
-				case "${__ARRY[12]:-}" in
-					200) __LIST=("${__ARRY[@]}");;
-					*  ) ;;
-				esac
+				if [[ -n "${__ARRY[*]}" ]]; then
+					case "${__ARRY[12]:-}" in
+						200) __LIST=("${__ARRY[@]}");;
+						*  ) ;;
+					esac
+				fi
 				;;
 			*       ) ;;
 		esac
@@ -3652,7 +3701,9 @@ function fnExec() {
 			update  )
 				fnExec_remastering "__RETN" "${__COMD_TYPE}" "${__LIST[@]}"
 				read -r -a __ARRY < <(echo "${__RETN:-}")
-				__LIST=("${__ARRY[@]}")
+				if [[ -n "${__ARRY[*]}" ]]; then
+					__LIST=("${__ARRY[@]}")
+				fi
 				;;
 			download) ;;
 			*       ) ;;
