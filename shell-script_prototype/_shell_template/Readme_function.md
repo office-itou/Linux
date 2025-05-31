@@ -29,7 +29,7 @@
 | [tmpl_001_initialize_test_function.sh](./tmpl_001_initialize_test_function.sh)                    |                                                                                                                       |                                                                               |
 | [tmpl_002_data_section.sh](./tmpl_002_data_section.sh)                                            |                                                                                                                       |                                                                               |
 | [tmpl_003_function_section_library.sh](./tmpl_003_function_section_library.sh)                    | [fnDebugout](#debug-print) "\$1"                                                                                      | debug print                                                                   |
-|                                                                                                   | fnDebug_parameter_list                                                                                                |                                                                               |
+|                                                                                                   | [fnDebug_parameter_list](#print-out-of-internal-variables) "\$1"                                                      | print out of internal variables                                               |
 |                                                                                                   | [fnIsNumeric](#is-numeric) "\$1"                                                                                      | is numeric                                                                    |
 |                                                                                                   | [fnSubstr](#substr) "\$1" "\$2" "\$3"                                                                                 | substr                                                                        |
 |                                                                                                   | [fnString](#string-output) "\$1" "\$2"                                                                                | string output                                                                 |
@@ -266,17 +266,20 @@
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
 | input  | $1     | input value            |                                            |
-| output | stdout | output                 |                                            |
+| output | stderr | output                 |                                            |
 | return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### print out of internal variables  
   
-*fnDebug_parameter_list*  
+*fnDebug_parameter_list "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $1     | input value            | mainly function names "${FUNCNAME[0]}"     |
+| output | stderr | output                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
