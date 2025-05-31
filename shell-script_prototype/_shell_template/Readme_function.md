@@ -28,7 +28,9 @@
 | [tmpl_001_initialize_mk_pxeboot_conf.sh](./tmpl_001_initialize_mk_pxeboot_conf.sh)                |                                                                                                                       |                                                                               |
 | [tmpl_001_initialize_test_function.sh](./tmpl_001_initialize_test_function.sh)                    |                                                                                                                       |                                                                               |
 | [tmpl_002_data_section.sh](./tmpl_002_data_section.sh)                                            |                                                                                                                       |                                                                               |
-| [tmpl_003_function_section_library.sh](./tmpl_003_function_section_library.sh)                    | [fnIsNumeric](#is-numeric) "\$1"                                                                                      | is numeric                                                                    |
+| [tmpl_003_function_section_library.sh](./tmpl_003_function_section_library.sh)                    | [fnDebugout](#debug-print) "\$1"                                                                                      | debug print                                                                   |
+|                                                                                                   | fnDebug_parameter_list                                                                                                |                                                                               |
+|                                                                                                   | [fnIsNumeric](#is-numeric) "\$1"                                                                                      | is numeric                                                                    |
 |                                                                                                   | [fnSubstr](#substr) "\$1" "\$2" "\$3"                                                                                 | substr                                                                        |
 |                                                                                                   | [fnString](#string-output) "\$1" "\$2"                                                                                | string output                                                                 |
 |                                                                                                   | [fnLtrim](#ltrim) "\$1"                                                                                               | ltrim                                                                         |
@@ -65,7 +67,6 @@
 |                                                                                                   | [fnCreate_autoyast](#create-autoyastxml) "\$1"                                                                        | create autoyast.xml                                                           |
 |                                                                                                   | [fnCreate_precon](#create-pre-configuration-file-templates) "\$1" "\$@"                                               | create pre-configuration file templates                                       |
 | [tmpl_004_function_section_template.sh](./tmpl_004_function_section_template.sh)                  | [fnInitialization](#initialization)                                                                                   | initialization                                                                |
-| [tmpl_005_function_section_common.sh](./tmpl_005_function_section_common.sh)                      | [fnPrint_menu](#print-out-of-menu) "\$1" "\$2" "\$3" "\$@"                                                            | print out of menu                                                             |
 | [tmpl_005_function_section_mk_custom_iso.sh](./tmpl_005_function_section_mk_custom_iso.sh)        | [fnRemastering_preseed](#create-a-boot-option-for-preseed-of-the-remaster) "\$@"                                      | create a boot option for preseed of the remaster                              |
 |                                                                                                   | [fnRemastering_nocloud](#create-a-boot-option-for-nocloud-of-the-remaster) "\$@"                                      | create a boot option for nocloud of the remaster                              |
 |                                                                                                   | [fnRemastering_kickstart](#create-a-boot-option-for-kickstart-of-the-remaster) "\$@"                                  | create a boot option for kickstart of the remaster                            |
@@ -80,9 +81,10 @@
 |                                                                                                   | [fnRemastering_initrd](#remastering-for-initrd) "\$1" "\$@"                                                           | remastering for initrd                                                        |
 |                                                                                                   | [fnRemastering_media](#remastering-for-media) "\$1" "\$@"                                                             | remastering for media                                                         |
 |                                                                                                   | [fnRemastering](#remastering) "\$@"                                                                                   | remastering                                                                   |
+|                                                                                                   | [fnExec_menu](#print-out-of-menu) "\$1" "\$@"                                                                         | print out of menu                                                             |
 |                                                                                                   | [fnExec_download](#executing-the-download) "\$1" "\$@"                                                                | executing the download                                                        |
 |                                                                                                   | [fnExec_remastering](#executing-the-remastering) "\$1" "\$@"                                                          | executing the remastering                                                     |
-|                                                                                                   | fnXXX                                                                                                                 |                                                                               |
+|                                                                                                   | [fnExec](#executing-the-action) "\$1" "\$2" "\$3" "\$@"                                                               | executing the action                                                          |
 | [tmpl_005_function_section_mk_pxeboot_conf.sh](./tmpl_005_function_section_mk_pxeboot_conf.sh)    | [fnPxeboot_copy](#file-copy) "\$1" "\$2"                                                                              | file copy                                                                     |
 |                                                                                                   | [fnPxeboot_preseed](#create-a-boot-option-for-preseed-of-the-pxeboot) "\$@"                                           | create a boot option for preseed of the pxeboot                               |
 |                                                                                                   | [fnPxeboot_nocloud](#create-a-boot-option-for-nocloud-of-the-pxeboot) "\$@"                                           | create a boot option for nocloud of the pxeboot                               |
@@ -254,6 +256,27 @@
 * * *
   
 ### **tmpl_003_function_section_library.sh**  
+  
+* * *
+  
+#### debug print  
+  
+*fnDebugout "\$1"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $1     | input value            |                                            |
+| output | stdout | output                 |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
+#### no items  
+  
+*fnDebug_parameter_list*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
   
 * * *
   
@@ -755,25 +778,6 @@
   
 * * *
   
-### **tmpl_005_function_section_common.sh**  
-  
-* * *
-  
-#### print out of menu  
-  
-*fnPrint_menu "\$1" "\$2" "\$3" "\$@"*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| n-ref  | $1     | return value           | options                                    |
-| input  | $2     | command type           |                                            |
-| input  | $3     | target range           |                                            |
-| input  | $@     | target data            |                                            |
-| output | stdout | message                |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
 ### **tmpl_005_function_section_mk_custom_iso.sh**  
   
 * * *
@@ -960,6 +964,19 @@
   
 * * *
   
+#### print out of menu  
+  
+*fnExec_menu "\$1" "\$@"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| n-ref  | $1     | return value           | options                                    |
+| input  | $@     | target data            |                                            |
+| output | stdout | message                |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
 #### executing the download  
   
 *fnExec_download "\$1" "\$@"*  
@@ -986,9 +1003,9 @@
   
 * * *
   
-#### no items  
+#### executing the action  
   
-*fnXXX "\$1" "\$2" "\$3" "\$@"*  
+*fnExec "\$1" "\$2" "\$3" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
