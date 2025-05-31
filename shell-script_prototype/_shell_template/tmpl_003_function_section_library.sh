@@ -96,6 +96,14 @@ function fnDebugout() {
 	printf "%s\n" "${*:-}" 1>&2
 }
 
+# --- debug out parameter -----------------------------------------------------
+function fnDebug_parameter_list() {
+	if [[ -z "${_DBGS_FLAG:-}" ]]; then
+		return
+	fi
+	printf "${1:?}: %q\n" "${!__@}" 1>&2
+}
+
 # -----------------------------------------------------------------------------
 # descript: is numeric
 #   input :   $1   : input value

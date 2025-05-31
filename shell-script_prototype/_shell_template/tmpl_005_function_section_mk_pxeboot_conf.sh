@@ -1,5 +1,9 @@
 # === <pxeboot> ===============================================================
 
+# . tmpl_001_initialize_common.sh
+# . tmpl_002_data_section.sh
+# . tmpl_003_function_section_library.sh
+
 # -----------------------------------------------------------------------------
 # descript: file copy
 #   input :   $1   : target file
@@ -17,7 +21,7 @@ function fnPxeboot_copy() {
 	if [[ ! -s "${__PATH_TGET}" ]]; then
 		return
 	fi
-	printf "%20.20s: %s\n" "copy" "${__PATH_TGET}" 1>&2
+	printf "%20.20s: %s\n" "copy" "${__PATH_TGET}"
 	__MNTP="${__PATH}/mnt"
 	rm -rf "${__MNTP:?}"
 	mkdir -p "${__MNTP}" "${__DIRS_DEST}"
@@ -403,17 +407,17 @@ function fnPxeboot_ipxe() {
 #		rm -f "${__PATH_TGET:?}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH_TGET}" || true
 			#!ipxe
-			
+
 			cpuid --ext 29 && set arch amd64 || set arch x86
-			
+
 			dhcp
-			
+
 			set optn-timeout 3000
 			set menu-timeout 0
 			isset \${menu-default} || set menu-default exit
-			
+
 			:start
-			
+
 			:menu
 			menu Select the OS type you want to boot
 			item --gap --                           --------------------------------------------------------------------------
@@ -424,26 +428,26 @@ function fnPxeboot_ipxe() {
 			item --gap --                           --------------------------------------------------------------------------
 			choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
 			goto \${selected}
-			
+
 			:shell
 			echo "Booting iPXE shell ..."
 			shell
 			goto start
-			
+
 			:shutdown
 			echo "System shutting down ..."
 			poweroff
 			exit
-			
+
 			:restart
 			echo "System rebooting ..."
 			reboot
 			exit
-			
+
 			:error
 			prompt Press any key to continue
 			exit
-			
+
 			:exit
 			exit
 _EOT_
@@ -497,7 +501,7 @@ _EOT_
 							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
 							boot || goto error
 							exit
-							
+
 _EOT_
 					)"
 					;;
@@ -518,7 +522,7 @@ _EOT_
 							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
 							boot || goto error
 							exit
-							
+
 _EOT_
 					)"
 					;;
@@ -535,7 +539,7 @@ _EOT_
 							kernel \${knlfile} || goto error
 							boot || goto error
 							exit
-							
+
 _EOT_
 					)"
 					;;
@@ -559,7 +563,7 @@ _EOT_
 								set language ${__BOPT[3]:-}
 								set ramsdisk ${__BOPT[4]:-}
 								set isosfile ${__BOPT[5]:-}
-								
+
 _EOT_
 						)"
 					else
@@ -597,7 +601,7 @@ _EOT_
 								item ramsdisk                           RAM disk
 								item isosfile                           ISO file
 								present ||
-								
+
 _EOT_
 						)"
 					fi
@@ -664,13 +668,13 @@ function fnPxeboot_grub() {
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH_TGET}" || true
 			set default="0"
 			set timeout="-1"
-			
+
 			if [ "x\${feature_default_font_path}" = "xy" ] ; then
 			  font="unicode"
 			else
 			  font="\${prefix}/fonts/font.pf2"
 			fi
-			
+
 			if loadfont "\$font" ; then
 			# set lang="ja_JP"
 			  set gfxmode=${_MENU_RESO:+"${_MENU_RESO}x${_MENU_DPTH},"}auto
@@ -686,33 +690,33 @@ function fnPxeboot_grub() {
 			  insmod gettext
 			  terminal_output gfxterm
 			fi
-			
+
 			set menu_color_normal="cyan/blue"
 			set menu_color_highlight="white/blue"
-			
+
 			#export lang
 			export gfxmode
 			export gfxpayload
 			export menu_color_normal
 			export menu_color_highlight
-			
+
 			insmod play
 			play 960 440 1 0 4 440 1
-			
+
 			menuentry '[ System command ]' {
 			  true
 			}
-			
+
 			menuentry '- System shutdown' {
 			  echo "System shutting down ..."
 			  halt
 			}
-			
+
 			menuentry '- System restart' {
 			  echo "System rebooting ..."
 			  reboot
 			}
-			
+
 			if [ "\${grub_platform}" = "efi" ]; then
 			  menuentry '- Boot from next volume' {
 			    exit 1
@@ -904,9 +908,9 @@ function fnPxeboot_slnx() {
 			prompt 0
 			timeout 0
 			default vesamenu.c32
-			
+
 			menu resolution ${_MENU_RESO/x/ }
-			
+
 			menu color screen       * #ffffffff #ee000080 *
 			menu color title        * #ffffffff #ee000080 *
 			menu color border       * #ffffffff #ee000080 *
@@ -922,7 +926,7 @@ function fnPxeboot_slnx() {
 			menu color cmdline      * #ffffffff #ee000080 *
 			menu color scrollbar    * #ffffffff #ee000080 *
 			menu color help         * #ffffffff #ee000080 *
-			
+
 			menu margin             4
 			menu vshift             5
 			menu rows               25
@@ -931,13 +935,13 @@ function fnPxeboot_slnx() {
 			menu timeoutrow         33
 			menu helpmsgrow         37
 			menu hekomsgendrow      39
-			
+
 			menu title - Boot Menu -
 			menu tabmsg Press ENTER to boot or TAB to edit a menu entry
-			
+
 			label System-command
 			  menu label ^[ System command ... ]
-			
+
 _EOT_
 		case "${__PATH_TGET}" in
 			*/menu-bios/*)
@@ -969,7 +973,7 @@ _EOT_
 				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
 					label ${__TGET_LIST[3]//%20/-}
 					  menu label ^[ ${__TGET_LIST[3]//%20/ } ... ]
-					
+
 _EOT_
 			)"
 			sed -i "${__PATH_TGET}" -e "/^label[ \t]\+System-command$/i \\${__WORK}"
@@ -1028,7 +1032,7 @@ _EOT_
 									label ${__TGET_LIST[2]}
 									  menu label ^${__ENTR}
 									  linux /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
-									
+
 _EOT_
 							)"
 							;;
@@ -1038,7 +1042,7 @@ _EOT_
 									label ${__TGET_LIST[2]}
 									  menu label ^${__ENTR}
 									  linux /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
-									
+
 _EOT_
 							)"
 							;;
@@ -1062,7 +1066,7 @@ _EOT_
 								  linux  /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
 								  initrd /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
 								  append ${__BOPT[@]:3}
-								
+
 _EOT_
 						)"
 					else
@@ -1073,7 +1077,7 @@ _EOT_
 								  linux  /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
 								  initrd /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
 								  append ${__BOPT[@]}
-								
+
 _EOT_
 						)"
 					fi
@@ -1107,10 +1111,12 @@ function fnPxeboot() {
 	      "${_MENU_GRUB:?}" \
 		  "${_MENU_SLNX:?}" \
 		  "${_MENU_UEFI:?}"
+
 	for I in "${!_LIST_MDIA[@]}"
 	do
 		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
-		printf "%20.20s: %s\n" "start" "${__LIST[2]}" 1>&2
+		# --- start -----------------------------------------------------------
+		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[13]##*/}"
 		# --- update ----------------------------------------------------------
 		case "${1:-}" in
 			update  ) ;;
@@ -1137,5 +1143,7 @@ function fnPxeboot() {
 			o) ;;						# (output)
 			*) ;;						# (hidden)
 		esac
+		# --- complete --------------------------------------------------------
+		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}"
 	done
 }

@@ -13,7 +13,6 @@ function fnInitialization() {
 	declare       __LINE=""				# work variable
 	declare       __NAME=""				# variable name
 	declare       __VALU=""				# value
-
 	# --- common configuration file -------------------------------------------
 	              _PATH_CONF="/srv/user/share/conf/_data/common.cfg"
 	for __PATH in \
@@ -26,7 +25,6 @@ function fnInitialization() {
 		fi
 	done
 	readonly      _PATH_CONF
-
 	# --- default value when empty --------------------------------------------
 	_DIRS_TOPS="${_DIRS_TOPS:-/srv}"
 	_DIRS_HGFS="${_DIRS_HGFS:-:_DIRS_TOPS_:/hgfs}"
@@ -94,7 +92,6 @@ function fnInitialization() {
 	_MENU_RESO="${_MENU_RESO:-1024x768}"
 	_MENU_DPTH="${_MENU_DPTH:-16}"
 	_MENU_MODE="${_MENU_MODE:-791}"
-
 	# --- gets the setting value ----------------------------------------------
 	while read -r __LINE
 	do
@@ -162,7 +159,6 @@ function fnInitialization() {
 			*        ) ;;
 		esac
 	done < <(cat "${_PATH_CONF:-}" 2> /dev/null || true)
-
 	# --- variable substitution -----------------------------------------------
 	_DIRS_TOPS="${_DIRS_TOPS:?}"
 	_DIRS_HGFS="${_DIRS_HGFS//:_DIRS_TOPS_:/"${_DIRS_TOPS}"}"
@@ -216,7 +212,6 @@ function fnInitialization() {
 #	_MENU_RESO="${_MENU_RESO:-}"
 #	_MENU_DPTH="${_MENU_DPTH:-}"
 #	_MENU_MODE="${_MENU_MODE:-}"
-
 	# --- making variables read-only ------------------------------------------
 	readonly      _DIRS_TOPS
 	readonly      _DIRS_HGFS
@@ -262,7 +257,6 @@ function fnInitialization() {
 	readonly      _MENU_RESO
 	readonly      _MENU_DPTH
 	readonly      _MENU_MODE
-
 	# --- directory list ------------------------------------------------------
 	_LIST_DIRS=(                                                                                                        \
 		"${_DIRS_TOPS:?}"                                                                                               \
@@ -283,7 +277,6 @@ function fnInitialization() {
 		"${_DIRS_RMAK:?}"                                                                                               \
 	)
 	readonly      _LIST_DIRS
-
 	# --- symbolic link list --------------------------------------------------
 	# 0: a:add, r:relative
 	# 1: target
@@ -307,30 +300,23 @@ function fnInitialization() {
 		"r  ${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg             ${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"        \
 	)
 	readonly      _LIST_LINK
-
 	# --- autoinstall configuration file --------------------------------------
 	              _AUTO_INST="autoinst.cfg"
 	readonly      _AUTO_INST
-
 	# --- initial ram disk of mini.iso including preseed ----------------------
 	              _MINI_IRAM="initps.gz"
 	readonly      _MINI_IRAM
-
 	# --- ipxe menu file ------------------------------------------------------
 	              _MENU_IPXE="${_DIRS_TFTP}/autoexec.ipxe"
 	readonly      _MENU_IPXE
-
 	# --- grub menu file ------------------------------------------------------
 	              _MENU_GRUB="${_DIRS_TFTP}/boot/grub/grub.cfg"
 	readonly      _MENU_GRUB
-
 	# --- syslinux menu file --------------------------------------------------
 	              _MENU_SLNX="${_DIRS_TFTP}/menu-bios/syslinux.cfg"
 	readonly      _MENU_SLNX
-
 	              _MENU_UEFI="${_DIRS_TFTP}/menu-efi64/syslinux.cfg"
 	readonly      _MENU_UEFI
-
 	# --- get media data ------------------------------------------------------
 	fnGet_media_data
 }
@@ -341,22 +327,31 @@ function fnInitialization() {
 #   output: stdout : unused
 #   return:        : unused
 function fnCreate_conf() {
+	fnDebugout "${FUNCNAME[0]}"
+	declare -n    __NAME_REFR="${1:-}"	# name reference
+	shift
 	declare -r    __TMPL="${_PATH_CONF:?}.template"
 	declare       __RNAM=""				# rename path
 	declare       __PATH=""				# full path
-
+	# --- option parameter ----------------------------------------------------
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1:-}" in
+			create) shift; break;;
+			*     ) __NAME_REFR="${*:-}"; return;;
+		esac
+	done
+	__NAME_REFR="${*:-}"
 	# --- check file exists ---------------------------------------------------
 	if [[ -f "${__TMPL:?}" ]]; then
 		__RNAM="${__TMPL}.$(TZ=UTC find "${__TMPL}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
 		mv "${__TMPL}" "${__RNAM}"
 	fi
-
 	# --- delete old files ----------------------------------------------------
 	for __PATH in $(find "${__TMPL%/*}" -name "${__TMPL##*/}"\* | sort -r | tail -n +3 || true)
 	do
 		rm -f "${__PATH:?}"
 	done
-
 	# --- exporting files -----------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__TMPL}" || true
 		###############################################################################
@@ -449,7 +444,6 @@ _EOT_
 function fnGet_media_data() {
 	declare       __PATH=""				# full path
 	declare       __LINE=""				# work variable
-
 	# --- list data -----------------------------------------------------------
 	_LIST_MDIA=()
 	for __PATH in \
@@ -507,7 +501,6 @@ function fnPut_media_data() {
 		printf "%s: \"%s\"\n" "backup" "${__RNAM}" 1>&2
 		cp -a "${_PATH_MDIA}" "${__RNAM}"
 	fi
-
 	# --- delete old files ----------------------------------------------------
 	while read -r __PATH
 	do
@@ -552,7 +545,8 @@ function fnPut_media_data() {
 #   output: stdout : message
 #   return:        : unused
 function fnCreate_directory() {
-	declare -n    __NAME_REFR="${1:?}"	# name reference
+	fnDebugout "${FUNCNAME[0]}"
+	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
 	declare -r    __DATE="$(date +"%Y%m%d%H%M%S")"
 	declare       __FORC=""				# force parameter
@@ -562,19 +556,18 @@ function fnCreate_directory() {
 	declare       __BACK=""				# backup path
 	declare -a    __LIST=()				# work variable
 	declare -i    I=0
-
 	# --- option parameter ----------------------------------------------------
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
-			-f | --force) shift; __NAME_REFR="${*:-}"; __FORC="true";;
-			*           )        __NAME_REFR="${*:-}"; break;;
+			create) shift; __FORC="true"; break;;
+			update) shift; __FORC=""; break;;
+			*     ) __NAME_REFR="${*:-}"; return;;
 		esac
 	done
-
+	__NAME_REFR="${*:-}"
 	# --- create directory ----------------------------------------------------
 	mkdir -p "${_LIST_DIRS[@]:?}"
-
 	# --- create symbolic link ------------------------------------------------
 	# 0: a:add, r:relative
 	# 1: target
@@ -624,7 +617,6 @@ function fnCreate_directory() {
 			*) ln -s  "${__TGET}" "${__LINK}";;
 		esac
 	done
-
 	for I in "${!_LIST_MDIA[@]}"
 	do
 		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
@@ -708,12 +700,10 @@ function fnCreate_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 	declare       __WORK=""				# work variables
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_SEDD}" "${__TGET_PATH}"
-
 	# --- by generation -------------------------------------------------------
 	case "${__TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
@@ -788,12 +778,10 @@ function fnCreate_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 #	declare       __WORK=""				# work variables
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_CLUD}" "${__TGET_PATH}"
-
 	# --- by generation -------------------------------------------------------
 	case "${__TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
@@ -850,12 +838,10 @@ function fnCreate_kickstart() {
 	declare       __SECT=""				# "            section
 	declare -r    __ARCH="x86_64"		# base architecture
 	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_KICK}" "${__TGET_PATH}"
-
 	# -------------------------------------------------------------------------
 #	__NUMS="\$releasever"
 	__VERS="${__TGET_PATH#*_}"
@@ -863,7 +849,6 @@ function fnCreate_kickstart() {
 	__NUMS="${__VERS##*-}"
 	__NAME="${__VERS%-*}"
 	__SECT="${__NAME/-/ }"
-
 	# --- initializing the settings -------------------------------------------
 	sed -i "${__TGET_PATH}"                     \
 	    -e "/^cdrom$/      s/^/#/             " \
@@ -914,17 +899,14 @@ function fnCreate_autoyast() {
 #	declare       __WORK=""				# work variables
 	declare       __VERS=""				# distribution version
 	declare       __NUMS=""				# "            number
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_YAST}" "${__TGET_PATH}"
-
 	# -------------------------------------------------------------------------
 	__VERS="${__TGET_PATH#*_}"
 	__VERS="${__VERS%%_*}"
 	__NUMS="${__VERS##*-}"
-
 	# --- by media ------------------------------------------------------------
 	case "${__TGET_PATH}" in
 		*_web*|\
@@ -982,29 +964,27 @@ function fnCreate_precon() {
 #	declare       __WORK=""				# work variables
 	declare -a    __LINE=()				# work variable
 	declare -i    I=0					# work variables
-
 	# --- option parameter ----------------------------------------------------
 	__OPTN=()
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
-			all      ) __OPTN+=("preseed" "nocloud" "kickstart" "autoyast");;
+			all      ) shift; __OPTN+=("preseed" "nocloud" "kickstart" "autoyast"); break;;
 			preseed  | \
 			nocloud  | \
 			kickstart| \
-			autoyast ) __OPTN+=("$1");;
+			autoyast ) ;;
 			*        ) break;;
 		esac
+		__OPTN+=("$1")
 		shift
 	done
 	__NAME_REFR="${*:-}"
 	if [[ -z "${__OPTN[*]}" ]]; then
 		return
 	fi
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create pre-conf file" ""
-
 	# -------------------------------------------------------------------------
 	__LIST=()
 	for I in "${!_LIST_MDIA[@]}"

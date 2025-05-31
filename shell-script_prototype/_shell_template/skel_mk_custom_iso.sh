@@ -37,8 +37,6 @@
 
 # :_tmpl_004_function_section_common.sh_:
 
-# :_tmpl_005_function_section_common.sh_:
-
 # :_tmpl_005_function_section_mk_custom_iso.sh_:
 
 # --- initialization ----------------------------------------------------------
@@ -84,38 +82,38 @@ function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
 
-		  iso image files:
-		    create|update|download [all|(mini|net|dvd|live {a|all|id})|version]
-		      empty             : waiting for input
-		      all               : all target
-		      mini|net|dvd|live : each target
-		        all             : all of each target
-		        id number       : selected id
+		  create or update for the remaster or download the iso file:
+		    create|update|download [(empty)|all|(mini|netinst|dvd|liveinst {a|all|id})]
+		      empty         : waiting for input
+		      all           : all target
+		      mini|netinst|dvd|liveinst
+			                : each target
+		        all         : all of each target
+		        id number   : selected id
 
-		  list files:
-		    list [create|update|download]
-		      empty             : display of list data
-		      create            : update / download list files
+		  display and update for list data:
+		    list [empty|all|(mini|net|dvd|live {a|all|id})]
+		      empty         : all target
+		      all           : all target
+		      mini|netinst|dvd|liveinst
+			                : each target
+		        all         : all of each target
+		        id number   : selected id
 
-		  config files:
+		  create common configuration file:
 		    conf [create]
-		      create            : create common configuration file
 
-		  pre-config files:
-		    preconf [all|(preseed|nocloudkickstart|autoyast)]
-		      all               : all pre-config files
-		      preseed           : preseed.cfg
-		      nocloud           : nocloud
-		      kickstart         : kickstart.cfg
-		      autoyast          : autoyast.xml
+		  create common pre-configuration file:
+		    preconf [all|(preseed|nocloud|kickstart|autoyast)]
+		      all           : all pre-config files
+		      preseed       : preseed.cfg
+		      nocloud       : nocloud
+		      kickstart     : kickstart.cfg
+		      autoyast      : autoyast.xml
 
-		  symbolic link:
+		  create symbolic link:
 		    link
-		      create            : create symbolic link
-
-		  debug print and test
-		    debug [func|text|parm]
-		      parm              : display of main internal parameters
+		      create        : create symbolic link
 _EOT_
 }
 
@@ -187,134 +185,15 @@ function fnMain() {
 			list    | \
 			create  | \
 			update  | \
-			download)
-				__COMD="$1"
-				shift
-				# --- processing by media type --------------------------------
-				__OPTN=("${@:-}")
-				case "${__COMD:-}" in
-					list    | \
-					create  | \
-					update  | \
-					download)
-						case "${1:-}" in
-							a|all   )
-								shift
-								case "${__COMD}" in
-									list    ) __OPTN=("mini"       "netinst"       "dvd"       "liveinst"       "${@:-}");;
-									create  | \
-									update  | \
-									download) __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all" "${@:-}");;
-									*       ) ;;
-								esac
-								;;
-							mini    ) ;;
-							netinst ) ;;
-							dvd     ) ;;
-							liveinst) ;;
-#							live    ) ;;
-#							tool    ) ;;
-#							clive   ) ;;
-#							cnetinst) ;;
-#							system  ) ;;
-							*       ) __OPTN=("mini" "netinst" "dvd" "liveinst" "${@:-}");;
-						esac
-						;;
-					*       ) ;;
-				esac
-				set -f -- "${__OPTN[@]:-}"
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						mini    ) ;;
-						netinst ) ;;
-						dvd     ) ;;
-						liveinst) ;;
-#						live    ) ;;
-#						tool    ) ;;
-#						clive   ) ;;
-#						cnetinst) ;;
-#						system  ) ;;
-						*       ) break;;
-					esac
-					__TGET="$1"
-					shift
-					__RANG=""
-					while [[ -n "${1:-}" ]]
-					do
-						case "${1,,}" in
-							a|all                           ) __RANG="all"; shift; break;;
-							[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) __RANG="${__RANG:+"${__RANG} "}$1";;
-							*                               ) break;;
-						esac
-						shift
-					done
-					# --- print out of menu -----------------------------------
-					fnPrint_menu "__RSLT" "${__COMD}" "${__TGET}" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
-					# --- selection by media type -----------------------------
-					IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RSLT}")
-					# --- descript: executing the action ----------------------
-					fnExec "__RSLT" "${__COMD}" "${__RANG}" "${__MDIA[@]}"
-					# --- set execution result --------------------------------
-					IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RSLT}")
-					# --- update media data record ----------------------------
-					for I in "${!__MDIA[@]}"
-					do
-						read -r -a __LIST < <(echo "${__MDIA[I]}")
-						for J in "${!_LIST_MDIA[@]}"
-						do
-							read -r -a __ARRY < <(echo "${_LIST_MDIA[J]}")
-							if [[ "${__LIST[0]}" != "${__ARRY[0]}" ]] \
-							|| [[ "${__LIST[1]}" != "${__ARRY[1]}" ]] \
-							|| [[ "${__LIST[2]}" != "${__ARRY[2]}" ]] \
-							|| [[ "${__LIST[3]}" != "${__ARRY[3]}" ]]; then
-								continue
-							fi
-							_LIST_MDIA[J]="${__LIST[*]}"
-							break
-						done
-					done
-				done
-				fnPut_media_data
-				__OPTN=("${@:-}")
-				;;
-			link    )
-				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						create   ) shift; fnCreate_directory __RETN_PARM "${@:-}"; fnPut_media_data;;
-						update   ) shift;;
-						download ) shift;;
-						*        ) break;;
-					esac
-				done
-				;;
-			conf    )
-				shift
-				case "${1:-}" in
-					create   ) shift; fnCreate_conf;;
-					*        ) ;;
-				esac
-				;;
-			preconf )
-				shift
-				fnCreate_precon __RETN_PARM "${@:-}"
-				;;
+			download)        fnExec             "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			link    ) shift; fnCreate_directory "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			conf    ) shift; fnCreate_conf      "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			preconf ) shift; fnCreate_precon    "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			help    ) shift; fnHelp; break;;
-			debug   )
-				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						parm) shift; fnDebug_parameter;;
-						*   ) break;;
-					esac
-				done
-				;;
-			*       ) shift;;
+			debug   ) shift; fnDebug_parameter; break;;
+			*       ) shift; __OPTN=("${@:-}");;
 		esac
-		set -f -- "${__OPTN[@]:-"${@:-}"}"
+		set -f -- "${__OPTN[@]}"
 	done
 
 	# --- complete ------------------------------------------------------------

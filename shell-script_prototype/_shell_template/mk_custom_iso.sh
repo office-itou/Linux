@@ -358,6 +358,14 @@ function fnDebugout() {
 	printf "%s\n" "${*:-}" 1>&2
 }
 
+# --- debug out parameter -----------------------------------------------------
+function fnDebug_parameter_list() {
+	if [[ -z "${_DBGS_FLAG:-}" ]]; then
+		return
+	fi
+	printf "${1:?}: %q\n" "${!__@}" 1>&2
+}
+
 # -----------------------------------------------------------------------------
 # descript: is numeric
 #   input :   $1   : input value
@@ -1231,7 +1239,6 @@ function fnInitialization() {
 	declare       __LINE=""				# work variable
 	declare       __NAME=""				# variable name
 	declare       __VALU=""				# value
-
 	# --- common configuration file -------------------------------------------
 	              _PATH_CONF="/srv/user/share/conf/_data/common.cfg"
 	for __PATH in \
@@ -1244,7 +1251,6 @@ function fnInitialization() {
 		fi
 	done
 	readonly      _PATH_CONF
-
 	# --- default value when empty --------------------------------------------
 	_DIRS_TOPS="${_DIRS_TOPS:-/srv}"
 	_DIRS_HGFS="${_DIRS_HGFS:-:_DIRS_TOPS_:/hgfs}"
@@ -1312,7 +1318,6 @@ function fnInitialization() {
 	_MENU_RESO="${_MENU_RESO:-1024x768}"
 	_MENU_DPTH="${_MENU_DPTH:-16}"
 	_MENU_MODE="${_MENU_MODE:-791}"
-
 	# --- gets the setting value ----------------------------------------------
 	while read -r __LINE
 	do
@@ -1380,7 +1385,6 @@ function fnInitialization() {
 			*        ) ;;
 		esac
 	done < <(cat "${_PATH_CONF:-}" 2> /dev/null || true)
-
 	# --- variable substitution -----------------------------------------------
 	_DIRS_TOPS="${_DIRS_TOPS:?}"
 	_DIRS_HGFS="${_DIRS_HGFS//:_DIRS_TOPS_:/"${_DIRS_TOPS}"}"
@@ -1434,7 +1438,6 @@ function fnInitialization() {
 #	_MENU_RESO="${_MENU_RESO:-}"
 #	_MENU_DPTH="${_MENU_DPTH:-}"
 #	_MENU_MODE="${_MENU_MODE:-}"
-
 	# --- making variables read-only ------------------------------------------
 	readonly      _DIRS_TOPS
 	readonly      _DIRS_HGFS
@@ -1480,7 +1483,6 @@ function fnInitialization() {
 	readonly      _MENU_RESO
 	readonly      _MENU_DPTH
 	readonly      _MENU_MODE
-
 	# --- directory list ------------------------------------------------------
 	_LIST_DIRS=(                                                                                                        \
 		"${_DIRS_TOPS:?}"                                                                                               \
@@ -1501,7 +1503,6 @@ function fnInitialization() {
 		"${_DIRS_RMAK:?}"                                                                                               \
 	)
 	readonly      _LIST_DIRS
-
 	# --- symbolic link list --------------------------------------------------
 	# 0: a:add, r:relative
 	# 1: target
@@ -1525,30 +1526,23 @@ function fnInitialization() {
 		"r  ${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg             ${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"        \
 	)
 	readonly      _LIST_LINK
-
 	# --- autoinstall configuration file --------------------------------------
 	              _AUTO_INST="autoinst.cfg"
 	readonly      _AUTO_INST
-
 	# --- initial ram disk of mini.iso including preseed ----------------------
 	              _MINI_IRAM="initps.gz"
 	readonly      _MINI_IRAM
-
 	# --- ipxe menu file ------------------------------------------------------
 	              _MENU_IPXE="${_DIRS_TFTP}/autoexec.ipxe"
 	readonly      _MENU_IPXE
-
 	# --- grub menu file ------------------------------------------------------
 	              _MENU_GRUB="${_DIRS_TFTP}/boot/grub/grub.cfg"
 	readonly      _MENU_GRUB
-
 	# --- syslinux menu file --------------------------------------------------
 	              _MENU_SLNX="${_DIRS_TFTP}/menu-bios/syslinux.cfg"
 	readonly      _MENU_SLNX
-
 	              _MENU_UEFI="${_DIRS_TFTP}/menu-efi64/syslinux.cfg"
 	readonly      _MENU_UEFI
-
 	# --- get media data ------------------------------------------------------
 	fnGet_media_data
 }
@@ -1559,22 +1553,31 @@ function fnInitialization() {
 #   output: stdout : unused
 #   return:        : unused
 function fnCreate_conf() {
+	fnDebugout "${FUNCNAME[0]}"
+	declare -n    __NAME_REFR="${1:-}"	# name reference
+	shift
 	declare -r    __TMPL="${_PATH_CONF:?}.template"
 	declare       __RNAM=""				# rename path
 	declare       __PATH=""				# full path
-
+	# --- option parameter ----------------------------------------------------
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1:-}" in
+			create) shift; break;;
+			*     ) __NAME_REFR="${*:-}"; return;;
+		esac
+	done
+	__NAME_REFR="${*:-}"
 	# --- check file exists ---------------------------------------------------
 	if [[ -f "${__TMPL:?}" ]]; then
 		__RNAM="${__TMPL}.$(TZ=UTC find "${__TMPL}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
 		mv "${__TMPL}" "${__RNAM}"
 	fi
-
 	# --- delete old files ----------------------------------------------------
 	for __PATH in $(find "${__TMPL%/*}" -name "${__TMPL##*/}"\* | sort -r | tail -n +3 || true)
 	do
 		rm -f "${__PATH:?}"
 	done
-
 	# --- exporting files -----------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__TMPL}" || true
 		###############################################################################
@@ -1667,7 +1670,6 @@ _EOT_
 function fnGet_media_data() {
 	declare       __PATH=""				# full path
 	declare       __LINE=""				# work variable
-
 	# --- list data -----------------------------------------------------------
 	_LIST_MDIA=()
 	for __PATH in \
@@ -1725,7 +1727,6 @@ function fnPut_media_data() {
 		printf "%s: \"%s\"\n" "backup" "${__RNAM}" 1>&2
 		cp -a "${_PATH_MDIA}" "${__RNAM}"
 	fi
-
 	# --- delete old files ----------------------------------------------------
 	while read -r __PATH
 	do
@@ -1770,7 +1771,8 @@ function fnPut_media_data() {
 #   output: stdout : message
 #   return:        : unused
 function fnCreate_directory() {
-	declare -n    __NAME_REFR="${1:?}"	# name reference
+	fnDebugout "${FUNCNAME[0]}"
+	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
 	declare -r    __DATE="$(date +"%Y%m%d%H%M%S")"
 	declare       __FORC=""				# force parameter
@@ -1780,19 +1782,18 @@ function fnCreate_directory() {
 	declare       __BACK=""				# backup path
 	declare -a    __LIST=()				# work variable
 	declare -i    I=0
-
 	# --- option parameter ----------------------------------------------------
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
-			-f | --force) shift; __NAME_REFR="${*:-}"; __FORC="true";;
-			*           )        __NAME_REFR="${*:-}"; break;;
+			create) shift; __FORC="true"; break;;
+			update) shift; __FORC=""; break;;
+			*     ) __NAME_REFR="${*:-}"; return;;
 		esac
 	done
-
+	__NAME_REFR="${*:-}"
 	# --- create directory ----------------------------------------------------
 	mkdir -p "${_LIST_DIRS[@]:?}"
-
 	# --- create symbolic link ------------------------------------------------
 	# 0: a:add, r:relative
 	# 1: target
@@ -1842,7 +1843,6 @@ function fnCreate_directory() {
 			*) ln -s  "${__TGET}" "${__LINK}";;
 		esac
 	done
-
 	for I in "${!_LIST_MDIA[@]}"
 	do
 		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
@@ -1926,12 +1926,10 @@ function fnCreate_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 	declare       __WORK=""				# work variables
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_SEDD}" "${__TGET_PATH}"
-
 	# --- by generation -------------------------------------------------------
 	case "${__TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
@@ -2006,12 +2004,10 @@ function fnCreate_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 #	declare       __WORK=""				# work variables
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_CLUD}" "${__TGET_PATH}"
-
 	# --- by generation -------------------------------------------------------
 	case "${__TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
@@ -2068,12 +2064,10 @@ function fnCreate_kickstart() {
 	declare       __SECT=""				# "            section
 	declare -r    __ARCH="x86_64"		# base architecture
 	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_KICK}" "${__TGET_PATH}"
-
 	# -------------------------------------------------------------------------
 #	__NUMS="\$releasever"
 	__VERS="${__TGET_PATH#*_}"
@@ -2081,7 +2075,6 @@ function fnCreate_kickstart() {
 	__NUMS="${__VERS##*-}"
 	__NAME="${__VERS%-*}"
 	__SECT="${__NAME/-/ }"
-
 	# --- initializing the settings -------------------------------------------
 	sed -i "${__TGET_PATH}"                     \
 	    -e "/^cdrom$/      s/^/#/             " \
@@ -2132,17 +2125,14 @@ function fnCreate_autoyast() {
 #	declare       __WORK=""				# work variables
 	declare       __VERS=""				# distribution version
 	declare       __NUMS=""				# "            number
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_YAST}" "${__TGET_PATH}"
-
 	# -------------------------------------------------------------------------
 	__VERS="${__TGET_PATH#*_}"
 	__VERS="${__VERS%%_*}"
 	__NUMS="${__VERS##*-}"
-
 	# --- by media ------------------------------------------------------------
 	case "${__TGET_PATH}" in
 		*_web*|\
@@ -2200,29 +2190,27 @@ function fnCreate_precon() {
 #	declare       __WORK=""				# work variables
 	declare -a    __LINE=()				# work variable
 	declare -i    I=0					# work variables
-
 	# --- option parameter ----------------------------------------------------
 	__OPTN=()
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
-			all      ) __OPTN+=("preseed" "nocloud" "kickstart" "autoyast");;
+			all      ) shift; __OPTN+=("preseed" "nocloud" "kickstart" "autoyast"); break;;
 			preseed  | \
 			nocloud  | \
 			kickstart| \
-			autoyast ) __OPTN+=("$1");;
+			autoyast ) ;;
 			*        ) break;;
 		esac
+		__OPTN+=("$1")
 		shift
 	done
 	__NAME_REFR="${*:-}"
 	if [[ -z "${__OPTN[*]}" ]]; then
 		return
 	fi
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create pre-conf file" ""
-
 	# -------------------------------------------------------------------------
 	__LIST=()
 	for I in "${!_LIST_MDIA[@]}"
@@ -2276,190 +2264,11 @@ function fnCreate_precon() {
 	# -------------------------------------------------------------------------
 }
 
-# === <interface> =============================================================
-
-# -----------------------------------------------------------------------------
-# descript: print out of menu
-#   n-ref :   $1   : return value : options
-#   input :   $2   : command type
-#   input :   $3   : target range
-#   input :   $@   : target data
-#   output: stdout : message
-#   return:        : unused
-function fnPrint_menu() {
-	declare -n    __RETN_VALU="$1"		# return value
-	declare -r    __COMD_TYPE="$2"		# command type
-	declare -r    __TGET_TYPE="$3"		# target media type
-	declare -r    __TGET_RANG="$4"		# target range
-	declare -r -a __TGET_LIST=("${@:5}") # target data
-	declare -a    __MDIA=() 			# selected media data
-	declare       __RANG=""				# range
-	declare -i    __IDNO=0				# id number (1..)
-	declare       __RETN=""				# return value
-	declare       __MESG=""				# message text
-	declare       __CLR0=""				# message color (line)
-	declare       __CLR1=""				# message color (word)
-	declare       __PATH=""				# full path
-	declare       __DIRS=""				# directory
-	declare       __FNAM=""				# file name
-	declare       __BASE=""				# base name
-	declare       __EXTN=""				# extension
-	declare       __SEED=""				# preseed
-	declare       __WORK=""				# work variables
-	declare -a    __LIST=()				# work variables
-	declare -a    __ARRY=()				# work variables
-	declare -i    I=0					# work variables
-	declare -i    J=0					# work variables
-	# --- selection by media type ---------------------------------------------
-	IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${__TGET_LIST[@]}" | awk '$1=="'"${__TGET_TYPE}"'" && $2=="o" {print $0;}' || true)
-	case "${__TGET_RANG,,}" in
-		a|all) __RANG="$(eval "echo {1..${#__MDIA[@]}}")";;
-		*    ) __RANG="${__TGET_RANG}";;
-	esac
-	# --- print out menu ------------------------------------------------------
-	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "# ${_TEXT_GAP1::((${#_TEXT_GAP1}-4))} #"
-	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#%-2.2s:%-42.42s:%-10.10s:%-10.10s:%-$((${_SIZE_COLS:-80}-70)).$((${_SIZE_COLS:-80}-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "ID" "Version" "ReleaseDay" "SupportEnd" "Memo"
-	__IDNO=0
-	for I in "${!__MDIA[@]}"
-	do
-		if ! echo "$((I+1))" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
-			continue
-		fi
-		((__IDNO++)) || true
-		read -r -a __LIST < <(echo "${__MDIA[I]}")
-		for J in "${!__LIST[@]}"
-		do
-			__LIST[J]="${__LIST[J]##-}"		# empty
-			__LIST[J]="${__LIST[J]//%20/ }"	# space
-		done
-		# --- web original iso file -------------------------------------------
-		__RETN=""
-		__MESG=""											# contents
-		__CLR0=""
-		__CLR1=""
-		if [[ -n "${__LIST[8]}" ]]; then
-			fnGetWeb_info "__RETN" "${__LIST[8]}"			# web_regexp
-			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
-			__ARRY=("${__ARRY[@]##-}")
-			# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
-			# 1xx (Informational): The request was received, continuing process
-			# 2xx (Successful)   : The request was successfully received, understood, and accepted
-			# 3xx (Redirection)  : Further action needs to be taken in order to complete the request
-			# 4xx (Client Error) : The request contains bad syntax or cannot be fulfilled
-			# 5xx (Server Error) : The server failed to fulfill an apparently valid request
-			case "${__ARRY[3]:--}" in
-				-  ) ;;
-				200)
-					__LIST[9]="${__ARRY[0]:-}"				# web_path
-					__LIST[10]="${__ARRY[1]:-}"				# web_tstamp
-					__LIST[11]="${__ARRY[2]:-}"				# web_size
-					__LIST[12]="${__ARRY[3]:-}"				# web_status
-					case "${__LIST[9]##*/}" in
-						mini.iso) ;;
-						*       )
-							__FNAM="${__LIST[9]##*/}"
-							__WORK="${__FNAM%.*}"
-							__EXTN="${__FNAM#"${__WORK}"}"
-							__BASE="${__FNAM%"${__EXTN}"}"
-															# iso_path
-							__LIST[13]="${__LIST[13]%/*}/${__FNAM}"
-															# rmk_path
-							if [[ -n "${__LIST[17]##-}" ]]; then
-								__SEED="${__LIST[17]##*_}"
-								__WORK="${__SEED%.*}"
-								__WORK="${__SEED#"${__WORK}"}"
-								__SEED="${__SEED%"${__WORK}"}"
-								__LIST[17]="${__LIST[17]%/*}/${__BASE}${__SEED:+"_${__SEED}"}${__EXTN}"
-							fi
-							;;
-					esac
-#					__MESG="${__ARRY[4]:--}"				# contents
-					;;
-				1??) ;;
-				2??) ;;
-				3??) ;;
-#				4??) ;;
-#				5??) ;;
-				*  )					# (error)
-#					__LIST[9]=""		# web_path
-					__LIST[10]=""		# web_tstamp
-					__LIST[11]=""		# web_size
-					__LIST[12]=""		# web_status
-					__MESG="$(set -e; fnGetWeb_status "${__ARRY[3]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}"
-					;;
-			esac
-		fi
-		# --- local original iso file -----------------------------------------
-		if [[ -n "${__LIST[13]}" ]]; then
-			fnGetFileinfo "__RETN" "${__LIST[13]}"			# iso_path
-			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
-			__ARRY=("${__ARRY[@]##-}")
-#			__LIST[13]="${__ARRY[0]:-}"						# iso_path
-			__LIST[14]="${__ARRY[1]:-}"						# iso_tstamp
-			__LIST[15]="${__ARRY[2]:-}"						# iso_size
-			__LIST[16]="${__ARRY[3]:-}"						# iso_volume
-		fi
-		# --- local remastering iso file --------------------------------------
-		if [[ -n "${__LIST[17]}" ]]; then
-			fnGetFileinfo "__RETN" "${__LIST[17]}"			# rmk_path
-			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
-			__ARRY=("${__ARRY[@]##-}")
-#			__LIST[17]="${__ARRY[0]:-}"						# rmk_path
-			__LIST[18]="${__ARRY[1]:-}"						# rmk_tstamp
-			__LIST[19]="${__ARRY[2]:-}"						# rmk_size
-			__LIST[20]="${__ARRY[3]:-}"						# rmk_volume
-		fi
-		# --- config file  ----------------------------------------------------
-		if [[ -n "${__LIST[23]}" ]]; then
-			if [[ -d "${__LIST[23]}" ]]; then				# cfg_path: cloud-init
-				fnGetFileinfo "__RETN" "${__LIST[23]}/user-data"
-			else											# cfg_path
-				fnGetFileinfo "__RETN" "${__LIST[23]}"
-			fi
-			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
-#			__LIST[23]="${__ARRY[0]:-}"						# cfg_path
-			__LIST[24]="${__ARRY[1]:-}"						# cfg_tstamp
-		fi
-		# --- print out -------------------------------------------------------
-		if [[ -z "${__CLR0:-}" ]]; then
-			if [[ -z "${__LIST[8]##-}" ]] && [[ -z "${__LIST[14]##-}" ]]; then
-				__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[33m"}"	# unreleased
-			elif [[ -z "${__LIST[14]##-}" ]]; then
-				__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[46m"}"	# new file
-			else
-				if [[ -n "${__LIST[18]##-}" ]]; then
-					__WORK="$(fnDateDiff "${__LIST[18]}" "${__LIST[14]}")"
-					if [[ "${__WORK}" -gt 0 ]]; then
-						__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}"	# remaster < local
-					fi
-				fi
-				if [[ -n "${__LIST[10]##-}" ]]; then
-					__WORK="$(fnDateDiff "${__LIST[10]}" "${__LIST[14]}")"
-					if [[ "${__WORK}" -lt 0 ]]; then
-						__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[92m"}"	# web > local
-					fi
-				fi
-			fi
-		fi
-		__MESG="${__MESG//%20/ }"
-		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#${__CLR0}%2d:%-42.42s:%-10.10s:%-10.10s:${__CLR1}%-$((_SIZE_COLS-70)).$((_SIZE_COLS-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "${__IDNO}" "${__LIST[13]##*/}" "${__LIST[10]:+"${__LIST[10]::10}"}${__LIST[14]:-"${__LIST[6]::10}"}" "${__LIST[7]::10}" "${__MESG:-"${__LIST[23]##*/}"}" 1>&2
-		# --- update media data record ----------------------------------------
-		for J in "${!__LIST[@]}"
-		do
-			__LIST[J]="${__LIST[J]:--}"		# empty
-			__LIST[J]="${__LIST[J]// /%20}"	# space
-		done
-		__WORK="$( \
-			printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s" \
-				"${__LIST[@]}" \
-		)"
-		__MDIA[I]="${__WORK}"
-	done
-	__RETN_VALU="$(printf "%s\n" "${__MDIA[@]}")"
-	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "# ${_TEXT_GAP1::((${#_TEXT_GAP1}-4))} #"
-}
-
 # === <remastering> ===========================================================
+
+# . tmpl_001_initialize_common.sh
+# . tmpl_002_data_section.sh
+# . tmpl_003_function_section_library.sh
 
 # -----------------------------------------------------------------------------
 # descript: create a boot option for preseed of the remaster
@@ -2557,6 +2366,7 @@ function fnRemastering_preseed() {
 #	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]:-}"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -2635,6 +2445,7 @@ function fnRemastering_nocloud() {
 #	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]:-}"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -2700,6 +2511,7 @@ function fnRemastering_kickstart() {
 #	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]:-}"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -2773,6 +2585,7 @@ function fnRemastering_autoyast() {
 #	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]:-}"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -2809,6 +2622,7 @@ function fnRemastering_boot_options() {
 	__BOPT+=("fsck.mode=skip raid=noautodetect${_MENU_MODE:+" vga=${_MENU_MODE}"}")
 	# --- finish --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]}"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -2830,6 +2644,7 @@ function fnRemastering_path() {
 	__DIRS="${__DIRS%%/}"
 	__DIRS="${__DIRS##/}"
 	echo -n "${__DIRS:+/"${__DIRS}"}/${__FNAM}"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -2909,7 +2724,7 @@ _EOT_
 		  menu default
 		  linux  ${__FKNL}
 		  initrd ${__FIRD}
-		  append ${__BOPT[@]:1}
+		  append ${__BOPT[@]:1} --- quiet
 
 _EOT_
 		# --- graphical installation mode -------------------------------------
@@ -2922,11 +2737,12 @@ _EOT_
 				  menu label ^Automatic installation of gui
 				  linux  ${__FKNL}
 				  initrd ${__FIRD}
-				  append ${__BOPT[@]:1}
+				  append ${__BOPT[@]:1} --- quiet
 
 _EOT_
 		done < <(find "${__DIRS_TGET}" -name 'gtk' -type d -printf '%P\n' || true)
 	fi
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -3000,6 +2816,7 @@ function fnRemastering_isolinux() {
 		fi
 		rm -f "${__FTMP:?}"
 	done < <(find "${__DIRS_TGET}" \( -name '*.cfg' -a ! -name "${_AUTO_INST##*/}" \) -type f || true)
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -3148,11 +2965,11 @@ _EOT_
 			  set knladdr="(tftp,${_SRVR_ADDR:?})/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}"
 			  set options="\${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}"
 			  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-			  insmod net
-			  insmod http
-			  insmod progress
+			# insmod net
+			# insmod http
+			# insmod progress
 			  echo 'Loading linux ...'
-			  linux  ${__FKNL} \${options} ---
+			  linux  ${__FKNL} \${options} --- quiet
 			  echo 'Loading initrd ...'
 			  initrd ${__FIRD}
 			}
@@ -3165,7 +2982,6 @@ _EOT_
 			__FIRD="${__DIRS:+/"${__DIRS}"}/${__TGET_LIST[21]##*/}"	# initrd
 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${__PATH}" || true
 				menuentry 'Automatic installation of gui' {
-			menuentry 'Automatic installation' {
 				  echo 'Loading ${__TGET_LIST[3]//%20/ } ...'
 				  set gfxpayload=keep
 				  set background_color=black
@@ -3184,11 +3000,11 @@ _EOT_
 				  set knladdr="(tftp,${_SRVR_ADDR:?})/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}"
 				  set options="\${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}"
 				  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-				  insmod net
-				  insmod http
-				  insmod progress
+				# insmod net
+				# insmod http
+				# insmod progress
 				  echo 'Loading linux ...'
-				  linux  ${__FKNL} \${options} ---
+				  linux  ${__FKNL} \${options} --- quiet
 				  echo 'Loading initrd ...'
 				  initrd ${__FIRD}
 				}
@@ -3196,6 +3012,7 @@ _EOT_
 _EOT_
 		done < <(find "${__DIRS_TGET}" -name 'gtk' -type d -printf '%P\n' || true)
 	fi
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -3257,6 +3074,7 @@ function fnRemastering_grub() {
 		fi
 		rm -f "${__FTMP:?}"
 	done < <(find "${__DIRS_TGET}" \( -name '*.cfg' -a ! -name "${_AUTO_INST##*/}" \) -type f || true)
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -3277,7 +3095,7 @@ function fnRemastering_copy() {
 	declare       __EXTN=""				# extension
 
 	# -------------------------------------------------------------------------
-	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "copy" "auto-install files" 1>&2
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "copy" "auto-install files"
 
 	# -------------------------------------------------------------------------
 	for __PATH in       \
@@ -3295,7 +3113,7 @@ function fnRemastering_copy() {
 		mkdir -p "${__DIRS}"
 		case "${__PATH}" in
 			*/script/*   )
-				printf "%20.20s: %s\n" "copy" "${__PATH#"${_DIRS_CONF}"/}" 1>&2
+				printf "%20.20s: %s\n" "copy" "${__PATH#"${_DIRS_CONF}"/}"
 				cp -a "${__PATH}" "${__DIRS}"
 				chmod ugo+xr-w "${__DIRS}/${__PATH##*/}"
 				;;
@@ -3311,7 +3129,7 @@ function fnRemastering_copy() {
 				__WORK="${__BASE%"${__WORK}"}"
 				__WORK="${__PATH#*"${__WORK:-${__BASE%%_*}}"}"
 				__WORK="${__PATH%"${__WORK}"*}"
-				printf "%20.20s: %s\n" "copy" "${__WORK#"${_DIRS_CONF}"/}*${__EXTN}" 1>&2
+				printf "%20.20s: %s\n" "copy" "${__WORK#"${_DIRS_CONF}"/}*${__EXTN}"
 				find "${__WORK%/*}" -name "${__WORK##*/}*${__EXTN}" -exec cp -a '{}' "${__DIRS}" \;
 				find "${__DIRS}" -exec chmod ugo+r-xw '{}' \;
 				;;
@@ -3319,6 +3137,7 @@ function fnRemastering_copy() {
 			*            ) ;;
 		esac
 	done
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -3338,7 +3157,7 @@ function fnRemastering_initrd() {
 	declare       __DIRS=""				# directory
 
 	# -------------------------------------------------------------------------
-	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "remake" "initrd" 1>&2
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "remake" "initrd"
 
 	# -------------------------------------------------------------------------
 	__DIRS="${_DIRS_LOAD}/${__TGET_LIST[2]}"
@@ -3361,6 +3180,7 @@ function fnRemastering_initrd() {
 	popd > /dev/null || exit
 
 	rm -rf "${__DTMP:?}"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -3392,7 +3212,7 @@ function fnRemastering_media() {
 	__FEFI="$(fnDistro2efi "${__TGET_LIST[2]%%-*}")"
 	# --- create iso image file -----------------------------------------------
 	if [[ -e "${__DIRS_TGET}/${__FEFI}" ]]; then
-		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "info" "xorriso (hybrid)" 1>&2
+		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "info" "xorriso (hybrid)"
 		__FHBR="$(find /usr/lib  -iname 'isohdpfx.bin' -type f || true)"
 		fnCreate_iso "${__DIRS_TGET}" "${__TGET_LIST[17]}" \
 			-quiet -rational-rock \
@@ -3408,7 +3228,7 @@ function fnRemastering_media() {
 			-no-emul-boot \
 			-isohybrid-gpt-basdat -isohybrid-apm-hfsplus
 	else
-		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "info" "xorriso (grub2-mbr)" 1>&2
+		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "info" "xorriso (grub2-mbr)"
 		__FMBR="${__DWRK}/mbr.img"
 		__FEFI="${__DWRK}/efi.img"
 		# --- extract the mbr template ----------------------------------------
@@ -3436,6 +3256,7 @@ function fnRemastering_media() {
 			-eltorito-alt-boot -e '--interval:appended_partition_2:all::' \
 			-no-emul-boot
 	fi
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -3461,25 +3282,25 @@ function fnRemastering() {
 
 	# --- start ---------------------------------------------------------------
 	__time_start=$(date +%s)
-	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__TGET_LIST[13]##*/}" 1>&2
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__TGET_LIST[13]##*/}"
 
 	# --- pre-check -----------------------------------------------------------
 	__FEFI="$(fnDistro2efi "${__TGET_LIST[2]%%-*}")"
 	if [[ -z "${__FEFI}" ]]; then
-		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[41m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "unknown target" "${__TGET_LIST[2]%%-*} [${__TGET_LIST[13]##*/}]" 1>&2
+		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[41m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "unknown target" "${__TGET_LIST[2]%%-*} [${__TGET_LIST[13]##*/}]"
 		return
 	fi
 	if [[ ! -s "${__TGET_LIST[13]}" ]]; then
-		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[93m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "not exist" "${__TGET_LIST[13]##*/}" 1>&2
+		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[93m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "not exist" "${__TGET_LIST[13]##*/}"
 		return
 	fi
 	if mountpoint --quiet "${__DMRG}"; then
-		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[41m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "already mounted" "${__DMRG#"${__DWRK}"/}" 1>&2
+		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[41m"}%20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "already mounted" "${__DMRG#"${__DWRK}"/}"
 		return
 	fi
 
 	# --- pre-processing ------------------------------------------------------
-	printf "%20.20s: %s\n" "start" "${__DMRG#"${__DWRK}"/}" 1>&2
+	printf "%20.20s: %s\n" "start" "${__DMRG#"${__DWRK}"/}"
 	rm -rf "${__DOVL:?}"
 	mkdir -p "${__DUPR}" "${__DLOW}" "${__DWKD}" "${__DMRG}"
 
@@ -3487,38 +3308,215 @@ function fnRemastering() {
 	mount -r "${__TGET_LIST[13]}" "${__DLOW}"
 	mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}"
 	# --- create boot options -------------------------------------------------
-	printf "%20.20s: %s\n" "start" "create boot options" 1>&2
+	printf "%20.20s: %s\n" "start" "create boot options"
 	__WORK="$(set -e; fnRemastering_boot_options "${__TGET_LIST[@]}")"
 	# --- create autoinstall configuration file for isolinux ------------------
-	printf "%20.20s: %s\n" "start" "create autoinstall configuration file for isolinux" 1>&2
+	printf "%20.20s: %s\n" "start" "create autoinstall configuration file for isolinux"
 	fnRemastering_isolinux "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
 	# --- create autoinstall configuration file for grub ----------------------
-	printf "%20.20s: %s\n" "start" "create autoinstall configuration file for grub" 1>&2
+	printf "%20.20s: %s\n" "start" "create autoinstall configuration file for grub"
 	fnRemastering_grub "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
 	# --- copy auto-install files ---------------------------------------------
-	printf "%20.20s: %s\n" "start" "copy auto-install files" 1>&2
+	printf "%20.20s: %s\n" "start" "copy auto-install files"
 	fnRemastering_copy "${__DMRG}" "${__TGET_LIST[@]}"
 	# --- remastering for initrd ----------------------------------------------
-	printf "%20.20s: %s\n" "start" "remastering for initrd" 1>&2
+	printf "%20.20s: %s\n" "start" "remastering for initrd"
 	case "${__TGET_LIST[2]}" in
 		*-mini-*         ) fnRemastering_initrd "${__DMRG}" "${__TGET_LIST[@]}";;
 		*                ) ;;
 	esac
 	# --- create iso image file -----------------------------------------------
-	printf "%20.20s: %s\n" "start" "create iso image file" 1>&2
+	printf "%20.20s: %s\n" "start" "create iso image file"
 	fnRemastering_media "${__DMRG}" "${__TGET_LIST[@]}"
 	umount "${__DMRG}"
 	umount "${__DLOW}"
 
 	# --- post-processing -----------------------------------------------------
 	rm -rf "${__DOVL:?}"
-	printf "%20.20s: %s\n" "finish" "${__DMRG#"${__DWRK}"/}" 1>&2
+	printf "%20.20s: %s\n" "finish" "${__DMRG#"${__DWRK}"/}"
 
 	# --- complete ------------------------------------------------------------
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end-__time_start))
-	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)" "finish" "${__TGET_LIST[13]##*/}" 1>&2
-	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$((__time_elapsed/86400))" "$((__time_elapsed%86400/3600))" "$((__time_elapsed%3600/60))" "$((__time_elapsed%60))" "elapsed" "${__TGET_LIST[13]##*/}" 1>&2
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)" "finish" "${__TGET_LIST[13]##*/}"
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$((__time_elapsed/86400))" "$((__time_elapsed%86400/3600))" "$((__time_elapsed%3600/60))" "$((__time_elapsed%60))" "elapsed" "${__TGET_LIST[13]##*/}"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: print out of menu
+#   n-ref :   $1   : return value : options
+#   input :   $@   : target data
+#   output: stdout : message
+#   return:        : unused
+function fnExec_menu() {
+	declare -n    __RETN_VALU="$1"		# return value
+	declare       __TGET_RANG="$2"		# target range
+	declare -r -a __TGET_LIST=("${@:3}") # target data
+	declare -a    __MDIA=() 			# selected media data
+	declare       __RANG=""				# range
+	declare -i    __IDNO=0				# id number (1..)
+	declare       __RETN=""				# return value
+	declare       __MESG=""				# message text
+	declare       __CLR0=""				# message color (line)
+	declare       __CLR1=""				# message color (word)
+	declare       __PATH=""				# full path
+	declare       __DIRS=""				# directory
+	declare       __FNAM=""				# file name
+	declare       __BASE=""				# base name
+	declare       __EXTN=""				# extension
+	declare       __SEED=""				# preseed
+	declare       __WORK=""				# work variables
+	declare -a    __LIST=()				# work variables
+	declare -a    __ARRY=()				# work variables
+	declare -i    I=0					# work variables
+	declare -i    J=0					# work variables
+	# --- print out menu ------------------------------------------------------
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "# ${_TEXT_GAP1::((${#_TEXT_GAP1}-4))} #"
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#%-2.2s:%-42.42s:%-10.10s:%-10.10s:%-$((${_SIZE_COLS:-80}-70)).$((${_SIZE_COLS:-80}-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "ID" "Version" "ReleaseDay" "SupportEnd" "Memo"
+	__IDNO=0
+	__MDIA=("${__TGET_LIST[@]}")
+	for I in "${!__MDIA[@]}"
+	do
+#		if ! echo "$((I+1))" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
+#			continue
+#		fi
+		((__IDNO++)) || true
+		if ! echo "${__IDNO}" | grep -qE '^('"${__TGET_RANG[*]// /\|}"')$'; then
+			continue
+		fi
+		read -r -a __LIST < <(echo "${__MDIA[I]}")
+		for J in "${!__LIST[@]}"
+		do
+			__LIST[J]="${__LIST[J]##-}"		# empty
+			__LIST[J]="${__LIST[J]//%20/ }"	# space
+		done
+		# --- web original iso file -------------------------------------------
+		__RETN=""
+		__MESG=""											# contents
+		__CLR0=""
+		__CLR1=""
+		if [[ -n "${__LIST[8]}" ]]; then
+			fnGetWeb_info "__RETN" "${__LIST[8]}"			# web_regexp
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+			# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+			# 1xx (Informational): The request was received, continuing process
+			# 2xx (Successful)   : The request was successfully received, understood, and accepted
+			# 3xx (Redirection)  : Further action needs to be taken in order to complete the request
+			# 4xx (Client Error) : The request contains bad syntax or cannot be fulfilled
+			# 5xx (Server Error) : The server failed to fulfill an apparently valid request
+			case "${__ARRY[3]:--}" in
+				-  ) ;;
+				200)
+					__LIST[9]="${__ARRY[0]:-}"				# web_path
+					__LIST[10]="${__ARRY[1]:-}"				# web_tstamp
+					__LIST[11]="${__ARRY[2]:-}"				# web_size
+					__LIST[12]="${__ARRY[3]:-}"				# web_status
+					case "${__LIST[9]##*/}" in
+						mini.iso) ;;
+						*       )
+							__FNAM="${__LIST[9]##*/}"
+							__WORK="${__FNAM%.*}"
+							__EXTN="${__FNAM#"${__WORK}"}"
+							__BASE="${__FNAM%"${__EXTN}"}"
+															# iso_path
+							__LIST[13]="${__LIST[13]%/*}/${__FNAM}"
+															# rmk_path
+							if [[ -n "${__LIST[17]##-}" ]]; then
+								__SEED="${__LIST[17]##*_}"
+								__WORK="${__SEED%.*}"
+								__WORK="${__SEED#"${__WORK}"}"
+								__SEED="${__SEED%"${__WORK}"}"
+								__LIST[17]="${__LIST[17]%/*}/${__BASE}${__SEED:+"_${__SEED}"}${__EXTN}"
+							fi
+							;;
+					esac
+#					__MESG="${__ARRY[4]:--}"				# contents
+					;;
+				1??) ;;
+				2??) ;;
+				3??) ;;
+#				4??) ;;
+#				5??) ;;
+				*  )					# (error)
+#					__LIST[9]=""		# web_path
+					__LIST[10]=""		# web_tstamp
+					__LIST[11]=""		# web_size
+					__LIST[12]=""		# web_status
+					__MESG="$(set -e; fnGetWeb_status "${__ARRY[3]}")"; __CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[91m"}"
+					;;
+			esac
+		fi
+		# --- local original iso file -----------------------------------------
+		if [[ -n "${__LIST[13]}" ]]; then
+			fnGetFileinfo "__RETN" "${__LIST[13]}"			# iso_path
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+#			__LIST[13]="${__ARRY[0]:-}"						# iso_path
+			__LIST[14]="${__ARRY[1]:-}"						# iso_tstamp
+			__LIST[15]="${__ARRY[2]:-}"						# iso_size
+			__LIST[16]="${__ARRY[3]:-}"						# iso_volume
+		fi
+		# --- local remastering iso file --------------------------------------
+		if [[ -n "${__LIST[17]}" ]]; then
+			fnGetFileinfo "__RETN" "${__LIST[17]}"			# rmk_path
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+#			__LIST[17]="${__ARRY[0]:-}"						# rmk_path
+			__LIST[18]="${__ARRY[1]:-}"						# rmk_tstamp
+			__LIST[19]="${__ARRY[2]:-}"						# rmk_size
+			__LIST[20]="${__ARRY[3]:-}"						# rmk_volume
+		fi
+		# --- config file  ----------------------------------------------------
+		if [[ -n "${__LIST[23]}" ]]; then
+			if [[ -d "${__LIST[23]}" ]]; then				# cfg_path: cloud-init
+				fnGetFileinfo "__RETN" "${__LIST[23]}/user-data"
+			else											# cfg_path
+				fnGetFileinfo "__RETN" "${__LIST[23]}"
+			fi
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+#			__LIST[23]="${__ARRY[0]:-}"						# cfg_path
+			__LIST[24]="${__ARRY[1]:-}"						# cfg_tstamp
+		fi
+		# --- print out -------------------------------------------------------
+		if [[ -z "${__CLR0:-}" ]]; then
+			if [[ -z "${__LIST[8]##-}" ]] && [[ -z "${__LIST[14]##-}" ]]; then
+				__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[33m"}"	# unreleased
+			elif [[ -z "${__LIST[14]##-}" ]]; then
+				__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[46m"}"	# new file
+			else
+				if [[ -n "${__LIST[18]##-}" ]]; then
+					__WORK="$(fnDateDiff "${__LIST[18]}" "${__LIST[14]}")"
+					if [[ "${__WORK}" -gt 0 ]]; then
+						__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}"	# remaster < local
+					fi
+				fi
+				if [[ -n "${__LIST[10]##-}" ]]; then
+					__WORK="$(fnDateDiff "${__LIST[10]}" "${__LIST[14]}")"
+					if [[ "${__WORK}" -lt 0 ]]; then
+						__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[92m"}"	# web > local
+					fi
+				fi
+			fi
+		fi
+		__MESG="${__MESG//%20/ }"
+		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}#${__CLR0}%2d:%-42.42s:%-10.10s:%-10.10s:${__CLR1}%-$((_SIZE_COLS-70)).$((_SIZE_COLS-70))s${_CODE_ESCP:+"${_CODE_ESCP}[m"}#\n" "${__IDNO}" "${__LIST[13]##*/}" "${__LIST[10]:+"${__LIST[10]::10}"}${__LIST[14]:-"${__LIST[6]::10}"}" "${__LIST[7]::10}" "${__MESG:-"${__LIST[23]##*/}"}"
+		# --- update media data record ----------------------------------------
+		for J in "${!__LIST[@]}"
+		do
+			__LIST[J]="${__LIST[J]:--}"		# empty
+			__LIST[J]="${__LIST[J]// /%20}"	# space
+		done
+		__WORK="$( \
+			printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s" \
+				"${__LIST[@]}" \
+		)"
+		__MDIA[I]="${__WORK}"
+	done
+	__RETN_VALU="$(printf "%s\n" "${__MDIA[@]}")"
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "# ${_TEXT_GAP1::((${#_TEXT_GAP1}-4))} #"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -3544,7 +3542,7 @@ function fnExec_download() {
 	esac
 	# --- lnk_path ------------------------------------------------------------
 	if [[ -n "${__TGET_LIST[25]##-}" ]] && [[ ! -e "${__TGET_LIST[13]}" ]] && [[ ! -h "${__TGET_LIST[13]}" ]]; then
-		fnPrintf "%20.20s: %s" "create symlink" "${__TGET_LIST[25]} -> ${__TGET_LIST[13]}"
+		printf "%20.20s: %s\n" "create symlink" "${__TGET_LIST[25]} -> ${__TGET_LIST[13]}"
 		ln -s "${__TGET_LIST[25]%%/}/${__TGET_LIST[13]##*/}" "${__TGET_LIST[13]}"
 	fi
 	# --- comparing web and local file timestamps -----------------------------
@@ -3564,6 +3562,7 @@ function fnExec_download() {
 	__TGET_LIST[16]="${__ARRY[3]:-}"	# iso_volume
 	# --- finish --------------------------------------------------------------
 	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -3594,7 +3593,7 @@ function fnExec_remastering() {
 	# --- comparing remaster and local file timestamps ------------------------
 	if [[ -z "${__FORC:-}" ]]; then
 		__RSLT="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
-		if [[ "${__RSLT}" -ge 0 ]]; then
+		if [[ "${__RSLT}" -lt 0 ]]; then
 			return
 		fi
 	fi
@@ -3610,6 +3609,7 @@ function fnExec_remastering() {
 	__TGET_LIST[20]="${__ARRY[3]:--}"	# rmk_volume
 	# --- finish --------------------------------------------------------------
 	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -3622,104 +3622,194 @@ function fnExec_remastering() {
 #   return:        : unused
 function fnExec() {
 	fnDebugout "${FUNCNAME[0]}"
-	declare -n    __RETN_VALU="$1"		# return value
-	declare -r    __COMD_TYPE="$2"		# command type
-	declare -r    __TGET_RANG="$3"		# target range
-	declare -a    __TGET_LIST=("${@:4}") # target data
+	declare -n    __NAME_REFR="${1:-}"	# name reference
+	shift
+	declare       __COMD=""				# command type
+	declare -a    __OPTN=()				# option parameter
+	declare       __TGET=""				# target
+	declare -a    __MDIA=() 			# selected media data
 	declare       __RANG=""				# range
-	declare -i    __IDNO=0				# id number (1..)
-	declare       __RSLT=""				# result
+	declare       __RETN=""				# return value
 	declare       __WORK=""				# work variables
-	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
+	declare -a    __ARRY=()				# work variables
 	declare -i    I=0					# work variables
 	declare -i    J=0					# work variables
-	# --- processing by command -----------------------------------------------
-	case "${__COMD_TYPE}" in
-		list    ) return;;			# (print out media list)
-		create  ) ;;				# (force create)
-		update  ) ;;				# (create new files only)
-		download) ;;				# (download only)
-		*       ) return;;
-	esac
-	# --- select by input value -----------------------------------------------
-	__RANG="${__TGET_RANG:-}"
-	if [[ -z "${__RANG:-}" ]]; then
-		read -r -p "enter the number to create:" __RANG
-	fi
-	if [[ -z "${__RANG:-}" ]]; then
-		return
-	fi
-	case "${__RANG,,}" in
-		a|all) __RANG="$(eval "echo {1..${#__TGET_LIST[@]}}")";;
-		*    ) __RANG="$(eval "echo ${__RANG}")";;
-	esac
-	# ---
-	__IDNO=0
-	for I in "${!__TGET_LIST[@]}"
-	do
-		read -r -a __LIST < <(echo "${__TGET_LIST[I]}")
-		case "${__LIST[1]}" in
-			o) ;;
-			*) continue;;
-		esac
-		if [[ -z "${__LIST[3]##-}"  ]] \
-		|| [[ -z "${__LIST[13]##-}" ]] \
-		|| [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
-			continue
-		fi
-		if ! echo "$((++__IDNO))" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
-			continue
-		fi
-		# --- start -----------------------------------------------------------
-		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[17]##*/}" 1>&2
-		# --- conversion ------------------------------------------------------
-		for J in "${!__LIST[@]}"
-		do
-			__LIST[J]="${__LIST[J]##-}"		# empty
-			__LIST[J]="${__LIST[J]//%20/ }"	# space
-		done
-		# --- download --------------------------------------------------------
-		case "${__COMD_TYPE}" in
-			create  | \
-			update  | \
-			download)
-				fnExec_download "__RETN" "${__LIST[@]}"
-				read -r -a __ARRY < <(echo "${__RETN:-}")
-				if [[ -n "${__ARRY[*]}" ]]; then
-					case "${__ARRY[12]:-}" in
-						200) __LIST=("${__ARRY[@]}");;
-						*  ) ;;
+
+	__COMD="$1"
+	shift
+	case "${__COMD:-}" in
+		list    | \
+		create  | \
+		update  | \
+		download)
+			__MDIA=()
+			__OPTN=()
+			while [[ -n "${1:-}" ]]
+			do
+				case "${1:-}" in
+					a|all   ) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all"); break;;
+					mini    ) ;;
+					netinst ) ;;
+					dvd     ) ;;
+					liveinst) ;;
+#					live    ) ;;
+#					tool    ) ;;
+#					clive   ) ;;
+#					cnetinst) ;;
+#					system  ) ;;
+					*       ) break;;
+				esac
+				__OPTN+=("$1")
+				shift
+			done
+set -x
+			read -r -a __OPTN < <(echo "${__OPTN[@]:-"mini" "netinst" "dvd" "liveinst"}" "${@:-}")
+printf "%s\n" "${__OPTN[@]}"
+sleep 600
+			set -f -- "${__OPTN[@]:-}"
+			while [[ -n "${1:-}" ]]
+			do
+				case "${1:-}" in
+					mini    ) ;;
+					netinst ) ;;
+					dvd     ) ;;
+					liveinst) ;;
+#					live    ) ;;
+#					tool    ) ;;
+#					clive   ) ;;
+#					cnetinst) ;;
+#					system  ) ;;
+					*       ) break;;
+				esac
+				__TGET="$1"
+				shift
+				# --- selection by media type ---------------------------------
+				IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=="'"${__TGET}"'" && $2=="o" {print $0;}' || true)
+				__RANG=""
+				while [[ -n "${1:-}" ]]
+				do
+					case "${1,,}" in
+						a|all                           ) shift; __RANG="$(eval "echo {1..${#__MDIA[@]}}")"; break;;
+						[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) ;;
+						*                               ) break;;
 					esac
+					__RANG="${__RANG:+"${__RANG} "}$1"
+					shift
+				done
+				# --- print out of menu ---------------------------------------
+				fnExec_menu "__RSLT" "${__RANG:-}" "${__MDIA[@]}"
+				IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RSLT}")
+				case "${__COMD}" in
+					list    ) continue;;					# (print out media list)
+					create  ) ;;							# (force create)
+					update  ) ;;							# (create new files only)
+					download) ;;							# (download only)
+					*       ) continue;;
+				esac
+				# --- select by input value -----------------------------------
+				if [[ -z "${__RANG:-}" ]]; then
+					read -r -p "enter the number to create:" __RANG
 				fi
-				;;
-			*       ) ;;
-		esac
-		# --- remastering -----------------------------------------------------
-		case "${__COMD_TYPE}" in
-			create  | \
-			update  )
-				fnExec_remastering "__RETN" "${__COMD_TYPE}" "${__LIST[@]}"
-				read -r -a __ARRY < <(echo "${__RETN:-}")
-				if [[ -n "${__ARRY[*]}" ]]; then
-					__LIST=("${__ARRY[@]}")
-				fi
-				;;
-			download) ;;
-			*       ) ;;
-		esac
-		# --- conversion ------------------------------------------------------
-		for J in "${!__LIST[@]}"
-		do
-			__LIST[J]="${__LIST[J]:--}"		# empty
-			__LIST[J]="${__LIST[J]// /%20}"	# space
-		done
-		# --- update media data record ----------------------------------------
-		__MDIA[I]="${__LIST[*]}"
-		# --- complete --------------------------------------------------------
-		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[17]##*/}" 1>&2
-	done
-	__RETN_VALU="$(printf "%s\n" "${__MDIA[@]}")"
+#				if [[ -z "${__RANG:-}" ]]; then
+#					continue
+#				fi
+				case "${__RANG,,}" in
+					a|all) __RANG="$(eval "echo {1..${#__MDIA[@]}}")";;
+					*    ) __RANG="$(eval "echo ${__RANG}")";;
+				esac
+				# --- processing by command -----------------------------------
+				__IDNO=0
+				for I in "${!__MDIA[@]}"
+				do
+					read -r -a __LIST < <(echo "${__MDIA[I]}")
+					case "${__LIST[1]}" in
+						o) ;;
+						*) continue;;
+					esac
+					if [[ -z "${__LIST[3]##-}"  ]] \
+					|| [[ -z "${__LIST[13]##-}" ]] \
+					|| [[ -z "${__LIST[23]##-}" ]] || [[ -z "${__LIST[24]##-}" ]]; then
+						continue
+					fi
+					((++__IDNO)) || true
+					if ! echo "${__IDNO}" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
+						continue
+					fi
+					# --- start -----------------------------------------------
+					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[17]##*/}"
+					# --- conversion ------------------------------------------
+					for J in "${!__LIST[@]}"
+					do
+						__LIST[J]="${__LIST[J]##-}"		# empty
+						__LIST[J]="${__LIST[J]//%20/ }"	# space
+					done
+					# --- download --------------------------------------------
+					case "${__COMD}" in
+						create  | \
+						update  | \
+						download)
+							fnExec_download "__RETN" "${__LIST[@]}"
+							read -r -a __ARRY < <(echo "${__RETN:-}")
+							if [[ -n "${__ARRY[*]}" ]]; then
+								case "${__ARRY[12]:-}" in
+									200) __LIST=("${__ARRY[@]}");;
+									*  ) ;;
+								esac
+							fi
+							;;
+						*       ) ;;
+					esac
+					# --- remastering -----------------------------------------
+					case "${__COMD}" in
+						create  | \
+						update  )
+							fnExec_remastering "__RETN" "${__COMD}" "${__LIST[@]}"
+							read -r -a __ARRY < <(echo "${__RETN:-}")
+							if [[ -n "${__ARRY[*]}" ]]; then
+								__LIST=("${__ARRY[@]}")
+							fi
+							;;
+						download) ;;
+						*       ) ;;
+					esac
+					# --- conversion ------------------------------------------
+					for J in "${!__LIST[@]}"
+					do
+						__LIST[J]="${__LIST[J]:--}"		# empty
+						__LIST[J]="${__LIST[J]// /%20}"	# space
+					done
+					# --- update media data record ----------------------------
+					__MDIA[I]="${__LIST[*]}"
+				done
+				# --- update media data record --------------------------------
+				for I in "${!__MDIA[@]}"
+				do
+					read -r -a __LIST < <(echo "${__MDIA[I]}")
+					for J in "${!_LIST_MDIA[@]}"
+					do
+						read -r -a __ARRY < <(echo "${_LIST_MDIA[J]}")
+						if [[ "${__LIST[0]}" != "${__ARRY[0]}" ]] \
+						|| [[ "${__LIST[1]}" != "${__ARRY[1]}" ]] \
+						|| [[ "${__LIST[2]}" != "${__ARRY[2]}" ]] \
+						|| [[ "${__LIST[3]}" != "${__ARRY[3]}" ]]; then
+							continue
+						fi
+						__WORK="$( \
+							printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s" \
+								"${__LIST[@]}" \
+						)"
+						_LIST_MDIA[J]="${__WORK}"
+						break
+					done
+				done
+			done
+			fnPut_media_data
+			;;
+		*       ) ;;
+	esac
+	__NAME_REFR="${*:-}"
+	fnDebug_parameter_list "${FUNCNAME[0]}"
 }
 
 # --- debug out parameter -----------------------------------------------------
@@ -3760,38 +3850,38 @@ function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
 
-		  iso image files:
-		    create|update|download [all|(mini|net|dvd|live {a|all|id})|version]
-		      empty             : waiting for input
-		      all               : all target
-		      mini|net|dvd|live : each target
-		        all             : all of each target
-		        id number       : selected id
+		  create or update for the remaster or download the iso file:
+		    create|update|download [(empty)|all|(mini|netinst|dvd|liveinst {a|all|id})]
+		      empty         : waiting for input
+		      all           : all target
+		      mini|netinst|dvd|liveinst
+			                : each target
+		        all         : all of each target
+		        id number   : selected id
 
-		  list files:
-		    list [create|update|download]
-		      empty             : display of list data
-		      create            : update / download list files
+		  display and update for list data:
+		    list [empty|all|(mini|net|dvd|live {a|all|id})]
+		      empty         : all target
+		      all           : all target
+		      mini|netinst|dvd|liveinst
+			                : each target
+		        all         : all of each target
+		        id number   : selected id
 
-		  config files:
+		  create common configuration file:
 		    conf [create]
-		      create            : create common configuration file
 
-		  pre-config files:
-		    preconf [all|(preseed|nocloudkickstart|autoyast)]
-		      all               : all pre-config files
-		      preseed           : preseed.cfg
-		      nocloud           : nocloud
-		      kickstart         : kickstart.cfg
-		      autoyast          : autoyast.xml
+		  create common pre-configuration file:
+		    preconf [all|(preseed|nocloud|kickstart|autoyast)]
+		      all           : all pre-config files
+		      preseed       : preseed.cfg
+		      nocloud       : nocloud
+		      kickstart     : kickstart.cfg
+		      autoyast      : autoyast.xml
 
-		  symbolic link:
+		  create symbolic link:
 		    link
-		      create            : create symbolic link
-
-		  debug print and test
-		    debug [func|text|parm]
-		      parm              : display of main internal parameters
+		      create        : create symbolic link
 _EOT_
 }
 
@@ -3863,134 +3953,15 @@ function fnMain() {
 			list    | \
 			create  | \
 			update  | \
-			download)
-				__COMD="$1"
-				shift
-				# --- processing by media type --------------------------------
-				__OPTN=("${@:-}")
-				case "${__COMD:-}" in
-					list    | \
-					create  | \
-					update  | \
-					download)
-						case "${1:-}" in
-							a|all   )
-								shift
-								case "${__COMD}" in
-									list    ) __OPTN=("mini"       "netinst"       "dvd"       "liveinst"       "${@:-}");;
-									create  | \
-									update  | \
-									download) __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all" "${@:-}");;
-									*       ) ;;
-								esac
-								;;
-							mini    ) ;;
-							netinst ) ;;
-							dvd     ) ;;
-							liveinst) ;;
-#							live    ) ;;
-#							tool    ) ;;
-#							clive   ) ;;
-#							cnetinst) ;;
-#							system  ) ;;
-							*       ) __OPTN=("mini" "netinst" "dvd" "liveinst" "${@:-}");;
-						esac
-						;;
-					*       ) ;;
-				esac
-				set -f -- "${__OPTN[@]:-}"
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						mini    ) ;;
-						netinst ) ;;
-						dvd     ) ;;
-						liveinst) ;;
-#						live    ) ;;
-#						tool    ) ;;
-#						clive   ) ;;
-#						cnetinst) ;;
-#						system  ) ;;
-						*       ) break;;
-					esac
-					__TGET="$1"
-					shift
-					__RANG=""
-					while [[ -n "${1:-}" ]]
-					do
-						case "${1,,}" in
-							a|all                           ) __RANG="all"; shift; break;;
-							[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) __RANG="${__RANG:+"${__RANG} "}$1";;
-							*                               ) break;;
-						esac
-						shift
-					done
-					# --- print out of menu -----------------------------------
-					fnPrint_menu "__RSLT" "${__COMD}" "${__TGET}" "${__RANG:-"all"}" "${_LIST_MDIA[@]}"
-					# --- selection by media type -----------------------------
-					IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RSLT}")
-					# --- descript: executing the action ----------------------
-					fnExec "__RSLT" "${__COMD}" "${__RANG}" "${__MDIA[@]}"
-					# --- set execution result --------------------------------
-					IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RSLT}")
-					# --- update media data record ----------------------------
-					for I in "${!__MDIA[@]}"
-					do
-						read -r -a __LIST < <(echo "${__MDIA[I]}")
-						for J in "${!_LIST_MDIA[@]}"
-						do
-							read -r -a __ARRY < <(echo "${_LIST_MDIA[J]}")
-							if [[ "${__LIST[0]}" != "${__ARRY[0]}" ]] \
-							|| [[ "${__LIST[1]}" != "${__ARRY[1]}" ]] \
-							|| [[ "${__LIST[2]}" != "${__ARRY[2]}" ]] \
-							|| [[ "${__LIST[3]}" != "${__ARRY[3]}" ]]; then
-								continue
-							fi
-							_LIST_MDIA[J]="${__LIST[*]}"
-							break
-						done
-					done
-				done
-				fnPut_media_data
-				__OPTN=("${@:-}")
-				;;
-			link    )
-				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						create   ) shift; fnCreate_directory __RETN_PARM "${@:-}"; fnPut_media_data;;
-						update   ) shift;;
-						download ) shift;;
-						*        ) break;;
-					esac
-				done
-				;;
-			conf    )
-				shift
-				case "${1:-}" in
-					create   ) shift; fnCreate_conf;;
-					*        ) ;;
-				esac
-				;;
-			preconf )
-				shift
-				fnCreate_precon __RETN_PARM "${@:-}"
-				;;
+			download)        fnExec             "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			link    ) shift; fnCreate_directory "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			conf    ) shift; fnCreate_conf      "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			preconf ) shift; fnCreate_precon    "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			help    ) shift; fnHelp; break;;
-			debug   )
-				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						parm) shift; fnDebug_parameter;;
-						*   ) break;;
-					esac
-				done
-				;;
-			*       ) shift;;
+			debug   ) shift; fnDebug_parameter; break;;
+			*       ) shift; __OPTN=("${@:-}");;
 		esac
-		set -f -- "${__OPTN[@]:-"${@:-}"}"
+		set -f -- "${__OPTN[@]}"
 	done
 
 	# --- complete ------------------------------------------------------------

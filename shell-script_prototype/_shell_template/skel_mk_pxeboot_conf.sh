@@ -81,33 +81,26 @@ function fnDebug_parameter() {
 function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
-		
-		  pxeboot menu files:
-		    create
-		      empty             : mirroring copy by rsync
-		      update            : without copying iso image
-		
-		  list files:
-		    list [create|update|download]
-		      empty             : display of list data
-		      create            : update / download list files
-		
-		  config files:
-		    conf [create|all|(preseed|nocloudkickstart|autoyast)|version]
-		      create            : create common configuration file
-		      all               : all config files (without common config file)
-		      preseed           : preseed.cfg
-		      nocloud           : nocloud
-		      kickstart         : kickstart.cfg
-		      autoyast          : autoyast.xml
-		
-		  symbolic link:
+
+		  create or update for the pxeboot menu:
+		    create|update
+		      create        : mirroring copy by rsync
+		      update        : without copying iso image
+
+		  create common configuration file:
+		    conf [create]
+
+		  create common pre-configuration file:
+		    preconf [all|(preseed|nocloud|kickstart|autoyast)]
+		      all           : all pre-config files
+		      preseed       : preseed.cfg
+		      nocloud       : nocloud
+		      kickstart     : kickstart.cfg
+		      autoyast      : autoyast.xml
+
+		  create symbolic link:
 		    link
-		      create            : create symbolic link
-		
-		  debug print and test
-		    debug [func|text|parm]
-		      parm              : display of main internal parameters
+		      create        : create symbolic link
 _EOT_
 }
 
@@ -118,7 +111,10 @@ function fnMain() {
 	declare -i    _time_end=0			# end of elapsed time
 	declare -i    _time_elapsed=0		# result of elapsed time
 	declare -r -a _OPTN_PARM=("${@:-}")	# option parameter
-	declare -a    _RETN_PARM=()			# name reference
+#	declare -a    _RETN_PARM=()			# name reference
+	declare       __COMD=""				# command type
+	declare -a    __OPTN=()				# option parameter
+	declare       __RSLT=""				# result
 
 	# --- help ----------------------------------------------------------------
 	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then
@@ -154,66 +150,27 @@ function fnMain() {
 	# --- main ----------------------------------------------------------------
 	fnInitialization					# initialization
 
-	set -f -- "${_OPTN_PARM[@]:-}"
+	set -f -- "${__OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
 	do
-		_RETN_PARM=()
+		__OPTN=()
 		case "${1:-}" in
-			create  ) shift; fnPxeboot "create"  ;;
-			update  ) shift; fnPxeboot "update"  ;;
-			download) shift; fnPxeboot "download";;
-			link    )
+			create  | \
+			update  | \
+			download)
+				__COMD="$1"
 				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						create   ) shift; fnCreate_directory _RETN_PARM "${@:-}"; fnPut_media_data;;
-						update   ) shift;;
-						download ) shift;;
-						*        ) break;;
-					esac
-				done
+				fnPxeboot "${__COMD}"
+				__OPTN=("${@:-}")
 				;;
-			list    )
-				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						create   ) shift; fnPut_media_data;;
-						update   ) shift;;
-						download ) shift;;
-						*        ) break;;
-					esac
-				done
-				;;
-			conf    )
-				shift
-				case "${1:-}" in
-					create   ) shift; fnCreate_conf;;
-					*        ) ;;
-				esac
-				;;
-			preconf )
-				shift
-				fnCreate_precon __RETN_PARM "${@:-}"
-				;;
+			link    ) shift; fnCreate_directory "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			conf    ) shift; fnCreate_conf      "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			preconf ) shift; fnCreate_precon    "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			help    ) shift; fnHelp; break;;
-			debug   )
-				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						parm) shift; fnDebug_parameter;;
-						*   ) break;;
-					esac
-				done
-				;;
+			debug   ) shift; fnDebug_parameter;;
 			*       ) shift;;
 		esac
-		_RETN_PARM=("$@")
-		IFS="${_COMD_IFS:-}"
-		set -f -- "${_RETN_PARM[@]:-}"
-		IFS="${_ORIG_IFS:-}"
+		set -f -- "${__OPTN[@]:-"${@:-}"}"
 	done
 
 	# --- complete ------------------------------------------------------------
