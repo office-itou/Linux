@@ -1397,10 +1397,7 @@ function fnExec() {
 				__OPTN+=("$1")
 				shift
 			done
-set -x
 			read -r -a __OPTN < <(echo "${__OPTN[@]:-"mini" "netinst" "dvd" "liveinst"}" "${@:-}")
-printf "%s\n" "${__OPTN[@]}"
-sleep 600
 			set -f -- "${__OPTN[@]:-}"
 			while [[ -n "${1:-}" ]]
 			do

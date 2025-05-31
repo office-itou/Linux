@@ -86,7 +86,7 @@
 # -----------------------------------------------------------------------------
 # descript: debug print
 #   input :   $1   : input value
-#   output: stdout : output
+#   output: stderr : output
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnDebugout() {
@@ -96,7 +96,12 @@ function fnDebugout() {
 	printf "%s\n" "${*:-}" 1>&2
 }
 
-# --- debug out parameter -----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: print out of internal variables
+#   input :   $1   : input value : mainly function names "${FUNCNAME[0]}"
+#   output: stderr : output
+#   return:        : unused
+# shellcheck disable=SC2317
 function fnDebug_parameter_list() {
 	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 		return
