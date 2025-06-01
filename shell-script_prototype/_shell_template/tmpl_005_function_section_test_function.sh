@@ -7,6 +7,7 @@
 #     "   :        :             : =3 (program is not running [unit is not active])
 #     "   :        :             : =4 (program or service status is unknown [no such unit])
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnServiceStatus() {
 	declare -i    _RET_CD=0
 	declare       _SRVC_STAT=""
@@ -35,6 +36,7 @@ function fnServiceStatus() {
 #   output: stdout : output      : empty (not install)
 #     "   :        :             : other (installed)
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnIsPackage () {
 	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed' || true
 }
@@ -45,6 +47,7 @@ function fnIsPackage () {
 #   input :   $2   : file 2
 #   output: stdout : result
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnDiff() {
 	if [[ ! -e "$1" ]] || [[ ! -e "$2" ]]; then
 		return

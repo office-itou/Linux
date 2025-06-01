@@ -1326,9 +1326,11 @@ function fnExec_remastering() {
 	fi
 	# --- comparing remaster and local file timestamps ------------------------
 	if [[ -z "${__FORC:-}" ]]; then
-		__RSLT="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
-		if [[ "${__RSLT}" -lt 0 ]]; then
-			return
+		if [[ -n "${__LIST[17]##-}" ]] && [[ -s "${__LIST[17]}" ]]; then
+			__RSLT="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
+			if [[ "${__RSLT}" -le 0 ]]; then
+				return
+			fi
 		fi
 	fi
 	# --- executing the remastering -------------------------------------------
@@ -1349,9 +1351,7 @@ function fnExec_remastering() {
 # -----------------------------------------------------------------------------
 # descript: executing the action
 #   n-ref :   $1   : return value : serialized target data
-#   input :   $2   : command type
-#   input :   $3   : target range
-#   input :   $@   : target data
+#   input :   $@   : option parameter
 #   output: stdout : message
 #   return:        : unused
 function fnExec() {
@@ -1379,25 +1379,11 @@ function fnExec() {
 		download)
 			__MDIA=()
 			__OPTN=()
-			while [[ -n "${1:-}" ]]
-			do
-				case "${1:-}" in
-					a|all   ) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all"); break;;
-					mini    ) ;;
-					netinst ) ;;
-					dvd     ) ;;
-					liveinst) ;;
-#					live    ) ;;
-#					tool    ) ;;
-#					clive   ) ;;
-#					cnetinst) ;;
-#					system  ) ;;
-					*       ) break;;
-				esac
-				__OPTN+=("$1")
-				shift
-			done
-			read -r -a __OPTN < <(echo "${__OPTN[@]:-"mini" "netinst" "dvd" "liveinst"}" "${@:-}")
+			case "${1:-}" in
+				a|all   ) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all");;
+				*       ) ;;
+			esac
+			__OPTN+=("${@:-}")
 			set -f -- "${__OPTN[@]:-}"
 			while [[ -n "${1:-}" ]]
 			do
@@ -1417,11 +1403,12 @@ function fnExec() {
 				shift
 				# --- selection by media type ---------------------------------
 				IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=="'"${__TGET}"'" && $2=="o" {print $0;}' || true)
+				__WORK="$(eval "echo {1..${#__MDIA[@]}}")"
 				__RANG=""
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1,,}" in
-						a|all                           ) shift; __RANG="$(eval "echo {1..${#__MDIA[@]}}")"; break;;
+						a|all                           ) shift; __RANG="${__WORK}"; break;;
 						[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) ;;
 						*                               ) break;;
 					esac
@@ -1429,7 +1416,7 @@ function fnExec() {
 					shift
 				done
 				# --- print out of menu ---------------------------------------
-				fnExec_menu "__RSLT" "${__RANG:-}" "${__MDIA[@]}"
+				fnExec_menu "__RSLT" "${__RANG:-"${__WORK}"}" "${__MDIA[@]}"
 				IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RSLT}")
 				case "${__COMD}" in
 					list    ) continue;;					# (print out media list)

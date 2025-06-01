@@ -185,24 +185,24 @@ function fnTrap() {
 	# --- constant for colors -------------------------------------------------
 	# https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
 	declare -r    _TEXT_RESET="${_CODE_ESCP}[0m"				# reset all attributes
-	declare -r    _TEXT_BOLD="${_CODE_ESCP}[1m"					# 
-	declare -r    _TEXT_FAINT="${_CODE_ESCP}[2m"				# 
-	declare -r    _TEXT_ITALIC="${_CODE_ESCP}[3m"				# 
+	declare -r    _TEXT_BOLD="${_CODE_ESCP}[1m"					#
+	declare -r    _TEXT_FAINT="${_CODE_ESCP}[2m"				#
+	declare -r    _TEXT_ITALIC="${_CODE_ESCP}[3m"				#
 	declare -r    _TEXT_UNDERLINE="${_CODE_ESCP}[4m"			# set underline
-	declare -r    _TEXT_BLINK="${_CODE_ESCP}[5m"				# 
-	declare -r    _TEXT_FAST_BLINK="${_CODE_ESCP}[6m"			# 
+	declare -r    _TEXT_BLINK="${_CODE_ESCP}[5m"				#
+	declare -r    _TEXT_FAST_BLINK="${_CODE_ESCP}[6m"			#
 	declare -r    _TEXT_REVERSE="${_CODE_ESCP}[7m"				# set reverse display
-	declare -r    _TEXT_CONCEAL="${_CODE_ESCP}[8m"				# 
-	declare -r    _TEXT_STRIKE="${_CODE_ESCP}[9m"				# 
-	declare -r    _TEXT_GOTHIC="${_CODE_ESCP}[20m"				# 
-	declare -r    _TEXT_DOUBLE_UNDERLINE="${_CODE_ESCP}[21m"	# 
-	declare -r    _TEXT_NORMAL="${_CODE_ESCP}[22m"				# 
-	declare -r    _TEXT_NO_ITALIC="${_CODE_ESCP}[23m"			# 
+	declare -r    _TEXT_CONCEAL="${_CODE_ESCP}[8m"				#
+	declare -r    _TEXT_STRIKE="${_CODE_ESCP}[9m"				#
+	declare -r    _TEXT_GOTHIC="${_CODE_ESCP}[20m"				#
+	declare -r    _TEXT_DOUBLE_UNDERLINE="${_CODE_ESCP}[21m"	#
+	declare -r    _TEXT_NORMAL="${_CODE_ESCP}[22m"				#
+	declare -r    _TEXT_NO_ITALIC="${_CODE_ESCP}[23m"			#
 	declare -r    _TEXT_NO_UNDERLINE="${_CODE_ESCP}[24m"		# reset underline
-	declare -r    _TEXT_NO_BLINK="${_CODE_ESCP}[25m"			# 
+	declare -r    _TEXT_NO_BLINK="${_CODE_ESCP}[25m"			#
 	declare -r    _TEXT_NO_REVERSE="${_CODE_ESCP}[27m"			# reset reverse display
-	declare -r    _TEXT_NO_CONCEAL="${_CODE_ESCP}[28m"			# 
-	declare -r    _TEXT_NO_STRIKE="${_CODE_ESCP}[29m"			# 
+	declare -r    _TEXT_NO_CONCEAL="${_CODE_ESCP}[28m"			#
+	declare -r    _TEXT_NO_STRIKE="${_CODE_ESCP}[29m"			#
 	declare -r    _TEXT_BLACK="${_CODE_ESCP}[30m"				# text dark black
 	declare -r    _TEXT_RED="${_CODE_ESCP}[31m"					# text dark red
 	declare -r    _TEXT_GREEN="${_CODE_ESCP}[32m"				# text dark green
@@ -211,7 +211,7 @@ function fnTrap() {
 	declare -r    _TEXT_MAGENTA="${_CODE_ESCP}[35m"				# text dark purple
 	declare -r    _TEXT_CYAN="${_CODE_ESCP}[36m"				# text dark light blue
 	declare -r    _TEXT_WHITE="${_CODE_ESCP}[37m"				# text dark white
-	declare -r    _TEXT_DEFAULT="${_CODE_ESCP}[39m"				# 
+	declare -r    _TEXT_DEFAULT="${_CODE_ESCP}[39m"				#
 	declare -r    _TEXT_BG_BLACK="${_CODE_ESCP}[40m"			# text reverse black
 	declare -r    _TEXT_BG_RED="${_CODE_ESCP}[41m"				# text reverse red
 	declare -r    _TEXT_BG_GREEN="${_CODE_ESCP}[42m"			# text reverse green
@@ -220,7 +220,7 @@ function fnTrap() {
 	declare -r    _TEXT_BG_MAGENTA="${_CODE_ESCP}[45m"			# text reverse purple
 	declare -r    _TEXT_BG_CYAN="${_CODE_ESCP}[46m"				# text reverse light blue
 	declare -r    _TEXT_BG_WHITE="${_CODE_ESCP}[47m"			# text reverse white
-	declare -r    _TEXT_BG_DEFAULT="${_CODE_ESCP}[49m"			# 
+	declare -r    _TEXT_BG_DEFAULT="${_CODE_ESCP}[49m"			#
 	declare -r    _TEXT_BR_BLACK="${_CODE_ESCP}[90m"			# text black
 	declare -r    _TEXT_BR_RED="${_CODE_ESCP}[91m"				# text red
 	declare -r    _TEXT_BR_GREEN="${_CODE_ESCP}[92m"			# text green
@@ -229,7 +229,33 @@ function fnTrap() {
 	declare -r    _TEXT_BR_MAGENTA="${_CODE_ESCP}[95m"			# text purple
 	declare -r    _TEXT_BR_CYAN="${_CODE_ESCP}[96m"				# text light blue
 	declare -r    _TEXT_BR_WHITE="${_CODE_ESCP}[97m"			# text white
-	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			# 
+	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			#
+
+# -----------------------------------------------------------------------------
+# descript: debug print
+#   input :   $@   : input value
+#   output: stderr : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnDebugout() {
+	if [[ -z "${_DBGS_FLAG:-}" ]]; then
+		return
+	fi
+	printf "${FUNCNAME[1]}: %q\n" "${@:-}" 1>&2
+}
+
+# -----------------------------------------------------------------------------
+# descript: print out of internal variables
+#   input :        : unused
+#   output: stderr : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnDebug_parameter_list() {
+	if [[ -z "${_DBGS_FLAG:-}" ]]; then
+		return
+	fi
+	printf "${FUNCNAME[1]}: %q\n" "${!__@}" 1>&2
+}
 
 # -----------------------------------------------------------------------------
 # descript: is numeric
@@ -354,7 +380,7 @@ function fnCenter() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnPrintf() {
-	declare -r    __TRCE="$(set -o | grep "^xtrace\s*on$")"
+	declare -r    __TRCE="$(set -o | grep -E "^xtrace\s*on$")"
 	set +x
 	# -------------------------------------------------------------------------
 	declare       __NCUT=""				# no cutting flag
@@ -436,6 +462,7 @@ function fnPrintf() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv4GetNetmask() {
+	fnDebugout ""
 	declare -a    __OCTS=()				# octets
 	declare -i    __LOOP=0				# work variables
 	declare -i    __CALC=0				# "
@@ -486,6 +513,7 @@ function fnIPv4GetNetmask() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv6GetFullAddr() {
+	fnDebugout ""
 	declare -r    __FSEP="${1//[^:]/}"
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
@@ -503,6 +531,7 @@ function fnIPv6GetFullAddr() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv6GetRevAddr() {
+	fnDebugout ""
 	echo "${1//:/}" | \
 	    awk '{
 	        for(i=length();i>1;i--)              \
@@ -520,6 +549,7 @@ function fnIPv6GetRevAddr() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnUnit_conversion() {
+	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -r -a __UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	declare -i    __CALC=0
@@ -560,6 +590,7 @@ function fnUnit_conversion() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetVolID() {
+	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __VLID=""				# volume id
 	declare       __WORK=""				# work variables
@@ -587,6 +618,7 @@ function fnGetVolID() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetFileinfo() {
+	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __DIRS=""				# directory
 	declare       __FNAM=""				# file name
@@ -620,6 +652,7 @@ function fnGetFileinfo() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnDistro2efi() {
+	fnDebugout ""
 	declare       __WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	case "${1:?}" in
@@ -646,6 +679,7 @@ function fnDistro2efi() {
 #   return:        : status
 # shellcheck disable=SC2317
 function fnGetWeb_contents() {
+	fnDebugout ""
 	declare -a    __OPTN=()				# options
 	declare -i    __RTCD=0				# return code
 	declare -a    __LIST=()				# data list
@@ -687,6 +721,7 @@ function fnGetWeb_contents() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_header() {
+	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -a    __OPTN=()				# options
 #	declare -i    __RTCD=0				# return code
@@ -743,6 +778,7 @@ function fnGetWeb_header() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_address() {
+	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
@@ -829,6 +865,7 @@ function fnGetWeb_address() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_info() {
+	fnDebugout ""
 #	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __WORK=""				# work variables
 
@@ -843,6 +880,7 @@ function fnGetWeb_info() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_status() {
+	fnDebugout ""
 	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
 		100) echo -n "$1: Continue";;
 		101) echo -n "$1: Switching Protocols";;
@@ -899,18 +937,16 @@ function fnGetWeb_status() {
 	esac
 }
 
-# *** function section (sub functions) ****************************************
-
 # -----------------------------------------------------------------------------
-# descript: initialization
-#   input :        : unused
-#   output: stdout : unused
+# descript: service status
+#   input :   $@   : input value
+#   output: stdout : output      : =0 (program is running or service is OK [unit is active])
+#     "   :        :             : =1 (program is dead and /var/run pid file exists [unit not failed (used by is-failed)])
+#     "   :        :             : =2 (program is dead and /var/lock lock file exists [unused])
+#     "   :        :             : =3 (program is not running [unit is not active])
+#     "   :        :             : =4 (program or service status is unknown [no such unit])
 #   return:        : unused
-function fnInitialization() {
-:
-}
-
-# --- service status ----------------------------------------------------------
+# shellcheck disable=SC2317
 function fnServiceStatus() {
 	declare -i    _RET_CD=0
 	declare       _SRVC_STAT=""
@@ -933,12 +969,24 @@ function fnServiceStatus() {
 	#-------+--------------------------------------------------+-------------------------------------#
 }
 
-# --- function is package -----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: function is package
+#   input :   $1   : input value
+#   output: stdout : output      : empty (not install)
+#     "   :        :             : other (installed)
+#   return:        : unused
+# shellcheck disable=SC2317
 function fnIsPackage () {
 	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed' || true
 }
 
-# --- diff --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: diff
+#   input :   $1   : file 1
+#   input :   $2   : file 2
+#   output: stdout : result
+#   return:        : unused
+# shellcheck disable=SC2317
 function fnDiff() {
 	if [[ ! -e "$1" ]] || [[ ! -e "$2" ]]; then
 		return
@@ -1053,8 +1101,11 @@ function fnDiff() {
 #	return "${_RET_CD}"
 #}
 
-# --- text color test ---------------------------------------------------------
-# shellcheck disable=SC2154
+# -----------------------------------------------------------------------------
+# descript: text color test
+#   input :        : unused
+#   output: stdout : output
+#   return:        : unused
 function fnDebug_color() {
 	printf "%s : %-22.22s : %s\n" "${_TEXT_RESET}"            "_TEXT_RESET"            "${_TEXT_RESET}"
 	printf "%s : %-22.22s : %s\n" "${_TEXT_BOLD}"             "_TEXT_BOLD"             "${_TEXT_RESET}"
@@ -1104,7 +1155,11 @@ function fnDebug_color() {
 	printf "%s : %-22.22s : %s\n" "${_TEXT_BR_DEFAULT}"       "_TEXT_BR_DEFAULT"       "${_TEXT_RESET}"
 }
 
-# ---- function test ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: function test
+#   input :        : unused
+#   output: stdout : output
+#   return:        : unused
 function fnDebug_function() {
 	declare -r    _MSGS_TITL="call function test"
 	declare -r    _FILE_WRK1="${_DIRS_TEMP:-/tmp}/testfile1.txt"
@@ -1370,7 +1425,12 @@ _EOT_
 	ls -l "${_DIRS_TEMP:-/tmp}"
 }
 
-# --- debug out parameter -----------------------------------------------------
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: debug out parameter for skel_test_function.sh
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function fnDebug_parameter() {
 	declare       _VARS_CHAR="_"		# variable initial letter
 	declare       _VARS_NAME=""			#          name
@@ -1403,11 +1463,15 @@ function fnDebug_parameter() {
 #	done
 }
 
-# --- help --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: help for skel_test_function.sh
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ${_PROG_PATH} [command (options)]
-		
+
 		  debug print and test
 		    debug [func|text|parm]
 		      func              : function test
@@ -1418,6 +1482,11 @@ _EOT_
 
 # === main ====================================================================
 
+# -----------------------------------------------------------------------------
+# descript: main for skel_test_function.sh
+#   input :   $@   : option parameter
+#   output: stdout : unused
+#   return:        : unused
 function fnMain() {
 	declare -i    _time_start=0			# start of elapsed time
 	declare -i    _time_end=0			# end of elapsed time

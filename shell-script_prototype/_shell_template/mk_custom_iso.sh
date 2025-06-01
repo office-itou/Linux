@@ -1557,6 +1557,7 @@ function fnInitialization() {
 #   input :        : unused
 #   output: stdout : unused
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnCreate_conf() {
 	fnDebugout ""
 	declare -n    __NAME_REFR="${1:-}"	# name reference
@@ -1672,6 +1673,7 @@ _EOT_
 #   input :        : unused
 #   output: stdout : message
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnGet_media_data() {
 	declare       __PATH=""				# full path
 	declare       __LINE=""				# work variable
@@ -1720,6 +1722,7 @@ function fnGet_media_data() {
 #   input :        : unused
 #   output: stdout : message
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnPut_media_data() {
 	declare       __RNAM=""				# rename path
 	declare       __LINE=""				# work variable
@@ -1775,6 +1778,7 @@ function fnPut_media_data() {
 #   input :   $@   : input vale
 #   output: stdout : message
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnCreate_directory() {
 	fnDebugout ""
 	declare -n    __NAME_REFR="${1:-}"	# name reference
@@ -1927,6 +1931,7 @@ function fnCreate_directory() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnCreate_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -2005,6 +2010,7 @@ function fnCreate_preseed() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnCreate_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -2059,6 +2065,7 @@ function fnCreate_nocloud() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnCreate_kickstart() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -2124,6 +2131,7 @@ function fnCreate_kickstart() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnCreate_autoyast() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -2185,6 +2193,7 @@ function fnCreate_autoyast() {
 #   input :   $@   : input value
 #   output: stdout : message
 #   return:        : unused
+# shellcheck disable=SC2317
 function fnCreate_precon() {
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
@@ -3597,9 +3606,11 @@ function fnExec_remastering() {
 	fi
 	# --- comparing remaster and local file timestamps ------------------------
 	if [[ -z "${__FORC:-}" ]]; then
-		__RSLT="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
-		if [[ "${__RSLT}" -lt 0 ]]; then
-			return
+		if [[ -n "${__LIST[17]##-}" ]] && [[ -s "${__LIST[17]}" ]]; then
+			__RSLT="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
+			if [[ "${__RSLT}" -le 0 ]]; then
+				return
+			fi
 		fi
 	fi
 	# --- executing the remastering -------------------------------------------
@@ -3620,9 +3631,7 @@ function fnExec_remastering() {
 # -----------------------------------------------------------------------------
 # descript: executing the action
 #   n-ref :   $1   : return value : serialized target data
-#   input :   $2   : command type
-#   input :   $3   : target range
-#   input :   $@   : target data
+#   input :   $@   : option parameter
 #   output: stdout : message
 #   return:        : unused
 function fnExec() {
@@ -3650,25 +3659,11 @@ function fnExec() {
 		download)
 			__MDIA=()
 			__OPTN=()
-			while [[ -n "${1:-}" ]]
-			do
-				case "${1:-}" in
-					a|all   ) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all"); break;;
-					mini    ) ;;
-					netinst ) ;;
-					dvd     ) ;;
-					liveinst) ;;
-#					live    ) ;;
-#					tool    ) ;;
-#					clive   ) ;;
-#					cnetinst) ;;
-#					system  ) ;;
-					*       ) break;;
-				esac
-				__OPTN+=("$1")
-				shift
-			done
-			read -r -a __OPTN < <(echo "${__OPTN[@]:-"mini" "netinst" "dvd" "liveinst"}" "${@:-}")
+			case "${1:-}" in
+				a|all   ) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all");;
+				*       ) ;;
+			esac
+			__OPTN+=("${@:-}")
 			set -f -- "${__OPTN[@]:-}"
 			while [[ -n "${1:-}" ]]
 			do
@@ -3688,11 +3683,12 @@ function fnExec() {
 				shift
 				# --- selection by media type ---------------------------------
 				IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=="'"${__TGET}"'" && $2=="o" {print $0;}' || true)
+				__WORK="$(eval "echo {1..${#__MDIA[@]}}")"
 				__RANG=""
 				while [[ -n "${1:-}" ]]
 				do
 					case "${1,,}" in
-						a|all                           ) shift; __RANG="$(eval "echo {1..${#__MDIA[@]}}")"; break;;
+						a|all                           ) shift; __RANG="${__WORK}"; break;;
 						[0-9]|[0-9][0-9]|[0-9][0-9][0-9]) ;;
 						*                               ) break;;
 					esac
@@ -3700,7 +3696,7 @@ function fnExec() {
 					shift
 				done
 				# --- print out of menu ---------------------------------------
-				fnExec_menu "__RSLT" "${__RANG:-}" "${__MDIA[@]}"
+				fnExec_menu "__RSLT" "${__RANG:-"${__WORK}"}" "${__MDIA[@]}"
 				IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RSLT}")
 				case "${__COMD}" in
 					list    ) continue;;					# (print out media list)

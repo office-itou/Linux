@@ -127,7 +127,7 @@ function fnMain() {
 	declare -i    _time_start=0			# start of elapsed time
 	declare -i    _time_end=0			# end of elapsed time
 	declare -i    _time_elapsed=0		# result of elapsed time
-	declare -r -a _OPTN_PARM=("${@:-}")	# option parameter
+	declare -r -a __OPTN_PARM=("${@:-}") # option parameter
 #	declare -a    _RETN_PARM=()			# name reference
 	declare       __COMD=""				# command type
 	declare -a    __OPTN=()				# option parameter
@@ -173,21 +173,15 @@ function fnMain() {
 		__OPTN=()
 		case "${1:-}" in
 			create  | \
-			update  | \
-			download)
-				__COMD="$1"
-				shift
-				fnPxeboot "${__COMD}"
-				__OPTN=("${@:-}")
-				;;
+			update  )        fnPxeboot          "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			link    ) shift; fnCreate_directory "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			conf    ) shift; fnCreate_conf      "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			preconf ) shift; fnCreate_precon    "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			help    ) shift; fnHelp; break;;
 			debug   ) shift; fnDebug_parameter;;
-			*       ) shift;;
+			*       ) shift; __OPTN=("${@:-}");;
 		esac
-		set -f -- "${__OPTN[@]:-"${@:-}"}"
+		set -f -- "${__OPTN[@]}"
 	done
 
 	# --- complete ------------------------------------------------------------

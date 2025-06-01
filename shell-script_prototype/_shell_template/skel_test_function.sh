@@ -40,8 +40,6 @@
 
 # :_tmpl_003_function_section_library_web_tool.sh_:
 
-# :_tmpl_004_function_section_template.sh_:
-
 # :_tmpl_005_function_section_test_function.sh_:
 
 # -----------------------------------------------------------------------------

@@ -1106,40 +1106,44 @@ _EOT_
 }
 
 # -----------------------------------------------------------------------------
-# descript: create pxeboot menu
-#   input :        : unused
+# descript: executing the action
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $@   : option parameter
 #   output: stdout : message
 #   return:        : unused
-# --- create pxeboot menu -----------------------------------------------------
 function fnPxeboot() {
 	fnDebugout ""
+	declare -n    __NAME_REFR="${1:-}"	# name reference
+	shift
+	declare       __COMD=""				# command type
 	declare -i    __time_start=0		# start of elapsed time
 	declare -i    __time_end=0			# end of elapsed time
 	declare -i    __time_elapsed=0		# result of elapsed time
 	declare -i    __TABS=0				# tabs count
 	declare       __LIST=()				# work variable
 	declare -i    I=0					# work variables
-
-	# --- start -----------------------------------------------------------
+	# --- start ---------------------------------------------------------------
 	__time_start=$(date +%s)
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)" "start" ""
 	rm -f "${_MENU_IPXE:?}" \
 	      "${_MENU_GRUB:?}" \
 		  "${_MENU_SLNX:?}" \
 		  "${_MENU_UEFI:?}"
-
+	# -------------------------------------------------------------------------
+	__COMD="$1"
+	shift
 	for I in "${!_LIST_MDIA[@]}"
 	do
 		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
 		# --- start -----------------------------------------------------------
 		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[13]##*/}"
 		# --- update ----------------------------------------------------------
-		case "${1:-}" in
+		case "${__COMD:-}" in
 			update  ) ;;
 			*       ) fnPxeboot_copy "${__LIST[13]}" "${_DIRS_IMGS}/${__LIST[2]}";;
 		esac
 		# --- create pxeboot menu ---------------------------------------------
-		case "${1:-}" in
+		case "${__COMD:-}" in
 			download) ;;
 			*       )
 				fnPxeboot_ipxe "${_MENU_IPXE}" "${__TABS:-"0"}" "${__LIST[@]}"
@@ -1166,6 +1170,7 @@ function fnPxeboot() {
 	__time_end=$(date +%s)
 	__time_elapsed=$((__time_end-__time_start))
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)" "finish" ""
-	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$((__time_elapsed/86400))" "$((__time_elapsed%86400/3600))" "$((__time_elapsed%3600/60))" "$((__time_elapsed%60))" "elapsed" "${__TGET_LIST[13]##*/}"
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$((__time_elapsed/86400))" "$((__time_elapsed%86400/3600))" "$((__time_elapsed%3600/60))" "$((__time_elapsed%60))" "elapsed" ""
+	__NAME_REFR="${*:-}"
 	fnDebug_parameter_list
 }
