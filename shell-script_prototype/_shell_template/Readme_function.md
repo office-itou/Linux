@@ -83,7 +83,7 @@
 |                                                                                                   | [fnExec_menu](#print-out-of-menu) "\$1" "\$@"                                                                         | print out of menu                                                             |
 |                                                                                                   | [fnExec_download](#executing-the-download) "\$1" "\$@"                                                                | executing the download                                                        |
 |                                                                                                   | [fnExec_remastering](#executing-the-remastering) "\$1" "\$@"                                                          | executing the remastering                                                     |
-|                                                                                                   | [fnExec](#executing-the-action) "\$1" "\$2" "\$3" "\$@"                                                               | executing the action                                                          |
+|                                                                                                   | [fnExec](#executing-the-action) "\$1" "\$@"                                                                           | executing the action                                                          |
 | [tmpl_005_function_section_mk_pxeboot_conf.sh](./tmpl_005_function_section_mk_pxeboot_conf.sh)    | [fnPxeboot_copy](#file-copy) "\$1" "\$2"                                                                              | file copy                                                                     |
 |                                                                                                   | [fnPxeboot_preseed](#create-a-boot-option-for-preseed-of-the-pxeboot) "\$@"                                           | create a boot option for preseed of the pxeboot                               |
 |                                                                                                   | [fnPxeboot_nocloud](#create-a-boot-option-for-nocloud-of-the-pxeboot) "\$@"                                           | create a boot option for nocloud of the pxeboot                               |
@@ -93,7 +93,7 @@
 |                                                                                                   | [fnPxeboot_ipxe](#create-autoexecipxe) "\$1" "\$2" "\$@"                                                              | create autoexec.ipxe                                                          |
 |                                                                                                   | [fnPxeboot_grub](#create-grubcfg) "\$1" "\$2" "\$@"                                                                   | create grub.cfg                                                               |
 |                                                                                                   | [fnPxeboot_slnx](#create-bios-mode) "\$1" "\$2" "\$@"                                                                 | create bios mode                                                              |
-|                                                                                                   | [fnPxeboot](#create-pxeboot-menu)                                                                                     | create pxeboot menu                                                           |
+|                                                                                                   | [fnPxeboot](#executing-the-action) "\$1" "\$@"                                                                        | executing the action                                                          |
 | [tmpl_005_function_section_test_function.sh](./tmpl_005_function_section_test_function.sh)        | [fnServiceStatus](#service-status) "\$@"                                                                              | service status                                                                |
 |                                                                                                   | [fnIsPackage](#function-is-package) "\$1"                                                                             | function is package                                                           |
 |                                                                                                   | [fnDiff](#diff) "\$1" "\$2"                                                                                           | diff                                                                          |
@@ -1027,14 +1027,12 @@
   
 #### executing the action  
   
-*fnExec "\$1" "\$2" "\$3" "\$@"*  
+*fnExec "\$1" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
 | n-ref  | $1     | return value           | serialized target data                     |
-| input  | $2     | command type           |                                            |
-| input  | $3     | target range           |                                            |
-| input  | $@     | target data            |                                            |
+| input  | $@     | option parameter       |                                            |
 | output | stdout | message                |                                            |
 | return |        | unused                 |                                            |
   
@@ -1159,13 +1157,14 @@
   
 * * *
   
-#### create pxeboot menu  
+#### executing the action  
   
-*fnPxeboot*  
+*fnPxeboot "\$1" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  |        | unused                 |                                            |
+| n-ref  | $1     | return value           | serialized target data                     |
+| input  | $@     | option parameter       |                                            |
 | output | stdout | message                |                                            |
 | return |        | unused                 |                                            |
   
