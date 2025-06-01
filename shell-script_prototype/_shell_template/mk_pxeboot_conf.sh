@@ -2085,7 +2085,7 @@ function fnCreate_kickstart() {
 	    -e "/^url[ \t]\+/  s/^/#/g            " \
 	    -e "/^repo[ \t]\+/ s/^/#/g            " \
 	    -e "s/:_HOST_NAME_:/${__NAME}/        " \
-	    -e "s%:__ADDR_:%${__ADDR}%g           " \
+	    -e "s%:_WEBS_ADDR_:%${__ADDR}%g       " \
 	    -e "s%:_DISTRO_:%${__NAME}-${__NUMS}%g"
 	# --- cdrom, repository ---------------------------------------------------
 	case "${__TGET_PATH}" in
