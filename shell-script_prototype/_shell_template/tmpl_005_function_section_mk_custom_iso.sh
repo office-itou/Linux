@@ -10,7 +10,7 @@
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_preseed() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -100,7 +100,7 @@ function fnRemastering_preseed() {
 #	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]:-}"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -109,7 +109,7 @@ function fnRemastering_preseed() {
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_nocloud() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -179,7 +179,7 @@ function fnRemastering_nocloud() {
 #	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]:-}"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -188,7 +188,7 @@ function fnRemastering_nocloud() {
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_kickstart() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -245,7 +245,7 @@ function fnRemastering_kickstart() {
 #	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]:-}"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -254,7 +254,7 @@ function fnRemastering_kickstart() {
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_autoyast() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -319,7 +319,7 @@ function fnRemastering_autoyast() {
 #	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]:-}"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -328,7 +328,7 @@ function fnRemastering_autoyast() {
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_boot_options() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
@@ -356,7 +356,7 @@ function fnRemastering_boot_options() {
 	__BOPT+=("fsck.mode=skip raid=noautodetect${_MENU_MODE:+" vga=${_MENU_MODE}"}")
 	# --- finish --------------------------------------------------------------
 	printf "%s\n" "${__BOPT[@]}"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -366,7 +366,7 @@ function fnRemastering_boot_options() {
 #   output: stdout : output
 #   return:        : unused
 function fnRemastering_path() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r    __PATH_TGET="${1:?}"	# target path
 	declare -r    __DIRS_TGET="${2:?}"	# directory
 	declare       __DIRS=""				# directory
@@ -378,7 +378,7 @@ function fnRemastering_path() {
 	__DIRS="${__DIRS%%/}"
 	__DIRS="${__DIRS##/}"
 	echo -n "${__DIRS:+/"${__DIRS}"}/${__FNAM}"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -390,7 +390,7 @@ function fnRemastering_path() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_isolinux_autoinst_cfg() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
 	declare -r    __BOOT_OPTN="${3:?}"	# boot options
@@ -476,7 +476,7 @@ _EOT_
 _EOT_
 		done < <(find "${__DIRS_TGET}" -name 'gtk' -type d -printf '%P\n' || true)
 	fi
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -487,7 +487,7 @@ _EOT_
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_isolinux() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __BOOT_OPTN="${2:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:3}") # target data
@@ -550,7 +550,7 @@ function fnRemastering_isolinux() {
 		fi
 		rm -f "${__FTMP:?}"
 	done < <(find "${__DIRS_TGET}" \( -name '*.cfg' -a ! -name "${_AUTO_INST##*/}" \) -type f || true)
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -562,7 +562,7 @@ function fnRemastering_isolinux() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_grub_autoinst_cfg() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_MENU="${2:?}"	# file name (autoinst.cfg)
 	declare -r    __BOOT_OPTN="${3:?}"	# boot options
@@ -746,7 +746,7 @@ _EOT_
 _EOT_
 		done < <(find "${__DIRS_TGET}" -name 'gtk' -type d -printf '%P\n' || true)
 	fi
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -757,7 +757,7 @@ _EOT_
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_grub() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __BOOT_OPTN="${2:?}"	# boot options
 	declare -r -a __TGET_LIST=("${@:3}") # target data
@@ -808,7 +808,7 @@ function fnRemastering_grub() {
 		fi
 		rm -f "${__FTMP:?}"
 	done < <(find "${__DIRS_TGET}" \( -name '*.cfg' -a ! -name "${_AUTO_INST##*/}" \) -type f || true)
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -818,7 +818,7 @@ function fnRemastering_grub() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_copy() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
 	declare       __WORK=""				# work variables
@@ -871,7 +871,7 @@ function fnRemastering_copy() {
 			*            ) ;;
 		esac
 	done
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -881,7 +881,7 @@ function fnRemastering_copy() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_initrd() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r -a __TGET_LIST=("${@:2}") # target data
 	declare       __FKNL=""				# kernel
@@ -914,7 +914,7 @@ function fnRemastering_initrd() {
 	popd > /dev/null || exit
 
 	rm -rf "${__DTMP:?}"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -924,7 +924,7 @@ function fnRemastering_initrd() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering_media() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r    __DIRS_TGET="${1:?}"						# target directory
 	declare -r -a __TGET_LIST=("${@:2}")					# target data
 	declare -r    __DWRK="${_DIRS_TEMP}/${__TGET_LIST[2]}"	# work directory
@@ -990,7 +990,7 @@ function fnRemastering_media() {
 			-eltorito-alt-boot -e '--interval:appended_partition_2:all::' \
 			-no-emul-boot
 	fi
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -999,7 +999,7 @@ function fnRemastering_media() {
 #   output: stdout : unused
 #   return:        : unused
 function fnRemastering() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -i    __time_start=0							# start of elapsed time
 	declare -i    __time_end=0								# end of elapsed time
 	declare -i    __time_elapsed=0							# result of elapsed time
@@ -1074,7 +1074,7 @@ function fnRemastering() {
 	__time_elapsed=$((__time_end-__time_start))
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)" "finish" "${__TGET_LIST[13]##*/}"
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$((__time_elapsed/86400))" "$((__time_elapsed%86400/3600))" "$((__time_elapsed%3600/60))" "$((__time_elapsed%60))" "elapsed" "${__TGET_LIST[13]##*/}"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -1250,7 +1250,7 @@ function fnExec_menu() {
 	done
 	__RETN_VALU="$(printf "%s\n" "${__MDIA[@]}")"
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "# ${_TEXT_GAP1::((${#_TEXT_GAP1}-4))} #"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -1260,7 +1260,7 @@ function fnExec_menu() {
 #   output: stdout : message
 #   return:        : unused
 function fnExec_download() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -a    __TGET_LIST=("${@:2}") # target data
 	declare       __RSLT=""				# result
@@ -1296,7 +1296,7 @@ function fnExec_download() {
 	__TGET_LIST[16]="${__ARRY[3]:-}"	# iso_volume
 	# --- finish --------------------------------------------------------------
 	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -1306,7 +1306,7 @@ function fnExec_download() {
 #   output: stdout : message
 #   return:        : unused
 function fnExec_remastering() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -r    __COMD_TYPE="$2"		# command type
 	declare -a    __TGET_LIST=("${@:3}") # target data
@@ -1343,7 +1343,7 @@ function fnExec_remastering() {
 	__TGET_LIST[20]="${__ARRY[3]:--}"	# rmk_volume
 	# --- finish --------------------------------------------------------------
 	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
@@ -1355,7 +1355,7 @@ function fnExec_remastering() {
 #   output: stdout : message
 #   return:        : unused
 function fnExec() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
 	declare       __COMD=""				# command type
@@ -1540,5 +1540,5 @@ function fnExec() {
 		*       ) ;;
 	esac
 	__NAME_REFR="${*:-}"
-	fnDebug_parameter_list "${FUNCNAME[0]}"
+	fnDebug_parameter_list
 }

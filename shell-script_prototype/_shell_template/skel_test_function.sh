@@ -44,12 +44,20 @@
 
 # :_tmpl_005_function_section_test_function.sh_:
 
-# --- initialization ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: initialization for skel_test_function.sh (dummy)
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function fnInitialization() {
 :
 }
 
-# --- debug out parameter -----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: debug out parameter for skel_test_function.sh
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function fnDebug_parameter() {
 	declare       _VARS_CHAR="_"		# variable initial letter
 	declare       _VARS_NAME=""			#          name
@@ -82,11 +90,15 @@ function fnDebug_parameter() {
 #	done
 }
 
-# --- help --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: help for skel_test_function.sh
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ${_PROG_PATH} [command (options)]
-		
+
 		  debug print and test
 		    debug [func|text|parm]
 		      func              : function test
@@ -97,6 +109,11 @@ _EOT_
 
 # === main ====================================================================
 
+# -----------------------------------------------------------------------------
+# descript: main for skel_test_function.sh
+#   input :   $@   : option parameter
+#   output: stdout : unused
+#   return:        : unused
 function fnMain() {
 	declare -i    _time_start=0			# start of elapsed time
 	declare -i    _time_end=0			# end of elapsed time

@@ -9,7 +9,7 @@
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnXcpio() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r    __TGET_FILE="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:-}"	# destination directory
 	shift 2
@@ -40,7 +40,7 @@ function fnXcpio() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnReadhex() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count="${3:?}" 2> /dev/null | LANG=C grep -E "^[0-9A-Fa-f]{$3}\$"
 }
@@ -53,7 +53,7 @@ function fnReadhex() {
 #   return:        : status
 # shellcheck disable=SC2317
 function fnCheckzero() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
 }
@@ -66,7 +66,7 @@ function fnCheckzero() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnSplit_initramfs() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -r    __TGET_FILE="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:-}"	# destination directory
 	declare -r -a __OPTS=("--preserve-modification-time" "--no-absolute-filenames" "--quiet")

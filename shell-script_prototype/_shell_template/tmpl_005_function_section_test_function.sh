@@ -1,4 +1,12 @@
-# --- service status ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: service status
+#   input :   $@   : input value
+#   output: stdout : output      : =0 (program is running or service is OK [unit is active])
+#     "   :        :             : =1 (program is dead and /var/run pid file exists [unit not failed (used by is-failed)])
+#     "   :        :             : =2 (program is dead and /var/lock lock file exists [unused])
+#     "   :        :             : =3 (program is not running [unit is not active])
+#     "   :        :             : =4 (program or service status is unknown [no such unit])
+#   return:        : unused
 function fnServiceStatus() {
 	declare -i    _RET_CD=0
 	declare       _SRVC_STAT=""
@@ -21,12 +29,22 @@ function fnServiceStatus() {
 	#-------+--------------------------------------------------+-------------------------------------#
 }
 
-# --- function is package -----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: function is package
+#   input :   $1   : input value
+#   output: stdout : output      : empty (not install)
+#     "   :        :             : other (installed)
+#   return:        : unused
 function fnIsPackage () {
 	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed' || true
 }
 
-# --- diff --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: diff
+#   input :   $1   : file 1
+#   input :   $2   : file 2
+#   output: stdout : result
+#   return:        : unused
 function fnDiff() {
 	if [[ ! -e "$1" ]] || [[ ! -e "$2" ]]; then
 		return
@@ -141,8 +159,11 @@ function fnDiff() {
 #	return "${_RET_CD}"
 #}
 
-# --- text color test ---------------------------------------------------------
-# shellcheck disable=SC2154
+# -----------------------------------------------------------------------------
+# descript: text color test
+#   input :        : unused
+#   output: stdout : output
+#   return:        : unused
 function fnDebug_color() {
 	printf "%s : %-22.22s : %s\n" "${_TEXT_RESET}"            "_TEXT_RESET"            "${_TEXT_RESET}"
 	printf "%s : %-22.22s : %s\n" "${_TEXT_BOLD}"             "_TEXT_BOLD"             "${_TEXT_RESET}"
@@ -192,7 +213,11 @@ function fnDebug_color() {
 	printf "%s : %-22.22s : %s\n" "${_TEXT_BR_DEFAULT}"       "_TEXT_BR_DEFAULT"       "${_TEXT_RESET}"
 }
 
-# ---- function test ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: function test
+#   input :        : unused
+#   output: stdout : output
+#   return:        : unused
 function fnDebug_function() {
 	declare -r    _MSGS_TITL="call function test"
 	declare -r    _FILE_WRK1="${_DIRS_TEMP:-/tmp}/testfile1.txt"

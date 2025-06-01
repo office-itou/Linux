@@ -39,12 +39,20 @@
 
 # :_tmpl_005_function_section_mk_custom_iso.sh_:
 
-# --- initialization ----------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: initialization for skel_mk_custom_iso.sh (dummy)
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function fnInitialization() {
 :
 }
 
-# --- debug out parameter -----------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: debug out parameter for skel_mk_custom_iso.sh
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function fnDebug_parameter() {
 	declare       __CHAR="_"			# variable initial letter
 	declare       __NAME=""				#          name
@@ -77,7 +85,11 @@ function fnDebug_parameter() {
 #	done
 }
 
-# --- help --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: help for skel_mk_custom_iso.sh
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
@@ -119,6 +131,11 @@ _EOT_
 
 # === main ====================================================================
 
+# -----------------------------------------------------------------------------
+# descript: main for skel_mk_custom_iso.sh
+#   input :   $@   : option parameter
+#   output: stdout : unused
+#   return:        : unused
 function fnMain() {
 	declare -i    __time_start=0		# start of elapsed time
 	declare -i    __time_end=0			# end of elapsed time

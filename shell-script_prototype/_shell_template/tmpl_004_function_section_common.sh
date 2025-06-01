@@ -327,7 +327,7 @@ function fnInitialization() {
 #   output: stdout : unused
 #   return:        : unused
 function fnCreate_conf() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
 	declare -r    __TMPL="${_PATH_CONF:?}.template"
@@ -545,7 +545,7 @@ function fnPut_media_data() {
 #   output: stdout : message
 #   return:        : unused
 function fnCreate_directory() {
-	fnDebugout "${FUNCNAME[0]}"
+	fnDebugout ""
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
 	declare -r    __DATE="$(date +"%Y%m%d%H%M%S")"

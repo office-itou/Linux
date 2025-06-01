@@ -291,24 +291,24 @@ function fnTrap() {
 	# --- constant for colors -------------------------------------------------
 	# https://qiita.com/ko1nksm/items/095bdb8f0eca6d327233
 	declare -r    _TEXT_RESET="${_CODE_ESCP}[0m"				# reset all attributes
-	declare -r    _TEXT_BOLD="${_CODE_ESCP}[1m"					# 
-	declare -r    _TEXT_FAINT="${_CODE_ESCP}[2m"				# 
-	declare -r    _TEXT_ITALIC="${_CODE_ESCP}[3m"				# 
+	declare -r    _TEXT_BOLD="${_CODE_ESCP}[1m"					#
+	declare -r    _TEXT_FAINT="${_CODE_ESCP}[2m"				#
+	declare -r    _TEXT_ITALIC="${_CODE_ESCP}[3m"				#
 	declare -r    _TEXT_UNDERLINE="${_CODE_ESCP}[4m"			# set underline
-	declare -r    _TEXT_BLINK="${_CODE_ESCP}[5m"				# 
-	declare -r    _TEXT_FAST_BLINK="${_CODE_ESCP}[6m"			# 
+	declare -r    _TEXT_BLINK="${_CODE_ESCP}[5m"				#
+	declare -r    _TEXT_FAST_BLINK="${_CODE_ESCP}[6m"			#
 	declare -r    _TEXT_REVERSE="${_CODE_ESCP}[7m"				# set reverse display
-	declare -r    _TEXT_CONCEAL="${_CODE_ESCP}[8m"				# 
-	declare -r    _TEXT_STRIKE="${_CODE_ESCP}[9m"				# 
-	declare -r    _TEXT_GOTHIC="${_CODE_ESCP}[20m"				# 
-	declare -r    _TEXT_DOUBLE_UNDERLINE="${_CODE_ESCP}[21m"	# 
-	declare -r    _TEXT_NORMAL="${_CODE_ESCP}[22m"				# 
-	declare -r    _TEXT_NO_ITALIC="${_CODE_ESCP}[23m"			# 
+	declare -r    _TEXT_CONCEAL="${_CODE_ESCP}[8m"				#
+	declare -r    _TEXT_STRIKE="${_CODE_ESCP}[9m"				#
+	declare -r    _TEXT_GOTHIC="${_CODE_ESCP}[20m"				#
+	declare -r    _TEXT_DOUBLE_UNDERLINE="${_CODE_ESCP}[21m"	#
+	declare -r    _TEXT_NORMAL="${_CODE_ESCP}[22m"				#
+	declare -r    _TEXT_NO_ITALIC="${_CODE_ESCP}[23m"			#
 	declare -r    _TEXT_NO_UNDERLINE="${_CODE_ESCP}[24m"		# reset underline
-	declare -r    _TEXT_NO_BLINK="${_CODE_ESCP}[25m"			# 
+	declare -r    _TEXT_NO_BLINK="${_CODE_ESCP}[25m"			#
 	declare -r    _TEXT_NO_REVERSE="${_CODE_ESCP}[27m"			# reset reverse display
-	declare -r    _TEXT_NO_CONCEAL="${_CODE_ESCP}[28m"			# 
-	declare -r    _TEXT_NO_STRIKE="${_CODE_ESCP}[29m"			# 
+	declare -r    _TEXT_NO_CONCEAL="${_CODE_ESCP}[28m"			#
+	declare -r    _TEXT_NO_STRIKE="${_CODE_ESCP}[29m"			#
 	declare -r    _TEXT_BLACK="${_CODE_ESCP}[30m"				# text dark black
 	declare -r    _TEXT_RED="${_CODE_ESCP}[31m"					# text dark red
 	declare -r    _TEXT_GREEN="${_CODE_ESCP}[32m"				# text dark green
@@ -317,7 +317,7 @@ function fnTrap() {
 	declare -r    _TEXT_MAGENTA="${_CODE_ESCP}[35m"				# text dark purple
 	declare -r    _TEXT_CYAN="${_CODE_ESCP}[36m"				# text dark light blue
 	declare -r    _TEXT_WHITE="${_CODE_ESCP}[37m"				# text dark white
-	declare -r    _TEXT_DEFAULT="${_CODE_ESCP}[39m"				# 
+	declare -r    _TEXT_DEFAULT="${_CODE_ESCP}[39m"				#
 	declare -r    _TEXT_BG_BLACK="${_CODE_ESCP}[40m"			# text reverse black
 	declare -r    _TEXT_BG_RED="${_CODE_ESCP}[41m"				# text reverse red
 	declare -r    _TEXT_BG_GREEN="${_CODE_ESCP}[42m"			# text reverse green
@@ -326,7 +326,7 @@ function fnTrap() {
 	declare -r    _TEXT_BG_MAGENTA="${_CODE_ESCP}[45m"			# text reverse purple
 	declare -r    _TEXT_BG_CYAN="${_CODE_ESCP}[46m"				# text reverse light blue
 	declare -r    _TEXT_BG_WHITE="${_CODE_ESCP}[47m"			# text reverse white
-	declare -r    _TEXT_BG_DEFAULT="${_CODE_ESCP}[49m"			# 
+	declare -r    _TEXT_BG_DEFAULT="${_CODE_ESCP}[49m"			#
 	declare -r    _TEXT_BR_BLACK="${_CODE_ESCP}[90m"			# text black
 	declare -r    _TEXT_BR_RED="${_CODE_ESCP}[91m"				# text red
 	declare -r    _TEXT_BR_GREEN="${_CODE_ESCP}[92m"			# text green
@@ -335,7 +335,33 @@ function fnTrap() {
 	declare -r    _TEXT_BR_MAGENTA="${_CODE_ESCP}[95m"			# text purple
 	declare -r    _TEXT_BR_CYAN="${_CODE_ESCP}[96m"				# text light blue
 	declare -r    _TEXT_BR_WHITE="${_CODE_ESCP}[97m"			# text white
-	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			# 
+	declare -r    _TEXT_BR_DEFAULT="${_CODE_ESCP}[99m"			#
+
+# -----------------------------------------------------------------------------
+# descript: debug print
+#   input :   $@   : input value
+#   output: stderr : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnDebugout() {
+	if [[ -z "${_DBGS_FLAG:-}" ]]; then
+		return
+	fi
+	printf "${FUNCNAME[1]}: %q\n" "${@:-}" 1>&2
+}
+
+# -----------------------------------------------------------------------------
+# descript: print out of internal variables
+#   input :        : unused
+#   output: stderr : output
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnDebug_parameter_list() {
+	if [[ -z "${_DBGS_FLAG:-}" ]]; then
+		return
+	fi
+	printf "${FUNCNAME[1]}: %q\n" "${!__@}" 1>&2
+}
 
 # -----------------------------------------------------------------------------
 # descript: is numeric
@@ -460,7 +486,7 @@ function fnCenter() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnPrintf() {
-	declare -r    __TRCE="$(set -o | grep "^xtrace\s*on$")"
+	declare -r    __TRCE="$(set -o | grep -E "^xtrace\s*on$")"
 	set +x
 	# -------------------------------------------------------------------------
 	declare       __NCUT=""				# no cutting flag
@@ -542,6 +568,7 @@ function fnPrintf() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv4GetNetmask() {
+	fnDebugout ""
 	declare -a    __OCTS=()				# octets
 	declare -i    __LOOP=0				# work variables
 	declare -i    __CALC=0				# "
@@ -592,6 +619,7 @@ function fnIPv4GetNetmask() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv6GetFullAddr() {
+	fnDebugout ""
 	declare -r    __FSEP="${1//[^:]/}"
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
@@ -609,6 +637,7 @@ function fnIPv6GetFullAddr() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnIPv6GetRevAddr() {
+	fnDebugout ""
 	echo "${1//:/}" | \
 	    awk '{
 	        for(i=length();i>1;i--)              \
@@ -626,6 +655,7 @@ function fnIPv6GetRevAddr() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnUnit_conversion() {
+	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -r -a __UNIT=("Byte" "KiB" "MiB" "GiB" "TiB")
 	declare -i    __CALC=0
@@ -666,6 +696,7 @@ function fnUnit_conversion() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetVolID() {
+	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __VLID=""				# volume id
 	declare       __WORK=""				# work variables
@@ -693,6 +724,7 @@ function fnGetVolID() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetFileinfo() {
+	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __DIRS=""				# directory
 	declare       __FNAM=""				# file name
@@ -726,6 +758,7 @@ function fnGetFileinfo() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnDistro2efi() {
+	fnDebugout ""
 	declare       __WORK=""				# work variables
 	# -------------------------------------------------------------------------
 	case "${1:?}" in
@@ -753,6 +786,7 @@ function fnDistro2efi() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnXcpio() {
+	fnDebugout ""
 	declare -r    __TGET_FILE="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:-}"	# destination directory
 	shift 2
@@ -783,6 +817,7 @@ function fnXcpio() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnReadhex() {
+	fnDebugout ""
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count="${3:?}" 2> /dev/null | LANG=C grep -E "^[0-9A-Fa-f]{$3}\$"
 }
@@ -795,6 +830,7 @@ function fnReadhex() {
 #   return:        : status
 # shellcheck disable=SC2317
 function fnCheckzero() {
+	fnDebugout ""
 	# shellcheck disable=SC2312
 	dd if="${1:?}" bs=1 skip="${2:?}" count=1 2> /dev/null | LANG=C grep -q -z '^$'
 }
@@ -807,6 +843,7 @@ function fnCheckzero() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnSplit_initramfs() {
+	fnDebugout ""
 	declare -r    __TGET_FILE="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:-}"	# destination directory
 	declare -r -a __OPTS=("--preserve-modification-time" "--no-absolute-filenames" "--quiet")
@@ -886,6 +923,7 @@ function fnSplit_initramfs() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnCreate_iso() {
+	fnDebugout ""
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
 	declare -r    __PATH_OUTP="${2:?}"	# output path
 	declare -r -a __OPTN_XORR=("${@:3}") # xorrisofs options
@@ -925,6 +963,7 @@ function fnCreate_iso() {
 #   return:        : status
 # shellcheck disable=SC2317
 function fnGetWeb_contents() {
+	fnDebugout ""
 	declare -a    __OPTN=()				# options
 	declare -i    __RTCD=0				# return code
 	declare -a    __LIST=()				# data list
@@ -966,6 +1005,7 @@ function fnGetWeb_contents() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_header() {
+	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare -a    __OPTN=()				# options
 #	declare -i    __RTCD=0				# return code
@@ -1022,6 +1062,7 @@ function fnGetWeb_header() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_address() {
+	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __PATH=""				# full path
 	declare       __DIRS=""				# directory
@@ -1108,6 +1149,7 @@ function fnGetWeb_address() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_info() {
+	fnDebugout ""
 #	declare -n    __RETN_VALU="${1:?}"	# return value
 	declare       __WORK=""				# work variables
 
@@ -1122,6 +1164,7 @@ function fnGetWeb_info() {
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnGetWeb_status() {
+	fnDebugout ""
 	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
 		100) echo -n "$1: Continue";;
 		101) echo -n "$1: Switching Protocols";;
@@ -1193,7 +1236,6 @@ function fnInitialization() {
 	declare       __LINE=""				# work variable
 	declare       __NAME=""				# variable name
 	declare       __VALU=""				# value
-
 	# --- common configuration file -------------------------------------------
 	              _PATH_CONF="/srv/user/share/conf/_data/common.cfg"
 	for __PATH in \
@@ -1206,7 +1248,6 @@ function fnInitialization() {
 		fi
 	done
 	readonly      _PATH_CONF
-
 	# --- default value when empty --------------------------------------------
 	_DIRS_TOPS="${_DIRS_TOPS:-/srv}"
 	_DIRS_HGFS="${_DIRS_HGFS:-:_DIRS_TOPS_:/hgfs}"
@@ -1274,7 +1315,6 @@ function fnInitialization() {
 	_MENU_RESO="${_MENU_RESO:-1024x768}"
 	_MENU_DPTH="${_MENU_DPTH:-16}"
 	_MENU_MODE="${_MENU_MODE:-791}"
-
 	# --- gets the setting value ----------------------------------------------
 	while read -r __LINE
 	do
@@ -1342,7 +1382,6 @@ function fnInitialization() {
 			*        ) ;;
 		esac
 	done < <(cat "${_PATH_CONF:-}" 2> /dev/null || true)
-
 	# --- variable substitution -----------------------------------------------
 	_DIRS_TOPS="${_DIRS_TOPS:?}"
 	_DIRS_HGFS="${_DIRS_HGFS//:_DIRS_TOPS_:/"${_DIRS_TOPS}"}"
@@ -1396,7 +1435,6 @@ function fnInitialization() {
 #	_MENU_RESO="${_MENU_RESO:-}"
 #	_MENU_DPTH="${_MENU_DPTH:-}"
 #	_MENU_MODE="${_MENU_MODE:-}"
-
 	# --- making variables read-only ------------------------------------------
 	readonly      _DIRS_TOPS
 	readonly      _DIRS_HGFS
@@ -1442,7 +1480,6 @@ function fnInitialization() {
 	readonly      _MENU_RESO
 	readonly      _MENU_DPTH
 	readonly      _MENU_MODE
-
 	# --- directory list ------------------------------------------------------
 	_LIST_DIRS=(                                                                                                        \
 		"${_DIRS_TOPS:?}"                                                                                               \
@@ -1463,7 +1500,6 @@ function fnInitialization() {
 		"${_DIRS_RMAK:?}"                                                                                               \
 	)
 	readonly      _LIST_DIRS
-
 	# --- symbolic link list --------------------------------------------------
 	# 0: a:add, r:relative
 	# 1: target
@@ -1487,30 +1523,23 @@ function fnInitialization() {
 		"r  ${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg             ${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"        \
 	)
 	readonly      _LIST_LINK
-
 	# --- autoinstall configuration file --------------------------------------
 	              _AUTO_INST="autoinst.cfg"
 	readonly      _AUTO_INST
-
 	# --- initial ram disk of mini.iso including preseed ----------------------
 	              _MINI_IRAM="initps.gz"
 	readonly      _MINI_IRAM
-
 	# --- ipxe menu file ------------------------------------------------------
 	              _MENU_IPXE="${_DIRS_TFTP}/autoexec.ipxe"
 	readonly      _MENU_IPXE
-
 	# --- grub menu file ------------------------------------------------------
 	              _MENU_GRUB="${_DIRS_TFTP}/boot/grub/grub.cfg"
 	readonly      _MENU_GRUB
-
 	# --- syslinux menu file --------------------------------------------------
 	              _MENU_SLNX="${_DIRS_TFTP}/menu-bios/syslinux.cfg"
 	readonly      _MENU_SLNX
-
 	              _MENU_UEFI="${_DIRS_TFTP}/menu-efi64/syslinux.cfg"
 	readonly      _MENU_UEFI
-
 	# --- get media data ------------------------------------------------------
 	fnGet_media_data
 }
@@ -1521,22 +1550,31 @@ function fnInitialization() {
 #   output: stdout : unused
 #   return:        : unused
 function fnCreate_conf() {
+	fnDebugout ""
+	declare -n    __NAME_REFR="${1:-}"	# name reference
+	shift
 	declare -r    __TMPL="${_PATH_CONF:?}.template"
 	declare       __RNAM=""				# rename path
 	declare       __PATH=""				# full path
-
+	# --- option parameter ----------------------------------------------------
+	while [[ -n "${1:-}" ]]
+	do
+		case "${1:-}" in
+			create) shift; break;;
+			*     ) __NAME_REFR="${*:-}"; return;;
+		esac
+	done
+	__NAME_REFR="${*:-}"
 	# --- check file exists ---------------------------------------------------
 	if [[ -f "${__TMPL:?}" ]]; then
 		__RNAM="${__TMPL}.$(TZ=UTC find "${__TMPL}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
 		mv "${__TMPL}" "${__RNAM}"
 	fi
-
 	# --- delete old files ----------------------------------------------------
 	for __PATH in $(find "${__TMPL%/*}" -name "${__TMPL##*/}"\* | sort -r | tail -n +3 || true)
 	do
 		rm -f "${__PATH:?}"
 	done
-
 	# --- exporting files -----------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__TMPL}" || true
 		###############################################################################
@@ -1629,7 +1667,6 @@ _EOT_
 function fnGet_media_data() {
 	declare       __PATH=""				# full path
 	declare       __LINE=""				# work variable
-
 	# --- list data -----------------------------------------------------------
 	_LIST_MDIA=()
 	for __PATH in \
@@ -1687,7 +1724,6 @@ function fnPut_media_data() {
 		printf "%s: \"%s\"\n" "backup" "${__RNAM}" 1>&2
 		cp -a "${_PATH_MDIA}" "${__RNAM}"
 	fi
-
 	# --- delete old files ----------------------------------------------------
 	while read -r __PATH
 	do
@@ -1732,7 +1768,8 @@ function fnPut_media_data() {
 #   output: stdout : message
 #   return:        : unused
 function fnCreate_directory() {
-	declare -n    __NAME_REFR="${1:?}"	# name reference
+	fnDebugout ""
+	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift
 	declare -r    __DATE="$(date +"%Y%m%d%H%M%S")"
 	declare       __FORC=""				# force parameter
@@ -1742,19 +1779,18 @@ function fnCreate_directory() {
 	declare       __BACK=""				# backup path
 	declare -a    __LIST=()				# work variable
 	declare -i    I=0
-
 	# --- option parameter ----------------------------------------------------
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
-			-f | --force) shift; __NAME_REFR="${*:-}"; __FORC="true";;
-			*           )        __NAME_REFR="${*:-}"; break;;
+			create) shift; __FORC="true"; break;;
+			update) shift; __FORC=""; break;;
+			*     ) __NAME_REFR="${*:-}"; return;;
 		esac
 	done
-
+	__NAME_REFR="${*:-}"
 	# --- create directory ----------------------------------------------------
 	mkdir -p "${_LIST_DIRS[@]:?}"
-
 	# --- create symbolic link ------------------------------------------------
 	# 0: a:add, r:relative
 	# 1: target
@@ -1804,7 +1840,6 @@ function fnCreate_directory() {
 			*) ln -s  "${__TGET}" "${__LINK}";;
 		esac
 	done
-
 	for I in "${!_LIST_MDIA[@]}"
 	do
 		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
@@ -1888,12 +1923,10 @@ function fnCreate_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 	declare       __WORK=""				# work variables
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_SEDD}" "${__TGET_PATH}"
-
 	# --- by generation -------------------------------------------------------
 	case "${__TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
@@ -1968,12 +2001,10 @@ function fnCreate_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
 #	declare       __WORK=""				# work variables
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_CLUD}" "${__TGET_PATH}"
-
 	# --- by generation -------------------------------------------------------
 	case "${__TGET_PATH}" in
 		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
@@ -2030,12 +2061,10 @@ function fnCreate_kickstart() {
 	declare       __SECT=""				# "            section
 	declare -r    __ARCH="x86_64"		# base architecture
 	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_KICK}" "${__TGET_PATH}"
-
 	# -------------------------------------------------------------------------
 #	__NUMS="\$releasever"
 	__VERS="${__TGET_PATH#*_}"
@@ -2043,7 +2072,6 @@ function fnCreate_kickstart() {
 	__NUMS="${__VERS##*-}"
 	__NAME="${__VERS%-*}"
 	__SECT="${__NAME/-/ }"
-
 	# --- initializing the settings -------------------------------------------
 	sed -i "${__TGET_PATH}"                     \
 	    -e "/^cdrom$/      s/^/#/             " \
@@ -2094,17 +2122,14 @@ function fnCreate_autoyast() {
 #	declare       __WORK=""				# work variables
 	declare       __VERS=""				# distribution version
 	declare       __NUMS=""				# "            number
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
 	mkdir -p "${__DIRS}"
 	cp --backup "${_CONF_YAST}" "${__TGET_PATH}"
-
 	# -------------------------------------------------------------------------
 	__VERS="${__TGET_PATH#*_}"
 	__VERS="${__VERS%%_*}"
 	__NUMS="${__VERS##*-}"
-
 	# --- by media ------------------------------------------------------------
 	case "${__TGET_PATH}" in
 		*_web*|\
@@ -2162,29 +2187,27 @@ function fnCreate_precon() {
 #	declare       __WORK=""				# work variables
 	declare -a    __LINE=()				# work variable
 	declare -i    I=0					# work variables
-
 	# --- option parameter ----------------------------------------------------
 	__OPTN=()
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
-			all      ) __OPTN+=("preseed" "nocloud" "kickstart" "autoyast");;
+			all      ) shift; __OPTN+=("preseed" "nocloud" "kickstart" "autoyast"); break;;
 			preseed  | \
 			nocloud  | \
 			kickstart| \
-			autoyast ) __OPTN+=("$1");;
+			autoyast ) ;;
 			*        ) break;;
 		esac
+		__OPTN+=("$1")
 		shift
 	done
 	__NAME_REFR="${*:-}"
 	if [[ -z "${__OPTN[*]}" ]]; then
 		return
 	fi
-
 	# -------------------------------------------------------------------------
 	fnPrintf "%20.20s: %s" "create pre-conf file" ""
-
 	# -------------------------------------------------------------------------
 	__LIST=()
 	for I in "${!_LIST_MDIA[@]}"
@@ -2240,6 +2263,10 @@ function fnCreate_precon() {
 
 # === <pxeboot> ===============================================================
 
+# . tmpl_001_initialize_common.sh
+# . tmpl_002_data_section.sh
+# . tmpl_003_function_section_library.sh
+
 # -----------------------------------------------------------------------------
 # descript: file copy
 #   input :   $1   : target file
@@ -2247,6 +2274,7 @@ function fnCreate_precon() {
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_copy() {
+	fnDebugout ""
 	declare -r    __PATH_TGET="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:?}"	# destination directory
 	declare       __MNTP=""				# mount point
@@ -2257,7 +2285,7 @@ function fnPxeboot_copy() {
 	if [[ ! -s "${__PATH_TGET}" ]]; then
 		return
 	fi
-	printf "%20.20s: %s\n" "copy" "${__PATH_TGET}" 1>&2
+	printf "%20.20s: %s\n" "copy" "${__PATH_TGET}"
 	__MNTP="${__PATH}/mnt"
 	rm -rf "${__MNTP:?}"
 	mkdir -p "${__MNTP}" "${__DIRS_DEST}"
@@ -2274,6 +2302,7 @@ function fnPxeboot_copy() {
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_preseed() {
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2372,6 +2401,7 @@ function fnPxeboot_preseed() {
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_nocloud() {
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2450,6 +2480,7 @@ function fnPxeboot_nocloud() {
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_kickstart() {
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2514,6 +2545,7 @@ function fnPxeboot_kickstart() {
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_autoyast() {
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -2586,6 +2618,7 @@ function fnPxeboot_autoyast() {
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_boot_options() {
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
@@ -2623,6 +2656,7 @@ function fnPxeboot_boot_options() {
 #   output: stdout : unused
 #   return:        : unused
 function fnPxeboot_ipxe() {
+	fnDebugout ""
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
 	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
@@ -2643,17 +2677,17 @@ function fnPxeboot_ipxe() {
 #		rm -f "${__PATH_TGET:?}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH_TGET}" || true
 			#!ipxe
-			
+
 			cpuid --ext 29 && set arch amd64 || set arch x86
-			
+
 			dhcp
-			
+
 			set optn-timeout 3000
 			set menu-timeout 0
 			isset \${menu-default} || set menu-default exit
-			
+
 			:start
-			
+
 			:menu
 			menu Select the OS type you want to boot
 			item --gap --                           --------------------------------------------------------------------------
@@ -2664,26 +2698,26 @@ function fnPxeboot_ipxe() {
 			item --gap --                           --------------------------------------------------------------------------
 			choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
 			goto \${selected}
-			
+
 			:shell
 			echo "Booting iPXE shell ..."
 			shell
 			goto start
-			
+
 			:shutdown
 			echo "System shutting down ..."
 			poweroff
 			exit
-			
+
 			:restart
 			echo "System rebooting ..."
 			reboot
 			exit
-			
+
 			:error
 			prompt Press any key to continue
 			exit
-			
+
 			:exit
 			exit
 _EOT_
@@ -2737,7 +2771,7 @@ _EOT_
 							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
 							boot || goto error
 							exit
-							
+
 _EOT_
 					)"
 					;;
@@ -2758,7 +2792,7 @@ _EOT_
 							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
 							boot || goto error
 							exit
-							
+
 _EOT_
 					)"
 					;;
@@ -2775,7 +2809,7 @@ _EOT_
 							kernel \${knlfile} || goto error
 							boot || goto error
 							exit
-							
+
 _EOT_
 					)"
 					;;
@@ -2799,7 +2833,7 @@ _EOT_
 								set language ${__BOPT[3]:-}
 								set ramsdisk ${__BOPT[4]:-}
 								set isosfile ${__BOPT[5]:-}
-								
+
 _EOT_
 						)"
 					else
@@ -2837,7 +2871,7 @@ _EOT_
 								item ramsdisk                           RAM disk
 								item isosfile                           ISO file
 								present ||
-								
+
 _EOT_
 						)"
 					fi
@@ -2846,7 +2880,7 @@ _EOT_
 							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
 							set options \${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}
 							echo Loading kernel and initrd ...
-							kernel \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} --- || goto error
+							kernel \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} --- quiet || goto error
 							initrd \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/} || goto error
 							boot || goto error
 							exit
@@ -2876,6 +2910,7 @@ _EOT_
 #   output: stdout : unused
 #   return:        : unused
 function fnPxeboot_grub() {
+	fnDebugout ""
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
 	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
@@ -2904,13 +2939,13 @@ function fnPxeboot_grub() {
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH_TGET}" || true
 			set default="0"
 			set timeout="-1"
-			
+
 			if [ "x\${feature_default_font_path}" = "xy" ] ; then
 			  font="unicode"
 			else
 			  font="\${prefix}/fonts/font.pf2"
 			fi
-			
+
 			if loadfont "\$font" ; then
 			# set lang="ja_JP"
 			  set gfxmode=${_MENU_RESO:+"${_MENU_RESO}x${_MENU_DPTH},"}auto
@@ -2926,33 +2961,33 @@ function fnPxeboot_grub() {
 			  insmod gettext
 			  terminal_output gfxterm
 			fi
-			
+
 			set menu_color_normal="cyan/blue"
 			set menu_color_highlight="white/blue"
-			
+
 			#export lang
 			export gfxmode
 			export gfxpayload
 			export menu_color_normal
 			export menu_color_highlight
-			
+
 			insmod play
 			play 960 440 1 0 4 440 1
-			
+
 			menuentry '[ System command ]' {
 			  true
 			}
-			
+
 			menuentry '- System shutdown' {
 			  echo "System shutting down ..."
 			  halt
 			}
-			
+
 			menuentry '- System restart' {
 			  echo "System rebooting ..."
 			  reboot
 			}
-			
+
 			if [ "\${grub_platform}" = "efi" ]; then
 			  menuentry '- Boot from next volume' {
 			    exit 1
@@ -3091,7 +3126,7 @@ _EOT_
 							  insmod http
 							  insmod progress
 							  echo 'Loading linux ...'
-							  linux  \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} ---
+							  linux  \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} --- quiet
 							  echo 'Loading initrd ...'
 							  initrd \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
 							}
@@ -3120,6 +3155,7 @@ _EOT_
 #   output: stdout : unused
 #   return:        : unused
 function fnPxeboot_slnx() {
+	fnDebugout ""
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
 	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
@@ -3144,9 +3180,9 @@ function fnPxeboot_slnx() {
 			prompt 0
 			timeout 0
 			default vesamenu.c32
-			
+
 			menu resolution ${_MENU_RESO/x/ }
-			
+
 			menu color screen       * #ffffffff #ee000080 *
 			menu color title        * #ffffffff #ee000080 *
 			menu color border       * #ffffffff #ee000080 *
@@ -3162,7 +3198,7 @@ function fnPxeboot_slnx() {
 			menu color cmdline      * #ffffffff #ee000080 *
 			menu color scrollbar    * #ffffffff #ee000080 *
 			menu color help         * #ffffffff #ee000080 *
-			
+
 			menu margin             4
 			menu vshift             5
 			menu rows               25
@@ -3171,13 +3207,13 @@ function fnPxeboot_slnx() {
 			menu timeoutrow         33
 			menu helpmsgrow         37
 			menu hekomsgendrow      39
-			
+
 			menu title - Boot Menu -
 			menu tabmsg Press ENTER to boot or TAB to edit a menu entry
-			
+
 			label System-command
 			  menu label ^[ System command ... ]
-			
+
 _EOT_
 		case "${__PATH_TGET}" in
 			*/menu-bios/*)
@@ -3209,7 +3245,7 @@ _EOT_
 				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
 					label ${__TGET_LIST[3]//%20/-}
 					  menu label ^[ ${__TGET_LIST[3]//%20/ } ... ]
-					
+
 _EOT_
 			)"
 			sed -i "${__PATH_TGET}" -e "/^label[ \t]\+System-command$/i \\${__WORK}"
@@ -3268,7 +3304,7 @@ _EOT_
 									label ${__TGET_LIST[2]}
 									  menu label ^${__ENTR}
 									  linux /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
-									
+
 _EOT_
 							)"
 							;;
@@ -3278,7 +3314,7 @@ _EOT_
 									label ${__TGET_LIST[2]}
 									  menu label ^${__ENTR}
 									  linux /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
-									
+
 _EOT_
 							)"
 							;;
@@ -3301,8 +3337,8 @@ _EOT_
 								  menu label ^${__ENTR}
 								  linux  /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
 								  initrd /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
-								  append ${__BOPT[@]:3}
-								
+								  append ${__BOPT[@]:3} --- quiet
+
 _EOT_
 						)"
 					else
@@ -3312,8 +3348,8 @@ _EOT_
 								  menu label ^${__ENTR}
 								  linux  /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
 								  initrd /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
-								  append ${__BOPT[@]}
-								
+								  append ${__BOPT[@]} --- quiet
+
 _EOT_
 						)"
 					fi
@@ -3339,18 +3375,27 @@ _EOT_
 #   return:        : unused
 # --- create pxeboot menu -----------------------------------------------------
 function fnPxeboot() {
+	fnDebugout ""
+	declare -i    __time_start=0		# start of elapsed time
+	declare -i    __time_end=0			# end of elapsed time
+	declare -i    __time_elapsed=0		# result of elapsed time
 	declare -i    __TABS=0				# tabs count
 	declare       __LIST=()				# work variable
 	declare -i    I=0					# work variables
 
+	# --- start -----------------------------------------------------------
+	__time_start=$(date +%s)
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)" "start" ""
 	rm -f "${_MENU_IPXE:?}" \
 	      "${_MENU_GRUB:?}" \
 		  "${_MENU_SLNX:?}" \
 		  "${_MENU_UEFI:?}"
+
 	for I in "${!_LIST_MDIA[@]}"
 	do
 		read -r -a __LIST < <(echo "${_LIST_MDIA[I]}")
-		printf "%20.20s: %s\n" "start" "${__LIST[2]}" 1>&2
+		# --- start -----------------------------------------------------------
+		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[13]##*/}"
 		# --- update ----------------------------------------------------------
 		case "${1:-}" in
 			update  ) ;;
@@ -3377,9 +3422,23 @@ function fnPxeboot() {
 			o) ;;						# (output)
 			*) ;;						# (hidden)
 		esac
+		# --- complete --------------------------------------------------------
+		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}"
 	done
+	# --- complete ------------------------------------------------------------
+	__time_end=$(date +%s)
+	__time_elapsed=$((__time_end-__time_start))
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)" "finish" ""
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$((__time_elapsed/86400))" "$((__time_elapsed%86400/3600))" "$((__time_elapsed%3600/60))" "$((__time_elapsed%60))" "elapsed" "${__TGET_LIST[13]##*/}"
+	fnDebug_parameter_list
 }
-# --- debug out parameter -----------------------------------------------------
+
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: debug out parameter for skel_mk_pxeboot_conf.sh
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function fnDebug_parameter() {
 	declare       _VARS_CHAR="_"		# variable initial letter
 	declare       _VARS_NAME=""			#          name
@@ -3412,48 +3471,53 @@ function fnDebug_parameter() {
 #	done
 }
 
-# --- help --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# descript: help for skel_mk_pxeboot_conf.sh
+#   input :        : unused
+#   output: stdout : unused
+#   return:        : unused
 function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
-		
-		  pxeboot menu files:
-		    create
-		      empty             : mirroring copy by rsync
-		      update            : without copying iso image
-		
-		  list files:
-		    list [create|update|download]
-		      empty             : display of list data
-		      create            : update / download list files
-		
-		  config files:
-		    conf [create|all|(preseed|nocloudkickstart|autoyast)|version]
-		      create            : create common configuration file
-		      all               : all config files (without common config file)
-		      preseed           : preseed.cfg
-		      nocloud           : nocloud
-		      kickstart         : kickstart.cfg
-		      autoyast          : autoyast.xml
-		
-		  symbolic link:
+
+		  create or update for the pxeboot menu:
+		    create|update
+		      create        : mirroring copy by rsync
+		      update        : without copying iso image
+
+		  create common configuration file:
+		    conf [create]
+
+		  create common pre-configuration file:
+		    preconf [all|(preseed|nocloud|kickstart|autoyast)]
+		      all           : all pre-config files
+		      preseed       : preseed.cfg
+		      nocloud       : nocloud
+		      kickstart     : kickstart.cfg
+		      autoyast      : autoyast.xml
+
+		  create symbolic link:
 		    link
-		      create            : create symbolic link
-		
-		  debug print and test
-		    debug [func|text|parm]
-		      parm              : display of main internal parameters
+		      create        : create symbolic link
 _EOT_
 }
 
 # === main ====================================================================
 
+# -----------------------------------------------------------------------------
+# descript: main for skel_mk_pxeboot_conf.sh
+#   input :   $@   : option parameter
+#   output: stdout : unused
+#   return:        : unused
 function fnMain() {
 	declare -i    _time_start=0			# start of elapsed time
 	declare -i    _time_end=0			# end of elapsed time
 	declare -i    _time_elapsed=0		# result of elapsed time
 	declare -r -a _OPTN_PARM=("${@:-}")	# option parameter
-	declare -a    _RETN_PARM=()			# name reference
+#	declare -a    _RETN_PARM=()			# name reference
+	declare       __COMD=""				# command type
+	declare -a    __OPTN=()				# option parameter
+	declare       __RSLT=""				# result
 
 	# --- help ----------------------------------------------------------------
 	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then
@@ -3489,66 +3553,27 @@ function fnMain() {
 	# --- main ----------------------------------------------------------------
 	fnInitialization					# initialization
 
-	set -f -- "${_OPTN_PARM[@]:-}"
+	set -f -- "${__OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
 	do
-		_RETN_PARM=()
+		__OPTN=()
 		case "${1:-}" in
-			create  ) shift; fnPxeboot "create"  ;;
-			update  ) shift; fnPxeboot "update"  ;;
-			download) shift; fnPxeboot "download";;
-			link    )
+			create  | \
+			update  | \
+			download)
+				__COMD="$1"
 				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						create   ) shift; fnCreate_directory _RETN_PARM "${@:-}"; fnPut_media_data;;
-						update   ) shift;;
-						download ) shift;;
-						*        ) break;;
-					esac
-				done
+				fnPxeboot "${__COMD}"
+				__OPTN=("${@:-}")
 				;;
-			list    )
-				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						create   ) shift; fnPut_media_data;;
-						update   ) shift;;
-						download ) shift;;
-						*        ) break;;
-					esac
-				done
-				;;
-			conf    )
-				shift
-				case "${1:-}" in
-					create   ) shift; fnCreate_conf;;
-					*        ) ;;
-				esac
-				;;
-			preconf )
-				shift
-				fnCreate_precon __RETN_PARM "${@:-}"
-				;;
+			link    ) shift; fnCreate_directory "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			conf    ) shift; fnCreate_conf      "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			preconf ) shift; fnCreate_precon    "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			help    ) shift; fnHelp; break;;
-			debug   )
-				shift
-				while [[ -n "${1:-}" ]]
-				do
-					case "${1:-}" in
-						parm) shift; fnDebug_parameter;;
-						*   ) break;;
-					esac
-				done
-				;;
+			debug   ) shift; fnDebug_parameter;;
 			*       ) shift;;
 		esac
-		_RETN_PARM=("$@")
-		IFS="${_COMD_IFS:-}"
-		set -f -- "${_RETN_PARM[@]:-}"
-		IFS="${_ORIG_IFS:-}"
+		set -f -- "${__OPTN[@]:-"${@:-}"}"
 	done
 
 	# --- complete ------------------------------------------------------------

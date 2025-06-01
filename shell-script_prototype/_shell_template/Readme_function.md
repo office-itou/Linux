@@ -6,18 +6,18 @@
   
 |                                          shell file name                                          |                                                     function name                                                     |                                  explanation                                  |
 | :------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
-| [skel_mk_custom_iso.sh](./skel_mk_custom_iso.sh)                                                  | fnInitialization                                                                                                      |                                                                               |
-|                                                                                                   | fnDebug_parameter                                                                                                     |                                                                               |
-|                                                                                                   | fnHelp                                                                                                                |                                                                               |
-|                                                                                                   | fnMain                                                                                                                |                                                                               |
-| [skel_mk_pxeboot_conf.sh](./skel_mk_pxeboot_conf.sh)                                              | fnInitialization                                                                                                      |                                                                               |
-|                                                                                                   | fnDebug_parameter                                                                                                     |                                                                               |
-|                                                                                                   | fnHelp                                                                                                                |                                                                               |
-|                                                                                                   | fnMain                                                                                                                |                                                                               |
-| [skel_test_function.sh](./skel_test_function.sh)                                                  | fnInitialization                                                                                                      |                                                                               |
-|                                                                                                   | fnDebug_parameter                                                                                                     |                                                                               |
-|                                                                                                   | fnHelp                                                                                                                |                                                                               |
-|                                                                                                   | fnMain                                                                                                                |                                                                               |
+| [skel_mk_custom_iso.sh](./skel_mk_custom_iso.sh)                                                  | [fnInitialization](#initialization-for-skel_mk_custom_isosh-dummy)                                                    | initialization for skel_mk_custom_iso.sh (dummy)                              |
+|                                                                                                   | [fnDebug_parameter](#debug-out-parameter-for-skel_mk_custom_isosh)                                                    | debug out parameter for skel_mk_custom_iso.sh                                 |
+|                                                                                                   | [fnHelp](#help-for-skel_mk_custom_isosh)                                                                              | help for skel_mk_custom_iso.sh                                                |
+|                                                                                                   | [fnMain](#main-for-skel_mk_custom_isosh) "\$@"                                                                        | main for skel_mk_custom_iso.sh                                                |
+| [skel_mk_pxeboot_conf.sh](./skel_mk_pxeboot_conf.sh)                                              | [fnInitialization](#initialization-for-skel_mk_pxeboot_confsh-dummy)                                                  | initialization for skel_mk_pxeboot_conf.sh (dummy)                            |
+|                                                                                                   | [fnDebug_parameter](#debug-out-parameter-for-skel_mk_pxeboot_confsh)                                                  | debug out parameter for skel_mk_pxeboot_conf.sh                               |
+|                                                                                                   | [fnHelp](#help-for-skel_mk_pxeboot_confsh)                                                                            | help for skel_mk_pxeboot_conf.sh                                              |
+|                                                                                                   | [fnMain](#main-for-skel_mk_pxeboot_confsh) "\$@"                                                                      | main for skel_mk_pxeboot_conf.sh                                              |
+| [skel_test_function.sh](./skel_test_function.sh)                                                  | [fnInitialization](#initialization-for-skel_test_functionsh-dummy)                                                    | initialization for skel_test_function.sh (dummy)                              |
+|                                                                                                   | [fnDebug_parameter](#debug-out-parameter-for-skel_test_functionsh)                                                    | debug out parameter for skel_test_function.sh                                 |
+|                                                                                                   | [fnHelp](#help-for-skel_test_functionsh)                                                                              | help for skel_test_function.sh                                                |
+|                                                                                                   | [fnMain](#main-for-skel_test_functionsh) "\$@"                                                                        | main for skel_test_function.sh                                                |
   
 ### **template**  
   
@@ -28,8 +28,8 @@
 | [tmpl_001_initialize_mk_pxeboot_conf.sh](./tmpl_001_initialize_mk_pxeboot_conf.sh)                |                                                                                                                       |                                                                               |
 | [tmpl_001_initialize_test_function.sh](./tmpl_001_initialize_test_function.sh)                    |                                                                                                                       |                                                                               |
 | [tmpl_002_data_section.sh](./tmpl_002_data_section.sh)                                            |                                                                                                                       |                                                                               |
-| [tmpl_003_function_section_library.sh](./tmpl_003_function_section_library.sh)                    | [fnDebugout](#debug-print) "\$1"                                                                                      | debug print                                                                   |
-|                                                                                                   | [fnDebug_parameter_list](#print-out-of-internal-variables) "\$1"                                                      | print out of internal variables                                               |
+| [tmpl_003_function_section_library.sh](./tmpl_003_function_section_library.sh)                    | [fnDebugout](#debug-print) "\$@"                                                                                      | debug print                                                                   |
+|                                                                                                   | [fnDebug_parameter_list](#print-out-of-internal-variables)                                                            | print out of internal variables                                               |
 |                                                                                                   | [fnIsNumeric](#is-numeric) "\$1"                                                                                      | is numeric                                                                    |
 |                                                                                                   | [fnSubstr](#substr) "\$1" "\$2" "\$3"                                                                                 | substr                                                                        |
 |                                                                                                   | [fnString](#string-output) "\$1" "\$2"                                                                                | string output                                                                 |
@@ -66,7 +66,6 @@
 |                                                                                                   | [fnCreate_kickstart](#create-kickstartcfg) "\$1"                                                                      | create kickstart.cfg                                                          |
 |                                                                                                   | [fnCreate_autoyast](#create-autoyastxml) "\$1"                                                                        | create autoyast.xml                                                           |
 |                                                                                                   | [fnCreate_precon](#create-pre-configuration-file-templates) "\$1" "\$@"                                               | create pre-configuration file templates                                       |
-| [tmpl_004_function_section_template.sh](./tmpl_004_function_section_template.sh)                  | [fnInitialization](#initialization)                                                                                   | initialization                                                                |
 | [tmpl_005_function_section_mk_custom_iso.sh](./tmpl_005_function_section_mk_custom_iso.sh)        | [fnRemastering_preseed](#create-a-boot-option-for-preseed-of-the-remaster) "\$@"                                      | create a boot option for preseed of the remaster                              |
 |                                                                                                   | [fnRemastering_nocloud](#create-a-boot-option-for-nocloud-of-the-remaster) "\$@"                                      | create a boot option for nocloud of the remaster                              |
 |                                                                                                   | [fnRemastering_kickstart](#create-a-boot-option-for-kickstart-of-the-remaster) "\$@"                                  | create a boot option for kickstart of the remaster                            |
@@ -95,11 +94,11 @@
 |                                                                                                   | [fnPxeboot_grub](#create-grubcfg) "\$1" "\$2" "\$@"                                                                   | create grub.cfg                                                               |
 |                                                                                                   | [fnPxeboot_slnx](#create-bios-mode) "\$1" "\$2" "\$@"                                                                 | create bios mode                                                              |
 |                                                                                                   | [fnPxeboot](#create-pxeboot-menu)                                                                                     | create pxeboot menu                                                           |
-| [tmpl_005_function_section_test_function.sh](./tmpl_005_function_section_test_function.sh)        | fnServiceStatus                                                                                                       |                                                                               |
-|                                                                                                   | fnIsPackage                                                                                                           |                                                                               |
-|                                                                                                   | fnDiff                                                                                                                |                                                                               |
-|                                                                                                   | fnDebug_color                                                                                                         |                                                                               |
-|                                                                                                   | fnDebug_function                                                                                                      |                                                                               |
+| [tmpl_005_function_section_test_function.sh](./tmpl_005_function_section_test_function.sh)        | [fnServiceStatus](#service-status) "\$@"                                                                              | service status                                                                |
+|                                                                                                   | [fnIsPackage](#function-is-package) "\$1"                                                                             | function is package                                                           |
+|                                                                                                   | [fnDiff](#diff) "\$1" "\$2"                                                                                           | diff                                                                          |
+|                                                                                                   | [fnDebug_color](#text-color-test)                                                                                     | text color test                                                               |
+|                                                                                                   | [fnDebug_function](#function-test)                                                                                    | function test                                                                 |
   
 * * *
   
@@ -107,39 +106,51 @@
   
 * * *
   
-#### no items  
+#### initialization for skel_mk_custom_iso.sh (dummy)  
   
 *fnInitialization*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### debug out parameter for skel_mk_custom_iso.sh  
   
 *fnDebug_parameter*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### help for skel_mk_custom_iso.sh  
   
 *fnHelp*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### main for skel_mk_custom_iso.sh  
   
-*fnMain*  
+*fnMain "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $@     | option parameter       |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
@@ -147,39 +158,51 @@
   
 * * *
   
-#### no items  
+#### initialization for skel_mk_pxeboot_conf.sh (dummy)  
   
 *fnInitialization*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### debug out parameter for skel_mk_pxeboot_conf.sh  
   
 *fnDebug_parameter*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### help for skel_mk_pxeboot_conf.sh  
   
 *fnHelp*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### main for skel_mk_pxeboot_conf.sh  
   
-*fnMain*  
+*fnMain "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $@     | option parameter       |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
@@ -187,39 +210,51 @@
   
 * * *
   
-#### no items  
+#### initialization for skel_test_function.sh (dummy)  
   
 *fnInitialization*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### debug out parameter for skel_test_function.sh  
   
 *fnDebug_parameter*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### help for skel_test_function.sh  
   
 *fnHelp*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### main for skel_test_function.sh  
   
-*fnMain*  
+*fnMain "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $@     | option parameter       |                                            |
+| output | stdout | unused                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
@@ -261,11 +296,11 @@
   
 #### debug print  
   
-*fnDebugout "\$1"*  
+*fnDebugout "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $1     | input value            |                                            |
+| input  | $@     | input value            |                                            |
 | output | stderr | output                 |                                            |
 | return |        | unused                 |                                            |
   
@@ -273,11 +308,11 @@
   
 #### print out of internal variables  
   
-*fnDebug_parameter_list "\$1"*  
+*fnDebug_parameter_list*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $1     | input value            | mainly function names "${FUNCNAME[0]}"     |
+| input  |        | unused                 |                                            |
 | output | stderr | output                 |                                            |
 | return |        | unused                 |                                            |
   
@@ -765,22 +800,6 @@
   
 * * *
   
-### **tmpl_004_function_section_template.sh**  
-  
-* * *
-  
-#### initialization  
-  
-*fnInitialization*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  |        | unused                 |                                            |
-| output | stdout | unused                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
 ### **tmpl_005_function_section_mk_custom_iso.sh**  
   
 * * *
@@ -1156,45 +1175,66 @@
   
 * * *
   
-#### no items  
+#### service status  
   
-*fnServiceStatus*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-  
-* * *
-  
-#### no items  
-  
-*fnIsPackage*  
+*fnServiceStatus "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $@     | input value            |                                            |
+| output | stdout | output                 | =0 (program is running or service is OK [unit is active]) |
+| "      |        |                        | =1 (program is dead and /var/run pid file exists [unit not failed (used by is-failed)]) |
+| "      |        |                        | =2 (program is dead and /var/lock lock file exists [unused]) |
+| "      |        |                        | =3 (program is not running [unit is not active]) |
+| "      |        |                        | =4 (program or service status is unknown [no such unit]) |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### function is package  
   
-*fnDiff*  
+*fnIsPackage "\$1"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $1     | input value            |                                            |
+| output | stdout | output                 | empty (not install)                        |
+| "      |        |                        | other (installed)                          |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### diff  
+  
+*fnDiff "\$1" "\$2"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $1     | file 1                 |                                            |
+| input  | $2     | file 2                 |                                            |
+| output | stdout | result                 |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
+#### text color test  
   
 *fnDebug_color*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | output                 |                                            |
+| return |        | unused                 |                                            |
   
 * * *
   
-#### no items  
+#### function test  
   
 *fnDebug_function*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  |        | unused                 |                                            |
+| output | stdout | output                 |                                            |
+| return |        | unused                 |                                            |

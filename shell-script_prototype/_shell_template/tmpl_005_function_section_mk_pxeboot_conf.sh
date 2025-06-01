@@ -11,6 +11,7 @@
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_copy() {
+	fnDebugout ""
 	declare -r    __PATH_TGET="${1:?}"	# target file
 	declare -r    __DIRS_DEST="${2:?}"	# destination directory
 	declare       __MNTP=""				# mount point
@@ -38,6 +39,7 @@ function fnPxeboot_copy() {
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_preseed() {
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -136,6 +138,7 @@ function fnPxeboot_preseed() {
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_nocloud() {
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -214,6 +217,7 @@ function fnPxeboot_nocloud() {
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_kickstart() {
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -278,6 +282,7 @@ function fnPxeboot_kickstart() {
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_autoyast() {
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
@@ -350,6 +355,7 @@ function fnPxeboot_autoyast() {
 #   output: stdout : output
 #   return:        : unused
 function fnPxeboot_boot_options() {
+	fnDebugout ""
 	declare -r -a __TGET_LIST=("$@")	# target data
 	declare -a    __LIST=()				# work variables
 	declare       __WORK=""				# work variables
@@ -387,6 +393,7 @@ function fnPxeboot_boot_options() {
 #   output: stdout : unused
 #   return:        : unused
 function fnPxeboot_ipxe() {
+	fnDebugout ""
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
 	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
@@ -610,7 +617,7 @@ _EOT_
 							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
 							set options \${autoinst} \${networks} \${language} \${ramsdisk} \${isosfile} ${__BOPT[@]:6}
 							echo Loading kernel and initrd ...
-							kernel \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} --- || goto error
+							kernel \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} --- quiet || goto error
 							initrd \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/} || goto error
 							boot || goto error
 							exit
@@ -640,6 +647,7 @@ _EOT_
 #   output: stdout : unused
 #   return:        : unused
 function fnPxeboot_grub() {
+	fnDebugout ""
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
 	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
@@ -855,7 +863,7 @@ _EOT_
 							  insmod http
 							  insmod progress
 							  echo 'Loading linux ...'
-							  linux  \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} ---
+							  linux  \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/} \${options} --- quiet
 							  echo 'Loading initrd ...'
 							  initrd \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
 							}
@@ -884,6 +892,7 @@ _EOT_
 #   output: stdout : unused
 #   return:        : unused
 function fnPxeboot_slnx() {
+	fnDebugout ""
 	declare -r    __PATH_TGET="${1:?}"	# target file (menu)
 	declare -r -i __CONT_TABS="${2:?}"	# tabs count
 	declare -r -a __TGET_LIST=("${@:3}") # target data (list)
@@ -1065,7 +1074,7 @@ _EOT_
 								  menu label ^${__ENTR}
 								  linux  /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
 								  initrd /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
-								  append ${__BOPT[@]:3}
+								  append ${__BOPT[@]:3} --- quiet
 
 _EOT_
 						)"
@@ -1076,7 +1085,7 @@ _EOT_
 								  menu label ^${__ENTR}
 								  linux  /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
 								  initrd /${_DIRS_IMGS##*/}/${__TGET_LIST[2]}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/}
-								  append ${__BOPT[@]}
+								  append ${__BOPT[@]} --- quiet
 
 _EOT_
 						)"
@@ -1103,10 +1112,17 @@ _EOT_
 #   return:        : unused
 # --- create pxeboot menu -----------------------------------------------------
 function fnPxeboot() {
+	fnDebugout ""
+	declare -i    __time_start=0		# start of elapsed time
+	declare -i    __time_end=0			# end of elapsed time
+	declare -i    __time_elapsed=0		# result of elapsed time
 	declare -i    __TABS=0				# tabs count
 	declare       __LIST=()				# work variable
 	declare -i    I=0					# work variables
 
+	# --- start -----------------------------------------------------------
+	__time_start=$(date +%s)
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)" "start" ""
 	rm -f "${_MENU_IPXE:?}" \
 	      "${_MENU_GRUB:?}" \
 		  "${_MENU_SLNX:?}" \
@@ -1146,4 +1162,10 @@ function fnPxeboot() {
 		# --- complete --------------------------------------------------------
 		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__LIST[13]##*/}"
 	done
+	# --- complete ------------------------------------------------------------
+	__time_end=$(date +%s)
+	__time_elapsed=$((__time_end-__time_start))
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)" "finish" ""
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$((__time_elapsed/86400))" "$((__time_elapsed%86400/3600))" "$((__time_elapsed%3600/60))" "$((__time_elapsed%60))" "elapsed" "${__TGET_LIST[13]##*/}"
+	fnDebug_parameter_list
 }

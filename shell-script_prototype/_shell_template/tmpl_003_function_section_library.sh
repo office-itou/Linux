@@ -85,20 +85,20 @@
 
 # -----------------------------------------------------------------------------
 # descript: debug print
-#   input :   $1   : input value
+#   input :   $@   : input value
 #   output: stderr : output
 #   return:        : unused
 # shellcheck disable=SC2317
 function fnDebugout() {
-	if ! set -o | grep -qE "^xtrace\s*on$"; then
+	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 		return
 	fi
-	printf "%s\n" "${*:-}" 1>&2
+	printf "${FUNCNAME[1]}: %q\n" "${@:-}" 1>&2
 }
 
 # -----------------------------------------------------------------------------
 # descript: print out of internal variables
-#   input :   $1   : input value : mainly function names "${FUNCNAME[0]}"
+#   input :        : unused
 #   output: stderr : output
 #   return:        : unused
 # shellcheck disable=SC2317
@@ -106,7 +106,7 @@ function fnDebug_parameter_list() {
 	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 		return
 	fi
-	printf "${1:?}: %q\n" "${!__@}" 1>&2
+	printf "${FUNCNAME[1]}: %q\n" "${!__@}" 1>&2
 }
 
 # -----------------------------------------------------------------------------
