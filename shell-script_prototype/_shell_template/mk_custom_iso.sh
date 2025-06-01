@@ -2044,7 +2044,7 @@ function fnCreate_nocloud() {
 	esac
 	# --- server or desktop ---------------------------------------------------
 	case "${__TGET_PATH}" in
-		*_desktop.*)
+		*_desktop*)
 			sed -i "${__TGET_PATH}"                                            \
 			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
 			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
@@ -2093,7 +2093,7 @@ function fnCreate_kickstart() {
 	    -e "/^url[ \t]\+/  s/^/#/g            " \
 	    -e "/^repo[ \t]\+/ s/^/#/g            " \
 	    -e "s/:_HOST_NAME_:/${__NAME}/        " \
-	    -e "s%:__ADDR_:%${__ADDR}%g           " \
+	    -e "s%:_WEBS_ADDR_:%${__ADDR}%g       " \
 	    -e "s%:_DISTRO_:%${__NAME}-${__NUMS}%g"
 	# --- cdrom, repository ---------------------------------------------------
 	case "${__TGET_PATH}" in
@@ -2234,7 +2234,7 @@ function fnCreate_precon() {
 			o) ;;
 			*) continue;;
 		esac
-		case "${__LINE[23]}" in			# cfg_path
+		case "${__LINE[23]##*/}" in		# cfg_path
 			-) continue;;
 			*) ;;
 		esac

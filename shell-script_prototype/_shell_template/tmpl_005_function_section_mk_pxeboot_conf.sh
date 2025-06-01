@@ -167,7 +167,7 @@ function fnPxeboot_nocloud() {
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__WORK="boot=live"
 	else
-		__WORK="${__WORK:+" "}automatic-ubiquity noprompt autoinstall ds=nocloud\;s=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK="${__WORK:+" "}automatic-ubiquity noprompt autoinstall ds=nocloud;s=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
 		__WORK="${__CONF:+"${__WORK/\/cdrom/${__CONF}}"}"
 	fi
 	__BOPT+=("${__WORK}")

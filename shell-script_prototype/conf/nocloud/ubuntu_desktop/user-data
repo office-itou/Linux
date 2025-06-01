@@ -193,25 +193,25 @@ autoinstall:
   - libnss-winbind
   - open-vm-tools
   - open-vm-tools-desktop
-# - ubuntu-desktop
-# - ubuntu-gnome-desktop
-# - language-pack-ja
-# - language-pack-gnome-ja
-# - fonts-noto
-# - im-config
-# - zenity
-# - ibus-mozc
-# - fcitx5-mozc
-# - mozc-utils-gui
-# - gnome-shell-extensions
-# - libreoffice-l10n-ja
-# - libreoffice-help-ja
-# - firefox-locale-ja
-# - thunderbird
-# - thunderbird-locale-ja
-# - rhythmbox
-# - ffmpeg
-# - gstreamer1.0-libav
+  - ubuntu-desktop
+  - ubuntu-gnome-desktop
+  - language-pack-ja
+  - language-pack-gnome-ja
+  - fonts-noto
+  - im-config
+  - zenity
+  - ibus-mozc
+  - fcitx5-mozc
+  - mozc-utils-gui
+  - gnome-shell-extensions
+  - libreoffice-l10n-ja
+  - libreoffice-help-ja
+  - firefox-locale-ja
+  - thunderbird
+  - thunderbird-locale-ja
+  - rhythmbox
+  - ffmpeg
+  - gstreamer1.0-libav
 # -----------------------------------------------------------------------------
 # - usrmerge
 # - tftpd-hpa

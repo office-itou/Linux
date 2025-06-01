@@ -2036,7 +2036,7 @@ function fnCreate_nocloud() {
 	esac
 	# --- server or desktop ---------------------------------------------------
 	case "${__TGET_PATH}" in
-		*_desktop.*)
+		*_desktop*)
 			sed -i "${__TGET_PATH}"                                            \
 			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
 			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
@@ -2226,7 +2226,7 @@ function fnCreate_precon() {
 			o) ;;
 			*) continue;;
 		esac
-		case "${__LINE[23]}" in			# cfg_path
+		case "${__LINE[23]##*/}" in		# cfg_path
 			-) continue;;
 			*) ;;
 		esac
@@ -2439,7 +2439,7 @@ function fnPxeboot_nocloud() {
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__WORK="boot=live"
 	else
-		__WORK="${__WORK:+" "}automatic-ubiquity noprompt autoinstall ds=nocloud\;s=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK="${__WORK:+" "}automatic-ubiquity noprompt autoinstall ds=nocloud;s=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
 		__WORK="${__CONF:+"${__WORK/\/cdrom/${__CONF}}"}"
 	fi
 	__BOPT+=("${__WORK}")
