@@ -2,7 +2,7 @@
 
 ###############################################################################
 ##
-##	pxeboot configuration shell
+##	custom iso image creation and pxeboot configuration shell
 ##	  developed for debian
 ##
 ##	developer   : J.Itou
@@ -4496,7 +4496,12 @@ function fnExec() {
 			__OPTN=()
 			case "${1:-}" in
 				a|all   ) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all");;
-				*       ) ;;
+				*       )
+					case "${__COMD:-}" in
+						pxeboot ) __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all");;
+						*       ) ;;
+					esac
+					;;
 			esac
 			__OPTN+=("${@:-}")
 			set -f -- "${__OPTN[@]:-}"
@@ -4726,12 +4731,6 @@ function fnHelp() {
 
 		  create for the pxeboot menu:
 		    pxeboot [(empty)]
-		      empty         : waiting for input
-		      all           : all target
-		      mini|netinst|dvd|liveinst
-			                : each target
-		        all         : all of each target
-		        id number   : selected id
 
 		  display and update for list data:
 		    list [empty|all|(mini|net|dvd|live {a|all|id})]

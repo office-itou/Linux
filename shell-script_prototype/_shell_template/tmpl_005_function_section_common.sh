@@ -2211,7 +2211,12 @@ function fnExec() {
 			__OPTN=()
 			case "${1:-}" in
 				a|all   ) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all");;
-				*       ) ;;
+				*       )
+					case "${__COMD:-}" in
+						pxeboot ) __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all");;
+						*       ) ;;
+					esac
+					;;
 			esac
 			__OPTN+=("${@:-}")
 			set -f -- "${__OPTN[@]:-}"

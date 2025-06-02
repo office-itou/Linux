@@ -2,7 +2,7 @@
 
 ###############################################################################
 ##
-##	pxeboot configuration shell
+##	custom iso image creation and pxeboot configuration shell
 ##	  developed for debian
 ##
 ##	developer   : J.Itou
@@ -105,12 +105,6 @@ function fnHelp() {
 
 		  create for the pxeboot menu:
 		    pxeboot [(empty)]
-		      empty         : waiting for input
-		      all           : all target
-		      mini|netinst|dvd|liveinst
-			                : each target
-		        all         : all of each target
-		        id number   : selected id
 
 		  display and update for list data:
 		    list [empty|all|(mini|net|dvd|live {a|all|id})]
