@@ -37,7 +37,7 @@
 
 # :_tmpl_004_function_section_common.sh_:
 
-# :_tmpl_005_function_section_mk_custom_iso.sh_:
+# :_tmpl_005_function_section_common.sh_:
 
 # -----------------------------------------------------------------------------
 # descript: initialization for skel_mk_custom_iso.sh (dummy)
@@ -96,6 +96,15 @@ function fnHelp() {
 
 		  create or update for the remaster or download the iso file:
 		    create|update|download [(empty)|all|(mini|netinst|dvd|liveinst {a|all|id})]
+		      empty         : waiting for input
+		      all           : all target
+		      mini|netinst|dvd|liveinst
+			                : each target
+		        all         : all of each target
+		        id number   : selected id
+
+		  create for the pxeboot menu:
+		    pxeboot [(empty)]
 		      empty         : waiting for input
 		      all           : all target
 		      mini|netinst|dvd|liveinst
@@ -199,10 +208,12 @@ function fnMain() {
 #			create  ) ;;				# (force create)
 #			update  ) ;;				# (create new files only)
 #			download) ;;				# (download only)
+#			pxeboot ) ;;				# (pxeboot)
 			list    | \
 			create  | \
 			update  | \
-			download)        fnExec             "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			download| \
+			pxeboot )        fnExec             "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			link    ) shift; fnCreate_directory "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			conf    ) shift; fnCreate_conf      "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			preconf ) shift; fnCreate_precon    "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;

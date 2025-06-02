@@ -10,10 +10,6 @@
 |                                                                                                   | [fnDebug_parameter](#debug-out-parameter-for-skel_mk_custom_isosh)                                                    | debug out parameter for skel_mk_custom_iso.sh                                 |
 |                                                                                                   | [fnHelp](#help-for-skel_mk_custom_isosh)                                                                              | help for skel_mk_custom_iso.sh                                                |
 |                                                                                                   | [fnMain](#main-for-skel_mk_custom_isosh) "\$@"                                                                        | main for skel_mk_custom_iso.sh                                                |
-| [skel_mk_pxeboot_conf.sh](./skel_mk_pxeboot_conf.sh)                                              | [fnInitialization](#initialization-for-skel_mk_pxeboot_confsh-dummy)                                                  | initialization for skel_mk_pxeboot_conf.sh (dummy)                            |
-|                                                                                                   | [fnDebug_parameter](#debug-out-parameter-for-skel_mk_pxeboot_confsh)                                                  | debug out parameter for skel_mk_pxeboot_conf.sh                               |
-|                                                                                                   | [fnHelp](#help-for-skel_mk_pxeboot_confsh)                                                                            | help for skel_mk_pxeboot_conf.sh                                              |
-|                                                                                                   | [fnMain](#main-for-skel_mk_pxeboot_confsh) "\$@"                                                                      | main for skel_mk_pxeboot_conf.sh                                              |
 | [skel_test_function.sh](./skel_test_function.sh)                                                  | [fnInitialization](#initialization-for-skel_test_functionsh-dummy)                                                    | initialization for skel_test_function.sh (dummy)                              |
 |                                                                                                   | [fnDebug_parameter](#debug-out-parameter-for-skel_test_functionsh)                                                    | debug out parameter for skel_test_function.sh                                 |
 |                                                                                                   | [fnHelp](#help-for-skel_test_functionsh)                                                                              | help for skel_test_function.sh                                                |
@@ -25,7 +21,6 @@
 | :------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
 | [tmpl_001_initialize_common.sh](./tmpl_001_initialize_common.sh)                                  | [fnTrap](#trap)                                                                                                       | trap                                                                          |
 | [tmpl_001_initialize_mk_custom_iso.sh](./tmpl_001_initialize_mk_custom_iso.sh)                    |                                                                                                                       |                                                                               |
-| [tmpl_001_initialize_mk_pxeboot_conf.sh](./tmpl_001_initialize_mk_pxeboot_conf.sh)                |                                                                                                                       |                                                                               |
 | [tmpl_001_initialize_test_function.sh](./tmpl_001_initialize_test_function.sh)                    |                                                                                                                       |                                                                               |
 | [tmpl_002_data_section.sh](./tmpl_002_data_section.sh)                                            |                                                                                                                       |                                                                               |
 | [tmpl_003_function_section_library.sh](./tmpl_003_function_section_library.sh)                    | [fnDebugout](#debug-print) "\$@"                                                                                      | debug print                                                                   |
@@ -66,11 +61,12 @@
 |                                                                                                   | [fnCreate_kickstart](#create-kickstartcfg) "\$1"                                                                      | create kickstart.cfg                                                          |
 |                                                                                                   | [fnCreate_autoyast](#create-autoyastxml) "\$1"                                                                        | create autoyast.xml                                                           |
 |                                                                                                   | [fnCreate_precon](#create-pre-configuration-file-templates) "\$1" "\$@"                                               | create pre-configuration file templates                                       |
-| [tmpl_005_function_section_mk_custom_iso.sh](./tmpl_005_function_section_mk_custom_iso.sh)        | [fnRemastering_preseed](#create-a-boot-option-for-preseed-of-the-remaster) "\$@"                                      | create a boot option for preseed of the remaster                              |
-|                                                                                                   | [fnRemastering_nocloud](#create-a-boot-option-for-nocloud-of-the-remaster) "\$@"                                      | create a boot option for nocloud of the remaster                              |
-|                                                                                                   | [fnRemastering_kickstart](#create-a-boot-option-for-kickstart-of-the-remaster) "\$@"                                  | create a boot option for kickstart of the remaster                            |
-|                                                                                                   | [fnRemastering_autoyast](#create-a-boot-option-for-autoyast-of-the-remaster) "\$@"                                    | create a boot option for autoyast of the remaster                             |
-|                                                                                                   | [fnRemastering_boot_options](#create-a-boot-option-of-the-remaster) "\$@"                                             | create a boot option of the remaster                                          |
+| [tmpl_005_function_section_common.sh](./tmpl_005_function_section_common.sh)                      | [fnFile_copy](#file-copy) "\$1" "\$2"                                                                                 | file copy                                                                     |
+|                                                                                                   | [fnBoot_option_preseed](#create-a-boot-option-for-preseed) "\$@"                                                      | create a boot option for preseed                                              |
+|                                                                                                   | [fnBoot_option_nocloud](#create-a-boot-option-for-nocloud) "\$@"                                                      | create a boot option for nocloud                                              |
+|                                                                                                   | [fnBoot_option_kickstart](#create-a-boot-option-for-kickstart) "\$@"                                                  | create a boot option for kickstart                                            |
+|                                                                                                   | [fnBoot_option_autoyast](#create-a-boot-option-for-autoyast) "\$@"                                                    | create a boot option for autoyast                                             |
+|                                                                                                   | [fnBoot_options](#create-a-boot-option) "\$@"                                                                         | create a boot option                                                          |
 |                                                                                                   | [fnRemastering_path](#create-path-for-configuration-file) "\$1" "\$2"                                                 | create path for configuration file                                            |
 |                                                                                                   | [fnRemastering_isolinux_autoinst_cfg](#create-autoinstall-configuration-file-for-isolinux) "\$1" "\$2" "\$3" "\$@"    | create autoinstall configuration file for isolinux                            |
 |                                                                                                   | [fnRemastering_isolinux](#editing-isolinux-for-autoinstall) "\$1" "\$2" "\$@"                                         | editing isolinux for autoinstall                                              |
@@ -83,17 +79,11 @@
 |                                                                                                   | [fnExec_menu](#print-out-of-menu) "\$1" "\$@"                                                                         | print out of menu                                                             |
 |                                                                                                   | [fnExec_download](#executing-the-download) "\$1" "\$@"                                                                | executing the download                                                        |
 |                                                                                                   | [fnExec_remastering](#executing-the-remastering) "\$1" "\$@"                                                          | executing the remastering                                                     |
-|                                                                                                   | [fnExec](#executing-the-action) "\$1" "\$@"                                                                           | executing the action                                                          |
-| [tmpl_005_function_section_mk_pxeboot_conf.sh](./tmpl_005_function_section_mk_pxeboot_conf.sh)    | [fnPxeboot_copy](#file-copy) "\$1" "\$2"                                                                              | file copy                                                                     |
-|                                                                                                   | [fnPxeboot_preseed](#create-a-boot-option-for-preseed-of-the-pxeboot) "\$@"                                           | create a boot option for preseed of the pxeboot                               |
-|                                                                                                   | [fnPxeboot_nocloud](#create-a-boot-option-for-nocloud-of-the-pxeboot) "\$@"                                           | create a boot option for nocloud of the pxeboot                               |
-|                                                                                                   | [fnPxeboot_kickstart](#create-a-boot-option-for-kickstart-of-the-pxeboot) "\$@"                                       | create a boot option for kickstart of the pxeboot                             |
-|                                                                                                   | [fnPxeboot_autoyast](#create-a-boot-option-for-autoyast-of-the-pxeboot) "\$@"                                         | create a boot option for autoyast of the pxeboot                              |
-|                                                                                                   | [fnPxeboot_boot_options](#create-a-boot-option-of-the-pxeboot) "\$@"                                                  | create a boot option of the pxeboot                                           |
 |                                                                                                   | [fnPxeboot_ipxe](#create-autoexecipxe) "\$1" "\$2" "\$@"                                                              | create autoexec.ipxe                                                          |
 |                                                                                                   | [fnPxeboot_grub](#create-grubcfg) "\$1" "\$2" "\$@"                                                                   | create grub.cfg                                                               |
 |                                                                                                   | [fnPxeboot_slnx](#create-bios-mode) "\$1" "\$2" "\$@"                                                                 | create bios mode                                                              |
-|                                                                                                   | [fnPxeboot](#executing-the-action) "\$1" "\$@"                                                                        | executing the action                                                          |
+|                                                                                                   | [fnExec_pxeboot](#executing-the-pxeboot) "\$1" "\$@"                                                                  | executing the pxeboot                                                         |
+|                                                                                                   | [fnExec](#executing-the-action) "\$1" "\$@"                                                                           | executing the action                                                          |
 | [tmpl_005_function_section_test_function.sh](./tmpl_005_function_section_test_function.sh)        | [fnServiceStatus](#service-status) "\$@"                                                                              | service status                                                                |
 |                                                                                                   | [fnIsPackage](#function-is-package) "\$1"                                                                             | function is package                                                           |
 |                                                                                                   | [fnDiff](#diff) "\$1" "\$2"                                                                                           | diff                                                                          |
@@ -143,58 +133,6 @@
 * * *
   
 #### main for skel_mk_custom_iso.sh  
-  
-*fnMain "\$@"*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | option parameter       |                                            |
-| output | stdout | unused                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
-### **skel_mk_pxeboot_conf.sh**  
-  
-* * *
-  
-#### initialization for skel_mk_pxeboot_conf.sh (dummy)  
-  
-*fnInitialization*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  |        | unused                 |                                            |
-| output | stdout | unused                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
-#### debug out parameter for skel_mk_pxeboot_conf.sh  
-  
-*fnDebug_parameter*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  |        | unused                 |                                            |
-| output | stdout | unused                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
-#### help for skel_mk_pxeboot_conf.sh  
-  
-*fnHelp*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  |        | unused                 |                                            |
-| output | stdout | unused                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
-#### main for skel_mk_pxeboot_conf.sh  
   
 *fnMain "\$@"*  
   
@@ -275,10 +213,6 @@
 * * *
   
 ### **tmpl_001_initialize_mk_custom_iso.sh**  
-  
-* * *
-  
-### **tmpl_001_initialize_mk_pxeboot_conf.sh**  
   
 * * *
   
@@ -800,13 +734,26 @@
   
 * * *
   
-### **tmpl_005_function_section_mk_custom_iso.sh**  
+### **tmpl_005_function_section_common.sh**  
   
 * * *
   
-#### create a boot option for preseed of the remaster  
+#### file copy  
   
-*fnRemastering_preseed "\$@"*  
+*fnFile_copy "\$1" "\$2"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $1     | target file            |                                            |
+| input  | $2     | destination directory  |                                            |
+| output | stdout | output                 |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
+#### create a boot option for preseed  
+  
+*fnBoot_option_preseed "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -816,21 +763,9 @@
   
 * * *
   
-#### create a boot option for nocloud of the remaster  
+#### create a boot option for nocloud  
   
-*fnRemastering_nocloud "\$@"*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
-| output | stdout | output                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
-#### create a boot option for kickstart of the remaster  
-  
-*fnRemastering_kickstart "\$@"*  
+*fnBoot_option_nocloud "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -840,9 +775,9 @@
   
 * * *
   
-#### create a boot option for autoyast of the remaster  
+#### create a boot option for kickstart  
   
-*fnRemastering_autoyast "\$@"*  
+*fnBoot_option_kickstart "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -852,9 +787,21 @@
   
 * * *
   
-#### create a boot option of the remaster  
+#### create a boot option for autoyast  
   
-*fnRemastering_boot_options "\$@"*  
+*fnBoot_option_autoyast "\$@"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $@     | input value            |                                            |
+| output | stdout | output                 |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
+#### create a boot option  
+  
+*fnBoot_options "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
@@ -1025,96 +972,6 @@
   
 * * *
   
-#### executing the action  
-  
-*fnExec "\$1" "\$@"*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| n-ref  | $1     | return value           | serialized target data                     |
-| input  | $@     | option parameter       |                                            |
-| output | stdout | message                |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
-### **tmpl_005_function_section_mk_pxeboot_conf.sh**  
-  
-* * *
-  
-#### file copy  
-  
-*fnPxeboot_copy "\$1" "\$2"*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $1     | target file            |                                            |
-| input  | $2     | destination directory  |                                            |
-| output | stdout | output                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
-#### create a boot option for preseed of the pxeboot  
-  
-*fnPxeboot_preseed "\$@"*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
-| output | stdout | output                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
-#### create a boot option for nocloud of the pxeboot  
-  
-*fnPxeboot_nocloud "\$@"*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
-| output | stdout | output                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
-#### create a boot option for kickstart of the pxeboot  
-  
-*fnPxeboot_kickstart "\$@"*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
-| output | stdout | output                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
-#### create a boot option for autoyast of the pxeboot  
-  
-*fnPxeboot_autoyast "\$@"*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
-| output | stdout | output                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
-#### create a boot option of the pxeboot  
-  
-*fnPxeboot_boot_options "\$@"*  
-  
-|  i/o   | value  |      explanation       |                    note                    |
-| :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
-| output | stdout | output                 |                                            |
-| return |        | unused                 |                                            |
-  
-* * *
-  
 #### create autoexec.ipxe  
   
 *fnPxeboot_ipxe "\$1" "\$2" "\$@"*  
@@ -1157,9 +1014,22 @@
   
 * * *
   
+#### executing the pxeboot  
+  
+*fnExec_pxeboot "\$1" "\$@"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| n-ref  | $1     | return value           | serialized target data                     |
+| input  | $@     | target data            |                                            |
+| output | stdout | message                |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
 #### executing the action  
   
-*fnPxeboot "\$1" "\$@"*  
+*fnExec "\$1" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |

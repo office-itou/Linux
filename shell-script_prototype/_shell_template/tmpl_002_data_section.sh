@@ -107,3 +107,8 @@
 
 	# --- ram disk parameter --------------------------------------------------
 	declare -r -a _OPTN_RDSK=("root=/dev/ram0" "load_ramdisk=1" "ramdisk_size=1024000" "overlay-size=80%")
+
+	# --- boot type parameter -------------------------------------------------
+	declare -r    _TYPE_ISOB="isoboot"	# iso media boot
+	declare -r    _TYPE_PXEB="pxeboot"	# pxe boot
+	declare -r    _TYPE_USBB="usbboot"	# usb stick boot
