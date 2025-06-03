@@ -92,14 +92,14 @@ function fnDebug_parameter() {
 #   return:        : unused
 function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
+		usage: [sudo] ${_PROG_PATH:-"$0"} [command (options)]
 
 		  create or update for the remaster or download the iso file:
 		    create|update|download [(empty)|all|(mini|netinst|dvd|liveinst {a|all|id})]
 		      empty         : waiting for input
 		      all           : all target
 		      mini|netinst|dvd|liveinst
-			                : each target
+		                    : each target
 		        all         : all of each target
 		        id number   : selected id
 
@@ -111,7 +111,7 @@ function fnHelp() {
 		      empty         : all target
 		      all           : all target
 		      mini|netinst|dvd|liveinst
-			                : each target
+		                    : each target
 		        all         : all of each target
 		        id number   : selected id
 
@@ -177,6 +177,7 @@ function fnMain() {
 			--debug | \
 			--dbg   ) shift; _DBGS_FLAG="true"; set -x;;
 			--dbgout) shift; _DBGS_FLAG="true";;
+			--dbglog) shift; _DBGS_LOGS="/tmp/${_PROG_PROC}.$(date +"%Y%m%d%H%M%S" || true).log";;
 			help    ) shift; fnHelp; exit 0;;
 			*       ) shift;;
 		esac

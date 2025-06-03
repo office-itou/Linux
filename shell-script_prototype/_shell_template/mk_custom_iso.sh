@@ -34,6 +34,7 @@
 
 	# --- debug parameter -----------------------------------------------------
 	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
+	declare       _DBGS_LOGS=""			# debug file (empty: normal, else: debug)
 
 	# --- constant for control code -------------------------------------------
 	if [[ -z "${_CODE_ESCP+true}" ]]; then
@@ -1041,6 +1042,13 @@ function fnGetWeb_header() {
 		__OPTN=("${_OPTN_CURL[@]}" "--header" "${2:?}")
 		__RSLT="$(LANG=C curl "${__OPTN[@]}" 2>&1 || true)"
 	fi
+	if [[ -n "${_DBGS_LOGS}" ]]; then
+		{
+			echo "### ${FUNCNAME[0]} ###"
+			echo "URL=[${2:-}]"
+			echo "${__RSLT}"
+		} >> "${_DBGS_LOGS}"
+	fi
 	# -------------------------------------------------------------------------
 	__RSLT="${__RSLT//$'\r\n'/$'\n'}"	# crlf -> lf
 	__RSLT="${__RSLT//$'\r'/$'\n'}"		# cr   -> lf
@@ -1090,6 +1098,7 @@ function fnGetWeb_address() {
 	declare       __CODE=""				# status codes
 	declare       __LENG=""				# content-length
 	declare       __LMOD=""				# last-modified
+	declare -i    __RTRY=3				# retry count
 	declare -a    __LIST=()				# work variables
 	declare       __LINE=""				# work variables
 	declare -i    I=0					# work variables
@@ -1105,49 +1114,68 @@ function fnGetWeb_address() {
 		__FNAM="${__FNAM#*/}"
 		__PATH="${__DIRS}"
 		# ---------------------------------------------------------------------
-#		__RTCD=0
-		__RSLT=""
-		if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
-			__OPTN=("${_OPTN_WGET[@]}" "--server-response" "--output-document=-" "${__PATH:?}")
-			__RSLT="$(LANG=C wget "${__OPTN[@]}" 2>&1 || true)"
-		else
-			__OPTN=("${_OPTN_CURL[@]}" "--header" "${__PATH:?}")
-			__RSLT="$(LANG=C curl "${__OPTN[@]}" 2>&1 || true)"
-		fi
-		# ---------------------------------------------------------------------
-		__RSLT="${__RSLT//$'\r\n'/$'\n'}"	# crlf -> lf
-		__RSLT="${__RSLT//$'\r'/$'\n'}"		# cr   -> lf
-		__RSLT="${__RSLT//></>\n<}"
-		__RSLT="${__RSLT#"${__RSLT%%[!"${IFS}"]*}"}"	# ltrim
-		__RSLT="${__RSLT%"${__RSLT##*[!"${IFS}"]}"}"	# rtrim
-		IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
-		for I in "${!__LIST[@]}"
+		while [[ "${__RTRY}" -gt 0 ]]
 		do
-			__LINE="${__LIST[I],,}"
-			__LINE="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
-			__LINE="${__LINE%"${__LINE##*[!"${IFS}"]}"}"	# rtrim
-			__FILD="${__LINE%% *}"
-			__VALU="${__LINE#* }"
-			case "${__FILD%% *}" in
-				http/*         ) __CODE="${__VALU%% *}";;
-				content-length:) __LENG="${__VALU}";;
-				last-modified: ) __LMOD="$(TZ=UTC date -d "${__VALU}" "+%Y-%m-%d%%20%H:%M:%S%z")";;
-				*              ) ;;
+			((__RTRY--))
+#			__RTCD=0
+			__RSLT=""
+			if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
+				__OPTN=("${_OPTN_WGET[@]}" "--server-response" "--output-document=-" "${__PATH:?}")
+				__RSLT="$(LANG=C wget "${__OPTN[@]}" 2>&1 || true)"
+			else
+				__OPTN=("${_OPTN_CURL[@]}" "--header" "${__PATH:?}")
+				__RSLT="$(LANG=C curl "${__OPTN[@]}" 2>&1 || true)"
+			fi
+			if [[ -n "${_DBGS_LOGS}" ]]; then
+				{
+					echo "### ${FUNCNAME[0]} ###"
+					echo "URL=[${__PATH:-}]"
+					echo "${__RSLT}"
+				} >> "${_DBGS_LOGS}"
+			fi
+			if [[ -z "${__RSLT:-}" ]]; then
+				continue
+			fi
+			# -----------------------------------------------------------------
+			__RSLT="${__RSLT//$'\r\n'/$'\n'}"	# crlf -> lf
+			__RSLT="${__RSLT//$'\r'/$'\n'}"		# cr   -> lf
+			__RSLT="${__RSLT//></>\n<}"
+			__RSLT="${__RSLT#"${__RSLT%%[!"${IFS}"]*}"}"	# ltrim
+			__RSLT="${__RSLT%"${__RSLT##*[!"${IFS}"]}"}"	# rtrim
+			IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
+			__CODE=""
+			__LENG=""
+			__LMOD=""
+			for I in "${!__LIST[@]}"
+			do
+				__LINE="${__LIST[I],,}"
+				__LINE="${__LINE#"${__LINE%%[!"${IFS}"]*}"}"	# ltrim
+				__LINE="${__LINE%"${__LINE##*[!"${IFS}"]}"}"	# rtrim
+				__FILD="${__LINE%% *}"
+				__FILD="${__FILD%% *}"
+				__VALU="${__LINE#* }"
+				case "${__FILD,,}" in
+					http/*         ) __CODE="${__VALU%% *}";;
+					content-length:) __LENG="${__VALU}";;
+					last-modified: ) __LMOD="$(TZ=UTC date -d "${__VALU}" "+%Y-%m-%d%%20%H:%M:%S%z")";;
+					*              ) ;;
+				esac
+			done
+			# -----------------------------------------------------------------
+			case "${__CODE}" in				# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
+				1??) ;;						# 1xx (Informational)
+				2??)						# 2xx (Successful)
+					IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
+					__PATH="$(printf "%s\n" "${__LIST[@]//%20/ }" | sed -ne 's%^.*<a href="'"${__MATC}"'/*">\(.*\)</a>.*$%\1%gp' | sort -rVu | head -n 1 || true)"
+					__PATH="${__PATH:+"${__DIRS%%/}/${__PATH%%/}${__FNAM:+/"${__FNAM##/}"}"}"
+					;;
+				3??) ;;						# 3xx (Redirection)
+				4??) ;;						# 4xx (Client Error)
+				5??) ;;						# 5xx (Server Error)
+				*  ) ;;						# xxx (Unknown Code)
 			esac
+			break
 		done
-		# ---------------------------------------------------------------------
-		case "${__CODE}" in				# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
-			1??) ;;						# 1xx (Informational)
-			2??)						# 2xx (Successful)
-				IFS= mapfile -d $'\n' -t __LIST < <(echo -n "${__RSLT}")
-				__PATH="$(printf "%s\n" "${__LIST[@]//%20/ }" | sed -ne 's%^.*<a href="'"${__MATC}"'/*">\(.*\)</a>.*$%\1%gp' | sort -rVu | head -n 1 || true)"
-				__PATH="${__PATH:+"${__DIRS%%/}/${__PATH%%/}${__FNAM:+/"${__FNAM##/}"}"}"
-				;;
-			3??) ;;						# 3xx (Redirection)
-			4??) ;;						# 4xx (Client Error)
-			5??) ;;						# 5xx (Server Error)
-			*  ) ;;						# xxx (Unknown Code)
-		esac
 	done
 	# -------------------------------------------------------------------------
 	__RETN_VALU="${__PATH}"
@@ -4496,10 +4524,19 @@ function fnExec() {
 			__OPTN=()
 			case "${1:-}" in
 				a|all   ) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all");;
+				mini    ) ;;
+				netinst ) ;;
+				dvd     ) ;;
+				liveinst) ;;
+#				live    ) ;;
+#				tool    ) ;;
+#				clive   ) ;;
+#				cnetinst) ;;
+#				system  ) ;;
 				*       )
 					case "${__COMD:-}" in
 						pxeboot ) __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all");;
-						*       ) ;;
+						*       ) __OPTN=("mini"       "netinst"       "dvd"       "liveinst"      );;
 					esac
 					;;
 			esac
@@ -4571,12 +4608,13 @@ function fnExec() {
 						continue
 					fi
 					case "${__COMD}" in
-						pxeboot ) ;;
-						*       )
-							if [[ -z "${__LIST[23]##-}" ]] || { [[ -n "${__LIST[23]##-}" ]] && [[ ! -s "${__LIST[23]##-}" ]]; }; then
+						create  | \
+						update  )
+							if [[ -z "${__LIST[23]##*-}" ]]; then
 								continue
 							fi
 							;;
+						*       ) ;;
 					esac
 					((++__IDNO)) || true
 					if ! echo "${__IDNO}" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then
@@ -4718,14 +4756,14 @@ function fnDebug_parameter() {
 #   return:        : unused
 function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
-		usage: [sudo] ./${_PROG_PATH:-"${0##*/}"}${_PROG_PATH##*/} [command (options)]
+		usage: [sudo] ${_PROG_PATH:-"$0"} [command (options)]
 
 		  create or update for the remaster or download the iso file:
 		    create|update|download [(empty)|all|(mini|netinst|dvd|liveinst {a|all|id})]
 		      empty         : waiting for input
 		      all           : all target
 		      mini|netinst|dvd|liveinst
-			                : each target
+		                    : each target
 		        all         : all of each target
 		        id number   : selected id
 
@@ -4737,7 +4775,7 @@ function fnHelp() {
 		      empty         : all target
 		      all           : all target
 		      mini|netinst|dvd|liveinst
-			                : each target
+		                    : each target
 		        all         : all of each target
 		        id number   : selected id
 
@@ -4803,6 +4841,7 @@ function fnMain() {
 			--debug | \
 			--dbg   ) shift; _DBGS_FLAG="true"; set -x;;
 			--dbgout) shift; _DBGS_FLAG="true";;
+			--dbglog) shift; _DBGS_LOGS="/tmp/${_PROG_PROC}.$(date +"%Y%m%d%H%M%S" || true).log";;
 			help    ) shift; fnHelp; exit 0;;
 			*       ) shift;;
 		esac

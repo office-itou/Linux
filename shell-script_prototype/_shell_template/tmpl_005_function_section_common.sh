@@ -2211,10 +2211,19 @@ function fnExec() {
 			__OPTN=()
 			case "${1:-}" in
 				a|all   ) shift; __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all");;
+				mini    ) ;;
+				netinst ) ;;
+				dvd     ) ;;
+				liveinst) ;;
+#				live    ) ;;
+#				tool    ) ;;
+#				clive   ) ;;
+#				cnetinst) ;;
+#				system  ) ;;
 				*       )
 					case "${__COMD:-}" in
 						pxeboot ) __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all");;
-						*       ) ;;
+						*       ) __OPTN=("mini"       "netinst"       "dvd"       "liveinst"      );;
 					esac
 					;;
 			esac
@@ -2286,12 +2295,13 @@ function fnExec() {
 						continue
 					fi
 					case "${__COMD}" in
-						pxeboot ) ;;
-						*       )
-							if [[ -z "${__LIST[23]##-}" ]] || { [[ -n "${__LIST[23]##-}" ]] && [[ ! -s "${__LIST[23]##-}" ]]; }; then
+						create  | \
+						update  )
+							if [[ -z "${__LIST[23]##*-}" ]]; then
 								continue
 							fi
 							;;
+						*       ) ;;
 					esac
 					((++__IDNO)) || true
 					if ! echo "${__IDNO}" | grep -qE '^('"${__RANG[*]// /\|}"')$'; then

@@ -15,6 +15,7 @@
 
 	# --- debug parameter -----------------------------------------------------
 	declare       _DBGS_FLAG=""			# debug flag (empty: normal, else: debug)
+	declare       _DBGS_LOGS=""			# debug file (empty: normal, else: debug)
 
 	# --- constant for control code -------------------------------------------
 	if [[ -z "${_CODE_ESCP+true}" ]]; then
