@@ -595,6 +595,11 @@ function fnCreate_directory() {
 #				touch "${__TGET}"
 #			fi
 		fi
+		# --- check target directory ------------------------------------------
+		if [[ -z "${__TGET##*/}" ]] && [[ ! -e "${__TGET%%/}"/. ]]; then
+			fnPrintf "%20.20s: %s" "create directory" "${__TGET%%/}"
+			mkdir -p "${__TGET%%/}"
+		fi
 		# --- force parameter -------------------------------------------------
 		__BACK="${__LINK}.back.${__DATE}"
 		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
@@ -642,6 +647,11 @@ function fnCreate_directory() {
 #		if [[ ! -e "${__TGET}" ]]; then
 #			touch "${__TGET}"
 #		fi
+		# --- check target directory ------------------------------------------
+		if [[ -n "${__LIST[25]##*-}" ]] && [[ ! -e "${__LIST[25]}"/. ]]; then
+			fnPrintf "%20.20s: %s" "create directory" "${__LIST[25]}"
+			mkdir -p "${__LIST[25]}"
+		fi
 		# --- force parameter -------------------------------------------------
 		__BACK="${__LINK}.back.${__DATE}"
 		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
