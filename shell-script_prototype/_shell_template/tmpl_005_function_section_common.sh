@@ -2204,6 +2204,10 @@ function fnExec() {
 	__COMD="$1"
 	shift
 	case "${__COMD:-}" in
+		pxeboot ) rm -f "${_MENU_IPXE}" "${_MENU_GRUB}" "${_MENU_SLNX}" "${_MENU_UEFI}";;
+		*       ) ;;
+	esac
+	case "${__COMD:-}" in
 		list    | \
 		create  | \
 		update  | \
