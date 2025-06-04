@@ -1329,10 +1329,10 @@ function fnExec_download() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -a    __TGET_LIST=("${@:2}") # target data
-	declare       __RSLT=""				# result
 	declare       __RETN=""				# return value
 	declare -a    __ARRY=()				# work variables
 
+	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
 	if [[ -z "${__TGET_LIST[9]##-}" ]]; then # web_path
 		return
 	fi
@@ -1346,8 +1346,8 @@ function fnExec_download() {
 		ln -s "${__TGET_LIST[25]%%/}/${__TGET_LIST[13]##*/}" "${__TGET_LIST[13]}"
 	fi
 	# --- comparing web and local file timestamps -----------------------------
-	__RSLT="$(fnDateDiff "${__TGET_LIST[10]:-@0}" "${__TGET_LIST[14]:-@0}")"
-	if [[ "${__RSLT}" -ge 0 ]]; then
+	__RETN="$(fnDateDiff "${__TGET_LIST[10]:-@0}" "${__TGET_LIST[14]:-@0}")"
+	if [[ "${__RETN}" -ge 0 ]]; then
 		return
 	fi
 	# --- executing the download ----------------------------------------------
@@ -1394,8 +1394,8 @@ function fnExec_remastering() {
 	# --- comparing remaster and local file timestamps ------------------------
 	if [[ -z "${__FORC:-}" ]]; then
 		if [[ -n "${__TGET_LIST[17]##-}" ]] && [[ -s "${__TGET_LIST[17]}" ]]; then
-			__RSLT="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
-			if [[ "${__RSLT}" -le 0 ]]; then
+			__RETN="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
+			if [[ "${__RETN}" -le 0 ]]; then
 				return
 			fi
 		fi
@@ -2148,8 +2148,8 @@ function fnExec_pxeboot() {
 	declare -r -i __CONT_TABS="${3:?}"	# tabs count
 	declare -a    __TGET_LIST=("${@:4}") # target data
 
+	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
 	if [[ -n "${__TGET_LIST[13]##-}" ]] && [[ ! -s "${__TGET_LIST[13]}" ]]; then
-		__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
 		return
 	fi
 	# --- start ---------------------------------------------------------------
@@ -2191,7 +2191,9 @@ function fnExec() {
 	declare       __TGET=""				# target
 	declare -a    __MDIA=() 			# selected media data
 	declare       __RANG=""				# range
-	declare       __RETN=""				# return value
+#	declare       __RSLT=""				# result
+	declare       __RVAL=""				# return value
+#	declare       __RETN=""				# return value
 	declare -i    __TABS=0				# tabs count
 	declare       __WORK=""				# work variables
 	declare -a    __LIST=()				# work variables
@@ -2260,8 +2262,8 @@ function fnExec() {
 					shift
 				done
 				# --- print out of menu ---------------------------------------
-				fnExec_menu "__RSLT" "${__RANG:-"${__WORK}"}" "${__MDIA[@]}"
-				IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RSLT}")
+				fnExec_menu "__RVAL" "${__RANG:-"${__WORK}"}" "${__MDIA[@]}"
+				IFS= mapfile -d $'\n' -t __MDIA < <(echo -n "${__RVAL}")
 				case "${__COMD}" in
 					list    ) continue;;					# print out media list
 					create  ) ;;							# force create
@@ -2321,8 +2323,9 @@ function fnExec() {
 						update  | \
 						download| \
 						pxeboot )
-							fnExec_download "__RETN" "${__LIST[@]}"
-							read -r -a __ARRY < <(echo "${__RETN:-}")
+							fnExec_download "__RVAL" "${__LIST[@]}"
+#							read -r -a __ARRY < <(echo "${__RVAL:-}")
+							IFS= mapfile -d $'\n' -t __ARRY < <(echo -n "${__RVAL:-}")
 							if [[ -n "${__ARRY[*]}" ]]; then
 								case "${__ARRY[12]:-}" in
 									200) __LIST=("${__ARRY[@]}");;
@@ -2336,15 +2339,16 @@ function fnExec() {
 					case "${__COMD}" in
 						create  | \
 						update  )
-							fnExec_remastering "__RETN" "${__COMD}" "${__LIST[@]}"
-							read -r -a __ARRY < <(echo "${__RETN:-}")
+							fnExec_remastering "__RVAL" "${__COMD}" "${__LIST[@]}"
+#							read -r -a __ARRY < <(echo "${__RVAL:-}")
+							IFS= mapfile -d $'\n' -t __ARRY < <(echo -n "${__RVAL:-}")
 							if [[ -n "${__ARRY[*]}" ]]; then
 								__LIST=("${__ARRY[@]}")
 							fi
 							;;
 						download) ;;
 						pxeboot )
-							fnExec_pxeboot "__RETN" "${__COMD}" "${__TABS:-"0"}" "${__LIST[@]}"
+							fnExec_pxeboot "__RVAL" "${__COMD}" "${__TABS:-"0"}" "${__LIST[@]}"
 							case "${__LIST[1]}" in
 								m)							# (menu)
 									if [[ "${__TABS:-"0"}" -eq 0 ]]; then
