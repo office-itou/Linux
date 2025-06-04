@@ -601,11 +601,11 @@ function fnCreate_directory() {
 			mkdir -p "${__TGET%%/}"
 		fi
 		# --- force parameter -------------------------------------------------
-		__BACK="${__LINK}.back.${__DATE}"
-		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
-			fnPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
-			mv "${__LINK}" "${__BACK}"
-		fi
+#		__BACK="${__LINK}.back.${__DATE}"
+#		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
+#			fnPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
+#			mv "${__LINK}" "${__BACK}"
+#		fi
 		# --- check symbolic link ---------------------------------------------
 		if [[ -h "${__LINK}" ]]; then
 			fnPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
@@ -653,11 +653,11 @@ function fnCreate_directory() {
 			mkdir -p "${__LIST[25]}"
 		fi
 		# --- force parameter -------------------------------------------------
-		__BACK="${__LINK}.back.${__DATE}"
-		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
-			fnPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
-			mv "${__LINK}" "${__BACK}"
-		fi
+#		__BACK="${__LINK}.back.${__DATE}"
+#		if [[ -n "${__FORC:-}" ]] && [[ -e "${__LINK}" ]] && [[ ! -e "${__BACK##*/}" ]]; then
+#			fnPrintf "%20.20s: %s" "move symlink" "${__LINK} -> ${__BACK##*/}"
+#			mv "${__LINK}" "${__BACK}"
+#		fi
 		# --- check symbolic link ---------------------------------------------
 		if [[ -h "${__LINK}" ]]; then
 			fnPrintf "%20.20s: %s" "exist symlink" "${__LINK}"
