@@ -265,10 +265,9 @@ function fnBoot_option_kickstart() {
 		__WORK="boot=live"
 	else
 		__WORK+="${__WORK:+" "}inst.ks=${__CONF}${__TGET_LIST[23]#"${_DIRS_CONF}"}"
-		__WORK+="${__TGET_LIST[16]:+"${__WORK:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}"
 		case "${__TGET_TYPE:-}" in
 			"${_TYPE_PXEB:?}") __WORK="${__CONF:+"${__WORK/_dvd/_web}"}";;
-			*                ) ;;
+			*                ) __WORK+="${__TGET_LIST[16]:+"${__WORK:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}";;
 		esac
 	fi
 	__BOPT+=("${__WORK}")
@@ -340,10 +339,9 @@ function fnBoot_option_autoyast() {
 		__WORK="boot=live"
 	else
 		__WORK+="${__WORK:+" "}autoyast=${__CONF}${__TGET_LIST[23]#"${_DIRS_CONF}"}"
-		__WORK+="${__TGET_LIST[16]:+"${__WORK:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}"
 		case "${__TGET_TYPE:-}" in
 			"${_TYPE_PXEB:?}") __WORK="${__CONF:+"${__WORK/_dvd/_web}"}";;
-			*                ) ;;
+			*                ) __WORK+="${__TGET_LIST[16]:+"${__WORK:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}";;
 		esac
 	fi
 	__BOPT+=("${__WORK}")
