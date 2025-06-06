@@ -233,6 +233,12 @@ fixed address -->
       _PATH_SEED="$(awk '$1=="Name:"&&($2=="preseed/url"||$2=="preseed/file"),$1=="" {if ($1=="Value:") {print $2;}}' "${_PATH}")"
       cp -a "${_PATH}" "${_DIRS_TGET}${_DIRS_INST}/"
     fi
+    _PATH="/var/lib/cloud/data/result.json"
+    if [ -f "${_PATH}" ]; then
+      printf "### %s: %s ###\n" "${_FUNC_NAME}" "find ${_PATH##*/}"
+      _PATH_DEVS="$(awk ''''''/DataSourceNoCloud/ {sub(/.*\//,""); sub(/[^[:alnum:]].*/,""); print $0;}'''''' "${_PATH}")"
+      _PATH_SEED="/user-data"
+    fi
     if [ -n "${AutoYaST:-}" ]; then
       printf "### %s: %s ###\n" "${_FUNC_NAME}" "find AutoYaST=${AutoYaST}"
       _PATH_DEVS="${Device:-}"
