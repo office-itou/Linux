@@ -3034,8 +3034,28 @@ _EOT_
 _EOT_
 	# --- header section ------------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${__PATH}" || true
-		#set gfxmode=${_MENU_RESO:+"${_MENU_RESO}${_MENU_DPTH:+x"${_MENU_DPTH}"},"}auto
-		#set default=0
+		if [ x\$feature_default_font_path = xy ] ; then
+		  font=unicode
+		else
+		  font=\$prefix/font.pf2
+		fi
+
+		if loadfont \$font ; then
+		  if [ x\$feature_all_video_module = xy ]; then
+		    insmod all_video
+		  else
+		    insmod efi_gop
+		    insmod efi_uga
+		    insmod video_bochs
+		    insmod video_cirrus
+		  fi
+		  insmod gfxterm
+		  insmod png
+		  terminal_output gfxterm
+		fi
+
+		set gfxmode=${_MENU_RESO:+"${_MENU_RESO}${_MENU_DPTH:+x"${_MENU_DPTH}"},"}auto
+		set default=0
 		set timeout=${_MENU_TOUT:-5}
 		set timeout_style=menu
 		set theme=${__FTHM#"${__DIRS_TGET}"}
