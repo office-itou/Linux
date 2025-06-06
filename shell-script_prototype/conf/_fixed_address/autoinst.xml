@@ -287,16 +287,16 @@ fixed address -->
       printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_PATH_SEED" "${_PATH_SEED:-}"
       printf "%s: %s=[%s]\n" "${_FUNC_NAME}" "_DIRS_COMD" "${_DIRS_COMD:-}"
     fi
+    {
+      echo "nameserver 8.8.8.8"
+      echo "nameserver 8.8.4.4"
+    } >>  /etc/resolv.conf
     _PATH="/run/systemd/resolve/stub-resolv.conf"
     if [ ! -e "${_PATH}" ]; then
       printf "### %s: %s ###\n" "${_FUNC_NAME}" "copy ${_PATH##/*}"
       mkdir -p /run/systemd/resolve
       cp -p /etc/resolv.conf "${_PATH}"
     fi
-    {
-      echo "nameserver 8.8.8.8"
-      echo "nameserver 8.8.4.4"
-    } >>  /etc/resolv.conf
     if [ -n "${_PATH_SEED:-}" ]; then
       if [ -n "${_PATH_DEVS:-}" ]; then
         _PATH_DEVS="/dev/${_PATH_DEVS}"
@@ -320,7 +320,7 @@ fixed address -->
         case "${_PATH}" in
           http:*|https:*|ftp:*|tftp:*)
             if command -v wget > /dev/null 2>&1; then
-              wget --output-document "${_DIRS_TGET:-}${_DIRS_INST}/${_PATH##*/}" "${_PATH}" || true
+              wget --tries=3 --timeout=10 --quiet --continue --show-progress --progress=bar --output-document "${_DIRS_TGET:-}${_DIRS_INST}/${_PATH##*/}" "${_PATH}" || true
             else
               curl --location --http1.1 --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --progress-bar --continue-at - --create-dirs --output-dir "${_DIRS_TGET}${_DIRS_INST}" --output "${_PATH##*/}" "${_PATH}" || true
             fi;;
@@ -464,13 +464,13 @@ fixed address -->
         mount --rbind /tmp  "${_DIRS_TGET}"/tmp
         mount --make-rslave "${_DIRS_TGET}"/dev
         mount --make-rslave "${_DIRS_TGET}"/sys
-        systemctl daemon-reload
+        systemctl daemon-reload || true
         if chroot "${_DIRS_TGET}"/ sh -c "${_PATH_EXEC}"; then
           printf "### %s: %s ###\n" "${_FUNC_NAME}" "complete: ${_PATH_EXEC}"
         else
           printf "### %s: %s ###\n" "${_FUNC_NAME}" "failed: ${_PATH_EXEC}"
         fi
-        umount -R "${_DIRS_TGET}" || true
+#       umount -R "${_DIRS_TGET}" || true
       fi
     fi
     _time_end=$(date +%s)
