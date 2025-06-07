@@ -1800,7 +1800,7 @@ function fnPut_media_data() {
 #			__LIST[J]="${__LIST[J]:--}"		# empty
 #			__LIST[J]="${__LIST[J]// /%20}"	# space
 #		done
-		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s\n" \
+		printf "%-11s %-3s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s %-3s\n" \
 			"${__LIST[@]}"
 	done > "${_PATH_MDIA:?}"
 }
@@ -1942,8 +1942,8 @@ function fnCreate_directory() {
 }
 
 # --- media information [new] -------------------------------------------------
-#  0: type          ( 14)   TEXT           NOT NULL     media type
-#  1: entry_flag    ( 15)   TEXT           NOT NULL     [m] menu, [o] output, [else] hidden
+#  0: type          ( 11)   TEXT           NOT NULL     media type
+#  1: entry_flag    (  3)   TEXT           NOT NULL     [m] menu, [o] output, [else] hidden
 #  2: entry_name    ( 39)   TEXT           NOT NULL     entry name (unique)
 #  3: entry_disp    ( 39)   TEXT           NOT NULL     entry name for display
 #  4: version       ( 23)   TEXT                        version id
@@ -1968,6 +1968,7 @@ function fnCreate_directory() {
 # 23: cfg_path      ( 85)   TEXT                        config    file path
 # 24: cfg_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 25: lnk_path      ( 85)   TEXT                        symlink   directory or file path
+# 26: create        (  3)   TEXT                        symlink   directory or file path
 
 # -----------------------------------------------------------------------------
 # descript: create preseed.cfg
@@ -3621,21 +3622,32 @@ function fnExec_menu() {
 			__LIST[24]="${__ARRY[1]:-}"						# cfg_tstamp
 		fi
 		# --- print out -------------------------------------------------------
+		__LIST[26]="s"
 		if [[ -z "${__CLR0:-}" ]]; then
 			if [[ -z "${__LIST[8]##-}" ]] && [[ -z "${__LIST[14]##-}" ]]; then
 				__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[33m"}"	# unreleased
 			elif [[ -z "${__LIST[14]##-}" ]]; then
+				__LIST[26]="o"
 				__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[46m"}"	# new file
 			else
-				if [[ -n "${__LIST[18]##-}" ]]; then
-					__WORK="$(fnDateDiff "${__LIST[18]}" "${__LIST[14]}")"
+				if [[ -n "${__LIST[24]##-}" ]]; then
+					__WORK="$(fnDateDiff "${__LIST[18]:-"0"}" "${__LIST[24]:-"0"}")"
 					if [[ "${__WORK}" -gt 0 ]]; then
+						__LIST[26]="o"
+						__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}"	# remaster < config
+					fi
+				fi
+				if [[ -n "${__LIST[18]}" ]]; then
+					__WORK="$(fnDateDiff "${__LIST[18]:-"0"}" "${__LIST[14]:-"0"}")"
+					if [[ "${__WORK}" -gt 0 ]]; then
+						__LIST[26]="o"
 						__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[93m"}"	# remaster < local
 					fi
 				fi
-				if [[ -n "${__LIST[10]##-}" ]]; then
-					__WORK="$(fnDateDiff "${__LIST[10]}" "${__LIST[14]}")"
+				if [[ -n "${__LIST[10]}" ]]; then
+					__WORK="$(fnDateDiff "${__LIST[10]:-"0"}" "${__LIST[14]:-"0"}")"
 					if [[ "${__WORK}" -lt 0 ]]; then
+						__LIST[26]="o"
 						__CLR0="${_CODE_ESCP:+"${_CODE_ESCP}[92m"}"	# web > local
 					fi
 				fi
@@ -3734,13 +3746,26 @@ function fnExec_remastering() {
 	fi
 	# --- comparing remaster and local file timestamps ------------------------
 	if [[ -z "${__FORC:-}" ]]; then
-		if [[ -n "${__TGET_LIST[17]##-}" ]] && [[ -s "${__TGET_LIST[17]}" ]]; then
-			__RETN="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
-			if [[ "${__RETN}" -le 0 ]]; then
-				return
-			fi
-		fi
+		case "${__TGET_LIST[26]}" in
+			s) return;;					# skip
+			*) ;;						# create
+		esac
 	fi
+#	if [[ -z "${__FORC:-}" ]]; then
+#		if { [[ -n "${__TGET_LIST[13]##-}" ]] && [[ -s "${__TGET_LIST[13]}" ]]; } \
+#		&& { [[ -n "${__TGET_LIST[17]##-}" ]] && [[ -s "${__TGET_LIST[17]}" ]]; }; then
+#			__RETN="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
+#			if [[ "${__RETN}" -le 0 ]]; then
+#				if { [[ -n "${__TGET_LIST[23]##-}" ]] && [[ -s "${__TGET_LIST[23]}" ]]; } \
+#				&& { [[ -n "${__TGET_LIST[17]##-}" ]] && [[ -s "${__TGET_LIST[17]}" ]]; }; then
+#					__RETN="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[24]:-@0}")"
+#					if [[ "${__RETN}" -le 0 ]]; then
+#						return
+#					fi
+#				fi
+#			fi
+#		fi
+#	fi
 	# --- executing the remastering -------------------------------------------
 	fnRemastering "${__TGET_LIST[@]}"
 	# --- new local remaster iso files ----------------------------------------

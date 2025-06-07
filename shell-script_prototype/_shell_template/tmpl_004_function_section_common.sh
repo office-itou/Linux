@@ -536,7 +536,7 @@ function fnPut_media_data() {
 #			__LIST[J]="${__LIST[J]:--}"		# empty
 #			__LIST[J]="${__LIST[J]// /%20}"	# space
 #		done
-		printf "%-15s %-15s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s\n" \
+		printf "%-11s %-3s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s %-3s\n" \
 			"${__LIST[@]}"
 	done > "${_PATH_MDIA:?}"
 }
@@ -678,8 +678,8 @@ function fnCreate_directory() {
 }
 
 # --- media information [new] -------------------------------------------------
-#  0: type          ( 14)   TEXT           NOT NULL     media type
-#  1: entry_flag    ( 15)   TEXT           NOT NULL     [m] menu, [o] output, [else] hidden
+#  0: type          ( 11)   TEXT           NOT NULL     media type
+#  1: entry_flag    (  3)   TEXT           NOT NULL     [m] menu, [o] output, [else] hidden
 #  2: entry_name    ( 39)   TEXT           NOT NULL     entry name (unique)
 #  3: entry_disp    ( 39)   TEXT           NOT NULL     entry name for display
 #  4: version       ( 23)   TEXT                        version id
@@ -704,6 +704,7 @@ function fnCreate_directory() {
 # 23: cfg_path      ( 85)   TEXT                        config    file path
 # 24: cfg_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 25: lnk_path      ( 85)   TEXT                        symlink   directory or file path
+# 26: create        (  3)   TEXT                        symlink   directory or file path
 
 # -----------------------------------------------------------------------------
 # descript: create preseed.cfg
