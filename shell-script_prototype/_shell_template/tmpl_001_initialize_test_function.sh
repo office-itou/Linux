@@ -1,3 +1,4 @@
+	# shellcheck disable=SC2148
 	# -------------------------------------------------------------------------
 	declare       _CODE_NAME=""
 	              _CODE_NAME="$(sed -ne '/VERSION_CODENAME/ s/^.*=//p' /etc/os-release)"

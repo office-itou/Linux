@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 # *** function section (sub functions) ****************************************
 
 # === <common> ================================================================
@@ -704,7 +705,7 @@ function fnCreate_directory() {
 # 23: cfg_path      ( 85)   TEXT                        config    file path
 # 24: cfg_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 25: lnk_path      ( 85)   TEXT                        symlink   directory or file path
-# 26: create        (  3)   TEXT                        symlink   directory or file path
+# 26: create_flag   (  3)   TEXT                        create flag
 
 # -----------------------------------------------------------------------------
 # descript: create preseed.cfg

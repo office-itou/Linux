@@ -17,6 +17,7 @@
 ##
 ###############################################################################
 
+# shellcheck disable=SC2148
 # *** initialization **********************************************************
 	export LANG=C
 
@@ -97,6 +98,7 @@ function fnTrap() {
 
 	trap fnTrap EXIT
 
+	# shellcheck disable=SC2148
 	# -------------------------------------------------------------------------
 	declare       _CODE_NAME=""
 	              _CODE_NAME="$(sed -ne '/VERSION_CODENAME/ s/^.*=//p' /etc/os-release)"
@@ -151,6 +153,7 @@ function fnTrap() {
 		fi
 	fi
 
+	# shellcheck disable=SC2148
 	# --- shared directory parameter ------------------------------------------
 	declare       _DIRS_TOPS=""			# top of shared directory
 	declare       _DIRS_HGFS=""			# vmware shared
@@ -266,6 +269,7 @@ function fnTrap() {
 	declare -r    _TYPE_PXEB="pxeboot"	# pxe boot
 	declare -r    _TYPE_USBB="usbboot"	# usb stick boot
 
+# shellcheck disable=SC2148
 # *** function section (common functions) *************************************
 
 # === <common> ================================================================
@@ -567,6 +571,7 @@ function fnPrintf() {
 	fi
 }
 
+# shellcheck disable=SC2148
 # === <network> ===============================================================
 
 # --- private ip address ------------------------------------------------------
@@ -659,6 +664,7 @@ function fnIPv6GetRevAddr() {
 	            printf("%c" , substr($0,1,1));}'
 }
 
+# shellcheck disable=SC2148
 # === <media> =================================================================
 
 # -----------------------------------------------------------------------------
@@ -789,6 +795,7 @@ function fnDistro2efi() {
 	echo -n "${__WORK}"
 }
 
+# shellcheck disable=SC2148
 # === <initrd> ================================================================
 
 # -----------------------------------------------------------------------------
@@ -926,6 +933,7 @@ function fnSplit_initramfs() {
 	fi
 }
 
+# shellcheck disable=SC2148
 # === <mkiso> =================================================================
 
 # -----------------------------------------------------------------------------
@@ -967,6 +975,7 @@ function fnCreate_iso() {
 	popd > /dev/null || exit
 }
 
+# shellcheck disable=SC2148
 # === <web_tools> =============================================================
 
 # -----------------------------------------------------------------------------
@@ -1262,6 +1271,7 @@ function fnGetWeb_status() {
 	esac
 }
 
+# shellcheck disable=SC2148
 # *** function section (sub functions) ****************************************
 
 # === <common> ================================================================
@@ -1968,7 +1978,7 @@ function fnCreate_directory() {
 # 23: cfg_path      ( 85)   TEXT                        config    file path
 # 24: cfg_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 25: lnk_path      ( 85)   TEXT                        symlink   directory or file path
-# 26: create        (  3)   TEXT                        symlink   directory or file path
+# 26: create_flag   (  3)   TEXT                        create flag
 
 # -----------------------------------------------------------------------------
 # descript: create preseed.cfg
@@ -2322,6 +2332,7 @@ function fnCreate_precon() {
 	# -------------------------------------------------------------------------
 }
 
+# shellcheck disable=SC2148
 # === <remastering> ===========================================================
 
 # . tmpl_001_initialize_common.sh
@@ -4680,7 +4691,7 @@ function fnExec() {
 						continue
 					fi
 					# --- start -----------------------------------------------
-					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[17]##*/}"
+#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[17]##*/}"
 					# --- conversion ------------------------------------------
 					for J in "${!__LIST[@]}"
 					do
@@ -4881,8 +4892,8 @@ function fnMain() {
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
-	declare -i    I=0					# work variables
-	declare -i    J=0					# work variables
+#	declare -i    I=0					# work variables
+#	declare -i    J=0					# work variables
 
 	# --- help ----------------------------------------------------------------
 	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then

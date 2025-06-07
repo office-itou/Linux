@@ -156,8 +156,8 @@ function fnMain() {
 	declare       __WORK=""				# work variables
 	declare -a    __ARRY=()				# work variables
 	declare -a    __LIST=()				# work variables
-	declare -i    I=0					# work variables
-	declare -i    J=0					# work variables
+#	declare -i    I=0					# work variables
+#	declare -i    J=0					# work variables
 
 	# --- help ----------------------------------------------------------------
 	if [[ -z "${__OPTN_PARM[*]:-}" ]]; then

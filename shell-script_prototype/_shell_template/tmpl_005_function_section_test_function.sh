@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 # -----------------------------------------------------------------------------
 # descript: service status
 #   input :   $@   : input value

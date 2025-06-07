@@ -1,3 +1,4 @@
+# shellcheck disable=SC2148
 # === <remastering> ===========================================================
 
 # . tmpl_001_initialize_common.sh
@@ -2356,7 +2357,7 @@ function fnExec() {
 						continue
 					fi
 					# --- start -----------------------------------------------
-					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[17]##*/}"
+#					printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__LIST[17]##*/}"
 					# --- conversion ------------------------------------------
 					for J in "${!__LIST[@]}"
 					do

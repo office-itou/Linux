@@ -1,3 +1,4 @@
+	# shellcheck disable=SC2148
 	# --- shared directory parameter ------------------------------------------
 	declare       _DIRS_TOPS=""			# top of shared directory
 	declare       _DIRS_HGFS=""			# vmware shared
