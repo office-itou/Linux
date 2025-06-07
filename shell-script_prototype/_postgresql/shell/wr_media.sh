@@ -86,7 +86,7 @@ set -u
 			echo "create table and insert data"
 			if ! psql --host=localhost --username=dbuser --quiet   --dbname=mydb --command="
 				DELETE FROM ${TABL_NAME:?};
-				INSERT INTO ${TABL_NAME:?}(type,entry_flag,entry_name,entry_disp,version,latest,release,support,web_regexp,web_path,web_tstamp,web_size,web_status,iso_path,iso_tstamp,iso_size,iso_volume,rmk_path,rmk_tstamp,rmk_size,rmk_volume,ldr_initrd,ldr_kernel,cfg_path,cfg_tstamp,lnk_path) VALUES ${_LINE}
+				INSERT INTO ${TABL_NAME:?}(type,entry_flag,entry_name,entry_disp,version,latest,release,support,web_regexp,web_path,web_tstamp,web_size,web_status,iso_path,iso_tstamp,iso_size,iso_volume,rmk_path,rmk_tstamp,rmk_size,rmk_volume,ldr_initrd,ldr_kernel,cfg_path,cfg_tstamp,lnk_path,create_flag) VALUES ${_LINE}
 				;"; then
 				echo "[${_LINE}]" > sql_error.txt
 				exit 1
@@ -109,9 +109,9 @@ set -u
 							AND t.entry_name = s.entry_name
 							AND t.entry_disp = s.entry_disp
 						WHEN MATCHED THEN
-							UPDATE SET (type,entry_flag,entry_name,entry_disp,version,latest,release,support,web_regexp,web_path,web_tstamp,web_size,web_status,iso_path,iso_tstamp,iso_size,iso_volume,rmk_path,rmk_tstamp,rmk_size,rmk_volume,ldr_initrd,ldr_kernel,cfg_path,cfg_tstamp,lnk_path) = (${_LINE})
+							UPDATE SET (type,entry_flag,entry_name,entry_disp,version,latest,release,support,web_regexp,web_path,web_tstamp,web_size,web_status,iso_path,iso_tstamp,iso_size,iso_volume,rmk_path,rmk_tstamp,rmk_size,rmk_volume,ldr_initrd,ldr_kernel,cfg_path,cfg_tstamp,lnk_path,create_flag) = (${_LINE})
 						WHEN NOT MATCHED THEN
-							INSERT     (type,entry_flag,entry_name,entry_disp,version,latest,release,support,web_regexp,web_path,web_tstamp,web_size,web_status,iso_path,iso_tstamp,iso_size,iso_volume,rmk_path,rmk_tstamp,rmk_size,rmk_volume,ldr_initrd,ldr_kernel,cfg_path,cfg_tstamp,lnk_path) VALUES (${_LINE})
+							INSERT     (type,entry_flag,entry_name,entry_disp,version,latest,release,support,web_regexp,web_path,web_tstamp,web_size,web_status,iso_path,iso_tstamp,iso_size,iso_volume,rmk_path,rmk_tstamp,rmk_size,rmk_volume,ldr_initrd,ldr_kernel,cfg_path,cfg_tstamp,lnk_path,create_flag) VALUES (${_LINE})
 					;"; then
 					echo "[${_LINE}]" > sql_error.txt
 					exit 1
@@ -122,8 +122,8 @@ set -u
 	esac
 
 # --- media information [new] -------------------------------------------------
-#  0: type          ( 14)   TEXT           NOT NULL     media type
-#  1: entry_flag    ( 15)   TEXT           NOT NULL     [m] menu, [o] output, [else] hidden
+#  0: type          ( 11)   TEXT           NOT NULL     media type
+#  1: entry_flag    (  3)   TEXT           NOT NULL     [m] menu, [o] output, [else] hidden
 #  2: entry_name    ( 39)   TEXT           NOT NULL     entry name (unique)
 #  3: entry_disp    ( 39)   TEXT           NOT NULL     entry name for display
 #  4: version       ( 23)   TEXT                        version id
@@ -148,3 +148,4 @@ set -u
 # 23: cfg_path      ( 85)   TEXT                        config    file path
 # 24: cfg_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
 # 25: lnk_path      ( 85)   TEXT                        symlink   directory or file path
+# 26: create_flag   (  3)   TEXT                        create flag

@@ -24,9 +24,10 @@ SELECT
     , public.media.ldr_kernel
     , public.media.cfg_path
     , public.media.cfg_tstamp
-    , public.media.lnk_path 
+    , public.media.lnk_path
+    , public.media.create
 FROM
-    public.media 
+    public.media
 ORDER BY
     public.media.type = 'mini' DESC
     , public.media.type = 'netinst' DESC
