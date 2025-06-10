@@ -6,56 +6,19 @@
 <!-- leap -->
       <listentry t="map">
         <alias>repo-oss</alias>
-        <media_url>http://download.opensuse.org/distribution/leap/16.0/repo/oss/</media_url>
+        <media_url>https://download.opensuse.org/distribution/leap/16.0/repo/oss/</media_url>
         <name>Main Repository</name>
         <priority t="integer">99</priority>
         <product_dir>/</product_dir>
       </listentry>
       <listentry t="map">
-        <alias>repo-update</alias>
-        <media_url>http://download.opensuse.org/update/leap/16.0/oss/</media_url>
+        <alias>repo-update-oss</alias>
+        <media_url>https://download.opensuse.org/update/leap/16.0/oss/</media_url>
         <name>Main Update Repository</name>
         <priority t="integer">99</priority>
         <product_dir>/</product_dir>
       </listentry>
-      <listentry t="map">
-        <alias>repo-sle-update</alias>
-        <media_url>http://download.opensuse.org/update/leap/16.0/sle/</media_url>
-        <name>Update repository with updates from SUSE Linux Enterprise 15</name>
-        <priority t="integer">99</priority>
-        <product_dir>/</product_dir>
-      </listentry>
-      <listentry t="map">
-        <alias>repo-backports-update</alias>
-        <media_url>http://download.opensuse.org/update/leap/16.0/backports/</media_url>
-        <name>Update repository of openSUSE Backports</name>
-        <priority t="integer">99</priority>
-        <product_dir>/</product_dir>
-      </listentry>
 <!-- leap -->
-<!-- leap non-oss
-      <listentry t="map">
-        <alias>repo-non-oss</alias>
-        <media_url>http://download.opensuse.org/distribution/leap/16.0/repo/non-oss/</media_url>
-        <name>Non-OSS Repository</name>
-        <priority t="integer">99</priority>
-        <product_dir>/</product_dir>
-      </listentry>
-      <listentry t="map">
-        <alias>repo-update-non-oss</alias>
-        <media_url>http://download.opensuse.org/update/leap/16.0/non-oss/</media_url>
-        <name>Update Repository (Non-Oss)</name>
-        <priority t="integer">99</priority>
-        <product_dir>/</product_dir>
-      </listentry>
-      <listentry t="map">
-        <alias>repo-openh264</alias>
-        <media_url>http://codecs.opensuse.org/openh264/openSUSE_Leap/</media_url>
-        <name>Open H.264 Codec (openSUSE Leap)</name>
-        <priority t="integer">99</priority>
-        <product_dir>/</product_dir>
-      </listentry>
-leap non-oss -->
 <!-- tumbleweed
       <listentry t="map">
         <alias>repo-oss</alias>
@@ -236,7 +199,7 @@ fixed address -->
     _PATH="/var/lib/cloud/data/result.json"
     if [ -f "${_PATH}" ]; then
       printf "### %s: %s ###\n" "${_FUNC_NAME}" "find ${_PATH##*/}"
-      _PATH_DEVS="$(awk ''''''/DataSourceNoCloud/ {sub(/.*\//,""); sub(/[^[:alnum:]].*/,""); print $0;}'''''' "${_PATH}")"
+      _PATH_DEVS="$(awk '/DataSourceNoCloud/ {sub(/.*\//,""); sub(/[^[:alnum:]].*/,""); print $0;}' "${_PATH}")"
       _PATH_SEED="/user-data"
     fi
     if [ -n "${AutoYaST:-}" ]; then
@@ -624,7 +587,12 @@ fixed address -->
       <package>bc</package>
       <package>tree</package>
       <package>openssh-server</package>
+<!-- leap -->
       <package>systemd-network</package>
+<!-- leap -->
+<!-- tumbleweed
+      <package>systemd-resolved</package>
+tumbleweed -->
       <package>dnsmasq</package>
       <package>tftp</package>
       <package>bind-utils</package>

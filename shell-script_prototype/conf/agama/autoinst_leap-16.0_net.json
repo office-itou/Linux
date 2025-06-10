@@ -1,0 +1,59 @@
+{
+  "localization": {
+    "language": "ja_JP.UTF-8",
+    "keyboard": "jp"
+  },
+  "product": {
+    "id": "Leap"
+  },
+  "storage": {
+    "bootDevice": "/dev/nvme0n1"
+  },
+  "user": {
+    "fullName": "Master",
+    "userName": "master",
+    "password": "master"
+  },
+  "hostname": {
+    "static": "sv-opensuse.workgroup"
+  },
+  "network": {
+    "connections": [
+      {
+        "id": "Etherned device 1",
+        "interface": "eth0",
+        "method4": "manual",
+        "gateway4": "192.168.1.254",
+        "addresses": ["192.168.1.1/24"],
+        "nameservers": ["192.168.1.254"]
+      }
+    ]
+  },
+	"software": {
+		"extraRepositories": [
+			{
+        "alias": "repo-oss",
+        "url": "https://download.opensuse.org/distribution/leap/16.0/repo/oss/"
+			},
+			{
+        "alias": "repo-update-oss",
+        "url": "https://download.opensuse.org/update/leap/16.0/oss/"
+			}
+		],
+		"packages": [
+			"AtomicWorm"
+		]
+	},
+  "scripts": {
+    "post": [
+      {
+        "name": "enable-sshd",
+        "chroot": true,
+        "body": |||
+          #!/bin/bash
+          systemctl enable sshd
+        |||
+      }
+    ]
+  }
+}
