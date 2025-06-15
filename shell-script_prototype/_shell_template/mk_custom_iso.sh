@@ -1323,6 +1323,7 @@ function fnInitialization() {
 	_CONF_SEDD="${_CONF_SEDD:-:_DIRS_TMPL_:/preseed_debian.cfg}"
 	_CONF_SEDU="${_CONF_SEDU:-:_DIRS_TMPL_:/preseed_ubuntu.cfg}"
 	_CONF_YAST="${_CONF_YAST:-:_DIRS_TMPL_:/yast_opensuse.xml}"
+	_CONF_AGMA="${_CONF_AGMA:-:_DIRS_TMPL_:/agama_opensuse.json}"
 	_SHEL_ERLY="${_SHEL_ERLY:-:_DIRS_SHEL_:/autoinst_cmd_early.sh}"
 	_SHEL_LATE="${_SHEL_LATE:-:_DIRS_SHEL_:/autoinst_cmd_late.sh}"
 	_SHEL_PART="${_SHEL_PART:-:_DIRS_SHEL_:/autoinst_cmd_part.sh}"
@@ -1401,6 +1402,7 @@ function fnInitialization() {
 			CONF_SEDD) _CONF_SEDD="${__VALU:-"${_CONF_SEDD:-}"}";;
 			CONF_SEDU) _CONF_SEDU="${__VALU:-"${_CONF_SEDU:-}"}";;
 			CONF_YAST) _CONF_YAST="${__VALU:-"${_CONF_YAST:-}"}";;
+			CONF_AGMA) _CONF_AGMA="${__VALU:-"${_CONF_AGMA:-}"}";;
 			SHEL_ERLY) _SHEL_ERLY="${__VALU:-"${_SHEL_ERLY:-}"}";;
 			SHEL_LATE) _SHEL_LATE="${__VALU:-"${_SHEL_LATE:-}"}";;
 			SHEL_PART) _SHEL_PART="${__VALU:-"${_SHEL_PART:-}"}";;
@@ -1457,6 +1459,7 @@ function fnInitialization() {
 	_CONF_SEDD="${_CONF_SEDD//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
 	_CONF_SEDU="${_CONF_SEDU//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
 	_CONF_YAST="${_CONF_YAST//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
+	_CONF_AGMA="${_CONF_AGMA//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
 	_SHEL_ERLY="${_SHEL_ERLY//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
 	_SHEL_LATE="${_SHEL_LATE//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
 	_SHEL_PART="${_SHEL_PART//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
@@ -1509,6 +1512,7 @@ function fnInitialization() {
 	readonly      _CONF_SEDD
 	readonly      _CONF_SEDU
 	readonly      _CONF_YAST
+	readonly      _CONF_AGMA
 	readonly      _SRVR_HTTP
 	readonly      _SRVR_PROT
 	readonly      _SRVR_NICS
@@ -1666,7 +1670,8 @@ function fnCreate_conf() {
 		CONF_CLUD="${_CONF_CLUD//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for ubuntu cloud-init
 		CONF_SEDD="${_CONF_SEDD//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for debian
 		CONF_SEDU="${_CONF_SEDU//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for ubuntu
-		CONF_YAST="${_CONF_YAST//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for opensuse
+		CONF_YAST="${_CONF_YAST//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for opensuse autoyast
+		CONF_AGMA="${_CONF_AGMA//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for opensuse agama
 
 		# --- shell script ------------------------------------------------------------
 		SHEL_ERLY="${_SHEL_ERLY//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run early
@@ -2216,7 +2221,11 @@ function fnCreate_autoyast() {
 	case "${__TGET_PATH}" in
 		*tumbleweed*)
 			sed -i "${__TGET_PATH}"                                    \
-			    -e '\%<add_on_products .*>%,\%<\/add_on_products>% { ' \
+			    -e '\%<add_on_products .*>%,\%</add_on_products>%  { ' \
+			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
+			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
+			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
+			    -e '\%<packages .*>%,\%</packages>%                { ' \
 			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
 			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
 			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
@@ -2226,8 +2235,12 @@ function fnCreate_autoyast() {
 			sed -i "${__TGET_PATH}"                                          \
 			    -e '\%<add_on_products .*>%,\%</add_on_products>%        { ' \
 			    -e '/<!-- leap/,/leap -->/                               { ' \
-			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${__NUMS}/%g } " \
-			    -e '/<!-- leap$/ s/$/ -->/g                                ' \
+			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${__NUMS}/%g   " \
+			    -e '/<!-- leap$/ s/$/ -->/g                              } ' \
+			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
+			    -e '\%<packages .*>%,\%</packages>%                      { ' \
+			    -e '/<!-- leap/,/leap -->/                               { ' \
+			    -e '/<!-- leap$/ s/$/ -->/g                              } ' \
 			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
 			    -e 's%\(<product>\).*\(</product>\)%\1Leap\2%              '
 			;;
@@ -2239,6 +2252,58 @@ function fnCreate_autoyast() {
 	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: create autoinst.json
+#   input :   $1   : input value
+#   output: stdout : message
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnCreate_agama() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
+	declare       __WORK=""				# work variables
+	declare       __VERS=""				# distribution version
+	declare       __NUMS=""				# "            number
+#	declare       __PDCT=""				# product name
+	declare       __PDID=""				# "       id
+	# -------------------------------------------------------------------------
+	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	mkdir -p "${__DIRS}"
+	cp --backup "${_CONF_AGMA}" "${__TGET_PATH}"
+	# -------------------------------------------------------------------------
+	__VERS="${__TGET_PATH#*_}"
+	__VERS="${__VERS%%_*}"
+	__VERS="${__VERS,,}"
+	__NUMS="${__VERS##*-}"
+#	__PDCT="${__VERS%%-*}"
+	__PDID="${__VERS//-/_}"
+	__PDID="${__PDID^}"
+	# --- by media ------------------------------------------------------------
+	# --- by version ----------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_tumbleweed_*) __WORK="leap";;
+		*             ) __WORK="tumbleweed";;
+	esac
+	sed -i "${__TGET_PATH}"                                   \
+	    -e '/"product": {/,/}/                             {' \
+	    -e '/"id":/ s/"[^ ]\+"$/"'"${__PDID}"'"/           }' \
+	    -e '/"extraRepositories": \[/,/\]/                 {' \
+	    -e '\%^// '"${__WORK}"'%,\%^// '"${__WORK}"'%d      ' \
+	    -e '\%^//.*$%d                                     }' \
+	    -e '\%^// fixed parameter%,\%^// fixed parameter%d  '
+	# --- desktop -------------------------------------------------------------
+	__WORK="${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	cp "${__TGET_PATH}" "${__WORK}"
+	sed -i "${__TGET_PATH}"                   \
+	    -e '/"patterns": \[/,/\]/          {' \
+	    -e '\%^// desktop%,\%^// desktop%d }'
+	sed -i "${__WORK}"                        \
+	    -e '/"patterns": \[/,/\]/          {' \
+	    -e '\%^//.*$%d                     }'
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${__TGET_PATH}" "${__WORK}"
 }
 
 # -----------------------------------------------------------------------------
@@ -2263,11 +2328,12 @@ function fnCreate_precon() {
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
-			all      ) shift; __OPTN+=("preseed" "nocloud" "kickstart" "autoyast"); break;;
+			all      ) shift; __OPTN+=("preseed" "nocloud" "kickstart" "autoyast" "agama"); break;;
 			preseed  | \
 			nocloud  | \
 			kickstart| \
-			autoyast ) ;;
+			autoyast | \
+			agama    ) ;;
 			*        ) break;;
 		esac
 		__OPTN+=("$1")
@@ -2300,7 +2366,8 @@ function fnCreate_precon() {
 		fi
 		__LIST+=("${__PATH}")
 		case "${__PATH}" in
-			*dvd.*) __LIST+=("${__PATH/_dvd/_web}");;
+			*/kickstart/*dvd.*) __LIST+=("${__PATH/_dvd/_web}");;
+			*/agama/*) __LIST+=("${__PATH/_leap-*_/_tumbleweed_}");;
 			*)	;;
 		esac
 	done
@@ -2315,6 +2382,7 @@ function fnCreate_precon() {
 			nocloud  ) fnCreate_nocloud   "${__PATH}/user-data";;
 			kickstart) fnCreate_kickstart "${__PATH}";;
 			autoyast ) fnCreate_autoyast  "${__PATH}";;
+			agama    ) fnCreate_agama     "${__PATH}";;
 			*)	;;
 		esac
 	done
@@ -2370,13 +2438,16 @@ function fnFile_copy() {
 
 # -----------------------------------------------------------------------------
 # descript: create a boot option for preseed
-#   input :   $@   : input value
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $2   : target type
+#   input :   $@   : target data
 #   output: stdout : output
 #   return:        : unused
 function fnBoot_option_preseed() {
 	fnDebugout ""
-	declare -r    __TGET_TYPE="${1:?}"	# target type
-	declare -r -a __TGET_LIST=("${@:2}") # target data
+	declare -n    __RETN_VALU="$1"		# return value
+	declare -r    __TGET_TYPE="${2:?}"	# target type
+	declare -r -a __TGET_LIST=("${@:3}") # target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
@@ -2450,9 +2521,9 @@ function fnBoot_option_preseed() {
 	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]}"
 	__BOPT+=("${__WORK}")
 	# ---  5: isosfile --------------------------------------------------------
+	__WORK=""
 	case "${__TGET_TYPE:-}" in
 		"${_TYPE_PXEB:?}")
-			__WORK=""
 			case "${__TGET_LIST[2]}" in
 #				debian-mini-*       ) ;;
 				ubuntu-mini-*       ) __WORK+="${__WORK:+" "}initrd=${__IMGS}/${__TGET_LIST[21]#"${_DIRS_LOAD}"} iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
@@ -2467,24 +2538,27 @@ function fnBoot_option_preseed() {
 				ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
 				*                   ) __WORK+="${__WORK:+" "}fetch=${__ISOS}/${__TGET_LIST[13]##*/}";;
 			esac
-			__BOPT+=("${__WORK}")
 			;;
 		*) ;;
 	esac
+	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]:-}"
+	printf -v __RETN_VALU "%s\n" "${__BOPT[@]:-}"
 	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
 # descript: create a boot option for nocloud
-#   input :   $@   : input value
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $2   : target type
+#   input :   $@   : target data
 #   output: stdout : output
 #   return:        : unused
 function fnBoot_option_nocloud() {
 	fnDebugout ""
-	declare -r    __TGET_TYPE="${1:?}"	# target type
-	declare -r -a __TGET_LIST=("${@:2}") # target data
+	declare -n    __RETN_VALU="$1"		# return value
+	declare -r    __TGET_TYPE="${2:?}"	# target type
+	declare -r -a __TGET_LIST=("${@:3}") # target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
@@ -2538,9 +2612,9 @@ function fnBoot_option_nocloud() {
 	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]}"
 	__BOPT+=("${__WORK}")
 	# ---  5: isosfile --------------------------------------------------------
+	__WORK=""
 	case "${__TGET_TYPE:-}" in
 		"${_TYPE_PXEB:?}")
-			__WORK=""
 			case "${__TGET_LIST[2]}" in
 #				debian-mini-*       ) ;;
 				ubuntu-mini-*       ) __WORK+="${__WORK:+" "}initrd=${__IMGS}/${__TGET_LIST[21]#"${_DIRS_LOAD}"} iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
@@ -2555,24 +2629,27 @@ function fnBoot_option_nocloud() {
 				ubuntu-*            ) __WORK+="${__WORK:+" "}boot=casper iso-url=${__ISOS}/${__TGET_LIST[13]##*/}";;
 				*                   ) __WORK+="${__WORK:+" "}fetch=${__ISOS}/${__TGET_LIST[13]##*/}";;
 			esac
-			__BOPT+=("${__WORK}")
 			;;
 		*) ;;
 	esac
+	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]:-}"
+	printf -v __RETN_VALU "%s\n" "${__BOPT[@]:-}"
 	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
 # descript: create a boot option for kickstart
-#   input :   $@   : input value
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $2   : target type
+#   input :   $@   : target data
 #   output: stdout : output
 #   return:        : unused
 function fnBoot_option_kickstart() {
 	fnDebugout ""
-	declare -r    __TGET_TYPE="${1:?}"	# target type
-	declare -r -a __TGET_LIST=("${@:2}") # target data
+	declare -n    __RETN_VALU="$1"		# return value
+	declare -r    __TGET_TYPE="${2:?}"	# target type
+	declare -r -a __TGET_LIST=("${@:3}") # target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
@@ -2599,10 +2676,10 @@ function fnBoot_option_kickstart() {
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__WORK="boot=live"
 	else
-		__WORK+="${__WORK:+" "}inst.ks=${__CONF}${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK="${__WORK:+" "}inst.ks=hd:sr0:${__TGET_LIST[23]#"${_DIRS_CONF}"}"
 		case "${__TGET_TYPE:-}" in
-			"${_TYPE_PXEB:?}") __WORK="${__CONF:+"${__WORK/_dvd/_web}"}";;
-			*                ) __WORK+="${__TGET_LIST[16]:+"${__WORK:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}";;
+			"${_TYPE_PXEB:?}") __WORK="${__CONF:+"${__WORK/hd:sr0:/${__CONF}}"}"; __WORK="${__WORK/_dvd/_web}";;
+			*                ) ;;
 		esac
 	fi
 	__BOPT+=("${__WORK}")
@@ -2625,28 +2702,29 @@ function fnBoot_option_kickstart() {
 	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
 	__BOPT+=("${__WORK}")
 	# ---  5: isosfile --------------------------------------------------------
+	__WORK=""
 	case "${__TGET_TYPE:-}" in
-		"${_TYPE_PXEB:?}")
-			__WORK=""
-			__WORK+="${__WORK:+" "}inst.repo=${__IMGS}/${__TGET_LIST[2]}"
-			__BOPT+=("${__WORK}")
-			;;
-		*) ;;
+		"${_TYPE_PXEB:?}") __WORK+="${__WORK:+" "}inst.repo=${__IMGS}/${__TGET_LIST[2]}";;
+		*                ) __WORK+="${__WORK:+" "}inst.stage2=hd:LABEL=${__TGET_LIST[16]}";;
 	esac
+	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]:-}"
+	printf -v __RETN_VALU "%s\n" "${__BOPT[@]:-}"
 	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
 # descript: create a boot option for autoyast
-#   input :   $@   : input value
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $2   : target type
+#   input :   $@   : target data
 #   output: stdout : output
 #   return:        : unused
 function fnBoot_option_autoyast() {
 	fnDebugout ""
-	declare -r    __TGET_TYPE="${1:?}"	# target type
-	declare -r -a __TGET_LIST=("${@:2}") # target data
+	declare -n    __RETN_VALU="$1"		# return value
+	declare -r    __TGET_TYPE="${2:?}"	# target type
+	declare -r -a __TGET_LIST=("${@:3}") # target data
 	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
 	declare       __HOST=""				# host name
@@ -2673,10 +2751,10 @@ function fnBoot_option_autoyast() {
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__WORK="boot=live"
 	else
-		__WORK+="${__WORK:+" "}autoyast=${__CONF}${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK+="${__WORK:+" "}autoyast=cd:${__TGET_LIST[23]#"${_DIRS_CONF}"}"
 		case "${__TGET_TYPE:-}" in
-			"${_TYPE_PXEB:?}") __WORK="${__CONF:+"${__WORK/_dvd/_web}"}";;
-			*                ) __WORK+="${__TGET_LIST[16]:+"${__WORK:+" "}${__TGET_LIST[16]:+inst.stage2=hd:LABEL="${__TGET_LIST[16]}"}"}";;
+			"${_TYPE_PXEB:?}") __WORK="${__CONF:+"${__WORK/cd:/${__CONF}}"}"; __WORK="${__WORK/_dvd/_web}";;
+			*                ) ;;
 		esac
 	fi
 	__BOPT+=("${__WORK}")
@@ -2686,10 +2764,10 @@ function fnBoot_option_autoyast() {
 		__WORK="ip=dhcp"
 	else
 		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
-#		case "${__TGET_LIST[2]}" in
-#			opensuse-*-15* ) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
-#			*              ) ;;
-#		esac
+		case "${__TGET_LIST[2]}" in
+			opensuse-*-15* ) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
+			*              ) ;;
+		esac
 	fi
 	__BOPT+=("${__WORK}")
 	# ---  3: locale ----------------------------------------------------------
@@ -2703,34 +2781,113 @@ function fnBoot_option_autoyast() {
 	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
 	__BOPT+=("${__WORK}")
 	# ---  5: isosfile --------------------------------------------------------
+	__WORK=""
 	case "${__TGET_TYPE:-}" in
 		"${_TYPE_PXEB:?}")
-			__WORK=""
 			case "${__TGET_LIST[2]}" in
 				opensuse-leap*netinst*      ) __WORK+="${__WORK:+" "}install=https://download.opensuse.org/distribution/leap/${__TGET_LIST[2]##*-}/repo/oss/";;
 				opensuse-tumbleweed*netinst*) __WORK+="${__WORK:+" "}install=https://download.opensuse.org/tumbleweed/repo/oss/";;
 				*                           ) __WORK+="${__WORK:+" "}install=${__IMGS}/${__TGET_LIST[2]}";;
 			esac
-			__BOPT+=("${__WORK}")
 			;;
 		*) ;;
 	esac
+	__BOPT+=("${__WORK}")
 	# --- finish --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]:-}"
+	printf -v __RETN_VALU "%s\n" "${__BOPT[@]:-}"
+	fnDebug_parameter_list
+}
+
+# -----------------------------------------------------------------------------
+# descript: create a boot option for agama
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $2   : target type
+#   input :   $@   : target data
+#   output: stdout : output
+#   return:        : unused
+function fnBoot_option_agama() {
+	fnDebugout ""
+	declare -n    __RETN_VALU="$1"		# return value
+	declare -r    __TGET_TYPE="${2:?}"	# target type
+	declare -r -a __TGET_LIST=("${@:3}") # target data
+	declare       __WORK=""				# work variables
+	declare -a    __BOPT=()				# boot options
+	declare       __HOST=""				# host name
+	declare       __SRVR="" 			# server address
+	declare       __CONF=""				# configuration file
+	declare       __IMGS=""				# iso file extraction destination
+#	declare       __ISOS=""				# iso file
+#	declare       __LOAD=""				# load module
+#	declare       __RMAK=""				# remake file
+	# --- boot option ---------------------------------------------------------
+#	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
+	__BOPT=()
+	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
+	# ---  0: server address --------------------------------------------------
+	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
+	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
+	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
+#	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+#	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
+#	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
+	__BOPT+=("server=${__SRVR}")
+	# ---  1: autoinstall -----------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="boot=live"
+	else
+		__WORK+="${__WORK:+" "}inst.auto=dvd:${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		case "${__TGET_TYPE:-}" in
+			"${_TYPE_PXEB:?}") __WORK="${__CONF:+"${__WORK/dvd:/${__CONF}}"}"; __WORK="${__WORK/_dvd/_web}";;
+			*                ) __WORK="${__WORK:+"${__WORK}?devices=sr0"}";;
+		esac
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  2: network ---------------------------------------------------------
+	__WORK=""
+	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
+		__WORK="ip=dhcp"
+	else
+		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+	fi
+	__BOPT+=("${__WORK}")
+	# ---  3: locale ----------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}localization.language=ja_JP.UTF-8 localization.keyboard=ja localization.timezone=Asia/Tokyo"
+	__BOPT+=("${__WORK}")
+	# ---  4: ramdisk ---------------------------------------------------------
+	__WORK=""
+	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]/root=\/dev\/ram*[0-9]/}"
+	__WORK="${__WORK#"${__WORK%%[!"${IFS}"]*}"}"	# ltrim
+	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
+	__BOPT+=("${__WORK}")
+	# ---  5: isosfile --------------------------------------------------------
+	__WORK=""
+	case "${__TGET_TYPE:-}" in
+		"${_TYPE_PXEB:?}") ;;
+		*                ) ;;
+	esac
+	__BOPT+=("${__WORK}")
+	# --- finish --------------------------------------------------------------
+	printf -v __RETN_VALU "%s\n" "${__BOPT[@]:-}"
 	fnDebug_parameter_list
 }
 
 # -----------------------------------------------------------------------------
 # descript: create a boot option
-#   input :   $@   : input value
+#   n-ref :   $1   : return value : serialized target data
+#   input :   $2   : target type
+#   input :   $@   : target data
 #   output: stdout : output
 #   return:        : unused
 function fnBoot_options() {
 	fnDebugout ""
-	declare -r    __TGET_TYPE="${1:?}"	# target type
-	declare -r -a __TGET_LIST=("${@:2}") # target data
+	declare -n    __RETN_VALU="$1"		# return value
+	declare -r    __TGET_TYPE="${2:?}"	# target type
+	declare -r -a __TGET_LIST=("${@:3}") # target data
+	declare       __RSLT=""				# result
 	declare -a    __LIST=()				# work variables
-	declare       __WORK=""				# work variables
+#	declare       __WORK=""				# work variables
 	declare -a    __BOPT=()				# boot options
 
 	# --- create boot options -------------------------------------------------
@@ -2738,8 +2895,8 @@ function fnBoot_options() {
 		debian       | \
 		ubuntu       )
 			case "${__TGET_LIST[23]}" in
-				*/preseed/* ) __WORK="$(set -e; fnBoot_option_preseed "${__TGET_TYPE}" "${__TGET_LIST[@]}")";;
-				*/nocloud/* ) __WORK="$(set -e; fnBoot_option_nocloud "${__TGET_TYPE}" "${__TGET_LIST[@]}")";;
+				*/preseed/* ) fnBoot_option_preseed "__RSLT" "${__TGET_TYPE}" "${__TGET_LIST[@]}";;
+				*/nocloud/* ) fnBoot_option_nocloud "__RSLT" "${__TGET_TYPE}" "${__TGET_LIST[@]}";;
 				*           ) ;;
 			esac
 			;;
@@ -2747,14 +2904,20 @@ function fnBoot_options() {
 		centos       | \
 		almalinux    | \
 		rockylinux   | \
-		miraclelinux ) __WORK="$(set -e; fnBoot_option_kickstart "${__TGET_TYPE}" "${__TGET_LIST[@]}")";;
-		opensuse     ) __WORK="$(set -e; fnBoot_option_autoyast  "${__TGET_TYPE}" "${__TGET_LIST[@]}")";;
+		miraclelinux ) fnBoot_option_kickstart "__RSLT" "${__TGET_TYPE}" "${__TGET_LIST[@]}";;
+		opensuse     )
+			case "${__TGET_LIST[23]}" in
+				*/autoyast/*) fnBoot_option_autoyast  "__RSLT" "${__TGET_TYPE}" "${__TGET_LIST[@]}";;
+				*/agama/*   ) fnBoot_option_agama     "__RSLT" "${__TGET_TYPE}" "${__TGET_LIST[@]}";;
+				*           ) ;;
+			esac
+			;;
 		*            ) ;;
 	esac
-	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
+	IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__RSLT}")
 	__BOPT+=("fsck.mode=skip raid=noautodetect${_MENU_MODE:+" vga=${_MENU_MODE}"}")
 	# --- finish --------------------------------------------------------------
-	printf "%s\n" "${__BOPT[@]}"
+	printf -v __RETN_VALU "%s\n" "${__BOPT[@]}"
 	fnDebug_parameter_list
 }
 
@@ -3270,6 +3433,7 @@ function fnRemastering_copy() {
 				cp -a "${__PATH}" "${__DIRS}"
 				chmod ugo+xr-w "${__DIRS}/${__PATH##*/}"
 				;;
+			*/agama/*    | \
 			*/autoyast/* | \
 			*/kickstart/*| \
 			*/nocloud/*  | \
@@ -3462,7 +3626,8 @@ function fnRemastering() {
 	mount -t overlay overlay -o lowerdir="${__DLOW}",upperdir="${__DUPR}",workdir="${__DWKD}" "${__DMRG}"
 	# --- create boot options -------------------------------------------------
 	printf "%20.20s: %s\n" "start" "create boot options"
-	__WORK="$(set -e; fnBoot_options "${_TYPE_ISOB:?}" "${__TGET_LIST[@]}")"
+#	__WORK="$(set -e; fnBoot_options "${_TYPE_ISOB:?}" "${__TGET_LIST[@]}")"
+	fnBoot_options "__WORK" "${_TYPE_ISOB:?}" "${__TGET_LIST[@]}"
 	# --- create autoinstall configuration file for isolinux ------------------
 	printf "%20.20s: %s\n" "start" "create autoinstall configuration file for isolinux"
 	fnRemastering_isolinux "${__DMRG}" "${__WORK}" "${__TGET_LIST[@]}"
@@ -3678,7 +3843,8 @@ function fnExec_menu() {
 		)"
 		__MDIA[I]="${__WORK}"
 	done
-	__RETN_VALU="$(printf "%s\n" "${__MDIA[@]}")"
+#	__RETN_VALU="$(printf "%s\n" "${__MDIA[@]}")"
+	printf -v __RETN_VALU "%s\n" "${__MDIA[@]}"
 	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "# ${_TEXT_GAP1::((${#_TEXT_GAP1}-4))} #"
 	fnDebug_parameter_list
 }
@@ -3691,12 +3857,16 @@ function fnExec_menu() {
 #   return:        : unused
 function fnExec_download() {
 	fnDebugout ""
+	declare -i    __time_start=0		# start of elapsed time
+	declare -i    __time_end=0			# end of elapsed time
+	declare -i    __time_elapsed=0		# result of elapsed time
 	declare -n    __RETN_VALU="$1"		# return value
 	declare -a    __TGET_LIST=("${@:2}") # target data
 	declare       __RETN=""				# return value
 	declare -a    __ARRY=()				# work variables
 
-	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+#	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+	printf -v __RETN_VALU "%s\n" "${__TGET_LIST[@]}"
 	if [[ -z "${__TGET_LIST[9]##-}" ]]; then # web_path
 		return
 	fi
@@ -3714,6 +3884,9 @@ function fnExec_download() {
 	if [[ "${__RETN}" -ge 0 ]]; then
 		return
 	fi
+	# --- start ---------------------------------------------------------------
+	__time_start=$(date +%s)
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_start}" +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__TGET_LIST[13]##*/}"
 	# --- executing the download ----------------------------------------------
 	fnGetWeb_contents "${__TGET_LIST[13]}" "${__TGET_LIST[9]}"
 	# --- get file information ------------------------------------------------
@@ -3725,7 +3898,13 @@ function fnExec_download() {
 	__TGET_LIST[15]="${__ARRY[2]:-}"	# iso_size
 	__TGET_LIST[16]="${__ARRY[3]:-}"	# iso_volume
 	# --- finish --------------------------------------------------------------
-	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+#	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+	printf -v __RETN_VALU "%s\n" "${__TGET_LIST[@]}"
+	# --- complete ------------------------------------------------------------
+	__time_end=$(date +%s)
+	__time_elapsed=$((__time_end-__time_start))
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%20.20s: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$(date -d "@${__time_end}" +"%Y/%m/%d %H:%M:%S" || true)" "finish" "${__TGET_LIST[13]##*/}"
+	printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[92m"}%10dd%02dh%02dm%02ds: %-20.20s: %s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "$((__time_elapsed/86400))" "$((__time_elapsed%86400/3600))" "$((__time_elapsed%3600/60))" "$((__time_elapsed%60))" "elapsed" "${__TGET_LIST[13]##*/}"
 	fnDebug_parameter_list
 }
 
@@ -3745,7 +3924,8 @@ function fnExec_remastering() {
 	declare       __RETN=""				# return value
 	declare -a    __ARRY=()				# work variables
 
-	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+#	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+	printf -v __RETN_VALU "%s\n" "${__TGET_LIST[@]}"
 	case "${__COMD_TYPE}" in
 		create  ) __FORC="true";;
 		update  ) __FORC="";;
@@ -3762,21 +3942,6 @@ function fnExec_remastering() {
 			*) ;;						# create
 		esac
 	fi
-#	if [[ -z "${__FORC:-}" ]]; then
-#		if { [[ -n "${__TGET_LIST[13]##-}" ]] && [[ -s "${__TGET_LIST[13]}" ]]; } \
-#		&& { [[ -n "${__TGET_LIST[17]##-}" ]] && [[ -s "${__TGET_LIST[17]}" ]]; }; then
-#			__RETN="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[14]:-@0}")"
-#			if [[ "${__RETN}" -le 0 ]]; then
-#				if { [[ -n "${__TGET_LIST[23]##-}" ]] && [[ -s "${__TGET_LIST[23]}" ]]; } \
-#				&& { [[ -n "${__TGET_LIST[17]##-}" ]] && [[ -s "${__TGET_LIST[17]}" ]]; }; then
-#					__RETN="$(fnDateDiff "${__TGET_LIST[18]:-@0}" "${__TGET_LIST[24]:-@0}")"
-#					if [[ "${__RETN}" -le 0 ]]; then
-#						return
-#					fi
-#				fi
-#			fi
-#		fi
-#	fi
 	# --- executing the remastering -------------------------------------------
 	fnRemastering "${__TGET_LIST[@]}"
 	# --- new local remaster iso files ----------------------------------------
@@ -3788,7 +3953,8 @@ function fnExec_remastering() {
 	__TGET_LIST[19]="${__ARRY[2]:--}"	# rmk_size
 	__TGET_LIST[20]="${__ARRY[3]:--}"	# rmk_volume
 	# --- finish --------------------------------------------------------------
-	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+#	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+	printf -v __RETN_VALU "%s\n" "${__TGET_LIST[@]}"
 	fnDebug_parameter_list
 }
 
@@ -3834,12 +4000,12 @@ function fnPxeboot_ipxe() {
 
 			:menu
 			menu Select the OS type you want to boot
-			item --gap --                           --------------------------------------------------------------------------
-			item --gap --                           [ System command ]
-			item -- shell                           - iPXE shell
-			#item -- shutdown                       - System shutdown
-			item -- restart                         - System reboot
-			item --gap --                           --------------------------------------------------------------------------
+			item --gap --                                   --------------------------------------------------------------------------
+			item --gap --                                   [ System command ]
+			item -- shell                                   - iPXE shell
+			#item -- shutdown                               - System shutdown
+			item -- restart                                 - System reboot
+			item --gap --                                   --------------------------------------------------------------------------
 			choose --timeout \${menu-timeout} --default \${menu-default} selected || goto menu
 			goto \${selected}
 
@@ -3891,7 +4057,7 @@ _EOT_
 				live          ) __ENTR="live-${__ENTR}";;	# original media live mode
 				*             ) ;;							# original media install mode
 			esac
-			__WORK="$(printf "%-40.40s%-55.55s%19.19s" "item -- ${__ENTR}" "- ${__TGET_LIST[3]//%20/ } ${_TEXT_SPCE// /.}" "${__TGET_LIST[14]//%20/ }")"
+			__WORK="$(printf "%-48.48s%-55.55s%19.19s" "item -- ${__ENTR}" "- ${__TGET_LIST[3]//%20/ } ${_TEXT_SPCE// /.}" "${__TGET_LIST[14]//%20/ }")"
 			sed -i "${__PATH_TGET}" -e "/\[ System command \]/i \\${__WORK}"
 			__WORK=""
 			case "${__TGET_LIST[2]}" in
@@ -3958,7 +4124,8 @@ _EOT_
 					)"
 					;;
 				*          )			# (linux)
-					__WORK="$(set -e; fnBoot_options "${_TYPE_PXEB}" "${__TGET_LIST[@]}")"
+#					__WORK="$(set -e; fnBoot_options "${_TYPE_PXEB}" "${__TGET_LIST[@]}")"
+					fnBoot_options "__WORK" "${_TYPE_PXEB}" "${__TGET_LIST[@]}"
 					IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
 					if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 						__WORK="$(
@@ -4233,7 +4400,8 @@ _EOT_
 					)"
 					;;
 				*          )			# (linux)
-					__WORK="$(set -e; fnBoot_options "${_TYPE_PXEB}" "${__TGET_LIST[@]}")"
+#					__WORK="$(set -e; fnBoot_options "${_TYPE_PXEB}" "${__TGET_LIST[@]}")"
+					fnBoot_options "__WORK" "${_TYPE_PXEB}" "${__TGET_LIST[@]}"
 					IFS= mapfile -d $'\n' -t __BOPT < <(echo -n "${__WORK}")
 					__WORK="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${__SPCS}/g" | sed -e ':l; N; s/\n/\\n/; b l;' || true
@@ -4465,7 +4633,8 @@ _EOT_
 					esac
 					;;
 				*          )			# (linux)
-					__WORK="$(set -e; fnBoot_options "${_TYPE_PXEB}" "${__TGET_LIST[@]}")"
+#					__WORK="$(set -e; fnBoot_options "${_TYPE_PXEB}" "${__TGET_LIST[@]}")"
+					fnBoot_options "__WORK" "${_TYPE_PXEB}" "${__TGET_LIST[@]}"
 					__WORK="${__WORK//\$\{hostname\}/"${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"}"
 					__WORK="${__WORK//\$\{srvraddr\}/"${_SRVR_PROT}://${_SRVR_ADDR:?}"}"
 					__WORK="${__WORK//\$\{ethrname\}/"${_NICS_NAME:-ens160}"}"
@@ -4549,7 +4718,8 @@ function fnExec_pxeboot() {
 	# --- complete ------------------------------------------------------------
 	printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__TGET_LIST[13]##*/}"
 	# --- finish --------------------------------------------------------------
-	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+#	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
+	printf -v __RETN_VALU "%s\n" "${__TGET_LIST[@]}"
 	fnDebug_parameter_list
 }
 
@@ -4861,6 +5031,7 @@ function fnHelp() {
 		      nocloud       : nocloud
 		      kickstart     : kickstart.cfg
 		      autoyast      : autoyast.xml
+		      agama         : autoinst.json
 
 		  create symbolic link:
 		    link

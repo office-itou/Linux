@@ -1,12 +1,11 @@
 {
+// fixed parameter
   "bootloader": {
     "extraKernelParams": ""
   },
   "localization": {
-    "languages": [
-      "ja_JP.UTF-8"
-    ],
-    "keyboard": "jp",
+    "language": "ja_JP.UTF-8",
+    "keyboard": "ja",
     "timezone": "Asia/Tokyo"
   },
   "hostname": {
@@ -25,6 +24,7 @@
       }
     ]
   },
+// fixed parameter
   "product": {
     "id": "Tumbleweed"
   },
@@ -73,17 +73,33 @@
     ]
   },
   "software": {
-		"extraRepositories": [
-			{
+    "extraRepositories": [
+// leap
+      {
+        "alias": "repo-oss",
+        "url": "https://download.opensuse.org/distribution/leap/16.0/repo/oss/"
+      },
+      {
+        "alias": "repo-update-oss",
+        "url": "https://download.opensuse.org/update/leap/16.0/oss/"
+      }
+// leap
+// tumbleweed
+      {
         "alias": "repo-oss",
         "url": "https://download.opensuse.org/tumbleweed/repo/oss/"
-			},
-			{
+      },
+      {
         "alias": "repo-update",
         "url": "https://download.opensuse.org/update/tumbleweed/"
-			}
-		],
+      }
+// tumbleweed
+    ],
     "patterns": [
+// desktop
+      "gnome",
+      "rhythmbox",
+// desktop
       "apparmor",
       "base",
       "basesystem",

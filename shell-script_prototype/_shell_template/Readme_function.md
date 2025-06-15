@@ -60,12 +60,14 @@
 |                                                                                                   | [fnCreate_nocloud](#create-nocloud) "\$1"                                                                             | create nocloud                                                                |
 |                                                                                                   | [fnCreate_kickstart](#create-kickstartcfg) "\$1"                                                                      | create kickstart.cfg                                                          |
 |                                                                                                   | [fnCreate_autoyast](#create-autoyastxml) "\$1"                                                                        | create autoyast.xml                                                           |
+|                                                                                                   | [fnCreate_agama](#create-autoinstjson) "\$1"                                                                          | create autoinst.json                                                          |
 |                                                                                                   | [fnCreate_precon](#create-pre-configuration-file-templates) "\$1" "\$@"                                               | create pre-configuration file templates                                       |
 | [tmpl_005_function_section_common.sh](./tmpl_005_function_section_common.sh)                      | [fnFile_copy](#file-copy) "\$1" "\$2"                                                                                 | file copy                                                                     |
 |                                                                                                   | [fnBoot_option_preseed](#create-a-boot-option-for-preseed) "\$@"                                                      | create a boot option for preseed                                              |
 |                                                                                                   | [fnBoot_option_nocloud](#create-a-boot-option-for-nocloud) "\$@"                                                      | create a boot option for nocloud                                              |
 |                                                                                                   | [fnBoot_option_kickstart](#create-a-boot-option-for-kickstart) "\$@"                                                  | create a boot option for kickstart                                            |
 |                                                                                                   | [fnBoot_option_autoyast](#create-a-boot-option-for-autoyast) "\$@"                                                    | create a boot option for autoyast                                             |
+|                                                                                                   | [fnBoot_option_agama](#create-a-boot-option-for-agama) "\$@"                                                          | create a boot option for agama                                                |
 |                                                                                                   | [fnBoot_options](#create-a-boot-option) "\$@"                                                                         | create a boot option                                                          |
 |                                                                                                   | [fnRemastering_path](#create-path-for-configuration-file) "\$1" "\$2"                                                 | create path for configuration file                                            |
 |                                                                                                   | [fnRemastering_isolinux_autoinst_cfg](#create-autoinstall-configuration-file-for-isolinux) "\$1" "\$2" "\$3" "\$@"    | create autoinstall configuration file for isolinux                            |
@@ -721,6 +723,18 @@
   
 * * *
   
+#### create autoinst.json  
+  
+*fnCreate_agama "\$1"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $1     | input value            |                                            |
+| output | stdout | message                |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
 #### create pre-configuration file templates  
   
 *fnCreate_precon "\$1" "\$@"*  
@@ -790,6 +804,18 @@
 #### create a boot option for autoyast  
   
 *fnBoot_option_autoyast "\$@"*  
+  
+|  i/o   | value  |      explanation       |                    note                    |
+| :----: | :----: | :--------------------- | :----------------------------------------- |
+| input  | $@     | input value            |                                            |
+| output | stdout | output                 |                                            |
+| return |        | unused                 |                                            |
+  
+* * *
+  
+#### create a boot option for agama  
+  
+*fnBoot_option_agama "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |

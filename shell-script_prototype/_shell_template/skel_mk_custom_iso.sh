@@ -125,6 +125,7 @@ function fnHelp() {
 		      nocloud       : nocloud
 		      kickstart     : kickstart.cfg
 		      autoyast      : autoyast.xml
+		      agama         : autoinst.json
 
 		  create symbolic link:
 		    link

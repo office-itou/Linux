@@ -50,6 +50,7 @@ function fnInitialization() {
 	_CONF_SEDD="${_CONF_SEDD:-:_DIRS_TMPL_:/preseed_debian.cfg}"
 	_CONF_SEDU="${_CONF_SEDU:-:_DIRS_TMPL_:/preseed_ubuntu.cfg}"
 	_CONF_YAST="${_CONF_YAST:-:_DIRS_TMPL_:/yast_opensuse.xml}"
+	_CONF_AGMA="${_CONF_AGMA:-:_DIRS_TMPL_:/agama_opensuse.json}"
 	_SHEL_ERLY="${_SHEL_ERLY:-:_DIRS_SHEL_:/autoinst_cmd_early.sh}"
 	_SHEL_LATE="${_SHEL_LATE:-:_DIRS_SHEL_:/autoinst_cmd_late.sh}"
 	_SHEL_PART="${_SHEL_PART:-:_DIRS_SHEL_:/autoinst_cmd_part.sh}"
@@ -128,6 +129,7 @@ function fnInitialization() {
 			CONF_SEDD) _CONF_SEDD="${__VALU:-"${_CONF_SEDD:-}"}";;
 			CONF_SEDU) _CONF_SEDU="${__VALU:-"${_CONF_SEDU:-}"}";;
 			CONF_YAST) _CONF_YAST="${__VALU:-"${_CONF_YAST:-}"}";;
+			CONF_AGMA) _CONF_AGMA="${__VALU:-"${_CONF_AGMA:-}"}";;
 			SHEL_ERLY) _SHEL_ERLY="${__VALU:-"${_SHEL_ERLY:-}"}";;
 			SHEL_LATE) _SHEL_LATE="${__VALU:-"${_SHEL_LATE:-}"}";;
 			SHEL_PART) _SHEL_PART="${__VALU:-"${_SHEL_PART:-}"}";;
@@ -184,6 +186,7 @@ function fnInitialization() {
 	_CONF_SEDD="${_CONF_SEDD//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
 	_CONF_SEDU="${_CONF_SEDU//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
 	_CONF_YAST="${_CONF_YAST//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
+	_CONF_AGMA="${_CONF_AGMA//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
 	_SHEL_ERLY="${_SHEL_ERLY//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
 	_SHEL_LATE="${_SHEL_LATE//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
 	_SHEL_PART="${_SHEL_PART//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
@@ -236,6 +239,7 @@ function fnInitialization() {
 	readonly      _CONF_SEDD
 	readonly      _CONF_SEDU
 	readonly      _CONF_YAST
+	readonly      _CONF_AGMA
 	readonly      _SRVR_HTTP
 	readonly      _SRVR_PROT
 	readonly      _SRVR_NICS
@@ -393,7 +397,8 @@ function fnCreate_conf() {
 		CONF_CLUD="${_CONF_CLUD//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for ubuntu cloud-init
 		CONF_SEDD="${_CONF_SEDD//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for debian
 		CONF_SEDU="${_CONF_SEDU//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for ubuntu
-		CONF_YAST="${_CONF_YAST//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for opensuse
+		CONF_YAST="${_CONF_YAST//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"		# for opensuse autoyast
+		CONF_AGMA="${_CONF_AGMA//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for opensuse agama
 
 		# --- shell script ------------------------------------------------------------
 		SHEL_ERLY="${_SHEL_ERLY//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"	# run early
@@ -943,7 +948,11 @@ function fnCreate_autoyast() {
 	case "${__TGET_PATH}" in
 		*tumbleweed*)
 			sed -i "${__TGET_PATH}"                                    \
-			    -e '\%<add_on_products .*>%,\%<\/add_on_products>% { ' \
+			    -e '\%<add_on_products .*>%,\%</add_on_products>%  { ' \
+			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
+			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
+			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
+			    -e '\%<packages .*>%,\%</packages>%                { ' \
 			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
 			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
 			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
@@ -953,8 +962,12 @@ function fnCreate_autoyast() {
 			sed -i "${__TGET_PATH}"                                          \
 			    -e '\%<add_on_products .*>%,\%</add_on_products>%        { ' \
 			    -e '/<!-- leap/,/leap -->/                               { ' \
-			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${__NUMS}/%g } " \
-			    -e '/<!-- leap$/ s/$/ -->/g                                ' \
+			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${__NUMS}/%g   " \
+			    -e '/<!-- leap$/ s/$/ -->/g                              } ' \
+			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
+			    -e '\%<packages .*>%,\%</packages>%                      { ' \
+			    -e '/<!-- leap/,/leap -->/                               { ' \
+			    -e '/<!-- leap$/ s/$/ -->/g                              } ' \
 			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
 			    -e 's%\(<product>\).*\(</product>\)%\1Leap\2%              '
 			;;
@@ -966,6 +979,58 @@ function fnCreate_autoyast() {
 	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}"
+}
+
+# -----------------------------------------------------------------------------
+# descript: create autoinst.json
+#   input :   $1   : input value
+#   output: stdout : message
+#   return:        : unused
+# shellcheck disable=SC2317
+function fnCreate_agama() {
+	declare -r    __TGET_PATH="${1:?}"	# file name
+	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
+	declare       __WORK=""				# work variables
+	declare       __VERS=""				# distribution version
+	declare       __NUMS=""				# "            number
+#	declare       __PDCT=""				# product name
+	declare       __PDID=""				# "       id
+	# -------------------------------------------------------------------------
+	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
+	mkdir -p "${__DIRS}"
+	cp --backup "${_CONF_AGMA}" "${__TGET_PATH}"
+	# -------------------------------------------------------------------------
+	__VERS="${__TGET_PATH#*_}"
+	__VERS="${__VERS%%_*}"
+	__VERS="${__VERS,,}"
+	__NUMS="${__VERS##*-}"
+#	__PDCT="${__VERS%%-*}"
+	__PDID="${__VERS//-/_}"
+	__PDID="${__PDID^}"
+	# --- by media ------------------------------------------------------------
+	# --- by version ----------------------------------------------------------
+	case "${__TGET_PATH}" in
+		*_tumbleweed_*) __WORK="leap";;
+		*             ) __WORK="tumbleweed";;
+	esac
+	sed -i "${__TGET_PATH}"                                   \
+	    -e '/"product": {/,/}/                             {' \
+	    -e '/"id":/ s/"[^ ]\+"$/"'"${__PDID}"'"/           }' \
+	    -e '/"extraRepositories": \[/,/\]/                 {' \
+	    -e '\%^// '"${__WORK}"'%,\%^// '"${__WORK}"'%d      ' \
+	    -e '\%^//.*$%d                                     }' \
+	    -e '\%^// fixed parameter%,\%^// fixed parameter%d  '
+	# --- desktop -------------------------------------------------------------
+	__WORK="${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	cp "${__TGET_PATH}" "${__WORK}"
+	sed -i "${__TGET_PATH}"                   \
+	    -e '/"patterns": \[/,/\]/          {' \
+	    -e '\%^// desktop%,\%^// desktop%d }'
+	sed -i "${__WORK}"                        \
+	    -e '/"patterns": \[/,/\]/          {' \
+	    -e '\%^//.*$%d                     }'
+	# -------------------------------------------------------------------------
+	chmod ugo-x "${__TGET_PATH}" "${__WORK}"
 }
 
 # -----------------------------------------------------------------------------
@@ -990,11 +1055,12 @@ function fnCreate_precon() {
 	while [[ -n "${1:-}" ]]
 	do
 		case "${1:-}" in
-			all      ) shift; __OPTN+=("preseed" "nocloud" "kickstart" "autoyast"); break;;
+			all      ) shift; __OPTN+=("preseed" "nocloud" "kickstart" "autoyast" "agama"); break;;
 			preseed  | \
 			nocloud  | \
 			kickstart| \
-			autoyast ) ;;
+			autoyast | \
+			agama    ) ;;
 			*        ) break;;
 		esac
 		__OPTN+=("$1")
@@ -1027,7 +1093,8 @@ function fnCreate_precon() {
 		fi
 		__LIST+=("${__PATH}")
 		case "${__PATH}" in
-			*dvd.*) __LIST+=("${__PATH/_dvd/_web}");;
+			*/kickstart/*dvd.*) __LIST+=("${__PATH/_dvd/_web}");;
+			*/agama/*) __LIST+=("${__PATH/_leap-*_/_tumbleweed_}");;
 			*)	;;
 		esac
 	done
@@ -1042,6 +1109,7 @@ function fnCreate_precon() {
 			nocloud  ) fnCreate_nocloud   "${__PATH}/user-data";;
 			kickstart) fnCreate_kickstart "${__PATH}";;
 			autoyast ) fnCreate_autoyast  "${__PATH}";;
+			agama    ) fnCreate_agama     "${__PATH}";;
 			*)	;;
 		esac
 	done
