@@ -370,7 +370,7 @@ function fnBoot_option_autoyast() {
 	__BOPT+=("${__WORK}")
 	# ---  3: locale ----------------------------------------------------------
 	__WORK=""
-	__WORK+="${__WORK:+" "}locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106"
+	__WORK+="${__WORK:+" "}language=ja_JP"
 	__BOPT+=("${__WORK}")
 	# ---  4: ramdisk ---------------------------------------------------------
 	__WORK=""
@@ -451,7 +451,7 @@ function fnBoot_option_agama() {
 	__BOPT+=("${__WORK}")
 	# ---  3: locale ----------------------------------------------------------
 	__WORK=""
-	__WORK+="${__WORK:+" "}localization.language=ja_JP.UTF-8 localization.keyboard=ja localization.timezone=Asia/Tokyo"
+	__WORK+="${__WORK:+" "}language=ja_JP.UTF-8 keyboard=jp timezone=Asia/Tokyo"
 	__BOPT+=("${__WORK}")
 	# ---  4: ramdisk ---------------------------------------------------------
 	__WORK=""

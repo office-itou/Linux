@@ -243,6 +243,29 @@ fixed address -->
                                       _DIRS_COMD="${_PATH_SEED%/*}"
                                       _DIRS_COMD="${_DIRS_COMD%/*}/script"
                                     fi;;
+        inst.auto=*               ) _PATH_SEED="${_LINE#*inst.auto=}"
+                                    case "${_PATH_SEED}" in
+                                      device:*)
+                                        _PATH_DEVS="${_PATH_SEED#device://}"
+                                        _PATH_DEVS="${_PATH_DEVS%/*}"
+                                        _PATH_SEED="${_PATH_SEED#*"${_PATH_DEVS}"}";;
+                                      usb:*) ;;
+                                      label:*) ;;
+                                      hd:*|dvd:*|cd:*)
+                                        _PATH_DEVS="${_PATH_SEED#*devices=}"
+                                        _PATH_DEVS="${_PATH_DEVS#/dev/}"
+                                        _PATH_SEED="${_PATH_SEED#*:}"
+                                        _PATH_SEED="${_PATH_SEED%\?*}"
+                                        _DIRS_COMD="${_PATH_SEED%/*}"
+                                        _DIRS_COMD="${_DIRS_COMD%/*}/script";;
+                                      http:*|https:*|ftp:*|tftp:*)
+                                        _DIRS_COMD="${_PATH_SEED%/*}"
+                                        _DIRS_COMD="${_DIRS_COMD%/*}/script";;
+                                      smb:*                 ) ;;
+                                      nfs:*                 ) ;;
+                                      file:*                ) ;;
+                                      *) ;;
+                                    esac;;
         *) ;;
       esac
     done
