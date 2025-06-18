@@ -63,12 +63,12 @@
 |                                                                                                   | [fnCreate_agama](#create-autoinstjson) "\$1"                                                                          | create autoinst.json                                                          |
 |                                                                                                   | [fnCreate_precon](#create-pre-configuration-file-templates) "\$1" "\$@"                                               | create pre-configuration file templates                                       |
 | [tmpl_005_function_section_common.sh](./tmpl_005_function_section_common.sh)                      | [fnFile_copy](#file-copy) "\$1" "\$2"                                                                                 | file copy                                                                     |
-|                                                                                                   | [fnBoot_option_preseed](#create-a-boot-option-for-preseed) "\$@"                                                      | create a boot option for preseed                                              |
-|                                                                                                   | [fnBoot_option_nocloud](#create-a-boot-option-for-nocloud) "\$@"                                                      | create a boot option for nocloud                                              |
-|                                                                                                   | [fnBoot_option_kickstart](#create-a-boot-option-for-kickstart) "\$@"                                                  | create a boot option for kickstart                                            |
-|                                                                                                   | [fnBoot_option_autoyast](#create-a-boot-option-for-autoyast) "\$@"                                                    | create a boot option for autoyast                                             |
-|                                                                                                   | [fnBoot_option_agama](#create-a-boot-option-for-agama) "\$@"                                                          | create a boot option for agama                                                |
-|                                                                                                   | [fnBoot_options](#create-a-boot-option) "\$@"                                                                         | create a boot option                                                          |
+|                                                                                                   | [fnBoot_option_preseed](#create-a-boot-option-for-preseed) "\$1" "\$2" "\$@"                                          | create a boot option for preseed                                              |
+|                                                                                                   | [fnBoot_option_nocloud](#create-a-boot-option-for-nocloud) "\$1" "\$2" "\$@"                                          | create a boot option for nocloud                                              |
+|                                                                                                   | [fnBoot_option_kickstart](#create-a-boot-option-for-kickstart) "\$1" "\$2" "\$@"                                      | create a boot option for kickstart                                            |
+|                                                                                                   | [fnBoot_option_autoyast](#create-a-boot-option-for-autoyast) "\$1" "\$2" "\$@"                                        | create a boot option for autoyast                                             |
+|                                                                                                   | [fnBoot_option_agama](#create-a-boot-option-for-agama) "\$1" "\$2" "\$@"                                              | create a boot option for agama                                                |
+|                                                                                                   | [fnBoot_options](#create-a-boot-option) "\$1" "\$2" "\$@"                                                             | create a boot option                                                          |
 |                                                                                                   | [fnRemastering_path](#create-path-for-configuration-file) "\$1" "\$2"                                                 | create path for configuration file                                            |
 |                                                                                                   | [fnRemastering_isolinux_autoinst_cfg](#create-autoinstall-configuration-file-for-isolinux) "\$1" "\$2" "\$3" "\$@"    | create autoinstall configuration file for isolinux                            |
 |                                                                                                   | [fnRemastering_isolinux](#editing-isolinux-for-autoinstall) "\$1" "\$2" "\$@"                                         | editing isolinux for autoinstall                                              |
@@ -767,11 +767,13 @@
   
 #### create a boot option for preseed  
   
-*fnBoot_option_preseed "\$@"*  
+*fnBoot_option_preseed "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
+| n-ref  | $1     | return value           | serialized target data                     |
+| input  | $2     | target type            |                                            |
+| input  | $@     | target data            |                                            |
 | output | stdout | output                 |                                            |
 | return |        | unused                 |                                            |
   
@@ -779,11 +781,13 @@
   
 #### create a boot option for nocloud  
   
-*fnBoot_option_nocloud "\$@"*  
+*fnBoot_option_nocloud "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
+| n-ref  | $1     | return value           | serialized target data                     |
+| input  | $2     | target type            |                                            |
+| input  | $@     | target data            |                                            |
 | output | stdout | output                 |                                            |
 | return |        | unused                 |                                            |
   
@@ -791,11 +795,13 @@
   
 #### create a boot option for kickstart  
   
-*fnBoot_option_kickstart "\$@"*  
+*fnBoot_option_kickstart "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
+| n-ref  | $1     | return value           | serialized target data                     |
+| input  | $2     | target type            |                                            |
+| input  | $@     | target data            |                                            |
 | output | stdout | output                 |                                            |
 | return |        | unused                 |                                            |
   
@@ -803,11 +809,13 @@
   
 #### create a boot option for autoyast  
   
-*fnBoot_option_autoyast "\$@"*  
+*fnBoot_option_autoyast "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
+| n-ref  | $1     | return value           | serialized target data                     |
+| input  | $2     | target type            |                                            |
+| input  | $@     | target data            |                                            |
 | output | stdout | output                 |                                            |
 | return |        | unused                 |                                            |
   
@@ -815,11 +823,13 @@
   
 #### create a boot option for agama  
   
-*fnBoot_option_agama "\$@"*  
+*fnBoot_option_agama "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
+| n-ref  | $1     | return value           | serialized target data                     |
+| input  | $2     | target type            |                                            |
+| input  | $@     | target data            |                                            |
 | output | stdout | output                 |                                            |
 | return |        | unused                 |                                            |
   
@@ -827,11 +837,13 @@
   
 #### create a boot option  
   
-*fnBoot_options "\$@"*  
+*fnBoot_options "\$1" "\$2" "\$@"*  
   
 |  i/o   | value  |      explanation       |                    note                    |
 | :----: | :----: | :--------------------- | :----------------------------------------- |
-| input  | $@     | input value            |                                            |
+| n-ref  | $1     | return value           | serialized target data                     |
+| input  | $2     | target type            |                                            |
+| input  | $@     | target data            |                                            |
 | output | stdout | output                 |                                            |
 | return |        | unused                 |                                            |
   

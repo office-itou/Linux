@@ -2348,13 +2348,13 @@ funcSetupConfig_skel() {
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
 
 	# --- .bashrc -------------------------------------------------------------
-	if [ -e "${DIRS_TGET:-}/etc/skel/.bashrc" ]; then
+#	if [ -e "${DIRS_TGET:-}/etc/skel/.bashrc" ]; then
 		_FILE_PATH="${DIRS_TGET:-}/etc/skel/.bashrc"
-	elif [ -e "${DIRS_TGET:-}/etc/skel/.i18n" ]; then
-		_FILE_PATH="${DIRS_TGET:-}/etc/skel/.i18n"
-	else
-		_FILE_PATH=""
-	fi
+#	elif [ -e "${DIRS_TGET:-}/etc/skel/.i18n" ]; then
+#		_FILE_PATH="${DIRS_TGET:-}/etc/skel/.i18n"
+#	else
+#		_FILE_PATH=""
+#	fi
 	if [ -n "${_FILE_PATH}" ]; then
 		funcFile_backup "${_FILE_PATH}"
 		mkdir -p "${_FILE_PATH%/*}"

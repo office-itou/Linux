@@ -434,7 +434,7 @@ function fnBoot_option_agama() {
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__WORK="boot=live"
 	else
-		__WORK+="${__WORK:+" "}inst.auto=dvd:${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK+="${__WORK:+" "}live.password=install inst.auto=dvd:${__TGET_LIST[23]#"${_DIRS_CONF}"}"
 		case "${__TGET_TYPE:-}" in
 			"${_TYPE_PXEB:?}") __WORK="${__CONF:+"${__WORK/dvd:/${__CONF}}"}"; __WORK="${__WORK/_dvd/_web}";;
 			*                ) __WORK="${__WORK:+"${__WORK}?devices=sr0"}";;
@@ -456,11 +456,12 @@ function fnBoot_option_agama() {
 	# ---  4: ramdisk ---------------------------------------------------------
 	__WORK=""
 	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]/root=\/dev\/ram*[0-9]/}"
+	__WORK="${__WORK/load_ramdisk=[0-9]/rd.kiwi.ramdisk}"
 	__WORK="${__WORK#"${__WORK%%[!"${IFS}"]*}"}"	# ltrim
 	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
 	__BOPT+=("${__WORK}")
 	# ---  5: isosfile --------------------------------------------------------
-	__WORK=""
+	__WORK="\${extra_cmdline} \${isoboot}"
 	case "${__TGET_TYPE:-}" in
 		"${_TYPE_PXEB:?}") ;;
 		*                ) ;;
