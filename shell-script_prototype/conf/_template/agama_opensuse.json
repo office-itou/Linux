@@ -92,18 +92,19 @@
 // tumbleweed
     ],
     "patterns": [
+// desktop
+      "gnome",
+// desktop
+      "apparmor",
+      "base",
+      "documentation",
+      "enhanced_base",
+      "minimal_base"
     ],
     "packages": [
 // desktop
-      "patterns-gnome-gnome",
       "rhythmbox",
 // desktop
-      "patterns-base-apparmor",
-      "patterns-base",
-      "patterns-basesystem",
-      "patterns-base-documentation",
-      "patterns-base-enhanced_base",
-      "patterns-base-minimal_base",
       "lvm2",
       "sudo",
       "firewalld",
