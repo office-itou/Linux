@@ -1025,9 +1025,13 @@ function fnCreate_agama() {
 	cp "${__TGET_PATH}" "${__WORK}"
 	sed -i "${__TGET_PATH}"                   \
 	    -e '/"patterns": \[/,/\]/          {' \
+	    -e '\%^// desktop%,\%^// desktop%d }' \
+	    -e '/"packages": \[/,/\]/          {' \
 	    -e '\%^// desktop%,\%^// desktop%d }'
 	sed -i "${__WORK}"                        \
 	    -e '/"patterns": \[/,/\]/          {' \
+	    -e '\%^//.*$%d                     }' \
+	    -e '/"packages": \[/,/\]/          {' \
 	    -e '\%^//.*$%d                     }'
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}" "${__WORK}"

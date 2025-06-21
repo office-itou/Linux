@@ -2298,9 +2298,13 @@ function fnCreate_agama() {
 	cp "${__TGET_PATH}" "${__WORK}"
 	sed -i "${__TGET_PATH}"                   \
 	    -e '/"patterns": \[/,/\]/          {' \
+	    -e '\%^// desktop%,\%^// desktop%d }' \
+	    -e '/"packages": \[/,/\]/          {' \
 	    -e '\%^// desktop%,\%^// desktop%d }'
 	sed -i "${__WORK}"                        \
 	    -e '/"patterns": \[/,/\]/          {' \
+	    -e '\%^//.*$%d                     }' \
+	    -e '/"packages": \[/,/\]/          {' \
 	    -e '\%^//.*$%d                     }'
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}" "${__WORK}"
@@ -2857,12 +2861,12 @@ function fnBoot_option_agama() {
 	__BOPT+=("${__WORK}")
 	# ---  3: locale ----------------------------------------------------------
 	__WORK=""
-	__WORK+="${__WORK:+" "}language=ja_JP.UTF-8 keyboard=jp timezone=Asia/Tokyo"
+	__WORK+="${__WORK:+" "}lang=ja_JP language=ja_JP.UTF-8 keyboard=jp timezone=Asia/Tokyo"
 	__BOPT+=("${__WORK}")
 	# ---  4: ramdisk ---------------------------------------------------------
 	__WORK=""
 	__WORK+="${__WORK:+" "}${_OPTN_RDSK[*]/root=\/dev\/ram*[0-9]/}"
-	__WORK="${__WORK/load_ramdisk=[0-9]/rd.kiwi.ramdisk}"
+#	__WORK="${__WORK/load_ramdisk=[0-9]/rd.kiwi.ramdisk}"
 	__WORK="${__WORK#"${__WORK%%[!"${IFS}"]*}"}"	# ltrim
 	__WORK="${__WORK%"${__WORK##*[!"${IFS}"]}"}"	# rtrim
 	__BOPT+=("${__WORK}")
