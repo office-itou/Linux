@@ -92,18 +92,19 @@
 // tumbleweed
     ],
     "patterns": [
-// desktop
-      "gnome",
-      "rhythmbox",
-// desktop
-      "apparmor",
-      "base",
-      "basesystem",
-      "documentation",
-      "enhanced_base",
-      "minimal_base"
     ],
     "packages": [
+// desktop
+      "patterns-gnome-gnome",
+      "rhythmbox",
+// desktop
+      "patterns-base-apparmor",
+      "patterns-base",
+      "patterns-basesystem",
+      "patterns-base-documentation",
+      "patterns-base-enhanced_base",
+      "patterns-base-minimal_base",
+      "lvm2",
       "sudo",
       "firewalld",
       "traceroute",
@@ -134,13 +135,49 @@
       "zypper"
     ]
   },
-  "legacyAutoyastStorage": [
-    {
-      "device": "/dev/nvme0n1",
-      "initialize": true,
-      "partitions": [],
-      "type": "CT_DISK",
-      "use": "all"
-    }
-  ]
+  "storage": {
+    "drives": [
+      {
+        "search": {
+          "condition": {
+            "name": "/dev/nvme0n1"
+          },
+          "ifNotFound": "error"
+        },
+        "alias": "pvs-disk",
+        "partitions": [
+          {
+            "search": {
+              "ifNotFound": "skip"
+            },
+            "delete": true
+          }
+        ]
+      }
+    ],
+    "volumeGroups": [
+      {
+        "name": "system",
+        "physicalVolumes": [
+          { "generate": [ "pvs-disk" ] }
+        ],
+        "logicalVolumes": [
+          {
+            "filesystem": {
+              "path": "/",
+              "type": "btrfs"
+            },
+            "name": "root"
+          },
+          {
+            "filesystem": {
+              "path": "swap",
+              "type": "swap"
+            },
+            "name": "swap"
+          }
+        ]
+      }
+    ]
+  }
 }
