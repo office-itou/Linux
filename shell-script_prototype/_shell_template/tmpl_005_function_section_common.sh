@@ -23,6 +23,10 @@ function fnFile_copy() {
 	if [[ ! -s "${__PATH_TGET}" ]]; then
 		return
 	fi
+	case "${__PATH_TGET}" in
+		*.iso) ;;
+		*    ) return;;
+	esac
 	printf "%20.20s: %s\n" "copy" "${__PATH_TGET}"
 	__MNTP="${__PATH}/mnt"
 	rm -rf "${__MNTP:?}"
@@ -2374,8 +2378,8 @@ function fnExec() {
 #				system  ) ;;
 				*       )
 					case "${__COMD:-}" in
-						pxeboot ) __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all");;
-						*       ) __OPTN=("mini"       "netinst"       "dvd"       "liveinst"      );;
+						pxeboot ) __OPTN=("mini" "all" "netinst" "all" "dvd" "all" "liveinst" "all" "live" "all" "tool" "all" "system" "all");;
+						*       ) __OPTN=("mini"       "netinst"       "dvd"       "liveinst"                                               );;
 					esac
 					;;
 			esac
@@ -2388,11 +2392,11 @@ function fnExec() {
 					netinst ) ;;
 					dvd     ) ;;
 					liveinst) ;;
-#					live    ) ;;
-#					tool    ) ;;
-#					clive   ) ;;
-#					cnetinst) ;;
-#					system  ) ;;
+					live    ) ;;
+					tool    ) ;;
+					clive   ) ;;
+					cnetinst) ;;
+					system  ) ;;
 					*       ) break;;
 				esac
 				__TGET="$1"
@@ -2438,7 +2442,7 @@ function fnExec() {
 				for I in "${!__MDIA[@]}"
 				do
 					read -r -a __LIST < <(echo "${__MDIA[I]}")
-					case "${__LIST[1]}" in
+					case "${__LIST[1]:-}" in
 						o) ;;
 						*) continue;;
 					esac
@@ -2529,10 +2533,10 @@ function fnExec() {
 					for J in "${!_LIST_MDIA[@]}"
 					do
 						read -r -a __ARRY < <(echo "${_LIST_MDIA[J]}")
-						if [[ "${__LIST[0]}" != "${__ARRY[0]}" ]] \
-						|| [[ "${__LIST[1]}" != "${__ARRY[1]}" ]] \
-						|| [[ "${__LIST[2]}" != "${__ARRY[2]}" ]] \
-						|| [[ "${__LIST[3]}" != "${__ARRY[3]}" ]]; then
+						if [[ "${__LIST[0]:-}" != "${__ARRY[0]}" ]] \
+						|| [[ "${__LIST[1]:-}" != "${__ARRY[1]}" ]] \
+						|| [[ "${__LIST[2]:-}" != "${__ARRY[2]}" ]] \
+						|| [[ "${__LIST[3]:-}" != "${__ARRY[3]}" ]]; then
 							continue
 						fi
 						__WORK="$( \

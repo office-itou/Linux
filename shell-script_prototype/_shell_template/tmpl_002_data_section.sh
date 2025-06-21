@@ -95,8 +95,8 @@
 	# --- curl / wget parameter -----------------------------------------------
 	declare       _COMD_CURL=""
 	declare       _COMD_WGET=""
-	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "3" "--connect-timeout" "60")
-	declare -r -a _OPTN_WGET=("--tries=3" "--timeout=10" "--quiet")
+	declare -r -a _OPTN_CURL=("--location" "--http1.1" "--no-progress-bar" "--remote-time" "--show-error" "--fail" "--retry-max-time" "3" "--retry" "10" "--connect-timeout" "60")
+	declare -r -a _OPTN_WGET=("--tries=10" "--timeout=30" "--quiet")
 	if command -v curl  > /dev/null 2>&1; then _COMD_CURL="true"; fi
 	if command -v wget  > /dev/null 2>&1; then _COMD_WGET="true"; fi
 	if command -v wget2 > /dev/null 2>&1; then _COMD_WGET="ver2"; fi
