@@ -421,15 +421,23 @@ function fnBoot_option_agama() {
 #	declare       __ISOS=""				# iso file
 #	declare       __LOAD=""				# load module
 #	declare       __RMAK=""				# remake file
+	declare       __VERS=""				# distribution version
+	declare       __PDID=""				# product id
 	# --- boot option ---------------------------------------------------------
 #	printf "%20.20s: %s\n" "create" "boot options for preseed" 1>&2
 	__BOPT=()
 	__HOST="${_NWRK_HOST/:_DISTRO_:/"${__TGET_LIST[2]%%-*}"}"
+	# -------------------------------------------------------------------------
+	__VERS="${__TGET_LIST[23]#*_}"
+	__VERS="${__VERS%%_*}"
+	__PDID="${__VERS//-/_}"
+	__PDID="${__PDID,,}"
+	__PDID="${__PDID^}"
 	# ---  0: server address --------------------------------------------------
 	__SRVR="${_SRVR_PROT}://${_SRVR_ADDR:?}"
 	__CONF="\${srvraddr}/${_DIRS_CONF##*/}"
 	__IMGS="\${srvraddr}/${_DIRS_IMGS##*/}"
-#	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
+	__ISOS="\${srvraddr}/${_DIRS_ISOS##*/}"
 #	__LOAD="\${srvraddr}/${_DIRS_LOAD##*/}"
 #	__RMAK="\${srvraddr}/${_DIRS_RMAK##*/}"
 	__BOPT+=("server=${__SRVR}")
@@ -467,7 +475,7 @@ function fnBoot_option_agama() {
 	# ---  5: isosfile --------------------------------------------------------
 	__WORK="\${extra_cmdline} \${isoboot}"
 	case "${__TGET_TYPE:-}" in
-		"${_TYPE_PXEB:?}") ;;
+		"${_TYPE_PXEB:?}") __WORK+="${__WORK:+" "}root=live:${__ISOS}/${__TGET_LIST[13]##*/}";;
 		*                ) ;;
 	esac
 	__BOPT+=("${__WORK}")

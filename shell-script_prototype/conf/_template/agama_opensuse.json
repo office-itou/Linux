@@ -69,28 +69,6 @@
     ]
   },
   "software": {
-    "extraRepositories": [
-// leap
-      {
-        "alias": "repo-oss",
-        "url": "https://download.opensuse.org/distribution/leap/16.0/repo/oss/"
-      },
-      {
-        "alias": "repo-update-oss",
-        "url": "https://download.opensuse.org/update/leap/16.0/oss/"
-      }
-// leap
-// tumbleweed
-      {
-        "alias": "repo-oss",
-        "url": "https://download.opensuse.org/tumbleweed/repo/oss/"
-      },
-      {
-        "alias": "repo-update",
-        "url": "https://download.opensuse.org/update/tumbleweed/"
-      }
-// tumbleweed
-    ],
     "patterns": [
 // desktop
       "gnome",
