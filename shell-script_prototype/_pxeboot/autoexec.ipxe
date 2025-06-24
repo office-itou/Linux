@@ -12,110 +12,78 @@ isset ${menu-default} || set menu-default exit
 
 :menu
 menu Select the OS type you want to boot
-item --gap --                           --------------------------------------------------------------------------
-item --gap --                           [ Auto install mini.iso ]
-item -- debian-mini-11                  - Debian 11 ...........................................2024-08-27 06:14:31
-item -- debian-mini-12                  - Debian 12 ...........................................2025-03-10 12:28:07
-item -- debian-mini-13                  - Debian 13 ...........................................2024-12-27 09:14:03
-item -- debian-mini-testing             - Debian testing ......................................2024-12-27 09:14:03
-item -- debian-mini-testing-daily       - Debian testing daily ................................2025-05-07 00:02:25
-item --gap --                           [ Auto install Net install ]
-item -- debian-netinst-11               - Debian 11 ...........................................2024-08-31 16:11:10
-item -- debian-netinst-12               - Debian 12 ...........................................2025-03-15 12:03:05
-item -- debian-netinst-testing          - Debian testing ......................................2025-05-07 09:20:06
-item -- fedora-netinst-41               - Fedora Server 41 ....................................2024-10-24 13:36:10
-item -- fedora-netinst-42               - Fedora Server 42 ....................................2025-04-09 11:48:26
-item -- centos-stream-netinst-9         - CentOS Stream 9 .....................................2025-05-06 17:05:53
-item -- centos-stream-netinst-10        - CentOS Stream 10 ....................................2025-05-06 08:45:01
-item -- almalinux-netinst-9             - Alma Linux 9 ........................................2024-11-13 09:40:34
-item -- rockylinux-netinst-9            - Rocky Linux 9 .......................................2024-11-16 01:52:35
-item -- miraclelinux-netinst-9          - Miracle Linux 9 .....................................2024-08-23 05:57:18
-item -- opensuse-leap-netinst-15.6      - openSUSE Leap 15.6 ..................................2024-06-20 11:42:39
-item -- opensuse-tumbleweed-netinst     - openSUSE Tumbleweed .................................2025-05-04 13:27:58
-item --gap --                           [ Auto install DVD media ]
-item -- debian-11                       - Debian 11 ...........................................2024-08-31 16:11:53
-item -- debian-12                       - Debian 12 ...........................................2025-03-15 12:03:59
-item -- debian-testing                  - Debian testing ......................................2025-05-05 05:37:49
-item -- ubuntu-live-24.04               - Ubuntu 24.04 Live Server ............................2025-02-16 22:49:40
-item -- ubuntu-live-24.10               - Ubuntu 24.10 Live Server ............................2024-10-07 21:19:04
-item -- ubuntu-live-25.04               - Ubuntu 25.04 Live Server ............................2025-04-15 22:38:47
-item -- fedora-41                       - Fedora Server 41 ....................................2024-10-24 14:48:35
-item -- fedora-42                       - Fedora Server 42 ....................................2025-04-09 12:01:30
-item -- centos-stream-9                 - CentOS Stream 9 .....................................2025-05-06 17:20:28
-item -- centos-stream-10                - CentOS Stream 10 ....................................2025-05-06 08:51:53
-item -- almalinux-9                     - Alma Linux 9 ........................................2024-11-13 09:59:46
-item -- rockylinux-9                    - Rocky Linux 9 .......................................2024-11-16 04:23:15
-item -- miraclelinux-9                  - Miracle Linux 9 .....................................2024-08-23 05:57:18
-item -- opensuse-leap-15.6              - openSUSE Leap 15.6 ..................................2024-06-20 11:56:54
-item -- opensuse-tumbleweed             - openSUSE Tumbleweed .................................2025-05-04 13:31:47
-item -- windows-10                      - Windows 10 ..........................................2022-10-18 15:21:50
-item -- windows-11                      - Windows 11 ..........................................2024-10-01 12:18:50
-item --gap --                           [ Live media Install mode ]
-item -- debian-live-11                  - Debian 11 Live ......................................2024-08-31 15:15:29
-item -- debian-live-12                  - Debian 12 Live ......................................2025-03-15 09:09:36
-item -- debian-live-testing             - Debian testing Live .................................2025-05-05 02:14:51
-item -- ubuntu-desktop-24.04            - Ubuntu 24.04 Desktop ................................2025-02-15 09:16:38
-item -- ubuntu-desktop-24.10            - Ubuntu 24.10 Desktop ................................2024-10-09 14:32:32
-item -- ubuntu-desktop-25.04            - Ubuntu 25.04 Desktop ................................2025-04-15 18:47:56
-item --gap --                           [ Live media Live mode ]
-item -- live-debian-live-11             - Debian 11 Live ......................................2024-08-31 15:15:29
-item -- live-debian-live-12             - Debian 12 Live ......................................2025-03-15 09:09:36
-item -- live-debian-live-testing        - Debian testing Live .................................2025-05-05 02:14:51
-item -- live-ubuntu-desktop-24.04       - Ubuntu 24.04 Desktop ................................2025-02-15 09:16:38
-item -- live-ubuntu-desktop-24.10       - Ubuntu 24.10 Desktop ................................2024-10-09 14:32:32
-item -- live-ubuntu-desktop-25.04       - Ubuntu 25.04 Desktop ................................2025-04-15 18:47:56
-item --gap --                           [ System tools ]
-item -- memtest86plus                   - Memtest86+ 7.20 .....................................2024-11-11 09:15:12
-item -- winpe-x64                       - WinPE x64 ...........................................2024-10-21 12:19:39
-item -- ati2020x86                      - ATI2020x86 ..........................................2022-01-28 13:07:12
-item -- ati2020x64                      - ATI2020x64 ..........................................2022-01-28 13:12:34
-item --gap --                           [ System command ]
-item -- shell                           - iPXE shell
-#item -- shutdown                       - System shutdown
-item -- restart                         - System reboot
-item --gap --                           --------------------------------------------------------------------------
+item --gap --                                   --------------------------------------------------------------------------
+item --gap --                                   [ Auto install mini.iso ]
+item -- debian-mini-12                          - Debian 12 ...........................................2025-05-12 18:07:40
+item -- debian-mini-13                          - Debian 13 ...........................................2025-05-15 03:49:50
+item -- debian-mini-testing                     - Debian testing ......................................2025-05-15 03:49:50
+item -- debian-mini-testing-daily               - Debian testing daily ................................2025-06-24 00:02:04
+item --gap --                                   [ Auto install Net install ]
+item -- debian-netinst-12                       - Debian 12 ...........................................2025-05-17 11:49:16
+item -- debian-netinst-13-rc1                   - Debian 13 RC1 .......................................2025-05-15 23:48:37
+item -- debian-netinst-testing                  - Debian testing ......................................2025-06-23 21:25:46
+item -- fedora-netinst-41                       - Fedora Server 41 ....................................2024-10-24 13:36:10
+item -- fedora-netinst-42                       - Fedora Server 42 ....................................2025-04-09 11:48:26
+item -- centos-stream-netinst-9                 - CentOS Stream 9 .....................................2025-06-17 03:59:02
+item -- centos-stream-netinst-10                - CentOS Stream 10 ....................................2025-06-23 04:17:23
+item -- almalinux-netinst-9                     - Alma Linux 9 ........................................2025-05-16 13:57:02
+item -- almalinux-netinst-10                    - Alma Linux 10 .......................................2025-05-25 07:39:32
+item -- rockylinux-netinst-9                    - Rocky Linux 9 .......................................2025-05-26 20:19:42
+item -- rockylinux-netinst-10                   - Rocky Linux 10 ......................................2025-05-31 19:44:39
+item -- miraclelinux-netinst-9                  - Miracle Linux 9 .....................................2024-08-23 05:57:18
+item -- opensuse-leap-netinst-15.6              - openSUSE Leap 15.6 ..................................2024-06-20 11:42:39
+item -- opensuse-tumbleweed-netinst             - openSUSE Tumbleweed .................................2025-06-20 21:35:20
+item -- opensuse-leap-netinst-16.0-beta         - openSUSE Leap 16.0 Beta .............................2025-06-17 18:52:34
+item -- opensuse-leap-netinst-16.0-devel        - openSUSE Leap 16.0 Devel ............................2025-06-23 16:16:55
+item -- opensuse-agama-netinst                  - openSUSE Agama ......................................2025-06-23 16:17:29
+item -- opensuse-agama-netinst-pxe              - openSUSE Agama PXE ..................................2025-06-23 16:22:37
+item --gap --                                   [ Auto install DVD media ]
+item -- debian-12                               - Debian 12 ...........................................2025-05-17 11:50:09
+item -- debian-testing                          - Debian testing ......................................2025-06-23 03:41:36
+item -- ubuntu-live-24.04                       - Ubuntu 24.04 Live Server ............................2025-02-16 22:49:40
+item -- ubuntu-live-24.10                       - Ubuntu 24.10 Live Server ............................2024-10-07 21:19:04
+item -- ubuntu-live-25.04                       - Ubuntu 25.04 Live Server ............................2025-04-15 22:38:47
+item -- ubuntu-live-25.10                       - Ubuntu 25.10 Live Server ............................2025-06-23 12:30:27
+item -- fedora-41                               - Fedora Server 41 ....................................2024-10-24 14:48:35
+item -- fedora-42                               - Fedora Server 42 ....................................2025-04-09 12:01:30
+item -- centos-stream-9                         - CentOS Stream 9 .....................................2025-06-17 04:13:37
+item -- centos-stream-10                        - CentOS Stream 10 ....................................2025-06-23 04:23:35
+item -- almalinux-9                             - Alma Linux 9 ........................................2025-05-16 14:23:55
+item -- almalinux-10                            - Alma Linux 10 .......................................2025-05-25 07:40:41
+item -- rockylinux-9                            - Rocky Linux 9 .......................................2025-05-30 00:06:45
+item -- rockylinux-10                           - Rocky Linux 10 ......................................2025-05-31 21:44:32
+item -- miraclelinux-9                          - Miracle Linux 9 .....................................2024-08-23 05:57:18
+item -- opensuse-leap-15.6                      - openSUSE Leap 15.6 ..................................2024-06-20 11:56:54
+item -- opensuse-tumbleweed                     - openSUSE Tumbleweed .................................2025-06-20 21:40:20
+item -- opensuse-leap-16.0-beta                 - openSUSE Leap 16.0 Beta .............................2025-06-17 19:08:07
+item -- windows-10                              - Windows 10 ..........................................2022-10-18 15:21:50
+item -- windows-11                              - Windows 11 ..........................................2024-10-01 12:18:50
+item --gap --                                   [ Live media Install mode ]
+item -- debian-live-12                          - Debian 12 Live ......................................2025-05-17 09:13:04
+item -- debian-live-testing                     - Debian testing Live .................................2025-06-22 20:32:59
+item -- ubuntu-desktop-24.04                    - Ubuntu 24.04 Desktop ................................2025-02-15 09:16:38
+item -- ubuntu-desktop-24.10                    - Ubuntu 24.10 Desktop ................................2024-10-09 14:32:32
+item -- ubuntu-desktop-25.04                    - Ubuntu 25.04 Desktop ................................2025-04-15 18:47:56
+item -- ubuntu-desktop-25.10                    - Ubuntu 25.10 Desktop ................................2025-06-23 06:33:01
+item --gap --                                   [ Live media Live mode ]
+item -- live-debian-live-12                     - Debian 12 Live ......................................2025-05-17 09:13:04
+item -- live-debian-live-testing                - Debian testing Live .................................2025-06-22 20:32:59
+item -- live-ubuntu-desktop-24.04               - Ubuntu 24.04 Desktop ................................2025-02-15 09:16:38
+item -- live-ubuntu-desktop-24.10               - Ubuntu 24.10 Desktop ................................2024-10-09 14:32:32
+item -- live-ubuntu-desktop-25.04               - Ubuntu 25.04 Desktop ................................2025-04-15 18:47:56
+item -- live-ubuntu-desktop-25.10               - Ubuntu 25.10 Desktop ................................2025-06-23 06:33:01
+item --gap --                                   [ System tools ]
+item -- memtest86plus                           - Memtest86+ 7.20 .....................................2024-11-11 18:20:14
+item -- winpe-x64                               - WinPE x64 ...........................................2024-10-21 12:19:39
+item -- ati2020x86                              - ATI2020x86 ..........................................2022-01-28 13:07:12
+item -- ati2020x64                              - ATI2020x64 ..........................................2022-01-28 13:12:34
+item --gap --                                   [ System command ]
+item -- shell                                   - iPXE shell
+#item -- shutdown                               - System shutdown
+item -- restart                                 - System reboot
+item --gap --                                   --------------------------------------------------------------------------
 choose --timeout ${menu-timeout} --default ${menu-default} selected || goto menu
 goto ${selected}
-
-:debian-mini-11
-echo Loading Debian 11 ...
-set hostname sv-debian.workgroup
-set srvraddr http://192.168.1.12
-form                                    Configure Boot Options
-item hostname                           Hostname
-item srvraddr                           Server ip address
-present ||
-set ethrname ens160
-set ipv4addr 192.168.1.1/24
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
-item ethrname                           Interface
-item ipv4addr                           IPv4 address
-item ipv4mask                           IPv4 netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-present ||
-set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server_old.cfg
-set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
-set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
-set isosfile fetch=${srvraddr}/isos/mini-bullseye-amd64.iso
-form                                    Configure Boot Options
-item autoinst                           Auto install
-item networks                           Network
-item language                           Language
-item ramsdisk                           RAM disk
-item isosfile                           ISO file
-present ||
-set knladdr ${srvraddr}/imgs/debian-mini-11
-set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
-echo Loading kernel and initrd ...
-kernel ${knladdr}/linux ${options} --- || goto error
-initrd ${knladdr}/initrd.gz || goto error
-boot || goto error
-exit
 
 :debian-mini-12
 echo Loading Debian 12 ...
@@ -152,7 +120,7 @@ present ||
 set knladdr ${srvraddr}/imgs/debian-mini-12
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/linux ${options} --- || goto error
+kernel ${knladdr}/linux ${options} --- quiet || goto error
 initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
@@ -192,7 +160,7 @@ present ||
 set knladdr ${srvraddr}/imgs/debian-mini-13
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/linux ${options} --- || goto error
+kernel ${knladdr}/linux ${options} --- quiet || goto error
 initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
@@ -232,7 +200,7 @@ present ||
 set knladdr ${srvraddr}/imgs/debian-mini-testing
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/linux ${options} --- || goto error
+kernel ${knladdr}/linux ${options} --- quiet || goto error
 initrd ${knladdr}/initrd.gz || goto error
 boot || goto error
 exit
@@ -272,48 +240,8 @@ present ||
 set knladdr ${srvraddr}/imgs/debian-mini-testing-daily
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/linux ${options} --- || goto error
+kernel ${knladdr}/linux ${options} --- quiet || goto error
 initrd ${knladdr}/initrd.gz || goto error
-boot || goto error
-exit
-
-:debian-netinst-11
-echo Loading Debian 11 ...
-set hostname sv-debian.workgroup
-set srvraddr http://192.168.1.12
-form                                    Configure Boot Options
-item hostname                           Hostname
-item srvraddr                           Server ip address
-present ||
-set ethrname ens160
-set ipv4addr 192.168.1.1/24
-set ipv4mask 255.255.255.0
-set ipv4gway 192.168.1.254
-set ipv4nsvr 192.168.1.254
-form                                    Configure Boot Options
-item ethrname                           Interface
-item ipv4addr                           IPv4 address
-item ipv4mask                           IPv4 netmask
-item ipv4gway                           IPv4 gateway
-item ipv4nsvr                           IPv4 nameservers
-present ||
-set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server_old.cfg
-set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
-set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
-set isosfile fetch=${srvraddr}/isos/debian-11.11.0-amd64-netinst.iso
-form                                    Configure Boot Options
-item autoinst                           Auto install
-item networks                           Network
-item language                           Language
-item ramsdisk                           RAM disk
-item isosfile                           ISO file
-present ||
-set knladdr ${srvraddr}/imgs/debian-netinst-11
-set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
-echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
 boot || goto error
 exit
 
@@ -341,7 +269,7 @@ set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
-set isosfile fetch=${srvraddr}/isos/debian-12.10.0-amd64-netinst.iso
+set isosfile fetch=${srvraddr}/isos/debian-12.11.0-amd64-netinst.iso
 form                                    Configure Boot Options
 item autoinst                           Auto install
 item networks                           Network
@@ -352,7 +280,47 @@ present ||
 set knladdr ${srvraddr}/imgs/debian-netinst-12
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/install.amd/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/install.amd/initrd.gz || goto error
+boot || goto error
+exit
+
+:debian-netinst-13-rc1
+echo Loading Debian 13 RC1 ...
+set hostname sv-debian.workgroup
+set srvraddr http://192.168.1.12
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+present ||
+set ethrname ens160
+set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                    Configure Boot Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+present ||
+set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
+set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
+set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
+set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile fetch=${srvraddr}/isos/debian-trixie-DI-rc1-amd64-netinst.iso
+form                                    Configure Boot Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+present ||
+set knladdr ${srvraddr}/imgs/debian-netinst-13-rc1
+set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
+echo Loading kernel and initrd ...
+kernel ${knladdr}/install.amd/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/install.amd/initrd.gz || goto error
 boot || goto error
 exit
@@ -392,7 +360,7 @@ present ||
 set knladdr ${srvraddr}/imgs/debian-netinst-testing
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/install.amd/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/install.amd/initrd.gz || goto error
 boot || goto error
 exit
@@ -432,7 +400,7 @@ present ||
 set knladdr ${srvraddr}/imgs/fedora-netinst-41
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -472,7 +440,7 @@ present ||
 set knladdr ${srvraddr}/imgs/fedora-netinst-42
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -512,7 +480,7 @@ present ||
 set knladdr ${srvraddr}/imgs/centos-stream-netinst-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -552,7 +520,7 @@ present ||
 set knladdr ${srvraddr}/imgs/centos-stream-netinst-10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -592,7 +560,47 @@ present ||
 set knladdr ${srvraddr}/imgs/almalinux-netinst-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+boot || goto error
+exit
+
+:almalinux-netinst-10
+echo Loading Alma Linux 10 ...
+set hostname sv-almalinux.workgroup
+set srvraddr http://192.168.1.12
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+present ||
+set ethrname ens160
+set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                    Configure Boot Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+present ||
+set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_almalinux-10_net.cfg
+set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
+set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile inst.repo=${srvraddr}/imgs/almalinux-netinst-10
+form                                    Configure Boot Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+present ||
+set knladdr ${srvraddr}/imgs/almalinux-netinst-10
+set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
+echo Loading kernel and initrd ...
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -632,7 +640,47 @@ present ||
 set knladdr ${srvraddr}/imgs/rockylinux-netinst-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+boot || goto error
+exit
+
+:rockylinux-netinst-10
+echo Loading Rocky Linux 10 ...
+set hostname sv-rockylinux.workgroup
+set srvraddr http://192.168.1.12
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+present ||
+set ethrname ens160
+set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                    Configure Boot Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+present ||
+set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_rockylinux-10_net.cfg
+set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
+set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile inst.repo=${srvraddr}/imgs/rockylinux-netinst-10
+form                                    Configure Boot Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+present ||
+set knladdr ${srvraddr}/imgs/rockylinux-netinst-10
+set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
+echo Loading kernel and initrd ...
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -672,7 +720,7 @@ present ||
 set knladdr ${srvraddr}/imgs/miraclelinux-netinst-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -685,7 +733,7 @@ form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
 present ||
-set ethrname ens160
+set ethrname eth0
 set ipv4addr 192.168.1.1/24
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
@@ -698,8 +746,8 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 present ||
 set autoinst autoyast=${srvraddr}/conf/autoyast/autoinst_leap-15.6_net.xml
-set networks hostname=${hostname} ifcfg==${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
-set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
+set language language=ja_JP
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile install=https://download.opensuse.org/distribution/leap/15.6/repo/oss/
 form                                    Configure Boot Options
@@ -712,7 +760,7 @@ present ||
 set knladdr ${srvraddr}/imgs/opensuse-leap-netinst-15.6
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
+kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- quiet || goto error
 initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
 boot || goto error
 exit
@@ -738,8 +786,8 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 present ||
 set autoinst autoyast=${srvraddr}/conf/autoyast/autoinst_tumbleweed_net.xml
-set networks hostname=${hostname} ifcfg==${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
-set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
+set language language=ja_JP
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile install=https://download.opensuse.org/tumbleweed/repo/oss/
 form                                    Configure Boot Options
@@ -752,14 +800,14 @@ present ||
 set knladdr ${srvraddr}/imgs/opensuse-tumbleweed-netinst
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
+kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- quiet || goto error
 initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
 boot || goto error
 exit
 
-:debian-11
-echo Loading Debian 11 ...
-set hostname sv-debian.workgroup
+:opensuse-leap-netinst-16.0-beta
+echo Loading openSUSE Leap 16.0 Beta ...
+set hostname sv-opensuse.workgroup
 set srvraddr http://192.168.1.12
 form                                    Configure Boot Options
 item hostname                           Hostname
@@ -777,11 +825,11 @@ item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 present ||
-set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server_old.cfg
-set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
-set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
-set isosfile fetch=${srvraddr}/isos/debian-11.11.0-amd64-DVD-1.iso
+set autoinst live.password=install inst.auto=${srvraddr}/conf/agama/autoinst_leap-16.0.json
+set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
+set language lang=ja_JP language=ja_JP.UTF-8 keyboard=jp timezone=Asia/Tokyo
+set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile ${extra_cmdline} ${isoboot} root=live:${srvraddr}/isos/agama-installer-Leap.x86_64-Leap.iso
 form                                    Configure Boot Options
 item autoinst                           Auto install
 item networks                           Network
@@ -789,11 +837,131 @@ item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
 present ||
-set knladdr ${srvraddr}/imgs/debian-11
+set knladdr ${srvraddr}/imgs/opensuse-leap-netinst-16.0-beta
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/install.amd/initrd.gz || goto error
+kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- quiet || goto error
+initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
+boot || goto error
+exit
+
+:opensuse-leap-netinst-16.0-devel
+echo Loading openSUSE Leap 16.0 Devel ...
+set hostname sv-opensuse.workgroup
+set srvraddr http://192.168.1.12
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+present ||
+set ethrname ens160
+set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                    Configure Boot Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+present ||
+set autoinst live.password=install inst.auto=${srvraddr}/conf/agama/autoinst_leap-16.0.json
+set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
+set language lang=ja_JP language=ja_JP.UTF-8 keyboard=jp timezone=Asia/Tokyo
+set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile ${extra_cmdline} ${isoboot} root=live:${srvraddr}/isos/agama-installer.x86_64-Leap_16.0.iso
+form                                    Configure Boot Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+present ||
+set knladdr ${srvraddr}/imgs/opensuse-leap-netinst-16.0-devel
+set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
+echo Loading kernel and initrd ...
+kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- quiet || goto error
+initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
+boot || goto error
+exit
+
+:opensuse-agama-netinst
+echo Loading openSUSE Agama ...
+set hostname sv-opensuse.workgroup
+set srvraddr http://192.168.1.12
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+present ||
+set ethrname ens160
+set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                    Configure Boot Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+present ||
+set autoinst live.password=install inst.auto=${srvraddr}/conf/agama/autoinst_tumbleweed.json
+set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
+set language lang=ja_JP language=ja_JP.UTF-8 keyboard=jp timezone=Asia/Tokyo
+set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile ${extra_cmdline} ${isoboot} root=live:${srvraddr}/isos/agama-installer.x86_64-openSUSE.iso
+form                                    Configure Boot Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+present ||
+set knladdr ${srvraddr}/imgs/opensuse-agama-netinst
+set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
+echo Loading kernel and initrd ...
+kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- quiet || goto error
+initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
+boot || goto error
+exit
+
+:opensuse-agama-netinst-pxe
+echo Loading openSUSE Agama PXE ...
+set hostname sv-opensuse.workgroup
+set srvraddr http://192.168.1.12
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+present ||
+set ethrname ens160
+set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                    Configure Boot Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+present ||
+set autoinst live.password=install inst.auto=${srvraddr}/conf/agama/autoinst_tumbleweed.json
+set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
+set language lang=ja_JP language=ja_JP.UTF-8 keyboard=jp timezone=Asia/Tokyo
+set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile ${extra_cmdline} ${isoboot} root=live:${srvraddr}/isos/agama-installer.x86_64-openSUSE_PXE.iso
+form                                    Configure Boot Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+present ||
+set knladdr ${srvraddr}/imgs/opensuse-agama-netinst-pxe
+set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
+echo Loading kernel and initrd ...
+kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- quiet || goto error
+initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
 boot || goto error
 exit
 
@@ -821,7 +989,7 @@ set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_server.cfg
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language language=ja country=JP timezone=Asia/Tokyo keyboard-configuration/xkb-keymap=jp keyboard-configuration/variant=Japanese
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
-set isosfile fetch=${srvraddr}/isos/debian-12.10.0-amd64-DVD-1.iso
+set isosfile fetch=${srvraddr}/isos/debian-12.11.0-amd64-DVD-1.iso
 form                                    Configure Boot Options
 item autoinst                           Auto install
 item networks                           Network
@@ -832,7 +1000,7 @@ present ||
 set knladdr ${srvraddr}/imgs/debian-12
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/install.amd/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/install.amd/initrd.gz || goto error
 boot || goto error
 exit
@@ -872,7 +1040,7 @@ present ||
 set knladdr ${srvraddr}/imgs/debian-testing
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install.amd/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/install.amd/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/install.amd/initrd.gz || goto error
 boot || goto error
 exit
@@ -912,7 +1080,7 @@ present ||
 set knladdr ${srvraddr}/imgs/ubuntu-live-24.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
@@ -952,7 +1120,7 @@ present ||
 set knladdr ${srvraddr}/imgs/ubuntu-live-24.10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
@@ -992,7 +1160,47 @@ present ||
 set knladdr ${srvraddr}/imgs/ubuntu-live-25.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/casper/initrd || goto error
+boot || goto error
+exit
+
+:ubuntu-live-25.10
+echo Loading Ubuntu 25.10 Live Server ...
+set hostname sv-ubuntu.workgroup
+set srvraddr http://192.168.1.12
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+present ||
+set ethrname ens160
+set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                    Configure Boot Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+present ||
+set autoinst automatic-ubiquity noprompt autoinstall ds=nocloud;s=${srvraddr}/conf/nocloud/ubuntu_server
+set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
+set language debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile boot=casper iso-url=${srvraddr}/isos/questing-live-server-amd64.iso
+form                                    Configure Boot Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+present ||
+set knladdr ${srvraddr}/imgs/ubuntu-live-25.10
+set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
+echo Loading kernel and initrd ...
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
@@ -1032,7 +1240,7 @@ present ||
 set knladdr ${srvraddr}/imgs/fedora-41
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -1072,7 +1280,7 @@ present ||
 set knladdr ${srvraddr}/imgs/fedora-42
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -1112,7 +1320,7 @@ present ||
 set knladdr ${srvraddr}/imgs/centos-stream-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -1152,7 +1360,7 @@ present ||
 set knladdr ${srvraddr}/imgs/centos-stream-10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -1192,7 +1400,47 @@ present ||
 set knladdr ${srvraddr}/imgs/almalinux-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+boot || goto error
+exit
+
+:almalinux-10
+echo Loading Alma Linux 10 ...
+set hostname sv-almalinux.workgroup
+set srvraddr http://192.168.1.12
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+present ||
+set ethrname ens160
+set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                    Configure Boot Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+present ||
+set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_almalinux-10_web.cfg
+set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
+set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile inst.repo=${srvraddr}/imgs/almalinux-10
+form                                    Configure Boot Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+present ||
+set knladdr ${srvraddr}/imgs/almalinux-10
+set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
+echo Loading kernel and initrd ...
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -1232,7 +1480,47 @@ present ||
 set knladdr ${srvraddr}/imgs/rockylinux-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/images/pxeboot/initrd.img || goto error
+boot || goto error
+exit
+
+:rockylinux-10
+echo Loading Rocky Linux 10 ...
+set hostname sv-rockylinux.workgroup
+set srvraddr http://192.168.1.12
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+present ||
+set ethrname ens160
+set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+form                                    Configure Boot Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+present ||
+set autoinst inst.ks=${srvraddr}/conf/kickstart/ks_rockylinux-10_web.cfg
+set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}:${hostname}:${ethrname}:none,auto6 nameserver=${ipv4nsvr}
+set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile inst.repo=${srvraddr}/imgs/rockylinux-10
+form                                    Configure Boot Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+present ||
+set knladdr ${srvraddr}/imgs/rockylinux-10
+set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
+echo Loading kernel and initrd ...
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -1272,7 +1560,7 @@ present ||
 set knladdr ${srvraddr}/imgs/miraclelinux-9
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/images/pxeboot/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/images/pxeboot/initrd.img || goto error
 boot || goto error
 exit
@@ -1285,7 +1573,7 @@ form                                    Configure Boot Options
 item hostname                           Hostname
 item srvraddr                           Server ip address
 present ||
-set ethrname ens160
+set ethrname eth0
 set ipv4addr 192.168.1.1/24
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
@@ -1298,8 +1586,8 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 present ||
 set autoinst autoyast=${srvraddr}/conf/autoyast/autoinst_leap-15.6_web.xml
-set networks hostname=${hostname} ifcfg==${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
-set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
+set language language=ja_JP
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile install=${srvraddr}/imgs/opensuse-leap-15.6
 form                                    Configure Boot Options
@@ -1312,7 +1600,7 @@ present ||
 set knladdr ${srvraddr}/imgs/opensuse-leap-15.6
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
+kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- quiet || goto error
 initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
 boot || goto error
 exit
@@ -1338,8 +1626,8 @@ item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 present ||
 set autoinst autoyast=${srvraddr}/conf/autoyast/autoinst_tumbleweed_web.xml
-set networks hostname=${hostname} ifcfg==${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
-set language locale=ja_JP.UTF-8 timezone=Asia/Tokyo keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
+set language language=ja_JP
 set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
 set isosfile install=${srvraddr}/imgs/opensuse-tumbleweed
 form                                    Configure Boot Options
@@ -1352,50 +1640,14 @@ present ||
 set knladdr ${srvraddr}/imgs/opensuse-tumbleweed
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- || goto error
+kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- quiet || goto error
 initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
 boot || goto error
 exit
 
-:windows-10
-echo Loading Windows 10 ...
-set srvraddr http://192.168.1.12
-isset ${next-server} && set srvraddr ${next-server} ||
-set knladdr ${srvraddr}/imgs/windows-10
-set cfgaddr ${srvraddr}/conf/windows
-echo Loading boot files ...
-kernel ipxe/wimboot
-initrd ${cfgaddr}/unattend.xml                 unattend.xml || goto error
-initrd ${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
-initrd -n install.cmd ${cfgaddr}/inst_w10.cmd  install.cmd  || goto error
-initrd ${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
-initrd ${knladdr}/boot/bcd                     BCD          || goto error
-initrd ${knladdr}/boot/boot.sdi                boot.sdi     || goto error
-initrd -n boot.wim ${knladdr}/sources/boot.wim boot.wim     || goto error
-boot || goto error
-exit
-
-:windows-11
-echo Loading Windows 11 ...
-set srvraddr http://192.168.1.12
-isset ${next-server} && set srvraddr ${next-server} ||
-set knladdr ${srvraddr}/imgs/windows-11
-set cfgaddr ${srvraddr}/conf/windows
-echo Loading boot files ...
-kernel ipxe/wimboot
-initrd ${cfgaddr}/unattend.xml                 unattend.xml || goto error
-initrd ${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
-initrd -n install.cmd ${cfgaddr}/inst_w11.cmd  install.cmd  || goto error
-initrd ${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
-initrd ${knladdr}/boot/bcd                     BCD          || goto error
-initrd ${knladdr}/boot/boot.sdi                boot.sdi     || goto error
-initrd -n boot.wim ${knladdr}/sources/boot.wim boot.wim     || goto error
-boot || goto error
-exit
-
-:debian-live-11
-echo Loading Debian 11 Live ...
-set hostname sv-debian.workgroup
+:opensuse-leap-16.0-beta
+echo Loading openSUSE Leap 16.0 Beta ...
+set hostname sv-opensuse.workgroup
 set srvraddr http://192.168.1.12
 form                                    Configure Boot Options
 item hostname                           Hostname
@@ -1413,11 +1665,11 @@ item ipv4mask                           IPv4 netmask
 item ipv4gway                           IPv4 gateway
 item ipv4nsvr                           IPv4 nameservers
 present ||
-set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop_old.cfg
-set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
-set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
-set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
-set isosfile fetch=${srvraddr}/isos/debian-live-11.11.0-amd64-lxde.iso
+set autoinst live.password=install inst.auto=${srvraddr}/conf/agama/autoinst_leap-16.0.json
+set networks hostname=${hostname} ifcfg=${ethrname}=${ipv4addr},${ipv4gway},${ipv4nsvr},workgroup
+set language lang=ja_JP language=ja_JP.UTF-8 keyboard=jp timezone=Asia/Tokyo
+set ramsdisk load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile ${extra_cmdline} ${isoboot} root=live:${srvraddr}/isos/Leap-16.0-offline-installer-x86_64.install.iso
 form                                    Configure Boot Options
 item autoinst                           Auto install
 item networks                           Network
@@ -1425,11 +1677,47 @@ item language                           Language
 item ramsdisk                           RAM disk
 item isosfile                           ISO file
 present ||
-set knladdr ${srvraddr}/imgs/debian-live-11
+set knladdr ${srvraddr}/imgs/opensuse-leap-16.0-beta
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/d-i/vmlinuz ${options} --- || goto error
-initrd ${knladdr}/d-i/initrd.gz || goto error
+kernel ${knladdr}/boot/x86_64/loader/linux ${options} --- quiet || goto error
+initrd ${knladdr}/boot/x86_64/loader/initrd || goto error
+boot || goto error
+exit
+
+:windows-10
+echo Loading Windows 10 ...
+set srvraddr http://192.168.1.12
+isset ${srvraddr} || isset ${next-server} && set srvraddr http://${next-server} ||
+set knladdr ${srvraddr}/imgs/windows-10
+set cfgaddr ${srvraddr}/conf/windows
+echo Loading boot files ...
+kernel ipxe/wimboot
+initrd ${cfgaddr}/unattend.xml                 unattend.xml || goto error
+initrd ${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
+initrd -n install.cmd ${cfgaddr}/inst_w10.cmd  install.cmd  || goto error
+initrd ${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
+initrd ${knladdr}/boot/bcd                     BCD          || goto error
+initrd ${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+initrd -n boot.wim ${knladdr}/sources/boot.wim boot.wim     || goto error
+boot || goto error
+exit
+
+:windows-11
+echo Loading Windows 11 ...
+set srvraddr http://192.168.1.12
+isset ${srvraddr} || isset ${next-server} && set srvraddr http://${next-server} ||
+set knladdr ${srvraddr}/imgs/windows-11
+set cfgaddr ${srvraddr}/conf/windows
+echo Loading boot files ...
+kernel ipxe/wimboot
+initrd ${cfgaddr}/unattend.xml                 unattend.xml || goto error
+initrd ${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
+initrd -n install.cmd ${cfgaddr}/inst_w11.cmd  install.cmd  || goto error
+initrd ${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
+initrd ${knladdr}/boot/bcd                     BCD          || goto error
+initrd ${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+initrd -n boot.wim ${knladdr}/sources/boot.wim boot.wim     || goto error
 boot || goto error
 exit
 
@@ -1457,7 +1745,7 @@ set autoinst auto=true preseed/url=${srvraddr}/conf/preseed/ps_debian_desktop.cf
 set networks netcfg/disable_autoconfig=true netcfg/choose_interface=${ethrname} netcfg/get_hostname=${hostname} netcfg/get_ipaddress=${ipv4addr} netcfg/get_netmask=${ipv4mask} netcfg/get_gateway=${ipv4gway} netcfg/get_nameservers=${ipv4nsvr}
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
-set isosfile fetch=${srvraddr}/isos/debian-live-12.10.0-amd64-lxde.iso
+set isosfile fetch=${srvraddr}/isos/debian-live-12.11.0-amd64-lxde.iso
 form                                    Configure Boot Options
 item autoinst                           Auto install
 item networks                           Network
@@ -1468,7 +1756,7 @@ present ||
 set knladdr ${srvraddr}/imgs/debian-live-12
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/install/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/install/initrd.gz || goto error
 boot || goto error
 exit
@@ -1508,7 +1796,7 @@ present ||
 set knladdr ${srvraddr}/imgs/debian-live-testing
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/install/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/install/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/install/initrd.gz || goto error
 boot || goto error
 exit
@@ -1548,7 +1836,7 @@ present ||
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-24.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
@@ -1588,7 +1876,7 @@ present ||
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-24.10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
@@ -1628,30 +1916,48 @@ present ||
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-25.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
 
-:live-debian-live-11
-echo Loading Debian 11 Live ...
-set hostname sv-debian.workgroup
+:ubuntu-desktop-25.10
+echo Loading Ubuntu 25.10 Desktop ...
+set hostname sv-ubuntu.workgroup
 set srvraddr http://192.168.1.12
+form                                    Configure Boot Options
+item hostname                           Hostname
+item srvraddr                           Server ip address
+present ||
 set ethrname ens160
 set ipv4addr 192.168.1.1/24
 set ipv4mask 255.255.255.0
 set ipv4gway 192.168.1.254
 set ipv4nsvr 192.168.1.254
-set autoinst boot=live
-set networks ip=dhcp
-set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
+form                                    Configure Boot Options
+item ethrname                           Interface
+item ipv4addr                           IPv4 address
+item ipv4mask                           IPv4 netmask
+item ipv4gway                           IPv4 gateway
+item ipv4nsvr                           IPv4 nameservers
+present ||
+set autoinst automatic-ubiquity noprompt autoinstall ds=nocloud;s=${srvraddr}/conf/nocloud/ubuntu_desktop
+set networks ip=${ipv4addr}::${ipv4gway}:${ipv4mask}::${ethrname}:static:${ipv4nsvr} hostname=${hostname}
+set language debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
-set isosfile fetch=${srvraddr}/isos/debian-live-11.11.0-amd64-lxde.iso
-set knladdr ${srvraddr}/imgs/debian-live-11
+set isosfile boot=casper iso-url=${srvraddr}/isos/questing-desktop-amd64.iso
+form                                    Configure Boot Options
+item autoinst                           Auto install
+item networks                           Network
+item language                           Language
+item ramsdisk                           RAM disk
+item isosfile                           ISO file
+present ||
+set knladdr ${srvraddr}/imgs/ubuntu-desktop-25.10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/live/vmlinuz-5.10.0-32-amd64 ${options} --- || goto error
-initrd ${knladdr}/live/initrd.img-5.10.0-32-amd64 || goto error
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
 
@@ -1668,11 +1974,11 @@ set autoinst boot=live
 set networks ip=dhcp
 set language utc=yes locales=ja_JP.UTF-8 timezone=Asia/Tokyo key-model=pc105 key-layouts=jp key-variants=OADG109A
 set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
-set isosfile fetch=${srvraddr}/isos/debian-live-12.10.0-amd64-lxde.iso
+set isosfile fetch=${srvraddr}/isos/debian-live-12.11.0-amd64-lxde.iso
 set knladdr ${srvraddr}/imgs/debian-live-12
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/live/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/live/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/live/initrd.img || goto error
 boot || goto error
 exit
@@ -1694,7 +2000,7 @@ set isosfile fetch=${srvraddr}/isos/debian-live-testing-amd64-lxde.iso
 set knladdr ${srvraddr}/imgs/debian-live-testing
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/live/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/live/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/live/initrd.img || goto error
 boot || goto error
 exit
@@ -1716,7 +2022,7 @@ set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-24.04.2-desktop-amd64.i
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-24.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
@@ -1738,7 +2044,7 @@ set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-24.10-desktop-amd64.iso
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-24.10
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
@@ -1760,7 +2066,29 @@ set isosfile boot=casper iso-url=${srvraddr}/isos/ubuntu-25.04-desktop-amd64.iso
 set knladdr ${srvraddr}/imgs/ubuntu-desktop-25.04
 set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
 echo Loading kernel and initrd ...
-kernel ${knladdr}/casper/vmlinuz ${options} --- || goto error
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
+initrd ${knladdr}/casper/initrd || goto error
+boot || goto error
+exit
+
+:live-ubuntu-desktop-25.10
+echo Loading Ubuntu 25.10 Desktop ...
+set hostname sv-ubuntu.workgroup
+set srvraddr http://192.168.1.12
+set ethrname ens160
+set ipv4addr 192.168.1.1/24
+set ipv4mask 255.255.255.0
+set ipv4gway 192.168.1.254
+set ipv4nsvr 192.168.1.254
+set autoinst boot=live
+set networks ip=dhcp
+set language debian-installer/locale=en_US.UTF-8 keyboard-configuration/layoutcode=jp keyboard-configuration/modelcode=jp106
+set ramsdisk root=/dev/ram0 load_ramdisk=1 ramdisk_size=1024000 overlay-size=80%
+set isosfile boot=casper iso-url=${srvraddr}/isos/questing-desktop-amd64.iso
+set knladdr ${srvraddr}/imgs/ubuntu-desktop-25.10
+set options ${autoinst} ${networks} ${language} ${ramsdisk} ${isosfile} fsck.mode=skip raid=noautodetect vga=791
+echo Loading kernel and initrd ...
+kernel ${knladdr}/casper/vmlinuz ${options} --- quiet || goto error
 initrd ${knladdr}/casper/initrd || goto error
 boot || goto error
 exit
@@ -1768,7 +2096,7 @@ exit
 :memtest86plus
 echo Loading Memtest86+ 7.20 ...
 set srvraddr http://192.168.1.12
-isset ${next-server} && set srvraddr ${next-server} ||
+isset ${srvraddr} || isset ${next-server} && set srvraddr http://${next-server} ||
 set knladdr ${srvraddr}/imgs/memtest86plus
 iseq ${platform} efi && set knlfile ${knladdr}/EFI/BOOT/memtest || set knlfile ${knladdr}/boot/memtest
 echo Loading boot files ...
@@ -1779,7 +2107,7 @@ exit
 :winpe-x64
 echo Loading WinPE x64 ...
 set srvraddr http://192.168.1.12
-isset ${next-server} && set srvraddr ${next-server} ||
+isset ${srvraddr} || isset ${next-server} && set srvraddr http://${next-server} ||
 set knladdr ${srvraddr}/imgs/winpe-x64
 echo Loading boot files ...
 kernel ipxe/wimboot
@@ -1792,7 +2120,7 @@ exit
 :ati2020x86
 echo Loading ATI2020x86 ...
 set srvraddr http://192.168.1.12
-isset ${next-server} && set srvraddr ${next-server} ||
+isset ${srvraddr} || isset ${next-server} && set srvraddr http://${next-server} ||
 set knladdr ${srvraddr}/imgs/ati2020x86
 echo Loading boot files ...
 kernel ipxe/wimboot
@@ -1805,7 +2133,7 @@ exit
 :ati2020x64
 echo Loading ATI2020x64 ...
 set srvraddr http://192.168.1.12
-isset ${next-server} && set srvraddr ${next-server} ||
+isset ${srvraddr} || isset ${next-server} && set srvraddr http://${next-server} ||
 set knladdr ${srvraddr}/imgs/ati2020x64
 echo Loading boot files ...
 kernel ipxe/wimboot
