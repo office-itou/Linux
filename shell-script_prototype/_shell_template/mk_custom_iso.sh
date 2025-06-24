@@ -4056,7 +4056,7 @@ _EOT_
 			if [[ -z "${__TGET_LIST[3]##-}" ]]; then
 				return
 			fi
-			__WORK="$(printf "%-40.40s[ %s ]" "item --gap --" "${__TGET_LIST[3]//%20/ }")"
+			__WORK="$(printf "%-48.48s[ %s ]" "item --gap --" "${__TGET_LIST[3]//%20/ }")"
 			sed -i "${__PATH_TGET}" -e "/\[ System command \]/i \\${__WORK}"
 			;;
 		o)								# (output)
@@ -4085,7 +4085,7 @@ _EOT_
 							:${__ENTR}
 							echo Loading ${__TGET_LIST[3]//%20/ } ...
 							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
-							isset \${next-server} && set srvraddr \${next-server} ||
+							isset \${srvraddr} || isset \${next-server} && set srvraddr http://\${next-server} ||
 							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
 							set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
 							echo Loading boot files ...
@@ -4111,7 +4111,7 @@ _EOT_
 							:${__ENTR}
 							echo Loading ${__TGET_LIST[3]//%20/ } ...
 							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
-							isset \${next-server} && set srvraddr \${next-server} ||
+							isset \${srvraddr} || isset \${next-server} && set srvraddr http://\${next-server} ||
 							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
 							echo Loading boot files ...
 							kernel ipxe/wimboot
@@ -4130,7 +4130,7 @@ _EOT_
 							:${__ENTR}
 							echo Loading ${__TGET_LIST[3]//%20/ } ...
 							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
-							isset \${next-server} && set srvraddr \${next-server} ||
+							isset \${srvraddr} || isset \${next-server} && set srvraddr http://\${next-server} ||
 							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
 							iseq \${platform} efi && set knlfile \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/} || set knlfile \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
 							echo Loading boot files ...
@@ -4717,7 +4717,9 @@ function fnExec_pxeboot() {
 		return
 	fi
 	# --- start ---------------------------------------------------------------
-	printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__TGET_LIST[13]##*/}"
+	if [[ -n "${__TGET_LIST[13]##-}" ]]; then
+		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "start" "${__TGET_LIST[13]##*/}"
+	fi
 	# --- update --------------------------------------------------------------
 	case "${__COMD_TYPE:-}" in
 		update  ) ;;
@@ -4734,7 +4736,9 @@ function fnExec_pxeboot() {
 			;;
 	esac
 	# --- complete ------------------------------------------------------------
-	printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__TGET_LIST[13]##*/}"
+	if [[ -n "${__TGET_LIST[13]##-}" ]]; then
+		printf "%20.20s: %-20.20s: %s\n" "$(date +"%Y/%m/%d %H:%M:%S" || true)" "complete" "${__TGET_LIST[13]##*/}"
+	fi
 	# --- finish --------------------------------------------------------------
 #	__RETN_VALU="$(printf "%s\n" "${__TGET_LIST[@]}")"
 	printf -v __RETN_VALU "%s\n" "${__TGET_LIST[@]}"
@@ -4759,6 +4763,7 @@ function fnExec() {
 #	declare       __RSLT=""				# result
 	declare       __RVAL=""				# return value
 #	declare       __RETN=""				# return value
+	declare -a    __TITL=()				# sub menu titile
 	declare -i    __TABS=0				# tabs count
 	declare       __WORK=""				# work variables
 	declare -a    __LIST=()				# work variables
@@ -4816,6 +4821,17 @@ function fnExec() {
 				esac
 				__TGET="$1"
 				shift
+				# --- pxeboot title gap ---------------------------------------
+				__TITL=()
+				case "${__COMD}" in
+					pxeboot )
+						IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=="'"${__TGET}"'" && $2=="m" {print $0;}' || true)
+						if [[ -n "${__MDIA[*]}" ]]; then
+							read -r -a __TITL < <(echo "${__MDIA[0]}")
+						fi
+						;;
+					*       ) ;;
+				esac
 				# --- selection by media type ---------------------------------
 				IFS= mapfile -d $'\n' -t __MDIA < <(printf "%s\n" "${_LIST_MDIA[@]}" | awk '$1=="'"${__TGET}"'" && $2=="o" {print $0;}' || true)
 				__WORK="$(eval "echo {1..${#__MDIA[@]}}")"
@@ -4917,6 +4933,10 @@ function fnExec() {
 							;;
 						download) ;;
 						pxeboot )
+							if [[ __IDNO -le 1 ]]; then
+								fnExec_pxeboot "__RVAL" "${__COMD}" "${__TABS:-"0"}" "${__TITL[@]}"
+								__TABS=1
+							fi
 							fnExec_pxeboot "__RVAL" "${__COMD}" "${__TABS:-"0"}" "${__LIST[@]}"
 							case "${__LIST[1]}" in
 								m)							# (menu)
@@ -4962,6 +4982,16 @@ function fnExec() {
 						break
 					done
 				done
+				case "${__COMD}" in
+						pxeboot )
+							if [[ -n "${__TITL[*]}" ]]; then
+								__TITL[3]="-"
+								__TABS=0
+								fnExec_pxeboot "__RVAL" "${__COMD}" "${__TABS:-"0"}" "${__TITL[@]}"
+							fi
+							;;
+						*       ) ;;
+				esac
 			done
 			fnPut_media_data
 			;;
