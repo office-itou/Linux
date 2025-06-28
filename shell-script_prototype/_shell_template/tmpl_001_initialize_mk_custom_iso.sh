@@ -39,6 +39,13 @@
 			"lz4" \
 			"bzip2" \
 			"lzop" \
+			"syslinux-common" \
+			"pxelinux" \
+			"syslinux-efi" \
+			"grub-common" \
+			"grub-pc-bin" \
+			"grub-efi-amd64-bin" \
+			"rsync" \
 		)
 		# ---------------------------------------------------------------------
 		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]:-bash}" 2> /dev/null | sed -ne '/[ \t]'"${_ARCH_OTHR:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g' || true)"

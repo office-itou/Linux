@@ -430,6 +430,8 @@ function fnCreate_conf() {
 		IPV4_MASK="${_IPV4_MASK:-}"				# IPv4 subnetmask (empty to ipv4 cidr)
 		IPV4_GWAY="${_IPV4_GWAY:-}"				# IPv4 gateway
 		IPV4_NSVR="${_IPV4_NSVR:-}"				# IPv4 nameserver
+		NTPS_ADDR="ntp.nict.jp"				    # ntp server address
+		NTPS_IPV4="61.205.120.130"		    	# ntp server ipv4 address
 
 		# --- menu timeout ------------------------------------------------------------
 		MENU_TOUT="${_MENU_TOUT:-}"							# timeout [sec]

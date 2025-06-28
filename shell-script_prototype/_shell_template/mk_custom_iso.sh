@@ -139,6 +139,13 @@ function fnTrap() {
 			"lz4" \
 			"bzip2" \
 			"lzop" \
+			"syslinux-common" \
+			"pxelinux" \
+			"syslinux-efi" \
+			"grub-common" \
+			"grub-pc-bin" \
+			"grub-efi-amd64-bin" \
+			"rsync" \
 		)
 		# ---------------------------------------------------------------------
 		PAKG_FIND="$(LANG=C apt list "${PAKG_LIST[@]:-bash}" 2> /dev/null | sed -ne '/[ \t]'"${_ARCH_OTHR:-"i386"}"'[ \t]*/!{' -e '/\[.*\(WARNING\|Listing\|installed\|upgradable\).*\]/! s%/.*%%gp}' | sed -z 's/[\r\n]\+/ /g' || true)"
@@ -1703,6 +1710,8 @@ function fnCreate_conf() {
 		IPV4_MASK="${_IPV4_MASK:-}"				# IPv4 subnetmask (empty to ipv4 cidr)
 		IPV4_GWAY="${_IPV4_GWAY:-}"				# IPv4 gateway
 		IPV4_NSVR="${_IPV4_NSVR:-}"				# IPv4 nameserver
+		NTPS_ADDR="ntp.nict.jp"				    # ntp server address
+		NTPS_IPV4="61.205.120.130"		    	# ntp server ipv4 address
 
 		# --- menu timeout ------------------------------------------------------------
 		MENU_TOUT="${_MENU_TOUT:-}"							# timeout [sec]
@@ -3903,6 +3912,15 @@ function fnExec_download() {
 	if [[ -n "${__TGET_LIST[25]##-}" ]] && [[ ! -e "${__TGET_LIST[13]}" ]] && [[ ! -h "${__TGET_LIST[13]}" ]]; then
 		printf "%20.20s: %s\n" "create symlink" "${__TGET_LIST[25]} -> ${__TGET_LIST[13]}"
 		ln -s "${__TGET_LIST[25]%%/}/${__TGET_LIST[13]##*/}" "${__TGET_LIST[13]}"
+		if [[ -e "${__TGET_LIST[13]}" ]]; then
+			fnGetFileinfo __RETN "${__TGET_LIST[13]}"
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+#			__TGET_LIST[13]="${__ARRY[0]:-}"	# iso_path
+			__TGET_LIST[14]="${__ARRY[1]:-}"	# iso_tstamp
+			__TGET_LIST[15]="${__ARRY[2]:-}"	# iso_size
+			__TGET_LIST[16]="${__ARRY[3]:-}"	# iso_volume
+		fi
 	fi
 	# --- comparing web and local file timestamps -----------------------------
 	__RETN="$(fnDateDiff "${__TGET_LIST[10]:-@0}" "${__TGET_LIST[14]:-@0}")"

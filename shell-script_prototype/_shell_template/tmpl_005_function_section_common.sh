@@ -1490,6 +1490,15 @@ function fnExec_download() {
 	if [[ -n "${__TGET_LIST[25]##-}" ]] && [[ ! -e "${__TGET_LIST[13]}" ]] && [[ ! -h "${__TGET_LIST[13]}" ]]; then
 		printf "%20.20s: %s\n" "create symlink" "${__TGET_LIST[25]} -> ${__TGET_LIST[13]}"
 		ln -s "${__TGET_LIST[25]%%/}/${__TGET_LIST[13]##*/}" "${__TGET_LIST[13]}"
+		if [[ -e "${__TGET_LIST[13]}" ]]; then
+			fnGetFileinfo __RETN "${__TGET_LIST[13]}"
+			read -r -a __ARRY < <(echo "${__RETN:-"- - - -"}")
+			__ARRY=("${__ARRY[@]##-}")
+#			__TGET_LIST[13]="${__ARRY[0]:-}"	# iso_path
+			__TGET_LIST[14]="${__ARRY[1]:-}"	# iso_tstamp
+			__TGET_LIST[15]="${__ARRY[2]:-}"	# iso_size
+			__TGET_LIST[16]="${__ARRY[3]:-}"	# iso_volume
+		fi
 	fi
 	# --- comparing web and local file timestamps -----------------------------
 	__RETN="$(fnDateDiff "${__TGET_LIST[10]:-@0}" "${__TGET_LIST[14]:-@0}")"
