@@ -365,7 +365,7 @@ function fnBoot_option_autoyast() {
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__WORK="ip=dhcp"
 	else
-		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
 		case "${__TGET_LIST[2]}" in
 			opensuse-*-15* ) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
 			*              ) ;;
@@ -458,7 +458,7 @@ function fnBoot_option_agama() {
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__WORK="ip=dhcp"
 	else
-		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
 	fi
 	__BOPT+=("${__WORK}")
 	# ---  3: locale ----------------------------------------------------------
@@ -606,7 +606,8 @@ _EOT_
 	__WORK="${__WORK//\$\{hostname\}/"${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"}"
 	__WORK="${__WORK//\$\{srvraddr\}/"${_SRVR_PROT}://${_SRVR_ADDR:?}"}"
 	__WORK="${__WORK//\$\{ethrname\}/"${_NICS_NAME:-ens160}"}"
-	__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"}"
+#	__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"}"
+	__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}"}"
 	__WORK="${__WORK//\$\{ipv4mask\}/"${_IPV4_MASK:-}"}"
 	__WORK="${__WORK//\$\{ipv4gway\}/"${_IPV4_GWAY:-}"}"
 	__WORK="${__WORK//\$\{ipv4nsvr\}/"${_IPV4_NSVR:-}"}"
@@ -880,7 +881,7 @@ _EOT_
 			  set srvraddr="${_SRVR_PROT}://${_SRVR_ADDR:?}"
 			  set hostname="${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
 			  set ethrname="${__WORK}"
-			  set ipv4addr="${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"
+			  set ipv4addr="${_IPV4_ADDR:-}"
 			  set ipv4mask="${_IPV4_MASK:-}"
 			  set ipv4gway="${_IPV4_GWAY:-}"
 			  set ipv4nsvr="${_IPV4_NSVR:-}"
@@ -915,7 +916,7 @@ _EOT_
 				  set srvraddr="${_SRVR_PROT}://${_SRVR_ADDR:?}"
 				  set hostname="${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
 				  set ethrname="${__WORK}"
-				  set ipv4addr="${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"
+				  set ipv4addr="${_IPV4_ADDR:-}"
 				  set ipv4mask="${_IPV4_MASK:-}"
 				  set ipv4gway="${_IPV4_GWAY:-}"
 				  set ipv4nsvr="${_IPV4_NSVR:-}"
@@ -1746,7 +1747,7 @@ _EOT_
 								set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
 								set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
 								set ethrname ${_NICS_NAME:-ens160}
-								set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
+								set ipv4addr ${_IPV4_ADDR:-}
 								set ipv4mask ${_IPV4_MASK:-}
 								set ipv4gway ${_IPV4_GWAY:-}
 								set ipv4nsvr ${_IPV4_NSVR:-}
@@ -1770,7 +1771,7 @@ _EOT_
 								item srvraddr                           Server ip address
 								present ||
 								set ethrname ${_NICS_NAME:-ens160}
-								set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
+								set ipv4addr ${_IPV4_ADDR:-}
 								set ipv4mask ${_IPV4_MASK:-}
 								set ipv4gway ${_IPV4_GWAY:-}
 								set ipv4nsvr ${_IPV4_NSVR:-}
@@ -2027,7 +2028,7 @@ _EOT_
 
 								  set hostname="${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
 								  set ethrname="${_NICS_NAME:-ens160}"
-								  set ipv4addr="${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"
+								  set ipv4addr="${_IPV4_ADDR:-}"
 								  set ipv4mask="${_IPV4_MASK:-}"
 								  set ipv4gway="${_IPV4_GWAY:-}"
 								  set ipv4nsvr="${_IPV4_NSVR:-}"
@@ -2249,7 +2250,8 @@ _EOT_
 					__WORK="${__WORK//\$\{hostname\}/"${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"}"
 					__WORK="${__WORK//\$\{srvraddr\}/"${_SRVR_PROT}://${_SRVR_ADDR:?}"}"
 					__WORK="${__WORK//\$\{ethrname\}/"${_NICS_NAME:-ens160}"}"
-					__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"}"
+#					__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"}"
+					__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}"}"
 					__WORK="${__WORK//\$\{ipv4mask\}/"${_IPV4_MASK:-}"}"
 					__WORK="${__WORK//\$\{ipv4gway\}/"${_IPV4_GWAY:-}"}"
 					__WORK="${__WORK//\$\{ipv4nsvr\}/"${_IPV4_NSVR:-}"}"

@@ -1536,46 +1536,48 @@ function fnInitialization() {
 	readonly      _MENU_DPTH
 	readonly      _MENU_MODE
 	# --- directory list ------------------------------------------------------
-	_LIST_DIRS=(                                                                                                        \
-		"${_DIRS_TOPS:?}"                                                                                               \
-		"${_DIRS_HGFS:?}"                                                                                               \
-		"${_DIRS_HTML:?}"                                                                                               \
-		"${_DIRS_SAMB:?}"/{cifs,data/{adm/{netlogon,profiles},arc,bak,pub,usr},dlna/{movies,others,photos,sounds}}      \
-		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,i386-{efi,pc},locale,x86_64-efi},ipxe,menu-{bios,efi64}/pxelinux.cfg}       \
-		"${_DIRS_USER:?}"                                                                                               \
-		"${_DIRS_SHAR:?}"                                                                                               \
-		"${_DIRS_CONF:?}"/{autoyast,kickstart,nocloud,preseed,windows}                                                  \
-		"${_DIRS_DATA:?}"                                                                                               \
-		"${_DIRS_KEYS:?}"                                                                                               \
-		"${_DIRS_TMPL:?}"                                                                                               \
-		"${_DIRS_SHEL:?}"                                                                                               \
-		"${_DIRS_IMGS:?}"                                                                                               \
-		"${_DIRS_ISOS:?}"                                                                                               \
-		"${_DIRS_LOAD:?}"                                                                                               \
-		"${_DIRS_RMAK:?}"                                                                                               \
+	_LIST_DIRS=(                                                                                                                                                                        \
+		"${_DIRS_TOPS:?}"                                                                                                                                                               \
+		"${_DIRS_HGFS:?}"                                                                                                                                                               \
+		"${_DIRS_HTML:?}"                                                                                                                                                               \
+		"${_DIRS_SAMB:?}"/{adm/{commands,profiles},pub/{contents/{disc,dlna/{movies,others,photos,sounds}},resource/{image/{linux,windows},source/git},software,hardware,_license},usr} \
+		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,i386-{efi,pc},locale,x86_64-efi},ipxe,menu-{bios,efi64}/pxelinux.cfg}                                                                       \
+		"${_DIRS_USER:?}"                                                                                                                                                               \
+		"${_DIRS_SHAR:?}"                                                                                                                                                               \
+		"${_DIRS_CONF:?}"/{agama,autoyast,kickstart,nocloud,preseed,script,windows}                                                                                                     \
+		"${_DIRS_DATA:?}"                                                                                                                                                               \
+		"${_DIRS_KEYS:?}"                                                                                                                                                               \
+		"${_DIRS_TMPL:?}"                                                                                                                                                               \
+		"${_DIRS_SHEL:?}"                                                                                                                                                               \
+		"${_DIRS_IMGS:?}"                                                                                                                                                               \
+		"${_DIRS_ISOS:?}"                                                                                                                                                               \
+		"${_DIRS_LOAD:?}"                                                                                                                                                               \
+		"${_DIRS_RMAK:?}"                                                                                                                                                               \
 	)
 	readonly      _LIST_DIRS
 	# --- symbolic link list --------------------------------------------------
 	# 0: a:add, r:relative
 	# 1: target
 	# 2: symlink
-	_LIST_LINK=(                                                                                                        \
-		"a  ${_DIRS_CONF:?}                                     ${_DIRS_HTML:?}/"                                       \
-		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_HTML:?}/"                                       \
-		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_HTML:?}/"                                       \
-		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_HTML:?}/"                                       \
-		"a  ${_DIRS_RMAK:?}                                     ${_DIRS_HTML:?}/"                                       \
-		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_TFTP:?}/"                                       \
-		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_TFTP:?}/"                                       \
-		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_TFTP:?}/"                                       \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                             \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                             \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                             \
-		"r  ${_DIRS_TFTP:?}/menu-bios/syslinux.cfg              ${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"         \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                            \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                            \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                            \
-		"r  ${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg             ${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"        \
+	_LIST_LINK=(                                                                                                                                                                        \
+		"a  ${_DIRS_CONF:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_RMAK:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
+		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
+		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_CONF##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/menu-bios/syslinux.cfg              ${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"                                                                         \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_CONF##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg             ${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"                                                                        \
 	)
 	readonly      _LIST_LINK
 	# --- autoinstall configuration file --------------------------------------
@@ -2776,7 +2778,7 @@ function fnBoot_option_autoyast() {
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__WORK="ip=dhcp"
 	else
-		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
 		case "${__TGET_LIST[2]}" in
 			opensuse-*-15* ) __WORK="${__WORK//"${_NICS_NAME:-ens160}"/"eth0"}";;
 			*              ) ;;
@@ -2869,7 +2871,7 @@ function fnBoot_option_agama() {
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__WORK="ip=dhcp"
 	else
-		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
+		__WORK+="${__WORK:+" "}hostname=\${hostname} ifcfg=\${ethrname}=\${ipv4addr}/${_IPV4_CIDR:-},\${ipv4gway},\${ipv4nsvr},${_NWRK_WGRP}"
 	fi
 	__BOPT+=("${__WORK}")
 	# ---  3: locale ----------------------------------------------------------
@@ -3017,7 +3019,8 @@ _EOT_
 	__WORK="${__WORK//\$\{hostname\}/"${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"}"
 	__WORK="${__WORK//\$\{srvraddr\}/"${_SRVR_PROT}://${_SRVR_ADDR:?}"}"
 	__WORK="${__WORK//\$\{ethrname\}/"${_NICS_NAME:-ens160}"}"
-	__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"}"
+#	__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"}"
+	__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}"}"
 	__WORK="${__WORK//\$\{ipv4mask\}/"${_IPV4_MASK:-}"}"
 	__WORK="${__WORK//\$\{ipv4gway\}/"${_IPV4_GWAY:-}"}"
 	__WORK="${__WORK//\$\{ipv4nsvr\}/"${_IPV4_NSVR:-}"}"
@@ -3291,7 +3294,7 @@ _EOT_
 			  set srvraddr="${_SRVR_PROT}://${_SRVR_ADDR:?}"
 			  set hostname="${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
 			  set ethrname="${__WORK}"
-			  set ipv4addr="${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"
+			  set ipv4addr="${_IPV4_ADDR:-}"
 			  set ipv4mask="${_IPV4_MASK:-}"
 			  set ipv4gway="${_IPV4_GWAY:-}"
 			  set ipv4nsvr="${_IPV4_NSVR:-}"
@@ -3326,7 +3329,7 @@ _EOT_
 				  set srvraddr="${_SRVR_PROT}://${_SRVR_ADDR:?}"
 				  set hostname="${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
 				  set ethrname="${__WORK}"
-				  set ipv4addr="${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"
+				  set ipv4addr="${_IPV4_ADDR:-}"
 				  set ipv4mask="${_IPV4_MASK:-}"
 				  set ipv4gway="${_IPV4_GWAY:-}"
 				  set ipv4nsvr="${_IPV4_NSVR:-}"
@@ -4157,7 +4160,7 @@ _EOT_
 								set hostname ${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}
 								set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
 								set ethrname ${_NICS_NAME:-ens160}
-								set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
+								set ipv4addr ${_IPV4_ADDR:-}
 								set ipv4mask ${_IPV4_MASK:-}
 								set ipv4gway ${_IPV4_GWAY:-}
 								set ipv4nsvr ${_IPV4_NSVR:-}
@@ -4181,7 +4184,7 @@ _EOT_
 								item srvraddr                           Server ip address
 								present ||
 								set ethrname ${_NICS_NAME:-ens160}
-								set ipv4addr ${_IPV4_ADDR:-}/${_IPV4_CIDR:-}
+								set ipv4addr ${_IPV4_ADDR:-}
 								set ipv4mask ${_IPV4_MASK:-}
 								set ipv4gway ${_IPV4_GWAY:-}
 								set ipv4nsvr ${_IPV4_NSVR:-}
@@ -4438,7 +4441,7 @@ _EOT_
 
 								  set hostname="${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"
 								  set ethrname="${_NICS_NAME:-ens160}"
-								  set ipv4addr="${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"
+								  set ipv4addr="${_IPV4_ADDR:-}"
 								  set ipv4mask="${_IPV4_MASK:-}"
 								  set ipv4gway="${_IPV4_GWAY:-}"
 								  set ipv4nsvr="${_IPV4_NSVR:-}"
@@ -4660,7 +4663,8 @@ _EOT_
 					__WORK="${__WORK//\$\{hostname\}/"${_NWRK_HOST/:_DISTRO_:/${__TGET_LIST[2]%%-*}}${_NWRK_WGRP:+.${_NWRK_WGRP}}"}"
 					__WORK="${__WORK//\$\{srvraddr\}/"${_SRVR_PROT}://${_SRVR_ADDR:?}"}"
 					__WORK="${__WORK//\$\{ethrname\}/"${_NICS_NAME:-ens160}"}"
-					__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"}"
+#					__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}/${_IPV4_CIDR:-}"}"
+					__WORK="${__WORK//\$\{ipv4addr\}/"${_IPV4_ADDR:-}"}"
 					__WORK="${__WORK//\$\{ipv4mask\}/"${_IPV4_MASK:-}"}"
 					__WORK="${__WORK//\$\{ipv4gway\}/"${_IPV4_GWAY:-}"}"
 					__WORK="${__WORK//\$\{ipv4nsvr\}/"${_IPV4_NSVR:-}"}"

@@ -263,46 +263,48 @@ function fnInitialization() {
 	readonly      _MENU_DPTH
 	readonly      _MENU_MODE
 	# --- directory list ------------------------------------------------------
-	_LIST_DIRS=(                                                                                                        \
-		"${_DIRS_TOPS:?}"                                                                                               \
-		"${_DIRS_HGFS:?}"                                                                                               \
-		"${_DIRS_HTML:?}"                                                                                               \
-		"${_DIRS_SAMB:?}"/{cifs,data/{adm/{netlogon,profiles},arc,bak,pub,usr},dlna/{movies,others,photos,sounds}}      \
-		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,i386-{efi,pc},locale,x86_64-efi},ipxe,menu-{bios,efi64}/pxelinux.cfg}       \
-		"${_DIRS_USER:?}"                                                                                               \
-		"${_DIRS_SHAR:?}"                                                                                               \
-		"${_DIRS_CONF:?}"/{autoyast,kickstart,nocloud,preseed,windows}                                                  \
-		"${_DIRS_DATA:?}"                                                                                               \
-		"${_DIRS_KEYS:?}"                                                                                               \
-		"${_DIRS_TMPL:?}"                                                                                               \
-		"${_DIRS_SHEL:?}"                                                                                               \
-		"${_DIRS_IMGS:?}"                                                                                               \
-		"${_DIRS_ISOS:?}"                                                                                               \
-		"${_DIRS_LOAD:?}"                                                                                               \
-		"${_DIRS_RMAK:?}"                                                                                               \
+	_LIST_DIRS=(                                                                                                                                                                        \
+		"${_DIRS_TOPS:?}"                                                                                                                                                               \
+		"${_DIRS_HGFS:?}"                                                                                                                                                               \
+		"${_DIRS_HTML:?}"                                                                                                                                                               \
+		"${_DIRS_SAMB:?}"/{adm/{commands,profiles},pub/{contents/{disc,dlna/{movies,others,photos,sounds}},resource/{image/{linux,windows},source/git},software,hardware,_license},usr} \
+		"${_DIRS_TFTP:?}"/{boot/grub/{fonts,i386-{efi,pc},locale,x86_64-efi},ipxe,menu-{bios,efi64}/pxelinux.cfg}                                                                       \
+		"${_DIRS_USER:?}"                                                                                                                                                               \
+		"${_DIRS_SHAR:?}"                                                                                                                                                               \
+		"${_DIRS_CONF:?}"/{agama,autoyast,kickstart,nocloud,preseed,script,windows}                                                                                                     \
+		"${_DIRS_DATA:?}"                                                                                                                                                               \
+		"${_DIRS_KEYS:?}"                                                                                                                                                               \
+		"${_DIRS_TMPL:?}"                                                                                                                                                               \
+		"${_DIRS_SHEL:?}"                                                                                                                                                               \
+		"${_DIRS_IMGS:?}"                                                                                                                                                               \
+		"${_DIRS_ISOS:?}"                                                                                                                                                               \
+		"${_DIRS_LOAD:?}"                                                                                                                                                               \
+		"${_DIRS_RMAK:?}"                                                                                                                                                               \
 	)
 	readonly      _LIST_DIRS
 	# --- symbolic link list --------------------------------------------------
 	# 0: a:add, r:relative
 	# 1: target
 	# 2: symlink
-	_LIST_LINK=(                                                                                                        \
-		"a  ${_DIRS_CONF:?}                                     ${_DIRS_HTML:?}/"                                       \
-		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_HTML:?}/"                                       \
-		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_HTML:?}/"                                       \
-		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_HTML:?}/"                                       \
-		"a  ${_DIRS_RMAK:?}                                     ${_DIRS_HTML:?}/"                                       \
-		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_TFTP:?}/"                                       \
-		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_TFTP:?}/"                                       \
-		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_TFTP:?}/"                                       \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                             \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                             \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                             \
-		"r  ${_DIRS_TFTP:?}/menu-bios/syslinux.cfg              ${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"         \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                            \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                            \
-		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                            \
-		"r  ${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg             ${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"        \
+	_LIST_LINK=(                                                                                                                                                                        \
+		"a  ${_DIRS_CONF:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_RMAK:?}                                     ${_DIRS_HTML:?}/"                                                                                                       \
+		"a  ${_DIRS_IMGS:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
+		"a  ${_DIRS_ISOS:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
+		"a  ${_DIRS_LOAD:?}                                     ${_DIRS_TFTP:?}/"                                                                                                       \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_CONF##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-bios/"                                                                                             \
+		"r  ${_DIRS_TFTP:?}/menu-bios/syslinux.cfg              ${_DIRS_TFTP:?}/menu-bios/pxelinux.cfg/default"                                                                         \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_CONF##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_IMGS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_ISOS##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/${_DIRS_LOAD##*/}                   ${_DIRS_TFTP:?}/menu-efi64/"                                                                                            \
+		"r  ${_DIRS_TFTP:?}/menu-efi64/syslinux.cfg             ${_DIRS_TFTP:?}/menu-efi64/pxelinux.cfg/default"                                                                        \
 	)
 	readonly      _LIST_LINK
 	# --- autoinstall configuration file --------------------------------------
