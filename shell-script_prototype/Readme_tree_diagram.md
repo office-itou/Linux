@@ -1,21 +1,21 @@
-# **main server tree diagram (developed for debian)**  
-  
-## **tree**  
-  
+# **main server tree diagram (developed for debian)**
+
+## **tree**
+
 ``` bash:
 tree --charset C -n --filesfirst -d /srv/
 ```
-  
-## **/boot/**  
-  
+
+## **/boot/**
+
 ``` bash:
 /boot/
 `-- grub
     `-- grub.cfg
 ```
-  
-## **/etc/**  
-  
+
+## **/etc/**
+
 ``` bash:
 /etc/
 |-- fstab
@@ -66,9 +66,9 @@ tree --charset C -n --filesfirst -d /srv/
     `-- timesyncd.conf.d
         `-- local.conf
 ```
-  
-## **/home/**  
-  
+
+## **/home/**
+
 ``` bash:
 /home/
 `-- master
@@ -78,9 +78,9 @@ tree --charset C -n --filesfirst -d /srv/
     |-- .pgpass
     `-- .vimrc
 ```
-  
-## **/lib/**  
-  
+
+## **/lib/**
+
 ``` bash:
 /lib/
 `-- systemd
@@ -88,9 +88,9 @@ tree --charset C -n --filesfirst -d /srv/
         |-- dnsmasq.service
         `-- firewalld.service
 ```
-  
-## **/root/**  
-  
+
+## **/root/**
+
 ``` bash:
 /root/
 |-- .bash_history
@@ -99,18 +99,18 @@ tree --charset C -n --filesfirst -d /srv/
 |-- .pgpass
 `-- .vimrc
 ```
-  
-## **/run/**  
-  
+
+## **/run/**
+
 ``` bash:
 /run/
 `-- systemd
     `-- resolve
         `-- stub-resolv.conf
 ```
-  
-## **/srv/**  
-  
+
+## **/srv/**
+
 ``` bash:
 /srv/
 |-- hgfs ------------------------------ vmware shared directory
@@ -123,21 +123,33 @@ tree --charset C -n --filesfirst -d /srv/
 |       |-- load -> /srv/user/share/load
 |       `-- rmak -> /srv/user/share/rmak
 |-- samba ----------------------------- samba shared directory
-|   |-- cifs
-|   |-- data
-|   |   |-- adm
-|   |   |   |-- netlogon
-|   |   |   |   `-- logon.bat
-|   |   |   `-- profiles
-|   |   |-- arc
-|   |   |-- bak
-|   |   |-- pub
-|   |   `-- usr
-|   `-- dlna
-|       |-- movies
-|       |-- others
-|       |-- photos
-|       `-- sounds
+|   |-- adm
+|   |   |-- commands
+|   |   `-- profiles
+|   |-- pub
+|   |   |-- _license
+|   |   |-- contents
+|   |   |   |-- disc
+|   |   |   `-- dlna
+|   |   |       |-- movies
+|   |   |       |-- others
+|   |   |       |-- photos
+|   |   |       `-- sounds
+|   |   |-- hardware
+|   |   |-- resource
+|   |   |   |-- image
+|   |   |   |   |-- linux
+|   |   |   |   `-- windows
+|   |   |   `-- source
+|   |   |       `-- git
+|   |   `-- software
+|   `-- usr
+|       `-- administrator
+|           |-- app
+|           |-- dat
+|           `-- web
+|               `-- public_html
+|                   `-- index.html
 |-- tftp ------------------------------ tftp contents
 |   |-- autoexec.ipxe ----------------- ipxe script file (menu file)
 |   |-- boot
@@ -199,12 +211,14 @@ tree --charset C -n --filesfirst -d /srv/
         |   |   |-- debian-keyring.gpg
         |   |   `-- ubuntu-archive-keyring.gpg
         |   |-- _template ------------- templates for various configuration files
+        |   |   |-- agama_opensuse.json ------- for opensuse agama installer
         |   |   |-- kickstart_rhel.cfg -------- for rhel
         |   |   |-- preseed_debian.cfg -------- for debian
         |   |   |-- preseed_ubuntu.cfg -------- for ubuntu
         |   |   |-- user-data_ubuntu ---------- for ubuntu cloud-init
         |   |   `-- yast_opensuse.xml --------- for opensuse
-        |   |-- autoyast -------------- configuration files for opensuse
+        |   |-- agama ----------------- configuration files for opensuse agama installer
+        |   |-- autoyast -------------- "                   for opensuse
         |   |-- kickstart ------------- "                   for rhel
         |   |-- nocloud --------------- "                   for ubuntu cloud-init
         |   |-- preseed --------------- "                   for debian/ubuntu preseed
@@ -223,24 +237,37 @@ tree --charset C -n --filesfirst -d /srv/
         |       |-- shutdown.cmd -------------- shutdown command for winpe
         |       |-- startnet.cmd -------------- startup command for winpe
         |       |-- unattend.xml -------------- auto-installation configuration file for windows 10/11
-        |       `-- winpeshl.ini
+        |       `-- winpeshl.ini --------------
         |-- imgs ---------------------- iso file extraction destination
         |-- isos ---------------------- iso file
         |-- load ---------------------- load module
         `-- rmak ---------------------- remake file
 ```
-  
-## **/var/**  
-  
+
+## **/var/**
+
 ``` bash:
 /var/
 |-- adm
 |   `-- autoinst
-|       |-- cmd_early.sh
-|       |-- cmd_late.sh
-|       |-- cmd_partition.sh
-|       |-- cmd_run.sh
-|       `-- get_module_ipxe.sh
+|       |-- autoinst_cmd_early.sh
+|       |-- autoinst_cmd_late.sh
+|       |-- autoinst_cmd_part.sh
+|       |-- autoinst_cmd_run.sh
+|       |-- early_command.log
+|       |-- get_module_ipxe.sh
+|       |-- late_command.log
+|       |-- partman_early_command.log
+|       |-- ps_debian_server.cfg
+|       |-- questions.dat
+|       |-- init
+|       |-- orig
+|       `-- samp
+|           `-- etc
+|               `-- dnsmasq.d
+|                   |-- pxeboot_grub.conf
+|                   |-- pxeboot_ipxe.conf
+|                   `-- pxeboot_syslinux.conf
 `-- lib
     `-- connman
         `-- ethernet_[mac address]_cable
