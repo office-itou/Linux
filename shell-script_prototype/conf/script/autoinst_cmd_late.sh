@@ -762,19 +762,27 @@ funcCreate_shared_env() {
 	ln -sf ../rmak         "${DIRS_TFTP}"/menu-efi64/
 	ln -sf ../syslinux.cfg "${DIRS_TFTP}"/menu-efi64/pxelinux.cfg/default
 
-	mkdir -p "${DIRS_SAMB}"/cifs
-	mkdir -p "${DIRS_SAMB}"/data/adm/netlogon
-	mkdir -p "${DIRS_SAMB}"/data/adm/profiles
-	mkdir -p "${DIRS_SAMB}"/data/arc
-	mkdir -p "${DIRS_SAMB}"/data/bak
-	mkdir -p "${DIRS_SAMB}"/data/pub
-	mkdir -p "${DIRS_SAMB}"/data/usr
-	mkdir -p "${DIRS_SAMB}"/dlna/movies
-	mkdir -p "${DIRS_SAMB}"/dlna/others
-	mkdir -p "${DIRS_SAMB}"/dlna/photos
-	mkdir -p "${DIRS_SAMB}"/dlna/sounds
+	mkdir -p "${DIRS_SAMB}"/adm/commands
+	mkdir -p "${DIRS_SAMB}"/adm/profiles
+	mkdir -p "${DIRS_SAMB}"/pub/contents/disc
+	mkdir -p "${DIRS_SAMB}"/pub/contents/dlna/movies
+	mkdir -p "${DIRS_SAMB}"/pub/contents/dlna/others
+	mkdir -p "${DIRS_SAMB}"/pub/contents/dlna/photos
+	mkdir -p "${DIRS_SAMB}"/pub/contents/dlna/sounds
+	mkdir -p "${DIRS_SAMB}"/pub/resource/image/linux
+    mkdir -p "${DIRS_SAMB}"/pub/resource/image/windows
+    mkdir -p "${DIRS_SAMB}"/pub/resource/source/git
+	mkdir -p "${DIRS_SAMB}"/pub/software
+	mkdir -p "${DIRS_SAMB}"/pub/hardware
+	mkdir -p "${DIRS_SAMB}"/pub/_license
+	mkdir -p "${DIRS_SAMB}"/usr
+#	touch -f "${DIRS_SAMB}"/data/adm/commands/logon.bat
+	chown -R "${SAMB_USER}":"${SAMB_GRUP}" "${DIRS_SAMB}/"*
+	chmod -R  770 "${DIRS_SAMB}/"*
+	chmod    1777 "${DIRS_SAMB}/adm/profiles"
 
 	mkdir -p "${DIRS_PVAT}"
+
 	mkdir -p "${DIRS_SHAR}"/conf
 	mkdir -p "${DIRS_SHAR}"/imgs
 	mkdir -p "${DIRS_SHAR}"/isos
@@ -786,6 +794,10 @@ funcCreate_shared_env() {
 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/isos "${DIRS_HTML}"/html/
 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/load "${DIRS_HTML}"/html/
 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/rmak "${DIRS_HTML}"/html/
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${DIRS_HTML}/html/index.html"
+		"Hello, world!" from ${NICS_HOST}
+_EOT_
+
 
 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/conf "${DIRS_TFTP}"/
 	ln -sf "${DIRS_SHAR#"${DIRS_TGET:-}"}"/imgs "${DIRS_TFTP}"/
@@ -846,14 +858,6 @@ _EOT_
 #		setsebool -P samba_export_all_ro 1
 #		setsebool -P samba_export_all_rw 1
 #	fi
-
-	touch -f "${DIRS_SAMB}"/data/adm/netlogon/logon.bat
-	chown -R "${SAMB_USER}":"${SAMB_GRUP}" "${DIRS_SAMB}/"*
-	chmod -R  770 "${DIRS_SAMB}/"*
-	chmod    1777 "${DIRS_SAMB}/data/adm/profiles"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${DIRS_HTML}/html/index.html"
-		"Hello, world!" from ${NICS_HOST}
-_EOT_
 
 	# --- symlink for html ----------------------------------------------------
 #	_WORK_PATH="${DIRS_TGET:-}/var/www/html"
@@ -1416,7 +1420,7 @@ funcSetupNetwork_firewalld() {
 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
 	if [ "${_SRVC_STAT}" = "active" ]; then
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service active: ${_SRVC_NAME}"
-		firewall-cmd --quiet --set-default-zone="${FWAL_ZONE}" || true
+		firewall-cmd --quiet --permanent --set-default-zone="${FWAL_ZONE}" || true
 		firewall-cmd --quiet --permanent --zone="${FWAL_ZONE}" --change-interface="${NICS_NAME}" || true
 		for _FWAL_NAME in ${FWAL_NAME}
 		do
@@ -1985,45 +1989,44 @@ funcSetupNetwork_samba() {
 		[print$]
 		        comment = Printer Drivers
 		        path = /var/lib/samba/printers
-		[netlogon]
+		[adm]
 		        browseable = No
-		        comment = Network Logon Service
+		        comment = Administrator directories
 		        create mask = 0770
 		        directory mask = 0770
 		        force group = ${SAMB_GRUP}
 		        force user = ${SAMB_USER}
-		        path = ${DIRS_SAMB}/data/adm/netlogon
+		        path = ${DIRS_SAMB}/adm
 		        valid users = @${SAMB_GRUP}
 		        write list = @${SAMB_GADM}
-		[profiles]
-		        browseable = No
-		        comment = User profiles
-		        path = ${DIRS_SAMB}/data/adm/profiles
+		[pub]
+		        browseable = Yes
+		        comment = Public directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        path = ${DIRS_SAMB}/pub
 		        valid users = @${SAMB_GRUP}
-		        write list = @${SAMB_GRUP}
+		        write list = @${SAMB_GADM}
+		[usr]
+		        browseable = No
+		        comment = User directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
+		        path = ${DIRS_SAMB}/usr
+		        valid users = @${SAMB_GADM}
+		        write list = @${SAMB_GADM}
 		[share]
 		        browseable = No
 		        comment = Shared directories
+		        create mask = 0770
+		        directory mask = 0770
+		        force group = ${SAMB_GRUP}
+		        force user = ${SAMB_USER}
 		        path = ${DIRS_SAMB}
-		        valid users = @${SAMB_GADM}
-		[cifs]
-		        browseable = No
-		        comment = CIFS directories
-		        create mask = 0770
-		        directory mask = 0770
-		        force group = ${SAMB_GRUP}
-		        force user = ${SAMB_USER}
-		        path = ${DIRS_SAMB}/cifs
-		        valid users = @${SAMB_GADM}
-		        write list = @${SAMB_GADM}
-		[data]
-		        browseable = No
-		        comment = Data directories
-		        create mask = 0770
-		        directory mask = 0770
-		        force group = ${SAMB_GRUP}
-		        force user = ${SAMB_USER}
-		        path = ${DIRS_SAMB}/data
 		        valid users = @${SAMB_GADM}
 		        write list = @${SAMB_GADM}
 		[dlna]
@@ -2033,27 +2036,9 @@ funcSetupNetwork_samba() {
 		        directory mask = 0770
 		        force group = ${SAMB_GRUP}
 		        force user = ${SAMB_USER}
-		        path = ${DIRS_SAMB}/dlna
+		        path = ${DIRS_SAMB}/pub/contents/dlna
 		        valid users = @${SAMB_GRUP}
-		        write list = @${SAMB_GRUP}
-		[pub]
-		        comment = Public directories
-		        path = ${DIRS_SAMB}/data/pub
-		        valid users = @${SAMB_GRUP}
-		[lhome]
-		        comment = Linux /home directories
-		        path = /home
-		        valid users = @${SAMB_GRUP}
-		[html-share]
-		        comment = HTML shared directories
-		        guest ok = Yes
-		        path = ${DIRS_HTML}
-		        wide links = Yes
-		[tftp-share]
-		        comment = TFTP shared directories
-		        guest ok = Yes
-		        path = ${DIRS_TFTP}
-		        wide links = Yes
+		        write list = @${SAMB_GADM}
 _EOT_
 
 	# --- output --------------------------------------------------------------
