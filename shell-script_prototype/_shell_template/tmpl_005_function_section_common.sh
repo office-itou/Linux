@@ -1718,8 +1718,8 @@ _EOT_
 							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
 							echo Loading boot files ...
 							kernel ipxe/wimboot
-							initrd \${knladdr}/boot/bcd                     BCD          || goto error
-							initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+							initrd \${knladdr}/Boot/BCD                     BCD          || goto error
+							initrd \${knladdr}/Boot/boot.sdi                boot.sdi     || goto error
 							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
 							boot || goto error
 							exit
