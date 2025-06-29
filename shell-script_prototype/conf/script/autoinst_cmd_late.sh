@@ -770,8 +770,8 @@ funcCreate_shared_env() {
 	mkdir -p "${DIRS_SAMB}"/pub/contents/dlna/photos
 	mkdir -p "${DIRS_SAMB}"/pub/contents/dlna/sounds
 	mkdir -p "${DIRS_SAMB}"/pub/resource/image/linux
-    mkdir -p "${DIRS_SAMB}"/pub/resource/image/windows
-    mkdir -p "${DIRS_SAMB}"/pub/resource/source/git
+	mkdir -p "${DIRS_SAMB}"/pub/resource/image/windows
+	mkdir -p "${DIRS_SAMB}"/pub/resource/source/git
 	mkdir -p "${DIRS_SAMB}"/pub/software
 	mkdir -p "${DIRS_SAMB}"/pub/hardware
 	mkdir -p "${DIRS_SAMB}"/pub/_license
@@ -2039,6 +2039,18 @@ funcSetupNetwork_samba() {
 		        path = ${DIRS_SAMB}/pub/contents/dlna
 		        valid users = @${SAMB_GRUP}
 		        write list = @${SAMB_GADM}
+		[html-share]
+		        browseable = No
+		        comment = HTML shared directories
+		        guest ok = Yes
+		        path = ${DIRS_HTML}
+		        wide links = Yes
+		[tftp-share]
+		        browseable = No
+		        comment = TFTP shared directories
+		        guest ok = Yes
+		        path = ${DIRS_TFTP}
+		        wide links = Yes
 _EOT_
 
 	# --- output --------------------------------------------------------------
