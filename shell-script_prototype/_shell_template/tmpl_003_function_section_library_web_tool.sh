@@ -65,6 +65,10 @@ function fnGetWeb_header() {
 	declare       __LINE=""				# work variables
 	declare -i    I=0					# work variables
 	# -------------------------------------------------------------------------
+	__RETN_VALU=""
+	if [[ -z "${2:-}" ]]; then
+		return
+	fi
 #	__RTCD=0
 	__RSLT=""
 	if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then

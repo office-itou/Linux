@@ -2305,31 +2305,122 @@ funcSetupConfig_wireplumber() {
 		return
 	fi
 
-	# --- 50-alsa-config.conf -------------------------------------------------
-	_FILE_PATH="${DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
-	funcFile_backup "${_FILE_PATH}"
-	mkdir -p "${_FILE_PATH%/*}"
-	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
-		monitor.alsa.rules = [
-		  {
-		    matches = [
-		      # This matches the value of the 'node.name' property of the node.
-		      {
-		        node.name = "~alsa_output.*"
-		      }
-		    ]
-		    actions = {
-		      # Apply all the desired node specific settings here.
-		      update-props = {
-		        api.alsa.period-size   = 1024
-		        api.alsa.headroom      = 8192
-		        session.suspend-timeout-seconds = 0
-		      }
-		    }
-		  }
-		]
+	# --- alsa ----------------------------------------------------------------
+	_WORK_PATH="${DIRS_TGET:-}/usr/share/wireplumber/main.lua.d/50-alsa-config.lua"
+	if [ -e "${_WORK_PATH}" ]; then
+		# --- 50-alsa-config.lua ----------------------------------------------
+		_FILE_PATH="${DIRS_TGET:-}/etc/wireplumber/main.lua.d/${_WORK_PATH##*/}"
+		mkdir -p "${_FILE_PATH%/*}"
+		funcFile_backup "${_FILE_PATH}"
+		cp -a "${_WORK_PATH}" "${_FILE_PATH}"
+		sed -i "${_FILE_PATH}"                                                                \
+		    -e '/^alsa_monitor.rules[ \t]*=[ \t]*{$/,/^}$/                                 {' \
+		    -e '/^[ \t]*apply_properties[ \t]*=[ \t]*{/,/^[ \t]*}/                         {' \
+		    -e '/\["api.alsa.period-size"\]/a \        \["api.alsa.period-size"\]   = 1024,'  \
+		    -e '/\["api.alsa.headroom"\]/a    \        \["api.alsa.headroom"\]      = 16384,' \
+		    -e '}}'
+	else
+		_WORK_PATH="${DIRS_TGET:-}/usr/share/wireplumber/wireplumber.conf.d/alsa-vm.conf"
+		if [ -e "${_WORK_PATH}" ]; then
+			# --- alsa-vm.conf ------------------------------------------------
+			_FILE_PATH="${DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/${_WORK_PATH##*/}"
+			mkdir -p "${_FILE_PATH%/*}"
+			funcFile_backup "${_FILE_PATH}"
+			cp -a "${_WORK_PATH}" "${_FILE_PATH}"
+			sed -i "${_FILE_PATH}"                                                  \
+			    -e '/^monitor.alsa.rules[ \t]*=[ \t]*\[$/,/^\]$/                 {' \
+			    -e '/^[ \t]*actions[ \t]*=[ \t]*{$/,/^[ \t]*}$/                  {' \
+			    -e '/^[ \t]*update-props[ \t]*=[ \t]*{$/,/^[ \t]*}$/             {' \
+			    -e '/^[ \t]*api.alsa.period-size[ \t]*/ s/=\([ \t]*\).*$/=\11024/'  \
+			    -e '/^[ \t]*api.alsa.headroom[ \t]*/    s/=\([ \t]*\).*$/=\116384/' \
+			    -e '}}}'
+		else
+			# --- 50-alsa-config.conf -----------------------------------------
+			_FILE_PATH="${DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/50-alsa-config.conf"
+			mkdir -p "${_FILE_PATH%/*}"
+			funcFile_backup "${_FILE_PATH}"
+			cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+				monitor.alsa.rules = [
+				  {
+				    matches = [
+				      # This matches the value of the 'node.name' property of the node.
+				      {
+				        node.name = "~alsa_output.*"
+				      }
+				    ]
+				    actions = {
+				      # Apply all the desired node specific settings here.
+				      update-props = {
+				        api.alsa.period-size   = 1024
+				        api.alsa.headroom      = 16384
+				        session.suspend-timeout-seconds = 0
+				      }
+				    }
+				  }
+				]
 _EOT_
+		fi
+	fi
+
+	# --- debug out -----------------------------------------------------------
+	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
+
+	# --- bluetooth -----------------------------------------------------------
+	_WORK_PATH="${DIRS_TGET:-}/usr/share/wireplumber/bluetooth.lua.d/50-bluez-config.lua"
+	if [ -e "${_WORK_PATH}" ]; then
+		# --- 50-bluez-config.lua ---------------------------------------------
+		_FILE_PATH="${DIRS_TGET:-}/etc/wireplumber/bluetooth.lua.d/${_WORK_PATH##*/}"
+		mkdir -p "${_FILE_PATH%/*}"
+		funcFile_backup "${_FILE_PATH}"
+		cp -a "${_WORK_PATH}" "${_FILE_PATH}"
+		sed -i "${_FILE_PATH}"                                                             \
+		    -e '/^bluez_monitor.properties[ \t]*=[ \t]*{$/,/^}$/                        {' \
+		    -e '/\["bluez5.headset-roles"\]/a  \    \["bluez5.headset-roles"\] = "[ ]",'   \
+		    -e '/\["bluez5.hfphsp-backend"\]/a \    \["bluez5.hfphsp-backend"\] = "none",' \
+		    -e '                                                                        }' \
+		    -e '/^bluez_monitor.rules[ \t]*=[ \t]*{$/,/^}$/                             {' \
+		    -e '/^[ \t]*apply_properties[ \t]*=[ \t]*{/,/^[ \t]*},/                     {' \
+		    -e '/^[ \t]*},/i \        ["bluez5.auto-connect"] = "[ a2dp_sink ]",'          \
+		    -e '/^[ \t]*},/i \        ["bluez5.hw-volume"]    = "[ a2dp_sink ]",'          \
+		    -e '}}'
+	else
+		# --- bluez.conf ------------------------------------------------------
+		_FILE_PATH="${DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/bluez.conf"
+		mkdir -p "${_FILE_PATH%/*}"
+		funcFile_backup "${_FILE_PATH}"
+		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+			monitor.bluez.properties = {
+			  bluez5.headset-roles  = "[ ]"
+			  bluez5.hfphsp-backend = "none"
+			}
+
+			monitor.bluez.rules = [
+			  {
+			    matches = [
+			      {
+			        node.name = "~bluez_input.*"
+			      }
+			      {
+			        node.name = "~bluez_output.*"
+			      }
+			    ]
+			    actions = {
+			      update-props = {
+			        bluez5.auto-connect = "[ a2dp_sink ]"
+			        bluez5.hw-volume    = "[ a2dp_sink ]"
+			      }
+			    }
+			  }
+			]
+_EOT_
+	fi
+
+	# --- debug out -----------------------------------------------------------
+	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
