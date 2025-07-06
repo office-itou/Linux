@@ -1257,6 +1257,22 @@ _EOT_
 	funcDebugout_file "${_FILE_PATH}"
 	funcFile_backup   "${_FILE_PATH}" "init"
 
+	# --- mdns.conf -----------------------------------------------------------
+	_FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/conf.d/mdns.conf"
+	funcFile_backup "${_FILE_PATH}"
+	mkdir -p "${_FILE_PATH%/*}"
+	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+	if command -v resolvectl > /dev/null 2>&1; then
+		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
+			[connection]
+			connection.mdns=2
+_EOT_
+	fi
+
+	# --- debug out -----------------------------------------------------------
+	funcDebugout_file "${_FILE_PATH}"
+	funcFile_backup   "${_FILE_PATH}" "init"
+
 	# --- systemctl -----------------------------------------------------------
 	_SRVC_NAME="NetworkManager.service"
 	_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
@@ -1496,17 +1512,24 @@ funcSetupNetwork_dnsmasq() {
 		funcFile_backup "${_FILE_PATH}"
 		mkdir -p "${_FILE_PATH%/*}"
 		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-		sed -i "${_FILE_PATH}"                    \
-		    -e '/\[Unit\]/,/\[.\+\]/           {' \
-		    -e '/^Requires=/                   {' \
-		    -e 's/^/#/g'                          \
-		    -e 'a Requires=network-online.target' \
-		    -e '                               }' \
-		    -e '/^After=/                      {' \
-		    -e 's/^/#/g'                          \
-		    -e 'a After=network-online.target'    \
-		    -e '                               }' \
+		sed -i "${_FILE_PATH}"                                   \
+		    -e '/^\[Unit\]$/,/^\[.\+\]/                       {' \
+		    -e '/^Requires=/ s/^/#/g'                            \
+		    -e '/^After=/    s/^/#/g'                            \
+		    -e '/^Description=/a Requires=network-online.target' \
+		    -e '/^Description=/a After=network-online.target'    \
 		    -e '}'
+#		sed -i "${_FILE_PATH}"                    \
+#		    -e '/\[Unit\]/,/\[.\+\]/           {' \
+#		    -e '/^Requires=/                   {' \
+#		    -e 's/^/#/g'                          \
+#		    -e 'a Requires=network-online.target' \
+#		    -e '                               }' \
+#		    -e '/^After=/                      {' \
+#		    -e 's/^/#/g'                          \
+#		    -e 'a After=network-online.target'    \
+#		    -e '                               }' \
+#		    -e '}'
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
@@ -1730,6 +1753,7 @@ _EOT_
 		cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 		cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
 			[Resolve]
+			MulticastDNS=yes
 			DNS=${NICS_DNS4}
 			Domains=${NICS_WGRP}
 _EOT_
@@ -2382,9 +2406,10 @@ _EOT_
 		    -e '                                                                        }' \
 		    -e '/^bluez_monitor.rules[ \t]*=[ \t]*{$/,/^}$/                             {' \
 		    -e '/^[ \t]*apply_properties[ \t]*=[ \t]*{/,/^[ \t]*},/                     {' \
-		    -e '/^[ \t]*},/i \        ["bluez5.auto-connect"] = "[ a2dp_sink ]",'          \
-		    -e '/^[ \t]*},/i \        ["bluez5.hw-volume"]    = "[ a2dp_sink ]",'          \
-		    -e '}}'
+		    -e '/\["bluez5.media-source-role"\]/,/^[ \t]*},/                            {' \
+		    -e '/^[ \t]*},/i \        \["bluez5.auto-connect"\] = "\[ a2dp_sink \]",'      \
+		    -e '/^[ \t]*},/i \        \["bluez5.hw-volume"\]    = "\[ a2dp_sink \]",'      \
+		    -e '}}}'
 	else
 		# --- bluez.conf ------------------------------------------------------
 		_FILE_PATH="${DIRS_TGET:-}/etc/wireplumber/wireplumber.conf.d/bluez.conf"

@@ -2176,30 +2176,69 @@ function fnCreate_kickstart() {
 	# --- cdrom, repository ---------------------------------------------------
 	case "${__TGET_PATH}" in
 		*_dvd*)		# --- cdrom install ---------------------------------------
-			sed -i "${__TGET_PATH}"    \
-			    -e "/^#cdrom$/ s/^#//"
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^#cdrom$/ s/^#//             " \
+			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
+			    -e "/^#url[ \t]\+/  s/^#//g       " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g      " \
+			    -e "s/\$stream/${__NUMS}/g      } "
 			;;
 		*_net*)		# --- network install -------------------------------------
-			sed -i "${__TGET_PATH}"               \
-			    -e "/^#.*(${__SECT}).*$/,/^$/ { " \
-			    -e "/^#url[ \t]\+/  s/^#//g     " \
-			    -e "/^#repo[ \t]\+/ s/^#//g   } "
-			;;
-		*_web*)		# --- network install [ for pxeboot ] ---------------------
 			sed -i "${__TGET_PATH}"                 \
-			    -e "/^#.*(web address).*$/,/^$/ { " \
+			    -e "/^cdrom$/ s/^/#/              " \
+			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
 			    -e "/^#url[ \t]\+/  s/^#//g       " \
 			    -e "/^#repo[ \t]\+/ s/^#//g       " \
 			    -e "s/\$releasever/${__NUMS}/g    " \
 			    -e "s/\$basearch/${__ARCH}/g    } "
 			;;
+		*_web*)		# --- network install [ for pxeboot ] ---------------------
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^cdrom$/ s/^/#/              " \
+			    -e "/^#.*(web address).*$/,/^$/ { " \
+			    -e "/^#url[ \t]\+/  s/^#//g       " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g      " \
+			    -e "s/\$stream/${__NUMS}/g      } "
+			;;
 		*)	;;
 	esac
+	case "${__TGET_PATH}" in
+		*_fedora*)
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/%packages/,/%end/          { " \
+			    -e "/^epel-release/ s/^/#/      } "
+			;;
+		*)
+			sed -i "${__TGET_PATH}"                 \
+			    -e "/^#.*(EPEL).*$/,/^$/        { " \
+			    -e "/^#url[ \t]\+/  s/^#//g       " \
+			    -e "/^#repo[ \t]\+/ s/^#//g       " \
+			    -e "s/\$releasever/${__NUMS}/g    " \
+			    -e "s/\$basearch/${__ARCH}/g      " \
+			    -e "s/\$stream/${__NUMS}/g      } "
+			;;
+	esac
 	# --- desktop -------------------------------------------------------------
-	sed -e "/%packages/,/%end/ {"                      \
-	    -e "/desktop/ s/^-//g  }"                      \
+#	sed -e "/%packages/,/%end/ {"                      \
+#	    -e "/desktop/ s/^-//g  }"                      \
+#	    "${__TGET_PATH}"                               \
+#	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	sed -e "/%packages/,/%end/                      {" \
+	    -e "/#@.*-desktop/,/^[^#]/ s/^#//g          }" \
 	    "${__TGET_PATH}"                               \
 	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
+	case "${__NUMS}" in
+		[1-9]) ;;
+		*    )
+			sed -i "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}" \
+			    -e "/%packages/,/%end/                         {" \
+			    -e "/^kpipewire$/ s/^/#/g                      }"
+			;;
+	esac
 	# -------------------------------------------------------------------------
 	chmod ugo-x "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 }
