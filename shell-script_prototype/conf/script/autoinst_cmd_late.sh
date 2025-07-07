@@ -333,7 +333,7 @@ funcServiceStatus() {
 #    1  | "program is dead and /var/run pid file exists"   | unit not failed (used by is-failed) #
 #    2  | "program is dead and /var/lock lock file exists" | unused                              #
 #    3  | "program is not running"                         | unit is not active                  #
-#    4  | "program or service status is unknown"           | no such unit                        #
+#    4  | "program or service status is unknown"           | no such unit (used by status)       #
 #-------+--------------------------------------------------+-------------------------------------#
 }
 
@@ -1769,29 +1769,35 @@ _EOT_
 
 		# --- systemctl avahi-daemon.service ----------------------------------
 		_SRVC_NAME="avahi-daemon.service"
-		_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
-		if [ "${_SRVC_STAT}" = "enabled" ]; then
-			systemctl --quiet mask "${_SRVC_NAME}"
-			systemctl --quiet mask "${_SRVC_NAME%.*}.socket"
+		_SRVC_STAT="$(funcServiceStatus status "${_SRVC_NAME}")"
+		if [ "${_SRVC_STAT}" != "not-found" ]; then
+#			_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
+#			if [ "${_SRVC_STAT}" = "enabled" ]; then
+				systemctl --quiet mask "${_SRVC_NAME}"
+				systemctl --quiet mask "${_SRVC_NAME%.*}.socket"
+#			fi
 		fi
 
 		# --- systemctl systemd-resolved.service ------------------------------
 		_SRVC_NAME="systemd-resolved.service"
-		_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
-		case "${_SRVC_STAT}" in
-			disabled) systemctl --quiet enable "${_SRVC_NAME}";;
-#			masked  ) systemctl --quiet unmask "${_SRVC_NAME}"; systemctl --quiet enable "${_SRVC_NAME}";;
-			*) ;;
-		esac
-		_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
-		if [ -z "${CHGE_ROOT:-}" ] \
-		|| [ "${_SRVC_STAT}" = "active" ]; then
-			printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
-			systemctl --quiet daemon-reload
-			systemctl --quiet restart "${_SRVC_NAME}"
-		fi
-		if [ -n "${DBGS_FLAG:-}" ]; then
-			resolvectl status || true
+		_SRVC_STAT="$(funcServiceStatus status "${_SRVC_NAME}")"
+		if [ "${_SRVC_STAT}" != "not-found" ]; then
+			_SRVC_STAT="$(funcServiceStatus is-enabled "${_SRVC_NAME}")"
+			case "${_SRVC_STAT}" in
+				disabled) systemctl --quiet enable "${_SRVC_NAME}";;
+#				masked  ) systemctl --quiet unmask "${_SRVC_NAME}"; systemctl --quiet enable "${_SRVC_NAME}";;
+				*) ;;
+			esac
+			_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
+			if [ -z "${CHGE_ROOT:-}" ] \
+			|| [ "${_SRVC_STAT}" = "active" ]; then
+				printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
+				systemctl --quiet daemon-reload
+				systemctl --quiet restart "${_SRVC_NAME}"
+			fi
+			if [ -n "${DBGS_FLAG:-}" ]; then
+				resolvectl status || true
+			fi
 		fi
 	fi
 
