@@ -25,7 +25,7 @@ SELECT
     , public.media.cfg_path
     , public.media.cfg_tstamp
     , public.media.lnk_path
-    , public.media.create
+    , public.media.create_flag
 FROM
     public.media
 ORDER BY

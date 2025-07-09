@@ -95,7 +95,7 @@ centos-8.4          CentOS          8.4-2015        -                           
 centos-8.5          CentOS          8.5-2111        -                           EOL         2021-11-16  2021-12-31  -           2021-11-09  4.18.0-348              -
 centos-stream-8     CentOS%20Stream 8               -                           EOL         2019-09-24  2024-05-31  -           -           4.18.0                  -
 centos-stream-9     CentOS%20Stream 9               -                           -           2021-12-03  2027-05-31  -           -           5.14.0                  -
-centos-stream-10    CentOS%20Stream 10              Coughlan                    -           2024-12-12  2030-01-01  -           -           6.12.0                  -
+centos-stream-10    CentOS%20Stream 10              Coughlan                    -           2024-12-12  2030-05-31  -           -           6.12.0                  -
 almalinux-8.3       AlmaLinux       8.3             Purple%20Manul              EOL         2021-03-30  -           -           2020-11-03  4.18.0-240              -
 almalinux-8.4       AlmaLinux       8.4             Electric%20Cheetah          EOL         2021-05-26  -           -           2021-05-18  4.18.0-305              -
 almalinux-8.5       AlmaLinux       8.5             Arctic%20Sphynx             EOL         2021-11-12  -           -           2021-11-09  4.18.0-348              -
@@ -125,7 +125,9 @@ rockylinux-9.1      Rocky%20Linux   9.1             -                           
 rockylinux-9.2      Rocky%20Linux   9.2             -                           EOL         2023-05-16  -           -           2023-05-10  5.14.0-284.11.1         -
 rockylinux-9.3      Rocky%20Linux   9.3             -                           EOL         2023-11-20  -           -           2023-11-07  5.14.0-362.8.1          -
 rockylinux-9.4      Rocky%20Linux   9.4             -                           EOL         2024-05-09  -           -           2024-04-30  5.14.0-427.13.1         -
-rockylinux-9.5      Rocky%20Linux   9.5             Blue%20Onyx                 -           2024-11-19  -           -           2024-11-12  5.14.0-503.14.1         -
+rockylinux-9.5      Rocky%20Linux   9.5             Blue%20Onyx                 EOL         2024-11-19  -           -           2024-11-12  5.14.0-503.14.1         -
+rockylinux-9.6      Rocky%20Linux   9.6             Blue%20Onyx                 -           2025-06-04  -           -           2025-05-20  5.14.0-570.17.1         -
+rockylinux-10.0     Rocky%20Linux   10.0            Red%20Quartz                -           2025-06-11  -           -           2025-05-20  6.12.0-55.12.1          -
 miraclelinux-8.4    Miracle%20Linux 8.4             -                           EOL         2021-10-04  -           -           2021-05-18  4.18.0-305.el8          -
 miraclelinux-8.6    Miracle%20Linux 8.6             -                           EOL         2022-11-01  -           -           2022-05-10  4.18.0-372.el8          -
 miraclelinux-8.8    Miracle%20Linux 8.8             -                           -           2023-10-05  -           -           2023-05-16  4.18.0-477.el8          -
@@ -133,6 +135,7 @@ miraclelinux-8.10   Miracle%20Linux 8.10            Peony                       
 miraclelinux-9.0    Miracle%20Linux 9.0             -                           EOL         2022-11-01  -           -           2022-05-17  5.14.0-70.el9           -
 miraclelinux-9.2    Miracle%20Linux 9.2             -                           EOL         2023-10-05  -           -           2023-05-10  5.14.0-284.el9          -
 miraclelinux-9.4    Miracle%20Linux 9.4             Feige                       -           2024-09-02  -           -           2024-04-30  5.14.0-427.13.1.el9_4   -
+miraclelinux-9.6    Miracle%20Linux 9.6             Feige                       -           2025-07-xx  -           -           2025-xx-xx  5.14.0-570.16.1.el9_6   -
 opensuse-leap-15.0  openSUSE        15.0            -                           EOL         2018-05-25  2019-12-03  -           -           4.12                    -
 opensuse-leap-15.1  openSUSE        15.1            -                           EOL         2019-05-22  2021-01-31  -           -           4.12                    -
 opensuse-leap-15.2  openSUSE        15.2            -                           EOL         2020-07-02  2021-12-31  -           -           5.3.18                  -
