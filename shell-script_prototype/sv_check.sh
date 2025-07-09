@@ -582,14 +582,14 @@ function funcTest_network() {
 
 	IPV4_UADR="${NICS_IPV4%.*}"
 	IPV4_LADR="${NICS_IPV4##*.}"
-	IPV6_ADDR="$(ip -6 -oneline address show primary dev ens160 | sed -ne '/fe80:/! s%^.*[ \t]inet6[ \t]\+\([[:alnum:]/:]\+\)\+[ \t].*$%\1%p')"
+	IPV6_ADDR="$(ip -6 -oneline address show primary dev "${NICS_NAME}" | sed -ne '/fe80:/! s%^.*[ \t]inet6[ \t]\+\([[:alnum:]/:]\+\)\+[ \t].*$%\1%p')"
 	IPV6_CIDR="${IPV6_ADDR#*/}"
 	IPV6_ADDR="${IPV6_ADDR%%/*}"
 	IPV6_FADR="$(funcIPv6GetFullAddr "${IPV6_ADDR}")"
 	IPV6_UADR="$(echo "${IPV6_FADR}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	IPV6_LADR="$(echo "${IPV6_FADR}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	IPV6_RADR=""
-	LINK_ADDR="$(ip -6 -oneline address show primary dev ens160 | sed -ne '/fe80:/ s%^.*[ \t]inet6[ \t]\+\([[:alnum:]/:]\+\)\+[ \t].*$%\1%p')"
+	LINK_ADDR="$(ip -6 -oneline address show primary dev "${NICS_NAME}" | sed -ne '/fe80:/ s%^.*[ \t]inet6[ \t]\+\([[:alnum:]/:]\+\)\+[ \t].*$%\1%p')"
 	LINK_CIDR="${LINK_ADDR#*/}"
 	LINK_ADDR="${LINK_ADDR%%/*}"
 	LINK_FADR="$(funcIPv6GetFullAddr "${LINK_ADDR}")"
@@ -699,7 +699,7 @@ function funcTest_dig() {
 		_LIST=(
 			"${NICS_IPV4}"
 			"${IPV6_ADDR}"
-			"${LINK_ADDR}"
+			"${LINK_ADDR}%${NICS_NAME}"
 		)
 		for I in "${!_LIST[@]}"
 		do
@@ -737,7 +737,7 @@ function funcTest_getent() {
 			"${NICS_FQDN%.*}.local"
 			"${NICS_IPV4}"
 			"${IPV6_ADDR}"
-			"${LINK_ADDR}"
+			"${LINK_ADDR}%${NICS_NAME}"
 			"www.google.com"
 		)
 		for I in "${!_LIST[@]}"
@@ -776,7 +776,7 @@ function funcTest_communication() {
 			"-6,${NICS_FQDN}"
 			"-4,${NICS_IPV4}"
 			"-6,${IPV6_ADDR}"
-			"-6,${LINK_ADDR}"
+			"-6,${LINK_ADDR}%${NICS_NAME}"
 			"-4,www.google.com"
 			"-6,www.google.com"
 		)
@@ -886,7 +886,7 @@ function funcTest_samba() {
 			"${NICS_FQDN%.*}.local"
 			"${NICS_IPV4}"
 			"${IPV6_ADDR}"
-			"${LINK_ADDR}"
+			"${LINK_ADDR}%${NICS_NAME}"
 		)
 		for I in "${!_LIST[@]}"
 		do
