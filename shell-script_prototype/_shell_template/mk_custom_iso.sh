@@ -4023,10 +4023,13 @@ function fnExec_remastering() {
 	fi
 	# --- comparing remaster and local file timestamps ------------------------
 	if [[ -z "${__FORC:-}" ]]; then
-		case "${__TGET_LIST[26]}" in
-			s) return;;					# skip
-			*) ;;						# create
-		esac
+		__RETN="$(fnDateDiff "${__TGET_LIST[14]:-@0}" "${__TGET_LIST[18]:-@0}")"
+		if [[ "${__RETN}" -ge 0 ]]; then
+			case "${__TGET_LIST[26]}" in
+				s) return;;				# skip
+				*) ;;					# create
+			esac
+		fi
 	fi
 	# --- executing the remastering -------------------------------------------
 	fnRemastering "${__TGET_LIST[@]}"
