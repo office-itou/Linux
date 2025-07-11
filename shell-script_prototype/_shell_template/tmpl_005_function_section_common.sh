@@ -1691,39 +1691,61 @@ _EOT_
 							:${__ENTR}
 							echo Loading ${__TGET_LIST[3]//%20/ } ...
 							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
-							isset \${srvraddr} || isset \${next-server} && set srvraddr http://\${next-server} ||
+							set ipxaddr \${srvraddr}/tftp/ipxe
 							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
 							set cfgaddr \${srvraddr}/${_DIRS_CONF##*/}/windows
 							echo Loading boot files ...
-							kernel ipxe/wimboot
+							kernel \${ipxaddr}/wimboot
+							initrd -n install.cmd \${cfgaddr}/inst_w${__TGET_LIST[2]##*-}.cmd  install.cmd  || goto error
 							initrd \${cfgaddr}/unattend.xml                 unattend.xml || goto error
 							initrd \${cfgaddr}/shutdown.cmd                 shutdown.cmd || goto error
-							initrd -n install.cmd \${cfgaddr}/inst_w${__TGET_LIST[2]##*-}.cmd  install.cmd  || goto error
 							initrd \${cfgaddr}/winpeshl.ini                 winpeshl.ini || goto error
+							initrd \${knladdr}/bootmgr                      bootmgr      || goto error
 							initrd \${knladdr}/boot/bcd                     BCD          || goto error
 							initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
-							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
+							initrd \${knladdr}/sources/boot.wim             boot.wim     || goto error
 							boot || goto error
 							exit
 
 _EOT_
 					)"
 					;;
-				winpe-* | \
-				ati*x64 | \
-				ati*x86 )				# (winpe/ati)
+				winpe-*         | \
+				ati*x64         | \
+				ati*x86         )		# (winpe/ati)
 					__WORK="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
 							:${__ENTR}
 							echo Loading ${__TGET_LIST[3]//%20/ } ...
 							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
-							isset \${srvraddr} || isset \${next-server} && set srvraddr http://\${next-server} ||
+							set ipxaddr \${srvraddr}/tftp/ipxe
 							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
 							echo Loading boot files ...
-							kernel ipxe/wimboot
+							kernel \${ipxaddr}/wimboot
+							initrd \${knladdr}/bootmgr                      bootmgr      || goto error
 							initrd \${knladdr}/Boot/BCD                     BCD          || goto error
 							initrd \${knladdr}/Boot/boot.sdi                boot.sdi     || goto error
-							initrd -n boot.wim \${knladdr}/sources/boot.wim boot.wim     || goto error
+							initrd \${knladdr}/sources/boot.wim             boot.wim     || goto error
+							boot || goto error
+							exit
+
+_EOT_
+					)"
+					;;
+				aomei-backupper )		# (winpe/ati)
+					__WORK="$(
+						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' | sed -e ':l; N; s/\n/\\n/; b l;' || true
+							:${__ENTR}
+							echo Loading ${__TGET_LIST[3]//%20/ } ...
+							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
+							set ipxaddr \${srvraddr}/tftp/ipxe
+							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
+							echo Loading boot files ...
+							kernel \${ipxaddr}/wimboot
+							initrd \${knladdr}/bootmgr                      bootmgr      || goto error
+							initrd \${knladdr}/boot/bcd                     BCD          || goto error
+							initrd \${knladdr}/boot/boot.sdi                boot.sdi     || goto error
+							initrd \${knladdr}/sources/boot.wim             boot.wim     || goto error
 							boot || goto error
 							exit
 
@@ -1736,7 +1758,6 @@ _EOT_
 							:${__ENTR}
 							echo Loading ${__TGET_LIST[3]//%20/ } ...
 							set srvraddr ${_SRVR_PROT}://${_SRVR_ADDR:?}
-							isset \${srvraddr} || isset \${next-server} && set srvraddr http://\${next-server} ||
 							set knladdr \${srvraddr}/${_DIRS_IMGS##*/}/${__TGET_LIST[2]}
 							iseq \${platform} efi && set knlfile \${knladdr}/${__TGET_LIST[21]#*/${__TGET_LIST[2]}/} || set knlfile \${knladdr}/${__TGET_LIST[22]#*/${__TGET_LIST[2]}/}
 							echo Loading boot files ...
@@ -1979,9 +2000,10 @@ _EOT_
 _EOT_
 					)"
 					;;
-				winpe-* | \
-				ati*x64 | \
-				ati*x86 )				# (winpe/ati)
+				winpe-*         | \
+				ati*x64         | \
+				ati*x86         | \
+				aomei-backupper )		# (winpe/ati)
 					__WORK="$(
 						cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' -e "s/^/${__SPCS}/g" | sed -e ':l; N; s/\n/\\n/; b l;' || true
 							if [ "\${grub_platform}" = "pc" ]; then
@@ -2213,9 +2235,10 @@ _EOT_
 						*) ;;
 					esac
 					;;
-				winpe-* | \
-				ati*x64 | \
-				ati*x86 )				# (winpe/ati)
+				winpe-*         | \
+				ati*x64         | \
+				ati*x86         | \
+				aomei-backupper )		# (winpe/ati)
 					case "${__PATH_TGET}" in
 						*/menu-bios/*)
 							__WORK="$(

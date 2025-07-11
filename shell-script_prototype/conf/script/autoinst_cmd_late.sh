@@ -514,10 +514,18 @@ funcInitialize() {
 		DIST_VERS="$(sed -ne 's/DISTRIB_RELEASE=\"\([[:graph:]]\+\)[ \t].*\"$/\1/p' "${DIRS_TGET:-}/etc/lsb-release" | tr '[:upper:]' '[:lower:]')"
 	fi
 
+	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIRS_TGET" "${DIRS_TGET:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIST_NAME" "${DIST_NAME:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIST_CODE" "${DIST_CODE:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "DIST_VERS" "${DIST_VERS:-}"
+	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
+
 	# --- ntp server ipv4 address ---------------------------------------------
 	NTPS_IPV4="${NTPS_IPV4:-"$(dig "${NTPS_ADDR}" | awk '/^ntp.nict.jp./ {print $5;}' | sort -V | head -n 1)"}"
 
 	# --- network information -------------------------------------------------
+	NICS_NAME="$(find /sys/devices/ -name 'net' -not -path '*/virtual/*' -exec ls '{}' \; | grep -E "${NICS_NAME}" | sort | head -n 1)"
 	NICS_NAME="${NICS_NAME:-"$(ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}')"}"
 	NICS_NAME="${NICS_NAME:-"ens160"}"
 	if [ -z "${IPV4_DHCP:-}" ]; then
@@ -570,17 +578,32 @@ funcInitialize() {
 	if [ "${NICS_FQDN}" = "${NICS_HOST}" ] && [ -n "${NICS_WGRP}" ]; then
 		NICS_FQDN="${NICS_HOST}.${NICS_WGRP}"
 	fi
+	IPV6_ADDR="$(ip -6 -brief address show primary dev "${NICS_NAME}" | awk '$1!="lo" {print $3;}')"
+	LINK_ADDR="$(ip -6 -brief address show primary dev "${NICS_NAME}" | awk '$1!="lo" {print $4;}')"
+
+	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_FQDN" "${NICS_FQDN:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_HOST" "${NICS_HOST:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_WGRP" "${NICS_WGRP:-}"
+	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
+
+	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_NAME" "${NICS_NAME:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_IPV4" "${NICS_IPV4:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_GATE" "${NICS_GATE:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "NICS_DNS4" "${NICS_DNS4:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "IPV6_ADDR" "${IPV6_ADDR:-}"
+	printf "\033[m${PROG_NAME}: %s=[%s]\033[m\n" "LINK_ADDR" "${LINK_ADDR:-}"
+	printf "\033[m${PROG_NAME}: %s\033[m\n" "${TEXT_GAP1}"
 
 	IPV4_UADR="${NICS_IPV4%.*}"
 	IPV4_LADR="${NICS_IPV4##*.}"
-	IPV6_ADDR="$(ip -6 -brief address show primary dev "${NICS_NAME}" | awk '$1!="lo" {print $3;}')"
 	IPV6_CIDR="${IPV6_ADDR#*/}"
 	IPV6_ADDR="${IPV6_ADDR%%/*}"
 	IPV6_FADR="$(funcIPv6GetFullAddr "${IPV6_ADDR}")"
 	IPV6_UADR="$(echo "${IPV6_FADR}" | cut -d ':' -f 1-4 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	IPV6_LADR="$(echo "${IPV6_FADR}" | cut -d ':' -f 5-8 | sed -e 's/\(^\|:\)0\+/:/g' -e 's/::\+/::/g')"
 	IPV6_RADR=""
-	LINK_ADDR="$(ip -6 -brief address show primary dev "${NICS_NAME}" | awk '$1!="lo" {print $4;}')"
 	LINK_CIDR="${LINK_ADDR#*/}"
 	LINK_ADDR="${LINK_ADDR%%/*}"
 	LINK_FADR="$(funcIPv6GetFullAddr "${LINK_ADDR}")"
@@ -1155,8 +1178,14 @@ funcSetupNetwork_nmanagr() {
 	funcFile_backup "${_FILE_PATH}"
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+	_SRVC_FLAG=""
+	if [ "${_SRVC_STAT}" != "active" ]; then
+		_SRVC_FLAG="--offline"
+	fi
 	if [ "${IPV4_DHCP}" = "true" ]; then
-		if ! nmcli --offline connection add type ethernet \
+		_SRVC_NAME="firewalld.service"
+		_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
+		if ! nmcli ${_SRVC_FLAG} connection add type ethernet \
 			connection.id "${_FILE_PATH##*/}" \
 			connection.interface-name "${NICS_NAME}" \
 			connection.autoconnect true \
@@ -1190,7 +1219,7 @@ funcSetupNetwork_nmanagr() {
 _EOT_
 		fi
 	else
-		if ! nmcli --offline connection add type ethernet \
+		if ! nmcli ${_SRVC_FLAG} connection add type ethernet \
 			connection.id "${_FILE_PATH##*/}" \
 			connection.interface-name "${NICS_NAME}" \
 			connection.autoconnect true \
