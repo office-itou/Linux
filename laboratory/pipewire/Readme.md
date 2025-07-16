@@ -190,7 +190,7 @@ monitor.bluez.rules = [
 
 上記設定をしたサンプルファイル。
 
-|  libpipewire  | Sample file                                                                                                                     |
+|    pipewire   | Sample file                                                                                                                     |
 | :-----------: | :------------------------------------------------------------------------------------------------------------------------------ |
 |     0.3.x     | [50-alsa-config.lua](https://github.com/office-itou/Linux/blob/master/laboratory/pipewire/main.lua.d/50-alsa-config.lua)        |
 |       "       | [50-bluez-config.lua](https://github.com/office-itou/Linux/blob/master/laboratory/pipewire/bluetooth.lua.d/50-bluez-config.lua) |
