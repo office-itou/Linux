@@ -633,6 +633,16 @@ leap -->
       <package>wget</package>
       <package>which</package>
       <package>zypper</package>
+<!-- desktop -->
+      <package>gnome-desktop2</package>
+      <package>gnome-desktop2-lang</package>
+      <package>gnome-terminal</package>
+      <package>gnome-shell</package>
+      <package>gstreamer-plugins-libav</package>
+      <package>wireplumber-audio</package>
+      <package>audacious</package>
+      <package>rhythmbox</package>
+<!-- desktop -->
     </packages>
     <patterns t="list">
       <pattern>apparmor</pattern>
@@ -641,9 +651,12 @@ leap -->
       <pattern>documentation</pattern>
       <pattern>enhanced_base</pattern>
       <pattern>minimal_base</pattern>
-<!-- desktop lxde -->
+<!-- desktop gnome -->
+      <pattern>gnome</pattern>
+<!-- desktop gnome -->
+<!-- desktop lxde
       <pattern>lxde</pattern>
-<!-- desktop lxde -->
+desktop lxde -->
     </patterns>
     <products t="list">
       <product>openSUSE</product>

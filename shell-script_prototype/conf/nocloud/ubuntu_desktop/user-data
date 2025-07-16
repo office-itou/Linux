@@ -210,7 +210,7 @@ autoinstall:
   - thunderbird
   - thunderbird-locale-ja
   - rhythmbox
-  - ffmpeg
+  - libavcodec-extra
   - gstreamer1.0-libav
 # -----------------------------------------------------------------------------
 # - usrmerge
