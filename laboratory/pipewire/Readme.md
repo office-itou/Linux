@@ -177,13 +177,11 @@ monitor.bluez.rules = [
 
 上記を確認した時の主な自動インストール用事前設定ファイル。
 
-:::note info
-ネットワーク設定の部分はブートパラメーターで設定できるようにコメントにしている
-:::
+(ネットワーク設定の部分はブートパラメーターで設定できるようにコメントにしている)
 
 |       Distribution       |                                                                 Preconfiguration Files                                                                 |
 | :----------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Debian (preseed.cfg)     | [ps_debian_desktop_gnome.cfg](https://github.com/office-itou/Linux/blob/master/shell-script_prototype/conf/preseed/ps_debian_desktop_gnome.cfg)        |
+| Debian (preseed.cfg)     | [ps_debian_desktop.cfg](https://github.com/office-itou/Linux/blob/master/shell-script_prototype/conf/preseed/ps_debian_desktop.cfg)                    |
 | Ubuntu (cloud-init)      | [user-data](https://github.com/office-itou/Linux/blob/master/shell-script_prototype/conf/nocloud/ubuntu_desktop/user-data)                             |
 | Fedora-42 (kickstart)    | [ks_fedora-42_net_desktop.cfg](https://github.com/office-itou/Linux/blob/master/shell-script_prototype/conf/kickstart/ks_fedora-42_net_desktop.cfg)    |
 | openSUSE-16 Beta (agama) | [autoinst_leap-16.0_desktop.json](https://github.com/office-itou/Linux/blob/master/shell-script_prototype/conf/agama/autoinst_leap-16.0_desktop.json)  |
