@@ -37,9 +37,7 @@
 
 設定ファイルの追加変更を行ったらサービスを再起動する。
 
-:::note warn
-sudoを使わない事に注意
-:::
+**sudoを使わない事に注意**
 
 ``` bash: サービスの再起動
 systemctl --user restart wireplumber.service
