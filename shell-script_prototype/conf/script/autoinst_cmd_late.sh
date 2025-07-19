@@ -1179,12 +1179,12 @@ funcSetupNetwork_nmanagr() {
 	mkdir -p "${_FILE_PATH%/*}"
 	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
 	_SRVC_FLAG=""
+	_SRVC_NAME="firewalld.service"
+	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
 	if [ "${_SRVC_STAT}" != "active" ]; then
 		_SRVC_FLAG="--offline"
 	fi
 	if [ "${IPV4_DHCP}" = "true" ]; then
-		_SRVC_NAME="firewalld.service"
-		_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
 		if ! nmcli ${_SRVC_FLAG} connection add type ethernet \
 			connection.id "${_FILE_PATH##*/}" \
 			connection.interface-name "${NICS_NAME}" \
@@ -2297,6 +2297,15 @@ _EOT_
 funcSetupConfig_vmware() {
 	__FUNC_NAME="funcSetupConfig_vmware"
 	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	# --- GNOME3 rendering issues ---------------------------------------------
+	_FILE_PATH="${DIRS_TGET:-}/etc/environment"
+	funcFile_backup "${_FILE_PATH}"
+	mkdir -p "${_FILE_PATH%/*}"
+	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
+	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${_FILE_PATH}"
+		CLUTTER_PAINT=disable-clipped-redraws:disable-culling
+_EOT_
 
 	# --- check command -------------------------------------------------------
 	if ! command -v vmware-hgfsclient > /dev/null 2>&1; then
