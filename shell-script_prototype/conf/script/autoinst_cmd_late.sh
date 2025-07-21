@@ -660,6 +660,39 @@ funcFile_backup() {
 	fi
 }
 
+# --- package updates ---------------------------------------------------------
+funcUpdate_package() {
+	__FUNC_NAME="funcUpdate_package"
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- start   : [${__FUNC_NAME}] ---"
+
+	# --- check command -------------------------------------------------------
+	  if command -v apt-get > /dev/null 2>&1; then
+		if ! apt-get --quiet update && apt-get --quiet --assume-yes upgrade; then
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "package update failure"
+		fi
+	elif command -v yum     > /dev/null 2>&1; then
+		if ! yum --quiet --assumeyes update; then
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "package update failure"
+		fi
+	elif command -v zypper  > /dev/null 2>&1; then
+		_WORK_TEXT="$(LANG=C zypper lr | awk -F '|' '$1==1&&$2~/http/ {gsub(/^[ \t]+/,"",$2); gsub(/[ \t]+$/,"",$2); print $2;}')"
+		if [ -n "${_WORK_TEXT:-}" ]; then
+			if ! zypper modifyrepo --disable "${_WORK_TEXT}"; then
+				printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "repository disable failure"
+			fi
+		fi
+		if ! zypper refresh && zypper --quiet --non-interactive update; then
+			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "package update failure"
+		fi
+	else
+		printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "package update failure (command not found)"
+		return
+	fi
+
+	# --- complete ------------------------------------------------------------
+	printf "\033[m${PROG_NAME}: \033[92m%s\033[m\n" "--- complete: [${__FUNC_NAME}] ---"
+}
+
 # --- installing missing packages ---------------------------------------------
 # only runs on debian and ubuntu on amd64
 funcInstall_package() {
@@ -728,12 +761,12 @@ funcInstall_package() {
 		sed -z 's/[\r\n]\+/ /g')"
 
 	# --- install missing packages --------------------------------------------
-	apt-get -qq update
 	if [ -n "${_PAKG_FIND:-}" ]; then
 		# shellcheck disable=SC2086
-		if ! apt-get -qq -y install ${_PAKG_FIND}; then
+		if ! apt-get --quiet update && apt-get --quiet --assume-yes install ${_PAKG_FIND}; then
 			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "missing packages installation failure"
 			printf "\033[m${PROG_NAME}: \033[91m%s\033[m\n" "${_PAKG_FIND}"
+			return
 		fi
 	fi
 
@@ -2958,6 +2991,9 @@ funcMain() {
 	funcFile_backup "/proc/cmdline"
 	funcFile_backup "/proc/mounts"
 	funcFile_backup "/proc/self/mounts"
+
+	# --- package updates -----------------------------------------------------
+	funcUpdate_package
 
 	# --- installing missing packages -----------------------------------------
 	funcInstall_package
