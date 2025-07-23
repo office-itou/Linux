@@ -169,7 +169,7 @@ autoinstall:
 # drivers:
 #   install: true
 # =============================================================================
-# updates: security
+  updates: security
 # updates: all
 # package_update: true
 # package_upgrade: true
