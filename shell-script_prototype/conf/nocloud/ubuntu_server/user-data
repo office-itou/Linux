@@ -34,6 +34,12 @@ autoinstall:
 #       - riscv64
 #       uri: http://ports.ubuntu.com/ubuntu-ports
 #   preserve_sources_list: false
+# apt:
+#   disable_suites: [backports]
+#   sources:
+#     backports.list:
+#       source: |
+#         deb $MIRROR $RELEASE-backports main restricted universe multiverse
 # =============================================================================
   storage:
     grub:
@@ -164,9 +170,9 @@ autoinstall:
 #   install: true
 # =============================================================================
 # updates: security
-  updates: all
-  package_update: true
-  package_upgrade: true
+# updates: all
+# package_update: true
+# package_upgrade: true
   packages:
   - apparmor
   - apparmor-utils
@@ -181,6 +187,7 @@ autoinstall:
   - bc
   - tree
   - shellcheck
+  - tasksel
   - clamav
   - openssh-server
   - systemd-resolved
@@ -194,6 +201,7 @@ autoinstall:
   - open-vm-tools
   - open-vm-tools-desktop
 # - ubuntu-desktop
+# - ubuntu-desktop-minimal
 # - ubuntu-gnome-desktop
 # - language-pack-ja
 # - language-pack-gnome-ja
@@ -212,6 +220,9 @@ autoinstall:
 # - rhythmbox
 # - libavcodec-extra
 # - gstreamer1.0-libav
+# snap:
+#   commands:
+#   - [install, firefox]
 # -----------------------------------------------------------------------------
 # - usrmerge
 # - tftpd-hpa
@@ -290,14 +301,18 @@ autoinstall:
 #   ln -s /etc/resolv.conf.manually-configured /etc/resolv.conf;
 #   ls -l /etc/resolv.conf*;
 # =============================================================================
-  power_state:
-    delay: now
-    mode: reboot
-    message: Rebooting machine
-    timeout: 2
-    condition: true
+# power_state:
+#   delay: now
+#   mode: reboot
+#   message: Rebooting machine
+#   timeout: 2
+#   condition: true
 # =============================================================================
   early-commands:
+  - [ sh, -c, '
+      cat /cdrom/casper/install-sources.yaml | awk "NR>1 && /^-/{exit};1" > /run/my-sources.yaml;
+      mount -o ro,bind /run/my-sources.yaml /cdrom/casper/install-sources.yaml;
+    ' ]
   - [ sh, -c, '
       set -eu;
       exec 2>&1;
@@ -330,13 +345,13 @@ autoinstall:
         _PATH="/var/lib/cdebconf/questions.dat";
         if [ -f "${_PATH}" ]; then
           printf "### %s: %s ###\n" "${_FUNC_NAME}" "find ${_PATH##*/}";
-          _PATH_SEED="$(awk ''''''$1=="Name:"&&($2=="preseed/url"||$2=="preseed/file"),$1=="" {if ($1=="Value:") {print $2;}}'''''' "${_PATH}")";
+          _PATH_SEED="$(awk "\$1==\"Name:\"&&(\$2==\"preseed/url\"||\$2==\"preseed/file\"),\$1==\"\" {if (\$1==\"Value:\") {print \$2;}}" "${_PATH}")";
           cp -a "${_PATH}" "${_DIRS_TGET}${_DIRS_INST}/";
         fi;
         _PATH="/var/lib/cloud/data/result.json";
         if [ -f "${_PATH}" ]; then
           printf "### %s: %s ###\n" "${_FUNC_NAME}" "find ${_PATH##*/}";
-          _PATH_DEVS="$(awk ''''''/DataSourceNoCloud/ {sub(/.*\//,""); sub(/[^[:alnum:]].*/,""); print $0;}'''''' "${_PATH}")";
+          _PATH_DEVS="$(awk "/DataSourceNoCloud/ {sub(/.*\//,\"\"); sub(/[^[:alnum:]].*/,\"\"); print \$0;}" "${_PATH}")";
           _PATH_SEED="/user-data";
         fi;
         if [ -n "${AutoYaST:-}" ]; then
@@ -416,11 +431,7 @@ autoinstall:
             fi;
           fi;
           printf "### %s: %s ###\n" "${_FUNC_NAME}" "file copy";
-          for _PATH in "${_PATH_SEED}"
-                       "${_DIRS_COMD}/autoinst_cmd_early.sh"
-                       "${_DIRS_COMD}/autoinst_cmd_late.sh"
-                       "${_DIRS_COMD}/autoinst_cmd_part.sh"
-                       "${_DIRS_COMD}/autoinst_cmd_run.sh";
+          for _PATH in "${_PATH_SEED}" "${_DIRS_COMD}/autoinst_cmd_early.sh" "${_DIRS_COMD}/autoinst_cmd_late.sh" "${_DIRS_COMD}/autoinst_cmd_part.sh" "${_DIRS_COMD}/autoinst_cmd_run.sh";
           do
             printf "### %s: %s ###\n" "${_FUNC_NAME}" "copy: [${_PATH}]";
             case "${_PATH}" in
@@ -428,9 +439,12 @@ autoinstall:
                 if command -v wget > /dev/null 2>&1; then
                   wget --tries=3 --timeout=10 --quiet --continue --show-progress --progress=bar --output-document "${_DIRS_TGET:-}${_DIRS_INST}/${_PATH##*/}" "${_PATH}" || true;
                 else
-                  curl --location --http1.1 --no-progress-bar --remote-time --show-error --fail --retry-max-time 3 --retry 3 --connect-timeout 60 --progress-bar --continue-at - --create-dirs --output-dir "${_DIRS_TGET}${_DIRS_INST}" --output "${_PATH##*/}" "${_PATH}" || true;
-                fi;;
-              file:*|/*                  ) cp -a "${_PATH#*:*//}" "${_DIRS_TGET}${_DIRS_INST}/" || true;;
+                  curl --location --http1.1 --no-progress-bar --remote-time -S -f --retry-max-time 3 --retry 3 --connect-timeout 60 --progress-bar --continue-at - --create-dirs --output-dir "${_DIRS_TGET}${_DIRS_INST}" --output "${_PATH##*/}" "${_PATH}" || true;
+                fi;
+                ;;
+              file:*|/*                  )
+                cp -a "${_PATH#*:*//}" "${_DIRS_TGET}${_DIRS_INST}/" || true;
+                ;;
               *) ;;
             esac;
             if [ "${_PATH}" != "${_PATH_SEED}" ] && [ -e "${_DIRS_TGET}${_DIRS_INST}/${_PATH##*/}" ]; then
