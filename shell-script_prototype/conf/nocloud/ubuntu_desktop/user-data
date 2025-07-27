@@ -188,6 +188,7 @@ autoinstall:
   - tree
   - shellcheck
   - tasksel
+  - snapd
   - clamav
   - openssh-server
   - systemd-resolved
@@ -220,9 +221,6 @@ autoinstall:
   - rhythmbox
   - libavcodec-extra
   - gstreamer1.0-libav
-  snap:
-#   commands:
-#   - [install, firefox]
 # -----------------------------------------------------------------------------
 # - usrmerge
 # - tftpd-hpa
@@ -309,10 +307,13 @@ autoinstall:
 #   condition: true
 # =============================================================================
   early-commands:
-  - [ sh, -c, '
-      cat /cdrom/casper/install-sources.yaml | awk "NR>1 && /^-/{exit};1" > /run/my-sources.yaml;
-      mount -o ro,bind /run/my-sources.yaml /cdrom/casper/install-sources.yaml;
-    ' ]
+# - [ sh, -c, '
+#     apt-get --quiet update && apt-get --quiet --assume-yes upgrade && snap refresh || true;
+#   ' ]
+# - [ sh, -c, '
+#     cat /cdrom/casper/install-sources.yaml | awk "NR>1 && /^-/{exit};1" > /run/my-sources.yaml;
+#     mount -o ro,bind /run/my-sources.yaml /cdrom/casper/install-sources.yaml;
+#   ' ]
   - [ sh, -c, '
       set -eu;
       exec 2>&1;
@@ -437,9 +438,9 @@ autoinstall:
             case "${_PATH}" in
               http:*|https:*|ftp:*|tftp:*)
                 if command -v wget > /dev/null 2>&1; then
-                  wget --tries=3 --timeout=10 --quiet --continue --show-progress --progress=bar --output-document "${_DIRS_TGET:-}${_DIRS_INST}/${_PATH##*/}" "${_PATH}" || true;
+                  wget --tries=3 --timeout=10 --quiet --continue --output-document "${_DIRS_TGET:-}${_DIRS_INST}/${_PATH##*/}" "${_PATH}" || true;
                 else
-                  curl --location --http1.1 --no-progress-bar --remote-time -S -f --retry-max-time 3 --retry 3 --connect-timeout 60 --progress-bar --continue-at - --create-dirs --output-dir "${_DIRS_TGET}${_DIRS_INST}" --output "${_PATH##*/}" "${_PATH}" || true;
+                  curl --location --http1.1 --no-progress-bar --remote-time -S -f --retry-max-time 3 --retry 3 --connect-timeout 60 --continue-at - --create-dirs --output-dir "${_DIRS_TGET}${_DIRS_INST}" --output "${_PATH##*/}" "${_PATH}" || true;
                 fi;
                 ;;
               file:*|/*                  )

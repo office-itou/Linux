@@ -759,11 +759,11 @@ function fnCreate_preseed() {
 			sed -i "${__TGET_PATH}"                                             \
 			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
 			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \
-			    -e 's/^#/ /g                                                }'
-			sed -e 's/connman/network-manager/'                                 \
-			    -e 's/task-lxde-desktop/task-gnome-desktop/'                    \
-			  "${__TGET_PATH}"                                                  \
-			> "${__TGET_PATH%.*}_gnome.${__TGET_PATH##*.}"
+			    -e 's/^#/ /g'                                                   \
+			    -e 's/connman/network-manager/                              } '
+#			sed -e 's/task-lxde-desktop/task-gnome-desktop/'                    \
+#			  "${__TGET_PATH}"                                                  \
+#			> "${__TGET_PATH%.*}_gnome.${__TGET_PATH##*.}"
 			;;
 		*)	;;
 	esac
@@ -1020,8 +1020,10 @@ function fnCreate_autoyast() {
 			;;
 	esac
 	# --- desktop -------------------------------------------------------------
-	sed -e '/<!-- desktop lxde$/ s/$/ -->/g '          \
-	    -e '/^desktop lxde -->/  s/^/<!-- /g'          \
+	sed -e '/<!-- desktop$/       s/$/ -->/g '         \
+	    -e '/^desktop -->/        s/^/<!-- /g'         \
+	    -e '/<!-- desktop gnome$/ s/$/ -->/g '         \
+	    -e '/^desktop gnome -->/  s/^/<!-- /g'         \
 	    "${__TGET_PATH}"                               \
 	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
 	# -------------------------------------------------------------------------

@@ -187,7 +187,7 @@ function fnBoot_option_nocloud() {
 	if [[ -z "${__TGET_LIST[23]##-}" ]] || [[ -z "${__TGET_LIST[23]##*/-}" ]]; then
 		__WORK="boot=live"
 	else
-		__WORK="${__WORK:+" "}automatic-ubiquity noprompt autoinstall ds=nocloud;s=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
+		__WORK="${__WORK:+" "}automatic-ubiquity noprompt autoinstall cloud-config-url=/dev/null ds=nocloud;s=/cdrom${__TGET_LIST[23]#"${_DIRS_CONF}"}"
 		case "${__TGET_TYPE:-}" in
 			"${_TYPE_PXEB:?}") __WORK="${__CONF:+"${__WORK/\/cdrom/${__CONF}}"}";;
 			*                ) ;;
@@ -1345,7 +1345,7 @@ function fnExec_menu() {
 					__LIST[12]="${__ARRY[3]:-}"				# web_status
 					case "${__LIST[9]##*/}" in
 						mini.iso) ;;
-						*       )
+						*.iso   )
 							__FNAM="${__LIST[9]##*/}"
 							__WORK="${__FNAM%.*}"
 							__EXTN="${__FNAM#"${__WORK}"}"
@@ -1361,6 +1361,7 @@ function fnExec_menu() {
 								__LIST[17]="${__LIST[17]%/*}/${__BASE}${__SEED:+"_${__SEED}"}${__EXTN}"
 							fi
 							;;
+						*       ) ;;
 					esac
 #					__MESG="${__ARRY[4]:--}"				# contents
 					;;
@@ -2533,22 +2534,27 @@ function fnExec() {
 						__LIST[J]="${__LIST[J]//%20/ }"	# space
 					done
 					# --- download --------------------------------------------
-					case "${__COMD}" in
-						create  | \
-						update  | \
-						download| \
-						pxeboot )
-							fnExec_download "__RVAL" "${__LIST[@]}"
-#							read -r -a __ARRY < <(echo "${__RVAL:-}")
-							IFS= mapfile -d $'\n' -t __ARRY < <(echo -n "${__RVAL:-}")
-							if [[ -n "${__ARRY[*]}" ]]; then
-								case "${__ARRY[12]:-}" in
-									200) __LIST=("${__ARRY[@]}");;
-									*  ) ;;
-								esac
-							fi
+					case "${__LIST[9]}" in
+						*.iso)
+							case "${__COMD}" in
+								create  | \
+								update  | \
+								download| \
+								pxeboot )
+									fnExec_download "__RVAL" "${__LIST[@]}"
+#									read -r -a __ARRY < <(echo "${__RVAL:-}")
+									IFS= mapfile -d $'\n' -t __ARRY < <(echo -n "${__RVAL:-}")
+									if [[ -n "${__ARRY[*]}" ]]; then
+										case "${__ARRY[12]:-}" in
+											200) __LIST=("${__ARRY[@]}");;
+											*  ) ;;
+										esac
+									fi
+									;;
+								*       ) ;;
+							esac
 							;;
-						*       ) ;;
+						*)  ;;
 					esac
 					# --- remastering or pxeboot ------------------------------
 					case "${__COMD}" in
