@@ -569,10 +569,12 @@ funcInitialize() {
 		NICS_WGRP="${NICS_WGRP:-"$(resolvectl domain | sed -ne '/^Global:/            s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
 		NICS_WGRP="${NICS_WGRP:-"$(resolvectl domain | sed -ne '/('"${NICS_NAME}"'):/ s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p')"}"
 	fi
-	NICS_DNS4="${NICS_DNS4:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' "${DIRS_TGET:-}/etc/resolv.conf")"}"
-	NICS_WGRP="${NICS_WGRP:-"$(sed -ne '/^search/     s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p'                      "${DIRS_TGET:-}/etc/resolv.conf")"}"
-#	NICS_DNS4="${NICS_DNS4:-"$(sed -ne 's/^nameserver[ \]\+\([[:alnum:]:.]\+\)[ \t]*$/\1/p' "${DIRS_TGET:-}/etc/resolv.conf" | sed -e ':l; N; s/\n/,/; b l;')"}"
-#	NICS_WGRP="${NICS_WGRP:-"$(awk '$1=="search" {print $2;}' "${DIRS_TGET:-}/etc/resolv.conf")"}"
+	if [ -e "${DIRS_TGET:-}/etc/resolv.conf" ]; then
+		NICS_DNS4="${NICS_DNS4:-"$(sed -ne '/^nameserver/ s/^.*[ \t]\([0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+\)[ \t]*.*$/\1/p' "${DIRS_TGET:-}/etc/resolv.conf")"}"
+		NICS_WGRP="${NICS_WGRP:-"$(sed -ne '/^search/     s/^.*[ \t]\([[:graph:]]\+\)[ \t]*.*$/\1/p'                      "${DIRS_TGET:-}/etc/resolv.conf")"}"
+#		NICS_DNS4="${NICS_DNS4:-"$(sed -ne 's/^nameserver[ \]\+\([[:alnum:]:.]\+\)[ \t]*$/\1/p' "${DIRS_TGET:-}/etc/resolv.conf" | sed -e ':l; N; s/\n/,/; b l;')"}"
+#		NICS_WGRP="${NICS_WGRP:-"$(awk '$1=="search" {print $2;}' "${DIRS_TGET:-}/etc/resolv.conf")"}"
+	fi
 	NICS_HOST="$(echo "${NICS_HOST}" | tr '[:upper:]' '[:lower:]')"
 	NICS_WGRP="$(echo "${NICS_WGRP}" | tr '[:upper:]' '[:lower:]')"
 	if [ "${NICS_FQDN}" = "${NICS_HOST}" ] && [ -n "${NICS_WGRP}" ]; then
@@ -1208,91 +1210,83 @@ funcSetupNetwork_nmanagr() {
 		debian | ubuntu ) _FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/Wired connection 1";;
 		*               ) _FILE_PATH="${DIRS_TGET:-}/etc/NetworkManager/system-connections/${NICS_NAME}.nmconnection";;
 	esac
-	funcFile_backup "${_FILE_PATH}"
-	mkdir -p "${_FILE_PATH%/*}"
-	cp -a "${DIRS_ORIG}/${_FILE_PATH#*"${DIRS_TGET:-}/"}" "${_FILE_PATH}"
-	_SRVC_FLAG=""
-	_SRVC_NAME="firewalld.service"
+	_SRVC_NAME="NetworkManager.service"
 	_SRVC_STAT="$(funcServiceStatus is-active "${_SRVC_NAME}")"
-	if [ "${_SRVC_STAT}" != "active" ]; then
-		_SRVC_FLAG="--offline"
+	if [ "${_SRVC_STAT}" = "active" ]; then
+		_FIND_UUID="$(nmcli --fields DEVICE,UUID connection show | awk '$1=="'"${NICS_NAME}"'" {print $2;}')"
+		for _FIND_PATH in "${DIRS_TGET:-}/etc/NetworkManager/system-connections/"* "${DIRS_TGET:-}/run/NetworkManager/system-connections/"*
+		do
+			if grep -Hqs "uuid=${_FIND_UUID}" "${_FIND_PATH}"; then
+				_FILE_PATH="${_FIND_PATH}"
+				break
+			fi
+		done
 	fi
-	if [ "${IPV4_DHCP}" = "true" ]; then
-		if ! nmcli ${_SRVC_FLAG} connection add type ethernet \
-			connection.id "${_FILE_PATH##*/}" \
-			connection.interface-name "${NICS_NAME}" \
-			connection.autoconnect true \
-			connection.zone "${FWAL_ZONE}" \
-			ethernet.wake-on-lan 0 \
-			ethernet.mac-address "${NICS_MADR}" \
-			ipv4.method auto \
-			ipv6.method auto \
-			ipv6.addr-gen-mode default \
-		> "${_FILE_PATH}"; then
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-				[connection]
-				id=${_FILE_PATH##*/}
-				type=ethernet
-				interface-name=${NICS_NAME}
-				autoconnect=true
-				zone=${FWAL_ZONE}
-
-				[ethernet]
-				wake-on-lan=0
-				mac-address=${NICS_MADR}
-
-				[ipv4]
-				method=auto
-
-				[ipv6]
-				method=auto
-				addr-gen-mode=default
-
-				[proxy]
-_EOT_
+	_CONN_NAME="${_FILE_PATH##*/}"
+	_CONN_NAME="${_CONN_NAME%.nmconnection}"
+	if [ -z "${_FIND_UUID:-}" ]; then
+		if [ "${IPV4_DHCP}" = "true" ]; then
+			nmcli --offline connection add \
+				type ethernet \
+				connection.id "${_CONN_NAME}" \
+				connection.interface-name "${NICS_NAME}" \
+				connection.autoconnect true \
+				connection.zone "${FWAL_ZONE}" \
+				ethernet.wake-on-lan 0 \
+				ethernet.mac-address "${NICS_MADR}" \
+				ipv4.method auto \
+				ipv6.method auto \
+				ipv6.addr-gen-mode default \
+			> "${_FILE_PATH}"
+		else
+			nmcli --offline connection add \
+				type ethernet \
+				connection.id "${_CONN_NAME}" \
+				connection.interface-name "${NICS_NAME}" \
+				connection.autoconnect true \
+				connection.zone "${FWAL_ZONE}" \
+				ethernet.wake-on-lan 0 \
+				ethernet.mac-address "${NICS_MADR}" \
+				ipv4.method manual \
+				ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
+				ipv4.gateway "${NICS_GATE}" \
+				ipv4.dns "${NICS_DNS4}" \
+				ipv6.method auto \
+				ipv6.addr-gen-mode default \
+			> "${_FILE_PATH}"
 		fi
+		chown root:root "${_FILE_PATH}"
+		chmod 600 "${_FILE_PATH}"
 	else
-		if ! nmcli ${_SRVC_FLAG} connection add type ethernet \
-			connection.id "${_FILE_PATH##*/}" \
-			connection.interface-name "${NICS_NAME}" \
-			connection.autoconnect true \
-			connection.zone "${FWAL_ZONE}" \
-			ethernet.wake-on-lan 0 \
-			ethernet.mac-address "${NICS_MADR}" \
-			ipv4.method manual \
-			ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
-			ipv4.gateway "${NICS_GATE}" \
-			ipv4.dns "${NICS_DNS4}" \
-			ipv6.method auto \
-			ipv6.addr-gen-mode default \
-		> "${_FILE_PATH}"; then
-			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_FILE_PATH}"
-				[connection]
-				id=${_FILE_PATH##*/}
-				type=ethernet
-				interface-name=${NICS_NAME}
-				autoconnect=true
-				zone=${FWAL_ZONE}
-
-				[ethernet]
-				wake-on-lan=0
-				mac-address=${NICS_MADR}
-
-				[ipv4]
-				method=manual
-				address1=${NICS_IPV4}/${NICS_BIT4},${NICS_GATE}
-				dns=${NICS_DNS4};
-
-				[ipv6]
-				method=auto
-				addr-gen-mode=default
-
-				[proxy]
-_EOT_
+		if [ "${IPV4_DHCP}" = "true" ]; then
+			nmcli connection modify uuid "${_FIND_UUID}" \
+				type ethernet \
+				connection.id "${_CONN_NAME}" \
+				connection.interface-name "${NICS_NAME}" \
+				connection.autoconnect true \
+				connection.zone "${FWAL_ZONE}" \
+				ethernet.wake-on-lan 0 \
+				ethernet.mac-address "${NICS_MADR}" \
+				ipv4.method auto \
+				ipv6.method auto \
+				ipv6.addr-gen-mode default
+		else
+			nmcli connection modify uuid "${_FIND_UUID}" \
+				type ethernet \
+				connection.id "${_CONN_NAME}" \
+				connection.interface-name "${NICS_NAME}" \
+				connection.autoconnect true \
+				connection.zone "${FWAL_ZONE}" \
+				ethernet.wake-on-lan 0 \
+				ethernet.mac-address "${NICS_MADR}" \
+				ipv4.method manual \
+				ipv4.address "${NICS_IPV4}/${NICS_BIT4}" \
+				ipv4.gateway "${NICS_GATE}" \
+				ipv4.dns "${NICS_DNS4}" \
+				ipv6.method auto \
+				ipv6.addr-gen-mode default
 		fi
 	fi
-	chown root:root "${_FILE_PATH}"
-	chmod 600 "${_FILE_PATH}"
 
 	# --- debug out -----------------------------------------------------------
 	funcDebugout_file "${_FILE_PATH}"
@@ -1352,6 +1346,7 @@ _EOT_
 		printf "\033[m${PROG_NAME}: %s\033[m\n" "service restart: ${_SRVC_NAME}"
 		systemctl --quiet daemon-reload
 		systemctl --quiet restart "${_SRVC_NAME}"
+		sleep 1
 		nmcli connection reload
 	fi
 
@@ -2298,7 +2293,7 @@ funcSetupConfig_ssh() {
 		#AuthorizedKeysFile
 
 		# setting password authentication
-		#PasswordAuthentication yes
+		PasswordAuthentication yes
 
 		# configuring challenge-response authentication
 		#ChallengeResponseAuthentication no
