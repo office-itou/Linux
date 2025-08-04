@@ -16,10 +16,18 @@ function fnCreate_UEFI_image() {
 	# === dummy file ==========================================================
 	# --- create disk image ---------------------------------------------------
 	dd if=/dev/zero of="${_FILE_UEFI}" bs=1M count=100
+	# --- create loop device --------------------------------------------------
+	_DEVS_LOOP="$(losetup --find --show "${_FILE_UEFI}")"
+	# --- create partition ----------------------------------------------------
+	sfdisk "${_DEVS_LOOP}" << _EOF_
+		,,U,*
+_EOF_
 	# --- format efi partition ------------------------------------------------
-	mkfs.vfat -F 32 "${_FILE_UEFI}"
+	sleep 1
+	partprobe "${_DEVS_LOOP}"
+	mkfs.vfat -F 32 "${_DEVS_LOOP}p1"
 	# --- mount efi partition -------------------------------------------------
-	mount "${_FILE_UEFI}" "${_DIRS_MNTP}"
+	mount "${_DEVS_LOOP}p1" "${_DIRS_MNTP}"
 	# --- install grub module -------------------------------------------------
 	grub-install \
 		--target=x86_64-efi \
@@ -27,12 +35,17 @@ function fnCreate_UEFI_image() {
 		--bootloader-id=boot \
 		--boot-directory="${_DIRS_TEMP}" \
 		--removable
+	grub-install \
+		--target=i386-pc \
+		--boot-directory="${_DIRS_TEMP}" \
+		"${_DEVS_LOOP}"
 	# --- file copy -----------------------------------------------------------
-	cp -a "${_DIRS_MNTP}/EFI/BOOT/BOOTX64.EFI"  "${_DIRS_TEMP}/bootx64.efi"
-	cp -a "${_DIRS_MNTP}/EFI/BOOT/grubx64.efi"  "${_DIRS_TEMP}/grubx64.efi"
+	[[ -e "${_DIRS_MNTP}/EFI/BOOT/BOOTX64.EFI" ]] && cp -a "${_DIRS_MNTP}/EFI/BOOT/BOOTX64.EFI"  "${_DIRS_TEMP}/bootx64.efi"
+	[[ -e "${_DIRS_MNTP}/EFI/BOOT/grubx64.efi" ]] && cp -a "${_DIRS_MNTP}/EFI/BOOT/grubx64.efi"  "${_DIRS_TEMP}/grubx64.efi"
 	# --- unmount efi partition -----------------------------------------------
 	umount "${_DIRS_MNTP}"
-
+	# --- detach loop device --------------------------------------------------
+	losetup --detach "${_DEVS_LOOP}"
 	# === real file ===========================================================
 	# --- create disk image ---------------------------------------------------
 	dd if=/dev/zero of="${_FILE_UEFI}" bs=1M count=100
@@ -42,7 +55,8 @@ function fnCreate_UEFI_image() {
 	mount "${_FILE_UEFI}" "${_DIRS_MNTP}"
 	# --- create --------------------------------------------------------------
 	mkdir -p "${_DIRS_MNTP}/"{EFI/boot,boot/grub}
-	cp -a "${_DIRS_TEMP}/"{bootx64.efi,grubx64.efi} "${_DIRS_MNTP}/EFI/boot/"
+	[[ -e "${_DIRS_TEMP}/bootx64.efi" ]] && cp -a "${_DIRS_TEMP}/bootx64.efi" "${_DIRS_MNTP}/EFI/boot/"
+	[[ -e "${_DIRS_TEMP}/grubx64.efi" ]] && cp -a "${_DIRS_TEMP}/grubx64.efi" "${_DIRS_MNTP}/EFI/boot/"
 	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_MNTP}/boot/grub/grub.cfg"
 		search --set=root --file /.disk/info
 		set prefix=($root)'/boot/grub'
@@ -113,11 +127,12 @@ _EOT_
 
 function fnCreate_GRUB_menu() {
 	# --- copy grub module ----------------------------------------------------
-	nice -n 19 cp -a /usr/lib/grub/i386-pc/*     "${_DIRS_CDFS}/boot/grub/i386-pc/"
-	nice -n 19 cp -a /usr/lib/grub/x86_64-efi/*  "${_DIRS_CDFS}/boot/grub/x86_64-efi/"
-	nice -n 19 cp -a /usr/share/grub/unicode.pf2 "${_DIRS_CDFS}/boot/grub/"
+#	nice -n 19 cp -a /usr/lib/grub/i386-pc/*     "${_DIRS_CDFS}/boot/grub/i386-pc/"
+#	nice -n 19 cp -a /usr/lib/grub/x86_64-efi/*  "${_DIRS_CDFS}/boot/grub/x86_64-efi/"
+#	nice -n 19 cp -a /usr/share/grub/unicode.pf2 "${_DIRS_CDFS}/boot/grub/"
+	nice -n 19 cp -a "${_DIRS_TEMP}/grub/"       "${_DIRS_CDFS}/boot/"      
 	if [[ -z "${_FLAG_ILNK}" ]]; then
-		nice -n 19 cp -a "/srv/user/share/imgs/ubuntu-live-24.10/boot/grub/i386-pc/eltorito.img" "${_DIRS_CDFS}/boot/grub/i386-pc/"
+		nice -n 19 cp -a "/usr/lib/grub/i386-pc/eltorito.img" "${_DIRS_CDFS}/boot/grub/i386-pc/"
 	fi
 	# --- create grub.cfg -----------------------------------------------------
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_CDFS}/boot/grub/grub.cfg"
@@ -126,51 +141,33 @@ function fnCreate_GRUB_menu() {
 		set gfxmode=auto
 		set lang=ja_JP
 		
-		if [ x\$feature_default_font_path = xy ] ; then
-		 	font=unicode
+		if [ x\${feature_default_font_path} = xy ] ; then
+		  font=unicode
 		else
-		 	font=\$prefix/font.pf2
+		  font=\${prefix}/font.pf2
 		fi
 		
-		if loadfont \$font ; then
-		 	set gfxmode=1024x768
-		 	set gfxpayload=keep
-		 	insmod efi_gop
-		 	insmod efi_uga
-		 	insmod video_bochs
-		 	insmod video_cirrus
-		 	insmod gfxterm
-		 	insmod png
-		 	terminal_output gfxterm
-		fi
-		
-		if background_image /isolinux/splash.png; then
-		 	set color_normal=light-gray/black
-		 	set color_highlight=white/black
-		elif background_image /splash.png; then
-		 	set color_normal=light-gray/black
-		 	set color_highlight=white/black
-		else
-		 	set menu_color_normal=cyan/blue
-		 	set menu_color_highlight=white/blue
-		fi
+		set gfxmode=1024x768
+		set gfxpayload=keep
+		set menu_color_normal=cyan/blue
+		set menu_color_highlight=white/blue
 		
 		insmod play
 		play 960 440 1 0 4 440 1
 		#set theme=/boot/grub/theme/1
 		
 		menuentry "live-media" {
-		 	if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
-		 	linux  /live/vmlinuz boot=${_BOOT_OPTN[@]}
-		 	initrd /live/initrd
+		  if [ "\${grub_platform}" = "efi" ]; then rmmod tpm; fi
+		  linux  /live/vmlinuz boot=${_BOOT_OPTN[@]}
+		  initrd /live/initrd
 		}
 		menuentry "System shutdown" {
-		 	echo "System shutting down ..."
-		 	halt
+		  echo "System shutting down ..."
+		  halt
 		}
 		menuentry "System restart" {
-		 	echo "System rebooting ..."
-		 	reboot
+		  echo "System rebooting ..."
+		  reboot
 		}
 _EOT_
 }
@@ -264,15 +261,11 @@ function fnCreate_ISO_file() {
 	declare -r    _DIRS_WORK="/srv/user/private/live"
 	declare -r    _DIRS_MNTP="${_DIRS_TEMP}/mnt"
 	declare -r    _FILE_UEFI="${_DIRS_TEMP}/efi.img"
-	declare -r    _FILE_MDIA="${_DIRS_WORK}/live-debian/filesystem.squashfs"
 	declare -r    _DIRS_CDFS="${_DIRS_TEMP}/cdfs"
 	declare -r    _FILE_SQFS="${_DIRS_CDFS}/live/filesystem.squashfs"
-	declare -r    _FILE_CONF="/srv/user/share/conf/_template/live-debian.yaml"
 	declare -r -a _BOOT_OPTN=(\
 		"live" \
 		"components" \
-		"quiet" \
-		"splash" \
 		"overlay-size=90%" \
 		"hooks=medium" \
 		"xorg-resolution=1680x1050" \
@@ -282,28 +275,44 @@ function fnCreate_ISO_file() {
 		"keyboard-model=pc105" \
 		"keyboard-layouts=jp" \
 		"keyboard-variants=OADG109A" \
+		"---" \
+		"quiet" \
+		"splash" \
 )
 
 	declare -r    _FILE_VLID="LIVE-MEDIA"
 	declare -r    _FILE_ISOS="/srv/hgfs/linux/live-media.iso"
 	declare -r    _FILE_WORK="${_DIRS_TEMP}/${_FILE_ISOS##*/}.work"
-	declare -r    _FLAG_ILNK="true"
+
+	declare       _FLAG_ILNK="true"
+	if [[ -e /usr/lib/grub/i386-pc/eltorito.img ]]; then
+		_FLAG_ILNK=""
+	fi
+	readonly      _FLAG_ILNK
 
 	declare -r    _FILE_BIOS="boot/grub/i386-pc/boot.img"
 
 	if [[ -n "${_FLAG_ILNK}" ]]; then
-		declare -r    _FILE_ETRI="isolinux/isolinux.bin"
 		declare -r    _FILE_BCAT="isolinux/boot.catalog"
+		declare -r    _FILE_ETRI="isolinux/isolinux.bin"
 	else
 		declare -r    _FILE_BCAT="boot/grub/boot.catalog"
 		declare -r    _FILE_ETRI="boot/grub/i386-pc/eltorito.img"
 	fi
 
+#	declare -r    _TGET_DIST="debian"
+	declare -r    _TGET_DIST="ubuntu"
+#	declare -r    _TGET_SUIT="bookworm"
+	declare -r    _TGET_SUIT="plucky"
+
+	declare -r    _FILE_MDIA="${_DIRS_WORK}/live-${_TGET_DIST}/filesystem.squashfs"
+	declare -r    _FILE_CONF="/srv/user/share/conf/_template/live-${_TGET_DIST}.yaml"
+
 	mkdir -p "${_DIRS_MNTP}"
 
 	if [[ ! -e "${_FILE_MDIA}" ]]; then
-		rm -rf "${_DIRS_WORK:?}/live-debian/"
-		bdebstrap \
+		rm -rf "${_DIRS_WORK:?}/live-${_TGET_DIST}/"
+		if ! bdebstrap \
 			--output-base-dir "${_DIRS_WORK:?}" \
 			--config "${_FILE_CONF:?}" \
 			--customize-hook "mkdir -p \"\$1/my-script\"" \
@@ -312,10 +321,12 @@ function fnCreate_ISO_file() {
 			--customize-hook "chroot \"\$1\" \"/my-script/autoinst_cmd_late.sh\"" \
 			--customize-hook "rm -rf \"\$1/my-script\"" \
 			--customize-hook "rm -rf \"\$1/etc/NetworkManager/system-connections/*\"" \
-			--suite bookworm
+			--suite "${_TGET_SUIT}"; then
+				exit $?
+		fi
 	fi
 
-	ls -lh "${_DIRS_WORK:?}/live-debian/"
+	ls -lh "${_DIRS_WORK:?}/live-${_TGET_DIST}/"
 
 	fnCreate_UEFI_image
 	fnCreate_CDFS_image
