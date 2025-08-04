@@ -24,10 +24,11 @@ mmdebstrap:
   - dosfstools                          # utilities for making and checking MS-DOS FAT filesystems
   - grub-common                         # GRand Unified Bootloader (common files)
   - grub-efi-amd64-bin                  # GRand Unified Bootloader, version 2 (EFI-AMD64 modules)
+  - apparmor                            # user-space parser utility for AppArmor
+  - apparmor-utils                      # utilities for controlling AppArmor
   - sudo                                # Provide limited super user privileges to specific users
   - firewalld                           # dynamically managed firewall with support for network zones
   - traceroute                          # Traces the route taken by packets over an IPv4/IPv6 network
-# - connman                             # Intel Connection Manager daemon
   - network-manager                     # network management framework (daemon and userspace tools)
   - bash-completion                     # programmable completion for the bash shell
   - build-essential                     # Informational list of build-essential packages
@@ -36,6 +37,8 @@ mmdebstrap:
   - bc                                  # GNU bc arbitrary precision calculator language
   - tree                                # displays an indented directory tree, in color
   - shellcheck                          # lint tool for shell scripts
+  - tasksel                             # tool for selecting tasks for installation on Debian systems
+  - snapd                               # Daemon and tooling that enable snap packages
   - clamav                              # anti-virus utility for Unix - command-line interface
   - openssh-server                      # secure shell (SSH) server, for secure access from remote machines
   - systemd-resolved                    # systemd DNS resolver
@@ -48,11 +51,11 @@ mmdebstrap:
   - libnss-winbind                      # Samba nameservice integration plugins
   - open-vm-tools                       # Open VMware Tools for virtual machines hosted on VMware (CLI)
   - open-vm-tools-desktop               # Open VMware Tools for virtual machines hosted on VMware (GUI)
-  - task-desktop                        # Debian desktop environment
-  - task-gnome-desktop                  # GNOME
-  - task-laptop                         # laptop
-  - task-japanese                       # Japanese environment
-  - task-japanese-desktop               # Japanese desktop
+  - ubuntu-desktop                      # Ubuntu desktop system
+  - ubuntu-desktop-minimal              # Ubuntu desktop minimal system
+  - ubuntu-gnome-desktop                # The Ubuntu desktop system (transitional package)
+  - language-pack-ja                    # translation updates for language Japanese
+  - language-pack-gnome-ja              # GNOME translation updates for language Japanese
   - fonts-noto                          # metapackage to pull in all Noto fonts
   - im-config                           # Input method configuration framework
   - zenity                              # Display graphical dialog boxes from shell scripts
@@ -63,16 +66,12 @@ mmdebstrap:
   - libreoffice-l10n-ja                 # office productivity suite -- Japanese language package
   - libreoffice-help-ja                 # office productivity suite -- Japanese help
   - firefox-locale-ja                   # Transitional package - firefox-locale-ja -> firefox snap
-  - thunderbird                         # mail/news client with RSS, chat and integrated spam filter support
+  - thunderbird                         # Transitional package - thunderbird -> thunderbird snap
   - thunderbird-locale-ja               # Transitional package - thunderbird-locale-ja -> thunderbird snap
   - rhythmbox                           # music player and organizer for GNOME
   - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
-  - pipewire-audio-client-libraries     # transitional package for pipewire-alsa and pipewire-jack
-  - bluetooth                           # Bluetooth support (metapackage)
-  - bluez                               # Bluetooth tools and daemons
-  - bluez-firmware                      # Firmware for Bluetooth devices
-# - firmware-realtek                    # Binary firmware for Realtek wired/wifi/BT adapters
-  - lsb-release                         # Linux Standard Base version reporting utility (minimal implementa>
+  - gstreamer1.0-libav                  # ffmpeg plugin for GStreamer
+  - lsb-release                         # Linux Standard Base version reporting utility (minimal implementation)
   - systemd                             # system and service manager
   - fakechroot                          # gives a fake chroot environment - utilities
   - iproute2                            # networking and traffic control tools
