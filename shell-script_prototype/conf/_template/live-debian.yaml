@@ -72,7 +72,7 @@ mmdebstrap:
   - bluez                               # Bluetooth tools and daemons
   - bluez-firmware                      # Firmware for Bluetooth devices
   - firmware-realtek                    # Binary firmware for Realtek wired/wifi/BT adapters
-  - lsb-release                         # Linux Standard Base version reporting utility (minimal implementa>
+  - lsb-release                         # Linux Standard Base version reporting utility (minimal implementation)
   - systemd                             # system and service manager
   - fakechroot                          # gives a fake chroot environment - utilities
   - iproute2                            # networking and traffic control tools
