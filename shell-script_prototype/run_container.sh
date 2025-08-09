@@ -143,6 +143,44 @@ function funcMount_overlay() {
 	fi
 	# --- chroot --------------------------------------------------------------
 #	chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/"
+	if [[ ! -e "${DIRS_OLAY}/merged/etc/systemd/system/loop_create.service" ]]; then
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_OLAY}/merged/usr/local/bin/loop.sh"
+			#!/bin/sh
+
+			set -eu
+
+			_PATH="/dev/loop-control"
+			if [ ! -e "${_PATH:?}" ]; then
+			 	mknod "${_PATH}" c 10 237
+			fi
+
+			I=0
+			while [ "${I}" -lt 9 ]
+			do
+			 	_PATH="/dev/loop${I}"
+			 	if [ ! -e "${_PATH}" ]; then
+			 		mknod "${_PATH}" b 7 "${I}"
+			 	fi
+			 	I=$((I+1))
+			done
+
+			exit 0
+_EOT_
+		chmod +x "${DIRS_OLAY}/merged/usr/local/bin/loop.sh"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_OLAY}/merged/etc/systemd/system/loop_create.service"
+			[Unit]
+			Description=Create Loop Device
+
+			[Service]
+			ExecStart=/usr/local/bin/loop.sh
+			Type=oneshot
+
+			[Install]
+			WantedBy=default.target
+_EOT_
+		chmod +x "${DIRS_OLAY}/merged/etc/systemd/system/loop_create.service"
+	fi
+	chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/" systemctl enable loop_create.service
 	OPTN_PARM=()
 	OPTN_PARM+=("--private-users=no")
 	OPTN_PARM+=("--bind=${DIRS_TOPS}:${DIRS_TOPS}:norbind")
