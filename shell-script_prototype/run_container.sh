@@ -178,7 +178,6 @@ _EOT_
 			[Install]
 			WantedBy=default.target
 _EOT_
-		chmod +x "${DIRS_OLAY}/merged/etc/systemd/system/loop_create.service"
 	fi
 	chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/" systemctl enable loop_create.service
 	OPTN_PARM=()
