@@ -14,6 +14,7 @@ do
 	if [ ! -e "${_PATH}" ]; then
 		mknod "${_PATH}" b 7 "${I}"
 	fi
+	I=$((I+1))
 done
 
 exit 0
