@@ -67,7 +67,7 @@
 #   input :        : unused
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnTrap() {
 	declare       __PATH=""				# full path
 	declare -i    I=0
@@ -367,7 +367,7 @@ function fnTrap() {
 #   input :   $@   : input value
 #   output: stderr : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDebugout() {
 	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 		return
@@ -380,7 +380,7 @@ function fnDebugout() {
 #   input :        : unused
 #   output: stderr : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDebug_parameter_list() {
 	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 		return
@@ -394,7 +394,7 @@ function fnDebug_parameter_list() {
 #   output: stdout :             : =0 (numer)
 #     "   :        :             : !0 (not number)
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIsNumeric() {
 	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo -n "0" || echo -n "1"
 }
@@ -406,7 +406,7 @@ function fnIsNumeric() {
 #   input :   $3   : number of characters
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnSubstr() {
 	echo -n "${1:$((${2:-1}-1)):${3:-${#1}}}"
 }
@@ -417,7 +417,7 @@ function fnSubstr() {
 #   input :   $2   : output character
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnString() {
 	echo "" | IFS= awk '{s=sprintf("%'"${1:?}"'s",""); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
 }
@@ -427,7 +427,7 @@ function fnString() {
 #   input :   $1   : input
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnLtrim() {
 	echo -n "${1#"${1%%[!"${IFS}"]*}"}"	# ltrim
 }
@@ -437,7 +437,7 @@ function fnLtrim() {
 #   input :   $1   : input
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnRtrim() {
 	echo -n "${1%"${1##*[!"${IFS}"]}"}"	# rtrim
 }
@@ -447,7 +447,7 @@ function fnRtrim() {
 #   input :   $1   : input
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnTrim() {
 	declare       __WORK=""
 	__WORK="$(fnLtrim "$1")"
@@ -463,7 +463,7 @@ function fnTrim() {
 #     "   :        :        :  -1 ($1 > $2)
 #     "   :        :        : emp (error)
 #   return:        : status
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDateDiff() {
 	declare       __TGET_DAT1="${1:?}"	# date1
 	declare       __TGET_DAT2="${2:?}"	# date2
@@ -492,7 +492,7 @@ function fnDateDiff() {
 #   input :   $2   : input value
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCenter() {
 	declare       __TEXT=""				# trimmed string
 	declare -i    __LEFT=0				# count of space on left
@@ -509,7 +509,7 @@ function fnCenter() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnPrintf() {
 	declare -r    __TRCE="$(set -o | grep -E "^xtrace\s*on$")"
 	set +x
@@ -592,7 +592,7 @@ function fnPrintf() {
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIPv4GetNetmask() {
 	fnDebugout ""
 	declare -a    __OCTS=()				# octets
@@ -643,7 +643,7 @@ function fnIPv4GetNetmask() {
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIPv6GetFullAddr() {
 	fnDebugout ""
 	declare -r    __FSEP="${1//[^:]/}"
@@ -661,7 +661,7 @@ function fnIPv6GetFullAddr() {
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIPv6GetRevAddr() {
 	fnDebugout ""
 	echo "${1//:/}" | \
@@ -680,7 +680,7 @@ function fnIPv6GetRevAddr() {
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnUnit_conversion() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -721,7 +721,7 @@ function fnUnit_conversion() {
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetVolID() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -749,7 +749,7 @@ function fnGetVolID() {
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetFileinfo() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -783,7 +783,7 @@ function fnGetFileinfo() {
 #   input :   $1   : input value
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDistro2efi() {
 	fnDebugout ""
 	declare       __WORK=""				# work variables
@@ -812,7 +812,7 @@ function fnDistro2efi() {
 #   input :   $@   : cpio options
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnXcpio() {
 	fnDebugout ""
 	declare -r    __TGET_FILE="${1:?}"	# target file
@@ -843,7 +843,7 @@ function fnXcpio() {
 #   input :   $3   : count bytes
 #   output: stdout : result
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnReadhex() {
 	fnDebugout ""
 	# shellcheck disable=SC2312
@@ -856,7 +856,7 @@ function fnReadhex() {
 #   input :   $2   : skip bytes
 #   output: stdout : unused
 #   return:        : status
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCheckzero() {
 	fnDebugout ""
 	# shellcheck disable=SC2312
@@ -869,7 +869,7 @@ function fnCheckzero() {
 #   input :   $2   : destination directory
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnSplit_initramfs() {
 	fnDebugout ""
 	declare -r    __TGET_FILE="${1:?}"	# target file
@@ -950,7 +950,7 @@ function fnSplit_initramfs() {
 #   input :   $@   : xorrisofs options
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_iso() {
 	fnDebugout ""
 	declare -r    __DIRS_TGET="${1:?}"	# target directory
@@ -991,7 +991,7 @@ function fnCreate_iso() {
 #   input :   $2   : url
 #   output: stdout : message
 #   return:        : status
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_contents() {
 	fnDebugout ""
 	declare -a    __OPTN=()				# options
@@ -1033,7 +1033,7 @@ function fnGetWeb_contents() {
 #   input :   $2   : url
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_header() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -1101,7 +1101,7 @@ function fnGetWeb_header() {
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_address() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -1208,7 +1208,7 @@ function fnGetWeb_address() {
 #   input :   $2   : url
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_info() {
 	fnDebugout ""
 #	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -1223,7 +1223,7 @@ function fnGetWeb_info() {
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_status() {
 	fnDebugout ""
 	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
@@ -1617,7 +1617,7 @@ function fnInitialization() {
 #   input :        : unused
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_conf() {
 	fnDebugout ""
 	declare -n    __NAME_REFR="${1:-}"	# name reference
@@ -1736,7 +1736,7 @@ _EOT_
 #   input :        : unused
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGet_media_data() {
 	declare       __PATH=""				# full path
 	declare       __LINE=""				# work variable
@@ -1785,7 +1785,7 @@ function fnGet_media_data() {
 #   input :        : unused
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnPut_media_data() {
 	declare       __RNAM=""				# rename path
 	declare       __LINE=""				# work variable
@@ -1841,7 +1841,7 @@ function fnPut_media_data() {
 #   input :   $@   : input vale
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_directory() {
 	fnDebugout ""
 	declare -n    __NAME_REFR="${1:-}"	# name reference
@@ -2005,7 +2005,7 @@ function fnCreate_directory() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -2088,7 +2088,7 @@ function fnCreate_preseed() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -2143,7 +2143,7 @@ function fnCreate_nocloud() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_kickstart() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -2248,7 +2248,7 @@ function fnCreate_kickstart() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_autoyast() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -2319,7 +2319,7 @@ function fnCreate_autoyast() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_agama() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -2377,7 +2377,7 @@ function fnCreate_agama() {
 #   input :   $@   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_precon() {
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift

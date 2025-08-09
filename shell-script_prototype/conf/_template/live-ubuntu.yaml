@@ -65,9 +65,12 @@ mmdebstrap:
   - gnome-shell-extensions              # Extensions to extend functionality of GNOME Shell
   - libreoffice-l10n-ja                 # office productivity suite -- Japanese language package
   - libreoffice-help-ja                 # office productivity suite -- Japanese help
+  - firefox                             # Installs Firefox snap and provides some system integration
   - firefox-locale-ja                   # Transitional package - firefox-locale-ja -> firefox snap
   - thunderbird                         # Transitional package - thunderbird -> thunderbird snap
   - thunderbird-locale-ja               # Transitional package - thunderbird-locale-ja -> thunderbird snap
+  - chromium-browser                    # Transitional package - chromium-browser -> chromium snap
+  - chromium-browser-l10n               # Transitional package - chromium-browser-l10n -> chromium snap
   - rhythmbox                           # music player and organizer for GNOME
   - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
   - gstreamer1.0-libav                  # ffmpeg plugin for GStreamer
@@ -88,9 +91,14 @@ mmdebstrap:
   - file                                # Recognize the type of data in a file using "magic" numbers
   - tree                                # displays an indented directory tree, in color
   - man-db                              # tools for reading manual pages
+# snap:
+# - firefox                             # Mozilla Firefox web browser
+# - thunderbird                         # Mozilla Thunderbird email application
+# - chromium                            # Chromium web browser, open-source version of Chrome
 # setup-hooks:
 # essential-hooks:
-# customize-hooks:
+  customize-hooks:
+  - "chroot \"$1\" snap install firefox thunderbird chromium"
 # cleanup-hooks:
 # suite: plucky
   target: filesystem.squashfs

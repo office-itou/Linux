@@ -8,7 +8,7 @@
 #   input :   $@   : cpio options
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnXcpio() {
 	fnDebugout ""
 	declare -r    __TGET_FILE="${1:?}"	# target file
@@ -39,7 +39,7 @@ function fnXcpio() {
 #   input :   $3   : count bytes
 #   output: stdout : result
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnReadhex() {
 	fnDebugout ""
 	# shellcheck disable=SC2312
@@ -52,7 +52,7 @@ function fnReadhex() {
 #   input :   $2   : skip bytes
 #   output: stdout : unused
 #   return:        : status
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCheckzero() {
 	fnDebugout ""
 	# shellcheck disable=SC2312
@@ -65,7 +65,7 @@ function fnCheckzero() {
 #   input :   $2   : destination directory
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnSplit_initramfs() {
 	fnDebugout ""
 	declare -r    __TGET_FILE="${1:?}"	# target file

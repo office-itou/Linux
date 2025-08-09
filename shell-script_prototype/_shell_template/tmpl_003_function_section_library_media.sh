@@ -7,7 +7,7 @@
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnUnit_conversion() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -48,7 +48,7 @@ function fnUnit_conversion() {
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetVolID() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -76,7 +76,7 @@ function fnGetVolID() {
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetFileinfo() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -110,7 +110,7 @@ function fnGetFileinfo() {
 #   input :   $1   : input value
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDistro2efi() {
 	fnDebugout ""
 	declare       __WORK=""				# work variables

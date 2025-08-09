@@ -8,7 +8,7 @@
 #   input :   $@   : xorrisofs options
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_iso() {
 	fnDebugout ""
 	declare -r    __DIRS_TGET="${1:?}"	# target directory

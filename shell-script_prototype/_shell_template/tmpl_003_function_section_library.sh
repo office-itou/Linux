@@ -89,7 +89,7 @@
 #   input :   $@   : input value
 #   output: stderr : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDebugout() {
 	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 		return
@@ -102,7 +102,7 @@ function fnDebugout() {
 #   input :        : unused
 #   output: stderr : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDebug_parameter_list() {
 	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 		return
@@ -116,7 +116,7 @@ function fnDebug_parameter_list() {
 #   output: stdout :             : =0 (numer)
 #     "   :        :             : !0 (not number)
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIsNumeric() {
 	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo -n "0" || echo -n "1"
 }
@@ -128,7 +128,7 @@ function fnIsNumeric() {
 #   input :   $3   : number of characters
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnSubstr() {
 	echo -n "${1:$((${2:-1}-1)):${3:-${#1}}}"
 }
@@ -139,7 +139,7 @@ function fnSubstr() {
 #   input :   $2   : output character
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnString() {
 	echo "" | IFS= awk '{s=sprintf("%'"${1:?}"'s",""); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
 }
@@ -149,7 +149,7 @@ function fnString() {
 #   input :   $1   : input
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnLtrim() {
 	echo -n "${1#"${1%%[!"${IFS}"]*}"}"	# ltrim
 }
@@ -159,7 +159,7 @@ function fnLtrim() {
 #   input :   $1   : input
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnRtrim() {
 	echo -n "${1%"${1##*[!"${IFS}"]}"}"	# rtrim
 }
@@ -169,7 +169,7 @@ function fnRtrim() {
 #   input :   $1   : input
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnTrim() {
 	declare       __WORK=""
 	__WORK="$(fnLtrim "$1")"
@@ -185,7 +185,7 @@ function fnTrim() {
 #     "   :        :        :  -1 ($1 > $2)
 #     "   :        :        : emp (error)
 #   return:        : status
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDateDiff() {
 	declare       __TGET_DAT1="${1:?}"	# date1
 	declare       __TGET_DAT2="${2:?}"	# date2
@@ -214,7 +214,7 @@ function fnDateDiff() {
 #   input :   $2   : input value
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCenter() {
 	declare       __TEXT=""				# trimmed string
 	declare -i    __LEFT=0				# count of space on left
@@ -231,7 +231,7 @@ function fnCenter() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnPrintf() {
 	declare -r    __TRCE="$(set -o | grep -E "^xtrace\s*on$")"
 	set +x

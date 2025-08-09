@@ -333,7 +333,7 @@ function fnInitialization() {
 #   input :        : unused
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_conf() {
 	fnDebugout ""
 	declare -n    __NAME_REFR="${1:-}"	# name reference
@@ -452,7 +452,7 @@ _EOT_
 #   input :        : unused
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGet_media_data() {
 	declare       __PATH=""				# full path
 	declare       __LINE=""				# work variable
@@ -501,7 +501,7 @@ function fnGet_media_data() {
 #   input :        : unused
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnPut_media_data() {
 	declare       __RNAM=""				# rename path
 	declare       __LINE=""				# work variable
@@ -557,7 +557,7 @@ function fnPut_media_data() {
 #   input :   $@   : input vale
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_directory() {
 	fnDebugout ""
 	declare -n    __NAME_REFR="${1:-}"	# name reference
@@ -721,7 +721,7 @@ function fnCreate_directory() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_preseed() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -804,7 +804,7 @@ function fnCreate_preseed() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_nocloud() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -859,7 +859,7 @@ function fnCreate_nocloud() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_kickstart() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -964,7 +964,7 @@ function fnCreate_kickstart() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_autoyast() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -1035,7 +1035,7 @@ function fnCreate_autoyast() {
 #   input :   $1   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_agama() {
 	declare -r    __TGET_PATH="${1:?}"	# file name
 	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
@@ -1093,7 +1093,7 @@ function fnCreate_agama() {
 #   input :   $@   : input value
 #   output: stdout : message
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCreate_precon() {
 	declare -n    __NAME_REFR="${1:-}"	# name reference
 	shift

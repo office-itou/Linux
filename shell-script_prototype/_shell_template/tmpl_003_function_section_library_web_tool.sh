@@ -7,7 +7,7 @@
 #   input :   $2   : url
 #   output: stdout : message
 #   return:        : status
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_contents() {
 	fnDebugout ""
 	declare -a    __OPTN=()				# options
@@ -49,7 +49,7 @@ function fnGetWeb_contents() {
 #   input :   $2   : url
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_header() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -117,7 +117,7 @@ function fnGetWeb_header() {
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_address() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -224,7 +224,7 @@ function fnGetWeb_address() {
 #   input :   $2   : url
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_info() {
 	fnDebugout ""
 #	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -239,7 +239,7 @@ function fnGetWeb_info() {
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_status() {
 	fnDebugout ""
 	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes

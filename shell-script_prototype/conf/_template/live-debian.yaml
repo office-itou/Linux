@@ -62,9 +62,12 @@ mmdebstrap:
   - gnome-shell-extensions              # Extensions to extend functionality of GNOME Shell
   - libreoffice-l10n-ja                 # office productivity suite -- Japanese language package
   - libreoffice-help-ja                 # office productivity suite -- Japanese help
+  - firefox-esr                         # Mozilla Firefox web browser - Extended Support Release (ESR)
   - firefox-esr-l10n-ja                 # Japanese language package for Firefox ESR
   - thunderbird                         # mail/news client with RSS, chat and integrated spam filter support
   - thunderbird-l10n-ja                 # Japanese language package for Thunderbird
+  - chromium                            # web browser
+  - chromium-l10n                       # web browser - language packs
   - rhythmbox                           # music player and organizer for GNOME
   - libavcodec-extra                    # FFmpeg library with extra codecs (metapackage)
   - pipewire-audio-client-libraries     # transitional package for pipewire-alsa and pipewire-jack

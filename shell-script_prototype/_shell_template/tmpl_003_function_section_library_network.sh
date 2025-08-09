@@ -12,7 +12,7 @@
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIPv4GetNetmask() {
 	fnDebugout ""
 	declare -a    __OCTS=()				# octets
@@ -63,7 +63,7 @@ function fnIPv4GetNetmask() {
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIPv6GetFullAddr() {
 	fnDebugout ""
 	declare -r    __FSEP="${1//[^:]/}"
@@ -81,7 +81,7 @@ function fnIPv6GetFullAddr() {
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIPv6GetRevAddr() {
 	fnDebugout ""
 	echo "${1//:/}" | \

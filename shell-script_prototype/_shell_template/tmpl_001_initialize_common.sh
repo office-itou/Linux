@@ -48,7 +48,7 @@
 #   input :        : unused
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnTrap() {
 	declare       __PATH=""				# full path
 	declare -i    I=0

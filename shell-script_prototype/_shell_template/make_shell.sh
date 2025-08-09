@@ -59,7 +59,7 @@
 	declare -a    _LIST_RMOV=()			# list remove directory / file
 	              _LIST_RMOV+=("${_DIRS_TEMP:?}")
 
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function funcTrap() {
 	declare -i    I=0
 
