@@ -188,7 +188,7 @@ _EOT_
 	OPTN_PARM+=("--bind-ro=/etc/passwd:/etc/passwd:norbind")
 	OPTN_PARM+=("--bind-ro=/etc/shadow:/etc/shadow:norbind")
 	OPTN_PARM+=("--bind-ro=/etc/group:/etc/group:norbind")
-	OPTN_PARM+=("--bind-ro=/etc/hostname:/etc/hostname:norbind")
+#	OPTN_PARM+=("--bind-ro=/etc/hostname:/etc/hostname:norbind")
 	OPTN_PARM+=("--bind-ro=/etc/hosts:/etc/hosts:norbind")
 #	OPTN_PARM+=("--bind-ro=/etc/resolv.conf:/etc/resolv.conf:norbind")
 	if [[ -f /run/systemd/resolve/stub-resolv.conf ]]; then
