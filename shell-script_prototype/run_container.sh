@@ -178,8 +178,11 @@ _EOT_
 			[Install]
 			WantedBy=default.target
 _EOT_
+		chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/" systemctl enable loop_create.service
+		HOST_NAME="${DIRS_OLAY##*/}"
+		HOST_NAME="${HOST_NAME//./}"
+		chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/" echo "127.0.1.1       ${HOST_NAME}" >> "${DIRS_OLAY}/merged/etc/hosts"
 	fi
-	chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/" systemctl enable loop_create.service
 	OPTN_PARM=()
 	OPTN_PARM+=("--private-users=no")
 	OPTN_PARM+=("--bind=${DIRS_TOPS}:${DIRS_TOPS}:norbind")
@@ -189,7 +192,7 @@ _EOT_
 	OPTN_PARM+=("--bind-ro=/etc/shadow:/etc/shadow:norbind")
 	OPTN_PARM+=("--bind-ro=/etc/group:/etc/group:norbind")
 #	OPTN_PARM+=("--bind-ro=/etc/hostname:/etc/hostname:norbind")
-	OPTN_PARM+=("--bind-ro=/etc/hosts:/etc/hosts:norbind")
+#	OPTN_PARM+=("--bind-ro=/etc/hosts:/etc/hosts:norbind")
 #	OPTN_PARM+=("--bind-ro=/etc/resolv.conf:/etc/resolv.conf:norbind")
 	if [[ -f /run/systemd/resolve/stub-resolv.conf ]]; then
 		OPTN_PARM+=("--resolv-conf=copy-uplink")
@@ -197,7 +200,7 @@ _EOT_
 #	DBGS_OUTS="SYSTEMD_LOG_LEVEL=debug"
 	${DBGS_OUTS:-} systemd-nspawn --boot -U \
 		--directory="${DIRS_OLAY}/merged/" \
-		--machine="${DIRS_CHRT##*/}" \
+		--machine="${HOST_NAME}" \
 		--capability=CAP_MKNOD \
 		--property=DeviceAllow="block-loop rwm" \
 		--property=DeviceAllow="block-blkext rwm" \
