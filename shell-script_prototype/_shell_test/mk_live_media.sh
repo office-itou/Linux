@@ -12,6 +12,53 @@
 
 	trap 'exit 1' SIGHUP SIGINT SIGQUIT SIGTERM
 
+	declare -r    _PROG_PATH="$0"
+	declare -r -a _PROG_PARM=("${@:-}")
+	declare -r    _PROG_DIRS="${_PROG_PATH%/*}"
+	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
+	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
+	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
+	readonly      _DIRS_TEMP
+
+	declare -r -a _BOOT_OPTN=(\
+		"live" \
+		"components" \
+		"overlay-size=90%" \
+		"hooks=medium" \
+		"xorg-resolution=1680x1050" \
+		"utc=yes" \
+		"locales=ja_JP.UTF-8" \
+		"timezone=Asia/Tokyo" \
+		"keyboard-model=pc105" \
+		"keyboard-layouts=jp" \
+		"keyboard-variants=OADG109A" \
+		"---" \
+		"quiet" \
+		"splash" \
+	)
+
+function fnCreate_squashfs() {
+	if [[ -e "${_FILE_MDIA}" ]]; then
+		return
+	fi
+	if ! bdebstrap \
+		--output-base-dir "${_DIRS_BASE:?}" \
+		--tmpdir "${_DIRS_WORK}" \
+		--config "${_FILE_CONF:?}" \
+		--name "${_DIRS_WORK##*/}" \
+		--customize-hook "mkdir -p \"\$1/my-script\"" \
+		--customize-hook "cp -a \"/srv/user/share/conf/script/autoinst_cmd_late.sh\" \"\$1/my-script\"" \
+		--customize-hook "chmod +x \"\$1/my-script/autoinst_cmd_late.sh\"" \
+		--customize-hook "chroot \"\$1\" \"/my-script/autoinst_cmd_late.sh\"" \
+		--customize-hook "rm -rf \"\$1/my-script\"" \
+		--customize-hook "rm -rf \"\$1/etc/NetworkManager/system-connections/*\"" \
+		--suite "${_TGET_SUIT}"; then
+			rm -f "${_FILE_MDIA:?}" "${_FILE_MDIA%/*}/config.yaml"
+			exit $?
+	fi
+	ls -lh "${_DIRS_WORK:?}/live-${_TGET_DIST}/"
+}
+
 function fnCreate_UEFI_image() {
 	# === dummy file ==========================================================
 	# --- create disk image ---------------------------------------------------
@@ -33,15 +80,15 @@ _EOF_
 		--target=x86_64-efi \
 		--efi-directory="${_DIRS_MNTP}" \
 		--bootloader-id=boot \
-		--boot-directory="${_DIRS_TEMP}" \
+		--boot-directory="${_DIRS_WORK}" \
 		--removable
 	grub-install \
 		--target=i386-pc \
-		--boot-directory="${_DIRS_TEMP}" \
+		--boot-directory="${_DIRS_WORK}" \
 		"${_DEVS_LOOP}"
 	# --- file copy -----------------------------------------------------------
-	[[ -e "${_DIRS_MNTP}/EFI/BOOT/BOOTX64.EFI" ]] && cp -a "${_DIRS_MNTP}/EFI/BOOT/BOOTX64.EFI"  "${_DIRS_TEMP}/bootx64.efi"
-	[[ -e "${_DIRS_MNTP}/EFI/BOOT/grubx64.efi" ]] && cp -a "${_DIRS_MNTP}/EFI/BOOT/grubx64.efi"  "${_DIRS_TEMP}/grubx64.efi"
+	[[ -e "${_DIRS_MNTP}/EFI/BOOT/BOOTX64.EFI" ]] && cp -a "${_DIRS_MNTP}/EFI/BOOT/BOOTX64.EFI"  "${_DIRS_WORK}/bootx64.efi"
+	[[ -e "${_DIRS_MNTP}/EFI/BOOT/grubx64.efi" ]] && cp -a "${_DIRS_MNTP}/EFI/BOOT/grubx64.efi"  "${_DIRS_WORK}/grubx64.efi"
 	# --- unmount efi partition -----------------------------------------------
 	umount "${_DIRS_MNTP}"
 	# --- detach loop device --------------------------------------------------
@@ -55,8 +102,8 @@ _EOF_
 	mount "${_FILE_UEFI}" "${_DIRS_MNTP}"
 	# --- create --------------------------------------------------------------
 	mkdir -p "${_DIRS_MNTP}/"{EFI/boot,boot/grub}
-	[[ -e "${_DIRS_TEMP}/bootx64.efi" ]] && cp -a "${_DIRS_TEMP}/bootx64.efi" "${_DIRS_MNTP}/EFI/boot/"
-	[[ -e "${_DIRS_TEMP}/grubx64.efi" ]] && cp -a "${_DIRS_TEMP}/grubx64.efi" "${_DIRS_MNTP}/EFI/boot/"
+	[[ -e "${_DIRS_WORK}/bootx64.efi" ]] && cp -a "${_DIRS_WORK}/bootx64.efi" "${_DIRS_MNTP}/EFI/boot/"
+	[[ -e "${_DIRS_WORK}/grubx64.efi" ]] && cp -a "${_DIRS_WORK}/grubx64.efi" "${_DIRS_MNTP}/EFI/boot/"
 	cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${_DIRS_MNTP}/boot/grub/grub.cfg"
 		search --set=root --file /.disk/info
 		set prefix=($root)'/boot/grub'
@@ -67,6 +114,9 @@ _EOT_
 }
 
 function fnCreate_ISOLINUX_menu() {
+	if [[ -e /usr/lib/grub/i386-pc/eltorito.img ]]; then
+		return
+	fi
 	# ---- copy isolinux module -------------------------------------------
 	nice -n 19 cp -a /usr/lib/syslinux/modules/bios/* "${_DIRS_CDFS}/isolinux"
 	nice -n 19 cp -a /usr/lib/ISOLINUX/isolinux.bin   "${_DIRS_CDFS}/isolinux"
@@ -127,11 +177,8 @@ _EOT_
 
 function fnCreate_GRUB_menu() {
 	# --- copy grub module ----------------------------------------------------
-#	nice -n 19 cp -a /usr/lib/grub/i386-pc/*     "${_DIRS_CDFS}/boot/grub/i386-pc/"
-#	nice -n 19 cp -a /usr/lib/grub/x86_64-efi/*  "${_DIRS_CDFS}/boot/grub/x86_64-efi/"
-#	nice -n 19 cp -a /usr/share/grub/unicode.pf2 "${_DIRS_CDFS}/boot/grub/"
-	nice -n 19 cp -a "${_DIRS_TEMP}/grub/"       "${_DIRS_CDFS}/boot/"      
-	if [[ -z "${_FLAG_ILNK}" ]]; then
+	nice -n 19 cp -a "${_DIRS_WORK}/grub/"       "${_DIRS_CDFS}/boot/"      
+	if [[ -e /usr/lib/grub/i386-pc/eltorito.img ]]; then
 		nice -n 19 cp -a "/usr/lib/grub/i386-pc/eltorito.img" "${_DIRS_CDFS}/boot/grub/i386-pc/"
 	fi
 	# --- create grub.cfg -----------------------------------------------------
@@ -180,8 +227,8 @@ function fnCreate_CDFS_image() {
 	# ---- copy efi image -----------------------------------------------------
 	nice -n 19 cp -a "${_FILE_UEFI}"             "${_DIRS_CDFS}/boot/grub/"
 	# ---- copy filesystem ----------------------------------------------------
-	nice -n 19 cp -a "${_FILE_MDIA}"             "${_FILE_SQFS}"
-	nice -n 19 cp -a "${_FILE_MDIA%/*}/manifest" "${_FILE_SQFS%.*}.packages"
+	[[ -e "${_FILE_MDIA}"             ]] && nice -n 19 cp -a "${_FILE_MDIA}"             "${_FILE_SQFS}"
+	[[ -e "${_FILE_MDIA%/*}/manifest" ]] && nice -n 19 cp -a "${_FILE_MDIA%/*}/manifest" "${_FILE_SQFS%.*}.packages"
 	# --- mount squashfs ------------------------------------------------------
 	mount -r -t squashfs "${_FILE_SQFS}" "${_DIRS_MNTP}"
 	# --- copy vmlinuz/initrd -------------------------------------------------
@@ -195,11 +242,8 @@ function fnCreate_CDFS_image() {
 	done
 	# --- umount squashfs -----------------------------------------------------
 	umount "${_DIRS_MNTP}"
-
-	# === create isolinux =====================================================
-	if [[ -n "${_FLAG_ILNK}" ]]; then
-		fnCreate_ISOLINUX_menu
-	fi
+	# === create isolinux / grub menu =========================================
+	fnCreate_ISOLINUX_menu
 	fnCreate_GRUB_menu
 }
 
@@ -223,20 +267,6 @@ function fnCreate_ISO_file() {
 		-eltorito-alt-boot -e '--interval:appended_partition_2:all::' \
 		-no-emul-boot
 	)
-#	_OPTN_XORR=(\
-#		-quiet -rational-rock \
-#		${_FILE_VLID:+-volid "${_FILE_VLID}"}           \
-#		-joliet -joliet-long \
-#		-cache-inodes \
-#		${_FILE_HBRD:+-isohybrid-mbr "${_FILE_HBRD}"} \
-#		${_FILE_ETRI:+-eltorito-boot "${_FILE_ETRI}"}   \
-#		${_FILE_BCAT:+-eltorito-catalog "${_FILE_BCAT}"} \
-#		-boot-load-size 4 -boot-info-table \
-#		-no-emul-boot \
-#		-eltorito-alt-boot ${_FILE_UEFI:+-e "boot/grub/${_FILE_UEFI##*/}"} \
-#		-no-emul-boot \
-#		-isohybrid-gpt-basdat -isohybrid-apm-hfsplus
-#	)
 	pushd "${_DIRS_CDFS:?}" > /dev/null || exit
 	if ! nice -n 19 xorrisofs "${_OPTN_XORR[@]}" -output "${_FILE_WORK}" .; then
 		printf "\033[m\033[41m%20.20s: %s\033[m\n" "error [xorriso]" "${_FILE_ISOS##*/}" 1>&2
@@ -251,83 +281,42 @@ function fnCreate_ISO_file() {
 	popd > /dev/null || exit
 }
 
-	declare -r    _PROG_PATH="$0"
-	declare -r -a _PROG_PARM=("${@:-}")
-	declare -r    _PROG_DIRS="${_PROG_PATH%/*}"
-	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
-	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
-	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
-	readonly      _DIRS_TEMP
-	declare -r    _DIRS_WORK="/srv/user/private/live"
-	declare -r    _DIRS_MNTP="${_DIRS_TEMP}/mnt"
-	declare -r    _FILE_UEFI="${_DIRS_TEMP}/efi.img"
-	declare -r    _DIRS_CDFS="${_DIRS_TEMP}/cdfs"
-	declare -r    _FILE_SQFS="${_DIRS_CDFS}/live/filesystem.squashfs"
-	declare -r -a _BOOT_OPTN=(\
-		"live" \
-		"components" \
-		"overlay-size=90%" \
-		"hooks=medium" \
-		"xorg-resolution=1680x1050" \
-		"utc=yes" \
-		"locales=ja_JP.UTF-8" \
-		"timezone=Asia/Tokyo" \
-		"keyboard-model=pc105" \
-		"keyboard-layouts=jp" \
-		"keyboard-variants=OADG109A" \
-		"---" \
-		"quiet" \
-		"splash" \
-)
-
-	declare -r    _FILE_VLID="LIVE-MEDIA"
-	declare -r    _FILE_ISOS="/srv/hgfs/linux/live-media.iso"
-	declare -r    _FILE_WORK="${_DIRS_TEMP}/${_FILE_ISOS##*/}.work"
-
-	declare       _FLAG_ILNK="true"
-	if [[ -e /usr/lib/grub/i386-pc/eltorito.img ]]; then
-		_FLAG_ILNK=""
-	fi
-	readonly      _FLAG_ILNK
-
 	declare -r    _FILE_BIOS="boot/grub/i386-pc/boot.img"
-
-	if [[ -n "${_FLAG_ILNK}" ]]; then
-		declare -r    _FILE_BCAT="isolinux/boot.catalog"
-		declare -r    _FILE_ETRI="isolinux/isolinux.bin"
-	else
+	if [[ -e /usr/lib/grub/i386-pc/eltorito.img ]]; then
 		declare -r    _FILE_BCAT="boot/grub/boot.catalog"
 		declare -r    _FILE_ETRI="boot/grub/i386-pc/eltorito.img"
+	else
+		declare -r    _FILE_BCAT="isolinux/boot.catalog"
+		declare -r    _FILE_ETRI="isolinux/isolinux.bin"
 	fi
 
 #	declare -r    _TGET_DIST="debian"
 	declare -r    _TGET_DIST="ubuntu"
 #	declare -r    _TGET_SUIT="bookworm"
-	declare -r    _TGET_SUIT="plucky"
+#	declare -r    _TGET_SUIT="jammy"	# ubuntu-22.04
+	declare -r    _TGET_SUIT="noble"	# ubuntu-24.04
+#	declare -r    _TGET_SUIT="oracular"	# ubuntu-24.10
+#	declare -r    _TGET_SUIT="plucky"	# ubuntu-25.04
+#	declare -r    _TGET_SUIT="questing"	# ubuntu-25.10
 
-	declare -r    _FILE_MDIA="${_DIRS_WORK}/live-${_TGET_DIST}/filesystem.squashfs"
+	declare -r    _DIRS_BASE="/srv/user/private/live"
+	declare -r    _DIRS_WORK="${_DIRS_BASE}/${_TGET_DIST}-${_TGET_SUIT}"
+	declare -r    _DIRS_MNTP="${_DIRS_WORK}/mnt"
+	declare -r    _FILE_UEFI="${_DIRS_WORK}/efi.img"
+	declare -r    _DIRS_CDFS="${_DIRS_WORK}/cdfs"
+	declare -r    _FILE_SQFS="${_DIRS_CDFS}/live/filesystem.squashfs"
+
 	declare -r    _FILE_CONF="/srv/user/share/conf/_template/live-${_TGET_DIST}.yaml"
+	declare -r    _FILE_ISOS="/srv/user/share/rmak/live-${_TGET_DIST}-${_TGET_SUIT}.iso"
+	declare -r    _FILE_WORK="${_DIRS_WORK}/${_FILE_ISOS##*/}.work"
+	declare -r    _FILE_MDIA="${_DIRS_WORK}/filesystem.squashfs"
+	declare -r    _FILE_VLID="LIVE-MEDIA"
 
-	mkdir -p "${_DIRS_MNTP}"
+#	mkdir -p "${_DIRS_MNTP}"
 
-	if [[ ! -e "${_FILE_MDIA}" ]]; then
-		rm -rf "${_DIRS_WORK:?}/live-${_TGET_DIST}/"
-		if ! bdebstrap \
-			--output-base-dir "${_DIRS_WORK:?}" \
-			--config "${_FILE_CONF:?}" \
-			--customize-hook "mkdir -p \"\$1/my-script\"" \
-			--customize-hook "cp -a \"/srv/user/share/conf/script/autoinst_cmd_late.sh\" \"\$1/my-script\"" \
-			--customize-hook "chmod +x \"\$1/my-script/autoinst_cmd_late.sh\"" \
-			--customize-hook "chroot \"\$1\" \"/my-script/autoinst_cmd_late.sh\"" \
-			--customize-hook "rm -rf \"\$1/my-script\"" \
-			--customize-hook "rm -rf \"\$1/etc/NetworkManager/system-connections/*\"" \
-			--suite "${_TGET_SUIT}"; then
-				exit $?
-		fi
-	fi
+#	rm -rf "${_FILE_MDIA:?}"
 
-	ls -lh "${_DIRS_WORK:?}/live-${_TGET_DIST}/"
-
+	fnCreate_squashfs
 	fnCreate_UEFI_image
 	fnCreate_CDFS_image
 	fnCreate_ISO_file
