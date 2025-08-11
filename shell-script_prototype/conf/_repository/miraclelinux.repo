@@ -1,0 +1,18 @@
+[miraclelinux-chroot-BaseOS]
+name=MiracleLinux $releasever - $basearch - BaseOS
+mirrorlist=https://repo.dist.miraclelinux.net/miraclelinux/mirrorlist/$releasever/$basearch/baseos
+enabled=1
+gpgcheck=0
+
+[miraclelinux-chroot-AppStream]
+name=MiracleLinux $releasever - $basearch - AppStream
+mirrorlist=https://repo.dist.miraclelinux.net/miraclelinux/mirrorlist/$releasever/$basearch/appstream
+enabled=1
+gpgcheck=0
+
+[miraclelinux-chroot-Extras]
+name=MiracleLinux $releasever - $basearch - Extras
+mirrorlist=https://repo.dist.miraclelinux.net/miraclelinux/mirrorlist/$releasever/$basearch/extras
+enabled=1
+gpgcheck=0
+

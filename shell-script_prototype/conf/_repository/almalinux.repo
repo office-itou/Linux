@@ -1,0 +1,18 @@
+[almalinux-chroot-BaseOS]
+name=AlmaLinux $releasever - $basearch - BaseOS
+mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos
+enabled=1
+gpgcheck=0
+
+[almalinux-chroot-AppStream]
+name=AlmaLinux $releasever - $basearch - AppStream
+mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream
+enabled=1
+gpgcheck=0
+
+[almalinux-chroot-Extras]
+name=AlmaLinux $releasever - $basearch - Extras
+mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras
+enabled=1
+gpgcheck=0
+
