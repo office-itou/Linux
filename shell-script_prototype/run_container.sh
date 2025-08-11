@@ -143,8 +143,9 @@ function funcMount_overlay() {
 	fi
 	# --- chroot --------------------------------------------------------------
 #	chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/"
-	if [[ ! -e "${DIRS_OLAY}/merged/etc/systemd/system/loop_create.service" ]]; then
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_OLAY}/merged/usr/local/bin/loop.sh"
+	FILE_PATH="${DIRS_OLAY}/merged/usr/local/bin/loop.sh"
+	if [[ ! -e "${FILE_PATH}" ]]; then
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
 			#!/bin/sh
 
 			set -eu
@@ -167,7 +168,10 @@ function funcMount_overlay() {
 			exit 0
 _EOT_
 		chmod +x "${DIRS_OLAY}/merged/usr/local/bin/loop.sh"
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${DIRS_OLAY}/merged/etc/systemd/system/loop_create.service"
+	fi
+	FILE_PATH="${DIRS_OLAY}/merged/etc/systemd/system/loop_create.service"
+	if [[ ! -e "${FILE_PATH}" ]]; then
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
 			[Unit]
 			Description=Create Loop Device
 
@@ -178,19 +182,131 @@ _EOT_
 			[Install]
 			WantedBy=default.target
 _EOT_
-		chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/" systemctl enable loop_create.service
-		HOST_NAME="${DIRS_OLAY##*/}"
-		HOST_NAME="${HOST_NAME//./}"
-		chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/" echo "127.0.1.1       ${HOST_NAME}" >> "${DIRS_OLAY}/merged/etc/hosts"
+		chroot --userspec="${USER}" "${DIRS_OLAY}/merged/" systemctl enable loop_create.service
+	fi
+	HOST_NAME="${DIRS_OLAY##*/}"
+	HOST_NAME="${HOST_NAME//./}"
+	FILE_PATH="${DIRS_OLAY}/merged/etc/hosts"
+	if ! grep -q "${HOST_NAME}" "${FILE_PATH}"; then
+			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${FILE_PATH}"
+				127.0.1.1       ${HOST_NAME}
+_EOT_
+	fi
+	FILE_PATH="${DIRS_OLAY}/merged/etc/ssh/sshd_config.d/default.conf"
+	if [[ -e "${DIRS_OLAY}/merged/etc/ssh/sshd_config" ]] && [[ ! -e "${FILE_PATH}" ]]; then
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
+			# --- user settings ---
+
+			# port number to listen to ssh
+			Port 2222
+
+			# ip address to accept connections
+			#ListenAddress 0.0.0.0
+			#ListenAddress ::
+
+			# ssh protocol
+			Protocol 2
+
+			# whether to allow root login
+			PermitRootLogin no
+
+			# configuring public key authentication
+			#PubkeyAuthentication no
+
+			# public key file location
+			#AuthorizedKeysFile
+
+			# setting password authentication
+			PasswordAuthentication yes
+
+			# configuring challenge-response authentication
+			#ChallengeResponseAuthentication no
+
+			# sshd log is output to /var/log/secure
+			#SyslogFacility AUTHPRIV
+
+			# specify log output level
+			#LogLevel INFO
+_EOT_
+	fi
+	FILE_PATH="${DIRS_OLAY}/merged/etc/dnsmasq.d/default.conf"
+	if [[ -e "${DIRS_OLAY}/merged/etc/dnsmasq.conf" ]] && [[ ! -e "${FILE_PATH}" ]]; then
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
+			# --- log ---------------------------------------------------------------------
+			#log-queries                                                # dns query log output
+			#log-dhcp                                                   # dhcp transaction log output
+			#log-facility=                                              # log output file name
+
+			# --- dns ---------------------------------------------------------------------
+			#port=0                                                     # listening port
+			#bogus-priv                                                 # do not perform reverse lookup of private ip address on upstream server
+			#domain-needed                                              # do not forward plain names
+			#domain=workgroup                                           # local domain name
+			#expand-hosts                                               # add domain name to host
+			#filterwin2k                                                # filter for windows
+			interface=ens160                                            # listen to interface
+			#listen-address=127.0.0.1                                   # listen to ip address
+			#listen-address=::1                                         # listen to ip address
+			#listen-address=192.168.1.1                                 # listen to ip address
+			#listen-address=fe80::20c:29ff:fe57:5edc                    # listen to ip address
+			#server=192.168.1.254                                       # directly specify upstream server
+			#server=8.8.8.8                                             # directly specify upstream server
+			#server=8.8.4.4                                             # directly specify upstream server
+			#no-hosts                                                   # don't read the hostnames in /etc/hosts
+			#no-poll                                                    # don't poll /etc/resolv.conf for changes
+			#no-resolv                                                  # don't read /etc/resolv.conf
+			#strict-order                                               # try in the registration order of /etc/resolv.conf
+			#bind-dynamic                                               # enable bind-interfaces and the default hybrid network mode
+			bind-interfaces                                             # enable multiple instances of dnsmasq
+			#conf-file=/usr/share/dnsmasq-base/trust-anchors.conf       # enable dnssec validation and caching
+			#dnssec                                                     # "
+
+			# --- dhcp --------------------------------------------------------------------
+			dhcp-range=192.168.1.0,proxy,24                             # proxy dhcp
+			#dhcp-range=192.168.1.64,192.168.1.79,12h                   # dhcp range
+			#dhcp-option=option:netmask,255.255.255.0                   #  1 netmask
+			#dhcp-option=option:router,192.168.1.254                    #  3 router
+			#dhcp-option=option:dns-server,192.168.1.1,192.168.1.254    #  6 dns-server
+			#dhcp-option=option:domain-name,workgroup                   # 15 domain-name
+			#dhcp-option=option:28,192.168.1.255                        # 28 broadcast
+			#dhcp-option=option:ntp-server,61.205.120.130               # 42 ntp-server
+			#dhcp-option=option:tftp-server,192.168.1.1                 # 66 tftp-server
+			#dhcp-option=option:bootfile-name,                          # 67 bootfile-name
+			dhcp-no-override                                            # disable re-use of the dhcp servername and filename fields as extra option space
+
+			# --- dnsmasq manual page -----------------------------------------------------
+			# https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
+
+			# --- eof ---------------------------------------------------------------------
+_EOT_
+	fi
+	USER_NAME="master"
+	if ! grep -q "${USER_NAME}" "${DIRS_OLAY}/merged/etc/passwd"; then
+#		USER_PSWD="master"
+		USER_UIDS="$(id -u "${USER_NAME:?}")"
+		USER_GIDS="$(id -g "${USER_NAME:?}")"
+		USER_CRPT="$(grep "${USER_NAME:?}" /etc/shadow | cut -d : -f 2)"
+		USER_SHEL="$(grep "${USER_NAME:?}" /etc/passwd | cut -d : -f 7)"
+		if grep -q sudo "${DIRS_OLAY}/merged/etc/group"; then
+			GRUP_SUDO="sudo"
+		else
+			GRUP_SUDO="wheel"
+		fi
+		chroot --userspec="${USER}" "${DIRS_OLAY}/merged/" groupadd -g "${USER_GIDS:?}" "${USER_NAME:?}"
+		chroot --userspec="${USER}" "${DIRS_OLAY}/merged/" useradd -u "${USER_UIDS:?}" -g "${USER_GIDS:?}" -G "${GRUP_SUDO}" -p "${USER_CRPT}" -s "${USER_SHEL:?}" "${USER_NAME:?}"
+#		cp -a /etc/passwd "${DIRS_OLAY}/merged/etc/"
+#		cp -a /etc/shadow "${DIRS_OLAY}/merged/etc/"
+#		cp -a /etc/group  "${DIRS_OLAY}/merged/etc/"
 	fi
 	OPTN_PARM=()
+#	OPTN_PARM+=("--network-macvlan=ens160")
 	OPTN_PARM+=("--private-users=no")
 	OPTN_PARM+=("--bind=${DIRS_TOPS}:${DIRS_TOPS}:norbind")
 	OPTN_PARM+=("--bind=${DIRS_HGFS}:${DIRS_HGFS}:norbind")
 	OPTN_PARM+=("--bind=/home:/home:norbind")
-	OPTN_PARM+=("--bind-ro=/etc/passwd:/etc/passwd:norbind")
-	OPTN_PARM+=("--bind-ro=/etc/shadow:/etc/shadow:norbind")
-	OPTN_PARM+=("--bind-ro=/etc/group:/etc/group:norbind")
+#	OPTN_PARM+=("--bind-ro=/etc/passwd:/etc/passwd:norbind")
+#	OPTN_PARM+=("--bind-ro=/etc/shadow:/etc/shadow:norbind")
+#	OPTN_PARM+=("--bind-ro=/etc/group:/etc/group:norbind")
 #	OPTN_PARM+=("--bind-ro=/etc/hostname:/etc/hostname:norbind")
 #	OPTN_PARM+=("--bind-ro=/etc/hosts:/etc/hosts:norbind")
 #	OPTN_PARM+=("--bind-ro=/etc/resolv.conf:/etc/resolv.conf:norbind")
