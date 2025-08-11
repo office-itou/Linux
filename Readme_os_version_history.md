@@ -4,10 +4,10 @@
 
 |         version          |        code_name         | life |  release   |  support   | long_term  |    rhel    |         kerne         |     note     |
 | :----------------------- | :----------------------- | :--: | :--------: | :--------: | :--------: | :--------: | :-------------------- | :----------- |
-| Debian-11.0              | Bullseye                 | LTS  | 2021/08/14 | 2024/08/15 | 2026/08/31 |            | 5.10                  | oldstable    |
-| Debian-12.0              | Bookworm                 |      | 2023/06/10 | 2026/06/xx | 2028/06/xx |            | 6.1                   | stable       |
-| Debian-13.0              | Trixie                   |      | 2025/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | testing      |
-| Debian-14.0              | Forky                    |      | 2027/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       |              |
+| Debian-11.0              | Bullseye                 | LTS  | 2021/08/14 | 2024/08/15 | 2026/08/31 |            | 5.10                  | oldoldstable |
+| Debian-12.0              | Bookworm                 |      | 2023/06/10 | 2026/06/10 | 2028/06/30 |            | 6.1                   | oldstable    |
+| Debian-13.0              | Trixie                   |      | 2025/08/09 | 2028/08/09 | 2030/06/30 |            | 6.12                  | stable       |
+| Debian-14.0              | Forky                    |      | 2027/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | testing      |
 | Debian-15.0              | Duke                     |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       |              |
 | Debian-testing           | Testing                  |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | testing      |
 | Debian-sid               | SID                      |      | 20xx/xx/xx | 20xx/xx/xx | 20xx/xx/xx |            |                       | sid          |
@@ -16,10 +16,8 @@
 | Ubuntu-20.04             | Focal Fossa              | LTS  | 2020/04/23 | 2025/05/29 | 2030/04/23 |            | 5.4                   |              |
 | Ubuntu-22.04             | Jammy Jellyfish          |      | 2022/04/21 | 2027/06/01 | 2032/04/21 |            | 5.15 or 5.17          |              |
 | Ubuntu-24.04             | Noble Numbat             |      | 2024/04/25 | 2029/05/31 | 2034/04/25 |            | 6.8                   |              |
-| Ubuntu-24.10             | Oracular Oriole          |      | 2024/10/10 | 2025/07/xx |            |            | 6.11                  |              |
 | Ubuntu-25.04             | Plucky Puffin            |      | 2025/04/17 | 2026/01/xx |            |            | 6.14                  |              |
 | Ubuntu-25.10             | Questing Quokka          |      | 2025/10/09 | 2026/07/xx |            |            |                       |              |
-| Fedora-40                |                          |      | 2024/04/23 | 2025/05/28 |            |            | 6.8                   |              |
 | Fedora-41                |                          |      | 2024/10/29 | 2025/11/19 |            |            | 6.11                  |              |
 | Fedora-42                |                          |      | 2025/04/15 | 2026/05/13 |            |            | 6.14                  |              |
 | Fedora-43                |                          |      | 2025/11/11 | 2026/12/02 |            |            |                       |              |
