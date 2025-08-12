@@ -17,7 +17,7 @@ function fnFile_copy() {
 	declare -r    __DIRS_DEST="${2:?}"	# destination directory
 	declare       __MNTP=""				# mount point
 	declare       __PATH=""				# full path
-	              __PATH="$(mktemp -qd "${TMPDIR:-/tmp}/${__DIRS_DEST##*/}.XXXXXX")"
+	              __PATH="$(mktemp -qd -p "${_DIRS_TEMP:-/tmp}" "${__DIRS_DEST##*/}.XXXXXX")"
 	readonly      __PATH
 
 	if [[ ! -s "${__PATH_TGET}" ]]; then
@@ -1092,7 +1092,7 @@ function fnRemastering_initrd() {
 	__DIRS="${_DIRS_LOAD}/${__TGET_LIST[2]}"
 	__FKNL="${__TGET_LIST[22]#"${__DIRS}"}"					# kernel
 	__FIRD="${__TGET_LIST[21]#"${__DIRS}"}"					# initrd
-	__DTMP="$(mktemp -qd "${TMPDIR:-/tmp}/${__FIRD##*/}.XXXXXX")"
+	__DTMP="$(mktemp -qd -p "${_DIRS_TEMP:-/tmp}" "${__FIRD##*/}.XXXXXX")"
 
 	# --- extract -------------------------------------------------------------
 	fnSplit_initramfs "${__DIRS_TGET}${__FIRD}" "${__DTMP}"
@@ -1296,6 +1296,8 @@ function fnExec_menu() {
 	declare       __BASE=""				# base name
 	declare       __EXTN=""				# extension
 	declare       __SEED=""				# preseed
+	declare       __ARCH=""				# architecture
+	declare       __DIST=""				# distribution
 	declare       __WORK=""				# work variables
 	declare -a    __LIST=()				# work variables
 	declare -a    __ARRY=()				# work variables
@@ -1344,12 +1346,24 @@ function fnExec_menu() {
 					__LIST[11]="${__ARRY[2]:-}"				# web_size
 					__LIST[12]="${__ARRY[3]:-}"				# web_status
 					case "${__LIST[9]##*/}" in
-						mini.iso) ;;
 						*.iso   )
 							__FNAM="${__LIST[9]##*/}"
 							__WORK="${__FNAM%.*}"
 							__EXTN="${__FNAM#"${__WORK}"}"
 							__BASE="${__FNAM%"${__EXTN}"}"
+							__DIST=""
+							case "${__FNAM}" in
+								mini.iso)
+									__ARCH="$(echo "${__LIST[9]}" | sed -ne 's/^.*\(amd64\|arm64\|armhf\|ppc64el\|riscv64\|s390x\).*$/\1/p')"
+									case "${__LIST[2]}" in
+										debian-mini-testing-daily) __DIST="testing-daily";;
+										*                        ) __DIST="${__LIST[9]#*/dists/}"; __DIST="${__DIST%%/*}";;
+									esac
+									__BASE="${__BASE}${__DIST:+"-${__DIST}"}${__ARCH:+"-${__ARCH}"}"
+									__FNAM="${__BASE}${__EXTN}"
+									;;
+								*       ) ;;
+							esac
 															# iso_path
 							__LIST[13]="${__LIST[13]%/*}/${__FNAM}"
 															# rmk_path
@@ -1359,6 +1373,10 @@ function fnExec_menu() {
 								__WORK="${__SEED#"${__WORK}"}"
 								__SEED="${__SEED%"${__WORK}"}"
 								__LIST[17]="${__LIST[17]%/*}/${__BASE}${__SEED:+"_${__SEED}"}${__EXTN}"
+							elif [[ -n "${__LIST[23]##-}" ]]; then
+								__SEED="${__LIST[23]%/*}"
+								__SEED="${__SEED##*/}"
+								__LIST[17]="${_DIRS_RMAK}/${__BASE}${__SEED:+"_${__SEED}"}${__EXTN}"
 							fi
 							;;
 						*       ) ;;

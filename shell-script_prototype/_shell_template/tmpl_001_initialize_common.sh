@@ -26,7 +26,7 @@
 	fi
 
 	# --- user name -----------------------------------------------------------
-	declare       _USER_NAME="${USER:-"$(whoami || true)"}"
+	declare       _USER_NAME="${USER:-"${LOGNAME:-"$(whoami || true)"}"}"
 
 	# --- working directory name ----------------------------------------------
 	declare -r    _PROG_PATH="$0"
@@ -35,9 +35,9 @@
 	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
 	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
 	declare       _DIRS_TEMP=""
-	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
+	              _DIRS_TEMP="$(mktemp -qd -p "${SUDO_HOME:-/tmp}" "${_PROG_PROC}.XXXXXX")"
 	readonly      _DIRS_TEMP
-	declare -r    TMPDIR="${_DIRS_TEMP:-?}"
+#	declare -r    TMPDIR="${_DIRS_TEMP:-?}"
 
 	# --- trap ----------------------------------------------------------------
 	declare -a    _LIST_RMOV=()			# list remove directory / file

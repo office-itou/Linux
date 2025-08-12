@@ -16,7 +16,7 @@ function fnCreate_iso() {
 	declare -r -a __OPTN_XORR=("${@:3}") # xorrisofs options
 	declare -a    __LIST=()				# data list
 	declare       __PATH=""				# full path
-	              __PATH="$(mktemp -q "${TMPDIR:-/tmp}/${__PATH_OUTP##*/}.XXXXXX")"
+	              __PATH="$(mktemp -q -p "${_DIRS_TEMP:-/tmp}" "${__PATH_OUTP##*/}.XXXXXX")"
 	readonly      __PATH
 	# --- constant for control code -------------------------------------------
 	if [[ -z "${_CODE_ESCP+true}" ]]; then

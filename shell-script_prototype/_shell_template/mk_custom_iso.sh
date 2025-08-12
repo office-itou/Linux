@@ -45,7 +45,7 @@
 	fi
 
 	# --- user name -----------------------------------------------------------
-	declare       _USER_NAME="${USER:-"$(whoami || true)"}"
+	declare       _USER_NAME="${USER:-"${LOGNAME:-"$(whoami || true)"}"}"
 
 	# --- working directory name ----------------------------------------------
 	declare -r    _PROG_PATH="$0"
@@ -54,9 +54,9 @@
 	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
 	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
 	declare       _DIRS_TEMP=""
-	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
+	              _DIRS_TEMP="$(mktemp -qd -p "${SUDO_HOME:-/tmp}" "${_PROG_PROC}.XXXXXX")"
 	readonly      _DIRS_TEMP
-	declare -r    TMPDIR="${_DIRS_TEMP:-?}"
+#	declare -r    TMPDIR="${_DIRS_TEMP:-?}"
 
 	# --- trap ----------------------------------------------------------------
 	declare -a    _LIST_RMOV=()			# list remove directory / file
@@ -152,7 +152,7 @@ function fnTrap() {
 		readonly      PAKG_FIND
 		if [[ -n "${PAKG_FIND% *}" ]]; then
 			echo "please install these:"
-			if [[ "${_USER_NAME:-}" != "root" ]]; then
+			if [[ -n "${SUDO_USER:-}" ]] || { [[ -z "${SUDO_USER:-}" ]] && [[ "${_USER_NAME:-}" != "root" ]]; }; then
 				echo -n "sudo "
 			fi
 			echo "apt-get install ${PAKG_FIND% *}" 1>&2
@@ -958,7 +958,7 @@ function fnCreate_iso() {
 	declare -r -a __OPTN_XORR=("${@:3}") # xorrisofs options
 	declare -a    __LIST=()				# data list
 	declare       __PATH=""				# full path
-	              __PATH="$(mktemp -q "${TMPDIR:-/tmp}/${__PATH_OUTP##*/}.XXXXXX")"
+	              __PATH="$(mktemp -q -p "${_DIRS_TEMP:-/tmp}" "${__PATH_OUTP##*/}.XXXXXX")"
 	readonly      __PATH
 	# --- constant for control code -------------------------------------------
 	if [[ -z "${_CODE_ESCP+true}" ]]; then
@@ -998,7 +998,7 @@ function fnGetWeb_contents() {
 	declare -i    __RTCD=0				# return code
 	declare -a    __LIST=()				# data list
 	declare       __TEMP=""				# temporary file
-	              __TEMP="$(mktemp -q "${TMPDIR:-/tmp}/${1##*/}.XXXXXX")"
+	              __TEMP="$(mktemp -q -p "${_DIRS_TEMP:-/tmp}" "${1##*/}.XXXXXX")"
 	readonly      __TEMP
 	# -------------------------------------------------------------------------
 	__RTCD=0
@@ -2484,7 +2484,7 @@ function fnFile_copy() {
 	declare -r    __DIRS_DEST="${2:?}"	# destination directory
 	declare       __MNTP=""				# mount point
 	declare       __PATH=""				# full path
-	              __PATH="$(mktemp -qd "${TMPDIR:-/tmp}/${__DIRS_DEST##*/}.XXXXXX")"
+	              __PATH="$(mktemp -qd -p "${_DIRS_TEMP:-/tmp}" "${__DIRS_DEST##*/}.XXXXXX")"
 	readonly      __PATH
 
 	if [[ ! -s "${__PATH_TGET}" ]]; then
@@ -3559,7 +3559,7 @@ function fnRemastering_initrd() {
 	__DIRS="${_DIRS_LOAD}/${__TGET_LIST[2]}"
 	__FKNL="${__TGET_LIST[22]#"${__DIRS}"}"					# kernel
 	__FIRD="${__TGET_LIST[21]#"${__DIRS}"}"					# initrd
-	__DTMP="$(mktemp -qd "${TMPDIR:-/tmp}/${__FIRD##*/}.XXXXXX")"
+	__DTMP="$(mktemp -qd -p "${_DIRS_TEMP:-/tmp}" "${__FIRD##*/}.XXXXXX")"
 
 	# --- extract -------------------------------------------------------------
 	fnSplit_initramfs "${__DIRS_TGET}${__FIRD}" "${__DTMP}"
@@ -3763,6 +3763,8 @@ function fnExec_menu() {
 	declare       __BASE=""				# base name
 	declare       __EXTN=""				# extension
 	declare       __SEED=""				# preseed
+	declare       __ARCH=""				# architecture
+	declare       __DIST=""				# distribution
 	declare       __WORK=""				# work variables
 	declare -a    __LIST=()				# work variables
 	declare -a    __ARRY=()				# work variables
@@ -3811,12 +3813,24 @@ function fnExec_menu() {
 					__LIST[11]="${__ARRY[2]:-}"				# web_size
 					__LIST[12]="${__ARRY[3]:-}"				# web_status
 					case "${__LIST[9]##*/}" in
-						mini.iso) ;;
 						*.iso   )
 							__FNAM="${__LIST[9]##*/}"
 							__WORK="${__FNAM%.*}"
 							__EXTN="${__FNAM#"${__WORK}"}"
 							__BASE="${__FNAM%"${__EXTN}"}"
+							__DIST=""
+							case "${__FNAM}" in
+								mini.iso)
+									__ARCH="$(echo "${__LIST[9]}" | sed -ne 's/^.*\(amd64\|arm64\|armhf\|ppc64el\|riscv64\|s390x\).*$/\1/p')"
+									case "${__LIST[2]}" in
+										debian-mini-testing-daily) __DIST="testing-daily";;
+										*                        ) __DIST="${__LIST[9]#*/dists/}"; __DIST="${__DIST%%/*}";;
+									esac
+									__BASE="${__BASE}${__DIST:+"-${__DIST}"}${__ARCH:+"-${__ARCH}"}"
+									__FNAM="${__BASE}${__EXTN}"
+									;;
+								*       ) ;;
+							esac
 															# iso_path
 							__LIST[13]="${__LIST[13]%/*}/${__FNAM}"
 															# rmk_path
@@ -3826,6 +3840,10 @@ function fnExec_menu() {
 								__WORK="${__SEED#"${__WORK}"}"
 								__SEED="${__SEED%"${__WORK}"}"
 								__LIST[17]="${__LIST[17]%/*}/${__BASE}${__SEED:+"_${__SEED}"}${__EXTN}"
+							elif [[ -n "${__LIST[23]##-}" ]]; then
+								__SEED="${__LIST[23]%/*}"
+								__SEED="${__SEED##*/}"
+								__LIST[17]="${_DIRS_RMAK}/${__BASE}${__SEED:+"_${__SEED}"}${__EXTN}"
 							fi
 							;;
 						*       ) ;;

@@ -45,7 +45,7 @@
 	fi
 
 	# --- user name -----------------------------------------------------------
-	declare       _USER_NAME="${USER:-"$(whoami || true)"}"
+	declare       _USER_NAME="${USER:-"${LOGNAME:-"$(whoami || true)"}"}"
 
 	# --- working directory name ----------------------------------------------
 	declare -r    _PROG_PATH="$0"
@@ -54,9 +54,9 @@
 	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
 	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
 	declare       _DIRS_TEMP=""
-	              _DIRS_TEMP="$(mktemp -qtd "${_PROG_PROC}.XXXXXX")"
+	              _DIRS_TEMP="$(mktemp -qd -p "${SUDO_HOME:-/tmp}" "${_PROG_PROC}.XXXXXX")"
 	readonly      _DIRS_TEMP
-	declare -r    TMPDIR="${_DIRS_TEMP:-?}"
+#	declare -r    TMPDIR="${_DIRS_TEMP:-?}"
 
 	# --- trap ----------------------------------------------------------------
 	declare -a    _LIST_RMOV=()			# list remove directory / file
@@ -67,7 +67,7 @@
 #   input :        : unused
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnTrap() {
 	declare       __PATH=""				# full path
 	declare -i    I=0
@@ -240,7 +240,7 @@ function fnTrap() {
 #   input :   $@   : input value
 #   output: stderr : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDebugout() {
 	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 		return
@@ -253,7 +253,7 @@ function fnDebugout() {
 #   input :        : unused
 #   output: stderr : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDebug_parameter_list() {
 	if [[ -z "${_DBGS_FLAG:-}" ]]; then
 		return
@@ -267,7 +267,7 @@ function fnDebug_parameter_list() {
 #   output: stdout :             : =0 (numer)
 #     "   :        :             : !0 (not number)
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIsNumeric() {
 	[[ ${1:?} =~ ^-?[0-9]+\.?[0-9]*$ ]] && echo -n "0" || echo -n "1"
 }
@@ -279,7 +279,7 @@ function fnIsNumeric() {
 #   input :   $3   : number of characters
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnSubstr() {
 	echo -n "${1:$((${2:-1}-1)):${3:-${#1}}}"
 }
@@ -290,7 +290,7 @@ function fnSubstr() {
 #   input :   $2   : output character
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnString() {
 	echo "" | IFS= awk '{s=sprintf("%'"${1:?}"'s",""); gsub(" ","'"${2:-\" \"}"'",s); print s;}'
 }
@@ -300,7 +300,7 @@ function fnString() {
 #   input :   $1   : input
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnLtrim() {
 	echo -n "${1#"${1%%[!"${IFS}"]*}"}"	# ltrim
 }
@@ -310,7 +310,7 @@ function fnLtrim() {
 #   input :   $1   : input
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnRtrim() {
 	echo -n "${1%"${1##*[!"${IFS}"]}"}"	# rtrim
 }
@@ -320,7 +320,7 @@ function fnRtrim() {
 #   input :   $1   : input
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnTrim() {
 	declare       __WORK=""
 	__WORK="$(fnLtrim "$1")"
@@ -336,7 +336,7 @@ function fnTrim() {
 #     "   :        :        :  -1 ($1 > $2)
 #     "   :        :        : emp (error)
 #   return:        : status
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDateDiff() {
 	declare       __TGET_DAT1="${1:?}"	# date1
 	declare       __TGET_DAT2="${2:?}"	# date2
@@ -365,7 +365,7 @@ function fnDateDiff() {
 #   input :   $2   : input value
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnCenter() {
 	declare       __TEXT=""				# trimmed string
 	declare -i    __LEFT=0				# count of space on left
@@ -382,7 +382,7 @@ function fnCenter() {
 #   input :   $@   : input value
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnPrintf() {
 	declare -r    __TRCE="$(set -o | grep -E "^xtrace\s*on$")"
 	set +x
@@ -465,7 +465,7 @@ function fnPrintf() {
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIPv4GetNetmask() {
 	fnDebugout ""
 	declare -a    __OCTS=()				# octets
@@ -516,7 +516,7 @@ function fnIPv4GetNetmask() {
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIPv6GetFullAddr() {
 	fnDebugout ""
 	declare -r    __FSEP="${1//[^:]/}"
@@ -534,7 +534,7 @@ function fnIPv6GetFullAddr() {
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIPv6GetRevAddr() {
 	fnDebugout ""
 	echo "${1//:/}" | \
@@ -553,7 +553,7 @@ function fnIPv6GetRevAddr() {
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnUnit_conversion() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -594,7 +594,7 @@ function fnUnit_conversion() {
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetVolID() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -622,7 +622,7 @@ function fnGetVolID() {
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetFileinfo() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -656,7 +656,7 @@ function fnGetFileinfo() {
 #   input :   $1   : input value
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDistro2efi() {
 	fnDebugout ""
 	declare       __WORK=""				# work variables
@@ -684,14 +684,14 @@ function fnDistro2efi() {
 #   input :   $2   : url
 #   output: stdout : message
 #   return:        : status
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_contents() {
 	fnDebugout ""
 	declare -a    __OPTN=()				# options
 	declare -i    __RTCD=0				# return code
 	declare -a    __LIST=()				# data list
 	declare       __TEMP=""				# temporary file
-	              __TEMP="$(mktemp -q "${TMPDIR:-/tmp}/${1##*/}.XXXXXX")"
+	              __TEMP="$(mktemp -q -p "${_DIRS_TEMP:-/tmp}" "${1##*/}.XXXXXX")"
 	readonly      __TEMP
 	# -------------------------------------------------------------------------
 	__RTCD=0
@@ -726,7 +726,7 @@ function fnGetWeb_contents() {
 #   input :   $2   : url
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_header() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -742,6 +742,10 @@ function fnGetWeb_header() {
 	declare       __LINE=""				# work variables
 	declare -i    I=0					# work variables
 	# -------------------------------------------------------------------------
+	__RETN_VALU=""
+	if [[ -z "${2:-}" ]]; then
+		return
+	fi
 #	__RTCD=0
 	__RSLT=""
 	if [[ -n "${_COMD_WGET}" ]] && [[ "${_COMD_WGET}" != "ver2" ]]; then
@@ -790,7 +794,7 @@ function fnGetWeb_header() {
 #   input :   $2   : input value
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_address() {
 	fnDebugout ""
 	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -897,7 +901,7 @@ function fnGetWeb_address() {
 #   input :   $2   : url
 #   output: stdout : unused
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_info() {
 	fnDebugout ""
 #	declare -n    __RETN_VALU="${1:?}"	# return value
@@ -912,7 +916,7 @@ function fnGetWeb_info() {
 #   input :   $1   : input vale
 #   output: stdout : output
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnGetWeb_status() {
 	fnDebugout ""
 	case "${1:?}" in					# https://httpwg.org/specs/rfc9110.html#overview.of.status.codes
@@ -981,7 +985,7 @@ function fnGetWeb_status() {
 #     "   :        :             : =3 (program is not running [unit is not active])
 #     "   :        :             : =4 (program or service status is unknown [no such unit])
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnServiceStatus() {
 	declare -i    _RET_CD=0
 	declare       _SRVC_STAT=""
@@ -1010,7 +1014,7 @@ function fnServiceStatus() {
 #   output: stdout : output      : empty (not install)
 #     "   :        :             : other (installed)
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnIsPackage () {
 	LANG=C apt list "${1:?}" 2> /dev/null | grep -q 'installed' || true
 }
@@ -1021,7 +1025,7 @@ function fnIsPackage () {
 #   input :   $2   : file 2
 #   output: stdout : result
 #   return:        : unused
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 function fnDiff() {
 	if [[ ! -e "$1" ]] || [[ ! -e "$2" ]]; then
 		return

@@ -14,7 +14,7 @@ function fnGetWeb_contents() {
 	declare -i    __RTCD=0				# return code
 	declare -a    __LIST=()				# data list
 	declare       __TEMP=""				# temporary file
-	              __TEMP="$(mktemp -q "${TMPDIR:-/tmp}/${1##*/}.XXXXXX")"
+	              __TEMP="$(mktemp -q -p "${_DIRS_TEMP:-/tmp}" "${1##*/}.XXXXXX")"
 	readonly      __TEMP
 	# -------------------------------------------------------------------------
 	__RTCD=0

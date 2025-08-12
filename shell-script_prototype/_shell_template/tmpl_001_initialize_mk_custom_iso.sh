@@ -52,7 +52,7 @@
 		readonly      PAKG_FIND
 		if [[ -n "${PAKG_FIND% *}" ]]; then
 			echo "please install these:"
-			if [[ "${_USER_NAME:-}" != "root" ]]; then
+			if [[ -n "${SUDO_USER:-}" ]] || { [[ -z "${SUDO_USER:-}" ]] && [[ "${_USER_NAME:-}" != "root" ]]; }; then
 				echo -n "sudo "
 			fi
 			echo "apt-get install ${PAKG_FIND% *}" 1>&2
