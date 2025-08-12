@@ -196,8 +196,6 @@ tree --charset C -n --filesfirst -d /srv/
     |-- private ----------------------- personal use
     `-- share ------------------------- shared
         |-- chroot -------------------- change route directory
-        |   |-- debian12 ---------------------- debian 12    (some examples)
-        |   `-- ubuntu2504 -------------------- ubuntu 25.04 ("            )
         |-- conf ---------------------- configuration file
         |   |-- _data ----------------- common data files
         |   |   |-- common.cfg ---------------- configuration file of common
@@ -210,9 +208,17 @@ tree --charset C -n --filesfirst -d /srv/
         |   |-- _keyring -------------- keyring file
         |   |   |-- debian-keyring.gpg
         |   |   `-- ubuntu-archive-keyring.gpg
+        |   |-- _repository
+        |   |   |-- almalinux.repo
+        |   |   |-- centos-stream.repo
+        |   |   |-- fedora.repo
+        |   |   |-- miraclelinux.repo
+        |   |   `-- rockylinux.repo
         |   |-- _template ------------- templates for various configuration files
         |   |   |-- agama_opensuse.json ------- for opensuse agama installer
         |   |   |-- kickstart_rhel.cfg -------- for rhel
+        |   |   |-- live-debian.yaml
+        |   |   |-- live-ubuntu.yaml
         |   |   |-- preseed_debian.cfg -------- for debian
         |   |   |-- preseed_ubuntu.cfg -------- for ubuntu
         |   |   |-- user-data_ubuntu ---------- for ubuntu cloud-init
