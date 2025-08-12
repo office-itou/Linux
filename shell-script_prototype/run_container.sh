@@ -184,6 +184,28 @@ _EOT_
 _EOT_
 		chroot --userspec="${USER}" "${DIRS_OLAY}/merged/" systemctl enable loop_create.service
 	fi
+	FILE_PATH="${DIRS_OLAY}/merged/etc/avahi/avahi-daemon.conf"
+	if [[ -e "${FILE_PATH}" ]] && [[ ! -e "${FILE_PATH}.orig" ]]; then
+		cp -a "${FILE_PATH}" "${FILE_PATH}".orig
+		sed -e '/use-ipv4=/             {s/^#//; s/=.*$/=yes/}' \
+		    -e '/use-ipv6=/             {s/^#//; s/=.*$/=no/ }' \
+		    -e '/publish-aaaa-on-ipv4=/ {s/^#//; s/=.*$/=no/ }' \
+		    -e '/publish-a-on-ipv6=/    {s/^#//; s/=.*$/=no/ }' \
+			"${FILE_PATH}.orig"                                 \
+		>	"${FILE_PATH}"
+	fi
+	FILE_PATH="${DIRS_OLAY}/merged/etc/nsswitch.conf"
+	if [[ -e "${FILE_PATH}" ]] && [[ ! -e "${FILE_PATH}.orig" ]]; then
+#		WORK_TEXT='mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns/n'
+		WORK_TEXT='files wins mdns4_minimal [NOTFOUND=return] mymachines resolve [!UNAVAIL=return] dns mdns4 mdns6'
+		cp -a "${FILE_PATH}" "${FILE_PATH}".orig
+		sed -e '/hosts:/ {'                       \
+		    -e 's/^/#/'                           \
+		    -e "a hosts:          ${WORK_TEXT}/n" \
+		    -e '}'                                \
+			"${FILE_PATH}.orig"                   \
+		>	"${FILE_PATH}"
+	fi
 	HOST_NAME="${DIRS_OLAY##*/}"
 	HOST_NAME="${HOST_NAME//./}"
 	FILE_PATH="${DIRS_OLAY}/merged/etc/hosts"
@@ -304,6 +326,7 @@ _EOT_
 	OPTN_PARM+=("--bind=${DIRS_TOPS}:${DIRS_TOPS}:norbind")
 	OPTN_PARM+=("--bind=${DIRS_HGFS}:${DIRS_HGFS}:norbind")
 	OPTN_PARM+=("--bind=/home:/home:norbind")
+#	OPTN_PARM+=("--bind=/dev:/dev:norbind")
 #	OPTN_PARM+=("--bind-ro=/etc/passwd:/etc/passwd:norbind")
 #	OPTN_PARM+=("--bind-ro=/etc/shadow:/etc/shadow:norbind")
 #	OPTN_PARM+=("--bind-ro=/etc/group:/etc/group:norbind")
@@ -321,6 +344,7 @@ _EOT_
 		--property=DeviceAllow="block-loop rwm" \
 		--property=DeviceAllow="block-blkext rwm" \
 		--property=DeviceAllow="/dev/loop-control rwm" \
+		--property=DeviceAllow="/dev/console rwm" \
 		"${OPTN_PARM[@]}"
 	# --- umount --------------------------------------------------------------
 	FLAG_CHRT="$(find /tmp/ -type d \( -name "${PROG_NAME}.*" -a -not -name "${DIRS_TEMP##*/}" \) -exec find '{}' -type f -name "${DIRS_CHRT##*/}" \; 2> /dev/null || true)"
