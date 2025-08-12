@@ -76,6 +76,7 @@ set -eu
 					gnupg \
 					iproute2 \
 					iputils-ping \
+					libnss-mdns \
 					linux-image-amd64 \
 					less \
 					locales \
@@ -123,6 +124,7 @@ set -eu
 					gnupg \
 					iproute2 \
 					iputils-ping \
+					libnss-mdns \
 					linux-image-generic \
 					less \
 					locales \
@@ -187,6 +189,7 @@ set -eu
 						lz4 \
 						lzop \
 						man \
+						nss-mdns \
 						openssh-server \
 						procps \
 						rsync \
