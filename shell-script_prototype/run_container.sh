@@ -143,6 +143,8 @@ function funcMount_overlay() {
 	fi
 	# --- chroot --------------------------------------------------------------
 #	chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/"
+
+	# --- container -----------------------------------------------------------
 	FILE_PATH="${DIRS_OLAY}/merged/usr/local/bin/loop.sh"
 	if [[ ! -e "${FILE_PATH}" ]]; then
 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
@@ -182,7 +184,7 @@ _EOT_
 			[Install]
 			WantedBy=default.target
 _EOT_
-		chroot --userspec="${USER}" "${DIRS_OLAY}/merged/" systemctl enable loop_create.service
+		chroot "${DIRS_OLAY}/merged/" systemctl enable loop_create.service
 	fi
 	FILE_PATH="${DIRS_OLAY}/merged/etc/avahi/avahi-daemon.conf"
 	if [[ -e "${FILE_PATH}" ]] && [[ ! -e "${FILE_PATH}.orig" ]]; then
@@ -314,8 +316,8 @@ _EOT_
 		else
 			GRUP_SUDO="wheel"
 		fi
-		chroot --userspec="${USER}" "${DIRS_OLAY}/merged/" groupadd -g "${USER_GIDS:?}" "${USER_NAME:?}"
-		chroot --userspec="${USER}" "${DIRS_OLAY}/merged/" useradd -u "${USER_UIDS:?}" -g "${USER_GIDS:?}" -G "${GRUP_SUDO}" -p "${USER_CRPT}" -s "${USER_SHEL:?}" "${USER_NAME:?}"
+		chroot "${DIRS_OLAY}/merged/" groupadd -g "${USER_GIDS:?}" "${USER_NAME:?}"
+		chroot "${DIRS_OLAY}/merged/" useradd -u "${USER_UIDS:?}" -g "${USER_GIDS:?}" -G "${GRUP_SUDO}" -p "${USER_CRPT}" -s "${USER_SHEL:?}" "${USER_NAME:?}"
 #		cp -a /etc/passwd "${DIRS_OLAY}/merged/etc/"
 #		cp -a /etc/shadow "${DIRS_OLAY}/merged/etc/"
 #		cp -a /etc/group  "${DIRS_OLAY}/merged/etc/"
