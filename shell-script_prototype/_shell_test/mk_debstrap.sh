@@ -70,7 +70,6 @@ set -eu
 					cpio \
 					curl \
 					dbus \
-					dnsmasq \
 					fakechroot \
 					file \
 					gnupg \
@@ -118,7 +117,6 @@ set -eu
 					cpio \
 					curl \
 					dbus \
-					dnsmasq \
 					fakechroot \
 					file \
 					gnupg \
@@ -178,7 +176,6 @@ set -eu
 						cpio \
 						curl \
 						dbus \
-						dnsmasq \
 						file \
 						gnupg \
 						isomd5sum \
