@@ -1998,7 +1998,8 @@ funcSetupNetwork_samba() {
 		sed -i "${_FILE_PATH}"            \
 		    -e '/^hosts:[ \t]\+/       {' \
 		    -e 's/\(files\).*$/\1/'       \
-		    -e 's/$/ '"${_WORK_TEXT}"'/}'
+		    -e 's/$/ '"${_WORK_TEXT}"'/}' \
+			-e '/^\(passwd\|group\|shadow\|gshadow\):[ \t]\+/ s/[ \t]\+winbind//'
 
 		# --- debug out -------------------------------------------------------
 		funcDebugout_file "${_FILE_PATH}"
