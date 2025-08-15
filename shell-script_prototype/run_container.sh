@@ -110,149 +110,64 @@ function funcMount_overlay() {
 	mount -t overlay overlay -o lowerdir="${1:?}/",upperdir="${2:?}",workdir="${3:?}" "${4:?}" && _LIST_RMOV+=("${4:?}")
 }
 
-	# --- mount and daemon reload ---------------------------------------------
-	FLAG_CHRT="$(find /tmp/ -type d \( -name "${PROG_NAME}.*" -a -not -name "${DIRS_TEMP##*/}" \) -exec find '{}' -type f -name "${DIRS_CHRT##*/}" \; 2> /dev/null || true)"
-	touch "${DIRS_TEMP:?}/${DIRS_CHRT##*/}"
-	if [[ -z "${FLAG_CHRT}" ]]; then
-		rm -rf   "${DIRS_OLAY:?}"/work
-		mkdir -p "${DIRS_OLAY}"/{upper,lower,work,merged}
-		mkdir -p "${DIRS_OLAY}"/upper/{root,home,"${DIRS_TOPS##/}","${DIRS_HGFS##/}"}
-		mkdir -p "${DIRS_OLAY}"/work/{_rootdir,root,home,"${DIRS_TOPS##/}","${DIRS_TOPS##/}"_"${DIRS_HGFS##*/}"}
-		# ---------------------------------------------------------------------
-		funcMount_overlay "${DIRS_CHRT:?}" "${DIRS_OLAY}/upper"                 "${DIRS_OLAY}/work/_rootdir"                         "${DIRS_OLAY}/merged"
-#		funcMount_overlay "/root"          "${DIRS_OLAY}/upper/root"            "${DIRS_OLAY}/work/root"                             "${DIRS_OLAY}/merged/root"
-#		funcMount_overlay "/home"          "${DIRS_OLAY}/upper/home"            "${DIRS_OLAY}/work/home"                             "${DIRS_OLAY}/merged/home"
-#		funcMount_overlay "${DIRS_TOPS}"   "${DIRS_OLAY}/upper/${DIRS_TOPS##/}" "${DIRS_OLAY}/work/${DIRS_TOPS##/}"                  "${DIRS_OLAY}/merged/${DIRS_TOPS##/}"
-#		funcMount_overlay "${DIRS_HGFS}"   "${DIRS_OLAY}/upper/${DIRS_HGFS##/}" "${DIRS_OLAY}/work/${DIRS_TOPS##/}_${DIRS_HGFS##*/}" "${DIRS_OLAY}/merged/${DIRS_HGFS##/}"
-		# ---------------------------------------------------------------------
-#		mount  --bind "${DIRS_CONF}"       "${DIRS_OLAY}/merged/${DIRS_CONF##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_CONF##/}")
-#		mount  --bind "${DIRS_ISOS}"       "${DIRS_OLAY}/merged/${DIRS_ISOS##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_ISOS##/}")
-#		mount  --bind "${DIRS_RMAK}"       "${DIRS_OLAY}/merged/${DIRS_RMAK##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_RMAK##/}")
-#		mount  --bind "${DIRS_SHAR}"       "${DIRS_OLAY}/merged/${DIRS_SHAR##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_SHAR##/}")
-#		mount  --bind "${DIRS_HTML}"       "${DIRS_OLAY}/merged/${DIRS_HTML##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_HTML##/}")
-#		mount  --bind "${DIRS_TFTP}"       "${DIRS_OLAY}/merged/${DIRS_TFTP##/}"       && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_TFTP##/}")
-#		mount  --bind "${DIRS_HGFS}/linux" "${DIRS_OLAY}/merged/${DIRS_HGFS##/}/linux" && _LIST_RMOV+=("${DIRS_OLAY}/merged/${DIRS_HGFS##/}/linux")
-		# ---------------------------------------------------------------------
-#		mount --rbind /dev/          "${DIRS_OLAY}/merged/dev/"  && mount --make-rslave "${DIRS_OLAY}/merged/dev/"	&& _LIST_RMOV+=("${DIRS_OLAY}/merged/dev/")
-#		mount -t proc /proc/         "${DIRS_OLAY}/merged/proc/"													&& _LIST_RMOV+=("${DIRS_OLAY}/merged/proc/")
-#		mount --rbind /sys/          "${DIRS_OLAY}/merged/sys/"  && mount --make-rslave "${DIRS_OLAY}/merged/sys/"	&& _LIST_RMOV+=("${DIRS_OLAY}/merged/sys/")
-#		mount  --bind /run/          "${DIRS_OLAY}/merged/run/"														&& _LIST_RMOV+=("${DIRS_OLAY}/merged/run/")
-#		mount --rbind /tmp/          "${DIRS_OLAY}/merged/tmp/"  && mount --make-rslave "${DIRS_OLAY}/merged/tmp/"	&& _LIST_RMOV+=("${DIRS_OLAY}/merged/tmp/")
-		# ---------------------------------------------------------------------
-#		cp -aH /etc/{passwd,shadow,group,resolv.conf} "${DIRS_OLAY}/merged/etc/"
-	fi
-	# --- chroot --------------------------------------------------------------
-#	chroot --userspec="${USER}" "$@" "${DIRS_OLAY}/merged/"
-
-	# --- container -----------------------------------------------------------
-	FILE_PATH="${DIRS_OLAY}/merged/usr/local/bin/loop.sh"
-	if [[ ! -e "${FILE_PATH}" ]]; then
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
-			#!/bin/sh
-
-			set -eu
-
-			_PATH="/dev/loop-control"
-			if [ ! -e "${_PATH:?}" ]; then
-			 	mknod "${_PATH}" c 10 237
-			fi
-
-			I=0
-			while [ "${I}" -lt 9 ]
-			do
-			 	_PATH="/dev/loop${I}"
-			 	if [ ! -e "${_PATH}" ]; then
-			 		mknod "${_PATH}" b 7 "${I}"
-			 	fi
-			 	I=$((I+1))
-			done
-
-			exit 0
-_EOT_
-		chmod +x "${DIRS_OLAY}/merged/usr/local/bin/loop.sh"
-	fi
-	FILE_PATH="${DIRS_OLAY}/merged/etc/systemd/system/loop_create.service"
-	if [[ ! -e "${FILE_PATH}" ]]; then
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
-			[Unit]
-			Description=Create Loop Device
-
-			[Service]
-			ExecStart=/usr/local/bin/loop.sh
-			Type=oneshot
-
-			[Install]
-			WantedBy=default.target
-_EOT_
-		chroot "${DIRS_OLAY}/merged/" systemctl enable loop_create.service
-	fi
-	FILE_PATH="${DIRS_OLAY}/merged/etc/avahi/avahi-daemon.conf"
-	if [[ -e "${FILE_PATH}" ]] && [[ ! -e "${FILE_PATH}.orig" ]]; then
-		cp -a "${FILE_PATH}" "${FILE_PATH}".orig
-		sed -e '/use-ipv4=/             {s/^#//; s/=.*$/=yes/}' \
-		    -e '/use-ipv6=/             {s/^#//; s/=.*$/=no/ }' \
-		    -e '/publish-aaaa-on-ipv4=/ {s/^#//; s/=.*$/=no/ }' \
-		    -e '/publish-a-on-ipv6=/    {s/^#//; s/=.*$/=no/ }' \
-			"${FILE_PATH}.orig"                                 \
-		>	"${FILE_PATH}"
-	fi
+# --- nsswitch ----------------------------------------------------------------
+# shellcheck disable=SC2317,SC2329
+function fnSetup_nsswitch() {
+	declare       FILE_PATH=""
 	FILE_PATH="${DIRS_OLAY}/merged/etc/nsswitch.conf"
 	if [[ -e "${FILE_PATH}" ]] && [[ ! -e "${FILE_PATH}.orig" ]]; then
 #		WORK_TEXT='mymachines mdns_minimal [NOTFOUND=return] resolve [!UNAVAIL=return] files myhostname dns/n'
 		WORK_TEXT='files wins mdns4_minimal [NOTFOUND=return] mymachines resolve [!UNAVAIL=return] dns mdns4 mdns6'
-		cp -a "${FILE_PATH}" "${FILE_PATH}".orig
-		sed -e '/hosts:/ {'                       \
-		    -e 's/^/#/'                           \
-		    -e "a hosts:          ${WORK_TEXT}/n" \
-		    -e '}'                                \
-			"${FILE_PATH}.orig"                   \
+		cp -a "${FILE_PATH}" "${FILE_PATH}.orig"
+		sed -e '/hosts:/ {'                                                       \
+		    -e 's/^/#/'                                                           \
+		    -e "a hosts:                                          ${WORK_TEXT}/n" \
+		    -e '}'                                                                \
+			-e '/^\(passwd\|group\|shadow\|gshadow\):[ \t]\+/ s/[ \t]\+winbind//' \
+			"${FILE_PATH}.orig"                                                   \
 		>	"${FILE_PATH}"
 	fi
-	HOST_NAME="${DIRS_OLAY##*/}"
-	HOST_NAME="${HOST_NAME//./}"
+}
+
+# --- network -----------------------------------------------------------------
+# shellcheck disable=SC2317,SC2329
+function fnSetup_network() {
+	declare       FILE_PATH=""
+	declare       COMD_NAME=""
 	FILE_PATH="${DIRS_OLAY}/merged/etc/hosts"
 	if ! grep -q "${HOST_NAME}" "${FILE_PATH}"; then
 			cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${FILE_PATH}"
 				127.0.1.1       ${HOST_NAME}
 _EOT_
 	fi
-	FILE_PATH="${DIRS_OLAY}/merged/etc/ssh/sshd_config.d/default.conf"
-	if [[ -e "${DIRS_OLAY}/merged/etc/ssh/sshd_config" ]] && [[ ! -e "${FILE_PATH}" ]]; then
-		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
-			# --- user settings ---
-
-			# port number to listen to ssh
-			Port 2222
-
-			# ip address to accept connections
-			#ListenAddress 0.0.0.0
-			#ListenAddress ::
-
-			# ssh protocol
-			Protocol 2
-
-			# whether to allow root login
-			PermitRootLogin no
-
-			# configuring public key authentication
-			#PubkeyAuthentication no
-
-			# public key file location
-			#AuthorizedKeysFile
-
-			# setting password authentication
-			PasswordAuthentication yes
-
-			# configuring challenge-response authentication
-			#ChallengeResponseAuthentication no
-
-			# sshd log is output to /var/log/secure
-			#SyslogFacility AUTHPRIV
-
-			# specify log output level
-			#LogLevel INFO
+	COMD_NAME="resolvectl"
+	FILE_PATH="$(find "${DIRS_OLAY}/merged"{/,/usr}/{bin,sbin}/ -type f -name "${COMD_NAME}" 2> /dev/null || true)"
+	if [[ -n "${FILE_PATH}" ]]; then
+		if [[ -e "${DIRS_OLAY}/merged/etc/NetworkManager/NetworkManager.conf" ]]; then
+			FILE_PATH="${DIRS_OLAY}/merged/etc/NetworkManager/conf.d/dns.conf"
+			if [[ ! -e "${FILE_PATH}" ]]; then
+				mkdir -p "${FILE_PATH%/*}"
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
+					[main]
+					dns=systemd-resolved
 _EOT_
+			fi
+			FILE_PATH="${DIRS_OLAY}/merged/etc/NetworkManager/conf.d/mdns.conf"
+			if [[ ! -e "${FILE_PATH}" ]]; then
+				mkdir -p "${FILE_PATH%/*}"
+				cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
+					[connection]
+					connection.mdns=2
+_EOT_
+			fi
+		fi
 	fi
+}
+
+# --- dnsmasq -----------------------------------------------------------------
+# shellcheck disable=SC2317,SC2329
+function fnSetup_dnsmasq() {
+	declare       FILE_PATH=""
 	FILE_PATH="${DIRS_OLAY}/merged/etc/dnsmasq.d/default.conf"
 	if [[ -e "${DIRS_OLAY}/merged/etc/dnsmasq.conf" ]] && [[ ! -e "${FILE_PATH}" ]]; then
 		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
@@ -304,7 +219,201 @@ _EOT_
 			# --- eof ---------------------------------------------------------------------
 _EOT_
 	fi
-	USER_NAME="master"
+}
+
+# --- sshd --------------------------------------------------------------------
+# shellcheck disable=SC2317,SC2329
+function fnSetup_sshd() {
+	declare       FILE_PATH=""
+	FILE_PATH="${DIRS_OLAY}/merged/etc/ssh/sshd_config.d/default.conf"
+	if [[ -e "${DIRS_OLAY}/merged/etc/ssh/sshd_config" ]] && [[ ! -e "${FILE_PATH}" ]]; then
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
+			# --- user settings ---
+
+			# port number to listen to ssh
+			#Port 2222
+
+			# ip address to accept connections
+			#ListenAddress 0.0.0.0
+			#ListenAddress ::
+
+			# ssh protocol
+			Protocol 2
+
+			# whether to allow root login
+			PermitRootLogin no
+
+			# configuring public key authentication
+			#PubkeyAuthentication no
+
+			# public key file location
+			#AuthorizedKeysFile
+
+			# setting password authentication
+			PasswordAuthentication yes
+
+			# configuring challenge-response authentication
+			#ChallengeResponseAuthentication no
+
+			# sshd log is output to /var/log/secure
+			#SyslogFacility AUTHPRIV
+
+			# specify log output level
+			#LogLevel INFO
+_EOT_
+	fi
+}
+
+# --- avahi -------------------------------------------------------------------
+# shellcheck disable=SC2317,SC2329
+function fnSetup_avahi() {
+	declare       FILE_PATH=""
+	FILE_PATH="${DIRS_OLAY}/merged/etc/avahi/avahi-daemon.conf"
+	if [[ -e "${FILE_PATH}" ]] && [[ ! -e "${FILE_PATH}.orig" ]]; then
+		cp -a "${FILE_PATH}" "${FILE_PATH}.orig"
+		sed -e '/use-ipv4=/             {s/^#//; s/=.*$/=yes/}' \
+		    -e '/use-ipv6=/             {s/^#//; s/=.*$/=no/ }' \
+		    -e '/publish-aaaa-on-ipv4=/ {s/^#//; s/=.*$/=no/ }' \
+		    -e '/publish-a-on-ipv6=/    {s/^#//; s/=.*$/=no/ }' \
+			"${FILE_PATH}.orig"                                 \
+		>	"${FILE_PATH}"
+	fi
+}
+
+# -- loop device: shell -------------------------------------------------------
+# shellcheck disable=SC2317,SC2329
+function fnSetup_loop() {
+	declare       FILE_PATH=""
+	# [ loop device: shell ]
+	FILE_PATH="${DIRS_OLAY}/merged/usr/local/bin/loop.sh"
+	if [[ ! -e "${FILE_PATH}" ]]; then
+		mkdir -p "${FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
+			#!/bin/sh
+
+			set -eu
+
+			_PATH="/dev/loop-control"
+			if [ ! -e "${_PATH:?}" ]; then
+			 	mknod "${_PATH}" c 10 237
+				sleep 1
+			fi
+
+			I=0
+			while [ "${I}" -lt 10 ]
+			do
+			 	_PATH="/dev/loop${I}"
+			 	if [ ! -e "${_PATH}" ]; then
+			 		mknod "${_PATH}" b 7 "${I}"
+			 	fi
+			 	I=$((I+1))
+			done
+
+			exit 0
+_EOT_
+		chmod +x "${DIRS_OLAY}/merged/usr/local/bin/loop.sh"
+	fi
+	# [ loop device: service ]
+	FILE_PATH="${DIRS_OLAY}/merged/etc/systemd/system/loop_create.service"
+	if [[ ! -e "${FILE_PATH}" ]]; then
+		mkdir -p "${FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
+			[Unit]
+			Description=Create Loop Device
+
+			[Service]
+			ExecStart=/usr/local/bin/loop.sh
+			Type=oneshot
+
+			[Install]
+			WantedBy=default.target
+_EOT_
+#		chroot "${DIRS_OLAY}/merged/" systemctl enable loop_create.service
+	fi
+}
+
+# --- firewall ----------------------------------------------------------------
+# shellcheck disable=SC2317,SC2329
+function fnSetup_firewall() {
+	declare -r -a SRVC_LIST=(\
+		"-  enable  dhcp                        " \
+		"-  enable  dhcpv6                      " \
+		"o  enable  dhcpv6-client               " \
+		"-  enable  dns                         " \
+		"-  enable  http                        " \
+		"-  enable  https                       " \
+		"o  enable  mdns                        " \
+		"-  enable  nfs                         " \
+		"-  enable  proxy-dhcp                  " \
+		"-  enable  samba                       " \
+		"-  enable  samba-client                " \
+		"o  enable  ssh                         " \
+		"-  enable  tftp                        " \
+	)
+	declare -a    SRVC_LINE=()
+	declare       COMD_NAME=""
+	declare       FILE_PATH=""
+	declare -i    I=0
+	COMD_NAME="firewall-offline-cmd"
+	FILE_PATH="$(find "${DIRS_OLAY}/merged"{/,/usr}/{bin,sbin}/ -type f -name "${COMD_NAME}" 2> /dev/null || true)"
+	if [[ -n "${FILE_PATH}" ]]; then
+		for I in "${!SRVC_LIST[@]}"
+		do
+			read -r -a SRVC_LINE < <(echo "${SRVC_LIST[I]}")
+			if [[ "${SRVC_LINE[0]}" != "o" ]]; then
+				printf "%-10.10s: %s\n" "skip" "${SRVC_LINE[2]}"
+				continue
+			fi
+			printf "%-10.10s: %s\n" "${SRVC_LINE[1]}" "${SRVC_LINE[2]}"
+			case "${SRVC_LINE[1]}" in
+				enable ) chroot "${DIRS_OLAY}/merged/" firewall-offline-cmd --add-service="${SRVC_LINE[2]}" || true;;
+				disable) chroot "${DIRS_OLAY}/merged/" firewall-offline-cmd --remove-service="${SRVC_LINE[2]}" || true;;
+				*      ) ;;
+			esac
+		done
+	fi
+}
+
+# --- service -----------------------------------------------------------------
+# shellcheck disable=SC2317,SC2329
+function fnSetup_service() {
+	declare -r -a SRVC_LIST=(\
+		"o  enable  systemd-networkd.service    " \
+		"o  enable  systemd-resolved.service    " \
+		"o  enable  avahi-daemon.service        " \
+		"o  enable  firewalld.service           " \
+		"o  enable  sshd.service                " \
+		"o  enable  loop_create.service         " \
+	)
+	declare -a    SRVC_LINE=()
+	declare       FILE_PATH=""
+	declare -i    I=0
+	for I in "${!SRVC_LIST[@]}"
+	do
+		read -r -a SRVC_LINE < <(echo "${SRVC_LIST[I]}")
+		if [[ "${SRVC_LINE[0]}" != "o" ]]; then
+			printf "%-10.10s: %s\n" "skip" "${SRVC_LINE[2]}"
+			continue
+		fi
+		FILE_PATH="$(find "${DIRS_OLAY}/merged"{/usr/lib/systemd/,/etc/systemd/} -type f -name "${SRVC_LINE[2]}" 2> /dev/null || true)"
+		if [[ -z "${FILE_PATH}" ]]; then
+			printf "%-10.10s: %s\n" "not exist" "${SRVC_LINE[2]}"
+			continue
+		fi
+		printf "%-10.10s: %s\n" "${SRVC_LINE[1]}" "${SRVC_LINE[2]}"
+		chroot "${DIRS_OLAY}/merged/" systemctl --quiet "${SRVC_LINE[1]}" "${SRVC_LINE[2]}" || true
+	done
+}
+
+# --- add user ----------------------------------------------------------------
+# shellcheck disable=SC2317,SC2329
+function fnSetup_user() {
+	declare -r    USER_NAME="master"
+	declare       USER_UIDS=""
+	declare       USER_GIDS=""
+	declare       USER_CRPT=""
+	declare       USER_SHEL=""
+	declare       GRUP_SUDO=""
 	if ! grep -q "${USER_NAME}" "${DIRS_OLAY}/merged/etc/passwd"; then
 #		USER_PSWD="master"
 		USER_UIDS="$(id -u "${USER_NAME:?}")"
@@ -322,53 +431,62 @@ _EOT_
 #		cp -a /etc/shadow "${DIRS_OLAY}/merged/etc/"
 #		cp -a /etc/group  "${DIRS_OLAY}/merged/etc/"
 	fi
+}
+
+# --- main --------------------------------------------------------------------
+	declare       HOST_NAME="${DIRS_OLAY##*/}"
+	              HOST_NAME="${HOST_NAME//./}"
+
+	# --- mount and daemon reload ---------------------------------------------
+	FLAG_CHRT="$(find /tmp/ -type d \( -name "${PROG_NAME}.*" -a -not -name "${DIRS_TEMP##*/}" \) -exec find '{}' -type f -name "${DIRS_CHRT##*/}" \; 2> /dev/null || true)"
+	touch "${DIRS_TEMP:?}/${DIRS_CHRT##*/}"
+	if [[ -z "${FLAG_CHRT}" ]]; then
+		rm -rf   "${DIRS_OLAY:?}"/work
+		mkdir -p "${DIRS_OLAY}"/{upper,lower,work,merged}
+		mkdir -p "${DIRS_OLAY}"/upper/{root,home,"${DIRS_TOPS##/}","${DIRS_HGFS##/}"}
+		mkdir -p "${DIRS_OLAY}"/work/{_rootdir,root,home,"${DIRS_TOPS##/}","${DIRS_TOPS##/}"_"${DIRS_HGFS##*/}"}
+		# ---------------------------------------------------------------------
+		funcMount_overlay "${DIRS_CHRT:?}" "${DIRS_OLAY}/upper"                 "${DIRS_OLAY}/work/_rootdir"                         "${DIRS_OLAY}/merged"
+	fi
+
+	# --- container -----------------------------------------------------------
+	fnSetup_nsswitch
+	fnSetup_network
+#	fnSetup_dnsmasq
+	fnSetup_sshd
+#	fnSetup_avahi
+	fnSetup_loop
+	fnSetup_firewall
+	fnSetup_service
+	fnSetup_user
+
+	# --- options -------------------------------------------------------------
 	OPTN_PARM=()
-#	OPTN_PARM+=("--network-macvlan=ens160")
 	OPTN_PARM+=("--private-users=no")
 	OPTN_PARM+=("--bind=${DIRS_TOPS}:${DIRS_TOPS}:norbind")
 	OPTN_PARM+=("--bind=${DIRS_HGFS}:${DIRS_HGFS}:norbind")
 	OPTN_PARM+=("--bind=/home:/home:norbind")
-#	OPTN_PARM+=("--bind=/dev:/dev:norbind")
-#	OPTN_PARM+=("--bind-ro=/etc/passwd:/etc/passwd:norbind")
-#	OPTN_PARM+=("--bind-ro=/etc/shadow:/etc/shadow:norbind")
-#	OPTN_PARM+=("--bind-ro=/etc/group:/etc/group:norbind")
-#	OPTN_PARM+=("--bind-ro=/etc/hostname:/etc/hostname:norbind")
-#	OPTN_PARM+=("--bind-ro=/etc/hosts:/etc/hosts:norbind")
-#	OPTN_PARM+=("--bind-ro=/etc/resolv.conf:/etc/resolv.conf:norbind")
-	if [[ -f /run/systemd/resolve/stub-resolv.conf ]]; then
-		OPTN_PARM+=("--resolv-conf=copy-uplink")
+#	if [[ -f /run/systemd/resolve/stub-resolv.conf ]]; then
+#		OPTN_PARM+=("--resolv-conf=copy-uplink")
+#	fi
+	if ip link show | grep -q 'br0'; then
+		OPTN_PARM+=("--network-bridge=br0")
 	fi
+
+	# --- exec ----------------------------------------------------------------
 #	DBGS_OUTS="SYSTEMD_LOG_LEVEL=debug"
 	${DBGS_OUTS:-} systemd-nspawn --boot -U \
 		--directory="${DIRS_OLAY}/merged/" \
 		--machine="${HOST_NAME}" \
-		--capability=CAP_MKNOD \
+		--capability=CAP_MKNOD,CAP_NET_RAW \
+		--property=DeviceAllow="/dev/console rwm" \
+		--property=DeviceAllow="/dev/loop-control rwm" \
 		--property=DeviceAllow="block-loop rwm" \
 		--property=DeviceAllow="block-blkext rwm" \
-		--property=DeviceAllow="/dev/loop-control rwm" \
-		--property=DeviceAllow="/dev/console rwm" \
 		"${OPTN_PARM[@]}"
 	# --- umount --------------------------------------------------------------
 	FLAG_CHRT="$(find /tmp/ -type d \( -name "${PROG_NAME}.*" -a -not -name "${DIRS_TEMP##*/}" \) -exec find '{}' -type f -name "${DIRS_CHRT##*/}" \; 2> /dev/null || true)"
 	if [[ -z "${FLAG_CHRT}" ]]; then
-#		umount --recursive     "${DIRS_OLAY}/merged/tmp/"
-#		umount                 "${DIRS_OLAY}/merged/run/"
-#		umount --recursive     "${DIRS_OLAY}/merged/sys/"
-#		umount                 "${DIRS_OLAY}/merged/proc/"
-#		umount --recursive     "${DIRS_OLAY}/merged/dev/"
-		# ---------------------------------------------------------------------
-#		umount                 "${DIRS_OLAY}/merged/${DIRS_HGFS##/}/linux"
-#		umount                 "${DIRS_OLAY}/merged/${DIRS_TFTP##/}"
-#		umount                 "${DIRS_OLAY}/merged/${DIRS_HTML##/}"
-#		umount                 "${DIRS_OLAY}/merged/${DIRS_SHAR##/}"
-#		umount                 "${DIRS_OLAY}/merged/${DIRS_RMAK}"
-#		umount                 "${DIRS_OLAY}/merged/${DIRS_ISOS}"
-#		umount                 "${DIRS_OLAY}/merged/${DIRS_CONF}"
-		# ---------------------------------------------------------------------
-#		umount                 "${DIRS_OLAY}/merged/srv/hgfs/"
-#		umount                 "${DIRS_OLAY}/merged/srv"
-#		umount                 "${DIRS_OLAY}/merged/home/"
-#		umount                 "${DIRS_OLAY}/merged/root/"
 		umount                 "${DIRS_OLAY}/merged/"
 	fi
 	rm -rf "${DIRS_TEMP:?}/${DIRS_CHRT##*/}"
