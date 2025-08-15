@@ -72,10 +72,13 @@ set -eu
 					dbus \
 					fakechroot \
 					file \
+					firewalld \
 					gnupg \
+					ifupdown \
 					iproute2 \
 					iputils-ping \
 					libnss-mdns \
+					libpam-systemd \
 					linux-image-amd64 \
 					less \
 					locales \
@@ -119,16 +122,20 @@ set -eu
 					dbus \
 					fakechroot \
 					file \
+					firewalld \
 					gnupg \
+					ifupdown \
 					iproute2 \
 					iputils-ping \
 					libnss-mdns \
+					libpam-systemd \
 					linux-image-generic \
 					less \
 					locales \
 					locales-all \
 					lsb-release \
 					man \
+					network-manager \
 					openssh-server \
 					rsync \
 					shellcheck \
@@ -177,6 +184,7 @@ set -eu
 						curl \
 						dbus \
 						file \
+						firewalld \
 						gnupg \
 						isomd5sum \
 						kernel \
@@ -186,6 +194,7 @@ set -eu
 						lz4 \
 						lzop \
 						man \
+						NetworkManager \
 						nss-mdns \
 						openssh-server \
 						procps \
@@ -193,6 +202,7 @@ set -eu
 						shellcheck \
 						sudo \
 						systemd \
+						systemd-resolved \
 						tar \
 						traceroute \
 						tree \
