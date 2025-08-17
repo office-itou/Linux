@@ -69,11 +69,11 @@
 
 #	mkdir -p "${DIRS_CHRT}"/srv/{hgfs,http,samba,tftp,user}
 
-	# --- trap ----------------------------------------------------------------
+# --- trap --------------------------------------------------------------------
 	declare -a    _LIST_RMOV=()			# list remove directory / file
 	              _LIST_RMOV+=("${DIRS_TEMP:?}")
 
-# shellcheck disable=SC2329
+# shellcheck disable=SC2317,SC2329
 function funcTrap() {
 	declare       _PATH=""
 	declare -i    I=0
@@ -95,14 +95,7 @@ function funcTrap() {
 
 	trap funcTrap EXIT
 
-	# --- check the execution user --------------------------------------------
-	# shellcheck disable=SC2312
-	if [[ "$(whoami)" != "root" ]]; then
-		echo "run as root user."
-		exit 1
-	fi
-
-	# --- overlay -------------------------------------------------------------
+# --- overlay -----------------------------------------------------------------
 	declare -r    DIRS_OLAY="${PWD:?}/overlay/${DIRS_CHRT##*/}"
 
 function funcMount_overlay() {
@@ -280,7 +273,7 @@ function fnSetup_avahi() {
 	fi
 }
 
-# -- loop device: shell -------------------------------------------------------
+# -- loop device --------------------------------------------------------------
 # shellcheck disable=SC2317,SC2329
 function fnSetup_loop() {
 	declare       FILE_PATH=""
@@ -405,6 +398,57 @@ function fnSetup_service() {
 	done
 }
 
+# --- skeleton ----------------------------------------------------------------
+# shellcheck disable=SC2317,SC2329
+function fnSetup_skeleton() {
+	declare       FILE_PATH=""
+	# --- .bashrc -------------------------------------------------------------
+	FILE_PATH="${DIRS_OLAY}/merged/etc/skel/.bashrc"
+	if ! grep -q "# --- user custom ---" "${FILE_PATH}"; then
+		mkdir -p "${FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' >> "${FILE_PATH}"
+			# --- measures against garbled characters ---
+			case "${TERM}" in
+			 	linux ) export LANG=C;;
+			 	*     )              ;;
+			esac
+			# --- user custom ---
+			alias vi='vim'
+			alias view='vim'
+			alias diff='diff --color=auto'
+			alias ip='ip -color=auto'
+			alias ls='ls --color=auto'
+_EOT_
+	fi
+	# --- .curlrc -------------------------------------------------------------
+	FILE_PATH="${DIRS_OLAY}/merged/etc/skel/.curlrc"
+	if [[ ! -e "${FILE_PATH}" ]]; then
+		mkdir -p "${FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
+			location
+			progress-bar
+			remote-time
+			show-error
+_EOT_
+	fi
+	# --- .vimrc --------------------------------------------------------------
+	FILE_PATH="${DIRS_OLAY}/merged/etc/skel/.vimrc"
+	if [[ ! -e "${FILE_PATH}" ]]; then
+		mkdir -p "${FILE_PATH%/*}"
+		cat <<- '_EOT_' | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g' > "${FILE_PATH}"
+			set number              " Print the line number in front of each line.
+			set tabstop=4           " Number of spaces that a <Tab> in the file counts for.
+			set list                " List mode: Show tabs as CTRL-I is displayed, display \$ after end of line.
+			set listchars=tab:>_    " Strings to use in 'list' mode and for the |:list| command.
+			set nowrap              " This option changes how text is displayed.
+			set showmode            " If in Insert, Replace or Visual mode put a message on the last line.
+			set laststatus=2        " The value of this option influences when the last window will have a status line always.
+			set mouse-=a            " Disable mouse usage
+			syntax on               " Vim5 and later versions support syntax highlighting.
+_EOT_
+	fi
+}
+
 # --- add user ----------------------------------------------------------------
 # shellcheck disable=SC2317,SC2329
 function fnSetup_user() {
@@ -427,6 +471,7 @@ function fnSetup_user() {
 		fi
 		chroot "${DIRS_OLAY}/merged/" groupadd -g "${USER_GIDS:?}" "${USER_NAME:?}"
 		chroot "${DIRS_OLAY}/merged/" useradd -u "${USER_UIDS:?}" -g "${USER_GIDS:?}" -G "${GRUP_SUDO}" -p "${USER_CRPT}" -s "${USER_SHEL:?}" "${USER_NAME:?}"
+#		chroot "${DIRS_OLAY}/merged/" useradd -u "${USER_UIDS:?}" -g "${USER_GIDS:?}" -G "${GRUP_SUDO}" -p "${USER_CRPT}" -s "${USER_SHEL:?}" -m "${USER_NAME:?}"
 #		cp -a /etc/passwd "${DIRS_OLAY}/merged/etc/"
 #		cp -a /etc/shadow "${DIRS_OLAY}/merged/etc/"
 #		cp -a /etc/group  "${DIRS_OLAY}/merged/etc/"
@@ -434,6 +479,12 @@ function fnSetup_user() {
 }
 
 # --- main --------------------------------------------------------------------
+	# --- check the execution user --------------------------------------------
+	if [[ "$(whoami)" != "root" ]]; then
+		echo "run as root user."
+		exit 1
+	fi
+
 	declare       HOST_NAME="${DIRS_OLAY##*/}"
 	              HOST_NAME="${HOST_NAME//./}"
 
@@ -450,15 +501,16 @@ function fnSetup_user() {
 	fi
 
 	# --- container -----------------------------------------------------------
-	fnSetup_nsswitch
-	fnSetup_network
-#	fnSetup_dnsmasq
-	fnSetup_sshd
-#	fnSetup_avahi
-	fnSetup_loop
-	fnSetup_firewall
-	fnSetup_service
-	fnSetup_user
+	fnSetup_nsswitch					# nsswitch
+	fnSetup_network						# network
+#	fnSetup_dnsmasq						# dnsmasq
+	fnSetup_sshd						# sshd
+#	fnSetup_avahi						# avahi
+	fnSetup_loop						# loop device
+	fnSetup_firewall					# firewall
+	fnSetup_service						# service
+	fnSetup_skeleton					# skeleton
+	fnSetup_user						# add user
 
 	# --- options -------------------------------------------------------------
 	OPTN_PARM=()
@@ -474,6 +526,8 @@ function fnSetup_user() {
 	fi
 
 	# --- exec ----------------------------------------------------------------
+#	mount -t proc /proc/         "${DIRS_OLAY}/merged/proc/"												
+#	mount --rbind /sys/          "${DIRS_OLAY}/merged/sys/"  && mount --make-rslave "${DIRS_OLAY}/merged/sys/"
 #	DBGS_OUTS="SYSTEMD_LOG_LEVEL=debug"
 	${DBGS_OUTS:-} systemd-nspawn --boot -U \
 		--directory="${DIRS_OLAY}/merged/" \
@@ -484,6 +538,8 @@ function fnSetup_user() {
 		--property=DeviceAllow="block-loop rwm" \
 		--property=DeviceAllow="block-blkext rwm" \
 		"${OPTN_PARM[@]}"
+#	umount --recursive     "${DIRS_OLAY}/merged/sys/"
+#	umount                 "${DIRS_OLAY}/merged/proc/"
 	# --- umount --------------------------------------------------------------
 	FLAG_CHRT="$(find /tmp/ -type d \( -name "${PROG_NAME}.*" -a -not -name "${DIRS_TEMP##*/}" \) -exec find '{}' -type f -name "${DIRS_CHRT##*/}" \; 2> /dev/null || true)"
 	if [[ -z "${FLAG_CHRT}" ]]; then

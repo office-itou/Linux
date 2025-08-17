@@ -18,10 +18,12 @@
 	declare       _DIRS_ISOS=""			# iso file
 	declare       _DIRS_LOAD=""			# load module
 	declare       _DIRS_RMAK=""			# remake file
+	declare       _DIRS_CHRT=""			# container file
 
 	# --- common data file ----------------------------------------------------
 	declare       _PATH_CONF=""			# common configuration file
 	declare       _PATH_MDIA=""			# media data file
+	declare       _PATH_DSTP=""			# debstrap data file
 
 	# --- pre-configuration file templates ------------------------------------
 	declare       _CONF_KICK=""			# for rhel
@@ -91,6 +93,7 @@
 
 	# --- list data -----------------------------------------------------------
 	declare -a    _LIST_MDIA=()			# media information
+	declare -a    _LIST_DSTP=()			# debstrap information
 
 	# --- curl / wget parameter -----------------------------------------------
 	declare       _COMD_CURL=""

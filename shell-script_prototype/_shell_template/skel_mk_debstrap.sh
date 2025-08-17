@@ -2,16 +2,16 @@
 
 ###############################################################################
 ##
-##	custom iso image creation and pxeboot configuration shell
+##	create container shell
 ##	  developed for debian
 ##
 ##	developer   : J.Itou
-##	release     : 2025/04/13
+##	release     : 2025/08/16
 ##
 ##	history     :
 ##	   data    version    developer    point
 ##	---------- -------- -------------- ----------------------------------------
-##	2025/04/13 000.0000 J.Itou         first release
+##	2025/08/16 000.0000 J.Itou         first release
 ##
 ##	shellcheck -o all "filename"
 ##
@@ -19,7 +19,7 @@
 
 # :_tmpl_001_initialize_common.sh_:
 
-# :_tmpl_001_initialize_mk_custom_iso.sh_:
+# :_tmpl_001_initialize_mk_debstrap.sh_:
 
 # :_tmpl_002_data_section.sh_:
 
@@ -27,21 +27,11 @@
 
 # :_tmpl_003_function_section_library_network.sh_:
 
-# :_tmpl_003_function_section_library_media.sh_:
-
-# :_tmpl_003_function_section_library_initrd.sh_:
-
-# :_tmpl_003_function_section_library_mkiso.sh_:
-
-# :_tmpl_003_function_section_library_web_tool.sh_:
-
 # :_tmpl_004_function_section_common.sh_:
 
-# :_tmpl_004_function_section_media_data.sh_:
+# :_tmpl_004_function_section_debstrap_data.sh_:
 
-# :_tmpl_004_function_section_pre-configuration.sh_:
-
-# :_tmpl_005_function_section_common.sh_:
+# :_tmpl_005_function_section_mk_debstrap.sh_:
 
 # -----------------------------------------------------------------------------
 # descript: initialization for skel_mk_custom_iso.sh (dummy)
@@ -98,42 +88,15 @@ function fnHelp() {
 	cat <<- _EOT_ | sed -e '/^ [^ ]\+/ s/^ *//g' -e 's/^ \+$//g'
 		usage: [sudo] ${_PROG_PATH:-"$0"} [command (options)]
 
-		  create or update for the remaster or download the iso file:
-		    create|update|download [(empty)|all|(mini|netinst|dvd|liveinst {a|all|id})]
-		      empty         : waiting for input
-		      all           : all target
-		      mini|netinst|dvd|liveinst
-		                    : each target
-		        all         : all of each target
-		        id number   : selected id
-
-		  create for the pxeboot menu:
-		    pxeboot [(empty)]
-
-		  display and update for list data:
-		    list [empty|all|(mini|net|dvd|live {a|all|id})]
-		      empty         : all target
-		      all           : all target
-		      mini|netinst|dvd|liveinst
-		                    : each target
-		        all         : all of each target
-		        id number   : selected id
-
-		  create common configuration file:
-		    conf [create]
-
-		  create common pre-configuration file:
-		    preconf [all|(preseed|nocloud|kickstart|autoyast)]
-		      all           : all pre-config files
-		      preseed       : preseed.cfg
-		      nocloud       : nocloud
-		      kickstart     : kickstart.cfg
-		      autoyast      : autoyast.xml
-		      agama         : autoinst.json
-
-		  create symbolic link:
-		    link
-		      create        : create symbolic link
+		  create for the container file:
+		    debian-nn
+		    ubuntu-nn.nn
+		    fedora-nn
+		    centos-stream-nn
+		    almalinux-nn
+		    rockylinux-nn
+		    miraclelinux-nn
+		    opensuse-nn
 _EOT_
 }
 
@@ -198,26 +161,14 @@ function fnMain() {
 
 	# --- main ----------------------------------------------------------------
 	fnInitialization					# initialization
-	fnGet_media_data					# get media data
+	fnGet_debstrap_data					# get debstrap data
 
 	set -f -- "${__OPTN_PARM[@]:-}"
 	while [[ -n "${1:-}" ]]
 	do
 		__OPTN=()
 		case "${1:-}" in
-#			list    ) ;;				# (print out media list)
-#			create  ) ;;				# (force create)
-#			update  ) ;;				# (create new files only)
-#			download) ;;				# (download only)
-#			pxeboot ) ;;				# (pxeboot)
-			list    | \
-			create  | \
-			update  | \
-			download| \
-			pxeboot )        fnExec             "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
-			link    ) shift; fnCreate_directory "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
-			conf    ) shift; fnCreate_conf      "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
-			preconf ) shift; fnCreate_precon    "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
+			create  ) shift; fnExec "__RSLT" "${@:-}"; read -r -a __OPTN < <(echo "${__RSLT}");;
 			help    ) shift; fnHelp; break;;
 			debug   ) shift; fnDebug_parameter; break;;
 			*       ) shift; __OPTN=("${@:-}");;

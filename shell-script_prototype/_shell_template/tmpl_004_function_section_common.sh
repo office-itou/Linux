@@ -14,6 +14,7 @@ function fnInitialization() {
 	declare       __LINE=""				# work variable
 	declare       __NAME=""				# variable name
 	declare       __VALU=""				# value
+	declare       __DEVS=""				# device name
 	# --- common configuration file -------------------------------------------
 	              _PATH_CONF="/srv/user/share/conf/_data/common.cfg"
 	for __PATH in \
@@ -43,8 +44,10 @@ function fnInitialization() {
 	_DIRS_ISOS="${_DIRS_ISOS:-:_DIRS_SHAR_:/isos}"
 	_DIRS_LOAD="${_DIRS_LOAD:-:_DIRS_SHAR_:/load}"
 	_DIRS_RMAK="${_DIRS_RMAK:-:_DIRS_SHAR_:/rmak}"
+	_DIRS_CHRT="${_DIRS_CHRT:-:_DIRS_SHAR_:/chroot}"
 #	_PATH_CONF="${_PATH_CONF:-:_DIRS_DATA_:/common.cfg}"
 	_PATH_MDIA="${_PATH_MDIA:-:_DIRS_DATA_:/media.dat}"
+	_PATH_DSTP="${_PATH_DSTP:-:_DIRS_DATA_:/debstrap.dat}"
 	_CONF_KICK="${_CONF_KICK:-:_DIRS_TMPL_:/kickstart_rhel.cfg}"
 	_CONF_CLUD="${_CONF_CLUD:-:_DIRS_TMPL_:/user-data_ubuntu}"
 	_CONF_SEDD="${_CONF_SEDD:-:_DIRS_TMPL_:/preseed_debian.cfg}"
@@ -57,7 +60,20 @@ function fnInitialization() {
 	_SHEL_RUNS="${_SHEL_RUNS:-:_DIRS_SHEL_:/autoinst_cmd_run.sh}"
 	_SRVR_HTTP="${_SRVR_HTTP:-http}"
 	_SRVR_PROT="${_SRVR_PROT:-"${_SRVR_HTTP}"}"
+	_SRVR_NICS=""
+	while read -r __DEVS
+	do
+		__VALU="$(ip -4 -brief address show dev "${__DEVS}")"
+		if [[ -n "${__VALU:-}" ]]; then
+			_SRVR_NICS="${__DEVS}"
+			_SRVR_ADDR="$(echo "${__VALU}" | awk '{print $3;}')"
+			_SRVR_CIDR="${_SRVR_ADDR##*/}"
+			_SRVR_ADDR="${_SRVR_ADDR%/*}"
+			break
+		fi
+	done < <(ls /sys/class/net/ || true)
 	_SRVR_NICS="${_SRVR_NICS:-"$(LANG=C ip -0 -brief address show scope global | awk '$1!="lo" {print $1;}' || true)"}"
+	_SRVR_NICS="${_SRVR_NICS%@*}"
 	_SRVR_MADR="${_SRVR_MADR:-"$(LANG=C ip -0 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {print $3;}' || true)"}"
 	if [[ -z "${_SRVR_ADDR:-}" ]]; then
 		_SRVR_ADDR="${_SRVR_ADDR:-"$(LANG=C ip -4 -brief address show dev "${_SRVR_NICS}" | awk '$1!="lo" {split($3,s,"/"); print s[1];}' || true)"}"
@@ -122,8 +138,10 @@ function fnInitialization() {
 			DIRS_ISOS) _DIRS_ISOS="${__VALU:-"${_DIRS_ISOS:-}"}";;
 			DIRS_LOAD) _DIRS_LOAD="${__VALU:-"${_DIRS_LOAD:-}"}";;
 			DIRS_RMAK) _DIRS_RMAK="${__VALU:-"${_DIRS_RMAK:-}"}";;
+			DIRS_CHRT) _DIRS_CHRT="${__VALU:-"${_DIRS_CHRT:-}"}";;
 #			PATH_CONF) _PATH_CONF="${__VALU:-"${_PATH_CONF:-}"}";;
 			PATH_MDIA) _PATH_MDIA="${__VALU:-"${_PATH_MDIA:-}"}";;
+			PATH_DSTP) _PATH_DSTP="${__VALU:-"${_PATH_DSTP:-}"}";;
 			CONF_KICK) _CONF_KICK="${__VALU:-"${_CONF_KICK:-}"}";;
 			CONF_CLUD) _CONF_CLUD="${__VALU:-"${_CONF_CLUD:-}"}";;
 			CONF_SEDD) _CONF_SEDD="${__VALU:-"${_CONF_SEDD:-}"}";;
@@ -179,8 +197,10 @@ function fnInitialization() {
 	_DIRS_ISOS="${_DIRS_ISOS//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
 	_DIRS_LOAD="${_DIRS_LOAD//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
 	_DIRS_RMAK="${_DIRS_RMAK//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
+	_DIRS_CHRT="${_DIRS_CHRT//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
 #	_PATH_CONF="${_PATH_CONF//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
 	_PATH_MDIA="${_PATH_MDIA//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
+	_PATH_DSTP="${_PATH_DSTP//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
 	_CONF_KICK="${_CONF_KICK//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
 	_CONF_CLUD="${_CONF_CLUD//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
 	_CONF_SEDD="${_CONF_SEDD//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
@@ -232,8 +252,10 @@ function fnInitialization() {
 	readonly      _DIRS_ISOS
 	readonly      _DIRS_LOAD
 	readonly      _DIRS_RMAK
+	readonly      _DIRS_CHRT
 #	readonly      _PATH_CONF
 	readonly      _PATH_MDIA
+	readonly      _PATH_DSTP
 	readonly      _CONF_KICK
 	readonly      _CONF_CLUD
 	readonly      _CONF_SEDD
@@ -280,6 +302,7 @@ function fnInitialization() {
 		"${_DIRS_ISOS:?}"                                                                                                                                                               \
 		"${_DIRS_LOAD:?}"                                                                                                                                                               \
 		"${_DIRS_RMAK:?}"                                                                                                                                                               \
+		"${_DIRS_CHRT:?}"                                                                                                                                                               \
 	)
 	readonly      _LIST_DIRS
 	# --- symbolic link list --------------------------------------------------
@@ -324,8 +347,6 @@ function fnInitialization() {
 	readonly      _MENU_SLNX
 	              _MENU_UEFI="${_DIRS_TFTP}/menu-efi64/syslinux.cfg"
 	readonly      _MENU_UEFI
-	# --- get media data ------------------------------------------------------
-	fnGet_media_data
 }
 
 # -----------------------------------------------------------------------------
@@ -389,10 +410,12 @@ function fnCreate_conf() {
 		DIRS_ISOS="${_DIRS_ISOS//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# iso file
 		DIRS_LOAD="${_DIRS_LOAD//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# load module
 		DIRS_RMAK="${_DIRS_RMAK//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"			# remake file
+		DIRS_CHRT="${_DIRS_CHRT//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"		# container file
 
 		# --- common data file --------------------------------------------------------
 		#PATH_CONF="${_PATH_CONF//"${_DIRS_DATA}"/:_DIRS_DATA_:}"	# common configuration file (this file)
 		PATH_MDIA="${_PATH_MDIA//"${_DIRS_DATA}"/:_DIRS_DATA_:}"		# media data file
+		PATH_DSTP="${_PATH_DSTP//"${_DIRS_DATA}"/:_DIRS_DATA_:}"	# debstrap data file
 
 		# --- pre-configuration file templates ----------------------------------------
 		CONF_KICK="${_CONF_KICK//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"	# for rhel
@@ -445,110 +468,6 @@ function fnCreate_conf() {
 
 		### eof #######################################################################
 _EOT_
-}
-
-# -----------------------------------------------------------------------------
-# descript: get media data
-#   input :        : unused
-#   output: stdout : message
-#   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnGet_media_data() {
-	declare       __PATH=""				# full path
-	declare       __LINE=""				# work variable
-	# --- list data -----------------------------------------------------------
-	_LIST_MDIA=()
-	for __PATH in \
-		"${PWD:+"${PWD}/${_PATH_MDIA##*/}"}" \
-		"${_PATH_MDIA}"
-	do
-		if [[ ! -s "${__PATH}" ]]; then
-			continue
-		fi
-		while IFS=$'\n' read -r __LINE
-		do
-			__LINE="${__LINE//:_DIRS_TOPS_:/"${_DIRS_TOPS}"}"
-			__LINE="${__LINE//:_DIRS_HGFS_:/"${_DIRS_HGFS}"}"
-			__LINE="${__LINE//:_DIRS_HTML_:/"${_DIRS_HTML}"}"
-			__LINE="${__LINE//:_DIRS_SAMB_:/"${_DIRS_SAMB}"}"
-			__LINE="${__LINE//:_DIRS_TFTP_:/"${_DIRS_TFTP}"}"
-			__LINE="${__LINE//:_DIRS_USER_:/"${_DIRS_USER}"}"
-			__LINE="${__LINE//:_DIRS_SHAR_:/"${_DIRS_SHAR}"}"
-			__LINE="${__LINE//:_DIRS_CONF_:/"${_DIRS_CONF}"}"
-			__LINE="${__LINE//:_DIRS_DATA_:/"${_DIRS_DATA}"}"
-			__LINE="${__LINE//:_DIRS_KEYS_:/"${_DIRS_KEYS}"}"
-			__LINE="${__LINE//:_DIRS_TMPL_:/"${_DIRS_TMPL}"}"
-			__LINE="${__LINE//:_DIRS_SHEL_:/"${_DIRS_SHEL}"}"
-			__LINE="${__LINE//:_DIRS_IMGS_:/"${_DIRS_IMGS}"}"
-			__LINE="${__LINE//:_DIRS_ISOS_:/"${_DIRS_ISOS}"}"
-			__LINE="${__LINE//:_DIRS_LOAD_:/"${_DIRS_LOAD}"}"
-			__LINE="${__LINE//:_DIRS_RMAK_:/"${_DIRS_RMAK}"}"
-			_LIST_MDIA+=("${__LINE}")
-		done < "${__PATH:?}"
-		if [[ -n "${_DBGS_FLAG:-}" ]]; then
-			printf "[%-$((${_SIZE_COLS:-80}-2)).$((${_SIZE_COLS:-80}-2))s]\n" "${_LIST_MDIA[@]}" 1>&2
-		fi
-		break
-	done
-	if [[ -z "${_LIST_MDIA[*]}" ]]; then
-		printf "${_CODE_ESCP:+"${_CODE_ESCP}[m"}${_CODE_ESCP:+"${_CODE_ESCP}[91m"}%s${_CODE_ESCP:+"${_CODE_ESCP}[m"}\n" "data file not found: [${_PATH_MDIA}]" 1>&2
-#		exit 1
-	fi
-}
-
-# -----------------------------------------------------------------------------
-# descript: put media data
-#   input :        : unused
-#   output: stdout : message
-#   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnPut_media_data() {
-	declare       __RNAM=""				# rename path
-	declare       __LINE=""				# work variable
-	declare -a    __LIST=()				# work variable
-	declare -i    I=0
-#	declare -i    J=0
-	# --- check file exists ---------------------------------------------------
-	if [[ -f "${_PATH_MDIA:?}" ]]; then
-		__RNAM="${_PATH_MDIA}.$(TZ=UTC find "${_PATH_MDIA}" -printf '%TY%Tm%Td%TH%TM%.2TS')"
-		printf "%s: \"%s\"\n" "backup" "${__RNAM}" 1>&2
-		cp -a "${_PATH_MDIA}" "${__RNAM}"
-	fi
-	# --- delete old files ----------------------------------------------------
-	while read -r __PATH
-	do
-		printf "%s: \"%s\"\n" "remove" "${__PATH}" 1>&2
-		rm -f "${__PATH:?}"
-	done < <(find "${_PATH_MDIA%/*}" -name "${_PATH_MDIA##*/}.[0-9]*" | sort -r | tail -n +3  || true)
-	# --- list data -----------------------------------------------------------
-	for I in "${!_LIST_MDIA[@]}"
-	do
-		__LINE="${_LIST_MDIA[I]}"
-		__LINE="${__LINE//"${_DIRS_RMAK}"/:_DIRS_RMAK_:}"
-		__LINE="${__LINE//"${_DIRS_LOAD}"/:_DIRS_LOAD_:}"
-		__LINE="${__LINE//"${_DIRS_ISOS}"/:_DIRS_ISOS_:}"
-		__LINE="${__LINE//"${_DIRS_IMGS}"/:_DIRS_IMGS_:}"
-		__LINE="${__LINE//"${_DIRS_SHEL}"/:_DIRS_SHEL_:}"
-		__LINE="${__LINE//"${_DIRS_TMPL}"/:_DIRS_TMPL_:}"
-		__LINE="${__LINE//"${_DIRS_KEYS}"/:_DIRS_KEYS_:}"
-		__LINE="${__LINE//"${_DIRS_DATA}"/:_DIRS_DATA_:}"
-		__LINE="${__LINE//"${_DIRS_CONF}"/:_DIRS_CONF_:}"
-		__LINE="${__LINE//"${_DIRS_SHAR}"/:_DIRS_SHAR_:}"
-		__LINE="${__LINE//"${_DIRS_USER}"/:_DIRS_USER_:}"
-		__LINE="${__LINE//"${_DIRS_TFTP}"/:_DIRS_TFTP_:}"
-		__LINE="${__LINE//"${_DIRS_SAMB}"/:_DIRS_SAMB_:}"
-		__LINE="${__LINE//"${_DIRS_HTML}"/:_DIRS_HTML_:}"
-		__LINE="${__LINE//"${_DIRS_HGFS}"/:_DIRS_HGFS_:}"
-		__LINE="${__LINE//"${_DIRS_TOPS}"/:_DIRS_TOPS_:}"
-		read -r -a __LIST < <(echo "${__LINE}")
-#		for J in "${!__LIST[@]}"
-#		do
-#			__LIST[J]="${__LIST[J]:--}"		# empty
-#			__LIST[J]="${__LIST[J]// /%20}"	# space
-#		done
-		printf "%-11s %-3s %-39s %-39s %-23s %-23s %-15s %-15s %-143s %-143s %-47s %-15s %-15s %-85s %-47s %-15s %-43s %-85s %-47s %-15s %-43s %-85s %-85s %-85s %-47s %-85s %-3s\n" \
-			"${__LIST[@]}"
-	done > "${_PATH_MDIA:?}"
 }
 
 # -----------------------------------------------------------------------------
@@ -685,498 +604,4 @@ function fnCreate_directory() {
 		fnPrintf "%20.20s: %s" "create symlink" "${__TGET} -> ${__LINK}"
 		ln -s "${__TGET}" "${__LINK}"
 	done
-}
-
-# --- media information [new] -------------------------------------------------
-#  0: type          ( 11)   TEXT           NOT NULL     media type
-#  1: entry_flag    (  3)   TEXT           NOT NULL     [m] menu, [o] output, [else] hidden
-#  2: entry_name    ( 39)   TEXT           NOT NULL     entry name (unique)
-#  3: entry_disp    ( 39)   TEXT           NOT NULL     entry name for display
-#  4: version       ( 23)   TEXT                        version id
-#  5: latest        ( 23)   TEXT                        latest version
-#  6: release       ( 15)   TEXT                        release date
-#  7: support       ( 15)   TEXT                        support end date
-#  8: web_regexp    (143)   TEXT                        web file  regexp
-#  9: web_path      (143)   TEXT                        "         path
-# 10: web_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
-# 11: web_size      ( 15)   BIGINT                      "         file size
-# 12: web_status    ( 15)   TEXT                        "         download status
-# 13: iso_path      ( 85)   TEXT                        iso image file path
-# 14: iso_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
-# 15: iso_size      ( 15)   BIGINT          "           file size
-# 16: iso_volume    ( 43)   TEXT            "           volume id
-# 17: rmk_path      ( 85)   TEXT            remaster    file path
-# 18: rmk_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
-# 19: rmk_size      ( 15)   BIGINT                      "         file size
-# 20: rmk_volume    ( 43)   TEXT                        "         volume id
-# 21: ldr_initrd    ( 85)   TEXT                        initrd    file path
-# 22: ldr_kernel    ( 85)   TEXT                        kernel    file path
-# 23: cfg_path      ( 85)   TEXT                        config    file path
-# 24: cfg_tstamp    ( 47)   TIMESTAMP WITH TIME ZONE    "         time stamp
-# 25: lnk_path      ( 85)   TEXT                        symlink   directory or file path
-# 26: create_flag   (  3)   TEXT                        create flag
-
-# -----------------------------------------------------------------------------
-# descript: create preseed.cfg
-#   input :   $1   : input value
-#   output: stdout : message
-#   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnCreate_preseed() {
-	declare -r    __TGET_PATH="${1:?}"	# file name
-	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
-	declare       __WORK=""				# work variables
-	# -------------------------------------------------------------------------
-	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
-	mkdir -p "${__DIRS}"
-	cp --backup "${_CONF_SEDD}" "${__TGET_PATH}"
-	# --- by generation -------------------------------------------------------
-	case "${__TGET_PATH}" in
-		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${__TGET_PATH}"               \
-			    -e '/packages:/a \    usrmerge '\\
-			;;
-		*)	;;
-	esac
-	case "${__TGET_PATH}" in
-		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
-			sed -i "${__TGET_PATH}"               \
-			    -e 's/bind9-utils/bind9utils/'   \
-			    -e 's/bind9-dnsutils/dnsutils/'  \
-			    -e 's/systemd-resolved/systemd/' \
-			    -e 's/fcitx5-mozc/fcitx-mozc/'
-			;;
-		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${__TGET_PATH}"               \
-			    -e 's/systemd-resolved/systemd/' \
-			    -e 's/fcitx5-mozc/fcitx-mozc/'
-			;;
-		*)	;;
-	esac
-	# --- server or desktop ---------------------------------------------------
-	case "${__TGET_PATH}" in
-		*_desktop*)
-			sed -i "${__TGET_PATH}"                                             \
-			    -e '\%^[ \t]*d-i[ \t]\+pkgsel/include[ \t]\+%,\%^#.*[^\\]$% { ' \
-			    -e '/^[^#].*[^\\]$/ s/$/ \\/g'                                  \
-			    -e 's/^#/ /g'                                                   \
-			    -e 's/connman/network-manager/                              } '
-#			sed -e 's/task-lxde-desktop/task-gnome-desktop/'                    \
-#			  "${__TGET_PATH}"                                                  \
-#			> "${__TGET_PATH%.*}_gnome.${__TGET_PATH##*.}"
-			;;
-		*)	;;
-	esac
-	# --- for ubiquity --------------------------------------------------------
-	case "${__TGET_PATH}" in
-		*_ubiquity_*)
-			IFS= __WORK=$(
-				sed -n '\%^[^#].*preseed/late_command%,\%[^\\]$%p' "${__TGET_PATH}" | \
-				sed -e 's/\\/\\\\/g'                                                  \
-				    -e 's/d-i/ubiquity/'                                              \
-				    -e 's%preseed\/late_command%ubiquity\/success_command%'         | \
-				sed -e ':l; N; s/\n/\\n/; b l;' || true
-			)
-			if [[ -n "${__WORK}" ]]; then
-				sed -i "${__TGET_PATH}"                                  \
-				    -e '\%^[^#].*preseed/late_command%,\%[^\\]$%     { ' \
-				    -e 's/^/#/g                                        ' \
-				    -e 's/^#  /# /g                                  } ' \
-				    -e '\%^[^#].*ubiquity/success_command%,\%[^\\]$% { ' \
-				    -e 's/^/#/g                                        ' \
-				    -e 's/^#  /# /g                                  } '
-				sed -i "${__TGET_PATH}"                                  \
-				    -e "\%ubiquity/success_command%i \\${__WORK}"
-			fi
-			sed -i "${__TGET_PATH}"                       \
-			    -e "\%ubiquity/download_updates% s/^#/ /" \
-			    -e "\%ubiquity/use_nonfree%      s/^#/ /" \
-			    -e "\%ubiquity/reboot%           s/^#/ /"
-			;;
-		*)	;;
-	esac
-	# -------------------------------------------------------------------------
-	chmod ugo-x "${__TGET_PATH}"
-}
-
-# -----------------------------------------------------------------------------
-# descript: create nocloud
-#   input :   $1   : input value
-#   output: stdout : message
-#   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnCreate_nocloud() {
-	declare -r    __TGET_PATH="${1:?}"	# file name
-	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
-#	declare       __WORK=""				# work variables
-	# -------------------------------------------------------------------------
-	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
-	mkdir -p "${__DIRS}"
-	cp --backup "${_CONF_CLUD}" "${__TGET_PATH}"
-	# --- by generation -------------------------------------------------------
-	case "${__TGET_PATH}" in
-		*_debian_*.*         | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${__TGET_PATH}"              \
-			    -e '/packages:/a \    usrmerge '
-			;;
-		*)	;;
-	esac
-	case "${__TGET_PATH}" in
-		*_debian_*_oldold.*  | *_ubuntu_*_oldold.*  | *_ubiquity_*_oldold.*)
-			sed -i "${__TGET_PATH}"              \
-			    -e 's/bind9-utils/bind9utils/'   \
-			    -e 's/bind9-dnsutils/dnsutils/'  \
-			    -e 's/systemd-resolved/systemd/' \
-			    -e 's/fcitx5-mozc/fcitx-mozc/'
-			;;
-		*_debian_*_old.*     | *_ubuntu_*_old.*     | *_ubiquity_*_old.*   )
-			sed -i "${__TGET_PATH}"              \
-			    -e 's/systemd-resolved/systemd/' \
-			    -e 's/fcitx5-mozc/fcitx-mozc/'
-			;;
-		*)	;;
-	esac
-	# --- server or desktop ---------------------------------------------------
-	case "${__TGET_PATH}" in
-		*_desktop*)
-			sed -i "${__TGET_PATH}"                                            \
-			    -e '/^[ \t]*packages:$/,/\([[:graph:]]\+:$\|^#[ \t]*--\+\)/ {' \
-			    -e '/^#[ \t]*--\+/! s/^#/ /g                                }'
-			;;
-		*)	;;
-	esac
-	# -------------------------------------------------------------------------
-	touch -m "${__DIRS}/meta-data"      --reference "${__TGET_PATH}"
-	touch -m "${__DIRS}/network-config" --reference "${__TGET_PATH}"
-#	touch -m "${__DIRS}/user-data"      --reference "${__TGET_PATH}"
-	touch -m "${__DIRS}/vendor-data"    --reference "${__TGET_PATH}"
-	# -------------------------------------------------------------------------
-	chmod --recursive ugo-x "${__DIRS}"
-}
-
-# -----------------------------------------------------------------------------
-# descript: create kickstart.cfg
-#   input :   $1   : input value
-#   output: stdout : message
-#   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnCreate_kickstart() {
-	declare -r    __TGET_PATH="${1:?}"	# file name
-	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
-#	declare       __WORK=""				# work variables
-	declare       __VERS=""				# distribution version
-	declare       __NUMS=""				# "            number
-	declare       __NAME=""				# "            name
-	declare       __SECT=""				# "            section
-	declare -r    __ARCH="x86_64"		# base architecture
-	declare -r    __ADDR="${_SRVR_PROT:+"${_SRVR_PROT}:/"}/${_SRVR_ADDR:?}/${_DIRS_IMGS##*/}"
-	# -------------------------------------------------------------------------
-	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
-	mkdir -p "${__DIRS}"
-	cp --backup "${_CONF_KICK}" "${__TGET_PATH}"
-	# -------------------------------------------------------------------------
-#	__NUMS="\$releasever"
-	__VERS="${__TGET_PATH#*_}"
-	__VERS="${__VERS%%_*}"
-	__NUMS="${__VERS##*-}"
-	__NAME="${__VERS%-*}"
-	__SECT="${__NAME/-/ }"
-	# --- initializing the settings -------------------------------------------
-	sed -i "${__TGET_PATH}"                     \
-	    -e "/^cdrom$/      s/^/#/             " \
-	    -e "/^url[ \t]\+/  s/^/#/g            " \
-	    -e "/^repo[ \t]\+/ s/^/#/g            " \
-	    -e "s/:_HOST_NAME_:/${__NAME}/        " \
-	    -e "s%:_WEBS_ADDR_:%${__ADDR}%g       " \
-	    -e "s%:_DISTRO_:%${__NAME}-${__NUMS}%g"
-	# --- cdrom, repository ---------------------------------------------------
-	case "${__TGET_PATH}" in
-		*_dvd*)		# --- cdrom install ---------------------------------------
-			sed -i "${__TGET_PATH}"                 \
-			    -e "/^#cdrom$/ s/^#//             " \
-			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
-			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "/^#repo[ \t]\+/ s/^#//g       " \
-			    -e "s/\$releasever/${__NUMS}/g    " \
-			    -e "s/\$basearch/${__ARCH}/g      " \
-			    -e "s/\$stream/${__NUMS}/g      } "
-			;;
-		*_net*)		# --- network install -------------------------------------
-			sed -i "${__TGET_PATH}"                 \
-			    -e "/^cdrom$/ s/^/#/              " \
-			    -e "/^#.*(${__SECT}).*$/,/^$/   { " \
-			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "/^#repo[ \t]\+/ s/^#//g       " \
-			    -e "s/\$releasever/${__NUMS}/g    " \
-			    -e "s/\$basearch/${__ARCH}/g    } "
-			;;
-		*_web*)		# --- network install [ for pxeboot ] ---------------------
-			sed -i "${__TGET_PATH}"                 \
-			    -e "/^cdrom$/ s/^/#/              " \
-			    -e "/^#.*(web address).*$/,/^$/ { " \
-			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "/^#repo[ \t]\+/ s/^#//g       " \
-			    -e "s/\$releasever/${__NUMS}/g    " \
-			    -e "s/\$basearch/${__ARCH}/g      " \
-			    -e "s/\$stream/${__NUMS}/g      } "
-			;;
-		*)	;;
-	esac
-	case "${__TGET_PATH}" in
-		*_fedora*)
-			sed -i "${__TGET_PATH}"                 \
-			    -e "/%packages/,/%end/          { " \
-			    -e "/^epel-release/ s/^/#/      } "
-			;;
-		*)
-			sed -i "${__TGET_PATH}"                 \
-			    -e "/^#.*(EPEL).*$/,/^$/        { " \
-			    -e "/^#url[ \t]\+/  s/^#//g       " \
-			    -e "/^#repo[ \t]\+/ s/^#//g       " \
-			    -e "s/\$releasever/${__NUMS}/g    " \
-			    -e "s/\$basearch/${__ARCH}/g      " \
-			    -e "s/\$stream/${__NUMS}/g      } "
-			;;
-	esac
-	# --- desktop -------------------------------------------------------------
-#	sed -e "/%packages/,/%end/ {"                      \
-#	    -e "/desktop/ s/^-//g  }"                      \
-#	    "${__TGET_PATH}"                               \
-#	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
-	sed -e "/%packages/,/%end/                      {" \
-	    -e "/#@.*-desktop/,/^[^#]/ s/^#//g          }" \
-	    "${__TGET_PATH}"                               \
-	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
-	case "${__NUMS}" in
-		[1-9]) ;;
-		*    )
-			sed -i "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}" \
-			    -e "/%packages/,/%end/                         {" \
-			    -e "/^kpipewire$/ s/^/#/g                      }"
-			;;
-	esac
-	# -------------------------------------------------------------------------
-	chmod ugo-x "${__TGET_PATH}" "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
-}
-
-# -----------------------------------------------------------------------------
-# descript: create autoyast.xml
-#   input :   $1   : input value
-#   output: stdout : message
-#   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnCreate_autoyast() {
-	declare -r    __TGET_PATH="${1:?}"	# file name
-	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
-#	declare       __WORK=""				# work variables
-	declare       __VERS=""				# distribution version
-	declare       __NUMS=""				# "            number
-	# -------------------------------------------------------------------------
-	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
-	mkdir -p "${__DIRS}"
-	cp --backup "${_CONF_YAST}" "${__TGET_PATH}"
-	# -------------------------------------------------------------------------
-	__VERS="${__TGET_PATH#*_}"
-	__VERS="${__VERS%%_*}"
-	__NUMS="${__VERS##*-}"
-	# --- by media ------------------------------------------------------------
-	case "${__TGET_PATH}" in
-		*_web*|\
-		*_dvd*)
-			sed -i "${__TGET_PATH}"                                   \
-			    -e '/<image_installation t="boolean">/ s/false/true/'
-			;;
-		*)
-			sed -i "${__TGET_PATH}"                                   \
-			    -e '/<image_installation t="boolean">/ s/true/false/'
-			;;
-	esac
-	# --- by version ----------------------------------------------------------
-	case "${__TGET_PATH}" in
-		*tumbleweed*)
-			sed -i "${__TGET_PATH}"                                    \
-			    -e '\%<add_on_products .*>%,\%</add_on_products>%  { ' \
-			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
-			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
-			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
-			    -e '\%<packages .*>%,\%</packages>%                { ' \
-			    -e '/<!-- tumbleweed/,/tumbleweed -->/             { ' \
-			    -e '/<!-- tumbleweed$/ s/$/ -->/g                  } ' \
-			    -e '/^tumbleweed -->/  s/^/<!-- /g                 } ' \
-			    -e 's%\(<product>\).*\(</product>\)%\1openSUSE\2%    '
-			;;
-		*           )
-			sed -i "${__TGET_PATH}"                                          \
-			    -e '\%<add_on_products .*>%,\%</add_on_products>%        { ' \
-			    -e '/<!-- leap/,/leap -->/                               { ' \
-			    -e "/<media_url>/ s%/\(leap\)/[0-9.]\+/%/\1/${__NUMS}/%g   " \
-			    -e '/<!-- leap$/ s/$/ -->/g                              } ' \
-			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
-			    -e '\%<packages .*>%,\%</packages>%                      { ' \
-			    -e '/<!-- leap/,/leap -->/                               { ' \
-			    -e '/<!-- leap$/ s/$/ -->/g                              } ' \
-			    -e '/^leap -->/  s/^/<!-- /g                             } ' \
-			    -e 's%\(<product>\).*\(</product>\)%\1Leap\2%              '
-			;;
-	esac
-	# --- desktop -------------------------------------------------------------
-	sed -e '/<!-- desktop$/       s/$/ -->/g '         \
-	    -e '/^desktop -->/        s/^/<!-- /g'         \
-	    -e '/<!-- desktop gnome$/ s/$/ -->/g '         \
-	    -e '/^desktop gnome -->/  s/^/<!-- /g'         \
-	    "${__TGET_PATH}"                               \
-	>   "${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
-	# -------------------------------------------------------------------------
-	chmod ugo-x "${__TGET_PATH}"
-}
-
-# -----------------------------------------------------------------------------
-# descript: create autoinst.json
-#   input :   $1   : input value
-#   output: stdout : message
-#   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnCreate_agama() {
-	declare -r    __TGET_PATH="${1:?}"	# file name
-	declare -r    __DIRS="${__TGET_PATH%/*}" # directory name
-	declare       __WORK=""				# work variables
-	declare       __VERS=""				# distribution version
-	declare       __NUMS=""				# "            number
-#	declare       __PDCT=""				# product name
-	declare       __PDID=""				# "       id
-	# -------------------------------------------------------------------------
-	fnPrintf "%20.20s: %s" "create file" "${__TGET_PATH}"
-	mkdir -p "${__DIRS}"
-	cp --backup "${_CONF_AGMA}" "${__TGET_PATH}"
-	# -------------------------------------------------------------------------
-	__VERS="${__TGET_PATH#*_}"
-	__VERS="${__VERS%%_*}"
-	__VERS="${__VERS%.*}"
-	__VERS="${__VERS,,}"
-	__NUMS="${__VERS##*-}"
-#	__PDCT="${__VERS%%-*}"
-	__PDID="${__VERS//-/_}"
-	__PDID="${__PDID^}"
-	# --- by media ------------------------------------------------------------
-	# --- by version ----------------------------------------------------------
-	case "${__TGET_PATH}" in
-		*_tumbleweed_*) __WORK="leap";;
-		*             ) __WORK="tumbleweed";;
-	esac
-	sed -i "${__TGET_PATH}"                                   \
-	    -e '/"product": {/,/}/                             {' \
-	    -e '/"id":/ s/"[^ ]\+"$/"'"${__PDID}"'"/           }' \
-	    -e '/"extraRepositories": \[/,/\]/                 {' \
-	    -e '\%^// '"${__WORK}"'%,\%^// '"${__WORK}"'%d      ' \
-	    -e '\%^//.*$%d                                     }' \
-	    -e '\%^// fixed parameter%,\%^// fixed parameter%d  '
-	# --- desktop -------------------------------------------------------------
-	__WORK="${__TGET_PATH%.*}_desktop.${__TGET_PATH##*.}"
-	cp "${__TGET_PATH}" "${__WORK}"
-	sed -i "${__TGET_PATH}"                   \
-	    -e '/"patterns": \[/,/\]/          {' \
-	    -e '\%^// desktop%,\%^// desktop%d }' \
-	    -e '/"packages": \[/,/\]/          {' \
-	    -e '\%^// desktop%,\%^// desktop%d }'
-	sed -i "${__WORK}"                        \
-	    -e '/"patterns": \[/,/\]/          {' \
-	    -e '\%^//.*$%d                     }' \
-	    -e '/"packages": \[/,/\]/          {' \
-	    -e '\%^//.*$%d                     }'
-	# -------------------------------------------------------------------------
-	chmod ugo-x "${__TGET_PATH}" "${__WORK}"
-}
-
-# -----------------------------------------------------------------------------
-# descript: create pre-configuration file templates
-#   n-ref :   $1   : return value : options
-#   input :   $@   : input value
-#   output: stdout : message
-#   return:        : unused
-# shellcheck disable=SC2317,SC2329
-function fnCreate_precon() {
-	declare -n    __NAME_REFR="${1:-}"	# name reference
-	shift
-	declare -a    __OPTN=()				# option parameter
-	declare -a    __LIST=()				# data list
-	declare       __PATH=""				# full path
-	declare       __TYPE=""				# configuration type
-#	declare       __WORK=""				# work variables
-	declare -a    __LINE=()				# work variable
-	declare -i    I=0					# work variables
-	# --- option parameter ----------------------------------------------------
-	__OPTN=()
-	while [[ -n "${1:-}" ]]
-	do
-		case "${1:-}" in
-			all      ) shift; __OPTN+=("preseed" "nocloud" "kickstart" "autoyast" "agama"); break;;
-			preseed  | \
-			nocloud  | \
-			kickstart| \
-			autoyast | \
-			agama    ) ;;
-			*        ) break;;
-		esac
-		__OPTN+=("$1")
-		shift
-	done
-	__NAME_REFR="${*:-}"
-	if [[ -z "${__OPTN[*]}" ]]; then
-		return
-	fi
-	# -------------------------------------------------------------------------
-	fnPrintf "%20.20s: %s" "create pre-conf file" ""
-	# -------------------------------------------------------------------------
-	__LIST=()
-	for I in "${!_LIST_MDIA[@]}"
-	do
-		read -r -a __LINE < <(echo "${_LIST_MDIA[I]}")
-		case "${__LINE[1]}" in			# entry_flag
-			o) ;;
-			*) continue;;
-		esac
-		case "${__LINE[23]##*/}" in		# cfg_path
-			-) continue;;
-			*) ;;
-		esac
-		__PATH="${__LINE[23]}"
-		__TYPE="${__PATH%/*}"
-		__TYPE="${__TYPE##*/}"
-		if ! echo "${__OPTN[*]}" | grep -q "${__TYPE}"; then
-			continue
-		fi
-		__LIST+=("${__PATH}")
-		case "${__PATH}" in
-			*/kickstart/*dvd.*) __LIST+=("${__PATH/_dvd/_web}");;
-			*/agama/*) __LIST+=("${__PATH/_leap-*_/_tumbleweed_}");;
-			*)	;;
-		esac
-	done
-	IFS= mapfile -d $'\n' -t __LIST < <(IFS=  printf "%s\n" "${__LIST[@]}" | sort -Vu || true)
-	# -------------------------------------------------------------------------
-	for __PATH in "${__LIST[@]}"
-	do
-		__TYPE="${__PATH%/*}"
-		__TYPE="${__TYPE##*/}"
-		case "${__TYPE}" in
-			preseed  ) fnCreate_preseed   "${__PATH}";;
-			nocloud  ) fnCreate_nocloud   "${__PATH}/user-data";;
-			kickstart) fnCreate_kickstart "${__PATH}";;
-			autoyast ) fnCreate_autoyast  "${__PATH}";;
-			agama    ) fnCreate_agama     "${__PATH}";;
-			*)	;;
-		esac
-	done
-
-	# -------------------------------------------------------------------------
-	# debian_*_oldold  : debian-10(buster)
-	# debian_*_old     : debian-11(bullseye)
-	# debian_*         : debian-12(bookworm)/13(trixie)/14(forky)/testing/sid/~
-	# ubuntu_*_oldold  : ubuntu-14.04(trusty)/16.04(xenial)/18.04(bionic)
-	# ubuntu_*_old     : ubuntu-20.04(focal)/22.04(jammy)
-	# ubuntu_*         : ubuntu-23.04(lunar)/~
-	# ubiquity_*_oldold: ubuntu-14.04(trusty)/16.04(xenial)/18.04(bionic)
-	# ubiquity_*_old   : ubuntu-20.04(focal)/22.04(jammy)
-	# ubiquity_*       : ubuntu-23.04(lunar)/~
-	# -------------------------------------------------------------------------
 }

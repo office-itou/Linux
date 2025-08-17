@@ -53,8 +53,14 @@
 	declare -r    _PROG_DIRS="${_PROG_PATH%/*}"
 	declare -r    _PROG_NAME="${_PROG_PATH##*/}"
 	declare -r    _PROG_PROC="${_PROG_NAME}.$$"
+    declare -r    _SUDO_USER="${SUDO_USER:-}"
+    declare       _SUDO_HOME="${SUDO_HOME:-}"
+    if [[ -n "${_SUDO_USER}" ]] && [[ -z "${_SUDO_HOME}" ]]; then
+        _SUDO_HOME="$(awk -F ':' '$1=="'"${_SUDO_USER}"'" {print $6;}' /etc/passwd)"
+    fi
+	readonly      _SUDO_HOME
 	declare       _DIRS_TEMP=""
-	              _DIRS_TEMP="$(mktemp -qd -p "${SUDO_HOME:-/tmp}" "${_PROG_PROC}.XXXXXX")"
+	              _DIRS_TEMP="$(mktemp -qd -p "${_SUDO_HOME:-/tmp}" "${_PROG_PROC}.XXXXXX")"
 	readonly      _DIRS_TEMP
 #	declare -r    TMPDIR="${_DIRS_TEMP:-?}"
 

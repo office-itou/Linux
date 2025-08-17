@@ -86,6 +86,7 @@ set -eu
 					lsb-release \
 					man \
 					openssh-server \
+					polkitd \
 					rsync \
 					shellcheck \
 					sudo \
@@ -137,6 +138,7 @@ set -eu
 					man \
 					network-manager \
 					openssh-server \
+					polkitd \
 					rsync \
 					shellcheck \
 					sudo \
@@ -198,6 +200,7 @@ set -eu
 						nss-mdns \
 						openssh-server \
 						procps \
+						polkitd \
 						rsync \
 						shellcheck \
 						sudo \
